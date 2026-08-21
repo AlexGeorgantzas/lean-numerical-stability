@@ -14,52 +14,77 @@ following equation (3.3) on PDF and article page 5:
 E = E_sch + E_per.
 ```
 
-The adjacent big-O statements are not part of P18-T1. The paper does not fix
-their norm, constants, neighborhoods, or quantifier dependencies, and it makes
-the global statement conditional on stability. Those claims therefore cannot
-be replaced by an exact Euclidean assertion. P18-T1 selects only the exact
-decomposition and adds a universally valid Euclidean-norm corollary.
+The adjacent local big-O orders and stability-conditional global estimate are
+not part of P18-T1. The paper does not specify their norm, constants, limiting
+regime, or stability notion, so this task does not assign them exact semantics.
 
 ## Additive Runge--Kutta execution
 
-`P18AdditiveRKOneStepRun n s` represents one positive-dimensional, positive
-stage-count execution of the additive Runge--Kutta formulation in equation
-(3.2). It records:
+`P18AdditiveRKOneStepRun State s` works over an arbitrary real module `State`.
+It therefore does not restrict the paper's unspecified state space to a
+positive-dimensional finite Euclidean vector space. The stage count is
+positive, as in the paper's `s`-stage method.
 
-- the initial state and exact one-step state;
-- the step size `step` and perturbation size `epsilon`;
-- the full-precision operator `F` and perturbation operator `tau`;
-- the displayed coefficient families;
-- the unperturbed stages and output obtained by setting `epsilon = 0`; and
-- the perturbed stages and output satisfying both equations (3.2a)--(3.2b).
+The run records the original additive method (3.1) directly:
 
-The run follows the positive `epsilon * tau` signs printed in equation (3.2).
-Equation (2.3) prints the opposite definition of `tau`; the paper does not
-resolve that sign inconsistency. The selected error split is algebraic and is
-valid under either convention, so the target does not infer any sign-dependent
-claim.
+- `F` and `FEpsilon` are the two operators;
+- `a`, `aPerturbation`, `b`, and `bPerturbation` are the two coefficient
+  channels;
+- `perturbedStages` and `perturbedNext` satisfy (3.1a)--(3.1b); and
+- `schemeStages` and `schemeNext` are the comparison method obtained by
+  replacing `FEpsilon` with `F`, equivalently using the combined coefficients
+  with the unperturbed operator.
+
+The scale `epsilon` is nonzero because equation (2.3) divides by it. Instead of
+division, the run records the equivalent exact relation
+
+```text
+epsilon * tau(y) = F(y) - FEpsilon(y).
+```
+
+This follows the sign in (2.3). The paper's (3.2) prints plus perturbation terms
+that are inconsistent with that definition. Since the run uses the original
+(3.1) equations rather than the rewritten (3.2) equations, no correction of
+the source's conflicting signs is needed. The exact error split is independent
+of the conflict.
+
+The source's `F^epsilon-F = O(epsilon)` assumption is needed for its surrounding
+order analysis, not for the selected algebraic split. Omitting a bound on
+`tau` makes this exact theorem more general; it does not turn a big-O claim into
+an exact bound.
 
 ## Error definitions
 
-The controlled definitions make the paper's three errors explicit:
+The paper names the three errors but does not define their signed baselines.
+The controlled definitions make one orientation explicit for an arbitrary
+reference state:
 
 ```text
-E     = exactNext - perturbedNext
-E_sch = exactNext - schemeNext
+E     = referenceNext - perturbedNext
+E_sch = referenceNext - schemeNext
 E_per = schemeNext - perturbedNext.
 ```
 
-Consequently `E = E_sch + E_per` must be derived from the algorithm-linked
-outputs; it is not supplied as a field of the run.
+Because the theorem holds for every `referenceNext`, it includes whichever
+exact one-step reference the paper intends without adding an ODE-flow model or
+restricting the baseline. The intermediate scheme output cancels, giving the
+paper's split.
 
 ## Fixed conclusion
 
-The theorem has two conclusions:
+The theorem proves three linked facts:
 
-1. the exact paper decomposition `E = E_sch + E_per`; and
-2. the stronger Euclidean consequence
-   `||E||_2 <= ||E_sch||_2 + ||E_per||_2`.
+1. the selected exact decomposition `E = E_sch + E_per`;
+2. the exact expansion of `E_per` obtained by subtracting the two algorithmic
+   output equations (3.1b); and
+3. for every additive observation from `State` into finite real coordinates,
+   the Euclidean norm of the observed total error obeys the triangle bound.
 
-The paper does not claim that its later big-O notation uses the Euclidean norm.
-The norm inequality is recorded only as an added corollary for the finite real
-execution model, not as an interpretation of those asymptotic statements.
+The second clause prevents the algorithm fields from being a decorative
+premise: it identifies the perturbation contribution with the difference of
+the two recorded Runge--Kutta updates. The third clause is a separate universal
+corollary. It does not claim that the paper's abstract `E`, its big-O notation,
+or its state space uses the Euclidean norm.
+
+No rounding mode, IEEE exceptional-value behavior, smoothness, order
+conditions, or stability hypothesis is asserted by this exact split task.

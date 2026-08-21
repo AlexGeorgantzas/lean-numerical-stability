@@ -1,16 +1,16 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source reselection, additive Runge--Kutta execution model, exact one-step error split, Euclidean corollary, and tier review",
+    "kind": "source selection, generic additive Runge--Kutta execution model, exact one-step error split, algorithm-output expansion, observed-coordinate corollary, and tier review",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The state dimension n and Runge--Kutta stage count s are positive.",
-    "The step size and perturbation magnitude epsilon are nonnegative.",
-    "The unperturbed stages and output satisfy equation (3.2) with epsilon set to zero.",
-    "The perturbed stages and output satisfy equations (3.2a)-(3.2b) with the printed positive epsilon*tau convention.",
-    "The exact next state is the reference one-step solution from the same initial state.",
-    "The total, scheme, and perturbation errors are respectively exactNext-perturbedNext, exactNext-schemeNext, and schemeNext-perturbedNext."
+    "The state space is an arbitrary additive real module, and the Runge--Kutta stage count s is positive.",
+    "The perturbation scale epsilon is nonzero, and epsilon*tau(y)=F(y)-FEpsilon(y) records equation (2.3) without division.",
+    "The comparison stages and output satisfy the original additive equations (3.1) with F used in both coefficient channels.",
+    "The perturbed stages and output satisfy equations (3.1a)-(3.1b) with F in the original channel and FEpsilon in the perturbation channel.",
+    "The step size, operators, coefficients, and reference one-step state are otherwise arbitrary; no finite state dimension, norm, step-sign, order, smoothness, stability, or IEEE assumption is added.",
+    "The total, scheme, and perturbation errors are respectively referenceNext-perturbedNext, referenceNext-schemeNext, and schemeNext-perturbedNext."
   ],
   "author_label": null,
   "classification_frozen_before_runs": false,
@@ -20,14 +20,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P18/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p18_t1_scheme_perturbation_error_split {n s : Nat} (run : P18AdditiveRKOneStepRun n s) : p18TotalOneStepError run = p18Add (p18SchemeOneStepError run) (p18PerturbationOneStepError run) /\\ p18VecNorm2 (p18TotalOneStepError run) <= p18VecNorm2 (p18SchemeOneStepError run) + p18VecNorm2 (p18PerturbationOneStepError run)",
+    "lean_header": "theorem p18_t1_scheme_perturbation_error_split {State : Type*} [AddCommGroup State] [Module Real State] {s : Nat} (run : P18AdditiveRKOneStepRun State s) : totalError = schemeError + perturbationError /\\ perturbationError = p18PerturbationOutputExpansion run /\\ forall additive observations into finite real coordinates, norm(observed totalError) <= norm(observed schemeError) + norm(observed perturbationError)",
     "namespace": "HighamBench",
-    "plain_language": "For one execution of the paper's additive Runge--Kutta formulation, the total one-step error is exactly the sum of the scheme and perturbation errors, and its Euclidean norm obeys the corresponding triangle bound.",
+    "plain_language": "For one execution of the paper's original additive Runge--Kutta method, the total one-step error is exactly the sum of the scheme and perturbation errors. The perturbation error is also the exact difference of the two algorithmic outputs, and every finite-coordinate additive observation obeys the Euclidean triangle bound.",
     "target_file": "paper_bencmark/highambench/tasks/P18/T1/Target.lean",
     "theorem_name": "p18_t1_scheme_perturbation_error_split"
   },
-  "informal_proof": "Expand the three errors defined from the exact, unperturbed, and perturbed one-step outputs. The intermediate unperturbed output cancels, proving E=E_sch+E_per coordinatewise. Rewrite by that equality and apply the finite Euclidean triangle inequality.",
-  "informal_statement": "The exact unnumbered E=E_sch+E_per decomposition following equation (3.3), tied to equations (3.2a)-(3.2b), together with a stronger Euclidean triangle corollary.",
+  "informal_proof": "Expand the three errors and cancel the comparison output to obtain E=E_sch+E_per in the arbitrary state module. Substitute the two output equations (3.1b) and cancel the common initial state to derive the exact perturbation-output expansion. Apply any additive observation to the split, use preservation of addition, and invoke the finite Euclidean triangle inequality.",
+  "informal_statement": "The exact unnumbered E=E_sch+E_per decomposition following equation (3.3), tied to the original additive method (3.1), with an unfolded perturbation-output identity and a separate universal observed-coordinate triangle corollary.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -45,7 +45,7 @@
     "nearby_numstability_declarations": [
       "NumStability.vecNorm2_add_le"
     ],
-    "note": "The frozen library directly supplies the Euclidean triangle-inequality conjunct. It does not contain this paper's additive Runge--Kutta execution model or the exact three-output telescoping identity.",
+    "note": "The frozen library directly supplies the Euclidean triangle inequality after any additive observation into finite coordinates. It does not contain this paper's generic additive Runge--Kutta execution model, the three-output split, or the exact output-equation expansion.",
     "searched_locations": [
       "NumStability/Analysis/MatrixAlgebra.lean",
       "NumStability/Algorithms",
@@ -56,21 +56,26 @@
   "shared_symbols": [
     "p18VecNorm2Sq",
     "p18VecNorm2",
-    "p18Add",
-    "p18Sub",
-    "p18Scale",
-    "p18StageSum",
+    "p18ModuleStageSum",
     "P18AdditiveRKOneStepRun",
     "p18TotalOneStepError",
     "p18SchemeOneStepError",
-    "p18PerturbationOneStepError"
+    "p18PerturbationOneStepError",
+    "p18PerturbationOutputExpansion"
   ],
   "source_locations": [
     {
-      "anchor": "equations (3.2a)-(3.2b)",
-      "pdf_page": 5,
-      "printed_page": "5",
-      "role": "additive Runge--Kutta stages, output, and perturbation convention",
+      "anchor": "equation (2.3)",
+      "pdf_page": 3,
+      "printed_page": "3",
+      "role": "operator perturbation definition and nonzero epsilon requirement",
+      "section": "2. Motivating Example: Mixed Precision Implementation of the Implicit Midpoint Rule"
+    },
+    {
+      "anchor": "equations (3.1a)-(3.1b)",
+      "pdf_page": 4,
+      "printed_page": "4",
+      "role": "original additive Runge--Kutta stages and output, used without the inconsistent (3.2) sign rewrite",
       "section": "3. A General Framework for the Analysis of Mixed Precision Runge--Kutta Methods"
     },
     {
@@ -88,7 +93,7 @@
   "task_id": "P18-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "After the coordinatewise telescoping identity exposes the paper's exact split, the L proof directly applies NumStability.vecNorm2_add_le to obtain the only inequality conjunct. The paper-specific execution model contributes definitions rather than a new numerical-analysis proof.",
+  "tier_rationale": "After the generic telescoping identity and the direct subtraction of the two output equations expose the paper's split, the L proof applies NumStability.vecNorm2_add_le to every finite-coordinate additive observation. The paper-specific execution model contributes algebraic definitions and exact cancellation rather than a new numerical-analysis estimate, so the direct-use tier remains appropriate.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P18/T1/Target.lean",
     "mode": "shared automatic validator",

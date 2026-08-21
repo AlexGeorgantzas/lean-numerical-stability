@@ -29,76 +29,98 @@ noncomputable def p18StageSum {n s : ℕ}
     (weights : Fin s → ℝ) (values : Fin s → Fin n → ℝ) : Fin n → ℝ :=
   fun k => ∑ j : Fin s, weights j * values j k
 
-/-- One step of the additive Runge--Kutta formulation (3.2), together with
-the unperturbed scheme obtained by setting `epsilon = 0`.
+/-- A coefficient-weighted stage sum in an arbitrary real state module. -/
+noncomputable def p18ModuleStageSum {State : Type*} [AddCommGroup State]
+    [Module ℝ State] {s : ℕ} (weights : Fin s → ℝ)
+    (values : Fin s → State) : State :=
+  ∑ j : Fin s, weights j • values j
 
-The two stage families and two outputs are constrained by the displayed
-algorithm equations. They are not arbitrary error vectors. The finite-real
-model treats `tau` as the perturbation operator and does not choose between
-the inconsistent sign conventions printed in equations (2.3) and (3.2): the
-fields below record equation (3.2)'s positive-`epsilon` convention explicitly. -/
-structure P18AdditiveRKOneStepRun (n s : ℕ) where
-  dimension_pos : 0 < n
+/-- One execution of the original additive Runge--Kutta method (3.1), together
+with the comparison scheme obtained by replacing `F^epsilon` by `F`.
+
+Using (3.1) avoids choosing a side in the paper's sign conflict: equation
+(2.3) gives `epsilon * tau = F - F^epsilon`, whereas (3.2) prints the signs
+obtained from the opposite convention. The operator equation below records
+(2.3), while the stage and output equations record (3.1) directly. -/
+structure P18AdditiveRKOneStepRun (State : Type*) [AddCommGroup State]
+    [Module ℝ State] (s : ℕ) where
   stage_count_pos : 0 < s
   step : ℝ
   epsilon : ℝ
-  step_nonneg : 0 ≤ step
-  epsilon_nonneg : 0 ≤ epsilon
-  initial : Fin n → ℝ
-  exactNext : Fin n → ℝ
-  F : (Fin n → ℝ) → Fin n → ℝ
-  tau : (Fin n → ℝ) → Fin n → ℝ
-  aTilde : Fin s → Fin s → ℝ
+  epsilon_ne_zero : epsilon ≠ 0
+  initial : State
+  referenceNext : State
+  F : State → State
+  FEpsilon : State → State
+  tau : State → State
+  operator_perturbation : ∀ y,
+    epsilon • tau y = F y - FEpsilon y
+  a : Fin s → Fin s → ℝ
   aPerturbation : Fin s → Fin s → ℝ
-  bTilde : Fin s → ℝ
+  b : Fin s → ℝ
   bPerturbation : Fin s → ℝ
-  schemeStages : Fin s → Fin n → ℝ
-  perturbedStages : Fin s → Fin n → ℝ
-  schemeNext : Fin n → ℝ
-  perturbedNext : Fin n → ℝ
+  schemeStages : Fin s → State
+  perturbedStages : Fin s → State
+  schemeNext : State
+  perturbedNext : State
   scheme_stage_equation : ∀ i,
     schemeStages i =
-      p18Add initial
-        (p18Scale step
-          (p18StageSum (aTilde i) (fun j => F (schemeStages j))))
+      initial +
+        step • p18ModuleStageSum (a i) (fun j => F (schemeStages j)) +
+        step • p18ModuleStageSum (aPerturbation i)
+          (fun j => F (schemeStages j))
   scheme_output_equation :
     schemeNext =
-      p18Add initial
-        (p18Scale step
-          (p18StageSum bTilde (fun j => F (schemeStages j))))
+      initial +
+        step • p18ModuleStageSum b (fun j => F (schemeStages j)) +
+        step • p18ModuleStageSum bPerturbation
+          (fun j => F (schemeStages j))
   perturbed_stage_equation : ∀ i,
     perturbedStages i =
-      p18Add initial
-        (p18Add
-          (p18Scale step
-            (p18StageSum (aTilde i) (fun j => F (perturbedStages j))))
-          (p18Scale (epsilon * step)
-            (p18StageSum (aPerturbation i)
-              (fun j => tau (perturbedStages j)))))
+      initial +
+        step • p18ModuleStageSum (a i) (fun j => F (perturbedStages j)) +
+        step • p18ModuleStageSum (aPerturbation i)
+          (fun j => FEpsilon (perturbedStages j))
   perturbed_output_equation :
     perturbedNext =
-      p18Add initial
-        (p18Add
-          (p18Scale step
-            (p18StageSum bTilde (fun j => F (perturbedStages j))))
-          (p18Scale (epsilon * step)
-            (p18StageSum bPerturbation
-              (fun j => tau (perturbedStages j)))))
+      initial +
+        step • p18ModuleStageSum b (fun j => F (perturbedStages j)) +
+        step • p18ModuleStageSum bPerturbation
+          (fun j => FEpsilon (perturbedStages j))
 
 /-- Total one-step error of the perturbed method. -/
-def p18TotalOneStepError {n s : ℕ}
-    (run : P18AdditiveRKOneStepRun n s) : Fin n → ℝ :=
-  p18Sub run.exactNext run.perturbedNext
+def p18TotalOneStepError {State : Type*} [AddCommGroup State]
+    [Module ℝ State] {s : ℕ}
+    (run : P18AdditiveRKOneStepRun State s) : State :=
+  run.referenceNext - run.perturbedNext
 
 /-- Approximation error of the unperturbed Runge--Kutta scheme. -/
-def p18SchemeOneStepError {n s : ℕ}
-    (run : P18AdditiveRKOneStepRun n s) : Fin n → ℝ :=
-  p18Sub run.exactNext run.schemeNext
+def p18SchemeOneStepError {State : Type*} [AddCommGroup State]
+    [Module ℝ State] {s : ℕ}
+    (run : P18AdditiveRKOneStepRun State s) : State :=
+  run.referenceNext - run.schemeNext
 
 /-- Error introduced by replacing the scheme output by the perturbed output. -/
-def p18PerturbationOneStepError {n s : ℕ}
-    (run : P18AdditiveRKOneStepRun n s) : Fin n → ℝ :=
-  p18Sub run.schemeNext run.perturbedNext
+def p18PerturbationOneStepError {State : Type*} [AddCommGroup State]
+    [Module ℝ State] {s : ℕ}
+    (run : P18AdditiveRKOneStepRun State s) : State :=
+  run.schemeNext - run.perturbedNext
+
+/-- Equation (3.1b) unfolded for the difference between the comparison output
+and the perturbed output. -/
+noncomputable def p18PerturbationOutputExpansion {State : Type*}
+    [AddCommGroup State] [Module ℝ State] {s : ℕ}
+    (run : P18AdditiveRKOneStepRun State s) : State :=
+  (run.step •
+      p18ModuleStageSum run.b (fun j => run.F (run.schemeStages j)) +
+    run.step •
+      p18ModuleStageSum run.bPerturbation
+        (fun j => run.F (run.schemeStages j))) -
+  (run.step •
+      p18ModuleStageSum run.b (fun j => run.F (run.perturbedStages j)) +
+    run.step •
+      p18ModuleStageSum run.bPerturbation
+        (fun j => run.FEpsilon (run.perturbedStages j)))
 
 /-- Finite coefficient dot product used in the P18 order conditions. -/
 noncomputable def p18CoeffDot {s : ℕ}
