@@ -1,0 +1,63 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ"
+  ],
+  "classification": "not-faithful-weaker",
+  "completed_at_utc": "2026-08-14T10:42:43.345829+00:00",
+  "findings": [
+    {
+      "category": "missing-forward-error-result",
+      "evidence": "Equation (4.32) on B795 bounds ||C_hat-AB||_infinity, whereas the Lean target mentions only four right-hand-side envelope expressions.",
+      "impact": "Lean cannot establish the selected paper theorem's central claim.",
+      "severity": "critical"
+    },
+    {
+      "category": "algorithm-and-model-omission",
+      "evidence": "Theorem 4.1 links the bound to Model 1, power-of-two scaling, rounded decompositions (4.29)-(4.30), retained pairs i+j<p, and accumulation-format inner products. These objects and hypotheses are absent from Lean.",
+      "impact": "The Lean theorem is independent of the floating-point computation analyzed by the paper.",
+      "severity": "major"
+    },
+    {
+      "category": "relation-strength",
+      "evidence": "Equations (4.32)-(4.33) use lesssim, while Lean asserts exact equality, an iff, and strict order among newly defined envelopes.",
+      "impact": "The exact Lean relations are valid algebraic facts about definitions but must not be interpreted as exact versions of the paper's error bounds.",
+      "severity": "major"
+    },
+    {
+      "category": "definition-driven-content",
+      "evidence": "D003 defines the narrow coefficient as the sum of D004, D002, and D001, and D005 applies the same norm product to each coefficient.",
+      "impact": "The substantive Lean conclusions follow from distributivity and nonnegativity rather than matrix-multiplication error analysis.",
+      "severity": "major"
+    },
+    {
+      "category": "matched-formula-corollary",
+      "evidence": "The four coefficients in Lean match the four displayed terms of (4.32), and its range-free coefficient matches (4.33) on the intended p-word domain.",
+      "impact": "This direct formula-level relationship supports not-faithful-weaker rather than not-faithful-different.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Exact identities among self-defined right-hand-side envelopes place no constraint on a computed matrix product and cannot establish the paper's normwise forward-error bound or its floating-point algorithm assumptions.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The raw coefficient expression displayed in (4.32) is the expression displayed in (4.33) plus the two nonnegative underflow contributions, exactly as stated in the comparison on B796. After unfolding the Lean definitions, elementary ordered-real algebra yields every Lean conjunct. This is only a weak consequence about chosen expressions, not an exact interpretation of lesssim.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-weaker",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The source and Lean statements are related, but only through the displayed right-hand-side formulas. The paper proves an order-level forward-error estimate for a specific scaled mixed-precision computation. Lean instead defines the narrow expression to be the range-free expression plus two underflow expressions and proves the resulting ordered-ring facts. Because B795-B796 explicitly present and compare those same terms, the paper entails this formula-level corollary after unfolding the definitions. Conversely, the corollary cannot recover any computed output, error inequality, algorithm, floating-point model, scaling hypothesis, or higher-order interpretation. The implication pattern is therefore paper-to-Lean yes and Lean-to-paper no, giving not-faithful-weaker and rejection.",
+  "remaining_uncertainties": [
+    "The paper does not define the constants hidden by lesssim, so no exact comparison between fully instantiated numerical bound constants can be recovered.",
+    "Theorem 4.1 does not explicitly state the positive domain of p or conventions for zero-dimensional matrices, although its p-word indexing implicitly requires p at least one."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P20-T3"
+}

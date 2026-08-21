@@ -3,72 +3,112 @@
   "role": "adjudicator",
   "task_id": "P20-T3",
   "trigger": [
-    "judge classifications differ"
+    "direct judge requested adjudication",
+    "round-trip judge requested adjudication",
+    "round-trip S12 is unclear",
+    "round-trip S14 is unclear"
   ],
   "resolved_items": [
     {
-      "item": "judge classifications differ",
-      "resolution": "The correct classification is not-faithful-weaker. The direct judge correctly identifies the Lean proposition as a formula-level consequence, while the round-trip judge correctly identifies its major semantic omissions but incorrectly denies the paper-to-Lean implication.",
-      "primary_evidence": "On printed page B795, equation (4.32) displays the two terms from (4.33) plus the input- and accumulation-underflow terms. Printed page B796 expressly says that the same two range-free terms are recovered and two new underflow terms are added. Declaration dependencies D003-D006 turn these displayed expressions into exact real-valued definitions and multiply them by the same nonnegative matrix infinity-norm product."
+      "item": "direct judge requested adjudication",
+      "resolution": "The decisive circularity finding is confirmed. P20Theorem41Execution can be constructed only with P20MultiwordForwardAnalysis, whose constructor assumes the four component bounds and a second-order residual. The target therefore aggregates pre-certified estimates instead of deriving the paper's analysis from Model 1 and the algorithm.",
+      "primary_evidence": "SHA-256 ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2 was verified for :codex-file-citation{path=\"/Users/georgiosalexandrosgeorgantzas/GitHub/lean-fp-analysis/paper_bencmark/reference_papers/P20_ERROR ANALYSIS OF MATRIX MULTIPLICATION WITHNARROW RANGE FLOATING-POINT ARITHMETIC.pdf\" purpose=\"source\"}. PDF pp. 10-11, printed B794-B795, state that (4.18)-(4.28) have been proven or obtained before Theorem 4.1. Declaration D025 requires P20MultiwordForwardAnalysis, while D042/D050 require decomposition data, all four coefficient bounds, and the O(scale^2) residual."
     },
     {
-      "item": "paper-to-Lean implication",
-      "resolution": "The paper implies the Lean proposition as a weak corollary about the raw displayed right-hand-side expressions. This does not mean that the paper supplies exact constants for its lesssim bounds.",
-      "primary_evidence": "Equations (4.32)-(4.33) on B795 have the termwise decomposition encoded by D001-D005. Model 1 and Theorem 4.1 provide nonnegative format parameters, positive theta, and nonnegative matrix norms. Therefore the two added envelopes are nonnegative, their sum gives the exact synthetically defined narrow envelope, equality with the range-free envelope holds exactly when both additions vanish, and positivity of either addition gives strict growth. The same algebra also discharges Lean's extra parameter cases independently of the paper-specific computation."
+      "item": "round-trip judge requested adjudication",
+      "resolution": "Rejection is confirmed, but paper_implies_lean cannot be affirmed from primary evidence. The embedded certificate makes the Lean result structurally weaker in applicability, yet the paper does not define a relation that entails the particular arbitrary-filter conclusion. With lean_implies_paper=no and paper_implies_lean=unclear, the implication-consistent final classification is undetermined.",
+      "primary_evidence": "PDF p. 7, printed B791, explains lesssim only by saying second-order terms are dropped. PDF pp. 10-11, printed B794-B795, use lesssim without a filter, remainder, constant, or limiting regime. D008/D034 instead impose eventual inequality and IsBigO along an arbitrary nonbottom filter."
     },
     {
-      "item": "Lean-to-paper implication",
-      "resolution": "The Lean proposition does not imply equation (4.32), Theorem 4.1, or the associated algorithmic error result.",
-      "primary_evidence": "Theorem 4.1 on B795 defines rounded word decompositions in (4.29)-(4.30), retained products with i+j<p in (4.31), accumulation-format inner products, a computed C_hat, and the forward-error relation in (4.32). None of C_hat, AB, their error, the decompositions, scaling matrices, retained products, rounding, or Model 1 occurs in the Lean target."
+      "item": "round-trip S12 is unclear",
+      "resolution": "The exact comparative strength remains source-underdetermined. The analysis-certificate requirement is definitely narrower applicability and is not genuine theorem strength. Separately, the paper provides insufficient semantics to decide whether its lesssim conclusion implies, is implied by, or is incomparable with p20FirstOrderLeAt.",
+      "primary_evidence": "Theorem 4.1 on PDF p. 11, printed B795, assumes Model 1, scaling, word construction, and accumulation-format inner products, not an analysis certificate. D025/D050 add that certificate. The same PDF page gives only a lesssim conclusion, whereas D008 introduces a quantified remainder and arbitrary filter."
+    },
+    {
+      "item": "round-trip S14 is unclear",
+      "resolution": "The uncertainty is preserved. Requiring remainder=O_l(scale^2) without Tendsto scale 0 does not ensure that the remainder is negligible relative to the displayed first-order scale. On a principal filter with positive scale, the condition can bound any finite local remainder. The paper does not specify enough semantics to validate or refute this exact bridge.",
+      "primary_evidence": "PDF p. 11, printed B795, displays zeta^2 in (4.28) and suppresses higher-order terms in (4.32), but supplies no asymptotic variable or remainder statement. D017 defines a positive precision scale and D034 uses only IsBigO l remainder (scale^2); D089/D090 allow any nonbottom filter."
+    },
+    {
+      "item": "whether circularity alone settles the final classification",
+      "resolution": "It settles accepted=false and lean_implies_paper=no, but not the reverse implication or the exact weaker-versus-different classification. Because the lesssim bridge remains unsupported, forcing not-faithful-weaker would conflict with paper_implies_lean=unclear.",
+      "primary_evidence": "D050 assumes the paper-derived component estimates, proving that the target does not recover Theorem 4.1. However, PDF pp. 7 and 11 do not define lesssim sufficiently to compare it logically with D008/D034."
+    },
+    {
+      "item": "multiplication rounding in p20AccumulatedInnerProduct",
+      "resolution": "The Lean inner product omits multiplication rounding and multiplication underflow required by the paper's analysis. Its step round(sum+x_k*y_k) forms x_k*y_k exactly and performs one fused-looking rounding, so it is not the separate multiplication-and-addition operation model used in the source.",
+      "primary_evidence": "PDF p. 3, printed B787, defines FL(x op y) for op including multiplication and addition. PDF p. 6, printed B790, explicitly considers underflows of FL(x_tilde_k*y_tilde_k), distinguishes r' underflowing multiplications from addition underflows, and counts both. D062 computes x_k*y_k exactly before applying round only to sum+product."
+    },
+    {
+      "item": "S02 binder and domain disagreement",
+      "resolution": "The matrix shapes and common inner dimension match, but the complete binder domains do not. The arbitrary parameter type and filter are absent from the paper, and the Lean run explicitly excludes zero outer dimensions. These are restrictions or generalizations, not added theorem strength.",
+      "primary_evidence": "Theorem 4.1 on PDF p. 11, printed B795, concerns fixed A in R^(m x n), B in R^(n x q), fixed formats, and a p-word computation. D043 requires m,n,q,p>0, while the target additionally quantifies iota and a nonbottom filter l."
+    },
+    {
+      "item": "S05 and S06 conclusion and definition disagreement",
+      "resolution": "The visible numerical content passes: the forward-error norm, triangular indexing, and four coefficients match. The complete conclusion does not have a resolved paper match because p20FirstOrderLeAt supplies unsupported filter/remainder semantics, and the operational inner-product definition conflicts with Model 1. The coefficient identity is definitional bookkeeping, not a second substantive estimate.",
+      "primary_evidence": "Equation (4.32) on PDF p. 11, printed B795, has exactly the four coefficients represented by D012-D015 and D031-D032, and D016/D029 use the intended normwise forward error. D008/D034 alter the relation, D062 alters accumulation, and the target's second conjunct merely unfolds D014."
+    },
+    {
+      "item": "genuine strength assessment",
+      "resolution": "Neither the certified-analysis prerequisite, positive-domain restriction, fixed fold order, nor definitional coefficient conjunct is genuine nonvacuous strength. They reduce applicability, change the algorithm, or restate a definition.",
+      "primary_evidence": "The paper derives (4.18)-(4.28) before Theorem 4.1. D025/D050 require their consequences, D043 restricts the domain, D054/D062 fix operational folds, and D014 makes the coefficient equality true by definition."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "Exact identities among self-defined right-hand-side envelopes place no constraint on a computed matrix product and cannot establish the paper's normwise forward-error bound or its floating-point algorithm assumptions."
+      "reasoning": "The Lean declaration applies only after the four principal estimates and residual order have been supplied in an execution certificate. It neither derives such a certificate for every paper-admissible run nor covers the paper's separately rounded multiplication semantics. Proving the aggregation target therefore does not establish Theorem 4.1."
     },
     "paper_implies_lean": {
-      "verdict": "yes",
-      "reasoning": "The raw coefficient expression displayed in (4.32) is the expression displayed in (4.33) plus the two nonnegative underflow contributions, exactly as stated in the comparison on B796. After unfolding the Lean definitions, elementary ordered-real algebra yields every Lean conjunct. This is only a weak consequence about chosen expressions, not an exact interpretation of lesssim."
+      "verdict": "unclear",
+      "reasoning": "The paper has fixed formats and an undefined lesssim relation; it supplies no filter, uniform BigO constant, remainder function, or scale-to-zero regime. Consequently primary evidence does not justify a bridge to p20FirstOrderLeAt for arbitrary parameter families and filters. The fact that an already-certified Lean execution internally entails the target demonstrates restricted conditionality, not a source-to-Lean implication."
     }
   },
-  "classification": "not-faithful-weaker",
+  "classification": "undetermined",
   "accepted": false,
   "remaining_uncertainties": [
-    "The paper does not define the constants hidden by lesssim, so no exact comparison between fully instantiated numerical bound constants can be recovered.",
-    "Theorem 4.1 does not explicitly state the positive domain of p or conventions for zero-dimensional matrices, although its p-word indexing implicitly requires p at least one."
+    "The paper does not define the hidden constant, asymptotic variable, uniformity domain, or remainder semantics of lesssim, so paper_implies_lean cannot be resolved.",
+    "Equation (4.31) does not uniquely specify the order for summing retained word-pair products, although the source clearly does require multiplication effects inside each accumulation-format inner product.",
+    "The higher-order contributions hidden by lesssim in (4.26)-(4.28), beyond the displayed zeta^2 term, are not enumerated."
   ],
   "findings": [
     {
       "severity": "critical",
-      "category": "missing-forward-error-result",
-      "evidence": "Equation (4.32) on B795 bounds ||C_hat-AB||_infinity, whereas the Lean target mentions only four right-hand-side envelope expressions.",
-      "impact": "Lean cannot establish the selected paper theorem's central claim."
+      "category": "derived-analysis-assumed",
+      "evidence": "The paper derives (4.18)-(4.28) and says 'In conclusion we have proven' before Theorem 4.1. D025/D042/D050 make the corresponding decompositions, four bounds, and residual-order property prerequisites of every execution.",
+      "impact": "The target is a circular aggregation lemma and does not formalize the paper's main proof obligation."
     },
     {
       "severity": "major",
-      "category": "algorithm-and-model-omission",
-      "evidence": "Theorem 4.1 links the bound to Model 1, power-of-two scaling, rounded decompositions (4.29)-(4.30), retained pairs i+j<p, and accumulation-format inner products. These objects and hypotheses are absent from Lean.",
-      "impact": "The Lean theorem is independent of the floating-point computation analyzed by the paper."
+      "category": "unsupported-lesssim-bridge",
+      "evidence": "The source describes lesssim only as dropping second-order terms. D008/D034 replace it with eventual <= plus an O_l(scale^2) remainder along any nonbottom filter, without Tendsto scale 0.",
+      "impact": "The exact strength and paper-to-Lean implication are underdetermined; principal or constant-scale filters can make the supposed second-order condition non-negligible."
     },
     {
       "severity": "major",
-      "category": "relation-strength",
-      "evidence": "Equations (4.32)-(4.33) use lesssim, while Lean asserts exact equality, an iff, and strict order among newly defined envelopes.",
-      "impact": "The exact Lean relations are valid algebraic facts about definitions but must not be interpreted as exact versions of the paper's error bounds."
+      "category": "multiplication-rounding-omitted",
+      "evidence": "Model 1 includes multiplication in (2.4), and PDF p. 6 separately counts underflowing multiplications and additions. D062 computes each product exactly and rounds only sum+product.",
+      "impact": "The Lean run models a fused-looking, different inner product and omits an error source used to derive the accumulation-underflow term."
     },
     {
       "severity": "major",
-      "category": "definition-driven-content",
-      "evidence": "D003 defines the narrow coefficient as the sum of D004, D002, and D001, and D005 applies the same norm product to each coefficient.",
-      "impact": "The substantive Lean conclusions follow from distributivity and nonnegativity rather than matrix-multiplication error analysis."
+      "category": "paper-implies-lean-overclaimed",
+      "evidence": "Neither (4.32) nor the surrounding discussion supplies a filter-indexed BigO remainder or uniform constant.",
+      "impact": "The prior yes verdict cannot be retained from primary evidence; the exact implication-based classification must remain undetermined."
+    },
+    {
+      "severity": "minor",
+      "category": "binder-and-domain-drift",
+      "evidence": "D043 requires positive m,n,q,p and the target introduces arbitrary iota and l; Theorem 4.1 states a fixed-format computation and does not state positivity of both outer dimensions.",
+      "impact": "This creates narrower applicability and additional vacuity, not a stronger theorem."
     },
     {
       "severity": "note",
-      "category": "matched-formula-corollary",
-      "evidence": "The four coefficients in Lean match the four displayed terms of (4.32), and its range-free coefficient matches (4.33) on the intended p-word domain.",
-      "impact": "This direct formula-level relationship supports not-faithful-weaker rather than not-faithful-different."
+      "category": "preserved-visible-numerical-content",
+      "evidence": "D012-D015 and D031-D032 reproduce the four terms of (4.32); D029 is the maximum absolute row-sum norm; D067 retains exactly i+j<p.",
+      "impact": "The displayed coefficients, norm, dimensions, exponent p-1, and triangular index boundary are not causes of rejection."
     }
   ],
-  "rationale": "The source and Lean statements are related, but only through the displayed right-hand-side formulas. The paper proves an order-level forward-error estimate for a specific scaled mixed-precision computation. Lean instead defines the narrow expression to be the range-free expression plus two underflow expressions and proves the resulting ordered-ring facts. Because B795-B796 explicitly present and compare those same terms, the paper entails this formula-level corollary after unfolding the definitions. Conversely, the corollary cannot recover any computed output, error inequality, algorithm, floating-point model, scaling hypothesis, or higher-order interpretation. The implication pattern is therefore paper-to-Lean yes and Lean-to-paper no, giving not-faithful-weaker and rejection."
+  "rationale": "Primary evidence conclusively establishes that the Lean declaration is not acceptable as a faithful formalization: it assumes the analysis that the paper derives and uses an inner product that omits separately rounded multiplications. These defects establish lean_implies_paper=no and rule out faithful equivalence or genuine strengthening. However, the paper never defines lesssim well enough to prove or disprove implication to the arbitrary-filter O(scale^2) relation. Because paper_implies_lean must therefore remain unclear, an implication-consistent adjudication uses classification undetermined rather than forcing not-faithful-weaker or not-faithful-different."
 }

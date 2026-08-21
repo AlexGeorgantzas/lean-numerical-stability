@@ -1,0 +1,514 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "ed55d301c9b1849584a259886a4dcfe6ed0bc0dde3fe5d5ac94ecaa8d83259ad",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For natural n,p and real theta,Gmin, this is the real number 2*(p:R)*((p:R)+1)*(n:R)^2*(theta^(-1))^2*Gmin.",
+      "effect_on_target": "It supplies the coefficient of the quantity called accumUnderflow before multiplication by the matrix row-norm factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For natural n,p and real u,theta,gmin, this is 4*(n:R)*u^(p dotminus 1)*theta^(-1)*gmin, where p dotminus 1 is truncated natural-number subtraction.",
+      "effect_on_target": "It supplies the coefficient of inputUnderflow before multiplication by the matrix row-norm factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "This is the sum LocalDef004(n,p,u,U) + LocalDef002(n,p,u,theta,gmin) + LocalDef001(n,p,theta,Gmin), associated from the left.",
+      "effect_on_target": "It makes the narrowRange coefficient exactly the sum of the rangeFree, inputUnderflow, and accumUnderflow coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "For natural n,p and real u,U, this is ((p:R)+1)*u^p + ((n:R)+(p:R)^2)*U.",
+      "effect_on_target": "It supplies the coefficient of rangeFree before multiplication by the matrix row-norm factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "Given a real coefficient and matrices A and B, this returns coefficient*LocalDef006(A)*LocalDef006(B).",
+      "effect_on_target": "It applies the same nonnegative product of matrix row-norm quantities to each of the four coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "For a real m-by-n matrix A, this is the real value of the maximum, over rows i, of the sum over columns j of the nonnegative norm of A(i,j). Empty sums and an empty maximum are zero.",
+      "effect_on_target": "It defines the row-sum norm factors of A and B used by every named target quantity.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "This certifies that the natural numeral expression 1+1 is at least two.",
+      "effect_on_target": "It supports construction of the real numeral 2 appearing in the accumUnderflow coefficient and imposes no additional hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "This certifies that the natural numeral expression 3+1 is at least two.",
+      "effect_on_target": "It supports construction of the real numeral 4 appearing in the inputUnderflow coefficient and imposes no additional hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "And",
+      "meaning": "Logical conjunction: both component propositions must hold.",
+      "effect_on_target": "It combines the four asserted conclusions into one proposition and combines the two zero equalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Eq",
+      "meaning": "Propositional equality of two values of the same type.",
+      "effect_on_target": "It expresses the additive identity for narrowRange and the equalities in the zero-characterization.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with elements corresponding to natural indices less than n.",
+      "effect_on_target": "It gives A dimensions m by n and B dimensions n by q and determines the finite row and column index sets.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "HAdd.hAdd",
+      "meaning": "This selects the heterogeneous addition operation supplied by an HAdd instance.",
+      "effect_on_target": "With the real addition instance, it denotes every real addition in the coefficients and in narrowRange = rangeFree + inputUnderflow + accumUnderflow.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Iff",
+      "meaning": "Logical equivalence: each proposition implies the other.",
+      "effect_on_target": "It states that narrowRange equals rangeFree exactly when both correction quantities are zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LE.le",
+      "meaning": "This selects the non-strict order relation supplied by an LE instance.",
+      "effect_on_target": "With the real order instance, it expresses the nonnegativity hypotheses and rangeFree <= narrowRange.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "LT.lt",
+      "meaning": "This selects the strict order relation supplied by an LT instance.",
+      "effect_on_target": "With the real strict order, it expresses theta>0, positivity of correction quantities, and rangeFree<narrowRange.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Nat",
+      "meaning": "The type of natural numbers, including zero.",
+      "effect_on_target": "It is the type of m,n,q,p, matrix dimensions, and natural exponents.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "OfNat.ofNat",
+      "meaning": "This obtains a numeral in a type from the corresponding OfNat instance.",
+      "effect_on_target": "It interprets numeric literals, notably real zero in the hypotheses and conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Or",
+      "meaning": "Logical disjunction: at least one component proposition holds.",
+      "effect_on_target": "It forms the premise that inputUnderflow is positive or accumUnderflow is positive.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "It is the scalar type of all parameters, matrix entries, coefficients, norms, and computed quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instAdd",
+      "meaning": "The standard addition operation on real numbers.",
+      "effect_on_target": "It gives the additions their ordinary real-arithmetic meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instLE",
+      "meaning": "The standard non-strict order on real numbers.",
+      "effect_on_target": "It gives the nonnegativity assumptions and rangeFree <= narrowRange their usual meanings.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instLT",
+      "meaning": "The standard strict order on real numbers.",
+      "effect_on_target": "It gives all positivity and strict-inequality statements their usual meanings.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instZero",
+      "meaning": "The standard zero element of the real numbers.",
+      "effect_on_target": "It interprets zero in the assumptions, equalities, and positivity tests.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Zero.toOfNat0",
+      "meaning": "A zero structure induces interpretation of the numeral 0 as that structure's zero.",
+      "effect_on_target": "It makes every real literal 0 denote real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "instHAdd",
+      "meaning": "An ordinary Add operation induces homogeneous HAdd by using the same binary operation.",
+      "effect_on_target": "It connects overloaded addition syntax to standard real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "HMul.hMul",
+      "meaning": "This selects the heterogeneous multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "It denotes multiplication in all coefficients and in coefficient*LocalDef006(A)*LocalDef006(B).",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "HPow.hPow",
+      "meaning": "This selects the exponentiation operation supplied by an HPow instance.",
+      "effect_on_target": "It supplies u^p, u^(p dotminus 1), n^2, p^2, and theta^(-2) through natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "HSub.hSub",
+      "meaning": "This selects the heterogeneous subtraction operation supplied by an HSub instance.",
+      "effect_on_target": "For natural p and 1, it produces the truncated exponent p dotminus 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Inv.inv",
+      "meaning": "This selects the multiplicative inverse operation supplied by an Inv instance.",
+      "effect_on_target": "It interprets theta^(-1) in both underflow coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Monoid.toNatPow",
+      "meaning": "A monoid induces exponentiation by natural numbers through repeated multiplication, with exponent zero giving one.",
+      "effect_on_target": "It gives the real powers in the coefficient formulas their natural-power semantics, including 0^0 = 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Nat.cast",
+      "meaning": "This maps a natural number into a type equipped with a natural-number cast.",
+      "effect_on_target": "It embeds n and p into the real numbers in the coefficient formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "One.toOfNat1",
+      "meaning": "A one structure induces interpretation of the numeral 1 as its multiplicative identity.",
+      "effect_on_target": "It supplies real and natural occurrences of the numeral 1 in sums, powers, and p dotminus 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Real.instInv",
+      "meaning": "The standard multiplicative inverse operation on real numbers.",
+      "effect_on_target": "It makes the inverse of positive theta the ordinary reciprocal 1/theta.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure on the real numbers.",
+      "effect_on_target": "It provides natural-number exponentiation of real quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instMul",
+      "meaning": "The standard multiplication operation on real numbers.",
+      "effect_on_target": "It gives all scalar products and matrix-norm scaling their usual real-arithmetic meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the real numbers.",
+      "effect_on_target": "It interprets cast occurrences of n,p and real numerals in the formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instOne",
+      "meaning": "The standard multiplicative identity 1 in the real numbers.",
+      "effect_on_target": "It supplies real one in p+1, reciprocal and power infrastructure, and numeral construction.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "instHMul",
+      "meaning": "An ordinary Mul operation induces homogeneous HMul using the same binary multiplication.",
+      "effect_on_target": "It connects overloaded multiplication syntax to standard real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "instHPow",
+      "meaning": "A Pow operation induces the corresponding homogeneous-base HPow operation.",
+      "effect_on_target": "It connects overloaded exponentiation syntax to real natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "instHSub",
+      "meaning": "An ordinary Sub operation induces homogeneous HSub using the same subtraction.",
+      "effect_on_target": "It connects p-1 to natural-number subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "A natural-number cast and a proof that n is at least two induce interpretation of numeral n by casting n.",
+      "effect_on_target": "It constructs real constants such as 2 and 4 from natural numerals.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "instOfNatNat",
+      "meaning": "Every natural numeral n is interpreted in Nat as n itself.",
+      "effect_on_target": "It interprets natural literals used as exponents and in p dotminus 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "instSubNat",
+      "meaning": "The subtraction operation on Nat is truncated natural subtraction.",
+      "effect_on_target": "It ensures that p-1 equals zero when p is zero or one rather than becoming a negative integer.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "ConditionallyCompleteLinearOrderBot.toOrderBot",
+      "meaning": "A conditionally complete linear order with a bottom element supplies an OrderBot structure.",
+      "effect_on_target": "For NNReal it supplies the bottom value used to initialize a finite supremum, so an empty supremum is zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "Fin.fintype",
+      "meaning": "Fin n has a finite enumeration of all its elements.",
+      "effect_on_target": "It permits universal finite sums and suprema over matrix rows and columns.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "Finset.sum",
+      "meaning": "This is the finite sum of the values of a function over a finite set in an additive commutative monoid.",
+      "effect_on_target": "It computes each row's sum of nonnegative entry norms, with an empty row sum equal to zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "Finset.sup",
+      "meaning": "This folds finite values using maximum, starting from the order's bottom element.",
+      "effect_on_target": "It computes the largest row sum in LocalDef006 and returns zero when there are no rows.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "Finset.univ",
+      "meaning": "The universal finite set containing every element of a finite type.",
+      "effect_on_target": "It makes the sums and suprema range over every matrix column and row respectively.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "NNNorm.nnnorm",
+      "meaning": "This maps a value to its norm represented as a nonnegative real number.",
+      "effect_on_target": "For real matrix entries, it contributes their nonnegative real norm, equivalently absolute value, to each row sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "NNReal",
+      "meaning": "The type of real numbers constrained to be nonnegative.",
+      "effect_on_target": "Row sums and their finite maximum are computed as nonnegative reals before conversion back to Real.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "NNReal.instConditionallyCompleteLinearOrderBot",
+      "meaning": "NNReal carries its standard conditionally complete linear order with bottom element zero.",
+      "effect_on_target": "It supplies ordering, maxima, and the zero value for empty finite suprema in LocalDef006.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "NNReal.toReal",
+      "meaning": "This forgets the nonnegativity proof and returns the underlying real value.",
+      "effect_on_target": "It turns the maximum row sum into the real scalar used by LocalDef005.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "A proposition witnessing that a natural number is at least two.",
+      "effect_on_target": "It supports the numeral-casting instances used for real constants 2 and 4.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "NonAssocSemiring.toNonUnitalNonAssocSemiring",
+      "meaning": "This extracts the nonunital nonassociative semiring structure from a nonassociative semiring.",
+      "effect_on_target": "It is part of the instance chain providing additive finite sums on NNReal.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "NonUnitalNonAssocSemiring.toAddCommMonoid",
+      "meaning": "This extracts the additive commutative monoid structure from a nonunital nonassociative semiring.",
+      "effect_on_target": "It provides the addition and zero needed to sum NNReal entry norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "NonUnitalSeminormedCommRing.toNonUnitalSeminormedRing",
+      "meaning": "This forgets commutativity while retaining the nonunital seminormed-ring structure.",
+      "effect_on_target": "It is part of the instance chain that supplies the nonnegative norm on real entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "NonUnitalSeminormedRing.toSeminormedAddCommGroup",
+      "meaning": "A nonunital seminormed ring supplies a seminormed additive commutative group.",
+      "effect_on_target": "It is part of the structure chain used to obtain NNNorm Real.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "NormedCommRing.toSeminormedCommRing",
+      "meaning": "A normed commutative ring supplies a seminormed commutative ring by forgetting norm separation strength.",
+      "effect_on_target": "It begins the supplied coercion chain from the normed real ring to the entry norm used in LocalDef006.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Real.normedCommRing",
+      "meaning": "The real numbers carry their standard normed commutative ring structure.",
+      "effect_on_target": "It ultimately provides the ordinary real norm, multiplication, and compatible algebraic structure used by the matrix row sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "SeminormedAddCommGroup.toSeminormedAddGroup",
+      "meaning": "This forgets commutativity while retaining a seminormed additive group.",
+      "effect_on_target": "It is the final structural conversion before constructing NNNorm Real.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "SeminormedAddGroup.toNNNorm",
+      "meaning": "A seminormed additive group induces an NNNorm by pairing its norm with a proof of nonnegativity.",
+      "effect_on_target": "It supplies the NNReal-valued norm applied to each real matrix entry.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "SeminormedCommRing.toNonUnitalSeminormedCommRing",
+      "meaning": "This forgets the multiplicative identity while retaining the commutative seminormed-ring structure.",
+      "effect_on_target": "It is part of the instance chain deriving the NNNorm used in LocalDef006.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Semiring.toNonAssocSemiring",
+      "meaning": "A semiring supplies a nonassociative-semiring interface by forgetting some structure.",
+      "effect_on_target": "It is part of the instance chain deriving an additive commutative monoid on NNReal for finite row sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "instAddNat",
+      "meaning": "The standard addition operation on natural numbers.",
+      "effect_on_target": "It evaluates the expressions 1+1 and 3+1 used to certify numeral casts for 2 and 4.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "instSemilatticeSupNNReal",
+      "meaning": "NNReal has the standard supremum semilattice operation, namely maximum.",
+      "effect_on_target": "It makes Finset.sup in LocalDef006 compute the maximum row sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "instSemiringNNReal",
+      "meaning": "NNReal has its standard semiring structure.",
+      "effect_on_target": "Through inherited structures, it supplies addition and zero for finite sums of entry norms.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "m, n, q, and p are arbitrary natural numbers.",
+      "u, U, theta, gmin, and Gmin are arbitrary real numbers.",
+      "A is an arbitrary real matrix indexed by Fin m x Fin n.",
+      "B is an arbitrary real matrix indexed by Fin n x Fin q."
+    ],
+    "hypotheses": [
+      "u >= 0.",
+      "gmin >= 0.",
+      "Gmin >= 0.",
+      "theta > 0."
+    ],
+    "conclusions": [
+      "rangeFree <= narrowRange.",
+      "narrowRange = rangeFree + inputUnderflow + accumUnderflow.",
+      "narrowRange = rangeFree if and only if inputUnderflow = 0 and accumUnderflow = 0.",
+      "If inputUnderflow > 0 or accumUnderflow > 0, then rangeFree < narrowRange."
+    ],
+    "mathematical_definitions": [
+      "For an r-by-s real matrix X, define rho(X) = max over i in Fin r of the sum over j in Fin s of |X(i,j)|. The maximum of an empty set and every empty sum are zero.",
+      "Define S = rho(A)*rho(B).",
+      "Define c_range = ((p:R)+1)*u^p + ((n:R)+(p:R)^2)*U.",
+      "Define c_input = 4*(n:R)*u^(p dotminus 1)*theta^(-1)*gmin, where p dotminus 1 is truncated natural subtraction.",
+      "Define c_accum = 2*(p:R)*((p:R)+1)*(n:R)^2*(theta^(-1))^2*Gmin.",
+      "Define c_narrow = c_range + c_input + c_accum.",
+      "Define rangeFree = c_range*S, inputUnderflow = c_input*S, accumUnderflow = c_accum*S, and narrowRange = c_narrow*S."
+    ],
+    "proposition_plain_english": "For every choice of natural dimensions m,n,q,p, real parameters u,U,theta,gmin,Gmin, and real matrices A of size m by n and B of size n by q, assume u, gmin, and Gmin are nonnegative and theta is positive. Form the product S of the maximum absolute row-sum norms of A and B, and scale the four specified coefficients by S. Then narrowRange is at least rangeFree and is exactly rangeFree plus the two underflow quantities. It equals rangeFree exactly when both underflow quantities vanish, and it is strictly larger whenever at least one of those two computed quantities is positive."
+  },
+  "restrictions_and_vacuity_risks": [
+    "There are no positivity assumptions on m, n, q, or p; zero-dimensional matrices are allowed.",
+    "Natural subtraction is truncated: p dotminus 1 = 0 for both p=0 and p=1.",
+    "Natural powers use monoid exponentiation, so an exponent of zero gives 1, including 0^0 = 1.",
+    "The hypothesis theta>0 rules out division by zero and makes theta^(-1) positive.",
+    "U is completely unrestricted and may be negative; consequently rangeFree itself need not be nonnegative.",
+    "No ordering or scale relationship among u, U, theta, gmin, and Gmin is assumed beyond the four stated sign conditions.",
+    "If m=0 or n=0 then rho(A)=0; if n=0 or q=0 then rho(B)=0. Thus S can be zero solely because of dimensions, and it can also vanish when a matrix has zero row-sum norm.",
+    "When S=0, all four named quantities are zero, so the premise of the strict-inequality implication is false and that implication is vacuous.",
+    "The zero-characterization concerns the computed quantities inputUnderflow and accumUnderflow, not the raw parameters gmin and Gmin or their coefficients; either quantity may vanish because of zero dimensions, zero matrix norms, or zero multiplicative factors.",
+    "The strict conclusion is conditional on a computed underflow quantity being positive. Positivity of an unscaled coefficient alone does not trigger it when S=0.",
+    "The matrices enter only through the product rho(A)*rho(B). The proposition does not mention entries of the matrix product A*B, actual floating-point computations, rounding errors, or underflow events.",
+    "The parameter q affects the proposition only through the row-sum norm of B."
+  ],
+  "ambiguities": []
+}

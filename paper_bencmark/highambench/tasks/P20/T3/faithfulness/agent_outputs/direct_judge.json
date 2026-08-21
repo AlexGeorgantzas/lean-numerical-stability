@@ -3,707 +3,1747 @@
   "role": "direct-judge",
   "task_id": "P20-T3",
   "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
-  "dossier_sha256": "dc155ab8beb53199995d6e0ceedb7aaebde0eae65573f5adf492f5fcb61368b7",
+  "dossier_sha256": "950c4daa24caf3e938c2e3f137f6fa13a777dcbb9b8b77e2fefddba1ddc77b2c",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.p20MultiAccumUnderflowCoefficient",
-      "interpretation": "Defines the real coefficient 2*p*(p+1)*n^2*theta^(-2)*Gmin, using real casts of the natural parameters.",
-      "effect_on_target": "Supplies the accumulation-underflow contribution used in both narrowRange and accumUnderflow.",
-      "paper_match": "It matches the displayed accumulation-underflow coefficient in equation (4.32).",
+      "name": "HighamBench.P20MultiwordRun.A",
+      "interpretation": "Projection of the run's real m-by-n matrix A.",
+      "effect_on_target": "Supplies the exact left factor in AB and the normwise envelope.",
+      "paper_match": "Matches A in R^(m x n).",
       "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p20MultiInputUnderflowCoefficient",
-      "interpretation": "Defines 4*n*u^(p-1)*theta^(-1)*gmin, but computes p-1 using truncated natural-number subtraction.",
-      "effect_on_target": "Supplies the input-underflow contribution and remains defined at p=0 as 4*n*theta^(-1)*gmin.",
-      "paper_match": "It matches equation (4.32) when p>=1, but the target omits that implicit paper condition and therefore gives an unintended p=0 interpretation.",
-      "status": "fail"
+      "name": "HighamBench.P20MultiwordRun.B",
+      "interpretation": "Projection of the run's real n-by-q matrix B.",
+      "effect_on_target": "Supplies the exact right factor and common inner dimension n.",
+      "paper_match": "Matches B in R^(n x q).",
+      "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p20MultiNarrowCoefficient",
-      "interpretation": "Defines the narrow-range coefficient as the exact real sum of the range-free, input-underflow, and accumulation-underflow coefficients.",
-      "effect_on_target": "Makes the principal equality in the target a distributive algebraic identity after multiplication by the two matrix norms.",
-      "paper_match": "The four summands match the displayed expression in equation (4.32), but this definition alone does not encode the paper's lesssim error relation.",
+      "name": "HighamBench.P20MultiwordRun.model",
+      "interpretation": "Projection of the run's Model 1 object.",
+      "effect_on_target": "Supplies all format parameters and rounding maps.",
+      "paper_match": "Broadly matches Model 1; constructor defects are assessed at D041.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.p20MultiRangeFreeCoefficient",
-      "interpretation": "Defines (p+1)*u^p+(n+p^2)*U over the reals.",
-      "effect_on_target": "Supplies the range-free envelope and the first part of the narrow-range envelope.",
-      "paper_match": "It matches the two displayed range-free terms in equations (4.32) and (4.33).",
-      "status": "pass"
+      "name": "HighamBench.P20Theorem41Execution",
+      "interpretation": "Package containing a run and a forward-analysis certificate for filter l.",
+      "effect_on_target": "Restricts the target to runs already carrying the component estimates and remainder certificate.",
+      "paper_match": "The paper derives (4.18)-(4.28); packaging that analysis as input weakens and circularizes the theorem.",
+      "status": "fail"
     },
     {
       "id": "D005",
-      "name": "HighamBench.p20NormwiseEnvelope",
-      "interpretation": "Multiplies a real coefficient by the matrix infinity norms of A and B.",
-      "effect_on_target": "Turns each coefficient expression into a product-scaled right-hand-side envelope.",
-      "paper_match": "This matches the right-hand-side scaling by ||A||_infinity||B||_infinity, but it contains no computed-error left-hand side.",
-      "status": "pass"
+      "name": "HighamBench.P20Theorem41Execution.run",
+      "interpretation": "Projection from a certified execution to its run.",
+      "effect_on_target": "Exposes algorithm data while retaining the hidden analysis prerequisite.",
+      "paper_match": "The paper does not require a pre-proved analysis certificate.",
+      "status": "fail"
     },
     {
       "id": "D006",
-      "name": "HighamBench.p20InfNormRect",
-      "interpretation": "Computes the maximum, over all rows, of the sum of the absolute values in that row; the empty maximum is zero.",
-      "effect_on_target": "Provides the matrix infinity norms used by every envelope.",
-      "paper_match": "For nonempty finite real matrices this is the matrix infinity norm used in equations (4.32) and (4.33).",
+      "name": "HighamBench.p20AccumUnderflowEnvelope",
+      "interpretation": "Selects the accumulation underflow envelope Gmin.",
+      "effect_on_target": "Supplies Gmin to the fourth coefficient and precision scale.",
+      "paper_match": "Matches Fmin/2 or U*Fmin according to subnormal support.",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "HighamBench.p20MultiAccumUnderflowCoefficient._proof_1",
-      "interpretation": "A proof object establishing that the natural numeral 1+1 is at least two for numeral elaboration.",
-      "effect_on_target": "Only permits elaboration of a numeral used as an exponent; it adds no mathematical hypothesis or conclusion.",
-      "paper_match": "This is compiler-level numeral infrastructure with no independent paper content.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20AccumUnitRoundoff",
+      "interpretation": "Selects accumulation unit roundoff U.",
+      "effect_on_target": "Supplies U to the third coefficient and precision scale.",
+      "paper_match": "Matches U=2^(-T).",
+      "status": "pass"
     },
     {
       "id": "D008",
-      "name": "HighamBench.p20SingleInputUnderflowBound._proof_1",
-      "interpretation": "A proof object establishing that the natural numeral 3+1 is at least two for numeral elaboration.",
-      "effect_on_target": "It has no substantive effect beyond elaborating a numeric literal reached through the dependency graph.",
-      "paper_match": "This is compiler-level infrastructure with no independent paper claim.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20FirstOrderLeAt",
+      "interpretation": "There exists r=O_l(scale^2) such that eventually lhs<=rhs+|r|.",
+      "effect_on_target": "This is the actual meaning assigned to the final lesssim relation.",
+      "paper_match": "The paper only drops higher-order terms; arbitrary l without scale tending to zero is not faithful to that convention.",
+      "status": "fail"
     },
     {
       "id": "D009",
-      "name": "And",
-      "reuse_sha256": "e84e0f89d5dc243031e99a52bce4007c7667d87e7e08c6ba13033f4c72a4ad98",
-      "effect_on_target": "Nests four required claims: non-strict envelope growth, exact decomposition, a zero-gap biconditional, and conditional strict growth.",
-      "paper_match": "The paper states an order-level forward-error bound and comparison, not this four-part conjunction of exact envelope facts.",
-      "status": "fail"
+      "name": "HighamBench.p20InputUnderflowEnvelope",
+      "interpretation": "Selects the input underflow envelope gmin.",
+      "effect_on_target": "Supplies gmin to the second coefficient and precision scale.",
+      "paper_match": "Matches fmin/2 or u*fmin.",
+      "status": "pass"
     },
     {
       "id": "D010",
-      "name": "Eq",
-      "interpretation": "Propositional equality between two terms of the same type.",
-      "effect_on_target": "Requires exact equalities between the synthetic envelope expressions and exact zero tests.",
-      "paper_match": "Exact algebraic equality is valid for the chosen definitions, but it is not the paper's lesssim relation between computed error and a bound.",
-      "status": "fail"
+      "name": "HighamBench.p20InputUnitRoundoff",
+      "interpretation": "Selects input unit roundoff u.",
+      "effect_on_target": "Supplies u to word weights and the first two coefficients.",
+      "paper_match": "Matches u=2^(-t).",
+      "status": "pass"
     },
     {
       "id": "D011",
-      "name": "Fin",
-      "reuse_sha256": "dfbc66ed9c77e0e31efd5983dfe7784a41cdff29d83e54ad82e4ad486a2a1ecf",
-      "effect_on_target": "Represents A as an m-by-n real array and B as an n-by-q real array.",
-      "paper_match": "This faithfully represents the finite matrix dimensions in Theorem 4.1.",
+      "name": "HighamBench.p20ModelScalingThreshold",
+      "interpretation": "Computes theta from n and the formats' maximum finite values.",
+      "effect_on_target": "Supplies the scaling cap and inverse-theta factors.",
+      "paper_match": "Matches theta=min(fmax,sqrt(Fmax/n)) for positive n.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "HAdd.hAdd",
-      "interpretation": "Overloaded heterogeneous addition, instantiated here as ordinary real addition.",
-      "effect_on_target": "Adds the three normwise envelope contributions.",
-      "paper_match": "Ordinary addition correctly combines the four displayed coefficient terms.",
+      "name": "HighamBench.p20MultiAccumUnderflowCoefficient",
+      "interpretation": "Defines 2*p*(p+1)*n^2*(theta^-1)^2*Gmin.",
+      "effect_on_target": "Provides the fourth displayed source term.",
+      "paper_match": "Matches (4.27)-(4.32).",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "Iff",
-      "interpretation": "Logical biconditional requiring implications in both directions.",
-      "effect_on_target": "States that the synthetic narrow and range-free envelopes are equal exactly when both underflow envelopes vanish.",
-      "paper_match": "The paper does not state this biconditional; it only identifies two additional order-level terms.",
-      "status": "fail"
+      "name": "HighamBench.p20MultiInputUnderflowCoefficient",
+      "interpretation": "Defines 4*n*u^(p-1)*theta^-1*gmin using natural subtraction.",
+      "effect_on_target": "Provides the second displayed source term.",
+      "paper_match": "Matches (4.32); p>0 makes the exponent the intended p-1.",
+      "status": "pass"
     },
     {
       "id": "D014",
-      "name": "LE.le",
-      "reuse_sha256": "7ba56fb09fc6a5ffad8ad7fbaba2c84fa430e3278d766b75bcdbb932bfbdeacb",
-      "effect_on_target": "Expresses nonnegativity hypotheses and the inequality rangeFree<=narrowRange.",
-      "paper_match": "For valid paper parameters, adding the two nonnegative displayed terms supports this formula-level comparison.",
+      "name": "HighamBench.p20MultiNarrowCoefficient",
+      "interpretation": "Defines the range-free coefficient plus both underflow coefficients.",
+      "effect_on_target": "Supplies the final coefficient and makes the second conjunct definitional.",
+      "paper_match": "Expands to exactly the four terms in (4.32).",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "LT.lt",
-      "reuse_sha256": "7908a8740c985f4fdfcb5adb02d2dd6e192f4b8cff19d8c8aad148f3866c3c19",
-      "effect_on_target": "Expresses theta>0, positivity of underflow envelopes, and strict growth of the synthetic envelope.",
-      "paper_match": "Theta positivity is appropriate, but the paper does not state a strict inequality between actual narrow- and unlimited-range error bounds.",
-      "status": "fail"
+      "name": "HighamBench.p20MultiRangeFreeCoefficient",
+      "interpretation": "Defines (p+1)u^p+(n+p^2)U.",
+      "effect_on_target": "Provides the range-free summand in the coefficient identity.",
+      "paper_match": "Matches the coefficient in (4.33).",
+      "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Nat",
-      "reuse_sha256": "7c24a69216396b8cd1e879799d749da67b839a946fcf1c1bd1cfd9758e0b4626",
-      "effect_on_target": "Types all dimensions and the word count, including zero values.",
-      "paper_match": "Natural dimensions and word count are appropriate, but the omitted positivity restrictions are a target-hypothesis defect rather than a defect in Nat itself.",
+      "name": "HighamBench.p20MultiwordForwardError",
+      "interpretation": "Defines ||computed(t)-A*B||_infinity.",
+      "effect_on_target": "Makes the target an absolute normwise forward-error statement.",
+      "paper_match": "Matches ||C-hat-AB||_infinity in (4.32).",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "OfNat.ofNat",
-      "reuse_sha256": "77f2a3cfa9b2702a7a7a574ead9f37cd24ccd8ca0d71d79d5dbaa318bd74550b",
-      "effect_on_target": "Interprets literals such as 0, 1, 2, and 4 in Nat or Real as required.",
-      "paper_match": "This is numeral infrastructure and has no independent paper-level meaning.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D018",
-      "name": "Or",
-      "interpretation": "Logical disjunction requiring at least one of two propositions.",
-      "effect_on_target": "Triggers strict envelope growth when either underflow envelope is positive.",
-      "paper_match": "The paper identifies two extra terms but does not formulate this disjunctive strictness theorem.",
+      "name": "HighamBench.p20MultiwordPrecisionScale",
+      "interpretation": "Defines u^p+u^(p-1)theta^-1*gmin+U+theta^-2*Gmin.",
+      "effect_on_target": "Serves as the reference scale for the assumed squared-order remainder.",
+      "paper_match": "The orders match, but no hypothesis makes the scale tend to zero.",
       "status": "fail"
     },
     {
+      "id": "D018",
+      "name": "HighamBench.p20NormwiseEnvelope",
+      "interpretation": "Defines coefficient*||A||_infinity*||B||_infinity.",
+      "effect_on_target": "Forms all component and final right-hand sides.",
+      "paper_match": "Matches the envelope in (4.32).",
+      "status": "pass"
+    },
+    {
       "id": "D019",
-      "name": "Real",
-      "reuse_sha256": "a84189e6a5c5ea9b76eabba8f537c70956215fb00ed18a106012dbcfb7b793d8",
-      "effect_on_target": "Types matrix entries, format parameters, coefficients, norms, and envelopes as exact real numbers.",
-      "paper_match": "Theorem 4.1 is stated for real matrices and real-valued error parameters.",
+      "name": "HighamBench.P20Matrix",
+      "interpretation": "Alias for Matrix (Fin m) (Fin n) Real.",
+      "effect_on_target": "Fixes finite real rectangular matrices.",
+      "paper_match": "Matches the paper's matrix domains.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "Real.instAdd",
-      "interpretation": "The standard addition operation on real numbers.",
-      "effect_on_target": "Implements addition among coefficient and envelope terms.",
-      "paper_match": "This matches ordinary arithmetic in the displayed paper formulas.",
-      "status": "pass"
+      "name": "HighamBench.P20Model1",
+      "interpretation": "Package of two format families and total rounding/error maps.",
+      "effect_on_target": "Provides the run's numerical model.",
+      "paper_match": "It does not enforce representability or round-to-nearest and globalizes the error equations to all real inputs.",
+      "status": "fail"
     },
     {
       "id": "D021",
-      "name": "Real.instLE",
-      "reuse_sha256": "85df6b3549e942d844b14243bf9fc7b1047534eff5e7a9e48643e8071cce7953",
-      "effect_on_target": "Provides the standard real non-strict inequalities in hypotheses and conclusion.",
-      "paper_match": "The ordering is mathematically appropriate for nonnegative parameters and formula-level envelope comparison.",
+      "name": "HighamBench.P20Model1.accumulationFormat",
+      "interpretation": "Projection of the accumulation format.",
+      "effect_on_target": "Determines U, Fmax, Gmin, and nesting.",
+      "paper_match": "Matches the accumulation format.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Real.instLT",
-      "reuse_sha256": "1f0d7502b6f10e4d2622db89ae11cfaf2421766cbb02286f14f65e7193cfa65d",
-      "effect_on_target": "Provides standard real strict inequalities for theta and the strict-gap clause.",
-      "paper_match": "It correctly expresses theta positivity, but its strict-gap use has no corresponding theorem in the cited passage.",
-      "status": "fail"
+      "name": "HighamBench.P20Model1.inputFormat",
+      "interpretation": "Projection of the input format.",
+      "effect_on_target": "Determines u, fmax, gmin, and input rounding.",
+      "paper_match": "Matches the input format.",
+      "status": "pass"
     },
     {
       "id": "D023",
-      "name": "Real.instZero",
-      "reuse_sha256": "e4e3b50df2913dea925be965515af8f9c46792acb2c44ccebeac445e76d2681a",
-      "effect_on_target": "Supplies real zero for sign hypotheses and zero-envelope equalities.",
-      "paper_match": "Zero is used with its ordinary real meaning.",
-      "status": "pass"
+      "name": "HighamBench.P20MultiwordRun",
+      "interpretation": "Package of dimensions, model, matrices, scales, words, and output.",
+      "effect_on_target": "Links the target to a concrete scaled p-word execution.",
+      "paper_match": "Broad structure matches, but its retained-product semantics omit separately rounded multiplications.",
+      "status": "fail"
     },
     {
       "id": "D024",
-      "name": "Zero.toOfNat0",
-      "reuse_sha256": "772389464ac989ac4666f947d0bbf0909bffa7c9dc8e3782a4ae9cdc0f43ce3f",
-      "effect_on_target": "Allows the numeral 0 to denote real zero.",
-      "paper_match": "This is numeral infrastructure with no independent source claim.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D025",
-      "name": "instHAdd",
-      "interpretation": "Builds homogeneous overloaded addition from the ordinary addition operation of a type.",
-      "effect_on_target": "Routes all homogeneous real additions to standard real addition.",
-      "paper_match": "It implements the ordinary sums appearing in equations (4.32) and (4.33).",
+      "name": "HighamBench.P20MultiwordRun.computed",
+      "interpretation": "Projection of the t-indexed computed m-by-q matrix.",
+      "effect_on_target": "Represents C-hat.",
+      "paper_match": "Matches the computed output distinguished from AB.",
       "status": "pass"
     },
     {
+      "id": "D025",
+      "name": "HighamBench.P20Theorem41Execution.mk",
+      "interpretation": "Constructor requiring a run and P20MultiwordForwardAnalysis.",
+      "effect_on_target": "Makes the desired component analysis a prerequisite to applying the theorem.",
+      "paper_match": "This is circular relative to the paper, which proves the analysis.",
+      "status": "fail"
+    },
+    {
       "id": "D026",
-      "name": "HMul.hMul",
-      "reuse_sha256": "841487ee033d6cbf4ede76f3028b84251d31f55c0b8afe5ea323b0aa82f6006b",
-      "effect_on_target": "Multiplies coefficient factors and multiplies coefficients by the two matrix norms.",
-      "paper_match": "The multiplication structure matches the displayed products in the paper.",
+      "name": "HighamBench.p20FormatMaxFinite",
+      "interpretation": "Computes a format's maximum finite value.",
+      "effect_on_target": "Feeds fmax and Fmax to theta.",
+      "paper_match": "Matches Model 1.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "HPow.hPow",
-      "interpretation": "Overloaded exponentiation, instantiated here mainly as real bases raised to natural-number powers.",
-      "effect_on_target": "Builds u^p, u^(p-1), p^2, n^2, and theta^(-2) through inverse powers.",
-      "paper_match": "These powers match the paper formulas on the intended p>=1 domain.",
+      "name": "HighamBench.p20FormatUnderflowEnvelope",
+      "interpretation": "Computes the underflow envelope from precision, minimum exponent, and subnormal support.",
+      "effect_on_target": "Supplies gmin and Gmin.",
+      "paper_match": "Matches (2.1)-(2.2).",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "HSub.hSub",
-      "interpretation": "Overloaded subtraction, instantiated for p-1 as natural-number subtraction.",
-      "effect_on_target": "Makes the exponent p-1 truncate to zero when p=0.",
-      "paper_match": "The paper's p-word indexing implicitly requires p>=1, so this unconstrained truncated case is not sourced.",
-      "status": "fail"
+      "name": "HighamBench.p20FormatUnitRoundoff",
+      "interpretation": "Computes a format's unit roundoff.",
+      "effect_on_target": "Supplies u and U.",
+      "paper_match": "Matches 2^(-precision).",
+      "status": "pass"
     },
     {
       "id": "D029",
-      "name": "Inv.inv",
-      "interpretation": "Overloaded multiplicative inverse, instantiated here as real reciprocal.",
-      "effect_on_target": "Constructs theta^(-1) and, after squaring, theta^(-2).",
-      "paper_match": "This matches the reciprocal powers of positive theta in equation (4.32).",
+      "name": "HighamBench.p20InfNormRect",
+      "interpretation": "Maximum row sum of absolute entry values.",
+      "effect_on_target": "Defines all matrix norms in the target and analysis.",
+      "paper_match": "Matches the induced matrix infinity norm.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "Monoid.toNatPow",
-      "interpretation": "Provides natural-number exponentiation from the monoid structure.",
-      "effect_on_target": "Gives standard repeated real multiplication for all natural exponents.",
-      "paper_match": "It implements the conventional powers used in the paper coefficients.",
-      "status": "pass"
+      "name": "HighamBench.p20IsPowerOfTwo._proof_1",
+      "interpretation": "Internal proof that numeral 2 is at least two.",
+      "effect_on_target": "Supports numeral elaboration only.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
     },
     {
       "id": "D031",
-      "name": "Nat.cast",
-      "interpretation": "Casts natural numbers into a type with a natural-number cast, here the reals.",
-      "effect_on_target": "Converts n and p into real coefficient factors.",
-      "paper_match": "This is the standard interpretation of dimension-dependent real coefficients.",
+      "name": "HighamBench.p20MultiAccumRoundingCoefficient",
+      "interpretation": "Defines (n+p^2)U.",
+      "effect_on_target": "Provides the third displayed source term.",
+      "paper_match": "Matches (4.27)-(4.32).",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "One.toOfNat1",
-      "interpretation": "Derives interpretation of the numeral 1 from a type's multiplicative identity.",
-      "effect_on_target": "Supplies the real or natural literal 1 in p+1 and p-1.",
-      "paper_match": "This is numeral infrastructure with no independent source content.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20MultiInputRoundingCoefficient",
+      "interpretation": "Defines (p+1)u^p.",
+      "effect_on_target": "Provides the first displayed source term.",
+      "paper_match": "Matches (4.32).",
+      "status": "pass"
     },
     {
       "id": "D033",
-      "name": "Real.instInv",
-      "interpretation": "The standard multiplicative inverse operation on real numbers.",
-      "effect_on_target": "Makes inverse theta the ordinary real reciprocal; htheta prevents division by zero.",
-      "paper_match": "This agrees with theta^(-1) and theta^(-2) in equation (4.32).",
+      "name": "HighamBench.p20ScalingThreshold",
+      "interpretation": "Defines min(fmax,sqrt(Fmax/n)).",
+      "effect_on_target": "Provides theta.",
+      "paper_match": "Matches (3.2).",
       "status": "pass"
     },
     {
       "id": "D034",
-      "name": "Real.instMonoid",
-      "interpretation": "The standard multiplicative monoid structure on the real numbers.",
-      "effect_on_target": "Provides real natural powers with the usual multiplication and identity.",
-      "paper_match": "It supports the conventional real exponentiation used by the displayed coefficients.",
-      "status": "pass"
+      "name": "HighamBench.p20SecondOrderAt",
+      "interpretation": "Defines second order as IsBigO l remainder (scale^2).",
+      "effect_on_target": "Controls the assumed and final remainder.",
+      "paper_match": "The paper provides no filter, uniform constant, or scale-to-zero condition.",
+      "status": "fail"
     },
     {
       "id": "D035",
-      "name": "Real.instMul",
-      "reuse_sha256": "b8169054213a5815487bab996809fcd90fd9d91ca110c4339da22e138a3304d2",
-      "effect_on_target": "Implements every real product in the coefficient and normwise-envelope definitions.",
-      "paper_match": "This is ordinary multiplication as used in equations (4.32) and (4.33).",
-      "status": "pass"
-    },
-    {
-      "id": "D036",
-      "name": "Real.instNatCast",
-      "reuse_sha256": "95004929311c9243422748a0e39cfd61f0263769a92c4b06cd265088b09a2227",
-      "effect_on_target": "Embeds n and p as exact nonnegative reals.",
-      "paper_match": "This matches the ordinary use of integer dimensions as real coefficients.",
-      "status": "pass"
-    },
-    {
-      "id": "D037",
-      "name": "Real.instOne",
-      "interpretation": "The standard multiplicative identity of the real numbers.",
-      "effect_on_target": "Supplies real one in p+1 and exponentiation.",
-      "paper_match": "This is basic arithmetic infrastructure with no separate paper claim.",
+      "name": "HighamBench.p20SingleInputUnderflowBound._proof_1",
+      "interpretation": "Internal proof that numeral 4 is at least two.",
+      "effect_on_target": "Supports numeral elaboration only.",
+      "paper_match": "No paper-level semantic effect.",
       "status": "not-applicable"
     },
     {
+      "id": "D036",
+      "name": "HighamBench.P20BinaryFormatFamily",
+      "interpretation": "A t-indexed family of precision, exponent limits, and subnormal flags.",
+      "effect_on_target": "Allows format parameters to vary along an arbitrary filter.",
+      "paper_match": "The paper states fixed formats and no asymptotic family.",
+      "status": "fail"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.P20BinaryFormatFamily.hasSubnormals",
+      "interpretation": "Projection of the subnormal-support flag.",
+      "effect_on_target": "Selects the underflow-envelope branch.",
+      "paper_match": "Matches the paper's two cases.",
+      "status": "pass"
+    },
+    {
       "id": "D038",
-      "name": "instHMul",
-      "reuse_sha256": "a3268a975e72907d863492f1a56223912720da50c86845e79f4d506d52574844",
-      "effect_on_target": "Routes homogeneous products to standard multiplication on Real.",
-      "paper_match": "It faithfully implements the ordinary products in the displayed formulas.",
+      "name": "HighamBench.P20BinaryFormatFamily.maxExponent",
+      "interpretation": "Projection of maximum exponent.",
+      "effect_on_target": "Determines fmax or Fmax.",
+      "paper_match": "Matches emax or Emax.",
       "status": "pass"
     },
     {
       "id": "D039",
-      "name": "instHPow",
-      "interpretation": "Builds homogeneous power notation from an existing power operation.",
-      "effect_on_target": "Routes all real-to-natural powers to standard natural exponentiation.",
-      "paper_match": "It implements the conventional powers in the paper coefficients.",
+      "name": "HighamBench.P20BinaryFormatFamily.minExponent",
+      "interpretation": "Projection of minimum exponent.",
+      "effect_on_target": "Determines fmin or Fmin.",
+      "paper_match": "Matches emin or Emin.",
       "status": "pass"
     },
     {
       "id": "D040",
-      "name": "instHSub",
-      "interpretation": "Builds homogeneous subtraction from an ordinary subtraction operation.",
-      "effect_on_target": "Routes p-1 to Nat.sub and therefore enables truncation at p=0.",
-      "paper_match": "Without p>=1, this creates an exponent case outside the paper's p-word meaning.",
-      "status": "fail"
+      "name": "HighamBench.P20BinaryFormatFamily.precision",
+      "interpretation": "Projection of positive natural precision.",
+      "effect_on_target": "Determines u or U.",
+      "paper_match": "Matches t or T.",
+      "status": "pass"
     },
     {
       "id": "D041",
-      "name": "instOfNatAtLeastTwo",
-      "reuse_sha256": "ee8dea13c20a6d655058fd29de3001c3303ba5f76a84a23be1c3e6f230892192",
-      "effect_on_target": "Supports elaboration of numeric literals at least two from natural casts.",
-      "paper_match": "This is compiler-level numeral infrastructure.",
-      "status": "not-applicable"
+      "name": "HighamBench.P20Model1.mk",
+      "interpretation": "Requires nested formats and total equations round(x)=x(1+delta)+eta with bounds and eta*delta=0.",
+      "effect_on_target": "Supplies the only floating-point hypotheses.",
+      "paper_match": "Captures nesting and exclusivity but not nearest representability, operation-specific FL, or local no-overflow scope.",
+      "status": "fail"
     },
     {
       "id": "D042",
-      "name": "instOfNatNat",
-      "reuse_sha256": "c7e4054e68b949d6b33b4ee50c731801d820a152188c301be751e45433563b78",
-      "effect_on_target": "Interprets natural-number literals used in exponents and proof obligations.",
-      "paper_match": "This is numeral infrastructure with no independent paper semantics.",
-      "status": "not-applicable"
+      "name": "HighamBench.P20MultiwordForwardAnalysis",
+      "interpretation": "Certificate containing error data, four component bounds, and second-order control.",
+      "effect_on_target": "Is hidden inside every theorem execution.",
+      "paper_match": "These are main conclusions of the paper's analysis, not hypotheses.",
+      "status": "fail"
     },
     {
       "id": "D043",
-      "name": "instSubNat",
-      "interpretation": "The standard truncated subtraction operation on natural numbers.",
-      "effect_on_target": "Evaluates p-1 as zero at p=0 rather than requiring a positive word count.",
-      "paper_match": "This differs from the paper's implicit p>=1 domain unless an omitted positivity hypothesis is supplied.",
+      "name": "HighamBench.P20MultiwordRun.mk",
+      "interpretation": "Constructs a run from positive dimensions, maximal scaling, residual recurrences, and an output equation.",
+      "effect_on_target": "Links many quantities correctly to the algorithm but delegates accumulation to D054/D062.",
+      "paper_match": "Scaling and recurrences match; concrete accumulation omits multiplication rounding counted by the paper.",
       "status": "fail"
     },
     {
       "id": "D044",
-      "name": "ConditionallyCompleteLinearOrderBot.toOrderBot",
-      "interpretation": "Extracts a bottom element from a conditionally complete linear order with bottom; for NNReal the bottom is zero.",
-      "effect_on_target": "Makes the supremum of an empty set of row sums equal zero.",
-      "paper_match": "This is a standard finite-matrix norm convention, though the paper does not discuss zero-dimensional matrices.",
+      "name": "HighamBench.p20MaxFinite",
+      "interpretation": "Defines 2^emax*(2-2u).",
+      "effect_on_target": "Produces fmax or Fmax.",
+      "paper_match": "Matches Model 1 exactly.",
       "status": "pass"
     },
     {
       "id": "D045",
-      "name": "Fin.fintype",
-      "reuse_sha256": "5d49fab3fb4a6bd331ea9d553f425a59971964ea39b80cc2b277b234f2a286a2",
-      "effect_on_target": "Enumerates every row and column index for the finite sums and supremum defining the norm.",
-      "paper_match": "This faithfully implements finite matrix indexing.",
+      "name": "HighamBench.p20UnderflowEnvelope",
+      "interpretation": "Returns fmin/2 or u*fmin according to subnormal support.",
+      "effect_on_target": "Produces gmin or Gmin.",
+      "paper_match": "Matches (2.1)-(2.2).",
       "status": "pass"
     },
     {
       "id": "D046",
-      "name": "Finset.sum",
-      "interpretation": "Sums a function over all elements of a finite set using an additive commutative monoid.",
-      "effect_on_target": "Computes each row's sum of absolute entry values.",
-      "paper_match": "This is the standard row-sum component of the matrix infinity norm.",
+      "name": "HighamBench.p20UnitRoundoff",
+      "interpretation": "Defines (1/2)^precision.",
+      "effect_on_target": "Produces unit roundoff.",
+      "paper_match": "Matches 2^(-precision).",
       "status": "pass"
     },
     {
       "id": "D047",
-      "name": "Finset.sup",
-      "interpretation": "Computes a finite supremum by folding maximum from the bottom element.",
-      "effect_on_target": "Selects the largest row sum, with zero for no rows.",
-      "paper_match": "For ordinary nonempty matrices this is exactly the maximum-row-sum infinity norm.",
+      "name": "HighamBench.P20BinaryFormatFamily.mk",
+      "interpretation": "Requires positive precision and nonempty exponent range.",
+      "effect_on_target": "Rules out malformed format data.",
+      "paper_match": "Consistent with the paper without adding harmful smallness assumptions.",
       "status": "pass"
     },
     {
       "id": "D048",
-      "name": "Finset.univ",
-      "interpretation": "The finite set containing every element of a finite type.",
-      "effect_on_target": "Ensures all rows and all columns of each row are included in the norm.",
-      "paper_match": "This matches the full finite index ranges of the paper's matrices.",
-      "status": "pass"
+      "name": "HighamBench.P20Model1.accumulationRound",
+      "interpretation": "Projection of the total accumulation rounding map.",
+      "effect_on_target": "Is applied to inner and outer additions.",
+      "paper_match": "Its placement does not round multiplications as the paper's Model 1 analysis does.",
+      "status": "fail"
     },
     {
       "id": "D049",
-      "name": "NNNorm.nnnorm",
-      "interpretation": "Returns a nonnegative-real-valued norm; on a real scalar it is its absolute value.",
-      "effect_on_target": "Converts each matrix entry to its absolute value before row summation.",
-      "paper_match": "This matches the absolute values used in the matrix infinity norm.",
+      "name": "HighamBench.P20Model1.inputRound",
+      "interpretation": "Projection of the input rounding map.",
+      "effect_on_target": "Is applied once to each exact composite residual quotient.",
+      "paper_match": "Matches the source-level fl placement in (4.29)-(4.30).",
       "status": "pass"
     },
     {
       "id": "D050",
-      "name": "NNReal",
-      "interpretation": "The subtype of real numbers that are greater than or equal to zero.",
-      "effect_on_target": "Keeps row sums and their supremum nonnegative before conversion back to Real.",
-      "paper_match": "This is a faithful implementation device for nonnegative norm values.",
-      "status": "pass"
+      "name": "HighamBench.P20MultiwordForwardAnalysis.mk",
+      "interpretation": "Requires exact decompositions, four pointwise coefficient bounds, and an O(scale^2) remainder.",
+      "effect_on_target": "Assumes almost exactly the hard facts needed for the target.",
+      "paper_match": "The paper derives these facts in (4.18)-(4.28); assuming them makes the theorem an aggregation lemma.",
+      "status": "fail"
     },
     {
       "id": "D051",
-      "name": "NNReal.instConditionallyCompleteLinearOrderBot",
-      "interpretation": "Provides NNReal with its usual conditional complete linear order and bottom zero.",
-      "effect_on_target": "Supports taking finite suprema of nonnegative row sums.",
-      "paper_match": "It implements the usual maximum operation needed for the infinity norm.",
+      "name": "HighamBench.p20InfNormVec",
+      "interpretation": "Maximum absolute component of a finite real vector.",
+      "effect_on_target": "Controls row and column scaling.",
+      "paper_match": "Matches the vector infinity norm in (3.4).",
       "status": "pass"
     },
     {
       "id": "D052",
-      "name": "NNReal.toReal",
-      "interpretation": "Returns the underlying real value of a nonnegative real.",
-      "effect_on_target": "Converts the maximum NNReal row sum into the Real-valued matrix norm.",
-      "paper_match": "This preserves the numerical value of the norm used in the paper.",
+      "name": "HighamBench.p20MaximalPowerTwoScale",
+      "interpretation": "Requires a positive integer power of two, lambda=1 for zero vectors, and the factor-two interval otherwise.",
+      "effect_on_target": "Supplies the lower and upper scaling bounds used in the proof.",
+      "paper_match": "Matches (3.4) and explicitly resolves the zero-vector ambiguity.",
       "status": "pass"
     },
     {
       "id": "D053",
-      "name": "Nat.AtLeastTwo",
-      "interpretation": "A proposition witnessing that a natural numeral is at least two, used in numeral elaboration.",
-      "effect_on_target": "It contributes no mathematical assertion about the matrix multiplication problem.",
-      "paper_match": "This is elaboration infrastructure only.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20MinNormal",
+      "interpretation": "Defines 2^emin.",
+      "effect_on_target": "Produces fmin or Fmin.",
+      "paper_match": "Matches Model 1.",
+      "status": "pass"
     },
     {
       "id": "D054",
-      "name": "NonAssocSemiring.toNonUnitalNonAssocSemiring",
-      "interpretation": "A forgetful structure map exposing the nonunital nonassociative semiring operations.",
-      "effect_on_target": "Provides inherited algebraic instances needed by finite sums.",
-      "paper_match": "This is typeclass infrastructure with no independent paper-level content.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20RetainedWordProduct",
+      "interpretation": "Lexicographically folds i+j<p pairs, rounding outer additions and using exact weights.",
+      "effect_on_target": "Defines the computed scaled product.",
+      "paper_match": "The pair set and weights match, but exact products followed only by rounded additions omit multiplication rounding and impose unstated sequencing.",
+      "status": "fail"
     },
     {
       "id": "D055",
-      "name": "NonUnitalNonAssocSemiring.toAddCommMonoid",
-      "interpretation": "A forgetful structure map exposing an additive commutative monoid.",
-      "effect_on_target": "Supplies zero and addition for summing NNReal absolute values.",
-      "paper_match": "This is implementation infrastructure for the row sums.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20ScaleColumns",
+      "interpretation": "Defines (BM)_ij=B_ij*mu_j.",
+      "effect_on_target": "Implements right diagonal scaling.",
+      "paper_match": "Matches BM.",
+      "status": "pass"
     },
     {
       "id": "D056",
-      "name": "NonUnitalSeminormedCommRing.toNonUnitalSeminormedRing",
-      "interpretation": "Forgets commutativity while retaining the nonunital seminormed-ring structure.",
-      "effect_on_target": "Participates in deriving the scalar norm instance used on real entries.",
-      "paper_match": "This is typeclass plumbing without a separate paper interpretation.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20ScaleRows",
+      "interpretation": "Defines (Lambda A)_ij=lambda_i*A_ij.",
+      "effect_on_target": "Implements left diagonal scaling.",
+      "paper_match": "Matches Lambda A.",
+      "status": "pass"
     },
     {
       "id": "D057",
-      "name": "NonUnitalSeminormedRing.toSeminormedAddCommGroup",
-      "interpretation": "Extracts the seminormed additive commutative-group structure from a nonunital seminormed ring.",
-      "effect_on_target": "Provides the additive normed structure underlying the real scalar norm.",
-      "paper_match": "This is implementation infrastructure only.",
+      "name": "HighamBench.p20UnderflowEnvelope.match_1",
+      "interpretation": "Boolean eliminator for the two underflow cases.",
+      "effect_on_target": "Implements D045.",
+      "paper_match": "No separate paper-level content.",
       "status": "not-applicable"
     },
     {
       "id": "D058",
-      "name": "NormedCommRing.toSeminormedCommRing",
-      "interpretation": "Forgets norm separation while retaining the seminormed commutative-ring operations.",
-      "effect_on_target": "Helps derive the norm and nonnegative norm instances for Real.",
-      "paper_match": "This has no independent counterpart in the cited numerical-analysis result.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20UnscaleProduct",
+      "interpretation": "Defines lambda_i^-1*C_ij*mu_j^-1.",
+      "effect_on_target": "Performs exact outer unscaling.",
+      "paper_match": "Matches exact Lambda^-1 C M^-1 under the high-precision storage assumption.",
+      "status": "pass"
     },
     {
       "id": "D059",
-      "name": "Real.normedCommRing",
-      "reuse_sha256": "171664b6b84de02850ecfe79832b7d7a357058e76697b51f3379babe2b23dc99",
-      "effect_on_target": "Makes the scalar norm of each real matrix entry its absolute value.",
-      "paper_match": "This correctly supports the absolute-value row sums defining the matrix infinity norm.",
-      "status": "pass"
+      "name": "HighamBench.P20MultiwordErrorData",
+      "interpretation": "Package of six supplied error fields and decomposition equations.",
+      "effect_on_target": "Introduces proof quantities used for the four contributions.",
+      "paper_match": "The paper derives analogous errors from rounding rather than accepting supplied certificate data.",
+      "status": "fail"
     },
     {
       "id": "D060",
-      "name": "SeminormedAddCommGroup.toSeminormedAddGroup",
-      "interpretation": "Forgets additive commutativity while retaining the seminormed additive-group structure.",
-      "effect_on_target": "Participates in deriving the nonnegative norm operation for real scalars.",
-      "paper_match": "This is typeclass infrastructure only.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20AccumRoundingContribution",
+      "interpretation": "Projection of the supplied accumulation-rounding error.",
+      "effect_on_target": "Its norm is assumed bounded by (n+p^2)U.",
+      "paper_match": "The paper derives this estimate in (4.27).",
+      "status": "fail"
     },
     {
       "id": "D061",
-      "name": "SeminormedAddGroup.toNNNorm",
-      "interpretation": "Packages an ordinary norm and its nonnegativity proof as an NNReal-valued norm.",
-      "effect_on_target": "Produces the nonnegative absolute values summed in each matrix row.",
-      "paper_match": "It faithfully implements scalar absolute values but is otherwise infrastructure.",
-      "status": "pass"
+      "name": "HighamBench.p20AccumUnderflowContribution",
+      "interpretation": "Projection of the supplied accumulation-underflow error.",
+      "effect_on_target": "Its norm is assumed bounded by the fourth coefficient.",
+      "paper_match": "The paper derives this estimate using the underflow count r.",
+      "status": "fail"
     },
     {
       "id": "D062",
-      "name": "SeminormedCommRing.toNonUnitalSeminormedCommRing",
-      "interpretation": "Forgets the multiplicative identity while retaining the seminormed commutative-ring structure.",
-      "effect_on_target": "Supports the instance chain used to obtain real scalar norms.",
-      "paper_match": "This is typeclass infrastructure with no independent source claim.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20AccumulatedInnerProduct",
+      "interpretation": "Ascending fold of round(sum+x_k*y_k) with x_k*y_k exact.",
+      "effect_on_target": "Fixes inner-product semantics and rounds only additions.",
+      "paper_match": "The paper explicitly counts underflows in FL(x_k*y_k), so multiplication effects are missing.",
+      "status": "fail"
     },
     {
       "id": "D063",
-      "name": "Semiring.toNonAssocSemiring",
-      "interpretation": "Exposes the underlying nonassociative semiring structure of a semiring.",
-      "effect_on_target": "Supports inherited addition and zero instances used in finite sums.",
-      "paper_match": "This is implementation infrastructure only.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20ForwardRemainder",
+      "interpretation": "Total forward error minus the four selected contribution matrices.",
+      "effect_on_target": "Places every unassigned interaction into a residual later assumed second order.",
+      "paper_match": "The paper analyzes higher-order terms; Lean defines the residual tautologically and assumes its order.",
+      "status": "fail"
     },
     {
       "id": "D064",
-      "name": "instAddNat",
-      "interpretation": "The standard addition operation on natural numbers.",
-      "effect_on_target": "Supports numeral proof obligations such as 1+1 and 3+1.",
-      "paper_match": "It has no substantive role in the cited paper result.",
-      "status": "not-applicable"
+      "name": "HighamBench.p20InputRoundingContribution",
+      "interpretation": "Defines the two linear input-rounding products and the omitted word tail.",
+      "effect_on_target": "Groups them under the first coefficient.",
+      "paper_match": "The grouping fits (4.26)-(4.32), but its constituent errors and bound are supplied rather than derived.",
+      "status": "fail"
     },
     {
       "id": "D065",
-      "name": "instSemilatticeSupNNReal",
-      "interpretation": "The usual maximum-based semilattice-supremum structure on nonnegative reals.",
-      "effect_on_target": "Makes Finset.sup compute the maximum row sum.",
-      "paper_match": "This correctly implements the maximum in the matrix infinity norm.",
-      "status": "pass"
+      "name": "HighamBench.p20InputUnderflowContribution",
+      "interpretation": "Defines the two linear input-underflow products.",
+      "effect_on_target": "Groups them under the second coefficient.",
+      "paper_match": "The paper derives their bound from the residual recurrence; Lean assumes it.",
+      "status": "fail"
     },
     {
       "id": "D066",
-      "name": "instSemiringNNReal",
-      "interpretation": "The standard nonnegative-real semiring structure.",
-      "effect_on_target": "Provides zero and addition for finite sums of nonnegative scalar norms.",
-      "paper_match": "This correctly supports row-sum norm computation.",
+      "name": "HighamBench.p20IsPowerOfTwo",
+      "interpretation": "There exists an integer exponent with lambda=2^exponent.",
+      "effect_on_target": "Constrains row and column scales.",
+      "paper_match": "Matches the power-of-two requirement.",
       "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "HighamBench.p20RetainedWordPairs",
+      "interpretation": "Lists all Fin p pairs with i+j<p in i-major order.",
+      "effect_on_target": "Selects exactly the retained triangular pair set.",
+      "paper_match": "The set matches (4.31); the order is an implementation specialization.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "HighamBench.P20MultiwordErrorData.AInputRoundingError",
+      "interpretation": "Projection of a supplied A rounding-error field.",
+      "effect_on_target": "Enters the A decomposition and first contribution.",
+      "paper_match": "The paper derives this error rather than assuming an arbitrary split.",
+      "status": "fail"
+    },
+    {
+      "id": "D069",
+      "name": "HighamBench.P20MultiwordErrorData.AInputUnderflowError",
+      "interpretation": "Projection of a supplied A underflow-error field.",
+      "effect_on_target": "Enters the A decomposition and second contribution.",
+      "paper_match": "The paper derives its residual bound.",
+      "status": "fail"
+    },
+    {
+      "id": "D070",
+      "name": "HighamBench.P20MultiwordErrorData.BInputRoundingError",
+      "interpretation": "Projection of a supplied B rounding-error field.",
+      "effect_on_target": "Enters the B decomposition and first contribution.",
+      "paper_match": "The paper derives this error from the recurrence.",
+      "status": "fail"
+    },
+    {
+      "id": "D071",
+      "name": "HighamBench.P20MultiwordErrorData.BInputUnderflowError",
+      "interpretation": "Projection of a supplied B underflow-error field.",
+      "effect_on_target": "Enters the B decomposition and second contribution.",
+      "paper_match": "The paper derives this error from the recurrence.",
+      "status": "fail"
+    },
+    {
+      "id": "D072",
+      "name": "HighamBench.P20MultiwordErrorData.accumulationRoundingError",
+      "interpretation": "Projection of a supplied accumulation-rounding field.",
+      "effect_on_target": "Becomes one of the four bounded contributions.",
+      "paper_match": "The paper derives the accumulation estimate.",
+      "status": "fail"
+    },
+    {
+      "id": "D073",
+      "name": "HighamBench.P20MultiwordErrorData.accumulationUnderflowError",
+      "interpretation": "Projection of a supplied accumulation-underflow field.",
+      "effect_on_target": "Becomes one of the four bounded contributions.",
+      "paper_match": "The paper derives it using r<=n*p*(p+1)/2.",
+      "status": "fail"
+    },
+    {
+      "id": "D074",
+      "name": "HighamBench.P20MultiwordErrorData.mk",
+      "interpretation": "Requires A/B decompositions, retained partition, accumulation decomposition, and zero links for arbitrary error fields.",
+      "effect_on_target": "Certifies a chosen decomposition without deriving its fields from Model 1.",
+      "paper_match": "The identities resemble (4.18)-(4.25), but the paper derives them and their estimates.",
+      "status": "fail"
+    },
+    {
+      "id": "D075",
+      "name": "HighamBench.p20OmittedWordTail",
+      "interpretation": "Exact unscaled sum over pairs i+j>=p with weight u^(i+j).",
+      "effect_on_target": "Enters the input-rounding contribution.",
+      "paper_match": "Matches the omitted tail in (4.22)-(4.26).",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "HighamBench.P20Model1.accumulationDelta",
+      "interpretation": "Projection of accumulation relative error delta.",
+      "effect_on_target": "Supports the rounding equation and zero attribution.",
+      "paper_match": "Matches the relative accumulation error.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "HighamBench.P20Model1.accumulationEta",
+      "interpretation": "Projection of accumulation additive error eta.",
+      "effect_on_target": "Supports the rounding equation and zero attribution.",
+      "paper_match": "Matches accumulation underflow error.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "HighamBench.P20Model1.inputDelta",
+      "interpretation": "Projection of input relative error delta.",
+      "effect_on_target": "Supports the input rounding equation and zero attribution.",
+      "paper_match": "Matches input relative error.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "HighamBench.P20Model1.inputEta",
+      "interpretation": "Projection of input additive error eta.",
+      "effect_on_target": "Supports the input rounding equation and zero attribution.",
+      "paper_match": "Matches input underflow error.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "HighamBench.P20MultiwordRun.Aword",
+      "interpretation": "Projection of A words indexed by Fin p.",
+      "effect_on_target": "Supplies A^(i), i=0,...,p-1.",
+      "paper_match": "Matches the paper's A-word family.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "HighamBench.P20MultiwordRun.Bword",
+      "interpretation": "Projection of B words indexed by Fin p.",
+      "effect_on_target": "Supplies B^(j), j=0,...,p-1.",
+      "paper_match": "Matches the paper's B-word family.",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "HighamBench.P20MultiwordRun.columnScale",
+      "interpretation": "Projection of column scales mu_j.",
+      "effect_on_target": "Implements M and right unscaling.",
+      "paper_match": "Matches diagonal column scaling.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "HighamBench.P20MultiwordRun.rowScale",
+      "interpretation": "Projection of row scales lambda_i.",
+      "effect_on_target": "Implements Lambda and left unscaling.",
+      "paper_match": "Matches diagonal row scaling.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "HighamBench.p20AWordApproximation",
+      "interpretation": "Defines lambda^-1 times sum_i u^i Aword_i.",
+      "effect_on_target": "Forms the weighted A approximation.",
+      "paper_match": "Matches the approximation in (4.18).",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "HighamBench.p20BWordApproximation",
+      "interpretation": "Defines sum_j u^j Bword_j times mu^-1.",
+      "effect_on_target": "Forms the weighted B approximation.",
+      "paper_match": "Matches the approximation in (4.19).",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "HighamBench.p20ExactRetainedWordProduct",
+      "interpretation": "Exact unscaled sum of all i+j<p weighted word products.",
+      "effect_on_target": "Provides the proof-level triangular product.",
+      "paper_match": "Matches (4.21)-(4.24).",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "Separates the error relation from the coefficient identity.",
+      "paper_match": "The second conjunct is only coefficient decomposition, not another error bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "States the pointwise coefficient decomposition.",
+      "paper_match": "Unfolding D014 yields the paper's four-term algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "Filter",
+      "interpretation": "Mathlib filter on the index type.",
+      "effect_on_target": "Provides the arbitrary eventual/asymptotic context.",
+      "paper_match": "The paper has no filter or asymptotic direction.",
+      "status": "fail"
+    },
+    {
+      "id": "D090",
+      "name": "Filter.NeBot",
+      "interpretation": "Asserts that l is not the bottom filter.",
+      "effect_on_target": "Excludes an inconsistent filter but permits singleton and constant-scale filters.",
+      "paper_match": "It does not supply the missing scale-to-zero condition.",
+      "status": "fail"
+    },
+    {
+      "id": "D091",
+      "name": "HAdd.hAdd",
+      "interpretation": "Generic overloaded addition.",
+      "effect_on_target": "Resolves to real or matrix addition.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D092",
+      "name": "Nat",
+      "interpretation": "Natural numbers.",
+      "effect_on_target": "Types dimensions, counts, precisions, and natural exponents.",
+      "paper_match": "Matches finite dimensions and positive integer counts once run hypotheses are included.",
+      "status": "pass"
+    },
+    {
+      "id": "D093",
+      "name": "Real",
+      "interpretation": "Real numbers.",
+      "effect_on_target": "Types matrices, parameters, coefficients, and errors.",
+      "paper_match": "Matches the paper's real analysis.",
+      "status": "pass"
+    },
+    {
+      "id": "D094",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary real addition.",
+      "effect_on_target": "Expands coefficient sums.",
+      "paper_match": "No independent paper-level issue.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D095",
+      "name": "instHAdd",
+      "interpretation": "Adapter from Add to HAdd.",
+      "effect_on_target": "Elaboration infrastructure only.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D096",
+      "name": "Exists",
+      "interpretation": "Existential quantifier.",
+      "effect_on_target": "Introduces an unspecified remainder witness.",
+      "paper_match": "The paper does not quantify such a witness; this belongs to the unsupported lesssim formalization.",
+      "status": "fail"
+    },
+    {
+      "id": "D097",
+      "name": "Filter.Eventually",
+      "interpretation": "A predicate holding eventually along a filter.",
+      "effect_on_target": "Weakens the final inequality to eventual validity.",
+      "paper_match": "The paper states a bound for the selected computation, not an arbitrary eventual family.",
+      "status": "fail"
+    },
+    {
+      "id": "D098",
+      "name": "Fin",
+      "interpretation": "Finite index type 0,...,n-1.",
+      "effect_on_target": "Types matrix and word indices.",
+      "paper_match": "Matches finite index ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Fin.fintype",
+      "interpretation": "Finite enumeration of Fin n.",
+      "effect_on_target": "Enables sums, suprema, and products.",
+      "paper_match": "Matches finite-dimensional operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "HMul.hMul",
+      "interpretation": "Generic overloaded multiplication.",
+      "effect_on_target": "Resolves to real or matrix multiplication.",
+      "paper_match": "No independent paper-level issue.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D101",
+      "name": "HPow.hPow",
+      "interpretation": "Generic exponentiation.",
+      "effect_on_target": "Realizes u powers, theta powers, and powers of two.",
+      "paper_match": "Instantiated powers match the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D102",
+      "name": "HSub.hSub",
+      "interpretation": "Generic subtraction.",
+      "effect_on_target": "Realizes errors, residuals, and p-1.",
+      "paper_match": "Real and matrix subtraction match; natural p-1 is assessed at D128.",
+      "status": "pass"
+    },
+    {
+      "id": "D103",
+      "name": "Inv.inv",
+      "interpretation": "Multiplicative inverse.",
+      "effect_on_target": "Realizes inverse scales and theta^-1.",
+      "paper_match": "Matches reciprocal factors under positivity.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "LE.le",
+      "interpretation": "Non-strict order.",
+      "effect_on_target": "Forms literal component and eventual inequalities.",
+      "paper_match": "The final source relation is lesssim; literal <= plus an invented remainder is not source-defined.",
+      "status": "fail"
+    },
+    {
+      "id": "D105",
+      "name": "Matrix",
+      "interpretation": "Matrices represented as functions.",
+      "effect_on_target": "Underlies P20Matrix.",
+      "paper_match": "Extensionally matches finite real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D106",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "interpretation": "Standard exact finite matrix multiplication.",
+      "effect_on_target": "Defines exact AB and proof-level word products.",
+      "paper_match": "Matches exact real matrix multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "Matrix.sub",
+      "interpretation": "Pointwise matrix subtraction.",
+      "effect_on_target": "Defines forward errors and residuals.",
+      "paper_match": "Matches exact error algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-power instance.",
+      "effect_on_target": "Provides repeated multiplication for powers.",
+      "paper_match": "Matches intended natural powers.",
+      "status": "pass"
+    },
+    {
+      "id": "D109",
+      "name": "Nat.cast",
+      "interpretation": "Natural-to-real cast.",
+      "effect_on_target": "Creates real coefficients from n and p.",
+      "paper_match": "Matches displayed integer coefficients.",
+      "status": "pass"
+    },
+    {
+      "id": "D110",
+      "name": "OfNat.ofNat",
+      "interpretation": "Generic numeral interpretation.",
+      "effect_on_target": "Supplies constants.",
+      "paper_match": "No independent paper-level issue.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D111",
+      "name": "One.toOfNat1",
+      "interpretation": "Interprets numeral one.",
+      "effect_on_target": "Supports equations and coefficients.",
+      "paper_match": "No independent paper-level issue.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D112",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "Real additive commutative monoid.",
+      "effect_on_target": "Enables exact sums.",
+      "paper_match": "Standard infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D113",
+      "name": "Real.instAddGroup",
+      "interpretation": "Real additive group.",
+      "effect_on_target": "Enables subtraction and absolute value.",
+      "paper_match": "Standard infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D114",
+      "name": "Real.instInv",
+      "interpretation": "Ordinary real inverse.",
+      "effect_on_target": "Interprets reciprocal scales and theta.",
+      "paper_match": "Matches reciprocal factors under positivity.",
+      "status": "pass"
+    },
+    {
+      "id": "D115",
+      "name": "Real.instLE",
+      "interpretation": "Usual real order.",
+      "effect_on_target": "Interprets scalar inequalities.",
+      "paper_match": "Matches paper inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D116",
+      "name": "Real.instMonoid",
+      "interpretation": "Real multiplicative monoid.",
+      "effect_on_target": "Supports natural powers.",
+      "paper_match": "Standard infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D117",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "Interprets coefficients, weights, and exact products.",
+      "paper_match": "Matches real algebra; rounding placement is assessed separately.",
+      "status": "pass"
+    },
+    {
+      "id": "D118",
+      "name": "Real.instNatCast",
+      "interpretation": "Natural-cast structure on Real.",
+      "effect_on_target": "Interprets n and p in coefficients.",
+      "paper_match": "Matches integer-valued coefficients.",
+      "status": "pass"
+    },
+    {
+      "id": "D119",
+      "name": "Real.instOne",
+      "interpretation": "Real numeral one.",
+      "effect_on_target": "Appears in 1+delta and p+1.",
+      "paper_match": "No independent mismatch.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D120",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction.",
+      "effect_on_target": "Interprets residual differences.",
+      "paper_match": "Matches exact real algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D121",
+      "name": "Real.lattice",
+      "interpretation": "Real lattice structure.",
+      "effect_on_target": "Supports absolute value.",
+      "paper_match": "Standard infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D122",
+      "name": "abs",
+      "interpretation": "Real absolute value.",
+      "effect_on_target": "Appears in rounding bounds, norms, and remainder control.",
+      "paper_match": "Matches absolute errors in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D123",
+      "name": "instHMul",
+      "interpretation": "Adapter from Mul to HMul.",
+      "effect_on_target": "Elaboration infrastructure only.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D124",
+      "name": "instHPow",
+      "interpretation": "Adapter from Pow to HPow.",
+      "effect_on_target": "Elaboration infrastructure only.",
+      "paper_match": "No separate paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D125",
+      "name": "instHSub",
+      "interpretation": "Adapter from Sub to HSub.",
+      "effect_on_target": "Elaboration infrastructure only.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D126",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Numeral instance for values at least two.",
+      "effect_on_target": "Elaborates constants such as 2 and 4.",
+      "paper_match": "No independent semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D127",
+      "name": "instOfNatNat",
+      "interpretation": "Natural numeral instance.",
+      "effect_on_target": "Elaborates index and exponent constants.",
+      "paper_match": "No independent semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D128",
+      "name": "instSubNat",
+      "interpretation": "Truncated natural subtraction.",
+      "effect_on_target": "Defines the exponent p-1.",
+      "paper_match": "Because the run requires p>0, it equals the intended predecessor and adds no p>1 restriction.",
+      "status": "pass"
+    },
+    {
+      "id": "D129",
+      "name": "Asymptotics.IsBigO",
+      "interpretation": "Mathlib big-O along a filter.",
+      "effect_on_target": "Provides the sole formal meaning of second order.",
+      "paper_match": "The paper supplies no asymptotic variable, constant, uniformity, or scale-to-zero assumption.",
+      "status": "fail"
+    },
+    {
+      "id": "D130",
+      "name": "ConditionallyCompleteLinearOrderBot.toOrderBot",
+      "interpretation": "Order-bottom instance for finite suprema.",
+      "effect_on_target": "Supports norm definitions.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D131",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Ordinary division from inverse.",
+      "effect_on_target": "Interprets theta, residual quotients, and Fmax/n.",
+      "paper_match": "Matches the paper under positive denominators.",
+      "status": "pass"
+    },
+    {
+      "id": "D132",
+      "name": "Finset.sum",
+      "interpretation": "Finite commutative sum.",
+      "effect_on_target": "Defines norms, approximations, and exact products.",
+      "paper_match": "Matches mathematical finite sums; operational accumulation is separate.",
+      "status": "pass"
+    },
+    {
+      "id": "D133",
+      "name": "Finset.sup",
+      "interpretation": "Finite supremum.",
+      "effect_on_target": "Takes maximum row sums and components.",
+      "paper_match": "Matches infinity-norm maxima.",
+      "status": "pass"
+    },
+    {
+      "id": "D134",
+      "name": "Finset.univ",
+      "interpretation": "All elements of a finite type.",
+      "effect_on_target": "Supplies complete index ranges.",
+      "paper_match": "Matches full finite ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D135",
+      "name": "HDiv.hDiv",
+      "interpretation": "Generic division.",
+      "effect_on_target": "Resolves to real division.",
+      "paper_match": "No independent paper-level issue.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D136",
+      "name": "Min.min",
+      "interpretation": "Minimum operation.",
+      "effect_on_target": "Defines theta from two overflow caps.",
+      "paper_match": "Matches (3.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D137",
+      "name": "NNNorm.nnnorm",
+      "interpretation": "Nonnegative norm value.",
+      "effect_on_target": "Makes each real entry contribute its absolute value to row sums.",
+      "paper_match": "Supports the induced infinity norm correctly.",
+      "status": "pass"
+    },
+    {
+      "id": "D138",
+      "name": "NNReal",
+      "interpretation": "Nonnegative real subtype.",
+      "effect_on_target": "Provides a bottom element for finite norm suprema.",
+      "paper_match": "Implementation detail only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D139",
+      "name": "NNReal.instConditionallyCompleteLinearOrderBot",
+      "interpretation": "Order structure for NNReal.",
+      "effect_on_target": "Supports finite suprema.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D140",
+      "name": "NNReal.toReal",
+      "interpretation": "Coercion from NNReal to Real.",
+      "effect_on_target": "Returns real-valued norms.",
+      "paper_match": "Preserves the intended norm value.",
+      "status": "pass"
+    },
+    {
+      "id": "D141",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "Proof class for numerals at least two.",
+      "effect_on_target": "Supports numeral elaboration.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D142",
+      "name": "NonAssocSemiring.toNonUnitalNonAssocSemiring",
+      "interpretation": "Typeclass projection.",
+      "effect_on_target": "Supports algebra synthesis.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D143",
+      "name": "NonUnitalNonAssocSemiring.toAddCommMonoid",
+      "interpretation": "Typeclass projection.",
+      "effect_on_target": "Supports finite sums.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D144",
+      "name": "NonUnitalSeminormedCommRing.toNonUnitalSeminormedRing",
+      "interpretation": "Typeclass projection.",
+      "effect_on_target": "Supports norm infrastructure.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D145",
+      "name": "NonUnitalSeminormedRing.toSeminormedAddCommGroup",
+      "interpretation": "Typeclass construction.",
+      "effect_on_target": "Supports nonnegative norms.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D146",
+      "name": "NormedCommRing.toSeminormedCommRing",
+      "interpretation": "Typeclass construction.",
+      "effect_on_target": "Supports real norm infrastructure.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D147",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "Ordinary real division and inverse.",
+      "effect_on_target": "Realizes residual and threshold divisions.",
+      "paper_match": "Matches exact real division under nonzero denominators.",
+      "status": "pass"
+    },
+    {
+      "id": "D148",
+      "name": "Real.instMin",
+      "interpretation": "Usual real minimum.",
+      "effect_on_target": "Realizes theta.",
+      "paper_match": "Matches min in (3.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D149",
+      "name": "Real.norm",
+      "interpretation": "Real norm equal to absolute value.",
+      "effect_on_target": "Governs BigO norms.",
+      "paper_match": "The operator is standard, though its BigO use is unfaithful.",
+      "status": "pass"
+    },
+    {
+      "id": "D150",
+      "name": "Real.normedCommRing",
+      "interpretation": "Normed ring structure on Real.",
+      "effect_on_target": "Supports BigO and nnnorm.",
+      "paper_match": "Standard infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D151",
+      "name": "Real.sqrt",
+      "interpretation": "Nonnegative real square root.",
+      "effect_on_target": "Computes sqrt(Fmax/n).",
+      "paper_match": "Matches the accumulation overflow cap.",
+      "status": "pass"
+    },
+    {
+      "id": "D152",
+      "name": "SeminormedAddCommGroup.toSeminormedAddGroup",
+      "interpretation": "Typeclass projection.",
+      "effect_on_target": "Supports nnnorm.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D153",
+      "name": "SeminormedAddGroup.toNNNorm",
+      "interpretation": "Constructs nonnegative norm from real norm.",
+      "effect_on_target": "Makes each matrix entry contribute |a_ij|.",
+      "paper_match": "Matches absolute row sums.",
+      "status": "pass"
+    },
+    {
+      "id": "D154",
+      "name": "SeminormedCommRing.toNonUnitalSeminormedCommRing",
+      "interpretation": "Typeclass projection.",
+      "effect_on_target": "Supports norm structures.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D155",
+      "name": "Semiring.toNonAssocSemiring",
+      "interpretation": "Typeclass projection.",
+      "effect_on_target": "Supports NNReal sums.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D156",
+      "name": "instAddNat",
+      "interpretation": "Natural addition.",
+      "effect_on_target": "Forms i+j, p+1, and count expressions.",
+      "paper_match": "Matches paper indexing and coefficients.",
+      "status": "pass"
+    },
+    {
+      "id": "D157",
+      "name": "instHDiv",
+      "interpretation": "Adapter from Div to HDiv.",
+      "effect_on_target": "Elaboration infrastructure only.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D158",
+      "name": "instSemilatticeSupNNReal",
+      "interpretation": "Maximum structure on NNReal.",
+      "effect_on_target": "Supports infinity norms.",
+      "paper_match": "No separate source content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D159",
+      "name": "instSemiringNNReal",
+      "interpretation": "Semiring structure on NNReal.",
+      "effect_on_target": "Supports row-sum norm construction.",
+      "paper_match": "No independent source content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D160",
+      "name": "Bool",
+      "interpretation": "Two-valued type.",
+      "effect_on_target": "Represents subnormal availability.",
+      "paper_match": "Matches the paper's two underflow cases.",
+      "status": "pass"
+    },
+    {
+      "id": "D161",
+      "name": "DivInvMonoid.toZPow",
+      "interpretation": "Integer-power operation.",
+      "effect_on_target": "Defines powers of two for exponents and scales.",
+      "paper_match": "Matches possibly negative powers of two.",
+      "status": "pass"
+    },
+    {
+      "id": "D162",
+      "name": "Fin.val",
+      "interpretation": "Natural value of a Fin index.",
+      "effect_on_target": "Supplies exponents and i+j inequalities.",
+      "paper_match": "Matches zero-based indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D163",
+      "name": "Finset.filter",
+      "interpretation": "Finite subset selected by a predicate.",
+      "effect_on_target": "Selects k<i and retained or omitted pairs.",
+      "paper_match": "Matches recurrence and pair boundaries.",
+      "status": "pass"
+    },
+    {
+      "id": "D164",
+      "name": "Int",
+      "interpretation": "Integers.",
+      "effect_on_target": "Types exponent limits and power-of-two exponents.",
+      "paper_match": "Matches signed exponent ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D165",
+      "name": "Int.instLEInt",
+      "interpretation": "Integer order.",
+      "effect_on_target": "Enforces exponent-range containment.",
+      "paper_match": "Matches [Emin,Emax] containing [emin,emax].",
+      "status": "pass"
+    },
+    {
+      "id": "D166",
+      "name": "LT.lt",
+      "interpretation": "Strict order.",
+      "effect_on_target": "States positivity and strict lower scaling bounds.",
+      "paper_match": "Matches positivity and (3.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D167",
+      "name": "Nat.decLt",
+      "interpretation": "Decision procedure for natural strict inequality.",
+      "effect_on_target": "Computes filtered finite ranges.",
+      "paper_match": "No independent effect beyond matched inequalities.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D168",
+      "name": "Real.instZero",
+      "interpretation": "Real zero.",
+      "effect_on_target": "Initializes accumulations and zero-error conditions.",
+      "paper_match": "Matches ordinary zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D169",
+      "name": "Unit",
+      "interpretation": "Singleton type.",
+      "effect_on_target": "Implements Boolean branches.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D170",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Interprets numeral zero.",
+      "effect_on_target": "Supports zero matrices and fold initializers.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D171",
+      "name": "instLENat",
+      "interpretation": "Natural non-strict order.",
+      "effect_on_target": "Expresses precision nesting and i+j>=p.",
+      "paper_match": "Matches T>=t and omitted-pair indexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D172",
+      "name": "instLTNat",
+      "interpretation": "Natural strict order.",
+      "effect_on_target": "Expresses positivity and i+j<p.",
+      "paper_match": "Matches intended positive counts and retained pairs.",
+      "status": "pass"
+    },
+    {
+      "id": "D173",
+      "name": "Bool.casesOn",
+      "interpretation": "Boolean eliminator.",
+      "effect_on_target": "Chooses underflow cases.",
+      "paper_match": "Implementation detail only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D174",
+      "name": "Bool.false",
+      "interpretation": "Boolean false.",
+      "effect_on_target": "Denotes no subnormals.",
+      "paper_match": "No separate source effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D175",
+      "name": "Bool.true",
+      "interpretation": "Boolean true.",
+      "effect_on_target": "Denotes gradual underflow.",
+      "paper_match": "No separate source effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D176",
+      "name": "List.foldl",
+      "interpretation": "Ordered left fold.",
+      "effect_on_target": "Fixes ascending inner accumulation and lexicographic outer accumulation.",
+      "paper_match": "The paper does not specify this order, and the Lean fold rounds only sum-plus-exact-product.",
+      "status": "fail"
+    },
+    {
+      "id": "D177",
+      "name": "Or",
+      "interpretation": "Logical disjunction.",
+      "effect_on_target": "Separates zero-vector and positive-vector scaling cases.",
+      "paper_match": "Faithfully resolves the paper's zero-row or column ambiguity.",
+      "status": "pass"
+    },
+    {
+      "id": "D178",
+      "name": "Prod",
+      "interpretation": "Ordered pair type.",
+      "effect_on_target": "Represents word-index pairs.",
+      "paper_match": "Matches pairs (i,j).",
+      "status": "pass"
+    },
+    {
+      "id": "D179",
+      "name": "Prod.fst",
+      "interpretation": "First pair projection.",
+      "effect_on_target": "Selects i.",
+      "paper_match": "Matches the first word index.",
+      "status": "pass"
+    },
+    {
+      "id": "D180",
+      "name": "Prod.snd",
+      "interpretation": "Second pair projection.",
+      "effect_on_target": "Selects j.",
+      "paper_match": "Matches the second word index.",
+      "status": "pass"
+    },
+    {
+      "id": "D181",
+      "name": "Real.instLT",
+      "interpretation": "Usual strict real order.",
+      "effect_on_target": "States positive scales and strict lower bounds.",
+      "paper_match": "Matches paper inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D182",
+      "name": "Real.toNNReal",
+      "interpretation": "Converts a real to its nonnegative part.",
+      "effect_on_target": "Preserves already-absolute values in vector norms.",
+      "paper_match": "Matches maximum absolute components.",
+      "status": "pass"
+    },
+    {
+      "id": "D183",
+      "name": "Unit.unit",
+      "interpretation": "Unique Unit value.",
+      "effect_on_target": "Implements Boolean matching.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D184",
+      "name": "Decidable.decide",
+      "interpretation": "Converts a decidable proposition to Bool.",
+      "effect_on_target": "Drives list filtering for i+j<p.",
+      "paper_match": "Implementation detail preserving the intended predicate.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D185",
+      "name": "List",
+      "interpretation": "Ordered finite sequence.",
+      "effect_on_target": "Represents operational accumulation order.",
+      "paper_match": "The type itself has no mismatch; D176 assesses the order.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D186",
+      "name": "List.filter",
+      "interpretation": "Order-preserving list filter.",
+      "effect_on_target": "Retains exactly i+j<p pairs.",
+      "paper_match": "Matches the retained set.",
+      "status": "pass"
+    },
+    {
+      "id": "D187",
+      "name": "List.flatten",
+      "interpretation": "Concatenates per-i pair lists.",
+      "effect_on_target": "Produces i-major ordering.",
+      "paper_match": "An applicability specialization, not added theorem strength.",
+      "status": "pass"
+    },
+    {
+      "id": "D188",
+      "name": "List.ofFn",
+      "interpretation": "Enumerates Fin n in ascending order.",
+      "effect_on_target": "Fixes k, i, and j order.",
+      "paper_match": "Index sets match; D176 covers operational ordering.",
+      "status": "pass"
+    },
+    {
+      "id": "D189",
+      "name": "Matrix.neg",
+      "interpretation": "Pointwise matrix negation.",
+      "effect_on_target": "Defines signed contribution decompositions.",
+      "paper_match": "Matches exact error algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D190",
+      "name": "Neg.neg",
+      "interpretation": "Generic negation.",
+      "effect_on_target": "Resolves to real or matrix negation.",
+      "paper_match": "Matches exact algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D191",
+      "name": "Prod.mk",
+      "interpretation": "Pair constructor.",
+      "effect_on_target": "Builds word-index pairs.",
+      "paper_match": "Matches (i,j) pairing.",
+      "status": "pass"
+    },
+    {
+      "id": "D192",
+      "name": "Real.instNeg",
+      "interpretation": "Ordinary real negation.",
+      "effect_on_target": "Supports subtraction and signed errors.",
+      "paper_match": "Matches real algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D193",
+      "name": "Matrix.add",
+      "interpretation": "Pointwise matrix addition.",
+      "effect_on_target": "States decompositions and error sums.",
+      "paper_match": "Matches exact matrix identities.",
+      "status": "pass"
+    },
+    {
+      "id": "D194",
+      "name": "Matrix.zero",
+      "interpretation": "Pointwise zero matrix.",
+      "effect_on_target": "Supports zero-link conditions.",
+      "paper_match": "Matches a zero error matrix.",
+      "status": "pass"
+    },
+    {
+      "id": "D195",
+      "name": "Nat.decLe",
+      "interpretation": "Decision procedure for natural non-strict order.",
+      "effect_on_target": "Computes omitted-pair filters.",
+      "paper_match": "No independent semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D196",
+      "name": "Pi.instZero",
+      "interpretation": "Pointwise zero function.",
+      "effect_on_target": "Allows entire delta or eta maps to equal zero.",
+      "paper_match": "Lean bookkeeping with no separate paper assertion.",
+      "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF contains Theorem 4.1 and equations (4.32)-(4.33) on PDF page 11, printed B795, followed by the comparison discussion on B796.",
-      "lean_evidence": "The target uses the coefficients displayed in those two equations and is identified as P20-T3.",
-      "reasoning": "The cited version, passage, and surrounding comparison are the correct source selection."
+      "paper_evidence": "Verified PDF SHA-256 ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2. PDF pp. 2-3 give Model 1; pp. 10-12 (B794-B796) give (4.18)-(4.33) and Theorem 4.1.",
+      "lean_evidence": "The exact, readable, and explicit targets name the P20 execution and four-term coefficient; D001-D086 expose the local semantics.",
+      "reasoning": "The cited version and selected passage are correct."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.1 uses A in R^(m x n), B in R^(n x q), a positive number p of words indexed 0 through p-1, and format-derived parameters.",
-      "lean_evidence": "A and B have correct Fin dimensions, but p and n range over all Nat including zero, and u, U, theta, gmin, and Gmin are largely arbitrary reals.",
-      "reasoning": "The matrix types match, but the word-count and parameter domains do not preserve the intended meanings."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.1 has A in R^(m x n), B in R^(n x q), output in R^(m x q), and word indices 0,...,p-1 with i+j<p.",
+      "lean_evidence": "D019, D001-D002, D024, and D080-D081 give those types and indices; D043 requires positive m,n,q,p.",
+      "reasoning": "Dimensions, scalar types, common inner dimension, and word index sets match. The extra filter family is assessed separately."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "The paper selects scaling matrices Lambda and M from A, B, and theta, constructs word matrices A^(i), B^(j), and then defines the computed C_hat through their retained products.",
-      "lean_evidence": "The target quantifies only over parameters and A, B; it has no scaling witnesses, word decompositions, computed output, or dependence among them.",
-      "reasoning": "The source's witness dependencies and computational quantifier structure are absent."
+      "paper_evidence": "The paper fixes formats and an execution, derives (4.18)-(4.28), and then states Theorem 4.1; it has no filter or pre-certified analysis quantifier.",
+      "lean_evidence": "The target quantifies arbitrary ι and l, then assumes P20Theorem41Execution; D025 requires P20MultiwordForwardAnalysis before constructing that execution.",
+      "reasoning": "Quantifier scope changes from all paper executions to executions already carrying the main analysis."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Theorem 4.1 assumes Model 1, power-of-two diagonal scaling, scaled entries bounded by theta=min(fmax,sqrt(Fmax/n)), input-format decomposition, and accumulation-format inner products; p>=1 is implicit.",
-      "lean_evidence": "The only hypotheses are 0<=u, 0<=gmin, 0<=Gmin, and 0<theta. There is no p>=1, n>0, 0<=U, format relation, scaling condition, or Model 1 assumption.",
-      "reasoning": "Most explicit and implicit numerical hypotheses are missing."
+      "paper_evidence": "PDF pp. 10-11 explicitly derive (4.18)-(4.28) from Model 1 and the algorithm.",
+      "lean_evidence": "D050 requires the four component bounds and second-order remainder as premises; D041 also omits nearest-representable and local overflow semantics.",
+      "reasoning": "Principal paper conclusions become hypotheses, weakening and circularizing the proposition."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Equation (4.32) concludes a forward-error bound for ||C_hat-AB||_infinity, while equation (4.33) supplies the unlimited-range comparator.",
-      "lean_evidence": "The target concludes four algebraic facts about right-hand-side envelopes and never mentions C_hat, AB, or an error inequality.",
-      "reasoning": "The central paper conclusion is omitted and replaced by a coefficient-gap corollary."
+      "status": "pass",
+      "paper_evidence": "The selected conclusion is the single forward-error estimate (4.32); (4.33) is a comparison.",
+      "lean_evidence": "The first conjunct contains all four narrow-range terms. The second unfolds D014 into D015+D013+D012.",
+      "reasoning": "The conclusion includes the intended bound; the second conjunct is coefficient bookkeeping, not another error bound."
     },
     {
       "id": "S06",
-      "status": "pass",
-      "paper_evidence": "The displayed right-hand sides use ordinary addition, multiplication, powers, reciprocals, and matrix infinity norms.",
-      "lean_evidence": "The dossier unfolds every local coefficient and norm definition to standard real arithmetic, finite sums, absolute values, and finite maxima.",
-      "reasoning": "The operators occurring in the Lean proposition are fully interpretable and correctly unfolded."
+      "status": "fail",
+      "paper_evidence": "The source uses induced infinity norms, weighted word sums, Model 1 operations, and informal lesssim after dropping higher-order terms.",
+      "lean_evidence": "D029, D033, and D012-D015 match, but D008/D034/D129 invent arbitrary-filter semantics and D054/D062 alter accumulation.",
+      "reasoning": "Core formulas match, while the relation and operational definitions do not."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "The paper distinguishes exact AB, computed C_hat, rounded input words, and accumulation-format products.",
-      "lean_evidence": "The target contains only exact real-valued formula expressions named rangeFree and narrowRange, with no exact product or computed result.",
-      "reasoning": "It cannot preserve the exact-versus-computed distinction because the computed quantities are absent."
+      "status": "pass",
+      "paper_evidence": "Equation (4.25) distinguishes computed C-hat, exact AB, and proof error E.",
+      "lean_evidence": "D016 is ||computed-AB||; D024 is computed output; D059-D075 keep proof errors separate.",
+      "reasoning": "Exact and computed quantities are not conflated, although proof errors are improperly assumed."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Equations (4.29)-(4.31) require p-word decompositions and retain exactly pairs i+j<p, with input rounding and accumulation-format inner products.",
-      "lean_evidence": "No decomposition, retained index set, scaling matrix, rounding operation, inner product, or MMA execution appears in the target.",
-      "reasoning": "The proposition is independent of the paper's algorithm."
+      "paper_evidence": "Theorem 4.1 links the bound to scaling, (4.29)-(4.30), triangular sum (4.31), and accumulation-format inner products; preceding estimates are derived.",
+      "lean_evidence": "D043 links scaling and recurrences, but D025/D050 require the analysis certificate. D062 rounds sum+x*y with x*y exact, while PDF p. 6 counts FL(x_k*y_k) underflows.",
+      "reasoning": "Algorithm linkage is partial and the substantive theorem obligation is outsourced."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "Equation (4.32) is a matrix-infinity-norm forward-error bound with left side ||C_hat-AB||_infinity and right side proportional to ||A||_infinity||B||_infinity.",
-      "lean_evidence": "p20InfNormRect correctly implements maximum absolute row sum for A and B, but there is no norm of C_hat-AB.",
-      "reasoning": "The right-hand-side norm factors match, but the normed error assertion is missing."
+      "status": "pass",
+      "paper_evidence": "Equation (4.32) is an absolute normwise bound using the matrix infinity norm.",
+      "lean_evidence": "D029 is maximum row sum, D051 is maximum absolute component, and D016 is the unsquared norm of computed-minus-exact.",
+      "reasoning": "The induced infinity norm and normwise error notion match."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "Equation (4.32) displays (p+1)u^p, 4n*u^(p-1)*theta^(-1)*gmin, (n+p^2)U, and 2p(p+1)n^2*theta^(-2)*Gmin for a positive p-word representation.",
-      "lean_evidence": "All four coefficients are encoded correctly for p>=1, but p-1 is truncated Nat subtraction and p=0 is allowed.",
-      "reasoning": "The intended coefficients match, but the missing positive-word-count condition creates an incorrect indexed boundary case."
+      "status": "pass",
+      "paper_evidence": "Equation (4.32) has exactly (p+1)u^p, 4n u^(p-1)theta^-1 gmin, (n+p^2)U, and 2p(p+1)n^2 theta^-2 Gmin; (4.31) retains i+j<p.",
+      "lean_evidence": "D032, D013, D031, and D012 reproduce the terms; D128 plus p>0 validates p-1; D067/D075 use the correct boundaries.",
+      "reasoning": "Coefficients, powers, dimensions, and indexing match exactly, with no added p>1 or smallness condition."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "Model 1 specifies input and accumulation precisions, exponent ranges, underflow envelopes, round-to-nearest by default, directed-rounding adjustments, and overflow prevention through theta scaling.",
-      "lean_evidence": "The target treats u, U, gmin, Gmin, and theta as mostly unconstrained real scalars and contains no rounding or exceptional-value model.",
-      "reasoning": "The floating-point semantics are not represented."
+      "paper_evidence": "Model 1 specifies nested formats, round-to-nearest constants, exclusive relative/underflow errors, absence of overflow, and multiplication/addition effects.",
+      "lean_evidence": "D041 captures nesting and delta/eta bounds but lacks nearest representability and an overflow-domain predicate; D062 omits separately rounded multiplications.",
+      "reasoning": "Parameter formulas match, but rounding mode, representability, overflow scope, and operation coverage do not."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "Both equations (4.32) and (4.33) use lesssim, with hidden constants, to relate computed forward error to displayed right-hand sides.",
-      "lean_evidence": "The target uses <=, exact equality, an iff, and strict inequality solely between exactly defined envelope expressions.",
-      "reasoning": "The exact envelope algebra is valid, but it does not encode the paper's order-level error relation and must not be interpreted as an exact comparison of actual errors."
+      "paper_evidence": "The source gives a derived lesssim bound; extra hypotheses and narrower applicability are not theorem strength.",
+      "lean_evidence": "D004/D025/D050 restrict to certified analyses; D008 permits an eventual inequality with an assumed residual; the coefficient equality is definitional.",
+      "reasoning": "The stronger hypotheses make the benchmark theorem weaker and circular, while the extra conjunct adds no genuine strength."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "The selected result is a normwise product-scaled forward-error estimate for C_hat relative to exact AB.",
-      "lean_evidence": "The target proves a gap property between symbolic right-hand-side expressions.",
-      "reasoning": "A coefficient-envelope comparison is substituted for the paper's forward-error notion."
+      "status": "pass",
+      "paper_evidence": "The selected result is an absolute normwise forward error with four source contributions and higher-order interactions.",
+      "lean_evidence": "D016 is that forward error; D060-D065 identify the four sources and D063 contains remaining interactions.",
+      "reasoning": "No backward, residual, relative-quotient, or componentwise notion replaces the final claim."
     },
     {
       "id": "S14",
       "status": "fail",
-      "paper_evidence": "The derivation contains zeta^2 in (4.28), while the summary (4.32) uses lesssim and suppresses higher-order detail and hidden constants.",
-      "lean_evidence": "The target treats the displayed summary coefficient as an exact real expression and proves exact identities about it.",
-      "reasoning": "It does not formalize the order-level approximation or the treatment of omitted higher-order terms."
+      "paper_evidence": "PDF p. 7 explains lesssim only as dropping second-order terms; (4.28) contains zeta^2, while (4.32) supplies no constant, variable, threshold, or remainder semantics.",
+      "lean_evidence": "D008/D034 impose BigO(scale^2) along arbitrary l, and D050 assumes it; no hypothesis states scale tends to zero.",
+      "reasoning": "The formalization adds unsupported semantics yet does not ensure the remainder is asymptotically negligible. On a singleton filter with nonzero scale, arbitrary finite residuals can qualify."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The theorem concerns finite real matrices processed by a specified mixed-precision p-word algorithm.",
-      "lean_evidence": "Finite real matrices are represented correctly, but the proposition specializes away the entire computation and generalizes to p=0, n=0, and arbitrary scalar parameters without classifying that change.",
-      "reasoning": "This is not an acceptable faithful specialization of the benchmark result."
+      "paper_evidence": "The paper structurally uses positive p and n and maximal power-of-two scaling, but derives its theorem without an analysis certificate.",
+      "lean_evidence": "D043's finite positive dimensions and fixed order are restrictions; D025 additionally requires the desired analysis, and D041/D062 alter the operational model.",
+      "reasoning": "Finite real specialization is acceptable. The certified-analysis restriction is not genuine strength and removes the benchmark task."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "The paper's conclusion depends on nontrivial decomposition and rounding-error analysis of the computed matrix product.",
-      "lean_evidence": "The principal equality follows immediately from p20MultiNarrowCoefficient's definition and distributivity; zero matrices or empty dimensions make every envelope zero.",
-      "reasoning": "Although the hypotheses are satisfiable, the conclusion is true for a definitional reason independent of matrix multiplication, so it does not provide the claimed benchmark proof."
+      "paper_evidence": "The paper intends control of genuinely small rounding and underflow effects after higher-order terms are discarded.",
+      "lean_evidence": "NeBot allows singleton principal filters; with nonzero scale, the selected remainder can be BigO(scale^2) for a filter-local reason, and D050 already assumes all substantive bounds.",
+      "reasoning": "The hypotheses are satisfiable, but the first-order conclusion can hold for an unintended trivial reason and the analysis is pre-assumed."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The Lean proposition supplies no computed C_hat, no algorithm or floating-point model, and no bound on ||C_hat-AB||_infinity, so its envelope identities cannot establish equation (4.32)."
+      "reasoning": "Lean covers only executions carrying the four source estimates and a second-order certificate, so it does not derive them for arbitrary Model 1 runs. Its arbitrary-filter relation can be degenerate, and its inner product omits separately rounded multiplications. Proving Lean therefore does not establish Theorem 4.1."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "On the paper's intended valid domain, the displayed right-hand side of (4.32) is algebraically the (4.33) expression plus two nonnegative underflow contributions. Multiplication by nonnegative matrix norms yields the target's formula-level inequality, decomposition, zero-gap equivalence, and conditional strictness. This is only a weak corollary about the displayed expressions."
+      "reasoning": "At the selected error-content level, the paper derives the component estimates and (4.32), so restriction to Lean's already-certified executions supplies at least its eventual envelope; the second conjunct follows by unfolding definitions. This reflects weaker applicability, not greater Lean strength. The exact bridge from undefined lesssim to the chosen BigO remainder still warrants adjudication."
     }
   },
   "classification": "not-faithful-weaker",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "missing-forward-error-result",
-      "paper_evidence": "Equation (4.32) bounds ||C_hat-AB||_infinity for the computed multiword product.",
-      "lean_evidence": "Neither C_hat nor AB nor any error inequality occurs in the proposition.",
-      "impact": "The target does not formalize the selected theorem's central mathematical claim."
+      "category": "circular-analysis-hypothesis",
+      "paper_evidence": "PDF pp. 10-11 (B794-B795), equations (4.18)-(4.28), derive the decompositions, omitted-tail estimate, accumulation estimate, and combined error before Theorem 4.1.",
+      "lean_evidence": "D025 requires P20MultiwordForwardAnalysis; D050 requires the four exact component bounds and an O(scale^2) remainder.",
+      "impact": "The target is mainly an aggregation of assumed estimates and does not measure proving Theorem 4.1 from Model 1 and the algorithm."
     },
     {
       "severity": "major",
-      "category": "algorithm-and-model-omission",
-      "paper_evidence": "Theorem 4.1 links the result to Model 1, power-of-two scaling, equations (4.29)-(4.30), retained pairs i+j<p, and accumulation-format inner products.",
-      "lean_evidence": "The target depends only on closed coefficient formulas and matrix norms.",
-      "impact": "The theorem is provable without reasoning about floating-point arithmetic or matrix multiplication."
+      "category": "unfaithful-first-order-relation",
+      "paper_evidence": "PDF p. 7 only says second-order terms are dropped, and (4.26)-(4.33) define no asymptotic variable, hidden constant, or remainder.",
+      "lean_evidence": "D008/D034 use an arbitrary nonbottom filter and BigO(scale^2), without Tendsto scale 0.",
+      "impact": "The relation is unsupported and can become nearly vacuous on singleton or constant-scale filters."
     },
     {
       "severity": "major",
-      "category": "relation-strength",
-      "paper_evidence": "Equations (4.32) and (4.33) use lesssim and do not define exact error-bound values with fixed displayed constants.",
-      "lean_evidence": "The target proves exact equality, biconditional, and strict inequality among synthetic envelope expressions.",
-      "impact": "These exact facts are valid only as algebra on chosen formulas and cannot replace or strengthen the paper's order-level error statements."
+      "category": "accumulation-algorithm-mismatch",
+      "paper_evidence": "Model 1 equation (2.4) covers multiplication and addition; PDF p. 6 explicitly counts multiplication underflows FL(x_k*y_k).",
+      "lean_evidence": "D062 computes x_k*y_k exactly and applies accumulationRound only to sum+product; D054 fixes a lexicographic rounded outer fold.",
+      "impact": "The run is a narrower or different operational algorithm and omits multiplication underflows used in the paper's fourth-term derivation."
     },
     {
       "severity": "major",
-      "category": "missing-domain-hypotheses",
-      "paper_evidence": "A p-word decomposition implicitly requires p>=1, and theta and the error parameters arise from concrete floating-point formats and overflow-preventing scaling.",
-      "lean_evidence": "The target allows p=0, n=0, arbitrary U, and arbitrary positive theta; p-1 is truncated at zero.",
-      "impact": "The formal statement includes cases with no intended interpretation in Theorem 4.1."
-    },
-    {
-      "severity": "major",
-      "category": "nonvacuous-benchmark-content",
-      "paper_evidence": "The paper derives the result through decomposition, omitted-product, rounding, and underflow estimates.",
-      "lean_evidence": "The narrow coefficient is defined to be the sum of the other coefficients, making the main conclusion definitional.",
-      "impact": "The target measures elementary ordered-ring algebra rather than the numerical-analysis result claimed by the task."
+      "category": "incomplete-floating-point-model",
+      "paper_evidence": "Model 1 describes rounding to representable numbers, round-to-nearest constants, nested formats, exclusive errors, and absence of overflow.",
+      "lean_evidence": "D041 supplies only total real error-envelope maps, without representability, rounding mode, exceptional values, or a local overflow predicate.",
+      "impact": "The model admits non-paper rounding maps and replaces the paper's operation-level overflow scope with an idealized total-map assumption."
     },
     {
       "severity": "note",
-      "category": "matched-formula-components",
-      "paper_evidence": "Equation (4.32) contains all four stated terms, and equation (4.33) contains the two range-free terms.",
-      "lean_evidence": "The local coefficient definitions reproduce those terms for p>=1, and p20InfNormRect reproduces the matrix infinity norm.",
-      "impact": "The target is related to the source as a formula-level corollary, which supports classification as weaker rather than unrelated."
+      "category": "matched-formula-and-norm",
+      "paper_evidence": "Equation (4.32) displays the four exact coefficients and induced infinity-norm envelope; (4.31) retains i+j<p.",
+      "lean_evidence": "D012-D015 and D031-D032 reproduce the terms, D128 validates p-1, D029 is maximum row sum, and D067 has the correct pair set.",
+      "impact": "Coefficient values, exponent, dimensions, pair boundary, and norm are not the cause of rejection."
+    },
+    {
+      "severity": "note",
+      "category": "coefficient-only-second-conjunct",
+      "paper_evidence": "Equation (4.33) is a range-free comparison, while Theorem 4.1 states one narrow-range error bound.",
+      "lean_evidence": "The second conjunct is exactly D014=D015+D013+D012 for every t.",
+      "impact": "It is only a definitional coefficient decomposition, not a second error estimate or genuine added strength."
     }
   ],
-  "rationale": "The Lean target accurately reconstructs the displayed coefficient expressions and proves that the narrow-range right-hand-side formula equals the range-free formula plus two nonnegative contributions. That algebraic comparison follows from the paper on its intended domain, but it omits the computed product, forward-error inequality, algorithm, mixed-precision model, scaling assumptions, higher-order interpretation, and positive word-count condition. It is therefore a nontrivial-looking but definition-driven corollary that is strictly too weak to serve as a faithful formalization of Theorem 4.1 and equation (4.32)."
+  "rationale": "The Lean declaration reproduces the four coefficients, p-1 exponent, dimensions, induced matrix infinity norm, scaling intervals, residual-word recurrence, and retained i+j<p set. It is nevertheless not a faithful benchmark theorem: P20Theorem41Execution exists only after the four hard estimates and a second-order remainder have been assumed, whereas the paper derives them from Model 1 and the algorithm. The arbitrary-filter BigO relation lacks a scale-to-zero condition and does not faithfully realize the informal lesssim convention. The accumulation fold also omits separately rounded multiplications and their underflows, and the model does not enforce nearest representable rounding or the paper's overflow scope. These are restrictions and assumptions, not genuine theorem strength. Independent adjudication is warranted for the lesssim-to-BigO bridge and exact operational reading of accumulation."
 }

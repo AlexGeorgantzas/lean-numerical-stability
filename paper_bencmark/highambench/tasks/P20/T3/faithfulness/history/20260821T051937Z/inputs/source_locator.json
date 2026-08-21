@@ -1,0 +1,23 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P20_ERROR ANALYSIS OF MATRIX MULTIPLICATION WITHNARROW RANGE FLOATING-POINT ARITHMETIC.pdf",
+  "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
+  "paper_version": "SIAM Journal on Scientific Computing 47(4), B785-B800, published 2025-07-01",
+  "source_locations": [
+    {
+      "anchor": "equation (4.32), multiword narrow-range bound",
+      "pdf_page": 11,
+      "printed_page": "B795",
+      "role": "range-free terms plus input- and accumulation-underflow contributions",
+      "section": "4.2. Summary and discussion"
+    },
+    {
+      "anchor": "equation (4.33) and preceding comparison sentence",
+      "pdf_page": 11,
+      "printed_page": "B795",
+      "role": "multiword bound without range limitations",
+      "section": "4.2. Summary and discussion"
+    }
+  ],
+  "task_id": "P20-T3"
+}

@@ -5,17 +5,45 @@
   "paper_version": "SIAM Journal on Scientific Computing 47(4), B785-B800, published 2025-07-01",
   "source_locations": [
     {
-      "anchor": "equation (4.32), multiword narrow-range bound",
+      "anchor": "Model 1 and equations (2.1)-(2.3)",
+      "pdf_page": 2,
+      "printed_page": "B786",
+      "role": "input and accumulation binary formats, roundoff and underflow parameters, format nesting, and input rounding equation",
+      "section": "2.1. The model of matrix multiplication"
+    },
+    {
+      "anchor": "equation (2.4) and the following rounding-mode paragraph",
+      "pdf_page": 3,
+      "printed_page": "B787",
+      "role": "accumulation rounding equation, mutually exclusive relative and underflow errors, and the default round-to-nearest scope",
+      "section": "2.1. The model of matrix multiplication"
+    },
+    {
+      "anchor": "equations (3.2) and (3.4a)-(3.4b)",
+      "pdf_page": 5,
+      "printed_page": "B789",
+      "role": "format-derived theta and the maximal power-of-two scaling intervals used by the derivation",
+      "section": "3.1. Analysis"
+    },
+    {
+      "anchor": "equations (4.18)-(4.28)",
+      "pdf_page": 10,
+      "printed_page": "B794-B795",
+      "role": "decomposition and accumulation errors, omitted products, exact error decomposition, and the four source estimates",
+      "section": "4. Multiword arithmetic"
+    },
+    {
+      "anchor": "Theorem 4.1 and equations (4.29)-(4.32)",
       "pdf_page": 11,
       "printed_page": "B795",
-      "role": "range-free terms plus input- and accumulation-underflow contributions",
+      "role": "selected scaled p-word algorithm and narrow-range infinity-norm forward-error bound",
       "section": "4.2. Summary and discussion"
     },
     {
-      "anchor": "equation (4.33) and preceding comparison sentence",
+      "anchor": "equation (4.33) and the following comparison",
       "pdf_page": 11,
-      "printed_page": "B795",
-      "role": "multiword bound without range limitations",
+      "printed_page": "B795-B796",
+      "role": "range-unrestricted coefficient and identification of the two additional underflow terms",
       "section": "4.2. Summary and discussion"
     }
   ],
