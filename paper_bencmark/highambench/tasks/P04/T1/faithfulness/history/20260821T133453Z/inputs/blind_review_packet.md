@@ -7,134 +7,129 @@ Do not use tools or inspect any filesystem content.
 ## Elaborated target type
 
 ```lean
-∀ {n b q : Nat} (run : LocalDef003 n b q),
+∀ {n b q : Nat} (run : LocalDef001 n b q),
   Exists fun alpha =>
     Exists fun beta =>
       And
         (Eq run.computed
-          (Finset.univ.sum fun k =>
-            Finset.univ.sum fun j =>
-              instHMul.hMul (instHMul.hMul (instHMul.hMul (run.x k j) (run.y k j)) (instHAdd.hAdd 1 (alpha k j)))
-                (instHAdd.hAdd 1 (beta k j))))
+          (Finset.univ.sum fun i =>
+            instHMul.hMul (instHMul.hMul (instHMul.hMul (run.x i) (run.y i)) (instHAdd.hAdd 1 (alpha i)))
+              (instHAdd.hAdd 1 (beta i))))
         (And
-          (∀ (k : Fin q) (j : Fin b),
-            Real.instLE.le (abs (alpha k j))
-              (LocalDef011 (LocalDef015 run.uBar run.uFma run.uOut) q))
-          (And (∀ (k : Fin q) (j : Fin b), Real.instLE.le (abs (beta k j)) (LocalDef011 run.uBar n))
+          (∀ (i : Fin n),
+            Real.instLE.le (abs (alpha i))
+              (LocalDef009 (LocalDef013 run.uBar run.uFma run.uOut) q))
+          (And (∀ (i : Fin n), Real.instLE.le (abs (beta i)) (LocalDef009 run.uBar n))
             (And
-              (Real.instLE.le (abs (instHSub.hSub (LocalDef014 run.x run.y) run.computed))
+              (Real.instLE.le (abs (instHSub.hSub (LocalDef012 run.x run.y) run.computed))
                 (instHMul.hMul
-                  (LocalDef012 (LocalDef015 run.uBar run.uFma run.uOut)
+                  (LocalDef011 (LocalDef013 run.uBar run.uFma run.uOut)
                     run.uBar q n)
-                  (LocalDef013 run.x run.y)))
+                  (LocalDef010 run.x run.y)))
               (And
-                (Eq run.order LocalDef002 →
+                (run.rightToLeft →
                   And
-                    (∀ (k : Fin q) (j : Fin b),
-                      Real.instLE.le (abs (beta k j))
-                        (LocalDef011 run.uBar (instHSub.hSub (instHAdd.hAdd q b) 1)))
-                    (Real.instLE.le (abs (instHSub.hSub (LocalDef014 run.x run.y) run.computed))
+                    (∀ (i : Fin n),
+                      Real.instLE.le (abs (beta i)) (LocalDef009 run.uBar (instHSub.hSub (instHAdd.hAdd q b) 1)))
+                    (Real.instLE.le (abs (instHSub.hSub (LocalDef012 run.x run.y) run.computed))
                       (instHMul.hMul
-                        (LocalDef012 (LocalDef015 run.uBar run.uFma run.uOut)
+                        (LocalDef011 (LocalDef013 run.uBar run.uFma run.uOut)
                           run.uBar q (instHSub.hSub (instHAdd.hAdd q b) 1))
-                        (LocalDef013 run.x run.y))))
+                        (LocalDef010 run.x run.y))))
                 (And (Real.instLE.le run.uOut run.uFma) (Eq run.uBar run.uFma) →
-                  And (∀ (k : Fin q) (j : Fin b), Eq (alpha k j) 0)
-                    (Real.instLE.le (abs (instHSub.hSub (LocalDef014 run.x run.y) run.computed))
-                      (instHMul.hMul (LocalDef011 run.uBar n) (LocalDef013 run.x run.y))))))))
+                  And (∀ (i : Fin n), Eq (alpha i) 0)
+                    (Real.instLE.le (abs (instHSub.hSub (LocalDef012 run.x run.y) run.computed))
+                      (instHMul.hMul (LocalDef009 run.uBar n) (LocalDef010 run.x run.y))))))))
 ```
 
 ## Fully explicit elaborated target type
 
 ```lean
-∀ {n b q : Nat} (run : LocalDef003 n b q),
-  @Exists.{1} (Fin q → Fin b → Real) fun (alpha : Fin q → Fin b → Real) =>
-    @Exists.{1} (Fin q → Fin b → Real) fun (beta : Fin q → Fin b → Real) =>
+∀ {n b q : Nat} (run : LocalDef001 n b q),
+  @Exists.{1} (Fin n → Real) fun (alpha : Fin n → Real) =>
+    @Exists.{1} (Fin n → Real) fun (beta : Fin n → Real) =>
       And
-        (@Eq.{1} Real (@LocalDef004 n b q run)
-          (@Finset.sum.{0, 0} (Fin q) Real Real.instAddCommMonoid (@Finset.univ.{0} (Fin q) (Fin.fintype q))
-            fun (k : Fin q) =>
-            @Finset.sum.{0, 0} (Fin b) Real Real.instAddCommMonoid (@Finset.univ.{0} (Fin b) (Fin.fintype b))
-              fun (j : Fin b) =>
-              @HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+        (@Eq.{1} Real (@LocalDef002 n b q run)
+          (@Finset.sum.{0, 0} (Fin n) Real Real.instAddCommMonoid (@Finset.univ.{0} (Fin n) (Fin.fintype n))
+            fun (i : Fin n) =>
+            @HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
                 (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                    (@LocalDef009 n b q run k j) (@LocalDef010 n b q run k j))
-                  (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                    (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) (alpha k j)))
+                  (@LocalDef007 n b q run i) (@LocalDef008 n b q run i))
                 (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                  (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) (beta k j))))
+                  (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) (alpha i)))
+              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) (beta i))))
         (And
-          (∀ (k : Fin q) (j : Fin b),
-            @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (alpha k j))
-              (LocalDef011
-                (LocalDef015 (@LocalDef006 n b q run)
-                  (@LocalDef007 n b q run) (@LocalDef008 n b q run))
+          (∀ (i : Fin n),
+            @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (alpha i))
+              (LocalDef009
+                (LocalDef013 (@LocalDef004 n b q run)
+                  (@LocalDef005 n b q run) (@LocalDef006 n b q run))
                 q))
           (And
-            (∀ (k : Fin q) (j : Fin b),
-              @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (beta k j))
-                (LocalDef011 (@LocalDef006 n b q run) n))
+            (∀ (i : Fin n),
+              @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (beta i))
+                (LocalDef009 (@LocalDef004 n b q run) n))
             (And
               (@LE.le.{0} Real Real.instLE
                 (@abs.{0} Real Real.lattice Real.instAddGroup
                   (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-                    (@LocalDef014 q b (@LocalDef009 n b q run)
-                      (@LocalDef010 n b q run))
-                    (@LocalDef004 n b q run)))
+                    (@LocalDef012 n (@LocalDef007 n b q run)
+                      (@LocalDef008 n b q run))
+                    (@LocalDef002 n b q run)))
                 (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                  (LocalDef012
-                    (LocalDef015 (@LocalDef006 n b q run)
-                      (@LocalDef007 n b q run) (@LocalDef008 n b q run))
-                    (@LocalDef006 n b q run) q n)
-                  (@LocalDef013 q b (@LocalDef009 n b q run)
-                    (@LocalDef010 n b q run))))
+                  (LocalDef011
+                    (LocalDef013 (@LocalDef004 n b q run)
+                      (@LocalDef005 n b q run) (@LocalDef006 n b q run))
+                    (@LocalDef004 n b q run) q n)
+                  (@LocalDef010 n (@LocalDef007 n b q run)
+                    (@LocalDef008 n b q run))))
               (And
-                (@Eq.{1} LocalDef001 (@LocalDef005 n b q run)
-                    LocalDef002 →
+                (@LocalDef003 n b q run →
                   And
-                    (∀ (k : Fin q) (j : Fin b),
-                      @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (beta k j))
-                        (LocalDef011 (@LocalDef006 n b q run)
+                    (∀ (i : Fin n),
+                      @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (beta i))
+                        (LocalDef009 (@LocalDef004 n b q run)
                           (@HSub.hSub.{0, 0, 0} Nat Nat Nat (@instHSub.{0} Nat instSubNat)
                             (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) q b)
                             (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))
                     (@LE.le.{0} Real Real.instLE
                       (@abs.{0} Real Real.lattice Real.instAddGroup
                         (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-                          (@LocalDef014 q b (@LocalDef009 n b q run)
-                            (@LocalDef010 n b q run))
-                          (@LocalDef004 n b q run)))
-                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                        (LocalDef012
-                          (LocalDef015 (@LocalDef006 n b q run)
-                            (@LocalDef007 n b q run)
+                          (@LocalDef012 n (@LocalDef007 n b q run)
                             (@LocalDef008 n b q run))
-                          (@LocalDef006 n b q run) q
+                          (@LocalDef002 n b q run)))
+                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                        (LocalDef011
+                          (LocalDef013 (@LocalDef004 n b q run)
+                            (@LocalDef005 n b q run)
+                            (@LocalDef006 n b q run))
+                          (@LocalDef004 n b q run) q
                           (@HSub.hSub.{0, 0, 0} Nat Nat Nat (@instHSub.{0} Nat instSubNat)
                             (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) q b)
                             (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                        (@LocalDef013 q b (@LocalDef009 n b q run)
-                          (@LocalDef010 n b q run)))))
+                        (@LocalDef010 n (@LocalDef007 n b q run)
+                          (@LocalDef008 n b q run)))))
                 (And
-                    (@LE.le.{0} Real Real.instLE (@LocalDef008 n b q run)
-                      (@LocalDef007 n b q run))
-                    (@Eq.{1} Real (@LocalDef006 n b q run)
-                      (@LocalDef007 n b q run)) →
+                    (@LE.le.{0} Real Real.instLE (@LocalDef006 n b q run)
+                      (@LocalDef005 n b q run))
+                    (@Eq.{1} Real (@LocalDef004 n b q run)
+                      (@LocalDef005 n b q run)) →
                   And
-                    (∀ (k : Fin q) (j : Fin b),
-                      @Eq.{1} Real (alpha k j)
+                    (∀ (i : Fin n),
+                      @Eq.{1} Real (alpha i)
                         (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)))
                     (@LE.le.{0} Real Real.instLE
                       (@abs.{0} Real Real.lattice Real.instAddGroup
                         (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-                          (@LocalDef014 q b (@LocalDef009 n b q run)
-                            (@LocalDef010 n b q run))
-                          (@LocalDef004 n b q run)))
+                          (@LocalDef012 n (@LocalDef007 n b q run)
+                            (@LocalDef008 n b q run))
+                          (@LocalDef002 n b q run)))
                       (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                        (LocalDef011 (@LocalDef006 n b q run) n)
-                        (@LocalDef013 q b (@LocalDef009 n b q run)
-                          (@LocalDef010 n b q run)))))))))
+                        (LocalDef009 (@LocalDef004 n b q run) n)
+                        (@LocalDef010 n (@LocalDef007 n b q run)
+                          (@LocalDef008 n b q run)))))))))
 ```
 
 ## Complete semantic dependency inventory
@@ -148,34 +143,6 @@ use the supplied types and bodies to determine their exact meanings.
 - Owner module: `LocalImport002`
 - Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `58340acc7504455e3288212d0336b5c0d7ab3feafd953ac30df0858c48709e5e`
-
-Type:
-
-```lean
-Type
-```
-
-### D002: `LocalDef002`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `constructor`
-- Distance from target type: `1`
-- Semantic SHA-256: `7f4e5396a430e3e0762dddd0e56e4a05427324b97c006713ec9424b1ff151084`
-
-Type:
-
-```lean
-LocalDef001
-```
-
-### D003: `LocalDef003`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
 - Semantic SHA-256: `4944bca2329eb454982d0814cc41eeb43369f287267aa02482bb780f17148ce2`
 
 Type:
@@ -184,58 +151,18 @@ Type:
 Nat → Nat → Nat → Type
 ```
 
-### D004: `LocalDef004`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `c3eb4eadcd87bb71cef99dd87735ab5c04942df5d1f8df1fc1986c9b6389202a`
-
-Type:
-
-```lean
-{n b q : Nat} → LocalDef003 n b q → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n b q} run => run.state q
-```
-
-### D005: `LocalDef005`
+### D002: `LocalDef002`
 
 - Role: `local`
 - Owner module: `LocalImport002`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `8618d9e504b66e932a9796ab05f0645816b4d9ba32fb0c3b23fd87cd1be64376`
+- Semantic SHA-256: `68274bb7b767f2c78147c09db9a7940181c824464edcb43cd90180f33cc81fff`
 
 Type:
 
 ```lean
-{n b q : Nat} → LocalDef003 n b q → LocalDef001
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n b q self => self.16
-```
-
-### D006: `LocalDef006`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `41c0a0cc6168be2bf81c18f69b9a68ec790f9ba792c6f8c204b8f50beaeec4d9`
-
-Type:
-
-```lean
-{n b q : Nat} → LocalDef003 n b q → Real
+{n b q : Nat} → LocalDef001 n b q → Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -244,18 +171,38 @@ Definition body (one-level semantic boundary):
 fun n b q self => self.7
 ```
 
-### D007: `LocalDef007`
+### D003: `LocalDef003`
 
 - Role: `local`
 - Owner module: `LocalImport002`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `e2b22ca607ce748685985331ec008998a2298f54ce905af81eb6772c009c7e4f`
+- Semantic SHA-256: `5e7d45f7d624c020e85587b3bacf967c8ec32b5075b6e9b5f620e2588b97c913`
 
 Type:
 
 ```lean
-{n b q : Nat} → LocalDef003 n b q → Real
+{n b q : Nat} → LocalDef001 n b q → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n b q self => self.22
+```
+
+### D004: `LocalDef004`
+
+- Role: `local`
+- Owner module: `LocalImport002`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `b99e276e691b4500ceeb6b5bcb43acf765276e074303e40d9e702fc5baf81987`
+
+Type:
+
+```lean
+{n b q : Nat} → LocalDef001 n b q → Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -264,18 +211,18 @@ Definition body (one-level semantic boundary):
 fun n b q self => self.8
 ```
 
-### D008: `LocalDef008`
+### D005: `LocalDef005`
 
 - Role: `local`
 - Owner module: `LocalImport002`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `104f8dfbddf61964ceffaec223529dd8fcf200618b860378165a154b0c99ea9a`
+- Semantic SHA-256: `3a825ac0b9e40e1c143a121e7844f5f517d063777b64d58035e2b5b44655f11e`
 
 Type:
 
 ```lean
-{n b q : Nat} → LocalDef003 n b q → Real
+{n b q : Nat} → LocalDef001 n b q → Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -284,18 +231,38 @@ Definition body (one-level semantic boundary):
 fun n b q self => self.9
 ```
 
-### D009: `LocalDef009`
+### D006: `LocalDef006`
 
 - Role: `local`
 - Owner module: `LocalImport002`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `17490b7d9bdf5e3cca3cf8c15a8c60dbd6d3844f4b899ceab499c95e9c9d6803`
+- Semantic SHA-256: `f2c815e3c136dfcdfcb4df37ea528c4bac1afbadaf14a34ee343171534b37d84`
 
 Type:
 
 ```lean
-{n b q : Nat} → LocalDef003 n b q → Fin q → Fin b → Real
+{n b q : Nat} → LocalDef001 n b q → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n b q self => self.10
+```
+
+### D007: `LocalDef007`
+
+- Role: `local`
+- Owner module: `LocalImport002`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `665bcf6249dab190671979e68d52cdbb7d2e2e0c136fc3a008863109cc1acb14`
+
+Type:
+
+```lean
+{n b q : Nat} → LocalDef001 n b q → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -304,18 +271,18 @@ Definition body (one-level semantic boundary):
 fun n b q self => self.5
 ```
 
-### D010: `LocalDef010`
+### D008: `LocalDef008`
 
 - Role: `local`
 - Owner module: `LocalImport002`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `d89893ea364358e94343a07e992bc287bc49546cbcb351875c7f77ad22c0fb6f`
+- Semantic SHA-256: `6b23d33b452c454597fdad9edd78c3242433bbc566deda310b2791ad4f5f64b3`
 
 Type:
 
 ```lean
-{n b q : Nat} → LocalDef003 n b q → Fin q → Fin b → Real
+{n b q : Nat} → LocalDef001 n b q → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -324,7 +291,7 @@ Definition body (one-level semantic boundary):
 fun n b q self => self.6
 ```
 
-### D011: `LocalDef011`
+### D009: `LocalDef009`
 
 - Role: `local`
 - Owner module: `LocalImport001`
@@ -344,7 +311,27 @@ Definition body (one-level semantic boundary):
 fun u n => instHDiv.hDiv (instHMul.hMul n.cast u) (instHSub.hSub 1 (instHMul.hMul n.cast u))
 ```
 
-### D012: `LocalDef012`
+### D010: `LocalDef010`
+
+- Role: `local`
+- Owner module: `LocalImport002`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `d8a32f6c2662831e05b7cf39519a27b4464ac57255ac56d765d4907c9c817a35`
+
+Type:
+
+```lean
+{n : Nat} → (Fin n → Real) → (Fin n → Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} x y => Finset.univ.sum fun i => instHMul.hMul (abs (x i)) (abs (y i))
+```
+
+### D011: `LocalDef011`
 
 - Role: `local`
 - Owner module: `LocalImport002`
@@ -362,51 +349,31 @@ Definition body (one-level semantic boundary):
 
 ```lean
 fun uFma u q n =>
-  instHAdd.hAdd (instHAdd.hAdd (LocalDef011 uFma q) (LocalDef011 u n))
-    (instHMul.hMul (LocalDef011 uFma q) (LocalDef011 u n))
+  instHAdd.hAdd (instHAdd.hAdd (LocalDef009 uFma q) (LocalDef009 u n))
+    (instHMul.hMul (LocalDef009 uFma q) (LocalDef009 u n))
+```
+
+### D012: `LocalDef012`
+
+- Role: `local`
+- Owner module: `LocalImport002`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `5cde2e20f0e54520e4d8828b713ee858807cf2c4f334c9b79756cf0d0d8f4f1b`
+
+Type:
+
+```lean
+{n : Nat} → (Fin n → Real) → (Fin n → Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} x y => Finset.univ.sum fun i => instHMul.hMul (x i) (y i)
 ```
 
 ### D013: `LocalDef013`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `d48887a04c1ba82790b78d9a99b4063c0b2bac48a34c40c5d6f26bed25279156`
-
-Type:
-
-```lean
-{q b : Nat} → (Fin q → Fin b → Real) → (Fin q → Fin b → Real) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {q b} x y => Finset.univ.sum fun k => Finset.univ.sum fun j => instHMul.hMul (abs (x k j)) (abs (y k j))
-```
-
-### D014: `LocalDef014`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `941f6468cf02869cd6674c5bed5f1ab4f18fda6337769359a87dfe700a8f65da`
-
-Type:
-
-```lean
-{q b : Nat} → (Fin q → Fin b → Real) → (Fin q → Fin b → Real) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {q b} x y => Finset.univ.sum fun k => Finset.univ.sum fun j => instHMul.hMul (x k j) (y k j)
-```
-
-### D015: `LocalDef015`
 
 - Role: `local`
 - Owner module: `LocalImport002`
@@ -426,41 +393,13 @@ Definition body (one-level semantic boundary):
 fun uBar uFma uOut => ite (Real.instLT.lt uFma uOut) uOut (ite (Real.instLE.le uFma uBar) 0 uFma)
 ```
 
-### D016: `LocalDef016`
+### D014: `LocalDef014`
 
 - Role: `local`
 - Owner module: `LocalImport002`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `238cca16f93bd483f05f4b1dba71d774f3803a2b5fc727ccb3539659c5f4dd52`
-
-Type:
-
-```lean
-LocalDef001
-```
-
-### D017: `LocalDef017`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `constructor`
-- Distance from target type: `2`
-- Semantic SHA-256: `26ef234a89eb1ba00d8d4f2c5d456da095913ca53729633625ffa4bc91c65d1e`
-
-Type:
-
-```lean
-Nat → LocalDef001
-```
-
-### D018: `LocalDef018`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `constructor`
-- Distance from target type: `2`
-- Semantic SHA-256: `7627fc4e7244dcfdc166578032417ad1eb8ec07c078174c3fa7427b335142b0c`
+- Semantic SHA-256: `32243ab14157c86eecadd351f6ba3ae9782b5c14a8ca5b83590303ceb3837a90`
 
 Type:
 
@@ -470,87 +409,33 @@ Type:
     instLTNat.lt 0 b →
       instLTNat.lt 0 q →
         Eq n (instHMul.hMul q b) →
-          (x y : Fin q → Fin b → Real) →
-            (uBar uFma uOut : Real) →
+          (x y : Fin n → Real) →
+            (computed uBar uFma uOut : Real) →
               Real.instLE.le 0 uBar →
                 Real.instLE.le 0 uFma →
                   Real.instLE.le 0 uOut →
                     Real.instLE.le uBar uFma →
-                      LocalDef020 (LocalDef015 uBar uFma uOut) q →
-                        LocalDef020 uBar n →
-                          (order : LocalDef001) →
-                            (state : Nat → Real) →
-                              (carryTheta : Fin q → Real) →
-                                (termTheta : Fin q → Fin b → Real) →
-                                  (delta : Fin q → Real) →
-                                    Eq (state 0) 0 →
-                                      (∀ (k : Fin q),
-                                          Eq (state (instHAdd.hAdd k.val 1))
-                                            (instHMul.hMul
-                                              (instHAdd.hAdd
-                                                (instHMul.hMul (state k.val) (instHAdd.hAdd 1 (carryTheta k)))
-                                                (Finset.univ.sum fun j =>
-                                                  instHMul.hMul (instHMul.hMul (x k j) (y k j))
-                                                    (instHAdd.hAdd 1 (termTheta k j))))
-                                              (instHAdd.hAdd 1 (delta k)))) →
-                                        (∀ (k : Fin q),
-                                            Real.instLE.le (abs (delta k))
-                                              (LocalDef015 uBar uFma uOut)) →
-                                          (∀ (k : Fin q),
-                                              Real.instLE.le (abs (carryTheta k)) (LocalDef011 uBar b)) →
-                                            (∀ (k : Fin q) (j : Fin b),
-                                                Real.instLE.le (abs (termTheta k j))
-                                                  (LocalDef011 uBar (ite (Eq k.val 0) b (instHAdd.hAdd b 1)))) →
-                                              (Eq order LocalDef002 →
-                                                  ∀ (k : Fin q),
-                                                    Real.instLE.le (abs (carryTheta k)) (LocalDef011 uBar 1)) →
-                                                (innerPathError : Fin q → Fin b → Fin n → Real) →
-                                                  (∀ (k : Fin q) (j : Fin b) (r : Fin n),
-                                                      Real.instLE.le (abs (innerPathError k j r)) uBar) →
-                                                    (∀ (k : Fin q) (j : Fin b),
-                                                        Eq
-                                                          (Finset.univ.prod fun r =>
-                                                            instHAdd.hAdd 1 (innerPathError k j r))
-                                                          (instHMul.hMul (instHAdd.hAdd 1 (termTheta k j))
-                                                            (LocalDef021 carryTheta k))) →
-                                                      (rightToLeftPathError :
-                                                          Fin q →
-                                                            Fin b → Fin (instHSub.hSub (instHAdd.hAdd q b) 1) → Real) →
-                                                        (Eq order LocalDef002 →
-                                                            ∀ (k : Fin q) (j : Fin b)
-                                                              (r : Fin (instHSub.hSub (instHAdd.hAdd q b) 1)),
-                                                              Real.instLE.le (abs (rightToLeftPathError k j r)) uBar) →
-                                                          (Eq order LocalDef002 →
-                                                              ∀ (k : Fin q) (j : Fin b),
-                                                                Eq
-                                                                  (Finset.univ.prod fun r =>
-                                                                    instHAdd.hAdd 1 (rightToLeftPathError k j r))
-                                                                  (instHMul.hMul (instHAdd.hAdd 1 (termTheta k j))
-                                                                    (LocalDef021 carryTheta k))) →
-                                                            LocalDef003 n b q
+                      LocalDef015 (LocalDef013 uBar uFma uOut) q →
+                        LocalDef015 uBar n →
+                          (alpha beta : Fin n → Real) →
+                            Eq computed
+                                (Finset.univ.sum fun i =>
+                                  instHMul.hMul (instHMul.hMul (instHMul.hMul (x i) (y i)) (instHAdd.hAdd 1 (alpha i)))
+                                    (instHAdd.hAdd 1 (beta i))) →
+                              (∀ (i : Fin n),
+                                  Real.instLE.le (abs (alpha i))
+                                    (LocalDef009 (LocalDef013 uBar uFma uOut) q)) →
+                                (∀ (i : Fin n), Real.instLE.le (abs (beta i)) (LocalDef009 uBar n)) →
+                                  (rightToLeft : Prop) →
+                                    (rightToLeft → LocalDef015 uBar (instHSub.hSub (instHAdd.hAdd q b) 1)) →
+                                      (rightToLeft →
+                                          ∀ (i : Fin n),
+                                            Real.instLE.le (abs (beta i))
+                                              (LocalDef009 uBar (instHSub.hSub (instHAdd.hAdd q b) 1))) →
+                                        LocalDef001 n b q
 ```
 
-### D019: `LocalDef019`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `afc5091f30061a4695e670afab99786fa31bd80e06e01494c40cad4fb27919d3`
-
-Type:
-
-```lean
-{n b q : Nat} → LocalDef003 n b q → Nat → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n b q self => self.17
-```
-
-### D020: `LocalDef020`
+### D015: `LocalDef015`
 
 - Role: `local`
 - Owner module: `LocalImport001`
@@ -570,47 +455,7 @@ Definition body (one-level semantic boundary):
 fun u n => Real.instLT.lt (instHMul.hMul n.cast u) 1
 ```
 
-### D021: `LocalDef021`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `dcc4e809ac9b8a385e972a2966fd2e478c43899de1595c5932678f2adea7911c`
-
-Type:
-
-```lean
-{q : Nat} → (Fin q → Real) → Fin q → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {q} error k => (Finset.Ico (instHAdd.hAdd k.val 1) q).prod fun l => instHAdd.hAdd 1 (LocalDef022 error l)
-```
-
-### D022: `LocalDef022`
-
-- Role: `local`
-- Owner module: `LocalImport002`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `719296617c1e16a2c6fbcc5bbf40acf7abbb9f43c60231fc3e43cf8151e467d3`
-
-Type:
-
-```lean
-{q : Nat} → (Fin q → Real) → Nat → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {q} error k => if h : instLTNat.lt k q then error ⟨k, h⟩ else 0
-```
-
-### D023: `And`
+### D016: `And`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -624,7 +469,7 @@ Type:
 Prop → Prop → Prop
 ```
 
-### D024: `Eq`
+### D017: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -638,7 +483,7 @@ Type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D025: `Exists`
+### D018: `Exists`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -652,7 +497,7 @@ Type:
 {α : Sort u} → (α → Prop) → Prop
 ```
 
-### D026: `Fin`
+### D019: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -666,7 +511,7 @@ Type:
 Nat → Type
 ```
 
-### D027: `Fin.fintype`
+### D020: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -686,7 +531,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D028: `Finset.sum`
+### D021: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -706,7 +551,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D029: `Finset.univ`
+### D022: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -726,7 +571,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D030: `HAdd.hAdd`
+### D023: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -746,7 +591,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D031: `HMul.hMul`
+### D024: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -766,7 +611,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D032: `HSub.hSub`
+### D025: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -786,7 +631,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D033: `LE.le`
+### D026: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -806,7 +651,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D034: `Nat`
+### D027: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -820,7 +665,7 @@ Type:
 Type
 ```
 
-### D035: `OfNat.ofNat`
+### D028: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -840,7 +685,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D036: `One.toOfNat1`
+### D029: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -860,7 +705,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D037: `Real`
+### D030: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -874,7 +719,7 @@ Type:
 Type
 ```
 
-### D038: `Real.instAdd`
+### D031: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -894,7 +739,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D039: `Real.instAddCommMonoid`
+### D032: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -914,7 +759,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D040: `Real.instAddGroup`
+### D033: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -934,7 +779,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D041: `Real.instLE`
+### D034: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -954,7 +799,7 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D042: `Real.instMul`
+### D035: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -974,7 +819,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D043: `Real.instOne`
+### D036: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -994,7 +839,7 @@ Definition body (one-level semantic boundary):
 { one := Real.one✝ }
 ```
 
-### D044: `Real.instSub`
+### D037: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1014,7 +859,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D045: `Real.instZero`
+### D038: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1034,7 +879,7 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D046: `Real.lattice`
+### D039: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1054,7 +899,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D047: `Zero.toOfNat0`
+### D040: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -1074,7 +919,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D048: `abs`
+### D041: `abs`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
@@ -1095,7 +940,7 @@ fun {α} [Lattice α] [AddGroup α] a =>
   SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
 ```
 
-### D049: `instAddNat`
+### D042: `instAddNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1115,7 +960,7 @@ Definition body (one-level semantic boundary):
 { add := Nat.add }
 ```
 
-### D050: `instHAdd`
+### D043: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1135,7 +980,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D051: `instHMul`
+### D044: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1155,7 +1000,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D052: `instHSub`
+### D045: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1175,7 +1020,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D053: `instOfNatNat`
+### D046: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1195,7 +1040,7 @@ Definition body (one-level semantic boundary):
 fun n => { ofNat := n }
 ```
 
-### D054: `instSubNat`
+### D047: `instSubNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1215,7 +1060,7 @@ Definition body (one-level semantic boundary):
 { sub := Nat.sub }
 ```
 
-### D055: `DivInvMonoid.toDiv`
+### D048: `DivInvMonoid.toDiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -1235,7 +1080,7 @@ Definition body (one-level semantic boundary):
 fun G [self : DivInvMonoid G] => self.3
 ```
 
-### D056: `HDiv.hDiv`
+### D049: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1255,7 +1100,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D057: `LT.lt`
+### D050: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1275,7 +1120,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LT α] => self.1
 ```
 
-### D058: `Nat.cast`
+### D051: `Nat.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Cast`
@@ -1295,7 +1140,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D059: `Real.decidableLE`
+### D052: `Real.decidableLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1315,7 +1160,7 @@ Definition body (one-level semantic boundary):
 fun a b => inferInstance
 ```
 
-### D060: `Real.decidableLT`
+### D053: `Real.decidableLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1335,7 +1180,7 @@ Definition body (one-level semantic boundary):
 fun a b => inferInstance
 ```
 
-### D061: `Real.instDivInvMonoid`
+### D054: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1357,7 +1202,7 @@ Definition body (one-level semantic boundary):
   zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D062: `Real.instLT`
+### D055: `Real.instLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1377,7 +1222,7 @@ Definition body (one-level semantic boundary):
 { lt := Real.lt✝ }
 ```
 
-### D063: `Real.instNatCast`
+### D056: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1397,7 +1242,7 @@ Definition body (one-level semantic boundary):
 { natCast := fun n => { cauchy := n.cast } }
 ```
 
-### D064: `instHDiv`
+### D057: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1417,7 +1262,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
-### D065: `ite`
+### D058: `ite`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1437,87 +1282,7 @@ Definition body (one-level semantic boundary):
 fun {α} c [h : Decidable c] t e => Decidable.casesOn h (fun x => e) fun x => t
 ```
 
-### D066: `Fin.val`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.1
-```
-
-### D067: `Finset.prod`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `e364cffe1f2457eedceca9fe0617d7a66084963ffb6e6ed760d1f3fe74eee841`
-
-Type:
-
-```lean
-{ι : Type u_1} → {M : Type u_3} → [CommMonoid M] → Finset ι → (ι → M) → M
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {ι} {M} [CommMonoid M] s f => (Multiset.map f s.val).prod
-```
-
-### D068: `Real.instCommMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `f537dc5e9be2b886066e25d0f560dc52fd1be771759ec3e7b40a5f5f3e6c6467`
-
-Type:
-
-```lean
-CommMonoid Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D069: `instDecidableEqNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `658bdfe7785c44f21a851cae8ec44aec53d69bb69af955a9d42028df3fe37d22`
-
-Type:
-
-```lean
-DecidableEq Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-Nat.decEq
-```
-
-### D070: `instLTNat`
+### D059: `instLTNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1537,7 +1302,7 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D071: `instMulNat`
+### D060: `instMulNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1555,143 +1320,4 @@ Definition body (one-level semantic boundary):
 
 ```lean
 { mul := Nat.mul }
-```
-
-### D072: `Finset.Ico`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Order.Interval.Finset.Defs`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `256e28d69fc14d1c084345d68cbe49ed3d7c9201ffebf16a70893f13dcafaf29`
-
-Type:
-
-```lean
-{α : Type u_1} → [inst : Preorder α] → [LocallyFiniteOrder α] → α → α → Finset α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [Preorder α] [inst_1 : LocallyFiniteOrder α] a b => inst_1.finsetIco a b
-```
-
-### D073: `Nat.instLocallyFiniteOrder`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Order.Interval.Finset.Nat`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `8161a27efe4a0d75ef79e9a0fb2477c8f9f3df6dbf2ddc8cd26e705d3d59a945`
-
-Type:
-
-```lean
-LocallyFiniteOrder Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ finsetIcc := fun a b => { val := Multiset.ofList (List.range' a (instHSub.hSub (instHAdd.hAdd b 1) a)), nodup := ⋯ },
-  finsetIco := fun a b => { val := Multiset.ofList (List.range' a (instHSub.hSub b a)), nodup := ⋯ },
-  finsetIoc := fun a b => { val := Multiset.ofList (List.range' (instHAdd.hAdd a 1) (instHSub.hSub b a)), nodup := ⋯ },
-  finsetIoo := fun a b =>
-    { val := Multiset.ofList (List.range' (instHAdd.hAdd a 1) (instHSub.hSub (instHSub.hSub b a) 1)), nodup := ⋯ },
-  finset_mem_Icc := ⋯, finset_mem_Ico := ⋯, finset_mem_Ioc := ⋯, finset_mem_Ioo := ⋯ }
-```
-
-### D074: `Nat.instPreorder`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Nat.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `5ea89e9915200c8782bc933f9184e28eb38f4c9610b00cf1310cc6e6435642d8`
-
-Type:
-
-```lean
-Preorder Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D075: `Fin.mk`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `constructor`
-- Distance from target type: `5`
-- Semantic SHA-256: `2fb605c17aa879bf453f735ede02a7306496f461d34549bf61cb6c85662ce182`
-
-Type:
-
-```lean
-{n : Nat} → (val : Nat) → instLTNat.lt val n → Fin n
-```
-
-### D076: `Nat.decLt`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `652ffb54717682f55eafca6c2b47fca31dfea599c9898709ba2f56fbc9113d99`
-
-Type:
-
-```lean
-(n m : Nat) → Decidable (instLTNat.lt n m)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n m => n.succ.decLe m
-```
-
-### D077: `Not`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `0bfdacbe07f6cbb8995b354e36299fd742f29398c188d7cc23dedcdc47f57a9a`
-
-Type:
-
-```lean
-Prop → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun a => a → False
-```
-
-### D078: `dite`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `a2551097d29bac847f3c59e8213b5882afd4a95e9247c2382e8bce33011974b5`
-
-Type:
-
-```lean
-{α : Sort u} → (c : Prop) → [h : Decidable c] → (c → α) → (Not c → α) → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} c [h : Decidable c] t e => Decidable.casesOn h e t
 ```

@@ -1,0 +1,151 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P04-T1",
+  "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
+  "source_evidence": [
+    {
+      "pdf_page": 3,
+      "printed_page": "C126",
+      "anchor": "componentwise absolute-value convention",
+      "observation": "The paper defines absolute value componentwise, |A| = (|a_ij|). Applied to vectors in (3.4), |x|^T|y| is the nonnegative scalar sum of the componentwise product magnitudes."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "C127",
+      "anchor": "equations (2.3)-(2.6) and gamma notation",
+      "observation": "The block-FMA framework computes C+AB internally at unit roundoff u_bar, ordinarily with u_bar <= u_FMA, and then rounds to output precision u_FMA when needed. It uses the standard relative-error model and defines gamma_k(u) = ku/(1-ku), assuming ku < 1 for every relevant k and precision."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "C128",
+      "anchor": "Algorithm 3.1 and following numerical-model paragraph",
+      "observation": "Algorithm 3.1 takes A in R^(m x n) and B in R^(n x t), partitions them into b1 x b and b x b2 blocks, assumes p=m/b1, q=n/b, and r=t/b2 are integers, and chains q block FMAs for each output block. Inputs are rounded to u_low if necessary, the block-FMA output precision is u_FMA, the final output precision is u, and the analysis assumes no underflow or overflow."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "C129",
+      "anchor": "equations (3.1)-(3.3)",
+      "observation": "For a row x and column y, the exact dot product s_n=x^Ty is grouped into q=n/b consecutive blocks. Starting from s_0=0, recurrence (3.1) adds block i, containing indices (i-1)b+1 through ib. The derivation initially assumes left-to-right evaluation at internal precision u_bar followed by the modeled output rounding."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "C129",
+      "anchor": "equation (3.3) and branch-priority sentence",
+      "observation": "The effective outer-rounding unit roundoff is u_tilde_FMA = u when u>u_FMA; otherwise it is 0 when u_bar>=u_FMA and u_FMA when u_bar<u_FMA. The paper explicitly says that the first condition overlaps the other conditions and must take priority."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "C129",
+      "anchor": "compact factorization and equation (3.4)",
+      "observation": "The computed result has the factorization s_hat_n = sum_(i=1)^n x_i y_i(1+alpha_i)(1+beta_i), with |alpha_i| <= gamma_tilde_q^FMA and |beta_i| <= gamma_bar_n. Consequently, |s_n-s_hat_n| <= (gamma_tilde_q^FMA + gamma_bar_n + gamma_tilde_q^FMA gamma_bar_n)|x|^T|y|."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "C129",
+      "anchor": "following evaluation-order discussion",
+      "observation": "For right-to-left evaluation, identified as blocked summation, gamma_bar_n can be replaced throughout (3.4) by gamma_bar_(q+b-1). The paper also states that the original bound (3.4) is valid for every evaluation order of recurrence (3.1)."
+    }
+  ],
+  "statement": {
+    "binders": [
+      "A in R^(m x n) and B in R^(n x t), with block dimensions b1 x b and b x b2 and integer block counts p=m/b1, q=n/b, and r=t/b2. [PDF p. 5, printed C128, Algorithm 3.1]",
+      "A selected row x=(x_1,...,x_n)^T and column y=(y_1,...,y_n)^T, and the exact scalar s_n=x^Ty. [PDF p. 6, printed C129, paragraph preceding (3.1)]",
+      "Internal arithmetic unit roundoff u_bar, block-FMA output unit roundoff u_FMA, requested output unit roundoff u, and the derived effective outer-rounding unit roundoff u_tilde_FMA. [PDF p. 4, printed C127, block-FMA model; PDF p. 6, printed C129, (3.3)]",
+      "For the compact representation, per-index perturbations alpha_i and beta_i for i=1,...,n exist after the operands, precisions, recurrence, and computed result have been fixed. [PDF p. 6, printed C129, compact factorization following (3.3)]"
+    ],
+    "hypotheses": [
+      "The inner dimension is divisible by the block width: q=n/b is an integer, equivalently qb=n. [PDF p. 5, printed C128, Algorithm 3.1; PDF p. 6, printed C129, sentence preceding (3.4)]",
+      "The exact recurrence is s_0=0 and s_i=s_(i-1)+sum_(j=(i-1)b+1)^(ib) x_jy_j for i=1,...,q. [PDF p. 6, printed C129, (3.1)]",
+      "Each block-FMA right-hand side is modeled as evaluated at precision u_bar; the displayed derivation assumes left-to-right evaluation and then the applicable output rounding. [PDF p. 6, printed C129, paragraph following (3.1)]",
+      "Floating-point operations obey fl(a op b)=(a op b)(1+delta), |delta|<=v, and equivalently fl(a op b)=(a op b)/(1+delta), for the relevant unit roundoff v and op in {+,-,multiplication,division}. [PDF p. 4, printed C127, (2.3)-(2.4)]",
+      "For every gamma constant used, k times its associated unit roundoff is less than 1. [PDF p. 4, printed C127, gamma definition and standing assumption]",
+      "When u>u_FMA>u_bar would cause two successive roundings, the analysis deliberately includes only one rounding. [PDF p. 6, printed C129, paragraph preceding (3.2)]",
+      "Underflow and overflow do not occur. [PDF p. 5, printed C128, paragraph following Algorithm 3.1]"
+    ],
+    "conclusions": [
+      "The computed recurrence satisfies the local perturbation form (3.2): each internal contribution carries a theta factor bounded by the corresponding gamma_bar_j, and the block result carries a factor (1+delta_i) with |delta_i|<=u_tilde_FMA. [PDF p. 6, printed C129, (3.2)]",
+      "There are perturbations alpha_i and beta_i such that s_hat_n=sum_(i=1)^n x_i y_i(1+alpha_i)(1+beta_i), |alpha_i|<=gamma_tilde_q^FMA, and |beta_i|<=gamma_bar_n. [PDF p. 6, printed C129, compact factorization following (3.3)]",
+      "The deterministic forward-error bound is |s_n-s_hat_n| <= (gamma_tilde_q^FMA + gamma_bar_n + gamma_tilde_q^FMA gamma_bar_n)|x|^T|y|. [PDF p. 6, printed C129, (3.4)]",
+      "If each recurrence right-hand side is evaluated right to left, gamma_bar_n may be replaced everywhere in (3.4) by gamma_bar_(q+b-1), giving coefficient gamma_tilde_q^FMA + gamma_bar_(q+b-1) + gamma_tilde_q^FMA gamma_bar_(q+b-1). [PDF p. 6, printed C129, paragraph following (3.4)]",
+      "Without the right-to-left specialization, the original bound (3.4) remains valid for every evaluation order of (3.1). [PDF p. 6, printed C129, paragraph following (3.4)]"
+    ],
+    "definitions_and_conventions": [
+      "gamma_k(v)=kv/(1-kv). An accent on gamma means that the associated unit roundoff carries the same accent; thus gamma_bar_k=k u_bar/(1-k u_bar) and gamma_tilde_k^FMA=k u_tilde_FMA/(1-k u_tilde_FMA). [PDF p. 4, printed C127, gamma notation paragraph]",
+      "u_tilde_FMA is piecewise: first choose u if u>u_FMA; otherwise choose 0 if u_bar>=u_FMA and u_FMA if u_bar<u_FMA. [PDF p. 6, printed C129, (3.3) and branch-priority sentence]",
+      "Absolute value is componentwise; hence |x|^T|y|=sum_(i=1)^n |x_i||y_i|. [PDF p. 3, printed C126, componentwise absolute-value convention; PDF p. 6, printed C129, (3.4)]",
+      "s_n denotes the exact dot product x^Ty, whereas s_hat_n denotes the value produced by the modeled rounded block recurrence. [PDF p. 6, printed C129, definitions preceding (3.1) and compact factorization]"
+    ],
+    "implicit_context": [
+      "The block sizes and matrix dimensions are integer-sized algorithmic dimensions; their positivity is inherited from their use as matrix and loop dimensions rather than separately quantified in the passage. [PDF p. 5, printed C128, Algorithm 3.1]",
+      "Equation (3.4) analyzes the arithmetic applied to the values denoted x and y. Applying it directly to Algorithm 3.1 without an additional input-conversion term is explicitly justified only when A and B are already in precision u_low. [PDF p. 5, printed C128, Algorithm 3.1 line 1; PDF p. 6, printed C129, final paragraph]",
+      "The one-block framework ordinarily assumes u_bar<=u_FMA, while (3.3) is written with both u_bar>=u_FMA and u_bar<u_FMA branches. [PDF p. 4, printed C127, block-FMA model; PDF p. 6, printed C129, (3.3)]"
+    ],
+    "algorithm_linkage": "Equation (3.4) is the row-by-column scalar error analysis underlying Algorithm 3.1: each output block starts at zero and chains q=n/b block FMAs, with each scalar component accumulating b consecutive products per recurrence step. [PDF p. 5, printed C128, Algorithm 3.1 lines 4-8; PDF p. 6, printed C129, (3.1)-(3.4)]",
+    "numerical_model": [
+      "The internal sum-and-products of each block recurrence are evaluated at unit roundoff u_bar using the standard relative-error model. [PDF p. 4, printed C127, (2.3)-(2.4); PDF p. 6, printed C129, paragraph following (3.1)]",
+      "The modeled post-block rounding is governed by u_tilde_FMA from (3.3), accounting for whether the requested output precision u is coarser than the block-FMA output and whether a distinct block-output rounding is needed. [PDF p. 6, printed C129, (3.3)]",
+      "The first branch u when u>u_FMA has priority even if one of the u_bar comparisons also holds. [PDF p. 6, printed C129, sentence following (3.3)]",
+      "The analysis uses one rounding when the physical sequence would round first to u_FMA and then to u. [PDF p. 6, printed C129, double-rounding paragraph]"
+    ],
+    "error_notions": [
+      "The main result is a deterministic absolute forward error for the scalar dot product, |s_n-s_hat_n|. [PDF p. 6, printed C129, (3.4)]",
+      "The data-dependent scale is the componentwise absolute dot product |x|^T|y|, not |s_n| and not a backward perturbation statement. [PDF p. 3, printed C126, componentwise convention; PDF p. 6, printed C129, (3.4)]",
+      "The compact factorization additionally gives componentwise multiplicative perturbations of each exact product x_i y_i. [PDF p. 6, printed C129, compact factorization preceding (3.4)]"
+    ],
+    "norms": [
+      "No vector or matrix norm occurs in (3.4); the left side is scalar absolute value and the right side uses componentwise absolute values followed by an exact inner product. [PDF p. 3, printed C126, componentwise absolute-value convention; PDF p. 6, printed C129, (3.4)]"
+    ],
+    "constants_and_indexing": [
+      "The q blocks cover indices (i-1)b+1 through ib for i=1,...,q, and qb=n. [PDF p. 6, printed C129, (3.1) and sentence preceding (3.4)]",
+      "In the generic local formula, the first product of a block carries theta_(b+1), the last carries theta_2, and the incoming partial sum carries theta_b. [PDF p. 6, printed C129, (3.2)]",
+      "For i=1, because s_0=0, the theta index multiplying x_1y_1 is b rather than b+1. [PDF p. 6, printed C129, sentence following (3.3)]",
+      "The exact coefficient in (3.4) retains all three terms gamma_tilde_q^FMA, gamma_bar_n, and their product. [PDF p. 6, printed C129, (3.4)]",
+      "The right-to-left specialization uses the offset q+b-1, not q+b or n/b+b. [PDF p. 6, printed C129, paragraph following (3.4)]"
+    ],
+    "higher_order_terms": [
+      "Equation (3.4) is not presented as a first-order approximation: the product term gamma_tilde_q^FMA gamma_bar_n is retained, and no big-O remainder is appended to that equation. [PDF p. 6, printed C129, (3.4)]",
+      "A possible second rounding in the case u>u_FMA>u_bar is omitted from the analysis as having a negligible effect on the final bound; thus (3.4) is exact for the stated simplified rounding model, not an explicit two-rounding model. [PDF p. 6, printed C129, double-rounding paragraph]",
+      "Separately, the earlier one-block model (2.6) says that setting u_bar=0 corresponds to rounded-exact evaluation only to within O(u_FMA^2), because its right side contains the computed D_hat rather than exact D; this is not an O-term in (3.4). [PDF p. 4, printed C127, paragraph following (2.6)]"
+    ],
+    "exceptional_values": [
+      "The analysis explicitly excludes underflow and overflow. [PDF p. 5, printed C128, paragraph following Algorithm 3.1]",
+      "The cited passage gives no separate semantics for NaNs, infinities, or other exceptional values beyond the standard relative-error model and the no-underflow/no-overflow assumption. [PDF p. 4, printed C127, (2.3)-(2.4); PDF p. 5, printed C128, paragraph following Algorithm 3.1]"
+    ]
+  },
+  "undebatable_constraints": [
+    "The principal conclusion must contain the exact coefficient gamma_tilde_q^FMA + gamma_bar_n + gamma_tilde_q^FMA gamma_bar_n multiplying |x|^T|y|. [PDF p. 6, printed C129, (3.4)]",
+    "The exact value is s_n=x^Ty and the compared computed value is s_hat_n from the block recurrence. [PDF p. 6, printed C129, definitions surrounding (3.1)]",
+    "The inner dimension satisfies q=n/b and the recurrence contains exactly q blocks of b consecutive products. [PDF p. 5, printed C128, Algorithm 3.1; PDF p. 6, printed C129, (3.1)]",
+    "The compact factorization and both witness bounds, |alpha_i|<=gamma_tilde_q^FMA and |beta_i|<=gamma_bar_n, are part of the source result. [PDF p. 6, printed C129, compact factorization preceding (3.4)]",
+    "u_tilde_FMA must follow the prioritized three-case definition in (3.3); it cannot be replaced unconditionally by u_FMA. [PDF p. 6, printed C129, (3.3) and following sentence]",
+    "All gamma constants require k times the associated unit roundoff to be less than 1. [PDF p. 4, printed C127, gamma standing assumption]",
+    "|x|^T|y| is componentwise and is not a norm or |x^Ty|. [PDF p. 3, printed C126, componentwise convention; PDF p. 6, printed C129, (3.4)]",
+    "The right-to-left specialization replaces gamma_bar_n by gamma_bar_(q+b-1), while the unsharpened bound remains valid for all evaluation orders. [PDF p. 6, printed C129, paragraph following (3.4)]",
+    "The first block uses theta index b rather than b+1 for the x_1y_1 term. [PDF p. 6, printed C129, sentence following (3.3)]",
+    "The modeled result excludes underflow and overflow and deliberately collapses a possible double rounding to one rounding. [PDF p. 5, printed C128, paragraph following Algorithm 3.1; PDF p. 6, printed C129, double-rounding paragraph]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "Identity of x and y when Algorithm 3.1 performs initial input conversion.",
+      "evidence": "Algorithm 3.1 computes with A_tilde=fl_low(A) and B_tilde=fl_low(B) if conversion is needed, but the scalar derivation calls x a row of A and y a column of B. The paper says the scalar analysis applies directly to Algorithm 3.1 when A and B are already in u_low. [PDF p. 5, printed C128, Algorithm 3.1 line 1; PDF p. 6, printed C129, opening and final paragraphs]",
+      "impact": "For inputs not already in u_low, (3.4) should not silently be interpreted as including the error from converting the original A and B; x and y must either denote the post-conversion operands or additional conversion-error terms are required."
+    },
+    {
+      "issue": "The general-framework ordering u_bar<=u_FMA versus the broader comparisons appearing in (3.3).",
+      "evidence": "Section 2.1 assumes u_bar<=u_FMA, whereas (3.3) has branches for u_bar>=u_FMA and u_bar<u_FMA. Under the earlier assumption, the second branch mainly covers equality, but the later formula is written more broadly. [PDF p. 4, printed C127, block-FMA model; PDF p. 6, printed C129, (3.3)]",
+      "impact": "A formal statement should preserve the piecewise definition and any intended precision-ordering hypothesis rather than infer an unstated simplification of the branches."
+    },
+    {
+      "issue": "Scope of the physical double-rounding behavior.",
+      "evidence": "The paper says two roundings are needed when u>u_FMA>u_bar but includes only one in the analysis, calling the effect on the final bound negligible. [PDF p. 6, printed C129, paragraph preceding (3.2)]",
+      "impact": "The stated bound contracts the simplified model. A theorem about the literal two-rounding implementation would require a separately justified error term or a double-rounding result."
+    },
+    {
+      "issue": "Meaning of the claim that (3.4) is valid for all evaluation orders.",
+      "evidence": "The derivation first assumes left-to-right evaluation, then states without further formal specification that (3.4) is valid for all orders of evaluation of (3.1), while giving a sharper constant only for right-to-left evaluation. [PDF p. 6, printed C129, paragraphs following (3.1) and (3.4)]",
+      "impact": "The broad bound may be carried over to arbitrary evaluation orders as stated, but no unstated sharper constant or precise parenthesization model should be inferred for orders other than the explicitly discussed right-to-left case."
+    }
+  ],
+  "contract_plain_english": "Split a length-n row-column dot product into q=n/b consecutive blocks of b products and accumulate those blocks with the block-FMA recurrence starting from zero. [PDF p. 6, printed C129, (3.1)] Under the standard relative-error model, the stated effective output-rounding rule, valid gamma denominators, no underflow or overflow, and the paper's single-rounding simplification, the computed value can be written as sum x_i y_i(1+alpha_i)(1+beta_i), with alpha_i bounded by gamma_tilde_q^FMA and beta_i by gamma_bar_n. [PDF p. 4, printed C127, gamma model; PDF p. 5, printed C128, exceptional-value assumption; PDF p. 6, printed C129, (3.2)-(3.3) and compact factorization] Therefore its absolute forward error is at most (gamma_tilde_q^FMA + gamma_bar_n + gamma_tilde_q^FMA gamma_bar_n) times sum |x_i||y_i|. [PDF p. 3, printed C126, componentwise convention; PDF p. 6, printed C129, (3.4)] Right-to-left blocked summation permits gamma_bar_(q+b-1) in place of gamma_bar_n, while the original bound is asserted for every evaluation order. [PDF p. 6, printed C129, paragraph following (3.4)] The scalar result does not by itself include initial conversion error for original inputs not already in u_low. [PDF p. 5, printed C128, Algorithm 3.1 line 1; PDF p. 6, printed C129, final paragraph]"
+}

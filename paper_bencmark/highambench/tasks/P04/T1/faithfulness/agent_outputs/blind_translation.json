@@ -1,475 +1,608 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "b19dd66051f23e6a3a30305118713ac3d0a3b40feb547573f79d63ec32ab9aa2",
+  "dossier_sha256": "ebd41cb5febdd308a8e26959738b84765e6d5c2194aafe90b3c3cab54b28f381",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For natural numbers n, b, and q, this is an indexed inductive type of run packages. Its supplied constructor packages positive dimensions, the relation n = q*b, input vectors, three nonnegative real parameters, a computed value, admissibility proofs, perturbation witnesses, and a proposition-valued right-to-left condition.",
-      "effect_on_target": "The theorem is universally quantified only over inhabitants of this package type. Consequently, every field and proof required by its constructor is an implicit hypothesis, and the statement is vacuous for indices for which no package exists.",
+      "meaning": "An inductive datatype used as an order tag. Its supplied constructors are the nullary tags LocalDef002 and LocalDef016 and the Nat-parameterized tag LocalDef017.",
+      "effect_on_target": "The run contains a value of this type. The target distinguishes only the case where that value equals LocalDef002.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "This projects field 7 of a run package, a real number denoted computed.",
-      "effect_on_target": "It is the computed scalar represented by the perturbed sum and compared with the exact dot product in every error bound.",
+      "meaning": "A distinguished nullary constructor of the order-tag datatype LocalDef001.",
+      "effect_on_target": "Equality of the run's order tag to this constructor is the antecedent of the sharper beta and forward-error bounds.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "This projects field 22 of a run package, a proposition denoted rightToLeft.",
-      "effect_on_target": "It is the antecedent of the conditional sharper beta bound and conditional sharper error bound.",
+      "meaning": "An indexed inductive family of valid run records, indexed by natural dimensions n, b, and q. Its constructor LocalDef018 bundles arrays, error parameters, an accumulated state, local error factors, positivity and dimension conditions, recurrences, and bounds.",
+      "effect_on_target": "The theorem quantifies only over bundled valid runs of this family, so all conditions required by LocalDef018 are implicit hypotheses.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "This projects field 8 of a run package, the real parameter uBar.",
-      "effect_on_target": "It appears in all beta bounds, in the composite error coefficients, and in the special-case equality uBar = uFma.",
+      "meaning": "For a run, this is state(q), the final value of its accumulated state sequence.",
+      "effect_on_target": "It is the computed scalar represented by the perturbed double sum and compared with the exact double sum in every forward-error bound.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "This projects field 9 of a run package, the real parameter uFma.",
-      "effect_on_target": "It helps define the effective parameter and appears in the special-case assumptions uOut <= uFma and uBar = uFma.",
+      "meaning": "The order-tag field of a run.",
+      "effect_on_target": "Its equality to LocalDef002 activates the conditional sharper bounds.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "LocalDef006",
-      "meaning": "This projects field 10 of a run package, the real parameter uOut.",
-      "effect_on_target": "It helps define the effective parameter and appears in the special-case condition uOut <= uFma.",
+      "meaning": "The real parameter uBar stored in the run.",
+      "effect_on_target": "It controls beta, path, carry, and term error bounds and occurs in both general and specialized forward-error coefficients.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "LocalDef007",
-      "meaning": "This projects field 5 of a run package, a function x : Fin n -> Real.",
-      "effect_on_target": "It supplies the first length-n real vector in the exact dot product, perturbed representation, and absolute-product sum.",
+      "meaning": "The real parameter uFma stored in the run.",
+      "effect_on_target": "Together with uBar and uOut it determines the effective parameter used for alpha and the main bound, and it occurs in the final conditional antecedent.",
       "status": "understood"
     },
     {
       "id": "D008",
       "name": "LocalDef008",
-      "meaning": "This projects field 6 of a run package, a function y : Fin n -> Real.",
-      "effect_on_target": "It supplies the second length-n real vector in the exact dot product, perturbed representation, and absolute-product sum.",
+      "meaning": "The real parameter uOut stored in the run.",
+      "effect_on_target": "Together with uBar and uFma it determines the effective parameter, and the condition uOut <= uFma participates in the final specialized conclusion.",
       "status": "understood"
     },
     {
       "id": "D009",
       "name": "LocalDef009",
-      "meaning": "For a real u and natural k, it defines gamma_k(u) = (k*u)/(1-k*u), with k cast to a real number.",
-      "effect_on_target": "It gives every componentwise perturbation bound and is used to construct all forward-error coefficients.",
+      "meaning": "The run's real array x, indexed by Fin q and Fin b.",
+      "effect_on_target": "Its entries occur in the perturbed representation, the exact double sum, and the absolute product sum used to scale all forward-error bounds.",
       "status": "understood"
     },
     {
       "id": "D010",
       "name": "LocalDef010",
-      "meaning": "For x,y : Fin n -> Real, it defines A(x,y) = sum over i in Fin n of |x_i|*|y_i|.",
-      "effect_on_target": "This nonnegative absolute-product sum scales each absolute error bound.",
+      "meaning": "The run's real array y, indexed by Fin q and Fin b.",
+      "effect_on_target": "Its entries occur in the perturbed representation, the exact double sum, and the absolute product sum used to scale all forward-error bounds.",
       "status": "understood"
     },
     {
       "id": "D011",
       "name": "LocalDef011",
-      "meaning": "For reals a and u and naturals q and m, it defines gamma_q(a) + gamma_m(u) + gamma_q(a)*gamma_m(u).",
-      "effect_on_target": "With a equal to the effective parameter and u equal to uBar, it is the baseline coefficient for m = n and the right-to-left coefficient for m = q+b-1.",
+      "meaning": "For a real u and natural m, it is gamma_m(u) = (m as a real) * u / (1 - (m as a real) * u).",
+      "effect_on_target": "It gives every componentwise alpha and beta bound and the simple coefficient in the final specialized error bound.",
       "status": "understood"
     },
     {
       "id": "D012",
       "name": "LocalDef012",
-      "meaning": "For x,y : Fin n -> Real, it defines their exact finite dot product S = sum over i in Fin n of x_i*y_i.",
-      "effect_on_target": "The absolute forward error is |S-computed|.",
+      "meaning": "For real parameters v and u and natural indices q and m, it is gamma_q(v) + gamma_m(u) + gamma_q(v) * gamma_m(u).",
+      "effect_on_target": "It is the coefficient multiplying the absolute product sum in the general forward-error bound, with m=n, and in the order-specialized bound, with m=q+b-1.",
       "status": "understood"
     },
     {
       "id": "D013",
       "name": "LocalDef013",
-      "meaning": "It defines an effective real parameter e by e = uOut if uFma < uOut; otherwise e = 0 if uFma <= uBar; otherwise e = uFma.",
-      "effect_on_target": "The alpha bound and the first part of each composite error coefficient use e. Under uOut <= uFma and uBar = uFma, this definition yields e = 0.",
+      "meaning": "For q-by-b real arrays x and y, it is the nonnegative scalar sum over all k in Fin q and j in Fin b of |x(k,j)| * |y(k,j)|.",
+      "effect_on_target": "This scalar is the scale factor in every absolute forward-error bound.",
       "status": "understood"
     },
     {
       "id": "D014",
       "name": "LocalDef014",
-      "meaning": "This constructor builds a run package from proofs 0<n, 0<b, 0<q, and n=q*b; vectors x and y; reals computed, uBar, uFma, and uOut; nonnegativity of the three parameters; uBar<=uFma; admissibility q*e<1 and n*uBar<1; stored perturbations alpha0 and beta0 satisfying the perturbed-sum identity and baseline componentwise bounds; a proposition rightToLeft; and, conditionally on that proposition, admissibility and a beta0 bound using q+b-1.",
-      "effect_on_target": "It exposes all restrictions hidden in the type of run. In particular, substantial parts of the existential representation and componentwise bounds are already required when constructing a run, although the target existential witnesses are fresh and need not be definitionally identical to the stored ones.",
+      "meaning": "For q-by-b real arrays x and y, it is the exact scalar double sum over all k in Fin q and j in Fin b of x(k,j) * y(k,j).",
+      "effect_on_target": "The target bounds the absolute difference between this exact sum and the run's computed value.",
       "status": "understood"
     },
     {
       "id": "D015",
       "name": "LocalDef015",
-      "meaning": "For a real u and natural k, it is the proposition k*u < 1, with k cast to a real.",
-      "effect_on_target": "The run package requires it for (e,q) and (uBar,n), and conditionally for (uBar,q+b-1), ensuring positive denominators in all gamma quantities used under the corresponding conditions.",
+      "meaning": "The effective parameter U(uBar,uFma,uOut), equal to uOut if uFma < uOut, equal to 0 if uFma is not less than uOut and uFma <= uBar, and equal to uFma otherwise.",
+      "effect_on_target": "The alpha bound and the first component of the main and order-specialized error coefficients use this effective parameter.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "And",
-      "meaning": "This is logical conjunction.",
-      "effect_on_target": "It requires the perturbed identity, all componentwise bounds, the baseline error bound, and both conditional refinements to hold simultaneously for the same existential witnesses.",
+      "name": "LocalDef016",
+      "meaning": "A second nullary constructor of the order-tag datatype LocalDef001, distinct from LocalDef002.",
+      "effect_on_target": "A run with this order tag does not satisfy order = LocalDef002, so the order-specialized implication is vacuous.",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "Eq",
-      "meaning": "This is propositional equality.",
-      "effect_on_target": "It expresses the perturbed-sum identity, the condition uBar = uFma, and the componentwise conclusions alpha_i = 0.",
+      "name": "LocalDef017",
+      "meaning": "A constructor assigning a LocalDef001 order tag to each natural-number argument.",
+      "effect_on_target": "A run with a tag built by this constructor does not satisfy order = LocalDef002, so the order-specialized implication is vacuous.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "Exists",
-      "meaning": "This is existential quantification.",
-      "effect_on_target": "It introduces two functions alpha,beta : Fin n -> Real that jointly satisfy every conclusion.",
+      "name": "LocalDef018",
+      "meaning": "The constructor for a run. It requires n,b,q>0 and n=q*b; q-by-b arrays x and y; nonnegative uBar,uFma,uOut with uBar<=uFma; q*U(uBar,uFma,uOut)<1 and n*uBar<1; an order tag; and state and error data. It requires state(0)=0 and, for each k in Fin q, state(k+1) = (state(k)*(1+carryTheta(k)) + sum_j x(k,j)*y(k,j)*(1+termTheta(k,j)))*(1+delta(k)). It bounds |delta(k)| by U, |carryTheta(k)| by gamma_b(uBar), and |termTheta(k,j)| by gamma_b(uBar) when k=0 and gamma_(b+1)(uBar) otherwise. If order=LocalDef002 it additionally bounds |carryTheta(k)| by gamma_1(uBar). It also supplies q-by-b-by-n inner path errors bounded by uBar whose product of one-plus-error factors equals (1+termTheta(k,j)) times the later-carry product, and, conditionally when order=LocalDef002, analogous q-by-b-by-(q+b-1) path errors bounded by uBar with the same product identity.",
+      "effect_on_target": "All of these requirements are bundled into the universally quantified run. The target directly projects x, y, uBar, uFma, uOut, order, and state(q); the remaining bundled recurrence and path assumptions restrict which computed values can occur and support the asserted witnesses and bounds.",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "Fin",
-      "meaning": "Fin n is the finite type of natural indices strictly less than n.",
-      "effect_on_target": "It makes x, y, alpha, and beta length-n real vectors indexed by 0 through n-1.",
+      "name": "LocalDef019",
+      "meaning": "The entire natural-indexed real state sequence stored in a run.",
+      "effect_on_target": "The target uses it indirectly because the computed result is its value at q.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "Fin.fintype",
-      "meaning": "This gives the canonical finite enumeration of Fin n.",
-      "effect_on_target": "It permits universal finite sums to range over every index in Fin n exactly once.",
+      "name": "LocalDef020",
+      "meaning": "For real u and natural m, the proposition (m as a real) * u < 1.",
+      "effect_on_target": "The run constructor assumes it for (U,q) and (uBar,n), ensuring positive nonzero denominators in the principal gamma quantities.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "Finset.sum",
-      "meaning": "This folds addition over a finite set after applying a summand function.",
-      "effect_on_target": "It forms the perturbed sum, exact dot product, and sum of absolute componentwise products.",
+      "name": "LocalDef021",
+      "meaning": "For an error array on Fin q and k in Fin q, it is the product of 1+error(l) over natural indices l with k.val+1 <= l < q.",
+      "effect_on_target": "This later-index suffix product appears in the path-product identities bundled into a run and thus restricts admissible term and carry errors.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "Finset.univ",
-      "meaning": "For a finite type, this is the finite set containing all of its elements.",
-      "effect_on_target": "Every displayed sum ranges over all indices i in Fin n.",
+      "name": "LocalDef022",
+      "meaning": "For an error array on Fin q and a natural k, it returns error(k) when k<q, using the corresponding Fin q index, and returns 0 otherwise.",
+      "effect_on_target": "It permits LocalDef021 to evaluate the Fin-indexed error array over a natural interval; every interval index there is below q.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "HAdd.hAdd",
-      "meaning": "This selects the addition operation supplied by a heterogeneous-addition instance.",
-      "effect_on_target": "It realizes real addition in 1+alpha_i, 1+beta_i, and the composite coefficients, and natural addition in q+b.",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It requires the representation, all unconditional bounds, and both conditional statements to hold simultaneously for the same alpha and beta witnesses.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "HMul.hMul",
-      "meaning": "This selects the multiplication operation supplied by a heterogeneous-multiplication instance.",
-      "effect_on_target": "It realizes products in the perturbed sum, dot products, gamma expressions, error coefficients, and the constructor relation n=q*b.",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It expresses the exact perturbed representation, equality of order tags and error parameters, and the conditional conclusion alpha(k,j)=0.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "HSub.hSub",
-      "meaning": "This selects the subtraction operation supplied by a heterogeneous-subtraction instance.",
-      "effect_on_target": "It realizes real subtraction in S-computed and 1-k*u, and natural-number subtraction in q+b-1.",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It asserts the existence of a q-by-b real array alpha and then a q-by-b real array beta satisfying all conclusions; the witnesses may depend on the run, and beta may be selected after alpha.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "LE.le",
-      "meaning": "This selects the non-strict order relation supplied by an LE instance.",
-      "effect_on_target": "It expresses all real componentwise and forward-error inequalities, parameter nonnegativity, uBar<=uFma, and the special condition uOut<=uFma.",
+      "name": "Fin",
+      "meaning": "Fin m is the finite type of natural indices strictly below m.",
+      "effect_on_target": "It gives the exact dimensions of x, y, alpha, beta, and the universally quantified component indices.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "Nat",
-      "meaning": "This is the type of natural numbers, including zero.",
-      "effect_on_target": "The universally quantified n, b, and q and the count q+b-1 are natural numbers; positivity is supplied only through the run package.",
+      "name": "Fin.fintype",
+      "meaning": "The canonical finite enumeration of Fin m.",
+      "effect_on_target": "It makes sums over every k<q and every j<b well-defined.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "OfNat.ofNat",
-      "meaning": "This interprets a natural-number literal in a target type using its OfNat instance.",
-      "effect_on_target": "It supplies the real constants 0 and 1 and the natural constant 1 occurring throughout the proposition.",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It forms the perturbed computed representation, the exact double sum, the absolute product sum, and sums in the run recurrence.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "One.toOfNat1",
-      "meaning": "This turns a type's distinguished one into its interpretation of the numeral 1.",
-      "effect_on_target": "It makes the 1 in 1+alpha_i, 1+beta_i, and gamma denominators the real number one.",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It makes each displayed sum range over all indices in Fin q or Fin b.",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "Real",
-      "meaning": "This is the type of real numbers.",
-      "effect_on_target": "All vector entries, perturbations, parameters, sums, computed quantities, and bounds are real-valued.",
+      "name": "HAdd.hAdd",
+      "meaning": "Typeclass-dispatched addition.",
+      "effect_on_target": "With the supplied instances it is ordinary real or natural addition, including the factors 1+alpha, 1+beta, dimension q+b, and additions in auxiliary definitions.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "Real.instAdd",
-      "meaning": "This supplies ordinary real addition.",
-      "effect_on_target": "All additions between real quantities have their usual mathematical meaning.",
+      "name": "HMul.hMul",
+      "meaning": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "With the supplied instances it is ordinary real multiplication in representations and bounds and natural multiplication in n=q*b.",
       "status": "understood"
     },
     {
       "id": "D032",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "This supplies the commutative additive-monoid structure of the real numbers.",
-      "effect_on_target": "It makes all finite real sums well-defined, with zero as the empty-sum value.",
+      "name": "HSub.hSub",
+      "meaning": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "It is ordinary real subtraction in exact-minus-computed errors and denominator expressions, and truncated natural subtraction in q+b-1.",
       "status": "understood"
     },
     {
       "id": "D033",
-      "name": "Real.instAddGroup",
-      "meaning": "This supplies the additive-group structure of the real numbers, including negation.",
-      "effect_on_target": "It supports real subtraction and the definition of absolute value as max(a,-a).",
+      "name": "LE.le",
+      "meaning": "Typeclass-dispatched less-than-or-equal relation.",
+      "effect_on_target": "For reals it expresses all componentwise absolute-error bounds, forward-error bounds, and the condition uOut<=uFma.",
       "status": "understood"
     },
     {
       "id": "D034",
-      "name": "Real.instLE",
-      "meaning": "This supplies the usual non-strict order on the real numbers.",
-      "effect_on_target": "Every <= relation in the target is ordinary real inequality.",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "The dimensions n, b, and q and several path lengths are natural numbers.",
       "status": "understood"
     },
     {
       "id": "D035",
-      "name": "Real.instMul",
-      "meaning": "This supplies ordinary real multiplication.",
-      "effect_on_target": "Every product among real vector entries, perturbation factors, gamma terms, and error coefficients is ordinary real multiplication.",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of a natural-number literal in a target type.",
+      "effect_on_target": "It supplies the real literals 0 and 1 and the natural literal 1 in the proposition and its definitions.",
       "status": "understood"
     },
     {
       "id": "D036",
-      "name": "Real.instOne",
-      "meaning": "This supplies the real multiplicative identity 1.",
-      "effect_on_target": "It determines the constants in the perturbation factors and gamma denominators.",
+      "name": "One.toOfNat1",
+      "meaning": "The canonical interpretation of the literal 1 from a type's multiplicative identity.",
+      "effect_on_target": "For reals it supplies the 1 in perturbation factors and gamma denominators.",
       "status": "understood"
     },
     {
       "id": "D037",
-      "name": "Real.instSub",
-      "meaning": "This supplies real subtraction, defined as addition of the additive inverse.",
-      "effect_on_target": "It gives the usual real differences S-computed and 1-k*u.",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "Array entries, parameters, witnesses, sums, computed values, and bounds are all real-valued.",
       "status": "understood"
     },
     {
       "id": "D038",
-      "name": "Real.instZero",
-      "meaning": "This supplies the real additive identity 0.",
-      "effect_on_target": "It is used in the effective parameter's zero branch, nonnegativity conditions, and conclusions alpha_i=0.",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary addition on real numbers.",
+      "effect_on_target": "It interprets all real additions appearing in perturbation factors, combined coefficients, sums, and recurrences.",
       "status": "understood"
     },
     {
       "id": "D039",
-      "name": "Real.lattice",
-      "meaning": "This supplies max and min operations compatible with the usual real order.",
-      "effect_on_target": "Together with the additive-group structure, it supports the absolute-value operation used in every magnitude bound.",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure of the reals.",
+      "effect_on_target": "It supplies finite real summation and the empty-sum value zero.",
       "status": "understood"
     },
     {
       "id": "D040",
-      "name": "Zero.toOfNat0",
-      "meaning": "This turns a type's distinguished zero into its interpretation of the numeral 0.",
-      "effect_on_target": "It makes the zero in alpha_i=0 the real number zero.",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive group structure of the reals.",
+      "effect_on_target": "It supplies negation and subtraction structure used by real absolute value and error differences.",
       "status": "understood"
     },
     {
       "id": "D041",
-      "name": "abs",
-      "meaning": "It maps a real a to max(a,-a), which is the ordinary absolute value |a|.",
-      "effect_on_target": "It measures perturbation magnitudes, the absolute forward error, and each factor in the absolute-product sum.",
+      "name": "Real.instLE",
+      "meaning": "The ordinary less-than-or-equal order on the reals.",
+      "effect_on_target": "It gives the standard real inequalities in all bounds and conditional assumptions.",
       "status": "understood"
     },
     {
       "id": "D042",
-      "name": "instAddNat",
-      "meaning": "This supplies ordinary natural-number addition.",
-      "effect_on_target": "It forms the natural count q+b before subtracting one.",
+      "name": "Real.instMul",
+      "meaning": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "It interprets products of data entries, perturbation factors, gamma quantities, and error coefficients.",
       "status": "understood"
     },
     {
       "id": "D043",
-      "name": "instHAdd",
-      "meaning": "This converts a homogeneous Add operation into the corresponding HAdd operation.",
-      "effect_on_target": "It routes the overloaded additions to ordinary real addition or ordinary natural addition as determined by their operands.",
+      "name": "Real.instOne",
+      "meaning": "The multiplicative identity 1 in the reals.",
+      "effect_on_target": "It supplies the 1 in factors 1+alpha and 1+beta and in gamma denominators.",
       "status": "understood"
     },
     {
       "id": "D044",
-      "name": "instHMul",
-      "meaning": "This converts a homogeneous Mul operation into the corresponding HMul operation.",
-      "effect_on_target": "It routes overloaded products to ordinary real multiplication or natural multiplication.",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "It interprets exact sum minus computed result and the denominator 1-m*u.",
       "status": "understood"
     },
     {
       "id": "D045",
-      "name": "instHSub",
-      "meaning": "This converts a homogeneous Sub operation into the corresponding HSub operation.",
-      "effect_on_target": "It routes overloaded subtraction to real subtraction or truncated natural-number subtraction.",
+      "name": "Real.instZero",
+      "meaning": "The additive identity 0 in the reals.",
+      "effect_on_target": "It supplies the value asserted for alpha in the final specialized conclusion and the zero branch of the effective parameter.",
       "status": "understood"
     },
     {
       "id": "D046",
-      "name": "instOfNatNat",
-      "meaning": "This interprets each natural numeral as that same natural number.",
-      "effect_on_target": "It supplies the natural numeral 1 in q+b-1 and the positivity conditions.",
+      "name": "Real.lattice",
+      "meaning": "The lattice order structure of the real numbers.",
+      "effect_on_target": "Together with the additive group structure it defines the usual real absolute value.",
       "status": "understood"
     },
     {
       "id": "D047",
-      "name": "instSubNat",
-      "meaning": "This supplies natural-number subtraction, truncated at zero.",
-      "effect_on_target": "The sharper count is formally Nat subtraction (q+b)-1; the packaged positivity of q and b ensures this agrees with ordinary subtraction by one.",
+      "name": "Zero.toOfNat0",
+      "meaning": "The canonical interpretation of the literal 0 from a type's additive identity.",
+      "effect_on_target": "For reals it supplies zero in the equation alpha(k,j)=0.",
       "status": "understood"
     },
     {
       "id": "D048",
-      "name": "DivInvMonoid.toDiv",
-      "meaning": "This extracts division from a division-and-inverse monoid structure.",
-      "effect_on_target": "It supplies real division inside gamma_k(u).",
+      "name": "abs",
+      "meaning": "Absolute value, defined as max(a,-a); on the reals this is the usual absolute value.",
+      "effect_on_target": "It measures all component perturbations and the scalar forward error and forms the absolute product scale.",
       "status": "understood"
     },
     {
       "id": "D049",
-      "name": "HDiv.hDiv",
-      "meaning": "This selects the division operation supplied by a heterogeneous-division instance.",
-      "effect_on_target": "It realizes the quotient (k*u)/(1-k*u) in every gamma term.",
+      "name": "instAddNat",
+      "meaning": "Ordinary addition on natural numbers.",
+      "effect_on_target": "It interprets q+b, k.val+1, b+1, and related natural indices.",
       "status": "understood"
     },
     {
       "id": "D050",
-      "name": "LT.lt",
-      "meaning": "This selects the strict order relation supplied by an LT instance.",
-      "effect_on_target": "It expresses uFma<uOut in the effective parameter, k*u<1 in admissibility conditions, and natural positivity in the run constructor.",
+      "name": "instHAdd",
+      "meaning": "The homogeneous addition instance induced by a type's ordinary addition.",
+      "effect_on_target": "It routes HAdd expressions to real addition or natural addition as appropriate.",
       "status": "understood"
     },
     {
       "id": "D051",
-      "name": "Nat.cast",
-      "meaning": "This embeds a natural number into a type with a natural-number cast.",
-      "effect_on_target": "It converts each count k to a real number in k*u and hence in every gamma and admissibility expression.",
+      "name": "instHMul",
+      "meaning": "The homogeneous multiplication instance induced by a type's ordinary multiplication.",
+      "effect_on_target": "It routes HMul expressions to real multiplication or natural multiplication as appropriate.",
       "status": "understood"
     },
     {
       "id": "D052",
-      "name": "Real.decidableLE",
-      "meaning": "This supplies a decision procedure for real propositions a<=b.",
-      "effect_on_target": "It permits the second branch test uFma<=uBar in the effective parameter's if-then-else definition.",
+      "name": "instHSub",
+      "meaning": "The homogeneous subtraction instance induced by a type's ordinary subtraction.",
+      "effect_on_target": "It routes HSub expressions to real subtraction or truncated natural subtraction as appropriate.",
       "status": "understood"
     },
     {
       "id": "D053",
-      "name": "Real.decidableLT",
-      "meaning": "This supplies a decision procedure for real propositions a<b.",
-      "effect_on_target": "It permits the first branch test uFma<uOut in the effective parameter's if-then-else definition.",
+      "name": "instOfNatNat",
+      "meaning": "The canonical interpretation of each natural-number literal as that same natural number.",
+      "effect_on_target": "It supplies the natural literal 1 in q+b-1 and related auxiliary expressions.",
       "status": "understood"
     },
     {
       "id": "D054",
-      "name": "Real.instDivInvMonoid",
-      "meaning": "This supplies multiplication, inverse, and division on the real numbers.",
-      "effect_on_target": "It makes gamma_k(u) a total real expression; the run's admissibility conditions ensure the denominators relevant to asserted bounds are positive.",
+      "name": "instSubNat",
+      "meaning": "Natural-number subtraction, truncated at zero.",
+      "effect_on_target": "It interprets the path length and specialized beta index (q+b)-1. For bundled runs q,b>0, this equals the usual positive integer q+b-1.",
       "status": "understood"
     },
     {
       "id": "D055",
-      "name": "Real.instLT",
-      "meaning": "This supplies the usual strict order on the real numbers.",
-      "effect_on_target": "The comparisons uFma<uOut and k*u<1 use ordinary real strict inequality.",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "The division operation supplied by a division-inverse monoid.",
+      "effect_on_target": "For reals it provides the division used in gamma_m(u).",
       "status": "understood"
     },
     {
       "id": "D056",
-      "name": "Real.instNatCast",
-      "meaning": "This supplies the canonical embedding of natural numbers into the real numbers.",
-      "effect_on_target": "All natural counts appearing in real products are interpreted as their usual real values.",
+      "name": "HDiv.hDiv",
+      "meaning": "Typeclass-dispatched division.",
+      "effect_on_target": "It performs the real division (m*u)/(1-m*u) in LocalDef011.",
       "status": "understood"
     },
     {
       "id": "D057",
-      "name": "instHDiv",
-      "meaning": "This converts a homogeneous Div operation into the corresponding HDiv operation.",
-      "effect_on_target": "It routes the overloaded quotient in gamma_k(u) to ordinary real division.",
+      "name": "LT.lt",
+      "meaning": "Typeclass-dispatched strict inequality.",
+      "effect_on_target": "It expresses uFma<uOut in the effective-parameter definition and the smallness conditions m*u<1 bundled into a run.",
       "status": "understood"
     },
     {
       "id": "D058",
-      "name": "ite",
-      "meaning": "This is propositional if-then-else: it returns the first value when the condition holds and the second otherwise.",
-      "effect_on_target": "It implements the exact three-case piecewise definition of the effective parameter.",
+      "name": "Nat.cast",
+      "meaning": "The canonical cast of a natural number into a type with natural-number casts.",
+      "effect_on_target": "It interprets each natural index m as a real number in m*u and gamma_m(u).",
       "status": "understood"
     },
     {
       "id": "D059",
-      "name": "instLTNat",
-      "meaning": "This supplies ordinary strict order on natural numbers.",
-      "effect_on_target": "It gives the constructor restrictions 0<n, 0<b, and 0<q.",
+      "name": "Real.decidableLE",
+      "meaning": "A decision procedure for real inequalities a<=b.",
+      "effect_on_target": "It selects the uFma<=uBar branch in the effective-parameter definition without altering its mathematical meaning.",
       "status": "understood"
     },
     {
       "id": "D060",
+      "name": "Real.decidableLT",
+      "meaning": "A decision procedure for real strict inequalities a<b.",
+      "effect_on_target": "It selects the uFma<uOut branch in the effective-parameter definition without altering its mathematical meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The standard multiplication, inversion, and division structure on the reals.",
+      "effect_on_target": "It makes LocalDef011 use standard real division. Lean's division is total, although the bundled smallness assumptions make the principal denominators positive.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "Real.instLT",
+      "meaning": "The ordinary strict order on the real numbers.",
+      "effect_on_target": "It interprets all real strict inequalities in effective-parameter selection and smallness assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Real.instNatCast",
+      "meaning": "The canonical embedding of natural numbers into the reals.",
+      "effect_on_target": "It gives the real coefficient m in gamma_m(u) and in the conditions m*u<1.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "instHDiv",
+      "meaning": "The homogeneous division instance induced by a type's ordinary division.",
+      "effect_on_target": "It routes the division in LocalDef011 to real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "ite",
+      "meaning": "Ordinary if-then-else selected by a decidable proposition.",
+      "effect_on_target": "It defines the three-case effective parameter and the k=0 versus k>0 term-error bound in the bundled run.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Fin.val",
+      "meaning": "The underlying natural number of a Fin m index.",
+      "effect_on_target": "It identifies k with a natural state index, distinguishes k=0, and defines later-index intervals in the run assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Finset.prod",
+      "meaning": "Finite multiplication in a commutative monoid.",
+      "effect_on_target": "It forms products of one-plus-local-error factors in the bundled path identities.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instCommMonoid",
+      "meaning": "The commutative multiplicative monoid structure of the reals.",
+      "effect_on_target": "It supplies finite real products and the empty-product value one in the path identities.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "instDecidableEqNat",
+      "meaning": "A decision procedure for equality of natural numbers.",
+      "effect_on_target": "It decides whether k.val=0 when selecting the bundled term-error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "instLTNat",
+      "meaning": "The ordinary strict order on natural numbers.",
+      "effect_on_target": "It expresses positivity of dimensions, membership in Fin types, and bounds used by safe indexing.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
       "name": "instMulNat",
-      "meaning": "This supplies ordinary natural-number multiplication.",
-      "effect_on_target": "It gives the constructor's dimensional relation n=q*b.",
+      "meaning": "Ordinary multiplication on natural numbers.",
+      "effect_on_target": "It interprets the bundled dimension equation n=q*b.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Finset.Ico",
+      "meaning": "The finite half-open interval of indices l satisfying a<=l<b.",
+      "effect_on_target": "It makes the later-carry product range exactly over k.val+1 <= l < q.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "Nat.instLocallyFiniteOrder",
+      "meaning": "The locally finite order structure on natural numbers, providing finite interval enumerations.",
+      "effect_on_target": "It implements the natural half-open interval used in LocalDef021.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "Nat.instPreorder",
+      "meaning": "The standard preorder on natural numbers.",
+      "effect_on_target": "It supplies the ordering relation for the half-open natural interval in LocalDef021.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "Fin.mk",
+      "meaning": "Construction of an element of Fin q from a natural k and a proof that k<q.",
+      "effect_on_target": "It converts a valid natural index into the Fin q index used by LocalDef022.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "Nat.decLt",
+      "meaning": "A decision procedure for strict inequality of natural numbers.",
+      "effect_on_target": "It selects whether LocalDef022 returns an array entry or zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "Not",
+      "meaning": "Logical negation, defined as implication to False.",
+      "effect_on_target": "It supplies the proof type for the false branch of the dependent conditional implementing LocalDef022; it adds no separate target assertion.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "dite",
+      "meaning": "Dependent if-then-else, whose branches may use proofs of the condition or its negation.",
+      "effect_on_target": "It implements the safe indexing operation LocalDef022 by using a proof of k<q to construct a Fin q index.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "The natural numbers n, b, and q are implicitly universally quantified.",
-      "The variable run is universally quantified over LocalDef001 n b q, an indexed package carrying vectors x,y : Fin n -> Real, a real computed value, real parameters uBar, uFma, and uOut, a proposition rightToLeft, and the constructor data and proofs described below.",
-      "The conclusion existentially quantifies alpha,beta : Fin n -> Real. The same alpha and beta must satisfy all conjuncts."
+      "n, b, and q are universally quantified natural numbers.",
+      "run is universally quantified over LocalDef003 n b q, so it is a bundled valid run with q-by-b real arrays x and y, real parameters uBar, uFma, and uOut, an order tag, and an accumulated real state.",
+      "alpha and beta are existentially quantified functions Fin q -> Fin b -> Real. Both may depend on n, b, q, and run; beta is quantified after alpha. The same witnesses must satisfy every conclusion.",
+      "Every componentwise assertion is universally quantified over k in Fin q and j in Fin b."
     ],
     "hypotheses": [
-      "Inhabitance of the run package entails 0<n, 0<b, 0<q, and n=q*b.",
-      "The package entails 0<=uBar, 0<=uFma, 0<=uOut, and uBar<=uFma.",
-      "Let e be the effective parameter defined below. The package entails q*e<1 and n*uBar<1.",
-      "The package already contains some stored perturbations alpha0,beta0 : Fin n -> Real satisfying computed = sum_i x_i*y_i*(1+alpha0_i)*(1+beta0_i), |alpha0_i|<=gamma_q(e), and |beta0_i|<=gamma_n(uBar).",
-      "The package contains an arbitrary proposition rightToLeft. If it holds, the package additionally entails (q+b-1)*uBar<1 and |beta0_i|<=gamma_{q+b-1}(uBar) for every i."
+      "All hypotheses are bundled into run rather than written as separate implications.",
+      "The bundled dimensions satisfy n>0, b>0, q>0, and n=q*b.",
+      "The parameters satisfy 0<=uBar, 0<=uFma, 0<=uOut, and uBar<=uFma.",
+      "Writing U for the effective parameter, the bundled smallness assumptions are q*U<1 and n*uBar<1.",
+      "The bundled state satisfies state(0)=0 and state(k+1) = (state(k)*(1+carryTheta(k)) + sum_j x(k,j)*y(k,j)*(1+termTheta(k,j)))*(1+delta(k)) for every k<q.",
+      "The bundled local factors satisfy |delta(k)|<=U, |carryTheta(k)|<=gamma_b(uBar), and |termTheta(k,j)|<=gamma_b(uBar) for k=0 and <=gamma_(b+1)(uBar) otherwise.",
+      "If the order tag is LocalDef002, the bundled carry factors additionally satisfy |carryTheta(k)|<=gamma_1(uBar).",
+      "The run includes inner path errors indexed by Fin q, Fin b, and Fin n, each bounded in absolute value by uBar, with their one-plus-error product equal to (1+termTheta(k,j)) times the product of later carry factors.",
+      "If the order tag is LocalDef002, the run also includes right-to-left path errors indexed by Fin q, Fin b, and Fin(q+b-1), each bounded in absolute value by uBar and satisfying the same product identity."
     ],
     "conclusions": [
-      "There exist alpha,beta : Fin n -> Real satisfying all of the following statements simultaneously.",
-      "computed = sum over i in Fin n of x_i*y_i*(1+alpha_i)*(1+beta_i).",
-      "For every i in Fin n, |alpha_i| <= gamma_q(e).",
-      "For every i in Fin n, |beta_i| <= gamma_n(uBar).",
-      "|S-computed| <= C_n*A.",
-      "If rightToLeft holds, then for every i, |beta_i| <= gamma_r(uBar), and |S-computed| <= C_r*A, where r=(q+b)-1 in Nat.",
-      "If uOut<=uFma and uBar=uFma, then alpha_i=0 for every i and |S-computed| <= gamma_n(uBar)*A."
+      "There exist q-by-b real arrays alpha and beta such that computed = sum over k<q and j<b of x(k,j)*y(k,j)*(1+alpha(k,j))*(1+beta(k,j)).",
+      "For every k<q and j<b, |alpha(k,j)| <= gamma_q(U).",
+      "For every k<q and j<b, |beta(k,j)| <= gamma_n(uBar).",
+      "The unconditional forward error satisfies |S-computed| <= C(q,n)*A, where C(q,n)=gamma_q(U)+gamma_n(uBar)+gamma_q(U)*gamma_n(uBar).",
+      "If order=LocalDef002, then simultaneously |beta(k,j)| <= gamma_(q+b-1)(uBar) for every k,j and |S-computed| <= C(q,q+b-1)*A.",
+      "If uOut<=uFma and uBar=uFma, then simultaneously alpha(k,j)=0 for every k,j and |S-computed| <= gamma_n(uBar)*A."
     ],
     "mathematical_definitions": [
-      "The index set Fin n consists of i=0,...,n-1.",
-      "e = uOut if uFma<uOut; e = 0 if uFma is not less than uOut and uFma<=uBar; otherwise e = uFma.",
-      "For a natural k and real u, gamma_k(u) = (k*u)/(1-k*u), with k interpreted as a real number.",
-      "S = sum over i in Fin n of x_i*y_i.",
-      "A = sum over i in Fin n of |x_i|*|y_i|.",
-      "For a natural m, C_m = gamma_q(e) + gamma_m(uBar) + gamma_q(e)*gamma_m(uBar).",
-      "r = (q+b)-1 using natural-number subtraction."
+      "The index sets are Fin q = {0,...,q-1} and Fin b = {0,...,b-1}.",
+      "gamma_m(u) = m*u/(1-m*u), with m interpreted as a real number.",
+      "U = uOut if uFma<uOut; U=0 if uFma is not less than uOut and uFma<=uBar; otherwise U=uFma.",
+      "S = sum over k<q and j<b of x(k,j)*y(k,j), the exact scalar double sum.",
+      "A = sum over k<q and j<b of |x(k,j)|*|y(k,j)|.",
+      "C(q,m) = gamma_q(U)+gamma_m(uBar)+gamma_q(U)*gamma_m(uBar).",
+      "computed = state(q).",
+      "The natural expression q+b-1 uses truncated natural subtraction, but the bundled positivity of q and b makes it the ordinary integer q+b-1."
     ],
-    "proposition_plain_english": "For every packaged run with positive natural parameters n,b,q satisfying n=q*b and with the packaged vectors, scalar parameters, admissibility conditions, and preliminary perturbation representation, there are length-n real perturbation vectors alpha and beta such that the computed scalar is exactly the dot-product sum with each term multiplied by (1+alpha_i)(1+beta_i). Every alpha_i is bounded in magnitude by gamma_q(e), and every beta_i is bounded by gamma_n(uBar). The absolute difference between the exact dot product and the computed scalar is at most [gamma_q(e)+gamma_n(uBar)+gamma_q(e)gamma_n(uBar)] times sum_i |x_i||y_i|. If the package's proposition rightToLeft holds, beta and the error satisfy the corresponding sharper bounds with n replaced by q+b-1. Finally, if uOut<=uFma and uBar=uFma, every alpha_i is zero and the error is bounded by gamma_n(uBar) times sum_i |x_i||y_i|."
+    "proposition_plain_english": "For every bundled valid run with positive dimensions n=q*b, there are two arrays of relative perturbations alpha and beta such that the final accumulated value state(q) is exactly the double sum of x(k,j)y(k,j) after multiplying each term by (1+alpha(k,j))(1+beta(k,j)). Alpha is uniformly bounded by gamma_q of the effective parameter U, and beta is uniformly bounded by gamma_n(uBar). Consequently, the absolute difference between the exact double sum and the computed value is bounded by [gamma_q(U)+gamma_n(uBar)+gamma_q(U)gamma_n(uBar)] times the sum of |x(k,j)||y(k,j)|. For the distinguished order tag LocalDef002, the same beta witness and error satisfy sharper bounds using q+b-1 instead of n. If uOut<=uFma and uBar=uFma, the same alpha witness is identically zero and the error is bounded by gamma_n(uBar) times the absolute product sum."
   },
   "restrictions_and_vacuity_risks": [
-    "The theorem does not range over arbitrary n,b,q and arbitrary data independently. It ranges over inhabitants of a package whose constructor already requires n,b,q>0, n=q*b, parameter restrictions, admissibility, and an existing perturbation representation.",
-    "For indices or data admitting no LocalDef001 package, the universal statement has no run to which it applies and is therefore vacuous.",
-    "The constructor already assumes stored perturbations satisfying the exact perturbed identity and the baseline alpha and beta bounds. Thus those parts of the target do not establish such a representation from unstructured input data.",
-    "The existential alpha and beta are not asserted to be unique and are not asserted to equal the perturbations stored in run.",
-    "The proposition rightToLeft is an arbitrary Prop field with no encoded mathematical characterization. Both right-to-left refinements are vacuous when that proposition does not hold.",
-    "The final refinement is an implication and is vacuous unless both uOut<=uFma and uBar=uFma hold.",
-    "Natural subtraction is truncated at zero. Here q>0 and b>0 imply q+b>=2, so (q+b)-1 agrees with ordinary subtraction and is positive.",
-    "Lean's real division is total, but the package's strict inequalities q*e<1, n*uBar<1, and conditionally r*uBar<1 ensure that every gamma denominator used in an asserted bound is positive under the relevant condition.",
-    "The vectors x and y otherwise have arbitrary real entries. No nonzero assumption, normalization, sign condition, or bound on their components is encoded.",
-    "The error guarantee is absolute and scaled by A=sum_i |x_i||y_i|. No relative-error bound, normwise relative guarantee, or lower bound on the exact dot product is asserted.",
-    "No operational or algorithmic meaning of computed, uBar, uFma, uOut, or rightToLeft is encoded beyond the displayed fields, equations, inequalities, and package constraints."
+    "The theorem ranges over LocalDef003 runs, not arbitrary dimensions, arrays, parameters, or computed values. Invalid data for which no such run exists make the universal statement vacuous.",
+    "Although n, b, and q are syntactically quantified over all natural numbers, every inhabited bundled run has n,b,q>0 and n=q*b; hence the principal q-by-b index sets are nonempty.",
+    "The implication containing the q+b-1 bounds is vacuous whenever the order tag is not LocalDef002.",
+    "The implication forcing alpha=0 and the simpler error bound is vacuous unless both uOut<=uFma and uBar=uFma hold.",
+    "The constructor explicitly guarantees q*U<1 and n*uBar<1. It does not separately store (q+b-1)*uBar<1, but that inequality follows from positivity, n=q*b, q+b-1<=q*b, and uBar>=0.",
+    "Real division in Lean is total even at a zero denominator. The bundled smallness conditions nevertheless make the denominators of the gamma quantities used in the principal bounds positive; the specialized denominator is positive by the preceding derived inequality.",
+    "When uFma is not less than uOut and uFma<=uBar, U is exactly zero. Given the bundled uBar<=uFma, this branch can occur only when uBar=uFma.",
+    "The error scale A is a scalar sum of componentwise absolute products, not a separately defined vector or matrix norm.",
+    "The proposition asserts existence but not uniqueness or a method for computing alpha and beta.",
+    "No interpretation of the run as actual machine arithmetic is encoded beyond the explicit state recurrence, local error-factor bounds, path-product identities, and parameter conditions."
   ],
-  "ambiguities": []
+  "ambiguities": [
+    "The dossier gives no domain-level names or interpretation for the constructors of LocalDef001. Therefore LocalDef002 can only be described as the distinguished order tag that activates the sharper bounds.",
+    "The parameters uBar, uFma, and uOut have exact algebraic roles but no independently supplied physical or algorithmic interpretation."
+  ]
 }
 

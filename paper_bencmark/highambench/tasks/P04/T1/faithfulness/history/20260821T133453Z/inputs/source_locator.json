@@ -1,0 +1,37 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P04_MIXED PRECISION BLOCK FUSED MULTIPLY-ADD- ERRORANALYSIS AND APPLICATION TO GPU TENSOR CORES.pdf",
+  "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
+  "paper_version": "published journal version; volume 42, issue 3, 2020, printed pages C124-C141",
+  "source_locations": [
+    {
+      "anchor": "componentwise absolute-value convention",
+      "pdf_page": 3,
+      "printed_page": "C126",
+      "role": "meaning of |x|^T|y|",
+      "section": "2. Block fused multiply-add"
+    },
+    {
+      "anchor": "equations (2.3)-(2.6) and gamma notation",
+      "pdf_page": 4,
+      "printed_page": "C127",
+      "role": "standard relative-error model, precision roles, and gamma validity",
+      "section": "2.1. General framework for mixed precision block FMA"
+    },
+    {
+      "anchor": "Algorithm 3.1 and following numerical-model paragraph",
+      "pdf_page": 5,
+      "printed_page": "C128",
+      "role": "block dimensions, chained computation, and exclusion of underflow and overflow",
+      "section": "3. Matrix multiplication using block FMAs"
+    },
+    {
+      "anchor": "equations (3.1)-(3.4), compact factorization, and following evaluation-order discussion",
+      "pdf_page": 6,
+      "printed_page": "C129",
+      "role": "computed recurrence, prioritized effective precision, indexed witnesses, exact forward-error bound, and specializations",
+      "section": "3.2. Rounding error analysis"
+    }
+  ],
+  "task_id": "P04-T1"
+}

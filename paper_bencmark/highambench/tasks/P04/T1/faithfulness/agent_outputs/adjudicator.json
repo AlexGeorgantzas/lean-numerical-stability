@@ -1,0 +1,91 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P04-T1",
+  "trigger": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "round-trip S08 is unclear",
+    "round-trip S12 is unclear",
+    "round-trip S15 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "The declaration is faithful-stronger. The direct judge correctly matched the main factorization and bounds but treated the certificate abstraction as exact equivalence. The round-trip judge correctly noticed the abstraction boundary but left resolvable linkage questions open.",
+      "primary_evidence": "PDF p. 6, printed C129, gives the exact two-factor representation, gamma_q and gamma_n bounds, equation (3.4), and the right-to-left q+b-1 refinement. D018 supplies the same recurrence and bounded path factors, while the target concludes the same representation and bound. D018 also admits conservative maximum-length path certificates not restricted to the exact position-specific operation tree printed in (3.2)."
+    },
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "Adjudication resolves the dependency meanings and all disputed semantic checks from the hash-matching PDF and complete named declarations. No dependency-reuse record was used.",
+      "primary_evidence": "The inspected PDF has SHA-256 7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862. D002 is the constructor P04BlockEvaluationOrder.rightToLeft; D015 implements the prioritized cases of (3.3); and D018 exposes the recurrence, gamma conditions, and both path-length certificates."
+    },
+    {
+      "item": "round-trip judge classification is undetermined",
+      "resolution": "The classification is determined as faithful-stronger. Every computation covered by the paper can populate the run certificate, so paper applicability is not reduced. Conversely, the certificate type permits additional abstract traces, and the target proves the final result for them.",
+      "primary_evidence": "Equations (2.3), (3.2), and the unrolled computation on PDF pp. 4 and 6 provide bounded elementary errors along each term-to-root path. These errors populate D018.innerPathError, padded by zero errors to length n=qb, and populate rightToLeftPathError to length q+b-1 in the right-to-left case."
+    },
+    {
+      "item": "round-trip S08 is unclear",
+      "resolution": "Algorithm linkage is established at the execution-certificate level. The constructor name alone is not decisive: D018.state_zero and state_step encode the q chained updates from zero, D004 selects state(q), and equality with D002 activates exactly the shorter carry and path premises used for the right-to-left refinement.",
+      "primary_evidence": "Algorithm 3.1 on PDF p. 5, printed C128, initializes each output block to zero and performs q block-FMA updates. Equation (3.1) on PDF p. 6 is the corresponding scalar recurrence. D002 is named rightToLeft, and D018 conditions right_to_left_carry_bound, right_to_left_path_error_bound, and right_to_left_path_factor on that constructor."
+    },
+    {
+      "item": "round-trip S12 is unclear",
+      "resolution": "All displayed relation directions and strictness match: the perturbation representation is an equality and all magnitude statements are non-strict upper bounds. The target's same-beta right-to-left bound is a genuine strengthening, while the effective-zero conjunct is a derived specialization of the general clauses.",
+      "primary_evidence": "PDF p. 6, printed C129, states an exact factorization and non-strict gamma bounds, then permits gamma_n to be replaced by gamma_(q+b-1) in (3.4). The target requires the same beta witness to satisfy the shorter bound. D018.rightToLeftPathError supplies an exact q+b-1-factor representation, so this stronger witness bound is justified. Under uOut<=uFma and uBar=uFma, D015 equals zero, gamma(0,q)=0, and the target's alpha=0 conclusion follows."
+    },
+    {
+      "item": "round-trip S15 is unclear",
+      "resolution": "The scalar specialization is faithful. Fin q by Fin b is an exact blocked reindexing of a length-n row-column dot product because D018 requires n=q*b. The distinguished order specialization is resolved by D002 and its conditional path fields.",
+      "primary_evidence": "Algorithm 3.1 on PDF p. 5 uses q=n/b blocks, and PDF p. 6 specializes one row and column to n products in q blocks of width b. D013 and D014 are exactly the blocked componentwise absolute-product sum and exact dot product, and D018.dimension_eq is n=q*b."
+    },
+    {
+      "item": "round-trip S03 quantifier-scope objection",
+      "resolution": "The run does package derived path identities as input certificates, so it is not a raw encoding of only the elementary floating-point axioms. Those identities do not assume the final alpha-beta representation or forward-error inequality, but they move a substantial intermediate derivation into the certified-run boundary. Every paper execution supplies the certificate, while the target remains universal over all certificates.",
+      "primary_evidence": "D018.inner_path_factor equates each aggregate internal-and-future-carry factor with a product of n bounded primitive factors; its right-to-left analogue uses q+b-1 factors. PDF p. 6 derives precisely such aggregate paths by unrolling (3.2) and invoking the standard product lemmas before introducing alpha and beta."
+    },
+    {
+      "item": "round-trip S10 local-rounding-indexing objection",
+      "resolution": "The exact position-dependent theta subscripts are preserved for paper executions through their primitive operation paths, but they are not forced for every Lean run. Actual paths can be inserted into the length-n or length-(q+b-1) arrays and unused positions padded with zero errors. Because the declarations do not require padding positions to be zero, the run model is a conservative strengthening rather than an exact operation-tree encoding.",
+      "primary_evidence": "PDF p. 6, printed C129, assigns theta_b to the carry, theta_(b+1) through theta_2 to products, and replaces theta_(b+1) by theta_b for x1*y1. D018 instead gives uniform local bounds gamma_b in the first block and gamma_(b+1) later, together with exact products of n primitive errors, or q+b-1 in the right-to-left case."
+    },
+    {
+      "item": "round-trip S04 and S11 numerical-model objections",
+      "resolution": "The declarations faithfully encode the paper's finite, single-rounding relative-error analysis as an algebraic certificate. They do not encode an IEEE machine or rounding function, which broadens the model but does not exclude any computation covered by the paper.",
+      "primary_evidence": "PDF p. 4, printed C127, gives fl(a op b)=(a op b)(1+delta), relevant gamma validity, and uBar<=uFma. PDF p. 5 excludes underflow and overflow, and PDF p. 6 deliberately retains one output rounding. D018 uses real values, bounded primitive and aggregate relative errors, GammaValid hypotheses, uBar<=uFma, and one delta factor per block update."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Every paper execution supplies a D018 certificate: its q states and local theta and delta factors satisfy state_step, and its elementary internal errors along each term-to-root path populate the n-factor arrays, with zero padding where the printed path is shorter. Right-to-left execution similarly supplies q+b-1 factors. Applying the Lean conclusion then yields the paper's compact representation and equation (3.4), so no paper case is lost."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper quantifies over evaluations of Algorithm 3.1 with the printed operation paths; it does not assert the result for every abstract certificate admitted by D018. D018 permits uniform maximum-length, independently certified paths and does not force unused factors to be zero or enforce every position-specific theta count. The target also states the shorter bound for the same beta witness. These are genuine extensions beyond the paper's stated execution domain."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "remaining_uncertainties": [
+    "The paper does not formally enumerate its phrase \"all orders of evaluation,\" and the constructor other(code) is only a tag. The baseline comparison is therefore made at the path-certificate level enforced by D018, not through a bijection with concrete parenthesization trees."
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "category": "certificate-scope-generalization",
+      "evidence": "D018 uses maximum path lengths n and q+b-1 and permits every supplied primitive factor to be nonzero, whereas equation (3.2) has position-dependent path lengths.",
+      "impact": "Exact equivalence is too strong a classification, but this does not reduce applicability because every paper path embeds by zero padding."
+    },
+    {
+      "severity": "note",
+      "category": "right-to-left-witness-strengthening",
+      "evidence": "The PDF explicitly replaces gamma_n in the forward bound (3.4); the target additionally bounds the same beta witness by gamma_(q+b-1), justified by D018.rightToLeftPathError.",
+      "impact": "For q,b>1 and positive valid uBar, q+b-1<qb=n, so the added componentwise witness bound is strictly stronger. Its antecedent is satisfiable, so the strength is nonvacuous."
+    }
+  ],
+  "rationale": "The central mathematical content matches the paper exactly: blocked dimensions, effective precision priority, exact perturbation factorization, gamma constants, componentwise scale, full mixed product term, all-orders baseline, and right-to-left refinement. The run fields are sufficient execution certificates rather than the final theorem itself, and every paper execution can supply them. They nevertheless abstract away exact local operation sharing and allow conservative maximum-length paths, while the target also records a same-witness right-to-left refinement. Therefore the Lean declaration covers the full paper result and a nonvacuous broader certificate class: Lean implies the paper result, the converse does not hold at the declared domains, and faithful-stronger is the consistent classification."
+}
+
