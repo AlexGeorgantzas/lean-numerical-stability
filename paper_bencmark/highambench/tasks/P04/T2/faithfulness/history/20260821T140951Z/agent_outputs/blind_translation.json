@@ -1,0 +1,491 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "213f7205321b63196e02a0778bbc31c8fc5576cbb4ed850163345bc3fed85df3",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "An inductive family indexed by nine natural numbers m, n, t, b1, b, b2, p, q, r. Its supplied constructor packages positive dimensions and factors, dimension factorizations, matrices, perturbations, a computed matrix, four real parameters, and proofs of the conversion and computation error model.",
+      "effect_on_target": "The universally quantified run is the package containing every matrix, real parameter, and hypothesis used by the target inequality. For parameter choices admitting no such package, quantification over run is vacuous.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For a run, this projects its thirteenth constructor field, the real matrix A indexed by Fin m × Fin n.",
+      "effect_on_target": "It supplies A both to the exact matrix product and to the absolute-product scaling term.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "For a run, this projects its fourteenth constructor field, the real matrix B indexed by Fin n × Fin t.",
+      "effect_on_target": "It supplies B both to the exact matrix product and to the absolute-product scaling term.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "For a run, this projects its nineteenth constructor field, the real matrix computed indexed by Fin m × Fin t.",
+      "effect_on_target": "Its entry computed(i,j) is compared with the exact product entry (AB)(i,j).",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "For a run, this projects its twenty-first constructor field, the real parameter uBar.",
+      "effect_on_target": "uBar enters the effective-parameter selection, γ_n(uBar), and the packaged assumptions 0 ≤ uBar, uBar ≤ uFma, and n·uBar < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "For a run, this projects its twenty-second constructor field, the real parameter uFma.",
+      "effect_on_target": "uFma is used in the piecewise definition of the effective parameter and is constrained by 0 ≤ uFma and uBar ≤ uFma.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "For a run, this projects its twentieth constructor field, the real parameter uLow.",
+      "effect_on_target": "uLow bounds the entrywise relative input perturbations and occurs in the coefficient 2uLow + uLow² and the multiplier (1 + uLow)².",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "For a run, this projects its twenty-third constructor field, the real parameter uOut.",
+      "effect_on_target": "uOut is the first branch value of the effective-parameter selection and is constrained only by nonnegativity among the explicit scalar assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "For A : Fin m → Fin n → Real and B : Fin n → Fin t → Real, it defines the entrywise absolute product S(i,j) = Σ_{k∈Fin n} |A(i,k)|·|B(k,j)|.",
+      "effect_on_target": "S(i,j) is the nonnegative entrywise scale multiplying the complete error coefficient on the right-hand side.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "For real numbers v and u and natural numbers q and n, it returns γ_q(v) + γ_n(u) + γ_q(v)γ_n(u), where γ_s(x) = s·x/(1-s·x).",
+      "effect_on_target": "With v equal to the piecewise effective parameter and u = uBar, it forms the accumulated coefficient for the alpha and beta computation errors.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "It defines the piecewise real uEff by uEff = uOut if uFma < uOut; otherwise uEff = 0 if uFma ≤ uBar; otherwise uEff = uFma.",
+      "effect_on_target": "uEff is used in γ_q(uEff), in the alpha error bound, and in the packaged strict condition q·uEff < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "For A : Fin m → Fin n → Real and B : Fin n → Fin t → Real, it defines the ordinary matrix-product entry (AB)(i,j) = Σ_{k∈Fin n} A(i,k)B(k,j).",
+      "effect_on_target": "This is the exact quantity subtracted from computed(i,j) inside the absolute error.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "This constructor builds a run from positive m, n, t, b1, b, b2, p, q, r satisfying m = p·b1, n = q·b, and t = r·b2; matrices A, B, convertedA, convertedB, deltaA, deltaB, and computed; nonnegative uLow, uBar, uFma, uOut with uBar ≤ uFma; the strict conditions q·uEff < 1 and n·uBar < 1; identities convertedA = A + deltaA and convertedB = B + deltaB; bounds |deltaA| ≤ uLow|A| and |deltaB| ≤ uLow|B|; and arrays alpha and beta such that computed(i,j) = Σ_k convertedA(i,k)convertedB(k,j)(1+alpha(i,j,k))(1+beta(i,j,k)), with |alpha(i,j,k)| ≤ γ_q(uEff) and |beta(i,j,k)| ≤ γ_n(uBar).",
+      "effect_on_target": "It supplies all substantive hypotheses behind the claimed bound, including positivity, dimensions, perturbation models, denominator-smallness conditions, and the exact representation of the computed entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LocalDef014",
+      "meaning": "For a real u and natural n, it defines γ_n(u) = n·u/(1-n·u), with n cast to a real number.",
+      "effect_on_target": "It defines each γ factor used in the accumulated coefficient and in the alpha and beta bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "LocalDef015",
+      "meaning": "For a real u and natural n, it is the proposition n·u < 1, with n cast to a real number.",
+      "effect_on_target": "The run contains q·uEff < 1 and n·uBar < 1, making the corresponding γ denominators strictly positive because the relevant parameters are nonnegative.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type whose values represent natural indices strictly below n.",
+      "effect_on_target": "It specifies the matrix dimensions and the domains of i, j, and the summation index k.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "HAdd.hAdd",
+      "meaning": "This selects the addition operation from an HAdd instance; for the instances used here it is ordinary real or natural addition.",
+      "effect_on_target": "It expresses sums in the error coefficient, the factors 1+uLow, 1+alpha, and 1+beta, and the converted-input identities.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "HMul.hMul",
+      "meaning": "This selects the multiplication operation from an HMul instance; for the instances used here it is ordinary real or natural multiplication.",
+      "effect_on_target": "It expresses products in matrix entries, γ factors, perturbation bounds, dimension factorizations, and the final right-hand side.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "HPow.hPow",
+      "meaning": "This selects exponentiation from an HPow instance.",
+      "effect_on_target": "With the real natural-power instance and exponent 2, it gives uLow² and (1+uLow)².",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "HSub.hSub",
+      "meaning": "This selects subtraction from an HSub instance; here it is ordinary real subtraction.",
+      "effect_on_target": "It forms computed(i,j) − (AB)(i,j) and the denominator 1 − n·u in γ_n(u).",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "LE.le",
+      "meaning": "This selects the non-strict order relation from an LE instance; here it is the ordinary real relation ≤.",
+      "effect_on_target": "It is the relation asserted by the final error bound and by the nonnegativity and entrywise perturbation hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Monoid.toNatPow",
+      "meaning": "A monoid's natural-power operation, defining x^n by repeated multiplication with x^0 = 1.",
+      "effect_on_target": "It gives the standard real squares uLow² and (1+uLow)².",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "All dimensions, factor parameters, finite-index sizes, and exponents are natural numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "For nonzero n, it proves that n+1 is at least two.",
+      "effect_on_target": "It is typeclass evidence allowing the real numeral 2 to be produced by natural casting; it adds no mathematical hypothesis to the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "It proves that every natural successor n+1 is nonzero.",
+      "effect_on_target": "Used with n=0 in the numeral machinery leading to the literal 2; it contributes no substantive restriction.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "OfNat.ofNat",
+      "meaning": "It interprets a natural-number literal in a type equipped with the corresponding OfNat instance.",
+      "effect_on_target": "It supplies the literals 0, 1, and 2 appearing in conditions, γ expressions, and the final coefficient.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "One.toOfNat1",
+      "meaning": "It turns a type's distinguished multiplicative identity into its interpretation of the numeral 1.",
+      "effect_on_target": "It supplies the real number 1 in 1+uLow and related expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "All matrix entries, perturbations, scalar parameters, sums, products, and bounds are over the real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Real.instAdd",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "It interprets every real addition in the coefficient and in the packaged computation model.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure of the real numbers, including zero, addition, negation, and subtraction laws.",
+      "effect_on_target": "It supports real absolute value as max(x,−x) and the additive operations used in the error expression.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Real.instLE",
+      "meaning": "The ordinary non-strict order ≤ on the real numbers.",
+      "effect_on_target": "It gives the exact order relation in the final inequality and all packaged non-strict bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure of the real numbers.",
+      "effect_on_target": "It supplies natural-number exponentiation on reals, especially the two squares in the coefficient.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Real.instMul",
+      "meaning": "The ordinary multiplication operation on real numbers.",
+      "effect_on_target": "It interprets all real products in matrix multiplication, γ expressions, perturbation bounds, and the final scale.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instNatCast",
+      "meaning": "The canonical embedding of natural numbers into the real numbers.",
+      "effect_on_target": "It interprets natural coefficients and the factors q and n as real numbers in γ and smallness conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instOne",
+      "meaning": "The multiplicative identity 1 of the real numbers.",
+      "effect_on_target": "It supplies the real constant 1 in γ denominators and multiplicative error factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instSub",
+      "meaning": "Real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "It interprets the error difference and each γ denominator.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.lattice",
+      "meaning": "The lattice structure induced by the ordinary order on real numbers.",
+      "effect_on_target": "Together with the additive group, it gives the standard real absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "abs",
+      "meaning": "In an ordered additive group it is max(x,−x); on the reals this is the standard absolute value |x|.",
+      "effect_on_target": "It measures the entrywise output error, input perturbations, alpha and beta errors, and the absolute-product scale.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "instHAdd",
+      "meaning": "It promotes an ordinary same-type Add operation to homogeneous HAdd.",
+      "effect_on_target": "It ensures every displayed HAdd on reals or naturals is ordinary addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "instHMul",
+      "meaning": "It promotes an ordinary same-type Mul operation to homogeneous HMul.",
+      "effect_on_target": "It ensures every displayed HMul on reals or naturals is ordinary multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "instHPow",
+      "meaning": "It promotes a Pow operation to homogeneous-base HPow.",
+      "effect_on_target": "It routes the displayed powers to the standard real natural-power operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "instHSub",
+      "meaning": "It promotes an ordinary same-type Sub operation to homogeneous HSub.",
+      "effect_on_target": "It ensures the displayed subtractions are ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "For a type with natural casting and a natural n known to be at least two, it interprets the literal n by casting n.",
+      "effect_on_target": "It interprets the literal 2 as the real number 2 in the coefficient.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "instOfNatNat",
+      "meaning": "It interprets each natural-number literal n in Nat as n itself.",
+      "effect_on_target": "It supplies natural literals used for the exponent 2 and for auxiliary numeral-instance construction.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "Fin.fintype",
+      "meaning": "It gives Fin n its finite enumeration, formed from the list of indices 0 through n−1.",
+      "effect_on_target": "It makes summation over every k : Fin n well-defined.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "Finset.sum",
+      "meaning": "It sums the values of a function over a finite set in an additive commutative monoid.",
+      "effect_on_target": "It defines exact matrix-product entries, absolute-product entries, and the modeled computed entries as finite real sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, it is the finite set containing every value of that type.",
+      "effect_on_target": "In each matrix expression it makes the summation range all k in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "LT.lt",
+      "meaning": "This selects the strict order relation from an LT instance.",
+      "effect_on_target": "It expresses positivity of natural parameters, the branch test uFma < uOut, and the strict smallness conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "Real.decidableLE",
+      "meaning": "It provides a decision procedure for each real proposition a ≤ b.",
+      "effect_on_target": "It permits evaluation of the inner condition uFma ≤ uBar in the piecewise effective parameter; it changes no mathematical content.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "Real.decidableLT",
+      "meaning": "It provides a decision procedure for each real proposition a < b.",
+      "effect_on_target": "It permits evaluation of the outer condition uFma < uOut in the piecewise effective parameter; it changes no mathematical content.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative-monoid structure of the real numbers.",
+      "effect_on_target": "It provides the algebraic structure required for all finite sums of real-valued terms.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Real.instLT",
+      "meaning": "The ordinary strict order < on the real numbers.",
+      "effect_on_target": "It interprets the effective-parameter branch comparison and the strict γ smallness assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Real.instZero",
+      "meaning": "The real number zero.",
+      "effect_on_target": "It supplies the zero branch of the effective parameter and the lower bounds asserting scalar nonnegativity.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Zero.toOfNat0",
+      "meaning": "It turns a type's distinguished zero into its interpretation of the numeral 0.",
+      "effect_on_target": "It interprets the literal zero used in positivity and nonnegativity statements and in the effective-parameter branch.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "ite",
+      "meaning": "The decidable if-then-else operation: it returns its first value when the condition is true and its second value otherwise.",
+      "effect_on_target": "It gives the exact nested, ordered case distinction defining uEff.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "It extracts the division operation from a division-and-inversion monoid structure.",
+      "effect_on_target": "It supplies real division in γ_n(u) = n·u/(1−n·u).",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "Eq",
+      "meaning": "The proposition that two terms of the same type are equal.",
+      "effect_on_target": "It expresses the three dimension factorizations, the converted-input decompositions, and the exact formula defining each computed entry inside a run.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "HDiv.hDiv",
+      "meaning": "This selects division from an HDiv instance; here it is ordinary real division.",
+      "effect_on_target": "It is the division operation used in every γ factor.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Nat.cast",
+      "meaning": "It maps a natural number into a type with a NatCast instance; here it is the canonical real embedding.",
+      "effect_on_target": "It turns q and n into real coefficients in γ expressions and strict smallness conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The standard multiplicative, inverse, and division structure on the real numbers.",
+      "effect_on_target": "It supplies the real division used by γ. The packaged strict conditions ensure the two γ denominators occurring in the proposition are positive.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "instHDiv",
+      "meaning": "It promotes an ordinary same-type Div operation to homogeneous HDiv.",
+      "effect_on_target": "It ensures the displayed HDiv in γ is ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "instLTNat",
+      "meaning": "The standard strict order on natural numbers.",
+      "effect_on_target": "It interprets all nine constructor assumptions that the dimensions and factor parameters are positive.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "instMulNat",
+      "meaning": "The standard multiplication operation on natural numbers.",
+      "effect_on_target": "It interprets the dimension relations m = p·b1, n = q·b, and t = r·b2.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "Arbitrary natural numbers m, n, t, b1, b, b2, p, q, and r.",
+      "A run value in LocalDef001 m n t b1 b b2 p q r, which packages the matrices, scalar parameters, auxiliary error arrays, and all hypotheses described below.",
+      "An arbitrary row index i ∈ Fin m and column index j ∈ Fin t."
+    ],
+    "hypotheses": [
+      "All nine natural parameters are positive: m,n,t,b1,b,b2,p,q,r > 0.",
+      "The dimensions satisfy m = p·b1, n = q·b, and t = r·b2.",
+      "The run contains real matrices A of size m×n, B of size n×t, convertedA of size m×n, convertedB of size n×t, deltaA of size m×n, deltaB of size n×t, and computed of size m×t.",
+      "The real parameters uLow, uBar, uFma, and uOut are nonnegative, and uBar ≤ uFma.",
+      "Define uEff = uOut if uFma < uOut; otherwise uEff = 0 if uFma ≤ uBar; otherwise uEff = uFma. The strict conditions q·uEff < 1 and n·uBar < 1 hold.",
+      "For every i ∈ Fin m and k ∈ Fin n, convertedA(i,k) = A(i,k) + deltaA(i,k) and |deltaA(i,k)| ≤ uLow·|A(i,k)|.",
+      "For every k ∈ Fin n and j ∈ Fin t, convertedB(k,j) = B(k,j) + deltaB(k,j) and |deltaB(k,j)| ≤ uLow·|B(k,j)|.",
+      "There are real arrays alpha and beta indexed by Fin m × Fin t × Fin n such that computed(i,j) = Σ_{k∈Fin n} convertedA(i,k)·convertedB(k,j)·(1+alpha(i,j,k))·(1+beta(i,j,k)) for every i and j.",
+      "For every i,j,k, |alpha(i,j,k)| ≤ γ_q(uEff) and |beta(i,j,k)| ≤ γ_n(uBar), where γ_s(u) = s·u/(1−s·u)."
+    ],
+    "conclusions": [
+      "For every i ∈ Fin m and j ∈ Fin t, |computed(i,j) − Σ_{k∈Fin n} A(i,k)B(k,j)| ≤ [2uLow + uLow² + (γ_q(uEff) + γ_n(uBar) + γ_q(uEff)γ_n(uBar))(1+uLow)²] · Σ_{k∈Fin n} |A(i,k)|·|B(k,j)|."
+    ],
+    "mathematical_definitions": [
+      "The exact product entry is (AB)(i,j) = Σ_{k∈Fin n} A(i,k)B(k,j).",
+      "The absolute-product scale is S(i,j) = Σ_{k∈Fin n} |A(i,k)|·|B(k,j)|.",
+      "For a natural number s and real u, γ_s(u) = s·u/(1−s·u), with s interpreted as a real number.",
+      "uEff = uOut when uFma < uOut; if that comparison is false, uEff = 0 when uFma ≤ uBar and uEff = uFma otherwise.",
+      "The accumulated computation coefficient is Γ = γ_q(uEff) + γ_n(uBar) + γ_q(uEff)γ_n(uBar).",
+      "The complete coefficient multiplying S(i,j) is 2uLow + uLow² + Γ(1+uLow)²."
+    ],
+    "proposition_plain_english": "For every admissible packaged run and every output entry (i,j), the absolute difference between the packaged computed entry and the corresponding exact matrix-product entry is at most the entrywise absolute-product scale Σ_k |A(i,k)||B(k,j)| times the explicit coefficient 2uLow + uLow² + [γ_q(uEff)+γ_n(uBar)+γ_q(uEff)γ_n(uBar)](1+uLow)², under the packaged input-perturbation and multiplicative computation-error model."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The theorem quantifies over run values rather than separately assuming the constructor conditions. If no run exists for a chosen parameter tuple or chosen data, the universal statement over run is vacuous.",
+    "Existence of a run forces all dimensions and factor parameters to be positive and forces the exact factorizations m = p·b1, n = q·b, and t = r·b2.",
+    "The result applies only to computed matrices already representable by the supplied converted-input, alpha, and beta error model; it does not assert that an unspecified algorithm produces such a representation.",
+    "The strict assumptions q·uEff < 1 and n·uBar < 1 are encoded, but no upper bound such as uLow < 1 is encoded.",
+    "No order relation between uOut and uBar or between uOut and uFma is assumed beyond the branch test itself; only uBar ≤ uFma is required.",
+    "Because the piecewise tests are nested, when uFma < uOut is false and uFma = uBar, uEff is exactly 0 rather than uFma.",
+    "The conclusion is an entrywise absolute-error bound. It does not state a matrix-norm bound, relative output-error bound, backward-error result, or uniform maximum over entries.",
+    "No sign, nonzero-entry, conditioning, rank, or norm assumptions are imposed on A or B.",
+    "If A(i,k) or B(k,j) is zero, the corresponding relative perturbation bound forces the associated delta entry to be zero, since uLow is nonnegative.",
+    "The parameters b1, b, b2, p, and r affect admissibility through positivity and dimension factorizations but do not otherwise appear in the final coefficient."
+  ],
+  "ambiguities": []
+}

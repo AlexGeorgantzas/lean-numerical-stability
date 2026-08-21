@@ -1,0 +1,153 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P04-T2",
+  "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
+  "source_evidence": [
+    {
+      "pdf_page": 3,
+      "printed_page": "C126",
+      "anchor": "componentwise absolute-value convention",
+      "observation": "The paper defines matrix absolute value componentwise, |A| = (|a_ij|), and says fl_p applied to a matrix expression means evaluation at a specified precision followed by rounding to precision p."
+    },
+    {
+      "pdf_page": 3,
+      "printed_page": "C126",
+      "anchor": "mixed precision block FMA definition",
+      "observation": "A block FMA takes low-precision multiplicands of dimensions b1 x b and b x b2, adds their product to a b1 x b2 matrix, and returns an output whose precision is low or high."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "C127",
+      "anchor": "equations (2.3)-(2.6) and gamma notation",
+      "observation": "The standard relative-error models are fl(a op b) = (a op b)(1+delta) and fl(a op b) = (a op b)/(1+delta), with |delta| <= u. The paper defines gamma_k = ku/(1-ku), assumes ku < 1 for relevant k and precisions, and transfers accents and the FMA superscript from gamma to its unit roundoff."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "C128",
+      "anchor": "Algorithm 3.1 and following numerical-model paragraph",
+      "observation": "Algorithm 3.1 partitions A in R^(m x n) and B in R^(n x t) into b1 x b and b x b2 blocks, assumes p=m/b1, q=n/b, and r=t/b2 are integers, converts A and B to low precision if necessary, chains q block FMAs per output block, and returns C in precision u."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "C128",
+      "anchor": "Algorithm 3.1 exceptional-value scope",
+      "observation": "The paper notes that scaling may be needed during conversion to avoid underflow or overflow, but explicitly assumes in its analysis that underflow and overflow do not occur."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "C129",
+      "anchor": "equations (3.1)-(3.4) and prioritized effective precision",
+      "observation": "Each length-n dot product is grouped into q=n/b blocks. The block expression is evaluated at internal precision u_bar. Equation (3.3) defines u_tilde_FMA as u when u > u_FMA, as 0 when u_bar >= u_FMA, and as u_FMA when u_bar < u_FMA, with the first choice taking priority. The resulting factor is gamma_tilde_q^FMA + gamma_bar_n + gamma_tilde_q^FMA gamma_bar_n."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "C130",
+      "anchor": "initial low-precision conversions preceding Theorem 3.2",
+      "observation": "For inputs not already in low precision, A_tilde = fl_low(A) = A + DeltaA and B_tilde = fl_low(B) = B + DeltaB, with componentwise bounds |DeltaA| <= u_low|A| and |DeltaB| <= u_low|B|, assuming no underflow or overflow."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "C130",
+      "anchor": "Theorem 3.2 and equation (3.6)",
+      "observation": "For the exact product C=AB of A in R^(m x n) and B in R^(n x t), not necessarily supplied in low precision, Algorithm 3.1 computes C_hat satisfying |C-C_hat| <= [2u_low + u_low^2 + (gamma_tilde_q^FMA + gamma_bar_n + gamma_tilde_q^FMA gamma_bar_n)(1+u_low)^2]|A||B|, where q=n/b."
+    }
+  ],
+  "statement": {
+    "binders": [
+      "A in R^(m x n), B in R^(n x t), the exact mathematical product C := AB in R^(m x t), and the computed result C_hat returned by Algorithm 3.1. [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]",
+      "The block dimensions are b1 x b for blocks of A and b x b2 for blocks of B; p=m/b1, q=n/b, and r=t/b2 are the corresponding block counts. [PDF p. 5, printed C128; anchor: Algorithm 3.1 and following numerical-model paragraph]",
+      "u_low is the unit roundoff used to convert the multiplicands, u_FMA is the block-FMA output unit roundoff, u_bar is the internal evaluation unit roundoff, u is the algorithm output unit roundoff, and u_tilde_FMA is the effective rounding parameter from equation (3.3). [PDF pp. 4-6, printed C127-C129; anchors: equations (2.3)-(2.6) and gamma notation; equations (3.1)-(3.4) and prioritized effective precision]"
+    ],
+    "hypotheses": [
+      "The product is evaluated specifically by Algorithm 3.1, with q=n/b; through that algorithm, p=m/b1, q=n/b, and r=t/b2 are assumed to be integers. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 and following numerical-model paragraph; Theorem 3.2 and equation (3.6)]",
+      "A and B need not initially be in precision u_low; when necessary they are rounded componentwise to u_low before multiplication. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 and following numerical-model paragraph; initial low-precision conversions preceding Theorem 3.2]",
+      "The standard relative-error floating-point model applies, and every gamma parameter is used only where its denominator is positive under the standing assumption ku < 1 for the relevant k and unit roundoff. [PDF p. 4, printed C127; anchor: equations (2.3)-(2.6) and gamma notation]",
+      "Underflow and overflow do not occur during the conversions or arithmetic analyzed. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 exceptional-value scope; initial low-precision conversions preceding Theorem 3.2]",
+      "The derivation initially describes left-to-right evaluation of each block expression, but the paper explicitly states that the bound in equation (3.4), from which the matrix bound follows, is valid for all evaluation orders of equation (3.1). [PDF p. 6, printed C129; anchor: equations (3.1)-(3.4) and prioritized effective precision]"
+    ],
+    "conclusions": [
+      "The computed result satisfies the componentwise forward-error bound |C - C_hat| <= [2 u_low + u_low^2 + (gamma_tilde_q^FMA + gamma_bar_n + gamma_tilde_q^FMA * gamma_bar_n)(1 + u_low)^2] |A| |B|. [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]"
+    ],
+    "definitions_and_conventions": [
+      "|A| denotes componentwise absolute value, and every displayed matrix inequality is componentwise. [PDF p. 3, printed C126; anchor: componentwise absolute-value convention]",
+      "The juxtaposition |A| |B| in equation (3.6) is ordinary matrix multiplication of the nonnegative componentwise-absolute-value matrices, producing an m x t matrix. [PDF pp. 3 and 7, printed C126 and C130; anchors: componentwise absolute-value convention; Theorem 3.2 and equation (3.6)]",
+      "C=AB is the exact product of the original input values, whereas C_hat is computed after any required conversions A_tilde=fl_low(A) and B_tilde=fl_low(B). [PDF p. 7, printed C130; anchors: initial low-precision conversions preceding Theorem 3.2; Theorem 3.2 and equation (3.6)]",
+      "gamma_bar_k means k u_bar/(1-k u_bar), and gamma_tilde_k^FMA means k u_tilde_FMA/(1-k u_tilde_FMA). [PDF p. 4, printed C127; anchor: equations (2.3)-(2.6) and gamma notation]",
+      "Equation (3.3) defines u_tilde_FMA by the prioritized cases: u if u > u_FMA; otherwise 0 when u_bar >= u_FMA; otherwise u_FMA when u_bar < u_FMA. The paper expressly says that the first choice takes priority when its condition overlaps another condition. [PDF p. 6, printed C129; anchor: equations (3.1)-(3.4) and prioritized effective precision]"
+    ],
+    "implicit_context": [
+      "Theorem 3.2 inherits Algorithm 3.1's rectangular block partition and divisibility requirements even though the theorem itself restates only q=n/b. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 and following numerical-model paragraph; Theorem 3.2 and equation (3.6)]",
+      "The proof first applies the low-input bound to A_tilde B_tilde and expands C_hat as AB + DeltaA B + A DeltaB + DeltaA DeltaB + DeltaC; this is why equation (3.6) bounds error relative to the original exact product AB. [PDF p. 7, printed C130; anchor: initial low-precision conversions preceding Theorem 3.2]",
+      "The theorem is a general block-FMA result and does not specialize b, the precisions, or the implementation to a particular tensor-core device. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 and following numerical-model paragraph; Theorem 3.2 and equation (3.6)]"
+    ],
+    "algorithm_linkage": "Algorithm 3.1 first forms A_tilde=fl_low(A) and B_tilde=fl_low(B) if needed, initializes each output block to zero, and for l=1,...,q repeatedly computes C_ij = C_ij + A_tilde_i,l B_tilde_l,j with a block FMA whose output precision is u_FMA; if the requested output precision u differs from u_FMA, the output is rounded to u. Theorem 3.2 applies only to the result of this chained block-FMA algorithm. [PDF pp. 5-7, printed C128-C130; anchors: Algorithm 3.1 and following numerical-model paragraph; equations (3.1)-(3.4) and prioritized effective precision; Theorem 3.2 and equation (3.6)]",
+    "numerical_model": [
+      "For op in {+,-,multiplication,division}, fl(a op b)=(a op b)(1+delta), |delta|<=u, with the alternative form fl(a op b)=(a op b)/(1+delta). [PDF p. 4, printed C127; anchor: equations (2.3)-(2.6) and gamma notation]",
+      "A block-FMA expression is evaluated at internal precision u_bar and then represented at block-FMA output precision u_FMA; Section 3 additionally accounts for requested output precision u through u_tilde_FMA. [PDF pp. 4 and 6, printed C127 and C129; anchors: equations (2.3)-(2.6) and gamma notation; equations (3.1)-(3.4) and prioritized effective precision]",
+      "The input conversions satisfy A_tilde=A+DeltaA and B_tilde=B+DeltaB with |DeltaA|<=u_low|A| and |DeltaB|<=u_low|B| componentwise. [PDF p. 7, printed C130; anchor: initial low-precision conversions preceding Theorem 3.2]",
+      "If u > u_FMA > u_bar, two physical roundings can be required, first to u_FMA and then to u; the analysis deliberately includes only one rounding and describes the resulting effect on the final bound as negligible. [PDF p. 6, printed C129; anchor: equations (3.1)-(3.4) and prioritized effective precision]",
+      "The standing gamma-validity condition is ku<1 for every relevant integer k and precision; in equation (3.6) this includes the denominators of gamma_bar_n and gamma_tilde_q^FMA. [PDF p. 4, printed C127; anchor: equations (2.3)-(2.6) and gamma notation]"
+    ],
+    "error_notions": [
+      "Equation (3.6) is an absolute componentwise forward-error bound for C_hat relative to the exact product C=AB. [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]",
+      "The terms 2u_low+u_low^2 account for perturbing both original inputs during conversion, while the gamma terms account for the chained block-FMA computation. [PDF p. 7, printed C130; anchors: initial low-precision conversions preceding Theorem 3.2; Theorem 3.2 and equation (3.6)]",
+      "No backward-error assertion or relative normwise error ratio is stated in Theorem 3.2. [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]"
+    ],
+    "norms": [
+      "No vector or matrix norm occurs in equation (3.6); absolute values and inequalities are componentwise. [PDF pp. 3 and 7, printed C126 and C130; anchors: componentwise absolute-value convention; Theorem 3.2 and equation (3.6)]",
+      "|A||B| must not be replaced silently by ||A|| ||B|| or interpreted as an entrywise product. [PDF pp. 3 and 7, printed C126 and C130; anchors: componentwise absolute-value convention; Theorem 3.2 and equation (3.6)]"
+    ],
+    "constants_and_indexing": [
+      "The exact block count in the bound is q=n/b, inherited from splitting the shared matrix dimension n into q consecutive groups of length b. [PDF pp. 5-7, printed C128-C130; anchors: Algorithm 3.1 and following numerical-model paragraph; equations (3.1)-(3.4) and prioritized effective precision; Theorem 3.2 and equation (3.6)]",
+      "The scalar recurrence is s_i=s_(i-1)+sum from j=(i-1)b+1 through ib of x_j y_j, for i=1,...,q, with s_0=0. [PDF p. 6, printed C129; anchor: equations (3.1)-(3.4) and prioritized effective precision]",
+      "For i=1, the derivation replaces b+1 by b in the theta factor multiplying x_1 y_1 because s_0=0. [PDF p. 6, printed C129; anchor: equations (3.1)-(3.4) and prioritized effective precision]",
+      "The coefficient in equation (3.6) uses gamma_bar_n, not gamma_bar_q or gamma_bar_(q+b-1), and uses gamma_tilde_q^FMA with q=n/b. [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]",
+      "The paper notes that right-to-left blocked summation can replace gamma_bar_n by gamma_bar_(q+b-1) in the preceding scalar bound, but equation (3.6) itself retains gamma_bar_n. [PDF pp. 6 and 7, printed C129 and C130; anchors: equations (3.1)-(3.4) and prioritized effective precision; Theorem 3.2 and equation (3.6)]"
+    ],
+    "higher_order_terms": [
+      "Equation (3.6) retains u_low^2, the product gamma_tilde_q^FMA * gamma_bar_n, and the full factor (1+u_low)^2; none may be discarded in an exact transcription. [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]",
+      "The gamma quantities retain their denominators 1-nu_bar and 1-q u_tilde_FMA rather than being replaced by first-order approximations. [PDF p. 4, printed C127; anchor: equations (2.3)-(2.6) and gamma notation]",
+      "No big-O remainder appears in Theorem 3.2 or equation (3.6). [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]",
+      "The only approximation explicitly associated with this derivation is the omission of a second rounding in possible double-rounding cases; the paper does not supply an additional term for it in equation (3.6). [PDF p. 6, printed C129; anchor: equations (3.1)-(3.4) and prioritized effective precision]"
+    ],
+    "exceptional_values": [
+      "Underflow and overflow are explicitly excluded from the analysis, including the initial low-precision conversions. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 exceptional-value scope; initial low-precision conversions preceding Theorem 3.2]",
+      "The cited passage gives no separate rule for NaNs, infinities, subnormals, or other exceptional floating-point values; its only explicit exceptional-value statement is the exclusion of underflow and overflow. [PDF p. 5, printed C128; anchor: Algorithm 3.1 exceptional-value scope]"
+    ]
+  },
+  "undebatable_constraints": [
+    "The exact operands have dimensions A in R^(m x n) and B in R^(n x t), and C is their exact original-value product AB. [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]",
+    "The inputs are not required to be initially representable in u_low; Algorithm 3.1 converts them to u_low if necessary. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 and following numerical-model paragraph; initial low-precision conversions preceding Theorem 3.2]",
+    "The result must be linked to Algorithm 3.1 and its q=n/b chained block-FMA structure. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 and following numerical-model paragraph; Theorem 3.2 and equation (3.6)]",
+    "The conclusion is componentwise and contains the exact coefficient 2u_low + u_low^2 + (gamma_tilde_q^FMA + gamma_bar_n + gamma_tilde_q^FMA * gamma_bar_n)(1+u_low)^2. [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]",
+    "The right-hand side is the matrix product |A||B| of componentwise absolute values, not a norm product or entrywise product. [PDF pp. 3 and 7, printed C126 and C130; anchors: componentwise absolute-value convention; Theorem 3.2 and equation (3.6)]",
+    "gamma_bar_n and gamma_tilde_q^FMA must use unit roundoffs u_bar and u_tilde_FMA respectively, with their full 1-ku denominators. [PDF p. 4, printed C127; anchor: equations (2.3)-(2.6) and gamma notation]",
+    "The prioritized piecewise definition of u_tilde_FMA from equation (3.3) is part of the meaning of gamma_tilde_q^FMA. [PDF p. 6, printed C129; anchor: equations (3.1)-(3.4) and prioritized effective precision]",
+    "Underflow and overflow must be excluded unless a different exceptional-value model is explicitly added. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 exceptional-value scope; initial low-precision conversions preceding Theorem 3.2]",
+    "The retained quadratic and gamma-product terms cannot be replaced by a first-order-only or big-O statement when claiming faithfulness to equation (3.6). [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The original storage precision of A and B is deliberately left unspecified beyond saying that it need not be u_low. [PDF p. 7, printed C130; anchor: Theorem 3.2 and equation (3.6)]",
+      "evidence": "Algorithm 3.1 rounds A and B to u_low only if necessary, and Theorem 3.2 describes them as not necessarily given in precision u_low. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 and following numerical-model paragraph; Theorem 3.2 and equation (3.6)]",
+      "impact": "A faithful formalization must not silently require the original inputs to be u_high, exact machine values, or already u_low; it should expose only the conversion behavior actually used by the bound."
+    },
+    {
+      "issue": "The final output precision u is named by Algorithm 3.1 but is not specialized in Theorem 3.2 to u_low, u_high, or u_FMA. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 and following numerical-model paragraph; Theorem 3.2 and equation (3.6)]",
+      "evidence": "Algorithm 3.1 says that C is in precision u and rounds to u when u differs from u_FMA; equation (3.3) accounts for u through its prioritized first branch. [PDF pp. 5 and 6, printed C128 and C129; anchors: Algorithm 3.1 and following numerical-model paragraph; equations (3.1)-(3.4) and prioritized effective precision]",
+      "impact": "The source does not justify replacing u by a particular precision without an added specialization; its effect must instead be carried through u_tilde_FMA."
+    },
+    {
+      "issue": "The exact correction for physical double rounding is not specified. [PDF p. 6, printed C129; anchor: equations (3.1)-(3.4) and prioritized effective precision]",
+      "evidence": "For u > u_FMA > u_bar the paper says that two roundings are needed, but includes only a single rounding for simplicity and calls the effect on the final bound negligible. [PDF p. 6, printed C129; anchor: equations (3.1)-(3.4) and prioritized effective precision]",
+      "impact": "Equation (3.6) should be represented under the paper's simplified rounding model; no unprinted exact double-rounding term or guarantee should be invented."
+    },
+    {
+      "issue": "Theorem 3.2 restates q=n/b but does not repeat Algorithm 3.1's assumptions that p=m/b1 and r=t/b2 are integers. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 and following numerical-model paragraph; Theorem 3.2 and equation (3.6)]",
+      "evidence": "The full divisibility assumptions appear in Algorithm 3.1, while the theorem invokes that algorithm and explicitly mentions only q=n/b. [PDF pp. 5 and 7, printed C128 and C130; anchors: Algorithm 3.1 and following numerical-model paragraph; Theorem 3.2 and equation (3.6)]",
+      "impact": "A formal statement modeling the actual algorithm should inherit all three partition preconditions, while a statement abstracting only the error formula must at minimum retain the explicit integer block count q=n/b."
+    }
+  ],
+  "contract_plain_english": "For real matrices A and B of compatible rectangular dimensions, Algorithm 3.1 converts them to low precision when necessary and computes their product by chaining q=n/b width-b block FMAs. Relative to the exact product C=AB of the original inputs, the computed C_hat has componentwise absolute error at most [2u_low + u_low^2 + (gamma_tilde_q^FMA + gamma_bar_n + gamma_tilde_q^FMA gamma_bar_n)(1+u_low)^2]|A||B|. Here gamma_bar_n uses the internal arithmetic unit roundoff u_bar, gamma_tilde_q^FMA uses the prioritized effective unit roundoff from equation (3.3), and all gamma denominators are retained. The result assumes the standard relative-error model and excludes underflow and overflow; it is not a normwise bound and it does not assume that the original inputs were already low precision. [PDF pp. 3-7, printed C126-C130; anchors: componentwise absolute-value convention; equations (2.3)-(2.6) and gamma notation; Algorithm 3.1 and following numerical-model paragraph; equations (3.1)-(3.4) and prioritized effective precision; Theorem 3.2 and equation (3.6)]"
+}

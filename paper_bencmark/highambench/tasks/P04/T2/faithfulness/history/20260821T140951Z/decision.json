@@ -1,0 +1,54 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ"
+  ],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-14T15:48:21.495115+00:00",
+  "findings": [
+    {
+      "category": "algorithm-linkage",
+      "evidence": "Theorem 3.2 explicitly concerns Algorithm 3.1, while D013 assumes the factorization derived from that algorithm and contains no execution relation or bridge.",
+      "impact": "The declaration does not formalize the paper's guarantee that Algorithm 3.1 produces an output satisfying equation (3.6).",
+      "severity": "critical"
+    },
+    {
+      "category": "reduced-proof-obligation",
+      "evidence": "On printed C129 the alpha/beta representation follows from recurrence (3.1), rounding equation (3.2), and effective parameter (3.3); D013 accepts that representation and its bounds as hypotheses.",
+      "impact": "The target proves only the final algebraic propagation step and cannot be counted as genuinely stronger merely because its certificate domain contains nonalgorithm objects.",
+      "severity": "major"
+    },
+    {
+      "category": "floating-point-model",
+      "evidence": "The PDF specifies actual conversions, block-FMA precision roles, final rounding, and exclusion of underflow and overflow. D013 replaces these with arbitrary real perturbations and factor bounds.",
+      "impact": "The formal premise describes a different extensional numerical model and permits configurations outside the source theorem.",
+      "severity": "major"
+    },
+    {
+      "category": "formula-fidelity",
+      "evidence": "The target retains the exact componentwise coefficient, gamma indices and denominators, prioritized effective-roundoff definition, higher-order terms, and |A||B| matrix-product scale from equation (3.6).",
+      "impact": "The defect is the theorem's subject and hypotheses, not an error in the displayed bound.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The declaration proves the bound only after a P04MixedInputMatMulRun containing the derived conversion and alpha/beta certificates has been supplied. It contains no execution semantics or theorem mapping an Algorithm 3.1 output to such a record, so it does not by itself establish Theorem 3.2 for the algorithm.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "Theorem 3.2 covers actual Algorithm 3.1 outputs under the paper's floating-point model. It does not quantify over every arbitrary real-valued certificate, perturbation choice, computed matrix, or precision tuple satisfying only D013's extensional postconditions.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-stronger",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "Primary PDF evidence distinguishes the operational algorithm from the factorization derived during its analysis: C128 defines the conversion and chained block-FMA execution, C129 derives the alpha/beta representation, and C130 states the bound for the result of that algorithm. The Lean record assumes the derived representation and bounds without encoding or connecting to the execution. Although the resulting algebraic lemma is exact and nonvacuous and ranges over additional certificates, that wider certificate domain does not supply the missing algorithm guarantee. The paper likewise does not prove the lemma for all such certificates. Therefore neither implication holds and the declaration is not-faithful-different.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P04-T2"
+}

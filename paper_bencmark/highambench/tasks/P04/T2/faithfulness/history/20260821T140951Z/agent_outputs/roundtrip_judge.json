@@ -1,0 +1,158 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P04-T2",
+  "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
+  "blind_translation_sha256": "0864f3b2a58a95e353041fbad8db5e8cb9111fb725da2fb9d4e46df9c5667936",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF is the 2020 SIAM journal version with SHA-256 7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862. The relevant result is Theorem 3.2 and equation (3.6), with definitions and derivation on printed pages C126-C130.",
+      "translation_evidence": "The translation targets the mixed-input componentwise matrix-product bound containing the conversion terms and the Algorithm 3.1 computation coefficient.",
+      "reasoning": "The selected source, theorem, equation, and surrounding definitions are correct."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "Theorem 3.2 uses A in R^(m x n), B in R^(n x t), exact C=AB, and computed C-hat in R^(m x t), with blocks determined by b1, b, b2 and counts p, q, r.",
+      "translation_evidence": "The run contains matrices with exactly these index types, enforces m=p*b1, n=q*b, and t=r*b2, and quantifies entry indices i in Fin m and j in Fin t.",
+      "reasoning": "The matrix dimensions, block parameters, exact-product indices, and output indices agree. Defining C entrywise instead of binding it separately is a harmless unfolding of C:=AB."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "For each admissible Algorithm 3.1 computation and each output entry, the analysis derives error-factor witnesses for the terms of that entry's dot product.",
+      "translation_evidence": "A run packages the matrices and global alpha and beta arrays, after which i and j are universally quantified. The conclusion is independent of the particular alpha and beta witnesses.",
+      "reasoning": "Packaging the finite family of analysis witnesses in the run preserves their dependence on the matrices and output indices. The separate failure to connect such packages to Algorithm 3.1 is assessed under S08."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes execution by Algorithm 3.1 under the standard relative-error model, allowed precision roles, valid gamma denominators, and absence of underflow and overflow.",
+      "translation_evidence": "The run instead assumes a final converted-input and alpha/beta representation. It has gamma smallness conditions but no execution hypothesis, no explicit exclusion of underflow or overflow, no unit-roundoff upper bound for uLow, and no restriction making uFma an allowed low or high output precision.",
+      "reasoning": "The algebraic perturbation hypotheses capture part of the derivation but do not match all explicit and inherited hypotheses of the paper result."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "Equation (3.6) gives one componentwise inequality with conversion coefficient 2uLow+uLow^2 and the complete gamma coefficient multiplied by (1+uLow)^2 and |A||B|.",
+      "translation_evidence": "The conclusion states the corresponding inequality for every i and j with every term and factor present.",
+      "reasoning": "The displayed mathematical conclusion is complete and has no omitted conjunct or case."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper defines componentwise matrix absolute value, ordinary matrix multiplication, gamma_k(u)=ku/(1-ku), and the prioritized effective unit roundoff in equation (3.3).",
+      "translation_evidence": "The dependency ledger unfolds the exact-product sum, absolute-product sum, gamma function, nested piecewise uEff, finite sums, real absolute value, arithmetic operations, and order relations.",
+      "reasoning": "All nontrivial operators affecting the target inequality are interpreted correctly."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes original A and B, converted A-tilde and B-tilde, perturbations DeltaA and DeltaB, exact C=AB, and computed C-hat.",
+      "translation_evidence": "The run separately stores A, B, convertedA, convertedB, deltaA, deltaB, and computed, while the exact product is formed from the original A and B.",
+      "reasoning": "Original, converted, perturbed, exact, and computed quantities are not conflated."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.2 applies specifically to Algorithm 3.1, which converts the inputs, initializes output blocks, and chains q=n/b block FMAs before any final output rounding.",
+      "translation_evidence": "The translation assumes directly that computed has a sum representation with bounded alpha and beta. It explicitly notes that it does not assert that an algorithm produces such a representation.",
+      "reasoning": "No execution relation or bridge establishes that Algorithm 3.1 outputs inhabit the packaged run type. The final error-factor representation is a consequence used in the paper's analysis, not a replacement for the theorem's algorithm linkage."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Equation (3.6) is componentwise, and |A||B| is ordinary matrix multiplication after taking componentwise absolute values; no matrix norm occurs.",
+      "translation_evidence": "The conclusion uses an entrywise absolute error and the sum over k of |A(i,k)| times |B(k,j)|.",
+      "reasoning": "The translation neither substitutes a norm nor misreads |A||B| as an entrywise product."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "The coefficient uses gamma_q at the effective FMA parameter and gamma_n at uBar, where q=n/b, together with their product and the exact conversion terms.",
+      "translation_evidence": "The run enforces n=q*b and uses gamma_q(uEff), gamma_n(uBar), their product, 2uLow+uLow^2, and (1+uLow)^2. Its prioritized uEff branches are equivalent to equation (3.3).",
+      "reasoning": "Constants, block count, gamma indices, precision dependence, branch priority, and higher-order coefficient factors match."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The analysis uses the standard relative-error floating-point model, internal precision uBar, block-FMA output precision uFma, requested output precision u, and explicitly excludes underflow and overflow. It also deliberately models only one rounding in the identified double-rounding case.",
+      "translation_evidence": "All quantities are real and the conversion and alpha/beta bounds are postulated algebraically. Exceptional values, underflow, overflow, representability, rounding operations, allowed output formats, and the single-rounding modeling choice are not expressed.",
+      "reasoning": "The translation captures numerical error inequalities but not the paper's floating-point execution model or exceptional-value scope."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The source conclusion bounds the output produced by Algorithm 3.1 under its numerical assumptions.",
+      "translation_evidence": "The same inequality direction is asserted for every object satisfying a broader final algebraic representation, irrespective of whether it is an Algorithm 3.1 output.",
+      "reasoning": "The scalar inequalities and strict gamma conditions have the right directions, but the logical strength and domain of the theorem change because the execution premise is replaced by a different relation."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Theorem 3.2 is an absolute componentwise forward-error bound relative to the exact original-input product AB.",
+      "translation_evidence": "The conclusion bounds the absolute difference between computed(i,j) and the exact sum formed from A and B.",
+      "reasoning": "No backward-error, residual, relative-error, or normwise stability notion is substituted."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Equation (3.6) retains uLow^2, the gamma product, (1+uLow)^2, and full gamma denominators, with no big-O remainder or double-rounding correction term in the displayed theorem.",
+      "translation_evidence": "The complete quadratic and gamma-product terms and the denominators 1-q*uEff and 1-n*uBar are retained exactly.",
+      "reasoning": "The formula is not reduced to first order and introduces no unprinted remainder. The missing execution-level double-rounding caveat is accounted for under S11."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The theorem concerns real rectangular matrices computed by the general block-FMA algorithm, with uFma tied to an allowed low or high output precision and uOut playing the algorithm's output-precision role.",
+      "translation_evidence": "Although the matrix domain and dimensions match, uLow, uBar, uFma, and uOut are arbitrary nonnegative reals subject only to listed inequalities, and computed ranges over arbitrary algebraic packages.",
+      "reasoning": "The translation silently generalizes both the precision configurations and the class of computed outputs beyond the paper's algorithmic setting."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "Algorithm 3.1 has admissible positive dimensions whenever the three block factorizations hold.",
+      "translation_evidence": "The run assumptions are satisfiable, for example with all dimensions and block counts equal to one, zero error parameters and witnesses, unchanged converted inputs, and computed equal to the exact product.",
+      "reasoning": "The packaged proposition is not globally vacuous. Empty run types for parameter tuples violating the required factorizations merely encode inadmissible partitions, although the missing algorithm-to-run bridge remains the separate S08 defect."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation proves a conditional statement only for values already carrying the final alpha/beta error representation. It contains no assertion that an execution of Algorithm 3.1 produces such a run, so the paper's algorithm-specific theorem cannot be derived from the translated proposition alone."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper proves the bound for Algorithm 3.1 outputs under its floating-point and exceptional-value assumptions. It does not assert the bound for every arbitrary algebraic package or every nonnegative real precision tuple admitted by the translation."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-linkage",
+      "paper_evidence": "Theorem 3.2 explicitly concerns the result returned by Algorithm 3.1 and inherits its conversion and chained block-FMA execution.",
+      "translation_evidence": "The run requires only a final multiplicative error-factor representation and provides no relation to Algorithm 3.1.",
+      "impact": "The translated theorem has a different subject and does not by itself establish the paper's claim about the algorithm."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point-model",
+      "paper_evidence": "The paper assigns specific precision roles, uses the standard relative-error model, excludes underflow and overflow, and states a single-rounding simplification for possible double rounding.",
+      "translation_evidence": "The run contains real-valued perturbation assumptions but no rounding execution, representability, exceptional-value exclusion, allowed-format relation, or double-rounding modeling statement.",
+      "impact": "The numerical assumptions are replaced by a broader algebraic model, so the scope of the guarantee does not match."
+    },
+    {
+      "severity": "major",
+      "category": "silent-generalization",
+      "paper_evidence": "The source bounds computed outputs arising from the specified block-FMA algorithm and its allowed precision configuration.",
+      "translation_evidence": "Any computed matrix satisfying the supplied alpha/beta representation is admitted, with largely arbitrary nonnegative real precision parameters.",
+      "impact": "The source theorem does not imply this generalized proposition, while the generalized proposition lacks the bridge needed to imply the source theorem."
+    }
+  ],
+  "rationale": "The entrywise formula itself is transcribed accurately: dimensions, exact and converted operands, componentwise scale, gamma indices, prioritized effective precision, constants, and higher-order terms all match equation (3.6). The decisive mismatch is semantic rather than algebraic. The paper proves a result about executions of Algorithm 3.1 under a particular floating-point model and exceptional-value scope, whereas the translation proves an abstract lemma for objects already assumed to satisfy the final error-factor representation. Because no algorithm-to-run bridge is present and the abstract run class also permits configurations outside the paper's model, neither statement implies the other as supplied."
+}
