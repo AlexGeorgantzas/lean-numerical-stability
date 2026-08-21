@@ -33,24 +33,26 @@ evaluating the subtraction sum.
 
 ## Lean encoding
 
-`P05DoolittleRun m n` is an abstract analytic certificate for one completed
-floating-point Doolittle execution. It records `m >= n`, `n > 0`, one common
-finite radix format, representability of the input and computed factors, the
-unit-lower-trapezoidal and upper-triangular structure, and every computed upper
-and lower entry. Each entry is linked to a `P05Lemma41Run`, which records the
-rounded products, arbitrary permuted binary summation tree, optional pivot
-division, and range checks excluding underflow and overflow. Its scalar
-residual fields are the inherited consequences of Theorem 3.1 and Corollary
-3.2 used by Lemma 4.1; they do not assume either matrix conclusion of Theorem
-4.2.
+`P05DoolittleRun m n` records one completed floating-point Doolittle execution.
+It contains `m >= n`, `n > 0`, one common finite symmetric radix format,
+representability of the input and computed factors, the unit-lower-trapezoidal
+and upper-triangular structure, and every computed upper and lower entry. Each
+entry is linked to a `P05Lemma41Run`, which records the rounded products,
+arbitrary permuted binary summation tree, optional pivot division, and range
+checks excluding underflow and overflow. Its protected-leaf trace exposes the
+actual rounded merges and only the earlier equation (2.4) bounds for sibling
+subtrees. It stores neither a Lemma 4.1 residual estimate nor any local or global
+conclusion of Theorem 4.2.
 
 Lean uses zero-based `Fin` indices. Thus paper stage `k` becomes Lean stage
 `k.val`, making the local coefficients `k.val*u` and `(k.val+1)*u`. In the
 square case the paper's row coefficient `(i-1)u` becomes `i.val*u`.
 
-The target first derives both local bounds from the entry executions. The
+The proof first derives the scalar residual estimates of Lemma 4.1 from each
+protected summation trace and the format's round-to-nearest error laws. It then
+specializes those estimates to obtain both local Doolittle bounds. The
 triangular zero conditions identify each local through-pivot sum with the full
-rectangular matrix product. It then sets `DeltaA = LHat*UHat-A`, proves the
+rectangular matrix product. Finally it sets `DeltaA = LHat*UHat-A`, proves the
 general `n*u` bound, and derives the two square refinements.
 
 The run type is inhabited: a private construction check instantiates the
