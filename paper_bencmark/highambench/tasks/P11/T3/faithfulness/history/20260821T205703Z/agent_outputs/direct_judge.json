@@ -1,0 +1,1094 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P11-T3",
+  "paper_sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
+  "dossier_sha256": "215ca35c06a41ff1a2dc709c845314979a20b099ee638826967dfa273e064074",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.P11CGSPTheorem1Run",
+      "interpretation": "A dependent record-like type packaging dimensions, A, computed Q and R, epsilon, prefix inverses, condition (3), column traces, and prefix certificates.",
+      "effect_on_target": "The run binder imports all target data and hidden hypotheses, including pre-certified error bounds.",
+      "paper_match": "It includes several standing assumptions but also replaces execution semantics with permissive traces and assumes certificate forms of results (4)-(6).",
+      "status": "fail"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.P11CGSPTheorem1Run.Q",
+      "interpretation": "Projection of the m-by-n real matrix Q from a run.",
+      "effect_on_target": "Its leading column prefix forms the Q_k used in the orthogonality defect.",
+      "paper_match": "The dimensions and intended role as the computed Q agree with the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.P11CGSPTheorem1Run.R",
+      "interpretation": "Projection of the n-by-n real matrix R from a run.",
+      "effect_on_target": "Its leading block supplies R_k to the condition number.",
+      "paper_match": "The dimensions and intended role as the computed upper-triangular R agree with the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.P11CGSPTheorem1Run.epsilonM",
+      "interpretation": "Projection of a real-valued machine-unit parameter from the run.",
+      "effect_on_target": "It multiplies the first-order term and is squared in the explicit remainder.",
+      "paper_match": "A positive real epsilonM is a suitable mathematical representation of the paper's machine unit, considered independently of the missing IEEE semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HighamBench.P11CGSPTheorem1Run.leadingInverse",
+      "interpretation": "A supplied square matrix of size k.val+1 for each leading block.",
+      "effect_on_target": "It is used as R_k inverse inside kappa2 and the remainder coefficient.",
+      "paper_match": "The run constructor requires it to be both a left and right inverse, matching R_k^{-1}.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HighamBench.p11C4",
+      "interpretation": "The real function c4(m,k) defined as p11C2(m,k)+2*p11C1(m,k).",
+      "effect_on_target": "It appears in both condition (3) and the first-order orthogonality bound.",
+      "paper_match": "The combining formula matches equation (2), but its p11C1 dependency is numerically wrong for m greater than one, so the resulting c4 does not match the paper.",
+      "status": "fail"
+    },
+    {
+      "id": "D007",
+      "name": "HighamBench.p11ColumnPrefix",
+      "interpretation": "Restriction of an m-by-n matrix to columns 0 through k.val, producing k.val+1 columns.",
+      "effect_on_target": "It constructs the formal Q_k in the defect.",
+      "paper_match": "After translating zero-based Fin indexing, it is exactly the first k paper columns.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "HighamBench.p11Kappa2",
+      "interpretation": "The product of the spectral operator norms of R and a supplied inverse matrix.",
+      "effect_on_target": "Its square is the condition-number factor in the bound.",
+      "paper_match": "With the two-sided inverse laws in the run, it equals ||R_k||_2 ||R_k^{-1}||_2 as in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "HighamBench.p11LeadingBlock",
+      "interpretation": "Restriction of an n-by-n matrix to its upper-left (k.val+1)-square block.",
+      "effect_on_target": "It supplies the formal R_k.",
+      "paper_match": "This agrees with the leading triangular factor assembled by the paper's prefix algorithm.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "HighamBench.p11OpNorm2",
+      "interpretation": "The mathlib l2-induced operator norm on a finite real square matrix.",
+      "effect_on_target": "It measures both the orthogonality defect and factors in kappa2.",
+      "paper_match": "It is the spectral matrix 2-norm required by equations (3) and (7).",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "HighamBench.p11RectOrthogonalityDefect",
+      "interpretation": "The square matrix I-Q^T Q for a rectangular real Q.",
+      "effect_on_target": "It is the exact left-hand side before applying the operator norm.",
+      "paper_match": "It matches I_k-Q_k^T Q_k, with the identity dimension inferred as k in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff",
+      "interpretation": "A run- and prefix-dependent explicit coefficient assembled from norms and three certificate-supplied second-order coefficients.",
+      "effect_on_target": "It converts the paper's suppressed remainder into an exact additive coefficient times epsilonM squared.",
+      "paper_match": "The paper gives only O(epsilonM^2), not this formula or witness-dependent coefficient, and the definition also inherits the incorrect c1 and c4.",
+      "status": "fail"
+    },
+    {
+      "id": "D013",
+      "name": "HighamBench.P11CGSPTheorem1Run.A",
+      "interpretation": "Projection of the original m-by-n real input matrix A.",
+      "effect_on_target": "It enters the hidden prefix certificates and explicit remainder coefficient.",
+      "paper_match": "It correctly remains distinct from the computed Q and R.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "HighamBench.P11CGSPTheorem1Run.mk",
+      "interpretation": "Constructor requiring positive dimensions, n<=m, full-column-rank A, upper-triangular R, 0<epsilonM<1, two-sided prefix inverses, condition (3), per-column traces, and per-prefix certificates.",
+      "effect_on_target": "These constructor arguments are the actual antecedent of the Lean proposition.",
+      "paper_match": "Dimensions, rank, triangularity, invertibility, and prefix condition are represented, but certificate conclusions are assumed, c4 is wrong, and the trace is not the paper's IEEE execution model.",
+      "status": "fail"
+    },
+    {
+      "id": "D015",
+      "name": "HighamBench.P11CGSPTheorem1Run.prefixCertificate",
+      "interpretation": "Projection of a certificate for each A_k, Q_k, R_k, and epsilonM.",
+      "effect_on_target": "The remainder coefficient reads its assumed factorization, normal-equation, and reverse-norm error coefficients.",
+      "paper_match": "The paper derives the corresponding properties in Theorem 1; it does not assume a certificate containing them.",
+      "status": "fail"
+    },
+    {
+      "id": "D016",
+      "name": "HighamBench.P11Matrix",
+      "interpretation": "An n-by-n matrix indexed by Fin n with real entries.",
+      "effect_on_target": "It fixes the type of R_k, its inverse, the defect, and square residuals.",
+      "paper_match": "It faithfully represents finite real square matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "HighamBench.P11RectMatrix",
+      "interpretation": "An m-by-n matrix indexed by Fin m and Fin n with real entries.",
+      "effect_on_target": "It fixes the type of A, Q, and their prefixes.",
+      "paper_match": "It faithfully represents the paper's real rectangular matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "HighamBench.P11Theorem1PrefixCertificate",
+      "interpretation": "An indexed certificate type whose constructor records selected residual relations and bounds for one prefix.",
+      "effect_on_target": "Existence of one certificate per prefix is a hidden prerequisite of every run.",
+      "paper_match": "It packages conclusions used in the appendix as antecedent data rather than deriving them from Algorithm 2 and floating-point arithmetic.",
+      "status": "fail"
+    },
+    {
+      "id": "D019",
+      "name": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff",
+      "interpretation": "Projection of a nonnegative real coefficient for the epsilonM-squared part of the factorization-residual bound.",
+      "effect_on_target": "It contributes to the exact orthogonality remainder coefficient.",
+      "paper_match": "The source suppresses an O(epsilonM^2) term and supplies no such explicit certificate field or uniform coefficient.",
+      "status": "fail"
+    },
+    {
+      "id": "D020",
+      "name": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff",
+      "interpretation": "Projection of a nonnegative real coefficient for the epsilonM-squared normal-equation residual.",
+      "effect_on_target": "It contributes directly to the exact remainder coefficient.",
+      "paper_match": "The paper has an unspecified O(epsilonM^2) remainder rather than this assumed coefficient.",
+      "status": "fail"
+    },
+    {
+      "id": "D021",
+      "name": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff",
+      "interpretation": "Projection of a nonnegative coefficient in a one-sided reverse comparison between ||A_k||_2 and ||R_k||_2.",
+      "effect_on_target": "It is used to replace powers of ||A_k|| by powers of ||R_k|| in the exact bound.",
+      "paper_match": "The paper states two-sided norm agreement through mu_k to first order; it does not assume this coefficient-bearing one-sided certificate.",
+      "status": "fail"
+    },
+    {
+      "id": "D022",
+      "name": "HighamBench.p11C1",
+      "interpretation": "It returns 1 for k=1 and otherwise 2*sqrt(2*m)*k+2*sqrt(k).",
+      "effect_on_target": "It changes p11C4 and several terms in the explicit remainder.",
+      "paper_match": "Equation (2) requires 2*sqrt(2)*m*k+2*sqrt(k), with m outside the square root. The definitions differ whenever m>1.",
+      "status": "fail"
+    },
+    {
+      "id": "D023",
+      "name": "HighamBench.p11C1._proof_1",
+      "interpretation": "Compiler-generated evidence that the natural numeral 1+1 is at least two.",
+      "effect_on_target": "It only enables elaboration of a real numeral in p11C1.",
+      "paper_match": "It has no independent mathematical counterpart in the paper.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D024",
+      "name": "HighamBench.p11C2",
+      "interpretation": "It returns m+2 for k=1 and otherwise (7/2)mk^2-(3/2)mk+16k over the reals.",
+      "effect_on_target": "It contributes to c3, c4, condition (3), and the remainder.",
+      "paper_match": "This is exactly the piecewise c2 formula in equation (2).",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "HighamBench.p11C3",
+      "interpretation": "The real function one half times p11C2.",
+      "effect_on_target": "It enters the certificate's reverse-norm estimate and remainder coefficient.",
+      "paper_match": "It matches c3(m,k)=0.5c2(m,k).",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "HighamBench.p11Identity",
+      "interpretation": "The square identity matrix of the requested finite dimension.",
+      "effect_on_target": "It supplies I_k in the defect and inverse laws.",
+      "paper_match": "It matches the dimensionally inferred identity in equation (7).",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "HighamBench.p11LeadingBlock._proof_1",
+      "interpretation": "Proof that k.val+1 is at most n for k:Fin n.",
+      "effect_on_target": "It permits index-preserving restriction to a leading block.",
+      "paper_match": "It is bookkeeping for zero-based finite indices, with no standalone paper assertion.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D028",
+      "name": "HighamBench.p11RectMatMul",
+      "interpretation": "Standard finite-sum multiplication of compatible rectangular real matrices.",
+      "effect_on_target": "It defines Q^TQ and relations inside prefix certificates.",
+      "paper_match": "It matches ordinary real matrix multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "HighamBench.p11RectOpNorm2",
+      "interpretation": "The l2-induced operator norm on a finite rectangular real matrix.",
+      "effect_on_target": "It measures A_k and factorization residuals inside certificates and the remainder.",
+      "paper_match": "It matches the rectangular spectral 2-norm used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "HighamBench.p11RectTranspose",
+      "interpretation": "Ordinary transpose of a rectangular matrix.",
+      "effect_on_target": "It constructs Q_k^TQ_k and A_k^TA_k.",
+      "paper_match": "It matches the paper's real transpose.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "HighamBench.P11CGSPColumnTrace",
+      "interpretation": "An indexed proposition intended to witness one approximate CGS-P column update.",
+      "effect_on_target": "A trace is required for every column before a run can be constructed.",
+      "paper_match": "Its constructor uses unconstrained additive-error witnesses instead of an IEEE operation-by-operation execution semantics.",
+      "status": "fail"
+    },
+    {
+      "id": "D032",
+      "name": "HighamBench.P11Theorem1PrefixCertificate.mk",
+      "interpretation": "Constructor assuming QR and normal-equation residual identities, first-order bounds plus arbitrary nonnegative epsilonM-squared coefficients, and a one-sided reverse norm bound.",
+      "effect_on_target": "It supplies almost all analytic ingredients used to derive equation (7).",
+      "paper_match": "These are selected conclusions of Theorem 1 and appendix estimates, not hypotheses of the paper theorem; equation (6) is also weakened to one side.",
+      "status": "fail"
+    },
+    {
+      "id": "D033",
+      "name": "HighamBench.p11C2._proof_1",
+      "interpretation": "Generated evidence allowing the numeral seven to be cast through the generic numeral mechanism.",
+      "effect_on_target": "It has only elaboration-level effect on the c2 expression.",
+      "paper_match": "It has no independent source-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D034",
+      "name": "HighamBench.p11C2._proof_2",
+      "interpretation": "Generated evidence allowing the numeral three to be cast through the generic numeral mechanism.",
+      "effect_on_target": "It has only elaboration-level effect on the c2 expression.",
+      "paper_match": "It has no independent source-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D035",
+      "name": "HighamBench.p11C2._proof_3",
+      "interpretation": "Generated evidence allowing the numeral sixteen to be cast through the generic numeral mechanism.",
+      "effect_on_target": "It has only elaboration-level effect on the c2 expression.",
+      "paper_match": "It has no independent source-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D036",
+      "name": "HighamBench.p11MatMul",
+      "interpretation": "Standard multiplication of same-size square real matrices.",
+      "effect_on_target": "It states the two-sided inverse laws and normal-equation residual.",
+      "paper_match": "It matches ordinary matrix multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.P11CGSPColumnTrace.mk",
+      "interpretation": "Constructor encoding the CGS-P formulas with additive projection, residual, norm, diagonal, and normalization errors, all bounded by one arbitrary nonnegative localErrorScale times epsilonM.",
+      "effect_on_target": "It is the only formal linkage between Q,R and Algorithm 2.",
+      "paper_match": "The algebraic update shape is recognizable, but localErrorScale is unconstrained and there is no rounding mode, normalized-range premise, underflow, overflow, or operation-level IEEE relation; many non-IEEE executions are admitted.",
+      "status": "fail"
+    },
+    {
+      "id": "D038",
+      "name": "HighamBench.p11RectNormalEquationResidual",
+      "interpretation": "The matrix R^T R-A^T A.",
+      "effect_on_target": "It fixes the sign and meaning of the normal-equation residual in certificates.",
+      "paper_match": "It exactly matches E_k in equation (5) and the appendix identity.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.p11CGSPColumnNorm",
+      "interpretation": "The Euclidean norm of one column of a rectangular real matrix.",
+      "effect_on_target": "It represents ||a_k||_2 in the column trace.",
+      "paper_match": "It matches psi_k's underlying exact vector norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.p11CGSPProjectionEntry",
+      "interpretation": "The finite dot product of Q column j with A column k.",
+      "effect_on_target": "It represents the exact value underlying s_k's jth computed projection.",
+      "paper_match": "It matches (Q_{k-1}^T a_k)_j for j<k.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.p11CGSPResidualEntry",
+      "interpretation": "The entry a_ik minus the sum of Q_ij*s_j over j<k.",
+      "effect_on_target": "It represents the exact residual underlying v_k in a column trace.",
+      "paper_match": "It matches a_k-Q_{k-1}s_k.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.p11Transpose",
+      "interpretation": "Ordinary transpose of a square matrix.",
+      "effect_on_target": "It constructs R^T in the normal-equation residual.",
+      "paper_match": "It matches the paper's transpose.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.p11VecNorm",
+      "interpretation": "The square root of the finite sum of squared real vector entries.",
+      "effect_on_target": "It defines Euclidean norms for a_k and s_k.",
+      "paper_match": "It is the vector 2-norm used in Algorithm 2.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "Fin",
+      "interpretation": "The finite index type containing natural values strictly below n.",
+      "effect_on_target": "It makes all matrix dimensions and prefixes finite and uses zero-based indexing.",
+      "paper_match": "Together with the +1 translation, it represents paper indices 1 through n.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "Fin.val",
+      "interpretation": "The natural-number value of a finite index.",
+      "effect_on_target": "k.val+1 is the paper's one-based prefix size.",
+      "paper_match": "The offset is consistently applied in the target.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition.",
+      "effect_on_target": "It realizes natural index increments, real sums, and matrix additions according to inferred instances.",
+      "paper_match": "The inferred operations are ordinary additions of the corresponding mathematical objects.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "It realizes real scalar products and matrix products through the selected instances.",
+      "paper_match": "The instantiated operations have their standard mathematical meanings.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "It forms squares of kappa2, epsilonM, norms, and coefficients.",
+      "paper_match": "With the real natural-power instance, exponent two is ordinary squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "LE.le",
+      "interpretation": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "It is the relation in the final real inequality and certificate bounds.",
+      "paper_match": "The real instance is the usual less-than-or-equal relation used in equation (7).",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural exponentiation generated from a monoid's repeated multiplication.",
+      "effect_on_target": "It gives real x^2 its standard algebraic meaning.",
+      "paper_match": "It matches ordinary real squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "Nat",
+      "interpretation": "The natural-number type.",
+      "effect_on_target": "It represents dimensions, indices, and natural exponents.",
+      "paper_match": "It is appropriate for positive finite matrix dimensions and prefix indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "OfNat.ofNat",
+      "interpretation": "Generic interpretation of numeral literals.",
+      "effect_on_target": "It supplies the literals zero, one, and two in dimensions and real expressions.",
+      "paper_match": "The selected instances give the usual numerical values.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "Real",
+      "interpretation": "Mathlib's real-number type.",
+      "effect_on_target": "All matrix entries, norms, constants, and error parameters are real.",
+      "paper_match": "The paper works over real matrices and real bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary addition on real numbers.",
+      "effect_on_target": "It combines the first- and second-order right-hand-side terms.",
+      "paper_match": "It has the intended arithmetic meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "Real.instLE",
+      "interpretation": "The usual non-strict order on real numbers.",
+      "effect_on_target": "It interprets the target's bound.",
+      "paper_match": "It matches the inequality relation in equation (7).",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative monoid structure on real numbers.",
+      "effect_on_target": "It supplies natural powers used for squares.",
+      "paper_match": "It yields ordinary real multiplication and powers.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "It combines constants, condition numbers, epsilonM, and remainder coefficients.",
+      "paper_match": "It has the intended arithmetic meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "instAddNat",
+      "interpretation": "Ordinary addition on natural numbers.",
+      "effect_on_target": "It converts k.val to the prefix size k.val+1.",
+      "paper_match": "It correctly implements the zero-based to one-based index offset.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "instHAdd",
+      "interpretation": "The homogeneous HAdd instance induced by an Add instance.",
+      "effect_on_target": "It routes same-type additions to natural, real, or matrix addition.",
+      "paper_match": "It introduces no semantic change beyond standard addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "instHMul",
+      "interpretation": "The homogeneous HMul instance induced by a Mul instance.",
+      "effect_on_target": "It routes same-type multiplications to the intended operation.",
+      "paper_match": "It introduces no semantic change beyond standard multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "instHPow",
+      "interpretation": "The homogeneous HPow instance induced by a Pow instance.",
+      "effect_on_target": "It routes real natural exponentiation to the selected power operation.",
+      "paper_match": "It preserves ordinary squaring semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "instOfNatNat",
+      "interpretation": "The canonical interpretation of a natural numeral as itself.",
+      "effect_on_target": "It supplies index increments and exponents.",
+      "paper_match": "It has the expected arithmetic meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "Fin.castLE",
+      "interpretation": "Embedding of Fin n into Fin m when n<=m while preserving the underlying value.",
+      "effect_on_target": "It implements column-prefix and leading-block restrictions.",
+      "paper_match": "It selects the intended initial rows or columns without reordering.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "Fin.fintype",
+      "interpretation": "Finite enumeration of all elements of Fin n.",
+      "effect_on_target": "It enables finite dot products, matrix multiplication, and norms.",
+      "paper_match": "It implements sums over the complete finite index set.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "It forms I-Q^TQ, residuals, and norm-update expressions.",
+      "paper_match": "The inferred real and matrix subtractions have their usual meanings.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "Matrix",
+      "interpretation": "A matrix represented as a function from a row index and column index to entries.",
+      "effect_on_target": "It underlies all square and rectangular matrix types.",
+      "paper_match": "This is extensionally the usual finite matrix object.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "Matrix.instL2OpNormedAddCommGroup",
+      "interpretation": "The normed additive structure whose norm is the l2-induced matrix operator norm.",
+      "effect_on_target": "It determines the meaning of p11OpNorm2 and p11RectOpNorm2.",
+      "paper_match": "It supplies the spectral operator 2-norm, not a Frobenius or entrywise norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "Matrix.sub",
+      "interpretation": "Pointwise subtraction of matrices.",
+      "effect_on_target": "It forms the orthogonality and normal-equation defect matrices.",
+      "paper_match": "It matches ordinary matrix subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "Nat.succ",
+      "interpretation": "Natural-number successor.",
+      "effect_on_target": "It appears in the proof that a prefix of size k.val+1 fits in n.",
+      "paper_match": "It is index bookkeeping consistent with the paper's prefix size.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "Norm.norm",
+      "interpretation": "Projection of the norm operation from a Norm instance.",
+      "effect_on_target": "It evaluates matrix operator norms.",
+      "paper_match": "Through D067, it denotes the required 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "NormedAddCommGroup.toNorm",
+      "interpretation": "Extraction of a Norm instance from a normed additive commutative group.",
+      "effect_on_target": "It connects the matrix l2 operator-norm structure to norm notation.",
+      "paper_match": "It preserves the norm semantics established by D067.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "Real.instNatCast",
+      "interpretation": "Canonical casting of natural numbers into the reals.",
+      "effect_on_target": "It interprets m, k, and integer coefficients in c1, c2, and c3.",
+      "paper_match": "It gives the intended exact real values.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "Real.instRCLike",
+      "interpretation": "The RCLike structure on the real numbers.",
+      "effect_on_target": "It supports the l2 operator norm on real matrices.",
+      "paper_match": "It specializes the matrix norm correctly to real Euclidean spaces.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction defined through addition and negation.",
+      "effect_on_target": "It interprets polynomial constants and trace residuals.",
+      "paper_match": "It has the intended real-arithmetic meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "instDecidableEqFin",
+      "interpretation": "A decision procedure for equality of finite indices.",
+      "effect_on_target": "It enables identity matrices and finite matrix infrastructure.",
+      "paper_match": "It is computational infrastructure without an independent paper-level claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D076",
+      "name": "instHSub",
+      "interpretation": "The homogeneous HSub instance induced by a Sub instance.",
+      "effect_on_target": "It routes matrix and real subtraction to their standard operations.",
+      "paper_match": "It introduces no semantic change.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Generic mechanism for interpreting natural numerals at least two in a type with natural casts.",
+      "effect_on_target": "It elaborates real constants such as 2, 3, 7, and 16.",
+      "paper_match": "It is elaboration infrastructure rather than a source-level mathematical dependency.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D078",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Extraction of division from a division-inverse monoid.",
+      "effect_on_target": "It interprets real quotients in the trace and constants.",
+      "paper_match": "In the nonzero contexts enforced for diagonal division, it is ordinary real division.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "It states exact matrix identities and trace relations.",
+      "paper_match": "It represents the exact algebraic equalities used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "Function.Injective",
+      "interpretation": "A function is injective when equal outputs imply equal inputs.",
+      "effect_on_target": "Applied to A.mulVec, it encodes full column rank.",
+      "paper_match": "For a finite real m-by-n matrix, injectivity of x maps to Ax is equivalent to rank(A)=n.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched division.",
+      "effect_on_target": "It interprets q_k=v_k/r_kk and rational coefficients.",
+      "paper_match": "The real instance gives ordinary division.",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-dispatched strict order.",
+      "effect_on_target": "It states dimension positivity, epsilon bounds, condition (3), and diagonal positivity.",
+      "paper_match": "The inferred natural and real strict orders have their intended meanings.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "interpretation": "Matrix multiplication defined entrywise by finite dot products.",
+      "effect_on_target": "It implements all formal matrix products.",
+      "paper_match": "It is standard matrix multiplication over the reals.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "Matrix.mulVec",
+      "interpretation": "Matrix-vector multiplication by a finite row dot product.",
+      "effect_on_target": "Its injectivity expresses A's full column rank.",
+      "paper_match": "It matches the usual linear map x maps to Ax.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "Matrix.one",
+      "interpretation": "The identity square matrix with ones on the diagonal and zeros elsewhere.",
+      "effect_on_target": "It interprets p11Identity.",
+      "paper_match": "It matches I_k.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "Matrix.transpose",
+      "interpretation": "Matrix transpose obtained by swapping row and column arguments.",
+      "effect_on_target": "It implements Q^T, R^T, and A^T.",
+      "paper_match": "It is the ordinary real transpose used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "An internal proposition used to authorize numeral casts for naturals at least two.",
+      "effect_on_target": "It supports elaboration of numeric constants.",
+      "paper_match": "It has no independent paper-level semantic role.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D088",
+      "name": "Nat.cast",
+      "interpretation": "Generic casting of a natural number into a type with a NatCast instance.",
+      "effect_on_target": "It turns dimensions and indices into exact real coefficients.",
+      "paper_match": "For Real it has the intended arithmetic meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
+      "interpretation": "A structure projection exposing weaker real-ring operations.",
+      "effect_on_target": "It supports the typeclass chain needed for matrix-vector multiplication.",
+      "paper_match": "It does not alter ordinary real algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D090",
+      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
+      "interpretation": "A structure projection retaining addition, negation, and multiplication while forgetting commutativity.",
+      "effect_on_target": "It supports the matrix-vector multiplication instance.",
+      "paper_match": "It introduces no mathematical mismatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D091",
+      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
+      "interpretation": "A structure projection exposing the semiring operations needed by mulVec.",
+      "effect_on_target": "It allows real matrix-vector products to elaborate.",
+      "paper_match": "The resulting operations remain ordinary real addition and multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D092",
+      "name": "NonUnitalNormedCommRing.toNonUnitalCommRing",
+      "interpretation": "A structure projection from a normed commutative ring to its algebraic ring operations.",
+      "effect_on_target": "It participates in resolving real matrix-vector multiplication.",
+      "paper_match": "It has no effect on the mathematical meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D093",
+      "name": "NormedCommRing.toNonUnitalNormedCommRing",
+      "interpretation": "A structure projection forgetting the multiplicative unit while retaining real normed-ring operations.",
+      "effect_on_target": "It supports typeclass inference for matrix operations.",
+      "paper_match": "It preserves ordinary real arithmetic and norm semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D094",
+      "name": "One.toOfNat1",
+      "interpretation": "Interpretation of the numeral one from a One instance.",
+      "effect_on_target": "It supplies real and matrix identity values.",
+      "paper_match": "It gives the intended value one.",
+      "status": "pass"
+    },
+    {
+      "id": "D095",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative monoid structure on the reals.",
+      "effect_on_target": "It supports finite sums and matrix multiplication.",
+      "paper_match": "It is ordinary real addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D096",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The division and inverse structure on the reals.",
+      "effect_on_target": "It interprets scalar division in Algorithm 2 traces.",
+      "paper_match": "Although Lean totalizes zero inverse, the trace requires positive r_kk and the run supplies genuine matrix inverses, so relevant uses match the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D097",
+      "name": "Real.instLT",
+      "interpretation": "The usual strict order on real numbers.",
+      "effect_on_target": "It interprets positivity and condition (3).",
+      "paper_match": "It matches the paper's strict inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D098",
+      "name": "Real.instOne",
+      "interpretation": "The multiplicative identity of the reals.",
+      "effect_on_target": "It supplies the bound threshold one and matrix identity entries.",
+      "paper_match": "It has the intended value.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Real.instZero",
+      "interpretation": "The additive identity of the reals.",
+      "effect_on_target": "It supplies zero entries and positivity baselines.",
+      "paper_match": "It has the intended value.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "Real.normedCommRing",
+      "interpretation": "The standard normed commutative ring structure on Real.",
+      "effect_on_target": "It supports real arithmetic, norms, matrix multiplication, and mulVec.",
+      "paper_match": "It gives the usual exact real algebra used by the mathematical error analysis.",
+      "status": "pass"
+    },
+    {
+      "id": "D101",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square root, totalized through the nonnegative part of its argument.",
+      "effect_on_target": "It defines vector norms, constants, and the pythagorean diagonal trace.",
+      "paper_match": "The trace separately requires psi, phi, and psi-phi to be nonnegative and r_kk positive, so relevant square roots stay in the paper's real domain.",
+      "status": "pass"
+    },
+    {
+      "id": "D102",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Interpretation of numeral zero from a Zero instance.",
+      "effect_on_target": "It supplies zero matrix entries, zero errors, and positivity baselines.",
+      "paper_match": "It gives the intended value zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D103",
+      "name": "instDecidableEqNat",
+      "interpretation": "A decision procedure for equality of natural numbers.",
+      "effect_on_target": "It selects the k=1 branches of c1 and c2.",
+      "paper_match": "It is computational infrastructure rather than an independent paper concept.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D104",
+      "name": "instHDiv",
+      "interpretation": "The homogeneous HDiv instance induced by a Div instance.",
+      "effect_on_target": "It routes real quotients to real division.",
+      "paper_match": "It introduces no change to the intended quotient semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D105",
+      "name": "instLENat",
+      "interpretation": "The usual non-strict order on natural numbers.",
+      "effect_on_target": "It interprets n<=m, prefix embeddings, and trace support conditions.",
+      "paper_match": "It matches dimension and index ordering in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D106",
+      "name": "instLTNat",
+      "interpretation": "The usual strict order on natural numbers.",
+      "effect_on_target": "It distinguishes the first column and selects earlier projection indices.",
+      "paper_match": "It correctly represents j<k and positive dimensions.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "ite",
+      "interpretation": "Decidable if-then-else.",
+      "effect_on_target": "It implements the k=1 versus k>=2 branches of c1 and c2.",
+      "paper_match": "The branch structure matches equation (2), although the non-first c1 branch itself is wrong.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "Matrix.add",
+      "interpretation": "Pointwise matrix addition.",
+      "effect_on_target": "It states QR=A+deltaA in prefix certificates.",
+      "paper_match": "It is ordinary matrix addition and gives the correct residual sign.",
+      "status": "pass"
+    },
+    {
+      "id": "D109",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive group structure on Real.",
+      "effect_on_target": "It supports negation and absolute values in trace error bounds.",
+      "paper_match": "It gives ordinary real additive algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D110",
+      "name": "Real.lattice",
+      "interpretation": "The lattice order structure on Real.",
+      "effect_on_target": "It supports the definition of absolute value.",
+      "paper_match": "It yields the standard ordered-real absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D111",
+      "name": "abs",
+      "interpretation": "The standard absolute value defined as the maximum of a and -a.",
+      "effect_on_target": "It bounds scalar and componentwise trace errors.",
+      "paper_match": "It matches ordinary absolute value, though the surrounding error model remains inadequate.",
+      "status": "pass"
+    },
+    {
+      "id": "D112",
+      "name": "Finset.filter",
+      "interpretation": "Restriction of a finite set to elements satisfying a predicate.",
+      "effect_on_target": "It restricts residual sums to projection indices j with j<k.",
+      "paper_match": "It selects exactly the previously computed columns.",
+      "status": "pass"
+    },
+    {
+      "id": "D113",
+      "name": "Finset.sum",
+      "interpretation": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It defines dot products, matrix multiplication, residuals, and Euclidean norms.",
+      "paper_match": "Over Real it is ordinary finite summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D114",
+      "name": "Finset.univ",
+      "interpretation": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It ranges sums over all row, column, or vector indices.",
+      "paper_match": "It implements complete finite-dimensional sums.",
+      "status": "pass"
+    },
+    {
+      "id": "D115",
+      "name": "Nat.decLt",
+      "interpretation": "A decision procedure for strict natural-number comparison.",
+      "effect_on_target": "It makes the j<k filter and trace branches computable.",
+      "paper_match": "It is computational infrastructure with no independent paper-level meaning.",
+      "status": "not-applicable"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The inspected published 2006 journal PDF has the standing setup on printed page 300, Algorithm 2 and the floating-point convention on 301, Theorem 1 and equation (7) on 302, and the derivation on 312.",
+      "lean_evidence": "The target names CGS-P data, c4, kappa2, the prefix Q_k, and the orthogonality defect corresponding to those passages.",
+      "reasoning": "The selected source version and cited passages are correct."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "The paper has positive dimensions m>=n, A and Q in R^(m x n), R in R^(n x n), and prefix index k=1,...,n.",
+      "lean_evidence": "D014 requires 0<m, 0<n, and n<=m; D016-D017 use the correct real matrix dimensions; k:Fin n is translated to prefix size k.val+1 by D007 and D009.",
+      "reasoning": "The principal binders, dimensions, and index-set translation are correct."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "Theorem 1 quantifies over prefixes of a computed Algorithm 2 run and derives all stated bounds after assuming condition (3) for each prefix.",
+      "lean_evidence": "D014 requires functions of k supplying traces and prefix certificates before the run exists, while D012 makes the target bound depend on arbitrary coefficient witnesses stored in those certificates.",
+      "reasoning": "The Lean antecedent Skolemizes derived error certificates as input data and introduces witness-dependent remainder bounds absent from the paper's quantifier structure."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes a full-rank real input, an actual floating-point Algorithm 2 computation under its IEEE normalized-range model, and condition (3).",
+      "lean_evidence": "D014 additionally assumes prefix residual certificates; D037 uses arbitrary localErrorScale witnesses and omits normalized-range and exceptional-value conditions; condition (3) uses the incorrect D022-derived c4.",
+      "reasoning": "The formal hypotheses are neither the same execution assumptions nor merely explicit versions of them."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Theorem 1 simultaneously states equations (4), (5), (6), (7), and (8) for every prefix.",
+      "lean_evidence": "The target concludes only the orthogonality inequality corresponding to (7); D032 instead places selected forms of (4)-(6) in a required certificate, and no conclusion corresponding to (8) is present.",
+      "reasoning": "The enclosing paper theorem's conclusions are incomplete and partly moved into hypotheses."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "Equation (2) defines c1(m,k)=2*sqrt(2)*m*k+2*sqrt(k) for k>=2 and c4=c2+2c1.",
+      "lean_evidence": "D022 defines the branch as 2*sqrt(2*m)*k+2*sqrt(k), and D006 builds c4 from that value.",
+      "reasoning": "A central imported constant has been unfolded and found not to match the source."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes original A_k from computed Q_k and R_k and defines residual quantities relating them.",
+      "lean_evidence": "D002, D003, and D013 are distinct fields, while D032 relates QR to A plus deltaA and defines R^TR-A^TA separately.",
+      "reasoning": "The basic distinction between input, computed matrices, and residuals is preserved, despite the inadequate execution model."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The result is specifically for Algorithm 2, including its pythagorean diagonal update executed in floating-point arithmetic.",
+      "lean_evidence": "D037 contains the update's algebraic shape but permits arbitrary additive errors controlled by an unconstrained localErrorScale and does not define actual rounded operations.",
+      "reasoning": "The proposition is linked to a permissive trace relation, not to the paper's execution model."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Equation (7) uses the global spectral norm ||I_k-Q_k^TQ_k||_2 and the squared condition number ||R_k||_2^2||R_k^{-1}||_2^2.",
+      "lean_evidence": "D010 and D029 use the l2-induced operator norm, D011 forms I-Q^TQ, and D008 is squared in the target.",
+      "reasoning": "Norm kind, global rather than componentwise meaning, and the squared condition-number form all match."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "For k>=2, equation (2) places m outside the square root in c1; all bounds use the one-based prefix k.",
+      "lean_evidence": "The prefix offset k.val+1 is correct, and D024-D025 are correct, but D022 places m under the square root and thereby changes D006.",
+      "reasoning": "The indexing is correct but a coefficient and its parameter dependence are not."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Printed page 301 assumes IEEE floating-point behavior, explicitly restricts the displayed relative-error model to normalized-range results, and adopts a first-order approximation; Remark 2 discusses breakdown.",
+      "lean_evidence": "D037 has no precision, rounding mode, normalized-range, subnormal, overflow, infinity, or NaN semantics and bounds all additive errors using an unconstrained scale.",
+      "reasoning": "The Lean trace is not a faithful floating-point model."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper uses strict condition (3) and states equation (7) as a first-order non-strict upper bound subject to O(epsilonM^2).",
+      "lean_evidence": "Lean uses the same order directions but changes c4 and asserts an exact inequality with a certificate-dependent additive term.",
+      "reasoning": "Correct inequality symbols do not rescue the changed antecedent, constant, and exact logical strength."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Equation (7) measures loss of orthogonality, while the appendix derives it using factorization residual deltaA_k and normal-equation residual E_k.",
+      "lean_evidence": "D011 is the orthogonality defect, D038 is R^TR-A^TA, and D032 separately records the factorization residual.",
+      "reasoning": "The relevant error notions are not conflated."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Theorem 1 qualifies equations (4)-(8) by omitted O(epsilonM^2), and printed page 312 retains an unspecified O(epsilonM^2) remainder.",
+      "lean_evidence": "D019-D021 assume arbitrary coefficients at a fixed run and D012 forms an exact coefficient that may depend on those witnesses and on epsilon-dependent run data.",
+      "reasoning": "No uniform asymptotic big-O statement or source-derived explicit remainder coefficient is formalized."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The source result applies to all full-rank real inputs whose actual Algorithm 2 prefixes satisfy condition (3).",
+      "lean_evidence": "D014 narrows the domain to runs already carrying prefix certificates for selected theorem estimates, and the target extracts only one of five conclusions without classifying that specialization.",
+      "reasoning": "This is an unclassified certified-run and single-conclusion specialization, not the benchmark task claimed by the full paper theorem."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "A 1-by-1 full-rank input such as A=[1] gives an exact nonbreakdown Algorithm 2 execution for sufficiently small epsilonM.",
+      "lean_evidence": "D014 can be instantiated with m=n=1, A=Q=R=[1], inverse [1], epsilonM=0.1, zero local errors, and zero second-order coefficients; c4(1,1)*epsilonM=5*0.1<1.",
+      "reasoning": "The formal antecedent is satisfiable and Fin n is nonempty, so the proposition is not vacuous."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean theorem applies only after supplying permissive traces and certificates containing selected residual estimates, uses a different c1 and c4, and concludes only equation (7). It therefore cannot establish the paper's theorem from the paper's stated assumptions."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper's first-order result does not provide the Lean certificate fields or their exact witness-dependent remainder coefficient, and its larger source c4 bound cannot imply the Lean bound using the incorrectly smaller c4 with only an O(epsilonM^2) adjustment."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "incorrect-constant",
+      "paper_evidence": "Equation (2), printed page 302, defines c1(m,k)=2*sqrt(2)*m*k+2*sqrt(k) for k>=2.",
+      "lean_evidence": "D022 defines 2*sqrt(2*m)*k+2*sqrt(k), placing m under the square root; D006 propagates this into c4.",
+      "impact": "Both condition (3) and the principal coefficient in equation (7) are changed for m>1, preventing either claimed implication."
+    },
+    {
+      "severity": "critical",
+      "category": "derived-results-assumed",
+      "paper_evidence": "Theorem 1 derives equations (4)-(8) from Algorithm 2 and the stated assumptions, and the appendix derives (7) from (4)-(6).",
+      "lean_evidence": "D014 requires a prefixCertificate, and D032 constructs it only after assuming factorization and normal-equation residual bounds plus a reverse norm bound.",
+      "impact": "The target formalizes an algebraic consequence for pre-certified prefixes rather than the paper's floating-point theorem."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point-model",
+      "paper_evidence": "Printed page 301 invokes IEEE arithmetic, normalized-range relative error, and a first-order convention; Remark 2 addresses breakdown.",
+      "lean_evidence": "D037 uses additive error variables bounded by an arbitrary nonnegative localErrorScale and has no operation-level rounding or exceptional-value semantics.",
+      "impact": "The run type admits executions not justified by the paper's numerical model."
+    },
+    {
+      "severity": "major",
+      "category": "conclusion-incompleteness",
+      "paper_evidence": "Theorem 1 states five simultaneous conclusions, equations (4)-(8).",
+      "lean_evidence": "The target concludes only the inequality corresponding to equation (7), while selected other conclusions occur only inside D032 and equation (8) is absent.",
+      "impact": "The declaration does not represent the complete cited theorem."
+    },
+    {
+      "severity": "major",
+      "category": "higher-order-semantics",
+      "paper_evidence": "The source suppresses an unspecified O(epsilonM^2) term in the theorem and appendix.",
+      "lean_evidence": "D012 asserts an exact epsilonM-squared remainder using arbitrary coefficients projected by D019-D021.",
+      "impact": "The formal statement has different uniformity and witness dependence from the paper's first-order claim."
+    }
+  ],
+  "rationale": "The matrix dimensions, prefix indexing, orthogonality defect, spectral norm, inverse-based condition number, and residual signs are represented correctly, and the run type is nonempty. Nevertheless, the formal c1 formula is wrong, so c4 is wrong; the numerical execution model is not IEEE semantics; selected conclusions of Theorem 1 are assumed through certificates; the target omits four explicit conclusions; and the source's O(epsilonM^2) qualification is replaced by a witness-dependent exact term. These are decisive semantic differences, not an acceptable stronger theorem or a harmless specialization. :codex-file-citation{path=\"/tmp/lean-fp-analysis-p11t3-audit/paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram–Schmidt.pdf\" purpose=\"source\"}"
+}

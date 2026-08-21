@@ -1,0 +1,98 @@
+{
+  "accepted": false,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-15T08:28:19.649810+00:00",
+  "findings": [
+    {
+      "category": "incorrect-constant",
+      "impact": "Both condition (3) and the principal coefficient in equation (7) are changed for m>1, preventing either claimed implication.",
+      "lean_evidence": "D022 defines 2*sqrt(2*m)*k+2*sqrt(k), placing m under the square root; D006 propagates this into c4.",
+      "paper_evidence": "Equation (2), printed page 302, defines c1(m,k)=2*sqrt(2)*m*k+2*sqrt(k) for k>=2.",
+      "severity": "critical"
+    },
+    {
+      "category": "derived-results-assumed",
+      "impact": "The target formalizes an algebraic consequence for pre-certified prefixes rather than the paper's floating-point theorem.",
+      "lean_evidence": "D014 requires a prefixCertificate, and D032 constructs it only after assuming factorization and normal-equation residual bounds plus a reverse norm bound.",
+      "paper_evidence": "Theorem 1 derives equations (4)-(8) from Algorithm 2 and the stated assumptions, and the appendix derives (7) from (4)-(6).",
+      "severity": "critical"
+    },
+    {
+      "category": "floating-point-model",
+      "impact": "The run type admits executions not justified by the paper's numerical model.",
+      "lean_evidence": "D037 uses additive error variables bounded by an arbitrary nonnegative localErrorScale and has no operation-level rounding or exceptional-value semantics.",
+      "paper_evidence": "Printed page 301 invokes IEEE arithmetic, normalized-range relative error, and a first-order convention; Remark 2 addresses breakdown.",
+      "severity": "major"
+    },
+    {
+      "category": "conclusion-incompleteness",
+      "impact": "The declaration does not represent the complete cited theorem.",
+      "lean_evidence": "The target concludes only the inequality corresponding to equation (7), while selected other conclusions occur only inside D032 and equation (8) is absent.",
+      "paper_evidence": "Theorem 1 states five simultaneous conclusions, equations (4)-(8).",
+      "severity": "major"
+    },
+    {
+      "category": "higher-order-semantics",
+      "impact": "The formal statement has different uniformity and witness dependence from the paper's first-order claim.",
+      "lean_evidence": "D012 asserts an exact epsilonM-squared remainder using arbitrary coefficients projected by D019-D021.",
+      "paper_evidence": "The source suppresses an unspecified O(epsilonM^2) term in the theorem and appendix.",
+      "severity": "major"
+    },
+    {
+      "category": "conclusion completeness and role reversal",
+      "impact": "The translated proposition does not express the complete paper result and changes conclusions into hypotheses.",
+      "paper_evidence": "Theorem 1 simultaneously states equations (4)-(8).",
+      "severity": "critical",
+      "translation_evidence": "Only the orthogonality inequality is concluded, while residual bounds corresponding to equations (4) and (5) are prefix-certificate assumptions."
+    },
+    {
+      "category": "constant mismatch",
+      "impact": "The main first-order constant and smallness condition are numerically different whenever m is generally greater than one.",
+      "paper_evidence": "For k>=2, c1(m,k)=2 sqrt(2) m k+2 sqrt(k).",
+      "severity": "critical",
+      "translation_evidence": "For r>=2, beta(m,r)=2r sqrt(2m)+2 sqrt(r)."
+    },
+    {
+      "category": "algorithm and floating-point provenance",
+      "impact": "The proposition applies to an abstract certificate class rather than precisely to the paper's computed CGS-P outputs.",
+      "paper_evidence": "Q and R are computed by Algorithm 2 in IEEE floating-point arithmetic under the normalized-range model.",
+      "severity": "major",
+      "translation_evidence": "Q and R are supplied matrices constrained by perturbed step equations whose errors use an unrestricted lambda."
+    },
+    {
+      "category": "higher-order treatment",
+      "impact": "The translated remainder is neither the same asymptotic assertion nor a uniformly justified strengthening of it.",
+      "paper_evidence": "The displayed bounds suppress an O(epsilon_M^2) term under a first-order approximation.",
+      "severity": "major",
+      "translation_evidence": "An exact E_s epsilon^2 term is added using nonunique and unbounded certificate coefficients."
+    },
+    {
+      "category": "quantifier and domain mismatch",
+      "impact": "Witness dependence and admissible inputs differ enough that neither complete statement implies the other.",
+      "paper_evidence": "The source quantifies over CGS-P outputs and then over their prefixes.",
+      "severity": "major",
+      "translation_evidence": "The target quantifies over witness-bearing run records, with inverses and certificates supplied for every prefix before selecting k."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean theorem applies only after supplying permissive traces and certificates containing selected residual estimates, uses a different c1 and c4, and concludes only equation (7). It therefore cannot establish the paper's theorem from the paper's stated assumptions.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper's first-order result does not provide the Lean certificate fields or their exact witness-dependent remainder coefficient, and its larger source c4 bound cannot imply the Lean bound using the incorrectly smaller c4 with only an O(epsilonM^2) adjustment.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The matrix dimensions, prefix indexing, orthogonality defect, spectral norm, inverse-based condition number, and residual signs are represented correctly, and the run type is nonempty. Nevertheless, the formal c1 formula is wrong, so c4 is wrong; the numerical execution model is not IEEE semantics; selected conclusions of Theorem 1 are assumed through certificates; the target omits four explicit conclusions; and the source's O(epsilonM^2) qualification is replaced by a witness-dependent exact term. These are decisive semantic differences, not an acceptable stronger theorem or a harmless specialization. :codex-file-citation{path=\"/tmp/lean-fp-analysis-p11t3-audit/paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf\" purpose=\"source\"}",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P11-T3"
+}

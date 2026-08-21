@@ -19,17 +19,17 @@
       "section": "Algorithm 2"
     },
     {
-      "anchor": "Theorem 1, numbered equation (7)",
+      "anchor": "Theorem 1, inequality (7)",
       "pdf_page": 4,
       "printed_page": "302",
-      "role": "selected stated loss-of-orthogonality bound",
+      "role": "stated loss-of-orthogonality bound",
       "section": "Theorem 1"
     },
     {
-      "anchor": "exact identity and following norm estimates deriving equation (7)",
+      "anchor": "unnumbered exact identity and following norm estimate deriving (7)",
       "pdf_page": 14,
       "printed_page": "312",
-      "role": "proof decomposition and propagation of equations (4)-(6)",
+      "role": "proof decomposition into normal-equation and factorization-error terms",
       "section": "Appendix: Proof of Theorem 1"
     }
   ],

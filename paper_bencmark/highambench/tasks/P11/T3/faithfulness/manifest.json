@@ -121,11 +121,11 @@
     "module_count": 5166,
     "sorted_module_names_sha256": "075d801f7bde73eb40092417de373c990808f365218c2ea301d7777ed666ba52"
   },
-  "completed_at_utc": "2026-08-15T08:28:19.649810+00:00",
+  "completed_at_utc": "2026-08-21T21:17:59.626722+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P11/T3/context.md",
     "semantic_evidence": false,
-    "sha256": "de60bf03fa3a5829f2adf02c7b9565709a0e3fc6e75a39b8feec6998fdf53cc3"
+    "sha256": "fb7536e8a26411848b64c1578bda73a9bc77489061aab5e5d5507a2a359b2633"
   },
   "dependencies": [
     {
@@ -133,40 +133,40 @@
       "distance": 1,
       "id": "D001",
       "kind": "inductive",
-      "name": "HighamBench.P11CGSPTheorem1Run",
+      "name": "HighamBench.P11CGSPTheorem1Family",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "42844110370a2d08e8b33dc425a7c8906b46f2f13beefe01c915c765a2044e22"
+      "semantic_sha256": "88a1935a02345a7ece7f24d25d54db276a40ce62a31346678c19bc06888e4ec8"
     },
     {
       "blind_name": "LocalDef002",
       "distance": 1,
       "id": "D002",
       "kind": "abbrev",
-      "name": "HighamBench.P11CGSPTheorem1Run.Q",
+      "name": "HighamBench.P11CGSPTheorem1Family.run",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "968d297b07b9e9043d0b255726394b0cabe6a4b1ab48bad42dc2270cfdbdba7f"
+      "semantic_sha256": "0af00203f35742cc830892a7abb6bd69539c231e0166920e5832d810b92c5a2d"
     },
     {
       "blind_name": "LocalDef003",
       "distance": 1,
       "id": "D003",
       "kind": "abbrev",
-      "name": "HighamBench.P11CGSPTheorem1Run.R",
+      "name": "HighamBench.P11CGSPTheorem1Run.Q",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "12b7d00b54c4e4d203038ad90549de5ea0186d0ea5f8298250bf2f836eb3cfa6"
+      "semantic_sha256": "581f4de292608e15b8e0532f19dbfe00df2f883d58b084d873ee576ba7bedd06"
     },
     {
       "blind_name": "LocalDef004",
       "distance": 1,
       "id": "D004",
       "kind": "abbrev",
-      "name": "HighamBench.P11CGSPTheorem1Run.epsilonM",
+      "name": "HighamBench.P11CGSPTheorem1Run.R",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "d37dcbd78f5e0cf51b01fe51020b651b96d534f55739e70a303191649b8cc4ab"
+      "semantic_sha256": "0efd4ec0000a47b04b116e0dc6570a51e9d2be911554eb18ca4b475be12bcb94"
     },
     {
       "blind_name": "LocalDef005",
@@ -176,12 +176,32 @@
       "name": "HighamBench.P11CGSPTheorem1Run.leadingInverse",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "f796d1993b87ae8b4f28ee378b372e8b04f73dbd508077ba2be2f4e2634dc46a"
+      "semantic_sha256": "21c30ccaa5cbde88415cfde251ca0f535bda4cef9520e73605ae3a2797c012c5"
     },
     {
       "blind_name": "LocalDef006",
       "distance": 1,
       "id": "D006",
+      "kind": "abbrev",
+      "name": "HighamBench.P11PositiveEpsilon",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "bb2d959973ba6236a46c87a35e27742fe58ee6aabb2729bd7bd98aed1fab3a7b"
+    },
+    {
+      "blind_name": "LocalDef007",
+      "distance": 1,
+      "id": "D007",
+      "kind": "inductive",
+      "name": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "27916e70fda34265f406f0ca22bf37bd69c970cec8694e0363b5e94c8e429bf8"
+    },
+    {
+      "blind_name": "LocalDef008",
+      "distance": 1,
+      "id": "D008",
       "kind": "def",
       "name": "HighamBench.p11C4",
       "owner_module": "HighamBench.P11Definitions",
@@ -189,9 +209,9 @@
       "semantic_sha256": "8f2c155c77d4c16aea80738b5ae7b604b872a12e62760f1c0ac8a302fbc4f743"
     },
     {
-      "blind_name": "LocalDef007",
+      "blind_name": "LocalDef009",
       "distance": 1,
-      "id": "D007",
+      "id": "D009",
       "kind": "def",
       "name": "HighamBench.p11ColumnPrefix",
       "owner_module": "HighamBench.P11Definitions",
@@ -199,9 +219,9 @@
       "semantic_sha256": "9c78c40f5672660e00e3a8b29d027870cd22b7a49d516a1e5098f2d8afa8d83e"
     },
     {
-      "blind_name": "LocalDef008",
+      "blind_name": "LocalDef010",
       "distance": 1,
-      "id": "D008",
+      "id": "D010",
       "kind": "def",
       "name": "HighamBench.p11Kappa2",
       "owner_module": "HighamBench.P11Definitions",
@@ -209,9 +229,9 @@
       "semantic_sha256": "1f027b9831ac4b41c191c8155e75d236b1c2a94366da21461f0895f5a074537d"
     },
     {
-      "blind_name": "LocalDef009",
+      "blind_name": "LocalDef011",
       "distance": 1,
-      "id": "D009",
+      "id": "D011",
       "kind": "def",
       "name": "HighamBench.p11LeadingBlock",
       "owner_module": "HighamBench.P11Definitions",
@@ -219,9 +239,9 @@
       "semantic_sha256": "1efb31586e183a13446325718b87a7358f5cc51a349c897b72d2e1837e075d2a"
     },
     {
-      "blind_name": "LocalDef010",
+      "blind_name": "LocalDef012",
       "distance": 1,
-      "id": "D010",
+      "id": "D012",
       "kind": "def",
       "name": "HighamBench.p11OpNorm2",
       "owner_module": "HighamBench.P11Definitions",
@@ -229,9 +249,9 @@
       "semantic_sha256": "9e3c517d428a26eec754111d483048d655c05f52bfdd2a9013cb15cff394ccee"
     },
     {
-      "blind_name": "LocalDef011",
+      "blind_name": "LocalDef013",
       "distance": 1,
-      "id": "D011",
+      "id": "D013",
       "kind": "def",
       "name": "HighamBench.p11RectOrthogonalityDefect",
       "owner_module": "HighamBench.P11Definitions",
@@ -239,49 +259,99 @@
       "semantic_sha256": "cf3a0f08435f90398f8b694ecf96446b253704af09c791b454e534eea2c5f7f8"
     },
     {
-      "blind_name": "LocalDef012",
+      "blind_name": "LocalDef014",
       "distance": 1,
-      "id": "D012",
+      "id": "D014",
+      "kind": "def",
+      "name": "HighamBench.p11Theorem1OrthogonalityRadius",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "0679cdb3a79ec63e28b1865db2820205b0afb7b350bc1b8e8598968f1081014e"
+    },
+    {
+      "blind_name": "LocalDef015",
+      "distance": 1,
+      "id": "D015",
       "kind": "def",
       "name": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "6fd1c901671b0d677ada4d15c4a1cc50dfaaba0549610420f3f02584a5f67a4e"
-    },
-    {
-      "blind_name": "LocalDef013",
-      "distance": 2,
-      "id": "D013",
-      "kind": "abbrev",
-      "name": "HighamBench.P11CGSPTheorem1Run.A",
-      "owner_module": "HighamBench.P11Definitions",
-      "role": "local",
-      "semantic_sha256": "a580e1dd68785592879c4aea4503d8facbb2593f63fd1b5932714bf6b8c76dcc"
-    },
-    {
-      "blind_name": "LocalDef014",
-      "distance": 2,
-      "id": "D014",
-      "kind": "constructor",
-      "name": "HighamBench.P11CGSPTheorem1Run.mk",
-      "owner_module": "HighamBench.P11Definitions",
-      "role": "local",
-      "semantic_sha256": "fab0e9bf713d88b0bf7f6887c3542a8d81af310b305f39cf67e46749970b6574"
-    },
-    {
-      "blind_name": "LocalDef015",
-      "distance": 2,
-      "id": "D015",
-      "kind": "abbrev",
-      "name": "HighamBench.P11CGSPTheorem1Run.prefixCertificate",
-      "owner_module": "HighamBench.P11Definitions",
-      "role": "local",
-      "semantic_sha256": "61d1d0afa5493ee94b18352912800461c2fb442c4b9b93066a965f441bb44f34"
+      "semantic_sha256": "daf3c0beb3b8de1795ac8efb4d4363ea1ba6079497b52e361efb97cc87f950e6"
     },
     {
       "blind_name": "LocalDef016",
       "distance": 2,
       "id": "D016",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPTheorem1Family.A",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "66cebf208963153caa509363b1c69714e536de1dd8080805cc59752867695b37"
+    },
+    {
+      "blind_name": "LocalDef017",
+      "distance": 2,
+      "id": "D017",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPTheorem1Family.conditionRadius",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "6bc6cdbf4885a9deea5169d4a5b5a0681c9cc1e26bc416fc4f41a23d4d5c1bda"
+    },
+    {
+      "blind_name": "LocalDef018",
+      "distance": 2,
+      "id": "D018",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPTheorem1Family.inverseNormBound",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "1c2c32b6b9674d27e526876035a2d13cbd9704787f5e5526ed4f3505353a394f"
+    },
+    {
+      "blind_name": "LocalDef019",
+      "distance": 2,
+      "id": "D019",
+      "kind": "constructor",
+      "name": "HighamBench.P11CGSPTheorem1Family.mk",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "e0902c17763465a7b5a5eec4c11db2f74a8cbe8aad09e3da60ecc6306fbbbeda"
+    },
+    {
+      "blind_name": "LocalDef020",
+      "distance": 2,
+      "id": "D020",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPTheorem1Family.normBoundRadius",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "d11f6489a4a5472a85ff4f7abce601dc3528bfcb2648ef52dd3e0f6c030957bc"
+    },
+    {
+      "blind_name": "LocalDef021",
+      "distance": 2,
+      "id": "D021",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPTheorem1Family.rNormBound",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "a2fae4a96e544a316e9341fae3a2ac8a12542ec653dc07de98ae42fbdb3025fe"
+    },
+    {
+      "blind_name": "LocalDef022",
+      "distance": 2,
+      "id": "D022",
+      "kind": "inductive",
+      "name": "HighamBench.P11CGSPTheorem1Run",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "e151c45c3ec3ee714d94ed8106a6261c518dabc8ae96c0947bdd075e38bb9e51"
+    },
+    {
+      "blind_name": "LocalDef023",
+      "distance": 2,
+      "id": "D023",
       "kind": "abbrev",
       "name": "HighamBench.P11Matrix",
       "owner_module": "HighamBench.P11Definitions",
@@ -289,9 +359,9 @@
       "semantic_sha256": "36cb62df059104618b8f64e14d1c7515ec97591f02a19d69708a101cde0e7dce"
     },
     {
-      "blind_name": "LocalDef017",
+      "blind_name": "LocalDef024",
       "distance": 2,
-      "id": "D017",
+      "id": "D024",
       "kind": "abbrev",
       "name": "HighamBench.P11RectMatrix",
       "owner_module": "HighamBench.P11Definitions",
@@ -299,59 +369,69 @@
       "semantic_sha256": "157fc1c63f67a701a836e52c7a1efe6c7c8816987afb4e184e7e849df6494e90"
     },
     {
-      "blind_name": "LocalDef018",
+      "blind_name": "LocalDef025",
       "distance": 2,
-      "id": "D018",
-      "kind": "inductive",
-      "name": "HighamBench.P11Theorem1PrefixCertificate",
-      "owner_module": "HighamBench.P11Definitions",
-      "role": "local",
-      "semantic_sha256": "6f5c90db1f66d3db450aed8dab8ad7a55be652ceb40604dc9ca384b59a55b76e"
-    },
-    {
-      "blind_name": "LocalDef019",
-      "distance": 2,
-      "id": "D019",
+      "id": "D025",
       "kind": "abbrev",
-      "name": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff",
+      "name": "HighamBench.P11Theorem1ResidualAsymptotics.factorizationSecondOrderCoeff",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "fa9a66ac6f8c5329d359228cf5570c1de3bbb93a557326181598797b9c11be35"
+      "semantic_sha256": "4e91a1581c477a43d2069916a22cd9e2475db899d06582be1b7a3697a17c24da"
     },
     {
-      "blind_name": "LocalDef020",
+      "blind_name": "LocalDef026",
       "distance": 2,
-      "id": "D020",
+      "id": "D026",
+      "kind": "constructor",
+      "name": "HighamBench.P11Theorem1ResidualAsymptotics.mk",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "2262d8e81b97f436f5566d4fc78dcb80407fa784eb6f48da388143556e4d4e35"
+    },
+    {
+      "blind_name": "LocalDef027",
+      "distance": 2,
+      "id": "D027",
       "kind": "abbrev",
-      "name": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff",
+      "name": "HighamBench.P11Theorem1ResidualAsymptotics.normalEquationSecondOrderCoeff",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "380a214414f38413479bbb67da6310aafe2a86ac903156cb7e4ceca854725c7e"
+      "semantic_sha256": "43af9658a78bbb6d2e6fda54350c2b96765db5011186d5f604a789cfcbd3348b"
     },
     {
-      "blind_name": "LocalDef021",
+      "blind_name": "LocalDef028",
       "distance": 2,
-      "id": "D021",
+      "id": "D028",
       "kind": "abbrev",
-      "name": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff",
+      "name": "HighamBench.P11Theorem1ResidualAsymptotics.radius",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "2b3bf759cd4e849b2bede2c39aee1f644705c279ae862d405be4c1e50eee0915"
+      "semantic_sha256": "e1a86dc145731bb2ff528811b89781063bf08e9e1ef1e004fb1038538ce1d074"
     },
     {
-      "blind_name": "LocalDef022",
+      "blind_name": "LocalDef029",
       "distance": 2,
-      "id": "D022",
+      "id": "D029",
+      "kind": "abbrev",
+      "name": "HighamBench.P11Theorem1ResidualAsymptotics.reverseNormSecondOrderCoeff",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "eaf843c607343eac361393b9a8f05a8fda4b2d5463e0fb4ca50523a00d58e639"
+    },
+    {
+      "blind_name": "LocalDef030",
+      "distance": 2,
+      "id": "D030",
       "kind": "def",
       "name": "HighamBench.p11C1",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "a7ae047fbf6313935e520d17845cb69e0cd9566b671867985a99185edf24e2d5"
+      "semantic_sha256": "b7b08e3c7e58aa7c905346648ccb433c270d24b16ce1b39a791f3a8b77c4f09f"
     },
     {
-      "blind_name": "LocalDef023",
+      "blind_name": "LocalDef031",
       "distance": 2,
-      "id": "D023",
+      "id": "D031",
       "kind": "theorem",
       "name": "HighamBench.p11C1._proof_1",
       "owner_module": "HighamBench.P11Definitions",
@@ -359,9 +439,9 @@
       "semantic_sha256": "52067e5a77dcfefcf6fcc3dd88352b7497aba5f0a24254ae20d387e9e2f2faf7"
     },
     {
-      "blind_name": "LocalDef024",
+      "blind_name": "LocalDef032",
       "distance": 2,
-      "id": "D024",
+      "id": "D032",
       "kind": "def",
       "name": "HighamBench.p11C2",
       "owner_module": "HighamBench.P11Definitions",
@@ -369,9 +449,9 @@
       "semantic_sha256": "d798e6a8b8ba59dbcb92ee2cfc3d3d4168700ab660301680a184a00da12fe4b1"
     },
     {
-      "blind_name": "LocalDef025",
+      "blind_name": "LocalDef033",
       "distance": 2,
-      "id": "D025",
+      "id": "D033",
       "kind": "def",
       "name": "HighamBench.p11C3",
       "owner_module": "HighamBench.P11Definitions",
@@ -379,9 +459,9 @@
       "semantic_sha256": "c0ecb567dcc422d45ddb50bd71c12eace0cf0bad73f7974c28e5b5fc39325954"
     },
     {
-      "blind_name": "LocalDef026",
+      "blind_name": "LocalDef034",
       "distance": 2,
-      "id": "D026",
+      "id": "D034",
       "kind": "def",
       "name": "HighamBench.p11Identity",
       "owner_module": "HighamBench.P11Definitions",
@@ -389,9 +469,9 @@
       "semantic_sha256": "00a8fef3c8e11f6c84bb5d143a23f246869ac3bd80853c7ec3de93f1add99fda"
     },
     {
-      "blind_name": "LocalDef027",
+      "blind_name": "LocalDef035",
       "distance": 2,
-      "id": "D027",
+      "id": "D035",
       "kind": "theorem",
       "name": "HighamBench.p11LeadingBlock._proof_1",
       "owner_module": "HighamBench.P11Definitions",
@@ -399,9 +479,9 @@
       "semantic_sha256": "60564d03e1dd6754e3f768cd633cfa899d84059307025fff5d0e1d2c20189049"
     },
     {
-      "blind_name": "LocalDef028",
+      "blind_name": "LocalDef036",
       "distance": 2,
-      "id": "D028",
+      "id": "D036",
       "kind": "def",
       "name": "HighamBench.p11RectMatMul",
       "owner_module": "HighamBench.P11Definitions",
@@ -409,9 +489,9 @@
       "semantic_sha256": "45dbaf27eb1bfa2cd0daa5ab3a20f4c59e27000bb35c7e9ee94b4e37d117677d"
     },
     {
-      "blind_name": "LocalDef029",
+      "blind_name": "LocalDef037",
       "distance": 2,
-      "id": "D029",
+      "id": "D037",
       "kind": "def",
       "name": "HighamBench.p11RectOpNorm2",
       "owner_module": "HighamBench.P11Definitions",
@@ -419,9 +499,9 @@
       "semantic_sha256": "1b2d7c2d7e8f4d40657845bb9aa69ad3127ead898c03c302f25c632a978029d0"
     },
     {
-      "blind_name": "LocalDef030",
+      "blind_name": "LocalDef038",
       "distance": 2,
-      "id": "D030",
+      "id": "D038",
       "kind": "def",
       "name": "HighamBench.p11RectTranspose",
       "owner_module": "HighamBench.P11Definitions",
@@ -429,29 +509,29 @@
       "semantic_sha256": "6e4fb23abd6b03197c4fe854dbe27e151d6ef4dbe4698963a4bedfa69b00bee2"
     },
     {
-      "blind_name": "LocalDef031",
+      "blind_name": "LocalDef039",
       "distance": 3,
-      "id": "D031",
-      "kind": "inductive",
-      "name": "HighamBench.P11CGSPColumnTrace",
+      "id": "D039",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPTheorem1Run.A",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "709a4b6df878964e20af6a8aaac451ec5f6ab915672c6b5525c949ff34b99582"
+      "semantic_sha256": "7cb0279bb3dac58e4bb3da58311ddb531622c127f1778226875ee9ece32e6ddc"
     },
     {
-      "blind_name": "LocalDef032",
+      "blind_name": "LocalDef040",
       "distance": 3,
-      "id": "D032",
+      "id": "D040",
       "kind": "constructor",
-      "name": "HighamBench.P11Theorem1PrefixCertificate.mk",
+      "name": "HighamBench.P11CGSPTheorem1Run.mk",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "dae41e053aa1476a3e94c73e07012760fbb97e3129f9447316fba107980fd072"
+      "semantic_sha256": "750e8de18fcdb932aa1a1c09b0af4bf777402bee218c5bf7cfd3c416da630e36"
     },
     {
-      "blind_name": "LocalDef033",
+      "blind_name": "LocalDef041",
       "distance": 3,
-      "id": "D033",
+      "id": "D041",
       "kind": "theorem",
       "name": "HighamBench.p11C2._proof_1",
       "owner_module": "HighamBench.P11Definitions",
@@ -459,9 +539,9 @@
       "semantic_sha256": "7c4860c0f215e578204f5411971cf76e3cca164a37651cfc446acaa760c945e4"
     },
     {
-      "blind_name": "LocalDef034",
+      "blind_name": "LocalDef042",
       "distance": 3,
-      "id": "D034",
+      "id": "D042",
       "kind": "theorem",
       "name": "HighamBench.p11C2._proof_2",
       "owner_module": "HighamBench.P11Definitions",
@@ -469,9 +549,9 @@
       "semantic_sha256": "43da9e2478acfcc10315652cd8017ae5008c9946f416851d0614bcf8778b9474"
     },
     {
-      "blind_name": "LocalDef035",
+      "blind_name": "LocalDef043",
       "distance": 3,
-      "id": "D035",
+      "id": "D043",
       "kind": "theorem",
       "name": "HighamBench.p11C2._proof_3",
       "owner_module": "HighamBench.P11Definitions",
@@ -479,29 +559,9 @@
       "semantic_sha256": "1aa79886ab5282243bf93d3fba3d63ed20aa22eb2ac713e36b95342b25d8a763"
     },
     {
-      "blind_name": "LocalDef036",
+      "blind_name": "LocalDef044",
       "distance": 3,
-      "id": "D036",
-      "kind": "def",
-      "name": "HighamBench.p11MatMul",
-      "owner_module": "HighamBench.P11Definitions",
-      "role": "local",
-      "semantic_sha256": "5a88abf3460b515aae8930a3c3f8e801fd2d6dc6711b9f813b357ae40f5166b9"
-    },
-    {
-      "blind_name": "LocalDef037",
-      "distance": 4,
-      "id": "D037",
-      "kind": "constructor",
-      "name": "HighamBench.P11CGSPColumnTrace.mk",
-      "owner_module": "HighamBench.P11Definitions",
-      "role": "local",
-      "semantic_sha256": "00980d2f09c32c990f3fdbc35864f990bb3941739c697b17968e800900316340"
-    },
-    {
-      "blind_name": "LocalDef038",
-      "distance": 4,
-      "id": "D038",
+      "id": "D044",
       "kind": "def",
       "name": "HighamBench.p11RectNormalEquationResidual",
       "owner_module": "HighamBench.P11Definitions",
@@ -509,39 +569,49 @@
       "semantic_sha256": "06dacf14b4a26dd49f7011d96c291c69e6764b535d764a9c3677303af781b31f"
     },
     {
-      "blind_name": "LocalDef039",
-      "distance": 5,
-      "id": "D039",
+      "blind_name": "LocalDef045",
+      "distance": 3,
+      "id": "D045",
       "kind": "def",
-      "name": "HighamBench.p11CGSPColumnNorm",
+      "name": "HighamBench.p11Theorem1FactorizationResidual",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "99fe77ccf9737a94b82317491c1334cf7cfe793d722977a87a1a2115c1f149b5"
+      "semantic_sha256": "f3d2321eed783f06c71099af291e9a60e245623b9237a634de506133a9c79a13"
     },
     {
-      "blind_name": "LocalDef040",
-      "distance": 5,
-      "id": "D040",
-      "kind": "def",
-      "name": "HighamBench.p11CGSPProjectionEntry",
+      "blind_name": "LocalDef046",
+      "distance": 4,
+      "id": "D046",
+      "kind": "inductive",
+      "name": "HighamBench.P11CGSPColumnTrace",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "dca32c61dee9c90e394aae47d5d2e590f908f116a6215a5d22cf0a8c416196d3"
+      "semantic_sha256": "58676f0c9cf50293bec28232f6d42a3aea963c106083b364c0e052c53ed9ee7a"
     },
     {
-      "blind_name": "LocalDef041",
-      "distance": 5,
-      "id": "D041",
-      "kind": "def",
-      "name": "HighamBench.p11CGSPResidualEntry",
+      "blind_name": "LocalDef047",
+      "distance": 4,
+      "id": "D047",
+      "kind": "inductive",
+      "name": "HighamBench.P11CGSPNormalizedArithmetic",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "a676408fc9e88ec153fd942b4bb8e72a40b00f2efa8fc9778c3a4302aaa10278"
+      "semantic_sha256": "fa7de182724c676a8b15bbf1fa275f91515545373781a478307542120c523cc0"
     },
     {
-      "blind_name": "LocalDef042",
-      "distance": 5,
-      "id": "D042",
+      "blind_name": "LocalDef048",
+      "distance": 4,
+      "id": "D048",
+      "kind": "def",
+      "name": "HighamBench.p11MatMul",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "5a88abf3460b515aae8930a3c3f8e801fd2d6dc6711b9f813b357ae40f5166b9"
+    },
+    {
+      "blind_name": "LocalDef049",
+      "distance": 4,
+      "id": "D049",
       "kind": "def",
       "name": "HighamBench.p11Transpose",
       "owner_module": "HighamBench.P11Definitions",
@@ -549,9 +619,149 @@
       "semantic_sha256": "df902c1363a2c4d532efa052274ff9934e76027f6f628e6b7d8cbc207418820a"
     },
     {
-      "blind_name": "LocalDef043",
+      "blind_name": "LocalDef050",
       "distance": 5,
-      "id": "D043",
+      "id": "D050",
+      "kind": "constructor",
+      "name": "HighamBench.P11CGSPColumnTrace.mk",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "eb9487efe712303ab1e9c1372c5bb4d9fa06316eeedf7080b6b27ee9d7628d10"
+    },
+    {
+      "blind_name": "LocalDef051",
+      "distance": 5,
+      "id": "D051",
+      "kind": "constructor",
+      "name": "HighamBench.P11CGSPNormalizedArithmetic.mk",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "e2e1c0f2f274198e5ea069cf5578987b835cc08927303c3e9bfc4cd1d27b5dfe"
+    },
+    {
+      "blind_name": "LocalDef052",
+      "distance": 6,
+      "id": "D052",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPNormalizedArithmetic.add",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "4a1e2d74a39db77a1961715b59d980942a267249e8f02a4a434ca1c96e842578"
+    },
+    {
+      "blind_name": "LocalDef053",
+      "distance": 6,
+      "id": "D053",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPNormalizedArithmetic.dot",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "70f78fc5e866d515cba415ee3b7847987756205a374158486e75b2d88738d3e3"
+    },
+    {
+      "blind_name": "LocalDef054",
+      "distance": 6,
+      "id": "D054",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPNormalizedArithmetic.multiply",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "c596c728f2aa0d0809966a9a6548a6e7cf814cd755d509e992914ff7b2c1f25c"
+    },
+    {
+      "blind_name": "LocalDef055",
+      "distance": 6,
+      "id": "D055",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPNormalizedArithmetic.squareRoot",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "900317dbc6212a82bee8526922244be6eccab78470260efb3edeae2e5e0ae78f"
+    },
+    {
+      "blind_name": "LocalDef056",
+      "distance": 6,
+      "id": "D056",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPNormalizedArithmetic.subtract",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "8afee97006bfef7f3b3c410ac5f333fa91501a29eb310c316d8f09fa8b90a6e3"
+    },
+    {
+      "blind_name": "LocalDef057",
+      "distance": 6,
+      "id": "D057",
+      "kind": "abbrev",
+      "name": "HighamBench.P11CGSPNormalizedArithmetic.toP11NormalizedIEEEArithmetic",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "bf9f41a7af0d79905cbe82392f0173c43a0705dcbd45ac1262007e2f8d3303e5"
+    },
+    {
+      "blind_name": "LocalDef058",
+      "distance": 6,
+      "id": "D058",
+      "kind": "inductive",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "6bfad9707eb1614f58f51f173591081213b3485b488338c640574d543a7d283b"
+    },
+    {
+      "blind_name": "LocalDef059",
+      "distance": 6,
+      "id": "D059",
+      "kind": "abbrev",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic.computedNorm",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "6d4c2b8ece9829f777600a0141f4ff86469cb652ac589ae795d9f9a683733ac8"
+    },
+    {
+      "blind_name": "LocalDef060",
+      "distance": 6,
+      "id": "D060",
+      "kind": "abbrev",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic.divide",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "8294149a85ea5526102d1089e6d57f13d9039c7d58f22d287ef5a04664f622b0"
+    },
+    {
+      "blind_name": "LocalDef061",
+      "distance": 6,
+      "id": "D061",
+      "kind": "abbrev",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic.normalized",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "1b985c4542821baacd7f3343c0070ee8b7d1666027c272ae12ca85cb6bfa5cba"
+    },
+    {
+      "blind_name": "LocalDef062",
+      "distance": 6,
+      "id": "D062",
+      "kind": "def",
+      "name": "HighamBench.p11EarlierVector",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "6796d402d487f33a7b0f0afafe89d1b692a281e2162a117226a2872b745b1fda"
+    },
+    {
+      "blind_name": "LocalDef063",
+      "distance": 7,
+      "id": "D063",
+      "kind": "constructor",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic.mk",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local",
+      "semantic_sha256": "919e72580f3e6ea95642d1e3ec0ba90b82c79d9fba71c29d9bc8ff790f1fcbf2"
+    },
+    {
+      "blind_name": "LocalDef064",
+      "distance": 8,
+      "id": "D064",
       "kind": "def",
       "name": "HighamBench.p11VecNorm",
       "owner_module": "HighamBench.P11Definitions",
@@ -561,7 +771,7 @@
     {
       "blind_name": "Fin",
       "distance": 1,
-      "id": "D044",
+      "id": "D065",
       "kind": "inductive",
       "name": "Fin",
       "owner_module": "Init.Prelude",
@@ -571,7 +781,7 @@
     {
       "blind_name": "Fin.val",
       "distance": 1,
-      "id": "D045",
+      "id": "D066",
       "kind": "abbrev",
       "name": "Fin.val",
       "owner_module": "Init.Prelude",
@@ -581,7 +791,7 @@
     {
       "blind_name": "HAdd.hAdd",
       "distance": 1,
-      "id": "D046",
+      "id": "D067",
       "kind": "abbrev",
       "name": "HAdd.hAdd",
       "owner_module": "Init.Prelude",
@@ -591,7 +801,7 @@
     {
       "blind_name": "HMul.hMul",
       "distance": 1,
-      "id": "D047",
+      "id": "D068",
       "kind": "abbrev",
       "name": "HMul.hMul",
       "owner_module": "Init.Prelude",
@@ -601,7 +811,7 @@
     {
       "blind_name": "HPow.hPow",
       "distance": 1,
-      "id": "D048",
+      "id": "D069",
       "kind": "abbrev",
       "name": "HPow.hPow",
       "owner_module": "Init.Prelude",
@@ -611,7 +821,7 @@
     {
       "blind_name": "LE.le",
       "distance": 1,
-      "id": "D049",
+      "id": "D070",
       "kind": "abbrev",
       "name": "LE.le",
       "owner_module": "Init.Prelude",
@@ -619,9 +829,19 @@
       "semantic_sha256": "54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48"
     },
     {
+      "blind_name": "LT.lt",
+      "distance": 1,
+      "id": "D071",
+      "kind": "abbrev",
+      "name": "LT.lt",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009"
+    },
+    {
       "blind_name": "Monoid.toNatPow",
       "distance": 1,
-      "id": "D050",
+      "id": "D072",
       "kind": "def",
       "name": "Monoid.toNatPow",
       "owner_module": "Mathlib.Algebra.Group.Defs",
@@ -631,7 +851,7 @@
     {
       "blind_name": "Nat",
       "distance": 1,
-      "id": "D051",
+      "id": "D073",
       "kind": "inductive",
       "name": "Nat",
       "owner_module": "Init.Prelude",
@@ -641,7 +861,7 @@
     {
       "blind_name": "OfNat.ofNat",
       "distance": 1,
-      "id": "D052",
+      "id": "D074",
       "kind": "abbrev",
       "name": "OfNat.ofNat",
       "owner_module": "Init.Prelude",
@@ -651,7 +871,7 @@
     {
       "blind_name": "Real",
       "distance": 1,
-      "id": "D053",
+      "id": "D075",
       "kind": "inductive",
       "name": "Real",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -661,7 +881,7 @@
     {
       "blind_name": "Real.instAdd",
       "distance": 1,
-      "id": "D054",
+      "id": "D076",
       "kind": "def",
       "name": "Real.instAdd",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -671,7 +891,7 @@
     {
       "blind_name": "Real.instLE",
       "distance": 1,
-      "id": "D055",
+      "id": "D077",
       "kind": "def",
       "name": "Real.instLE",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -679,9 +899,19 @@
       "semantic_sha256": "144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3"
     },
     {
+      "blind_name": "Real.instLT",
+      "distance": 1,
+      "id": "D078",
+      "kind": "def",
+      "name": "Real.instLT",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a"
+    },
+    {
       "blind_name": "Real.instMonoid",
       "distance": 1,
-      "id": "D056",
+      "id": "D079",
       "kind": "def",
       "name": "Real.instMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -691,7 +921,7 @@
     {
       "blind_name": "Real.instMul",
       "distance": 1,
-      "id": "D057",
+      "id": "D080",
       "kind": "def",
       "name": "Real.instMul",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -699,9 +929,39 @@
       "semantic_sha256": "459ccbe28a1d29ccd2b329ea29e1a84b329b8064b8a8ecc52764b69b23e229ed"
     },
     {
+      "blind_name": "Real.instZero",
+      "distance": 1,
+      "id": "D081",
+      "kind": "def",
+      "name": "Real.instZero",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882"
+    },
+    {
+      "blind_name": "Subtype.val",
+      "distance": 1,
+      "id": "D082",
+      "kind": "abbrev",
+      "name": "Subtype.val",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "69c61ab82498e5563eaf5f0313ea7f2164c284c3dc742024a30332372a46663d"
+    },
+    {
+      "blind_name": "Zero.toOfNat0",
+      "distance": 1,
+      "id": "D083",
+      "kind": "def",
+      "name": "Zero.toOfNat0",
+      "owner_module": "Init.Data.Zero",
+      "role": "external-frontier",
+      "semantic_sha256": "f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a"
+    },
+    {
       "blind_name": "instAddNat",
       "distance": 1,
-      "id": "D058",
+      "id": "D084",
       "kind": "def",
       "name": "instAddNat",
       "owner_module": "Init.Prelude",
@@ -711,7 +971,7 @@
     {
       "blind_name": "instHAdd",
       "distance": 1,
-      "id": "D059",
+      "id": "D085",
       "kind": "def",
       "name": "instHAdd",
       "owner_module": "Init.Prelude",
@@ -721,7 +981,7 @@
     {
       "blind_name": "instHMul",
       "distance": 1,
-      "id": "D060",
+      "id": "D086",
       "kind": "def",
       "name": "instHMul",
       "owner_module": "Init.Prelude",
@@ -731,7 +991,7 @@
     {
       "blind_name": "instHPow",
       "distance": 1,
-      "id": "D061",
+      "id": "D087",
       "kind": "def",
       "name": "instHPow",
       "owner_module": "Init.Prelude",
@@ -741,7 +1001,7 @@
     {
       "blind_name": "instOfNatNat",
       "distance": 1,
-      "id": "D062",
+      "id": "D088",
       "kind": "def",
       "name": "instOfNatNat",
       "owner_module": "Init.Prelude",
@@ -751,7 +1011,7 @@
     {
       "blind_name": "Fin.castLE",
       "distance": 2,
-      "id": "D063",
+      "id": "D089",
       "kind": "def",
       "name": "Fin.castLE",
       "owner_module": "Init.Data.Fin.Basic",
@@ -761,7 +1021,7 @@
     {
       "blind_name": "Fin.fintype",
       "distance": 2,
-      "id": "D064",
+      "id": "D090",
       "kind": "def",
       "name": "Fin.fintype",
       "owner_module": "Mathlib.Data.Fintype.Basic",
@@ -771,7 +1031,7 @@
     {
       "blind_name": "HSub.hSub",
       "distance": 2,
-      "id": "D065",
+      "id": "D091",
       "kind": "abbrev",
       "name": "HSub.hSub",
       "owner_module": "Init.Prelude",
@@ -781,7 +1041,7 @@
     {
       "blind_name": "Matrix",
       "distance": 2,
-      "id": "D066",
+      "id": "D092",
       "kind": "def",
       "name": "Matrix",
       "owner_module": "Mathlib.LinearAlgebra.Matrix.Defs",
@@ -791,7 +1051,7 @@
     {
       "blind_name": "Matrix.instL2OpNormedAddCommGroup",
       "distance": 2,
-      "id": "D067",
+      "id": "D093",
       "kind": "def",
       "name": "Matrix.instL2OpNormedAddCommGroup",
       "owner_module": "Mathlib.Analysis.CStarAlgebra.Matrix",
@@ -801,7 +1061,7 @@
     {
       "blind_name": "Matrix.sub",
       "distance": 2,
-      "id": "D068",
+      "id": "D094",
       "kind": "def",
       "name": "Matrix.sub",
       "owner_module": "Mathlib.LinearAlgebra.Matrix.Defs",
@@ -809,9 +1069,19 @@
       "semantic_sha256": "f9a0c1f5b41c8d9a8658798c73b295495f6dfbf0bd7d081817aec4f598bbfc46"
     },
     {
+      "blind_name": "Min.min",
+      "distance": 2,
+      "id": "D095",
+      "kind": "abbrev",
+      "name": "Min.min",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "4781b8f14117c86f8d250ccd7a9bf20c2b8b6554a48ba0b45f9010ff26a72ea7"
+    },
+    {
       "blind_name": "Nat.succ",
       "distance": 2,
-      "id": "D069",
+      "id": "D096",
       "kind": "constructor",
       "name": "Nat.succ",
       "owner_module": "Init.Prelude",
@@ -821,7 +1091,7 @@
     {
       "blind_name": "Norm.norm",
       "distance": 2,
-      "id": "D070",
+      "id": "D097",
       "kind": "abbrev",
       "name": "Norm.norm",
       "owner_module": "Mathlib.Analysis.Normed.Group.Defs",
@@ -831,7 +1101,7 @@
     {
       "blind_name": "NormedAddCommGroup.toNorm",
       "distance": 2,
-      "id": "D071",
+      "id": "D098",
       "kind": "abbrev",
       "name": "NormedAddCommGroup.toNorm",
       "owner_module": "Mathlib.Analysis.Normed.Group.Defs",
@@ -839,9 +1109,29 @@
       "semantic_sha256": "702f98e978ba8cf9fe1b4ce130f011682d6d486d71ba0f7d12f36ec9925cd59b"
     },
     {
+      "blind_name": "One.toOfNat1",
+      "distance": 2,
+      "id": "D099",
+      "kind": "def",
+      "name": "One.toOfNat1",
+      "owner_module": "Init.Data.Zero",
+      "role": "external-frontier",
+      "semantic_sha256": "cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5"
+    },
+    {
+      "blind_name": "Real.instMin",
+      "distance": 2,
+      "id": "D100",
+      "kind": "def",
+      "name": "Real.instMin",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "d2cd90660c09f0530ecb3d8bd97eb9c8e1ed4fc9eebe2650e6a65a653c99fcb0"
+    },
+    {
       "blind_name": "Real.instNatCast",
       "distance": 2,
-      "id": "D072",
+      "id": "D101",
       "kind": "def",
       "name": "Real.instNatCast",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -849,9 +1139,19 @@
       "semantic_sha256": "5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15"
     },
     {
+      "blind_name": "Real.instOne",
+      "distance": 2,
+      "id": "D102",
+      "kind": "def",
+      "name": "Real.instOne",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81"
+    },
+    {
       "blind_name": "Real.instRCLike",
       "distance": 2,
-      "id": "D073",
+      "id": "D103",
       "kind": "def",
       "name": "Real.instRCLike",
       "owner_module": "Mathlib.Analysis.RCLike.Basic",
@@ -861,7 +1161,7 @@
     {
       "blind_name": "Real.instSub",
       "distance": 2,
-      "id": "D074",
+      "id": "D104",
       "kind": "def",
       "name": "Real.instSub",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -869,9 +1169,19 @@
       "semantic_sha256": "926d9e8fcca2819a885d446e168b20c7c8aac2e542d59ed2b48e32c9a4659a36"
     },
     {
+      "blind_name": "Subtype",
+      "distance": 2,
+      "id": "D105",
+      "kind": "inductive",
+      "name": "Subtype",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "3b0bb8433bd0c981dbdb4d6256bf74c50e9883207dae8d309dcb705135cf932c"
+    },
+    {
       "blind_name": "instDecidableEqFin",
       "distance": 2,
-      "id": "D075",
+      "id": "D106",
       "kind": "def",
       "name": "instDecidableEqFin",
       "owner_module": "Init.Prelude",
@@ -881,7 +1191,7 @@
     {
       "blind_name": "instHSub",
       "distance": 2,
-      "id": "D076",
+      "id": "D107",
       "kind": "def",
       "name": "instHSub",
       "owner_module": "Init.Prelude",
@@ -891,7 +1201,7 @@
     {
       "blind_name": "instOfNatAtLeastTwo",
       "distance": 2,
-      "id": "D077",
+      "id": "D108",
       "kind": "def",
       "name": "instOfNatAtLeastTwo",
       "owner_module": "Mathlib.Data.Nat.Cast.Defs",
@@ -901,7 +1211,7 @@
     {
       "blind_name": "DivInvMonoid.toDiv",
       "distance": 3,
-      "id": "D078",
+      "id": "D109",
       "kind": "abbrev",
       "name": "DivInvMonoid.toDiv",
       "owner_module": "Mathlib.Algebra.Group.Defs",
@@ -911,7 +1221,7 @@
     {
       "blind_name": "Eq",
       "distance": 3,
-      "id": "D079",
+      "id": "D110",
       "kind": "inductive",
       "name": "Eq",
       "owner_module": "Init.Prelude",
@@ -919,19 +1229,9 @@
       "semantic_sha256": "63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7"
     },
     {
-      "blind_name": "Function.Injective",
-      "distance": 3,
-      "id": "D080",
-      "kind": "def",
-      "name": "Function.Injective",
-      "owner_module": "Init.Data.Function",
-      "role": "external-frontier",
-      "semantic_sha256": "d947e6344cfd1327deca4c84f2eba89bf752b6e852fc0c680177dfaae4418776"
-    },
-    {
       "blind_name": "HDiv.hDiv",
       "distance": 3,
-      "id": "D081",
+      "id": "D111",
       "kind": "abbrev",
       "name": "HDiv.hDiv",
       "owner_module": "Init.Prelude",
@@ -939,19 +1239,9 @@
       "semantic_sha256": "10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b"
     },
     {
-      "blind_name": "LT.lt",
-      "distance": 3,
-      "id": "D082",
-      "kind": "abbrev",
-      "name": "LT.lt",
-      "owner_module": "Init.Prelude",
-      "role": "external-frontier",
-      "semantic_sha256": "fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009"
-    },
-    {
       "blind_name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
       "distance": 3,
-      "id": "D083",
+      "id": "D112",
       "kind": "def",
       "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
       "owner_module": "Mathlib.Data.Matrix.Mul",
@@ -959,19 +1249,9 @@
       "semantic_sha256": "8eecda35a630fe4097c6149154c07645e87eaf089a78dde5ca01f180806c2a40"
     },
     {
-      "blind_name": "Matrix.mulVec",
-      "distance": 3,
-      "id": "D084",
-      "kind": "def",
-      "name": "Matrix.mulVec",
-      "owner_module": "Mathlib.Data.Matrix.Mul",
-      "role": "external-frontier",
-      "semantic_sha256": "715de3f0bd9e7bcf034726e1efbf1b4dad42a16e2ce790d4403774d16ed5b549"
-    },
-    {
       "blind_name": "Matrix.one",
       "distance": 3,
-      "id": "D085",
+      "id": "D113",
       "kind": "def",
       "name": "Matrix.one",
       "owner_module": "Mathlib.Data.Matrix.Diagonal",
@@ -981,7 +1261,7 @@
     {
       "blind_name": "Matrix.transpose",
       "distance": 3,
-      "id": "D086",
+      "id": "D114",
       "kind": "def",
       "name": "Matrix.transpose",
       "owner_module": "Mathlib.LinearAlgebra.Matrix.Defs",
@@ -991,7 +1271,7 @@
     {
       "blind_name": "Nat.AtLeastTwo",
       "distance": 3,
-      "id": "D087",
+      "id": "D115",
       "kind": "inductive",
       "name": "Nat.AtLeastTwo",
       "owner_module": "Mathlib.Data.Nat.Init",
@@ -1001,7 +1281,7 @@
     {
       "blind_name": "Nat.cast",
       "distance": 3,
-      "id": "D088",
+      "id": "D116",
       "kind": "def",
       "name": "Nat.cast",
       "owner_module": "Init.Data.Cast",
@@ -1009,69 +1289,9 @@
       "semantic_sha256": "6e24327ea908b1837083bb15aef27d593e950a2ff8ade81d8aa94bfe33b64450"
     },
     {
-      "blind_name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
-      "distance": 3,
-      "id": "D089",
-      "kind": "abbrev",
-      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
-      "owner_module": "Mathlib.Algebra.Ring.Defs",
-      "role": "external-frontier",
-      "semantic_sha256": "3bd70454a5180abed6221bb3f73922ebc30c10136298d23eb30d358cdd2fdb82"
-    },
-    {
-      "blind_name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
-      "distance": 3,
-      "id": "D090",
-      "kind": "abbrev",
-      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
-      "owner_module": "Mathlib.Algebra.Ring.Defs",
-      "role": "external-frontier",
-      "semantic_sha256": "1082112ee2b1424cb7e1eff69df85640d23793811157d8a4401f364710bc21d2"
-    },
-    {
-      "blind_name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
-      "distance": 3,
-      "id": "D091",
-      "kind": "abbrev",
-      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
-      "owner_module": "Mathlib.Algebra.Ring.Defs",
-      "role": "external-frontier",
-      "semantic_sha256": "ffc3b0b49d777bb976662d9282026e03ef869205e45f90008bd1659a4e78f2d7"
-    },
-    {
-      "blind_name": "NonUnitalNormedCommRing.toNonUnitalCommRing",
-      "distance": 3,
-      "id": "D092",
-      "kind": "abbrev",
-      "name": "NonUnitalNormedCommRing.toNonUnitalCommRing",
-      "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
-      "role": "external-frontier",
-      "semantic_sha256": "4a44c0a0630b1766c12bb0c5456f4f914c813b6dcb179e8b3d87084d495efd1f"
-    },
-    {
-      "blind_name": "NormedCommRing.toNonUnitalNormedCommRing",
-      "distance": 3,
-      "id": "D093",
-      "kind": "def",
-      "name": "NormedCommRing.toNonUnitalNormedCommRing",
-      "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
-      "role": "external-frontier",
-      "semantic_sha256": "ce5ba4f454145f64923f4d555eb95891cb66dc2df21d2ef730bfa600ea6a22e5"
-    },
-    {
-      "blind_name": "One.toOfNat1",
-      "distance": 3,
-      "id": "D094",
-      "kind": "def",
-      "name": "One.toOfNat1",
-      "owner_module": "Init.Data.Zero",
-      "role": "external-frontier",
-      "semantic_sha256": "cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5"
-    },
-    {
       "blind_name": "Real.instAddCommMonoid",
       "distance": 3,
-      "id": "D095",
+      "id": "D117",
       "kind": "def",
       "name": "Real.instAddCommMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1081,7 +1301,7 @@
     {
       "blind_name": "Real.instDivInvMonoid",
       "distance": 3,
-      "id": "D096",
+      "id": "D118",
       "kind": "def",
       "name": "Real.instDivInvMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1089,49 +1309,9 @@
       "semantic_sha256": "166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3"
     },
     {
-      "blind_name": "Real.instLT",
-      "distance": 3,
-      "id": "D097",
-      "kind": "def",
-      "name": "Real.instLT",
-      "owner_module": "Mathlib.Data.Real.Basic",
-      "role": "external-frontier",
-      "semantic_sha256": "573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a"
-    },
-    {
-      "blind_name": "Real.instOne",
-      "distance": 3,
-      "id": "D098",
-      "kind": "def",
-      "name": "Real.instOne",
-      "owner_module": "Mathlib.Data.Real.Basic",
-      "role": "external-frontier",
-      "semantic_sha256": "b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81"
-    },
-    {
-      "blind_name": "Real.instZero",
-      "distance": 3,
-      "id": "D099",
-      "kind": "def",
-      "name": "Real.instZero",
-      "owner_module": "Mathlib.Data.Real.Basic",
-      "role": "external-frontier",
-      "semantic_sha256": "860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882"
-    },
-    {
-      "blind_name": "Real.normedCommRing",
-      "distance": 3,
-      "id": "D100",
-      "kind": "def",
-      "name": "Real.normedCommRing",
-      "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
-      "role": "external-frontier",
-      "semantic_sha256": "69cccc1e864661e103785f4a2712b9ad164d845c03b7737801c37e5ac852bad7"
-    },
-    {
       "blind_name": "Real.sqrt",
       "distance": 3,
-      "id": "D101",
+      "id": "D119",
       "kind": "def",
       "name": "Real.sqrt",
       "owner_module": "Mathlib.Data.Real.Sqrt",
@@ -1139,19 +1319,9 @@
       "semantic_sha256": "67f9248ae1acb851b5392be301057ebb8b8ef2fb20f76d2d53a2d07ec8f30553"
     },
     {
-      "blind_name": "Zero.toOfNat0",
-      "distance": 3,
-      "id": "D102",
-      "kind": "def",
-      "name": "Zero.toOfNat0",
-      "owner_module": "Init.Data.Zero",
-      "role": "external-frontier",
-      "semantic_sha256": "f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a"
-    },
-    {
       "blind_name": "instDecidableEqNat",
       "distance": 3,
-      "id": "D103",
+      "id": "D120",
       "kind": "def",
       "name": "instDecidableEqNat",
       "owner_module": "Init.Prelude",
@@ -1161,7 +1331,7 @@
     {
       "blind_name": "instHDiv",
       "distance": 3,
-      "id": "D104",
+      "id": "D121",
       "kind": "def",
       "name": "instHDiv",
       "owner_module": "Init.Prelude",
@@ -1171,7 +1341,7 @@
     {
       "blind_name": "instLENat",
       "distance": 3,
-      "id": "D105",
+      "id": "D122",
       "kind": "def",
       "name": "instLENat",
       "owner_module": "Init.Prelude",
@@ -1179,19 +1349,9 @@
       "semantic_sha256": "002e628e28a06e89ab80e69408fa3be9fc3e200fafd33e0f71d9111a8944875e"
     },
     {
-      "blind_name": "instLTNat",
-      "distance": 3,
-      "id": "D106",
-      "kind": "def",
-      "name": "instLTNat",
-      "owner_module": "Init.Prelude",
-      "role": "external-frontier",
-      "semantic_sha256": "4054f2341fdda887b2040c624c0867866ab56eabf3441d6ffc9451c94ae1663c"
-    },
-    {
       "blind_name": "ite",
       "distance": 3,
-      "id": "D107",
+      "id": "D123",
       "kind": "def",
       "name": "ite",
       "owner_module": "Init.Prelude",
@@ -1199,59 +1359,119 @@
       "semantic_sha256": "3029bae29d2d16b5aeb879ad3c12a1b3c4e78998083bf1ab4614942fafdece0e"
     },
     {
-      "blind_name": "Matrix.add",
+      "blind_name": "Function.Injective",
       "distance": 4,
-      "id": "D108",
+      "id": "D124",
       "kind": "def",
-      "name": "Matrix.add",
-      "owner_module": "Mathlib.LinearAlgebra.Matrix.Defs",
+      "name": "Function.Injective",
+      "owner_module": "Init.Data.Function",
       "role": "external-frontier",
-      "semantic_sha256": "c5598ac688001263050581cba0ba1df7931dce7913c28fb123463641833aae55"
+      "semantic_sha256": "d947e6344cfd1327deca4c84f2eba89bf752b6e852fc0c680177dfaae4418776"
     },
     {
-      "blind_name": "Real.instAddGroup",
-      "distance": 5,
-      "id": "D109",
+      "blind_name": "Matrix.mulVec",
+      "distance": 4,
+      "id": "D125",
       "kind": "def",
-      "name": "Real.instAddGroup",
-      "owner_module": "Mathlib.Data.Real.Basic",
+      "name": "Matrix.mulVec",
+      "owner_module": "Mathlib.Data.Matrix.Mul",
       "role": "external-frontier",
-      "semantic_sha256": "f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0"
+      "semantic_sha256": "715de3f0bd9e7bcf034726e1efbf1b4dad42a16e2ce790d4403774d16ed5b549"
     },
     {
-      "blind_name": "Real.lattice",
-      "distance": 5,
-      "id": "D110",
-      "kind": "def",
-      "name": "Real.lattice",
-      "owner_module": "Mathlib.Data.Real.Basic",
+      "blind_name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
+      "distance": 4,
+      "id": "D126",
+      "kind": "abbrev",
+      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
+      "owner_module": "Mathlib.Algebra.Ring.Defs",
       "role": "external-frontier",
-      "semantic_sha256": "5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510"
+      "semantic_sha256": "3bd70454a5180abed6221bb3f73922ebc30c10136298d23eb30d358cdd2fdb82"
     },
     {
-      "blind_name": "abs",
-      "distance": 5,
-      "id": "D111",
-      "kind": "def",
-      "name": "abs",
-      "owner_module": "Mathlib.Algebra.Order.Group.Unbundled.Abs",
+      "blind_name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
+      "distance": 4,
+      "id": "D127",
+      "kind": "abbrev",
+      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
+      "owner_module": "Mathlib.Algebra.Ring.Defs",
       "role": "external-frontier",
-      "semantic_sha256": "8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b"
+      "semantic_sha256": "1082112ee2b1424cb7e1eff69df85640d23793811157d8a4401f364710bc21d2"
     },
     {
-      "blind_name": "Finset.filter",
+      "blind_name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
+      "distance": 4,
+      "id": "D128",
+      "kind": "abbrev",
+      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
+      "owner_module": "Mathlib.Algebra.Ring.Defs",
+      "role": "external-frontier",
+      "semantic_sha256": "ffc3b0b49d777bb976662d9282026e03ef869205e45f90008bd1659a4e78f2d7"
+    },
+    {
+      "blind_name": "NonUnitalNormedCommRing.toNonUnitalCommRing",
+      "distance": 4,
+      "id": "D129",
+      "kind": "abbrev",
+      "name": "NonUnitalNormedCommRing.toNonUnitalCommRing",
+      "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "4a44c0a0630b1766c12bb0c5456f4f914c813b6dcb179e8b3d87084d495efd1f"
+    },
+    {
+      "blind_name": "NormedCommRing.toNonUnitalNormedCommRing",
+      "distance": 4,
+      "id": "D130",
+      "kind": "def",
+      "name": "NormedCommRing.toNonUnitalNormedCommRing",
+      "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "ce5ba4f454145f64923f4d555eb95891cb66dc2df21d2ef730bfa600ea6a22e5"
+    },
+    {
+      "blind_name": "Real.normedCommRing",
+      "distance": 4,
+      "id": "D131",
+      "kind": "def",
+      "name": "Real.normedCommRing",
+      "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "69cccc1e864661e103785f4a2712b9ad164d845c03b7737801c37e5ac852bad7"
+    },
+    {
+      "blind_name": "instLTNat",
+      "distance": 4,
+      "id": "D132",
+      "kind": "def",
+      "name": "instLTNat",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "4054f2341fdda887b2040c624c0867866ab56eabf3441d6ffc9451c94ae1663c"
+    },
+    {
+      "blind_name": "And",
       "distance": 6,
-      "id": "D112",
-      "kind": "def",
-      "name": "Finset.filter",
-      "owner_module": "Mathlib.Data.Finset.Filter",
+      "id": "D133",
+      "kind": "inductive",
+      "name": "And",
+      "owner_module": "Init.Prelude",
       "role": "external-frontier",
-      "semantic_sha256": "cc2bad5c5cc6aa2b196abe33b9083d127ab69155f1189766c3500bb83412c7df"
+      "semantic_sha256": "37ecdc009aa953e3d4924ef10e6a1fb591f6af993cd344fd5a6b5321466517c9"
+    },
+    {
+      "blind_name": "Exists",
+      "distance": 6,
+      "id": "D134",
+      "kind": "inductive",
+      "name": "Exists",
+      "owner_module": "Init.Core",
+      "role": "external-frontier",
+      "semantic_sha256": "a24a6eb72dcf5b3765659a28bb9d3814ed7ebd3e3fa1fd11e8f3c7acc80e0dde"
     },
     {
       "blind_name": "Finset.sum",
       "distance": 6,
-      "id": "D113",
+      "id": "D135",
       "kind": "def",
       "name": "Finset.sum",
       "owner_module": "Mathlib.Algebra.BigOperators.Group.Finset.Defs",
@@ -1261,7 +1481,7 @@
     {
       "blind_name": "Finset.univ",
       "distance": 6,
-      "id": "D114",
+      "id": "D136",
       "kind": "def",
       "name": "Finset.univ",
       "owner_module": "Mathlib.Data.Fintype.Defs",
@@ -1269,14 +1489,74 @@
       "semantic_sha256": "194413a784fbc0b27d0cb6b1ab67ed060210172bf16ba24045aa439e58f9a8c7"
     },
     {
-      "blind_name": "Nat.decLt",
+      "blind_name": "Real.instAddGroup",
       "distance": 6,
-      "id": "D115",
+      "id": "D137",
+      "kind": "def",
+      "name": "Real.instAddGroup",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0"
+    },
+    {
+      "blind_name": "Real.lattice",
+      "distance": 6,
+      "id": "D138",
+      "kind": "def",
+      "name": "Real.lattice",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510"
+    },
+    {
+      "blind_name": "abs",
+      "distance": 6,
+      "id": "D139",
+      "kind": "def",
+      "name": "abs",
+      "owner_module": "Mathlib.Algebra.Order.Group.Unbundled.Abs",
+      "role": "external-frontier",
+      "semantic_sha256": "8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b"
+    },
+    {
+      "blind_name": "Nat.decLt",
+      "distance": 7,
+      "id": "D140",
       "kind": "def",
       "name": "Nat.decLt",
       "owner_module": "Init.Prelude",
       "role": "external-frontier",
       "semantic_sha256": "652ffb54717682f55eafca6c2b47fca31dfea599c9898709ba2f56fbc9113d99"
+    },
+    {
+      "blind_name": "Nat.instAtLeastTwoHAddOfNat",
+      "distance": 8,
+      "id": "D141",
+      "kind": "theorem",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "owner_module": "Mathlib.Data.Nat.Init",
+      "role": "external-frontier",
+      "semantic_sha256": "309ef94c4b7cfbe2e668952e6915279353921d5d48b6123a30f90dd932dac3e6"
+    },
+    {
+      "blind_name": "Nat.instNeZeroSucc",
+      "distance": 8,
+      "id": "D142",
+      "kind": "theorem",
+      "name": "Nat.instNeZeroSucc",
+      "owner_module": "Init.Data.Nat.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "a0735a528184c05594c4c79312c1225bb4dcffcdf0df7eb1a50c5733047c85ad"
+    },
+    {
+      "blind_name": "Ne",
+      "distance": 8,
+      "id": "D143",
+      "kind": "def",
+      "name": "Ne",
+      "owner_module": "Init.Core",
+      "role": "external-frontier",
+      "semantic_sha256": "635adc1f9e4a981a5c01b21338fdf89e637bd4ef0aa6911bda4dc03acfe9fba6"
     }
   ],
   "dependency_edges": [
@@ -1288,6 +1568,11 @@
     {
       "child": "HighamBench.P11CGSPColumnTrace.mk",
       "origin": "constructor",
+      "parent": "HighamBench.P11CGSPColumnTrace"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "type",
       "parent": "HighamBench.P11CGSPColumnTrace"
     },
     {
@@ -1331,22 +1616,7 @@
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
     {
-      "child": "HAdd.hAdd",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
       "child": "HDiv.hDiv",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "HMul.hMul",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "HSub.hSub",
       "origin": "type",
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
@@ -1356,7 +1626,57 @@
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
     {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPColumnTrace.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic.add",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPColumnTrace.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic.dot",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPColumnTrace.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic.multiply",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPColumnTrace.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic.squareRoot",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPColumnTrace.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic.subtract",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPColumnTrace.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic.toP11NormalizedIEEEArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPColumnTrace.mk"
+    },
+    {
       "child": "HighamBench.P11Matrix",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPColumnTrace.mk"
+    },
+    {
+      "child": "HighamBench.P11NormalizedIEEEArithmetic.computedNorm",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPColumnTrace.mk"
+    },
+    {
+      "child": "HighamBench.P11NormalizedIEEEArithmetic.divide",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPColumnTrace.mk"
+    },
+    {
+      "child": "HighamBench.P11NormalizedIEEEArithmetic.normalized",
       "origin": "type",
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
@@ -1366,22 +1686,7 @@
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
     {
-      "child": "HighamBench.p11CGSPColumnNorm",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "HighamBench.p11CGSPProjectionEntry",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "HighamBench.p11CGSPResidualEntry",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "HighamBench.p11VecNorm",
+      "child": "HighamBench.p11EarlierVector",
       "origin": "type",
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
@@ -1411,16 +1716,6 @@
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
     {
-      "child": "Real.instAdd",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "Real.instAddGroup",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
       "child": "Real.instDivInvMonoid",
       "origin": "type",
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
@@ -1436,27 +1731,7 @@
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
     {
-      "child": "Real.instMul",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "Real.instSub",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
       "child": "Real.instZero",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "Real.lattice",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "Real.sqrt",
       "origin": "type",
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
@@ -1466,27 +1741,7 @@
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
     {
-      "child": "abs",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "instHAdd",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
       "child": "instHDiv",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "instHMul",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPColumnTrace.mk"
-    },
-    {
-      "child": "instHSub",
       "origin": "type",
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
@@ -1506,6 +1761,721 @@
       "parent": "HighamBench.P11CGSPColumnTrace.mk"
     },
     {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic.mk",
+      "origin": "constructor",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.add"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.add"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.add"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.add"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.dot"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.dot"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.dot"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.dot"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.dot"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.dot"
+    },
+    {
+      "child": "And",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Eq",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Exists",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Fin.fintype",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Finset.sum",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Finset.univ",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "HMul.hMul",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "HighamBench.P11NormalizedIEEEArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "HighamBench.P11NormalizedIEEEArithmetic.normalized",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "LE.le",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Nat.cast",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.instAdd",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.instAddCommMonoid",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.instAddGroup",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.instLE",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.instMul",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.instNatCast",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.instSub",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.lattice",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Real.sqrt",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "abs",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "instHMul",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "instHSub",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.multiply"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.multiply"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.multiply"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.multiply"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.squareRoot"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.squareRoot"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.squareRoot"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.squareRoot"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.subtract"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.subtract"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.subtract"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.subtract"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.toP11NormalizedIEEEArithmetic"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.toP11NormalizedIEEEArithmetic"
+    },
+    {
+      "child": "HighamBench.P11NormalizedIEEEArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.toP11NormalizedIEEEArithmetic"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.toP11NormalizedIEEEArithmetic"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPNormalizedArithmetic.toP11NormalizedIEEEArithmetic"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family.mk",
+      "origin": "constructor",
+      "parent": "HighamBench.P11CGSPTheorem1Family"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.A"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.A"
+    },
+    {
+      "child": "HighamBench.P11RectMatrix",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.A"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.A"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.A"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.conditionRadius"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.conditionRadius"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.conditionRadius"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.conditionRadius"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.conditionRadius"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.inverseNormBound"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.inverseNormBound"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.inverseNormBound"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.inverseNormBound"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.inverseNormBound"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.inverseNormBound"
+    },
+    {
+      "child": "Eq",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HMul.hMul",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HPow.hPow",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Run",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Run.A",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Run.R",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Run.leadingInverse",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.P11PositiveEpsilon",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.P11RectMatrix",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.p11C4",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.p11Kappa2",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.p11LeadingBlock",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.p11OpNorm2",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "LE.le",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "LT.lt",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Monoid.toNatPow",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Real.instLE",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Real.instLT",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Real.instMonoid",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Real.instMul",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Subtype.val",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "instHMul",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "instHPow",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.normBoundRadius"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.normBoundRadius"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.normBoundRadius"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.normBoundRadius"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.normBoundRadius"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.rNormBound"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.rNormBound"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.rNormBound"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.rNormBound"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.rNormBound"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.rNormBound"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Run",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "HighamBench.P11PositiveEpsilon",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "LT.lt",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "Real.instLT",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "Subtype.val",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Family.run"
+    },
+    {
       "child": "HighamBench.P11CGSPTheorem1Run.mk",
       "origin": "constructor",
       "parent": "HighamBench.P11CGSPTheorem1Run"
@@ -1516,6 +2486,11 @@
       "parent": "HighamBench.P11CGSPTheorem1Run"
     },
     {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Run"
+    },
+    {
       "child": "HighamBench.P11CGSPTheorem1Run",
       "origin": "body",
       "parent": "HighamBench.P11CGSPTheorem1Run.A"
@@ -1541,6 +2516,16 @@
       "parent": "HighamBench.P11CGSPTheorem1Run.A"
     },
     {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Run.A"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Run.A"
+    },
+    {
       "child": "HighamBench.P11CGSPTheorem1Run",
       "origin": "body",
       "parent": "HighamBench.P11CGSPTheorem1Run.Q"
@@ -1562,6 +2547,16 @@
     },
     {
       "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Run.Q"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Run.Q"
+    },
+    {
+      "child": "Real",
       "origin": "type",
       "parent": "HighamBench.P11CGSPTheorem1Run.Q"
     },
@@ -1591,29 +2586,14 @@
       "parent": "HighamBench.P11CGSPTheorem1Run.R"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run",
+      "child": "Real",
       "origin": "body",
-      "parent": "HighamBench.P11CGSPTheorem1Run.epsilonM"
-    },
-    {
-      "child": "HighamBench.P11CGSPTheorem1Run",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.epsilonM"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.P11CGSPTheorem1Run.epsilonM"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.epsilonM"
+      "parent": "HighamBench.P11CGSPTheorem1Run.R"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.epsilonM"
+      "parent": "HighamBench.P11CGSPTheorem1Run.R"
     },
     {
       "child": "Fin",
@@ -1657,6 +2637,16 @@
     },
     {
       "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Run.leadingInverse"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11CGSPTheorem1Run.leadingInverse"
+    },
+    {
+      "child": "Real",
       "origin": "type",
       "parent": "HighamBench.P11CGSPTheorem1Run.leadingInverse"
     },
@@ -1706,17 +2696,12 @@
       "parent": "HighamBench.P11CGSPTheorem1Run.mk"
     },
     {
-      "child": "HMul.hMul",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
-      "child": "HPow.hPow",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
       "child": "HighamBench.P11CGSPColumnTrace",
+      "origin": "type",
+      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPNormalizedArithmetic",
       "origin": "type",
       "parent": "HighamBench.P11CGSPTheorem1Run.mk"
     },
@@ -1736,27 +2721,7 @@
       "parent": "HighamBench.P11CGSPTheorem1Run.mk"
     },
     {
-      "child": "HighamBench.P11Theorem1PrefixCertificate",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
-      "child": "HighamBench.p11C4",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
-      "child": "HighamBench.p11ColumnPrefix",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
       "child": "HighamBench.p11Identity",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
-      "child": "HighamBench.p11Kappa2",
       "origin": "type",
       "parent": "HighamBench.P11CGSPTheorem1Run.mk"
     },
@@ -1782,11 +2747,6 @@
     },
     {
       "child": "Matrix.mulVec",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
-      "child": "Monoid.toNatPow",
       "origin": "type",
       "parent": "HighamBench.P11CGSPTheorem1Run.mk"
     },
@@ -1826,32 +2786,7 @@
       "parent": "HighamBench.P11CGSPTheorem1Run.mk"
     },
     {
-      "child": "One.toOfNat1",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
       "child": "Real",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
-      "child": "Real.instLT",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
-      "child": "Real.instMonoid",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
-      "child": "Real.instMul",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
-      "child": "Real.instOne",
       "origin": "type",
       "parent": "HighamBench.P11CGSPTheorem1Run.mk"
     },
@@ -1881,16 +2816,6 @@
       "parent": "HighamBench.P11CGSPTheorem1Run.mk"
     },
     {
-      "child": "instHMul",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
-      "child": "instHPow",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.mk"
-    },
-    {
       "child": "instLENat",
       "origin": "type",
       "parent": "HighamBench.P11CGSPTheorem1Run.mk"
@@ -1907,96 +2832,6 @@
     },
     {
       "child": "Fin",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "Fin.val",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "HAdd.hAdd",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "HighamBench.P11CGSPTheorem1Run",
-      "origin": "body",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "HighamBench.P11CGSPTheorem1Run",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "HighamBench.P11CGSPTheorem1Run.A",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "HighamBench.P11CGSPTheorem1Run.Q",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "HighamBench.P11CGSPTheorem1Run.R",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "HighamBench.P11CGSPTheorem1Run.epsilonM",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "HighamBench.p11ColumnPrefix",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "HighamBench.p11LeadingBlock",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "OfNat.ofNat",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "instAddNat",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "instHAdd",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "instOfNatNat",
-      "origin": "type",
-      "parent": "HighamBench.P11CGSPTheorem1Run.prefixCertificate"
-    },
-    {
-      "child": "Fin",
       "origin": "body",
       "parent": "HighamBench.P11Matrix"
     },
@@ -2021,369 +2856,714 @@
       "parent": "HighamBench.P11Matrix"
     },
     {
-      "child": "Fin",
-      "origin": "body",
-      "parent": "HighamBench.P11RectMatrix"
-    },
-    {
-      "child": "Matrix",
-      "origin": "body",
-      "parent": "HighamBench.P11RectMatrix"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.P11RectMatrix"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.P11RectMatrix"
-    },
-    {
-      "child": "Real",
-      "origin": "body",
-      "parent": "HighamBench.P11RectMatrix"
-    },
-    {
-      "child": "HighamBench.P11Matrix",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate"
-    },
-    {
-      "child": "HighamBench.P11RectMatrix",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate.mk",
+      "child": "HighamBench.P11NormalizedIEEEArithmetic.mk",
       "origin": "constructor",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic"
     },
     {
-      "child": "HighamBench.P11Matrix",
-      "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff"
-    },
-    {
-      "child": "HighamBench.P11Matrix",
+      "child": "Fin",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.computedNorm"
     },
     {
-      "child": "HighamBench.P11RectMatrix",
+      "child": "HighamBench.P11NormalizedIEEEArithmetic",
       "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.computedNorm"
     },
     {
-      "child": "HighamBench.P11RectMatrix",
+      "child": "HighamBench.P11NormalizedIEEEArithmetic",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate",
-      "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.computedNorm"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.computedNorm"
     },
     {
       "child": "Real",
       "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.computedNorm"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.computedNorm"
+    },
+    {
+      "child": "HighamBench.P11NormalizedIEEEArithmetic",
+      "origin": "body",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.divide"
+    },
+    {
+      "child": "HighamBench.P11NormalizedIEEEArithmetic",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.divide"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.divide"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.divide"
+    },
+    {
+      "child": "And",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "DivInvMonoid.toDiv",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Eq",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "Exists",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Fin",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "HAdd.hAdd",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "HDiv.hDiv",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "HMul.hMul",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "HPow.hPow",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
-      "child": "HighamBench.P11Matrix",
+      "child": "HighamBench.P11NormalizedIEEEArithmetic",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
-      "child": "HighamBench.P11RectMatrix",
+      "child": "HighamBench.p11VecNorm",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
-    },
-    {
-      "child": "HighamBench.p11C1",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
-    },
-    {
-      "child": "HighamBench.p11C2",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
-    },
-    {
-      "child": "HighamBench.p11C3",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
-    },
-    {
-      "child": "HighamBench.p11OpNorm2",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
-    },
-    {
-      "child": "HighamBench.p11RectMatMul",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
-    },
-    {
-      "child": "HighamBench.p11RectNormalEquationResidual",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
-    },
-    {
-      "child": "HighamBench.p11RectOpNorm2",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "LE.le",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
-    },
-    {
-      "child": "Matrix.add",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Monoid.toNatPow",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "Nat.cast",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "Nat.instAtLeastTwoHAddOfNat",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "Nat.instNeZeroSucc",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "Ne",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "OfNat.ofNat",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "One.toOfNat1",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Real.instAdd",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "Real.instAddGroup",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "Real.instDivInvMonoid",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Real.instLE",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Real.instMonoid",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Real.instMul",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "Real.instNatCast",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Real.instOne",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Real.instZero",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "Real.lattice",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "Zero.toOfNat0",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "abs",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "instHAdd",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "instHDiv",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "instHMul",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "instHPow",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
+    },
+    {
+      "child": "instOfNatAtLeastTwo",
+      "origin": "type",
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
       "child": "instOfNatNat",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.mk"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.mk"
     },
     {
-      "child": "HighamBench.P11Matrix",
+      "child": "HighamBench.P11NormalizedIEEEArithmetic",
       "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.normalized"
     },
     {
-      "child": "HighamBench.P11Matrix",
+      "child": "HighamBench.P11NormalizedIEEEArithmetic",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff"
-    },
-    {
-      "child": "HighamBench.P11RectMatrix",
-      "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff"
-    },
-    {
-      "child": "HighamBench.P11RectMatrix",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate",
-      "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.normalized"
     },
     {
       "child": "Real",
       "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.normalized"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff"
+      "parent": "HighamBench.P11NormalizedIEEEArithmetic.normalized"
     },
     {
-      "child": "HighamBench.P11Matrix",
+      "child": "LT.lt",
       "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff"
+      "parent": "HighamBench.P11PositiveEpsilon"
     },
     {
-      "child": "HighamBench.P11Matrix",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff"
-    },
-    {
-      "child": "HighamBench.P11RectMatrix",
+      "child": "OfNat.ofNat",
       "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff"
+      "parent": "HighamBench.P11PositiveEpsilon"
     },
     {
-      "child": "HighamBench.P11RectMatrix",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate",
+      "child": "Real",
       "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff"
+      "parent": "HighamBench.P11PositiveEpsilon"
     },
     {
-      "child": "HighamBench.P11Theorem1PrefixCertificate",
-      "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff"
+      "child": "Real.instLT",
+      "origin": "body",
+      "parent": "HighamBench.P11PositiveEpsilon"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "body",
+      "parent": "HighamBench.P11PositiveEpsilon"
+    },
+    {
+      "child": "Subtype",
+      "origin": "body",
+      "parent": "HighamBench.P11PositiveEpsilon"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "body",
+      "parent": "HighamBench.P11PositiveEpsilon"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.P11RectMatrix"
+    },
+    {
+      "child": "Matrix",
+      "origin": "body",
+      "parent": "HighamBench.P11RectMatrix"
     },
     {
       "child": "Nat",
       "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff"
+      "parent": "HighamBench.P11RectMatrix"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff"
+      "parent": "HighamBench.P11RectMatrix"
     },
     {
       "child": "Real",
       "origin": "body",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff"
+      "parent": "HighamBench.P11RectMatrix"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics.mk",
+      "origin": "constructor",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.factorizationSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.factorizationSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.factorizationSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.factorizationSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.factorizationSecondOrderCoeff"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.factorizationSecondOrderCoeff"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.factorizationSecondOrderCoeff"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff"
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.factorizationSecondOrderCoeff"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HMul.hMul",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HPow.hPow",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family.A",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family.run",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Run.R",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.P11PositiveEpsilon",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.p11C1",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.p11C2",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.p11C3",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.p11ColumnPrefix",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.p11LeadingBlock",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.p11OpNorm2",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.p11RectNormalEquationResidual",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.p11RectOpNorm2",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "HighamBench.p11Theorem1FactorizationResidual",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "LE.le",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "LT.lt",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Monoid.toNatPow",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Real.instAdd",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Real.instLE",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Real.instLT",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Real.instMonoid",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Real.instMul",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Subtype.val",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "instHMul",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "instHPow",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.mk"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.normalEquationSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.normalEquationSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.normalEquationSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.normalEquationSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.normalEquationSecondOrderCoeff"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.normalEquationSecondOrderCoeff"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.normalEquationSecondOrderCoeff"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.normalEquationSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.radius"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.radius"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.radius"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.radius"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.radius"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.radius"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.radius"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.reverseNormSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.reverseNormSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.reverseNormSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.reverseNormSecondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.reverseNormSecondOrderCoeff"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.reverseNormSecondOrderCoeff"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.reverseNormSecondOrderCoeff"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P11Theorem1ResidualAsymptotics.reverseNormSecondOrderCoeff"
     },
     {
       "child": "Eq",
@@ -2973,236 +4153,6 @@
     {
       "child": "Fin",
       "origin": "body",
-      "parent": "HighamBench.p11CGSPColumnNorm"
-    },
-    {
-      "child": "Fin",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPColumnNorm"
-    },
-    {
-      "child": "HighamBench.P11RectMatrix",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPColumnNorm"
-    },
-    {
-      "child": "HighamBench.P11RectMatrix",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPColumnNorm"
-    },
-    {
-      "child": "HighamBench.p11VecNorm",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPColumnNorm"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPColumnNorm"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPColumnNorm"
-    },
-    {
-      "child": "Real",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPColumnNorm"
-    },
-    {
-      "child": "Fin",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Fin",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Fin.fintype",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Finset.sum",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Finset.univ",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "HMul.hMul",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "HighamBench.P11RectMatrix",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "HighamBench.P11RectMatrix",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Real",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Real",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Real.instAddCommMonoid",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Real.instMul",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "instHMul",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPProjectionEntry"
-    },
-    {
-      "child": "Fin",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Fin",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Fin.fintype",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Fin.val",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Finset.filter",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Finset.sum",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Finset.univ",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "HMul.hMul",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "HSub.hSub",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "HighamBench.P11RectMatrix",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "HighamBench.P11RectMatrix",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "LT.lt",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Nat.decLt",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Real",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Real",
-      "origin": "type",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Real.instAddCommMonoid",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Real.instMul",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Real.instSub",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "instHMul",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "instHSub",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "instLTNat",
-      "origin": "body",
-      "parent": "HighamBench.p11CGSPResidualEntry"
-    },
-    {
-      "child": "Fin",
-      "origin": "body",
       "parent": "HighamBench.p11ColumnPrefix"
     },
     {
@@ -3304,6 +4254,76 @@
       "child": "instOfNatNat",
       "origin": "type",
       "parent": "HighamBench.p11ColumnPrefix"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "LT.lt",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "Nat.decLt",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "instLTNat",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
+    },
+    {
+      "child": "ite",
+      "origin": "body",
+      "parent": "HighamBench.p11EarlierVector"
     },
     {
       "child": "Fin",
@@ -4003,6 +5023,281 @@
     {
       "child": "Fin",
       "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family.A",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family.run",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Run.Q",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Run.R",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11PositiveEpsilon",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11PositiveEpsilon",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11RectMatrix",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11RectMatrix",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.p11ColumnPrefix",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.p11LeadingBlock",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.p11RectMatMul",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "LT.lt",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Matrix.sub",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Real.instLT",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Real.instSub",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Subtype.val",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "instHSub",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1FactorizationResidual"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family.conditionRadius",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family.normBoundRadius",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics.radius",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "Min.min",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "Real.instMin",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "body",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRadius"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
     {
@@ -4031,62 +5326,52 @@
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run",
+      "child": "HighamBench.P11CGSPTheorem1Family",
       "origin": "body",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run",
+      "child": "HighamBench.P11CGSPTheorem1Family",
       "origin": "type",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run.A",
+      "child": "HighamBench.P11CGSPTheorem1Family.A",
       "origin": "body",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run.Q",
+      "child": "HighamBench.P11CGSPTheorem1Family.inverseNormBound",
       "origin": "body",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run.R",
+      "child": "HighamBench.P11CGSPTheorem1Family.rNormBound",
       "origin": "body",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run.epsilonM",
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
       "origin": "body",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run.leadingInverse",
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
+      "origin": "type",
+      "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics.factorizationSecondOrderCoeff",
       "origin": "body",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run.prefixCertificate",
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics.normalEquationSecondOrderCoeff",
       "origin": "body",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
     {
-      "child": "HighamBench.P11Theorem1PrefixCertificate",
-      "origin": "body",
-      "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate.factorizationSecondOrderCoeff",
-      "origin": "body",
-      "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate.normalEquationSecondOrderCoeff",
-      "origin": "body",
-      "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
-    },
-    {
-      "child": "HighamBench.P11Theorem1PrefixCertificate.reverseNormSecondOrderCoeff",
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics.reverseNormSecondOrderCoeff",
       "origin": "body",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
@@ -4112,16 +5397,6 @@
     },
     {
       "child": "HighamBench.p11ColumnPrefix",
-      "origin": "body",
-      "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
-    },
-    {
-      "child": "HighamBench.p11LeadingBlock",
-      "origin": "body",
-      "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
-    },
-    {
-      "child": "HighamBench.p11OpNorm2",
       "origin": "body",
       "parent": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff"
     },
@@ -4356,7 +5631,12 @@
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run",
+      "child": "HighamBench.P11CGSPTheorem1Family",
+      "origin": "type",
+      "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
+    },
+    {
+      "child": "HighamBench.P11CGSPTheorem1Family.run",
       "origin": "type",
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
@@ -4371,12 +5651,17 @@
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run.epsilonM",
+      "child": "HighamBench.P11CGSPTheorem1Run.leadingInverse",
       "origin": "type",
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
     {
-      "child": "HighamBench.P11CGSPTheorem1Run.leadingInverse",
+      "child": "HighamBench.P11PositiveEpsilon",
+      "origin": "type",
+      "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
+    },
+    {
+      "child": "HighamBench.P11Theorem1ResidualAsymptotics",
       "origin": "type",
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
@@ -4411,12 +5696,22 @@
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
     {
+      "child": "HighamBench.p11Theorem1OrthogonalityRadius",
+      "origin": "type",
+      "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
+    },
+    {
       "child": "HighamBench.p11Theorem1OrthogonalityRemainderCoeff",
       "origin": "type",
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
     {
       "child": "LE.le",
+      "origin": "type",
+      "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
+    },
+    {
+      "child": "LT.lt",
       "origin": "type",
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
@@ -4451,12 +5746,32 @@
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
     {
+      "child": "Real.instLT",
+      "origin": "type",
+      "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
+    },
+    {
       "child": "Real.instMonoid",
       "origin": "type",
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
     {
       "child": "Real.instMul",
+      "origin": "type",
+      "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "type",
+      "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
+    },
+    {
+      "child": "Subtype.val",
+      "origin": "type",
+      "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
+    },
+    {
+      "child": "Zero.toOfNat0",
       "origin": "type",
       "parent": "HighamBench.p11_t3_orthogonality_defect_bound"
     },
@@ -4495,31 +5810,31 @@
   "inputs": {
     "blind_dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/blind_dependency_inventory.json",
-      "sha256": "a68c90ccbc94fb63ddf2908f73babd5a653b0b512c6d64433a266eb0d3ad6c2e"
+      "sha256": "a1e882e2ed79466783af96690b24574177457c8d5d1900efea4e8632d8d6750d"
     },
     "blind_dossier": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/blind_dossier.md",
-      "sha256": "661c9a60c9ec4ac226429c7ee2182b7e389710f9134ab271c657dcb698978ccc"
+      "sha256": "d8d6091a491a4931a5560c2d56f69d6bd46b7a8d23eabd3b7832cffc595d5bf3"
     },
     "blind_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/blind_review_packet.md",
-      "sha256": "661c9a60c9ec4ac226429c7ee2182b7e389710f9134ab271c657dcb698978ccc"
+      "sha256": "d8d6091a491a4931a5560c2d56f69d6bd46b7a8d23eabd3b7832cffc595d5bf3"
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "2e5897fdfeb98a5173677a84f05f628aca74356c2ecdd5012003470fd7bdba19"
+      "sha256": "1cfe2e4ce46fa6b5b11003d7f44354da818491b22c701deaae859752643f898b"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/dependency_inventory.json",
-      "sha256": "bb4a46bccc95e435c421e057bc927a0cb18320deaf6a2245de9c0bde34c8d288"
+      "sha256": "c70cbdea0326dd64c675d82ce4bd0f8d8aa65b2bc22523f617a0549fc62b1678"
     },
     "direct_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/direct_review_packet.md",
-      "sha256": "215ca35c06a41ff1a2dc709c845314979a20b099ee638826967dfa273e064074"
+      "sha256": "d2956c81c97f3513bbffdee2b6cc67aa63f5689951752b7d59221416d50ad8a4"
     },
     "source_locator": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/source_locator.json",
-      "sha256": "462bb0ce8a8f57893759800327728a43d0213f88c39ae9c5db657ef92813e402"
+      "sha256": "42d94e4ce965d0b75d9238029075bc915cb497b162989a889bca91dfd351bd77"
     }
   },
   "lean_environment": {
@@ -4551,33 +5866,33 @@
       ],
       "module": "HighamBench.P11Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean",
-      "sha256": "6756f18215387ae4f685e6cd69598895af8117ed6fe81c264b4591f04d20e40d"
+      "sha256": "3ec45c6fbd29587ee731d6a89fead89df8b7935d00d5555ccb3393b5e8655466"
     }
   ],
   "outputs": {
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "d394f63263058025e9cee598f5579d034e6c71021cd79baa353d920bfcbdca49"
+      "sha256": "4ea26bab7407661393e7d5df278ba9e0a23481f4f8aa346359450cf4f975a7cf"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/decision.json",
-      "sha256": "921f6a7a0e8e580f7e53e755321f690fa2d82932dadb47f27a9643df39eaf1d2"
+      "sha256": "ca0feb7f9d47f9c365066cff57241c25fa8d2b852e86e51fb65e00a78d199a80"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "a31fbb6dc1dd588fc79fac87f1d7dde429088ee6580df9390fb4dff8d7dacca9"
+      "sha256": "d18314c176067f0f657f613460fd88b35622ff1d08b2e45b55d1fe27f01fdfb8"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/report.md",
-      "sha256": "1117da9680b4534d479d79231af362317c792ae4335537a2b4781c8f031cebe3"
+      "sha256": "129882a3646ec500457897857d72a9691a7484d9f34ad837ae7a347800b61d64"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "953165a95ea6bb4309976bee92d0f1433642008d7b7bce0d1bdde3f99d9a5a8c"
+      "sha256": "0a9fe6a13450735956e33b67dac34bc3e5a5979b51a01c2d1dd4458aa14ea9a1"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "47e65a65f2c17dd755dbc441bc82dbfdca1fdb2de79b21ff21ea5971edd8516b"
+      "sha256": "d5940b5059927840bc38c6605b532819486059fcd87fc89cf9a6f478f3410ce1"
     }
   },
   "paper": {
@@ -4599,22 +5914,22 @@
         "section": "Algorithm 2"
       },
       {
-        "anchor": "Theorem 1, inequality (7)",
+        "anchor": "Theorem 1, numbered equation (7)",
         "pdf_page": 4,
         "printed_page": "302",
-        "role": "stated loss-of-orthogonality bound",
+        "role": "selected stated loss-of-orthogonality bound",
         "section": "Theorem 1"
       },
       {
-        "anchor": "unnumbered exact identity and following norm estimate deriving (7)",
+        "anchor": "exact identity and following norm estimates deriving equation (7)",
         "pdf_page": 14,
         "printed_page": "312",
-        "role": "proof decomposition into normal-equation and factorization-error terms",
+        "role": "proof decomposition and propagation of equations (4)-(6)",
         "section": "Appendix: Proof of Theorem 1"
       }
     ]
   },
-  "prepared_at_utc": "2026-08-15T08:12:07.465281+00:00",
+  "prepared_at_utc": "2026-08-21T20:57:03.979917+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
@@ -4702,12 +6017,12 @@
   "target": {
     "declaration": "HighamBench.p11_t3_orthogonality_defect_bound",
     "path": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
-    "sha256": "b6ecd17c207880a5b97422a423981ad79c542ee4f29eddfd1b4b5c460e1cf48a"
+    "sha256": "a7c13485b8f32f7701cce22d1839e454af8a5ff237d253a3bd6c7fedfa6d2077"
   },
   "task_id": "P11-T3",
   "task_metadata": {
     "path": "paper_bencmark/highambench/tasks/P11/T3/task.json",
     "semantic_evidence": false,
-    "sha256": "be6801cec56f5c4dd48b95634839d960bc2afc70c98dbc582dd49bbe0f29c10b"
+    "sha256": "189a8c2ad8a9abc995dcd2d9281a3048675fcc0e5b80b2182c4f782b1f11b020"
   }
 }
