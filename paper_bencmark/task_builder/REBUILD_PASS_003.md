@@ -7,12 +7,12 @@
 - Pass-3 scope: the 25 fully validated Audit 2 results that were not accepted
 - Processing order: the order in the ledger below
 - Active task: none
-- Rebuilds started: 5/25
-- Rebuilds committed and pushed: 5/25
+- Rebuilds started: 6/25
+- Rebuilds committed and pushed: 6/25
 - Pass-3 audits accepted: 0/25
 
-`P04-T1`, `P04-T2`, `P05-T1`, `P05-T2`, and `P05-T3` have been rebuilt and
-pushed. The next task is `P06-T1`.
+`P04-T1`, `P04-T2`, `P05-T1`, `P05-T2`, `P05-T3`, and `P06-T1` have been
+rebuilt and pushed. The next task is `P07-T2`.
 
 ## Operating rules
 
@@ -60,7 +60,7 @@ Audit 2 versions.
 | 3 | `P05-T1` | `not-faithful-different` | `no / no` | `c75077eefad7` | [decision](../highambench/tasks/P05/T1/faithfulness/decision.json), [report](../highambench/tasks/P05/T1/faithfulness/report.md) | `rebuilt-pushed` | `0402e4ec3` | - |
 | 4 | `P05-T2` | `not-faithful-different` | `no / no` | `eb1f4d90e3fd` | [decision](../highambench/tasks/P05/T2/faithfulness/decision.json), [report](../highambench/tasks/P05/T2/faithfulness/report.md) | `rebuilt-pushed` | `5eff63450` | - |
 | 5 | `P05-T3` | `not-faithful-weaker` | `no / yes` | `406fab50515a` | [decision](../highambench/tasks/P05/T3/faithfulness/decision.json), [report](../highambench/tasks/P05/T3/faithfulness/report.md) | `rebuilt-pushed` | `47d060c99` | - |
-| 6 | `P06-T1` | `not-faithful-weaker` | `no / yes` | `be015f6d50ce` | [decision](../highambench/tasks/P06/T1/faithfulness/decision.json), [report](../highambench/tasks/P06/T1/faithfulness/report.md) | `pending` | - | - |
+| 6 | `P06-T1` | `not-faithful-weaker` | `no / yes` | `be015f6d50ce` | [decision](../highambench/tasks/P06/T1/faithfulness/decision.json), [report](../highambench/tasks/P06/T1/faithfulness/report.md) | `rebuilt-pushed` | `23ca8a94f` | - |
 | 7 | `P07-T2` | `not-faithful-weaker` | `no / yes` | `cef9fdfaa43e` | [decision](../highambench/tasks/P07/T2/faithfulness/decision.json), [report](../highambench/tasks/P07/T2/faithfulness/report.md) | `pending` | - | - |
 | 8 | `P08-T3` | `not-faithful-different` | `no / no` | `b172c68f6218` | [decision](../highambench/tasks/P08/T3/faithfulness/decision.json), [report](../highambench/tasks/P08/T3/faithfulness/report.md) | `pending` | - | - |
 | 9 | `P09-T2` | `not-faithful-different` | `no / no` | `d184164e2187` | [decision](../highambench/tasks/P09/T2/faithfulness/decision.json), [report](../highambench/tasks/P09/T2/faithfulness/report.md) | `pending` | - | - |
