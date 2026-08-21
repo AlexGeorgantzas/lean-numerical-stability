@@ -1,0 +1,178 @@
+{
+  "schema_version": "highambench-audit-history-2",
+  "audit_id": "audit_002",
+  "status": "in-progress",
+  "recorded_at_utc": "2026-08-21T07:27:31Z",
+  "baseline_audit": {
+    "audit_id": "audit_001",
+    "repository_commit": "df483a11408fa7b7440bbc1907c93bb9b3e610fa"
+  },
+  "audit_window": {
+    "earliest_second_pass_completed_at_utc": "2026-08-14T13:31:48.966150+00:00",
+    "latest_second_pass_completed_at_utc": "2026-08-21T05:54:19.627797+00:00"
+  },
+  "repository_reference": {
+    "branch": "benchmark_faithfulness_audit",
+    "latest_audit_commit": "f47b4d4e38b47005a87228564a678d60615b76a8",
+    "evidence_is_pinned_per_task": true
+  },
+  "scope": {
+    "paper_count": 20,
+    "corpus_task_count": 60,
+    "eligible_task_count": 59,
+    "excluded_task_count": 1,
+    "pending_task_count": 2,
+    "fully_validated_resolved_task_count": 55,
+    "reported_resolved_task_count_including_provisional": 57,
+    "carried_forward_task_count": 17,
+    "second_pass_validated_task_count": 38,
+    "second_pass_provisional_task_count": 2,
+    "pending_tasks": [
+      "P13-T1",
+      "P20-T2"
+    ],
+    "excluded_tasks": [
+      "P17-T1"
+    ]
+  },
+  "validation": {
+    "all_task_bundles_valid": false,
+    "validated_carry_forward_count": 17,
+    "validated_second_pass_count": 38,
+    "provisional_unpinned_count": 2,
+    "notes": [
+      "All 38 second-pass-validated bundles passed complete-phase validation at their exact audit commits.",
+      "All 17 carried-forward accepted results retain identical target and dependency semantics; 11 were checked by regenerated semantic inventories and six P01/P02 tasks had unchanged targets and paper-specific shared source.",
+      "P20-T1 and P20-T3 cannot be complete-phase validated from their audit commits because their audited controlled inputs were never committed.",
+      "P13-T1 has a rebuilt target but no second-pass audit."
+    ]
+  },
+  "aggregates": {
+    "fully_validated": {
+      "total": 55,
+      "accepted": 31,
+      "not_accepted": 24,
+      "adjudicated": 33,
+      "classifications": {
+        "faithful-equivalent": 12,
+        "faithful-stronger": 19,
+        "not-faithful-different": 12,
+        "not-faithful-weaker": 11,
+        "undetermined": 1
+      },
+      "implication_pairs": {
+        "no/no": 12,
+        "no/yes": 11,
+        "unclear/no": 1,
+        "yes/no": 19,
+        "yes/yes": 12
+      },
+      "by_tier": {
+        "T1": {
+          "total": 17,
+          "accepted": 11,
+          "classifications": {
+            "faithful-equivalent": 3,
+            "faithful-stronger": 8,
+            "not-faithful-different": 1,
+            "not-faithful-weaker": 4,
+            "undetermined": 1
+          }
+        },
+        "T2": {
+          "total": 19,
+          "accepted": 11,
+          "classifications": {
+            "faithful-equivalent": 6,
+            "faithful-stronger": 5,
+            "not-faithful-different": 5,
+            "not-faithful-weaker": 3
+          }
+        },
+        "T3": {
+          "total": 19,
+          "accepted": 9,
+          "classifications": {
+            "faithful-equivalent": 3,
+            "faithful-stronger": 6,
+            "not-faithful-different": 6,
+            "not-faithful-weaker": 4
+          }
+        }
+      }
+    },
+    "including_provisional_decisions": {
+      "total": 57,
+      "accepted": 32,
+      "not_accepted": 25,
+      "adjudicated": 35,
+      "classifications": {
+        "faithful-equivalent": 12,
+        "faithful-stronger": 20,
+        "not-faithful-different": 12,
+        "not-faithful-weaker": 11,
+        "undetermined": 2
+      },
+      "implication_pairs": {
+        "no/no": 12,
+        "no/unclear": 1,
+        "no/yes": 11,
+        "unclear/no": 1,
+        "yes/no": 20,
+        "yes/yes": 12
+      },
+      "by_tier": {
+        "T1": {
+          "total": 18,
+          "accepted": 12,
+          "classifications": {
+            "faithful-equivalent": 3,
+            "faithful-stronger": 9,
+            "not-faithful-different": 1,
+            "not-faithful-weaker": 4,
+            "undetermined": 1
+          }
+        },
+        "T2": {
+          "total": 19,
+          "accepted": 11,
+          "classifications": {
+            "faithful-equivalent": 6,
+            "faithful-stronger": 5,
+            "not-faithful-different": 5,
+            "not-faithful-weaker": 3
+          }
+        },
+        "T3": {
+          "total": 20,
+          "accepted": 9,
+          "classifications": {
+            "faithful-equivalent": 3,
+            "faithful-stronger": 6,
+            "not-faithful-different": 6,
+            "not-faithful-weaker": 4,
+            "undetermined": 1
+          }
+        }
+      }
+    }
+  },
+  "files": [
+    {
+      "path": "paper_bencmark/faithfulness_audit/history/audit_002/results.json",
+      "role": "machine-readable task index and Audit 1 comparison",
+      "sha256": "b7a36a3ee00f3709aae01c7db544b45faf26cf0c55b773d2afab1c7adc99645b"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/history/audit_002/summary.md",
+      "role": "human-readable progress summary",
+      "sha256": "69efd4de1452d384734c7a6f0eb79ab22ce34a8bc3eb8ea15c7844b25401d424"
+    }
+  ],
+  "detailed_evidence": {
+    "task_root": "paper_bencmark/highambench/tasks",
+    "artifact_lookup": "results.json tasks[]",
+    "pinned_by_per_task_commit": true,
+    "global_snapshot_sufficient": false
+  }
+}
