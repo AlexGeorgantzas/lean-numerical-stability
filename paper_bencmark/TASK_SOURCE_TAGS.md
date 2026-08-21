@@ -84,7 +84,7 @@ the `theorem` command.
 | `P16-T1` | `UNL` | none | Section 2 gives the selected minimum normwise backward-error identity in an unnumbered display. |
 | `P16-T2` | `LEM` | `Lemma 4.2` | The selected exact identity and first-order restarted residual recurrence are the backward-error half of Lemma 4.2. |
 | `P16-T3` | `THM` | `Theorem 6.3` | The selected mixed-precision contraction and attainable-floor result is explicitly named Theorem 6.3. |
-| `P17-T1` | `THM` | `Theorem 3.6` | The selected accumulated-error product envelope is explicitly named Theorem 3.6. |
+| `P17-T1` | `THM` | `Theorem 3.6` | The selected corrected finite-probability product envelope remains explicitly tied to Theorem 3.6; the project-added sign conditions are documented separately. |
 | `P17-T2` | `THM` | `Theorem 4.1` | The selected recursive-summation bias bound is explicitly named Theorem 4.1. |
 | `P17-T3` | `THM` | `Theorem 4.3` | The selected variance-based probabilistic summation bound is explicitly named Theorem 4.3. |
 | `P18-T1` | `TXT`, `UNL` | none | The prose following equation (3.3) introduces the selected exact split, and the split itself is displayed without a number. |

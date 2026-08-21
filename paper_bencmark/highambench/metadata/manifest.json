@@ -180,7 +180,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P17Definitions.lean",
       "role": "P17-only limited-precision stochastic-rounding traces, recursive sums, product growth, summation conditioning, and finite-probability notation",
-      "sha256": "5402369043678beac601ab6e3b25b069da3cd903b65ab6f9ba9700488ad8594b",
+      "sha256": "3223e501fa3f1646cb206f7ae62604b601ae8e951204ee8f5d048141f634ef9a",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -3307,7 +3307,7 @@
         "volume": "47"
       },
       "paper_id": "P17",
-      "paper_structure_note": "The paper defines limited-precision stochastic rounding, proves its bias and centered mean-independent decomposition, derives product, recursive-summation, and inner-product error bounds, analyzes their random-bit dependence, and validates the rule experimentally. The selected targets progress from the basic product envelope through the summation condition-number step to the exact variance-plus-bias probability assembly.",
+      "paper_structure_note": "The paper defines limited-precision stochastic rounding, proves its bias and centered mean-independent decomposition, derives product, recursive-summation, and inner-product error bounds, analyzes their random-bit dependence, and validates the rule experimentally. P17-T1 records a project correction to the contradicted published statement of Theorem 3.6; the other targets progress through the summation condition-number step to the exact variance-plus-bias probability assembly.",
       "paper_version": "published journal version; SIAM Journal on Scientific Computing 47(5), 2025, pages B1227-B1249",
       "source": {
         "journal_page_map": "PDF pages 1-23 are journal pages B1227-B1249 respectively.",
@@ -3321,45 +3321,55 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
+            "NumStability.FiniteProbability.expectationReal_add",
+            "NumStability.FiniteProbability.expectationReal_mul_const",
+            "NumStability.FiniteProbability.expectationReal_mono",
             "NumStability.prod_one_add_delta_bounds"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P17/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Each factor lies between 1-B and 1+B. Since B is at most one, the lower factors are nonnegative, so monotonicity of finite products gives both bounds.",
-          "informal_statement_paraphrase": "The deterministic one-atom specialization of Theorem 3.6's expectation envelope for accumulated limited-precision stochastic-rounding errors.",
+          "informal_proof_paraphrase": "Induct on prefix length. The nonnegative prefix is history-measurable, so the conditional-mean identity replaces the next delta by beta inside expectation. The beta bound and expectation monotonicity multiply the preceding bounds by 1-B and 1+B.",
+          "informal_statement_paraphrase": "A project-corrected finite-probability version of Theorem 3.6's expected product envelope, with the induction's missing sign conditions explicit.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "003a394c8a361bdbad3c41d5ee8971d4be789afd1f7d64aa1044c7055cb1e28e",
-            "declaration": "p17_t1_product_bias_envelope",
+            "controlled_file_sha256": "4332f8549fe96bb969b46e6f3e33f54fa7584d3c7bcd11137b1be325a10aa80a",
+            "declaration": "p17_t1_corrected_product_bias_envelope",
             "file": "paper_bencmark/highambench/tasks/P17/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P17Definitions.lean"
             ],
-            "statement_summary": "A finite product of bounded relative-error factors lies between the lower and upper binomial envelopes from Theorem 3.6."
+            "statement_summary": "Under explicit nonnegative-factor conditions and bounded history-conditional biases, the expected random product lies between Theorem 3.6's lower and upper binomial envelopes."
           },
           "source_locations": [
+            {
+              "anchor": "Lemma 3.2 conditional-bias identity",
+              "pdf_page": 8,
+              "printed_page": "B1234",
+              "role": "supporting conditional-expectation semantics",
+              "section": "3. Properties of limited-precision stochastic rounding"
+            },
             {
               "anchor": "Theorem 3.6 product expectation envelope",
               "pdf_page": 9,
               "printed_page": "B1235",
-              "role": "finite accumulated-error product bound",
+              "role": "selected finite accumulated-error product bound",
               "section": "3. Properties of limited-precision stochastic rounding"
             },
             {
-              "anchor": "completion of the induction proof and Remark 3.7 specialization",
+              "anchor": "completion of Theorem 3.6's induction proof",
               "pdf_page": 10,
               "printed_page": "B1236",
-              "role": "roundoff-radius instantiation",
+              "role": "location of the proof steps requiring the added sign conditions",
               "section": "3. Properties of limited-precision stochastic rounding"
             }
           ],
           "task_id": "P17-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "The frozen theorem NumStability.prod_one_add_delta_bounds has the same product surface and conclusion. The L proof only supplies the paper-scoped names and hypotheses.",
-          "title": "Limited-precision product envelope"
+          "tier_reason": "Provisional task-slot label only. The exact corrected theorem is absent from the frozen library; the L proof reuses finite-expectation primitives but reconstructs the conditional-mean induction. Its actual proof shape is combine/T2, so P17 requires coordinated tier reassignment before measurement.",
+          "title": "Corrected stochastic product-bias envelope"
         },
         {
           "availability": "available",

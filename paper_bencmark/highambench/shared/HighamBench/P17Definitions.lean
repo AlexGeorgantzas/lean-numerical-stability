@@ -63,6 +63,36 @@ def p17HistoryMeasurable {m : ℕ} {Ω : Type*}
     (∀ j : Fin m, j.val < k.val → delta j ω₁ = delta j ω₂) →
       X ω₁ = X ω₂
 
+/-- Finite-probability form of Theorem 3.6 with the sign conditions required
+by its induction made explicit.
+
+The test-function identity is the finite-space meaning of
+`E(delta_k | delta_0, ..., delta_{k-1}) = beta_k`. The structure records no
+product bound: that remains the conclusion of P17-T1. -/
+structure P17CorrectedProductBiasRun
+    (n : ℕ) (Ω : Type*) [Fintype Ω] where
+  probability : P17FiniteProbability Ω
+  operation_count_pos : 0 < n
+  B : ℝ
+  B_pos : 0 < B
+  B_le_one : B ≤ 1
+  delta : Fin n → Ω → ℝ
+  beta : Fin n → Ω → ℝ
+  rounding_factor_nonneg : ∀ k ω, 0 ≤ 1 + delta k ω
+  beta_bound : ∀ k ω, |beta k ω| ≤ B
+  beta_history : ∀ k, 0 < k.val → p17HistoryMeasurable delta k (beta k)
+  conditional_mean : ∀ k X,
+    p17HistoryMeasurable delta k X →
+      p17Expectation probability (fun ω => X ω * delta k ω) =
+        p17Expectation probability (fun ω => X ω * beta k ω)
+
+/-- Expected accumulated relative-error product in corrected Theorem 3.6. -/
+noncomputable def p17ExpectedErrorProduct
+    {n : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17CorrectedProductBiasRun n Ω) : ℝ :=
+  p17Expectation run.probability
+    (fun ω => ∏ k : Fin n, (1 + run.delta k ω))
+
 /-- Left-to-right recursive summation of `m+1` inputs using the `m` supplied
 relative rounding errors. The first input is exact, as in the table preceding
 equation (4.4). -/
