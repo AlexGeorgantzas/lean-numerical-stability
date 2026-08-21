@@ -5,170 +5,154 @@
   "paper_sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6",
   "source_evidence": [
     {
-      "pdf_page": 10,
-      "printed_page": "693",
-      "anchor": "Section 4.1, Lemma 4.1 statement",
-      "observation": "For positive k, floating-point inputs a_1,...,a_{k-1}, b_1,...,b_k, c with b_k nonzero, and any evaluation order without underflow or overflow, the computed value satisfies an exact perturbed identity with coefficient bounds k*u; when b_k=1 and division is omitted, the bound is (k-1)*u."
-    },
-    {
-      "pdf_page": 10,
-      "printed_page": "693",
-      "anchor": "Lemma 4.1 proof, unit-divisor case",
-      "observation": "For b_k=1, Theorem 3.1 gives |y_hat-y| <= (k-1)*u*(|y_hat| + sum |a_i*b_i|), from which the proof constructs sign-aligned coefficients using one real epsilon."
-    },
-    {
-      "pdf_page": 10,
-      "printed_page": "693",
-      "anchor": "Lemma 4.1 proof, final paragraph",
-      "observation": "The nonzero general-divisor case is said to follow analogously from Corollary 3.2 with b=b_k, n=k, x_1=c, and x_{i+1}=-a_i*b_i."
-    },
-    {
       "pdf_page": 3,
       "printed_page": "686",
-      "anchor": "Equations (1.5a)-(1.5b), evaluation-order paragraph, and footnote 1",
-      "observation": "The surrounding convention treats evaluation order as a rooted binary summation tree; c remains unperturbed, while superscripted perturbation coefficients may be pairwise distinct."
-    },
-    {
-      "pdf_page": 5,
-      "printed_page": "688",
-      "anchor": "Sections 2.1-2.2 and equations (2.1a)-(2.1b)",
-      "observation": "The paper uses finite floating-point numbers with radix beta and precision p, arbitrary round-to-nearest tie breaking, and unit roundoff u=(1/2)*beta^(1-p)."
-    },
-    {
-      "pdf_page": 6,
-      "printed_page": "689",
-      "anchor": "Section 2.3, equation (2.4) and following paragraph",
-      "observation": "For real summands, each summand is first rounded and the rounded values are then added in an arbitrary order; choosing summands a_i*b_i gives the separate-product inner-product model used later."
-    },
-    {
-      "pdf_page": 7,
-      "printed_page": "690",
-      "anchor": "Theorem 3.1 statement",
-      "observation": "The underlying theorem bounds a sum containing one exactly floating-point summand and other real summands whose initial roundings do not underflow."
-    },
-    {
-      "pdf_page": 8,
-      "printed_page": "691",
-      "anchor": "Observations after Theorem 3.1 and first part of Corollary 3.2",
-      "observation": "Overflow exclusion covers initial summand rounding and summation; Corollary 3.2 supplies the bound for a rounded division by a nonzero floating-point divisor."
-    },
-    {
-      "pdf_page": 9,
-      "printed_page": "692",
-      "anchor": "Corollary 3.2 proof, first paragraph",
-      "observation": "For y_hat=fl(s_hat/b), the product b*y_hat used in the bound is exact mathematical multiplication, and the division contributes one u-sized error through equation (2.1b)."
+      "anchor": "Paragraph following equations (1.5a)-(1.5c), and footnote 1",
+      "observation": "The paper defines whatever order of evaluation through rooted binary summation trees with k leaves and k-1 binary internal nodes. Superscripts distinguish perturbation coefficients that may be pairwise distinct, and c is deliberately left unperturbed."
     },
     {
       "pdf_page": 4,
       "printed_page": "687",
-      "anchor": "Discussion following equation (1.8)",
-      "observation": "The improved coefficients are linear in u, contain no quadratic remainder, and impose no size restriction on the term count."
+      "anchor": "Equations (1.7)-(1.8) and the paragraph ending with any evaluation order of the sums involved",
+      "observation": "The underlying result uses rounding to nearest with arbitrary tie-breaking and applies for any radix, dimension, and summation order. Its constants are linear in u, contain no O(u^2) term, and impose no dimension-dependent smallness condition."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "688",
+      "anchor": "Section 2.1, Floating-point numbers and rounding to nearest",
+      "observation": "F is a symmetric set of finite floating-point numbers containing zero, with radix beta >= 2, precision p >= 1, and a finite exponent range. The map fl rounds a real number to a nearest floating-point value, with no prescribed tie-breaking rule."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "688",
+      "anchor": "Equations (2.1a)-(2.1b) and the surrounding underflow discussion",
+      "observation": "The unit roundoff is u = (1/2) beta^(1-p), hence u <= 1/2. Underflow means an inexact rounding of a real value in the subnormal range; multiplication and division can underflow or overflow, whereas floating-point addition cannot underflow under this definition."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "689",
+      "anchor": "Equation (2.4) and its following paragraph",
+      "observation": "The summation result used later first rounds each real summand x_i to fl(x_i) and then adds the resulting floating-point numbers in an arbitrary order. Taking x_i to be products of floating-point inputs covers inner products."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "690",
+      "anchor": "Theorem 3.1",
+      "observation": "For a sum of n real terms with one exactly floating-point term, Theorem 3.1 bounds the residual of a real rho approximating the computed sum. Its quantifier order is inputs and evaluation order first, followed by the residual conclusion."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "691",
+      "anchor": "Paragraph preceding Corollary 3.2 and the first conclusion of Corollary 3.2",
+      "observation": "For nonzero b in F and computed y-hat = fl(s-hat/b), the corollary treats rho = b y-hat as an exact real product and proves an absolute residual bound with coefficient n u."
+    },
+    {
+      "pdf_page": 10,
+      "printed_page": "693",
+      "anchor": "Section 4.1 opening paragraph and Lemma 4.1",
+      "observation": "Lemma 4.1 concerns y = (c - sum_{i=1}^{k-1} a_i b_i)/b_k for positive k, finite floating-point inputs, and nonzero b_k. Every permitted evaluation order without underflow or overflow admits coefficients satisfying b_k y-hat (1 + theta_k^(0)) = c - sum_{i=1}^{k-1} a_i b_i (1 + theta_k^(i)), with absolute coefficient bounds k u. When b_k = 1 and division is omitted, the bounds improve to (k-1)u."
+    },
+    {
+      "pdf_page": 10,
+      "printed_page": "693",
+      "anchor": "Proof of Lemma 4.1, from Assume first that b_k = 1 through the appeal to Corollary 3.2",
+      "observation": "For b_k = 1 the proof obtains y-hat - y = epsilon (abs(y-hat) + sum abs(a_i b_i)), where abs(epsilon) <= (k-1)u, and explicitly chooses epsilon^(0) = -sign(y-hat) epsilon and epsilon^(i) = -sign(a_i b_i) epsilon. The general nonzero-divisor case is said to follow analogously from Corollary 3.2 with b = b_k, n = k, x_1 = c, and x_{i+1} = -a_i b_i."
     }
   ],
   "statement": {
     "binders": [
-      "Quantifier order: for every k in N_{>0}, every permitted tuple of scalar inputs, and every permitted summation order, if that execution avoids underflow and overflow, there exist real coefficients theta_k^(i), dependent on the inputs and execution, satisfying the identity and bounds. [PDF p. 10 (printed 693), Lemma 4.1 statement and proof]",
-      "The scalar inputs are a_1,...,a_{k-1}, b_1,...,b_{k-1}, b_k, c in F, with b_k != 0; no sign restriction is imposed on b_k. [PDF p. 10 (printed 693), Lemma 4.1 statement]",
-      "The nominal exact value is y=(c-sum_{i=1}^{k-1} a_i*b_i)/b_k, while y_hat denotes the result of its floating-point evaluation. [PDF p. 10 (printed 693), Lemma 4.1 statement]",
-      "The displayed coefficients are indexed by i=0 for the b_k*y_hat term and i=1,...,k-1 for the product terms. [PDF p. 10 (printed 693), displayed identity in Lemma 4.1]"
+      "Universally quantify k in N_{>0}. (PDF p. 10, anchor: Lemma 4.1.)",
+      "Universally quantify scalar inputs a_1,...,a_{k-1}, b_1,...,b_{k-1}, b_k, and c in F. (PDF p. 10, anchor: Lemma 4.1.)",
+      "For each permitted floating-point evaluation order and its resulting computed value y-hat, existentially choose real coefficients theta_k^(0),...,theta_k^(k-1); the coefficients may depend on the inputs and computation. (PDF p. 10, anchor: Lemma 4.1; PDF p. 3, anchor: footnote 1.)"
     ],
     "hypotheses": [
-      "k is any positive integer; the passage explicitly removes the former restriction on k. [PDF p. 10 (printed 693), Section 4.1 opening paragraph]",
-      "All named inputs belong to the finite floating-point set F and b_k is nonzero. [PDF p. 10 (printed 693), Lemma 4.1 statement]",
-      "The expression is evaluated using the paper's separate floating-point product, binary summation, and final-division model, with arbitrary parenthesization of the summation. [PDF p. 3 (printed 686), evaluation-order paragraph; PDF p. 6 (printed 689), paragraph following (2.4); PDF p. 10 (printed 693), Lemma 4.1]",
-      "No underflow or overflow occurs in the relevant product roundings, summation, or final division. [PDF p. 8 (printed 691), observations after Theorem 3.1 and Corollary 3.2; PDF p. 10 (printed 693), Lemma 4.1 statement]"
+      "The divisor b_k is nonzero. (PDF p. 10, anchor: Lemma 4.1.)",
+      "The exact real expression is y = (c - sum_{i=1}^{k-1} a_i b_i)/b_k, and it is evaluated in floating-point arithmetic. (PDF p. 10, anchor: Lemma 4.1.)",
+      "No underflow or overflow occurs during the floating-point evaluation. (PDF p. 10, anchor: Lemma 4.1.)",
+      "The special bound assumes b_k = 1 and that the division is omitted. (PDF p. 10, anchor: sentence beginning If b_k = 1.)"
     ],
     "conclusions": [
-      "There exist real theta_k^(0),...,theta_k^(k-1) such that b_k*y_hat*(1+theta_k^(0)) = c - sum_{i=1}^{k-1} a_i*b_i*(1+theta_k^(i)), with |theta_k^(i)| <= k*u for every relevant i. [PDF p. 10 (printed 693), displayed identity in Lemma 4.1]",
-      "If b_k=1 and the division is omitted, the same identity has the sharper bounds |theta_k^(i)| <= (k-1)*u for every relevant i. [PDF p. 10 (printed 693), sentence immediately following the displayed identity]",
-      "For b_k=1, the proof explicitly obtains |y_hat-y| <= (k-1)*u*(|y_hat|+sum_{i=1}^{k-1}|a_i*b_i|). [PDF p. 10 (printed 693), Lemma 4.1 proof]",
-      "For b_k=1, the proof chooses epsilon in R with |epsilon| <= (k-1)*u and y_hat-y=epsilon*(|y_hat|+sum |a_i*b_i|), then sets epsilon^(0)=-sign(y_hat)*epsilon and epsilon^(i)=-sign(a_i*b_i)*epsilon for 1<=i<k to obtain the perturbed identity. [PDF p. 10 (printed 693), Lemma 4.1 proof]",
-      "The general b_k != 0 conclusion is obtained from Corollary 3.2, whose corresponding forward bound is |b_k*y_hat-(c-sum a_i*b_i)| <= k*u*(|b_k*y_hat|+sum |a_i*b_i|). [PDF p. 8 (printed 691), first bound of Corollary 3.2; PDF p. 10 (printed 693), final sentence of Lemma 4.1 proof]"
+      "General nonzero-divisor conclusion: there exist real coefficients such that b_k y-hat (1 + theta_k^(0)) = c - sum_{i=1}^{k-1} a_i b_i (1 + theta_k^(i)) and abs(theta_k^(i)) <= k u for every coefficient occurring in the identity. (PDF p. 10, anchor: Lemma 4.1 displayed conclusion.)",
+      "Unit-divisor conclusion: when b_k = 1 and no division is performed, the same identity holds with abs(theta_k^(i)) <= (k-1)u for every occurring coefficient. (PDF p. 10, anchor: sentence immediately following the Lemma 4.1 display.)",
+      "In the explicitly proved unit-divisor case, one common residual scalar epsilon can be used to construct sign-aligned coefficients epsilon^(0) = -sign(y-hat)epsilon and epsilon^(i) = -sign(a_i b_i)epsilon for 1 <= i < k, with magnitude bounded by (k-1)u. (PDF p. 10, anchor: proof of Lemma 4.1, sign construction.)",
+      "The proof indicates, rather than writes out, the analogous general-case construction obtained from Corollary 3.2 with the exact left quantity b_k y-hat and bound k u. (PDF p. 10, anchor: final sentence of the proof of Lemma 4.1; PDF p. 8, anchor: first conclusion of Corollary 3.2.)"
     ],
     "definitions_and_conventions": [
-      "F is a symmetric set of finite floating-point numbers containing zero, with radix beta>=2, precision p>=1, and a finite exponent range. [PDF p. 5 (printed 688), Section 2.1 opening paragraphs]",
-      "fl is an arbitrary round-to-nearest map; ties may be resolved by any strategy. [PDF p. 5 (printed 688), definition of fl]",
-      "The unit roundoff is u=(1/2)*beta^(1-p), hence u<=1/2. [PDF p. 5 (printed 688), equations (2.1a)-(2.1b) and following paragraph]",
-      "The products a_i*b_i and b_k*y_hat appearing in the final identity are exact real products; rounding committed while computing products and division is absorbed into the coefficients. [PDF p. 6 (printed 689), paragraph following (2.4); PDF p. 8 (printed 691), Corollary 3.2; PDF p. 9 (printed 692), its proof]",
-      "The scalar c is intentionally unperturbed in the backward identity. [PDF p. 3 (printed 686), paragraph following the evaluation-order examples]",
-      "Superscripts distinguish coefficients that may be pairwise different; the lemma does not assert one common coefficient for every term. [PDF p. 3 (printed 686), footnote 1]"
+      "F denotes finite floating-point values; y is an exact real expression, whereas y-hat is the floating-point result. (PDF p. 5, anchor: Section 2.1; PDF p. 10, anchor: Lemma 4.1.)",
+      "The products a_i b_i and b_k y-hat in the concluding identity are exact real products used in an algebraic backward-error representation, not additional computed multiplications. (PDF p. 8, anchor: paragraph identifying rho as the exact product; PDF p. 10, anchor: Lemma 4.1 display.)",
+      "The coefficient theta_k^(0) perturbs the aggregate b_k y-hat, while theta_k^(i) perturbs the complete product a_i b_i; the lemma does not separately perturb a_i, b_i, b_k, or y-hat. (PDF p. 10, anchor: Lemma 4.1 displayed conclusion.)",
+      "The scalar c remains exactly unperturbed. (PDF p. 10, anchor: Lemma 4.1 displayed conclusion; PDF p. 3, anchor: paragraph beginning Note also.)",
+      "Whatever order refers to arbitrary rooted binary parenthesizations of the signed summands, not to a fixed recursive order. (PDF p. 3, anchor: paragraph beginning Each of the three identities.)"
     ],
     "implicit_context": [
-      "The result inherits the paper-wide round-to-nearest model for any radix, precision, and tie-breaking strategy. [PDF p. 5 (printed 688), Sections 2.1-2.2; PDF p. 4 (printed 687), discussion following (1.8)]",
-      "The statement is scalar: k counts c together with k-1 signed product terms, not a matrix dimension. [PDF p. 3 (printed 686), equations (1.3a) and (1.5b); PDF p. 10 (printed 693), Lemma 4.1]",
-      "The existential coefficients may depend on the selected evaluation tree and on the computed result; they are not chosen uniformly before the computation. [PDF p. 3 (printed 686), evaluation-order paragraph; PDF p. 10 (printed 693), constructive proof]",
-      "For b_k != 1, an analogous common-epsilon sign construction can be inferred by replacing y_hat in the unit-case construction with the exact quantity b_k*y_hat, but that formula is not written explicitly. [PDF p. 8 (printed 691), Corollary 3.2; PDF p. 10 (printed 693), final sentence of Lemma 4.1 proof]",
-      "Although division by other values might happen to be exact, the sharper (k-1)*u conclusion is stated only for the algorithm variant b_k=1 with no division. [PDF p. 10 (printed 693), sentence following the displayed Lemma 4.1 identity]"
+      "Inherited from Section 2, every elementary rounding uses round-to-nearest in a finite floating-point system, with arbitrary tie-breaking. (PDF p. 5, anchor: Section 2.1.)",
+      "The proof formalizes the numerator using n = k, x_1 = c, and x_{i+1} = -a_i b_i for 1 <= i < k. (PDF p. 10, anchor: proof of Lemma 4.1.)",
+      "Existence of the perturbation coefficients follows from converting an absolute residual bound into an exact algebraic identity; uniqueness is neither claimed nor needed. (PDF p. 10, anchor: proof of Lemma 4.1.)",
+      "There is no restriction on k beyond positivity, even when k u >= 1. (PDF p. 10, anchor: Section 4.1 opening paragraph.)"
     ],
-    "algorithm_linkage": "Compute each product a_i*b_i with its own floating-point rounding, combine c and the signed products -a_i*b_i using any rooted binary summation tree, and, when b_k != 1, round the final division of the computed numerator by b_k; when b_k=1 the division is omitted. The formal order freedom concerns the binary summation tree and does not describe fused multiply-add or reassociation of the final division. [PDF p. 3 (printed 686), evaluation-order paragraph; PDF p. 6 (printed 689), paragraph following (2.4); PDF p. 8 (printed 691), Corollary 3.2; PDF p. 10 (printed 693), Lemma 4.1]",
+    "algorithm_linkage": "The numerator is modeled as the floating-point summation of the k signed leaves c and -a_i b_i in any rooted binary order; for general b_k, the resulting computed numerator is then divided by b_k and rounded, while the b_k = 1 variant omits that division. This linkage is explicit through x_1 = c and x_{i+1} = -a_i b_i in the proof and through the paper's binary-tree definition of evaluation order. (PDF p. 10, anchor: proof of Lemma 4.1; PDF p. 3, anchor: paragraph defining whatever order of evaluation.)",
     "numerical_model": [
-      "Arithmetic uses finite floating-point numbers and rounding to nearest, with arbitrary tie breaking. [PDF p. 5 (printed 688), Section 2.1]",
-      "When neither underflow nor overflow occurs, fl(t)=t*(1+delta_1)=t/(1+delta_2), with |delta_1|,|delta_2|<=u. [PDF p. 5 (printed 688), equations (2.1a)-(2.1b)]",
-      "For the division, y_hat=fl(s_hat/b_k), and b_k*y_hat in the analysis is an exact real product rather than an additional rounded operation. [PDF p. 8 (printed 691), first part of Corollary 3.2; PDF p. 9 (printed 692), first paragraph of its proof]",
-      "The inner-product model separately rounds each exact product a_i*b_i before binary summation; no fused operation is part of the stated model. [PDF p. 6 (printed 689), equation (2.4) and following paragraph]"
+      "F is a finite, symmetric floating-point set containing zero, with radix beta >= 2, precision p >= 1, and a finite exponent range. (PDF p. 5, anchor: Section 2.1 first paragraph.)",
+      "The rounding map fl selects a nearest floating-point value, with no fixed tie-breaking rule. (PDF p. 5, anchor: Section 2.1 definition of fl.)",
+      "The unit roundoff is u = (1/2) beta^(1-p), with u <= 1/2. (PDF p. 5, anchor: equations (2.1a)-(2.1b) and following sentence.)",
+      "The result applies for arbitrary radix, tie-breaking rule, dimension, and summation order, subject to the exceptional-value assumptions. (PDF p. 4, anchor: paragraph ending any evaluation order of the sums involved.)"
     ],
     "error_notions": [
-      "The principal result is a componentwise backward representation: c is exact, while the output-side term and each exact product receive separate multiplicative perturbations. [PDF p. 3 (printed 686), equation (1.5b) and following discussion; PDF p. 10 (printed 693), Lemma 4.1 identity]",
-      "Coefficient size is measured by scalar absolute value, uniformly bounded by k*u or, in the no-division case, (k-1)*u. [PDF p. 10 (printed 693), Lemma 4.1 statement]",
-      "The unit-divisor proof first establishes an absolute forward residual bound weighted by |y_hat| and the sum of absolute exact products, then converts it to the backward identity by sign alignment. [PDF p. 10 (printed 693), Lemma 4.1 proof]",
-      "The displayed backward identity is an exact real equality; it is not an equality only up to neglected rounding terms. [PDF p. 10 (printed 693), displayed identity and proof]"
+      "The conclusion is a componentwise backward-error representation: each complete product term and the aggregate computed-side term receive a multiplicative real perturbation. (PDF p. 10, anchor: Lemma 4.1 displayed conclusion.)",
+      "The perturbation size is measured by scalar absolute values abs(theta_k^(i)); no relative forward-error bound for y-hat versus y is asserted by the lemma. (PDF p. 10, anchor: Lemma 4.1 displayed conclusion.)",
+      "The absolute residual estimate in the proof is auxiliary and is converted into the exact backward identity by sign-aligned coefficients. (PDF p. 10, anchor: proof of Lemma 4.1.)"
     ],
     "norms": [
-      "Only scalar absolute values occur in Lemma 4.1 and its proof; no vector or matrix norm is part of this result. [PDF p. 10 (printed 693), Lemma 4.1 statement and proof]",
-      "The forward residual uses the componentwise weight |y_hat|+sum |a_i*b_i|, or |b_k*y_hat|+sum |a_i*b_i| in the general-divisor case. [PDF p. 8 (printed 691), Corollary 3.2; PDF p. 10 (printed 693), Lemma 4.1 proof]"
+      "Only ordinary scalar absolute value is used; Lemma 4.1 contains no vector, matrix, or operator norm. (PDF p. 10, anchor: Lemma 4.1 and its proof.)"
     ],
     "constants_and_indexing": [
-      "There are k signed summands in the numerator: c and k-1 products indexed i=1,...,k-1. [PDF p. 3 (printed 686), equation (1.3a); PDF p. 10 (printed 693), Lemma 4.1]",
-      "The perturbation index i=0 belongs to b_k*y_hat, while indices 1,...,k-1 belong to the corresponding product terms. [PDF p. 10 (printed 693), displayed identity]",
-      "The general constant is exactly k*u; the no-division constant is exactly (k-1)*u, while the theta subscript remains k in both displays. [PDF p. 10 (printed 693), Lemma 4.1 statement]",
-      "k=1 is not excluded by k in N_{>0}; under the standard empty-sum convention the unit-divisor bound becomes zero. [PDF p. 10 (printed 693), Lemma 4.1 binder and displayed ranges]",
-      "No hypothesis k*u<1 or (k-1)*u<1 is imposed. [PDF p. 10 (printed 693), Section 4.1 opening paragraph]"
+      "The numerator contains k-1 product terms indexed by i = 1,...,k-1, plus the unperturbed term c, for k total summation leaves. (PDF p. 10, anchor: Lemma 4.1; PDF p. 3, anchor: binary-tree description.)",
+      "The computed-side coefficient has superscript 0, and product coefficients have superscripts 1,...,k-1; the natural range of the phrase for all i is therefore i in {0,...,k-1}. (PDF p. 10, anchor: Lemma 4.1 displayed conclusion.)",
+      "The general constant is exactly k u; omitting division when b_k = 1 reduces it by one unit roundoff to exactly (k-1)u. (PDF p. 10, anchor: Lemma 4.1 and following sentence.)",
+      "For k = 1, the indexed product sum is empty by the displayed indexing, leaving y = c/b_1; in the b_1 = 1 no-division case the stated coefficient bound is zero. This edge case is inferred from k in N_{>0} and the range 1 <= i < k rather than discussed separately. (PDF p. 10, anchor: Lemma 4.1.)"
     ],
     "higher_order_terms": [
-      "The bounds k*u and (k-1)*u contain no gamma denominator and no stated O(u^2) remainder. [PDF p. 10 (printed 693), Section 4.1 opening paragraph and Lemma 4.1]",
-      "No terms are omitted from the exact perturbed identity. [PDF p. 10 (printed 693), displayed identity and proof]",
-      "The absence of a term-count restriction remains valid even when k*u>=1; the paper does not require the factors 1+theta_k^(i) to be positive or nonzero. [PDF p. 4 (printed 687), discussion following (1.8); PDF p. 10 (printed 693), Section 4.1 opening paragraph]"
+      "The bounds are the literal linear quantities k u and (k-1)u, with no gamma factor, omitted O(u^2) term, or condition such as k u < 1. (PDF p. 10, anchor: Section 4.1 opening paragraph and Lemma 4.1; PDF p. 4, anchor: discussion following equation (1.8).)",
+      "The displayed backward relation is an exact algebraic identity, not an equality modulo higher-order terms. (PDF p. 10, anchor: Lemma 4.1 displayed conclusion.)"
     ],
     "exceptional_values": [
-      "b_k must be nonzero, excluding division by zero; it need not be positive. [PDF p. 10 (printed 693), Lemma 4.1 statement]",
-      "The inputs are finite floating-point values; infinities are not members of F. [PDF p. 5 (printed 688), Section 2.1 definition of F]",
-      "Underflow is defined as an inexact rounding of a real value in the subnormal range; an exact subnormal result is therefore allowed. [PDF p. 5 (printed 688), Section 2.1 underflow definition]",
-      "Under the paper's convention floating-point addition cannot underflow, whereas multiplication and division can; Lemma 4.1 nevertheless states the blanket absence of both underflow and overflow. [PDF p. 5 (printed 688), end of Section 2.1; PDF p. 10 (printed 693), Lemma 4.1 statement]",
-      "Zero values of c, a_i, b_i, products, and y_hat are not excluded; only b_k is required to be nonzero. [PDF p. 5 (printed 688), F contains zero; PDF p. 10 (printed 693), Lemma 4.1 binders]"
+      "All inputs belong to the finite set F, so infinities and NaNs are outside the stated input domain. (PDF p. 5, anchor: Section 2.1 first paragraph; PDF p. 10, anchor: Lemma 4.1 binders.)",
+      "Division by zero is excluded by the explicit hypothesis b_k != 0. (PDF p. 10, anchor: Lemma 4.1.)",
+      "Underflow and overflow must be absent throughout the evaluated operations; multiplication and division can trigger either event, and additions can overflow but cannot underflow under the paper's definition. (PDF p. 5, anchor: underflow and operation discussion; PDF p. 10, anchor: Lemma 4.1.)",
+      "Zero values of y-hat or individual products are not excluded by the lemma. (PDF p. 10, anchor: Lemma 4.1 hypotheses.)"
     ]
   },
   "undebatable_constraints": [
-    "The contract must quantify over every positive k, every listed floating-point input tuple with b_k nonzero, and every permitted summation tree, followed by existential perturbation coefficients. [PDF p. 10 (printed 693), Lemma 4.1 statement; PDF p. 3 (printed 686), evaluation-order paragraph]",
-    "The exact identity must be b_k*y_hat*(1+theta_k^(0)) = c - sum_{i=1}^{k-1} a_i*b_i*(1+theta_k^(i)); c cannot be perturbed or omitted. [PDF p. 10 (printed 693), displayed identity; PDF p. 3 (printed 686), paragraph after (1.5)]",
-    "Every relevant coefficient has the general bound |theta_k^(i)|<=k*u. [PDF p. 10 (printed 693), Lemma 4.1 statement]",
-    "The sharper |theta_k^(i)|<=(k-1)*u bound is claimed specifically when b_k=1 and division is omitted. [PDF p. 10 (printed 693), sentence following the displayed identity]",
-    "The result assumes round-to-nearest arithmetic and excludes underflow and overflow. [PDF p. 5 (printed 688), Sections 2.1-2.2; PDF p. 10 (printed 693), Lemma 4.1 statement]",
-    "The result permits arbitrary binary summation order but uses separately rounded products and a final rounded division rather than an FMA model. [PDF p. 3 (printed 686), evaluation-order paragraph; PDF p. 6 (printed 689), paragraph after (2.4); PDF p. 8 (printed 691), Corollary 3.2]",
-    "The factors b_k*y_hat and a_i*b_i in the final identity are exact mathematical products, not newly rounded quantities. [PDF p. 8 (printed 691), Corollary 3.2; PDF p. 9 (printed 692), its proof; PDF p. 10 (printed 693), Lemma 4.1]",
-    "No k*u<1 condition, gamma factor, or higher-order remainder may be added. [PDF p. 10 (printed 693), Section 4.1 opening paragraph]",
-    "The unit-case proof's sign-aligned construction must be preserved as a particular witness construction, without strengthening the lemma to require all admissible coefficient families to share one magnitude. [PDF p. 3 (printed 686), footnote 1; PDF p. 10 (printed 693), Lemma 4.1 proof]"
+    "The exact expression has the division outside the entire numerator: y = (c - sum_{i=1}^{k-1} a_i b_i)/b_k. (PDF p. 10, anchor: Lemma 4.1.)",
+    "The divisor is a nonzero finite floating-point number, and every a_i, b_i, and c is also in F. (PDF p. 10, anchor: Lemma 4.1.)",
+    "The conclusion must preserve both coefficient families, including theta_k^(0) on b_k y-hat and theta_k^(i) on every product term. (PDF p. 10, anchor: Lemma 4.1 displayed conclusion.)",
+    "The scalar c is not perturbed. (PDF p. 10, anchor: Lemma 4.1 displayed conclusion.)",
+    "The general bound is k u; the improved (k-1)u bound applies specifically to b_k = 1 with no division. (PDF p. 10, anchor: Lemma 4.1 and its immediately following sentence.)",
+    "The claim covers every summation order represented by a binary summation tree, provided no underflow or overflow occurs. (PDF p. 3, anchor: definition of whatever order; PDF p. 10, anchor: Lemma 4.1.)",
+    "The constants contain no higher-order remainder and require no smallness assumption on k u. (PDF p. 10, anchor: Section 4.1 opening paragraph.)",
+    "The left product b_k y-hat in the backward identity is exact rather than a further rounded operation. (PDF p. 8, anchor: paragraph identifying rho as an exact product; PDF p. 10, anchor: Lemma 4.1 display.)"
   ],
   "ambiguities": [
     {
-      "issue": "The proof uses sign(y_hat) and sign(a_i*b_i) but does not define sign at zero in the selected passage or the preceding floating-point definitions. [PDF p. 5 (printed 688), Sections 2.1-2.2; PDF p. 10 (printed 693), Lemma 4.1 proof]",
-      "evidence": "Zero inputs and a zero computed result are allowed, yet the proof states |epsilon^(i)|=|epsilon| after multiplying epsilon by sign of the corresponding quantity. [PDF p. 10 (printed 693), unit-case construction]",
-      "impact": "With the conventional sign(0)=0, the claimed equality of magnitudes fails for a zero term, although the perturbed identity and required upper bounds remain obtainable; a formalization must specify a nonzero sign choice at zero or weaken that intermediate equality. [PDF p. 10 (printed 693), unit-case construction]"
+      "issue": "The paper does not define sign(0) in the inspected context.",
+      "evidence": "The unit-case construction uses sign(y-hat) and sign(a_i b_i) and then states equal coefficient magnitudes, while zero values are not excluded. (PDF p. 10, anchor: proof of Lemma 4.1, sign construction.)",
+      "impact": "With the common convention sign(0) = 0, the displayed equality abs(epsilon^(i)) = abs(epsilon) need not hold for a zero-associated coefficient. The backward identity and upper bound remain obtainable by assigning coefficients on zero terms arbitrarily within the bound, but a formalization should not silently rely on an unstated zero-sign convention."
     },
     {
-      "issue": "The explicit sign formulas are written only for b_k=1; the general-divisor proof is summarized as analogous. [PDF p. 10 (printed 693), final paragraph of Lemma 4.1 proof]",
-      "evidence": "Corollary 3.2 supplies a residual weighted by |b_k*y_hat|, but Lemma 4.1 does not explicitly write the corresponding general-case epsilon or signs. [PDF p. 8 (printed 691), first Corollary 3.2 bound; PDF p. 10 (printed 693), proof ending]",
-      "impact": "Using theta_k^(0)=-sign(b_k*y_hat)*epsilon in the general case is a justified inference, not an explicitly displayed source formula; the authoritative claim is existence of bounded coefficients."
+      "issue": "The exact index set in the phrase for all i is implicit.",
+      "evidence": "The display contains theta_k^(0) on the left and theta_k^(i) for i = 1,...,k-1 on the right, followed only by for all i. (PDF p. 10, anchor: Lemma 4.1 displayed conclusion.)",
+      "impact": "The evident intended range is {0,...,k-1}; formalizing only the summation range 1,...,k-1 would incorrectly omit the bound on theta_k^(0)."
     },
     {
-      "issue": "The phrase 'whatever the order of evaluation' could be read broadly in isolation. [PDF p. 10 (printed 693), Lemma 4.1 statement]",
-      "evidence": "The paper formally explains it through rooted binary trees for the summation, with products as leaves and the division treated separately. [PDF p. 3 (printed 686), paragraph following (1.5c); PDF p. 8 (printed 691), Corollary 3.2]",
-      "impact": "The claim should not be silently extended to fused multiply-add evaluation, movement of the division inside the summation, or arbitrary algebraic rewrites."
+      "issue": "The general nonzero-divisor proof does not write the sign-aligned witness coefficients explicitly.",
+      "evidence": "After giving explicit formulas only for b_k = 1, the proof says the general case is handled analogously using Corollary 3.2. (PDF p. 10, anchor: final sentence of the proof of Lemma 4.1.)",
+      "impact": "The lemma's general-case identity and k u bounds are explicit, but the stronger assertion that one common residual scalar yields equal-magnitude sign-aligned coefficients in that case is an inference from analogous reasoning, not a separately stated conclusion."
     },
     {
-      "issue": "The phrase 'for all i' does not separately spell out its index set. [PDF p. 10 (printed 693), displayed Lemma 4.1 identity]",
-      "evidence": "The display contains theta_k^(0) on the left and theta_k^(i) under a sum indexed i=1,...,k-1 on the right. [PDF p. 10 (printed 693), displayed identity]",
-      "impact": "The natural contract range is i=0,...,k-1; a formal target should not introduce a coefficient at i=k or omit the output-side coefficient i=0."
+      "issue": "Fused multiply-add evaluation is not discussed.",
+      "evidence": "The proof maps product terms to separate real summands x_{i+1} = -a_i b_i and relies on a model that rounds each x_i before summation. (PDF p. 10, anchor: proof of Lemma 4.1; PDF p. 6, anchor: equation (2.4) and following paragraph.)",
+      "impact": "The source contract directly covers the separately rounded product-and-sum model used in the proof. Coverage of an implementation that fuses multiplication and addition would require an additional argument."
     }
   ],
-  "contract_plain_english": "For any positive k and finite floating-point scalars a_1,...,a_{k-1}, b_1,...,b_k, c with b_k nonzero, compute the products separately, sum c-sum a_i*b_i using any binary summation order, and finally divide by b_k, all in round-to-nearest arithmetic without underflow or overflow. Then the computed y_hat admits an exact componentwise backward representation in which c is unchanged, b_k*y_hat and each exact product a_i*b_i receive separate relative perturbations, and every perturbation has magnitude at most k*u. If b_k=1 and division is omitted, the bound improves to (k-1)*u. The unit-case proof constructs witnesses from one forward-error scalar epsilon by aligning signs with y_hat and each product; the analogous general construction is only implicit. There is no restriction on k and no O(u^2) remainder. [PDF p. 3 (printed 686), evaluation-order convention; PDF pp. 5-6 (printed 688-689), floating-point and inner-product model; PDF pp. 8-9 (printed 691-692), Corollary 3.2; PDF p. 10 (printed 693), Lemma 4.1 and proof]"
+  "contract_plain_english": "For every positive k and finite floating-point inputs a_i, b_i, b_k, and c with b_k nonzero, compute (c - sum a_i b_i)/b_k using round-to-nearest floating-point arithmetic, allowing any binary parenthesization of the numerator and assuming no underflow or overflow. The resulting y-hat admits an exact backward interpretation in which c remains unchanged, the exact aggregate b_k y-hat is multiplied by 1 + theta_k^(0), and each exact product a_i b_i is multiplied by 1 + theta_k^(i). Every such coefficient is bounded in absolute value by k u. If b_k = 1 and division is omitted, every bound improves to (k-1)u. The unit-divisor proof explicitly constructs the coefficients from one residual scalar with signs opposite to y-hat and the product terms. These are exact, O(u^2)-free constants with no restriction on k. (PDF p. 10, anchor: Lemma 4.1 and its proof; PDF p. 3, anchor: evaluation-order convention; PDF p. 5, anchor: Section 2.1 rounding model.)"
 }

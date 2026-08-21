@@ -3,163 +3,149 @@
   "role": "roundtrip-judge",
   "task_id": "P05-T1",
   "paper_sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6",
-  "blind_translation_sha256": "e2055e56c0ecfcdd7c59b2d7dcbd28290eddcdd6b718aa40c3b3f18a90297da8",
+  "blind_translation_sha256": "79231c0ca28f69e20dd920bc364f2542653634c7a9d4624114c16bd247ef6ab0",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF hash matches the authorized published version, and PDF page 10, printed page 693, contains Section 4.1 and Lemma 4.1.",
-      "translation_evidence": "The translated proposition concerns the same scalar subtraction-and-division computation, with general and unit-divisor perturbation bounds.",
-      "reasoning": "The source version, passage, and targeted result are correctly selected."
+      "paper_evidence": "PDF p. 10, printed p. 693, contains Lemma 4.1 and its proof for the subtraction/division expression; the PDF hash matches the required published version.",
+      "translation_evidence": "The translation identifies the same scalar backward-error result, its general and unit-divisor cases, and the computation underlying them.",
+      "reasoning": "The selected source, passage, and surrounding result are correct."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "Lemma 4.1 binds positive k, k-1 pairs a_i and b_i, scalars b_k and c, and coefficients indexed from 0 through k-1.",
-      "translation_evidence": "The translation binds m in Nat, vectors indexed by Fin m, bK and c, theta0, and theta indexed by Fin m.",
-      "reasoning": "Taking k=m+1 gives the intended dimensions and indexing, including k=1 through m=0."
+      "paper_evidence": "Lemma 4.1 quantifies k in N_{>0}, k-1 pairs a_i,b_i, and scalars b_k,c in F.",
+      "translation_evidence": "The translation quantifies m in Nat, vectors a,b indexed by Fin m, and scalars b_K,c, with m+1 summation leaves.",
+      "reasoning": "The correspondence is k=m+1 and paper index i=1,...,k-1 corresponds to Fin m. Representable real fields model membership in F."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper quantifies over every permitted input tuple and evaluation order satisfying the arithmetic safety conditions, and only then existentially chooses perturbations.",
-      "translation_evidence": "The universal quantifier ranges over an admissible run package whose constructor already requires both residual-error inequalities.",
-      "reasoning": "Although perturbation witnesses occur after the run and may depend on it, the universal scope is narrowed to executions carrying proofs of key intermediate bounds that the paper derives."
+      "status": "pass",
+      "paper_evidence": "Inputs and an evaluation order determine yHat before the perturbation coefficients are chosen.",
+      "translation_evidence": "A universally quantified run fixes the format, inputs, tree, permutation, numerator, and yHat before theta_0 and theta are existentially quantified.",
+      "reasoning": "Witness dependence and quantifier order are preserved. Independent witnesses for the two conjuncts do not change either existential claim."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The hypotheses are floating-point inputs, b_k nonzero, the prescribed evaluation model, and absence of underflow and overflow.",
-      "translation_evidence": "D010 additionally assumes the general residual bound and the conditional unit-case residual bound, while safeRange has no specified connection to the paper's underflow and overflow definitions.",
-      "reasoning": "The translation adds mathematically substantive hypotheses and does not faithfully express the paper's exceptional-value conditions."
+      "status": "pass",
+      "paper_evidence": "The paper requires finite floating-point inputs, b_k nonzero, round-to-nearest evaluation, and absence of underflow and overflow.",
+      "translation_evidence": "The run requires representable inputs, b_K != 0, safe products, safe tree additions, safe nonunit division, and a bundled accumulation relation.",
+      "reasoning": "The source hypotheses are present. The accumulation relation is redundant on paper executions: equation (2.4) supplies its local block bounds, and following the unique path from the c leaf to the tree root constructs its steps."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "The lemma gives the general exact backward identity, the sharper no-division case, and its proof obtains the residual estimates and constructs sign-aligned witnesses from one epsilon.",
-      "translation_evidence": "Both displayed backward identities are conclusions, but the residual estimates are constructor assumptions and the common-epsilon sign construction is absent.",
-      "reasoning": "The principal displayed conclusions are present, but the supplied source contract's residual and witness-construction dependencies are not preserved as results."
+      "status": "pass",
+      "paper_evidence": "Lemma 4.1 gives the general k*u identity and the b_k=1 no-division identity with (k-1)*u bounds. Its unit-case proof constructs sign-aligned witnesses from a common residual scalar.",
+      "translation_evidence": "The two translated conclusions give the corresponding (m+1)*u and m*u identities and bound both theta_0 and every component theta_i.",
+      "reasoning": "Both displayed conclusions are complete. The common-residual sign formulas are the paper's witness construction, not an additional conjunct of the lemma statement."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The result uses ordinary real arithmetic, exact finite sums and products in the final identity, round-to-nearest operations in the computation, and scalar absolute value.",
-      "translation_evidence": "The dependency ledger unfolds the run projections, tree evaluation, rounded products, permutation, finite sums, real arithmetic, equality, inequalities, and absolute value.",
-      "reasoning": "The operators occurring in the translated proposition are comprehensively interpreted; the adequacy of the abstract floating-point definitions is assessed separately."
+      "paper_evidence": "PDF pp. 3, 5-6, and 10 define arbitrary binary summation order, rounding, rounded products, exact products, and the backward identity.",
+      "translation_evidence": "All 118 ledger dependencies are marked understood; the format, run, tree evaluation, validity predicate, accumulation relation, sums, products, and absolute value are unfolded.",
+      "reasoning": "No material operator or imported definition remains uninterpreted."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "Products are rounded during computation, the numerator is obtained by rounded binary summation, the division is rounded, and the final identity uses exact real products a_i b_i and b_k yHat.",
-      "translation_evidence": "The translation distinguishes q_i=round(a_i b_i), rounded tree result N, rounded output yHat, and the exact products appearing in the conclusion.",
-      "reasoning": "Exact, rounded, computed, and perturbed quantities are not conflated."
+      "paper_evidence": "The numerator uses rounded products and rounded additions, while b_k*yHat and a_i*b_i in the final identity are exact real products.",
+      "translation_evidence": "The leaves use -round(a_i*b_i), N is a rounded tree result, yHat is conditionally rounded after division, and the conclusion uses exact real products and sums.",
+      "reasoning": "Exact, rounded, and computed quantities are kept distinct."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Lemma 4.1 establishes the backward result from separately rounded products, arbitrary binary summation order, and final rounded division without underflow or overflow.",
-      "translation_evidence": "The tree, permutation, separate products, and division are represented, but the run must independently contain the residual bounds sufficient to prove the conclusion.",
-      "reasoning": "The algorithm is encoded syntactically, but the theorem no longer establishes its error property from that execution model; it is principally a residual-to-backward-error conversion."
+      "status": "pass",
+      "paper_evidence": "The paper permits every rooted binary summation tree for c and the signed product terms, followed by division unless the unit-divisor case omits it.",
+      "translation_evidence": "A run stores an m+1-leaf tree, an arbitrary permutation, rounded product leaves, rounded internal additions, and the conditional division rule.",
+      "reasoning": "The algorithm and execution order remain explicit. The accumulation certificate does not select a narrower order: each tree yields it by decomposing sibling subtrees along the c-to-root path and applying (2.4)."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Lemma 4.1 uses only scalar absolute values and componentwise perturbation bounds, with no vector or matrix norm.",
-      "translation_evidence": "Every magnitude is ordinary real absolute value, and the perturbations are bounded separately.",
-      "reasoning": "The scalar, componentwise norm semantics match."
+      "paper_evidence": "Lemma 4.1 measures each scalar coefficient using ordinary absolute value and states a componentwise backward relation.",
+      "translation_evidence": "Every bound uses real absolute value on theta_0 or theta_i; no vector or matrix norm occurs.",
+      "reasoning": "Norm and componentwise semantics match exactly."
     },
     {
       "id": "S10",
       "status": "pass",
-      "paper_evidence": "The general constant is k*u, the no-division constant is (k-1)*u, theta index 0 belongs to b_k yHat, and indices 1 through k-1 belong to the products.",
-      "translation_evidence": "The bounds are (m+1)*u and m*u, with theta0 on the output term and theta indexed by Fin m on the products.",
-      "reasoning": "Under k=m+1, the constants, offsets, empty case, and parameter dependence agree exactly."
+      "paper_evidence": "There are k-1 product coefficients plus theta_k^(0), with bounds k*u generally and (k-1)*u in the no-division unit case.",
+      "translation_evidence": "There are m product coefficients plus theta_0, with bounds (m+1)*u and m*u.",
+      "reasoning": "Under k=m+1, all constants and index offsets agree."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The paper uses a symmetric finite radix-beta, precision-p floating-point set with finite exponent range, round-to-nearest with arbitrary tie breaking, and explicit underflow and overflow conventions.",
-      "translation_evidence": "D011 permits an arbitrary finite representable subset and arbitrary safeRange predicate, without connecting either to beta, precision, exponent bounds, symmetry, subnormal values, underflow, or overflow.",
-      "reasoning": "The normalization of u and a nearest-point property are captured, but the admissible arithmetic models are not the paper's floating-point models."
+      "paper_evidence": "PDF pp. 5-6 defines a standard finite floating-point set F, round-to-nearest with arbitrary tie-breaking, and concrete underflow and overflow semantics.",
+      "translation_evidence": "LocalDef011 uses an abstract representability predicate with only a one-way normalized-form law and an abstract safeRange predicate, together with sufficient rounding axioms.",
+      "reasoning": "Every paper format can be represented, but the translated laws also permit certified sparse or otherwise nonstandard formats and safe-range predicates not identified with the paper's concrete F and exception model. This is a proper domain generalization."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper gives exact identities and non-strict coefficient bounds as consequences of the stated execution hypotheses.",
-      "translation_evidence": "The same equality forms and non-strict bounds appear, but only under constructor assumptions that include the decisive residual inequalities.",
-      "reasoning": "Local relation directions and strictness match, while the added antecedents make the overall theorem logically weaker on paper executions."
+      "status": "pass",
+      "paper_evidence": "The paper states exact equalities and non-strict absolute bounds.",
+      "translation_evidence": "The translated identities are exact equalities and all coefficient bounds use <= with the same direction.",
+      "reasoning": "Relation direction, strictness, and logical strength of the source conclusions are preserved."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "The principal conclusion is componentwise backward error, obtained from a weighted absolute forward residual bound.",
-      "translation_evidence": "The run fields state weighted residual bounds, while the conclusions state exact componentwise multiplicative perturbation representations.",
-      "reasoning": "The residual and backward-error notions are distinguished correctly, although moving the residual bounds into the hypotheses is a separate faithfulness defect."
+      "paper_evidence": "Lemma 4.1 is a componentwise backward-error representation; its residual estimate is auxiliary.",
+      "translation_evidence": "The conclusion perturbs the output-side product and each exact input product multiplicatively and asserts no forward-error estimate for yHat.",
+      "reasoning": "The error notion is unchanged."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "The bounds are exactly k*u and (k-1)*u, with no gamma denominator, smallness condition, omitted quadratic term, or big-O remainder.",
-      "translation_evidence": "The translated identities are exact and use only (m+1)*u and m*u, with no smallness requirement or remainder.",
-      "reasoning": "Higher-order treatment is faithful."
+      "paper_evidence": "The bounds are exactly k*u and (k-1)*u, with no gamma denominator, O(u^2) remainder, or smallness condition.",
+      "translation_evidence": "The bounds are exactly (m+1)*u and m*u, and the identities are exact.",
+      "reasoning": "Higher-order treatment matches."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The result is scalar and real-valued after embedding inputs from the paper's concrete finite floating-point system.",
-      "translation_evidence": "The scalar dimension is preserved, but the format binder ranges over abstract finite representability and safe-range structures not required to arise from the paper's radix-and-exponent construction.",
-      "reasoning": "The dimensional specialization is correct, but the numerical setting is generalized beyond the source without a faithful model correspondence."
+      "status": "pass",
+      "paper_evidence": "The paper covers every positive scalar dimension k in a standard finite floating-point system.",
+      "translation_evidence": "The translation covers every m in Nat and additionally quantifies over abstract certified formats satisfying LocalDef011.",
+      "reasoning": "The dimension change is exactly k=m+1, while the format abstraction is correctly classified as a strengthening by generalization rather than an unintended scalar or dimensional specialization."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "For each permitted floating-point execution, the paper derives the residual estimate and then the backward representation.",
-      "translation_evidence": "A run exists only after supplying the residual estimates, and those estimates alone algebraically yield the existential perturbations; executions lacking such packaged proofs are outside the quantifier.",
-      "reasoning": "The run type is satisfiable, but the target can hold for an unintended reason that makes its detailed computation fields irrelevant and makes omitted executions vacuous."
+      "status": "pass",
+      "paper_evidence": "For k=1 the product sum is empty; the general bound is u, and the b_1=1 no-division bound is zero.",
+      "translation_evidence": "For m=0, Fin m and its sums are empty, the one-leaf tree gives N=c, the accumulation relation has its base form, and the bounds are u and zero.",
+      "reasoning": "The m=0 case matches k=1 and is not an unintended vacuous case. Standard paper executions furnish runs and their accumulation certificates."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translation only covers runs already carrying the residual bounds. It therefore cannot establish the paper's conclusion for every permitted floating-point execution without first supplying the very error results that the paper derives."
+      "verdict": "yes",
+      "reasoning": "Instantiate m=k-1 and the translated format with the paper's F, rounding map, and exception-free range. Every paper evaluation supplies the tree and permutation fields. Its accumulation certificate is derivable by applying equation (2.4) to each sibling subtree along the path from c to the root. The translated conclusions then give both conclusions of Lemma 4.1."
     },
     "paper_implies_translation": {
       "verdict": "no",
-      "reasoning": "The translation quantifies over abstract format and safeRange structures not covered by the paper's concrete floating-point model. The paper does not assert a theorem for all such nonstandard runs."
+      "reasoning": "The translation also quantifies over abstract certified formats whose one-way representability law and abstract safeRange need not describe the paper's standard F or its concrete exception model. The PDF does not assert Lemma 4.1 for those additional formats."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
+  "classification": "faithful-stronger",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "assumed-residual-bounds",
-      "paper_evidence": "Theorem 3.1 and Corollary 3.2 supply the residual bounds used in the proof of Lemma 4.1.",
-      "translation_evidence": "D010 requires both corresponding residual inequalities as fields of every admissible run.",
-      "impact": "The translated theorem assumes its essential numerical-analysis content and proves only the subsequent real-algebraic perturbation decomposition."
+      "severity": "note",
+      "category": "format-domain-generalization",
+      "paper_evidence": "The paper fixes a standard finite floating-point system and concrete round-to-nearest exception semantics.",
+      "translation_evidence": "LocalDef011 permits abstract representable sets and safe-range predicates subject only to its listed axioms.",
+      "impact": "The source theorem is recovered, but the translation makes an additional certified-format claim, so equivalence is replaced by faithful strengthening."
     },
     {
-      "severity": "major",
-      "category": "floating-point-model",
-      "paper_evidence": "The paper specifies a symmetric radix-and-precision floating-point set, finite exponent range, round-to-nearest behavior, and explicit underflow and overflow semantics.",
-      "translation_evidence": "Representable and safeRange are abstract predicates largely disconnected from radix, precision, and exponent fields.",
-      "impact": "The translation admits arithmetic models outside the paper and does not ensure that its safety assumptions mean absence of underflow and overflow."
-    },
-    {
-      "severity": "major",
-      "category": "quantified-execution-domain",
-      "paper_evidence": "Lemma 4.1 applies to every permitted evaluation order satisfying the paper's arithmetic safety conditions.",
-      "translation_evidence": "Universality is restricted to inhabitants of a run type that includes residual proofs.",
-      "impact": "A permitted paper execution is not covered merely by satisfying the encoded computation and safety fields."
-    },
-    {
-      "severity": "minor",
-      "category": "witness-construction",
-      "paper_evidence": "The unit-divisor proof constructs coefficients from one epsilon using signs of yHat and the exact products.",
-      "translation_evidence": "The special conclusion states only independent existential perturbations and records no common-epsilon sign construction.",
-      "impact": "The displayed existential consequence is retained, but the source contract's particular higher-level witness construction is not expressed."
+      "severity": "note",
+      "category": "accumulation-certificate",
+      "paper_evidence": "Equation (2.4) bounds any rounded sum of l real terms by l*u times their absolute sum, and Lemma 4.1 permits every binary summation tree.",
+      "translation_evidence": "Each accumulation step records precisely such a sibling-block bound, and the run requires the resulting root certificate.",
+      "impact": "This field is derivable for every source execution and therefore is not an added restriction on the paper domain."
     }
   ],
-  "rationale": "The translation correctly preserves the scalar dimension under k=m+1, exact backward identities, coefficient indexing, constants, absolute-value semantics, separate product rounding, arbitrary binary summation order, final division, and absence of higher-order remainders. It is nevertheless not the same result. Its run constructor assumes the two residual estimates that the paper derives from its floating-point analysis, narrowing the universal execution domain and making the conclusion an algebraic consequence of an added premise. At the same time, its abstract representability and safe-range structure ranges beyond the paper's concrete floating-point model. These opposing domain changes prevent either formulation from implying the other as stated."
+  "rationale": "The translation faithfully recovers Lemma 4.1 under k=m+1, including arbitrary summation order, rounded products and division, exact backward identities, both constants, and the k=1 edge case. The accumulation relation is a derivable execution certificate obtained from the paper's summation bound rather than an assumed exclusion of valid source executions. The only directional difference is that the abstract format laws admit certified formats beyond the concrete standard systems covered by the PDF. Thus the translation entails the paper result, while the paper does not establish the full generalized translation."
 }

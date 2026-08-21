@@ -1,0 +1,56 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ"
+  ],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-14T16:48:44.877392+00:00",
+  "findings": [
+    {
+      "category": "core-residual-result-assumed",
+      "evidence": "PDF page 10 derives the unit residual estimate from Theorem 3.1 and invokes Corollary 3.2 for the general estimate; D010 requires both estimates before constructing a run.",
+      "impact": "The target formalizes only the algebraic conversion of already-established residual bounds, not the paper's error theorem for the modeled computation.",
+      "severity": "critical"
+    },
+    {
+      "category": "mixed-quantifier-domain",
+      "evidence": "D010 narrows applicability through proof-carrying residual premises, while D011 broadens the format domain beyond the concrete systems described on printed page 688.",
+      "impact": "The opposing domain changes prevent implication in either direction and require not-faithful-different rather than not-faithful-weaker.",
+      "severity": "major"
+    },
+    {
+      "category": "floating-point-model",
+      "evidence": "The paper requires a symmetric radix-and-exponent floating-point set and defined underflow and overflow behavior; D011 leaves representable and safeRange largely unconstrained and unrelated to its metadata.",
+      "impact": "Some Lean runs have no corresponding paper execution, so the paper cannot establish the complete universally quantified Lean proposition.",
+      "severity": "major"
+    },
+    {
+      "category": "conclusion-shape-and-nonvacuity",
+      "evidence": "The target exactly reproduces the two identities, coefficient indexing, and bounds under k=m+1, and D010 contains no theta witnesses. Its residual premises are nevertheless equivalent to the existential bounds by sign alignment and the triangle inequality.",
+      "impact": "The conclusion is accurately transcribed and the theorem is nonvacuous, but its analytical obligation has been replaced by an essentially equivalent premise.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "A paper-admissible execution is not sufficient to apply the Lean theorem until the two residual estimates have been proved and inserted into P05Lemma41Run. Those estimates are precisely the substantive consequences of Theorem 3.1 and Corollary 3.2 omitted from the target, so the Lean proposition alone does not establish Lemma 4.1 for every paper execution.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "Lemma 4.1 covers the paper's concrete floating-point systems, whereas the Lean proposition quantifies over additional abstract formats and runs admitted by D011. The paper gives no universal theorem for those non-paper instances. That their residual premises independently imply the target by real algebra does not make the selected paper statement imply this broader algebraic theorem.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-weaker",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The displayed Lean conclusions faithfully reproduce Lemma 4.1 under k=m+1. The proposition as a whole does not. It assumes the weighted residual estimates that the paper derives from the floating-point execution, so it cannot by itself recover the paper theorem. Conversely, it ranges over abstract non-paper formats, so the selected paper result does not cover every Lean run. The residual premises make those extra cases algebraically provable but do not constitute a source-backed generalization of Lemma 4.1. Therefore both implications are no and the final classification is not-faithful-different.",
+  "remaining_uncertainties": [
+    "The PDF does not define sign(0), so its intermediate assertion that every constructed coefficient has exactly |epsilon| is notation-dependent for zero-weight terms. This does not affect the required upper bounds, identities, implication decisions, or classification."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P05-T1"
+}

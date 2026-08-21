@@ -129,7 +129,7 @@ theorem p05_t1_uniform_backward_coefficients
 - Owner module: `HighamBench.P05Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `240724a17aa0df9cc56d34d7095bbb0b8cdde2c0852bf68b221e250958fd7af6`
+- Semantic SHA-256: `3630b109f8786a050a03b7576d18b02aca25f370b7c3aeacef8aeb8f4eded07d`
 
 Type:
 
@@ -146,7 +146,7 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun self => self.13
+fun self => self.12
 ```
 
 ### D002: `HighamBench.P05Lemma41Run`
@@ -305,7 +305,7 @@ fun m self => self.1
 - Owner module: `HighamBench.P05Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `0ea6a1e617cc6ab3454bdd82d96f6a2e77e34b288a84c60f304a9999b7957d65`
+- Semantic SHA-256: `24b9b4796c449d802022b0dc73b1270acab8eb937804ebf1c6169ecba412af34`
 
 Type:
 
@@ -322,7 +322,7 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun m self => self.18
+fun m self => self.17
 ```
 
 ### D009: `HighamBench.P05FiniteRoundToNearestFormat`
@@ -351,7 +351,7 @@ Type
 - Owner module: `HighamBench.P05Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `862950970286edcafebebdba5b40a3a83b3bdeb0cbcf22fa67880fa1716ca75e`
+- Semantic SHA-256: `c846b40599e7d4a3d66b55c917495caee8618b1e9b0f894f80f5936e203a1201`
 
 Type:
 
@@ -374,14 +374,28 @@ Type:
                             Eq numerator
                                 (HighamBench.p05SumTreeEval format tree fun i =>
                                   HighamBench.p05Lemma41Summands format a b c (EquivLike.toFunLike.coe order i)) →
-                              HighamBench.P05ProtectedSumTrace format (instHAdd.hAdd m 1) c
-                                  (Real.instNeg.neg (Finset.univ.sum fun i => instHMul.hMul (a i) (b i)))
-                                  (Finset.univ.sum fun i => abs (instHMul.hMul (a i) (b i))) numerator →
-                                (yHat : Real) →
-                                  (Eq bK 1 → Eq yHat numerator) →
-                                    (Ne bK 1 → format.safeRange (instHDiv.hDiv numerator bK)) →
-                                      (Ne bK 1 → Eq yHat (format.round (instHDiv.hDiv numerator bK))) →
-                                        HighamBench.P05Lemma41Run m
+                              (yHat : Real) →
+                                (Eq bK 1 → Eq yHat numerator) →
+                                  (Ne bK 1 → format.safeRange (instHDiv.hDiv numerator bK)) →
+                                    (Ne bK 1 → Eq yHat (format.round (instHDiv.hDiv numerator bK))) →
+                                      Real.instLE.le
+                                          (abs
+                                            (instHSub.hSub
+                                              (instHSub.hSub c (Finset.univ.sum fun i => instHMul.hMul (a i) (b i)))
+                                              (instHMul.hMul bK yHat)))
+                                          (instHMul.hMul (instHMul.hMul (instHAdd.hAdd m 1).cast format.unitRoundoff)
+                                            (instHAdd.hAdd (abs (instHMul.hMul bK yHat))
+                                              (Finset.univ.sum fun i => abs (instHMul.hMul (a i) (b i))))) →
+                                        (Eq bK 1 →
+                                            Real.instLE.le
+                                              (abs
+                                                (instHSub.hSub
+                                                  (instHSub.hSub c (Finset.univ.sum fun i => instHMul.hMul (a i) (b i)))
+                                                  yHat))
+                                              (instHMul.hMul (instHMul.hMul m.cast format.unitRoundoff)
+                                                (instHAdd.hAdd (abs yHat)
+                                                  (Finset.univ.sum fun i => abs (instHMul.hMul (a i) (b i)))))) →
+                                          HighamBench.P05Lemma41Run m
 ```
 
 Fully explicit type:
@@ -504,45 +518,79 @@ Fully explicit type:
                                               (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
                                                 (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))))
                                         order i))) →
-                              (protected_sum_trace :
-                                  HighamBench.P05ProtectedSumTrace format
-                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
-                                      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-                                    c
-                                    (@Neg.neg.{0} Real Real.instNeg
-                                      (@Finset.sum.{0, 0} (Fin m) Real Real.instAddCommMonoid
-                                        (@Finset.univ.{0} (Fin m) (Fin.fintype m)) fun (i : Fin m) =>
-                                        @HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) (a i)
-                                          (b i)))
-                                    (@Finset.sum.{0, 0} (Fin m) Real Real.instAddCommMonoid
-                                      (@Finset.univ.{0} (Fin m) (Fin.fintype m)) fun (i : Fin m) =>
-                                      @abs.{0} Real Real.lattice Real.instAddGroup
-                                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) (a i)
-                                          (b i)))
-                                    numerator) →
-                                (yHat : Real) →
-                                  (no_division_when_unit :
-                                      @Eq.{1} Real bK
+                              (yHat : Real) →
+                                (no_division_when_unit :
+                                    @Eq.{1} Real bK
+                                        (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) →
+                                      @Eq.{1} Real yHat numerator) →
+                                  (division_safe :
+                                      @Ne.{1} Real bK
                                           (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) →
-                                        @Eq.{1} Real yHat numerator) →
-                                    (division_safe :
+                                        HighamBench.P05FiniteRoundToNearestFormat.safeRange format
+                                          (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                                            (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                                            numerator bK)) →
+                                    (rounded_division :
                                         @Ne.{1} Real bK
                                             (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) →
-                                          HighamBench.P05FiniteRoundToNearestFormat.safeRange format
-                                            (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                                              (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                              numerator bK)) →
-                                      (rounded_division :
-                                          @Ne.{1} Real bK
-                                              (@OfNat.ofNat.{0} Real (nat_lit 1)
-                                                (@One.toOfNat1.{0} Real Real.instOne)) →
-                                            @Eq.{1} Real yHat
-                                              (HighamBench.P05FiniteRoundToNearestFormat.round format
-                                                (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                                                  (@instHDiv.{0} Real
-                                                    (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                                  numerator bK))) →
-                                        HighamBench.P05Lemma41Run m
+                                          @Eq.{1} Real yHat
+                                            (HighamBench.P05FiniteRoundToNearestFormat.round format
+                                              (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                                                (@instHDiv.{0} Real
+                                                  (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                                                numerator bK))) →
+                                      (general_residual_bound :
+                                          @LE.le.{0} Real Real.instLE
+                                            (@abs.{0} Real Real.lattice Real.instAddGroup
+                                              (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
+                                                (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub) c
+                                                  (@Finset.sum.{0, 0} (Fin m) Real Real.instAddCommMonoid
+                                                    (@Finset.univ.{0} (Fin m) (Fin.fintype m)) fun (i : Fin m) =>
+                                                    @HMul.hMul.{0, 0, 0} Real Real Real
+                                                      (@instHMul.{0} Real Real.instMul) (a i) (b i)))
+                                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                  bK yHat)))
+                                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                (@Nat.cast.{0} Real Real.instNatCast
+                                                  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+                                                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+                                                (HighamBench.P05FiniteRoundToNearestFormat.unitRoundoff format))
+                                              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                                (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                    bK yHat))
+                                                (@Finset.sum.{0, 0} (Fin m) Real Real.instAddCommMonoid
+                                                  (@Finset.univ.{0} (Fin m) (Fin.fintype m)) fun (i : Fin m) =>
+                                                  @abs.{0} Real Real.lattice Real.instAddGroup
+                                                    (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                      (@instHMul.{0} Real Real.instMul) (a i) (b i)))))) →
+                                        (unit_residual_bound :
+                                            @Eq.{1} Real bK
+                                                (@OfNat.ofNat.{0} Real (nat_lit 1)
+                                                  (@One.toOfNat1.{0} Real Real.instOne)) →
+                                              @LE.le.{0} Real Real.instLE
+                                                (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                  (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
+                                                    (@HSub.hSub.{0, 0, 0} Real Real Real
+                                                      (@instHSub.{0} Real Real.instSub) c
+                                                      (@Finset.sum.{0, 0} (Fin m) Real Real.instAddCommMonoid
+                                                        (@Finset.univ.{0} (Fin m) (Fin.fintype m)) fun (i : Fin m) =>
+                                                        @HMul.hMul.{0, 0, 0} Real Real Real
+                                                          (@instHMul.{0} Real Real.instMul) (a i) (b i)))
+                                                    yHat))
+                                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                    (@Nat.cast.{0} Real Real.instNatCast m)
+                                                    (HighamBench.P05FiniteRoundToNearestFormat.unitRoundoff format))
+                                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                                    (@abs.{0} Real Real.lattice Real.instAddGroup yHat)
+                                                    (@Finset.sum.{0, 0} (Fin m) Real Real.instAddCommMonoid
+                                                      (@Finset.univ.{0} (Fin m) (Fin.fintype m)) fun (i : Fin m) =>
+                                                      @abs.{0} Real Real.lattice Real.instAddGroup
+                                                        (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                          (@instHMul.{0} Real Real.instMul) (a i) (b i)))))) →
+                                          HighamBench.P05Lemma41Run m
 ```
 
 ### D011: `HighamBench.P05FiniteRoundToNearestFormat.mk`
@@ -551,7 +599,7 @@ Fully explicit type:
 - Owner module: `HighamBench.P05Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `3`
-- Semantic SHA-256: `ecaddec79880b04dfdf13674f536ffbb4d7235acab8561630b95068d92769d1e`
+- Semantic SHA-256: `12567c74ebb12a1d6821773c68b68a5d2df28fa0be58bacf4154a30b87c2b81e`
 
 Type:
 
@@ -563,52 +611,24 @@ Type:
         Int.instLTInt.lt minExponent maxExponent →
           (representable : Real → Prop) →
             (setOf fun x => representable x).Finite →
-              (∀ (x : Real),
-                  representable x →
-                    Or (Eq x 0)
-                      (Exists fun m =>
-                        Exists fun e =>
-                          And (instLTNat.lt m.natAbs (instHPow.hPow radix precision))
-                            (And (Int.instLEInt.le minExponent e)
-                              (And (Int.instLEInt.le e maxExponent)
-                                (Eq x
-                                  (instHMul.hMul m.cast
-                                    (instHPow.hPow radix.cast
-                                      (instHSub.hSub e (instHSub.hSub precision.cast 1))))))))) →
-                (safeRange : Real → Prop) →
-                  (round : Real → Real) →
-                    (unitRoundoff : Real) →
-                      Real.instLE.le 0 unitRoundoff →
-                        Real.instLE.le unitRoundoff (1 / 2) →
-                          Eq
-                              (instHMul.hMul unitRoundoff
-                                (instHMul.hMul 2 (instHPow.hPow radix.cast (instHSub.hSub precision 1))))
-                              1 →
-                            representable 0 →
-                              representable 1 →
-                                (∀ (x : Real), representable x → representable (Real.instNeg.neg x)) →
-                                  (∀ (x : Real), safeRange x → representable (round x)) →
-                                    (∀ (x : Real),
-                                        safeRange x →
-                                          ∀ (z : Real),
-                                            representable z →
-                                              Real.instLE.le (abs (instHSub.hSub x (round x)))
-                                                (abs (instHSub.hSub x z))) →
-                                      (∀ (x : Real),
-                                          safeRange x →
-                                            Real.instLE.le (abs (instHSub.hSub (round x) x))
-                                              (instHMul.hMul unitRoundoff (abs (round x)))) →
-                                        (∀ (x : Real), Real.instLE.le 0 x → safeRange x → Real.instLE.le 0 (round x)) →
-                                          (∀ (x : Real),
-                                              Real.instLE.le 0 x →
-                                                representable x →
-                                                  safeRange x.sqrt →
-                                                    Real.instLE.le
-                                                      (abs (instHSub.hSub (instHPow.hPow (round x.sqrt) 2) x))
-                                                      (instHMul.hMul (instHMul.hMul 2 unitRoundoff)
-                                                        (abs (instHPow.hPow (round x.sqrt) 2)))) →
-                                            (∀ (x : Real), representable x → Eq (round x) x) →
-                                              HighamBench.P05FiniteRoundToNearestFormat
+              (safeRange : Real → Prop) →
+                (round : Real → Real) →
+                  (unitRoundoff : Real) →
+                    Real.instLE.le 0 unitRoundoff →
+                      Eq
+                          (instHMul.hMul unitRoundoff
+                            (instHMul.hMul 2 (instHPow.hPow radix.cast (instHSub.hSub precision 1))))
+                          1 →
+                        representable 0 →
+                          representable 1 →
+                            (∀ (x : Real), safeRange x → representable (round x)) →
+                              (∀ (x : Real),
+                                  safeRange x →
+                                    ∀ (z : Real),
+                                      representable z →
+                                        Real.instLE.le (abs (instHSub.hSub x (round x))) (abs (instHSub.hSub x z))) →
+                                (∀ (x : Real), representable x → Eq (round x) x) →
+                                  HighamBench.P05FiniteRoundToNearestFormat
 ```
 
 Fully explicit type:
@@ -622,146 +642,47 @@ Fully explicit type:
         (exponent_range_nonempty : @LT.lt.{0} Int Int.instLTInt minExponent maxExponent) →
           (representable : Real → Prop) →
             (representable_finite : @Set.Finite.{0} Real (@setOf.{0} Real fun (x : Real) => representable x)) →
-              (representable_radix_expansion :
-                  ∀ (x : Real),
-                    representable x →
-                      Or (@Eq.{1} Real x (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)))
-                        (@Exists.{1} Int fun (m : Int) =>
-                          @Exists.{1} Int fun (e : Int) =>
-                            And
-                              (@LT.lt.{0} Nat instLTNat (Int.natAbs m)
-                                (@HPow.hPow.{0, 0, 0} Nat Nat Nat
-                                  (@instHPow.{0, 0} Nat Nat (@Monoid.toNatPow.{0} Nat Nat.instMonoid)) radix precision))
-                              (And (@LE.le.{0} Int Int.instLEInt minExponent e)
-                                (And (@LE.le.{0} Int Int.instLEInt e maxExponent)
-                                  (@Eq.{1} Real x
-                                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                      (@Int.cast.{0} Real Real.instIntCast m)
-                                      (@HPow.hPow.{0, 0, 0} Real Int Real
-                                        (@instHPow.{0, 0} Real Int
-                                          (@DivInvMonoid.toZPow.{0} Real Real.instDivInvMonoid))
-                                        (@Nat.cast.{0} Real Real.instNatCast radix)
-                                        (@HSub.hSub.{0, 0, 0} Int Int Int (@instHSub.{0} Int Int.instSub) e
-                                          (@HSub.hSub.{0, 0, 0} Int Int Int (@instHSub.{0} Int Int.instSub)
-                                            (@Nat.cast.{0} Int instNatCastInt precision)
-                                            (@OfNat.ofNat.{0} Int (nat_lit 1) (@instOfNat (nat_lit 1)))))))))))) →
-                (safeRange : Real → Prop) →
-                  (round : Real → Real) →
-                    (unitRoundoff : Real) →
-                      (unitRoundoff_nonneg :
-                          @LE.le.{0} Real Real.instLE
-                            (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) unitRoundoff) →
-                        (unitRoundoff_le_half :
-                            @LE.le.{0} Real Real.instLE unitRoundoff
-                              (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                                (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
+              (safeRange : Real → Prop) →
+                (round : Real → Real) →
+                  (unitRoundoff : Real) →
+                    (unitRoundoff_nonneg :
+                        @LE.le.{0} Real Real.instLE
+                          (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) unitRoundoff) →
+                      (unitRoundoff_scale :
+                          @Eq.{1} Real
+                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) unitRoundoff
+                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
                                 (@OfNat.ofNat.{0} Real (nat_lit 2)
                                   (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
                                     (@Nat.instAtLeastTwoHAddOfNat
                                       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
                                       (@Nat.instNeZeroSucc
-                                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))))))) →
-                          (unitRoundoff_scale :
-                              @Eq.{1} Real
-                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) unitRoundoff
-                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                    (@OfNat.ofNat.{0} Real (nat_lit 2)
-                                      (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
-                                        (@Nat.instAtLeastTwoHAddOfNat
-                                          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
-                                          (@Nat.instNeZeroSucc
-                                            (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))
-                                    (@HPow.hPow.{0, 0, 0} Real Nat Real
-                                      (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                                      (@Nat.cast.{0} Real Real.instNatCast radix)
-                                      (@HSub.hSub.{0, 0, 0} Nat Nat Nat (@instHSub.{0} Nat instSubNat) precision
-                                        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))))
-                                (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))) →
-                            (zero_representable :
-                                representable
-                                  (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
-                              (one_representable :
-                                  representable
-                                    (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))) →
-                                (neg_representable :
-                                    ∀ (x : Real), representable x → representable (@Neg.neg.{0} Real Real.instNeg x)) →
-                                  (round_representable : ∀ (x : Real), safeRange x → representable (round x)) →
-                                    (round_nearest :
-                                        ∀ (x : Real),
-                                          safeRange x →
-                                            ∀ (z : Real),
-                                              representable z →
-                                                @LE.le.{0} Real Real.instLE
-                                                  (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                    (@HSub.hSub.{0, 0, 0} Real Real Real
-                                                      (@instHSub.{0} Real Real.instSub) x (round x)))
-                                                  (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                    (@HSub.hSub.{0, 0, 0} Real Real Real
-                                                      (@instHSub.{0} Real Real.instSub) x z))) →
-                                      (round_error_to_output :
-                                          ∀ (x : Real),
-                                            safeRange x →
-                                              @LE.le.{0} Real Real.instLE
-                                                (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                  (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-                                                    (round x) x))
-                                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                  unitRoundoff
-                                                  (@abs.{0} Real Real.lattice Real.instAddGroup (round x)))) →
-                                        (round_nonnegative :
-                                            ∀ (x : Real),
-                                              @LE.le.{0} Real Real.instLE
-                                                  (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                    (@Zero.toOfNat0.{0} Real Real.instZero))
-                                                  x →
-                                                safeRange x →
-                                                  @LE.le.{0} Real Real.instLE
-                                                    (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                      (@Zero.toOfNat0.{0} Real Real.instZero))
-                                                    (round x)) →
-                                          (sqrt_round_square_error :
-                                              ∀ (x : Real),
-                                                @LE.le.{0} Real Real.instLE
-                                                    (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                      (@Zero.toOfNat0.{0} Real Real.instZero))
-                                                    x →
-                                                  representable x →
-                                                    safeRange (Real.sqrt x) →
-                                                      @LE.le.{0} Real Real.instLE
-                                                        (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                          (@HSub.hSub.{0, 0, 0} Real Real Real
-                                                            (@instHSub.{0} Real Real.instSub)
-                                                            (@HPow.hPow.{0, 0, 0} Real Nat Real
-                                                              (@instHPow.{0, 0} Real Nat
-                                                                (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                                                              (round (Real.sqrt x))
-                                                              (@OfNat.ofNat.{0} Nat (nat_lit 2)
-                                                                (instOfNatNat (nat_lit 2))))
-                                                            x))
-                                                        (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                          (@instHMul.{0} Real Real.instMul)
-                                                          (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                            (@instHMul.{0} Real Real.instMul)
-                                                            (@OfNat.ofNat.{0} Real (nat_lit 2)
-                                                              (@instOfNatAtLeastTwo.{0} Real (nat_lit 2)
-                                                                Real.instNatCast
-                                                                (@Nat.instAtLeastTwoHAddOfNat
-                                                                  (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                    (instOfNatNat (nat_lit 1)))
-                                                                  (@Nat.instNeZeroSucc
-                                                                    (@OfNat.ofNat.{0} Nat (nat_lit 0)
-                                                                      (instOfNatNat (nat_lit 0)))))))
-                                                            unitRoundoff)
-                                                          (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                            (@HPow.hPow.{0, 0, 0} Real Nat Real
-                                                              (@instHPow.{0, 0} Real Nat
-                                                                (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                                                              (round (Real.sqrt x))
-                                                              (@OfNat.ofNat.{0} Nat (nat_lit 2)
-                                                                (instOfNatNat (nat_lit 2))))))) →
-                                            (round_exact : ∀ (x : Real), representable x → @Eq.{1} Real (round x) x) →
-                                              HighamBench.P05FiniteRoundToNearestFormat
+                                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))
+                                (@HPow.hPow.{0, 0, 0} Real Nat Real
+                                  (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+                                  (@Nat.cast.{0} Real Real.instNatCast radix)
+                                  (@HSub.hSub.{0, 0, 0} Nat Nat Nat (@instHSub.{0} Nat instSubNat) precision
+                                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))))
+                            (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))) →
+                        (zero_representable :
+                            representable (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
+                          (one_representable :
+                              representable (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))) →
+                            (round_representable : ∀ (x : Real), safeRange x → representable (round x)) →
+                              (round_nearest :
+                                  ∀ (x : Real),
+                                    safeRange x →
+                                      ∀ (z : Real),
+                                        representable z →
+                                          @LE.le.{0} Real Real.instLE
+                                            (@abs.{0} Real Real.lattice Real.instAddGroup
+                                              (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub) x
+                                                (round x)))
+                                            (@abs.{0} Real Real.lattice Real.instAddGroup
+                                              (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub) x
+                                                z))) →
+                                (round_exact : ∀ (x : Real), representable x → @Eq.{1} Real (round x) x) →
+                                  HighamBench.P05FiniteRoundToNearestFormat
 ```
 
 ### D012: `HighamBench.P05FiniteRoundToNearestFormat.representable`
@@ -796,7 +717,7 @@ fun self => self.8
 - Owner module: `HighamBench.P05Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `9809b8471476999f734ffd0dd64b33e1b0bf7334f8f013398d3e4e55bfbf9844`
+- Semantic SHA-256: `0bebeeb156b3b1d6c4fb9f9ec0c12486071422fb52bff0d1206d805e87292cbc`
 
 Type:
 
@@ -813,7 +734,7 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun self => self.12
+fun self => self.11
 ```
 
 ### D014: `HighamBench.P05FiniteRoundToNearestFormat.safeRange`
@@ -822,7 +743,7 @@ fun self => self.12
 - Owner module: `HighamBench.P05Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `df0de3d94a11777d107bf4cb6f38361be0bd84e36bc1d91b5eaffe534762b511`
+- Semantic SHA-256: `6b66b03c590cc2c1654bd9631fb5645291a21681e905b136a1f85d1fd928c436`
 
 Type:
 
@@ -839,31 +760,10 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun self => self.11
+fun self => self.10
 ```
 
-### D015: `HighamBench.P05ProtectedSumTrace`
-
-- Role: `local`
-- Owner module: `HighamBench.P05Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `3`
-- Semantic SHA-256: `af57b1332cc6b515c4631fb5af5b6e4263bd0074340bbc55f856fecb3398b943`
-
-Type:
-
-```lean
-HighamBench.P05FiniteRoundToNearestFormat → Nat → Real → Real → Real → Real → Prop
-```
-
-Fully explicit type:
-
-```lean
-(fmt : HighamBench.P05FiniteRoundToNearestFormat) →
-  (termCount : Nat) → (pivotValue outsideExact outsideAbs computed : Real) → Prop
-```
-
-### D016: `HighamBench.P05SumTree`
+### D015: `HighamBench.P05SumTree`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -883,7 +783,7 @@ Fully explicit type:
 Nat → Type
 ```
 
-### D017: `HighamBench.p05Lemma41Summands`
+### D016: `HighamBench.p05Lemma41Summands`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -917,7 +817,7 @@ Definition body (one-level semantic boundary):
 fun {m} fmt a b c i => Fin.cases c (fun i => Real.instNeg.neg (HighamBench.p05RoundedProducts fmt a b i)) i
 ```
 
-### D018: `HighamBench.p05SumTreeEval`
+### D017: `HighamBench.p05SumTreeEval`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -953,7 +853,7 @@ fun fmt {n} tree v =>
     v
 ```
 
-### D019: `HighamBench.p05SumTreeSafe`
+### D018: `HighamBench.p05SumTreeSafe`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -993,95 +893,7 @@ fun fmt {n} tree v =>
     v
 ```
 
-### D020: `HighamBench.P05ProtectedSumTrace.leaf`
-
-- Role: `local`
-- Owner module: `HighamBench.P05Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `4`
-- Semantic SHA-256: `e109540049043b0f228eae43e83638898445f10954918e8f096d36020385dc81`
-
-Type:
-
-```lean
-∀ {fmt : HighamBench.P05FiniteRoundToNearestFormat} (pivotValue : Real),
-  fmt.representable pivotValue → HighamBench.P05ProtectedSumTrace fmt 1 pivotValue 0 0 pivotValue
-```
-
-Fully explicit type:
-
-```lean
-∀ {fmt : HighamBench.P05FiniteRoundToNearestFormat} (pivotValue : Real)
-  (pivot_representable : HighamBench.P05FiniteRoundToNearestFormat.representable fmt pivotValue),
-  HighamBench.P05ProtectedSumTrace fmt (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))) pivotValue
-    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) pivotValue
-```
-
-### D021: `HighamBench.P05ProtectedSumTrace.merge`
-
-- Role: `local`
-- Owner module: `HighamBench.P05Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `4`
-- Semantic SHA-256: `ebe05edeb007569f5d6a1f98a923ce7a193878cfbce59f91cfd85618a32289c0`
-
-Type:
-
-```lean
-∀ {fmt : HighamBench.P05FiniteRoundToNearestFormat} {outerCount siblingCount : Nat}
-  {pivotValue siblingExact siblingAbs siblingComputed outerExact outerAbs computed : Real},
-  fmt.representable pivotValue →
-    instLTNat.lt 0 siblingCount →
-      Real.instLE.le 0 siblingAbs →
-        Real.instLE.le (abs siblingExact) siblingAbs →
-          fmt.representable siblingComputed →
-            Real.instLE.le (abs (instHSub.hSub siblingComputed siblingExact))
-                (instHMul.hMul (instHMul.hMul siblingCount.cast fmt.unitRoundoff) siblingAbs) →
-              fmt.safeRange (instHAdd.hAdd pivotValue siblingComputed) →
-                HighamBench.P05ProtectedSumTrace fmt outerCount (fmt.round (instHAdd.hAdd pivotValue siblingComputed))
-                    outerExact outerAbs computed →
-                  HighamBench.P05ProtectedSumTrace fmt (instHAdd.hAdd outerCount siblingCount) pivotValue
-                    (instHAdd.hAdd siblingExact outerExact) (instHAdd.hAdd siblingAbs outerAbs) computed
-```
-
-Fully explicit type:
-
-```lean
-∀ {fmt : HighamBench.P05FiniteRoundToNearestFormat} {outerCount siblingCount : Nat}
-  {pivotValue siblingExact siblingAbs siblingComputed outerExact outerAbs computed : Real}
-  (pivot_representable : HighamBench.P05FiniteRoundToNearestFormat.representable fmt pivotValue)
-  (sibling_count_pos :
-    @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) siblingCount)
-  (sibling_abs_nonneg :
-    @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) siblingAbs)
-  (sibling_exact_abs_le :
-    @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup siblingExact) siblingAbs)
-  (sibling_computed_representable : HighamBench.P05FiniteRoundToNearestFormat.representable fmt siblingComputed)
-  (sibling_error_bound :
-    @LE.le.{0} Real Real.instLE
-      (@abs.{0} Real Real.lattice Real.instAddGroup
-        (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub) siblingComputed siblingExact))
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-          (@Nat.cast.{0} Real Real.instNatCast siblingCount)
-          (HighamBench.P05FiniteRoundToNearestFormat.unitRoundoff fmt))
-        siblingAbs))
-  (merge_safe :
-    HighamBench.P05FiniteRoundToNearestFormat.safeRange fmt
-      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) pivotValue siblingComputed))
-  (outer :
-    HighamBench.P05ProtectedSumTrace fmt outerCount
-      (HighamBench.P05FiniteRoundToNearestFormat.round fmt
-        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) pivotValue siblingComputed))
-      outerExact outerAbs computed),
-  HighamBench.P05ProtectedSumTrace fmt
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) outerCount siblingCount) pivotValue
-    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) siblingExact outerExact)
-    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) siblingAbs outerAbs) computed
-```
-
-### D022: `HighamBench.P05SumTree.below`
+### D019: `HighamBench.P05SumTree.below`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -1110,7 +922,7 @@ fun {motive} {a} t =>
     (fun {m n} a a_1 a_ih a_ih_1 => PProd (PProd (motive m a) a_ih) (PProd (motive n a_1) a_ih_1)) t
 ```
 
-### D023: `HighamBench.P05SumTree.brecOn`
+### D020: `HighamBench.P05SumTree.brecOn`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -1145,7 +957,7 @@ Definition body (one-level semantic boundary):
 fun {motive} {a} t F_1 => (HighamBench.P05SumTree.brecOn.go t F_1).1
 ```
 
-### D024: `HighamBench.P05SumTree.leaf`
+### D021: `HighamBench.P05SumTree.leaf`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -1165,7 +977,7 @@ Fully explicit type:
 HighamBench.P05SumTree (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
 ```
 
-### D025: `HighamBench.P05SumTree.node`
+### D022: `HighamBench.P05SumTree.node`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -1188,7 +1000,7 @@ Fully explicit type:
       HighamBench.P05SumTree (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m n)
 ```
 
-### D026: `HighamBench.p05RoundedProducts`
+### D023: `HighamBench.p05RoundedProducts`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -1214,7 +1026,7 @@ Definition body (one-level semantic boundary):
 fun {m} fmt a b i => fmt.round (instHMul.hMul (a i) (b i))
 ```
 
-### D027: `HighamBench.p05SumTreeEval._proof_1`
+### D024: `HighamBench.p05SumTreeEval._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -1236,7 +1048,7 @@ Fully explicit type:
   (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
 ```
 
-### D028: `HighamBench.p05SumTreeEval.match_1`
+### D025: `HighamBench.p05SumTreeEval.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -1297,7 +1109,7 @@ fun motive n tree v h_1 h_2 =>
     tree ⋯ ⋯
 ```
 
-### D029: `HighamBench.P05SumTree.brecOn.go`
+### D026: `HighamBench.P05SumTree.brecOn.go`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -1335,7 +1147,7 @@ fun {motive} {a} t F_1 =>
     (fun {m n} a a_1 a_ih a_ih_1 => ⟨F_1 (instHAdd.hAdd m n) (a.node a_1) ⟨a_ih, a_ih_1⟩, a_ih, a_ih_1⟩) t
 ```
 
-### D030: `HighamBench.P05SumTree.casesOn`
+### D027: `HighamBench.P05SumTree.casesOn`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -1378,7 +1190,7 @@ Definition body (one-level semantic boundary):
 fun {motive} {a} t leaf node => HighamBench.P05SumTree.rec leaf (fun {m n} a a_1 a_ih a_ih_1 => node a a_1) t
 ```
 
-### D031: `HighamBench.P05SumTree.rec`
+### D028: `HighamBench.P05SumTree.rec`
 
 - Role: `local`
 - Owner module: `HighamBench.P05Definitions`
@@ -1413,7 +1225,7 @@ Fully explicit type:
       {a : Nat} → (t : HighamBench.P05SumTree a) → motive a t
 ```
 
-### D032: `And`
+### D029: `And`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1433,7 +1245,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D033: `Eq`
+### D030: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1453,7 +1265,7 @@ Fully explicit type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D034: `Exists`
+### D031: `Exists`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -1473,7 +1285,7 @@ Fully explicit type:
 {α : Sort u} → (p : α → Prop) → Prop
 ```
 
-### D035: `Fin`
+### D032: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1493,7 +1305,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D036: `Fin.fintype`
+### D033: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -1519,7 +1331,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D037: `Finset.sum`
+### D034: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -1545,7 +1357,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D038: `Finset.univ`
+### D035: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -1571,7 +1383,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D039: `HAdd.hAdd`
+### D036: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1597,7 +1409,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D040: `HMul.hMul`
+### D037: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1623,7 +1435,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D041: `HSub.hSub`
+### D038: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1649,7 +1461,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D042: `LE.le`
+### D039: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1675,7 +1487,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D043: `Nat`
+### D040: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1695,7 +1507,7 @@ Fully explicit type:
 Type
 ```
 
-### D044: `Nat.cast`
+### D041: `Nat.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Cast`
@@ -1721,7 +1533,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D045: `OfNat.ofNat`
+### D042: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1747,7 +1559,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D046: `One.toOfNat1`
+### D043: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -1773,7 +1585,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D047: `Real`
+### D044: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1793,7 +1605,7 @@ Fully explicit type:
 Type
 ```
 
-### D048: `Real.instAdd`
+### D045: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1819,7 +1631,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D049: `Real.instAddCommMonoid`
+### D046: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1845,7 +1657,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D050: `Real.instAddGroup`
+### D047: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1871,7 +1683,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D051: `Real.instLE`
+### D048: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1897,7 +1709,7 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D052: `Real.instMul`
+### D049: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1923,7 +1735,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D053: `Real.instNatCast`
+### D050: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1949,7 +1761,7 @@ Definition body (one-level semantic boundary):
 { natCast := fun n => { cauchy := n.cast } }
 ```
 
-### D054: `Real.instOne`
+### D051: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1975,7 +1787,7 @@ Definition body (one-level semantic boundary):
 { one := Real.one✝ }
 ```
 
-### D055: `Real.instSub`
+### D052: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2001,7 +1813,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D056: `Real.lattice`
+### D053: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2027,7 +1839,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D057: `abs`
+### D054: `abs`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
@@ -2054,7 +1866,7 @@ fun {α} [Lattice α] [AddGroup α] a =>
   SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
 ```
 
-### D058: `instAddNat`
+### D055: `instAddNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2080,7 +1892,7 @@ Definition body (one-level semantic boundary):
 { add := Nat.add }
 ```
 
-### D059: `instHAdd`
+### D056: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2106,7 +1918,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D060: `instHMul`
+### D057: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2132,7 +1944,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D061: `instHSub`
+### D058: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2158,7 +1970,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D062: `instOfNatNat`
+### D059: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2184,7 +1996,7 @@ Definition body (one-level semantic boundary):
 fun n => { ofNat := n }
 ```
 
-### D063: `DFunLike.coe`
+### D060: `DFunLike.coe`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.FunLike.Basic`
@@ -2212,7 +2024,7 @@ Definition body (one-level semantic boundary):
 fun F {α} {β} [self : DFunLike F α β] => self.1
 ```
 
-### D064: `DivInvMonoid.toDiv`
+### D061: `DivInvMonoid.toDiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -2238,7 +2050,7 @@ Definition body (one-level semantic boundary):
 fun G [self : DivInvMonoid G] => self.3
 ```
 
-### D065: `Equiv.Perm`
+### D062: `Equiv.Perm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Logic.Equiv.Defs`
@@ -2264,7 +2076,7 @@ Definition body (one-level semantic boundary):
 fun α => Equiv α α
 ```
 
-### D066: `Equiv.instEquivLike`
+### D063: `Equiv.instEquivLike`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Logic.Equiv.Defs`
@@ -2290,7 +2102,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} => { coe := Equiv.toFun, inv := Equiv.invFun, left_inv := ⋯, right_inv := ⋯, coe_injective' := ⋯ }
 ```
 
-### D067: `EquivLike.toFunLike`
+### D064: `EquivLike.toFunLike`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.FunLike.Equiv`
@@ -2316,7 +2128,7 @@ Definition body (one-level semantic boundary):
 fun {E} {α} {β} [inst : EquivLike E α β] => { coe := inst.coe, coe_injective' := ⋯ }
 ```
 
-### D068: `HDiv.hDiv`
+### D065: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2342,7 +2154,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D069: `Ne`
+### D066: `Ne`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -2368,33 +2180,7 @@ Definition body (one-level semantic boundary):
 fun {α} a b => Not (Eq a b)
 ```
 
-### D070: `Neg.neg`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `0c56662a5d917c211c3cb741ca747b4a6710082af615cf071342ef70dee3a2c7`
-
-Type:
-
-```lean
-{α : Type u} → [self : Neg α] → α → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : Neg.{u} α] → α → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : Neg α] => self.1
-```
-
-### D071: `Real.instDivInvMonoid`
+### D067: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2422,33 +2208,7 @@ Definition body (one-level semantic boundary):
   zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D072: `Real.instNeg`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `000951397468b3d1f8a2a1cca1de3812bc024916ff842cfd5454811130093b41`
-
-Type:
-
-```lean
-Neg Real
-```
-
-Fully explicit type:
-
-```lean
-Neg.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ neg := Real.neg✝ }
-```
-
-### D073: `Real.instZero`
+### D068: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2474,7 +2234,7 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D074: `Zero.toOfNat0`
+### D069: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -2500,7 +2260,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D075: `instHDiv`
+### D070: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2526,33 +2286,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
-### D076: `DivInvMonoid.toZPow`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Group.Defs`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `1e8b6758b3a3bf88b78eeff1bb4effb1dce39e6b9e38153dab79b664d58d89b5`
-
-Type:
-
-```lean
-{M : Type u_2} → [DivInvMonoid M] → Pow M Int
-```
-
-Fully explicit type:
-
-```lean
-{M : Type u_2} → [DivInvMonoid.{u_2} M] → Pow.{u_2, 0} M Int
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {M} [inst : DivInvMonoid M] => { pow := fun x n => inst.zpow n x }
-```
-
-### D077: `Fin.cases`
+### D071: `Fin.cases`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Lemmas`
@@ -2604,7 +2338,7 @@ Definition body (one-level semantic boundary):
 fun {n} {motive} zero succ i => Fin.induction zero (fun i x => succ i) i
 ```
 
-### D078: `Fin.castAdd`
+### D072: `Fin.castAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Basic`
@@ -2630,7 +2364,7 @@ Definition body (one-level semantic boundary):
 fun {n} m => Fin.castLE ⋯
 ```
 
-### D079: `Fin.mk`
+### D073: `Fin.mk`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2650,7 +2384,7 @@ Fully explicit type:
 {n : Nat} → (val : Nat) → (isLt : @LT.lt.{0} Nat instLTNat val n) → Fin n
 ```
 
-### D080: `Fin.natAdd`
+### D074: `Fin.natAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Basic`
@@ -2676,7 +2410,7 @@ Definition body (one-level semantic boundary):
 fun {m} n i => ⟨instHAdd.hAdd n i.val, ⋯⟩
 ```
 
-### D081: `HPow.hPow`
+### D075: `HPow.hPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2702,7 +2436,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HPow α β γ] => self.1
 ```
 
-### D082: `Int`
+### D076: `Int`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Int.Basic`
@@ -2722,59 +2456,7 @@ Fully explicit type:
 Type
 ```
 
-### D083: `Int.cast`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Int.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `3347681a56db726f3d5ec40fea35e331466578d6194deeb554a0c70ba5189971`
-
-Type:
-
-```lean
-{R : Type u} → [IntCast R] → Int → R
-```
-
-Fully explicit type:
-
-```lean
-{R : Type u} → [IntCast.{u} R] → Int → R
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {R} [inst : IntCast R] => inst.intCast
-```
-
-### D084: `Int.instLEInt`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Int.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `f51330a4994f7ae8126646c50493b06244696bcf7ecd84ee76d837ba05820e15`
-
-Type:
-
-```lean
-LE Int
-```
-
-Fully explicit type:
-
-```lean
-LE.{0} Int
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ le := Int.le }
-```
-
-### D085: `Int.instLTInt`
+### D077: `Int.instLTInt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Int.Basic`
@@ -2800,59 +2482,7 @@ Definition body (one-level semantic boundary):
 { lt := Int.lt }
 ```
 
-### D086: `Int.instSub`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Int.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `cdec027f4b1a52ca9841248e8efbabc901ed4e9b4220aa4074044d4c9537c68c`
-
-Type:
-
-```lean
-Sub Int
-```
-
-Fully explicit type:
-
-```lean
-Sub.{0} Int
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ sub := Int.sub }
-```
-
-### D087: `Int.natAbs`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Int.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `2471688866fdc8c23fee672544006ebded1ade779a01e774c737876f989b77f9`
-
-Type:
-
-```lean
-Int → Nat
-```
-
-Fully explicit type:
-
-```lean
-(m : Int) → Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun m => Int.neg.match_1 (fun m => Nat) m (fun m => m) fun m => m.succ
-```
-
-### D088: `LT.lt`
+### D078: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2878,7 +2508,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LT α] => self.1
 ```
 
-### D089: `Monoid.toNatPow`
+### D079: `Monoid.toNatPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -2904,7 +2534,7 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
 ```
 
-### D090: `Nat.instAtLeastTwoHAddOfNat`
+### D080: `Nat.instAtLeastTwoHAddOfNat`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Init`
@@ -2927,33 +2557,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D091: `Nat.instMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Group.Nat.Defs`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `de0cbde8dd75c1a0c6d5d08b9cfa1cd5908aeb874409a1c880c9c9616deb1709`
-
-Type:
-
-```lean
-Monoid Nat
-```
-
-Fully explicit type:
-
-```lean
-Monoid.{0} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D092: `Nat.instNeZeroSucc`
+### D081: `Nat.instNeZeroSucc`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Nat.Basic`
@@ -2976,53 +2580,33 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D093: `Or`
+### D082: `Neg.neg`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
-- Declaration kind: `inductive`
+- Declaration kind: `abbrev`
 - Distance from target type: `4`
-- Semantic SHA-256: `de438fb54053199506d3db7df89e4ed6f1bc296d2e49a7e63e7a4b73a1b23d7e`
+- Semantic SHA-256: `0c56662a5d917c211c3cb741ca747b4a6710082af615cf071342ef70dee3a2c7`
 
 Type:
 
 ```lean
-Prop → Prop → Prop
+{α : Type u} → [self : Neg α] → α → α
 ```
 
 Fully explicit type:
 
 ```lean
-(a b : Prop) → Prop
-```
-
-### D094: `Real.instIntCast`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `7ad2826677bdd498c1fca7a01f5af78c74e38b65a4f1e767cdf3670649eac222`
-
-Type:
-
-```lean
-IntCast Real
-```
-
-Fully explicit type:
-
-```lean
-IntCast.{0} Real
+{α : Type u} → [self : Neg.{u} α] → α → α
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-{ intCast := fun z => { cauchy := z.cast } }
+fun α [self : Neg α] => self.1
 ```
 
-### D095: `Real.instMonoid`
+### D083: `Real.instMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3048,33 +2632,33 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D096: `Real.sqrt`
+### D084: `Real.instNeg`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Sqrt`
+- Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
 - Distance from target type: `4`
-- Semantic SHA-256: `67f9248ae1acb851b5392be301057ebb8b8ef2fb20f76d2d53a2d07ec8f30553`
+- Semantic SHA-256: `000951397468b3d1f8a2a1cca1de3812bc024916ff842cfd5454811130093b41`
 
 Type:
 
 ```lean
-Real → Real
+Neg Real
 ```
 
 Fully explicit type:
 
 ```lean
-(x : Real) → Real
+Neg.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun x => ((instFunLikeOrderIso NNReal NNReal).coe NNReal.sqrt x.toNNReal).toReal
+{ neg := Real.neg✝ }
 ```
 
-### D097: `Set.Finite`
+### D085: `Set.Finite`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Finite.Defs`
@@ -3100,7 +2684,7 @@ Definition body (one-level semantic boundary):
 fun {α} s => Finite s.Elem
 ```
 
-### D098: `instHPow`
+### D086: `instHPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3126,7 +2710,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
-### D099: `instLENat`
+### D087: `instLENat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3152,7 +2736,7 @@ Definition body (one-level semantic boundary):
 { le := Nat.le }
 ```
 
-### D100: `instLTNat`
+### D088: `instLTNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3178,59 +2762,7 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D101: `instNatCastInt`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Int.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `7fb46bceee4f1142c75008c8ac4be64c11c4bdbc7972ff89c0a5335ad80a2033`
-
-Type:
-
-```lean
-NatCast Int
-```
-
-Fully explicit type:
-
-```lean
-NatCast.{0} Int
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ natCast := fun n => Int.ofNat n }
-```
-
-### D102: `instOfNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Int.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `d01cf83431e28a96433c57a624e20a771e5e0ddc02355969c5044adf1ba168a5`
-
-Type:
-
-```lean
-{n : Nat} → OfNat Int n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → OfNat.{0} Int n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} => { ofNat := Int.ofNat n }
-```
-
-### D103: `instOfNatAtLeastTwo`
+### D089: `instOfNatAtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -3256,7 +2788,7 @@ Definition body (one-level semantic boundary):
 fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
 ```
 
-### D104: `instSubNat`
+### D090: `instSubNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3282,7 +2814,7 @@ Definition body (one-level semantic boundary):
 { sub := Nat.sub }
 ```
 
-### D105: `setOf`
+### D091: `setOf`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Set.Defs`
@@ -3308,7 +2840,7 @@ Definition body (one-level semantic boundary):
 fun {α} p => p
 ```
 
-### D106: `Eq.ndrec`
+### D092: `Eq.ndrec`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3334,7 +2866,7 @@ Definition body (one-level semantic boundary):
 fun {α} {a} {motive} m {b} h => Eq.rec m h
 ```
 
-### D107: `Eq.refl`
+### D093: `Eq.refl`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3354,7 +2886,7 @@ Fully explicit type:
 ∀ {α : Sort u_1} (a : α), @Eq.{u_1} α a a
 ```
 
-### D108: `Eq.symm`
+### D094: `Eq.symm`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3374,7 +2906,7 @@ Fully explicit type:
 ∀ {α : Sort u} {a b : α} (h : @Eq.{u} α a b), @Eq.{u} α b a
 ```
 
-### D109: `HEq`
+### D095: `HEq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3394,7 +2926,7 @@ Fully explicit type:
 {α : Sort u} → α → {β : Sort u} → β → Prop
 ```
 
-### D110: `HEq.refl`
+### D096: `HEq.refl`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3414,7 +2946,7 @@ Fully explicit type:
 ∀ {α : Sort u} (a : α), @HEq.{u} α a α a
 ```
 
-### D111: `Nat.instPartialOrder`
+### D097: `Nat.instPartialOrder`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Basic`
@@ -3440,7 +2972,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D112: `PProd`
+### D098: `PProd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3460,7 +2992,7 @@ Fully explicit type:
 (α : Sort u) → (β : Sort v) → Sort (max (max 1 u) v)
 ```
 
-### D113: `PUnit`
+### D099: `PUnit`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3480,7 +3012,7 @@ Fully explicit type:
 Sort u
 ```
 
-### D114: `PartialOrder.toPreorder`
+### D100: `PartialOrder.toPreorder`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Order.Defs.PartialOrder`
@@ -3506,7 +3038,7 @@ Definition body (one-level semantic boundary):
 fun α [self : PartialOrder α] => self.1
 ```
 
-### D115: `Preorder.toLT`
+### D101: `Preorder.toLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Order.Defs.PartialOrder`
@@ -3532,7 +3064,7 @@ Definition body (one-level semantic boundary):
 fun α [self : Preorder α] => self.2
 ```
 
-### D116: `eq_of_heq`
+### D102: `eq_of_heq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3552,7 +3084,7 @@ Fully explicit type:
 ∀ {α : Sort u} {a a' : α} (h : @HEq.{u} α a α a'), @Eq.{u} α a a'
 ```
 
-### D117: `PProd.mk`
+### D103: `PProd.mk`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3572,7 +3104,7 @@ Fully explicit type:
 {α : Sort u} → {β : Sort v} → (fst : α) → (snd : β) → PProd.{u, v} α β
 ```
 
-### D118: `PUnit.unit`
+### D104: `PUnit.unit`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
