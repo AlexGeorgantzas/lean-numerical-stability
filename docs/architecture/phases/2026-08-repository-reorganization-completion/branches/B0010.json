@@ -11671,6 +11671,10 @@
     "sha256": "9316DE9A594E7E924CC2213692ED23B49DCBB5BCCD21285642A60D5B0E09E35D"
    },
    {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-activation.json",
+    "sha256": "80D91BFD25A8A255883FBA36AFD03B1E4119E1893DA741F8D325A49147D290A4"
+   },
+   {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-consumers.tsv",
     "sha256": "2E057F3B6C28C86CEC5A52EF48E41AA86B08F3EE4BCA9A8D456C313A0FF2D90A"
    },
@@ -11773,6 +11777,6 @@
  "shared_request_ids": [
   "R0011"
  ],
- "status": "planned",
+ "status": "active",
  "wave_id": "R07"
 }

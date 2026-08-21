@@ -8,10 +8,18 @@ accepted predecessor code commit
 at exact integrated code commit `ad92bbfae62d538f3e52829a269a846688a8e213`.
 C0005 accepts M04/R04 and M08/R08 on top of C0004's accepted R05/R06. Its
 generated evidence records 2,818 production modules: 2,685 classified, 133
-unclassified, and 0 mixed. M04 and M08 are accepted; M07 is ready, while R07
-remains blocked until the exact acceptance-control CI is green. Branch
-retirement is a separate later control. This successor has precedence over
-dated migration packets and historical handoffs.
+unclassified, and 0 mixed. M04 and M08 are accepted; M07 is ready and B0010/R07
+is active at exact C0005 base code
+`ad92bbfae62d538f3e52829a269a846688a8e213`. Exact planned-control commit
+`bb3b1e3c9ccf4a96344fe574159389f0b994ac23` passed Lean CI run 32480533045
+(job 96765696176). The local and remote
+`codex/reorg-completion-2026-08-r07-matrix-functions-powers-ch18` refs and clean
+LF named worktree `C:\Users\qed_s\higham-worktrees\completion-r07-codex` point
+to that exact base. The worker is frozen until the separate activation-control
+commit passes Lean CI. No R07 implementation, delivery, integration,
+self-acceptance, checkpoint acceptance, or branch retirement is recorded.
+Acceptance and branch retirement remain separate controls. This successor has
+precedence over dated migration packets and historical handoffs.
 
 After C0001 acceptance-control commit
 `93883eb0ec69a01704ff24ac71713a03f0be5a49` passed Lean CI run 31542177523
