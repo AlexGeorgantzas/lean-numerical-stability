@@ -7,148 +7,149 @@
     {
       "pdf_page": 2,
       "printed_page": "384",
-      "anchor": "equation (1), nearest-rounding definition, and FastTwoSum listing",
-      "observation": "[PDF p. 2, printed p. 384, anchor: equation (1), nearest-rounding definition, and FastTwoSum listing] The paper defines F = {m β^e : m,e ∈ Z, −β^p < m < β^p, e_min ≤ e ≤ e_max}; unadorned arithmetic denotes exact real arithmetic, while circled operations are obtained through fl. Unless stated otherwise, fl selects a nearest member of F. FastTwoSum computes s = x ⊕ y, t = s ⊖ x, and e = y ⊖ t."
+      "anchor": "equation (1), rounding conventions, and FastTwoSum",
+      "observation": "The paper defines F = {m·β^e : m,e ∈ ℤ, −β^p < m < β^p, e_min ≤ e ≤ e_max}. Unless stated otherwise, operations use rounding to nearest. FastTwoSum computes s ← x ⊕ y, t ← s ⊖ x, and e ← y ⊖ t."
     },
     {
       "pdf_page": 3,
       "printed_page": "385",
-      "anchor": "Section 2, multiple representations",
-      "observation": "[PDF p. 3, printed p. 385, anchor: Section 2, multiple representations] A floating-point value can have several representations m β^e satisfying equation (1), so an exponent e(x) used in a FastTwoSum condition need not be canonical."
+      "anchor": "equations (2) and (3)",
+      "observation": "An exponent e(f) belongs to a representation f = m_f·β^{e(f)} satisfying equation (1), and representations need not be unique. The FastTwoSum exact-decomposition conclusion is s + e = x + y with s = x ⊕ y."
     },
     {
       "pdf_page": 4,
       "printed_page": "386",
-      "anchor": "equation (4), definition of ulp",
-      "observation": "[PDF p. 4, printed p. 386, anchor: equation (4), definition of ulp] For r ∈ (−β^(e_max+p), β^(e_max+p)), ulp(r) is min{g−f : f,g ∈ F ∪ {β^(e_max+p)}, f ≤ |r| < g}; for nonnegative x ∈ F it is the distance to the successor."
+      "anchor": "equation (4), ULP definition",
+      "observation": "For r ∈ (−β^{e_max+p}, β^{e_max+p}), ulp(r) is min{g−f : f,g ∈ F ∪ {β^{e_max+p}}, f ≤ |r| < g}. Thus the inequalities in equations (17) and the Lemma 4 proof use spacing measured at the exact real product."
     },
     {
       "pdf_page": 5,
       "printed_page": "387",
       "anchor": "Theorem 2 and condition (7)",
-      "observation": "[PDF p. 5, printed p. 387, anchor: Theorem 2 and condition (7)] FastTwoSum is error-free for nearest addition and faithful subtraction if some representation of its first input x satisfies |y| ≤ ⌈β^p − β/2⌉ β^e(x). The delimiters in condition (7) are ceiling brackets."
+      "observation": "For FastTwoSum inputs x,y ∈ F, nearest addition and faithful subtraction suffice if some representation of x satisfies |y| ≤ ⌈β^p − β/2⌉ β^{e(x)}. The ceiling encloses the entire expression β^p − β/2, and the inequality is non-strict."
     },
     {
       "pdf_page": 9,
       "printed_page": "391",
-      "anchor": "Section 4 standing assumptions",
-      "observation": "[PDF p. 9, printed p. 391, anchor: Section 4 standing assumptions] Section 4 inherits the notation of equation (1), evaluates arithmetic in rounding to nearest unless otherwise specified, and generally assumes absence of overflow. Base restrictions and underflow exceptions are to be stated case by case."
+      "anchor": "Section 4 standing conventions",
+      "observation": "Throughout Section 4, p is the mantissa length, β is the base, and e_min,e_max give the feasible exponent range. Operations are rounded to nearest unless otherwise specified, overflow is generally assumed absent, and any base restriction or underflow exception is stated separately."
     },
     {
       "pdf_page": 13,
       "printed_page": "395",
-      "anchor": "FourSumThreeProduct algorithm and TwoProduct introduction",
-      "observation": "[PDF p. 13, printed p. 395, anchor: FourSumThreeProduct algorithm and TwoProduct introduction] FourSumThreeProduct performs TwoProduct(x2,x3), then TwoProduct(x1,t_h), then TwoProduct(x1,t_l), producing s1,s2',s3',s4'. The paper states that TwoProduct is an error-free two-term product transformation when neither underflow nor overflow occurs."
+      "anchor": "FourSumThreeProduct and TwoProduct calls",
+      "observation": "FourSumThreeProduct performs (t_h,t_l) ← TwoProduct(x_2,x_3), (s_1,s'_2) ← TwoProduct(x_1,t_h), and (s'_3,s'_4) ← TwoProduct(x_1,t_l). TwoProduct is used as an error-free two-term product transformation when neither underflow nor overflow occurs."
     },
     {
       "pdf_page": 14,
       "printed_page": "396",
-      "anchor": "equation (17), ThreeProduct listing, Lemma 4, and equation (18)",
-      "observation": "[PDF p. 14, printed p. 396, anchor: equation (17), ThreeProduct listing, Lemma 4, and equation (18)] Equation (17) gives t_h+t_l=x2·x3, t_h=x2⊙x3, and |t_l|≤(1/2)ulp(x2·x3), with corresponding contracts for the other two TwoProduct calls. ThreeProduct merges s2',s3' using FastTwoSum and sets s3=s3''⊕s4'. Lemma 4 assumes absence of underflow errors within FourSumThreeProduct and concludes ∑_{i=1}^3 s_i=∏_{i=1}^3 x_i."
+      "anchor": "equation (17), ThreeProduct, Lemma 4, and equation (18)",
+      "observation": "Equation (17) states t_h+t_l=x_2·x_3, t_h=x_2⊙x_3, and |t_l|≤(1/2)ulp(x_2·x_3). The analogous contracts for the other two TwoProduct calls imply s_1+Σ_{i=2}^4 s'_i=Π_{i=1}^3 x_i. ThreeProduct then calls FourSumThreeProduct, calls FastTwoSum on (s'_2,s'_3) to obtain (s_2,s''_3), and computes s_3←s''_3⊕s'_4. Lemma 4 assumes absence of underflow errors within FourSumThreeProduct and concludes Σ_{i=1}^3 s_i=Π_{i=1}^3 x_i."
     },
     {
       "pdf_page": 15,
       "printed_page": "397",
-      "anchor": "proof of Lemma 4, condition (7) and exact final addition",
-      "observation": "[PDF p. 15, printed p. 397, anchor: proof of Lemma 4, condition (7) and exact final addition] The proof constructs a representation of s2' for which condition (7), with its ceiling, holds for FastTwoSum(s2',s3'), obtaining s2+s3''=s2'+s3'. It then proves |s3''+s4'|≤β^p and that this sum lies in F, so s3=s3''+s4' without rounding error."
+      "anchor": "condition (7), FastTwoSum merge, and exact final addition",
+      "observation": "The proof obtains a representation of s'_2 with β^{e(s'_2)}≥ulp(t_h) and proves |s'_3|≤β^p|t_l|≤(1/2)β^p ulp(t_h)≤(1/2)β^pβ^{e(s'_2)}≤⌈β^p−β/2⌉β^{e(s'_2)}. Hence condition (7) gives s_2+s''_3=s'_2+s'_3. It then proves |s''_3|≤(1/2)β^p and |s''_3+s'_4|≤β^p; the integer s''_3+s'_4 lies in F, so s_3=s''_3+s'_4 is evaluated without error."
     }
   ],
   "statement": {
     "binders": [
-      "[PDF p. 2, printed p. 384, anchor: equation (1)] Fix the scalar floating-point system F determined by base β, mantissa length p, and exponent bounds e_min,e_max.",
-      "[PDF p. 14, printed p. 396, anchor: ThreeProduct listing and Lemma 4] Quantify over three scalar inputs x1,x2,x3 ∈ F and let s1,s2,s3 ∈ F be the values computed by ThreeProduct(x1,x2,x3).",
-      "[PDF pp. 13–14, printed pp. 395–396, anchor: FourSumThreeProduct and ThreeProduct listings] Let t_h,t_l,s2',s3',s4',s3'' denote the computed intermediate floating-point values named by those listings."
+      "β, p, e_min, and e_max parameterize the floating-point set F in equation (1), with strict mantissa bounds −β^p < m < β^p and inclusive exponent bounds e_min ≤ e ≤ e_max. [PDF p. 2, printed p. 384, anchor: equation (1)]",
+      "x_1, x_2, x_3 are the three floating-point inputs inherited from the ThreeProduct and FourSumThreeProduct procedure signatures. [PDF pp. 13-14, printed pp. 395-396, anchor: procedure signatures]",
+      "t_h,t_l,s_1,s'_2,s'_3,s'_4,s_2,s''_3,s_3 are the computed intermediates and outputs, with every prime and subscript determined by the displayed algorithms. [PDF pp. 13-14, printed pp. 395-396, anchor: FourSumThreeProduct and ThreeProduct]"
     ],
     "hypotheses": [
-      "[PDF p. 9, printed p. 391, anchor: Section 4 standing assumptions] All arithmetic operations used here are rounded to nearest unless the passage states otherwise.",
-      "[PDF p. 9, printed p. 391, anchor: Section 4 standing assumptions] Overflow is absent throughout the application.",
-      "[PDF p. 14, printed p. 396, anchor: Lemma 4 hypothesis] There are no underflow errors within the FourSumThreeProduct call.",
-      "[PDF pp. 13–14, printed pp. 395–396, anchor: TwoProduct paragraph and equation (17)] Each of the three delegated TwoProduct calls obeys its error-free high-plus-low product contract under the inherited range assumptions."
+      "Lemma 4 explicitly assumes the absence of underflow errors within the FourSumThreeProduct call. [PDF p. 14, printed p. 396, anchor: Lemma 4]",
+      "Section 4 generally assumes absence of overflow. [PDF p. 9, printed p. 391, anchor: Section 4 standing conventions]",
+      "Section 4 operations are evaluated in rounding to nearest unless an exception is stated; Section 4.2 states no different rounding mode. [PDF p. 9, printed p. 391, anchor: Section 4 standing conventions]",
+      "The error-free contracts of all three TwoProduct calls are used under their stated no-underflow/no-overflow range condition. [PDF pp. 13-14, printed pp. 395-396, anchor: TwoProduct contract and equation (17)]",
+      "No restriction β ∈ {2,3} is imposed: the proof establishes condition (7), allowing FastTwoSum for any base covered by the paper's floating-point model. [PDF p. 14, printed p. 396, anchor: paragraph preceding ThreeProduct]"
     ],
     "conclusions": [
-      "[PDF p. 14, printed p. 396, anchor: Lemma 4 and equation (18)] The computed outputs satisfy the exact real identity s1+s2+s3=x1·x2·x3, equivalently ∑_{i=1}^3 s_i=∏_{i=1}^3 x_i.",
-      "[PDF p. 15, printed p. 397, anchor: condition (7) in the proof of Lemma 4] The FastTwoSum merge is exact: s2+s3''=s2'+s3'.",
-      "[PDF p. 15, printed p. 397, anchor: final paragraph of the proof of Lemma 4] The final floating-point addition is exact: s3=s3''⊕s4'=s3''+s4'.",
-      "[PDF pp. 14–15, printed pp. 396–397, anchor: ThreeProduct motivation and proof of Lemma 4] Consequently the four-term error-free decomposition produced by FourSumThreeProduct is reduced to a three-term error-free decomposition without an additional rounding error."
+      "The ThreeProduct outputs satisfy the exact real identity Σ_{i=1}^3 s_i = Π_{i=1}^3 x_i. [PDF p. 14, printed p. 396, anchor: Lemma 4 and equation (18)]",
+      "The FastTwoSum merge is error-free: s_2+s''_3=s'_2+s'_3, with s_2=s'_2⊕s'_3. [PDF pp. 14-15, printed pp. 396-397, anchor: ThreeProduct line 2 and condition (7) proof]",
+      "The last computed addition is exact: s_3=s''_3⊕s'_4=s''_3+s'_4. [PDF p. 15, printed p. 397, anchor: final exact addition]",
+      "Before compression, FourSumThreeProduct satisfies s_1+s'_2+s'_3+s'_4=x_1x_2x_3. [PDF p. 14, printed p. 396, anchor: consequence of equation (17)]"
     ],
     "definitions_and_conventions": [
-      "[PDF p. 2, printed p. 384, anchor: equation (1)] F consists only of real values mβ^e with integer m,e, strict mantissa bounds −β^p<m<β^p, and inclusive exponent bounds e_min≤e≤e_max.",
-      "[PDF p. 2, printed p. 384, anchor: floating-point operation semantics] A circled operation such as ⊕ or ⊙ denotes a computed floating-point result; ordinary + and · in the identities denote exact real operations.",
-      "[PDF p. 4, printed p. 386, anchor: equation (4)] ulp is the absolute spacing notion defined by equation (4), not a relative-error measure.",
-      "[PDF pp. 13–14, printed pp. 395–396, anchor: FourSumThreeProduct and equation (17)] The first TwoProduct call has t_h+t_l=x2·x3, t_h=x2⊙x3, and |t_l|≤(1/2)ulp(x2·x3); the phrase 'respective conditions for line 2 and 3' applies the analogous exact-decomposition and half-ULP-residual properties to x1·t_h and x1·t_l.",
-      "[PDF p. 14, printed p. 396, anchor: ThreeProduct listing] Prime marks are semantic: s2',s3',s4' are FourSumThreeProduct terms, s3'' is the residual returned by FastTwoSum(s2',s3'), and s3 is the result of adding s3'' to s4'."
+      "F consists of real values m·β^e with integer m,e, strict mantissa bounds −β^p<m<β^p, and e_min≤e≤e_max. [PDF p. 2, printed p. 384, anchor: equation (1)]",
+      "An exponent e(f) refers to a chosen feasible representation f=m_f·β^{e(f)}; it is not necessarily a unique normalized exponent. [PDF p. 3, printed p. 385, anchor: exponent notation and multiple representations]",
+      "ulp(r)=min{g−f : f,g∈F∪{β^{e_max+p}}, f≤|r|<g}; the outer domain is −β^{e_max+p}<r<β^{e_max+p}. [PDF p. 4, printed p. 386, anchor: equation (4)]",
+      "Condition (7) is |y|≤⌈β^p−β/2⌉β^{e(x)} for some representation of the first FastTwoSum input x; the ceiling covers β^p−β/2. [PDF p. 5, printed p. 387, anchor: condition (7)]",
+      "In the Lemma 4 application of condition (7), x=s'_2 and y=s'_3, and the proof supplies a representation satisfying β^{e(s'_2)}≥ulp(t_h). [PDF p. 15, printed p. 397, anchor: condition (7) verification]",
+      "The proof introduces upward rounding fl_△(r)=min{f∈F:r≤f} only as a bounding device, not as an operation performed by ThreeProduct. [PDF p. 14, printed p. 396, anchor: definition of fl_△]"
     ],
     "implicit_context": [
-      "[PDF p. 9, printed p. 391, anchor: Section 4 standing assumptions] The result inherits β,p,e_min,e_max and the operation notation from the earlier sections.",
-      "[PDF p. 14, printed p. 396, anchor: paragraph preceding ThreeProduct] No restriction to β∈{2,3} is imposed for this application; the proof establishes condition (7) for the relevant FastTwoSum call for an unrestricted floating-point base β.",
-      "[PDF p. 14, printed p. 396, anchor: paragraph preceding ThreeProduct] No ordering hypothesis such as |s2'|≥|s3'| or ulp(s2')≥ulp(s3') is assumed; the paper explicitly notes that these inequalities need not hold.",
-      "[PDF pp. 14–15, printed pp. 396–397, anchor: proof normalization] The proof's scaling to ulp(x_i)=1, integrality of the scaled x_i, and max{|x1|,|x2|,|x3|}≤β^p−1 is a without-loss-of-generality proof device, not an additional input restriction.",
-      "[PDF p. 14, printed p. 396, anchor: proof of Lemma 4] The case x1x2x3=0 is treated as trivial and remains included in the result."
+      "Membership x_i∈F is inherited from the floating-point algorithm context rather than restated as a formal quantifier in Lemma 4. [PDF pp. 2 and 14, printed pp. 384 and 396, anchors: equation (1) and Lemma 4]",
+      "The contracts for TwoProduct lines 2 and 3 are not printed as separate equations; the paper explicitly invokes the conditions corresponding to equation (17). [PDF p. 14, printed p. 396, anchor: sentence following equation (17)]",
+      "Nearest rounding in Section 4 is stronger than the faithful-subtraction requirement in Theorem 2, so the inherited arithmetic satisfies the FastTwoSum rounding requirements. [PDF pp. 5 and 9, printed pp. 387 and 391, anchors: Theorem 2 and Section 4 convention]",
+      "The proof treats x_1x_2x_3=0 as trivial and otherwise rescales by a power of β to assume ulp(x_i)=1, giving x_i∈ℤ and max{|x_1|,|x_2|,|x_3|}≤β^p−1. [PDF p. 14, printed p. 396, anchor: opening of Lemma 4 proof]"
     ],
-    "algorithm_linkage": "[PDF pp. 13–14, printed pp. 395–396, anchors: FourSumThreeProduct and ThreeProduct listings] The exact variant is: (t_h,t_l)←TwoProduct(x2,x3); (s1,s2')←TwoProduct(x1,t_h); (s3',s4')←TwoProduct(x1,t_l); (s2,s3'')←FastTwoSum(s2',s3'); s3←s3''⊕s4'. It uses the ordinary FastTwoSum, not cβ-FastTwoSum, and the product grouping starts with x2·x3.",
+    "algorithm_linkage": "FourSumThreeProduct first computes (t_h,t_l)←TwoProduct(x_2,x_3), then (s_1,s'_2)←TwoProduct(x_1,t_h), then (s'_3,s'_4)←TwoProduct(x_1,t_l). ThreeProduct calls that procedure, computes (s_2,s''_3)←FastTwoSum(s'_2,s'_3), and finally computes s_3←s''_3⊕s'_4. [PDF pp. 13-14, printed pp. 395-396, anchors: displayed FourSumThreeProduct and ThreeProduct procedures]",
     "numerical_model": [
-      "[PDF pp. 2 and 9, printed pp. 384 and 391, anchors: nearest-rounding definition and Section 4 standing assumptions] Every displayed computed operation is in the single p-digit system F and uses rounding to nearest under the inherited convention.",
-      "[PDF p. 5, printed p. 387, anchor: Theorem 2] The exactness result invoked for the merge requires nearest addition and faithful subtraction; nearest-rounded subtraction supplied by the standing convention is a faithful subtraction.",
-      "[PDF p. 14, printed p. 396, anchor: equation (17)] The high product t_h is a rounded product, while t_h+t_l is the exact product x2·x3; the same high-plus-residual distinction is inherited for the other TwoProduct calls.",
-      "[PDF p. 2, printed p. 384, anchor: nearest-rounding definition] The source's nearest-rounding condition permits either nearest value in a tie and does not state a tie-breaking rule."
+      "For each supported operation, the computed value is fl of the corresponding exact real operation; in particular ⊕ and ⊙ denote rounded addition and multiplication. [PDF p. 2, printed p. 384, anchor: operation semantics following equation (1)]",
+      "Rounding to nearest means |fl(r)−r|≤|f−r| for every r∈ℝ and every f∈F; no tie-breaking rule is specified. [PDF p. 2, printed p. 384, anchor: nearest-rounding definition]",
+      "TwoProduct line 1 returns the rounded high product t_h=x_2⊙x_3 and an exact residual t_l satisfying equation (17). [PDF p. 14, printed p. 396, anchor: equation (17)]",
+      "The analogous contracts are s_1+s'_2=x_1t_h with s_1=x_1⊙t_h and |s'_2|≤(1/2)ulp(x_1t_h), and s'_3+s'_4=x_1t_l with s'_3=x_1⊙t_l and |s'_4|≤(1/2)ulp(x_1t_l). These are the respective conditions invoked for lines 2 and 3. [PDF pp. 13-14, printed pp. 395-396, anchors: all TwoProduct calls and sentence following equation (17)]"
     ],
     "error_notions": [
-      "[PDF p. 14, printed p. 396, anchor: equation (17)] TwoProduct's low component is an exact residual with an absolute half-ULP bound, for example |t_l|≤(1/2)ulp(x2·x3).",
-      "[PDF pp. 14–15, printed pp. 396–397, anchor: Lemma 4 and its proof] 'Error-free' means exact equality of the unevaluated sum of the returned floating-point components with the exact real triple product.",
-      "[PDF p. 15, printed p. 397, anchor: exact merge and final-add proof] The merge and final addition introduce zero additional error.",
-      "[PDF p. 14, printed p. 396, anchor: equation (18)] Lemma 4 states no relative-error, backward-error, or componentwise accuracy bound for the final three components beyond their exact-sum identity."
+      "Error-free transformation means exact equality over real numbers between the unevaluated output sum and the input product, not merely a forward or relative error estimate. [PDF p. 14, printed p. 396, anchor: equations (17) and (18)]",
+      "Each TwoProduct low term is bounded non-strictly by one half ULP of its exact product. [PDF pp. 14-15, printed pp. 396-397, anchors: equation (17) and subsequent bounds]",
+      "FastTwoSum's middle residual is exact because condition (7) is proved for s'_2,s'_3. [PDF p. 15, printed p. 397, anchor: condition (7) verification]",
+      "The final addition has zero rounding error because its exact integer sum lies in F. [PDF p. 15, printed p. 397, anchor: final sentence of Lemma 4 proof]"
     ],
     "norms": [
-      "[PDF pp. 14–15, printed pp. 396–397, anchors: equation (17) and proof bounds] Only scalar absolute value |·| and ulp-based scalar bounds occur; no vector or matrix norm is involved."
+      "Only scalar absolute value |·| and ULP spacing are used; no vector or matrix norm appears in the result. [PDF pp. 14-15, printed pp. 396-397, anchors: Lemma 4 proof bounds]"
     ],
     "constants_and_indexing": [
-      "[PDF p. 14, printed p. 396, anchor: equations (17) and (18)] Input and output indices run exactly from 1 through 3; the intermediate FourSum decomposition uses s1 and s_i' for i=2,3,4.",
-      "[PDF p. 14, printed p. 396, anchor: equation (17)] The TwoProduct residual constant is exactly 1/2 and the inequality is non-strict: |t_l|≤(1/2)ulp(x2·x3).",
-      "[PDF p. 15, printed p. 397, anchor: intermediate bounds in the proof] Under the proof normalization, |s2'|≤(1/2)β^(2p), |s3'|≤(1/2)β^(2p), and |s4'|≤(1/2)β^p.",
-      "[PDF p. 15, printed p. 397, anchor: verification of condition (7)] The exact coefficient used in condition (7) is the ceiling ⌈β^p−β/2⌉, not a floor; the proof obtains |s3'|≤⌈β^p−β/2⌉β^e(s2') for a suitable representation of s2'.",
-      "[PDF p. 15, printed p. 397, anchor: final-add bound] The proof uses |s3''|≤(1/2)β^p and |s4'|≤(1/2)β^p, hence |s3''+s4'|≤β^p, all with non-strict inequalities."
+      "Equation (18) sums and multiplies over exactly i=1,2,3: Σ_{i=1}^3s_i=Π_{i=1}^3x_i. [PDF p. 14, printed p. 396, anchor: equation (18)]",
+      "The four-term identity uses unprimed s_1 and primed s'_2,s'_3,s'_4: s_1+Σ_{i=2}^4s'_i=Π_{i=1}^3x_i. [PDF p. 14, printed p. 396, anchor: consequence of equation (17)]",
+      "The proof's key non-strict bounds include |t_l|≤(1/2)β^p, |s'_2|≤(1/2)β^{2p}, |s'_3|≤(1/2)β^{2p}, and |s'_4|≤(1/2)β^p after normalization. [PDF pp. 14-15, printed pp. 396-397, anchor: ordered bounds in Lemma 4 proof]",
+      "The condition-(7) constant is ⌈β^p−β/2⌉, not β^p−⌈β/2⌉ and not a floor; the ceiling has scope over the complete difference. [PDF pp. 5 and 15, printed pp. 387 and 397, anchors: condition (7) and its Lemma 4 instantiation]",
+      "The final proof bounds are |s''_3|≤(1/2)β^p and |s''_3+s'_4|≤(1/2)β^p+(1/2)β^p≤β^p. [PDF p. 15, printed p. 397, anchor: final-add bounds]"
     ],
     "higher_order_terms": [
-      "[PDF p. 14, printed p. 396, anchor: equation (18)] There are no omitted terms, asymptotic terms, or big-O remainders: the conclusion is an exact finite identity."
+      "Equation (18) is exact and contains no big-O term, omitted remainder, or higher-order correction. [PDF p. 14, printed p. 396, anchor: equation (18)]"
     ],
     "exceptional_values": [
-      "[PDF p. 2, printed p. 384, anchor: equation (1)] F is a set of finite real floating-point values; NaNs and signed infinities are not members of the modeled domain.",
-      "[PDF p. 9, printed p. 391, anchor: Section 4 standing assumptions] Overflow is excluded.",
-      "[PDF p. 14, printed p. 396, anchor: Lemma 4 hypothesis] Underflow errors are excluded specifically within FourSumThreeProduct.",
-      "[PDF p. 14, printed p. 396, anchor: proof of Lemma 4] Zero inputs and the case x1x2x3=0 are not excluded."
+      "Overflow is excluded by the standing Section 4 convention. [PDF p. 9, printed p. 391, anchor: Section 4 standing conventions]",
+      "Lemma 4 explicitly excludes underflow errors within FourSumThreeProduct. [PDF p. 14, printed p. 396, anchor: Lemma 4 hypothesis]",
+      "The zero-product case x_1x_2x_3=0 is included and declared trivial in the proof. [PDF p. 14, printed p. 396, anchor: proof normalization paragraph]",
+      "NaNs and infinities are not given semantics in the cited model; F is defined as finite real values m·β^e. [PDF p. 2, printed p. 384, anchor: equation (1)]"
     ]
   },
   "undebatable_constraints": [
-    "[PDF pp. 13–14, printed pp. 395–396, anchors: algorithm listings] The algorithm must use exactly three TwoProduct calls with product order (x2,x3), (x1,t_h), and (x1,t_l), followed by FastTwoSum(s2',s3') and the addition s3''⊕s4'.",
-    "[PDF p. 14, printed p. 396, anchor: equation (18)] The required result is exact equality s1+s2+s3=x1x2x3, not an approximation bound on a rounded total.",
-    "[PDF pp. 9 and 14, printed pp. 391 and 396, anchors: standing assumptions and Lemma 4] Absence of overflow is inherited, and absence of underflow errors inside FourSumThreeProduct is an explicit hypothesis.",
-    "[PDF pp. 14–15, printed pp. 396–397, anchors: condition (7) discussion and proof] The ordinary FastTwoSum is used without a β∈{2,3} restriction and without magnitude or ULP ordering of s2',s3'.",
-    "[PDF p. 15, printed p. 397, anchor: verification of condition (7)] Any formal reconstruction of the merge condition must preserve the ceiling ⌈β^p−β/2⌉ and the existential choice of a representation of s2'.",
-    "[PDF p. 15, printed p. 397, anchor: final paragraph of the proof] The final operation s3''⊕s4' must be represented as exact under the proved bound, not merely nearest-rounded with a nonzero error.",
-    "[PDF p. 14, printed p. 396, anchor: equation (17)] TwoProduct high values are computed rounded products, while the associated high-plus-low sums equal exact real products.",
-    "[PDF p. 14, printed p. 396, anchor: proof normalization] The normalization ulp(x_i)=1 and integrality bounds are proof-local and must not be imposed as hypotheses on the original inputs."
+    "The result must expose exactly three output terms s_1,s_2,s_3 whose real sum equals the exact product x_1x_2x_3. [PDF p. 14, printed p. 396, anchor: equation (18)]",
+    "All three TwoProduct calls and their operand order must be preserved: (x_2,x_3), then (x_1,t_h), then (x_1,t_l). [PDF p. 13, printed p. 395, anchor: FourSumThreeProduct]",
+    "The middle merge must be FastTwoSum(s'_2,s'_3), returning s_2 and s''_3; swapping inputs or dropping the primes changes the stated algorithm. [PDF p. 14, printed p. 396, anchor: ThreeProduct line 2]",
+    "Condition (7) is established for a feasible representation of s'_2 and uses the non-strict inequality |s'_3|≤⌈β^p−β/2⌉β^{e(s'_2)}. [PDF p. 15, printed p. 397, anchor: condition (7) proof]",
+    "The final operation is the rounded addition s_3←s''_3⊕s'_4, and the proof concludes that this particular addition is exact. [PDF pp. 14-15, printed pp. 396-397, anchors: ThreeProduct line 3 and final proof sentence]",
+    "The Lemma 4 hypothesis is absence of underflow errors within FourSumThreeProduct, while absence of overflow is inherited from Section 4. [PDF pp. 9 and 14, printed pp. 391 and 396, anchors: Section 4 convention and Lemma 4]",
+    "No β∈{2,3} restriction may be added to Lemma 4; the passage explicitly states that condition (7) permits arbitrary base β within the paper's model. [PDF p. 14, printed p. 396, anchor: paragraph preceding ThreeProduct]",
+    "The conclusion is an exact equality, not an approximation bounded by ULPs. [PDF p. 14, printed p. 396, anchor: equation (18)]"
   ],
   "ambiguities": [
     {
-      "issue": "[PDF p. 14, printed p. 396, anchor: Lemma 4 hypothesis] The phrase 'absence of underflow errors' is not formally defined in this passage.",
-      "evidence": "[PDF pp. 13–14, printed pp. 395–396, anchors: TwoProduct paragraph and Lemma 4] The surrounding prose first says TwoProduct is error-free if neither underflow nor overflow occurs, while Lemma 4 uses the narrower wording 'absence of underflow errors within the FourSumThreeProduct call.'",
-      "impact": "[PDF p. 14, printed p. 396, anchor: Lemma 4] A formalization should preserve the stated no-underflow-error condition or separately justify strengthening it to absence of every underflow event."
+      "issue": "The phrase absence of underflow errors is not formally defined in the cited passage.",
+      "evidence": "The general TwoProduct discussion says neither underflow nor overflow occurs, Lemma 4 says absence of underflow errors within FourSumThreeProduct, and the proof's scaling sentence says provided overflow and underflow do not occur. [PDF pp. 13-14, printed pp. 395-396, anchors: TwoProduct paragraph, Lemma 4, and scaling paragraph]",
+      "impact": "A formalization should preserve the lemma's explicit wording and should not silently equate it with either total absence of underflow events or merely exact behavior in an underflow range."
     },
     {
-      "issue": "[PDF pp. 13–14, printed pp. 395–396, anchors: TwoProduct introduction and equation (17)] The internal implementation variant of TwoProduct is not specified.",
-      "evidence": "[PDF p. 13, printed p. 395, anchor: TwoProduct introduction] The paper identifies TwoProduct as a known algorithm and supplies its behavioral contract, but does not select an FMA-based, splitting-based, or other concrete implementation.",
-      "impact": "[PDF pp. 13–14, printed pp. 395–396, anchors: TwoProduct contract] The source contract constrains TwoProduct by its rounded-high, exact-decomposition, and half-ULP properties rather than by a particular instruction sequence."
+      "issue": "The concrete implementation of TwoProduct is not specified in Section 4.2.",
+      "evidence": "The paper cites prior algorithms and states the output contract, but displays only calls to TwoProduct rather than its internal operations. [PDF pp. 13-14, printed pp. 395-396, anchors: TwoProduct paragraph and equation (17)]",
+      "impact": "The source contract determines the high-product and exact-residual properties, but not a particular split-based, FMA-based, or other implementation."
     },
     {
-      "issue": "[PDF p. 2, printed p. 384, anchor: nearest-rounding definition] Tie-breaking for rounding to nearest is unspecified.",
-      "evidence": "[PDF p. 2, printed p. 384, anchor: nearest-rounding inequality] fl(r) is required only to be at least as close to r as every f∈F; no ties-to-even or ties-away convention is named.",
-      "impact": "[PDF pp. 14–15, printed pp. 396–397, anchor: Lemma 4 proof] The claimed exactness must hold independently of which nearest value is chosen in a tie."
+      "issue": "Nearest-rounding ties are left unspecified.",
+      "evidence": "Nearest rounding is defined solely by the minimum-distance inequality, with no tie-to-even or other tie rule. [PDF p. 2, printed p. 384, anchor: nearest-rounding definition]",
+      "impact": "A formal model may choose any nearest result at a tie, but the faithfulness claim must not depend on a specific IEEE tie-breaking mode absent from the passage."
     },
     {
-      "issue": "[PDF pp. 3 and 15, printed pp. 385 and 397, anchors: multiple representations and condition (7) proof] The exponent e(s2') used to establish the FastTwoSum condition is representation-dependent.",
-      "evidence": "[PDF p. 15, printed p. 397, anchor: representation of s2'] The proof states that there exists a representation of s2' satisfying β^e(s2')≥ulp(t_h), consistent with the earlier non-uniqueness of floating-point representations.",
-      "impact": "[PDF p. 15, printed p. 397, anchor: condition (7)] A formalization must use an existentially suitable representation or prove that its chosen exponent convention supplies the required inequality."
+      "issue": "Lemma 4 does not syntactically restate x_1,x_2,x_3∈F or the domains of β and p.",
+      "evidence": "Those types and parameters are inherited from equation (1), Section 4's conventions, and the displayed floating-point procedures. [PDF pp. 2, 9, and 14, printed pp. 384, 391, and 396, anchors: equation (1), Section 4 conventions, and Lemma 4]",
+      "impact": "A standalone formal statement must add the inherited floating-point typing without adding stronger normalization, positivity, or base restrictions not stated by the source."
     }
   ],
-  "contract_plain_english": "[PDF pp. 9 and 13–15, printed pp. 391 and 395–397, anchors: Section 4 assumptions, ThreeProduct listing, Lemma 4, and its proof] For any three scalar floating-point inputs, under nearest-rounded arithmetic, no overflow, and no underflow errors in the three-call FourSumThreeProduct stage, ThreeProduct first obtains the standard four-term exact decomposition, merges its middle two terms with ordinary FastTwoSum, and exactly adds the merge residual to the fourth term. No base restriction or magnitude ordering is required. The three returned floating-point numbers have an exact real sum equal to x1x2x3, with no omitted error term."
+  "contract_plain_english": "For three floating-point inputs, run three TwoProduct transformations to obtain an exact four-term expansion of x_1x_2x_3. Merge the middle terms s'_2 and s'_3 with FastTwoSum. The proof establishes the exact condition |s'_3|≤⌈β^p−β/2⌉β^{e(s'_2)} for a feasible representation of s'_2, so this merge is error-free for arbitrary base β. The remaining residual s''_3 and s'_4 have an exact sum lying in F, making the final rounded addition exact. Consequently, under Section 4's no-overflow convention and Lemma 4's absence-of-underflow-errors assumption for FourSumThreeProduct, the three returned values satisfy s_1+s_2+s_3=x_1x_2x_3 exactly. [PDF pp. 9 and 13-15, printed pp. 391 and 395-397, anchors: Section 4 conventions, equations (17)-(18), condition (7) proof, and final exact addition]"
 }

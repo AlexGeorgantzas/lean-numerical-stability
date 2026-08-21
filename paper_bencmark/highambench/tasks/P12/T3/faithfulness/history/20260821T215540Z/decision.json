@@ -1,0 +1,70 @@
+{
+  "accepted": false,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "not-faithful-weaker",
+  "completed_at_utc": "2026-08-15T09:18:47.646456+00:00",
+  "findings": [
+    {
+      "category": "hypothesis-domain-narrowing",
+      "impact": "The formal theorem excludes legitimate non-overflowing, non-underflowing ThreeProduct executions and therefore does not establish the full benchmark result.",
+      "lean_evidence": "P12TwoProductExecution.mk additionally assumes representability of two high-envelope endpoints and universal grid preservation, while P12ThreeProductExecution.mk adds merge candidate and exponent-grid premises.",
+      "paper_evidence": "Lemma 4 assumes no underflow errors within FourSumThreeProduct together with Section 4's standing absence of overflow; TwoProduct is specified by its rounded-high and exact high-plus-low behavioral contract.",
+      "severity": "major"
+    },
+    {
+      "category": "ceiling-constant",
+      "impact": "For odd radices the written bounds differ. The Lean bound is stronger but derivable from the proof's preceding half-beta^p bound, so this does not cause the failed implication; it is nevertheless not a literal preservation of the displayed condition.",
+      "lean_evidence": "The target states beta^p-beta/2 without a ceiling.",
+      "paper_evidence": "Equation (7), visually inspected on printed page 387 and reused on printed page 397, has ceiling brackets around beta^p-beta/2.",
+      "severity": "minor"
+    },
+    {
+      "category": "workflow-hypothesis-strengthening",
+      "impact": "Valid source executions can lack a run witness, so the translated theorem proves the result on a strictly narrower domain.",
+      "paper_evidence": "Printed pp. 395-396 constrain the three TwoProduct calls by rounded-high, exact-decomposition, half-ULP, and range assumptions; no signed-q representability, global lattice-preservation, or nearby-candidate premise is imposed.",
+      "severity": "major",
+      "translation_evidence": "Every product certificate requires representability of q and -q and universal lattice preservation, while the run additionally requires a lattice witness and a representable candidate near a2+a3."
+    },
+    {
+      "category": "underflow-model",
+      "impact": "The source range hypothesis is replaced by a stronger behavioral certificate rather than preserved as stated.",
+      "paper_evidence": "Lemma 4 explicitly assumes absence of underflow errors within FourSumThreeProduct.",
+      "severity": "major",
+      "translation_evidence": "No underflow predicate appears; exact product decompositions and several auxiliary properties are assumed directly."
+    },
+    {
+      "category": "ceiling-coefficient",
+      "impact": "For odd bases the translated bound is strictly stronger and does not literally reconstruct condition (7), although the paper's preceding B/2 estimate entails it on admitted runs.",
+      "paper_evidence": "Visual inspection of equations (7) and the bound on printed p. 397 confirms ceiling(beta^p-beta/2).",
+      "severity": "major",
+      "translation_evidence": "The conclusion uses B-beta_R/2 without ceiling."
+    },
+    {
+      "category": "rounding-mode",
+      "impact": "The abstract execution model is broader than the stated Section 4 rounding model, even though Theorem 2's faithful-subtraction result supports the same exact merge.",
+      "paper_evidence": "Section 4 states that arithmetic operations are evaluated in rounding to nearest unless otherwise specified.",
+      "severity": "minor",
+      "translation_evidence": "The merge additions are nearest, but the two subtractions are constrained only by NoBetween faithful rounding."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean proposition proves the result only for inhabitants of P12ThreeProductExecution. Valid paper executions need not produce such an inhabitant. For beta=2, p=3, emin=0, emax=2, the exact product of 1 and 7 is 7 with no underflow or overflow, but P12TwoProductExecution.mk requires the envelope 8*1*7=56 and its negative to be representable even though the largest magnitude in F is 28. Thus the Lean theorem cannot recover the paper's universal domain.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "Restricting the paper's argument to traces admitted by run yields every target conjunct: Theorem 2 proves the two subtraction equalities and exact merge, printed page 397 proves the final addition exact, and equation (18) gives the final product identity. The target's unceiled bound follows from the paper's earlier |s3'| <= (1/2)beta^p beta^e estimate and beta^p >= beta.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-weaker",
+    "roundtrip": "not-faithful-weaker"
+  },
+  "rationale": "The trace fields, algorithm order, exact-versus-computed distinction, rounding predicates, and final exact identity faithfully reflect the paper. The decisive defect is the antecedent: run assumes several proof-supporting envelope, grid, and candidate facts that the paper neither states nor equates with absence of underflow and overflow. Those assumptions exclude concrete valid paper executions. Consequently the paper result specializes to and supports the Lean target, including its stronger unceiled merge bound, but the Lean proposition cannot recover the full paper theorem. It is therefore not-faithful-weaker rather than faithful-stronger.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P12-T3"
+}

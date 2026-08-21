@@ -3,939 +3,987 @@
   "role": "direct-judge",
   "task_id": "P12-T3",
   "paper_sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1",
-  "dossier_sha256": "d01ca8d8ef1c3bf6d93187ae236790d86a965b77994cd2c708e633e54edfb30f",
+  "dossier_sha256": "30ab023ccc6e97a29bbc5697e1b679521bcf0aa6a8eb35077427084951dd4f09",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "HighamBench.P12RadixFormat",
-      "interpretation": "A bundled radix format containing beta, precision, and finite exponent bounds together with their validity proofs.",
-      "effect_on_target": "The theorem is universally quantified over one such scalar floating-point format.",
-      "paper_match": "This corresponds to the paper's format parameters beta, p, emin, and emax.",
+      "interpretation": "A finite radix format carrying the base, precision, and inclusive exponent range.",
+      "effect_on_target": "It indexes every representation, rounding relation, and execution witness.",
+      "paper_match": "Its constructor supplies exactly the paper's integer base, positive mantissa length, and ordered finite exponent range.",
       "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.P12RadixFormat.betaR",
-      "interpretation": "The natural-number radix cast into the real numbers.",
-      "effect_on_target": "It supplies the real beta in the merge coefficient beta/2.",
-      "paper_match": "The paper uses the integer radix beta as a real arithmetic quantity in the same way.",
+      "name": "HighamBench.P12RadixFormat.condition7Ceiling",
+      "interpretation": "The real cast of the natural number beta^p minus floor(beta/2).",
+      "effect_on_target": "It is the coefficient in the existential condition-(7) conclusion.",
+      "paper_match": "Visual inspection confirms the ceiling encloses beta^p-beta/2. For integral beta, ceil(beta^p-beta/2)=beta^p-floor(beta/2), so the definition is correct.",
       "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.P12RadixFormat.mantissaBound",
-      "interpretation": "The real number beta raised to the natural precision p.",
-      "effect_on_target": "It is the strict mantissa bound and the beta^p term in the merge inequality.",
-      "paper_match": "It matches beta^p in equation (1), equation (7), and the proof of Lemma 4.",
+      "name": "HighamBench.P12RadixFormat.scale",
+      "interpretation": "The real integer power beta^e.",
+      "effect_on_target": "It interprets representation exponents and all grid-scale bounds.",
+      "paper_match": "This is the paper's beta^{e(f)} scale for possibly negative feasible exponents.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.P12RadixFormat.scale",
-      "interpretation": "The integer power beta^e represented as a real number.",
-      "effect_on_target": "It supplies the representation-dependent scale multiplying the merge coefficient.",
-      "paper_match": "It matches the paper's beta^e factors for integer exponents.",
+      "name": "HighamBench.P12Representation",
+      "interpretation": "Proof data that a real number has an equation-(1) representation in the format.",
+      "effect_on_target": "The target existential chooses such a representation of a2.",
+      "paper_match": "Its constructor enforces an integral mantissa, strict mantissa bounds, inclusive exponent bounds, and x=m*beta^e.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HighamBench.P12Representation",
-      "interpretation": "A dependent witness that a real value has a legal integer-mantissa, integer-exponent representation in the format.",
-      "effect_on_target": "The first conclusion existentially chooses a representation of a2.",
-      "paper_match": "This captures membership in F and the paper's noncanonical representations.",
+      "name": "HighamBench.P12Representation.exponent",
+      "interpretation": "The chosen exponent field of a representation, without normalization or uniqueness.",
+      "effect_on_target": "The target may choose any feasible exponent of a2 for condition (7).",
+      "paper_match": "The paper explicitly permits multiple representations and uses a chosen feasible e(f).",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "HighamBench.P12Representation.exponent",
-      "interpretation": "The integer exponent field of a particular representation witness.",
-      "effect_on_target": "The merge bound depends on the exponent of the existentially chosen representation of a2.",
-      "paper_match": "This preserves the representation-dependent e(s2') used on printed page 397.",
-      "status": "pass"
-    },
-    {
-      "id": "D007",
       "name": "HighamBench.P12ThreeProductExecution",
-      "interpretation": "An inductively witnessed ThreeProduct execution whose sole constructor packages the three TwoProduct calls, the FastTwoSum call, the final rounded addition, and numerous range, grid, and candidate assumptions.",
-      "effect_on_target": "It is the theorem's complete antecedent and determines which algorithm executions are covered.",
-      "paper_match": "The call order matches the paper, but the relation is narrower than the paper's no-overflow and no-underflow-error assumptions because it additionally requires high-envelope representability, grid conditions, and candidate-range witnesses.",
+      "interpretation": "An indexed witness that a trace satisfies the three product splits, FastTwoSum operations, overflow conditions, and final rounded addition.",
+      "effect_on_target": "The theorem is conditional on existence of this witness.",
+      "paper_match": "The constructor's second product split is overconstrained, so this relation omits valid paper executions.",
       "status": "fail"
     },
     {
-      "id": "D008",
+      "id": "D007",
       "name": "HighamBench.P12ThreeProductTrace",
-      "interpretation": "A ten-real record holding th, tl, s1, a2, a3, a4, s2, t, r, and s3.",
-      "effect_on_target": "It supplies every named intermediate and output used in the proposition.",
-      "paper_match": "The ten fields correspond exactly to the intermediates in FourSumThreeProduct and ThreeProduct.",
+      "interpretation": "A ten-real record for th, tl, s1, a2, a3, a4, s2, t, r, and s3.",
+      "effect_on_target": "It stores all FourSumThreeProduct and ThreeProduct intermediates.",
+      "paper_match": "The field sequence faithfully represents the displayed algorithms.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "HighamBench.P12ThreeProductTrace.a2",
+      "interpretation": "The fourth trace field, representing the paper's s'_2.",
+      "effect_on_target": "It is the first FastTwoSum input and appears in the condition-(7) witness.",
+      "paper_match": "The identification with s'_2 is correct.",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "HighamBench.P12ThreeProductTrace.a2",
-      "interpretation": "The fourth trace field.",
-      "effect_on_target": "It is the first input to FastTwoSum and the value receiving the existential representation.",
-      "paper_match": "It corresponds to the paper's s2'.",
+      "name": "HighamBench.P12ThreeProductTrace.a3",
+      "interpretation": "The fifth trace field, representing the paper's s'_3.",
+      "effect_on_target": "It is the second FastTwoSum input.",
+      "paper_match": "The identification with s'_3 is correct.",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HighamBench.P12ThreeProductTrace.a3",
-      "interpretation": "The fifth trace field.",
-      "effect_on_target": "It is the second FastTwoSum input and the quantity bounded by the merge condition.",
-      "paper_match": "It corresponds to the paper's s3'.",
+      "name": "HighamBench.P12ThreeProductTrace.a4",
+      "interpretation": "The sixth trace field, representing the paper's s'_4.",
+      "effect_on_target": "It is added to the FastTwoSum residual in the final operation.",
+      "paper_match": "The identification with s'_4 is correct.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "HighamBench.P12ThreeProductTrace.a4",
-      "interpretation": "The sixth trace field.",
-      "effect_on_target": "It is added to the FastTwoSum residual to obtain s3.",
-      "paper_match": "It corresponds to the paper's s4'.",
+      "name": "HighamBench.P12ThreeProductTrace.r",
+      "interpretation": "The ninth trace field, representing the paper's s''_3.",
+      "effect_on_target": "It is the FastTwoSum residual and first operand of the final addition.",
+      "paper_match": "The identification with s''_3 is correct.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "HighamBench.P12ThreeProductTrace.r",
-      "interpretation": "The ninth trace field.",
-      "effect_on_target": "It is the FastTwoSum residual and first operand of the final addition.",
-      "paper_match": "It corresponds to the paper's s3''.",
+      "name": "HighamBench.P12ThreeProductTrace.s1",
+      "interpretation": "The first retained product-expansion output.",
+      "effect_on_target": "It is the first term in the final exact three-term sum.",
+      "paper_match": "It matches s1 from the second TwoProduct call.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "HighamBench.P12ThreeProductTrace.s1",
-      "interpretation": "The third trace field.",
-      "effect_on_target": "It is the leading ThreeProduct output in the exact final identity.",
-      "paper_match": "It corresponds to s1 in equations (17) and (18).",
+      "name": "HighamBench.P12ThreeProductTrace.s2",
+      "interpretation": "The rounded sum returned by FastTwoSum.",
+      "effect_on_target": "It is the second final output and participates in the exact merge.",
+      "paper_match": "It matches the paper's s2.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "HighamBench.P12ThreeProductTrace.s2",
-      "interpretation": "The seventh trace field.",
-      "effect_on_target": "It is the rounded high output of FastTwoSum and the second final component.",
-      "paper_match": "It corresponds to s2 in ThreeProduct.",
+      "name": "HighamBench.P12ThreeProductTrace.s3",
+      "interpretation": "The rounded result of r+a4.",
+      "effect_on_target": "It is the third final output.",
+      "paper_match": "It matches the paper's final s3.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "HighamBench.P12ThreeProductTrace.s3",
-      "interpretation": "The tenth trace field.",
-      "effect_on_target": "It is the rounded final-add output and the third final component.",
-      "paper_match": "It corresponds to s3 in ThreeProduct.",
+      "name": "HighamBench.P12ThreeProductTrace.t",
+      "interpretation": "The first FastTwoSum subtraction result s2-a2.",
+      "effect_on_target": "Its exactness is an explicit target conjunct.",
+      "paper_match": "It matches FastTwoSum line 2.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "HighamBench.P12ThreeProductTrace.t",
-      "interpretation": "The eighth trace field.",
-      "effect_on_target": "It records the first subtraction in FastTwoSum.",
-      "paper_match": "It corresponds to t = s2 minus s2' in the FastTwoSum listing.",
+      "name": "HighamBench.P12RadixFormat.beta",
+      "interpretation": "The natural-number radix.",
+      "effect_on_target": "It determines powers, mantissa bounds, and the condition-(7) coefficient.",
+      "paper_match": "The format constructor enforces beta>=2, as assumed by the paper.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "HighamBench.P12RadixFormat.beta",
-      "interpretation": "The natural-number radix stored in a format.",
-      "effect_on_target": "It determines betaR, powers, representability, and all range constants.",
-      "paper_match": "The paper assumes an integer floating-point base beta at least two.",
+      "name": "HighamBench.P12RadixFormat.betaR",
+      "interpretation": "The radix cast from Nat to Real.",
+      "effect_on_target": "It is the base of real-valued integer powers.",
+      "paper_match": "This is the intended real interpretation of the integral radix.",
       "status": "pass"
     },
     {
       "id": "D018",
       "name": "HighamBench.P12RadixFormat.mk",
-      "interpretation": "The format constructor requires beta at least two, positive precision, and emin no greater than emax.",
-      "effect_on_target": "These constraints hold for every universally quantified format.",
-      "paper_match": "They are the standard validity conditions implicit in the paper's floating-point system.",
+      "interpretation": "The format constructor requiring beta>=2, precision>0, and emin<=emax.",
+      "effect_on_target": "It rules out malformed parameter choices.",
+      "paper_match": "These are the inherited parameter constraints of the paper's floating-point model, without a beta in {2,3} restriction.",
       "status": "pass"
     },
     {
       "id": "D019",
       "name": "HighamBench.P12RadixFormat.precision",
-      "interpretation": "The natural-number mantissa length p stored in the format.",
-      "effect_on_target": "It determines beta^p.",
-      "paper_match": "It matches the paper's mantissa length p.",
+      "interpretation": "The natural mantissa length p.",
+      "effect_on_target": "It controls beta^p and all half-ULP estimates.",
+      "paper_match": "It matches the paper's positive mantissa length.",
       "status": "pass"
     },
     {
       "id": "D020",
       "name": "HighamBench.P12Representation.mk",
-      "interpretation": "A representation consists of integer m and e with -beta^p < m < beta^p, emin <= e <= emax, and x = m beta^e.",
-      "effect_on_target": "It gives exact semantics to format membership and the existential representation in the conclusion.",
-      "paper_match": "It reproduces equation (1), including strict mantissa bounds and inclusive exponent bounds.",
+      "interpretation": "A constructor for x=m*beta^e with integral m,e and the equation-(1) bounds.",
+      "effect_on_target": "It gives the exact semantics of representability and the existential witness.",
+      "paper_match": "Its strict mantissa and inclusive exponent inequalities match equation (1).",
       "status": "pass"
     },
     {
       "id": "D021",
       "name": "HighamBench.P12ThreeProductExecution.mk",
-      "interpretation": "The constructor links the exact three TwoProduct calls, FastTwoSum, and final nearest addition, but also requires merge-grid, candidate-range, final-range, and total-exponent premises.",
-      "effect_on_target": "All these constructor fields become hidden hypotheses through the run binder.",
-      "paper_match": "The algorithm linkage is correct, but the additional candidate and grid premises are not hypotheses of Lemma 4 and are not shown equivalent to absence of range errors.",
+      "interpretation": "The sole constructor linking three TwoProduct calls, FastTwoSum(a2,a3), and the final rounded addition.",
+      "effect_on_target": "It fixes the call order and supplies all hypotheses used by the target.",
+      "paper_match": "Call order and explicit noOverflow fields are correct, but the second TwoProduct is passed rightGrid=e(x2)+e(x3), causing D049 to require |a2|<=0.5*beta^p*beta^{e1+e2+e3}, whereas the paper permits a scale as large as 0.5*beta^{2p} times that grid.",
       "status": "fail"
     },
     {
       "id": "D022",
       "name": "HighamBench.P12ThreeProductTrace.mk",
-      "interpretation": "The trace constructor stores ten real values in the order th, tl, s1, a2, a3, a4, s2, t, r, s3.",
-      "effect_on_target": "It fixes the meanings of all trace projections.",
-      "paper_match": "The ordering faithfully follows the two algorithm listings.",
+      "interpretation": "The constructor placing ten real values in the algorithmic field order.",
+      "effect_on_target": "It permits traces with all displayed intermediates.",
+      "paper_match": "Its ordering matches FourSumThreeProduct followed by ThreeProduct.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "HighamBench.P12FastTwoSumExecution",
-      "interpretation": "A proposition asserting that a three-field trace is an execution of FastTwoSum for x and y.",
-      "effect_on_target": "It constrains the merge of a2 and a3 inside the ThreeProduct run.",
-      "paper_match": "Its constructor implements the ordinary FastTwoSum operation pattern used by the paper.",
+      "name": "HighamBench.P12LeastRepresentation",
+      "interpretation": "A representation whose exponent is no greater than that of every other feasible representation.",
+      "effect_on_target": "Execution witnesses carry least representations for inputs and split outputs.",
+      "paper_match": "This is harmless proof data: every representable value has a least exponent because feasible exponents form a nonempty finite interval. It does not normalize or restrict the value.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "HighamBench.P12LeastRepresentation",
-      "interpretation": "A representation witness whose exponent is no greater than the exponent of every other representation of the same value.",
-      "effect_on_target": "Inputs and TwoProduct outputs carry canonical least-exponent witnesses used for grid and scale premises.",
-      "paper_match": "The paper permits multiple representations; selecting the least exponent is legitimate and does not exclude any representable value because the exponent range is finite.",
+      "name": "HighamBench.P12LeastRepresentation.toP12Representation",
+      "interpretation": "The underlying ordinary representation of a least representation.",
+      "effect_on_target": "It exposes the value's least exponent to grid calculations.",
+      "paper_match": "It preserves the equation-(1) representation exactly.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "HighamBench.P12LeastRepresentation.toP12Representation",
-      "interpretation": "The underlying ordinary representation of a least representation.",
-      "effect_on_target": "It exposes exponents and format membership throughout the execution relation.",
-      "paper_match": "It is a transparent projection with the same representation semantics as equation (1).",
+      "name": "HighamBench.P12NearestFastTwoSumExecution",
+      "interpretation": "A relation asserting nearest rounding for the FastTwoSum addition and both subtractions.",
+      "effect_on_target": "It links s2, t, and r to a2 and a3.",
+      "paper_match": "Section 4 uses nearest rounding for all three operations, which is at least the faithful subtraction required by Theorem 2.",
       "status": "pass"
     },
     {
       "id": "D026",
       "name": "HighamBench.P12RadixFormat.emax",
-      "interpretation": "The maximum legal integer exponent.",
-      "effect_on_target": "It bounds representations and defines noOverflow.",
-      "paper_match": "It matches emax in equation (1).",
+      "interpretation": "The inclusive maximum representation exponent.",
+      "effect_on_target": "It determines maximum representable magnitude.",
+      "paper_match": "It matches equation (1).",
       "status": "pass"
     },
     {
       "id": "D027",
       "name": "HighamBench.P12RadixFormat.emin",
-      "interpretation": "The minimum legal integer exponent.",
-      "effect_on_target": "It bounds representations and several execution-grid premises.",
-      "paper_match": "It matches emin in equation (1).",
+      "interpretation": "The inclusive minimum representation exponent.",
+      "effect_on_target": "It determines the minimum grid and representation range.",
+      "paper_match": "It matches equation (1).",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "HighamBench.P12RadixFormat.noOverflow",
-      "interpretation": "The strict condition |z| < beta^p beta^emax.",
-      "effect_on_target": "It is required for product, merge, subtraction, and final-add exact operands inside run.",
-      "paper_match": "The strict endpoint agrees with the finite range boundary used by the paper; the broader problem is the additional range surrogates elsewhere in run.",
+      "name": "HighamBench.P12RadixFormat.mantissaBound",
+      "interpretation": "The real number beta^p.",
+      "effect_on_target": "It supplies the strict representation bound and product-grid estimates.",
+      "paper_match": "It is the correct equation-(1) mantissa bound.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "HighamBench.P12ThreeProductTrace.mergeTrace",
-      "interpretation": "The FastTwoSum trace formed from s2, t, and r.",
-      "effect_on_target": "It identifies the merge execution outputs with the main trace fields.",
-      "paper_match": "It exactly maps FastTwoSum's s, t, and e to s2, t, and s3''.",
+      "name": "HighamBench.P12RadixFormat.noOverflow",
+      "interpretation": "The predicate |z|<=maxValue on an exact operation result.",
+      "effect_on_target": "It excludes overflow for each modeled product, FastTwoSum operation, and final addition.",
+      "paper_match": "This is a faithful exact-range encoding of Section 4's absence-of-overflow convention.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "HighamBench.P12ThreeProductTrace.th",
-      "interpretation": "The first trace field.",
-      "effect_on_target": "It is the rounded high result of TwoProduct(x2,x3).",
-      "paper_match": "It corresponds to th in equation (17).",
+      "name": "HighamBench.P12ThreeProductTrace.mergeTrace",
+      "interpretation": "The FastTwoSum subtrace {s=s2,t=t,e=r}.",
+      "effect_on_target": "It connects the outer trace to the merge relation.",
+      "paper_match": "The field linkage exactly matches FastTwoSum(s'_2,s'_3).",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "HighamBench.P12ThreeProductTrace.tl",
-      "interpretation": "The second trace field.",
-      "effect_on_target": "It is the exact low residual from TwoProduct(x2,x3).",
-      "paper_match": "It corresponds to tl in equation (17).",
+      "name": "HighamBench.P12ThreeProductTrace.th",
+      "interpretation": "The rounded high product of x2*x3.",
+      "effect_on_target": "It is the right operand of the second TwoProduct call.",
+      "paper_match": "It matches t_h in equation (17).",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "HighamBench.P12TwoProductExecution",
-      "interpretation": "A dependent execution witness for a rounded high and exact low product decomposition, with semantics supplied by its constructor.",
-      "effect_on_target": "Three inhabitants are mandatory before a ThreeProduct run can be supplied.",
-      "paper_match": "The core contract matches TwoProduct, but the constructor adds conditions beyond the behavioral contract stated in the paper, narrowing the target domain.",
-      "status": "fail"
-    },
-    {
-      "id": "D033",
-      "name": "HighamBench.P12TwoProductExecution.highRep",
-      "interpretation": "The least representation of a TwoProduct high result stored in its execution witness.",
-      "effect_on_target": "It supplies the high-product exponent used in later calls and residual bounds.",
-      "paper_match": "The high value is a member of F in the paper, so such a least representation exists.",
+      "name": "HighamBench.P12ThreeProductTrace.tl",
+      "interpretation": "The exact residual of the first product split.",
+      "effect_on_target": "It is the right operand of the third TwoProduct call.",
+      "paper_match": "It matches t_l in equation (17).",
       "status": "pass"
     },
     {
+      "id": "D033",
+      "name": "HighamBench.P12TwoProductExecution",
+      "interpretation": "An indexed witness for a rounded high product, exact low residual, range conditions, and two low-term bounds.",
+      "effect_on_target": "Three such witnesses define FourSumThreeProduct.",
+      "paper_match": "Through its sole constructor and D049, it becomes overrestrictive when the target instantiates the second call with the raw x2*x3 grid.",
+      "status": "fail"
+    },
+    {
       "id": "D034",
-      "name": "HighamBench.P12TwoProductExecution.lowRep",
-      "interpretation": "The least representation of a TwoProduct low result stored in its execution witness.",
-      "effect_on_target": "It permits the low result to be passed as a represented operand to the third call.",
-      "paper_match": "The low residual is a floating-point value in the paper's TwoProduct contract.",
+      "name": "HighamBench.P12TwoProductExecution.highRep",
+      "interpretation": "The least representation carried for a TwoProduct high output.",
+      "effect_on_target": "It represents t_h for the second call and supplies high-output spacing.",
+      "paper_match": "Existence is harmless proof data for the representable high result.",
       "status": "pass"
     },
     {
       "id": "D035",
-      "name": "HighamBench.p12IntegerMultiple",
-      "interpretation": "The assertion that x = k beta^e for some integer k.",
-      "effect_on_target": "It supplies grid-alignment premises for product outputs and the FastTwoSum high result.",
-      "paper_match": "It faithfully expresses the integer-multiple facts used in the proof, although run assumes some such facts instead of deriving them.",
+      "name": "HighamBench.P12TwoProductExecution.lowRep",
+      "interpretation": "The least representation carried for a TwoProduct low output.",
+      "effect_on_target": "It represents t_l for the third call.",
+      "paper_match": "Existence is harmless proof data for the representable residual.",
       "status": "pass"
     },
     {
       "id": "D036",
       "name": "HighamBench.p12NearestInFormat",
-      "interpretation": "Nearest rounding relative to the format's representable set.",
-      "effect_on_target": "It constrains product highs, the FastTwoSum addition, and the final addition.",
-      "paper_match": "It matches nearest rounding and leaves ties unspecified, as does the paper.",
+      "interpretation": "Nearest rounding relative to the format's representable values.",
+      "effect_on_target": "It models every displayed rounded operation.",
+      "paper_match": "It implements the paper's unspecified-tie nearest-rounding relation.",
       "status": "pass"
     },
     {
       "id": "D037",
-      "name": "HighamBench.p12Representable",
-      "interpretation": "A real is representable when its P12Representation type is nonempty.",
-      "effect_on_target": "It defines the candidate set for nearest and faithful rounding and several range premises.",
-      "paper_match": "It is equivalent to membership in F.",
+      "name": "HighamBench.P12FastTwoSumTrace",
+      "interpretation": "A three-real record for FastTwoSum's s, t, and e.",
+      "effect_on_target": "It records the middle merge.",
+      "paper_match": "It has exactly the displayed FastTwoSum intermediates.",
       "status": "pass"
     },
     {
       "id": "D038",
-      "name": "HighamBench.P12FastTwoSumExecution.mk",
-      "interpretation": "The FastTwoSum constructor requires nearest rounding of x+y, faithful rounding of s-x and y-t, and no overflow for all three exact operands.",
-      "effect_on_target": "It records the computed merge without assuming its error-free conclusion.",
-      "paper_match": "Theorem 2 explicitly permits nearest addition and faithful subtraction; nearest subtraction from the Section 4 convention is a special case.",
+      "name": "HighamBench.P12FastTwoSumTrace.mk",
+      "interpretation": "The constructor for the s, t, e FastTwoSum trace.",
+      "effect_on_target": "It builds the merge subtrace from s2, t, and r.",
+      "paper_match": "The field order is correct.",
       "status": "pass"
     },
     {
       "id": "D039",
-      "name": "HighamBench.P12FastTwoSumTrace",
-      "interpretation": "A record of the FastTwoSum values s, t, and e.",
-      "effect_on_target": "It provides the three merge fields embedded in the ThreeProduct trace.",
-      "paper_match": "It matches the three assignments in the FastTwoSum listing.",
+      "name": "HighamBench.P12LeastRepresentation.mk",
+      "interpretation": "A representation paired with proof that its exponent is minimal.",
+      "effect_on_target": "It supplies canonical grid witnesses without changing numerical values.",
+      "paper_match": "The finite exponent range guarantees such proof data for every paper-representable value.",
       "status": "pass"
     },
     {
       "id": "D040",
-      "name": "HighamBench.P12FastTwoSumTrace.mk",
-      "interpretation": "The constructor for a FastTwoSum trace from three real values.",
-      "effect_on_target": "It fixes the field ordering s, t, e.",
-      "paper_match": "The order is faithful to the algorithm.",
+      "name": "HighamBench.P12NearestFastTwoSumExecution.mk",
+      "interpretation": "The constructor requiring nearest results for x+y, s-x, and y-t.",
+      "effect_on_target": "It models all three FastTwoSum instructions in order.",
+      "paper_match": "It exactly matches the Section 4 rounding mode and displayed operand order.",
       "status": "pass"
     },
     {
       "id": "D041",
-      "name": "HighamBench.P12LeastRepresentation.mk",
-      "interpretation": "The constructor pairs a representation with proof that its exponent is minimal among all representations.",
-      "effect_on_target": "It gives precise meaning to every least-representation premise in run.",
-      "paper_match": "It formalizes a permissible canonical choice among the paper's multiple representations.",
+      "name": "HighamBench.P12RadixFormat.maxValue",
+      "interpretation": "The largest magnitude (beta^p-1)*beta^emax.",
+      "effect_on_target": "It is the threshold used by noOverflow.",
+      "paper_match": "It is the largest finite magnitude allowed by equation (1).",
       "status": "pass"
     },
     {
       "id": "D042",
       "name": "HighamBench.P12TwoProductExecution.mk",
-      "interpretation": "The constructor requires represented high and low values, nearest high rounding, exact high-plus-low decomposition, product range conditions, a residual bound, representable high-envelope endpoints, and universal grid preservation.",
-      "effect_on_target": "Its high-envelope and grid fields are mandatory hypotheses for each of the three product calls.",
-      "paper_match": "Nearest high and exact decomposition match equation (17), but high-envelope representability and universal grid preservation are not part of the paper's TwoProduct contract. For beta=2, p=3, emin=0, emax=2, left=1 and right=7 have an exact non-overflowing product 7, while the required envelope 8*1*7=56 is not in F.",
+      "interpretation": "The constructor bundling representable high and low outputs, nearest high rounding, D049, product range, and a high-scale low bound.",
+      "effect_on_target": "It is the only way to witness each delegated TwoProduct call.",
+      "paper_match": "Nearest high rounding, exact decomposition, representability, and the high-scale bound are paper-derived, but the mandatory D049 grid bound is not valid for the target's second instantiation.",
       "status": "fail"
     },
     {
       "id": "D043",
       "name": "HighamBench.p12Nearest",
-      "interpretation": "The rounded value is representable and is at least as close to the exact value as every representable candidate.",
-      "effect_on_target": "It supplies the actual nearest-rounding semantics under p12NearestInFormat.",
-      "paper_match": "This is the paper's nearest-rounding definition and permits either result in a tie.",
+      "interpretation": "A rounded value is representable and no farther from the exact real value than any representable candidate.",
+      "effect_on_target": "It gives relational nearest rounding with arbitrary tie choice.",
+      "paper_match": "This is the paper's nearest-rounding definition.",
       "status": "pass"
     },
     {
       "id": "D044",
-      "name": "HighamBench.P12FastTwoSumTrace.e",
-      "interpretation": "The third FastTwoSum trace field.",
-      "effect_on_target": "Through mergeTrace it is the ThreeProduct residual r.",
-      "paper_match": "It is the error output e, renamed s3'' in ThreeProduct.",
+      "name": "HighamBench.p12Representable",
+      "interpretation": "Nonempty equation-(1) representation data for a real value.",
+      "effect_on_target": "It defines the candidate set used by nearest rounding.",
+      "paper_match": "It denotes exactly membership in F.",
       "status": "pass"
     },
     {
       "id": "D045",
-      "name": "HighamBench.P12FastTwoSumTrace.s",
-      "interpretation": "The first FastTwoSum trace field.",
-      "effect_on_target": "Through mergeTrace it is s2.",
-      "paper_match": "It is the rounded sum output s.",
+      "name": "HighamBench.P12FastTwoSumTrace.e",
+      "interpretation": "The third FastTwoSum trace field.",
+      "effect_on_target": "It is identified with the outer trace residual r.",
+      "paper_match": "It matches the paper's FastTwoSum error output s''_3.",
       "status": "pass"
     },
     {
       "id": "D046",
-      "name": "HighamBench.P12FastTwoSumTrace.t",
-      "interpretation": "The second FastTwoSum trace field.",
-      "effect_on_target": "Through mergeTrace it is the intermediate t.",
-      "paper_match": "It is the first subtraction result t.",
+      "name": "HighamBench.P12FastTwoSumTrace.s",
+      "interpretation": "The first FastTwoSum trace field.",
+      "effect_on_target": "It is identified with s2.",
+      "paper_match": "It matches the rounded sum output.",
       "status": "pass"
     },
     {
       "id": "D047",
-      "name": "HighamBench.p12FaithfulInFormat",
-      "interpretation": "The rounded value is representable and no representable value lies strictly between it and the exact value.",
-      "effect_on_target": "It constrains both FastTwoSum subtractions.",
-      "paper_match": "This matches the paper's definition of faithful rounding.",
+      "name": "HighamBench.P12FastTwoSumTrace.t",
+      "interpretation": "The second FastTwoSum trace field.",
+      "effect_on_target": "It is identified with the intermediate t.",
+      "paper_match": "It matches FastTwoSum line 2.",
       "status": "pass"
     },
     {
       "id": "D048",
-      "name": "And",
-      "interpretation": "Logical conjunction.",
-      "effect_on_target": "It combines the six conclusions and combines execution premises.",
-      "paper_match": "It has the standard logical meaning required to state all properties simultaneously.",
+      "name": "HighamBench.P12RadixFormat.maxMantissa",
+      "interpretation": "The real cast of beta^p-1.",
+      "effect_on_target": "It determines maxValue.",
+      "paper_match": "It is the largest integral mantissa allowed by the strict equation-(1) bound.",
       "status": "pass"
     },
     {
       "id": "D049",
-      "name": "DivInvMonoid.toDiv",
-      "interpretation": "The division operation inherited from the real multiplicative structure.",
-      "effect_on_target": "It interprets betaR/2 and other real halves.",
-      "paper_match": "All relevant divisors are the nonzero real number 2, so this is ordinary exact real division.",
-      "status": "pass"
+      "name": "HighamBench.P12TwoProductNoUnderflowError",
+      "interpretation": "A conjunction of exact high+low decomposition, nonzero-product preservation, and |low|<=0.5*beta^p*beta^productGrid.",
+      "effect_on_target": "For the second split, productGrid is e1+e2+e3, so it imposes an extra small bound on a2.",
+      "paper_match": "The exactness and nonzero clauses are compatible with no underflow, but the grid bound is false for the second call. The paper explicitly allows |s'_2| up to 0.5*beta^{2p} after unit-grid scaling.",
+      "status": "fail"
     },
     {
       "id": "D050",
-      "name": "Eq",
-      "interpretation": "Propositional equality.",
-      "effect_on_target": "It states exact subtraction identities, merge equality, final-add exactness, and the final product identity.",
-      "paper_match": "These are exact real equalities, as in equations (17), (18), and the proof.",
-      "status": "pass"
+      "name": "HighamBench.P12TwoProductNoUnderflowError._proof_1",
+      "interpretation": "Typeclass evidence that the natural literal 2 is at least two.",
+      "effect_on_target": "It only elaborates the denominator in a real half factor.",
+      "paper_match": "It has no independent numerical-paper content.",
+      "status": "not-applicable"
     },
     {
       "id": "D051",
-      "name": "Exists",
-      "interpretation": "Dependent existential quantification.",
-      "effect_on_target": "It chooses a representation of a2 and appears in range premises.",
-      "paper_match": "It preserves the paper's existential choice of a suitable representation of s2'.",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "It combines the six target conclusions and contract fields.",
+      "paper_match": "Ordinary conjunction preserves all stated conclusions.",
       "status": "pass"
     },
     {
       "id": "D052",
-      "name": "HAdd.hAdd",
-      "interpretation": "Typeclass-dispatched addition, instantiated here as real or integer addition.",
-      "effect_on_target": "Real instances form exact sums; integer instances combine exponents.",
-      "paper_match": "At the target surface it denotes exact real addition, not a computed floating-point addition.",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "It states exact real decompositions and the final identity.",
+      "paper_match": "The paper's error-free conclusions are exact equalities.",
       "status": "pass"
     },
     {
       "id": "D053",
-      "name": "HDiv.hDiv",
-      "interpretation": "Typeclass-dispatched division, instantiated here as real division.",
-      "effect_on_target": "It forms the exact constants beta/2 and 1/2.",
-      "paper_match": "This matches the exact real constants used by the paper.",
+      "name": "Exists",
+      "interpretation": "Dependent existential quantification.",
+      "effect_on_target": "It chooses a feasible representation of a2.",
+      "paper_match": "Condition (7) requires existence of an appropriate representation.",
       "status": "pass"
     },
     {
       "id": "D054",
-      "name": "HMul.hMul",
-      "interpretation": "Typeclass-dispatched multiplication, instantiated here as real multiplication.",
-      "effect_on_target": "It forms scales, bounds, and the exact triple product.",
-      "paper_match": "It denotes exact real multiplication in the conclusion, matching the unadorned paper operator.",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition.",
+      "effect_on_target": "At Real and Int instances it denotes ordinary addition.",
+      "paper_match": "The instantiated operations have the intended exact real or exponent-addition semantics.",
       "status": "pass"
     },
     {
       "id": "D055",
-      "name": "HSub.hSub",
-      "interpretation": "Typeclass-dispatched subtraction, instantiated here as real subtraction.",
-      "effect_on_target": "It forms the merge coefficient and exact subtraction identities.",
-      "paper_match": "The target equalities use exact subtraction; computed subtraction is separately represented by the execution relation.",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "At Real it denotes exact real multiplication in specifications.",
+      "paper_match": "It correctly states exact products and scale coefficients.",
       "status": "pass"
     },
     {
       "id": "D056",
-      "name": "LE.le",
-      "interpretation": "Typeclass-dispatched non-strict order.",
-      "effect_on_target": "It states the merge bound and all range conditions.",
-      "paper_match": "The target's inequality is non-strict, as are equation (7) and the displayed bounds.",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "At Real it denotes exact real subtraction inside operation specifications.",
+      "paper_match": "It correctly represents the exact quantities being rounded.",
       "status": "pass"
     },
     {
       "id": "D057",
-      "name": "Nat",
-      "interpretation": "The natural numbers.",
-      "effect_on_target": "They type the radix, precision, and numeric literals used in elaboration.",
-      "paper_match": "The paper's base and mantissa length are positive integer parameters.",
+      "name": "LE.le",
+      "interpretation": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "It states condition-(7), range, and low-error bounds.",
+      "paper_match": "The cited paper bounds are non-strict.",
       "status": "pass"
     },
     {
       "id": "D058",
-      "name": "Nat.instAtLeastTwoHAddOfNat",
-      "interpretation": "An elaboration theorem supplying evidence that a successor natural literal is at least two.",
-      "effect_on_target": "It helps construct the real literal 2.",
-      "paper_match": "It has no independent mathematical effect beyond the exact numeral 2.",
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "Inputs, intermediates, scales, and exact equalities are real-valued.",
+      "paper_match": "The paper interprets floating-point values as finite real numbers.",
       "status": "pass"
     },
     {
       "id": "D059",
-      "name": "Nat.instNeZeroSucc",
-      "interpretation": "An elaboration theorem that every natural successor is nonzero.",
-      "effect_on_target": "It supports construction of the numeral 2 instance.",
-      "paper_match": "It introduces no semantic deviation.",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary real addition.",
+      "effect_on_target": "It interprets all exact sums.",
+      "paper_match": "It matches the paper's unevaluated real sums.",
       "status": "pass"
     },
     {
       "id": "D060",
-      "name": "OfNat.ofNat",
-      "interpretation": "Interpretation of a natural-number literal in a target type.",
-      "effect_on_target": "It interprets 0, 1, and 2 in the real, integer, and natural contexts.",
-      "paper_match": "The literals retain their ordinary exact values.",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group structure of the reals.",
+      "effect_on_target": "It supports subtraction and absolute value.",
+      "paper_match": "It contributes standard real arithmetic only.",
       "status": "pass"
     },
     {
       "id": "D061",
-      "name": "Real",
-      "interpretation": "The mathematical real-number type.",
-      "effect_on_target": "Inputs, trace values, exact operations, and inequalities all live in the reals.",
-      "paper_match": "The paper models F as a finite subset of the real numbers and uses exact real identities.",
+      "name": "Real.instLE",
+      "interpretation": "The ordinary real non-strict order.",
+      "effect_on_target": "It interprets all real inequalities.",
+      "paper_match": "It matches scalar inequalities in the paper.",
       "status": "pass"
     },
     {
       "id": "D062",
-      "name": "Real.instAdd",
-      "interpretation": "Ordinary real addition.",
-      "effect_on_target": "It interprets every unadorned addition in the proposition.",
-      "paper_match": "It matches the paper's exact addition in identities.",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "It interprets exact products and scaled bounds.",
+      "paper_match": "It matches the paper's exact real multiplication.",
       "status": "pass"
     },
     {
       "id": "D063",
-      "name": "Real.instAddGroup",
-      "interpretation": "The additive-group structure on the reals.",
-      "effect_on_target": "It supports subtraction and absolute value.",
-      "paper_match": "It gives standard real arithmetic with no floating-point reinterpretation.",
+      "name": "Real.instSub",
+      "interpretation": "Real subtraction defined by addition of the negation.",
+      "effect_on_target": "It interprets t=s2-a2 and r=a3-t.",
+      "paper_match": "It is ordinary exact real subtraction.",
       "status": "pass"
     },
     {
       "id": "D064",
-      "name": "Real.instDivInvMonoid",
-      "interpretation": "The real multiplicative, inverse, division, and integer-power structure.",
-      "effect_on_target": "It interprets exact real division and integer powers.",
-      "paper_match": "With beta at least two and divisor 2, it matches the paper's ordinary real operations.",
+      "name": "Real.lattice",
+      "interpretation": "The lattice order structure of the reals.",
+      "effect_on_target": "It supports the absolute-value definition.",
+      "paper_match": "It introduces no nonstandard semantics.",
       "status": "pass"
     },
     {
       "id": "D065",
-      "name": "Real.instLE",
-      "interpretation": "The standard non-strict order on real numbers.",
-      "effect_on_target": "It orders absolute values, bounds, and nearest-rounding distances.",
-      "paper_match": "It matches the paper's real inequalities.",
+      "name": "abs",
+      "interpretation": "Scalar absolute value max(a,-a).",
+      "effect_on_target": "It measures condition-(7), low errors, and overflow magnitudes.",
+      "paper_match": "The paper uses scalar absolute value throughout.",
       "status": "pass"
     },
     {
       "id": "D066",
-      "name": "Real.instMul",
-      "interpretation": "Ordinary real multiplication.",
-      "effect_on_target": "It interprets the exact product and bound multiplication.",
-      "paper_match": "It matches unadorned multiplication in the paper.",
+      "name": "instHAdd",
+      "interpretation": "The homogeneous-addition adapter for an Add instance.",
+      "effect_on_target": "It routes Real and Int additions to their standard operations.",
+      "paper_match": "It has no semantic deviation.",
       "status": "pass"
     },
     {
       "id": "D067",
-      "name": "Real.instNatCast",
-      "interpretation": "The canonical cast of natural numbers into the reals.",
-      "effect_on_target": "It casts beta, p-related powers, and numeric literals.",
-      "paper_match": "It preserves their exact integer values.",
+      "name": "instHMul",
+      "interpretation": "The homogeneous-multiplication adapter for a Mul instance.",
+      "effect_on_target": "It routes Real multiplication to ordinary multiplication.",
+      "paper_match": "It has no semantic deviation.",
       "status": "pass"
     },
     {
       "id": "D068",
-      "name": "Real.instSub",
-      "interpretation": "Ordinary real subtraction defined as addition of the negation.",
-      "effect_on_target": "It interprets t, r, distance, and coefficient expressions.",
-      "paper_match": "It is exact subtraction, distinct from the computed subtraction encoded by FastTwoSumExecution.",
+      "name": "instHSub",
+      "interpretation": "The homogeneous-subtraction adapter for a Sub instance.",
+      "effect_on_target": "It routes Real subtraction to ordinary subtraction.",
+      "paper_match": "It has no semantic deviation.",
       "status": "pass"
     },
     {
       "id": "D069",
-      "name": "Real.lattice",
-      "interpretation": "The lattice order structure on the real numbers.",
-      "effect_on_target": "It supports the generic absolute-value definition.",
-      "paper_match": "It yields standard scalar real absolute value.",
+      "name": "DivInvMonoid.toZPow",
+      "interpretation": "The integer-power instance supplied by a division-inverse monoid.",
+      "effect_on_target": "It interprets betaR^e for negative and positive integer exponents.",
+      "paper_match": "Integer powers are required for the paper's full exponent range.",
       "status": "pass"
     },
     {
       "id": "D070",
-      "name": "abs",
-      "interpretation": "The scalar absolute value max(a,-a).",
-      "effect_on_target": "It measures a3 and all rounding and range errors.",
-      "paper_match": "It matches the scalar absolute value used throughout the paper.",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched division.",
+      "effect_on_target": "It forms real factors such as 1/2 and natural beta/2 where separately instantiated.",
+      "paper_match": "Its instantiated uses have the intended meanings.",
       "status": "pass"
     },
     {
       "id": "D071",
-      "name": "instHAdd",
-      "interpretation": "The homogeneous-addition adapter for an Add instance.",
-      "effect_on_target": "It dispatches real addition to Real.instAdd and integer addition to Int.instAdd.",
-      "paper_match": "It is elaboration infrastructure and does not alter operator meaning.",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "It forms natural beta^p and real beta^e.",
+      "paper_match": "The two instances match the paper's powers.",
       "status": "pass"
     },
     {
       "id": "D072",
-      "name": "instHDiv",
-      "interpretation": "The homogeneous-division adapter for a Div instance.",
-      "effect_on_target": "It dispatches division to real division.",
-      "paper_match": "It is semantically transparent.",
+      "name": "Int",
+      "interpretation": "The mathematical integer type.",
+      "effect_on_target": "It represents mantissas, exponents, and summed grids.",
+      "paper_match": "Equation (1) uses integer mantissas and exponents.",
       "status": "pass"
     },
     {
       "id": "D073",
-      "name": "instHMul",
-      "interpretation": "The homogeneous-multiplication adapter for a Mul instance.",
-      "effect_on_target": "It dispatches multiplication to real multiplication.",
-      "paper_match": "It is semantically transparent.",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number exponentiation in a monoid.",
+      "effect_on_target": "It supplies beta^p for natural beta and p.",
+      "paper_match": "It is standard integral exponentiation.",
       "status": "pass"
     },
     {
       "id": "D074",
-      "name": "instHSub",
-      "interpretation": "The homogeneous-subtraction adapter for a Sub instance.",
-      "effect_on_target": "It dispatches subtraction to real subtraction.",
-      "paper_match": "It is semantically transparent.",
+      "name": "Nat",
+      "interpretation": "The natural-number type.",
+      "effect_on_target": "It represents beta and positive precision.",
+      "paper_match": "This matches the paper's integral radix and mantissa length.",
       "status": "pass"
     },
     {
       "id": "D075",
-      "name": "instOfNatAtLeastTwo",
-      "interpretation": "The generic natural-cast instance used for literals at least two.",
-      "effect_on_target": "It constructs the real numeral 2 in divisions.",
-      "paper_match": "It preserves the exact constant 2.",
+      "name": "Nat.cast",
+      "interpretation": "Casting a natural number into a target number system.",
+      "effect_on_target": "It embeds beta, beta^p, and the ceiling coefficient into Real.",
+      "paper_match": "The casts preserve the intended integer values.",
       "status": "pass"
     },
     {
       "id": "D076",
-      "name": "instOfNatNat",
-      "interpretation": "The canonical interpretation of a natural literal as itself.",
-      "effect_on_target": "It supports elaboration of the numeric literals.",
-      "paper_match": "It has no independent semantic effect.",
+      "name": "Nat.instDiv",
+      "interpretation": "Euclidean natural-number division.",
+      "effect_on_target": "It makes beta/2 equal floor(beta/2) in condition7Ceiling.",
+      "paper_match": "Combined with subtraction from integral beta^p, this exactly realizes ceil(beta^p-beta/2).",
       "status": "pass"
     },
     {
       "id": "D077",
-      "name": "DivInvMonoid.toZPow",
-      "interpretation": "The integer-power operation inherited from a division-inverse monoid.",
-      "effect_on_target": "It interprets beta^e when e is an integer.",
-      "paper_match": "Because beta is positive, it is the ordinary integer power beta^e used by the paper.",
+      "name": "Nat.instMonoid",
+      "interpretation": "The multiplicative monoid structure of natural numbers.",
+      "effect_on_target": "It supports beta^p.",
+      "paper_match": "It is standard natural multiplication and exponentiation.",
       "status": "pass"
     },
     {
       "id": "D078",
-      "name": "HPow.hPow",
-      "interpretation": "Typeclass-dispatched exponentiation.",
-      "effect_on_target": "It forms beta^p and beta^e.",
-      "paper_match": "The selected natural- and integer-power instances match the paper's powers.",
+      "name": "OfNat.ofNat",
+      "interpretation": "Interpretation of numeric literals.",
+      "effect_on_target": "It supplies literals 0, 1, and 2 in constraints and formulas.",
+      "paper_match": "The literals retain their standard values.",
       "status": "pass"
     },
     {
       "id": "D079",
-      "name": "Int",
-      "interpretation": "The mathematical integer type.",
-      "effect_on_target": "It types exponents, mantissas, and grid coefficients.",
-      "paper_match": "Equation (1) quantifies both mantissa and exponent over the integers.",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The real multiplicative and inverse structure, including integer powers.",
+      "effect_on_target": "It supports negative exponent scales and real division.",
+      "paper_match": "It provides standard real arithmetic.",
       "status": "pass"
     },
     {
       "id": "D080",
-      "name": "Monoid.toNatPow",
-      "interpretation": "The natural-power operation inherited from a monoid.",
-      "effect_on_target": "It interprets beta raised to the natural precision p.",
-      "paper_match": "It is ordinary beta^p.",
+      "name": "Real.instNatCast",
+      "interpretation": "The standard embedding of naturals into reals.",
+      "effect_on_target": "It interprets radix-derived natural quantities as reals.",
+      "paper_match": "It preserves the intended exact integer values.",
       "status": "pass"
     },
     {
       "id": "D081",
-      "name": "Nat.cast",
-      "interpretation": "The generic natural-number cast.",
-      "effect_on_target": "It casts beta and numeric literals into the reals.",
-      "paper_match": "It preserves exact integer values.",
+      "name": "instHDiv",
+      "interpretation": "The homogeneous-division adapter.",
+      "effect_on_target": "It dispatches real and natural division in the definitions.",
+      "paper_match": "The relevant instances are standard.",
       "status": "pass"
     },
     {
       "id": "D082",
-      "name": "Real.instMonoid",
-      "interpretation": "The multiplicative monoid structure on the reals.",
-      "effect_on_target": "It supports natural and integer powers.",
-      "paper_match": "It yields standard real multiplication and powers.",
+      "name": "instHPow",
+      "interpretation": "The homogeneous-power adapter.",
+      "effect_on_target": "It dispatches natural and integer exponentiation.",
+      "paper_match": "The resulting power operations have the intended semantics.",
       "status": "pass"
     },
     {
       "id": "D083",
-      "name": "instHPow",
-      "interpretation": "The homogeneous-power adapter for a Pow instance.",
-      "effect_on_target": "It dispatches beta powers to natural or integer exponentiation.",
-      "paper_match": "It is elaboration infrastructure with no altered semantics.",
+      "name": "instOfNatNat",
+      "interpretation": "The standard natural-number literal instance.",
+      "effect_on_target": "It interprets format-side literals.",
+      "paper_match": "It has no semantic deviation.",
       "status": "pass"
     },
     {
       "id": "D084",
-      "name": "Int.cast",
-      "interpretation": "The canonical cast of an integer into a target ring.",
-      "effect_on_target": "It embeds representation mantissas and grid coefficients into the reals.",
-      "paper_match": "It matches exact integer-valued mantissas and coefficients.",
+      "name": "instSubNat",
+      "interpretation": "Truncated natural subtraction.",
+      "effect_on_target": "It computes beta^p-floor(beta/2) and beta^p-1.",
+      "paper_match": "No truncation occurs because beta>=2 and p>0, so both subtractions equal their integer counterparts.",
       "status": "pass"
     },
     {
       "id": "D085",
-      "name": "Int.instAdd",
-      "interpretation": "Ordinary integer addition.",
-      "effect_on_target": "It combines representation exponents in grid premises.",
-      "paper_match": "Exponent products use ordinary integer exponent addition.",
+      "name": "Int.cast",
+      "interpretation": "The standard embedding of integers into a target number system.",
+      "effect_on_target": "It embeds representation mantissas into Real.",
+      "paper_match": "It preserves the signed integral mantissa.",
       "status": "pass"
     },
     {
       "id": "D086",
-      "name": "Int.instLEInt",
-      "interpretation": "The standard non-strict order on integers.",
-      "effect_on_target": "It enforces exponent bounds and minimality.",
-      "paper_match": "It matches the inclusive exponent inequalities in equation (1).",
+      "name": "Int.instAdd",
+      "interpretation": "Ordinary integer addition.",
+      "effect_on_target": "It sums operand grid exponents.",
+      "paper_match": "Powers multiply by adding exponents, as intended.",
       "status": "pass"
     },
     {
       "id": "D087",
-      "name": "LT.lt",
-      "interpretation": "Typeclass-dispatched strict order.",
-      "effect_on_target": "It states strict mantissa and noOverflow bounds.",
-      "paper_match": "It preserves the strict bounds appearing in equation (1) and the finite range endpoint.",
+      "name": "Int.instLEInt",
+      "interpretation": "Ordinary integer non-strict order.",
+      "effect_on_target": "It enforces exponent ranges and minimality.",
+      "paper_match": "It matches the paper's exponent inequalities.",
       "status": "pass"
     },
     {
       "id": "D088",
-      "name": "Ne",
-      "interpretation": "Inequality defined as the negation of equality.",
-      "effect_on_target": "It guards product and exponent-range premises so that zero remains included.",
-      "paper_match": "The paper treats the zero-product case separately and does not exclude it.",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-dispatched strict order.",
+      "effect_on_target": "It expresses strict mantissa bounds and positive precision.",
+      "paper_match": "The mantissa inequalities in equation (1) are strict.",
       "status": "pass"
     },
     {
       "id": "D089",
       "name": "Neg.neg",
       "interpretation": "Typeclass-dispatched negation.",
-      "effect_on_target": "It forms lower mantissa bounds and negative envelope candidates.",
-      "paper_match": "It is ordinary real negation.",
+      "effect_on_target": "It forms the lower mantissa bound and absolute values.",
+      "paper_match": "It is ordinary arithmetic negation.",
       "status": "pass"
     },
     {
       "id": "D090",
       "name": "Real.instIntCast",
-      "interpretation": "The canonical cast of integers into the reals.",
-      "effect_on_target": "It interprets integer mantissas and grid coefficients as exact reals.",
-      "paper_match": "It matches the real value m beta^e in equation (1).",
+      "interpretation": "The standard embedding of integers into reals.",
+      "effect_on_target": "It interprets signed mantissas.",
+      "paper_match": "It matches m in the real value m*beta^e.",
       "status": "pass"
     },
     {
       "id": "D091",
       "name": "Real.instLT",
-      "interpretation": "The standard strict order on real numbers.",
-      "effect_on_target": "It interprets strict mantissa, nearest-candidate, and overflow comparisons.",
-      "paper_match": "It matches the paper's strict real inequalities.",
+      "interpretation": "The ordinary strict order on reals.",
+      "effect_on_target": "It interprets strict real mantissa inequalities.",
+      "paper_match": "It matches equation (1).",
       "status": "pass"
     },
     {
       "id": "D092",
       "name": "Real.instNeg",
       "interpretation": "Ordinary real negation.",
-      "effect_on_target": "It forms -beta^p and negative range candidates.",
-      "paper_match": "It matches the paper's signed scalar model.",
+      "effect_on_target": "It supports signed bounds, subtraction, and absolute value.",
+      "paper_match": "It introduces no semantic difference.",
       "status": "pass"
     },
     {
       "id": "D093",
-      "name": "Real.instZero",
-      "interpretation": "The real zero.",
-      "effect_on_target": "It appears in guarded nonzero premises and zero executions.",
-      "paper_match": "Zero is an element of F and is explicitly included by Lemma 4.",
+      "name": "instLENat",
+      "interpretation": "The ordinary non-strict order on naturals.",
+      "effect_on_target": "It enforces beta>=2.",
+      "paper_match": "This is the intended radix restriction.",
       "status": "pass"
     },
     {
       "id": "D094",
-      "name": "Zero.toOfNat0",
-      "interpretation": "The conversion from a Zero instance to interpretation of the numeral 0.",
-      "effect_on_target": "It elaborates real zero in nonzero guards.",
-      "paper_match": "It preserves ordinary zero.",
+      "name": "instLTNat",
+      "interpretation": "The ordinary strict order on naturals.",
+      "effect_on_target": "It enforces 0<precision.",
+      "paper_match": "This is the intended positive mantissa length.",
       "status": "pass"
     },
     {
       "id": "D095",
-      "name": "instLENat",
-      "interpretation": "The standard non-strict order on natural numbers.",
-      "effect_on_target": "It interprets the constructor condition 2 <= beta.",
-      "paper_match": "It matches the required radix lower bound.",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative monoid structure of the reals.",
+      "effect_on_target": "It supports natural and integer powers.",
+      "paper_match": "It is standard real multiplication.",
       "status": "pass"
     },
     {
       "id": "D096",
-      "name": "instLTNat",
-      "interpretation": "The standard strict order on natural numbers.",
-      "effect_on_target": "It interprets the constructor condition 0 < precision.",
-      "paper_match": "A mantissa length is positive in the paper's model.",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "The division operation obtained from the real inverse structure.",
+      "effect_on_target": "It interprets real halves.",
+      "paper_match": "It gives exact real division by 2.",
       "status": "pass"
     },
     {
       "id": "D097",
-      "name": "Nonempty",
-      "interpretation": "Propositional existence of an inhabitant without exposing the witness.",
-      "effect_on_target": "It turns P12Representation into the proposition that a value belongs to F.",
-      "paper_match": "This is adequate for set membership in the paper's floating-point set.",
-      "status": "pass"
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "interpretation": "Typeclass evidence that a successor natural is at least two under the relevant premise.",
+      "effect_on_target": "It supports elaboration of the real literal 2.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
     },
     {
       "id": "D098",
-      "name": "One.toOfNat1",
-      "interpretation": "The conversion from a One instance to interpretation of the numeral 1.",
-      "effect_on_target": "It constructs the real numerator 1 in the half-ULP bound.",
-      "paper_match": "It preserves the exact constant 1.",
-      "status": "pass"
+      "name": "Nat.instNeZeroSucc",
+      "interpretation": "Typeclass evidence that a successor natural is nonzero.",
+      "effect_on_target": "It supports construction of literal-instance evidence.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
     },
     {
       "id": "D099",
-      "name": "Real.instOne",
-      "interpretation": "The real multiplicative identity.",
-      "effect_on_target": "It interprets the numeral 1 in real fractions.",
-      "paper_match": "It is ordinary real one.",
+      "name": "Nonempty",
+      "interpretation": "A proposition asserting that a type has an inhabitant.",
+      "effect_on_target": "It turns representation data into membership in F without selecting a representation.",
+      "paper_match": "Existence of an equation-(1) representation is exactly representability.",
       "status": "pass"
     },
     {
       "id": "D100",
-      "name": "Not",
-      "interpretation": "Logical negation defined as implication to False.",
-      "effect_on_target": "It defines non-equality and the absence of intervening faithful-rounding candidates.",
-      "paper_match": "It has standard classical propositional meaning.",
-      "status": "pass"
+      "name": "One.toOfNat1",
+      "interpretation": "The generic literal-one instance.",
+      "effect_on_target": "It elaborates the numerator in 1/2.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
     },
     {
       "id": "D101",
-      "name": "Or",
-      "interpretation": "Logical disjunction.",
-      "effect_on_target": "It expresses the two possible orderings of a candidate strictly between exact and rounded values.",
-      "paper_match": "It faithfully formalizes the paper's definition of faithful rounding.",
+      "name": "Real.instOne",
+      "interpretation": "The real multiplicative identity.",
+      "effect_on_target": "It supplies the real numerator one in half factors.",
+      "paper_match": "It is the standard real number 1.",
       "status": "pass"
+    },
+    {
+      "id": "D102",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "A generic cast-based instance for natural literals at least two.",
+      "effect_on_target": "It elaborates the real literal 2.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D103",
+      "name": "Ne",
+      "interpretation": "Inequality defined as the negation of equality.",
+      "effect_on_target": "It states that a nonzero exact product must have a nonzero high result.",
+      "paper_match": "This is a reasonable consequence of the assumed absence of underflow errors.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "Real.instZero",
+      "interpretation": "The real additive identity.",
+      "effect_on_target": "It interprets zero-product and nonzero conditions.",
+      "paper_match": "It is the standard real number 0.",
+      "status": "pass"
+    },
+    {
+      "id": "D105",
+      "name": "Zero.toOfNat0",
+      "interpretation": "The generic literal-zero instance.",
+      "effect_on_target": "It elaborates zero in nonzero conditions.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D106",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "Typeclass evidence that a natural literal is at least two.",
+      "effect_on_target": "It supports numeral elaboration for the denominator 2.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D107",
+      "name": "instAddNat",
+      "interpretation": "Ordinary natural-number addition.",
+      "effect_on_target": "It occurs only in generated numeral-instance evidence.",
+      "paper_match": "It has no independent effect on the numerical statement.",
+      "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The hash-verified PDF is the corrected 2021 publication of Numerische Mathematik 145 (2020), pages 383-403. The inspected passages are equation (1), Section 4, FourSumThreeProduct, Lemma 4, equation (18), and its proof on printed pages 384, 391, and 395-397.",
-      "lean_evidence": "The fixed paper hash matches the inspected file, and the dossier identifies target P12-T3 with the supplied dossier hash.",
-      "reasoning": "The source version and selected ThreeProduct result are unambiguous."
+      "paper_evidence": "The PDF hash matches the supplied locator. The corrected 2020 journal version contains Section 4.2, equations (17)-(18), and Lemma 4 on printed pages 395-397.",
+      "lean_evidence": "The target is P12-T3 and models ThreeProduct, its three TwoProduct calls, the FastTwoSum merge, and final addition.",
+      "reasoning": "The selected source, version, and passage are correct."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "Lemma 4 concerns three scalar inputs x1,x2,x3 in F, four intermediate FourSum terms, the FastTwoSum intermediates, and three scalar outputs.",
-      "lean_evidence": "x1,x2,x3 and all ten trace fields are real; run carries representations for inputs, product outputs, merge outputs, and the final output.",
-      "reasoning": "The scalar types, three-input indexing, and meanings of trace fields agree."
+      "paper_evidence": "Equation (1) uses integral beta,p-related mantissas and exponents, while ThreeProduct takes three floating-point scalar inputs and returns three scalar outputs.",
+      "lean_evidence": "fmt carries beta,p,emin,emax; run carries representability of x1,x2,x3 and all trace fields; trace projections map to the paper's ten intermediates.",
+      "reasoning": "Binder types, scalar dimensions, and field indexing are correct. Least representations are always-available proof data over the finite exponent range."
     },
     {
       "id": "S03",
-      "status": "pass",
-      "paper_evidence": "Printed page 397 chooses a representation of s2' after the product intermediates have been computed, so its exponent may depend on that value.",
-      "lean_evidence": "The existential ra2 occurs inside the universal quantification over fmt, inputs, tr, and run and has type P12Representation fmt tr.a2.",
-      "reasoning": "Witness dependence and quantifier scope are preserved."
+      "status": "fail",
+      "paper_evidence": "Lemma 4 applies to every ThreeProduct execution satisfying its range assumptions; condition (7) existentially chooses a representation of s'_2.",
+      "lean_evidence": "The theorem quantifies over traces only conditionally on P12ThreeProductExecution, whose second split requires the extra D049 grid bound.",
+      "reasoning": "The representation witness has correct dependence, but the run premise narrows the effective universal scope because some valid paper traces have no run witness."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Section 4 assumes nearest arithmetic and generally no overflow; Lemma 4 adds absence of underflow errors within FourSumThreeProduct. It does not assume representable high-envelope endpoints, universal grid preservation, or explicit candidate witnesses.",
-      "lean_evidence": "P12ThreeProductExecution.mk and P12TwoProductExecution.mk require high_envelope_candidates, grid_preserving, merge_high_grid, merge_no_range_error, and several exponent-range premises.",
-      "reasoning": "These are additional antecedents, not consequences exposed by the target, and they strictly narrow the covered executions."
+      "paper_evidence": "Lemma 4 assumes absence of underflow errors within FourSumThreeProduct, while Section 4 generally assumes absence of overflow and nearest rounding.",
+      "lean_evidence": "The run correctly records nearest rounding and operation-specific noOverflow predicates, but also requires |a2|<=0.5*beta^p*beta^{e1+e2+e3}.",
+      "reasoning": "That additional low-grid hypothesis is not implied by the paper's no-underflow assumption or equation (17)."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Equation (18) gives the exact three-term product identity; the proof also establishes exact FastTwoSum subtraction identities, s2+s3''=s2'+s3', and exact final addition s3=s3''+s4'.",
-      "lean_evidence": "The target contains the suitable-representation bound, both subtraction equalities, exact merge equality, exact final-add equality, and the final triple-product equality.",
-      "reasoning": "The selected conclusion and the explicit intermediate conclusions used to prove it are all present."
+      "paper_evidence": "The proof gives the condition-(7) witness, exact FastTwoSum merge, exact final addition, and equation (18).",
+      "lean_evidence": "The target states the witness, both exact subtractions, merge identity, exact final addition, and final three-term product identity; the run contains the four-term split.",
+      "reasoning": "All required conclusions are represented, and the additional intermediate conclusions are paper-derived."
     },
     {
       "id": "S06",
-      "status": "pass",
-      "paper_evidence": "The paper distinguishes F-membership, representation-dependent exponents, nearest rounding, faithful rounding, exact arithmetic, and scalar absolute value.",
-      "lean_evidence": "D001-D101 expose representations, nearest and faithful predicates, execution traces, exact real operators, powers, casts, orders, and absolute value.",
-      "reasoning": "All nontrivial imported operators and local definitions have a determinate interpretation."
+      "status": "fail",
+      "paper_evidence": "For the second TwoProduct call, equation (17) analogously gives |s'_2|<=0.5*ulp(x1*t_h); the proof bounds this by 0.5*beta^{2p} after unit-grid scaling.",
+      "lean_evidence": "D049 defines no-underflow error using 0.5*beta^p*scale(productGrid), and D021 instantiates productGrid=e1+e2+e3 for the second call.",
+      "reasoning": "The imported execution definition gives the second low term the wrong grid scale."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "Circled operations are computed operations, while the identities on printed pages 396-397 use exact real addition and multiplication.",
-      "lean_evidence": "Computed operations are encoded in run through nearest or faithful predicates; every operation in the target equalities is ordinary real arithmetic.",
-      "reasoning": "Rounded values and exact identities are not conflated."
+      "paper_evidence": "The paper distinguishes rounded high products and additions from exact real products, residual decompositions, and unevaluated sums.",
+      "lean_evidence": "p12NearestInFormat models rounded outputs, while ordinary Real operations appear in exact contracts and conclusions.",
+      "reasoning": "Rounded and exact quantities are not conflated."
     },
     {
       "id": "S08",
-      "status": "pass",
-      "paper_evidence": "ThreeProduct performs TwoProduct(x2,x3), TwoProduct(x1,th), TwoProduct(x1,tl), FastTwoSum(s2',s3'), and the final addition s3'' plus s4'.",
-      "lean_evidence": "P12ThreeProductExecution.mk links first, second, third, merge, and final_add in exactly that order and with those operands.",
-      "reasoning": "The statement remains linked to the correct algorithm despite the execution relation's excess premises."
+      "status": "fail",
+      "paper_evidence": "The algorithm calls TwoProduct on (x2,x3), (x1,t_h), and (x1,t_l), then FastTwoSum(s'_2,s'_3), then adds s''_3+s'_4.",
+      "lean_evidence": "D021 preserves this order and operand linkage, but its second-call grid constraint rejects valid executions of that exact algorithm.",
+      "reasoning": "Syntactic linkage is correct, but the execution relation is not extensionally faithful to the paper's valid executions."
     },
     {
       "id": "S09",
-      "status": "not-applicable",
-      "paper_evidence": "Only scalar absolute value and ULP spacing occur; no vector or matrix norm appears.",
-      "lean_evidence": "The target uses only Real absolute value.",
-      "reasoning": "There is no norm-kind or squared-norm distinction to compare."
+      "status": "pass",
+      "paper_evidence": "Lemma 4 uses only scalar absolute values and ULP spacing.",
+      "lean_evidence": "All magnitude predicates use Real absolute value; no vector or matrix norm is introduced.",
+      "reasoning": "Norm semantics match."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "Visual inspection of equation (7) and its use on printed page 397 shows ceiling brackets around beta^p-beta/2; the inequality is non-strict.",
-      "lean_evidence": "The target uses the unrounded real coefficient fmt.mantissaBound - fmt.betaR/2, with no ceiling.",
-      "reasoning": "For odd beta the displayed constants differ by one half. The Lean bound is stronger and follows from the preceding paper bound |s3'| <= (1/2)beta^p beta^e because beta^p >= beta, but it does not literally preserve the paper's stated coefficient."
+      "paper_evidence": "Printed page 397 gives |s'_2|<=0.5*beta^{2p}, while |s'_4|<=0.5*beta^p under the normalized grids. Visual inspection also confirms ceil(beta^p-beta/2) with full ceiling scope.",
+      "lean_evidence": "condition7Ceiling is correct, but D049 applies a 0.5*beta^p total-input-grid bound to a2 as well as the appropriately smaller terms.",
+      "reasoning": "Constants and indices mostly match, but the second low-term scale is missing a factor beta^p."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The model is the finite real set F, with nearest rounding, unspecified ties, no overflow, and no underflow errors in FourSumThreeProduct.",
-      "lean_evidence": "Representability, nearest rounding, faithful subtraction, and finite range are modeled correctly, but run replaces the paper's range assumptions with additional envelope, candidate, and exponent-grid requirements.",
-      "reasoning": "The core floating-point model matches, but the admissible execution model is strictly narrower than the paper's."
+      "paper_evidence": "Section 4 uses nearest rounding, finite F, general beta>=2, no overflow, and Lemma 4's absence of underflow errors in FourSumThreeProduct.",
+      "lean_evidence": "The format, nearest relation, finite values, and explicit noOverflow fields match. The noOverflow fields cover the three rounded products, the FastTwoSum add/sub/sub, and final add. D049 nevertheless strengthens the underflow contract incorrectly for the second product.",
+      "reasoning": "The rounding and overflow model is faithful, but the modeled no-underflow condition is too restrictive."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "Lemma 4 is universal over every ThreeProduct execution satisfying its stated range assumptions.",
-      "lean_evidence": "The conclusion uses correct equality directions and non-strict bounds, but it is conditional on the stronger P12ThreeProductExecution relation.",
-      "reasoning": "The strengthened antecedent makes the formal theorem logically weaker in domain; extra conclusions do not make it a stronger theorem overall."
+      "paper_evidence": "Equation (17) uses a non-strict half-ULP bound at the exact product, and equation (18) is exact equality.",
+      "lean_evidence": "Target equalities and condition-(7) inequality have correct directions and strictness, but the second split adds a strictly stronger low bound at a smaller grid.",
+      "reasoning": "The core conclusions have correct relation strength, but an execution hypothesis has unjustified extra logical strength."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Error-free means exact equality of the unevaluated component sum with the exact product; the merge and final addition have zero additional error.",
-      "lean_evidence": "The target states exact component identities and exact final product equality, not a forward, backward, or relative error estimate.",
-      "reasoning": "The error notion is preserved."
+      "paper_evidence": "Error-free transformation means an exact real identity between output sums and the input product.",
+      "lean_evidence": "The final conclusion is s1+s2+s3=x1*x2*x3 over Real, with exact residual identities.",
+      "reasoning": "No forward, backward, relative, or residual bound is substituted for exactness."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Equation (18) is an exact finite identity with no omitted or asymptotic remainder.",
-      "lean_evidence": "The final Lean equality has no error term or approximation qualifier.",
-      "reasoning": "No higher-order terms are introduced or discarded."
+      "paper_evidence": "Equation (18) is exact and contains no asymptotic or omitted higher-order term.",
+      "lean_evidence": "The target states exact finite equalities only.",
+      "reasoning": "Higher-order-term semantics match."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The paper permits arbitrary scalar inputs in F under the stated absence-of-range-error assumptions and imposes no high-envelope or grid-candidate specialization.",
-      "lean_evidence": "The run relation admits only executions satisfying the extra premises in D021 and D042.",
-      "reasoning": "This is an unclassified and materially narrower specialization, not a faithful formulation of the full paper result."
+      "paper_evidence": "Lemma 4 covers arbitrary supported radix and every valid ThreeProduct execution under the stated range assumptions.",
+      "lean_evidence": "The format keeps arbitrary beta, but the run relation specializes to executions satisfying the erroneous second low-grid bound.",
+      "reasoning": "This is an unacknowledged, behaviorally significant specialization, so it is not an acceptable faithful encoding."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper includes both zero and nonzero products and treats the zero-product case as trivial rather than excluding it.",
-      "lean_evidence": "The execution relation is satisfiable for nonzero data; for example, with beta=2, p=2, a sufficiently wide exponent range, and x1=x2=x3=1, the exact trace th=s1=1 and all residuals zero satisfies the constructor premises.",
-      "reasoning": "The theorem is nonvacuous and not true solely because only zero executions inhabit run, although its domain remains improperly narrowed."
+      "paper_evidence": "ThreeProduct has ordinary nonzero executions; the paper's proof is not based on an empty domain.",
+      "lean_evidence": "A concrete formal run exists for beta=2,p=3,emin=0,emax=10 and (x1,x2,x3)=(3,3,5): th=14, tl=1, s1=40, a2=2, a3=3, a4=0, s2=5, t=3, r=0, s3=0, giving 40+5+0=45.",
+      "reasoning": "The formal hypotheses are satisfiable on a nonzero execution with nonzero product residuals; the defect is domain loss, not total vacuity."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The Lean proposition proves the result only for inhabitants of P12ThreeProductExecution. Valid paper executions need not produce such an inhabitant. For beta=2, p=3, emin=0, emax=2, the exact product of 1 and 7 is 7 with no underflow or overflow, but P12TwoProductExecution.mk requires the envelope 8*1*7=56 and its negative to be representable even though the largest magnitude in F is 28. Thus the Lean theorem cannot recover the paper's universal domain."
+      "reasoning": "The Lean theorem proves the paper conclusion only for traces admitting its stronger run witness. For beta=2,p=3,emin=0,emax=10 and x1=x2=x3=7, a valid paper execution is th=48, tl=1, s1=320, a2=16, a3=7, a4=0, s2=24, t=8, r=-1, s3=-1. Equation (17) permits a2 because ulp(336)=64 and 16<=32, but the formal second split demands 16<=0.5*8=4. Hence this valid paper execution has no run witness."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "Restricting the paper's argument to traces admitted by run yields every target conjunct: Theorem 2 proves the two subtraction equalities and exact merge, printed page 397 proves the final addition exact, and equation (18) gives the final product identity. The target's unceiled bound follows from the paper's earlier |s3'| <= (1/2)beta^p beta^e estimate and beta^p >= beta."
+      "reasoning": "Assuming the narrower formal run premise, equation (17), nearest rounding, the range assumptions, Theorem 2, and the proof of Lemma 4 establish the condition-(7) witness, both exact FastTwoSum subtractions, the merge identity, exact final addition, and equation (18). The erroneous low-grid clause is an extra premise, so it does not obstruct this implication direction."
     }
   },
   "classification": "not-faithful-weaker",
@@ -944,18 +992,11 @@
   "findings": [
     {
       "severity": "major",
-      "category": "hypothesis-domain-narrowing",
-      "paper_evidence": "Lemma 4 assumes no underflow errors within FourSumThreeProduct together with Section 4's standing absence of overflow; TwoProduct is specified by its rounded-high and exact high-plus-low behavioral contract.",
-      "lean_evidence": "P12TwoProductExecution.mk additionally assumes representability of two high-envelope endpoints and universal grid preservation, while P12ThreeProductExecution.mk adds merge candidate and exponent-grid premises.",
-      "impact": "The formal theorem excludes legitimate non-overflowing, non-underflowing ThreeProduct executions and therefore does not establish the full benchmark result."
-    },
-    {
-      "severity": "minor",
-      "category": "ceiling-constant",
-      "paper_evidence": "Equation (7), visually inspected on printed page 387 and reused on printed page 397, has ceiling brackets around beta^p-beta/2.",
-      "lean_evidence": "The target states beta^p-beta/2 without a ceiling.",
-      "impact": "For odd radices the written bounds differ. The Lean bound is stronger but derivable from the proof's preceding half-beta^p bound, so this does not cause the failed implication; it is nevertheless not a literal preservation of the displayed condition."
+      "category": "second-product-grid-overconstraint",
+      "paper_evidence": "For (s1,s'_2)=TwoProduct(x1,t_h), equation (17) analogously bounds |s'_2| by 0.5*ulp(x1*t_h). Printed page 397 explicitly allows |s'_2|<=0.5*beta^{2p} after input-grid normalization.",
+      "lean_evidence": "D021 passes rightGrid=e(x2)+e(x3) to the second P12TwoProductExecution, and D049 therefore requires |a2|<=0.5*beta^p*beta^{e1+e2+e3}. With beta=2,p=3 and x1=x2=x3=7, the valid residual a2=16 violates the formal bound 4 while satisfying the paper's half-ULP bound 32.",
+      "impact": "The run relation excludes valid nontrivial ThreeProduct executions. The theorem therefore covers a strict subset of the paper's domain and cannot faithfully represent Lemma 4."
     }
   ],
-  "rationale": "The trace fields, algorithm order, exact-versus-computed distinction, rounding predicates, and final exact identity faithfully reflect the paper. The decisive defect is the antecedent: run assumes several proof-supporting envelope, grid, and candidate facts that the paper neither states nor equates with absence of underflow and overflow. Those assumptions exclude concrete valid paper executions. Consequently the paper result specializes to and supports the Lean target, including its stronger unceiled merge bound, but the Lean proposition cannot recover the full paper theorem. It is therefore not-faithful-weaker rather than faithful-stronger."
+  "rationale": "The format, representation semantics, ceiling scope, nearest rounding, operation order, noOverflow coverage, condition-(7) witness, and all stated intermediate conclusions otherwise match the cited paper. Least-representation witnesses are harmless because every representable value has a minimum feasible exponent in the finite exponent interval. The decisive defect is the second TwoProduct call's raw input-grid argument to D049: it imposes a half-beta^p grid bound where the paper permits a half-beta^{2p} bound. A nontrivial formal run demonstrates nonvacuity, while the explicit 7*7*7 execution demonstrates genuine loss of paper-valid behavior. Thus the proposition is a nonfaithful weaker specialization, not a stronger theorem."
 }

@@ -3,129 +3,129 @@
   "role": "roundtrip-judge",
   "task_id": "P12-T3",
   "paper_sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1",
-  "blind_translation_sha256": "fbe70027ac3ecff5289e85d3927269092dfa4bab32409c98002f3e4ec97a7683",
+  "blind_translation_sha256": "3c68ec45281674ad12b95d7c5655459d1cb143efe16c82e6b7d9f78eb582b669",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "PDF pp. 13-15, printed pp. 395-397, contain FourSumThreeProduct, ThreeProduct, Lemma 4, equation (18), and its proof.",
-      "translation_evidence": "The translation concerns the same three-product decomposition, ten-component trace, three product splits, FastTwoSum merge, and final addition.",
-      "reasoning": "The selected paper version, section, algorithm, lemma, and surrounding proof are the correct source for P12-T3."
+      "paper_evidence": "The inspected PDF is the published Numerische Mathematik article, volume 145 (2020), corrected publication 2021. The relevant material is equation (1), Section 4's conventions, FourSumThreeProduct, ThreeProduct, Lemma 4, and equations (17)-(18) on printed pages 384 and 391-397.",
+      "translation_evidence": "The translation identifies P12-T3 and models the ThreeProduct result with the same format parameters, three TwoProduct stages, FastTwoSum compression, and final addition.",
+      "reasoning": "The selected source and surrounding result are correct."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "Lemma 4 quantifies three scalar inputs and three scalar outputs in the finite real floating-point system F; all indices run from 1 through 3.",
-      "translation_evidence": "The translation quantifies one radix format, three real inputs, and a ten-real trace; the run certificate supplies bounded representations for all values serving as floating-point quantities.",
-      "reasoning": "The scalar types, three-input dimension, output indexing, and intermediate trace positions match once run-provided representability is unfolded."
+      "paper_evidence": "Equation (1) parameterizes the scalar floating-point set by integer radix, precision, and exponent bounds; ThreeProduct takes three floating-point inputs and returns three floating-point outputs, with the displayed intermediates.",
+      "translation_evidence": "fmt packages beta, p, emin, and emax; x1, x2, x3 and the ten trace components are real scalars constrained by representability and execution evidence.",
+      "reasoning": "Quantifying reals and restricting them through run evidence is a valid relational presentation of the paper's floating-point binders. The trace contains exactly the displayed product, merge, and final-add intermediates."
     },
     {
       "id": "S03",
       "status": "pass",
-      "paper_evidence": "The proof on printed p. 397 existentially chooses a representation of s2' whose exponent depends on the computed trace.",
-      "translation_evidence": "After fmt, inputs, trace, and run are fixed, the conclusion existentially chooses one bounded representation of a2 and uses that same witness exponent in the a3 bound.",
-      "reasoning": "The dependence and scope of the representation witness are preserved; the witness is not required to work for every representation."
+      "paper_evidence": "The algorithms determine their intermediates through rounded operations, while condition (7) requires the existence of a suitable representation of the first FastTwoSum input.",
+      "translation_evidence": "The trace and run are universally quantified, and the controlling representation of a2 is existentially selected after the run is given.",
+      "reasoning": "Universal quantification over every permitted nearest-rounding trace correctly handles unspecified ties, and the representation witness has the intended dependence."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Printed p. 391 assumes nearest arithmetic and absence of overflow; Lemma 4 on printed p. 396 explicitly assumes absence of underflow errors within FourSumThreeProduct. TwoProduct is otherwise constrained by its behavioral contract.",
-      "translation_evidence": "The run assumes exact product certificates but has no explicit no-underflow-error hypothesis. It additionally assumes canonical representations, lattice preservation, a nearby representable candidate, conditional exponent facts, and representability of artificial signed quantities q and -q.",
-      "reasoning": "The translation replaces and substantially strengthens the source hypotheses with auxiliary proof conditions that the paper neither assumes nor derives as part of the algorithm contract."
+      "paper_evidence": "For the second TwoProduct call, the paper requires s1+a2=x1*th, nearest-rounded high part s1, and |a2| at most one half ulp(x1*th), under the no-underflow/no-overflow model. It does not require |a2| <= (beta^p/2)*beta^(e1+e2+e3).",
+      "translation_evidence": "The run requires the split of x1 and th, parameterized by grids e1 and e2+e3, to satisfy |a2| <= (B/2)*scale(e1+e2+e3).",
+      "reasoning": "This grid-relative inequality is an added restriction. For beta=2, p=3, sufficiently wide exponent bounds, and x1=x2=x3=7, a valid paper execution has th=48, tl=1, s1=320, and a2=16. The normalized input exponents are all zero, so the translation demands 16 <= 4, which is false, although the paper's bound is 16 <= ulp(336)/2 = 32. Least representations themselves always exist because the feasible exponent set is finite. The nonzero-high clauses follow from nearest rounding plus an exact representable residual, and the operation-range clauses unpack the standing no-overflow convention; neither causes this counterexample."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Printed pp. 396-397 establish the exact three-term product identity, the exact FastTwoSum merge, and the exact final addition, including the zero-product case.",
-      "translation_evidence": "The conclusion includes the merge subtraction identities, s2+r=a2+a3, s3=r+a4, and (s1+s2)+s3=(x1*x2)*x3.",
-      "reasoning": "All source conclusions are represented. The translation adds an auxiliary representation bound, whose strength is assessed separately."
+      "paper_evidence": "The paper obtains the exact four-term product expansion, verifies the FastTwoSum merge, proves the final addition exact, and concludes the exact three-term identity in equation (18). Theorem 2's proof also verifies the two subtraction identities used by FastTwoSum.",
+      "translation_evidence": "The run contains the three exact split equations, while the conclusions give the controlling representation bound, both exact subtraction identities, the merge identity, exact final addition, and the exact three-term product identity.",
+      "reasoning": "All paper conclusions are semantically present. The four-term identity is an immediate algebraic consequence of the split hypotheses, and the additional subtraction equalities are established in the cited FastTwoSum proof."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "Equation (4) defines ulp as an absolute spacing, and visually inspected equation (7) uses ceiling brackets around beta^p-beta/2.",
-      "translation_evidence": "The dependency ledger replaces the paper's ULP conditions with canonical-exponent scale predicates and states B-beta_R/2 without a ceiling operation.",
-      "reasoning": "Although the target's local predicates are unfolded, two source-level operators central to the proof, ulp and the ceiling in condition (7), are not preserved literally."
+      "status": "pass",
+      "paper_evidence": "The PDF defines representability by equation (1), permits multiple representations, defines ulp by equation (4), and defines nearest rounding by minimum distance without a tie rule.",
+      "translation_evidence": "The translation unfolds representations, least-exponent representations, scale, representability, nearest rounding, maximum finite magnitude, noOverflow, split witnesses, and merge witnesses.",
+      "reasoning": "The nontrivial operators and dependencies are interpreted sufficiently to compare the statements. The extra product-grid inequality is a hypothesis-strength issue rather than an undefined operator."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper distinguishes rounded high products and circled operations from exact high-plus-low decompositions and exact real sums.",
-      "translation_evidence": "Nearest predicates govern computed high values and s3, while product splits and all displayed conclusion equalities use exact real arithmetic.",
-      "reasoning": "Rounded values, exact residuals, and exact accumulated identities are not conflated."
+      "paper_evidence": "Equation (17) distinguishes each rounded high product from its exact high-plus-low decomposition. ThreeProduct line 3 is a rounded addition whose exactness is subsequently proved.",
+      "translation_evidence": "Nearest-rounding predicates specify computed values, while separate real equalities express exact residuals, compensation, the final addition, and the expansion identity.",
+      "reasoning": "Rounded and exact quantities are not conflated."
     },
     {
       "id": "S08",
       "status": "pass",
-      "paper_evidence": "The algorithm calls TwoProduct(x2,x3), TwoProduct(x1,th), TwoProduct(x1,tl), FastTwoSum(s2',s3'), and finally computes s3'' plus s4'.",
-      "translation_evidence": "The run certificate uses the corresponding splits x2*x3=th+tl, x1*th=s1+a2, x1*tl=a3+a4, merge (a2,a3) to (s2,t,r), and final rounding of r+a4 to s3.",
-      "reasoning": "The operation order, product grouping, intermediate roles, and final merge are correctly linked to ThreeProduct."
+      "paper_evidence": "FourSumThreeProduct calls TwoProduct on (x2,x3), then (x1,th), then (x1,tl). ThreeProduct next calls FastTwoSum on (s2',s3') and finally rounds s3''+s4'.",
+      "translation_evidence": "The trace uses the same operand order: (x2,x3) gives (th,tl), (x1,th) gives (s1,a2), (x1,tl) gives (a3,a4), the merge gives (s2,t,r), and the final rounding gives s3.",
+      "reasoning": "The algorithm order, operand order, and intermediate correspondence are preserved."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Only scalar absolute values and scalar ULP bounds occur; no vector or matrix norm is used.",
-      "translation_evidence": "All error predicates use ordinary real absolute value on scalar quantities.",
-      "reasoning": "There is no squared, vector, matrix, componentwise, or normwise substitution."
+      "paper_evidence": "Lemma 4 and its proof use scalar absolute values and ULP spacing only.",
+      "translation_evidence": "All quantities are real scalars and every bound uses ordinary real absolute value.",
+      "reasoning": "There is no vector, matrix, squared-norm, or componentwise-versus-normwise mismatch."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "Visual inspection of equations (7) and the corresponding bound on printed p. 397 confirms the coefficient is ceiling(beta^p-beta/2). The residual coefficient 1/2 and all inequalities are non-strict.",
-      "translation_evidence": "The principal representation conclusion uses B-beta_R/2 with no ceiling; the indices and 1/2 constants otherwise match.",
-      "reasoning": "For odd beta the translated coefficient is smaller by one half before multiplication by the positive scale, so the exact source constant is not preserved."
+      "paper_evidence": "Visual inspection of equations (7) and its use on printed page 397 confirms the full coefficient ceil(beta^p-beta/2). The second product residual is instead indexed by ulp(x1*th), not by the original input grid e1+e2+e3.",
+      "translation_evidence": "The main coefficient is cast(beta^p-floor(beta/2)), but the second product split additionally indexes a B/2 low bound by e1+e2+e3.",
+      "reasoning": "The main coefficient is correct because ceil(n-beta/2)=n-floor(beta/2) for integer n=beta^p, and natural subtraction cannot truncate under beta>=2 and p>0. However, the additional second-split coefficient has unsupported grid dependence and fails in the beta=2, p=3, x1=x2=x3=7 execution."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "Printed p. 391 specifies rounding to nearest for Section 4, generally excludes overflow, and printed p. 396 explicitly excludes underflow errors in FourSumThreeProduct.",
-      "translation_evidence": "Nearest permits ties and NoOverflow uses a finite real bound, but merge subtractions use only NoBetween faithful rounding and no explicit underflow condition is present.",
-      "reasoning": "The finite radix domain and tie policy agree, but the subtraction mode and underflow hypotheses do not exactly match the source numerical model."
+      "status": "pass",
+      "paper_evidence": "Section 4 uses nearest rounding, generally excludes overflow, and Lemma 4 excludes underflow errors within FourSumThreeProduct. The passage explicitly permits arbitrary radix beta and includes the zero-product case.",
+      "translation_evidence": "The format permits every natural beta>=2, uses nearest rounding without a tie rule, has only finite real values, requires exact representable product residuals, and imposes noOverflow on each product and merge operation.",
+      "reasoning": "The rounding mode, radix scope, finite-value model, zero coverage, and operation-level underflow/overflow treatment match the paper's inherited model. The erroneous product-grid inequality is an additional domain condition, not a radix or rounding-mode substitution."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The paper proves exact equalities and uses the non-strict ceiling bound in condition (7).",
-      "translation_evidence": "The translation retains exact equalities but asserts the stricter unceiled bound and conditions the theorem on a substantially stronger run certificate.",
-      "reasoning": "The conclusion is strengthened in one respect while the admissible execution domain is narrowed, so overall relation strength is not preserved."
+      "paper_evidence": "The paper's product-error conditions are non-strict half-ULP bounds at the exact products.",
+      "translation_evidence": "In addition to nearest rounding and exact decomposition, the translation requires a non-strict B/2 bound at e1+e2+e3 for the second split.",
+      "reasoning": "The equality directions and final exactness are correct, but the additional low-part inequality is strictly stronger than the paper's admissibility conditions and removes valid executions."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Error-free means exact equality between the unevaluated component sum and the exact triple product; low terms are absolute residuals.",
-      "translation_evidence": "The translation concludes exact residual and product identities and gives only an absolute bound on a3.",
-      "reasoning": "No forward, backward, relative, or stability estimate is substituted for the source's exact residual notion."
+      "paper_evidence": "Error-free transformation means exact real equality between the unevaluated output expansion and x1*x2*x3; ULP bounds are used only to establish exactness.",
+      "translation_evidence": "The conclusion is an exact real product-expansion identity, supplemented by exact residual and merge identities.",
+      "reasoning": "No forward, backward, relative, or residual estimate is substituted for the paper's error-free identity."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Equation (18) is an exact finite identity with no asymptotic or omitted remainder.",
-      "translation_evidence": "Every conclusion is an exact equality or explicit finite inequality; no big-O or truncated expansion appears.",
-      "reasoning": "Higher-order treatment is faithfully absent."
+      "paper_evidence": "Equation (18) is exact and contains no omitted remainder or asymptotic term.",
+      "translation_evidence": "The final equality and intermediate compensation equalities are exact.",
+      "reasoning": "There are no higher-order or big-O terms to mishandle."
     },
     {
       "id": "S15",
-      "status": "pass",
-      "paper_evidence": "The application is scalar and real-valued, permits every floating-point base, and imposes no magnitude or ULP ordering on s2' and s3'.",
-      "translation_evidence": "The format permits every natural beta at least two, all values are scalar reals, and no beta-in-{2,3} or middle-term ordering hypothesis is imposed.",
-      "reasoning": "The scalar specialization and unrestricted-base scope match."
+      "status": "fail",
+      "paper_evidence": "Lemma 4 covers all ThreeProduct executions satisfying its no-underflow assumption and Section 4's no-overflow convention, for arbitrary supported radix.",
+      "translation_evidence": "A conclusion is available only for executions admitting the stronger product-grid split witness.",
+      "reasoning": "The scalar finite-real specialization is intended, but the run type specializes the execution domain further than the paper. The beta=2, p=3, x1=x2=x3=7 execution is covered by the paper and excluded by the translation."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "ThreeProduct is asserted for every valid execution under the stated range assumptions, including zero products.",
-      "translation_evidence": "The proposition is universally conditional on an inhabitant of the enriched run-certificate type and asserts no run existence or completeness theorem.",
-      "reasoning": "The additional certificate fields can make the run type empty for executions covered by the paper, making the translated implication vacuous on those cases."
+      "status": "pass",
+      "paper_evidence": "The paper supplies ordinary nonzero ThreeProduct executions and separately includes the zero-product case.",
+      "translation_evidence": "Valid runs are satisfiable; for example, beta=2, p=3, emin=0, emax=3, and x1=x2=x3=1 admit exact product splits and an exact zero-residual merge.",
+      "reasoning": "The proposition is not globally vacuous or circular. Its failure is loss of intended coverage, already recorded above, rather than inconsistency of the run hypotheses."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The translation only covers traces admitting its enriched run certificate. Its product certificates require facts absent from the source contract, notably representability of q=B*scale(e_left)*|right| and -q. For beta=2, p=2, emin=0, emax=10, x1=0, x2=2, and x3=1536, the first exact product is the representable value 3072 and the paper's ThreeProduct execution has no overflow or underflow error, but q=6144 is not representable. Thus no translated run certificate exists for a source-covered execution."
+      "reasoning": "The translation only proves the result under its stronger run premise. It says nothing about genuine paper executions failing that premise, including beta=2, p=3 and x1=x2=x3=7, so it cannot recover Lemma 4 over the paper's full domain."
     },
     "paper_implies_translation": {
       "verdict": "yes",
-      "reasoning": "On the narrower class admitted by the run certificate, its exact product splits and range conditions provide at least the behavioral premises used in the paper's proof. The proof establishes the subtraction identities, exact merge, exact final addition, and exact triple-product sum. It also obtains |a3| <= (B/2)*scale(e); since p>0 and beta>=2 imply B>=beta, this entails the translation's stronger |a3| <= (B-beta/2)*scale(e) bound."
+      "reasoning": "For every run admitted by the translation, the paper's ThreeProduct hypotheses and operation order hold. The paper's proof establishes the representation bound, exact FastTwoSum subtractions and merge, exact final addition, and final product identity. The added product-grid premise merely narrows this domain."
     }
   },
   "classification": "not-faithful-weaker",
@@ -134,32 +134,11 @@
   "findings": [
     {
       "severity": "major",
-      "category": "workflow-hypothesis-strengthening",
-      "paper_evidence": "Printed pp. 395-396 constrain the three TwoProduct calls by rounded-high, exact-decomposition, half-ULP, and range assumptions; no signed-q representability, global lattice-preservation, or nearby-candidate premise is imposed.",
-      "translation_evidence": "Every product certificate requires representability of q and -q and universal lattice preservation, while the run additionally requires a lattice witness and a representable candidate near a2+a3.",
-      "impact": "Valid source executions can lack a run witness, so the translated theorem proves the result on a strictly narrower domain."
-    },
-    {
-      "severity": "major",
-      "category": "underflow-model",
-      "paper_evidence": "Lemma 4 explicitly assumes absence of underflow errors within FourSumThreeProduct.",
-      "translation_evidence": "No underflow predicate appears; exact product decompositions and several auxiliary properties are assumed directly.",
-      "impact": "The source range hypothesis is replaced by a stronger behavioral certificate rather than preserved as stated."
-    },
-    {
-      "severity": "major",
-      "category": "ceiling-coefficient",
-      "paper_evidence": "Visual inspection of equations (7) and the bound on printed p. 397 confirms ceiling(beta^p-beta/2).",
-      "translation_evidence": "The conclusion uses B-beta_R/2 without ceiling.",
-      "impact": "For odd bases the translated bound is strictly stronger and does not literally reconstruct condition (7), although the paper's preceding B/2 estimate entails it on admitted runs."
-    },
-    {
-      "severity": "minor",
-      "category": "rounding-mode",
-      "paper_evidence": "Section 4 states that arithmetic operations are evaluated in rounding to nearest unless otherwise specified.",
-      "translation_evidence": "The merge additions are nearest, but the two subtractions are constrained only by NoBetween faithful rounding.",
-      "impact": "The abstract execution model is broader than the stated Section 4 rounding model, even though Theorem 2's faithful-subtraction result supports the same exact merge."
+      "category": "added product-grid domain restriction",
+      "paper_evidence": "For the TwoProduct call on (x1,th), the paper requires a nearest high product, exact residual, and |a2|<=ulp(x1*th)/2 under no underflow or overflow. With beta=2, p=3 and x1=x2=x3=7, the valid values th=48, tl=1, s1=320, and a2=16 satisfy this because ulp(336)/2=32.",
+      "translation_evidence": "The corresponding split additionally requires |a2|<=(B/2)*scale(e1+e2+e3). The same example has B=8 and e1=e2=e3=0, so it requires 16<=4.",
+      "impact": "A valid nonzero ThreeProduct execution in the paper's arbitrary-radix, nearest-rounding, no-underflow/no-overflow model has no translation run. The formal theorem therefore covers a proper subset of Lemma 4's domain."
     }
   ],
-  "rationale": "The translation preserves the scalar ThreeProduct sequence and contains every exact identity proved in the source. Its admitted runs are nevertheless restricted by substantial auxiliary certificate hypotheses not required by the paper, and no totality result connects every source execution to such a certificate. The paper proof establishes the translated conclusions whenever that stronger certificate exists, including the unceiled bound via its sharper B/2 estimate, but the translated theorem does not cover all executions covered by Lemma 4. It is therefore not-faithful-weaker."
+  "rationale": "The translation preserves the format, arbitrary radix, nearest rounding, exact algorithm order, zero case, controlling ceiling coefficient, FastTwoSum compensation, final exact addition, and exact three-term product identity. Least representations are available for every represented value in the finite exponent interval; nonzero-high follows from nearest rounding plus an exact representable residual; and the operation-specific range predicates express the standing no-overflow convention. The decisive defect is the second product split's B/2 bound on the original e1+e2+e3 grid. It is not a consequence of the paper's TwoProduct contract and excludes valid executions, making the translation a non-faithful weakening."
 }
