@@ -205,18 +205,40 @@ def file_state(root: Path, record: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def selected_task_result(task: dict[str, Any]) -> dict[str, Any]:
+    """Return the validated result from a multi-pass history entry."""
+    result = task.get("result")
+    if not isinstance(result, dict):
+        return task
+
+    validation = task.get("validation")
+    if not isinstance(validation, dict) or validation.get("status") != "validated":
+        raise AuditContextError("task result is present but is not validated")
+    return result
+
+
 def build_context(
     root: Path, task_id: str, requested_audit: str | None
 ) -> dict[str, Any]:
     directory, manifest, results, task = history_entry(
         root, task_id, requested_audit
     )
+    result = selected_task_result(task)
     snapshot = results.get("repository_snapshot")
-    if not isinstance(snapshot, dict) or not isinstance(snapshot.get("commit"), str):
-        raise AuditContextError(f"{directory.name} has no repository snapshot commit")
-    commit = snapshot["commit"]
+    if isinstance(snapshot, dict) and isinstance(snapshot.get("commit"), str):
+        commit = snapshot["commit"]
+        snapshot_source = "repository_snapshot"
+    else:
+        commit = task.get("evidence_commit")
+        if not isinstance(commit, str):
+            raise AuditContextError(
+                f"{directory.name} has neither a repository snapshot commit "
+                f"nor an evidence commit for {task_id}"
+            )
+        snapshot = {"commit": commit, "scope": "task-evidence"}
+        snapshot_source = "task_evidence_commit"
 
-    artifacts = task.get("artifacts")
+    artifacts = result.get("artifacts")
     if not isinstance(artifacts, dict):
         raise AuditContextError(f"{task_id} has no artifact index")
     decision_record = artifacts.get("decision")
@@ -240,20 +262,20 @@ def build_context(
     if decision.get("task_id") != task_id:
         raise AuditContextError("decision task ID disagrees with the requested task")
     for field in ("classification", "accepted", "adjudicated"):
-        if decision.get(field) != task.get(field):
+        if decision.get(field) != result.get(field):
             raise AuditContextError(
                 f"decision field {field} disagrees with the history index"
             )
 
-    target = task.get("target")
-    paper = task.get("paper")
+    target = result.get("target")
+    paper = result.get("paper")
     if not isinstance(target, dict) or not isinstance(paper, dict):
         raise AuditContextError(f"{task_id} has incomplete target/paper records")
     target_state = file_state(root, target)
     paper_state = file_state(root, paper)
 
     warnings: list[str] = []
-    if bool(task.get("accepted")):
+    if bool(result.get("accepted")):
         warnings.append(
             "The latest audit accepted this task; do not repair it without explicit direction."
         )
@@ -278,13 +300,14 @@ def build_context(
             "history_directory": str(directory.relative_to(root)),
             "recorded_at_utc": manifest.get("recorded_at_utc"),
             "repository_snapshot": snapshot,
+            "snapshot_source": snapshot_source,
             "protocol_versions": results.get("protocol_versions"),
         },
         "verdict": {
-            "classification": task.get("classification"),
-            "accepted": task.get("accepted"),
-            "adjudicated": task.get("adjudicated"),
-            "implications": task.get("implications"),
+            "classification": result.get("classification"),
+            "accepted": result.get("accepted"),
+            "adjudicated": result.get("adjudicated"),
+            "implications": result.get("implications"),
         },
         "audited_inputs": {
             "target": target,
