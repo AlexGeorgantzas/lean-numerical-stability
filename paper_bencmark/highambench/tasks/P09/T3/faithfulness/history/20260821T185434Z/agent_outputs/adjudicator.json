@@ -1,0 +1,194 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P09-T3",
+  "trigger": [
+    "judge classifications differ",
+    "direct judge requested adjudication",
+    "round-trip judge requested adjudication",
+    "direct D010 is unclear",
+    "direct D048 is unclear",
+    "direct D064 is unclear",
+    "direct D069 is unclear",
+    "direct D194 is unclear",
+    "direct S06 is unclear",
+    "direct S10 is unclear",
+    "round-trip S06 is unclear",
+    "round-trip S10 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "The classification is not-faithful-different. Lean does not imply the paper, and the paper does not imply the universally quantified Lean proposition. The round-trip judgment conflated derivability from Lean's own certificate premises with implication by the paper.",
+      "primary_evidence": "PDF printed pages 764-765 concern the actual nested computation fl(T_1 fl(T_2 ... fl(T_m X))) and an asymptotic O(epsilon^2) result. D023 and D026 instead quantify arbitrary packaged states, residuals, and post-epsilon certificate bounds that do not imply such an execution."
+    },
+    {
+      "item": "direct judge requested adjudication",
+      "resolution": "The direct judgment's two negative implication directions and not-faithful-different classification are confirmed. Its independent execution-linkage and higher-order-witness defects are fatal; the Fourier sign remains unresolved.",
+      "primary_evidence": "The paper derives the result from Theorem 1 applied to each floating-point coordinate FFT on printed pages 764-765. D023 never uses D027's flAdd, flMul, flSin, or flCos, and D026 supplies the local and intermediate estimates as premises after epsilon is fixed."
+    },
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "The round-trip paper-implies-Lean verdict is rejected. Lean's certificate conditions are not merely stronger versions of the paper's hypotheses: they omit actual floating-point execution and therefore admit packaged runs outside the paper's subject. The resulting universal proposition is logically different, even though its inequality follows algebraically from its own premises.",
+      "primary_evidence": "D023 defines each state step as an exact coordinate transform plus an arbitrary localError and assumes telescoping_error. D026 assumes the quantitative local and intermediate bounds. Neither constructor requires evaluation of the paper's mixed-radix floating-point operations."
+    },
+    {
+      "item": "direct D010 is unclear",
+      "resolution": "D010 is verified as the unnormalized product-indexed transform obtained in the correct nested coordinate order. Its match to the paper's positive exponential remains unclear solely because the sign of D194 is unavailable.",
+      "primary_evidence": "D010 is p09ApplyCoordinatePrefix plan.axis m run.input; D028 applies coordinate m-1 first and coordinate 0 last, matching Z_0=T_1(T_2(...T_m X)) on PDF printed page 764. Each coordinate operator is D048, whose character sign depends on D194."
+    },
+    {
+      "item": "direct D048 is unclear",
+      "resolution": "D048 has the correct unnormalized coordinate sum, zero-based cyclic range, index replacement, and product j times output-index. The required positive phase sign remains unresolved.",
+      "primary_evidence": "D048 sums stdAddChar(j * index i) times x with coordinate i replaced by j over ZMod(axis i.order). This matches the structure of the coordinate equation on PDF printed pages 763-764, except that D194 does not expose the elementary exponential sign."
+    },
+    {
+      "item": "direct D064 is unclear",
+      "resolution": "D064 is verified as an unnormalized one-dimensional DFT with the correct cyclic indexing and jk phase argument. Whether it is the paper's positive-sign DFT remains unclear through D194.",
+      "primary_evidence": "D064 is the sum over j of stdAddChar(j*k)x(j). PDF equation (1.1), printed page 757, explicitly uses exp(+i 2 pi jk/N), while D194 stops before defining the sign of ZMod.toCircle."
+    },
+    {
+      "item": "direct D069 is unclear",
+      "resolution": "D069 correctly has a permuted radix-sized character sum followed by an optional character twiddle. Its character sign remains unresolved, and its exact-stage semantics do not repair the absence of a floating-point execution trace.",
+      "primary_evidence": "D069 uses stdAddChar in both its block Fourier sum and twiddle. D055 constrains the complete exact factorization to D064, but D064 has the same unresolved D194 convention. D023 does not use D069 to generate computed states."
+    },
+    {
+      "item": "direct D194 is unclear",
+      "resolution": "The uncertainty is preserved. The supplied declaration evidence is insufficient to determine whether stdAddChar(z) is exp(+2 pi i z/N) or the opposite convention.",
+      "primary_evidence": "D194 unfolds only to Circle.coeHom.compAddChar ZMod.toCircle. No supplied body for ZMod.toCircle fixes its orientation, while PDF equation (1.1) explicitly requires the positive sign."
+    },
+    {
+      "item": "direct S06 is unclear",
+      "resolution": "S06 remains unclear only for the Fourier-character sign. The RMS, coordinate sums, prefix transforms, K, alpha, propagated errors, and remainder coefficient are otherwise sufficiently unfolded.",
+      "primary_evidence": "D012, D028, D030, D045, D048, and D054 expose their mathematical operations. D194 alone stops at an unexpanded ZMod.toCircle convention."
+    },
+    {
+      "item": "direct S10 is unclear",
+      "resolution": "The radix constants, factorization dependence, zero-based indexing, prefix products, and unweighted sum of axis K values match. Fourier sign belongs to S06, not S10. S10 retains only the narrow source ambiguity about how one common gamma is selected across unequal coordinate orders.",
+      "primary_evidence": "PDF printed pages 759 and 764 give the same piecewise alpha, K formula, and sum over K(N_l,gamma) found in D030 and D045. The earlier gamma paragraph says gamma depends on the computation for a transform order but Theorem 2 displays one gamma in every coordinate term."
+    },
+    {
+      "item": "round-trip S06 is unclear",
+      "resolution": "The round-trip S06 uncertainty is preserved on the same narrow basis: normalization and operator structure match, but the positive exponential sign cannot be established from D194.",
+      "primary_evidence": "PDF equation (1.1) fixes a positive exponential. D048 and D064 use D194, whose supplied body does not unfold ZMod.toCircle."
+    },
+    {
+      "item": "round-trip S10 is unclear",
+      "resolution": "A single common gamma is compatible with the literal statement of Theorem 2 and may be read as a common upper bound, so it is not an established mismatch. The paper does not explicitly explain how that bound is chosen when coordinate orders differ, and that limited uncertainty is preserved.",
+      "primary_evidence": "PDF printed page 759 describes order-dependent computation of gamma, while printed page 764 writes K(N_l,gamma) with the same gamma for every l. D008 and the target likewise use one model.gamma."
+    },
+    {
+      "item": "disputed S02 binders-and-types",
+      "resolution": "S02 fails when every binder is considered. The basic dimensions, complex arrays, and index types match, but run and certificate binders do not have the intended meanings of an executed FFT and uniform asymptotic evidence.",
+      "primary_evidence": "The paper binds an input and an actual multidimensional floating-point FFT. D023 admits abstract states and residuals, while D026 packages coefficients chosen after the complete fixed-epsilon run."
+    },
+    {
+      "item": "disputed S13 error-notion",
+      "resolution": "S13 passes narrowly: computedState 0 minus the exact transform is algebraically a normwise forward difference, not a backward or componentwise error. Its failure to represent actual roundoff is recorded under exact-versus-computed and algorithm linkage rather than as substitution of the error norm.",
+      "primary_evidence": "D011 is pointwise computed output minus exact output and D012 supplies normalized RMS, matching E=fl(Y)-Y on PDF printed page 764. D023's missing execution linkage does not reverse the subtraction or change the norm."
+    },
+    {
+      "item": "epsilon-uniform O(epsilon) and O(epsilon^2) semantics and witness scope",
+      "resolution": "The Lean statement does not preserve the paper's higher-order semantics. Epsilon is fixed before every input, intermediate, and second-order coefficient, with no epsilon-independent bound or neighborhood of zero.",
+      "primary_evidence": "The paper expands arithmetic into first-order terms plus O(epsilon^2) on printed pages 759-763 and uses O(epsilon) replacements on printed page 765. D027 fixes model.epsilon before D023's inputFirstOrderCoeff and D026's coefficient functions are supplied."
+    },
+    {
+      "item": "certificate assumptions",
+      "resolution": "The certificate is not a faithful modular prior-result interface. It assumes the main local numerical bound and intermediate RMS approximation without tying either to a modeled execution or requiring uniform witnesses. These premises are sufficient for the final inequality by elementary propagation.",
+      "primary_evidence": "D026 directly assumes local_error_bound and intermediate_rms_approx. In the paper, equation (4.3) is obtained by applying Theorem 1 to actual coordinate FFTs and the intermediate estimates are derived during the proof on printed pages 764-765."
+    },
+    {
+      "item": "linkage to modeled floating-point operations and nested FFT",
+      "resolution": "The linkage fails. Exact mixed-radix plans exist in the data, but computed states are not generated by their floating-point evaluation or by any operation in the Wilkinson model.",
+      "primary_evidence": "D023 uses D048, an exact coordinate DFT, plus an arbitrary localError. D027's flAdd, flMul, flSin, and flCos and D069's staged operation do not occur in the run constructor. The paper explicitly analyzes nested floating-point evaluation on printed page 764."
+    },
+    {
+      "item": "fixed-epsilon existential input-RMS coefficient",
+      "resolution": "The second input-RMS alternative is vacuous at fixed epsilon and disconnected from the computation. Any finite discrepancy satisfies it with coefficient equal to the discrepancy divided by positive epsilon, while the run's final state is input rather than flInput applied to input.",
+      "primary_evidence": "D027 requires epsilon>0. D023 requires computedState(Fin.last m)=input and separately permits existence of c>=0 with an RMS discrepancy at most c*epsilon. PDF printed page 765 uses the RMS of the input actually represented for computation."
+    },
+    {
+      "item": "explicit positive denominator",
+      "resolution": "The positive exact-output RMS premise is a faithful explicit domain condition, not a defect or genuine strengthening.",
+      "primary_evidence": "Theorem 2(a) on PDF printed page 764 divides by exact-output RMS without stating nonzeroness. The Lean target requires 0<p09MultiRms(p09MultiExactOutput run), which makes that ratio defined."
+    },
+    {
+      "item": "already-assumed telescoping conjunct",
+      "resolution": "The extra equality is not genuine theorem strength because it is already a field required to construct every run.",
+      "primary_evidence": "D023 requires telescoping_error in exactly the form returned as the target's first conjunct. In the paper the identity is a proof step on printed page 764, not part of Theorem 2(a)'s displayed conclusion."
+    },
+    {
+      "item": "machine-model abstraction",
+      "resolution": "The pointwise addition, multiplication, sine, and cosine formulas resemble the paper, but the formal model is broader and operationally inert. It omits the paper's machine-derived epsilon choices and does not constrain the run's computation.",
+      "primary_evidence": "PDF printed pages 758-759 tie epsilon to base, precision, accumulation, and rounded or chopped operations. D027 requires only epsilon>0 and the pointwise formulas; D023 never invokes the modeled operations."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "Lean proves only a finite, certificate-relative propagation inequality for abstract residual decompositions. It provides neither actual nested floating-point FFT execution nor existence of epsilon-independent certificates over a small-epsilon family, so it cannot recover the paper's roundoff theorem or its O(epsilon^2) conclusion."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper quantifies actual floating-point FFT computations, whereas Lean universally quantifies packaged runs and certificates whose premises do not imply such execution. The fact that Lean's conclusion follows from its own assumed telescoping and quantitative bounds does not make it a consequence of the paper for arbitrary non-execution packages."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The exponential sign of ZMod.stdAddChar is not determined by the supplied D194 body. This uncertainty propagates separately to D010, D048, D064, D069, and S06.",
+    "The paper displays one gamma across all axes but does not explicitly explain how it is selected when coordinate orders use different trigonometric computations. A common upper-bound reading is compatible with Lean.",
+    "The paper does not quantify the constants, parameter dependence, or small-epsilon neighborhood hidden by its O notation. This omission does not justify witnesses chosen after one fixed epsilon."
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-execution-unlinked",
+      "evidence": "PDF printed page 764 analyzes fl(T_1 fl(T_2 ... fl(T_m X))). D023 defines states only by exact coordinate transforms plus arbitrary residuals and never invokes D027's arithmetic operations or D069's mixed-radix stages.",
+      "impact": "The proposition is not about execution of the numerical algorithm studied in the paper."
+    },
+    {
+      "severity": "critical",
+      "category": "higher-order-quantifier-collapse",
+      "evidence": "D027 fixes positive epsilon before D023 and D026 introduce all O(epsilon)- and O(epsilon^2)-shaped coefficients. No coefficient is required to be independent of epsilon.",
+      "impact": "Coefficients may scale as 1/epsilon or 1/epsilon^2, eliminating the paper's asymptotic leading-order content."
+    },
+    {
+      "severity": "major",
+      "category": "certificate-assumes-numerical-substance",
+      "evidence": "D026 assumes both the local coordinate error bound and every propagated intermediate-RMS approximation. The paper derives their analogues from Theorem 1 and the actual nested computation on printed pages 764-765.",
+      "impact": "The target is an algebraic consequence of supplied bounds rather than a formalization of the roundoff theorem."
+    },
+    {
+      "severity": "major",
+      "category": "input-representation-condition-vacuous",
+      "evidence": "D023 permits an arbitrary post-epsilon coefficient for the flInput RMS discrepancy and simultaneously sets the computation's last state equal to unmodified input.",
+      "impact": "The premise neither excludes arbitrary input-representation error nor links represented input to the computed run."
+    },
+    {
+      "severity": "major",
+      "category": "domain-and-implication-mismatch",
+      "evidence": "Paper eligibility requires an actual floating-point FFT. Lean eligibility requires abstract run and certificate structures that omit that fact while assuming residual inequalities.",
+      "impact": "The target is not simply the paper theorem under stronger hypotheses; the applicability classes are incomparable, so neither implication direction holds."
+    },
+    {
+      "severity": "major",
+      "category": "fourier-phase-unresolved",
+      "evidence": "The paper explicitly uses exp(+i 2 pi jk/N), while D194 stops at Circle.coeHom.compAddChar ZMod.toCircle.",
+      "impact": "The exact transform's sign cannot be certified from authorized evidence, although independent critical defects already determine rejection."
+    },
+    {
+      "severity": "minor",
+      "category": "redundant-telescoping-conclusion",
+      "evidence": "The target concludes the same telescoping equality required by D023's telescoping_error field.",
+      "impact": "The extra conjunct supplies no nonvacuous strength and cannot support a faithful-stronger classification."
+    },
+    {
+      "severity": "note",
+      "category": "faithful-static-components",
+      "evidence": "The product ZMod index, complex normalized RMS, positive denominator, piecewise alpha, factorization-dependent K, prefix scaling, and literal common-gamma coefficient agree with PDF printed pages 759 and 763-765.",
+      "impact": "These accurate static components do not repair the execution and quantifier failures."
+    }
+  ],
+  "rationale": "The Lean declaration accurately reproduces many static ingredients of Theorem 2(a), but it changes the theorem's logical and numerical subject. The paper bounds an actual nested floating-point FFT and uses first-order expansions with an O(epsilon^2) remainder. Lean instead quantifies arbitrary exact-transform-plus-residual runs, repeats a telescoping premise as a conclusion, and assumes the decisive local and intermediate estimates through coefficients chosen after one fixed epsilon. Those coefficients can absorb arbitrary finite discrepancies, and the modeled arithmetic operations never generate the computation. Consequently Lean cannot imply the paper, while the paper does not entail Lean's universal claim over non-execution packages. The statements are therefore not-faithful-different; unresolved Fourier sign and common-gamma details are non-determinative."
+}

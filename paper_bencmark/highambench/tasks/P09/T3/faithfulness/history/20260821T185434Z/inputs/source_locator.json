@@ -29,15 +29,8 @@
       "anchor": "continuation and completion of the proof of Theorem 2(a)",
       "pdf_page": 9,
       "printed_page": "765",
-      "role": "propagated scaling and completion of the first-order asymptotic argument",
+      "role": "propagated scaling and exact-or-O(epsilon) input RMS condition",
       "section": "4. Roundoff Errors in Multidimensional Transformations"
-    },
-    {
-      "anchor": "statement that the preceding analysis assumes exactly represented input data",
-      "pdf_page": 12,
-      "printed_page": "768",
-      "role": "input-representation scope used by the operational asymptotic family",
-      "section": "6. Conclusions"
     }
   ],
   "task_id": "P09-T3"
