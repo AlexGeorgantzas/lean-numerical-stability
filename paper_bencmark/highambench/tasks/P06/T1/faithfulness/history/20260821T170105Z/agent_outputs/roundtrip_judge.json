@@ -1,0 +1,179 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P06-T1",
+  "paper_sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79",
+  "blind_translation_sha256": "6951444f423cc38534ecada43139dc1a8bfd8b789e7b53ae702a2dfca95143cb",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The authorized PDF is the 2023 SIAM Journal on Matrix Analysis and Applications version, volume 44, issue 3. The relevant result is Theorem 4.4, equations (4.16)-(4.17), followed by the Frobenius consequence (4.20). Its SHA-256 matches the supplied source record.",
+      "translation_evidence": "The translation uses the same Householder QR setting, probability formula, backward relation, coefficient, and Frobenius consequence identified by those passages.",
+      "reasoning": "The source version and surrounding result have been selected correctly."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds a real m-by-n input with m at least n, positive lambda, the computed Householder QR factor RHat, and existential backward-error witnesses. The constants c5 and c6 are fixed symbolic constants under the paper's global convention.",
+      "translation_evidence": "The translation additionally universally binds arbitrary positive natural c5 and c6 and, crucially, a columnwise backward-error package already containing the event, Q, DeltaA, remainders, and column bounds.",
+      "reasoning": "The matrix dimensions and scalar types match, but the central paper result is introduced as an extra input binder and the paper's fixed constants are converted into conditional parameters."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "Under Model 1.5 and the probability-one local bound, Theorem 4.4 derives the orthogonal witness, backward relation, and simultaneous columnwise result.",
+      "translation_evidence": "The columnwise package is quantified before the conclusion and already supplies a good event, Q, DeltaA, per-column O(u^2) remainders, orthogonality, factorization, and column bounds.",
+      "reasoning": "Moving the principal existential result into a premise changes quantifier scope and proof obligation. This failure is independent of the paper's separate ambiguity about whether witnesses are selected globally or inside the successful event."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The substantive hypotheses are the actual Householder QR computation, the relative-error and mean-independent zero-mean model, and the almost-sure local perturbation bound.",
+      "translation_evidence": "Besides analogous model and local-control data, the translation requires an inhabited columnwise backward-error package containing the theorem's main conclusion.",
+      "reasoning": "The translation has a strictly stronger and circular hypothesis set, so it does not establish the paper result from the paper hypotheses."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.4 concludes the exact backward relation and bounds every column simultaneously with the stated probability; equation (4.20) is then a consequence.",
+      "translation_evidence": "The explicit conclusion contains the eventwise factorization and Frobenius inequality but no per-column inequality. The per-column result occurs only inside the assumed package.",
+      "reasoning": "A central simultaneous columnwise conclusion has been omitted from the conclusion and replaced by an assumption."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper defines the Euclidean and Frobenius norms, orthogonality, the relative-error model, gamma-tilde, and the probability coefficient explicitly.",
+      "translation_evidence": "The dependency ledger unfolds matrix multiplication, matrix addition, orthogonality, both norms, gamma_m, the probability threshold, local operator bounds, and Big-O.",
+      "reasoning": "The nontrivial operators appearing in the translated proposition are identified and mathematically interpreted."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "RHat is computed, Q is exactly orthogonal, and DeltaA is an exact-input backward perturbation satisfying A+DeltaA=Q RHat.",
+      "translation_evidence": "RHat is represented as the random computed output, Q is constrained by Q^T Q=I, and DeltaA occurs in the exact equality A+DeltaA=Q RHat.",
+      "reasoning": "The translation does not conflate the computed factor with the exact orthogonal witness or the input perturbation."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The paper concerns the standard Householder QR algorithm: reflectors are constructed from preceding computed active columns, intended entries are explicitly set to zero, and reflector-construction errors are accounted for.",
+      "translation_evidence": "The execution package only requires normalized vectors, a generic recurrence using I-vv^T+E, a final upper-trapezoidal matrix, and an arbitrary association of output entries with modeled computed values.",
+      "reasoning": "There is no requirement that each vector is the Householder vector selected from the current active column, no explicit-zeroing behavior, and no operation-level linkage between the recurrence perturbations and the stochastic errors."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Column perturbations use the unsquared Euclidean norm, local perturbations use the subordinate matrix 2-norm, and the normwise consequence uses the unsquared Frobenius norm.",
+      "translation_evidence": "The ledger defines the same Euclidean and Frobenius norms, and defines the local operator bound by its action on every vector.",
+      "reasoning": "The translated norm kinds, unsquared forms, and columnwise versus Frobenius meanings match."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The coefficient is c6*lambda*sqrt(n)*gamma_tilde_m(lambda), columns range over j=1:n simultaneously, and the probability is 1-2mn*exp(-lambda^2). The constants c5 and c6 are fixed paper constants.",
+      "translation_evidence": "The numerical coefficient, gamma index, finite column range, and probability formula match exactly, but c5 and c6 are universally quantified positive naturals whose relevance is conditional on supplied packages.",
+      "reasoning": "The displayed indexing and formulas are correct, but the constants' logical status and parameter dependence do not match the paper's assertion of fixed constants."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "Model 1.5 combines fl(x op y)=(x op y)(1+delta), |delta| at most u, computation-order mean independence, and zero mean. Exceptional arithmetic behavior is not separately treated.",
+      "translation_evidence": "The stochastic package has the same relative-error equation and bound, zero means, and expectation factorization against functions of previous errors. It likewise remains conditional on that model rather than specifying overflow or underflow behavior.",
+      "reasoning": "At the model level, the translation captures the paper's martingale-difference-style assumptions without substituting full mutual independence."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper derives an exact equality and non-strict upper bounds from Model 1.5 plus the local assumption.",
+      "translation_evidence": "The equality and inequality directions are individually correct, but the columnwise relation is presupposed and the final inequality uses a freely existential signed remainder.",
+      "reasoning": "Although the displayed comparison operators match, the proposition is logically much weaker than the paper theorem."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "DeltaA is a backward perturbation because the computed RHat is an exact R factor of A+DeltaA; no forward-error claim for RHat or computed-Q claim is made.",
+      "translation_evidence": "The translation states the same exact perturbed-input factorization and labels the Euclidean and Frobenius estimates as bounds on DeltaA.",
+      "reasoning": "The backward-error notion is preserved."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Equations (4.17) and (4.20) retain an additive O(u^2), and the following discussion treats it as the higher-order contribution of the computation, including its dimension growth and first-order-dominance condition.",
+      "translation_evidence": "After the model's single unit roundoff u is fixed, the conclusion freely chooses r:R x Omega->R, requires only pointwise IsBigO near zero, and uses r(u,omega) without an absolute-value or nonnegativity condition.",
+      "reasoning": "For any fixed u>0, r can vanish on a smaller neighborhood of zero yet take an arbitrarily large value at that u. Thus the Frobenius inequality can impose no quantitative restriction at the actual unit roundoff and does not faithfully encode the computational O(u^2) term."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The paper works with finite real m-by-n matrices in the tall setting m at least n and imposes no full-rank hypothesis.",
+      "translation_evidence": "The translation uses real Fin m by Fin n matrices, encodes n at most m, and adds only n>0 as the conventional nonempty QR dimension.",
+      "reasoning": "The substantive scalar field and dimensional specialization match, with no rank-based restriction or unintended complex generalization."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper makes a nontrivial probabilistic claim by deriving simultaneous backward-error bounds for actual Householder QR executions.",
+      "translation_evidence": "The main columnwise result is required as an input package, so executions lacking that package create no obligation. For u>0, the freely chosen pointwise Big-O remainder can also make the final numerical inequality automatic.",
+      "reasoning": "The translation can be true for unintended reasons and does not carry the paper theorem's nontrivial proof burden."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation cannot derive the required columnwise package from Model 1.5 and the local almost-sure bound, omits the simultaneous per-column conclusion, under-specifies the actual Householder QR execution, and weakens the higher-order term. Therefore it does not yield Theorem 4.4 under the paper's hypotheses."
+    },
+    "paper_implies_translation": {
+      "verdict": "yes",
+      "reasoning": "For a corresponding Householder QR execution, the paper supplies the simultaneous columnwise result and explicitly states that it implies the Frobenius bound (4.20). This is at least as strong as the translated conclusion, which additionally assumes a package already containing the event, witnesses, and columnwise bounds."
+    }
+  },
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "conclusion-as-hypothesis",
+      "paper_evidence": "Theorem 4.4 derives the simultaneous columnwise event, orthogonal Q, DeltaA, exact factorization, and bounds from Model 1.5 and the local assumption.",
+      "translation_evidence": "D007 and D018 place all of that information in the required columnwise backward-error package.",
+      "impact": "The proposition does not formalize the main theorem; it proves only a consequence after assuming the theorem's central conclusion."
+    },
+    {
+      "severity": "critical",
+      "category": "higher-order-vacuity",
+      "paper_evidence": "The O(u^2) term denotes omitted computational higher-order contributions and is analyzed by their dimension-dependent order after Theorem 4.4.",
+      "translation_evidence": "The remainder is chosen after a single model unit roundoff is fixed, is merely pointwise Big-O near zero, and is added without absolute value or nonnegativity.",
+      "impact": "At any fixed positive unit roundoff its value can be made arbitrarily large without violating Big-O near zero, making the displayed Frobenius bound quantitatively vacuous."
+    },
+    {
+      "severity": "major",
+      "category": "algorithm-linkage",
+      "paper_evidence": "The reflector vectors are computed from preceding active columns, annihilated entries are explicitly assigned zero, and construction errors are incorporated into the analysis.",
+      "translation_evidence": "The run package specifies only arbitrary normalized reflector vectors, generic perturbed recurrences, final triangularity, and weak output-value associations.",
+      "impact": "The formal execution class includes processes not shown to be executions of the paper's Householder QR algorithm."
+    },
+    {
+      "severity": "major",
+      "category": "incomplete-conclusion",
+      "paper_evidence": "The bound for every column j=1:n on one simultaneous event is the main conclusion of equation (4.17).",
+      "translation_evidence": "No per-column bound appears in the target conclusion; it is available only from the supplied package.",
+      "impact": "The translated conclusion is strictly weaker than the selected paper result."
+    },
+    {
+      "severity": "major",
+      "category": "event-and-witness-scope",
+      "paper_evidence": "The paper states the exact factorization before assigning probability to the bounds and does not fully specify the measure-theoretic placement of Q and DeltaA.",
+      "translation_evidence": "Q and DeltaA are global functions, but orthogonality and factorization are required only on the existential good event and no measurability is required of those functions.",
+      "impact": "This particular Skolemization is not determined by the source and requires adjudication, although it does not repair the independent weakening caused by the columnwise premise."
+    },
+    {
+      "severity": "minor",
+      "category": "constant-quantification",
+      "paper_evidence": "c5 and c6 are fixed integer constants of modest size, with no numerical values supplied.",
+      "translation_evidence": "c5 and c6 are universally quantified positive natural numbers, with the theorem conditional on packages indexed by those choices.",
+      "impact": "The formulas are preserved, but the source's fixed constants are not asserted to exist or identified by the translated proposition."
+    }
+  ],
+  "rationale": "The translation preserves the real tall-matrix dimensions, exact coefficient, event probability, norms, orthogonality equation, and backward-error relation. It nevertheless moves the paper's simultaneous columnwise theorem into an input package, omits that result from the conclusion, weakens the connection to the actual Householder QR computation, and encodes O(u^2) with a pointwise remainder that can make the bound vacuous at the fixed unit roundoff. The paper result therefore implies the translated consequence, but the translation does not imply the paper theorem. Adjudication is requested for the source-unstated event/witness quantifier order and exact higher-order remainder semantics."
+}

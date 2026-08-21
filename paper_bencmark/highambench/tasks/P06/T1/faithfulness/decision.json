@@ -1,58 +1,81 @@
 {
   "accepted": false,
-  "adjudicated": true,
-  "adjudication_reasons": [
-    "direct judge requested adjudication",
-    "round-trip judge requested adjudication",
-    "direct S03 is unclear"
-  ],
+  "adjudicated": false,
+  "adjudication_reasons": [],
   "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-14T21:27:34.111843+00:00",
+  "completed_at_utc": "2026-08-21T17:27:03.412180+00:00",
   "findings": [
     {
-      "category": "conclusion-as-hypothesis",
-      "evidence": "P06Theorem44ColumnwiseCertificate is a target premise and already contains the high-probability event, Q, DeltaA, exact factorization, and every bound from (4.17), whereas Theorem 4.4 derives these from the numerical and local assumptions.",
-      "impact": "The declaration proves only a consequence after assuming the selected theorem's main conclusion.",
+      "category": "hypotheses-and-quantifier-scope",
+      "impact": "A substantial part of the selected theorem is assumed, so Lean does not imply the paper theorem.",
+      "lean_evidence": "The target takes perColumn : forall j, P06Lemma42ColumnCertificate, whose constructor requires the per-column event, exact relation, remainder, and desired bound.",
+      "paper_evidence": "Theorem 4.4 assumes Model 1.5 and the probability-one local bound; Lemma 4.2 is a preceding proved result, not an added per-column backward-relation assumption.",
       "severity": "critical"
     },
     {
-      "category": "higher-order-vacuity",
-      "evidence": "The remainder is existentially chosen after unitRoundoff is fixed, is constrained only by IsBigO at nhds 0, and is evaluated at that fixed value without an absolute value or nonnegativity requirement.",
-      "impact": "For any positive fixed unit roundoff, an isolated positive spike can make the Frobenius inequality automatic without representing an O(u^2) computational error.",
+      "category": "higher-order-terms-and-nonvacuity",
+      "impact": "The column and Frobenius inequalities admit arbitrarily large slack and do not assert the paper's nontrivial backward-error bound.",
+      "lean_evidence": "P06SecondOrderControl is instantiated after unitRoundoff and separately per outcome. For u0>0 an arbitrary value at u0 can be extended as K*u^2 with an outcome-dependent K.",
+      "paper_evidence": "Equations (4.17) and (4.20) retain QR-derived additive O(u^2) terms, with dimensional growth analyzed after Theorem 4.4.",
       "severity": "critical"
     },
     {
       "category": "algorithm-linkage",
-      "evidence": "The run permits arbitrary normalized reflector vectors and perturbations with a generic recurrence and final triangularity, while the paper requires reflectors constructed from successive computed active columns and explicit annihilation of entries.",
-      "impact": "The formal execution class includes processes not established to be executions of the source algorithm.",
+      "impact": "Model 1.5 may describe a different error sequence from the packaged QR run.",
+      "lean_evidence": "The run has an abstract state recurrence and explicit zeros, but reflectorBuilder and localPerturbation are unrelated to P06Model15.error/exactValue; RHat is linked only to selected terminal computed values.",
+      "paper_evidence": "Theorem 4.4's proof uses actual operation order, generated local perturbations, explicit zeros, computed history-dependent reflectors, and later rounding errors.",
       "severity": "major"
     },
     {
-      "category": "incomplete-conclusion",
-      "evidence": "Theorem 4.4's simultaneous per-column bounds are absent from the target conclusion and occur only in the assumed certificate.",
-      "impact": "The declaration cannot recover the complete selected theorem-and-consequence result.",
+      "category": "constant-provenance",
+      "impact": "The target does not establish the paper's universal coefficient, despite reproducing its displayed formula.",
+      "lean_evidence": "They are arbitrary positive inputs, and adequacy of c6 is transferred into the perColumn premise.",
+      "paper_evidence": "c5 and c6 are derived modest integer constants in the section 4 analysis.",
       "severity": "major"
     },
     {
-      "category": "constant-quantification",
-      "evidence": "The paper uses fixed symbolic constants c5 and c6, while Lean universally quantifies positive natural choices and conditions the theorem on packages indexed by them.",
-      "impact": "The declaration does not assert existence of the paper's constants, although its displayed coefficient is otherwise correct.",
-      "severity": "minor"
+      "category": "conclusion-as-hypothesis",
+      "impact": "The translated proposition is primarily a certificate-gluing lemma and can hold vacuously where the paper must establish the numerical result.",
+      "paper_evidence": "Lemma 4.3 and Theorem 4.4 derive per-column backward relations, error bounds, and failure probabilities from Model 1.5 and the almost-sure local bound.",
+      "severity": "critical",
+      "translation_evidence": "D018 assumes those relations, bounds, remainders, and probabilities separately for every column before the target conclusion."
     },
     {
-      "category": "event-witness-scope",
-      "evidence": "The PDF context treats the exact relation as executionwise and attaches probability to the bounds; Lean states orthogonality and factorization only on goodEvent.",
-      "impact": "This textual scope differs, but it is not an independent logical weakening here because nonmeasurable existential witnesses can be extended outside goodEvent.",
-      "severity": "note"
+      "category": "algorithm-linkage",
+      "impact": "The stochastic execution represented by the formal assumptions is not demonstrably the execution analyzed in the paper.",
+      "paper_evidence": "Theorem 4.4's proof relies on history-dependent computed Householder vectors, later operation errors, local perturbed applications, and explicit zero assignments.",
+      "severity": "major",
+      "translation_evidence": "The run encodes reflector recurrences and zeros but the dependency ledger gives no adaptedness or operation-level equation connecting its reflector and local-perturbation fields to the ordered arithmetic-model errors."
+    },
+    {
+      "category": "constants-and-quantifiers",
+      "impact": "The theorem's constant claim is replaced by a conditional parameterization that is vacuous for unsupported constants.",
+      "paper_evidence": "c5 and c6 are fixed modest integer constants produced by the local and concentration analyses.",
+      "severity": "major",
+      "translation_evidence": "They are arbitrary positive natural inputs, and certificate existence absorbs whether a chosen pair is adequate."
+    },
+    {
+      "category": "higher-order-terms",
+      "impact": "The formal remainder conditions can fit a single finite-u discrepancy without representing the paper's asymptotic execution family.",
+      "paper_evidence": "The O(u^2) terms describe omitted higher-order accumulation in a first-order rounding-error analysis.",
+      "severity": "major",
+      "translation_evidence": "Remainders are outcome-wise existential functions selected after fixing one model unit roundoff, with nonuniform constants and inconsistent explicit sign treatment."
+    },
+    {
+      "category": "preserved-core-content",
+      "impact": "The algebraic surface of the selected result is recognizable despite the material hypothesis and quantifier defects.",
+      "paper_evidence": "Equations (4.16), (4.17), and (4.20) specify the exact backward relation, coefficient, simultaneous probability, column norms, and Frobenius norm.",
+      "severity": "note",
+      "translation_evidence": "Those formulas, dimensions, norm choices, exact-versus-computed distinction, and probability expression are reproduced correctly."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean proposition does not derive Theorem 4.4's simultaneous columnwise result from Model 1.5 and the local probability-one assumption. It assumes that result in a certificate, omits the column bounds from its conclusion, admits executions not linked to Householder QR, and allows a fixed-unit-roundoff remainder spike to trivialize its quantitative bound.",
+      "reasoning": "The Lean proposition requires per-column certificates that the paper derives, permits runs whose perturbations are unrelated to Model 1.5 errors, and permits arbitrary pointwise actual-u O(u^2) slack. It therefore does not establish Theorem 4.4 from the paper's hypotheses.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "For a corresponding genuine Householder QR execution, Theorem 4.4 supplies the event, orthogonal witness, exact factorization, and simultaneous column bounds required by the certificate. The paper explicitly states that (4.17) implies the Frobenius bound (4.20), which is at least as strong as the Lean conclusion.",
+      "reasoning": "For a source-conforming QR execution, Lemma 4.2 supplies the per-column facts, Lemma 4.3 supplies the simultaneous event and p4 coefficient, and Theorem 4.4 plus (4.20) supplies the exact relation and meaningful O(u^2) bounds, which instantiate the weaker formal conclusion.",
       "verdict": "yes"
     }
   },
@@ -60,12 +83,8 @@
     "direct": "not-faithful-weaker",
     "roundtrip": "not-faithful-weaker"
   },
-  "rationale": "Primary paper evidence confirms the exact coefficient, probability, norms, tall real dimensions, local probability-one assumption, backward relation, simultaneous column bounds, and Frobenius consequence. The declaration nevertheless assumes the complete columnwise theorem, proves only its aggregation, under-specifies the source algorithm, and encodes the higher-order remainder so that the asserted bound can be trivial at a fixed positive unit roundoff. Its apparently broader run and constant quantification therefore do not constitute genuine nonvacuous strength. The paper result yields the Lean consequence, but the Lean proposition does not yield the paper result, so the directionally consistent classification is not-faithful-weaker.",
-  "remaining_uncertainties": [
-    "The PDF does not quantify the coefficient, dimension dependence, input-norm scaling, or uniformity hidden in its additive O(u^2) terms.",
-    "The numerical values of c5 and c6 are not supplied; they are only described as integer constants of modest size.",
-    "The paper does not formalize measurability or canonical Skolemization of Q and DeltaA as random functions. This does not alter the classification because the Lean declaration also imposes no measurability on those witnesses."
-  ],
+  "rationale": "The target reproduces the source's dimensions, factorization orientation, exact Q versus computed RHat distinction at the surface, simultaneous event shape, norms, gamma-tilde, coefficient, and probability formula. It is nevertheless not faithful: it assumes per-column certificates containing nearly the Lemma 4.2 conclusion, does not couple the QR run to the Model 1.5 operation/error trace, and uses post-unit-roundoff pointwise O(u^2) witnesses that make the numerical bounds vacuous for positive u. The paper result can instantiate this weaker target, but the target cannot recover the paper theorem from the paper's hypotheses.",
+  "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P06-T1"
