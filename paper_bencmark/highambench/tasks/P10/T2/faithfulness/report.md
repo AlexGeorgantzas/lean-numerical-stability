@@ -1,32 +1,25 @@
 # Faithfulness audit: P10-T2
 
-- Classification: `not-faithful-different`
-- Accepted as paper-faithful: `false`
-- Adjudicated: `false`
-- Target SHA-256: `f56d9d29c88782c5d68a355e935a7fe695114305d019209ecfb4438dc36ff3a4`
+- Classification: `faithful-equivalent`
+- Accepted as paper-faithful: `true`
+- Adjudicated: `true`
+- Target SHA-256: `753c197449d85ead7c0ecf95bd91ffdb31604a0fe1ac917aa9a126b7b85dcfbf`
 - Paper SHA-256: `0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269`
 
 ## Decision
 
-The PDF directly supports a local, absolute normwise first-order product-error rule. The Lean packet correctly models real square operands, exact multiplication, a compatible norm, and the three displayed budget terms; its local equation (1) certificate is legitimate modularization and does not assume equation (8), and the complete recursive inversion algorithm is unnecessary. The decisive mismatch is the bounded object and asymptotic scope. Lean bounds computedProduct-AB-DeltaA*DeltaB-remainder exactly, while the paper accounts for the actual computed-product error modulo uniformly higher-order effects. The run contains no epsilon-indexed inherited-error families, its higher-order coefficient can depend on the fixed epsilon and remainder, and its mu witnesses are run-local. Consequently cross and remainder deletion can hide arbitrarily large actual error, even allowing arbitrary computed outputs to satisfy a run certificate. Neither implication holds, so this is a different, non-faithful proposition rather than a stronger theorem or an acceptable specialization.
+The declaration is a rigorous asymptotic form of equation (8). It measures absolute normwise error against the unperturbed exact product, retains the fresh multiplication contribution and both inherited-error contributions with the correct factors, and absorbs precisely the suppressed mixed and quadratic effects into a locally uniform nonnegative multiple of epsilon^2. The disputed witness dependence is not contrary to any paper quantifier, and the real-square setting does not remove an explicitly asserted complex scope. Both implications therefore hold for the selected result, supporting faithful-equivalent and acceptance.
 
 ## Implications
 
-- **Lean implies paper:** `no`. From the Lean run one can at most derive an actual-error bound equal to the displayed budget plus leftInheritedError*rightInheritedError and higherOrderCoeff*epsilon^2. With no epsilon-uniform first-order inherited errors or uniform coefficient, those additions are not O(epsilon^2), so the paper's first-order actual-error rule does not follow.
-- **Paper implies lean:** `no`. The paper gives an asymptotic scalar bound for a stable multiplication execution; it does not assert the Lean theorem's universal exact decomposition or control the specifically truncated matrix after independently chosen cross and remainder terms. Possible cancellation also prevents an actual-error bound from implying a bound on an arbitrarily selected component.
+- **Lean implies paper:** `yes`. For every admissible product family, Lean bounds the actual absolute normwise product error by exactly the three contributions in equation (8), plus a fixed O(epsilon^2) remainder on a positive neighborhood. Reading equation (8) as the surrounding recurrence does, namely as first-order error-bound accounting, recovers the paper statement.
+- **Paper implies lean:** `yes`. Under the declaration's explicit premises, apply the paper's stable-multiplication model to the perturbed operands, expand (A+DeltaA)(B+DeltaB)-AB, and use the triangle and submultiplicative norm inequalities. The two linear perturbation terms give the inherited-error contributions, while DeltaA times DeltaB and changes in the fresh operand norms are O(epsilon^2), yielding the Lean conclusion.
 
 ## Findings
 
-- **critical / different-error-object:** The formal inequality can hold while the actual computed-product error is arbitrarily larger than equation (8)'s budget.
-- **critical / nonuniform-higher-order-semantics:** The perturbation cross term need not be quadratic, and any finite discrepancy can be labeled higher order at one positive epsilon.
-- **major / algorithm-and-mu-quantifier-scope:** The theorem does not establish a uniform stable multiplication routine or its algorithm-level growth contract.
-- **note / faithful-local-structure:** The local algebra, norm semantics, coefficient placement, real specialization, and omission of the full recursive inversion algorithm are individually appropriate.
-- **critical / bounded-error-object:** The proposition concerns a different error object and does not directly bound the computed product's full forward error.
-- **major / first-order-uniformity:** The removed cross product can be leading order or arbitrarily large, so its omission is not justified as a higher-order omission.
-- **major / higher-order-remainder:** The remainder certificate does not represent a uniform big-O term and places no meaningful higher-order control on the asserted error.
-- **major / coefficient-dependence:** The formal scope loses the fixed algorithm-wide dependence needed for the paper's stability model.
-- **note / local-certificate-modularization:** This part is noncircular and is a legitimate local abstraction; the complete recursive inversion algorithm is not required.
-- **note / norm-and-domain:** These choices are acceptable for the local equation and are not the source of rejection.
+- **note / quantifier-scope:** This is a legitimate explicit local-O formulation and does not weaken an asserted paper quantifier.
+- **note / scalar-field-scope:** No explicit paper case is omitted, and the specialization remains substantive and nonvacuous.
+- **note / stability-assumption-placement:** The theorem formalizes the local conditional rule used in equation (8), not a standalone proof that every operation in the algorithm bundle is globally stable.
 
 ## Semantic checklist
 
@@ -34,37 +27,39 @@ The PDF directly supports a local, absolute normwise first-order product-error r
 |---|---|---|
 | `S01` | `pass` | `pass` |
 | `S02` | `pass` | `pass` |
-| `S03` | `fail` | `fail` |
-| `S04` | `fail` | `fail` |
-| `S05` | `fail` | `fail` |
+| `S03` | `pass` | `unclear` |
+| `S04` | `pass` | `pass` |
+| `S05` | `pass` | `pass` |
 | `S06` | `pass` | `pass` |
-| `S07` | `fail` | `pass` |
-| `S08` | `fail` | `pass` |
+| `S07` | `pass` | `pass` |
+| `S08` | `pass` | `pass` |
 | `S09` | `pass` | `pass` |
-| `S10` | `fail` | `fail` |
+| `S10` | `pass` | `pass` |
 | `S11` | `pass` | `pass` |
-| `S12` | `fail` | `fail` |
-| `S13` | `pass` | `fail` |
-| `S14` | `fail` | `fail` |
-| `S15` | `pass` | `pass` |
-| `S16` | `fail` | `pass` |
+| `S12` | `pass` | `pass` |
+| `S13` | `pass` | `pass` |
+| `S14` | `pass` | `pass` |
+| `S15` | `pass` | `unclear` |
+| `S16` | `pass` | `pass` |
 
 ## Dependency coverage
 
-- Blind translator covered `66` dependencies (`0` hash-reused meanings); unclear: `none`.
-- Direct judge covered `66` dependencies (`0` hash-reused interpretations); failing or unclear: `D002, D004, D011, D012, D013, D014, D015, D016, D017`.
+- Blind translator covered `72` dependencies (`0` hash-reused meanings); unclear: `none`.
+- Direct judge covered `72` dependencies (`0` hash-reused interpretations); failing or unclear: `none`.
 
 ## Remaining uncertainties
 
-No remaining uncertainties were recorded.
+- The paper does not formally state whether its O(epsilon^2) witnesses were intended to be uniform over operand families; this adjudication attributes only the standard fixed-instance local meaning actually supported by the text.
+- The selected passages do not explicitly declare a scalar field. Whether equation (8) was also intended as a complex-matrix result is unstated and is not treated as part of the adjudicated source claim.
 
 ## Audit artifacts
 
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/agent_outputs/blind_translation.json` (`ad8f3eb4a664ba0e61f090092bd821930adc2071585f00ee4b031d6bc272237b`)
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/agent_outputs/direct_judge.json` (`bcdd26e2770193a9b58bf34adcf777cce3e28a4794bb03932390ea2f5655268e`)
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/agent_outputs/roundtrip_judge.json` (`91178079cd9c357be1e63028919496f99d6c6c6e35c79a1e58df2115969f04f8`)
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/agent_outputs/source_contract.json` (`69ec8f212638421b4a01df40f662c4a884d0d95bdc01f447ec4b18764bd14c41`)
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/decision.json` (`503a87c2d191945b478c1adc08bd63c0db647f512ef29707be89f73a2b67230a`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/agent_outputs/adjudicator.json` (`c8b6562982205b678a54ec311b60d066f9d40ce5530d5ed86ae41c5bf2b700e2`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/agent_outputs/blind_translation.json` (`f0978898510efb1c56fc96974bdeb63876b64dbc4daedaee7b1f59119d4b7468`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/agent_outputs/direct_judge.json` (`3209343739cb0e5fa2fd1eaaf573d6e27129ee2358cad29a0f7d91ed2a3eaa2e`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/agent_outputs/roundtrip_judge.json` (`c854025480e55b9a7eb9d056d567833bf7e43a25d1f9d241cda4fa8b3a09ea2c`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/agent_outputs/source_contract.json` (`27c9dd314032cd0baab5a9dac17eab7ae1b2d34a0702c0ee13bcc34a5f616c99`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/decision.json` (`adb8312cebecd673f748b7d99ecf9f486afe90b0d95adb6c9ee5527b65980093`)
 - `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260815T060718Z/agent_outputs/blind_translation.json` (`559f6d1e96571c9877d952afdb42bb8205c09e30f049a44ad67792352c5349b1`)
 - `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260815T060718Z/agent_outputs/direct_judge.json` (`e1a6926a52d5959da1ec2961bb1a850dd23a43ffbdf53c5d7d88d2e52828f281`)
 - `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260815T060718Z/agent_outputs/paper_source_contract.json` (`a730fdcbbc543ec8712373b135d8a67dd310f31f635dedabf0ed548f9316414a`)
@@ -80,10 +75,22 @@ No remaining uncertainties were recorded.
 - `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260815T060718Z/inputs/direct_review_packet.md` (`d497f433a129b9c8ae7effd6171e0d1c5fdbcf93487c3d83c51e84f131eca76f`)
 - `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260815T060718Z/inputs/paper_source_locator.json` (`91f77a26c65c7ca024e216f6cc35327e6521963eee50d0bda4fd50b72060a4dc`)
 - `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260815T060718Z/inputs/source_locator.json` (`5024d15fffb84de9174802e1e04a0124e7961850131b58b3ca4190f0248a1ed8`)
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/blind_dependency_inventory.json` (`78b55c122ea7f4e7cae7fa95eac0faa913b593e365f3cb611dbd7c407a747236`)
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/blind_dossier.md` (`588f3a61a1c9d9a6aa9e908b220c9f05abdcd699b967d25e943c2a9080826e9f`)
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/blind_review_packet.md` (`588f3a61a1c9d9a6aa9e908b220c9f05abdcd699b967d25e943c2a9080826e9f`)
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/declaration_dossier.md` (`ca35e7d825093f0a244f30607161e168d1af74a2ec416bef8a06b185554c7497`)
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/dependency_inventory.json` (`ed2a072c67791456bd4d84fbfc2fab101db00bfeaa5b39831dda2b1352266f5d`)
-- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/direct_review_packet.md` (`0159e798ef6db7fba59f235354245d82517b9b920e04f916ddfb741d22b84f21`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/agent_outputs/blind_translation.json` (`ad8f3eb4a664ba0e61f090092bd821930adc2071585f00ee4b031d6bc272237b`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/agent_outputs/direct_judge.json` (`bcdd26e2770193a9b58bf34adcf777cce3e28a4794bb03932390ea2f5655268e`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/agent_outputs/roundtrip_judge.json` (`91178079cd9c357be1e63028919496f99d6c6c6e35c79a1e58df2115969f04f8`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/agent_outputs/source_contract.json` (`69ec8f212638421b4a01df40f662c4a884d0d95bdc01f447ec4b18764bd14c41`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/decision.json` (`503a87c2d191945b478c1adc08bd63c0db647f512ef29707be89f73a2b67230a`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/inputs/blind_dependency_inventory.json` (`78b55c122ea7f4e7cae7fa95eac0faa913b593e365f3cb611dbd7c407a747236`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/inputs/blind_dossier.md` (`588f3a61a1c9d9a6aa9e908b220c9f05abdcd699b967d25e943c2a9080826e9f`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/inputs/blind_review_packet.md` (`588f3a61a1c9d9a6aa9e908b220c9f05abdcd699b967d25e943c2a9080826e9f`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/inputs/declaration_dossier.md` (`ca35e7d825093f0a244f30607161e168d1af74a2ec416bef8a06b185554c7497`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/inputs/dependency_inventory.json` (`ed2a072c67791456bd4d84fbfc2fab101db00bfeaa5b39831dda2b1352266f5d`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/inputs/direct_review_packet.md` (`0159e798ef6db7fba59f235354245d82517b9b920e04f916ddfb741d22b84f21`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/history/20260821T200913Z/inputs/source_locator.json` (`5024d15fffb84de9174802e1e04a0124e7961850131b58b3ca4190f0248a1ed8`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/blind_dependency_inventory.json` (`4f9c7a4a769745db47110dcfb5e77d14c135ee4bb1a56de6eb88fe75b0aa8edd`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/blind_dossier.md` (`628982bd63e7222e25a69b66b4cac67474c58ebed9bbfc1b60907c6684cbf7d2`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/blind_review_packet.md` (`628982bd63e7222e25a69b66b4cac67474c58ebed9bbfc1b60907c6684cbf7d2`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/declaration_dossier.md` (`ab45f6bb66aa030e6148e62ad8eed998a7b40957992d04b2bcddb111be74642f`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/dependency_inventory.json` (`491a4173915ce3ca625d9e7ae80245cd8943384a9465c10a9b4f86607668c06b`)
+- `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/direct_review_packet.md` (`90e262d2e9130eafad7e3a20771bbb5731be8d53c55da60e50f29496323ad827`)
 - `paper_bencmark/highambench/tasks/P10/T2/faithfulness/inputs/source_locator.json` (`5024d15fffb84de9174802e1e04a0124e7961850131b58b3ca4190f0248a1ed8`)

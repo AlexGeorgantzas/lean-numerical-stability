@@ -1,523 +1,555 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "588f3a61a1c9d9a6aa9e908b220c9f05abdcd699b967d25e943c2a9080826e9f",
+  "dossier_sha256": "628982bd63e7222e25a69b66b4cac67474c58ebed9bbfc1b60907c6684cbf7d2",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For a certified matrix-norm structure, this is its real-valued evaluation function on n-by-n real matrices.",
-      "effect_on_target": "It evaluates the run's matrix norm at the projected error matrix, producing the left-hand side of the conclusion.",
+      "meaning": "For a matrix-norm package on n by n real matrices, this is its real-valued evaluation function.",
+      "effect_on_target": "It evaluates the algorithm's matrix norm on the total error matrix in the conclusion.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "This is the indexed type of proof-carrying runs of dimension n. Its constructor packages all numerical data, matrices, coefficients, algebraic relationships, and bounds listed in D014.",
-      "effect_on_target": "The theorem is universally quantified over every inhabitant of this certified-run type; it does not assert that such an inhabitant exists.",
+      "meaning": "This dependent inductive type packages an admissible data family for an algorithm and dimension, with the fields and assumptions supplied by D012.",
+      "effect_on_target": "The universal family binder ranges only over these admissible packages; its exact matrices, perturbations, inherited errors, and embedded estimates determine the target bound.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "This is the second constructor field of a run, namely its certified matrix-norm structure.",
-      "effect_on_target": "It selects the norm used to measure the projected error and all matrix quantities in the hypotheses and bound.",
+      "meaning": "The subtype of real numbers epsilon satisfying 0 < epsilon.",
+      "effect_on_target": "Every epsilon in the proposition is strictly positive, and epsilon.val is its underlying real value.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "For a run, this defines E = ((C - AB) - ΔAΔB) - R, where C is the computed product, A and B are the exact matrices, ΔA and ΔB are their perturbations, and R is the higher-order remainder.",
-      "effect_on_target": "This is the matrix whose norm is bounded. It is not the full error C-AB: the perturbation cross-product ΔAΔB and the certified remainder R are explicitly subtracted.",
+      "meaning": "This inductive type packages an algorithm as described by D015: dimension-indexed matrix norms, a nonnegative growth-controlled function mu, and a matrix-valued product operation.",
+      "effect_on_target": "The proposition is universal over such algorithm packages and uses their norm, mu value, and product operation.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "This defines the real number μ(n) ε N(A) N(B) + (N(A) η_B + η_A N(B)), with η_A and η_B the supplied left and right inherited-error bounds.",
-      "effect_on_target": "It is exactly the right-hand side of the asserted norm inequality.",
+      "meaning": "The first field of an algorithm package, assigning a matrix-norm package to every natural dimension.",
+      "effect_on_target": "At dimension n it supplies the norm N_n used on the total error and throughout the bound.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "LocalDef006",
-      "meaning": "This is the type of certified norm-like functionals on n-by-n real matrices, constructed with the nonnegativity, definiteness, absolute homogeneity, triangle, and submultiplicativity axioms in D020.",
-      "effect_on_target": "It restricts the allowed matrix measurements to abstract submultiplicative matrix norms on square real matrices.",
+      "meaning": "For epsilon, it is the algorithmic product of the perturbed inputs minus the exact matrix product of the unperturbed matrices.",
+      "effect_on_target": "This is the total error matrix whose norm is bounded in the conclusion.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "LocalDef007",
-      "meaning": "This is the fifteenth constructor field of a run, the n-by-n real matrix C designated as the computed product.",
-      "effect_on_target": "It supplies the computed output appearing in the projected error E.",
+      "meaning": "For epsilon, it is mu(n) epsilon N_n(A) N_n(B) + N_n(A) e_R(epsilon) + e_L(epsilon) N_n(B), where A and B are the exact matrices and e_L and e_R are the inherited-error functions.",
+      "effect_on_target": "It is the explicitly retained first-order and inherited-error part of the right-hand side, before adding the existential quadratic remainder.",
       "status": "understood"
     },
     {
       "id": "D008",
       "name": "LocalDef008",
-      "meaning": "This is the third constructor field of a run, the positive real parameter ε.",
-      "effect_on_target": "It scales the local-error term linearly and the removed remainder bound quadratically.",
+      "meaning": "An inductive package representing a norm-like function on n by n real matrices, with the norm axioms supplied by D019.",
+      "effect_on_target": "The algorithm provides one such package in each dimension, and its value field is used as N_n.",
       "status": "understood"
     },
     {
       "id": "D009",
       "name": "LocalDef009",
-      "meaning": "This is the eleventh constructor field of a run, the exact left n-by-n real matrix A.",
-      "effect_on_target": "It occurs in the exact product AB, the retained inherited-error term AΔB, and the right-hand-side factors N(A).",
+      "meaning": "The second field of a family package, namely its exact left n by n real matrix A.",
+      "effect_on_target": "A appears in the exact product AB and in the factors N_n(A) on the right-hand side.",
       "status": "understood"
     },
     {
       "id": "D010",
       "name": "LocalDef010",
-      "meaning": "This is the twelfth constructor field of a run, the exact right n-by-n real matrix B.",
-      "effect_on_target": "It occurs in the exact product AB, the retained inherited-error term ΔAB, and the right-hand-side factors N(B).",
+      "meaning": "The third field of a family package, namely its exact right n by n real matrix B.",
+      "effect_on_target": "B appears in the exact product AB and in the factors N_n(B) on the right-hand side.",
       "status": "understood"
     },
     {
       "id": "D011",
       "name": "LocalDef011",
-      "meaning": "This is the seventeenth constructor field of a run, the higher-order remainder matrix R.",
-      "effect_on_target": "It is included in the certified equation for C but is explicitly subtracted from E, so its κ ε² bound is not needed to estimate E.",
+      "meaning": "The sixth field of a family package, a nonnegative real-valued left inherited-error function e_L on positive epsilon.",
+      "effect_on_target": "It contributes the term e_L(epsilon) N_n(B) to the target bound.",
       "status": "understood"
     },
     {
       "id": "D012",
       "name": "LocalDef012",
-      "meaning": "This is the eighteenth constructor field of a run, the nonnegative left inherited-error scalar η_A.",
-      "effect_on_target": "It bounds N(ΔA) and contributes the term η_A N(B) to the conclusion.",
+      "meaning": "The family constructor requires 0 < n; exact matrices A and B; perturbations Delta_A and Delta_B; nonnegative inherited errors e_L and e_R; nonnegative coefficients c_L, c_R, and C_0; and a radius rho_0 > 0. It requires N_n(Delta_A(epsilon)) <= e_L(epsilon) and N_n(Delta_B(epsilon)) <= e_R(epsilon) for every positive epsilon, e_L(epsilon) <= c_L epsilon and e_R(epsilon) <= c_R epsilon when epsilon <= rho_0, and N_n(P(epsilon,A+Delta_A,B+Delta_B) - (A+Delta_A)(B+Delta_B)) <= mu(n) epsilon N_n(A) N_n(B) + C_0 epsilon^2 when epsilon <= rho_0.",
+      "effect_on_target": "These conditions are embedded in the type of the universally quantified family. They provide the local input-error and algorithmic-error assumptions from which the asserted total-error estimate can hold.",
       "status": "understood"
     },
     {
       "id": "D013",
       "name": "LocalDef013",
-      "meaning": "This is the thirteenth constructor field of a run, the left perturbation matrix ΔA.",
-      "effect_on_target": "Its quadratic product ΔAΔB is removed from E, while its linear product ΔAB remains and is bounded using N(ΔA) ≤ η_A.",
+      "meaning": "The seventh field of a family package, a nonnegative real-valued right inherited-error function e_R on positive epsilon.",
+      "effect_on_target": "It contributes the term N_n(A) e_R(epsilon) to the target bound.",
       "status": "understood"
     },
     {
       "id": "D014",
       "name": "LocalDef014",
-      "meaning": "This constructor takes, in order: n>0; a certified matrix norm N; ε with ε>0; μ:ℕ→ℝ with μ(k)≥0 for every k; a natural degree d; a nonnegative growth constant C_μ; the bound μ(k)≤C_μ(k:ℝ)^d for every k; matrices A, B, ΔA, ΔB, C, L, R; scalars η_A and η_B with both nonnegative; a scalar κ with κ≥0; the equation C=((A+ΔA)(B+ΔB)+L)+R; and the bounds N(L)≤μ(n)εN(A)N(B), N(ΔA)≤η_A, N(ΔB)≤η_B, and N(R)≤κ ε².",
-      "effect_on_target": "The decomposition equation makes E exactly AΔB + ΔAB + L. The bounds on L, ΔA, and ΔB, together with the norm axioms, yield the conclusion. Positivity of n and ε, polynomial growth of μ, nonnegativity proofs, and the bound on R constrain admissible runs but are not needed directly after R is canceled.",
+      "meaning": "For n, this is the type of n by n matrices over the real numbers, indexed by Fin n in both coordinates.",
+      "effect_on_target": "All exact matrices, perturbations, algorithm outputs, products, and error matrices have this type.",
       "status": "understood"
     },
     {
       "id": "D015",
       "name": "LocalDef015",
-      "meaning": "This is the fifth constructor field of a run, the nonnegative coefficient function μ:ℕ→ℝ.",
-      "effect_on_target": "Only its value μ(n) occurs in the local first-order-error bound and final inequality; its global polynomial-growth certificate does not otherwise enter the conclusion.",
+      "meaning": "The algorithm constructor takes a matrix norm N_n for each n, a function mu with mu(n) >= 0, a natural degree d, a constant K >= 0 satisfying mu(n) <= K n^d for every positive n, and a product operation P mapping n, positive epsilon, and two n by n matrices to an n by n matrix.",
+      "effect_on_target": "It restricts the algorithm binder to such packages. The conclusion directly uses N_n, mu(n), and P, while the polynomial growth data are only indirect type-level restrictions.",
       "status": "understood"
     },
     {
       "id": "D016",
       "name": "LocalDef016",
-      "meaning": "This is the nineteenth constructor field of a run, the nonnegative right inherited-error scalar η_B.",
-      "effect_on_target": "It bounds N(ΔB) and contributes the term N(A)η_B to the conclusion.",
+      "meaning": "The second field of an algorithm package, namely the real-valued function mu on natural dimensions.",
+      "effect_on_target": "Its value mu(n) multiplies epsilon N_n(A) N_n(B) in the leading term.",
       "status": "understood"
     },
     {
       "id": "D017",
       "name": "LocalDef017",
-      "meaning": "This is the fourteenth constructor field of a run, the right perturbation matrix ΔB.",
-      "effect_on_target": "Its quadratic product ΔAΔB is removed from E, while its linear product AΔB remains and is bounded using N(ΔB) ≤ η_B.",
+      "meaning": "Ordinary multiplication of two n by n real matrices, with entries formed by finite dot products.",
+      "effect_on_target": "It defines both the exact product AB subtracted in the total error and the exact products of perturbed inputs used in family assumptions.",
       "status": "understood"
     },
     {
       "id": "D018",
       "name": "LocalDef018",
-      "meaning": "For n, this is Matrix (Fin n) (Fin n) Real: the type of square n-by-n real matrices.",
-      "effect_on_target": "All exact matrices, perturbations, computed output, local error, remainder, and the projected error have this same square dimension.",
+      "meaning": "The algorithm's product operation applied at epsilon to A + Delta_A(epsilon) and B + Delta_B(epsilon).",
+      "effect_on_target": "It is the computed matrix output appearing in the total error.",
       "status": "understood"
     },
     {
       "id": "D019",
       "name": "LocalDef019",
-      "meaning": "This is ordinary matrix multiplication: (AB)ᵢₖ is the finite sum over j in Fin n of AᵢⱼBⱼₖ.",
-      "effect_on_target": "It defines AB, ΔAΔB, the perturbed-input product, and the submultiplicativity axiom used to bound retained product terms.",
+      "meaning": "The matrix-norm constructor packages a function N with N(A) >= 0, N(A) = 0 iff A = 0, N(cA) = |c|N(A), N(A+B) <= N(A)+N(B), and N(AB) <= N(A)N(B).",
+      "effect_on_target": "It ensures every algorithm norm used in the proposition is definite, absolutely homogeneous, subadditive, and submultiplicative.",
       "status": "understood"
     },
     {
       "id": "D020",
       "name": "LocalDef020",
-      "meaning": "This constructs a matrix norm N from a function on n-by-n real matrices satisfying N(A)≥0; N(A)=0 iff A=0; N(cA)=|c|N(A); N(A+B)≤N(A)+N(B); and N(AB)≤N(A)N(B).",
-      "effect_on_target": "Triangle inequality and submultiplicativity directly bound AΔB + ΔAB + L. The remaining axioms restrict the admitted functional but are not essential to this particular estimate.",
+      "meaning": "The fourth field of a family package, the left perturbation Delta_A(epsilon).",
+      "effect_on_target": "It is added to A before the algorithm's product is evaluated.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "LE.le",
-      "meaning": "This projects the less-than-or-equal relation supplied by an ordered type.",
-      "effect_on_target": "With the real instance, it expresses every non-strict real inequality, including the final bound.",
+      "name": "LocalDef021",
+      "meaning": "The fifth field of a family package, the right perturbation Delta_B(epsilon).",
+      "effect_on_target": "It is added to B before the algorithm's product is evaluated.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "Nat",
-      "meaning": "This is the type of natural numbers.",
-      "effect_on_target": "It supplies the matrix dimension n, indices for μ, the polynomial degree, and natural exponents.",
+      "name": "LocalDef022",
+      "meaning": "The eighth field of an algorithm package, its product operation P(n,epsilon,X,Y).",
+      "effect_on_target": "It produces the computed product used in the total error and in the family's local algorithmic-error assumption.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "Real",
-      "meaning": "This is the type of real numbers.",
-      "effect_on_target": "Matrix entries, norm values, ε, coefficient values, inherited-error bounds, and all scalar inequalities are real-valued.",
+      "name": "And",
+      "meaning": "Logical conjunction of two propositions.",
+      "effect_on_target": "It requires the quadratic coefficient to be nonnegative together with the remaining existence claim, and requires the radius to be positive together with the universal estimate.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "Real.instLE",
-      "meaning": "This is the standard less-than-or-equal order on real numbers.",
-      "effect_on_target": "It gives the mathematical meaning of the conclusion as an ordinary real inequality.",
+      "name": "Exists",
+      "meaning": "Existential quantification over values satisfying a predicate.",
+      "effect_on_target": "It introduces the real quadratic coefficient and, inside it, the real radius.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "Fin",
-      "meaning": "Fin n is the finite index type whose elements correspond to natural numbers less than n.",
-      "effect_on_target": "It indexes both rows and columns of every n-by-n matrix.",
+      "name": "HAdd.hAdd",
+      "meaning": "Typeclass-selected heterogeneous addition; at all direct target occurrences it resolves to ordinary real addition.",
+      "effect_on_target": "It adds the leading error expression and the quadratic term, and combines the three terms defining D007.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "HAdd.hAdd",
-      "meaning": "This invokes the applicable heterogeneous addition operation.",
-      "effect_on_target": "It realizes real addition in bounds and pointwise matrix addition in the perturbed inputs and decomposition.",
+      "name": "HMul.hMul",
+      "meaning": "Typeclass-selected heterogeneous multiplication; at direct target occurrences it resolves to ordinary real multiplication.",
+      "effect_on_target": "It forms the products in the leading term and the product of the existential coefficient with epsilon squared.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "HMul.hMul",
-      "meaning": "This invokes the applicable heterogeneous multiplication operation.",
-      "effect_on_target": "It realizes the real scalar products in coefficient bounds; matrix multiplication is supplied by the specialized matrix instance.",
+      "name": "HPow.hPow",
+      "meaning": "Typeclass-selected exponentiation.",
+      "effect_on_target": "With a real base and natural exponent 2, it forms epsilon squared.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "HSub.hSub",
-      "meaning": "This invokes the applicable heterogeneous subtraction operation.",
-      "effect_on_target": "It forms the three successive matrix subtractions defining E.",
+      "name": "LE.le",
+      "meaning": "The typeclass-selected non-strict order relation.",
+      "effect_on_target": "For reals it expresses nonnegativity, epsilon <= radius, and the final norm upper bound.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "Matrix.sub",
-      "meaning": "This equips matrices with entrywise subtraction inherited from their entries.",
-      "effect_on_target": "Consequently, E = ((C-AB)-ΔAΔB)-R is computed entrywise before its norm is taken.",
+      "name": "LT.lt",
+      "meaning": "The typeclass-selected strict order relation.",
+      "effect_on_target": "For reals it defines positive epsilon and requires the existential radius to be positive.",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "Real.instAdd",
-      "meaning": "This is ordinary real addition.",
-      "effect_on_target": "It combines the real terms on the right-hand side and supplies entrywise addition for real matrices.",
+      "name": "Monoid.toNatPow",
+      "meaning": "Natural-number exponentiation induced by a monoid's repeated multiplication operation.",
+      "effect_on_target": "It gives the standard real natural power used to interpret epsilon^2.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "Real.instMul",
-      "meaning": "This is ordinary real multiplication.",
-      "effect_on_target": "It forms all scalar products in the local-error, growth, remainder, and final bounds.",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "It supplies the universally quantified matrix dimension n and the exponent 2; it also occurs in packaged growth data.",
       "status": "understood"
     },
     {
       "id": "D032",
-      "name": "Real.instSub",
-      "meaning": "This is ordinary real subtraction, defined as addition of the additive inverse.",
-      "effect_on_target": "It supplies the entrywise scalar subtraction used by matrix subtraction in E.",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of a natural numeral in a type possessing the corresponding OfNat instance.",
+      "effect_on_target": "It interprets 0 as a real number and 2 as a natural exponent.",
       "status": "understood"
     },
     {
       "id": "D033",
-      "name": "instHAdd",
-      "meaning": "This converts an ordinary addition instance into homogeneous heterogeneous-addition notation.",
-      "effect_on_target": "It ensures the displayed additions are the standard real or matrix additions selected by type.",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "Norm values, epsilon values, coefficients, radii, inherited errors, and matrix entries are real.",
       "status": "understood"
     },
     {
       "id": "D034",
-      "name": "instHMul",
-      "meaning": "This converts an ordinary multiplication instance into homogeneous heterogeneous-multiplication notation.",
-      "effect_on_target": "It ensures scalar products in the bounds are ordinary real multiplication.",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary addition on the real numbers.",
+      "effect_on_target": "It determines the additions in the right-hand side of the target inequality.",
       "status": "understood"
     },
     {
       "id": "D035",
-      "name": "instHSub",
-      "meaning": "This converts an ordinary subtraction instance into homogeneous heterogeneous-subtraction notation.",
-      "effect_on_target": "It ensures the subtractions defining E use ordinary entrywise matrix subtraction.",
+      "name": "Real.instLE",
+      "meaning": "The usual non-strict order on real numbers.",
+      "effect_on_target": "It gives the mathematical meanings of C >= 0, epsilon <= r, and the final <= inequality.",
       "status": "understood"
     },
     {
       "id": "D036",
-      "name": "Eq",
-      "meaning": "This is propositional equality.",
-      "effect_on_target": "It expresses norm definiteness and, crucially, the exact certified equation linking C to the product of perturbed inputs plus L and R.",
+      "name": "Real.instLT",
+      "meaning": "The usual strict order on real numbers.",
+      "effect_on_target": "It gives the meanings of epsilon > 0 and r > 0.",
       "status": "understood"
     },
     {
       "id": "D037",
-      "name": "Fin.fintype",
-      "meaning": "This supplies the finite enumeration of Fin n.",
-      "effect_on_target": "It makes the inner index of square-matrix multiplication a finite summation domain.",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure on the real numbers.",
+      "effect_on_target": "It supplies repeated multiplication for the real square epsilon^2.",
       "status": "understood"
     },
     {
       "id": "D038",
-      "name": "HPow.hPow",
-      "meaning": "This invokes the applicable exponentiation operation.",
-      "effect_on_target": "It represents (k:ℝ)^d in the growth bound and ε² in the remainder bound.",
+      "name": "Real.instMul",
+      "meaning": "Ordinary multiplication on the real numbers.",
+      "effect_on_target": "It determines all scalar products in the target bound.",
       "status": "understood"
     },
     {
       "id": "D039",
-      "name": "LT.lt",
-      "meaning": "This projects the strict-order relation supplied by an ordered type.",
-      "effect_on_target": "It expresses the assumptions 0<n and 0<ε.",
+      "name": "Real.instZero",
+      "meaning": "The zero element of the real numbers.",
+      "effect_on_target": "It supplies the zero used in positivity and nonnegativity conditions.",
       "status": "understood"
     },
     {
       "id": "D040",
-      "name": "Matrix",
-      "meaning": "A matrix with row type m, column type n, and entries in α is a function m→n→α.",
-      "effect_on_target": "It gives the underlying representation of all matrices as functions on finite row and column indices.",
+      "name": "Subtype.val",
+      "meaning": "Projection from an element of a subtype to its underlying value.",
+      "effect_on_target": "It extracts the real epsilon from the proof-carrying positive-real epsilon.",
       "status": "understood"
     },
     {
       "id": "D041",
-      "name": "Matrix.add",
-      "meaning": "This equips matrices with pointwise addition.",
-      "effect_on_target": "It defines A+ΔA, B+ΔB, and the matrix sums with L and R in the certified decomposition.",
+      "name": "Zero.toOfNat0",
+      "meaning": "The canonical interpretation of the numeral 0 from a type's zero element.",
+      "effect_on_target": "It ensures every displayed real zero is the ordinary additive zero.",
       "status": "understood"
     },
     {
       "id": "D042",
-      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
-      "meaning": "This defines standard matrix multiplication by finite dot products over the shared index type.",
-      "effect_on_target": "It gives all matrix products their usual algebraic meaning and supports expansion of (A+ΔA)(B+ΔB).",
+      "name": "instHAdd",
+      "meaning": "The homogeneous HAdd instance induced by an ordinary Add instance.",
+      "effect_on_target": "It makes HAdd on reals coincide with ordinary real addition.",
       "status": "understood"
     },
     {
       "id": "D043",
-      "name": "Monoid.toNatPow",
-      "meaning": "This provides natural-number powers in a monoid.",
-      "effect_on_target": "For real numbers it gives the ordinary powers (k:ℝ)^d and ε².",
+      "name": "instHMul",
+      "meaning": "The homogeneous HMul instance induced by an ordinary Mul instance.",
+      "effect_on_target": "It makes HMul on reals coincide with ordinary real multiplication.",
       "status": "understood"
     },
     {
       "id": "D044",
-      "name": "Nat.cast",
-      "meaning": "This casts a natural number into a type with a natural-number embedding.",
-      "effect_on_target": "It interprets k as a real number in the polynomial-growth expression C_μ(k:ℝ)^d.",
+      "name": "instHPow",
+      "meaning": "The homogeneous HPow instance induced by a Pow instance.",
+      "effect_on_target": "It makes the target's heterogeneous power notation use ordinary real natural powers.",
       "status": "understood"
     },
     {
       "id": "D045",
-      "name": "OfNat.ofNat",
-      "meaning": "This interprets a natural numeral in the target type.",
-      "effect_on_target": "It supplies numerical constants such as 0 and 2 in positivity assumptions and powers.",
+      "name": "instOfNatNat",
+      "meaning": "The canonical OfNat instance interpreting a natural numeral n as the natural number n itself.",
+      "effect_on_target": "It interprets the exponent numeral 2 as the natural number two.",
       "status": "understood"
     },
     {
       "id": "D046",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "This supplies the commutative additive-monoid structure of the real numbers.",
-      "effect_on_target": "It permits finite sums of real products in standard matrix multiplication.",
+      "name": "Fin",
+      "meaning": "For n, the finite type of natural indices strictly below n.",
+      "effect_on_target": "It indexes the rows and columns of every n by n matrix.",
       "status": "understood"
     },
     {
       "id": "D047",
-      "name": "Real.instLT",
-      "meaning": "This is the standard strict order on real numbers.",
-      "effect_on_target": "It makes 0<ε ordinary strict positivity of ε.",
+      "name": "HSub.hSub",
+      "meaning": "Typeclass-selected heterogeneous subtraction.",
+      "effect_on_target": "For matrices it forms computed output minus exact product in the error matrices.",
       "status": "understood"
     },
     {
       "id": "D048",
-      "name": "Real.instMonoid",
-      "meaning": "This supplies the multiplicative monoid structure of the real numbers.",
-      "effect_on_target": "It defines natural powers of real quantities in the growth and remainder bounds.",
+      "name": "Matrix.sub",
+      "meaning": "Pointwise subtraction of matrices, inherited from subtraction of their entries.",
+      "effect_on_target": "It makes the error matrix equal entrywise to the computed matrix minus the exact matrix product.",
       "status": "understood"
     },
     {
       "id": "D049",
-      "name": "Real.instNatCast",
-      "meaning": "This supplies the standard embedding of natural numbers into the reals.",
-      "effect_on_target": "It gives the real value of k in the polynomial-growth bound.",
+      "name": "Real.instSub",
+      "meaning": "Ordinary subtraction on real numbers, defined as addition of the additive inverse.",
+      "effect_on_target": "It induces pointwise subtraction for real matrices.",
       "status": "understood"
     },
     {
       "id": "D050",
-      "name": "Real.instZero",
-      "meaning": "This supplies the real number zero.",
-      "effect_on_target": "It is used in nonnegativity, positivity, and norm-definiteness assumptions.",
+      "name": "Subtype",
+      "meaning": "The type of values equipped with a proof that they satisfy a predicate.",
+      "effect_on_target": "It represents epsilon as a real number equipped with a proof of strict positivity.",
       "status": "understood"
     },
     {
       "id": "D051",
-      "name": "Zero.toOfNat0",
-      "meaning": "This interprets numeral 0 using a type's zero element.",
-      "effect_on_target": "It connects written zeroes in real assumptions to the actual real zero.",
+      "name": "instHSub",
+      "meaning": "The homogeneous HSub instance induced by an ordinary Sub instance.",
+      "effect_on_target": "It makes matrix HSub coincide with ordinary pointwise matrix subtraction.",
       "status": "understood"
     },
     {
       "id": "D052",
-      "name": "instHPow",
-      "meaning": "This converts an ordinary power operation into heterogeneous-power notation.",
-      "effect_on_target": "It ensures the displayed powers are ordinary real powers with natural exponents.",
+      "name": "Fin.fintype",
+      "meaning": "The finite enumeration structure on Fin n.",
+      "effect_on_target": "It permits the finite sums over inner indices used in n by n matrix multiplication.",
       "status": "understood"
     },
     {
       "id": "D053",
-      "name": "instLTNat",
-      "meaning": "This is the standard strict order on natural numbers.",
-      "effect_on_target": "It makes the dimension requirement 0<n the usual positivity condition on n.",
+      "name": "Matrix",
+      "meaning": "A matrix with row type m, column type n, and entries in alpha is a function m -> n -> alpha.",
+      "effect_on_target": "Specialized to Fin n and Real, it is the ambient type of all matrices in the proposition.",
       "status": "understood"
     },
     {
       "id": "D054",
-      "name": "instOfNatNat",
-      "meaning": "This interprets each natural numeral as itself in ℕ.",
-      "effect_on_target": "It supplies natural constants such as the 0 in 0<n and the exponent 2.",
+      "name": "Matrix.add",
+      "meaning": "Pointwise addition of matrices.",
+      "effect_on_target": "It forms A + Delta_A(epsilon) and B + Delta_B(epsilon).",
       "status": "understood"
     },
     {
       "id": "D055",
-      "name": "Algebra.id",
-      "meaning": "This gives a commutative semiring its identity algebra structure over itself.",
-      "effect_on_target": "For ℝ it underlies scalar multiplication of real matrices by real numbers in the norm-homogeneity axiom.",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "meaning": "Matrix multiplication defined by finite dot products over the shared index type.",
+      "effect_on_target": "It supplies the ordinary exact matrix products used by D017.",
       "status": "understood"
     },
     {
       "id": "D056",
-      "name": "Algebra.toSMul",
-      "meaning": "This extracts scalar multiplication from an algebra structure.",
-      "effect_on_target": "It supplies ordinary real scalar multiplication used in cA.",
+      "name": "Nat.cast",
+      "meaning": "The canonical cast of a natural number into a type with a NatCast structure.",
+      "effect_on_target": "It interprets n as a real number in the polynomial growth restriction on mu; it does not occur directly in the final inequality.",
       "status": "understood"
     },
     {
       "id": "D057",
-      "name": "CommSemiring.toSemiring",
-      "meaning": "This extracts the semiring structure from a commutative semiring.",
-      "effect_on_target": "It supports the identity real-algebra structure used for scalar multiplication.",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure of the real numbers.",
+      "effect_on_target": "It supplies zero and finite summation of real products for matrix multiplication.",
       "status": "understood"
     },
     {
       "id": "D058",
-      "name": "HSMul.hSMul",
-      "meaning": "This invokes the applicable heterogeneous scalar-multiplication operation.",
-      "effect_on_target": "It forms the scalar multiple cA in the absolute-homogeneity axiom of the matrix norm.",
+      "name": "Real.instNatCast",
+      "meaning": "The canonical embedding of natural numbers into the real numbers.",
+      "effect_on_target": "It gives the real value of n in the algorithm package's growth bound mu(n) <= K n^d.",
       "status": "understood"
     },
     {
       "id": "D059",
-      "name": "Iff",
-      "meaning": "This is logical equivalence between two propositions.",
-      "effect_on_target": "It states the norm-definiteness condition N(A)=0 if and only if A is the zero matrix.",
+      "name": "instLTNat",
+      "meaning": "The usual strict order on natural numbers.",
+      "effect_on_target": "It interprets the embedded family requirement 0 < n and the positive-dimension condition in the growth bound.",
       "status": "understood"
     },
     {
       "id": "D060",
-      "name": "Matrix.smul",
-      "meaning": "This equips matrices with entrywise scalar multiplication.",
-      "effect_on_target": "Thus cA in the norm axiom is the matrix obtained by multiplying every entry of A by c.",
+      "name": "Algebra.id",
+      "meaning": "The identity algebra structure of a commutative semiring over itself.",
+      "effect_on_target": "For the reals it supports the standard scalar action used in the matrix norm's absolute-homogeneity axiom.",
       "status": "understood"
     },
     {
       "id": "D061",
-      "name": "Matrix.zero",
-      "meaning": "This equips matrices with the entrywise zero matrix.",
-      "effect_on_target": "It gives meaning to A=0 in the norm-definiteness axiom.",
+      "name": "Algebra.toSMul",
+      "meaning": "The scalar-multiplication structure supplied by an algebra.",
+      "effect_on_target": "It makes real scalar multiplication available for real matrices in the norm package.",
       "status": "understood"
     },
     {
       "id": "D062",
-      "name": "Real.instAddGroup",
-      "meaning": "This supplies the additive-group structure of the real numbers.",
-      "effect_on_target": "It provides negation and subtraction and participates in defining real absolute value.",
+      "name": "CommSemiring.toSemiring",
+      "meaning": "The semiring structure inherited from a commutative semiring.",
+      "effect_on_target": "It supports the identity real algebra and hence the scalar multiplication used indirectly by the norm axioms.",
       "status": "understood"
     },
     {
       "id": "D063",
-      "name": "Real.instCommSemiring",
-      "meaning": "This supplies the commutative-semiring structure of the real numbers.",
-      "effect_on_target": "It supports the identity real-algebra and hence real scalar multiplication of matrices.",
+      "name": "Eq",
+      "meaning": "Propositional equality between two values of the same type.",
+      "effect_on_target": "It expresses definiteness of the matrix norm through N(A) = 0 iff A is the zero matrix.",
       "status": "understood"
     },
     {
       "id": "D064",
-      "name": "Real.lattice",
-      "meaning": "This supplies the lattice order structure on the real numbers.",
-      "effect_on_target": "It supports the definition of |c| used in absolute homogeneity.",
+      "name": "HSMul.hSMul",
+      "meaning": "Typeclass-selected heterogeneous scalar multiplication.",
+      "effect_on_target": "It denotes multiplication of a matrix by a real scalar in the matrix norm's homogeneity axiom.",
       "status": "understood"
     },
     {
       "id": "D065",
-      "name": "abs",
-      "meaning": "For a real c, this defines |c| as max(c,-c).",
-      "effect_on_target": "It appears only in the matrix-norm homogeneity axiom N(cA)=|c|N(A).",
+      "name": "Iff",
+      "meaning": "Logical equivalence between two propositions.",
+      "effect_on_target": "It states the two-way definiteness condition N(A) = 0 iff A = 0 in the norm package.",
       "status": "understood"
     },
     {
       "id": "D066",
+      "name": "Matrix.smul",
+      "meaning": "Pointwise scalar multiplication of matrices.",
+      "effect_on_target": "It realizes the scalar multiple cA appearing in the norm homogeneity axiom.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Matrix.zero",
+      "meaning": "The pointwise zero matrix.",
+      "effect_on_target": "It supplies the zero matrix used in the norm definiteness axiom.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive group structure of the real numbers.",
+      "effect_on_target": "It provides negation needed for real absolute value in the norm homogeneity axiom.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instCommSemiring",
+      "meaning": "The commutative semiring structure of the real numbers.",
+      "effect_on_target": "It supports the identity algebra and standard real scalar action used indirectly by matrix scalar multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Real.lattice",
+      "meaning": "The lattice order structure of the real numbers.",
+      "effect_on_target": "It supports the maximum operation used to define real absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "abs",
+      "meaning": "In an ordered additive group, abs(c) is the maximum of c and -c; for reals this is ordinary absolute value.",
+      "effect_on_target": "It appears in the matrix norm axiom N(cA) = |c|N(A).",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
       "name": "instHSMul",
-      "meaning": "This converts an ordinary scalar action into heterogeneous scalar-multiplication notation.",
-      "effect_on_target": "It ensures cA in the norm axiom uses the standard pointwise real action on matrices.",
+      "meaning": "The HSMul instance induced by an ordinary scalar-multiplication structure.",
+      "effect_on_target": "It makes heterogeneous real-matrix scalar multiplication coincide with the standard pointwise scalar action.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "First, an implicit natural number n is universally quantified.",
-      "Second, run : LocalDef002 n is universally quantified. It is a proof-carrying certified run, not an existential witness in the conclusion.",
-      "Unpacking run, its constructor arguments occur in this exact order: a proof h_n of 0<n; a matrix norm N; ε; a proof of 0<ε; μ:ℕ→ℝ; a proof that μ is pointwise nonnegative; a degree d:ℕ; a growth constant C_μ; a proof C_μ≥0; a proof of the global growth bound; matrices A, B, ΔA, ΔB, C, L, R; scalars η_A and η_B; proofs η_A≥0 and η_B≥0; a coefficient κ; a proof κ≥0; the decomposition equality; the local-error bound; the left-perturbation bound; the right-perturbation bound; and the remainder bound.",
-      "All seven matrix fields A, B, ΔA, ΔB, C, L, and R are square n-by-n matrices over ℝ.",
-      "Here A and B are the exact left and right matrices, ΔA and ΔB are their perturbations, C is the designated computed product, L is a local first-order-error matrix, and R is a higher-order remainder matrix."
+      "An implicit natural number n, universally quantified.",
+      "An algorithm package, universally quantified, containing dimension-indexed matrix norms N_m, a function mu, associated growth data, and a matrix product operation P.",
+      "An admissible family for that algorithm at dimension n, universally quantified and carrying exact matrices A and B, perturbations Delta_A and Delta_B, inherited-error functions e_L and e_R, and the assumptions described below.",
+      "A real second-order coefficient C, existentially chosen after n, the algorithm, and the family.",
+      "A real radius r, existentially chosen inside the choice of C.",
+      "A positive real epsilon, universally quantified inside the local implication after C and r are chosen."
     ],
     "hypotheses": [
-      "The dimension is positive: 0<n.",
-      "N is an abstract matrix norm on n-by-n real matrices: N(X)≥0; N(X)=0 iff X=0; N(cX)=|c|N(X); N(X+Y)≤N(X)+N(Y); and N(XY)≤N(X)N(Y).",
-      "The parameter ε is strictly positive.",
-      "For every k∈ℕ, μ(k)≥0.",
-      "The supplied degree d is natural, C_μ≥0, and for every k∈ℕ, μ(k)≤C_μ(k:ℝ)^d.",
-      "The inherited-error scalars satisfy η_A≥0 and η_B≥0.",
-      "The higher-order coefficient satisfies κ≥0.",
-      "The computed matrix is linked to the perturbed inputs by the exact equality C=((A+ΔA)(B+ΔB)+L)+R.",
-      "The local error satisfies N(L)≤μ(n)εN(A)N(B).",
-      "The perturbations satisfy N(ΔA)≤η_A and N(ΔB)≤η_B.",
-      "The remainder satisfies N(R)≤κ ε²."
+      "Each N_m is nonnegative, definite, absolutely homogeneous, subadditive, and submultiplicative on m by m real matrices.",
+      "The algorithm package has mu(m) >= 0 for every m and stores a natural degree d and K >= 0 such that mu(m) <= K m^d for every m > 0.",
+      "The family package entails 0 < n.",
+      "For every positive epsilon, e_L(epsilon) >= 0, e_R(epsilon) >= 0, N_n(Delta_A(epsilon)) <= e_L(epsilon), and N_n(Delta_B(epsilon)) <= e_R(epsilon).",
+      "The family stores nonnegative c_L and c_R and a radius rho_0 > 0 such that, whenever epsilon <= rho_0, e_L(epsilon) <= c_L epsilon and e_R(epsilon) <= c_R epsilon.",
+      "The family stores C_0 >= 0 such that, whenever epsilon <= rho_0, N_n(P(n,epsilon,A+Delta_A(epsilon),B+Delta_B(epsilon)) - (A+Delta_A(epsilon))(B+Delta_B(epsilon))) <= mu(n) epsilon N_n(A) N_n(B) + C_0 epsilon^2."
     ],
     "conclusions": [
-      "Let E=((C-AB)-ΔAΔB)-R. Then N(E)≤μ(n)εN(A)N(B)+N(A)η_B+η_A N(B).",
-      "Using the certified equality for C and distributivity of ordinary matrix multiplication, E is exactly AΔB+ΔAB+L. Thus the conclusion bounds the retained two inherited linear terms and the local error."
+      "There exists a real C with C >= 0; C may depend on n, the algorithm package, and the entire family.",
+      "For that C there exists a real r with r > 0; r may also depend on C and all earlier binders.",
+      "For every positive real epsilon with epsilon <= r, N_n(P(n,epsilon,A+Delta_A(epsilon),B+Delta_B(epsilon)) - AB) <= mu(n) epsilon N_n(A) N_n(B) + N_n(A)e_R(epsilon) + e_L(epsilon)N_n(B) + C epsilon^2."
     ],
     "mathematical_definitions": [
-      "An n-by-n real matrix is a function Fin n→Fin n→ℝ.",
-      "Matrix multiplication is standard finite-sum multiplication: (XY)ᵢₖ=Σⱼ XᵢⱼYⱼₖ.",
-      "N denotes the run's abstract submultiplicative matrix norm.",
-      "A=exactLeft, B=exactRight, ΔA=leftPerturbation, ΔB=rightPerturbation, C=computedProduct, L=localFirstOrderError, and R=higherOrderRemainder.",
-      "η_A=leftInheritedError, η_B=rightInheritedError, and κ=higherOrderCoeff.",
-      "The projected error is E=((C-AB)-ΔAΔB)-R.",
-      "The full computed error would instead be C-AB=AΔB+ΔAB+ΔAΔB+L+R.",
-      "The projected error removes precisely ΔAΔB and R, leaving E=AΔB+ΔAB+L."
+      "M_n(R) denotes the n by n real matrices, with ordinary matrix addition, subtraction, scalar multiplication, and multiplication.",
+      "N_n(X) is the value of the algorithm's norm package in dimension n.",
+      "P(n,epsilon,X,Y) is the matrix returned by the algorithm's abstract product operation on X and Y at positive parameter epsilon.",
+      "A and B are the family's exact left and right matrices; Delta_A(epsilon) and Delta_B(epsilon) are their epsilon-dependent perturbations.",
+      "E(epsilon) = P(n,epsilon,A+Delta_A(epsilon),B+Delta_B(epsilon)) - AB is the total error against the unperturbed exact product.",
+      "L(epsilon) = mu(n) epsilon N_n(A) N_n(B) + N_n(A)e_R(epsilon) + e_L(epsilon)N_n(B) is the explicitly retained leading error expression."
     ],
-    "proposition_plain_english": "For every positive matrix dimension n and every certified run carrying an abstract submultiplicative norm, a positive ε, coefficient data, exact matrices A and B, perturbations ΔA and ΔB, a computed matrix C, a local error L, and a remainder R satisfying the stated decomposition and bounds, the norm of the explicitly projected error ((C-AB)-ΔAΔB)-R is at most μ(n)εN(A)N(B)+N(A)η_B+η_A N(B). The certified decomposition identifies that projected error with AΔB+ΔAB+L, so the estimate follows from the local-error bound, perturbation bounds, triangle inequality, and submultiplicativity."
+    "proposition_plain_english": "For every natural dimension n, every admissible algorithm package, and every admissible family at that dimension, there are a nonnegative real constant C and a positive real radius r such that every positive epsilon no larger than r satisfies N_n(P(n,epsilon,A+Delta_A(epsilon),B+Delta_B(epsilon)) - AB) <= mu(n) epsilon N_n(A) N_n(B) + N_n(A)e_R(epsilon) + e_L(epsilon)N_n(B) + C epsilon^2."
   },
   "restrictions_and_vacuity_risks": [
-    "The target quantifies over a single packaged run after n. It asserts no existence of runs, matrices, norms, or certificates.",
-    "Because constructing a run requires 0<n, the theorem is vacuous at n=0.",
-    "All matrices are square n-by-n real matrices; rectangular matrices, complex matrices, vectors, and other scalar domains are excluded.",
-    "The bounded quantity is not the full computed error C-AB. The quadratic perturbation product ΔAΔB and the entire remainder R are explicitly removed before measuring the error.",
-    "The retained terms AΔB and ΔAB are called first-order only in an algebraic sense. No hypothesis requires ΔA or ΔB to scale with ε.",
-    "The inherited bounds η_A and η_B are supplied after the matrices and may be chosen arbitrarily large subject only to nonnegativity and the two norm inequalities. Hence they do not encode uniform smallness or convergence as ε tends to zero.",
-    "The coefficient κ is supplied after R and ε. At a single positive ε it can be inflated to certify a large remainder, and the resulting remainder bound has no effect on the conclusion because R is subtracted exactly.",
-    "The function μ is supplied after ε but before the matrices. It is nonnegative and globally polynomially bounded, but it is not required to be uniform across different runs or different ε values. At one fixed ε, a sufficiently large admissible μ(n) can substantially weaken the local-error condition.",
-    "The polynomial-growth condition holds for every natural k, including k=0. If d>0, it forces μ(0)=0 because μ(0)≥0 and μ(0)≤C_μ·0^d=0.",
-    "There is no outer statement quantifying over ε while holding A, B, μ, η_A, η_B, and κ fixed. Therefore the proposition does not by itself establish an asymptotic O(ε) or O(ε²) result.",
-    "The norm is abstract and restricted only by the five supplied axioms. It need not be a particular operator, Frobenius, or entrywise norm.",
-    "No numerical algorithm, sequence of arithmetic operations, rounding model, or executable computation is encoded. C is simply a matrix certified by an exact algebraic relationship and accompanying bounds.",
-    "No invertibility, conditioning, normalization, relative-error statement, componentwise perturbation bound, or bound on the full error C-AB is encoded.",
-    "There are no existential witnesses in the conclusion; all witnesses and proofs are already contained in the universally quantified run."
+    "Epsilon ranges only over strictly positive reals; the proposition says nothing directly at epsilon = 0 or for negative epsilon.",
+    "The estimate is local: no bound is asserted for epsilon greater than the existentially chosen radius r.",
+    "The coefficient C and radius r are not uniform across dimensions, algorithms, or families and may depend on all preceding data; no explicit formula, minimum, or uniqueness is asserted.",
+    "The target coefficient C and radius r are not required to equal the family's stored local coefficient C_0 and radius rho_0.",
+    "Under the supplied constructor inventory, every family contains a proof that n > 0, so the outer universal statement at n = 0 is vacuous because there is no constructible family at that dimension.",
+    "The theorem applies only to algorithm and family packages satisfying the strong embedded norm, growth, perturbation, inherited-error, and local product-error assumptions; it is not a statement about arbitrary matrix-valued operations.",
+    "The inherited errors e_L and e_R are upper bounds for perturbation norms and need not equal those norms.",
+    "The result is only a norm upper bound. It does not assert an equality, lower bound, asymptotic limit, sharp coefficient, or convergence statement.",
+    "No concrete computational or rounding semantics for P are encoded beyond the package assumptions, and the polynomial growth data for mu do not appear directly in the final local inequality."
   ],
   "ambiguities": []
 }

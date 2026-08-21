@@ -3,177 +3,149 @@
   "role": "roundtrip-judge",
   "task_id": "P10-T2",
   "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
-  "blind_translation_sha256": "ad8f3eb4a664ba0e61f090092bd821930adc2071585f00ee4b031d6bc272237b",
+  "blind_translation_sha256": "f0978898510efb1c56fc96974bdeb63876b64dbc4daedaee7b1f59119d4b7468",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF has the assigned SHA-256. Equation (8) appears in Section 3.1 on PDF page 8, printed page 66, following equation (1)'s stable multiplication model.",
-      "translation_evidence": "The translation addresses an n-by-n product and reproduces the three displayed first-order contributions involving mu(n), epsilon, and inherited errors.",
-      "reasoning": "The selected version, passage, and surrounding product-error result are correct."
+      "paper_evidence": "The independently inspected PDF has the stated SHA-256. Printed page 60 contains equation (1), and printed pages 65-67 contain Section 3.1, equation (8), and its bounding recurrence.",
+      "translation_evidence": "The translation targets the three-term product-error rule and its connection to the normwise multiplication model.",
+      "reasoning": "The selected version, equation, and surrounding triangular-inversion analysis are correct."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "Equation (1) concerns square n-by-n operands, and equation (8) uses the same local dimension; recursive applications replace n by n/2.",
-      "translation_evidence": "A, B, Delta A, Delta B, C, L, and R are all square matrices indexed by Fin n, with A and B assigned the reference-operand roles.",
-      "reasoning": "The local dimensions and operand roles match. The additional perturbation and remainder matrices are same-dimensional modeling witnesses; scalar specialization is assessed under S15."
+      "paper_evidence": "Equation (1) concerns n-by-n square products, while Section 3.1 applies equation (8) to square blocks of size n/2.",
+      "translation_evidence": "The translation quantifies over n and uses Fin n by Fin n square matrices; admissible families require n > 0.",
+      "reasoning": "The dimension parameter, square matrix types, and positive-dimension restriction agree with the directly supported block setting. Scalar-field scope is assessed separately in S15."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "Equations (1) and (8) occur in an asymptotic first-order analysis: mu is attached to the multiplication algorithm, and quadratic remainders have epsilon-independent big-O constants for fixed problem data.",
-      "translation_evidence": "A single run packages epsilon before mu and packages each perturbation, inherited bound, R, and kappa without any outer epsilon-indexed family or cross-run uniformity condition.",
-      "reasoning": "The scopes permit mu, eta_A, eta_B, and kappa to vary with each chosen epsilon-run. They do not preserve the algorithm-wide or epsilon-uniform dependence required by the paper's first-order and big-O language."
+      "status": "unclear",
+      "paper_evidence": "Equations (1) and (8) do not formally specify the quantifier order or the permitted dependence of hidden higher-order constants and neighborhoods.",
+      "translation_evidence": "The quadratic coefficient and radius are chosen after n, the algorithm, and the complete family, so both may depend on all of that data.",
+      "reasoning": "This is a conservative pointwise interpretation of the asymptotic remainder, but the paper does not establish whether stronger uniformity over operands or perturbation families was intended."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "Equation (8) is introduced for operands carrying errors from prior computations inside a first-order error analysis. Its omission of their cross product relies on those inherited errors being first order in epsilon.",
-      "translation_evidence": "Only N(Delta A)<=eta_A and N(Delta B)<=eta_B are required. Neither perturbation nor inherited bound is required to be O(epsilon), uniformly or otherwise.",
-      "reasoning": "Positivity, norm compatibility, and the fresh-error certificate are suitable, but an essential first-order smallness condition is absent. Arbitrarily large inherited perturbations are admitted."
+      "status": "pass",
+      "paper_evidence": "The paper assumes normwise stable multiplication, inherited errors in both operands, and a first-order analysis. Invertibility is needed for the surrounding inversion algorithm but not for the local multiplication rule itself.",
+      "translation_evidence": "The family supplies perturbation bounds, inherited errors that are locally O(epsilon), and a local multiplication-error estimate with a quadratic remainder.",
+      "reasoning": "The explicit translation hypotheses provide the small-error assumptions needed to make the paper's first-order accounting rigorous without adding an irrelevant invertibility premise to the local rule."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "On printed page 66, err(C,n) denotes the absolute normwise error of the computed product to first order, with all three displayed contributions retained.",
-      "translation_evidence": "The conclusion bounds E=((C-AB)-Delta A Delta B)-R rather than the full computed error C-AB.",
-      "reasoning": "Although all three right-hand-side terms are present, the conclusion changes the bounded quantity and supplies no faithful full-error statement with a uniform second-order remainder."
+      "status": "pass",
+      "paper_evidence": "Equation (8) contains fresh multiplication error, amplification of B's inherited error by the norm of A, and amplification of A's inherited error by the norm of B.",
+      "translation_evidence": "The conclusion contains mu(n) epsilon N(A)N(B), N(A)e_R(epsilon), and e_L(epsilon)N(B), followed only by a quadratic remainder.",
+      "reasoning": "All three required first-order contributions are present with the correct operand association."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The passage uses ordinary matrix multiplication, absolute matrix norms, inherited-error bounds, and the dimension-dependent multiplication factor mu.",
-      "translation_evidence": "The dependency ledger explicitly interprets matrix multiplication, entrywise addition and subtraction, scalar operations, the abstract norm axioms, and every projection used by the conclusion.",
-      "reasoning": "The formal operators and imported definitions are adequately unfolded. The semantic suitability of the projected-error definition is separately assessed under S13 and S14."
+      "paper_evidence": "The selected passage uses ordinary matrix multiplication, a matrix norm, machine epsilon, the dimension-dependent factor mu, and absolute inherited-error quantities.",
+      "translation_evidence": "The dependency ledger unfolds the matrix type and operations, norm axioms, product operation P, perturbations, inherited-error bounds, real arithmetic, powers, and quantifiers.",
+      "reasoning": "The operators affecting the proposition have explicit mathematical meanings, and no opaque dependency changes the target semantics."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "Equation (1) distinguishes the exact product AB from its computed result, while equation (8) accounts for errors already present in the computed operands.",
-      "translation_evidence": "A and B are reference matrices, A+Delta A and B+Delta B are perturbed inputs, C is the designated computed output, and L and R are separated local-error components.",
-      "reasoning": "Exact, perturbed, and computed quantities are not conflated in the decomposition, even though the final choice of error object is unfaithful."
+      "paper_evidence": "The exact target product is AB, while the multiplication routine acts on operands carrying errors from earlier computations.",
+      "translation_evidence": "A and B are exact matrices, A+Delta_A and B+Delta_B are perturbed inputs, P returns the computed product, and the total error is measured against AB.",
+      "reasoning": "Exact, perturbed, and computed quantities remain distinct."
     },
     {
       "id": "S08",
       "status": "pass",
-      "paper_evidence": "Equation (8) is a local product rule and is reused in both triangular and dense inversion. The complete triangular-inversion recursion is only an application of that rule.",
-      "translation_evidence": "The equality C=(A+Delta A)(B+Delta B)+L+R links C to one perturbed-input multiplication, while the bound on L certifies only the fresh multiplication contribution.",
-      "reasoning": "This is a legitimate aggregate certificate for a local stable multiplication call and is not circularly assuming equation (8)'s inherited-error terms. Operation-level execution and the entire recursive inversion algorithm are not required for this local result."
+      "paper_evidence": "Equation (8) is the local multiplication rule used for the two products forming the off-diagonal block of the recursive triangular inverse; its applications use size n/2.",
+      "translation_evidence": "The proposition is explicitly linked to a matrix product operation P and is universal in its dimension, so it can be instantiated at the block dimension n/2.",
+      "reasoning": "The selected result is the local product rule rather than the complete inversion recurrence. Abstracting the multiplication routine does not sever that local algorithmic linkage."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Equation (8) is absolute and normwise and implicitly needs triangle inequality and product compatibility. No particular norm is named there.",
-      "translation_evidence": "N is an unsquared, real-valued matrix norm with triangle inequality, absolute homogeneity, and submultiplicativity.",
-      "reasoning": "The abstract norm axioms match the properties needed by the local rule. Submatrix-monotonicity axioms are unnecessary unless the later triangular-inversion recurrence is also formalized."
+      "paper_evidence": "Section 3.1 uses an unspecified normwise matrix error. The explicit declaration of the spectral 2-norm appears only later in Section 3.2.",
+      "translation_evidence": "The algorithm carries a general definite, homogeneous, subadditive, and submultiplicative matrix norm N_n rather than hard-coding the spectral norm.",
+      "reasoning": "The translation preserves absolute normwise semantics and does not make an unsupported norm specialization."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "Equation (8) has coefficient one on each displayed term and uses the local mu(n). Equation (1) associates a fixed polynomial-growth mu with the selected multiplication method and norm.",
-      "translation_evidence": "The displayed coefficients and index n match, but each run independently supplies epsilon, mu, its degree, and its growth constant; the degree is unrestricted and no common algorithm fixes these witnesses.",
-      "reasoning": "Local coefficients and indexing are correct, but parameter dependence is not: the polynomial certificate does not make mu uniform across precision values or calls as required by the algorithm-level paper model."
+      "status": "pass",
+      "paper_evidence": "The fresh coefficient is mu(n), each inherited-error contribution has coefficient one, and mu is polynomially bounded in the dimension. Recursive block uses replace n by n/2.",
+      "translation_evidence": "The leading expression has the same coefficients and indexing, while the algorithm package requires nonnegative mu with a polynomial growth bound.",
+      "reasoning": "Constants, operand factors, and dimension dependence match; universality in n permits the required n/2 instantiation."
     },
     {
       "id": "S11",
       "status": "pass",
-      "paper_evidence": "The paper identifies epsilon as machine epsilon bounding roundoff but supplies no radix, rounding direction, underflow, overflow, subnormal, NaN, or infinity contract.",
-      "translation_evidence": "Epsilon is a positive real parameter used in aggregate local and remainder bounds, and no detailed format or exceptional-value behavior is added.",
-      "reasoning": "At the aggregate level used by the paper, the translation neither substitutes a conflicting floating-point model nor attributes unsupported exceptional-value assumptions."
+      "paper_evidence": "The source identifies epsilon as machine epsilon bounding roundoff but states no rounding-mode, overflow, underflow, NaN, or infinity semantics.",
+      "translation_evidence": "Epsilon is a positive real precision parameter, and P has no exceptional-value semantics beyond the supplied normwise error assumption.",
+      "reasoning": "The translation abstracts exactly the numerical information supplied by the paper and does not invent exceptional-value behavior."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "Although equation (8) is printed with an equality sign, the text calls the analysis first order and subsequent applications use inequalities; rigorously it is an upper budget modulo higher-order terms.",
-      "translation_evidence": "The translation proves an exact non-strict inequality after exactly subtracting Delta A Delta B and R from the error matrix.",
-      "reasoning": "This is not a stronger exact version of the paper relation. It is an exact relation about a different, projected quantity under stronger certificates."
+      "status": "pass",
+      "paper_evidence": "Although equation (8) is printed with an equals sign, the text calls the analysis first order and immediately uses the expression through upper-bound recurrences.",
+      "translation_evidence": "The conclusion is a non-strict norm upper bound with an explicit nonnegative quadratic remainder.",
+      "reasoning": "The inequality reflects the surrounding bound semantics and avoids treating the printed first-order equality as an exact all-orders identity."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "The paper describes err(C,n) as the absolute normwise error propagated through a computed product, not as a norm of an error matrix after selected terms have been canceled.",
-      "translation_evidence": "N(E) measures only A Delta B+Delta A B+L; the full forward error additionally contains Delta A Delta B and R.",
-      "reasoning": "The translation remains absolute and normwise, but it substitutes a projected first-order component for the computed product's forward error."
+      "status": "pass",
+      "paper_evidence": "Section 3.1 describes absolute normwise error in the computed product and separately identifies fresh and inherited contributions.",
+      "translation_evidence": "The norm of computed output minus the unperturbed exact product is bounded using absolute inherited perturbation bounds.",
+      "reasoning": "The translation preserves an absolute normwise forward-error notion and does not substitute relative, backward, or residual error."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "Equation (1) explicitly has an O(epsilon^2) remainder, and equation (8) suppresses quadratic terms under a first-order asymptotic convention.",
-      "translation_evidence": "Delta A Delta B and R are canceled exactly. No hypothesis makes Delta A and Delta B first-order epsilon-families, and kappa may be selected separately for each R and positive epsilon.",
-      "reasoning": "The one-run bound N(R)<=kappa epsilon^2 does not express a uniform O(epsilon^2) remainder. Exact cancellation can remove terms that are not higher order at all under the admitted hypotheses."
+      "status": "pass",
+      "paper_evidence": "Equation (1) includes an O(epsilon^2) term, while equation (8) is explicitly first order and suppresses quadratic and mixed interactions.",
+      "translation_evidence": "Inherited errors are locally O(epsilon), and all omitted interactions are absorbed into an existential C epsilon^2 term on a positive neighborhood.",
+      "reasoning": "The explicit remainder is a rigorous realization of the paper's first-order convention rather than an exact identity."
     },
     {
       "id": "S15",
-      "status": "pass",
-      "paper_evidence": "The relevant passage states only that the matrices are square; it imposes no complex-only scalar domain and leaves the norm unnamed.",
-      "translation_evidence": "The proposition specializes to square real matrices and quantifies over abstract submultiplicative matrix norms.",
-      "reasoning": "Real square matrices are an acceptable specialization of this algebraic local rule. The translation does not claim unsupported rectangular or scalar-domain generality."
+      "status": "unclear",
+      "paper_evidence": "The inspected passages specify square matrices but do not explicitly state their scalar field.",
+      "translation_evidence": "Every matrix is specialized to real entries.",
+      "reasoning": "The specialization is compatible with the surrounding use of symmetric matrices and transposes, but the evidence does not determine whether equation (8) was intended only for real matrices or also for complex matrices."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The numerical dimensions used in equations (1) and (8) and in recursive inversion are implicitly positive; no meaningful zero-dimensional case is discussed.",
-      "translation_evidence": "Runs require 0<n, so the outer theorem is vacuous at n=0 but has readily satisfiable instances for every positive n.",
-      "reasoning": "The n=0 vacuity excludes an unintended case rather than proving the intended positive-dimensional result trivially. For n>0 the hypotheses are consistent and the estimate uses substantive norm and local-error bounds."
+      "paper_evidence": "The paper's matrix dimensions are implicitly positive, and the local rule has ordinary nonzero and zero-error instances.",
+      "translation_evidence": "Families require n > 0; for positive n the assumptions are satisfiable, for example with exact multiplication and zero perturbations. The n = 0 outer case is vacuous only because no admissible family exists.",
+      "reasoning": "The positive-dimensional proposition is nonvacuous, and vacuity at n = 0 does not create an unintended mathematical claim."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translation bounds only the projected matrix E and supplies no epsilon-uniform control making eta_A eta_B and R second order. It therefore does not establish the paper's absolute computed-product error rule, even modulo a valid O(epsilon^2) remainder."
+      "verdict": "unclear",
+      "reasoning": "The translation yields the paper's three first-order terms on each admissible real square family. It is unclear whether this pointwise, family-dependent result implies any broader scalar-field or uniform-constant scope intended by the paper."
     },
     "paper_implies_translation": {
-      "verdict": "no",
-      "reasoning": "The paper's first-order statement about the computed product error does not assert an exact inequality for the separately defined projection obtained by matrix subtraction. Such a projected component need not be bounded merely from a bound on the full error, and the translation additionally ranges over non-first-order perturbations outside the paper's regime."
+      "verdict": "yes",
+      "reasoning": "On the real square specialization, the paper's first-order rule and the translation's embedded local assumptions give the stated estimate: expanding the perturbed product produces the two inherited terms, while the perturbation product and other suppressed interactions are O(epsilon^2)."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "undetermined",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
-      "severity": "critical",
-      "category": "bounded-error-object",
-      "paper_evidence": "Equation (8) is presented as the first-order absolute error err(C,n) of the computed product.",
-      "translation_evidence": "The left-hand side is N(((C-AB)-Delta A Delta B)-R), with both the perturbation cross product and named remainder removed before taking the norm.",
-      "impact": "The proposition concerns a different error object and does not directly bound the computed product's full forward error."
+      "severity": "major",
+      "category": "quantifier-scope",
+      "paper_evidence": "The paper does not state whether higher-order constants and neighborhoods are uniform over operands or perturbation families.",
+      "translation_evidence": "C and r may depend on the complete algorithm-specific family.",
+      "impact": "The equation-level content matches, but translation-implies-paper depends on an unstated uniformity interpretation."
     },
     {
       "severity": "major",
-      "category": "first-order-uniformity",
-      "paper_evidence": "The passage explicitly conducts first-order analysis, and the recursive inherited errors produced on following lines remain proportional to epsilon.",
-      "translation_evidence": "Delta A, Delta B, eta_A, and eta_B belong only to one fixed-epsilon run and have no O(epsilon) scaling witnesses.",
-      "impact": "The removed cross product can be leading order or arbitrarily large, so its omission is not justified as a higher-order omission."
-    },
-    {
-      "severity": "major",
-      "category": "higher-order-remainder",
-      "paper_evidence": "Equation (1)'s O(epsilon^2) denotes asymptotic higher-order error.",
-      "translation_evidence": "Kappa is packaged after epsilon and R, can be inflated separately for each run, and its bound is irrelevant to the conclusion because R is canceled.",
-      "impact": "The remainder certificate does not represent a uniform big-O term and places no meaningful higher-order control on the asserted error."
-    },
-    {
-      "severity": "major",
-      "category": "coefficient-dependence",
-      "paper_evidence": "Mu is the polynomial-growth stability factor of a selected multiplication algorithm and norm.",
-      "translation_evidence": "Each run independently supplies mu, its degree, and its growth constant after supplying epsilon.",
-      "impact": "The formal scope loses the fixed algorithm-wide dependence needed for the paper's stability model."
-    },
-    {
-      "severity": "note",
-      "category": "local-certificate-modularization",
-      "paper_evidence": "Equation (8) derives inherited-error propagation from equation (1)'s fresh multiplication error.",
-      "translation_evidence": "The L certificate contains only the fresh term, while the two inherited terms are derived from the decomposition and norm axioms.",
-      "impact": "This part is noncircular and is a legitimate local abstraction; the complete recursive inversion algorithm is not required."
-    },
-    {
-      "severity": "note",
-      "category": "norm-and-domain",
-      "paper_evidence": "The local rule uses an unnamed product-compatible norm and does not specify a scalar domain.",
-      "translation_evidence": "The norm is abstract and submultiplicative, and matrices are specialized to real square matrices.",
-      "impact": "These choices are acceptable for the local equation and are not the source of rejection."
+      "category": "scalar-field-specialization",
+      "paper_evidence": "The selected paper passages do not identify the scalar field.",
+      "translation_evidence": "The proposition is restricted to real matrices.",
+      "impact": "If the paper intended both real and complex matrices, the translation is a proper specialization and cannot imply the full paper scope."
     }
   ],
-  "rationale": "The translation correctly reconstructs the algebraic linear terms, all three coefficients, local dimension, abstract norm requirements, and a noncircular certificate for one stable product call. Its central conclusion nevertheless measures a newly defined projected error rather than the paper's computed-product error. Because inherited perturbations are not epsilon-uniform first-order families and the remainder coefficient is not uniform, the exactly removed terms are not established as quadratic remainders. Mu is likewise scoped per run rather than fixed by a multiplication algorithm. Consequently neither implication holds for the stated propositions: the result is not a faithful strengthening or weakening, but a different exact algebraic lemma."
+  "rationale": "The blind translation faithfully reconstructs the local three-term absolute normwise first-order error rule, distinguishes exact, perturbed, and computed products, and handles omitted interactions with a quadratic remainder. Adjudication is nevertheless required because the paper does not resolve the translation's family-dependent asymptotic witnesses or its real-only scalar specialization, so full translation-implies-paper cannot be decided."
 }

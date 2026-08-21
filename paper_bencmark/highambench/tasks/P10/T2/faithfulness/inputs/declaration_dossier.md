@@ -7,27 +7,70 @@ Judges must interpret every dependency entry and may not infer semantics from na
 
 ```lean
 theorem p10_t2_first_order_product_error {n : ℕ}
-    (run : P10FirstOrderProductRun n) :
-    run.matrixNorm.value (p10FirstOrderProductError run) ≤
-      p10FirstOrderProductErrorBudget run
+    (algorithm : P10StableMatrixMultiplication)
+    (family : P10FirstOrderProductFamily algorithm n) :
+    ∃ secondOrderCoeff : ℝ, 0 ≤ secondOrderCoeff ∧
+      ∃ radius : ℝ, 0 < radius ∧
+        ∀ epsilon : P10PositiveEpsilon, (epsilon : ℝ) ≤ radius →
+          (algorithm.matrixNorm n).value
+              (p10ProductFamilyError algorithm family epsilon) ≤
+            p10ProductFamilyErrorBudget algorithm family epsilon +
+              secondOrderCoeff * (epsilon : ℝ) ^ 2
 ```
 
 ## Elaborated target type
 
 ```lean
-∀ {n : Nat} (run : HighamBench.P10FirstOrderProductRun n),
-  Real.instLE.le (run.matrixNorm.value (HighamBench.p10FirstOrderProductError run))
-    (HighamBench.p10FirstOrderProductErrorBudget run)
+∀ {n : Nat} (algorithm : HighamBench.P10StableMatrixMultiplication)
+  (family : HighamBench.P10FirstOrderProductFamily algorithm n),
+  Exists fun secondOrderCoeff =>
+    And (Real.instLE.le 0 secondOrderCoeff)
+      (Exists fun radius =>
+        And (Real.instLT.lt 0 radius)
+          (∀ (epsilon : HighamBench.P10PositiveEpsilon),
+            Real.instLE.le epsilon.val radius →
+              Real.instLE.le
+                ((algorithm.matrixNorm n).value (HighamBench.p10ProductFamilyError algorithm family epsilon))
+                (instHAdd.hAdd (HighamBench.p10ProductFamilyErrorBudget algorithm family epsilon)
+                  (instHMul.hMul secondOrderCoeff (instHPow.hPow epsilon.val 2)))))
 ```
 
 ## Fully explicit elaborated target type
 
 ```lean
-∀ {n : Nat} (run : HighamBench.P10FirstOrderProductRun n),
-  @LE.le.{0} Real Real.instLE
-    (@HighamBench.P10ConsistentMatrixNorm.value n (@HighamBench.P10FirstOrderProductRun.matrixNorm n run)
-      (@HighamBench.p10FirstOrderProductError n run))
-    (@HighamBench.p10FirstOrderProductErrorBudget n run)
+∀ {n : Nat} (algorithm : HighamBench.P10StableMatrixMultiplication)
+  (family : HighamBench.P10FirstOrderProductFamily algorithm n),
+  @Exists.{1} Real fun (secondOrderCoeff : Real) =>
+    And
+      (@LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+        secondOrderCoeff)
+      (@Exists.{1} Real fun (radius : Real) =>
+        And
+          (@LT.lt.{0} Real Real.instLT (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+            radius)
+          (∀ (epsilon : HighamBench.P10PositiveEpsilon),
+            @LE.le.{0} Real Real.instLE
+                (@Subtype.val.{1} Real
+                  (fun (epsilon : Real) =>
+                    @LT.lt.{0} Real Real.instLT
+                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) epsilon)
+                  epsilon)
+                radius →
+              @LE.le.{0} Real Real.instLE
+                (@HighamBench.P10ConsistentMatrixNorm.value n
+                  (HighamBench.P10StableMatrixMultiplication.matrixNorm algorithm n)
+                  (@HighamBench.p10ProductFamilyError n algorithm family epsilon))
+                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                  (@HighamBench.p10ProductFamilyErrorBudget n algorithm family epsilon)
+                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) secondOrderCoeff
+                    (@HPow.hPow.{0, 0, 0} Real Nat Real
+                      (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+                      (@Subtype.val.{1} Real
+                        (fun (epsilon : Real) =>
+                          @LT.lt.{0} Real Real.instLT
+                            (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) epsilon)
+                        epsilon)
+                      (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))))))
 ```
 
 ## Local import graph
@@ -66,114 +109,169 @@ Definition body (one-level semantic boundary):
 fun n self => self.1
 ```
 
-### D002: `HighamBench.P10FirstOrderProductRun`
+### D002: `HighamBench.P10FirstOrderProductFamily`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
 - Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `9bd1d426161f11499718e2979fa33e1c7138297ee3afab3005ccb07402113235`
+- Semantic SHA-256: `cbc5462a7c65c3968aceb33ada9714988e4740802dee6f62c84c877cf3661ab2`
 
 Type:
 
 ```lean
-Nat → Type
+HighamBench.P10StableMatrixMultiplication → Nat → Type
 ```
 
 Fully explicit type:
 
 ```lean
-(n : Nat) → Type
+(algorithm : HighamBench.P10StableMatrixMultiplication) → (n : Nat) → Type
 ```
 
-### D003: `HighamBench.P10FirstOrderProductRun.matrixNorm`
+### D003: `HighamBench.P10PositiveEpsilon`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `84017a8d3268c796b4fa42d556d7a71fed16c7295b6fd693600c6801252ad236`
+- Semantic SHA-256: `2664f2fe81114472fdd4c541fb7e4356b68164ec7923870e0270fa646aa98910`
 
 Type:
 
 ```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → HighamBench.P10ConsistentMatrixNorm n
+Type
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → HighamBench.P10ConsistentMatrixNorm n
+Type
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.2
+Subtype fun epsilon => Real.instLT.lt 0 epsilon
 ```
 
-### D004: `HighamBench.p10FirstOrderProductError`
+### D004: `HighamBench.P10StableMatrixMultiplication`
+
+- Role: `local`
+- Owner module: `HighamBench.P10Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `7a260263cd77e119e5ad8a0a7df1e06b7c41f16f55c045133fe3c68c3ca549cd`
+
+Type:
+
+```lean
+Type
+```
+
+Fully explicit type:
+
+```lean
+Type
+```
+
+### D005: `HighamBench.P10StableMatrixMultiplication.matrixNorm`
+
+- Role: `local`
+- Owner module: `HighamBench.P10Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `cf75e71c4cc947b23fbf11a667423ac03b9ca441235751f63c83e6b5b88e6279`
+
+Type:
+
+```lean
+HighamBench.P10StableMatrixMultiplication → (n : Nat) → HighamBench.P10ConsistentMatrixNorm n
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P10StableMatrixMultiplication) → (n : Nat) → HighamBench.P10ConsistentMatrixNorm n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.1
+```
+
+### D006: `HighamBench.p10ProductFamilyError`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `6e8e0dea1ec86039b49868afd735f9d12a16498e004f0d53419f83fd5bee9cac`
+- Semantic SHA-256: `a1ce6571e392e12df5fe90655cce4136fa201f2a73a3b20a1ba35182f1f82e2e`
 
 Type:
 
 ```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → HighamBench.P10Matrix n
+{n : Nat} →
+  (algorithm : HighamBench.P10StableMatrixMultiplication) →
+    HighamBench.P10FirstOrderProductFamily algorithm n → HighamBench.P10PositiveEpsilon → HighamBench.P10Matrix n
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (run : HighamBench.P10FirstOrderProductRun n) → HighamBench.P10Matrix n
+{n : Nat} →
+  (algorithm : HighamBench.P10StableMatrixMultiplication) →
+    (family : HighamBench.P10FirstOrderProductFamily algorithm n) →
+      (epsilon : HighamBench.P10PositiveEpsilon) → HighamBench.P10Matrix n
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} run =>
-  instHSub.hSub
-    (instHSub.hSub (instHSub.hSub run.computedProduct (HighamBench.p10MatMul n run.exactLeft run.exactRight))
-      (HighamBench.p10MatMul n run.leftPerturbation run.rightPerturbation))
-    run.higherOrderRemainder
+fun {n} algorithm family epsilon =>
+  instHSub.hSub (HighamBench.p10ProductFamilyComputed algorithm family epsilon)
+    (HighamBench.p10MatMul n family.exactLeft family.exactRight)
 ```
 
-### D005: `HighamBench.p10FirstOrderProductErrorBudget`
+### D007: `HighamBench.p10ProductFamilyErrorBudget`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `a9b21bfa1c18fb0bc7815cabd59e2baeaac125064169a9bcfac170ab5979ab3f`
+- Semantic SHA-256: `73fa33bd3fc9c4bcd7d0fea2a6bc80c817f5c467702ae19c725203cff277f838`
 
 Type:
 
 ```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → Real
+{n : Nat} →
+  (algorithm : HighamBench.P10StableMatrixMultiplication) →
+    HighamBench.P10FirstOrderProductFamily algorithm n → HighamBench.P10PositiveEpsilon → Real
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (run : HighamBench.P10FirstOrderProductRun n) → Real
+{n : Nat} →
+  (algorithm : HighamBench.P10StableMatrixMultiplication) →
+    (family : HighamBench.P10FirstOrderProductFamily algorithm n) → (epsilon : HighamBench.P10PositiveEpsilon) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} run =>
+fun {n} algorithm family epsilon =>
   instHAdd.hAdd
-    (instHMul.hMul (instHMul.hMul (instHMul.hMul (run.mu n) run.epsilon) (run.matrixNorm.value run.exactLeft))
-      (run.matrixNorm.value run.exactRight))
-    (instHAdd.hAdd (instHMul.hMul (run.matrixNorm.value run.exactLeft) run.rightInheritedError)
-      (instHMul.hMul run.leftInheritedError (run.matrixNorm.value run.exactRight)))
+    (instHMul.hMul
+      (instHMul.hMul (instHMul.hMul (algorithm.mu n) epsilon.val) ((algorithm.matrixNorm n).value family.exactLeft))
+      ((algorithm.matrixNorm n).value family.exactRight))
+    (instHAdd.hAdd
+      (instHMul.hMul ((algorithm.matrixNorm n).value family.exactLeft) (family.rightInheritedError epsilon))
+      (instHMul.hMul (family.leftInheritedError epsilon) ((algorithm.matrixNorm n).value family.exactRight)))
 ```
 
-### D006: `HighamBench.P10ConsistentMatrixNorm`
+### D008: `HighamBench.P10ConsistentMatrixNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
@@ -193,413 +291,351 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D007: `HighamBench.P10FirstOrderProductRun.computedProduct`
+### D009: `HighamBench.P10FirstOrderProductFamily.exactLeft`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `b66ce10ff01e598c089ae5f5477e42eee38591e3aa1401adedb4ba4b8b12e424`
+- Semantic SHA-256: `8f75c64d615703b1463df7d13205e1cab01ed0022e2b42703eed344eaa30be97`
 
 Type:
 
 ```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → HighamBench.P10Matrix n
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} → HighamBench.P10FirstOrderProductFamily algorithm n → HighamBench.P10Matrix n
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → HighamBench.P10Matrix n
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} → (self : HighamBench.P10FirstOrderProductFamily algorithm n) → HighamBench.P10Matrix n
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.15
+fun algorithm n self => self.2
 ```
 
-### D008: `HighamBench.P10FirstOrderProductRun.epsilon`
+### D010: `HighamBench.P10FirstOrderProductFamily.exactRight`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `d035d77cdd5b477712285af9516534aa4824fd6168ea85feff7484609bb9fd85`
+- Semantic SHA-256: `23a4702fb90ea4b64602f5d7012b33631a7153d7068067cec264e1b2715ea8ee`
 
 Type:
 
 ```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → Real
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} → HighamBench.P10FirstOrderProductFamily algorithm n → HighamBench.P10Matrix n
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → Real
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} → (self : HighamBench.P10FirstOrderProductFamily algorithm n) → HighamBench.P10Matrix n
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.3
+fun algorithm n self => self.3
 ```
 
-### D009: `HighamBench.P10FirstOrderProductRun.exactLeft`
+### D011: `HighamBench.P10FirstOrderProductFamily.leftInheritedError`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `526a8dcbbf7f622a9d792e1afb665c26afbb504269f128becfd336a1acdd7678`
+- Semantic SHA-256: `b36068b1b2c9bc9811e4ba32e75215dccb4d1e37124bbe4e1d590e40aaf8cf9c`
 
 Type:
 
 ```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → HighamBench.P10Matrix n
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} → HighamBench.P10FirstOrderProductFamily algorithm n → HighamBench.P10PositiveEpsilon → Real
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → HighamBench.P10Matrix n
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} → (self : HighamBench.P10FirstOrderProductFamily algorithm n) → HighamBench.P10PositiveEpsilon → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.11
+fun algorithm n self => self.6
 ```
 
-### D010: `HighamBench.P10FirstOrderProductRun.exactRight`
-
-- Role: `local`
-- Owner module: `HighamBench.P10Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `184721da71f6cae87c9bdcdd375852672a3a723e37466d0e54080d1b9e96f346`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → HighamBench.P10Matrix n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → HighamBench.P10Matrix n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.12
-```
-
-### D011: `HighamBench.P10FirstOrderProductRun.higherOrderRemainder`
-
-- Role: `local`
-- Owner module: `HighamBench.P10Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `f5ac3db563a20f775763bc330dbe1e9b1c12ef020e1b432a4e3c5c332a80090e`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → HighamBench.P10Matrix n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → HighamBench.P10Matrix n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.17
-```
-
-### D012: `HighamBench.P10FirstOrderProductRun.leftInheritedError`
-
-- Role: `local`
-- Owner module: `HighamBench.P10Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `0ba09bcbe80565b7a12bf816b9dec646d0f46cc2a06f01d971378473829f0a48`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.18
-```
-
-### D013: `HighamBench.P10FirstOrderProductRun.leftPerturbation`
-
-- Role: `local`
-- Owner module: `HighamBench.P10Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `8a11b0ae08eb4691f9811af6faffc4882f7b5081e74abe4ea42784344eb5586f`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → HighamBench.P10Matrix n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → HighamBench.P10Matrix n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.13
-```
-
-### D014: `HighamBench.P10FirstOrderProductRun.mk`
+### D012: `HighamBench.P10FirstOrderProductFamily.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `36f685eb07800f251aeaedfc610e0646b015ed7292248be367df176f3032d245`
+- Semantic SHA-256: `95424dc710c9de417c196befaecbfab974e754f12a19e771684444d9e8ad5e34`
 
 Type:
 
 ```lean
-{n : Nat} →
-  instLTNat.lt 0 n →
-    (matrixNorm : HighamBench.P10ConsistentMatrixNorm n) →
-      (epsilon : Real) →
-        Real.instLT.lt 0 epsilon →
-          (mu : Nat → Real) →
-            (∀ (k : Nat), Real.instLE.le 0 (mu k)) →
-              (muDegree : Nat) →
-                (muGrowthConstant : Real) →
-                  Real.instLE.le 0 muGrowthConstant →
-                    (∀ (k : Nat),
-                        Real.instLE.le (mu k) (instHMul.hMul muGrowthConstant (instHPow.hPow k.cast muDegree))) →
-                      (exactLeft exactRight leftPerturbation rightPerturbation computedProduct localFirstOrderError
-                          higherOrderRemainder : HighamBench.P10Matrix n) →
-                        (leftInheritedError rightInheritedError : Real) →
-                          Real.instLE.le 0 leftInheritedError →
-                            Real.instLE.le 0 rightInheritedError →
-                              (higherOrderCoeff : Real) →
-                                Real.instLE.le 0 higherOrderCoeff →
-                                  Eq computedProduct
-                                      (instHAdd.hAdd
-                                        (instHAdd.hAdd
-                                          (HighamBench.p10MatMul n (instHAdd.hAdd exactLeft leftPerturbation)
-                                            (instHAdd.hAdd exactRight rightPerturbation))
-                                          localFirstOrderError)
-                                        higherOrderRemainder) →
-                                    Real.instLE.le (matrixNorm.value localFirstOrderError)
-                                        (instHMul.hMul
-                                          (instHMul.hMul (instHMul.hMul (mu n) epsilon) (matrixNorm.value exactLeft))
-                                          (matrixNorm.value exactRight)) →
-                                      Real.instLE.le (matrixNorm.value leftPerturbation) leftInheritedError →
-                                        Real.instLE.le (matrixNorm.value rightPerturbation) rightInheritedError →
-                                          Real.instLE.le (matrixNorm.value higherOrderRemainder)
-                                              (instHMul.hMul higherOrderCoeff (instHPow.hPow epsilon 2)) →
-                                            HighamBench.P10FirstOrderProductRun n
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} →
+    instLTNat.lt 0 n →
+      (exactLeft exactRight : HighamBench.P10Matrix n) →
+        (leftPerturbation rightPerturbation : HighamBench.P10PositiveEpsilon → HighamBench.P10Matrix n) →
+          (leftInheritedError rightInheritedError : HighamBench.P10PositiveEpsilon → Real) →
+            (∀ (epsilon : HighamBench.P10PositiveEpsilon), Real.instLE.le 0 (leftInheritedError epsilon)) →
+              (∀ (epsilon : HighamBench.P10PositiveEpsilon), Real.instLE.le 0 (rightInheritedError epsilon)) →
+                (leftInheritedCoeff rightInheritedCoeff : Real) →
+                  Real.instLE.le 0 leftInheritedCoeff →
+                    Real.instLE.le 0 rightInheritedCoeff →
+                      (localSecondOrderCoeff : Real) →
+                        Real.instLE.le 0 localSecondOrderCoeff →
+                          (radius : Real) →
+                            Real.instLT.lt 0 radius →
+                              (∀ (epsilon : HighamBench.P10PositiveEpsilon),
+                                  Real.instLE.le ((algorithm.matrixNorm n).value (leftPerturbation epsilon))
+                                    (leftInheritedError epsilon)) →
+                                (∀ (epsilon : HighamBench.P10PositiveEpsilon),
+                                    Real.instLE.le ((algorithm.matrixNorm n).value (rightPerturbation epsilon))
+                                      (rightInheritedError epsilon)) →
+                                  (∀ (epsilon : HighamBench.P10PositiveEpsilon),
+                                      Real.instLE.le epsilon.val radius →
+                                        Real.instLE.le (leftInheritedError epsilon)
+                                          (instHMul.hMul leftInheritedCoeff epsilon.val)) →
+                                    (∀ (epsilon : HighamBench.P10PositiveEpsilon),
+                                        Real.instLE.le epsilon.val radius →
+                                          Real.instLE.le (rightInheritedError epsilon)
+                                            (instHMul.hMul rightInheritedCoeff epsilon.val)) →
+                                      (∀ (epsilon : HighamBench.P10PositiveEpsilon),
+                                          Real.instLE.le epsilon.val radius →
+                                            Real.instLE.le
+                                              ((algorithm.matrixNorm n).value
+                                                (instHSub.hSub
+                                                  (algorithm.product n epsilon
+                                                    (instHAdd.hAdd exactLeft (leftPerturbation epsilon))
+                                                    (instHAdd.hAdd exactRight (rightPerturbation epsilon)))
+                                                  (HighamBench.p10MatMul n
+                                                    (instHAdd.hAdd exactLeft (leftPerturbation epsilon))
+                                                    (instHAdd.hAdd exactRight (rightPerturbation epsilon)))))
+                                              (instHAdd.hAdd
+                                                (instHMul.hMul
+                                                  (instHMul.hMul (instHMul.hMul (algorithm.mu n) epsilon.val)
+                                                    ((algorithm.matrixNorm n).value exactLeft))
+                                                  ((algorithm.matrixNorm n).value exactRight))
+                                                (instHMul.hMul localSecondOrderCoeff (instHPow.hPow epsilon.val 2)))) →
+                                        HighamBench.P10FirstOrderProductFamily algorithm n
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  (dimension_pos : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n) →
-    (matrixNorm : HighamBench.P10ConsistentMatrixNorm n) →
-      (epsilon : Real) →
-        (epsilon_pos :
-            @LT.lt.{0} Real Real.instLT (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-              epsilon) →
-          (mu : Nat → Real) →
-            (mu_nonneg :
-                ∀ (k : Nat),
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} →
+    (dimension_pos : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n) →
+      (exactLeft exactRight : HighamBench.P10Matrix n) →
+        (leftPerturbation rightPerturbation : HighamBench.P10PositiveEpsilon → HighamBench.P10Matrix n) →
+          (leftInheritedError rightInheritedError : HighamBench.P10PositiveEpsilon → Real) →
+            (leftInheritedError_nonneg :
+                ∀ (epsilon : HighamBench.P10PositiveEpsilon),
                   @LE.le.{0} Real Real.instLE
-                    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) (mu k)) →
-              (muDegree : Nat) →
-                (muGrowthConstant : Real) →
-                  (muGrowthConstant_nonneg :
+                    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                    (leftInheritedError epsilon)) →
+              (rightInheritedError_nonneg :
+                  ∀ (epsilon : HighamBench.P10PositiveEpsilon),
+                    @LE.le.{0} Real Real.instLE
+                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                      (rightInheritedError epsilon)) →
+                (leftInheritedCoeff rightInheritedCoeff : Real) →
+                  (leftInheritedCoeff_nonneg :
                       @LE.le.{0} Real Real.instLE
-                        (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) muGrowthConstant) →
-                    (mu_polynomial_bound :
-                        ∀ (k : Nat),
-                          @LE.le.{0} Real Real.instLE (mu k)
-                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) muGrowthConstant
-                              (@HPow.hPow.{0, 0, 0} Real Nat Real
-                                (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                                (@Nat.cast.{0} Real Real.instNatCast k) muDegree))) →
-                      (exactLeft exactRight leftPerturbation rightPerturbation computedProduct localFirstOrderError
-                          higherOrderRemainder : HighamBench.P10Matrix n) →
-                        (leftInheritedError rightInheritedError : Real) →
-                          (leftInheritedError_nonneg :
-                              @LE.le.{0} Real Real.instLE
-                                (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                                leftInheritedError) →
-                            (rightInheritedError_nonneg :
-                                @LE.le.{0} Real Real.instLE
-                                  (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                                  rightInheritedError) →
-                              (higherOrderCoeff : Real) →
-                                (higherOrderCoeff_nonneg :
+                        (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                        leftInheritedCoeff) →
+                    (rightInheritedCoeff_nonneg :
+                        @LE.le.{0} Real Real.instLE
+                          (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                          rightInheritedCoeff) →
+                      (localSecondOrderCoeff : Real) →
+                        (localSecondOrderCoeff_nonneg :
+                            @LE.le.{0} Real Real.instLE
+                              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                              localSecondOrderCoeff) →
+                          (radius : Real) →
+                            (radius_pos :
+                                @LT.lt.{0} Real Real.instLT
+                                  (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) radius) →
+                              (left_perturbation_bound :
+                                  ∀ (epsilon : HighamBench.P10PositiveEpsilon),
                                     @LE.le.{0} Real Real.instLE
-                                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                                      higherOrderCoeff) →
-                                  (computed_product :
-                                      @Eq.{1} (HighamBench.P10Matrix n) computedProduct
-                                        (@HAdd.hAdd.{0, 0, 0} (HighamBench.P10Matrix n) (HighamBench.P10Matrix n)
-                                          (HighamBench.P10Matrix n)
-                                          (@instHAdd.{0} (HighamBench.P10Matrix n)
-                                            (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd))
-                                          (@HAdd.hAdd.{0, 0, 0} (HighamBench.P10Matrix n) (HighamBench.P10Matrix n)
-                                            (HighamBench.P10Matrix n)
-                                            (@instHAdd.{0} (HighamBench.P10Matrix n)
-                                              (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd))
-                                            (HighamBench.p10MatMul n
-                                              (@HAdd.hAdd.{0, 0, 0} (HighamBench.P10Matrix n) (HighamBench.P10Matrix n)
-                                                (HighamBench.P10Matrix n)
-                                                (@instHAdd.{0} (HighamBench.P10Matrix n)
-                                                  (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd))
-                                                exactLeft leftPerturbation)
-                                              (@HAdd.hAdd.{0, 0, 0} (HighamBench.P10Matrix n) (HighamBench.P10Matrix n)
-                                                (HighamBench.P10Matrix n)
-                                                (@instHAdd.{0} (HighamBench.P10Matrix n)
-                                                  (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd))
-                                                exactRight rightPerturbation))
-                                            localFirstOrderError)
-                                          higherOrderRemainder)) →
-                                    (local_error_bound :
+                                      (@HighamBench.P10ConsistentMatrixNorm.value n
+                                        (HighamBench.P10StableMatrixMultiplication.matrixNorm algorithm n)
+                                        (leftPerturbation epsilon))
+                                      (leftInheritedError epsilon)) →
+                                (right_perturbation_bound :
+                                    ∀ (epsilon : HighamBench.P10PositiveEpsilon),
+                                      @LE.le.{0} Real Real.instLE
+                                        (@HighamBench.P10ConsistentMatrixNorm.value n
+                                          (HighamBench.P10StableMatrixMultiplication.matrixNorm algorithm n)
+                                          (rightPerturbation epsilon))
+                                        (rightInheritedError epsilon)) →
+                                  (left_inherited_first_order :
+                                      ∀ (epsilon : HighamBench.P10PositiveEpsilon),
                                         @LE.le.{0} Real Real.instLE
-                                          (@HighamBench.P10ConsistentMatrixNorm.value n matrixNorm localFirstOrderError)
-                                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                            (@Subtype.val.{1} Real
+                                              (fun (epsilon : Real) =>
+                                                @LT.lt.{0} Real Real.instLT
+                                                  (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                    (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                  epsilon)
+                                              epsilon)
+                                            radius →
+                                          @LE.le.{0} Real Real.instLE (leftInheritedError epsilon)
                                             (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                (mu n) epsilon)
-                                              (@HighamBench.P10ConsistentMatrixNorm.value n matrixNorm exactLeft))
-                                            (@HighamBench.P10ConsistentMatrixNorm.value n matrixNorm exactRight))) →
-                                      (left_inherited_error_bound :
+                                              leftInheritedCoeff
+                                              (@Subtype.val.{1} Real
+                                                (fun (epsilon : Real) =>
+                                                  @LT.lt.{0} Real Real.instLT
+                                                    (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                      (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                    epsilon)
+                                                epsilon))) →
+                                    (right_inherited_first_order :
+                                        ∀ (epsilon : HighamBench.P10PositiveEpsilon),
                                           @LE.le.{0} Real Real.instLE
-                                            (@HighamBench.P10ConsistentMatrixNorm.value n matrixNorm leftPerturbation)
-                                            leftInheritedError) →
-                                        (right_inherited_error_bound :
+                                              (@Subtype.val.{1} Real
+                                                (fun (epsilon : Real) =>
+                                                  @LT.lt.{0} Real Real.instLT
+                                                    (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                      (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                    epsilon)
+                                                epsilon)
+                                              radius →
+                                            @LE.le.{0} Real Real.instLE (rightInheritedError epsilon)
+                                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                rightInheritedCoeff
+                                                (@Subtype.val.{1} Real
+                                                  (fun (epsilon : Real) =>
+                                                    @LT.lt.{0} Real Real.instLT
+                                                      (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                        (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                      epsilon)
+                                                  epsilon))) →
+                                      (local_error_bound :
+                                          ∀ (epsilon : HighamBench.P10PositiveEpsilon),
                                             @LE.le.{0} Real Real.instLE
-                                              (@HighamBench.P10ConsistentMatrixNorm.value n matrixNorm
-                                                rightPerturbation)
-                                              rightInheritedError) →
-                                          (higher_order_bound :
+                                                (@Subtype.val.{1} Real
+                                                  (fun (epsilon : Real) =>
+                                                    @LT.lt.{0} Real Real.instLT
+                                                      (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                        (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                      epsilon)
+                                                  epsilon)
+                                                radius →
                                               @LE.le.{0} Real Real.instLE
-                                                (@HighamBench.P10ConsistentMatrixNorm.value n matrixNorm
-                                                  higherOrderRemainder)
-                                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                  higherOrderCoeff
-                                                  (@HPow.hPow.{0, 0, 0} Real Nat Real
-                                                    (@instHPow.{0, 0} Real Nat
-                                                      (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                                                    epsilon
-                                                    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))) →
-                                            HighamBench.P10FirstOrderProductRun n
+                                                (@HighamBench.P10ConsistentMatrixNorm.value n
+                                                  (HighamBench.P10StableMatrixMultiplication.matrixNorm algorithm n)
+                                                  (@HSub.hSub.{0, 0, 0} (HighamBench.P10Matrix n)
+                                                    (HighamBench.P10Matrix n) (HighamBench.P10Matrix n)
+                                                    (@instHSub.{0} (HighamBench.P10Matrix n)
+                                                      (@Matrix.sub.{0, 0, 0} (Fin n) (Fin n) Real Real.instSub))
+                                                    (HighamBench.P10StableMatrixMultiplication.product algorithm n
+                                                      epsilon
+                                                      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P10Matrix n)
+                                                        (HighamBench.P10Matrix n) (HighamBench.P10Matrix n)
+                                                        (@instHAdd.{0} (HighamBench.P10Matrix n)
+                                                          (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd))
+                                                        exactLeft (leftPerturbation epsilon))
+                                                      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P10Matrix n)
+                                                        (HighamBench.P10Matrix n) (HighamBench.P10Matrix n)
+                                                        (@instHAdd.{0} (HighamBench.P10Matrix n)
+                                                          (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd))
+                                                        exactRight (rightPerturbation epsilon)))
+                                                    (HighamBench.p10MatMul n
+                                                      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P10Matrix n)
+                                                        (HighamBench.P10Matrix n) (HighamBench.P10Matrix n)
+                                                        (@instHAdd.{0} (HighamBench.P10Matrix n)
+                                                          (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd))
+                                                        exactLeft (leftPerturbation epsilon))
+                                                      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P10Matrix n)
+                                                        (HighamBench.P10Matrix n) (HighamBench.P10Matrix n)
+                                                        (@instHAdd.{0} (HighamBench.P10Matrix n)
+                                                          (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd))
+                                                        exactRight (rightPerturbation epsilon)))))
+                                                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                    (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                      (@instHMul.{0} Real Real.instMul)
+                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                        (@instHMul.{0} Real Real.instMul)
+                                                        (HighamBench.P10StableMatrixMultiplication.mu algorithm n)
+                                                        (@Subtype.val.{1} Real
+                                                          (fun (epsilon : Real) =>
+                                                            @LT.lt.{0} Real Real.instLT
+                                                              (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                                (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                              epsilon)
+                                                          epsilon))
+                                                      (@HighamBench.P10ConsistentMatrixNorm.value n
+                                                        (HighamBench.P10StableMatrixMultiplication.matrixNorm algorithm
+                                                          n)
+                                                        exactLeft))
+                                                    (@HighamBench.P10ConsistentMatrixNorm.value n
+                                                      (HighamBench.P10StableMatrixMultiplication.matrixNorm algorithm n)
+                                                      exactRight))
+                                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                    localSecondOrderCoeff
+                                                    (@HPow.hPow.{0, 0, 0} Real Nat Real
+                                                      (@instHPow.{0, 0} Real Nat
+                                                        (@Monoid.toNatPow.{0} Real Real.instMonoid))
+                                                      (@Subtype.val.{1} Real
+                                                        (fun (epsilon : Real) =>
+                                                          @LT.lt.{0} Real Real.instLT
+                                                            (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                              (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                            epsilon)
+                                                        epsilon)
+                                                      (@OfNat.ofNat.{0} Nat (nat_lit 2)
+                                                        (instOfNatNat (nat_lit 2))))))) →
+                                        HighamBench.P10FirstOrderProductFamily algorithm n
 ```
 
-### D015: `HighamBench.P10FirstOrderProductRun.mu`
+### D013: `HighamBench.P10FirstOrderProductFamily.rightInheritedError`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `2b4a0524cb60ddf1b4cd96d8b747266eb3d6885b5573c6311913e12abb800e08`
+- Semantic SHA-256: `5564d33fddad101da543d97b24e62c701aa8f62817cb2dc3d4652708122d11de`
 
 Type:
 
 ```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → Nat → Real
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} → HighamBench.P10FirstOrderProductFamily algorithm n → HighamBench.P10PositiveEpsilon → Real
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → Nat → Real
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} → (self : HighamBench.P10FirstOrderProductFamily algorithm n) → HighamBench.P10PositiveEpsilon → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.5
+fun algorithm n self => self.7
 ```
 
-### D016: `HighamBench.P10FirstOrderProductRun.rightInheritedError`
-
-- Role: `local`
-- Owner module: `HighamBench.P10Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `57a0b4f418cd235c75eb5eb9a5d237ed9d76155306f61862d212267e96b3eb17`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.19
-```
-
-### D017: `HighamBench.P10FirstOrderProductRun.rightPerturbation`
-
-- Role: `local`
-- Owner module: `HighamBench.P10Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `fac4a62bd8fdbf974b261c5d84bbf33ef8ccfe7cfaa8146d91651ef6c5dc352d`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P10FirstOrderProductRun n → HighamBench.P10Matrix n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P10FirstOrderProductRun n) → HighamBench.P10Matrix n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.14
-```
-
-### D018: `HighamBench.P10Matrix`
+### D014: `HighamBench.P10Matrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
@@ -625,7 +661,88 @@ Definition body (one-level semantic boundary):
 fun n => Matrix (Fin n) (Fin n) Real
 ```
 
-### D019: `HighamBench.p10MatMul`
+### D015: `HighamBench.P10StableMatrixMultiplication.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P10Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `84232f1a98567f4ccbadd679b1f1ddf56b99e3e5bf7f5fb85666385ae9316fb8`
+
+Type:
+
+```lean
+((n : Nat) → HighamBench.P10ConsistentMatrixNorm n) →
+  (mu : Nat → Real) →
+    (∀ (n : Nat), Real.instLE.le 0 (mu n)) →
+      (muDegree : Nat) →
+        (muGrowthConstant : Real) →
+          Real.instLE.le 0 muGrowthConstant →
+            (∀ (n : Nat),
+                instLTNat.lt 0 n →
+                  Real.instLE.le (mu n) (instHMul.hMul muGrowthConstant (instHPow.hPow n.cast muDegree))) →
+              ((n : Nat) →
+                  HighamBench.P10PositiveEpsilon →
+                    HighamBench.P10Matrix n → HighamBench.P10Matrix n → HighamBench.P10Matrix n) →
+                HighamBench.P10StableMatrixMultiplication
+```
+
+Fully explicit type:
+
+```lean
+(matrixNorm : (n : Nat) → HighamBench.P10ConsistentMatrixNorm n) →
+  (mu : Nat → Real) →
+    (mu_nonneg :
+        ∀ (n : Nat),
+          @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+            (mu n)) →
+      (muDegree : Nat) →
+        (muGrowthConstant : Real) →
+          (muGrowthConstant_nonneg :
+              @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                muGrowthConstant) →
+            (mu_polynomial_bound :
+                ∀ (n : Nat),
+                  @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n →
+                    @LE.le.{0} Real Real.instLE (mu n)
+                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) muGrowthConstant
+                        (@HPow.hPow.{0, 0, 0} Real Nat Real
+                          (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+                          (@Nat.cast.{0} Real Real.instNatCast n) muDegree))) →
+              (product :
+                  (n : Nat) →
+                    HighamBench.P10PositiveEpsilon →
+                      HighamBench.P10Matrix n → HighamBench.P10Matrix n → HighamBench.P10Matrix n) →
+                HighamBench.P10StableMatrixMultiplication
+```
+
+### D016: `HighamBench.P10StableMatrixMultiplication.mu`
+
+- Role: `local`
+- Owner module: `HighamBench.P10Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `74ea9f8b488e3d32bdceb5606495da6f51297b4a5022379e5580e107caeab5a8`
+
+Type:
+
+```lean
+HighamBench.P10StableMatrixMultiplication → Nat → Real
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P10StableMatrixMultiplication) → Nat → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.2
+```
+
+### D017: `HighamBench.p10MatMul`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
@@ -651,7 +768,40 @@ Definition body (one-level semantic boundary):
 fun n A B => Matrix.instHMulOfFintypeOfMulOfAddCommMonoid.hMul A B
 ```
 
-### D020: `HighamBench.P10ConsistentMatrixNorm.mk`
+### D018: `HighamBench.p10ProductFamilyComputed`
+
+- Role: `local`
+- Owner module: `HighamBench.P10Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `a5cbc54ab01794bc70f6101676d112c10fa5114d17241b16b46209a4de4303d5`
+
+Type:
+
+```lean
+{n : Nat} →
+  (algorithm : HighamBench.P10StableMatrixMultiplication) →
+    HighamBench.P10FirstOrderProductFamily algorithm n → HighamBench.P10PositiveEpsilon → HighamBench.P10Matrix n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  (algorithm : HighamBench.P10StableMatrixMultiplication) →
+    (family : HighamBench.P10FirstOrderProductFamily algorithm n) →
+      (epsilon : HighamBench.P10PositiveEpsilon) → HighamBench.P10Matrix n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} algorithm family epsilon =>
+  algorithm.product n epsilon (instHAdd.hAdd family.exactLeft (family.leftPerturbation epsilon))
+    (instHAdd.hAdd family.exactRight (family.rightPerturbation epsilon))
+```
+
+### D019: `HighamBench.P10ConsistentMatrixNorm.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P10Definitions`
@@ -720,7 +870,217 @@ Fully explicit type:
               HighamBench.P10ConsistentMatrixNorm n
 ```
 
-### D021: `LE.le`
+### D020: `HighamBench.P10FirstOrderProductFamily.leftPerturbation`
+
+- Role: `local`
+- Owner module: `HighamBench.P10Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `462df35cc46da2cdd17170c4d93fc473f67b56f0dbaa8a107b2b7756cdfd643f`
+
+Type:
+
+```lean
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} →
+    HighamBench.P10FirstOrderProductFamily algorithm n → HighamBench.P10PositiveEpsilon → HighamBench.P10Matrix n
+```
+
+Fully explicit type:
+
+```lean
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} →
+    (self : HighamBench.P10FirstOrderProductFamily algorithm n) →
+      HighamBench.P10PositiveEpsilon → HighamBench.P10Matrix n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun algorithm n self => self.4
+```
+
+### D021: `HighamBench.P10FirstOrderProductFamily.rightPerturbation`
+
+- Role: `local`
+- Owner module: `HighamBench.P10Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `c4504c0c4a6bcd8d8d696fbb9bfa7ecca9676ddb2258f30d3204bad0dd4ccc78`
+
+Type:
+
+```lean
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} →
+    HighamBench.P10FirstOrderProductFamily algorithm n → HighamBench.P10PositiveEpsilon → HighamBench.P10Matrix n
+```
+
+Fully explicit type:
+
+```lean
+{algorithm : HighamBench.P10StableMatrixMultiplication} →
+  {n : Nat} →
+    (self : HighamBench.P10FirstOrderProductFamily algorithm n) →
+      HighamBench.P10PositiveEpsilon → HighamBench.P10Matrix n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun algorithm n self => self.5
+```
+
+### D022: `HighamBench.P10StableMatrixMultiplication.product`
+
+- Role: `local`
+- Owner module: `HighamBench.P10Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `2330d9e873aec0f7171f5a03613ad73d85eb3a6efd009b8ed92f9b23999a8fb6`
+
+Type:
+
+```lean
+HighamBench.P10StableMatrixMultiplication →
+  (n : Nat) →
+    HighamBench.P10PositiveEpsilon → HighamBench.P10Matrix n → HighamBench.P10Matrix n → HighamBench.P10Matrix n
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P10StableMatrixMultiplication) →
+  (n : Nat) →
+    HighamBench.P10PositiveEpsilon → HighamBench.P10Matrix n → HighamBench.P10Matrix n → HighamBench.P10Matrix n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.8
+```
+
+### D023: `And`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `37ecdc009aa953e3d4924ef10e6a1fb591f6af993cd344fd5a6b5321466517c9`
+
+Type:
+
+```lean
+Prop → Prop → Prop
+```
+
+Fully explicit type:
+
+```lean
+(a b : Prop) → Prop
+```
+
+### D024: `Exists`
+
+- Role: `external-frontier`
+- Owner module: `Init.Core`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `a24a6eb72dcf5b3765659a28bb9d3814ed7ebd3e3fa1fd11e8f3c7acc80e0dde`
+
+Type:
+
+```lean
+{α : Sort u} → (α → Prop) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (p : α → Prop) → Prop
+```
+
+### D025: `HAdd.hAdd`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HAdd α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HAdd.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HAdd α β γ] => self.1
+```
+
+### D026: `HMul.hMul`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `4e00447a4a8ef4c2ce13e307c56a1fbcd7fa8c732fe039a452b42477a50df2c6`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HMul α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HMul.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HMul α β γ] => self.1
+```
+
+### D027: `HPow.hPow`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HPow α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HPow.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HPow α β γ] => self.1
+```
+
+### D028: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -746,7 +1106,59 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D022: `Nat`
+### D029: `LT.lt`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
+
+Type:
+
+```lean
+{α : Type u} → [self : LT α] → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : LT.{u} α] → α → α → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : LT α] => self.1
+```
+
+### D030: `Monoid.toNatPow`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a`
+
+Type:
+
+```lean
+{M : Type u_2} → [Monoid M] → Pow M Nat
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u_2} → [Monoid.{u_2} M] → Pow.{u_2, 0} M Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
+```
+
+### D031: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -766,7 +1178,33 @@ Fully explicit type:
 Type
 ```
 
-### D023: `Real`
+### D032: `OfNat.ofNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead`
+
+Type:
+
+```lean
+{α : Type u} → (x : Nat) → [self : OfNat α x] → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → (x : Nat) → [self : OfNat.{u} α x] → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α x [self : OfNat α x] => self.1
+```
+
+### D033: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -786,7 +1224,33 @@ Fully explicit type:
 Type
 ```
 
-### D024: `Real.instLE`
+### D034: `Real.instAdd`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce`
+
+Type:
+
+```lean
+Add Real
+```
+
+Fully explicit type:
+
+```lean
+Add.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ add := Real.add✝ }
+```
+
+### D035: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -812,7 +1276,267 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D025: `Fin`
+### D036: `Real.instLT`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a`
+
+Type:
+
+```lean
+LT Real
+```
+
+Fully explicit type:
+
+```lean
+LT.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Real.lt✝ }
+```
+
+### D037: `Real.instMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
+
+Type:
+
+```lean
+Monoid Real
+```
+
+Fully explicit type:
+
+```lean
+Monoid.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D038: `Real.instMul`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `459ccbe28a1d29ccd2b329ea29e1a84b329b8064b8a8ecc52764b69b23e229ed`
+
+Type:
+
+```lean
+Mul Real
+```
+
+Fully explicit type:
+
+```lean
+Mul.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ mul := Real.mul✝ }
+```
+
+### D039: `Real.instZero`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882`
+
+Type:
+
+```lean
+Zero Real
+```
+
+Fully explicit type:
+
+```lean
+Zero.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ zero := Real.zero✝ }
+```
+
+### D040: `Subtype.val`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `69c61ab82498e5563eaf5f0313ea7f2164c284c3dc742024a30332372a46663d`
+
+Type:
+
+```lean
+{α : Sort u} → {p : α → Prop} → Subtype p → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → {p : α → Prop} → (self : @Subtype.{u} α p) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α p self => self.1
+```
+
+### D041: `Zero.toOfNat0`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Zero`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a`
+
+Type:
+
+```lean
+{α : Type u_1} → [Zero α] → OfNat α 0
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Zero.{u_1} α] → OfNat.{u_1} α (nat_lit 0)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Zero α] => { ofNat := inst.zero }
+```
+
+### D042: `instHAdd`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981`
+
+Type:
+
+```lean
+{α : Type u_1} → [Add α] → HAdd α α α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Add.{u_1} α] → HAdd.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
+```
+
+### D043: `instHMul`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `1fd375514ac68e29e7941c94ba308ea936395db23d0fee63a5c69dcccd3b2bdc`
+
+Type:
+
+```lean
+{α : Type u_1} → [Mul α] → HMul α α α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Mul.{u_1} α] → HMul.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
+```
+
+### D044: `instHPow`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4`
+
+Type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [Pow α β] → HPow α β α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [Pow.{u_1, u_2} α β] → HPow.{u_1, u_2, u_1} α β α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
+```
+
+### D045: `instOfNatNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
+
+Type:
+
+```lean
+(n : Nat) → OfNat Nat n
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → OfNat.{0} Nat n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => { ofNat := n }
+```
+
+### D046: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -832,59 +1556,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D026: `HAdd.hAdd`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59`
-
-Type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HAdd α β γ] → α → β → γ
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HAdd.{u, v, w} α β γ] → α → β → γ
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α β {γ} [self : HAdd α β γ] => self.1
-```
-
-### D027: `HMul.hMul`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `4e00447a4a8ef4c2ce13e307c56a1fbcd7fa8c732fe039a452b42477a50df2c6`
-
-Type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HMul α β γ] → α → β → γ
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HMul.{u, v, w} α β γ] → α → β → γ
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α β {γ} [self : HMul α β γ] => self.1
-```
-
-### D028: `HSub.hSub`
+### D047: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -910,7 +1582,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D029: `Matrix.sub`
+### D048: `Matrix.sub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -936,59 +1608,7 @@ Definition body (one-level semantic boundary):
 fun {m} {n} {α} [Sub α] => Pi.instSub
 ```
 
-### D030: `Real.instAdd`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce`
-
-Type:
-
-```lean
-Add Real
-```
-
-Fully explicit type:
-
-```lean
-Add.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ add := Real.add✝ }
-```
-
-### D031: `Real.instMul`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `459ccbe28a1d29ccd2b329ea29e1a84b329b8064b8a8ecc52764b69b23e229ed`
-
-Type:
-
-```lean
-Mul Real
-```
-
-Fully explicit type:
-
-```lean
-Mul.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ mul := Real.mul✝ }
-```
-
-### D032: `Real.instSub`
+### D049: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1014,59 +1634,27 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D033: `instHAdd`
+### D050: `Subtype`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
-- Declaration kind: `def`
+- Declaration kind: `inductive`
 - Distance from target type: `2`
-- Semantic SHA-256: `38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981`
+- Semantic SHA-256: `3b0bb8433bd0c981dbdb4d6256bf74c50e9883207dae8d309dcb705135cf932c`
 
 Type:
 
 ```lean
-{α : Type u_1} → [Add α] → HAdd α α α
+{α : Sort u} → (α → Prop) → Sort (max 1 u)
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u_1} → [Add.{u_1} α] → HAdd.{u_1, u_1, u_1} α α α
+{α : Sort u} → (p : α → Prop) → Sort (max 1 u)
 ```
 
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
-```
-
-### D034: `instHMul`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `1fd375514ac68e29e7941c94ba308ea936395db23d0fee63a5c69dcccd3b2bdc`
-
-Type:
-
-```lean
-{α : Type u_1} → [Mul α] → HMul α α α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Mul.{u_1} α] → HMul.{u_1, u_1, u_1} α α α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
-```
-
-### D035: `instHSub`
+### D051: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1092,27 +1680,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D036: `Eq`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `inductive`
-- Distance from target type: `3`
-- Semantic SHA-256: `63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7`
-
-Type:
-
-```lean
-{α : Sort u_1} → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u_1} → α → α → Prop
-```
-
-### D037: `Fin.fintype`
+### D052: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -1138,59 +1706,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D038: `HPow.hPow`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8`
-
-Type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HPow α β γ] → α → β → γ
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HPow.{u, v, w} α β γ] → α → β → γ
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α β {γ} [self : HPow α β γ] => self.1
-```
-
-### D039: `LT.lt`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
-
-Type:
-
-```lean
-{α : Type u} → [self : LT α] → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : LT.{u} α] → α → α → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : LT α] => self.1
-```
-
-### D040: `Matrix`
+### D053: `Matrix`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -1216,7 +1732,7 @@ Definition body (one-level semantic boundary):
 fun m n α => m → n → α
 ```
 
-### D041: `Matrix.add`
+### D054: `Matrix.add`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -1242,7 +1758,7 @@ Definition body (one-level semantic boundary):
 fun {m} {n} {α} [Add α] => Pi.instAdd
 ```
 
-### D042: `Matrix.instHMulOfFintypeOfMulOfAddCommMonoid`
+### D055: `Matrix.instHMulOfFintypeOfMulOfAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Matrix.Mul`
@@ -1280,33 +1796,7 @@ fun {l} {m} {n} {α} [Fintype m] [Mul α] [AddCommMonoid α] =>
   { hMul := fun M N i k => dotProduct (fun j => M i j) fun j => N j k }
 ```
 
-### D043: `Monoid.toNatPow`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Group.Defs`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a`
-
-Type:
-
-```lean
-{M : Type u_2} → [Monoid M] → Pow M Nat
-```
-
-Fully explicit type:
-
-```lean
-{M : Type u_2} → [Monoid.{u_2} M] → Pow.{u_2, 0} M Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
-```
-
-### D044: `Nat.cast`
+### D056: `Nat.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Cast`
@@ -1332,33 +1822,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D045: `OfNat.ofNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead`
-
-Type:
-
-```lean
-{α : Type u} → (x : Nat) → [self : OfNat α x] → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → (x : Nat) → [self : OfNat.{u} α x] → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α x [self : OfNat α x] => self.1
-```
-
-### D046: `Real.instAddCommMonoid`
+### D057: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1384,59 +1848,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D047: `Real.instLT`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a`
-
-Type:
-
-```lean
-LT Real
-```
-
-Fully explicit type:
-
-```lean
-LT.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ lt := Real.lt✝ }
-```
-
-### D048: `Real.instMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
-
-Type:
-
-```lean
-Monoid Real
-```
-
-Fully explicit type:
-
-```lean
-Monoid.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D049: `Real.instNatCast`
+### D058: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1462,85 +1874,7 @@ Definition body (one-level semantic boundary):
 { natCast := fun n => { cauchy := n.cast } }
 ```
 
-### D050: `Real.instZero`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882`
-
-Type:
-
-```lean
-Zero Real
-```
-
-Fully explicit type:
-
-```lean
-Zero.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ zero := Real.zero✝ }
-```
-
-### D051: `Zero.toOfNat0`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Zero`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a`
-
-Type:
-
-```lean
-{α : Type u_1} → [Zero α] → OfNat α 0
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Zero.{u_1} α] → OfNat.{u_1} α (nat_lit 0)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Zero α] => { ofNat := inst.zero }
-```
-
-### D052: `instHPow`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4`
-
-Type:
-
-```lean
-{α : Type u_1} → {β : Type u_2} → [Pow α β] → HPow α β α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → {β : Type u_2} → [Pow.{u_1, u_2} α β] → HPow.{u_1, u_2, u_1} α β α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
-```
-
-### D053: `instLTNat`
+### D059: `instLTNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1566,33 +1900,7 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D054: `instOfNatNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
-
-Type:
-
-```lean
-(n : Nat) → OfNat Nat n
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) → OfNat.{0} Nat n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n => { ofNat := n }
-```
-
-### D055: `Algebra.id`
+### D060: `Algebra.id`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Algebra.Defs`
@@ -1623,7 +1931,7 @@ fun R [CommSemiring R] =>
   { toSMul := __SMul, algebraMap := __spread.0.algebraMap, commutes' := ⋯, smul_def' := ⋯ }
 ```
 
-### D056: `Algebra.toSMul`
+### D061: `Algebra.toSMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Algebra.Defs`
@@ -1651,7 +1959,7 @@ Definition body (one-level semantic boundary):
 fun R A {inst} {inst_1} [self : Algebra R A] => self.1
 ```
 
-### D057: `CommSemiring.toSemiring`
+### D062: `CommSemiring.toSemiring`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -1677,7 +1985,27 @@ Definition body (one-level semantic boundary):
 fun R [self : CommSemiring R] => self.1
 ```
 
-### D058: `HSMul.hSMul`
+### D063: `Eq`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `4`
+- Semantic SHA-256: `63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7`
+
+Type:
+
+```lean
+{α : Sort u_1} → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u_1} → α → α → Prop
+```
+
+### D064: `HSMul.hSMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1703,7 +2031,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSMul α β γ] => self.1
 ```
 
-### D059: `Iff`
+### D065: `Iff`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -1723,7 +2051,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D060: `Matrix.smul`
+### D066: `Matrix.smul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -1751,7 +2079,7 @@ Definition body (one-level semantic boundary):
 fun {m} {n} {R} {α} [SMul R α] => Pi.instSMul
 ```
 
-### D061: `Matrix.zero`
+### D067: `Matrix.zero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -1777,7 +2105,7 @@ Definition body (one-level semantic boundary):
 fun {m} {n} {α} [Zero α] => Pi.instZero
 ```
 
-### D062: `Real.instAddGroup`
+### D068: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1803,7 +2131,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D063: `Real.instCommSemiring`
+### D069: `Real.instCommSemiring`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1829,7 +2157,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D064: `Real.lattice`
+### D070: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1855,7 +2183,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D065: `abs`
+### D071: `abs`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
@@ -1882,7 +2210,7 @@ fun {α} [Lattice α] [AddGroup α] a =>
   SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
 ```
 
-### D066: `instHSMul`
+### D072: `instHSMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1969,7 +2297,7 @@ end HighamBench
 ### `HighamBench.P10Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean`
-SHA-256: `f49e4d8aea5940088440cc81e8a85365243730ec35689bf1f3bb9434c1e80cc6`
+SHA-256: `51ea90c955e708bcf5681be646793c317f1d15f5e33aaa7cb2e1593acd55d94a`
 
 ```lean
 import HighamBench.Core
@@ -2012,11 +2340,6 @@ structure P10FirstOrderProductRun (n : ℕ) where
   epsilon_pos : 0 < epsilon
   mu : ℕ → ℝ
   mu_nonneg : ∀ k, 0 ≤ mu k
-  muDegree : ℕ
-  muGrowthConstant : ℝ
-  muGrowthConstant_nonneg : 0 ≤ muGrowthConstant
-  mu_polynomial_bound : ∀ k,
-    mu k ≤ muGrowthConstant * (k : ℝ) ^ muDegree
   exactLeft : P10Matrix n
   exactRight : P10Matrix n
   leftPerturbation : P10Matrix n
@@ -2028,8 +2351,6 @@ structure P10FirstOrderProductRun (n : ℕ) where
   rightInheritedError : ℝ
   leftInheritedError_nonneg : 0 ≤ leftInheritedError
   rightInheritedError_nonneg : 0 ≤ rightInheritedError
-  higherOrderCoeff : ℝ
-  higherOrderCoeff_nonneg : 0 ≤ higherOrderCoeff
   computed_product :
     computedProduct =
       p10MatMul n
@@ -2043,8 +2364,6 @@ structure P10FirstOrderProductRun (n : ℕ) where
     matrixNorm.value leftPerturbation ≤ leftInheritedError
   right_inherited_error_bound :
     matrixNorm.value rightPerturbation ≤ rightInheritedError
-  higher_order_bound :
-    matrixNorm.value higherOrderRemainder ≤ higherOrderCoeff * epsilon ^ 2
 
 /-- The realized product error with the inherited cross term and the local
 higher-order remainder removed, exactly as required by first-order analysis. -/
@@ -2068,6 +2387,12 @@ noncomputable def p10InheritedRightError {n : ℕ}
     (run : P10FirstOrderProductRun n) : P10Matrix n :=
   p10MatMul n run.exactLeft run.rightPerturbation
 
+/-- The inherited-left error matrix produced to first order by multiplying
+the left operand perturbation by the exact right operand. -/
+noncomputable def p10InheritedLeftError {n : ℕ}
+    (run : P10FirstOrderProductRun n) : P10Matrix n :=
+  p10MatMul n run.leftPerturbation run.exactRight
+
 /-- Equation (8)'s local stable-multiplication contribution. -/
 noncomputable def p10LocalProductErrorContribution {n : ℕ}
     (run : P10FirstOrderProductRun n) : ℝ :=
@@ -2084,16 +2409,120 @@ noncomputable def p10InheritedLeftErrorContribution {n : ℕ}
     (run : P10FirstOrderProductRun n) : ℝ :=
   run.leftInheritedError * run.matrixNorm.value run.exactRight
 
-/-- The selected inherited-right term, including both its propagated matrix
-bound and its exact additive position in equation (8)'s first-order budget. -/
+/-- The selected inherited-right term. The first conjunct links all three
+first-order matrices to the realized product error; the second gives equation
+`(8)`'s `||A||*err(B,n)` bound for the middle matrix. -/
 def P10InheritedRightEquation8Term {n : ℕ}
     (run : P10FirstOrderProductRun n) : Prop :=
-  run.matrixNorm.value (p10InheritedRightError run) ≤
-      p10InheritedRightErrorContribution run ∧
-    p10FirstOrderProductErrorBudget run =
-      p10LocalProductErrorContribution run +
-        (p10InheritedRightErrorContribution run +
-          p10InheritedLeftErrorContribution run)
+  p10FirstOrderProductError run =
+      run.localFirstOrderError +
+        (p10InheritedRightError run + p10InheritedLeftError run) ∧
+    run.matrixNorm.value (p10InheritedRightError run) ≤
+      p10InheritedRightErrorContribution run
+
+/-! ## Uniform stable-product model for equation (8) -/
+
+/-- A positive machine precision. Quantifying over this type makes the
+`O(epsilon^2)` term in the paper's first-order analysis uniform as epsilon
+tends to zero through positive values. -/
+abbrev P10PositiveEpsilon := {epsilon : ℝ // 0 < epsilon}
+
+/-- One matrix-multiplication algorithm, with the norm and polynomially
+bounded stability factor fixed across dimensions, inputs, and precisions. -/
+structure P10StableMatrixMultiplication where
+  matrixNorm : (n : ℕ) → P10ConsistentMatrixNorm n
+  mu : ℕ → ℝ
+  mu_nonneg : ∀ n, 0 ≤ mu n
+  muDegree : ℕ
+  muGrowthConstant : ℝ
+  muGrowthConstant_nonneg : 0 ≤ muGrowthConstant
+  mu_polynomial_bound : ∀ n, 0 < n →
+    mu n ≤ muGrowthConstant * (n : ℝ) ^ muDegree
+  product : (n : ℕ) → P10PositiveEpsilon →
+    P10Matrix n → P10Matrix n → P10Matrix n
+
+/-- An epsilon-indexed family of calls to one stable multiplication
+algorithm. The local certificate is equation (1), after absorbing the
+first-order change from perturbed operands into one uniform quadratic term.
+The inherited errors themselves are required to be uniformly first order. -/
+structure P10FirstOrderProductFamily
+    (algorithm : P10StableMatrixMultiplication) (n : ℕ) where
+  dimension_pos : 0 < n
+  exactLeft : P10Matrix n
+  exactRight : P10Matrix n
+  leftPerturbation : P10PositiveEpsilon → P10Matrix n
+  rightPerturbation : P10PositiveEpsilon → P10Matrix n
+  leftInheritedError : P10PositiveEpsilon → ℝ
+  rightInheritedError : P10PositiveEpsilon → ℝ
+  leftInheritedError_nonneg : ∀ epsilon : P10PositiveEpsilon,
+    0 ≤ leftInheritedError epsilon
+  rightInheritedError_nonneg : ∀ epsilon : P10PositiveEpsilon,
+    0 ≤ rightInheritedError epsilon
+  leftInheritedCoeff : ℝ
+  rightInheritedCoeff : ℝ
+  leftInheritedCoeff_nonneg : 0 ≤ leftInheritedCoeff
+  rightInheritedCoeff_nonneg : 0 ≤ rightInheritedCoeff
+  localSecondOrderCoeff : ℝ
+  localSecondOrderCoeff_nonneg : 0 ≤ localSecondOrderCoeff
+  radius : ℝ
+  radius_pos : 0 < radius
+  left_perturbation_bound : ∀ epsilon : P10PositiveEpsilon,
+    (algorithm.matrixNorm n).value (leftPerturbation epsilon) ≤
+      leftInheritedError epsilon
+  right_perturbation_bound : ∀ epsilon : P10PositiveEpsilon,
+    (algorithm.matrixNorm n).value (rightPerturbation epsilon) ≤
+      rightInheritedError epsilon
+  left_inherited_first_order : ∀ epsilon : P10PositiveEpsilon,
+    (epsilon : ℝ) ≤ radius →
+    leftInheritedError epsilon ≤ leftInheritedCoeff * (epsilon : ℝ)
+  right_inherited_first_order : ∀ epsilon : P10PositiveEpsilon,
+    (epsilon : ℝ) ≤ radius →
+    rightInheritedError epsilon ≤ rightInheritedCoeff * (epsilon : ℝ)
+  local_error_bound : ∀ epsilon : P10PositiveEpsilon,
+    (epsilon : ℝ) ≤ radius →
+    (algorithm.matrixNorm n).value
+        (algorithm.product n epsilon
+            (exactLeft + leftPerturbation epsilon)
+            (exactRight + rightPerturbation epsilon) -
+          p10MatMul n
+            (exactLeft + leftPerturbation epsilon)
+            (exactRight + rightPerturbation epsilon)) ≤
+      algorithm.mu n * (epsilon : ℝ) *
+          (algorithm.matrixNorm n).value exactLeft *
+          (algorithm.matrixNorm n).value exactRight +
+        localSecondOrderCoeff * (epsilon : ℝ) ^ 2
+
+/-- The actual output of the fixed multiplication algorithm on the two
+epsilon-dependent computed operands. -/
+noncomputable def p10ProductFamilyComputed {n : ℕ}
+    (algorithm : P10StableMatrixMultiplication)
+    (family : P10FirstOrderProductFamily algorithm n)
+    (epsilon : P10PositiveEpsilon) : P10Matrix n :=
+  algorithm.product n epsilon
+    (family.exactLeft + family.leftPerturbation epsilon)
+    (family.exactRight + family.rightPerturbation epsilon)
+
+/-- The actual product error. No inherited cross term or local remainder is
+removed from this quantity. -/
+noncomputable def p10ProductFamilyError {n : ℕ}
+    (algorithm : P10StableMatrixMultiplication)
+    (family : P10FirstOrderProductFamily algorithm n)
+    (epsilon : P10PositiveEpsilon) : P10Matrix n :=
+  p10ProductFamilyComputed algorithm family epsilon -
+    p10MatMul n family.exactLeft family.exactRight
+
+/-- The three leading contributions printed in equation (8). -/
+noncomputable def p10ProductFamilyErrorBudget {n : ℕ}
+    (algorithm : P10StableMatrixMultiplication)
+    (family : P10FirstOrderProductFamily algorithm n)
+    (epsilon : P10PositiveEpsilon) : ℝ :=
+  algorithm.mu n * (epsilon : ℝ) *
+      (algorithm.matrixNorm n).value family.exactLeft *
+      (algorithm.matrixNorm n).value family.exactRight +
+    ((algorithm.matrixNorm n).value family.exactLeft *
+        family.rightInheritedError epsilon +
+      family.leftInheritedError epsilon *
+        (algorithm.matrixNorm n).value family.exactRight)
 
 /-- The one-level amplification factor in the Sylvester recurrence on printed page 86. -/
 noncomputable def p10SylvesterGrowth {n : ℕ}
