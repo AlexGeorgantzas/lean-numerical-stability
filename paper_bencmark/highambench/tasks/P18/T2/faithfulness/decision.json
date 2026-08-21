@@ -1,64 +1,55 @@
 {
-  "accepted": false,
-  "adjudicated": true,
-  "adjudication_reasons": [
-    "round-trip judge requested adjudication",
-    "round-trip S09 is unclear",
-    "round-trip S15 is unclear"
-  ],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-13T19:31:29.877679+00:00",
+  "accepted": true,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "faithful-equivalent",
+  "completed_at_utc": "2026-08-21T03:23:08.004533+00:00",
   "findings": [
     {
-      "category": "algorithm-linkage-and-error-notion",
-      "evidence": "Equation (4.1) on printed page 11 defines a low-precision implicit stage, a full-precision correction, and a full-precision update. D001 instead defines the purported error exactly as h^2 times one arbitrary vector plus epsilon h^2 times another.",
-      "impact": "The declaration proves no property of the corrected implicit midpoint computation or its global numerical error.",
-      "severity": "critical"
-    },
-    {
-      "category": "asymptotic-scope-and-hypotheses",
-      "evidence": "Printed page 11 conditions the big-O global envelope on stability. The declaration has no hypotheses and asserts an exact coefficient-one inequality for every real h and epsilon.",
-      "impact": "Stability, operator approximation, small-step asymptotics, hidden constants, and local-to-global accumulation are absent.",
-      "severity": "major"
-    },
-    {
-      "category": "unsupported-norm-specialization",
-      "evidence": "The PDF never identifies a norm, while D002, D005, and D026-D030 fix the square-root-of-sum-of-squares Euclidean norm.",
-      "impact": "The norm choice is not source-supported, although the PDF supplies no evidence that it is contradictory.",
-      "severity": "major"
-    },
-    {
-      "category": "unsupported-dimension-model",
-      "evidence": "The theoretical passages do not state a dimension, whereas Lean quantifies every Fin n -> Real, including the empty dimension; only the numerical van der Pol example is explicitly two-dimensional.",
-      "impact": "The dimensional scope cannot be validated from the source, but this does not repair or worsen the decisive algorithmic mismatch.",
-      "severity": "minor"
-    },
-    {
-      "category": "independent-validity",
-      "evidence": "For n > 0 and h != 0, the Lean target remains a genuine Euclidean triangle inequality, so its validity is not confined to the degenerate n = 0 or h = 0 cases.",
-      "impact": "Its paper-independent validity supports paper_implies_lean = yes, but it is strength about an unrelated synthetic quantity rather than the paper's numerical method.",
+      "category": "source-explicit-versus-derived",
+      "impact": "The added conjuncts do not make the formalization logically stronger than the selected paper result because the displayed source arrays already imply each one.",
+      "lean_evidence": "The target states both highlighted identities and the complete set of derived consistency, smooth, nonsmooth, sum, and row-sum identities.",
+      "paper_evidence": "PDF p. 11 explicitly prints the arrays and highlights b-epsilon c-tilde=0 and b-tilde c-epsilon=0; the remaining order-two equations follow by substituting those arrays into the conditions on pp. 7-8.",
       "severity": "note"
+    },
+    {
+      "category": "scope-control",
+      "impact": "The Lean theorem remains correctly scoped to the exact coefficient cancellation certificate and does not introduce an unsupported unconditional analytic claim.",
+      "lean_evidence": "No global big-O or stability assertion appears in the target.",
+      "paper_evidence": "The global Error=O(Delta t^2)+O(epsilon Delta t^2) expression on PDF p. 11 is explicitly conditional on stability.",
+      "severity": "note"
+    },
+    {
+      "category": "explicit-versus-derived",
+      "impact": "The extra conjuncts complete the selected certificate but do not strengthen it beyond what the paper's displayed arrays already imply.",
+      "paper_evidence": "Page 11 explicitly displays the coefficient arrays and highlights b^epsilon tilde-c=0 and tilde-b c^epsilon=0; the other order-two conditions follow by substituting those arrays into pages 7-8.",
+      "severity": "note",
+      "translation_evidence": "The translation includes both highlighted identities and all exact substitution consequences in one thirteen-conjunct certificate."
+    },
+    {
+      "category": "scope-control",
+      "impact": "The translation correctly remains within the locator's exact coefficient-certificate scope.",
+      "paper_evidence": "The global error expression on page 11 is explicitly conditional on stability.",
+      "severity": "note",
+      "translation_evidence": "No global error or stability statement appears."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean target contains no F, F^epsilon, stages, update, numerical trajectory, global error, stability assumption, approximation hypothesis, asymptotic limit, or hidden constants. Its exact norm inequality cannot establish the paper's conditional global-error result for method (4.1).",
-      "verdict": "no"
+      "reasoning": "After unfolding D006-D015, the Lean constants are exactly the three coefficient arrays and their combined arrays printed on PDF p. 11. The target directly includes the two p. 11 cancellation identities and all order-two consistency, smooth, and nonsmooth contractions from pp. 7-8. Its additional sum and row-sum conjuncts are exact consequences of the same arrays. It makes no unrelated global-error claim.",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "The complete definitions reduce the target to ||h^2 scheme + epsilon h^2 perturbation||_2 <= h^2 (||scheme||_2 + |epsilon| ||perturbation||_2). Since h^2 is nonnegative, Euclidean homogeneity and the triangle inequality prove this for every finite n and all inputs, independently of the paper. Thus the implication is logically valid but carries no substantive paper content; the unresolved source norm and dimension do not affect it.",
+      "reasoning": "Substituting the paper's arrays gives A-tilde=A+A-epsilon, c-tilde=c+c-epsilon, b-tilde=b+b-epsilon, A e=c, and A-epsilon e=c-epsilon. Direct finite contractions then yield b-tilde e=1, b-tilde c-tilde=1/2, all four smooth zeros, and both componentwise-absolute nonsmooth zeros. Thus every Lean conjunct follows exactly.",
       "verdict": "yes"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-weaker",
-    "roundtrip": "not-faithful-weaker"
+    "direct": "faithful-equivalent",
+    "roundtrip": "faithful-equivalent"
   },
-  "rationale": "The SHA-verified paper states a conditional asymptotic global-error envelope for a specific corrected mixed-precision implicit midpoint method. The complete formal dossier instead defines an exact arbitrary vector combination and proves its Euclidean triangle bound. The PDF's omissions concerning norm and state dimension create genuine compatibility uncertainties, but only about unsupported modeling choices; they do not establish contradictions and do not affect the complete implications. Lean cannot imply the paper result, while the paper implies Lean only because Lean is independently valid. The consistent classification is therefore not-faithful-weaker.",
-  "remaining_uncertainties": [
-    "The PDF does not decide whether the theoretical or plotted Error uses the Euclidean norm; Lean's choice is unsupported but not contradicted.",
-    "The PDF does not specify the theorem-level state space or dimension, so it does not decide whether arbitrary finite real dimensions, particularly n = 0, are intended."
-  ],
+  "rationale": "The declaration and all dependencies encode exactly the two-stage p=2 corrected implicit-midpoint arrays from PDF p. 11. Its conjunction contains the complete order-two consistency certificate, all smooth perturbation conditions through m=2, and both nonsmooth componentwise-absolute conditions through m=2 from PDF pp. 7-8. The paper-explicit cancellation identities occur directly; the other conjuncts are exact consequences of substituting the printed arrays, and there are no unrelated claims. Both implication directions therefore hold for the selected algebraic result.",
+  "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P18-T2"
