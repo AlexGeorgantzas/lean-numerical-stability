@@ -118,6 +118,110 @@ def P10InheritedRightEquation8Term {n : ℕ}
     run.matrixNorm.value (p10InheritedRightError run) ≤
       p10InheritedRightErrorContribution run
 
+/-! ## Uniform stable-product model for equation (8) -/
+
+/-- A positive machine precision. Quantifying over this type makes the
+`O(epsilon^2)` term in the paper's first-order analysis uniform as epsilon
+tends to zero through positive values. -/
+abbrev P10PositiveEpsilon := {epsilon : ℝ // 0 < epsilon}
+
+/-- One matrix-multiplication algorithm, with the norm and polynomially
+bounded stability factor fixed across dimensions, inputs, and precisions. -/
+structure P10StableMatrixMultiplication where
+  matrixNorm : (n : ℕ) → P10ConsistentMatrixNorm n
+  mu : ℕ → ℝ
+  mu_nonneg : ∀ n, 0 ≤ mu n
+  muDegree : ℕ
+  muGrowthConstant : ℝ
+  muGrowthConstant_nonneg : 0 ≤ muGrowthConstant
+  mu_polynomial_bound : ∀ n, 0 < n →
+    mu n ≤ muGrowthConstant * (n : ℝ) ^ muDegree
+  product : (n : ℕ) → P10PositiveEpsilon →
+    P10Matrix n → P10Matrix n → P10Matrix n
+
+/-- An epsilon-indexed family of calls to one stable multiplication
+algorithm. The local certificate is equation (1), after absorbing the
+first-order change from perturbed operands into one uniform quadratic term.
+The inherited errors themselves are required to be uniformly first order. -/
+structure P10FirstOrderProductFamily
+    (algorithm : P10StableMatrixMultiplication) (n : ℕ) where
+  dimension_pos : 0 < n
+  exactLeft : P10Matrix n
+  exactRight : P10Matrix n
+  leftPerturbation : P10PositiveEpsilon → P10Matrix n
+  rightPerturbation : P10PositiveEpsilon → P10Matrix n
+  leftInheritedError : P10PositiveEpsilon → ℝ
+  rightInheritedError : P10PositiveEpsilon → ℝ
+  leftInheritedError_nonneg : ∀ epsilon : P10PositiveEpsilon,
+    0 ≤ leftInheritedError epsilon
+  rightInheritedError_nonneg : ∀ epsilon : P10PositiveEpsilon,
+    0 ≤ rightInheritedError epsilon
+  leftInheritedCoeff : ℝ
+  rightInheritedCoeff : ℝ
+  leftInheritedCoeff_nonneg : 0 ≤ leftInheritedCoeff
+  rightInheritedCoeff_nonneg : 0 ≤ rightInheritedCoeff
+  localSecondOrderCoeff : ℝ
+  localSecondOrderCoeff_nonneg : 0 ≤ localSecondOrderCoeff
+  radius : ℝ
+  radius_pos : 0 < radius
+  left_perturbation_bound : ∀ epsilon : P10PositiveEpsilon,
+    (algorithm.matrixNorm n).value (leftPerturbation epsilon) ≤
+      leftInheritedError epsilon
+  right_perturbation_bound : ∀ epsilon : P10PositiveEpsilon,
+    (algorithm.matrixNorm n).value (rightPerturbation epsilon) ≤
+      rightInheritedError epsilon
+  left_inherited_first_order : ∀ epsilon : P10PositiveEpsilon,
+    (epsilon : ℝ) ≤ radius →
+    leftInheritedError epsilon ≤ leftInheritedCoeff * (epsilon : ℝ)
+  right_inherited_first_order : ∀ epsilon : P10PositiveEpsilon,
+    (epsilon : ℝ) ≤ radius →
+    rightInheritedError epsilon ≤ rightInheritedCoeff * (epsilon : ℝ)
+  local_error_bound : ∀ epsilon : P10PositiveEpsilon,
+    (epsilon : ℝ) ≤ radius →
+    (algorithm.matrixNorm n).value
+        (algorithm.product n epsilon
+            (exactLeft + leftPerturbation epsilon)
+            (exactRight + rightPerturbation epsilon) -
+          p10MatMul n
+            (exactLeft + leftPerturbation epsilon)
+            (exactRight + rightPerturbation epsilon)) ≤
+      algorithm.mu n * (epsilon : ℝ) *
+          (algorithm.matrixNorm n).value exactLeft *
+          (algorithm.matrixNorm n).value exactRight +
+        localSecondOrderCoeff * (epsilon : ℝ) ^ 2
+
+/-- The actual output of the fixed multiplication algorithm on the two
+epsilon-dependent computed operands. -/
+noncomputable def p10ProductFamilyComputed {n : ℕ}
+    (algorithm : P10StableMatrixMultiplication)
+    (family : P10FirstOrderProductFamily algorithm n)
+    (epsilon : P10PositiveEpsilon) : P10Matrix n :=
+  algorithm.product n epsilon
+    (family.exactLeft + family.leftPerturbation epsilon)
+    (family.exactRight + family.rightPerturbation epsilon)
+
+/-- The actual product error. No inherited cross term or local remainder is
+removed from this quantity. -/
+noncomputable def p10ProductFamilyError {n : ℕ}
+    (algorithm : P10StableMatrixMultiplication)
+    (family : P10FirstOrderProductFamily algorithm n)
+    (epsilon : P10PositiveEpsilon) : P10Matrix n :=
+  p10ProductFamilyComputed algorithm family epsilon -
+    p10MatMul n family.exactLeft family.exactRight
+
+/-- The three leading contributions printed in equation (8). -/
+noncomputable def p10ProductFamilyErrorBudget {n : ℕ}
+    (algorithm : P10StableMatrixMultiplication)
+    (family : P10FirstOrderProductFamily algorithm n)
+    (epsilon : P10PositiveEpsilon) : ℝ :=
+  algorithm.mu n * (epsilon : ℝ) *
+      (algorithm.matrixNorm n).value family.exactLeft *
+      (algorithm.matrixNorm n).value family.exactRight +
+    ((algorithm.matrixNorm n).value family.exactLeft *
+        family.rightInheritedError epsilon +
+      family.leftInheritedError epsilon *
+        (algorithm.matrixNorm n).value family.exactRight)
+
 /-- The one-level amplification factor in the Sylvester recurrence on printed page 86. -/
 noncomputable def p10SylvesterGrowth {n : ℕ}
     (A B : P10Matrix n) (sep : ℝ) : ℝ :=

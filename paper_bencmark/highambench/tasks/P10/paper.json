@@ -77,7 +77,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use equation (8)'s complete three-term first-order bound for a linked stable computed product under its otherwise unspecified consistent matrix norm; retain the inherited cross term and local epsilon-squared remainder only in the full execution model and remove them explicitly from the selected first-order error.",
+      "decision": "Use equation (8)'s complete three-term first-order bound for the actual output of one fixed stable multiplication algorithm under its otherwise unspecified consistent matrix norm; quantify uniformly over positive epsilon and absorb the inherited cross product and local higher-order effects into one explicit O(epsilon^2) term.",
       "task_id": "P10-T2",
       "theorem_name": "p10_t2_first_order_product_error"
     },

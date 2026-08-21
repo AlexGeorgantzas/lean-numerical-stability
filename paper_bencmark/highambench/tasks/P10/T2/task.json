@@ -1,16 +1,16 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, linked stable product computation, and explicit first-order projection for equation (8)",
+    "kind": "source selection, tier label, fixed stable-product algorithm, operational error family, and uniform first-order interpretation of equation (8)",
     "performed_by": "Codex"
   },
   "assumptions": [
     "The matrix dimension is positive and the exact and computed operands are real square n-by-n matrices, as in equation (1) and the recursive-inversion application of equation (8).",
     "One otherwise unspecified matrix norm is used throughout and satisfies nonnegativity, definiteness, homogeneity, subadditivity, and submultiplicativity.",
-    "Machine epsilon is positive; mu is nonnegative and has a finite polynomial-growth certificate, matching the normwise stable-multiplication model surrounding equation (1).",
-    "The computed product is linked exactly to the two perturbed operands, one local first-order multiplication error, and one explicitly bounded epsilon-squared remainder.",
-    "The left and right operand perturbation norms are bounded by their respective nonnegative inherited absolute errors.",
-    "The selected first-order error removes the inherited-error cross product and local higher-order remainder from the full realized product error; no exceptional-value semantics are added beyond the paper's real-valued normwise model."
+    "One multiplication operation, norm family, and nonnegative function mu are fixed across dimensions, inputs, calls, and positive precisions; mu has one global polynomial-growth certificate.",
+    "The exact operands are fixed while their computed perturbations and inherited absolute-error bounds vary with epsilon; both inherited errors are uniformly O(epsilon) on one positive radius.",
+    "Every computed output is the actual result of the fixed multiplication operation on the two perturbed operands, and its local error satisfies equation (1) with one uniform epsilon-squared coefficient.",
+    "The conclusion bounds the full realized product error without subtracting the inherited cross product or any local remainder; no exceptional-value semantics are added beyond the paper's real-valued normwise model."
   ],
   "author_label": null,
   "classification_frozen_before_runs": false,
@@ -20,14 +20,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P10/T2/context.md",
   "formal_statement": {
-    "lean_header": "theorem p10_t2_first_order_product_error {n : Nat} (run : P10FirstOrderProductRun n) : run.matrixNorm.value (p10FirstOrderProductError run) <= p10FirstOrderProductErrorBudget run",
+    "lean_header": "theorem p10_t2_first_order_product_error {n : Nat} (algorithm : P10StableMatrixMultiplication) (family : P10FirstOrderProductFamily algorithm n) : exists secondOrderCoeff : Real, 0 <= secondOrderCoeff and exists radius : Real, 0 < radius and forall epsilon : P10PositiveEpsilon, (epsilon : Real) <= radius -> (algorithm.matrixNorm n).value (p10ProductFamilyError algorithm family epsilon) <= p10ProductFamilyErrorBudget algorithm family epsilon + secondOrderCoeff * (epsilon : Real)^2",
     "namespace": "HighamBench",
-    "plain_language": "For one linked stable matrix-product computation, the realized first-order absolute normwise error is bounded by exactly the local multiplication term and the two cross-oriented inherited-input terms printed in equation (8).",
+    "plain_language": "For one fixed stable matrix-multiplication algorithm and one uniformly first-order family of inherited operand errors, the actual absolute normwise product error is bounded by equation (8)'s three leading terms plus one uniform quadratic remainder.",
     "target_file": "paper_bencmark/highambench/tasks/P10/T2/Target.lean",
     "theorem_name": "p10_t2_first_order_product_error"
   },
-  "informal_proof": "Use the linked computed-product equation to cancel the inherited cross term and explicit epsilon-squared remainder, obtaining the exact first-order sum localError + A*dB + dA*B. Apply the selected norm's triangle inequality twice and submultiplicativity to the two propagated products, then substitute the local and inherited-error certificates.",
-  "informal_statement": "Equation (8)'s complete three-term first-order absolute normwise product-error rule, with exact/computed operands linked and every omitted higher-order term represented outside the bounded first-order projection.",
+  "informal_proof": "Expand the actual error as localError + A*dB + dA*B + dA*dB. Apply subadditivity, submultiplicativity, the local equation-(1) certificate, and the two inherited-error bounds. Their uniform O(epsilon) certificates bound dA*dB by leftCoeff*rightCoeff*epsilon^2; add this coefficient to the local quadratic coefficient.",
+  "informal_statement": "Equation (8)'s complete three-term first-order absolute normwise product-error rule for the actual output of one fixed multiplication algorithm, with every suppressed effect bounded by one explicit uniform O(epsilon^2) term.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -57,9 +57,11 @@
     "P10Matrix",
     "p10MatMul",
     "P10ConsistentMatrixNorm",
-    "P10FirstOrderProductRun",
-    "p10FirstOrderProductError",
-    "p10FirstOrderProductErrorBudget"
+    "P10PositiveEpsilon",
+    "P10StableMatrixMultiplication",
+    "P10FirstOrderProductFamily",
+    "p10ProductFamilyError",
+    "p10ProductFamilyErrorBudget"
   ],
   "source_locations": [
     {
@@ -76,7 +78,7 @@
   "task_id": "P10-T2",
   "tier": "T2",
   "tier_label": "combine",
-  "tier_rationale": "The proof combines the local stable-multiplication certificate, both inherited-error certificates, two abstract submultiplicative bounds, and repeated subadditivity after a paper-specific noncommutative first-order extraction. The L proof obtains that extraction through NumStability.matMul_add_left and NumStability.matMul_add_right from the frozen MatrixAlgebra module. Searches across all 24 mounted modules found no declaration giving equation (8)'s linked three-term bound; the closer source-only MatMulFirstOrderSpec is not mounted, while the mounted Frobenius and entrywise results would improperly change the source's unnamed norm semantics.",
+  "tier_rationale": "The proof combines the local stable-multiplication certificate, both uniform inherited-error certificates, three abstract submultiplicative bounds, and repeated subadditivity after a paper-specific four-term expansion of the actual error. The L proof materially combines NumStability.matMul_add_left and NumStability.matMul_add_right from the frozen MatrixAlgebra module to derive that expansion. Searches across all 24 mounted modules found no declaration giving equation (8)'s linked uniform bound; the closer source-only MatMulFirstOrderSpec is not mounted, while the mounted Frobenius and entrywise results would improperly change the source's unnamed norm semantics.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P10/T2/Target.lean",
     "mode": "shared automatic validator",

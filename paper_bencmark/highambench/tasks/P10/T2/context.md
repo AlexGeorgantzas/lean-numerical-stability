@@ -9,21 +9,18 @@ linear algebra is stable*. The local PDF SHA-256 is
 The selected result is the product-error propagation rule in equation (8),
 PDF page 8, printed page 66, section 3.1.
 
-## Local context and statement
+## Source statement
 
-The paper defines stable multiplication of `n`-by-`n` matrices in equation (1)
-by the normwise model
+The paper defines stable multiplication of `n`-by-`n` matrices in equation
+(1) by
 
 ```text
-||Ccomp - A*B|| <= mu(n)*epsilon*||A||*||B|| + O(epsilon^2).
+||Ccomp - A*B|| <= mu(n)*epsilon*||A||*||B|| + O(epsilon^2),
 ```
 
-Here `epsilon` is machine epsilon and `mu(n)` is bounded by a polynomial in
-`n`. The paper deliberately leaves the matrix norm unnamed and notes that a
-change of norm can alter the dimension-dependent factor.
-
-For operands carrying errors from earlier computations, equation (8) gives
-the complete first-order absolute-error budget
+where `mu(n)` is bounded by a polynomial in `n`. For operands carrying errors
+from earlier computations, equation (8) records the complete first-order
+budget
 
 ```text
 err(C,n) = mu(n)*epsilon*||A||*||B||
@@ -31,83 +28,68 @@ err(C,n) = mu(n)*epsilon*||A||*||B||
              + err(A,n)*||B||.
 ```
 
-The equality is error-accounting notation: equation (1) is an inequality, and
-the paragraph introducing equation (8) explicitly says that the analysis is
-first order. The target therefore states a rigorous non-strict bound and does
-not interpret the printed equality as an exact identity for realized errors.
+The printed equality is first-order error-accounting notation. The formal
+target therefore gives a norm inequality for the actual computed-product
+error and exposes one uniform quadratic remainder.
 
-## Formal product computation
+## Fixed algorithm and norm
 
-`P10ConsistentMatrixNorm n` represents the one unnamed norm used throughout
-the product step. It records nonnegativity, definiteness, homogeneity,
-subadditivity, and submultiplicativity. It does not specialize the source to
-the Frobenius, spectral, or maximum norm.
+`P10StableMatrixMultiplication` is one multiplication algorithm, not a new
+choice for each run. Its output operation, matrix norm at every dimension,
+and function `mu` are fixed before the dimension, operands, and precision are
+chosen. The structure also records a global polynomial bound for `mu`.
 
-`P10FirstOrderProductRun n` is one proof-carrying stable multiplication with
-positive dimension. Its exact operands are `exactLeft` and `exactRight`; their
-computed values are
+`P10ConsistentMatrixNorm n` represents the paper's deliberately unnamed
+matrix norm. It supplies nonnegativity, definiteness, homogeneity,
+subadditivity, and submultiplicativity without changing the source to a
+particular norm.
 
-```text
-exactLeft  + leftPerturbation
-exactRight + rightPerturbation.
-```
+## Uniform first-order execution family
 
-The two perturbation norms are bounded by `leftInheritedError` and
-`rightInheritedError`. The computed output is linked to those operands by
+`P10FirstOrderProductFamily algorithm n` fixes exact matrices `A` and `B` and
+varies positive `epsilon`. At each precision the actual algorithm is called
+on
 
 ```text
-computedProduct
-  = (exactLeft + leftPerturbation)
-      * (exactRight + rightPerturbation)
-    + localFirstOrderError + higherOrderRemainder.
+A + leftPerturbation(epsilon)
+B + rightPerturbation(epsilon).
 ```
 
-The local first-order term satisfies exactly
+The perturbation norms are bounded by nonnegative inherited-error functions.
+Both inherited errors have one coefficient and one positive radius on which
+they are bounded by that coefficient times `epsilon`. Thus they are genuinely
+uniform `O(epsilon)` families rather than unrelated values chosen after one
+precision is fixed.
+
+The local multiplication certificate bounds the actual output minus the
+exact product of those perturbed operands by
 
 ```text
-N(localFirstOrderError)
-  <= mu(n)*epsilon*N(exactLeft)*N(exactRight),
+mu(n)*epsilon*N(A)*N(B) + localSecondOrderCoeff*epsilon^2
 ```
 
-and the separately named remainder has a finite
-`higherOrderCoeff*epsilon^2` bound. The run also records nonnegativity and a
-finite polynomial-growth certificate for `mu`. As in the source passages, the
-model is an axiomatic real-valued normwise model and makes no claim about
-overflow, underflow, NaN, or infinity.
-
-## First-order projection
-
-The exact computed-product error contains both the inherited cross term
-`leftPerturbation*rightPerturbation` and the local higher-order remainder.
-`p10FirstOrderProductError run` removes exactly those two terms:
-
-```text
-computedProduct - exactLeft*exactRight
-  - leftPerturbation*rightPerturbation - higherOrderRemainder.
-```
-
-Using the linked computation, this is exactly
-
-```text
-localFirstOrderError
-  + exactLeft*rightPerturbation
-  + leftPerturbation*exactRight.
-```
-
-Thus no quadratic term is silently inserted into equation (8), and no
-quadratic term is silently discarded from the full computation.
+on the same radius. This is equation (1) after the first-order effect of the
+epsilon-sized operand perturbations has been absorbed into a uniform
+quadratic term. It contains neither inherited contribution from equation (8)
+nor the desired final bound.
 
 ## Fixed conclusion
 
-The target bounds the norm of that realized first-order error by the three and
-only three printed contributions:
+`p10ProductFamilyError` is the actual error
 
 ```text
-mu(n)*epsilon*N(exactLeft)*N(exactRight)
-  + N(exactLeft)*rightInheritedError
-  + leftInheritedError*N(exactRight).
+algorithm.product(epsilon, A + dA(epsilon), B + dB(epsilon)) - A*B.
 ```
 
-The same `n`, `mu(n)`, `epsilon`, and norm occur in every term, and inherited
-right-input error is multiplied by the left-operand norm while inherited
-left-input error is multiplied by the right-operand norm.
+No cross term or local remainder is subtracted from it. The theorem produces
+one nonnegative coefficient and one positive radius such that, uniformly for
+all smaller positive precisions, its norm is at most the three terms printed
+in equation (8), plus that coefficient times `epsilon^2`.
+
+Expanding the perturbed product yields the local error, `A*dB`, `dA*B`, and
+`dA*dB`. The first three give the printed budget. Uniform first-order bounds
+on both inherited errors make the cross product uniformly quadratic.
+
+As in the source, this is an axiomatic real-valued normwise model. It does not
+add overflow, underflow, NaN, or infinity semantics absent from the selected
+paper passage.
