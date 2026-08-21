@@ -1,0 +1,172 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P11-T1",
+  "paper_sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
+  "blind_translation_sha256": "db2ff34dcab7539a5fcebc5b66fb7dd8dd6bd05654f0a0424d6b82136e483660",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified published PDF places the full-rank rectangular setting on printed page 300, Algorithm 2 and the IEEE model on page 301, Theorem 1 on page 302, positivity on page 307, and the k=1 representation, residual identity, and equation (16) on page 308.",
+      "translation_evidence": "The translation selects only a=A[:,0], q=Q[:,0], r=R_00, the G1 normalization representation, and the first-column residual chain.",
+      "reasoning": "The source packet identifies the correct paper version and the translation addresses the requested k=1 passage rather than later induction steps."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "The paper has A,Q in R^(m x n), R in R^(n x n), m>=n, rank(A)=n, and a first column; compatibility of (I+G1)a1 implies G1 is m by m.",
+      "translation_evidence": "The run has positive natural m,n with n<=m, A,Q of size m by n, R of size n by n, injective x maps to Ax, and G1 of size m by m; zero index denotes the paper's first index.",
+      "reasoning": "The finite-dimensional types and first-column indexing match. Explicit positivity follows from the paper's implicit n>=1 and m>=n."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "On printed page 308, standard error bounds supply a compatible G1 after the computed a1,q1,r11 are fixed, so G1 is an existential witness depending on that computation.",
+      "translation_evidence": "G1, q=(a+G1a)/r, r>0, and ||G1||<=epsilonM are already fields of every quantified run.",
+      "reasoning": "Quantifying over a package that already contains the witness is not equivalent to proving that such a witness exists for every admissible computed output. No existence or coverage theorem connects base algorithm outputs to inhabitants of the package."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The hypotheses include full column rank, computed Q and R from Algorithm 2, the IEEE normalized-range model, condition (3) for every leading block, and the resulting positivity r_kk>0 for every k.",
+      "translation_evidence": "The run includes rank, triangularity, explicit leading-block inverses, condition-like inequalities, and r_00>0, but assumes the G1 normalization facts, has no algorithm or IEEE premise, and does not require later diagonal entries to be positive.",
+      "reasoning": "Several algebraic hypotheses match, and chosen two-sided inverses are a reasonable formal account of R_s^(-1), but the algorithmic and numerical hypotheses are omitted while a central source conclusion is added as a premise."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The selected passage supplies G1 with both its normalization equation and norm bound, then states A1-Q1R1=a1-q1r11=-G1a1 and the complete norm chain ending in epsilonM||a1||2.",
+      "translation_evidence": "The conclusion certificate records the normalization equation, G1 bound, matrix-to-vector residual identification, e=-G1a, and every norm equality and inequality.",
+      "reasoning": "The algebraic expressions are complete, including all three residual representations, but the existence of G1 is not a conclusion: it has been moved into the run assumptions."
+    },
+    {
+      "id": "S06",
+      "status": "unclear",
+      "paper_evidence": "The source uses the conventional vector Euclidean norm and matrix 2-norm, including matrix-vector submultiplicativity.",
+      "translation_evidence": "Vector norms, matrix products, leading blocks, coefficient functions, and the sole-column norm are unfolded. D091 states that the matrix norm delegates to an auxiliary L2-operator construction whose defining formula is absent.",
+      "reasoning": "Nat.AtLeastTwo and NeZero have only elaboration effects in the supplied ledger. The substantive matrix-norm definition, however, cannot be fully interpreted from the authorized evidence."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "Printed page 308 treats r11 as the computed norm r11=||a1||2(1+delta1), not as the exact mathematical norm, and treats q1 as a computed division represented by G1.",
+      "translation_evidence": "The run contains arbitrary exact real q and r constrained by r>0 and the G1 equation; it contains neither the delta1 relation nor any designation of q and r as computed values.",
+      "reasoning": "The translation does not incorrectly set r equal to the exact norm, but it loses the distinction and constraint that make r and q computed floating-point quantities."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Theorem 1 expressly concerns R resulting from Algorithm 2, and page 308 is its k=1 induction base using Algorithm 2's computed initialization.",
+      "translation_evidence": "LocalDef001 contains matrices and algebraic properties but no execution relation, computation predicate, or other field linking them to Algorithm 2.",
+      "reasoning": "An operation-level trace is not necessary if an adequate aggregate model is stated, but field names and algebraic consequences alone do not establish Algorithm 2 provenance."
+    },
+    {
+      "id": "S09",
+      "status": "unclear",
+      "paper_evidence": "Equation (16) uses the matrix spectral 2-norm for the m by 1 residual, the Euclidean norm for vectors, and the induced spectral norm for G1.",
+      "translation_evidence": "LocalDef017 is exactly the Euclidean norm of the sole column, which equals the spectral norm of an m by 1 matrix. D091 does not expose enough of p11OpNorm2's auxiliary construction to prove that square-matrix norms are the induced spectral norm.",
+      "reasoning": "The special residual-matrix norm is faithful despite not invoking a rectangular operator norm. The norms of G1, R_s, and B_s remain semantically unresolved."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "The selected index is k=1, c1(m,1)=1, c4=c2+2c1, condition (3) ranges over every k, and equation (16) has no dimension or condition-number factor.",
+      "translation_evidence": "Zero index selects the first column and R_00; beta is c1, alpha is c2, C=alpha+2beta, C(m,1)=m+4, and the final bound has coefficient exactly one.",
+      "reasoning": "The coefficient formulas, all-leading-block indexing, dimensions, and first-column residual constant match."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Printed page 301 assumes IEEE arithmetic, identifies epsilonM as machine unit, restricts the relative-error rule to normalized-range results, and supplies no behavior for underflow, overflow, infinities, or NaNs.",
+      "translation_evidence": "epsilonM is any nonnegative real, and the proposition contains no floating-point format, rounding operation, normalized-range condition, or exceptional-value restriction.",
+      "reasoning": "The stored G1 facts cannot by themselves preserve the source's numerical-model assumptions, especially because their existence is assumed rather than derived from that model."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper has r11>0, q1=(I+G1)a1/r11, ||G1||<=epsilonM, exact residual equalities with negative sign, strict condition (3), and non-strict norm bounds.",
+      "translation_evidence": "All local signs, equality directions, strictness, and inequality directions match, but the normalization relation and G1 bound are premises of the quantified run.",
+      "reasoning": "The local relations are accurate, but the proposition is logically weaker because it assumes the witness facts that the selected paper result supplies."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Equation (16) is a normwise first-column factorization residual bound and, after reversing sign, the k=1 backward perturbation in equation (4).",
+      "translation_evidence": "The certificate bounds the Euclidean norm of A[:,0]-Q[:,0]R_00 relative to ||A[:,0]||2 and does not substitute orthogonality or a whole-factorization error.",
+      "reasoning": "The residual sign, normwise scale, and backward-error interpretation are preserved."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "The paper adopts a first-order convention that neglects O(epsilonM^2), Theorem 1 is globally qualified by such terms, and the r11 error bound retains an O(epsilonM^2) term, although the G1 display and equation (16) are printed without a remainder.",
+      "translation_evidence": "The proposition consists solely of exact real equations and inequalities and records neither the surrounding first-order convention nor the delta1 higher-order bound.",
+      "reasoning": "It correctly avoids adding an O term to equation (16), but fails to preserve the passage's surrounding higher-order qualification."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The chosen source result is specifically the real, finite-dimensional k=1 base case, not the conclusions for k=2 through n.",
+      "translation_evidence": "Only finite real matrices and the first zero-indexed column are covered; no later-column or whole-Theorem-1 claim is made.",
+      "reasoning": "This is the intended specialization to the selected passage."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The source claims the representation for actual admissible Algorithm 2 computations rather than assuming that each computation already has such a representation.",
+      "translation_evidence": "The proposition does not assert that a run exists, and each run already stores G1, its normalization equation, and its norm bound before the conclusion certificate is constructed.",
+      "reasoning": "The hypotheses are mathematically satisfiable, but the target's key residual result follows for an unintended trivial reason from a packaged central conclusion, and no coverage of algorithm outputs is established."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation cannot establish that every admissible Algorithm 2 computation has a G1 witness because it quantifies only over packages in which that witness and its essential facts are already supplied. It also cannot recover Algorithm 2 or IEEE provenance."
+    },
+    "paper_implies_translation": {
+      "verdict": "unclear",
+      "reasoning": "If p11OpNorm2 is the induced spectral norm, the paper's displayed G1 facts and ordinary algebra yield every certificate field, so this implication would be yes. The authorized dependency ledger does not expose enough of the matrix-norm construction to verify that necessary semantic identification."
+    }
+  },
+  "classification": "undetermined",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "witness quantification",
+      "paper_evidence": "Printed page 308 obtains G1 and its two defining facts from standard error bounds for the computed first column.",
+      "translation_evidence": "G1 and those facts are components of the universally quantified run.",
+      "impact": "The translation assumes a central selected conclusion and therefore does not imply the paper result."
+    },
+    {
+      "severity": "major",
+      "category": "algorithm and numerical provenance",
+      "paper_evidence": "The source ties the claim to computed Algorithm 2 outputs under IEEE arithmetic and a normalized-range, first-order model.",
+      "translation_evidence": "The run has no algorithm relation or floating-point execution model, and epsilonM is merely a nonnegative real.",
+      "impact": "Arbitrary exact-real packages cannot be identified as computed first-column states from Algorithm 2."
+    },
+    {
+      "severity": "major",
+      "category": "matrix norm semantics",
+      "paper_evidence": "The G1 and condition-number bounds use the matrix spectral 2-norm.",
+      "translation_evidence": "D091 leaves the auxiliary construction underlying p11OpNorm2 opaque, while the sole-column Euclidean norm is explicitly correct.",
+      "impact": "The paper-implies-translation direction cannot be settled from the supplied evidence and requires declaration-level adjudication."
+    },
+    {
+      "severity": "major",
+      "category": "computed values and higher-order context",
+      "paper_evidence": "The source records computed r11=||a1||2(1+delta1), a bound containing O(epsilonM^2), and a global first-order convention.",
+      "translation_evidence": "r is an unconstrained exact real beyond positivity and the G1 equation, and no delta1 or higher-order convention appears.",
+      "impact": "The translation loses the computed-versus-exact distinction and surrounding approximation regime."
+    },
+    {
+      "severity": "note",
+      "category": "residual algebra",
+      "paper_evidence": "The source has A1-Q1R1=a1-q1r11=-G1a1 and equation (16) with coefficient one.",
+      "translation_evidence": "The matrix residual, vector residual, negative G1 action, and complete norm chain are all represented with matching dimensions and signs.",
+      "impact": "Once the prepackaged witness and the intended spectral norm are assumed, the local residual calculation itself is faithful."
+    }
+  ],
+  "rationale": "The first-column algebra, dimensions, signs, condition coefficients, coefficient-one residual bound, and sole-column norm are accurately translated. The proposition nevertheless moves the existence and defining properties of G1 from the selected paper conclusion into the run assumptions and supplies no connection from such runs to Algorithm 2 or the IEEE execution model. Thus translation-implies-paper is definitively false. Paper-implies-translation would hold for the resulting conditional algebraic certificate if p11OpNorm2 is the induced spectral norm, but that substantive dependency is opaque in the authorized blind ledger. Adjudication is therefore required; confirmation of the spectral norm would make the remaining implication yes and support not-faithful-weaker."
+}

@@ -2,62 +2,52 @@
   "accepted": false,
   "adjudicated": true,
   "adjudication_reasons": [
-    "judge classifications differ",
-    "round-trip judge requested adjudication",
-    "round-trip judge classification is undetermined",
-    "blind dependency D091 is unclear",
-    "blind dependency D105 is unclear",
-    "blind dependency D107 is unclear",
-    "round-trip S06 is unclear",
-    "round-trip S09 is unclear"
+    "judge classifications differ"
   ],
   "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-15T07:29:43.956746+00:00",
+  "completed_at_utc": "2026-08-21T20:53:33.764591+00:00",
   "findings": [
     {
-      "category": "assumed-central-witness",
-      "evidence": "Printed page 308 obtains G1, q1=(I+G1)a1/r11, and ||G1||_2<=epsilonM from standard error bounds. D003 requires D012 as first_normalization, and D027 requires exactly those facts to construct D012.",
-      "impact": "The theorem applies only after the central selected witness claim has been supplied, so it does not prove that claim for Algorithm 2 outputs.",
-      "severity": "critical"
-    },
-    {
-      "category": "algorithm-and-numerical-provenance",
-      "evidence": "The PDF ties the result to Algorithm 2 under IEEE arithmetic in the normalized range. D003 contains algebraic matrices and certificates but no algorithm execution relation, rounding semantics, normalized-range premise, or computed-norm relation for r11.",
-      "impact": "Synthetic exact-real packages qualify as runs without being established as CGS-P computations, and the reverse implication to the paper fails.",
+      "category": "constant-and-applicability-mismatch",
+      "evidence": "The source has 2*sqrt(2*m*k), whereas D026 has 2*sqrt(2)*m*k; D012 propagates this into the all-k condition in D003.",
+      "impact": "For n>=2, the formal theorem applies to a proper subset of the paper-admissible executions.",
       "severity": "major"
     },
     {
-      "category": "reduced-applicability-not-strength",
-      "evidence": "The run premises are satisfiable, but every run already includes G1 and its defining facts. The conclusion reconstructs the residual identities and norm chain from those stored facts.",
-      "impact": "Nonempty premises do not make the theorem genuinely stronger; moving the witness-producing burden into the domain reduces applicability and yields a weaker selected claim.",
-      "severity": "major"
+      "category": "faithful-local-arithmetic-abstraction",
+      "evidence": "D024 axiomatizes the normalized computed-norm and division errors used on printed page 308, while D006 still requires production of G1 and the full residual chain.",
+      "impact": "The abstraction broadens implementation representation without changing the selected mathematical claim.",
+      "severity": "note"
     },
     {
-      "category": "norm-and-residual-algebra",
-      "evidence": "D091 is the induced L2 operator-norm instance, D026 is the Euclidean vector norm, and D016-D018 plus D004 encode A1-Q1R1=a1-q1r11=-G1a1 and the coefficient-one norm chain.",
-      "impact": "Once the prepackaged witness is accepted, the dimensions, signs, norm notions, and equation (16) algebra faithfully match the source.",
+      "category": "faithful-algorithm-prefix",
+      "evidence": "The selected proof uses only Algorithm 2's first norm and division step; later-column recurrences do not occur in equation (16).",
+      "impact": "Omitting irrelevant later execution traces is not an algorithm-linkage defect for P11-T1.",
+      "severity": "note"
+    },
+    {
+      "category": "higher-order-separation",
+      "evidence": "D006 includes an epsilonM-squared term only in the r11 roundoff relation and preserves the printed remainder-free G1 relation and equation-(16) inequalities.",
+      "impact": "The selected residual result retains the source's exact first-column form.",
       "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "For an existing Lean run, its stored G1 does witness the same local algebraic representation. However, the paper claim is witness-producing for every admissible Algorithm 2 computation. The Lean theorem supplies no coverage theorem converting a pre-G1 Algorithm 2 output into a run, and constructing the run already requires G1, its representation, and its bound. It also lacks Algorithm 2, normalized-range IEEE, and computed-r11 provenance. Therefore it cannot recover the paper claim.",
+      "reasoning": "Lean's malformed larger c4 excludes some executions satisfying the paper's condition (3), so the Lean theorem does not recover the source result over its full stated domain.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "For an admissible paper execution, the standing setting supplies positive dimensions, n<=m, full column rank, and Algorithm 2 matrices Q and upper-triangular R. Condition (3) and its nonsingularity consequence permit choosing the required two-sided leading-block inverses and give r11>0. The standard-error assertion on printed page 308 supplies G1, its representation, and its spectral-norm bound, thereby constructing first_normalization. The exact residual identity, induced-norm action bound, and equation (16) then supply every P11Equation16 field.",
+      "reasoning": "After the faithful identification of the abstract first-column operations with the source's normalized norm and division laws, restricting the paper result to Lean's stronger condition yields every Lean conclusion. The first-column prefix and explicit remainder coefficient introduce no conflicting conclusion.",
       "verdict": "yes"
     }
   },
   "judge_classifications": {
     "direct": "not-faithful-weaker",
-    "roundtrip": "undetermined"
+    "roundtrip": "not-faithful-different"
   },
-  "rationale": "Primary evidence resolves the norm ambiguity: the target uses Mathlib's induced L2 operator norm, not the separately defined Frobenius norm, so S06 and S09 pass. D105 and D107 are closed elaboration infrastructure. The decisive mismatch is logical and numerical: the paper produces G1 for computed Algorithm 2 data, whereas the Lean theorem quantifies only over runs already containing G1, its representation, and its bound, without an independent algorithm or IEEE model. The paper can use its produced witness and surrounding hypotheses to build such a run and derive the Lean certificate, but the Lean theorem cannot establish witness existence for pre-certificate Algorithm 2 outputs. Thus paper_implies_lean is yes, lean_implies_paper is no, and the theorem is not-faithful-weaker rather than genuinely stronger or merely vacuous.",
-  "remaining_uncertainties": [
-    "The PDF introduces G1 without an explicit quantifier or dimension. Compatibility with (I+G1)a1 supports the minimally structured m-by-m existential interpretation used here, but the source does not assert uniqueness, diagonality, or componentwise structure.",
-    "The paper globally invokes a first-order O(epsilonM^2) convention while printing the local G1 relation, exact residual identity, and equation (16) without a remainder. No explicit constant or threshold reconciles those presentations; this adjudication follows the selected remainder-free displays while retaining the first-order context as a modeling omission."
-  ],
+  "rationale": "The substantive k=1 witness, residual identity, norm meanings, signs, and full equation-(16) chain match the source. The arithmetic interface, first-column execution record, and localized second-order coefficient faithfully isolate the hypotheses actually used by that base-case argument. The sole classification-changing defect is the incorrectly grouped c1 formula used in the inherited all-k condition. Because it is strictly larger for every relevant k>=2, it narrows applicability without strengthening the conclusion, yielding not-faithful-weaker.",
+  "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P11-T1"

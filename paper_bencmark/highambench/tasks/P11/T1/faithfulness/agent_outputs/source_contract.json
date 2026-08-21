@@ -8,160 +8,169 @@
       "pdf_page": 2,
       "printed_page": "300",
       "anchor": "opening matrix setting and column notation",
-      "observation": "The paper fixes A ∈ R^{m×n} with m ≥ n and rank(A)=n, writes A=(a₁,…,aₙ), Q=(q₁,…,qₙ), and R=(rⱼₖ), and describes the exact-arithmetic factorization A=QR with QᵀQ=Iₙ and nonsingular upper-triangular R."
+      "observation": "The standing setting is A in R^{m x n}, m >= n, rank(A)=n, with A=(a1,...,an), Q=(q1,...,qn), and R=(r_jk). In exact arithmetic the factorization has A=QR, Q^T Q=I_n, and upper-triangular nonsingular R."
     },
     {
       "pdf_page": 3,
       "printed_page": "301",
-      "anchor": "Algorithm 2 first-column initialization",
-      "observation": "Algorithm 2 (CGS-P) initializes r₁₁=||a₁||₂, q₁=a₁/r₁₁, R₁=(r₁₁), and Q₁=(q₁), before its loop k=2,…,n."
+      "anchor": "Algorithm 2 and following floating-point model",
+      "observation": "Algorithm 2 (CGS-P) begins with r11=||a1||_2, q1=a1/r11, R1=(r11), and Q1=(q1)."
     },
     {
       "pdf_page": 3,
       "printed_page": "301",
-      "anchor": "floating-point model immediately following Algorithm 2",
-      "observation": "The paper assumes IEEE floating-point arithmetic and states fl(x+y)=(x+y)(1+δ), |δ|≤ε_M, for results in the normalized range. It adopts (1+ε_M)^{p(n)}=1+p(n)ε_M+O(ε_M²) for modest p(n), treating O(ε_M²) as making no significant contribution."
+      "anchor": "Algorithm 2 and following floating-point model",
+      "observation": "The paper assumes IEEE floating-point arithmetic, states fl(x+y)=(x+y)(1+delta), |delta|<=epsilon_M for normalized-range results, and uses the first-order approximation (1+epsilon_M)^{p(n)}=1+p(n)epsilon_M+O(epsilon_M^2), treating the O(epsilon_M^2) contribution as insignificant."
     },
     {
       "pdf_page": 4,
       "printed_page": "302",
-      "anchor": "definitions (2), Theorem 1 condition (3), and conclusion (4)",
-      "observation": "The paper defines A_k as the first k columns of A, κ₂(R_k)=||R_k||₂||R_k⁻¹||₂, c₁(m,1)=1, and c₄=c₂+2c₁. Theorem 1 assumes c₄(m,k)ε_Mκ₂(R_k)²<1 for each k for the R computed by Algorithm 2, and states, for k=1,…,n and to within O(ε_M²), Q_kR_k−A_k=ΔA_k with ||ΔA_k||₂≤c₁(m,k)||A_k||₂ε_M."
+      "anchor": "Theorem 1, condition (3)",
+      "observation": "Theorem 1 concerns the computed R and Q from Algorithm 2 and assumes c4(m,k) epsilon_M kappa_2(Rk)^2<1 for every k, where kappa_2(Rk)=||Rk||_2||Rk^{-1}||_2. Its residual conclusion is QkRk-Ak=Delta Ak with ||Delta Ak||_2<=c1(m,k)||Ak||_2 epsilon_M, to within O(epsilon_M^2), and c1(m,1)=1."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "305",
+      "anchor": "Remark 2, Algorithm 2 breakdown when assumptions fail",
+      "observation": "The paper notes that without the assumptions of Theorem 1, phi_k can be at least psi_k and Algorithm 2 can break down, producing Q and R that are not real matrices."
     },
     {
       "pdf_page": 9,
       "printed_page": "307",
       "anchor": "nonsingularity paragraph after equations (14)-(15)",
-      "observation": "In the proof of Lemma 2, the authors use condition (3) to conclude that R is nonsingular and hence that rₖₖ>0 for every k."
+      "observation": "Using condition (3), the proof concludes that R is nonsingular and hence every computed diagonal r_kk is positive."
     },
     {
       "pdf_page": 10,
       "printed_page": "308",
-      "anchor": "Proof of Theorem 1, k=1 normalization-error display",
-      "observation": "For the base case k=1, the proof repeats r₁₁=||a₁||₂(1+δ₁), with |δ₁|≤(0.5m+1)ε_M+O(ε_M²), so r₁₁ denotes a computed norm rather than an exact norm value."
+      "anchor": "standard-error-bound display, exact residual identity, and equation (16)",
+      "observation": "For the k=1 base case, standard error bounds give q1=(I+G1)a1/r11 with ||G1||_2<=epsilon_M."
     },
     {
       "pdf_page": 10,
       "printed_page": "308",
-      "anchor": "standard-error-bound display preceding equation (16)",
-      "observation": "The proof states that standard error bounds give q₁=(I+G₁)a₁/r₁₁ with ||G₁||₂≤ε_M."
+      "anchor": "standard-error-bound display, exact residual identity, and equation (16)",
+      "observation": "The proof then states the exact identity A1-Q1R1=a1-q1 r11=-G1 a1."
     },
     {
       "pdf_page": 10,
       "printed_page": "308",
-      "anchor": "exact residual identity immediately preceding equation (16)",
-      "observation": "The proof then gives the exact algebraic identity A₁−Q₁R₁=a₁−q₁r₁₁=−G₁a₁."
-    },
-    {
-      "pdf_page": 10,
-      "printed_page": "308",
-      "anchor": "equation (16), complete norm chain",
-      "observation": "Equation (16) states ||A₁−Q₁R₁||₂=||a₁−q₁r₁₁||₂≤||G₁||₂||a₁||₂≤ε_M||a₁||₂."
+      "anchor": "standard-error-bound display, exact residual identity, and equation (16)",
+      "observation": "Equation (16) is the complete chain ||A1-Q1R1||_2=||a1-q1 r11||_2<=||G1||_2||a1||_2<=epsilon_M||a1||_2."
     }
   ],
   "statement": {
     "binders": [
-      "m and n are matrix dimensions with m≥n, and A∈R^{m×n} has rank(A)=n and columns a₁,…,aₙ; the use of a first column makes n≥1 implicit rather than separately stated. [PDF p. 2, printed p. 300, anchor: opening matrix setting and column notation]",
-      "ε_M is the machine unit, and Q,R are the floating-point matrices computed by Algorithm 2; A₁=(a₁), Q₁=(q₁), and R₁=(r₁₁) are their first-column/leading-block objects. [PDF p. 3, printed p. 301, anchor: Algorithm 2 first-column initialization; PDF p. 4, printed p. 302, anchor: definitions (2)]",
-      "The logical reading is: for each admissible input and computed output satisfying the inherited assumptions, there is a dimension-compatible G₁, depending on the computed first-column normalization, for which the displayed relation and bound hold. The existential quantifier is inferred from the phrase 'we can conclude from standard error bounds that,' because no explicit quantifier or shape declaration for G₁ is printed. [PDF p. 10, printed p. 308, anchor: standard-error-bound display preceding equation (16)]"
+      "Standing input: dimensions m,n and A in R^{m x n}, with m>=n and rank(A)=n; a1 is its first column. [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation]",
+      "Floating-point parameter: machine unit epsilon_M under the paper's IEEE normalized-range model. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "Computed quantities: Q and R are the outputs of Algorithm 2; at k=1, Q1=(q1) and R1=(r11). [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "The theorem quantifies over k=1,...,n, while the selected proof passage fixes the base case k=1. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "For the computed first-column normalization there exists a perturbation matrix G1, dependent on that computation, satisfying the displayed relation and bound. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]"
     ],
     "hypotheses": [
-      "A is in the paper's standing rectangular full-column-rank setting: A∈R^{m×n}, m≥n, rank(A)=n. This is inherited from the opening setup and is not restated in Theorem 1. [PDF p. 2, printed p. 300, anchor: opening matrix setting and column notation; PDF p. 4, printed p. 302, anchor: Theorem 1]",
-      "Q and R are the computed outputs of Algorithm 2 (CGS-P) in floating-point arithmetic with machine unit ε_M. [PDF p. 3, printed p. 301, anchor: Algorithm 2 and following floating-point model; PDF p. 4, printed p. 302, anchor: Theorem 1 condition (3)]",
-      "For every leading index k=1,…,n, the inherited conditioning restriction is c₄(m,k)ε_Mκ₂(R_k)²<1, where κ₂(R_k)=||R_k||₂||R_k⁻¹||₂. [PDF p. 4, printed p. 302, anchor: Theorem 1 condition (3)]",
-      "The displayed IEEE relative-error rule is asserted only for results in the normalized range, and the paper works to first order by treating O(ε_M²) terms as insignificant. [PDF p. 3, printed p. 301, anchor: floating-point model immediately following Algorithm 2]"
+      "Inherited standing hypothesis: A in R^{m x n}, m>=n, has full column rank n. [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation]",
+      "Algorithm hypothesis: the factors are computed by Algorithm 2, CGS-P, whose first step is r11=||a1||_2 and q1=a1/r11. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "Numerical hypothesis: arithmetic satisfies the stated IEEE relative-error model for normalized-range results, with machine unit epsilon_M. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "First-order convention: the analysis linearizes products in epsilon_M and treats O(epsilon_M^2) as making no significant contribution. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "Explicit Theorem 1 hypothesis: for every k, c4(m,k) epsilon_M kappa_2(Rk)^2<1, with kappa_2(Rk)=||Rk||_2||Rk^{-1}||_2. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]",
+      "The constants are c1(m,1)=1 and c1(m,k)=2 sqrt(2mk)+2 sqrt(k) for k=2,...,n; c2(m,1)=m+2 and c2(m,k)=3.5mk^2-1.5mk+16k for k=2,...,n; c3=0.5c2; and c4=c2+2c1. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]"
     ],
     "conclusions": [
-      "There exists a compatible error operator G₁ such that q₁=(I+G₁)a₁/r₁₁ and ||G₁||₂≤ε_M. [PDF p. 10, printed p. 308, anchor: standard-error-bound display preceding equation (16)]",
-      "The first-column residual satisfies the exact identity A₁−Q₁R₁=a₁−q₁r₁₁=−G₁a₁. [PDF p. 10, printed p. 308, anchor: exact residual identity immediately preceding equation (16)]",
-      "The complete bound is ||A₁−Q₁R₁||₂=||a₁−q₁r₁₁||₂≤||G₁||₂||a₁||₂≤ε_M||a₁||₂. No factor depending on m or n appears in this k=1 residual bound. [PDF p. 10, printed p. 308, anchor: equation (16), complete norm chain]",
-      "Equivalently, with the sign convention of Theorem 1 equation (4), Q₁R₁−A₁=G₁a₁ can be taken as ΔA₁ and obeys ||ΔA₁||₂≤c₁(m,1)||A₁||₂ε_M because c₁(m,1)=1 and a one-column matrix A₁ has the same 2-norm as a₁. This equivalence is inferred by negating the exact residual identity and matching it to (4). [PDF p. 4, printed p. 302, anchor: definitions (2) and conclusion (4); PDF p. 10, printed p. 308, anchor: exact residual identity and equation (16)]"
+      "Explicit normalization-error representation: q1=(I+G1)a1/r11 and ||G1||_2<=epsilon_M. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "Explicit exact residual identity: A1-Q1R1=a1-q1 r11=-G1 a1. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "Complete equation-(16) chain: ||A1-Q1R1||_2=||a1-q1 r11||_2<=||G1||_2||a1||_2<=epsilon_M||a1||_2. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "Under Theorem 1's sign convention Q1R1-A1=Delta A1, the displayed identity implies Delta A1=G1a1 and ||Delta A1||_2<=epsilon_M||A1||_2; this is the k=1 instance of equation (4), using c1(m,1)=1. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]"
     ],
     "definitions_and_conventions": [
-      "A_k is the matrix formed by the first k columns of A; hence A₁ is the one-column matrix (a₁). Q_k and R_k are the corresponding recursively constructed leading factors, with Q₁=(q₁) and R₁=(r₁₁). [PDF p. 2, printed p. 300, anchor: column notation and Algorithm 1 block notation; PDF p. 3, printed p. 301, anchor: Algorithm 2 first-column initialization; PDF p. 4, printed p. 302, anchor: definition of A_k]",
-      "Although Algorithm 2's pseudocode writes r₁₁=||a₁||₂, the proof treats r₁₁ as the computed value r₁₁=||a₁||₂(1+δ₁), not as exact equality to the mathematical norm. [PDF p. 3, printed p. 301, anchor: Algorithm 2 first-column initialization; PDF p. 10, printed p. 308, anchor: k=1 normalization-error display]",
-      "I in q₁=(I+G₁)a₁/r₁₁ is the identity compatible with a₁; its size I_m is inferred from the multiplication, not explicitly subscripted. [PDF p. 2, printed p. 300, anchor: A∈R^{m×n} and a₁ column notation; PDF p. 10, printed p. 308, anchor: standard-error-bound display]",
-      "The theorem defines its perturbation with sign Q_kR_k−A_k=ΔA_k, while the proof of the base case displays A₁−Q₁R₁; the two are negatives and have equal 2-norms. [PDF p. 4, printed p. 302, anchor: conclusion (4); PDF p. 10, printed p. 308, anchor: exact residual identity and equation (16)]"
+      "A=(a1,...,an), Q=(q1,...,qn), and R=(r_jk); Ak denotes the first k columns of A. [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation] [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]",
+      "At k=1, A1 is the m-by-1 first-column matrix identified with a1, Q1=(q1), and R1=(r11), so Q1R1 is identified with q1 r11. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "The identity matrix I in q1=(I+G1)a1/r11 must be the m-by-m identity for conformable multiplication; its order is inferred rather than printed explicitly. [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "The paper uses unhatted symbols for computed q1, r11, Q1, and R1; A and a1 are the input data. Products such as Q1R1 in the residual are mathematical products of the stored computed factors, not an additional floating-point operation described by the algorithm. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]"
     ],
     "implicit_context": [
-      "Equation (16) is the k=1 induction base for Theorem 1 conclusion (4), not a standalone claim about arbitrary q₁ and r₁₁. [PDF p. 10, printed p. 308, anchor: opening of Proof of Theorem 1 and sentence following equation (16); PDF p. 4, printed p. 302, anchor: conclusion (4)]",
-      "The full-rank matrix setting is standing context from the introduction; Theorem 1 begins directly with the floating-point and conditioning assumptions. [PDF p. 2, printed p. 300, anchor: opening matrix setting; PDF p. 4, printed p. 302, anchor: Theorem 1]",
-      "Condition (3) is used in the appendix to obtain nonsingularity and rₖₖ>0 for all k, so in particular the computed denominator r₁₁ is positive. [PDF p. 9, printed p. 307, anchor: nonsingularity paragraph after equations (14)-(15)]",
-      "Theorem 1 is globally stated 'to within terms of O(ε_M²)'; the particular G₁ bound, residual identity, and equation (16) are nevertheless printed without an added O(ε_M²) remainder. [PDF p. 4, printed p. 302, anchor: Theorem 1 preamble to conclusions (4)-(8); PDF p. 10, printed p. 308, anchor: standard-error-bound display, exact residual identity, and equation (16)]"
+      "The use of a first column and the range k=1,...,n implicitly require n>=1, although positivity of n is not separately stated in the opening matrix sentence. [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation] [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]",
+      "Full column rank is a standing assumption inherited from the opening setup rather than restated in Theorem 1. [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation] [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]",
+      "The opening exact-arithmetic properties Q^TQ=I_n and nonsingular upper-triangular R describe exact CGS; they are not assertions that the computed Q is exactly orthogonal. [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation] [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]",
+      "Condition (3) is used later to conclude r_kk>0 for every k, including r11, making the scalar division in q1=(I+G1)a1/r11 well-defined. [PDF p. 9, printed p. 307; anchor: nonsingularity paragraph after equations (14)-(15)] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "The preceding relation r11=||a1||_2(1+delta1), |delta1|<=(0.5m+1)epsilon_M+O(epsilon_M^2), is repeated in the base-case proof, but its error constant does not appear in equation (16) because the selected identity uses the asserted q1 relation with the same computed r11. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]"
     ],
-    "algorithm_linkage": "The selected claim is attached to the k=1 step of Algorithm 2 (CGS-P): compute r₁₁ from ||a₁||₂, divide to obtain q₁, and set R₁=(r₁₁), Q₁=(q₁). The k≥2 Pythagorean diagonal formula distinguishing CGS-P from CGS-S does not enter equation (16); the first-column initialization is also printed for Algorithm 1, but the enclosing theorem and proof explicitly concern Algorithm 2. [PDF p. 2, printed p. 300, anchor: Algorithm 1 initialization; PDF p. 3, printed p. 301, anchor: Algorithm 2 initialization; PDF p. 4, printed p. 302, anchor: Theorem 1; PDF p. 10, printed p. 308, anchor: k=1 proof and equation (16)]",
+    "algorithm_linkage": "The selected result is the k=1 base case of Theorem 1 for Algorithm 2, the Cholesky-like classical Gram-Schmidt algorithm CGS-P. Its first-column instructions r11=||a1||_2 and q1=a1/r11 are identical to Algorithm 1's first-column instructions; the pythagorean diagonal formula distinguishing CGS-P is used only for k>=2 and does not enter equation (16). [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation] [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model] [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]",
     "numerical_model": [
-      "The paper assumes IEEE floating-point arithmetic with machine unit ε_M and explicitly gives fl(x+y)=(x+y)(1+δ), |δ|≤ε_M, for normalized-range results. [PDF p. 3, printed p. 301, anchor: floating-point model immediately following Algorithm 2]",
-      "It adopts the first-order convention (1+ε_M)^{p(n)}=1+p(n)ε_M+O(ε_M²) for modest p(n), with O(ε_M²) treated as insignificant. [PDF p. 3, printed p. 301, anchor: linear approximation following the IEEE model]",
-      "For the computed norm, r₁₁=||a₁||₂(1+δ₁) with |δ₁|≤(0.5m+1)ε_M+O(ε_M²). [PDF p. 10, printed p. 308, anchor: k=1 normalization-error display]",
-      "For the computed division/normalization, the source invokes unspecified 'standard error bounds' to assert q₁=(I+G₁)a₁/r₁₁ and ||G₁||₂≤ε_M. [PDF p. 10, printed p. 308, anchor: standard-error-bound display preceding equation (16)]"
+      "IEEE floating-point arithmetic with machine unit epsilon_M is assumed. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "For normalized-range results the displayed primitive model is fl(x+y)=(x+y)(1+delta), |delta|<=epsilon_M. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "The analysis uses (1+epsilon_M)^{p(n)}=1+p(n)epsilon_M+O(epsilon_M^2) for modest p(n) and assumes the second-order contribution is insignificant. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "For first-column normalization, the operation-level errors are summarized by q1=(I+G1)a1/r11 with ||G1||_2<=epsilon_M. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]"
     ],
     "error_notions": [
-      "The selected error is the normwise first-column factorization residual A₁−Q₁R₁ (equivalently the perturbation Q₁R₁−A₁ in Theorem 1's sign convention), measured against the input scale ||a₁||₂=||A₁||₂. [PDF p. 4, printed p. 302, anchor: conclusion (4); PDF p. 10, printed p. 308, anchor: exact residual identity and equation (16)]",
-      "G₁ models error in the computed normalization q₁ and is controlled only through the matrix 2-norm bound ||G₁||₂≤ε_M in the printed passage. [PDF p. 10, printed p. 308, anchor: standard-error-bound display]",
-      "The residual identity is exact algebra in the displayed computed quantities once the G₁ representation is accepted; the final inequality is a forward bound on that residual and simultaneously supplies the k=1 normwise backward perturbation ΔA₁. [PDF p. 4, printed p. 302, anchor: conclusion (4); PDF p. 10, printed p. 308, anchor: exact residual identity and equation (16)]"
+      "The selected error is a normwise factorization residual for the first column, A1-Q1R1, rather than an orthogonality error or a normal-equations error. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "The bound is absolute but scales with ||a1||_2: ||A1-Q1R1||_2<=epsilon_M||a1||_2. The paper does not write a quotient by ||a1||_2 in equation (16). [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "G1 represents the normalization error multiplicatively and yields the exact backward perturbation identity A1-Q1R1=-G1a1. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "The theorem uses the opposite residual orientation QkRk-Ak=Delta Ak; at k=1 this changes only the sign, not the norm bound. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]"
     ],
     "norms": [
-      "Every selected bound uses ||·||₂. The conventional reading is the Euclidean 2-norm for vectors and the induced spectral 2-norm for matrices, but the cited pages do not explicitly define those norm constructions. [PDF p. 2, printed p. 300, anchor: Algorithm 1 norm notation; PDF p. 4, printed p. 302, anchor: κ₂ definition; PDF p. 10, printed p. 308, anchor: equation (16)]",
-      "Equation (16) directly identifies the 2-norm of the m×1 matrix residual A₁−Q₁R₁ with the 2-norm of the vector residual a₁−q₁r₁₁. [PDF p. 10, printed p. 308, anchor: equation (16), first equality]",
-      "The step ||a₁−q₁r₁₁||₂≤||G₁||₂||a₁||₂ uses the operator-vector submultiplicative 2-norm inequality together with the preceding exact identity. [PDF p. 10, printed p. 308, anchor: exact residual identity and equation (16)]"
+      "Every norm in the selected relation and equation (16) is explicitly subscripted 2. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "For a1, q1, and the m-by-1 residual this is the Euclidean vector norm; for G1 it is the induced matrix 2-norm, as required by the displayed product bound. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "No Frobenius norm, componentwise residual, or mixed norm appears in the selected claim. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]"
     ],
     "constants_and_indexing": [
-      "The selected case is exactly k=1; Algorithm 2's loop and Pythagorean formula begin at k=2. [PDF p. 3, printed p. 301, anchor: Algorithm 2 initialization and loop]",
-      "The theorem's residual constant is c₁(m,1)=1, and equation (16) realizes that k=1 coefficient. [PDF p. 4, printed p. 302, anchor: definition (2) and conclusion (4); PDF p. 10, printed p. 308, anchor: equation (16)]",
-      "The norm-computation perturbation uses the separate coefficient 0.5m+1 in |δ₁|≤(0.5m+1)ε_M+O(ε_M²); that m-dependent coefficient does not appear in equation (16). [PDF p. 10, printed p. 308, anchor: k=1 normalization-error display and equation (16)]",
-      "Condition (3) is indexed over every leading block k and uses c₄(m,k)ε_Mκ₂(R_k)²<1; it is inherited by the k=1 proof even though it does not occur in the final display (16). [PDF p. 4, printed p. 302, anchor: condition (3); PDF p. 9, printed p. 307, anchor: nonsingularity consequence]"
+      "The selected passage is exactly the k=1 base case; there is no shifted index. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "The final coefficient in equation (16) is exactly 1: epsilon_M||a1||_2, with no factor depending on m or n. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "This coefficient agrees with c1(m,1)=1 in Theorem 1's equation (4). [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]",
+      "From the printed definitions, c4(m,1)=c2(m,1)+2c1(m,1)=m+4; this specialization is inferred algebraically and is not separately displayed. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]",
+      "The preceding computed-norm relation has the distinct constant 0.5m+1 in |delta1|<=(0.5m+1)epsilon_M+O(epsilon_M^2); it must not replace the coefficient 1 in equation (16). [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]"
     ],
     "higher_order_terms": [
-      "The paper's general convention discards or neglects contributions O(ε_M²) under a linear approximation for modest p(n). [PDF p. 3, printed p. 301, anchor: linear approximation following the IEEE model]",
-      "Theorem 1's conclusions are qualified as holding to within terms of O(ε_M²). [PDF p. 4, printed p. 302, anchor: preamble to conclusions (4)-(8)]",
-      "The bound for the computed r₁₁ explicitly retains +O(ε_M²) in the bound on δ₁. [PDF p. 10, printed p. 308, anchor: k=1 normalization-error display]",
-      "The G₁ bound, exact residual identity, and equation (16) contain no printed O(ε_M²) remainder; adding such a term to equation (16) would not reproduce the displayed passage exactly. [PDF p. 10, printed p. 308, anchor: standard-error-bound display, exact residual identity, and equation (16)]"
+      "Theorem 1 introduces conclusions (4)-(8) as holding to within terms of O(epsilon_M^2). [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]",
+      "The standing numerical convention explicitly treats O(epsilon_M^2) as making no significant contribution. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "The repeated r11 error bound includes an O(epsilon_M^2) term. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "The displayed q1 perturbation relation, exact residual identity, and equation (16) contain no explicit O(epsilon_M^2) remainder; one must not append such a term to the printed equation-(16) chain. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]"
     ],
     "exceptional_values": [
-      "The explicit relative-error formula is restricted to results in the normalized range. The selected pages provide no model for subnormal results, underflow, overflow, infinities, or NaNs. [PDF p. 3, printed p. 301, anchor: floating-point model immediately following Algorithm 2]",
-      "The inherited full-column-rank setting excludes a₁=0 in exact arithmetic, and condition (3) is used to conclude r₁₁>0, so the division defining q₁ has a nonzero computed denominator within the theorem's regime. [PDF p. 2, printed p. 300, anchor: full-column-rank setting; PDF p. 3, printed p. 301, anchor: Algorithm 2 first-column division; PDF p. 9, printed p. 307, anchor: rₖₖ>0 for all k]",
-      "No separate exceptional-value behavior or fallback is specified for the first-column normalization in the selected passage. [PDF p. 3, printed p. 301, anchor: Algorithm 2 first-column initialization and normalized-range model; PDF p. 10, printed p. 308, anchor: k=1 proof]"
+      "The stated primitive rounding model is restricted to normalized-range results. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "Condition (3) is used to conclude that every computed r_kk is positive, including r11, thereby excluding a zero normalization divisor in the selected base case. [PDF p. 9, printed p. 307; anchor: nonsingularity paragraph after equations (14)-(15)]",
+      "The paper warns that when Theorem 1's assumptions fail, Algorithm 2 may have phi_k>=psi_k and produce non-real Q and R; this warning concerns the pythagorean steps k>=2. [PDF p. 7, printed p. 305; anchor: Remark 2, Algorithm 2 breakdown when assumptions fail] [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+      "The selected pages provide no separate model for subnormal underflow, overflow, infinities, or NaNs beyond restricting the stated relative-error formula to normalized-range results. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]"
     ]
   },
   "undebatable_constraints": [
-    "The input is in the standing real rectangular setting A∈R^{m×n}, m≥n, rank(A)=n, with a first column a₁. [PDF p. 2, printed p. 300, anchor: opening matrix setting and column notation]",
-    "The claim concerns computed Q,R from Algorithm 2 under Theorem 1's all-leading-block condition c₄(m,k)ε_Mκ₂(R_k)²<1. [PDF p. 4, printed p. 302, anchor: Theorem 1 condition (3)]",
-    "The first computed objects are r₁₁, q₁, R₁=(r₁₁), and Q₁=(q₁); the selected result is indexed at k=1. [PDF p. 3, printed p. 301, anchor: Algorithm 2 first-column initialization; PDF p. 10, printed p. 308, anchor: k=1 proof]",
-    "The inherited condition is used to make every computed diagonal positive, including r₁₁>0. [PDF p. 9, printed p. 307, anchor: nonsingularity paragraph after equations (14)-(15)]",
-    "The paper asserts q₁=(I+G₁)a₁/r₁₁ together with ||G₁||₂≤ε_M; neither part may be omitted. [PDF p. 10, printed p. 308, anchor: standard-error-bound display preceding equation (16)]",
-    "The exact residual identity has all three expressions A₁−Q₁R₁=a₁−q₁r₁₁=−G₁a₁. [PDF p. 10, printed p. 308, anchor: exact residual identity immediately preceding equation (16)]",
-    "The complete norm chain is ||A₁−Q₁R₁||₂=||a₁−q₁r₁₁||₂≤||G₁||₂||a₁||₂≤ε_M||a₁||₂. [PDF p. 10, printed p. 308, anchor: equation (16)]",
-    "The final coefficient in the k=1 residual bound is exactly 1, agreeing with c₁(m,1)=1; there is no m-, n-, or condition-number factor in equation (16). [PDF p. 4, printed p. 302, anchor: definition (2); PDF p. 10, printed p. 308, anchor: equation (16)]",
-    "The source distinguishes exact input values from computed q₁ and r₁₁; in particular, computed r₁₁ carries the perturbation r₁₁=||a₁||₂(1+δ₁). [PDF p. 10, printed p. 308, anchor: k=1 normalization-error display]",
-    "The IEEE rule is limited to normalized-range results, and the paper's general analysis neglects O(ε_M²), although equation (16) itself is displayed without an O(ε_M²) remainder. [PDF p. 3, printed p. 301, anchor: floating-point model and linear approximation; PDF p. 10, printed p. 308, anchor: equation (16)]"
+    "The contract concerns the computed first column of Algorithm 2 (CGS-P), not an arbitrary QR factorization. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model]",
+    "The inherited matrix setting is A in R^{m x n}, m>=n, rank(A)=n. [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation]",
+    "Theorem 1 explicitly assumes condition (3) for every leading index k. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]",
+    "The proof obtains a G1 satisfying both q1=(I+G1)a1/r11 and ||G1||_2<=epsilon_M. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+    "The exact residual identity has the sign and all three terms A1-Q1R1=a1-q1 r11=-G1a1. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+    "Equation (16) must retain its initial equality and both inequalities: ||A1-Q1R1||_2=||a1-q1 r11||_2<=||G1||_2||a1||_2<=epsilon_M||a1||_2. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+    "The norm is the 2-norm throughout, and the final coefficient is exactly one machine unit. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+    "The selected equation is the k=1 case, consistent with c1(m,1)=1. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+    "The theorem's residual Q1R1-A1 and the proof's residual A1-Q1R1 differ by sign only; a faithful statement must not conflate their orientations. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+    "The displayed equation-(16) chain itself has no explicit O(epsilon_M^2) addend, despite the paper's broader first-order convention. [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+    "The computed r11 is positive under the paper's condition, so division by r11 is part of the valid selected derivation. [PDF p. 9, printed p. 307; anchor: nonsingularity paragraph after equations (14)-(15)]"
   ],
   "ambiguities": [
     {
-      "issue": "G₁ is introduced without an explicit quantifier, dimensions, diagonality, or componentwise bounds. [PDF p. 10, printed p. 308, anchor: standard-error-bound display preceding equation (16)]",
-      "evidence": "The source only prints q₁=(I+G₁)a₁/r₁₁ and ||G₁||₂≤ε_M, prefaced by 'standard error bounds.' [PDF p. 10, printed p. 308, anchor: standard-error-bound display preceding equation (16)]",
-      "impact": "The minimally faithful logical form is existential with a dimension-compatible operator G₁; a formalization must not silently strengthen it by requiring G₁ to be diagonal or componentwise bounded. [PDF p. 10, printed p. 308, anchor: same G₁ display]"
+      "issue": "The structure and dimension of G1 are not stated explicitly.",
+      "evidence": "The paper only prints q1=(I+G1)a1/r11 and ||G1||_2<=epsilon_M; conformability with a1 in R^m implies that G1 and I are m-by-m, but no diagonal, symmetric, or componentwise structure is stated. [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "impact": "A formal contract may infer the m-by-m type needed for well-typed multiplication, but it must not require extra structural properties of G1."
     },
     {
-      "issue": "The paper explicitly displays a relative-error rule only for addition, yet invokes standard error bounds for the norm and componentwise division used to form r₁₁ and q₁. [PDF p. 3, printed p. 301, anchor: floating-point model after Algorithm 2; PDF p. 10, printed p. 308, anchor: k=1 normalization and standard-error-bound displays]",
-      "evidence": "The displayed model is fl(x+y)=(x+y)(1+δ) for normalized results; no division or norm formula is stated there, while the appendix later asserts the δ₁ and G₁ bounds. [PDF p. 3, printed p. 301, anchor: normalized-range IEEE model; PDF p. 10, printed p. 308, anchor: k=1 error bounds]",
-      "impact": "The δ₁ and G₁ relations should be treated as asserted source facts; their derivation cannot be reconstructed uniquely from the single displayed addition rule. [PDF p. 10, printed p. 308, anchor: k=1 error bounds]"
+      "issue": "Exact and computed quantities are distinguished by prose rather than hats or separate notation.",
+      "evidence": "Theorem 1 calls Rk and Qk computed matrices, while the proof uses the same unhatted q1 and r11 in exact algebraic residual products with the input a1. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "impact": "A formalization must treat q1 and r11 as stored computed values and Q1R1 as their exact mathematical product during error analysis, unless it explicitly introduces a different computation."
     },
     {
-      "issue": "Theorem 1 globally qualifies its conclusions by O(ε_M²), but the G₁ relation and equation (16) are printed with no higher-order remainder. [PDF p. 4, printed p. 302, anchor: Theorem 1 preamble; PDF p. 10, printed p. 308, anchor: standard-error-bound display and equation (16)]",
-      "evidence": "The paper says the computed matrices satisfy (4)-(8) 'to within terms of O(ε_M²),' while equation (16) ends exactly at ε_M||a₁||₂. [PDF p. 4, printed p. 302, anchor: preamble to (4)-(8); PDF p. 10, printed p. 308, anchor: equation (16)]",
-      "impact": "A faithful contract must preserve both facts: equation (16)'s displayed bound has no O term, but its placement in a globally first-order analysis should not be hidden. The paper supplies no O-constant or ε_M threshold for a fully explicit replacement. [PDF p. 3, printed p. 301, anchor: linear approximation; PDF p. 4, printed p. 302, anchor: theorem qualification; PDF p. 10, printed p. 308, anchor: equation (16)]"
+      "issue": "The scope of the theorem's O(epsilon_M^2) qualification is not attached separately to each displayed sub-result.",
+      "evidence": "Theorem 1 prefaces equations (4)-(8) with 'to within terms of O(epsilon_M^2)', while the q1 relation, residual identity, and equation (16) are printed without an O-term. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "impact": "The exact source contract should preserve equation (16) as printed while separately recording that the encompassing theorem uses a first-order convention."
     },
     {
-      "issue": "Condition (3) is written using R_k⁻¹ through κ₂(R_k), and the paper then says that the condition assures nonsingularity, without specifying an extended condition-number convention for singular R_k. [PDF p. 4, printed p. 302, anchor: κ₂ definition, condition (3), and paragraph after Theorem 1; PDF p. 9, printed p. 307, anchor: nonsingularity consequence]",
-      "evidence": "κ₂(R_k) is defined as ||R_k||₂||R_k⁻¹||₂ before condition (3), while the later text uses (3) to conclude R is nonsingular and rₖₖ>0. [PDF p. 4, printed p. 302, anchor: κ₂ definition and condition (3); PDF p. 9, printed p. 307, anchor: nonsingularity paragraph]",
-      "impact": "A formalization must choose whether condition (3) carries invertibility as a well-formedness premise or whether κ₂ is extended by infinity on singular matrices; it cannot silently omit the condition's nonsingularity/positivity role. [PDF p. 4, printed p. 302, anchor: condition (3); PDF p. 9, printed p. 307, anchor: rₖₖ>0 conclusion]"
+      "issue": "Condition (3) uses Rk^{-1} in kappa_2(Rk) before the proof announces nonsingularity.",
+      "evidence": "The paper defines kappa_2(Rk)=||Rk||_2||Rk^{-1}||_2 and assumes condition (3), then later says that using (3) it concludes R is nonsingular. No extended condition-number convention for singular Rk is stated. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)] [PDF p. 9, printed p. 307; anchor: nonsingularity paragraph after equations (14)-(15)]",
+      "impact": "A formalization must either include invertibility needed to form Rk^{-1} or define an extended condition number; the paper does not choose explicitly between these encodings."
     },
     {
-      "issue": "The cited pages use ||·||₂ for vectors and matrices without an explicit local definition of the two norm types. [PDF p. 2, printed p. 300, anchor: algorithm norm notation; PDF p. 4, printed p. 302, anchor: κ₂ definition; PDF p. 10, printed p. 308, anchor: equation (16)]",
-      "evidence": "Equation (16) moves from an m×1 matrix residual to a vector residual and applies ||G₁a₁||₂≤||G₁||₂||a₁||₂, which is consistent with Euclidean vector and induced spectral matrix norms. [PDF p. 10, printed p. 308, anchor: exact residual identity and equation (16)]",
-      "impact": "That standard Euclidean/spectral interpretation is strongly indicated but inherited convention rather than an explicit definition in the selected passage; substituting a different matrix norm would require rechecking the chain. [PDF p. 10, printed p. 308, anchor: equation (16)]"
+      "issue": "The selected normalization bound is attributed only to 'standard error bounds'.",
+      "evidence": "The paper asserts q1=(I+G1)a1/r11 with ||G1||_2<=epsilon_M but does not derive it from a detailed sequence of norm, division, and storage roundings on the selected page. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)]",
+      "impact": "The asserted G1 relation and bound are authoritative for this contract; stronger operation-by-operation claims or exceptional-value behavior would require assumptions not stated in the selected source."
     }
   ],
-  "contract_plain_english": "In the paper's standing full-column-rank real matrix setting, run Algorithm 2 in the stated IEEE, normalized-range, first-order model and assume Theorem 1's conditioning restriction for every leading block; this restriction is used to ensure the computed r₁₁ is positive. [PDF p. 2, printed p. 300, anchor: opening matrix setting; PDF p. 3, printed p. 301, anchor: Algorithm 2 and floating-point model; PDF p. 4, printed p. 302, anchor: condition (3); PDF p. 9, printed p. 307, anchor: nonsingularity paragraph] For the first column, standard error bounds provide a compatible G₁ with q₁=(I+G₁)a₁/r₁₁ and ||G₁||₂≤ε_M. Consequently A₁−Q₁R₁=a₁−q₁r₁₁=−G₁a₁ exactly, and ||A₁−Q₁R₁||₂=||a₁−q₁r₁₁||₂≤||G₁||₂||a₁||₂≤ε_M||a₁||₂. [PDF p. 10, printed p. 308, anchor: standard-error-bound display, exact residual identity, and equation (16)] This is the k=1 case of Theorem 1's perturbation result (4), with c₁(m,1)=1 and the opposite residual sign absorbed into ΔA₁. [PDF p. 4, printed p. 302, anchor: definition (2) and conclusion (4); PDF p. 10, printed p. 308, anchor: equation (16)]"
+  "contract_plain_english": "Let A in R^{m x n}, m>=n, have full column rank, and compute Q and R with Algorithm 2 in the paper's IEEE normalized-range, first-order floating-point model, under condition (3) for every leading block. [PDF p. 2, printed p. 300; anchor: opening matrix setting and column notation] [PDF p. 3, printed p. 301; anchor: Algorithm 2 and following floating-point model] [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)] For the first column, with Q1=(q1), R1=(r11), and positive computed r11, standard error bounds provide a perturbation G1 such that q1=(I+G1)a1/r11 and ||G1||_2<=epsilon_M. [PDF p. 9, printed p. 307; anchor: nonsingularity paragraph after equations (14)-(15)] [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)] Consequently the exact residual is A1-Q1R1=a1-q1r11=-G1a1, and the full equation-(16) chain is ||A1-Q1R1||_2=||a1-q1r11||_2<=||G1||_2||a1||_2<=epsilon_M||a1||_2. [PDF p. 10, printed p. 308; anchor: standard-error-bound display, exact residual identity, and equation (16)] This is the k=1 case of Theorem 1's normwise residual bound because c1(m,1)=1, with the theorem using the opposite residual sign Q1R1-A1. [PDF p. 4, printed p. 302; anchor: Theorem 1, condition (3)]"
 }
