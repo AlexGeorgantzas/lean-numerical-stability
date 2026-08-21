@@ -426,6 +426,384 @@ structure P19Theorem31Execution {n : ℕ} {ι : Type*} (l : Filter ι) where
   forwardAnalysis : ∀ (MR MRinv : P19Matrix n),
     p19InversePair MR MRinv → P19ForwardAnalysis run MR MRinv
 
+/-- Static semantics for the source's qualitative first-order notation. The
+paper deliberately supplies neither a limiting parameter nor a numerical
+smallness threshold, so both predicates remain part of the interpretation. -/
+structure P19FirstOrderSemantics where
+  small : ℝ → Prop
+  secondOrder : ℝ → Prop
+  zero_secondOrder : secondOrder 0
+
+/-- The source relation `lhs lesssim rhs`: an exact inequality after retaining
+one term classified as negligible and second order by the chosen semantics. -/
+def p19FirstOrderLe (semantics : P19FirstOrderSemantics)
+    (lhs rhs : ℝ) : Prop :=
+  ∃ remainder : ℝ,
+    semantics.secondOrder remainder ∧ lhs ≤ rhs + |remainder|
+
+/-- A ratio that remains defined when its reference magnitude is zero. Source
+error inequalities force the numerator to vanish in that case. -/
+noncomputable def p19SafeRelativeMagnitude (actual reference : ℝ) : ℝ :=
+  if reference = 0 then 0 else actual / reference
+
+/-- A dimension admitted by Theorem 3.1. -/
+abbrev P19Theorem31Dimension (n : ℕ) :=
+  {k : ℕ // 0 < k ∧ k ≤ n}
+
+/-- Static nonsingular linear-system data shared by all Algorithm 2
+dimensions. -/
+structure P19Theorem31System (n : ℕ) where
+  dimension_pos : 0 < n
+  A : P19Matrix n
+  Ainv : P19Matrix n
+  ML : P19Matrix n
+  MLinv : P19Matrix n
+  b : P19Vector n
+  xExact : P19Vector n
+  A_inverse : p19InversePair A Ainv
+  ML_inverse : p19InversePair ML MLinv
+  b_nonzero : b ≠ 0
+  exact_solution : p19MatVec A xExact = b
+
+/-- The increasing full-rank search-space input from Theorem 3.1. -/
+structure P19Theorem31BasisFamily {n : ℕ}
+    (system : P19Theorem31System n) where
+  basis : (k : ℕ) → P19RectMatrix n k
+  full_rank : ∀ k, 0 < k → k ≤ n → p19FullColumnRank (basis k)
+  column_prefix : ∀ k, k < n → ∀ i (j : Fin k),
+    basis k i j = basis (k + 1) i j.castSucc
+
+/-- Exact left-preconditioned basis product in equation (3.2). -/
+noncomputable def p19StaticExactC {n k : ℕ}
+    (system : P19Theorem31System n) (Z : P19RectMatrix n k) :
+    P19RectMatrix n k :=
+  p19SquareRectMul system.MLinv (p19SquareRectMul system.A Z)
+
+/-- Exact left-preconditioned right-hand side in equation (3.3). -/
+noncomputable def p19StaticExactB {n : ℕ}
+    (system : P19Theorem31System n) : P19Vector n :=
+  p19MatVec system.MLinv system.b
+
+/-- One fixed-precision execution of all four modules of Algorithm 2 at one
+positive dimension. No selected key dimension or final error bound is stored. -/
+structure P19Algorithm2Iteration {n : ℕ}
+    (system : P19Theorem31System n)
+    (semantics : P19FirstOrderSemantics)
+    (basisFamily : P19Theorem31BasisFamily system)
+    (k : P19Theorem31Dimension n) where
+  dimensionFactor : ℝ
+  dimensionFactor_one_le : 1 ≤ dimensionFactor
+  epsilonC : ℝ
+  epsilonB : ℝ
+  ug : ℝ
+  epsilonX : ℝ
+  computedC : P19RectMatrix n k.1
+  deltaC : P19RectMatrix n k.1
+  computation_equation :
+    computedC = p19StaticExactC system (basisFamily.basis k.1) + deltaC
+  computedB : P19Vector n
+  deltaB : P19Vector n
+  rhs_equation : computedB = p19StaticExactB system + deltaB
+  vHat : P19RectMatrix n k.1
+  vHatNext : P19RectMatrix n (k.1 + 1)
+  beta : ℝ
+  hessenberg : P19RectMatrix (k.1 + 1) k.1
+  hessenberg_upper : p19IsUpperHessenberg hessenberg
+  mgs_givens_relation :
+    p19Augment computedB computedC =
+      p19RectMatMul vHatNext
+        (p19Augment (p19ScaledFirstBasisVector beta) hessenberg)
+  vHat_prefix : ∀ i (j : Fin k.1),
+    vHat i j = vHatNext i j.castSucc
+  leastSquaresDeltaB : P19Vector n
+  leastSquaresDeltaC : P19RectMatrix n k.1
+  yHat : P19Vector k.1
+  computedCSpectrum : P19SingularValueData computedC
+  exactCSpectrum :
+    P19SingularValueData
+      (p19StaticExactC system (basisFamily.basis k.1))
+  xHat : P19Vector n
+  deltaX : P19Vector n
+  solution_equation :
+    xHat = p19RectMatVec (basisFamily.basis k.1) yHat + deltaX
+  vHatSpectrum : P19SingularValueData vHat
+
+/-- Equations (3.2)-(3.6) and the MGS/Givens least-squares model at one
+specific Algorithm 2 dimension. Theorem 3.1 requires these only at the
+dimension selected by the MGS argument. -/
+structure P19Algorithm2Conditions {n : ℕ}
+    {system : P19Theorem31System n}
+    {semantics : P19FirstOrderSemantics}
+    {basisFamily : P19Theorem31BasisFamily system}
+    {k : P19Theorem31Dimension n}
+    (iteration : P19Algorithm2Iteration system semantics basisFamily k) where
+  accuracy_nonneg :
+    0 ≤ iteration.epsilonC ∧ 0 ≤ iteration.epsilonB ∧
+      0 ≤ iteration.ug ∧ 0 ≤ iteration.epsilonX
+  computation_error_bound :
+    p19FrobNorm iteration.deltaC ≤
+      iteration.epsilonC *
+        p19FrobNorm (p19StaticExactC system (basisFamily.basis k.1))
+  rhs_error_bound :
+    p19VecNorm2 iteration.deltaB ≤
+      iteration.epsilonB * p19VecNorm2 (p19StaticExactB system)
+  least_squares_solution :
+    p19IsLeastSquaresSolution
+      (iteration.computedC + iteration.leastSquaresDeltaC)
+      (iteration.computedB + iteration.leastSquaresDeltaB) iteration.yHat
+  least_squares_column_bound : ∀ j : Fin (k.1 + 1),
+    p19VecNorm2
+        (p19Column
+          (p19Augment iteration.leastSquaresDeltaB
+            iteration.leastSquaresDeltaC) j) ≤
+      iteration.dimensionFactor * iteration.ug *
+        p19VecNorm2
+          (p19Column
+            (p19Augment iteration.computedB iteration.computedC) j)
+  computedC_numerically_nonsingular :
+    semantics.small
+      (iteration.ug *
+        p19RectConditionF2 iteration.computedC
+          iteration.computedCSpectrum.sigmaMin)
+  combined_model_small :
+    semantics.small
+      ((iteration.epsilonC + iteration.epsilonB + iteration.ug) *
+        p19RectConditionF2
+          (p19StaticExactC system (basisFamily.basis k.1))
+          iteration.exactCSpectrum.sigmaMin)
+  solution_error_bound :
+    p19VecNorm2 iteration.deltaX ≤
+      iteration.epsilonX *
+        p19VecNorm2 (p19RectMatVec (basisFamily.basis k.1) iteration.yHat)
+  solution_small : semantics.small iteration.epsilonX
+
+/-- The two explicit conditioning inequalities in equation (3.7). -/
+def p19IterationWellConditioned {n : ℕ}
+    {system : P19Theorem31System n}
+    {semantics : P19FirstOrderSemantics}
+    {basisFamily : P19Theorem31BasisFamily system}
+    {k : P19Theorem31Dimension n}
+    (iteration : P19Algorithm2Iteration system semantics basisFamily k) : Prop :=
+  1 / iteration.vHatSpectrum.sigmaMin ≤ 4 / 3 ∧
+    iteration.vHatSpectrum.sigmaMax ≤ 4 / 3
+
+/-- Witness form of an upper bound on the smallest singular value. -/
+def p19NearRankDeficient {m k : ℕ} (A : P19RectMatrix m k)
+    (threshold : ℝ) : Prop :=
+  ∃ x : P19Vector k,
+    p19VecNorm2 x = 1 ∧
+      p19VecNorm2 (p19RectMatVec A x) < threshold
+
+/-- The input-near-dependence alternative (A.1), required only before the
+full dimension. -/
+def p19MGSNearDependence {n : ℕ}
+    {system : P19Theorem31System n}
+    {semantics : P19FirstOrderSemantics}
+    {basisFamily : P19Theorem31BasisFamily system}
+    {k : P19Theorem31Dimension n}
+    (iteration : P19Algorithm2Iteration system semantics basisFamily k) : Prop :=
+  ∀ phi : ℝ, 0 < phi →
+    p19NearRankDeficient
+      (p19Augment
+        (fun i ↦ p19StaticExactB system i * phi)
+        (p19StaticExactC system (basisFamily.basis k.1)))
+      (iteration.dimensionFactor * (iteration.ug + iteration.epsilonC) *
+        p19FrobNorm
+          (p19Augment
+            (fun i ↦ p19StaticExactB system i * phi)
+            (p19StaticExactC system (basisFamily.basis k.1))))
+
+/-- Static Algorithm 2 executions at every increasing dimension. -/
+structure P19Theorem31Family (n : ℕ)
+    (semantics : P19FirstOrderSemantics) where
+  system : P19Theorem31System n
+  basisFamily : P19Theorem31BasisFamily system
+  iteration : ∀ k : P19Theorem31Dimension n,
+    P19Algorithm2Iteration system semantics basisFamily k
+
+/-- The reusable MGS result invoked through [11, equations (5.15)-(5.17)] and
+the Paige MGS analysis: the first basis is well conditioned, and loss at the
+next dimension forces (A.1) for the current input. It contains no selected
+dimension. -/
+structure P19MGSSelectionLaw {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics) where
+  first_dimension_good :
+    p19IterationWellConditioned
+      (family.iteration
+        ⟨1, Nat.zero_lt_one, family.system.dimension_pos⟩)
+  loss_implies_near_dependence : ∀ (k : ℕ)
+      (hkpos : 0 < k) (hklt : k < n),
+    let current : P19Theorem31Dimension n :=
+      ⟨k, hkpos, Nat.le_of_lt hklt⟩
+    let next : P19Theorem31Dimension n :=
+      ⟨k + 1, Nat.succ_pos k, Nat.succ_le_iff.mpr hklt⟩
+    ¬ p19IterationWellConditioned (family.iteration next) →
+      p19MGSNearDependence (family.iteration current)
+
+/-- The split-preconditioned operator for the static Theorem 3.1 model. -/
+noncomputable def p19StaticSplitOperator {n : ℕ}
+    (system : P19Theorem31System n) (MRinv : P19Matrix n) :
+    P19Matrix n :=
+  p19SquareRectMul system.MLinv (p19SquareRectMul system.A MRinv)
+
+/-- A certified inverse of the static split-preconditioned operator. -/
+noncomputable def p19StaticSplitInverse {n : ℕ}
+    (system : P19Theorem31System n) (MR : P19Matrix n) :
+    P19Matrix n :=
+  p19SquareRectMul MR (p19SquareRectMul system.Ainv system.ML)
+
+/-- Singular-value and positivity evidence used to interpret the displayed
+`alpha`, `beta`, and `lambda` for one analytical right preconditioner. -/
+structure P19StaticRightQuantities {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics)
+    (k : P19Theorem31Dimension n)
+    (MR MRinv : P19Matrix n) where
+  mrzSpectrum :
+    P19SingularValueData
+      (p19SquareRectMul MR (family.basisFamily.basis k.1))
+  mrz_sigmaMin_pos : 0 < mrzSpectrum.sigmaMin
+  exactC_norm_pos :
+    0 < p19FrobNorm
+      (p19StaticExactC family.system (family.basisFamily.basis k.1))
+  split_operator_norm_pos :
+    0 < p19FrobNorm (p19StaticSplitOperator family.system MRinv)
+  mr_condition_pos : 0 < p19ConditionNumberF MR MRinv
+  split_condition_pos :
+    0 < p19ConditionNumberF
+      (p19StaticSplitOperator family.system MRinv)
+      (p19StaticSplitInverse family.system MR)
+
+/-- `alpha` below equation (3.8), with the paper-authorized Frobenius
+interpretation of unqualified square condition numbers. -/
+noncomputable def p19StaticAlpha {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {k : P19Theorem31Dimension n}
+    (MR MRinv : P19Matrix n)
+    (q : P19StaticRightQuantities family k MR MRinv) : ℝ :=
+  (p19ConditionNumberF MR MRinv / q.mrzSpectrum.sigmaMin) *
+    (p19FrobNorm
+        (p19StaticExactC family.system (family.basisFamily.basis k.1)) /
+      p19FrobNorm (p19StaticSplitOperator family.system MRinv))
+
+/-- `beta` below equation (3.8). -/
+noncomputable def p19StaticBeta {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {k : P19Theorem31Dimension n}
+    (MR MRinv : P19Matrix n)
+    (q : P19StaticRightQuantities family k MR MRinv) : ℝ :=
+  max 1
+      ((p19FrobNorm
+          (p19StaticExactC family.system (family.basisFamily.basis k.1)) /
+          p19FrobNorm (p19StaticSplitOperator family.system MRinv)) /
+        q.mrzSpectrum.sigmaMin) *
+    p19ConditionNumberF MR MRinv
+
+/-- `lambda` below equation (3.8). -/
+noncomputable def p19StaticLambda {n : ℕ}
+    (system : P19Theorem31System n) (MR MRinv : P19Matrix n) : ℝ :=
+  1 /
+    p19ConditionNumberF
+      (p19StaticSplitOperator system MRinv)
+      (p19StaticSplitInverse system MR)
+
+/-- The exact four-source coefficient `xi` in equation (3.8). -/
+noncomputable def p19StaticXi {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {k : P19Theorem31Dimension n}
+    (MR MRinv : P19Matrix n)
+    (q : P19StaticRightQuantities family k MR MRinv) : ℝ :=
+  let run := family.iteration k
+  p19ModularEnvelope (p19StaticAlpha MR MRinv q)
+    (p19StaticBeta MR MRinv q)
+    (p19StaticLambda family.system MR MRinv)
+    run.epsilonC run.epsilonB run.ug run.epsilonX
+
+/-- Raw Appendix-A first-order expansion. Its gain bounds are expressed in
+terms of the actual module-relative errors. In particular, none of the four
+source epsilons and no final Theorem 3.1 inequality is stored here. -/
+structure P19StaticAppendixAExpansion {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics)
+    (k : P19Theorem31Dimension n)
+    (MR MRinv : P19Matrix n)
+    (q : P19StaticRightQuantities family k MR MRinv) where
+  computationContribution : P19Vector n
+  rhsContribution : P19Vector n
+  gmresContribution : P19Vector n
+  solutionContribution : P19Vector n
+  remainder : P19Vector n
+  error_decomposition :
+    (family.iteration k).xHat - family.system.xExact =
+      computationContribution + rhsContribution + gmresContribution +
+        solutionContribution + remainder
+  remainder_second_order :
+    semantics.secondOrder
+      (p19VecNorm2 remainder / p19VecNorm2 family.system.xExact)
+  computation_gain_bound :
+    p19VecNorm2 computationContribution /
+          p19VecNorm2 family.system.xExact ≤
+      (family.iteration k).dimensionFactor *
+        p19ConditionNumberF
+          (p19StaticSplitOperator family.system MRinv)
+          (p19StaticSplitInverse family.system MR) *
+        (p19StaticAlpha MR MRinv q *
+          p19SafeRelativeMagnitude
+            (p19FrobNorm (family.iteration k).deltaC)
+            (p19FrobNorm
+              (p19StaticExactC family.system
+                (family.basisFamily.basis k.1))))
+  rhs_gain_bound :
+    p19VecNorm2 rhsContribution / p19VecNorm2 family.system.xExact ≤
+      (family.iteration k).dimensionFactor *
+        p19ConditionNumberF
+          (p19StaticSplitOperator family.system MRinv)
+          (p19StaticSplitInverse family.system MR) *
+        (p19StaticBeta MR MRinv q *
+          p19SafeRelativeMagnitude
+            (p19VecNorm2 (family.iteration k).deltaB)
+            (p19VecNorm2 (p19StaticExactB family.system)))
+  gmres_gain_bound :
+    p19VecNorm2 gmresContribution / p19VecNorm2 family.system.xExact ≤
+      (family.iteration k).dimensionFactor *
+        p19ConditionNumberF
+          (p19StaticSplitOperator family.system MRinv)
+          (p19StaticSplitInverse family.system MR) *
+        (p19StaticBeta MR MRinv q * (family.iteration k).ug)
+  solution_gain_bound :
+    p19VecNorm2 solutionContribution /
+          p19VecNorm2 family.system.xExact ≤
+      p19ConditionNumberF
+          (p19StaticSplitOperator family.system MRinv)
+          (p19StaticSplitInverse family.system MR) *
+        (p19StaticLambda family.system MR MRinv *
+          p19SafeRelativeMagnitude
+            (p19VecNorm2 (family.iteration k).deltaX)
+            (p19VecNorm2
+              (p19RectMatVec (family.basisFamily.basis k.1)
+                (family.iteration k).yHat)))
+
+/-- The reusable Appendix-A analysis invoked by Theorem 3.1. It is uniform in
+the dimension and right preconditioner and supplies only the raw expansion
+above, not a selected dimension or the theorem's collected bound. -/
+structure P19StaticAppendixATheory {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics) where
+  rightQuantities : ∀ (k : P19Theorem31Dimension n)
+      (MR MRinv : P19Matrix n), p19InversePair MR MRinv →
+    P19StaticRightQuantities family k MR MRinv
+  expansion : ∀ (k : P19Theorem31Dimension n),
+    p19IterationWellConditioned (family.iteration k) →
+    (k.1 = n ∨ p19MGSNearDependence (family.iteration k)) →
+    P19Algorithm2Conditions (family.iteration k) →
+    ∀ (MR MRinv : P19Matrix n) (hMR : p19InversePair MR MRinv),
+      P19StaticAppendixAExpansion family k MR MRinv
+        (rightQuantities k MR MRinv hMR)
+
 /-- Paper-scoped exact matrix operator 2-norm. -/
 noncomputable def p19OpNorm2 {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
   @norm (Matrix (Fin n) (Fin n) ℝ)

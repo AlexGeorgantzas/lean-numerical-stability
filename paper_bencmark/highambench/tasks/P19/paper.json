@@ -78,7 +78,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use Theorem 3.1, including Algorithm 2's modular hypotheses, the existential 4/3 basis-conditioning result, and the complete normalized first-order forward-error bound (3.8).",
+      "decision": "Use Theorem 3.1, including Algorithm 2's modular hypotheses, a dimension derived by the cited first-loss MGS argument rather than supplied as execution data, and the complete normalized first-order forward-error bound (3.8) derived from raw Appendix-A gains. Preserve the paper's unspecified c(n,k) value and qualitative second-order notation without inventing polynomial coefficients or a precision filter.",
       "task_id": "P19-T2",
       "theorem_name": "p19_t2_modular_gmres_forward_error"
     },
@@ -91,7 +91,7 @@
   },
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
-    "Represent a selected asymptotic theorem with an explicit polynomial witness and second-order remainder instead of deleting its approximation semantics.",
+    "Represent the source's unspecified low-degree c(n,k) by its value at the selected dimensions, and parameterize the qualitative second-order semantics instead of inventing polynomial coefficients or an asymptotic variable.",
     "Represent the paper's four modular error sources and right/flexible precision distinction explicitly.",
     "Do not promote empirical heatmaps, iteration counts, qualified recommendations, or future-work claims to theorem targets.",
     "Keep every public definition free of NumStability imports.",
