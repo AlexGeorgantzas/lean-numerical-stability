@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete 16-page local PDF sequentially, including Model 1, hardware examples, the full derivations of Theorems 3.1 and 4.1, numerical experiments, conclusion, reproducibility statement, and references; visually checked every selected source page; searched all 24 frozen mounted object modules; and compiled private N/L proofs before accepting the targets.",
+    "method": "Codex read the complete 16-page local PDF sequentially, including Model 1, hardware examples, the full derivations of Theorems 3.1 and 4.1, numerical experiments, conclusion, reproducibility statement, and references; during the audit-driven P20-T1 and P20-T3 rebuilds, rechecked Model 1, equations (3.1)-(3.4), the complete derivation (4.18)-(4.28), Theorem 4.1 and equations (4.29)-(4.33), including rendered B786-B795 pages; searched all 24 frozen mounted object modules; and compiled private N/L constructions plus a concrete nonvacuity witness.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P20 source selection and benchmark annotation to Codex."
@@ -44,8 +44,8 @@
       "reason": "The displayed relation uses an asymptotic less-similar sign after dropping terms and requires a full executable mixed-precision MMA semantics. T2 instead selects the exact underflow-term comparison the paper draws from its simplified envelope."
     },
     {
-      "candidate": "multiword recursion (4.8)-(4.20)",
-      "reason": "This long induction is supporting machinery for Theorem 4.1. T3 captures the exact final narrow-range versus range-free comparison and strengthens it with auditable gap certificates."
+      "candidate": "standalone multiword recursion (4.8)-(4.20)",
+      "reason": "This induction is supporting machinery rather than the selected conclusion. Its decomposition consequences and the subsequent error propagation are represented inside the proof-carrying execution for T3, whose target is Theorem 4.1."
     },
     {
       "candidate": "Figures 5.1-5.2 and the large-n divergence discussion",
@@ -59,9 +59,9 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the exact maximum-coefficient consequence of the row-scaling interval (3.4a).",
+      "decision": "Use the complete row-side scaling selection from equations (3.1)-(3.4a): construct the power-of-two diagonal factors at the format-derived threshold and prove the exact scaled-row maximum interval.",
       "task_id": "P20-T1",
-      "theorem_name": "p20_t1_scaled_row_range"
+      "theorem_name": "p20_t1_power_two_row_scaling"
     },
     "T2": {
       "available": true,
@@ -71,14 +71,14 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use the exact gap between the narrow-range multiword envelope (4.32) and range-free envelope (4.33), strengthened with equality and strictness certificates.",
+      "decision": "Use Theorem 4.1: the actual scaled p-word computation (4.29)-(4.31) satisfies the four-term first-order normwise forward-error bound (4.32), with (4.33) identifying the range-free terms.",
       "task_id": "P20-T3",
-      "theorem_name": "p20_t3_multiword_narrow_range_gap"
+      "theorem_name": "p20_t3_multiword_forward_error"
     }
   },
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
-    "Prefer exact scaling and envelope comparisons over asymptotic bounds with dropped terms.",
+    "Represent an undefined first-order lesssim by an explicit second-order remainder instead of silently replacing it with an exact displayed inequality.",
     "Represent input and accumulation underflow contributions separately.",
     "Do not promote experimental curves, qualified expectations, or future generalizations to theorem targets.",
     "Keep every public definition free of NumStability imports.",
