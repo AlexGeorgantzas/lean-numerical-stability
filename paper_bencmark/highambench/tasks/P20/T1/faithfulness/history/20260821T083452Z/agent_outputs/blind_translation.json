@@ -1,0 +1,643 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "0ad61100ec7e78ce517a63107a391434139e065ad4acd587a7a988a38866031f",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a vector x indexed by Fin n, this is the finite supremum of |x_j|, represented through nonnegative reals and then converted back to a real. Thus it is max_j |x_j| when n > 0, and is 0 when n = 0.",
+      "effect_on_target": "It defines each row magnitude r_i = max_j |A_ij|. The hypotheses require r_i > 0, and the row scaling bounds use theta/r_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "A real lambda satisfies this predicate exactly when there exists an integer exponent e such that lambda = 2^e, using integer powers of the real number 2.",
+      "effect_on_target": "The first conclusion for every row asserts that its scaling factor is an integral power of two; negative exponents are allowed.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "This forms the matrix product LocalDef008(theta,A) * A. Since the left factor is diagonal with row-i diagonal entry LocalDef004(theta,A_i), the resulting entry is B_ij = lambda_i A_ij.",
+      "effect_on_target": "It defines the scaled matrix whose entries are required to have absolute value at most theta and whose every row must contain an entry of absolute value strictly greater than theta/2.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "For theta and a row x, this is the real number 2^e, where e = LocalDef007(theta,x) is an integer selected from the ratio theta/LocalDef001(x).",
+      "effect_on_target": "It is the row scaling factor lambda_i appearing in all rowwise scale bounds and in the diagonal scaling of A.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "It defines theta = min(fmax, sqrt(Fmax/n)), with n cast to a real.",
+      "effect_on_target": "This exact theta is the common scale threshold in all conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "This supplies evidence that the natural numeral 1 + 1 is at least two, enabling construction of the numeral 2 through the relevant numeral-cast machinery.",
+      "effect_on_target": "It is typeclass evidence for occurrences of the real base 2 in local definitions and adds no independent mathematical assumption or conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "Let r = LocalDef001(x). If theta/r > 0, it classically chooses an integer e satisfying 2^e <= theta/r < 2^(e+1), using D009; otherwise it returns e = 0.",
+      "effect_on_target": "Under the target hypotheses theta > 0 and r_i > 0, only the positive branch applies. Consequently lambda_i = 2^e is selected from the half-open dyadic interval containing theta/r_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "This is the m by m diagonal matrix with diagonal entry lambda_i = LocalDef004(theta,A_i) in row i and zero off the diagonal.",
+      "effect_on_target": "Left multiplication by this matrix scales row i of A by lambda_i without mixing different rows.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "For a positive ratio theta/LocalDef001(x), it asserts the existence of an integer e such that 2^e <= theta/LocalDef001(x) < 2^(e+1).",
+      "effect_on_target": "It supplies the witness selected by D007 and thereby determines the dyadic scale used for each nonzero row.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "And",
+      "meaning": "Logical conjunction: And P Q means that both P and Q hold.",
+      "effect_on_target": "It combines the row-scaling properties, the global entrywise upper bound, and the rowwise existential lower bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This extracts the division operation from a division-and-inversion monoid structure.",
+      "effect_on_target": "For real numbers it gives ordinary real division in theta/r_i, theta/(2r_i), theta/2, and Fmax/n.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Exists",
+      "meaning": "Existential quantification: Exists p means that some value x satisfies p(x).",
+      "effect_on_target": "It expresses both the existence of integer power-of-two exponents and, for each row, the existence of a column exceeding the lower threshold.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type consisting of natural indices 0 through n-1.",
+      "effect_on_target": "Fin m indexes rows and Fin n indexes columns; the assumptions m > 0 and n > 0 make both index types nonempty.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "HDiv.hDiv",
+      "meaning": "This invokes the heterogeneous division operation supplied by an HDiv instance.",
+      "effect_on_target": "With real arguments it denotes ordinary real division throughout the definitions and inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "HMul.hMul",
+      "meaning": "This invokes the heterogeneous multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "With real arguments it denotes ordinary multiplication, including 2r_i; with matrices, the specific matrix instance gives matrix multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LE.le",
+      "meaning": "This invokes the non-strict order relation supplied by an LE instance.",
+      "effect_on_target": "For reals it interprets the upper scale bound lambda_i <= theta/r_i and the entrywise bounds |B_ij| <= theta.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "LT.lt",
+      "meaning": "This invokes the strict order relation supplied by an LT instance.",
+      "effect_on_target": "It interprets all strict positivity hypotheses and the strict lower bounds on lambda_i and selected scaled entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Matrix",
+      "meaning": "A matrix with row type I, column type J, and entries in alpha is a function I -> J -> alpha.",
+      "effect_on_target": "Thus A is an m by n real matrix with entries A_ij, and the scaled object in D003 has the same dimensions.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "The matrix dimensions m and n are natural numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "Given a nonzero natural n, this supplies evidence that n + 1 is at least two.",
+      "effect_on_target": "Applied to 1, it supports construction of the numeral 2 in real expressions and contributes no independent condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "It supplies evidence that every successor n + 1 is nonzero.",
+      "effect_on_target": "It is numeral-construction evidence used to establish that 1 + 1 is at least two.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural numeral in a type equipped with the corresponding OfNat instance.",
+      "effect_on_target": "It gives the intended natural or real values of the numerals 0, 1, and 2 appearing in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "Matrix entries, fmax, Fmax, theta, row magnitudes, scales, and all quantitative inequalities are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instAddGroup",
+      "meaning": "This equips the real numbers with their additive-group structure, including negation.",
+      "effect_on_target": "It supports real absolute value and ordinary additive algebra without introducing another hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This equips the real numbers with multiplication, inversion, division, and integer powers.",
+      "effect_on_target": "It interprets real division and the integer powers 2^e used for row scaling.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Real.instLE",
+      "meaning": "This supplies the usual non-strict order relation on the real numbers.",
+      "effect_on_target": "All real-valued <= comparisons use the standard real order.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Real.instLT",
+      "meaning": "This supplies the usual strict order relation on the real numbers.",
+      "effect_on_target": "All real-valued positivity and strict-threshold assertions use the standard real order.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Real.instMul",
+      "meaning": "This supplies ordinary multiplication of real numbers.",
+      "effect_on_target": "It interprets products such as 2r_i and the scalar multiplication lambda_i A_ij.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Real.instNatCast",
+      "meaning": "This embeds natural numbers into the real numbers.",
+      "effect_on_target": "It interprets n as a real in Fmax/n and interprets natural numerals such as 2 as real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Real.instZero",
+      "meaning": "This supplies the real number zero.",
+      "effect_on_target": "It interprets positivity assumptions and supplies the off-diagonal zeros of the diagonal scaling matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Real.lattice",
+      "meaning": "This supplies the lattice operations and order structure on the real numbers.",
+      "effect_on_target": "Together with the additive group, it supports the absolute-value operation used in row magnitudes and entry bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "Zero.toOfNat0",
+      "meaning": "This turns a Zero instance into an interpretation of the numeral 0.",
+      "effect_on_target": "It ensures every displayed real zero is the ordinary real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "abs",
+      "meaning": "In a lattice-ordered additive group, abs(a) is max(a,-a); for reals this is the usual absolute value |a|.",
+      "effect_on_target": "It defines row infinity magnitudes and the absolute values of scaled matrix entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "instHDiv",
+      "meaning": "This lifts an ordinary division operation on a type to homogeneous HDiv.",
+      "effect_on_target": "It routes all real divisions in the target to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "instHMul",
+      "meaning": "This lifts an ordinary multiplication operation on a type to homogeneous HMul.",
+      "effect_on_target": "It routes real products such as 2r_i to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "instLTNat",
+      "meaning": "This supplies the standard strict order on natural numbers.",
+      "effect_on_target": "The hypotheses 0 < m and 0 < n mean that both dimensions are positive.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "Given a natural-cast operation and evidence that n is at least two, this interprets the numeral n by its natural cast.",
+      "effect_on_target": "It constructs the real numeral 2 used in powers, products, and threshold divisions.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "instOfNatNat",
+      "meaning": "This interprets each natural numeral n as the natural number n itself.",
+      "effect_on_target": "It gives the standard natural values of dimension and auxiliary numerals.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "ConditionallyCompleteLinearOrderBot.toOrderBot",
+      "meaning": "This extracts a least-element order structure from a conditionally complete linear order with bottom.",
+      "effect_on_target": "For nonnegative reals it supplies the bottom element 0 needed to define a finite supremum, including the empty case.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "DivInvMonoid.toZPow",
+      "meaning": "This obtains exponentiation by integers from a division-and-inversion monoid.",
+      "effect_on_target": "It makes 2^e a real integer power, so row scales may include reciprocal powers when e is negative.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It states the exact identity lambda = 2^e in the power-of-two predicate.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "Fin.fintype",
+      "meaning": "This equips Fin n with its finite enumeration of all n indices.",
+      "effect_on_target": "It permits taking maxima over all columns and finite sums in matrix multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "Finset.sup",
+      "meaning": "For a finite set, this folds the maximum operation over all mapped elements, starting from the bottom element.",
+      "effect_on_target": "It makes D001 the finite maximum of the row's absolute entry values.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "Finset.univ",
+      "meaning": "This is the finite set containing every element of a finite type.",
+      "effect_on_target": "In D001 it ensures the row magnitude ranges over every column index j in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "HPow.hPow",
+      "meaning": "This invokes exponentiation supplied by an HPow instance.",
+      "effect_on_target": "Here it denotes real exponentiation of 2 by an integer exponent.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "Int",
+      "meaning": "The type of integers.",
+      "effect_on_target": "The exponent selected for each row is an integer, not necessarily a nonnegative natural number.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "meaning": "This defines matrix multiplication by (MN)_ik = sum_j M_ij N_jk over the finite intermediate index type.",
+      "effect_on_target": "It makes D003 ordinary matrix multiplication; because D008 is diagonal, the product entry simplifies to lambda_i A_ij.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "Min.min",
+      "meaning": "This invokes the binary minimum operation of a Min instance.",
+      "effect_on_target": "It combines fmax and sqrt(Fmax/n) into theta by taking their real minimum.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "NNReal",
+      "meaning": "The type of nonnegative real numbers, represented as real numbers equipped with a proof of being at least zero.",
+      "effect_on_target": "D001 computes the finite supremum in this type so that zero is available as a bottom element.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "NNReal.instConditionallyCompleteLinearOrderBot",
+      "meaning": "This gives nonnegative reals their usual conditionally complete linear order with least element zero.",
+      "effect_on_target": "It provides the order and bottom element used by the finite supremum defining each row magnitude.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "NNReal.toReal",
+      "meaning": "This forgets the nonnegativity proof and returns the underlying real value.",
+      "effect_on_target": "It converts the nonnegative finite maximum in D001 into the real row magnitude r_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Nat.cast",
+      "meaning": "This maps a natural number into a type with a natural-cast operation.",
+      "effect_on_target": "It maps n to the real denominator in Fmax/n.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This equips the real numbers with their commutative additive-monoid structure.",
+      "effect_on_target": "It supplies finite real sums for matrix multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Real.instMin",
+      "meaning": "This supplies real minimum, implemented as the infimum of two real numbers.",
+      "effect_on_target": "It interprets theta as the ordinary minimum of fmax and sqrt(Fmax/n).",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "Real.sqrt",
+      "meaning": "This is the nonnegative real square root, defined through the nonnegative part of its input; equivalently it is the usual square root of max(x,0).",
+      "effect_on_target": "It contributes sqrt(Fmax/n) to theta. Since Fmax > 0 and n > 0, its argument is positive here.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "Real.toNNReal",
+      "meaning": "This maps a real r to the nonnegative real with value max(r,0).",
+      "effect_on_target": "Applied to an absolute value in D001 it preserves that value; it also makes the square-root definition total on arbitrary real inputs.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "instHPow",
+      "meaning": "This lifts an ordinary Pow operation to an HPow operation with the same result type.",
+      "effect_on_target": "It routes 2^e to the integer-power operation on real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "instSemilatticeSupNNReal",
+      "meaning": "This equips nonnegative reals with the usual supremum operation, namely maximum.",
+      "effect_on_target": "It makes the finite supremum in D001 a maximum of nonnegative absolute values.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Classical.choose",
+      "meaning": "From an existence proof it selects one witness, classically and without specifying a computational selection rule.",
+      "effect_on_target": "It selects the integer exponent e supplied by D009 for each positive ratio theta/r_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "DistribLattice.toLattice",
+      "meaning": "This extracts the lattice structure from a distributive lattice.",
+      "effect_on_target": "It is structural support for real lattice operations such as maximum, minimum, and absolute value, with no added proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "DivisionSemiring.toGroupWithZero",
+      "meaning": "This extracts a multiplicative group-with-zero structure from a division semiring.",
+      "effect_on_target": "It is part of the inherited real-number structure supporting inversion, division, and integer powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "Field.toSemifield",
+      "meaning": "This extracts the division-semiring-side structure from a field, omitting use of additive inverses.",
+      "effect_on_target": "It is structural plumbing through which the real field supplies division and power operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "GroupWithZero.toDivInvMonoid",
+      "meaning": "This extracts a division-and-inversion monoid from a group with zero.",
+      "effect_on_target": "It supports the ordinary real division and integer exponentiation used in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "HAdd.hAdd",
+      "meaning": "This invokes the heterogeneous addition operation supplied by an HAdd instance.",
+      "effect_on_target": "It interprets e + 1 for integer exponents and auxiliary natural additions used to construct numerals.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Int.instAdd",
+      "meaning": "This supplies ordinary addition of integers.",
+      "effect_on_target": "It interprets e + 1 in the upper endpoint 2^(e+1) of the dyadic interval.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Lattice.toSemilatticeInf",
+      "meaning": "This extracts the infimum-semilattice and partial-order data from a lattice.",
+      "effect_on_target": "It is inherited order structure supporting real minima and comparisons, with no separate mathematical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Matrix.diagonal",
+      "meaning": "Given d_i, this creates a square matrix whose (i,j) entry is d_i when i = j and zero otherwise.",
+      "effect_on_target": "It makes D008 the diagonal row-scaling matrix with diagonal entries lambda_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Membership.mem",
+      "meaning": "This invokes the membership relation supplied for a container or set.",
+      "effect_on_target": "In D009 it interprets membership in the half-open interval [2^e,2^(e+1)).",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "This is evidence that a natural numeral is at least two, used to authorize its generic numeral interpretation.",
+      "effect_on_target": "It supports construction of the numeral 2 and does not impose an additional binder or hypothesis on the theorem.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Not",
+      "meaning": "Logical negation: Not P means P implies false.",
+      "effect_on_target": "It types the negative branch of the conditional defining D007 when theta/r is not positive.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "PartialOrder.toPreorder",
+      "meaning": "This extracts reflexive and transitive order structure from a partial order.",
+      "effect_on_target": "It supplies the preorder needed to define the half-open interval in D009.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Real.decidableLT",
+      "meaning": "This decides whether one real number is strictly less than another.",
+      "effect_on_target": "It permits D007 to branch on whether 0 < theta/r.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "Real.instField",
+      "meaning": "This equips the real numbers with their usual field structure.",
+      "effect_on_target": "It ultimately supplies ordinary real division, inversion, multiplication, and integer-power behavior.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "Real.linearOrder",
+      "meaning": "This supplies the usual linear order on real numbers.",
+      "effect_on_target": "It underlies real comparisons, minima, maxima, intervals, and absolute values.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "Semifield.toDivisionSemiring",
+      "meaning": "This extracts division-semiring structure from a semifield.",
+      "effect_on_target": "It is part of the instance path supplying real division and integer powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "SemilatticeInf.toPartialOrder",
+      "meaning": "This extracts a partial-order structure from an infimum semilattice.",
+      "effect_on_target": "It is inherited order plumbing used by real and nonnegative-real comparisons.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "Set",
+      "meaning": "A set of elements of alpha is a predicate alpha -> Prop.",
+      "effect_on_target": "It is the representation used for the half-open interval in D009.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "Set.Ico",
+      "meaning": "Set.Ico(a,b) is the half-open interval {x | a <= x and x < b}.",
+      "effect_on_target": "It states precisely that the positive ratio lies in [2^e,2^(e+1)).",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "Set.instMembership",
+      "meaning": "This supplies set membership by evaluating the set predicate on an element.",
+      "effect_on_target": "It turns the interval-membership statement in D009 into the two endpoint inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "dite",
+      "meaning": "This is a dependent conditional: it evaluates the true branch with a proof of the condition or the false branch with a proof of its negation.",
+      "effect_on_target": "It implements D007's case split on positivity of theta/r and allows the positive branch to use that proof in D009.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "instAddNat",
+      "meaning": "This supplies ordinary addition of natural numbers.",
+      "effect_on_target": "It supports auxiliary expressions such as 1 + 1 used to construct the numeral 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "instDecidableEqFin",
+      "meaning": "This decides equality of two Fin n indices by deciding equality of their underlying natural values.",
+      "effect_on_target": "It allows the diagonal matrix to distinguish diagonal from off-diagonal entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "instDistribLatticeOfLinearOrder",
+      "meaning": "Every linear order is given its standard distributive lattice structure using minimum and maximum.",
+      "effect_on_target": "For reals it supports the lattice operations used by absolute value and minimum.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "instHAdd",
+      "meaning": "This lifts an ordinary addition operation to homogeneous HAdd.",
+      "effect_on_target": "It routes natural and integer additions, including e + 1, to their usual operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "instOfNat",
+      "meaning": "This interprets a natural numeral n as the corresponding nonnegative integer.",
+      "effect_on_target": "It interprets the integer numeral 1 in e + 1.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "Natural numbers m and n.",
+      "A real m by n matrix A, represented as entries A_ij for i in Fin m and j in Fin n.",
+      "Real parameters fmax and Fmax."
+    ],
+    "hypotheses": [
+      "m > 0.",
+      "n > 0.",
+      "fmax > 0.",
+      "Fmax > 0.",
+      "For every row i, r_i := max_{j in Fin n} |A_ij| is strictly positive."
+    ],
+    "conclusions": [
+      "For every row i, its scale lambda_i is an integral power of two: there exists e in the integers such that lambda_i = 2^e.",
+      "For every row i, lambda_i > 0 and theta/(2r_i) < lambda_i <= theta/r_i.",
+      "For every row i and column j, |lambda_i A_ij| <= theta.",
+      "For every row i, there exists a column j, which may depend on i, such that theta/2 < |lambda_i A_ij|."
+    ],
+    "mathematical_definitions": [
+      "Fin k denotes the index set {0,...,k-1}.",
+      "r_i = max_{j in Fin n} |A_ij|.",
+      "theta = min(fmax, sqrt(Fmax/n)), where n is viewed as a real.",
+      "For a row x with r = max_j |x_j|, if theta/r > 0, e(theta,x) is a classically selected integer satisfying 2^e <= theta/r < 2^(e+1); otherwise e(theta,x) = 0.",
+      "lambda_i = 2^{e(theta,A_i)}.",
+      "D = diag(lambda_0,...,lambda_{m-1}) and B = DA, so exactly B_ij = lambda_i A_ij."
+    ],
+    "proposition_plain_english": "For every positive-dimensional real matrix A, and every positive pair fmax and Fmax, assume that no row of A is identically zero. Set theta equal to the smaller of fmax and sqrt(Fmax/n). Scale each row i by the integral power of two lambda_i obtained by locating theta/r_i in a half-open interval [2^e,2^(e+1)), where r_i is that row's maximum absolute entry. Then each lambda_i is positive and lies strictly above theta/(2r_i) and at or below theta/r_i. Consequently every entry of the scaled matrix DA has absolute value at most theta, while every scaled row has at least one entry whose absolute value is strictly greater than theta/2."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The declaration applies only when m and n are positive. If either dimension is zero, the corresponding positivity premise is false and the implication is vacuous.",
+    "Every row must have positive maximum absolute entry, equivalently every row must contain a nonzero entry. If any row is zero, the row hypothesis fails and the declaration gives no conclusion.",
+    "The positivity of fmax, Fmax, and n implies theta > 0; together with r_i > 0 this ensures that D007 always takes its positive branch in this proposition.",
+    "Division by n and by r_i is protected by the stated positivity assumptions.",
+    "The exponent is an integer, so lambda_i may be a reciprocal power of two; the proposition does not restrict it to powers with nonnegative exponent.",
+    "The exponent is introduced by classical choice and no computational algorithm for obtaining it is encoded.",
+    "The existential column witnessing theta/2 < |lambda_i A_ij| may be different for each row and is not asserted to be unique.",
+    "No relationship between fmax and Fmax is assumed beyond positivity, and they affect the result only through theta.",
+    "No floating-point format, rounding operation, overflow behavior, representability condition other than being an integral power of two, error bound, uniqueness claim, columnwise bound, or global matrix-norm statement is encoded."
+  ],
+  "ambiguities": []
+}

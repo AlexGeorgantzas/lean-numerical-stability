@@ -121,7 +121,7 @@
     "module_count": 5159,
     "sorted_module_names_sha256": "4c3d31a47326d0740ce1629ccac57cebe22e482adebb608942c49624f08ca752"
   },
-  "completed_at_utc": "2026-08-21T09:07:18.840318+00:00",
+  "completed_at_utc": "2026-08-21T04:51:03.828774+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P20/T1/context.md",
     "semantic_evidence": false,
@@ -2135,31 +2135,31 @@
   "outputs": {
     "adjudicator": {
       "path": "paper_bencmark/highambench/tasks/P20/T1/faithfulness/agent_outputs/adjudicator.json",
-      "sha256": "0695ba2e9b79d656c0c57d255d12c42c039c9ed68409f6332e89c3620f15a3e7"
+      "sha256": "f1e9a6f9c0007e27576d27c3ec857b715a2fa3ec0cc3244d114498c40d6d8693"
     },
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P20/T1/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "e41fa2f6659fcefbac879c6ea4af88d4a4d588a113ff4fd908b84229a6f2f16f"
+      "sha256": "fe60576e17f0ece150a2dd3e239ac8c8d9285dcdc0a70bf432693d700809ca70"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P20/T1/faithfulness/decision.json",
-      "sha256": "2a68b0e39a425bb16349e675ffc0434b0870f638f91200fc9fdce01640655c4f"
+      "sha256": "10f3c5585c710a8f4b1aab359be664f754427b826ae609cf7ccfe072f5df11bb"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P20/T1/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "7aa3e58ffe10ea5bd49d4c2ba1efadbd1462bb27403fbc9dc5996e8055190e02"
+      "sha256": "2a0717814331904d07c93c6c3e6c0d81dba42ea7c34aefb64954d4db23753105"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P20/T1/faithfulness/report.md",
-      "sha256": "d3e7547c59447676f55e0aba5b9e10c98566c82b0fe9d0c508a9b579d4a4aa25"
+      "sha256": "1397b6c00f9d3eaae47411449a536d840cf3ef2d09c932f1ff99c76720045cd8"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P20/T1/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "9a3e830a48d478bd5285a4ae768395bb686dbcb7fb0fc949938fcf4f3f336ab0"
+      "sha256": "0d9df5c9f12d4459c7b769bc8f070e308a3cb9549d79b3c875d945a792488f8b"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P20/T1/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "eec799394042b0f2efc4d6e7cd963686997fb44dc3f09421f04b417ff7d6f742"
+      "sha256": "75f47662da704842da5dc236c0cc8f559f86fbc2d4a53c8b6c2f15c9515e7b8a"
     }
   },
   "paper": {
@@ -2182,7 +2182,7 @@
       }
     ]
   },
-  "prepared_at_utc": "2026-08-21T08:34:52.281503+00:00",
+  "prepared_at_utc": "2026-08-21T04:34:20.201956+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
