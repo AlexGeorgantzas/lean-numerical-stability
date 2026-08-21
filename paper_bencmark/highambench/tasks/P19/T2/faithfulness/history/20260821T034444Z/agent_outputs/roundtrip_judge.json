@@ -1,0 +1,186 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P19-T2",
+  "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
+  "blind_translation_sha256": "5ece5e5732c21b0e179d6bee4aecf8bf5db288c1b68d0d545f76137b156636c0",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The supplied locator identifies HAL preprint hal-05071696v2, PDF page 9, printed page 8, equation (3.8) in Section 3.1 and its surrounding Theorem 3.1.",
+      "translation_evidence": "The translation contains the distinctive four-term expression alpha*epsilonC + beta*epsilonB + beta*ug + lambda*epsilonX.",
+      "reasoning": "The intended source passage is unambiguously selected, and the translation targets its four-source aggregate, although it does not preserve the surrounding result."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.1 concerns nonsingular A, M_L, and M_R, nonzero b, the exact solution x, a full-rank increasing basis family tilde_Z_k, computed quantities, and a dimension k no larger than n.",
+      "translation_evidence": "The translation binds only an arbitrary natural n, seven arbitrary real scalars, and four arbitrary functions from Fin n to Real; it permits n = 0.",
+      "reasoning": "The paper's matrices, vectors, basis dimension, exact solution, and computed objects are replaced by unrelated scalar and vector binders."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.1 existentially selects a suitable k no larger than n from an increasing basis family and, for that k, gives the bound for every nonsingular analytical right preconditioner M_R.",
+      "translation_evidence": "The translation universally quantifies n, all coefficients, all bounds, and all four error vectors, with no existential index or subsequent universal M_R.",
+      "reasoning": "The existential iteration witness, its dependence on the basis family, and the scope of the universal right-preconditioner quantifier are absent."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "Equations (3.2)-(3.6) require matrix-product, right-hand-side, least-squares, and solution-formation error models; nonsingularity and full-rank assumptions; numerical nonsingularity; and explicit first-order smallness conditions.",
+      "translation_evidence": "The only hypotheses are nonnegativity of alpha, beta, and lambda and four Euclidean norm bounds on arbitrary vectors.",
+      "reasoning": "Nearly all structural, algebraic, numerical, and smallness hypotheses of the paper are missing."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Equation (3.7) concludes two basis-conditioning inequalities with constant 4/3, while equation (3.8) bounds normalized forward error by c(n,k)*xi*kappa(M_L^-1 A M_R^-1).",
+      "translation_evidence": "The sole conclusion bounds the Euclidean norm of a weighted sum of four arbitrary vectors by xi.",
+      "reasoning": "Neither the basis-conditioning conclusion nor the attainable normalized forward-error conclusion appears."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "Below equation (3.8), alpha, beta, and lambda are defined using condition numbers, smallest singular values, Frobenius-norm ratios, M_R, tilde_Z_k, M_L, and A; c(n,k) is an unspecified low-degree polynomial.",
+      "translation_evidence": "The dependency ledger correctly unfolds its own Euclidean norm and pointwise operations, but alpha, beta, and lambda remain arbitrary real binders and the paper's matrix definitions do not occur.",
+      "reasoning": "Unfolding the generic vector operations does not recover the omitted paper-specific coefficient and condition-number definitions."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The paper distinguishes exact x and tilde_b from computed hat_x_k, hat_C_k, hat_b, hat_y_k, and hat_V_k, with explicit perturbations Delta c, Delta b, and Delta x.",
+      "translation_evidence": "The four error vectors are arbitrary functions whose names provide no formal exact, rounded, perturbed, or computed semantics.",
+      "reasoning": "All exact-versus-computed distinctions and perturbation identities are erased."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Algorithm 2 links epsilon_c to forming M_L^-1 A tilde_Z_k, epsilon_b to forming M_L^-1 b, u_g to the MGS/Givens least-squares stage, and epsilon_x to forming tilde_Z_k hat_y_k.",
+      "translation_evidence": "No matrix operation, MGS orthogonalization, Givens rotation, triangular solve, Krylov basis, or execution model appears.",
+      "reasoning": "The vector names do not establish any formal connection to the four modules of MGS-GMRES."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The forward error and two vector perturbations use the vector 2-norm, while the matrix-product perturbation and coefficient ratios use Frobenius norms; smallest singular values and condition numbers also occur.",
+      "translation_evidence": "Every error object is an n-dimensional vector and every norm is the same Euclidean 2-norm.",
+      "reasoning": "The matrix Frobenius-norm model is converted into an unrelated vector 2-norm model, and the conclusion's normalized forward-error norm is replaced."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The paper uses the exact 4/3 basis constants, an existential k no larger than n, c(n,k), the outer factor kappa(M_L^-1 A M_R^-1), and specific matrix-dependent definitions of alpha, beta, and lambda.",
+      "translation_evidence": "It preserves only the coefficient pattern alpha, beta, beta, lambda and otherwise treats the coefficients as arbitrary while omitting k, 4/3, c(n,k), and the outer condition number.",
+      "reasoning": "One four-term indexing pattern is preserved, but the essential constants and parameter dependence are not."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper assumes a standard floating-point model, substantially subunit roundoffs, MGS/Givens backward-error bounds, and numerical nonsingularity, while leaving overflow, underflow, NaN, and infinity outside the stated result.",
+      "translation_evidence": "The scalar ug is merely an arbitrary upper bound for an arbitrary vector; no floating-point operation or exceptional-value convention is represented.",
+      "reasoning": "The numerical model and the role of ug as unit roundoff for GMRES operations are absent."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "Equation (3.8) uses a less-than-or-approximately-equal first-order comparison for normalized forward error.",
+      "translation_evidence": "The translation gives an exact non-strict inequality for the norm of an arbitrary weighted vector sum.",
+      "reasoning": "Although both comparisons point toward an upper bound, the translation changes both the related quantities and the paper's approximate first-order strength."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The final paper quantity is the normalized forward error norm2(hat_x_k - x)/norm2(x) for the original system Ax = b.",
+      "translation_evidence": "The final quantity is the unnormalized norm of a weighted sum of four arbitrary error vectors.",
+      "reasoning": "A generic aggregate-vector bound is substituted for attainable normalized forward error."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "The convention for equation (3.8) drops negligible second-order terms, and Appendix A explicitly drops such terms before recovering the displayed bound.",
+      "translation_evidence": "The translated inequality is exact and contains no remainder, approximation convention, or higher-order qualification.",
+      "reasoning": "The paper's first-order treatment is replaced by an exact triangle-inequality statement."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The result concerns real n-by-n nonsingular systems, full-rank n-by-k bases with a selected positive algorithmic dimension, and matrix-dependent coefficients.",
+      "translation_evidence": "The translation ranges over arbitrary finite-dimensional real vectors, including the zero-dimensional case, with no matrix or algorithmic specialization.",
+      "reasoning": "This is not a valid specialization or generalization of the paper theorem; it changes the mathematical subject to a generic norm inequality."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper's result is conditional on substantive system, rank, numerical-model, and smallness assumptions and asserts computed-basis and forward-error information.",
+      "translation_evidence": "Its conclusion follows directly from Euclidean norm homogeneity and the triangle inequality once the four norm bounds hold; for n = 0 every norm is zero.",
+      "reasoning": "The hypotheses are satisfiable, but the proposition is true for a generic reason wholly independent of the paper's GMRES analysis, with additional trivial zero-dimensional instances."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The generic weighted-sum norm inequality supplies neither an existential iteration, basis conditioning, modular computation identities, smallness conditions, nor a bound on normalized computed forward error with c(n,k) and the outer preconditioned condition number."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper controls specific computed quantities arising from MGS-GMRES and does not assert a universally quantified inequality for four arbitrary vectors. The translated inequality is independently true from norm axioms, but it is not the paper result under preserved binders and quantity correspondence."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "conclusion replacement",
+      "paper_evidence": "Equations (3.7)-(3.8) assert existence of a well-conditioned computed basis and an attainable normalized forward-error envelope c(n,k)*xi*kappa(M_L^-1 A M_R^-1).",
+      "translation_evidence": "The translation asserts only the Euclidean triangle inequality for a weighted sum of four arbitrary vectors.",
+      "impact": "The principal theorem and its numerical-analysis content are absent."
+    },
+    {
+      "severity": "major",
+      "category": "binders and quantifiers",
+      "paper_evidence": "The theorem binds a nonsingular linear system, preconditioners, an increasing full-rank basis family, computed objects, and an existentially selected k followed by arbitrary nonsingular M_R.",
+      "translation_evidence": "Only arbitrary scalars and four Fin n-indexed vectors are universally quantified.",
+      "impact": "Witness dependence, matrix dimensions, rank conditions, and preconditioner scope cannot be recovered."
+    },
+    {
+      "severity": "major",
+      "category": "algorithm and numerical model",
+      "paper_evidence": "Equations (3.2)-(3.6) and Algorithm 2 specify four computation modules, MGS/Givens behavior, perturbation models, and smallness assumptions.",
+      "translation_evidence": "The vector names have no formal computational meaning, and ug is just another scalar norm bound.",
+      "impact": "The claim is detached from GMRES and floating-point execution."
+    },
+    {
+      "severity": "major",
+      "category": "norm and error semantics",
+      "paper_evidence": "The paper mixes Frobenius and vector 2-norm perturbation models and concludes a normalized forward-error bound.",
+      "translation_evidence": "All four sources and the conclusion use an unnormalized Euclidean vector norm.",
+      "impact": "Matrix-product error and forward error are replaced by different mathematical quantities."
+    },
+    {
+      "severity": "major",
+      "category": "coefficients and constants",
+      "paper_evidence": "Alpha, beta, and lambda have explicit matrix-dependent formulas, and the final envelope includes c(n,k), kappa(M_L^-1 A M_R^-1), and the 4/3 basis constants.",
+      "translation_evidence": "The coefficients are arbitrary nonnegative reals; only their four-term placement is retained.",
+      "impact": "The scaling and conditioning content of equation (3.8) is lost."
+    },
+    {
+      "severity": "major",
+      "category": "higher-order treatment",
+      "paper_evidence": "Equation (3.8) is a first-order approximate inequality obtained after dropping second-order terms.",
+      "translation_evidence": "The conclusion is an exact inequality with no omitted-term qualification.",
+      "impact": "The translated relation has a different formal strength and justification."
+    },
+    {
+      "severity": "note",
+      "category": "preserved fragment",
+      "paper_evidence": "The paper defines xi in the order alpha epsilon_c, beta epsilon_b, beta u_g, lambda epsilon_x.",
+      "translation_evidence": "The scalar bound preserves the same four terms and correctly shares beta between rhsError and gmresError.",
+      "impact": "The coefficient ordering is faithful, but this isolated fragment is insufficient to represent the source result."
+    }
+  ],
+  "rationale": "The translation preserves the displayed four-term scalar pattern for xi but turns the source theorem into a standalone Euclidean triangle inequality. It omits the linear system, preconditioners, basis family, existential iteration, computed quantities, perturbation models, smallness assumptions, coefficient definitions, mixed norm semantics, basis constants, outer condition-number factor, normalized forward-error conclusion, and first-order qualification. Because it also universally quantifies unrelated arbitrary vectors, it is not merely a weakened version under matching binders; it states a different generic fact."
+}

@@ -1,0 +1,119 @@
+{
+  "accepted": false,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-13T20:01:28.143246+00:00",
+  "findings": [
+    {
+      "category": "conclusion-substitution",
+      "impact": "The central numerical-analysis theorem is replaced by a generic triangle inequality.",
+      "lean_evidence": "The target bounds the Euclidean norm of an invented weighted sum of four arbitrary vectors by xi.",
+      "paper_evidence": "Equation (3.8) bounds normalized computed-solution forward error by c(n,k)*xi*kappa(M_L^-1*A*M_R^-1).",
+      "severity": "critical"
+    },
+    {
+      "category": "missing-algorithmic-context",
+      "impact": "The formal statement cannot measure reasoning about the paper's GMRES result.",
+      "lean_evidence": "None of these objects or conditions occurs in the proposition.",
+      "paper_evidence": "Theorem 3.1 depends on Algorithm 2, models (3.2)-(3.4), smallness conditions (3.5)-(3.6), full rank, nonsingularity, and an existential iteration k.",
+      "severity": "major"
+    },
+    {
+      "category": "error-and-norm-mismatch",
+      "impact": "The source meanings, shapes, and normwise models are conflated.",
+      "lean_evidence": "All four sources are arbitrary Fin n vectors measured with one Euclidean norm and combined componentwise.",
+      "paper_evidence": "The four sources arise through a Frobenius-norm matrix error, a vector 2-norm right-hand-side error, a structured least-squares rounding model, and a vector 2-norm solution error.",
+      "severity": "major"
+    },
+    {
+      "category": "coefficient-and-factor-omission",
+      "impact": "The proposition loses the conditioning and basis dependence that gives the paper bound its content.",
+      "lean_evidence": "The coefficients are arbitrary nonnegative reals and the outer factors are absent.",
+      "paper_evidence": "The paper defines alpha, beta, and lambda using condition numbers, singular values, and Frobenius-norm ratios, and multiplies xi by c(n,k) and an outer preconditioned condition number.",
+      "severity": "major"
+    },
+    {
+      "category": "approximation-mismatch",
+      "impact": "The logical relation and higher-order-term semantics do not match.",
+      "lean_evidence": "The target states an exact inequality with no remainder or approximation convention.",
+      "paper_evidence": "Equation (3.8) is a first-order approximate inequality obtained after dropping second-order terms.",
+      "severity": "major"
+    },
+    {
+      "category": "preserved-subexpression",
+      "impact": "The four-term aggregate is preserved as a subexpression, but this does not repair the replacement of the full theorem.",
+      "lean_evidence": "p19ModularEnvelope reproduces exactly that scalar expression.",
+      "paper_evidence": "Equation (3.8) defines xi in the order alpha epsilon_c, beta epsilon_b, beta u_g, lambda epsilon_x.",
+      "severity": "note"
+    },
+    {
+      "category": "conclusion replacement",
+      "impact": "The principal theorem and its numerical-analysis content are absent.",
+      "paper_evidence": "Equations (3.7)-(3.8) assert existence of a well-conditioned computed basis and an attainable normalized forward-error envelope c(n,k)*xi*kappa(M_L^-1 A M_R^-1).",
+      "severity": "critical",
+      "translation_evidence": "The translation asserts only the Euclidean triangle inequality for a weighted sum of four arbitrary vectors."
+    },
+    {
+      "category": "binders and quantifiers",
+      "impact": "Witness dependence, matrix dimensions, rank conditions, and preconditioner scope cannot be recovered.",
+      "paper_evidence": "The theorem binds a nonsingular linear system, preconditioners, an increasing full-rank basis family, computed objects, and an existentially selected k followed by arbitrary nonsingular M_R.",
+      "severity": "major",
+      "translation_evidence": "Only arbitrary scalars and four Fin n-indexed vectors are universally quantified."
+    },
+    {
+      "category": "algorithm and numerical model",
+      "impact": "The claim is detached from GMRES and floating-point execution.",
+      "paper_evidence": "Equations (3.2)-(3.6) and Algorithm 2 specify four computation modules, MGS/Givens behavior, perturbation models, and smallness assumptions.",
+      "severity": "major",
+      "translation_evidence": "The vector names have no formal computational meaning, and ug is just another scalar norm bound."
+    },
+    {
+      "category": "norm and error semantics",
+      "impact": "Matrix-product error and forward error are replaced by different mathematical quantities.",
+      "paper_evidence": "The paper mixes Frobenius and vector 2-norm perturbation models and concludes a normalized forward-error bound.",
+      "severity": "major",
+      "translation_evidence": "All four sources and the conclusion use an unnormalized Euclidean vector norm."
+    },
+    {
+      "category": "coefficients and constants",
+      "impact": "The scaling and conditioning content of equation (3.8) is lost.",
+      "paper_evidence": "Alpha, beta, and lambda have explicit matrix-dependent formulas, and the final envelope includes c(n,k), kappa(M_L^-1 A M_R^-1), and the 4/3 basis constants.",
+      "severity": "major",
+      "translation_evidence": "The coefficients are arbitrary nonnegative reals; only their four-term placement is retained."
+    },
+    {
+      "category": "higher-order treatment",
+      "impact": "The translated relation has a different formal strength and justification.",
+      "paper_evidence": "Equation (3.8) is a first-order approximate inequality obtained after dropping second-order terms.",
+      "severity": "major",
+      "translation_evidence": "The conclusion is an exact inequality with no omitted-term qualification."
+    },
+    {
+      "category": "preserved fragment",
+      "impact": "The coefficient ordering is faithful, but this isolated fragment is insufficient to represent the source result.",
+      "paper_evidence": "The paper defines xi in the order alpha epsilon_c, beta epsilon_b, beta u_g, lambda epsilon_x.",
+      "severity": "note",
+      "translation_evidence": "The scalar bound preserves the same four terms and correctly shares beta between rhsError and gmresError."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean triangle inequality provides no computed GMRES solution, existential iteration, basis-conditioning result, modular floating-point models, coefficient definitions, normalized forward error, c(n,k), or outer condition-number factor, so it cannot establish Theorem 3.1 or equation (3.8).",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper result concerns its algorithmically generated heterogeneous perturbations and derived coefficients; it does not assert a universal inequality for four arbitrary same-dimensional vectors and arbitrary nonnegative coefficients. The Lean proposition is independently true by norm algebra, not a consequence stated by the paper under a faithful variable correspondence.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The declaration faithfully reproduces only the scalar four-term definition of xi. Its asserted theorem is instead an exact Euclidean triangle inequality for four arbitrary same-dimensional vectors. It omits the GMRES algorithm, heterogeneous perturbation models, smallness and nonsingularity hypotheses, existential iteration, basis-conditioning conclusion, normalized forward error, explicit coefficient definitions, polynomial factor, outer condition number, and first-order approximation semantics. Because neither statement implies the other under a faithful correspondence of objects, the result is not-faithful-different.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P19-T2"
+}

@@ -5,11 +5,32 @@
   "paper_version": "HAL preprint hal-05071696v2, submitted 2026-05-19; IMA Journal of Numerical Analysis, in press, article pages 1-46",
   "source_locations": [
     {
-      "anchor": "equation (3.8), definition xi = alpha epsilon_c + beta epsilon_b + beta u_g + lambda epsilon_x",
+      "anchor": "Algorithm 2, Modular GMRES",
+      "pdf_page": 7,
+      "printed_page": "6",
+      "role": "four-module algorithm and increasing search-space basis",
+      "section": "3.1. Modular error bound"
+    },
+    {
+      "anchor": "equations (3.2)-(3.6) and the MGS/Givens least-squares model",
+      "pdf_page": 8,
+      "printed_page": "7",
+      "role": "heterogeneous rounding-error models and smallness conditions",
+      "section": "3.1. Modular error bound"
+    },
+    {
+      "anchor": "Theorem 3.1 and equations (3.7)-(3.8)",
       "pdf_page": 9,
       "printed_page": "8",
-      "role": "four-source modular attainable-error aggregate",
-      "section": "3.1. Improved modular framework"
+      "role": "selected basis-conditioning and normalized forward-error result",
+      "section": "3.1. Modular error bound"
+    },
+    {
+      "anchor": "equation (A.11) and the closing recovery of (3.8)",
+      "pdf_page": 39,
+      "printed_page": "38",
+      "role": "first-order propagation and omitted second-order terms",
+      "section": "Appendix A. Proof of Theorem 3.1"
     }
   ],
   "task_id": "P19-T2"

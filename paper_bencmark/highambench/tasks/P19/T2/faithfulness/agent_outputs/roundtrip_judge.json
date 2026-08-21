@@ -3,184 +3,184 @@
   "role": "roundtrip-judge",
   "task_id": "P19-T2",
   "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
-  "blind_translation_sha256": "5ece5e5732c21b0e179d6bee4aecf8bf5db288c1b68d0d545f76137b156636c0",
+  "blind_translation_sha256": "1fce5e1534fd1862d1d68f63bd2cd9b0b17e4a8639c8d390742780c5cec1ccbd",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The supplied locator identifies HAL preprint hal-05071696v2, PDF page 9, printed page 8, equation (3.8) in Section 3.1 and its surrounding Theorem 3.1.",
-      "translation_evidence": "The translation contains the distinctive four-term expression alpha*epsilonC + beta*epsilonB + beta*ug + lambda*epsilonX.",
-      "reasoning": "The intended source passage is unambiguously selected, and the translation targets its four-source aggregate, although it does not preserve the surrounding result."
+      "paper_evidence": "The verified PDF has the supplied SHA-256. PDF p. 9, printed p. 8, contains Theorem 3.1 and equations (3.7)-(3.8), with Algorithm 2 and models (3.2)-(3.6) on PDF pp. 7-8.",
+      "translation_evidence": "The translation identifies the existential dimension, both 4/3 spectral bounds, the normalized forward-error bound, and the alpha, beta, lambda coefficient structure of Theorem 3.1.",
+      "reasoning": "The selected paper version and target passage are correct."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "Theorem 3.1 concerns nonsingular A, M_L, and M_R, nonzero b, the exact solution x, a full-rank increasing basis family tilde_Z_k, computed quantities, and a dimension k no larger than n.",
-      "translation_evidence": "The translation binds only an arbitrary natural n, seven arbitrary real scalars, and four arbitrary functions from Fin n to Real; it permits n = 0.",
-      "reasoning": "The paper's matrices, vectors, basis dimension, exact solution, and computed objects are replaced by unrelated scalar and vector binders."
+      "paper_evidence": "Theorem 3.1 is a static finite-dimensional statement about real matrices and vectors, an increasing basis indexed by k <= n, and a dimension selected from that family.",
+      "translation_evidence": "The translation adds an arbitrary index type, a nonbottom filter, time-dependent matrices and errors, an execution object, explicit inverse matrices, and a stored keyDimension k0.",
+      "reasoning": "Although the finite matrix dimensions are mostly represented correctly, the added asymptotic index and execution types materially change the binders and the meaning of the data."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "Theorem 3.1 existentially selects a suitable k no larger than n from an increasing basis family and, for that k, gives the bound for every nonsingular analytical right preconditioner M_R.",
-      "translation_evidence": "The translation universally quantifies n, all coefficients, all bounds, and all four error vectors, with no existential index or subsequent universal M_R.",
-      "reasoning": "The existential iteration witness, its dependence on the basis family, and the scope of the universal right-preconditioner quantifier are absent."
+      "paper_evidence": "Theorem 3.1 and Appendix A select an existential k from the increasing basis and MGS computation before introducing the arbitrary nonsingular MR.",
+      "translation_evidence": "The execution already contains k0 and forwardAnalysis certificates for every inverse pair MR, MRinv; the existential witness is constrained to satisfy k = k0.",
+      "reasoning": "The paper-derived witness is replaced by an input field, and the universal MR-indexed analysis is assumed before the conclusion rather than established after selecting k."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Equations (3.2)-(3.6) require matrix-product, right-hand-side, least-squares, and solution-formation error models; nonsingularity and full-rank assumptions; numerical nonsingularity; and explicit first-order smallness conditions.",
-      "translation_evidence": "The only hypotheses are nonnegativity of alpha, beta, and lambda and four Euclidean norm bounds on arbitrary vectors.",
-      "reasoning": "Nearly all structural, algebraic, numerical, and smallness hypotheses of the paper are missing."
+      "paper_evidence": "The paper assumes full rank and increasing dimension, the modular models (3.2)-(3.4), the MGS/Givens least-squares perturbation model, numerical nonsingularity, and qualitative smallness conditions (3.5)-(3.6).",
+      "translation_evidence": "The run additionally assumes convergence of all error parameters, nestedness, several spectrum certificates, an eventual 7/16 orthogonality-defect bound, a complete perturbation decomposition, four componentwise forward-error bounds, and a second-order remainder for every inverse pair.",
+      "reasoning": "The translation imposes substantial hypotheses absent from the theorem, including certificates encoding results that the paper derives."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Equation (3.7) concludes two basis-conditioning inequalities with constant 4/3, while equation (3.8) bounds normalized forward error by c(n,k)*xi*kappa(M_L^-1 A M_R^-1).",
-      "translation_evidence": "The sole conclusion bounds the Euclidean norm of a weighted sum of four arbitrary vectors by xi.",
-      "reasoning": "Neither the basis-conditioning conclusion nor the attainable normalized forward-error conclusion appears."
+      "status": "pass",
+      "paper_evidence": "Equations (3.7)-(3.8) contain two spectral inequalities and a normalized forward-error estimate with xi = alpha epsilonC + beta epsilonB + beta ug + lambda epsilonX.",
+      "translation_evidence": "The conclusion contains both 4/3 inequalities, the normalized forward error, all four weighted summands, the outer composite condition factor, and universal inverse-pair quantification.",
+      "reasoning": "The displayed conclusion components are all present. Their altered scope and relation strength are assessed separately in S03, S12, and S14."
     },
     {
       "id": "S06",
       "status": "fail",
-      "paper_evidence": "Below equation (3.8), alpha, beta, and lambda are defined using condition numbers, smallest singular values, Frobenius-norm ratios, M_R, tilde_Z_k, M_L, and A; c(n,k) is an unspecified low-degree polynomial.",
-      "translation_evidence": "The dependency ledger correctly unfolds its own Euclidean norm and pointwise operations, but alpha, beta, and lambda remain arbitrary real binders and the paper's matrix definitions do not occur.",
-      "reasoning": "Unfolding the generic vector operations does not recover the omitted paper-specific coefficient and condition-number definitions."
+      "paper_evidence": "The paper deliberately leaves kappa unqualified, treats c(n,k) as an unspecified low-degree polynomial factor, uses qualitative much-less-than assumptions, and defines the less-than-or-approximately relation by discarding negligible second-order terms.",
+      "translation_evidence": "The translation fixes Frobenius inverse-norm products, stores a concrete polynomial descriptor, interprets smallness through convergence and eventual bounds below one, and defines the final approximation through an explicit Big-O remainder.",
+      "reasoning": "Several central informal operators are not merely unfolded; they are replaced by new formal definitions not supplied by the paper."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "The paper distinguishes exact x and tilde_b from computed hat_x_k, hat_C_k, hat_b, hat_y_k, and hat_V_k, with explicit perturbations Delta c, Delta b, and Delta x.",
-      "translation_evidence": "The four error vectors are arbitrary functions whose names provide no formal exact, rounded, perturbed, or computed semantics.",
-      "reasoning": "All exact-versus-computed distinctions and perturbation identities are erased."
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes the exact solution x, computed solution xHat, input search-space basis ZTilde, computed Krylov basis VHat, computed products, and perturbations.",
+      "translation_evidence": "The translation separately represents xExact, xHat, the search basis family, vHat, computedC, computedB, deltaC, deltaB, least-squares perturbations, and deltaX.",
+      "reasoning": "Despite renaming the search basis as V, the translation keeps it distinct from vHat and does not conflate exact, computed, and perturbed quantities."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Algorithm 2 links epsilon_c to forming M_L^-1 A tilde_Z_k, epsilon_b to forming M_L^-1 b, u_g to the MGS/Givens least-squares stage, and epsilon_x to forming tilde_Z_k hat_y_k.",
-      "translation_evidence": "No matrix operation, MGS orthogonalization, Givens rotation, triangular solve, Krylov basis, or execution model appears.",
-      "reasoning": "The vector names do not establish any formal connection to the four modules of MGS-GMRES."
+      "paper_evidence": "Algorithm 2 forms the projected matrix and right-hand side, solves the least-squares problem specifically using MGS, Givens rotations, and a triangular solve, and then forms the approximation. Appendix A derives the bound from this model.",
+      "translation_evidence": "The execution stores an algebraic Hessenberg relation and a perturbed least-squares minimizer, but does not encode the MGS/Givens/triangular-solve execution. It additionally assumes forwardAnalysis certificates containing the resulting error estimates.",
+      "reasoning": "The proposition is linked to a packaged algebraic certificate rather than deriving the analysis from the paper's specified algorithm and execution model."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "The forward error and two vector perturbations use the vector 2-norm, while the matrix-product perturbation and coefficient ratios use Frobenius norms; smallest singular values and condition numbers also occur.",
-      "translation_evidence": "Every error object is an n-dimensional vector and every norm is the same Euclidean 2-norm.",
-      "reasoning": "The matrix Frobenius-norm model is converted into an unrelated vector 2-norm model, and the conclusion's normalized forward-error norm is replaced."
+      "status": "unclear",
+      "paper_evidence": "The paper uses Euclidean vector norms and Frobenius norms in the displayed modular estimates and coefficient ratios, but intentionally leaves each unqualified kappa unresolved among related condition quantities.",
+      "translation_evidence": "Vector norms are Euclidean and the displayed matrix ratios are Frobenius, but every square-matrix kappa is fixed to the Frobenius product of a matrix and its supplied inverse.",
+      "reasoning": "The explicit norms match, but the source does not determine whether every unqualified kappa in (3.8) should be exactly the Frobenius condition number chosen by the translation."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "The paper uses the exact 4/3 basis constants, an existential k no larger than n, c(n,k), the outer factor kappa(M_L^-1 A M_R^-1), and specific matrix-dependent definitions of alpha, beta, and lambda.",
-      "translation_evidence": "It preserves only the coefficient pattern alpha, beta, beta, lambda and otherwise treats the coefficients as arbitrary while omitting k, 4/3, c(n,k), and the outer condition number.",
-      "reasoning": "One four-term indexing pattern is preserved, but the essential constants and parameter dependence are not."
+      "paper_evidence": "The constants 4/3, the k <= n indexing, the k+1 least-squares columns, and the alpha, beta, lambda placements are displayed explicitly. The factor c(n,k) is only specified as a generic low-degree polynomial.",
+      "translation_evidence": "The translation preserves the numerical constants, offsets, and four coefficient placements, but stores one arbitrary nonnegative-coefficient polynomial with unrestricted degrees.",
+      "reasoning": "The principal constants and indices match, but the permitted polynomial factor is not restricted to low degree and is treated as fixed execution data, so its parameter semantics differ."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The paper assumes a standard floating-point model, substantially subunit roundoffs, MGS/Givens backward-error bounds, and numerical nonsingularity, while leaving overflow, underflow, NaN, and infinity outside the stated result.",
-      "translation_evidence": "The scalar ug is merely an arbitrary upper bound for an arbitrary vector; no floating-point operation or exceptional-value convention is represented.",
-      "reasoning": "The numerical model and the role of ug as unit roundoff for GMRES operations are absent."
+      "paper_evidence": "Section 2 invokes the standard floating-point model; ug is a unit roundoff, while equations (3.2)-(3.4) describe computed fl operations and the theorem uses qualitative numerical-smallness conditions.",
+      "translation_evidence": "The translation uses real-valued perturbation functions converging to zero along an arbitrary filter and supplies no rounding operation, arithmetic precision, rounding mode, overflow, underflow, or exceptional-value semantics.",
+      "reasoning": "An asymptotic real perturbation family is not the paper's fixed floating-point execution model."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "Equation (3.8) uses a less-than-or-approximately-equal first-order comparison for normalized forward error.",
-      "translation_evidence": "The translation gives an exact non-strict inequality for the norm of an arbitrary weighted vector sum.",
-      "reasoning": "Although both comparisons point toward an upper bound, the translation changes both the related quantities and the paper's approximate first-order strength."
+      "paper_evidence": "Equation (3.8) uses an informal first-order less-than-or-approximately relation, and conditions (3.5)-(3.6) use an unquantified qualitative smallness relation.",
+      "translation_evidence": "LocalDef016 asserts an exact eventual inequality with an absolute remainder that satisfies a formal Big-O condition; smallness is replaced by convergence and eventual membership in [0,1).",
+      "reasoning": "The inequality direction is retained, but both the conclusion relation and the hypotheses have different formal strength."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "The final paper quantity is the normalized forward error norm2(hat_x_k - x)/norm2(x) for the original system Ax = b.",
-      "translation_evidence": "The final quantity is the unnormalized norm of a weighted sum of four arbitrary error vectors.",
-      "reasoning": "A generic aggregate-vector bound is substituted for attainable normalized forward error."
+      "status": "pass",
+      "paper_evidence": "Theorem 3.1 reports the original-system normwise relative forward error ||xHat_k-x||_2/||x||_2.",
+      "translation_evidence": "LocalDef017 is exactly ||xHat-xExact||_2/||xExact||_2, and the final conclusion uses this quantity.",
+      "reasoning": "No backward-error, residual, componentwise-error, or mixed-error notion replaces the paper's reported forward error."
     },
     {
       "id": "S14",
       "status": "fail",
-      "paper_evidence": "The convention for equation (3.8) drops negligible second-order terms, and Appendix A explicitly drops such terms before recovering the displayed bound.",
-      "translation_evidence": "The translated inequality is exact and contains no remainder, approximation convention, or higher-order qualification.",
-      "reasoning": "The paper's first-order treatment is replaced by an exact triangle-inequality statement."
+      "paper_evidence": "Section 2 says negligible second-order terms are dropped, and Appendix A explicitly drops them before (A.11); no remainder function, asymptotic variable, or quantitative Big-O statement is supplied.",
+      "translation_evidence": "The execution assumes a normalized remainder of order eta squared, and the conclusion asserts an MR-dependent scalar remainder r = O(eta^2) along l.",
+      "reasoning": "The explicit asymptotic remainder is an unsupported strengthening and is also assumed inside the execution certificate."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The result concerns real n-by-n nonsingular systems, full-rank n-by-k bases with a selected positive algorithmic dimension, and matrix-dependent coefficients.",
-      "translation_evidence": "The translation ranges over arbitrary finite-dimensional real vectors, including the zero-dimensional case, with no matrix or algorithmic specialization.",
-      "reasoning": "This is not a valid specialization or generalization of the paper theorem; it changes the mathematical subject to a generic norm inequality."
+      "paper_evidence": "The paper result concerns finite-dimensional real data and fixed rounding-error parameters at an existentially selected GMRES dimension.",
+      "translation_evidence": "The translation retains finite real matrices but replaces the fixed problem by an arbitrary filter-indexed family, requires convergence to zero, enforces nested bases, and requires 0 < k.",
+      "reasoning": "This is not merely a harmless finite or real specialization; it changes the theorem into an asymptotic-family statement with stronger structural assumptions."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "The paper's result is conditional on substantive system, rank, numerical-model, and smallness assumptions and asserts computed-basis and forward-error information.",
-      "translation_evidence": "Its conclusion follows directly from Euclidean norm homogeneity and the triangle inequality once the four norm bounds hold; for n = 0 every norm is zero.",
-      "reasoning": "The hypotheses are satisfiable, but the proposition is true for a generic reason wholly independent of the paper's GMRES analysis, with additional trivial zero-dimensional instances."
+      "paper_evidence": "Appendix A derives both the special dimension and the forward-error estimate from the increasing full-rank basis, MGS behavior, and modular error models.",
+      "translation_evidence": "The spectral-defect assumptions directly imply the eventual 4/3 bounds, while forwardAnalysis already supplies the decomposition, each first-order component bound, and the second-order remainder needed to obtain the final inequality by the triangle inequality.",
+      "reasoning": "The nonbottom filter avoids one form of vacuity, but the substantive conclusions are effectively assumed in the execution package, making the proposition a certificate-unpacking result rather than the paper's theorem."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The generic weighted-sum norm inequality supplies neither an existential iteration, basis conditioning, modular computation identities, smallness conditions, nor a bound on normalized computed forward error with c(n,k) and the outer preconditioned condition number."
+      "reasoning": "The translation only applies after supplying a filter-indexed execution with a predetermined k0, spectral-defect control, and complete forward-analysis certificates. The paper covers admissible Algorithm 2 instances without those extra certificates, so the translated proposition cannot establish the paper result for the paper's full domain."
     },
     "paper_implies_translation": {
       "verdict": "no",
-      "reasoning": "The paper controls specific computed quantities arising from MGS-GMRES and does not assert a universally quantified inequality for four arbitrary vectors. The translated inequality is independently true from norm axioms, but it is not the paper result under preserved binders and quantity correspondence."
+      "reasoning": "The paper supplies a static informal first-order estimate at an existentially selected dimension. It does not supply a fixed k0 valid eventually along an arbitrary filter, an exact Big-O remainder, convergence hypotheses, or the universally quantified certificate structure required by the translation."
     }
   },
   "classification": "not-faithful-different",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "conclusion replacement",
-      "paper_evidence": "Equations (3.7)-(3.8) assert existence of a well-conditioned computed basis and an attainable normalized forward-error envelope c(n,k)*xi*kappa(M_L^-1 A M_R^-1).",
-      "translation_evidence": "The translation asserts only the Euclidean triangle inequality for a weighted sum of four arbitrary vectors.",
-      "impact": "The principal theorem and its numerical-analysis content are absent."
+      "category": "assumed-forward-analysis-conclusion",
+      "paper_evidence": "Appendix A derives the backward-error and forward-error estimates culminating in (A.11) and then recovers (3.8).",
+      "translation_evidence": "LocalDef024 and execution.forwardAnalysis assume, for every inverse pair, the decomposition, all four first-order component bounds, and an O(eta^2) normalized remainder.",
+      "impact": "The main forward-error result is already encoded in the principal hypothesis and is merely recombined in the conclusion."
+    },
+    {
+      "severity": "critical",
+      "category": "assumed-spectral-witness",
+      "paper_evidence": "Theorem 3.1 and Appendix A derive existence of a suitable k from the increasing full-rank basis and the MGS result.",
+      "translation_evidence": "The witness is the stored keyDimension, and the run assumes eventual defect at most 7/16 together with inequalities that directly force the two 4/3 spectral bounds.",
+      "impact": "The existential achievement of a well-conditioned computed basis is replaced by a predetermined, already-certified dimension."
     },
     {
       "severity": "major",
-      "category": "binders and quantifiers",
-      "paper_evidence": "The theorem binds a nonsingular linear system, preconditioners, an increasing full-rank basis family, computed objects, and an existentially selected k followed by arbitrary nonsingular M_R.",
-      "translation_evidence": "Only arbitrary scalars and four Fin n-indexed vectors are universally quantified.",
-      "impact": "Witness dependence, matrix dimensions, rank conditions, and preconditioner scope cannot be recovered."
+      "category": "quantifier-and-domain-change",
+      "paper_evidence": "The paper selects one static k before universally quantifying nonsingular MR.",
+      "translation_evidence": "An execution containing k0 and certificates for every MR is quantified first, while all numerical quantities vary over an arbitrary filtered index type.",
+      "impact": "Neither the witness dependence nor the theorem's domain agrees with the paper."
     },
     {
       "severity": "major",
-      "category": "algorithm and numerical model",
-      "paper_evidence": "Equations (3.2)-(3.6) and Algorithm 2 specify four computation modules, MGS/Givens behavior, perturbation models, and smallness assumptions.",
-      "translation_evidence": "The vector names have no formal computational meaning, and ug is just another scalar norm bound.",
-      "impact": "The claim is detached from GMRES and floating-point execution."
+      "category": "higher-order-reformulation",
+      "paper_evidence": "The less-than-or-approximately notation only records that unspecified negligible second-order terms were dropped.",
+      "translation_evidence": "The final relation is an exact eventual inequality with an explicitly quantified MR-dependent remainder satisfying filter-based Big-O of eta squared.",
+      "impact": "The translation asserts asymptotic information and a remainder structure not established by the source."
     },
     {
       "severity": "major",
-      "category": "norm and error semantics",
-      "paper_evidence": "The paper mixes Frobenius and vector 2-norm perturbation models and concludes a normalized forward-error bound.",
-      "translation_evidence": "All four sources and the conclusion use an unnormalized Euclidean vector norm.",
-      "impact": "Matrix-product error and forward error are replaced by different mathematical quantities."
+      "category": "algorithm-and-floating-point-linkage",
+      "paper_evidence": "The result is for Modular GMRES with the MGS, Givens-rotation, and triangular-solve least-squares implementation under the standard floating-point model.",
+      "translation_evidence": "The run stores real perturbation equations and minimization certificates but omits the specified floating-point operations and assumes the resulting analysis certificates.",
+      "impact": "The formal proposition does not establish the paper's result from the stated algorithmic numerical model."
     },
     {
       "severity": "major",
-      "category": "coefficients and constants",
-      "paper_evidence": "Alpha, beta, and lambda have explicit matrix-dependent formulas, and the final envelope includes c(n,k), kappa(M_L^-1 A M_R^-1), and the 4/3 basis constants.",
-      "translation_evidence": "The coefficients are arbitrary nonnegative reals; only their four-term placement is retained.",
-      "impact": "The scaling and conditioning content of equation (3.8) is lost."
+      "category": "condition-number-interpretation",
+      "paper_evidence": "The paper intentionally leaves unqualified kappa ambiguous among several normwise condition quantities.",
+      "translation_evidence": "The translation fixes every square condition factor to a Frobenius-norm inverse product.",
+      "impact": "The exact norm interpretation cannot be confirmed from the paper and requires adjudication, although this ambiguity does not repair the other mismatches."
     },
     {
-      "severity": "major",
-      "category": "higher-order treatment",
-      "paper_evidence": "Equation (3.8) is a first-order approximate inequality obtained after dropping second-order terms.",
-      "translation_evidence": "The conclusion is an exact inequality with no omitted-term qualification.",
-      "impact": "The translated relation has a different formal strength and justification."
-    },
-    {
-      "severity": "note",
-      "category": "preserved fragment",
-      "paper_evidence": "The paper defines xi in the order alpha epsilon_c, beta epsilon_b, beta u_g, lambda epsilon_x.",
-      "translation_evidence": "The scalar bound preserves the same four terms and correctly shares beta between rhsError and gmresError.",
-      "impact": "The coefficient ordering is faithful, but this isolated fragment is insufficient to represent the source result."
+      "severity": "minor",
+      "category": "polynomial-factor",
+      "paper_evidence": "The paper describes c(n,k) as an unspecified generic polynomial of low degree.",
+      "translation_evidence": "The run stores one polynomial with nonnegative coefficients and unrestricted natural degrees.",
+      "impact": "High-degree and zero polynomial descriptors are admitted, and a generic analysis constant is turned into fixed execution data."
     }
   ],
-  "rationale": "The translation preserves the displayed four-term scalar pattern for xi but turns the source theorem into a standalone Euclidean triangle inequality. It omits the linear system, preconditioners, basis family, existential iteration, computed quantities, perturbation models, smallness assumptions, coefficient definitions, mixed norm semantics, basis constants, outer condition-number factor, normalized forward-error conclusion, and first-order qualification. Because it also universally quantifies unrelated arbitrary vectors, it is not merely a weakened version under matching binders; it states a different generic fact."
+  "rationale": "The translation retains the visible shape of (3.7)-(3.8), the normalized forward-error notion, and the alpha, beta, lambda decomposition. It nevertheless changes the statement fundamentally: k is supplied rather than derived, the spectral result and forward-analysis estimates are packed into the execution hypotheses, fixed floating-point reasoning is replaced by filter asymptotics, and the paper's informal suppression of second-order terms becomes an exact Big-O remainder assertion. Consequently neither implication holds and the result is not-faithful-different. Adjudication is requested for the unresolved interpretation of the paper's unqualified condition numbers, not for the overall rejection."
 }
