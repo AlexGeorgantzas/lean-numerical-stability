@@ -3,191 +3,177 @@
   "role": "roundtrip-judge",
   "task_id": "P10-T1",
   "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
-  "blind_translation_sha256": "2149442f1888f0661cb4c9c5de8e033b66574adbd96375f7301a639466bcbd73",
+  "blind_translation_sha256": "0f505b3a7f62e5637f8067430d911047d5b87c0739f5142482ff25dd9ebd0499",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The supplied published journal version identifies Eq. (1) on PDF page 2, printed page 60, and Eq. (8) in section 3.1 on PDF page 8, printed page 66.",
-      "translation_evidence": "The translation addresses n-by-n matrix multiplication, mu(n), epsilon, inherited left and right errors, and the three scalar terms displayed in Eq. (8).",
-      "reasoning": "The selected paper passage and surrounding stable-multiplication and triangular-inversion context are the correct source for the intended inherited-right contribution."
+      "paper_evidence": "PDF page 2, printed page 60, gives the stable multiplication model in equation (1); PDF page 8, printed page 66, gives equation (8) in recursive triangular inversion.",
+      "translation_evidence": "The translation concerns n-by-n multiplication, a local multiplication-error bound, inherited operand perturbations, and the right-operand cross term.",
+      "reasoning": "The cited version and passages are the correct source for the multiplication model and the inherited-error term under review."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "Eq. (8) concerns matrices A and B, their product C, inherited errors err(A,n) and err(B,n), total error err(C,n), epsilon, and mu(n), under the square n-by-n model inherited from Eq. (1).",
-      "translation_evidence": "The translation instead binds seven real matrices A, B, DeltaA, DeltaB, P, E, and H, several auxiliary constants, and bounds e_L and e_R, but binds no quantity representing err(C,n).",
-      "reasoning": "Square dimensions are preserved, but the binder structure introduces a particular perturbation decomposition and omits the total product-error quantity that is essential to the paper's conclusion."
+      "paper_evidence": "Equation (1) binds n-by-n operands A and B, exact product C, computed result Ccomp, epsilon, and mu(n); equation (8) uses scalar errors err(A,n), err(B,n), and err(C,n).",
+      "translation_evidence": "The translation universally binds seven real n-by-n matrices X, Y, dX, dY, C, E, and H, scalar bounds a and b, an arbitrary norm package, and an arbitrary nonnegative function mu.",
+      "reasoning": "The scalar inherited-error quantities are replaced by explicit perturbation matrices and bounds, several new matrices are introduced, and the domain is fixed to real square matrices. This is not the same binder and type signature."
     },
     {
       "id": "S03",
-      "status": "pass",
-      "paper_evidence": "The paper introduces Eq. (8) generically whenever a product C = AB is computed from operands carrying inherited errors; it prints no more specific formal quantifier order.",
-      "translation_evidence": "The proposition universally quantifies over n and every run containing all data and proofs, with no existential witnesses in the conclusion.",
-      "reasoning": "Universal quantification over certified data is compatible with the paper's reusable-rule presentation. Problems caused by the run restrictions and trivial conclusion are assessed separately."
+      "status": "unclear",
+      "paper_evidence": "The paper describes a stable multiplication algorithm and computations with inherited errors but does not give equation (8) as a fully quantified formal proposition.",
+      "translation_evidence": "The proposition quantifies over every n and every packaged run satisfying its fields, asserts no run exists, and permits arbitrary norms, data, and pointwise-nonnegative mu.",
+      "reasoning": "The source does not specify enough formal quantifier structure to determine whether universal run packaging, arbitrary mu, and the absence of an existence or algorithm witness preserve the intended scope."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The relevant hypotheses are stable normwise multiplication, inherited errors in both operands, and retention of first-order terms.",
-      "translation_evidence": "The run assumes a full norm structure, positivity and global polynomial bounds, an exact identity P = (A + DeltaA)(B + DeltaB) + E + H, perturbation bounds, and an explicit quadratic bound on H.",
-      "reasoning": "Several added hypotheses select an exact perturbation and remainder model not stated by Eq. (8), while no hypothesis or definition identifies the displayed budget with total computed-product error."
+      "paper_evidence": "The hypotheses include a stable multiplication primitive, machine epsilon, a low-degree polynomial mu, compatible products, and an explicitly first-order treatment of inherited operand errors.",
+      "translation_evidence": "The hypotheses instead require positivity, norm axioms, an exact perturbation decomposition, and component norm bounds; mu is only nonnegative, and H and the perturbations have no asymptotic constraints.",
+      "reasoning": "Essential numerical hypotheses are absent, while a particular exact perturbation model and unrestricted remainder are added."
     },
     {
       "id": "S05",
       "status": "fail",
-      "paper_evidence": "Eq. (8) gives the complete first-order formula err(C,n) = mu(n)epsilon||A||||B|| + ||A||err(B,n) + err(A,n)||B||, with the middle term identified as one additive contribution.",
-      "translation_evidence": "The conclusions are only N(A DeltaB) <= N(A)e_R and an expression equal to itself after unfolding S.",
-      "reasoning": "The translation does not conclude that the three-term scalar is equal to, approximates, or bounds total first-order product error. Merely placing the inherited-right scalar inside the definition of S does not preserve its paper-level role."
+      "paper_evidence": "Equation (8) gives the complete scalar first-order product error as the sum of fresh multiplication error, right-operand inherited error, and left-operand inherited error.",
+      "translation_evidence": "The conclusions are an exact matrix residual identity and only the component inequality N(X*dY) <= N(X)b.",
+      "reasoning": "Although the identity exposes three matrix components and further inequalities can be derived from the hypotheses, the proposition does not state the complete err(C,n) formula or a total normwise product-error bound."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The left side of Eq. (8), err(C,n), denotes absolute error in the computed product, while its right side decomposes that error into three sources.",
-      "translation_evidence": "LocalDef006 defines S directly as T + (R + L), and LocalDef002 concludes S = T + (R + L), which unfolds to reflexive equality.",
-      "reasoning": "The dependency ledger correctly unfolds the formal operators, but the definition of S supplies no semantic connection to P, AB, N(P - AB), or any total-error quantity. Definitional expansion cannot replace that connection."
+      "status": "pass",
+      "paper_evidence": "The relevant operations are ordinary matrix addition, multiplication, subtraction, scalar arithmetic, and matrix-norm evaluation.",
+      "translation_evidence": "The dependency ledger unfolds all local projections, standard finite-sum matrix multiplication, pointwise operations, scalar multiplication, norm axioms, and residual parenthesization.",
+      "reasoning": "The operators and imported definitions occurring in the translated proposition are fully and coherently interpreted."
     },
     {
       "id": "S07",
-      "status": "unclear",
-      "paper_evidence": "Eq. (1) explicitly distinguishes exact C from computed Ccomp, but Eq. (8) does not separately denote exact and computed versions of A and B.",
-      "translation_evidence": "The translation declares A and B exact, A + DeltaA and B + DeltaB perturbed, and P computed, with additional E and H terms.",
-      "reasoning": "The translation distinguishes its quantities rather than conflating them, but the paper does not determine this particular exact-versus-perturbed representation or sign convention. The absence of any conclusion involving P - AB also prevents confirmation of the intended mapping."
+      "status": "pass",
+      "paper_evidence": "Equation (1) distinguishes exact C = A*B from Ccomp; equation (8) tracks errors inherited by its operands without separate approximation symbols.",
+      "translation_evidence": "X and Y are distinguished from dX and dY, C is the computed result, X*Y is the exact product expression, and E and H are separately named error terms.",
+      "reasoning": "The translation does not conflate exact operands, perturbations, the computed product, local error, or remainder, although its explicit perturbation model is additional structure."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Eq. (8) is applied in recursive triangular inversion to n/2-by-n/2 blocks, with the selected execution order (T11^-1 T12)T22^-1.",
-      "translation_evidence": "The run contains only a generic matrix product and no triangular matrices, inverses, block recursion, n/2 application, or multiplication parenthesization.",
-      "reasoning": "The generic amplification inequality is detached from the paper's recursive inversion algorithm and its stated execution order."
+      "paper_evidence": "Equation (8) is applied systematically to recursive triangular inversion, including the selected order (T11^(-1)*T12)*T22^(-1).",
+      "translation_evidence": "The proposition contains no triangular matrix, inversion, recursive block structure, multiplication evaluation order, or execution model.",
+      "reasoning": "The translated statement is detached from the paper's algorithmic application and execution order."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "The paper uses an unspecified absolute normwise error and permits changes of finite-dimensional norm; Eq. (8) writes the amplification coefficients as one.",
-      "translation_evidence": "N is an abstract, unsquared, real-valued matrix norm with submultiplicativity N(XY) <= N(X)N(Y), and no named spectral, Frobenius, or entrywise norm is imposed.",
-      "reasoning": "The translation preserves normwise rather than componentwise semantics and makes the compatibility needed for the displayed unit coefficients explicit."
+      "paper_evidence": "The paper deliberately leaves the matrix norm unspecified, uses an unsquared normwise formulation, and relies on multiplicative norm amplification.",
+      "translation_evidence": "N is an arbitrary unsquared matrix norm satisfying the usual norm axioms and submultiplicativity.",
+      "reasoning": "Using an abstract submultiplicative matrix norm is compatible with the source's unspecified normwise convention and the amplification step."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "Eq. (8) has unit coefficients, the orientation ||A||err(B,n), the same size n throughout, and only the asymptotic condition mu(n) = O(n^c); its immediate application uses n/2.",
-      "translation_evidence": "The three scalar terms have the correct unit coefficients and orientation, but mu(k) <= C k^d is required for every natural k, d is natural, c_H is added, and no n/2 recursive indexing appears.",
-      "reasoning": "The central coefficients and orientation match, but the global polynomial condition is stronger than the stated asymptotic condition and the algorithmically relevant size substitution is absent."
+      "paper_evidence": "The paper requires mu(n) = O(n^c) for some constant c and uses coefficient one in the indexed term ||A|| err(B,n).",
+      "translation_evidence": "The coefficient-one expression N(X)b and mu(n) are retained, but mu may be any pointwise-nonnegative function and b has no explicit dependence on n.",
+      "reasoning": "The polynomial dependence of mu and the source's indexed inherited-error quantity are not preserved."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The paper identifies epsilon as machine epsilon and the leading term as fresh matrix-multiplication roundoff; it does not specify rounding mode or exceptional-value behavior.",
-      "translation_evidence": "Epsilon is only an arbitrary positive real, E is postulated to satisfy a norm bound, and no floating-point operation, rounding rule, or exceptional-value model is represented.",
-      "reasoning": "Although both sources omit detailed exceptional-value assumptions, the formal conclusion is independent of the assumed computed product and local roundoff matrix, so it does not retain the paper's numerical execution model."
+      "paper_evidence": "Epsilon is machine epsilon bounding roundoff, and the fresh term comes from a finite-precision matrix multiplication algorithm; no exceptional-value policy is stated.",
+      "translation_evidence": "Epsilon is merely an arbitrary positive real, all matrix arithmetic is exact over the reals, and no rounding operation or floating-point algorithm is represented.",
+      "reasoning": "Omitting exceptional-value assumptions agrees with the paper, but the central machine-epsilon and rounded-computation semantics are reduced to an assumed real inequality."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "Eq. (8) uses equality as first-order error bookkeeping and thereby relates total product error to all three additive contributions, even though its interpretation as realized equality versus an error-bound definition is not formalized.",
-      "translation_evidence": "The only substantive relation is the component inequality N(A DeltaB) <= N(A)e_R; the apparent complete-budget equality is definitionally reflexive.",
-      "reasoning": "Neither possible substantive reading of Eq. (8), total-error equality or total-error bound, is obtained from a tautology defining S."
+      "paper_evidence": "Equation (1) is a norm inequality with an O(epsilon^2) term, while equation (8) is a first-order scalar error-accounting equality.",
+      "translation_evidence": "The proposition asserts an exact matrix identity after subtracting dX*dY and H, together with one componentwise norm inequality.",
+      "reasoning": "An exact residual identity and isolated inequality do not have the same relation or logical strength as the paper's full first-order scalar error formula."
     },
     {
       "id": "S13",
       "status": "fail",
-      "paper_evidence": "The paper analyzes absolute normwise forward error in the computed product, combining fresh roundoff and inherited errors.",
-      "translation_evidence": "The proposition bounds only the norm of A DeltaB and makes no assertion about P - AB, total forward error, backward error, or stability.",
-      "reasoning": "A bound on one perturbation-expansion term is substituted for the complete forward-error propagation statement."
+      "paper_evidence": "The paper analyzes absolute normwise forward error in the computed matrix product.",
+      "translation_evidence": "The proposition concerns an exact matrix residual and the norm of one cross term, without defining or bounding the total forward error err(C,n).",
+      "reasoning": "A residual decomposition and component amplification bound have been substituted for the paper's complete absolute forward-error quantity."
     },
     {
       "id": "S14",
       "status": "fail",
-      "paper_evidence": "Eq. (1) explicitly includes O(epsilon^2), whereas Eq. (8) prints no remainder and is introduced only as a first-order analysis.",
-      "translation_evidence": "The run assumes an exact decomposition containing H with N(H) <= c_H epsilon^2, while the conclusion neither uses H nor states that S is the retained first-order part of total error.",
-      "reasoning": "The added explicit remainder model is not justified by Eq. (8), and it does not establish the required truncation because the perturbation cross term and total error are never related to the budget."
+      "paper_evidence": "Equation (1) explicitly retains O(epsilon^2), whereas equation (8) suppresses higher-order interactions as part of a first-order analysis.",
+      "translation_evidence": "The product dX*dY and a matrix H are subtracted exactly, but neither is bounded or related asymptotically to epsilon, and dX and dY are not required to be first order.",
+      "reasoning": "Naming and removing terms does not establish that they are higher order, so the translation cannot recover the paper's first-order approximation."
     },
     {
       "id": "S15",
       "status": "unclear",
-      "paper_evidence": "The cited model supports square n-by-n matrices but does not specify the scalar field in the supplied passage; the recursive application concerns positive block sizes.",
-      "translation_evidence": "All matrices are specifically real n-by-n matrices and constructed runs require 0 < n.",
-      "reasoning": "The square-dimensional specialization is supported, but the evidence does not resolve whether restriction to real matrices preserves the paper's intended domain."
+      "paper_evidence": "Equation (1) concerns square n-by-n multiplication and the recursive application uses square blocks, but equation (8) itself only requires compatible products and the cited passage does not uniquely fix the scalar field.",
+      "translation_evidence": "All matrices are real n-by-n matrices and n must be positive.",
+      "reasoning": "The square positive-dimensional specialization fits the recursive application, but the evidence does not determine whether restricting the generic rule to real square matrices preserves the intended full domain."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "Eq. (8) is a substantive propagation rule for the total error of a computed product.",
-      "translation_evidence": "For positive n the run assumptions can be satisfied, but the first conclusion follows immediately from assumed submultiplicativity and N(DeltaB) <= e_R, the second is reflexive, most run fields are unused, and n = 0 has no runs.",
-      "reasoning": "The proposition is satisfiable but succeeds for an unintended trivial reason and is vacuous at the excluded zero dimension; it never tests the substantive product-error model."
+      "paper_evidence": "The source concerns outputs of stable multiplication and their propagation through an actual recursive inversion computation.",
+      "translation_evidence": "No admissible run is asserted to exist; n = 0 is vacuous, and for n > 0 the identity follows algebraically from the exact decomposition while the inequality follows directly from submultiplicativity and N(dY) <= b.",
+      "reasoning": "Runs are satisfiable in simple cases, but the theorem's conclusions hold independently of any floating-point algorithm and therefore do not establish the substantive numerical claim."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The translation can hold while total computed-product error is unconstrained: neither S nor either conclusion is linked to err(C,n), P - AB, or a bound on that difference. Therefore the complete Eq. (8) propagation claim cannot be recovered."
+      "reasoning": "The translation does not establish a stable multiplication algorithm, polynomial growth of mu, a total normwise err(C,n) formula, or that the removed terms are higher order. Its component identity and bound therefore do not entail the paper result."
     },
     "paper_implies_translation": {
-      "verdict": "yes",
-      "reasoning": "Under the translation's explicit perturbation and submultiplicative-norm assumptions, the paper's inherited-right amplification is consistent with N(A DeltaB) <= N(A)e_R. The other conjunct follows merely from defining S as the complete three-term expression, so the paper's substantive result is more than sufficient for these weaker conclusions."
+      "verdict": "no",
+      "reasoning": "The paper's first-order scalar bookkeeping does not assert the translation's universally packaged exact perturbation decomposition, arbitrary remainder, or exact matrix residual identity. Those require an additional formal model not supplied by equation (8)."
     }
   },
-  "classification": "not-faithful-weaker",
+  "classification": "not-faithful-different",
   "accepted": false,
   "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "missing-total-error-linkage",
-      "paper_evidence": "Eq. (8) identifies ||A||err(B,n) as one summand of the total first-order error err(C,n).",
-      "translation_evidence": "S is defined as the sum of three scalars, but no proposition identifies or bounds total error by S.",
-      "impact": "The inherited-right term is present only syntactically. A definitionally expanded identity is not enough to preserve its status as an additive contribution to total first-order error."
-    },
-    {
-      "severity": "critical",
-      "category": "conclusion-weakened-to-tautology",
-      "paper_evidence": "The displayed equation relates an error quantity to three error contributions.",
-      "translation_evidence": "The complete-budget conjunct unfolds to x = x.",
-      "impact": "The principal paper conclusion is discarded, so translation-implies-paper fails."
+      "category": "conclusion-completeness-and-error-notion",
+      "paper_evidence": "Equation (8) states the complete absolute normwise product-error rule with all three additive contributions.",
+      "translation_evidence": "The target concludes an exact residual identity and a bound only for X*dY.",
+      "impact": "The translated proposition does not state the paper's total first-order error result."
     },
     {
       "severity": "major",
-      "category": "error-notion",
-      "paper_evidence": "The source concerns absolute normwise forward error of a computed matrix product.",
-      "translation_evidence": "Only N(A DeltaB) is bounded; no norm of P - AB or equivalent total-error expression occurs.",
-      "impact": "A single perturbation component replaces the forward-error statement."
+      "category": "floating-point-and-algorithm-linkage",
+      "paper_evidence": "The result assumes stable finite-precision multiplication and is used in a specific recursive triangular-inversion evaluation order.",
+      "translation_evidence": "The target is exact real-matrix algebra over arbitrary run data and contains no multiplication algorithm, rounding operation, recursion, or evaluation order.",
+      "impact": "The theorem can hold without representing any execution covered by the paper."
     },
     {
       "severity": "major",
-      "category": "algorithm-linkage",
-      "paper_evidence": "The rule is used for recursively inverted n/2 blocks with the product ordered as (T11^-1 T12)T22^-1.",
-      "translation_evidence": "No inversion, triangular block, recursion, block size, or execution order is represented.",
-      "impact": "The formal proposition does not retain the surrounding algorithmic application requested by the source contract."
+      "category": "higher-order-treatment",
+      "paper_evidence": "The source distinguishes an O(epsilon^2) remainder from the first-order equation.",
+      "translation_evidence": "H and dX*dY are removed exactly but have no size or asymptotic relationship to epsilon.",
+      "impact": "The exact residual cannot be identified with the paper's first-order error unless additional bounds are supplied."
     },
     {
       "severity": "major",
-      "category": "higher-order-model",
-      "paper_evidence": "Eq. (8) is first order and prints no explicit remainder, while only Eq. (1) displays O(epsilon^2).",
-      "translation_evidence": "An exact decomposition with a separately bounded H is assumed but unused.",
-      "impact": "The translation chooses an unsupported remainder representation without proving that its scalar budget is the first-order error of the computed product."
-    },
-    {
-      "severity": "major",
-      "category": "triviality",
-      "paper_evidence": "The paper's formula performs substantive three-source error bookkeeping.",
-      "translation_evidence": "One conjunct follows directly from two packaged assumptions and the other is reflexive.",
-      "impact": "The theorem can be proved without using the computed-product identity, local roundoff, higher-order remainder, or most other paper-facing data."
+      "category": "constants-and-numerical-model",
+      "paper_evidence": "Mu is a low-degree polynomial and epsilon is machine epsilon.",
+      "translation_evidence": "Mu is any nonnegative function and epsilon is any positive real.",
+      "impact": "The assumptions no longer encode the stability and complexity dependence required by the source."
     },
     {
       "severity": "minor",
-      "category": "constants-and-specialization",
-      "paper_evidence": "The source states only mu(n) = O(n^c) and does not specify the scalar field in the cited passages.",
-      "translation_evidence": "The run requires a global bound mu(k) <= C k^d for all naturals and restricts matrices to real entries.",
-      "impact": "These are additional specializations whose exact source support is unresolved, though they do not repair the missing conclusion."
+      "category": "unresolved-scope-and-specialization",
+      "paper_evidence": "Equation (8) is not formally quantified and does not uniquely state a scalar field or general rectangular signature.",
+      "translation_evidence": "The target universally quantifies packaged runs of positive-dimensional real square matrices.",
+      "impact": "Independent adjudication is needed on quantifier scope and whether the real square specialization is acceptable, though these issues do not remove the larger semantic mismatches."
     },
     {
       "severity": "note",
-      "category": "source-ambiguity",
-      "paper_evidence": "Eq. (8) does not formally distinguish exact from computed operands and does not resolve whether its equality defines an error bound or states realized first-order equality.",
-      "translation_evidence": "The translation selects one exact/perturbed decomposition but concludes neither interpretation of total error.",
-      "impact": "Adjudication is requested for the operand mapping and scalar-field specialization. The central non-faithfulness remains under either reading of Eq. (8)."
+      "category": "preserved-component",
+      "paper_evidence": "The right-operand contribution has coefficient one and is amplified by the norm of the left operand.",
+      "translation_evidence": "The target proves N(X*dY) <= N(X)b under N(dY) <= b using an abstract submultiplicative norm.",
+      "impact": "This correctly represents the isolated amplification mechanism but is insufficient to recover the complete paper result."
     }
   ],
-  "rationale": "The selected inherited-right orientation is represented correctly by N(A DeltaB) <= N(A)e_R, and all three scalar forms appear. However, the complete scalar identity is true only because S is defined as that expression. Nothing states that S equals, approximates, or bounds the total first-order error of P relative to AB. Consequently the translation is a weak component lemma plus a tautology, not Eq. (8)'s complete propagation result. The paper implies these weaker conclusions, but the translation does not imply the paper. Adjudication remains appropriate for source-level exact/computed and real-field ambiguities, neither of which can restore the missing total-error linkage."
+  "rationale": "The translation preserves the abstract norm semantics, exact-versus-perturbed distinctions, coefficient-one right-operand amplification, and additive matrix expansion. It nevertheless replaces the paper's algorithm-linked first-order absolute forward-error formula with a conditional exact algebraic identity and one component bound. It omits the total err(C,n) conclusion, polynomial mu condition, machine-epsilon semantics, recursive algorithm linkage, and any control showing that H and dX*dY are higher order. The result is therefore semantically different rather than equivalent or a faithful strengthening. Adjudication is requested for the source's under-specified quantifier scope and the real square specialization."
 }

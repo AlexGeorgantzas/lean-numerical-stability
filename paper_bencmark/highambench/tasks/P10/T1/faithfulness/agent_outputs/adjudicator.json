@@ -3,105 +3,74 @@
   "role": "adjudicator",
   "task_id": "P10-T1",
   "trigger": [
+    "judge classifications differ",
     "round-trip judge requested adjudication",
-    "round-trip S07 is unclear",
+    "round-trip S03 is unclear",
     "round-trip S15 is unclear"
   ],
   "resolved_items": [
     {
-      "item": "round-trip judge requested adjudication",
-      "resolution": "The target is not-faithful-weaker. Its inherited-right inequality is correctly oriented, mathematically substantive, and nonvacuous, but the asserted additive position is only a definitional expansion of an unconnected scalar budget. The target therefore does not preserve the term's role as a contribution to total first-order product error.",
-      "primary_evidence": "PDF p. 8, printed p. 66, Eq. (8) identifies ||A||err(B,n) as a summand of err(C,n). D002 asserts only norm(A*DeltaB) <= ||A||e_R and D006 = D010 + (D009 + D007). D006 is defined as that same three-term expression. Neither D002 nor the target mentions p10FirstOrderProductError or norm(computedProduct - exactLeft*exactRight)."
+      "item": "judge classifications differ",
+      "resolution": "The declaration is faithful-equivalent and accepted for the selected P10-T1 subclaim. The direct judgment used the correct scope; the round-trip judgment compared the declaration against the broader stable-multiplication definition, the complete algorithmic application, and the full higher-order result rather than the specifically located inherited-right contribution and its additive position.",
+      "primary_evidence": "Printed page 66, equation (8), explicitly places ||A|| err(B,n) between the fresh multiplication term and err(A,n)||B||. The declaration's first conjunct places exactLeft*rightPerturbation between the local and inherited-left matrices, while its second conjunct bounds its norm by ||exactLeft|| times rightInheritedError. Printed page 60 supplies broader stability conditions, but the source locator selects equation (8)'s middle contribution rather than the complete stable-algorithm theorem."
     },
     {
-      "item": "round-trip S07 is unclear",
-      "resolution": "Resolve S07 as an acceptable explicit interpretation, with a non-uniqueness caveat. Modeling computed operands as exactLeft + leftPerturbation and exactRight + rightPerturbation, with inherited-error scalars bounding the perturbation norms, is a conventional formalization of the paper's inherited errors. The selected matrix term exactLeft*rightPerturbation has the correct first-order orientation. This does not repair the missing total-error conclusion.",
-      "primary_evidence": "PDF p. 2, printed p. 60, Eq. (1) distinguishes an exact product from its computed result. PDF p. 8, printed p. 66, says A and B carry inherited errors without introducing separate exact and perturbed symbols. D005 explicitly supplies exact operands, perturbations, their norm bounds, and a computed-product equation; D008 defines the inherited-right matrix term as exactLeft*rightPerturbation."
+      "item": "round-trip judge requested adjudication",
+      "resolution": "Adjudication resolves the request in favor of acceptance. Missing recursion, a globally fixed multiplication algorithm, polynomial growth of mu, and an asymptotic remainder bound prevent this declaration from representing the paper's broader stability and triangular-inversion results, but those results are separable from the selected one-product inherited-right rule.",
+      "primary_evidence": "On printed page 66 the authors first state equation (8) as a generic fact about one product C=A*B with inherited operand errors, and only afterward say that they apply it systematically to recursive triangular inversion and choose a multiplication order. The target models one such product and retains the three first-order contributions; it does not purport to state the subsequent recurrences."
+    },
+    {
+      "item": "round-trip S03 is unclear",
+      "resolution": "S03 resolves to pass for the selected subclaim. Universal quantification over n and over every run satisfying the local product model is the natural formal scope of the paper's generic conditional rule. All operands, perturbations, bounds, norm data, epsilon, and mu remain dependent on the run and hence on n; no witness is moved outside its dependencies. Neither equation (8) nor the selected subclaim asserts existence of a stable algorithm.",
+      "primary_evidence": "Printed page 66 says that when computing a product whose operands have inherited errors, 'we may write' equation (8), expressing a generic conditional application rather than an existence theorem. Lean quantifies as forall n and run:P10FirstOrderProductRun n. The scalar rightInheritedError is a field of that n-indexed run, so its dependence on n is implicit rather than lost. Nonzero runs exist, for example at n=1 with the absolute-value norm and nonzero exact-left and right-perturbation matrices."
     },
     {
       "item": "round-trip S15 is unclear",
-      "resolution": "Resolve S15 as acceptable specialization. Square n-by-n matrices are directly supported. Restricting their entries to Real is at least a valid explicit specialization of the matrix claim, even if the cited passage does not settle the paper's maximal scalar domain. This reduced applicability is not genuine theorem strength.",
-      "primary_evidence": "PDF p. 2, printed p. 60, Eq. (1) states the multiplication model for n-by-n square matrices, and the immediate Eq. (8) application uses square recursive blocks. D019 is Matrix (Fin n) (Fin n) Real and D020 is ordinary finite matrix multiplication."
-    },
-    {
-      "item": "S02 binder correspondence",
-      "resolution": "The extra exact operands, perturbations, and error matrices are reasonable explicit binders for the generic component rule. The material binder-level omission is that no quantity occurring in the target represents or constrains err(C,n); computedProduct is packaged in the run but absent from both conclusions.",
-      "primary_evidence": "Eq. (8) has err(C,n) on its left side. D005 packages computedProduct and error data, while D002's two conclusions mention only exactLeft*rightPerturbation and the scalar definitions D006-D010."
-    },
-    {
-      "item": "S03 quantification and run packaging",
-      "resolution": "Universal quantification over certified product runs is compatible with Eq. (8)'s generic reusable-rule presentation. A uniform recursive algorithm or shared run provenance is not required for this isolated T1 component. Additional run premises restrict applicability and must not be counted as strength.",
-      "primary_evidence": "PDF p. 8, printed p. 66, introduces Eq. (8) generically for a product C=A*B whose operands have inherited errors, before applying it to recursive triangular inversion. The target universally quantifies over every D001 run."
-    },
-    {
-      "item": "S06 dependency semantics and budget identity",
-      "resolution": "The operators and dependencies are semantically transparent, but their unfolding confirms the central defect: the second conjunct is reflexive rather than an error estimate.",
-      "primary_evidence": "D006 expands to mu(n)epsilon||A||||B|| + (||A||e_R + e_L||B||); D010, D009, and D007 expand to those same three terms with identical parenthesization. Thus D002's equality unfolds to x = x."
-    },
-    {
-      "item": "S08 algorithm linkage",
-      "resolution": "Absence of triangular blocks, inversion, recursion, and the n/2 parenthesization is not fatal for P10-T1. Eq. (8) first states a generic product-error rule, and this task selects its inherited-right component. The rejection instead rests on failure to connect that generic component to total first-order product error.",
-      "primary_evidence": "PDF p. 8, printed p. 66, states Eq. (8) for a generic product before the following paragraph specializes it to recursive triangular inversion. D001-D010 model a generic product with inherited operand perturbations."
-    },
-    {
-      "item": "S10 constants and indexing",
-      "resolution": "The selected term's coefficient, orientation, and size index match Eq. (8). Requiring an all-k polynomial bound on mu is stricter than the paper's asymptotic condition and narrows admissible runs; it is not a stronger conclusion. The n/2 substitution belongs to the later recursive application and is unnecessary for the generic T1 component.",
-      "primary_evidence": "Eq. (8) contains ||A||err(B,n) with coefficient one. D009 is matrixNorm(exactLeft)*rightInheritedError, and D006 uses mu(n)epsilon with the same n. D005 separately imposes the global polynomial bound."
-    },
-    {
-      "item": "DeltaA*DeltaB higher-order term",
-      "resolution": "The cross term does not affect the isolated inherited-right inequality, which concerns only exactLeft*rightPerturbation. It matters only when claiming that a complete realized product error is represented to first order or that omitted terms are O(epsilon^2). The run does not make both perturbations O(epsilon), and the target makes no complete-error claim.",
-      "primary_evidence": "D005's perturbed product contains leftPerturbation*rightPerturbation after expansion. The supplied p10FirstOrderProductError definition explicitly subtracts that cross term and higherOrderRemainder, but D002 never references this definition. D008-D009 depend only on exactLeft, rightPerturbation, and its bound."
+      "resolution": "S15 resolves to pass as an explicit real square specialization, not as a stronger theorem. It covers the square product model and the square recursive-block instance cited by the locator. It must not be advertised as proving a rectangular or complex-matrix generalization.",
+      "primary_evidence": "Printed page 60 defines stability for n-by-n square multiplication. Printed page 66 applies equation (8) to n/2-by-n/2 square blocks. Lean uses real Matrix (Fin n) (Fin n) values with n>0, which is a supported square instance. Equation (8) itself does not specify a uniquely maximal scalar field or rectangular signature, so the declaration's reduced domain is recorded as a scope limitation rather than mislabeled as additional strength."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean conclusion can hold while its three-term budget remains unrelated to total first-order product error. It therefore establishes the magnitude of one propagated perturbation term but not its paper-level status as a summand of err(C,n)."
+      "verdict": "yes",
+      "reasoning": "For the selected first-order subclaim, the Lean identity places the matrix A*dB additively between the fresh and left-inherited contributions, and the second conjunct gives ||A*dB|| <= ||A|| errB. Together with the run's local and left-perturbation bounds and the norm axioms, the complete corresponding first-order norm upper bound can also be derived. This entails equation (8)'s inherited-right contribution in the real square instance, without entailing the paper's broader algorithmic stability claims."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "Under Lean's explicit specialization, Eq. (8)'s inherited-right interpretation together with the assumed submultiplicative norm and norm(rightPerturbation) <= rightInheritedError yields the first conjunct. The second conjunct follows definitionally. Lean's extra premises only restrict the admissible cases."
+      "reasoning": "In the selected real square instance, represent inherited operand errors by perturbation matrices dA and dB and fresh multiplication error by E, collecting the cross term and suppressed effects in the explicitly removed terms. Expanding (A+dA)(B+dB) gives the Lean residual identity, while submultiplicativity and ||dB|| <= err(B,n) give ||A*dB|| <= ||A|| err(B,n). Thus the paper's selected first-order mechanism yields the declaration under its explicit run representation."
     }
   },
-  "classification": "not-faithful-weaker",
-  "accepted": false,
+  "classification": "faithful-equivalent",
+  "accepted": true,
   "remaining_uncertainties": [
-    "Equation (8)'s equals sign may denote first-order bookkeeping that defines an error bound rather than equality with a realized error. Under either reading, the target asserts no relationship between its budget and a total-error quantity.",
-    "The cited passages do not conclusively establish whether Real is the paper's full scalar domain, although real n-by-n matrices are an acceptable specialization.",
-    "The paper does not uniquely determine an exact-plus-perturbation notation or sign convention for inherited operand errors; the run's chosen convention is reasonable but not canonical."
+    "Equation (8) does not formally define err(B,n) as an attained norm rather than an upper bound. The following recurrence discussion supports the upper-bound reading used by the declaration, but the standalone notation remains informal.",
+    "The cited passages do not state a maximal scalar field or rectangular domain. Acceptance is limited to the real square instance represented by the declaration and does not establish coverage of complex or rectangular products."
   ],
   "findings": [
     {
-      "severity": "critical",
-      "category": "missing-total-error-linkage",
-      "evidence": "Eq. (8) places ||A||err(B,n) inside err(C,n), whereas D002 mentions neither p10FirstOrderProductError nor computedProduct - exactLeft*exactRight and asserts no norm bound involving either quantity.",
-      "impact": "The selected term is not formally established as a contribution to total first-order product error, so the task's required semantic role is absent."
-    },
-    {
-      "severity": "major",
-      "category": "definitional-budget-equality",
-      "evidence": "D006 is defined as exactly D010 + (D009 + D007), which is the equality asserted by D002.",
-      "impact": "The claimed additive position follows by unfolding a definition and supplies no connection to a product-error quantity."
-    },
-    {
-      "severity": "minor",
-      "category": "restricted-applicability",
-      "evidence": "D005 requires positive dimension, real square matrices, a coefficient-one consistent norm, and an all-k polynomial bound on mu.",
-      "impact": "These choices narrow the source claim's applicability and cannot support a faithful-stronger classification."
+      "severity": "note",
+      "category": "selected-subclaim-scope",
+      "evidence": "Equation (8) separately annotates ||A|| err(B,n) as amplification of the error in B, and the declaration both places A*dB in the three-term decomposition and supplies its matching norm bound.",
+      "impact": "The declaration captures the located P10-T1 claim even though it is not a complete formalization of equation (1), equation (8)'s entire numerical model, or recursive inversion."
     },
     {
       "severity": "note",
-      "category": "valid-component-bound",
-      "evidence": "D021 supplies norm(A*DeltaB) <= norm(A)norm(DeltaB), D005 supplies norm(DeltaB) <= e_R, and D009 is norm(A)e_R.",
-      "impact": "The inherited-right inequality itself is genuine and nonvacuous; rejection is due to missing error linkage, not an incorrect orientation or a vacuous theorem."
+      "category": "higher-order-scope",
+      "evidence": "Printed page 60 includes O(epsilon^2), while printed page 66 expressly calls equation (8) first order. Lean subtracts dA*dB and an unconstrained higherOrderRemainder before stating its exact identity.",
+      "impact": "The declaration cannot certify that the full computed-product remainder is O(epsilon^2), but it does not misidentify that full error with the selected first-order component."
     },
     {
       "severity": "note",
-      "category": "task-sensitive-scope",
-      "evidence": "Eq. (8) is stated generically before its recursive triangular-inversion application, and the cross term is separate from D008's exactLeft*rightPerturbation.",
-      "impact": "Neither missing triangular-block structure nor the uncontrolled cross term is an independent fatal defect for this isolated component task."
+      "category": "algorithm-linkage",
+      "evidence": "Printed page 66 states equation (8) before applying it systematically to recursive inversion. P10FirstOrderProductRun is a certificate for one product and contains no recursive triangular structure.",
+      "impact": "Absence of the later recursion is not a defect for this selected generic product subclaim; the theorem must not be cited as proving the recursive algorithm's stability."
+    },
+    {
+      "severity": "note",
+      "category": "nonvacuity",
+      "evidence": "The declaration permits n=1, the absolute-value norm, nonzero exactLeft and rightPerturbation, rightInheritedError equal to the perturbation norm, and computedProduct chosen by the required decomposition.",
+      "impact": "The right-inherited contribution can be nonzero and can attain its bound, so acceptance does not rest on vacuity or an all-zero model."
     }
   ],
-  "rationale": "The run gives a reasonable explicit perturbation interpretation, and the theorem proves the correct nonvacuous bound for propagation of the right operand's inherited error. Real square matrices and a consistent abstract norm are acceptable specializations, while the generic T1 scope does not require triangular-inversion blocks. Nevertheless, Eq. (8) gives the selected term meaning by making it one contribution to total first-order product error. In Lean, p10FirstOrderProductErrorBudget is only the three-term scalar by definition, and the target's budget equality merely unfolds that definition. No asserted relation connects the component or budget to p10FirstOrderProductError, computedProduct - exactLeft*exactRight, or its norm. The paper therefore implies the weaker Lean conclusions under the explicit interpretation, but Lean does not imply the selected paper claim."
+  "rationale": "Primary PDF evidence identifies P10-T1 as the middle first-order contribution ||A|| err(B,n) and its additive placement in equation (8). The declaration realizes that contribution as A*dB, links it to the complete three-matrix first-order expansion, and proves the corresponding coefficient-one norm amplification using an abstract submultiplicative norm. The round-trip objections concerning polynomial mu, machine-level execution, recursive inversion, total forward error, and O(epsilon^2) concern broader paper results that are separable from the selected subclaim. The exact matrix identity is not classified as a genuine stronger numerical theorem: it is a conditional algebraic realization under the run's explicit decomposition, while the real square domain is restricted applicability rather than strength. Within that correctly delimited instance, both implication directions hold and the declaration is faithful-equivalent."
 }

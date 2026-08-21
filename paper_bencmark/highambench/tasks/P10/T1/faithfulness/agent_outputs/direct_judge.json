@@ -3,518 +3,502 @@
   "role": "direct-judge",
   "task_id": "P10-T1",
   "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
-  "dossier_sha256": "135e6810027ec5423b8d1eb848842d4949a47414e52a6491d9eeb12e17f15b95",
+  "dossier_sha256": "76cc12c63b6dc5129717d867b72a9d9d0e48e3d2e02ace947ca85948259752da",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "HighamBench.P10FirstOrderProductRun",
-      "interpretation": "A dependent record type packaging a positive dimension, an abstract matrix norm, error parameters, exact and perturbed operands, a computed product, and local and higher-order error assumptions.",
-      "effect_on_target": "The theorem is conditional on an already constructed perturbation-model run rather than directly quantifying over executions of the paper's multiplication or triangular-inversion algorithms.",
-      "paper_match": "It formalizes products with inherited operand errors, but adds an exact real perturbation model and omits provenance from prior recursive computations.",
-      "status": "fail"
+      "interpretation": "A size-indexed package whose constructor stores the norm, precision parameter, error coefficient, exact operands, operand perturbations, computed product, local multiplication error, omitted remainder, inherited-error bounds, and their governing equations and inequalities.",
+      "effect_on_target": "The theorem is universally quantified over first-order product data satisfying the constructor conditions rather than over unconstrained matrices.",
+      "paper_match": "This packages the first-order multiplication situation used in equation (8), with positive dimension and real square matrices as the recursive square-block specialization.",
+      "status": "pass"
     },
     {
       "id": "D002",
       "name": "HighamBench.P10InheritedRightEquation8Term",
-      "interpretation": "The target is the conjunction of a bound on the concrete matrix term exactLeft times rightPerturbation and an equality expanding a scalar budget into local, inherited-right, and inherited-left contributions.",
-      "effect_on_target": "It verifies the orientation and bound of the right contribution and places its scalar expression in a three-term definition.",
-      "paper_match": "Equation (8) relates the complete three-term expression to err(C,n). This predicate never relates its budget to the realized total first-order product error, so the second conjunct is only a definitional expansion.",
-      "status": "fail"
+      "interpretation": "The target is a conjunction: the remainder-stripped first-order error matrix equals local error plus right-inherited and left-inherited terms, and the norm of the right-inherited term is at most the norm of the exact left operand times the right inherited-error bound.",
+      "effect_on_target": "It records both the additive position of the right-operand contribution and its coefficient-one norm amplification.",
+      "paper_match": "It matches the middle term of equation (8), ||A|| err(B,n), while retaining the surrounding fresh and left-inherited contributions.",
+      "status": "pass"
     },
     {
       "id": "D003",
       "name": "HighamBench.P10ConsistentMatrixNorm.value",
-      "interpretation": "Projection of the real-valued norm function from the abstract matrix-norm package.",
-      "effect_on_target": "It supplies all operand, perturbation, and error magnitudes in the theorem.",
-      "paper_match": "This is a suitable interpretation of the paper's unnamed norm.",
+      "interpretation": "The first projection of the norm package, evaluating a matrix to a real-valued norm.",
+      "effect_on_target": "It supplies every matrix norm appearing in the right-contribution inequality.",
+      "paper_match": "The paper intentionally leaves the matrix norm unspecified; an abstract norm evaluator is appropriate.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.P10FirstOrderProductRun.matrixNorm",
-      "interpretation": "Projection of the selected consistent matrix norm from a run.",
-      "effect_on_target": "All norm expressions in the conclusion use one common norm.",
-      "paper_match": "Equation (8) likewise uses one norm notation consistently.",
+      "name": "HighamBench.P10FirstOrderProductRun.localFirstOrderError",
+      "interpretation": "The stored matrix-valued fresh multiplication-error component.",
+      "effect_on_target": "It is the first summand in the exact first-order error decomposition.",
+      "paper_match": "It represents the fresh multiplication-roundoff contribution whose norm is bounded by mu(n) epsilon ||A|| ||B||.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HighamBench.P10FirstOrderProductRun.mk",
-      "interpretation": "The constructor requires n greater than zero, positive real epsilon, polynomially bounded nonnegative mu, an exact equation computedProduct = (A+dA)(B+dB)+local+higher, norm bounds for local and inherited errors, and a coefficient-times-epsilon-squared bound for higher.",
-      "effect_on_target": "It makes all numerical assumptions fields of the quantified run and includes the cross term dA*dB inside the exact perturbed product.",
-      "paper_match": "The source gives first-order bookkeeping, not this exact finite perturbation equation. Moreover, dA and dB are not required to be O(epsilon), so their cross term is not justified as omitted higher order.",
-      "status": "fail"
+      "name": "HighamBench.P10FirstOrderProductRun.matrixNorm",
+      "interpretation": "The stored consistent matrix norm selected for this product run.",
+      "effect_on_target": "It determines all norm evaluations and supplies submultiplicativity.",
+      "paper_match": "This preserves the paper's unspecified-norm convention while requiring the consistency needed for equation (8).",
+      "status": "pass"
     },
     {
       "id": "D006",
-      "name": "HighamBench.p10FirstOrderProductErrorBudget",
-      "interpretation": "A scalar defined to be mu(n)*epsilon*norm(A)*norm(B) + norm(A)*rightInheritedError + leftInheritedError*norm(B).",
-      "effect_on_target": "Its unfolding makes the second target conjunct true by reflexivity.",
-      "paper_match": "Its value reproduces the right-hand side of equation (8), but there is no corresponding relation to err(C,n) or to a norm of a realized first-order product error.",
-      "status": "fail"
+      "name": "HighamBench.P10FirstOrderProductRun.mk",
+      "interpretation": "The constructor requires n>0, a consistent norm, epsilon>0, nonnegative mu, exact operands A and B, perturbations dA and dB, a computed product equal to (A+dA)(B+dB)+local+remainder, a local-error norm bound, and scalar upper bounds for the perturbation norms.",
+      "effect_on_target": "These fields make the target decomposition an exact expansion and make the right-term estimate follow from submultiplicativity and ||dB||<=errB.",
+      "paper_match": "The fields faithfully expose the first-order perturbation model behind equation (8). Polynomial growth of mu and an asymptotic bound on the remainder are not encoded, so this supports the selected component result rather than a complete stability theorem.",
+      "status": "pass"
     },
     {
       "id": "D007",
-      "name": "HighamBench.p10InheritedLeftErrorContribution",
-      "interpretation": "The scalar left-inherited contribution leftInheritedError*norm(exactRight).",
-      "effect_on_target": "It is the third summand of the defined budget.",
-      "paper_match": "It has the orientation err(A,n)*norm(B) printed in equation (8).",
+      "name": "HighamBench.P10Matrix",
+      "interpretation": "The type of n-by-n matrices over the real numbers, indexed in both directions by Fin n.",
+      "effect_on_target": "It specializes every operand and error component to finite real square matrices of one common size.",
+      "paper_match": "Equation (1) concerns n-by-n square matrices, and equation (8) is applied to square recursive blocks; the real-scalar choice is an acceptable specialization.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "HighamBench.p10InheritedRightError",
-      "interpretation": "The concrete propagated matrix error exactLeft*rightPerturbation.",
-      "effect_on_target": "It links the selected scalar contribution to an actual first-order matrix term.",
-      "paper_match": "This is the standard perturbation interpretation of amplification of B's inherited error by A.",
+      "name": "HighamBench.p10FirstOrderProductError",
+      "interpretation": "The matrix (((computedProduct - A*B) - dA*dB) - remainder), namely the computed-minus-exact error after removing the perturbation-product term and the designated omitted remainder.",
+      "effect_on_target": "It isolates the linear-in-errors component for which an exact three-term matrix decomposition is asserted.",
+      "paper_match": "This is a rigorous representation of equation (8)'s first-order scope and avoids treating the displayed first-order formula as an exact identity for the full computed error.",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "HighamBench.p10InheritedRightErrorContribution",
-      "interpretation": "The scalar norm(exactLeft)*rightInheritedError.",
-      "effect_on_target": "It is both the upper bound in the first conjunct and the middle summand of the budget.",
-      "paper_match": "It exactly matches the orientation norm(A)*err(B,n) in equation (8).",
+      "name": "HighamBench.p10InheritedLeftError",
+      "interpretation": "The matrix product dA*B formed from the left operand perturbation and exact right operand.",
+      "effect_on_target": "It is the third summand of the decomposition.",
+      "paper_match": "Its norm is bounded by err(A,n)||B||, matching the final term of equation (8).",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HighamBench.p10LocalProductErrorContribution",
-      "interpretation": "The scalar mu(n)*epsilon*norm(exactLeft)*norm(exactRight).",
-      "effect_on_target": "It is the fresh multiplication-error summand in the budget.",
-      "paper_match": "It matches equation (8)'s first contribution and equation (1)'s first-order term.",
+      "name": "HighamBench.p10InheritedRightError",
+      "interpretation": "The matrix product A*dB formed from the exact left operand and right operand perturbation.",
+      "effect_on_target": "It is the selected middle summand and the matrix whose norm the theorem bounds.",
+      "paper_match": "It is precisely the linear perturbation producing ||A|| err(B,n) in equation (8).",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "HighamBench.P10ConsistentMatrixNorm",
-      "interpretation": "A type of real matrix norms whose constructor supplies norm axioms and coefficient-one submultiplicativity.",
-      "effect_on_target": "It permits the inherited-right matrix bound with coefficient one without selecting a concrete norm.",
-      "paper_match": "An abstract coefficient-one submultiplicative norm is a faithful formal interpretation of the unnamed norm used with coefficient-one amplification terms.",
+      "name": "HighamBench.p10InheritedRightErrorContribution",
+      "interpretation": "The real scalar ||A|| multiplied by the stored right inherited-error bound.",
+      "effect_on_target": "It is the right-hand side of the selected norm inequality with coefficient one.",
+      "paper_match": "It exactly matches the displayed middle contribution ||A|| err(B,n).",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "HighamBench.P10FirstOrderProductRun.epsilon",
-      "interpretation": "Projection of a positive real scalar called epsilon.",
-      "effect_on_target": "It scales the local budget term and the assumed higher-order bound but does not affect the inherited-right inequality.",
-      "paper_match": "The paper identifies epsilon as machine epsilon bounding roundoff. Lean supplies only a positive real with no machine-arithmetic or small-parameter semantics.",
-      "status": "fail"
+      "name": "HighamBench.P10ConsistentMatrixNorm",
+      "interpretation": "A size-indexed bundled real matrix norm whose constructor supplies positivity, definiteness, homogeneity, the triangle inequality, and submultiplicativity.",
+      "effect_on_target": "It permits abstract normwise reasoning and directly justifies amplification by ||A||.",
+      "paper_match": "The paper does not choose a norm but equation (8) implicitly needs a compatible submultiplicative norm.",
+      "status": "pass"
     },
     {
       "id": "D013",
-      "name": "HighamBench.P10FirstOrderProductRun.exactLeft",
-      "interpretation": "Projection of the exact left n-by-n real matrix A.",
-      "effect_on_target": "It appears in the propagated term, its scalar bound, and the local multiplication term.",
-      "paper_match": "It faithfully supplies the left operand required by equation (8).",
+      "name": "HighamBench.P10FirstOrderProductRun.computedProduct",
+      "interpretation": "The stored matrix returned by the modeled multiplication run.",
+      "effect_on_target": "It is the starting quantity in the computed-minus-exact error definition.",
+      "paper_match": "It corresponds to the computed product distinguished as Ccomp in equation (1).",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "HighamBench.P10FirstOrderProductRun.exactRight",
-      "interpretation": "Projection of the exact right n-by-n real matrix B.",
-      "effect_on_target": "Its norm appears in the local and inherited-left budget terms.",
-      "paper_match": "It faithfully supplies the right operand required by equation (8).",
+      "name": "HighamBench.P10FirstOrderProductRun.exactLeft",
+      "interpretation": "The stored exact left operand A.",
+      "effect_on_target": "It occurs in the exact product, the right-inherited matrix A*dB, and the factor ||A||.",
+      "paper_match": "This is the left operand A in equations (1) and (8).",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "HighamBench.P10FirstOrderProductRun.leftInheritedError",
-      "interpretation": "A nonnegative scalar upper bound on the norm of the left perturbation.",
-      "effect_on_target": "It supplies the err(A,n) factor in the third budget term.",
-      "paper_match": "Interpreting err(A,n) as an absolute normwise error bound is consistent with the surrounding paper text.",
+      "name": "HighamBench.P10FirstOrderProductRun.exactRight",
+      "interpretation": "The stored exact right operand B.",
+      "effect_on_target": "It occurs in the exact product and in the left-inherited matrix dA*B.",
+      "paper_match": "This is the right operand B in equations (1) and (8).",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "HighamBench.P10FirstOrderProductRun.mu",
-      "interpretation": "A nonnegative Nat-to-Real function subject to a global bound C*k^degree.",
-      "effect_on_target": "Only mu(n) enters the local contribution.",
-      "paper_match": "This is a restrictive but acceptable polynomial-growth realization of the paper's mu(n)=O(n^c); the all-k bound is stronger than the paper's asymptotic statement.",
+      "name": "HighamBench.P10FirstOrderProductRun.higherOrderRemainder",
+      "interpretation": "An unconstrained matrix component included in the computed-product decomposition and explicitly subtracted when defining the first-order error.",
+      "effect_on_target": "The theorem makes no estimate for this component and therefore concerns only the designated remainder-stripped first-order part.",
+      "paper_match": "Equation (8) is explicitly first order and omits higher-order interactions. This representation is faithful for the selected component but cannot by itself establish the O(epsilon^2) claim in equation (1).",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "HighamBench.P10FirstOrderProductRun.rightInheritedError",
-      "interpretation": "A nonnegative scalar upper bound on the norm of the right perturbation.",
-      "effect_on_target": "It supplies the err(B,n) factor in the selected contribution.",
-      "paper_match": "This matches the use of err(B,n) as an absolute normwise inherited-error bound.",
+      "name": "HighamBench.P10FirstOrderProductRun.leftPerturbation",
+      "interpretation": "The matrix perturbation dA carried by the left operand.",
+      "effect_on_target": "It generates dA*B and the removed quadratic product dA*dB.",
+      "paper_match": "It realizes the inherited error in A that equation (8) tracks by err(A,n).",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "HighamBench.P10FirstOrderProductRun.rightPerturbation",
-      "interpretation": "Projection of the matrix perturbation applied to the exact right operand.",
-      "effect_on_target": "Multiplying it by exactLeft produces the realized inherited-right first-order term.",
-      "paper_match": "It is a reasonable explicit representation of the otherwise implicit error in B.",
+      "name": "HighamBench.P10FirstOrderProductRun.rightInheritedError",
+      "interpretation": "A nonnegative real upper bound for the norm of the right perturbation.",
+      "effect_on_target": "It supplies the err(B,n) factor in ||A|| err(B,n).",
+      "paper_match": "The surrounding recurrence analysis permits err(B,n) to be used as an absolute-error bound.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "HighamBench.P10Matrix",
-      "interpretation": "The type of real n-by-n matrices indexed by Fin n in both dimensions.",
-      "effect_on_target": "It restricts every operand and error matrix to square real matrices of one dimension.",
-      "paper_match": "The cited multiplication model expressly concerns n-by-n square matrices; the real specialization remains within that scope.",
+      "name": "HighamBench.P10FirstOrderProductRun.rightPerturbation",
+      "interpretation": "The matrix perturbation dB carried by the right operand.",
+      "effect_on_target": "It generates the selected linear error matrix A*dB and the removed quadratic term dA*dB.",
+      "paper_match": "It provides an explicit matrix realization of the inherited error in B.",
       "status": "pass"
     },
     {
       "id": "D020",
       "name": "HighamBench.p10MatMul",
-      "interpretation": "Standard finite matrix multiplication using dot products over the shared Fin n index.",
-      "effect_on_target": "It defines the exact products in the perturbation model and the inherited-right matrix term.",
-      "paper_match": "It has the ordinary matrix-product semantics used by C=A*B in the paper.",
+      "interpretation": "Ordinary finite n-by-n matrix multiplication over the reals.",
+      "effect_on_target": "It defines the exact product and all linear and quadratic perturbation products.",
+      "paper_match": "It is the standard matrix product denoted by the centered dot in the paper.",
       "status": "pass"
     },
     {
       "id": "D021",
       "name": "HighamBench.P10ConsistentMatrixNorm.mk",
-      "interpretation": "The norm constructor requires nonnegativity, definiteness, absolute homogeneity, the triangle inequality, and norm(AB) <= norm(A)*norm(B).",
-      "effect_on_target": "Coefficient-one submultiplicativity and the right-perturbation bound imply the first target conjunct.",
-      "paper_match": "This is faithful to equation (8)'s coefficient-one amplification. It excludes norms needing an explicit compatibility constant, but the paper permits absorbing such norm-equivalence factors separately.",
+      "interpretation": "The norm constructor requires nonnegativity, zero only at the zero matrix, absolute homogeneity, subadditivity, and ||AB||<=||A||||B||.",
+      "effect_on_target": "The last axiom and the perturbation bound yield ||A*dB||<=||A|| errB; the triangle axiom supports the complete first-order bound.",
+      "paper_match": "These are the norm properties implicitly used by the paper's normwise amplification formula.",
       "status": "pass"
     },
     {
       "id": "D022",
       "name": "Nat",
-      "interpretation": "Natural numbers.",
-      "effect_on_target": "They index matrix dimension, mu, and polynomial degree.",
-      "paper_match": "Natural-number matrix dimensions match the paper.",
+      "interpretation": "The natural-number type used for matrix dimension and the index of mu.",
+      "effect_on_target": "It makes n a discrete finite dimension.",
+      "paper_match": "The paper's n is a matrix-size parameter.",
       "status": "pass"
     },
     {
       "id": "D023",
       "name": "And",
-      "interpretation": "Logical conjunction requiring both component propositions.",
-      "effect_on_target": "The theorem must prove both the inherited-right bound and the budget equality.",
-      "paper_match": "Requiring both is appropriate for the selected two-part scope, although the second proposition is semantically insufficient.",
+      "interpretation": "Logical conjunction requiring both the decomposition equality and right-term norm inequality.",
+      "effect_on_target": "Neither part of the selected statement can be discarded.",
+      "paper_match": "The paper requires both additive placement and magnitude amplification for the inherited-right contribution.",
       "status": "pass"
     },
     {
       "id": "D024",
       "name": "Eq",
-      "interpretation": "Exact propositional equality.",
-      "effect_on_target": "It expresses both the constructor's exact computed-product model and the target's exact budget expansion.",
-      "paper_match": "Exact equality is standard, but the target equality's operands are not err(C,n) and its complete budget; the mismatch lies in D002 and D006 rather than in equality itself.",
+      "interpretation": "Exact propositional equality at the relevant matrix type.",
+      "effect_on_target": "It states an exact identity for the explicitly remainder-stripped matrix error.",
+      "paper_match": "The identity is the algebraic expansion underlying the paper's first-order bookkeeping equality.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "HAdd.hAdd",
-      "interpretation": "Overloaded addition resolved here to real or pointwise matrix addition.",
-      "effect_on_target": "It constructs the three-term scalar budget and the exact perturbation equation.",
-      "paper_match": "Real addition faithfully represents equation (8)'s additive position.",
+      "name": "Fin",
+      "interpretation": "The finite index type containing exactly the indices below n.",
+      "effect_on_target": "It fixes each matrix to n rows and n columns.",
+      "paper_match": "It faithfully realizes finite n-by-n matrices.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "LE.le",
-      "interpretation": "The non-strict less-than-or-equal relation.",
-      "effect_on_target": "It expresses norm and parameter upper bounds.",
-      "paper_match": "A non-strict bound is appropriate for normwise error estimates and for the propagated right term.",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition, instantiated here as pointwise matrix addition or real addition.",
+      "effect_on_target": "It combines local, right-inherited, and left-inherited contributions in the displayed additive order.",
+      "paper_match": "Equation (8) combines the three contributions additively.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Real",
-      "interpretation": "Exact real numbers.",
-      "effect_on_target": "Matrix entries, norms, errors, epsilon, and coefficients all live in exact real arithmetic.",
-      "paper_match": "Real matrices form an acceptable specialization, but Real alone does not formalize floating-point execution.",
+      "name": "LE.le",
+      "interpretation": "Typeclass-dispatched non-strict order, instantiated as the usual real less-than-or-equal relation.",
+      "effect_on_target": "It makes the component claim an upper bound.",
+      "paper_match": "A norm contribution is rigorously represented by an upper bound even though equation (8) uses bookkeeping equality notation.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "Real.instAdd",
-      "interpretation": "Ordinary real addition.",
-      "effect_on_target": "It supplies scalar summation in the budget.",
-      "paper_match": "It matches the additive error bookkeeping.",
+      "name": "Matrix.add",
+      "interpretation": "Pointwise addition of matrices.",
+      "effect_on_target": "It gives matrix-level addition for perturbations and error components.",
+      "paper_match": "This is ordinary addition of matrix errors used in first-order expansion.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "Real.instLE",
-      "interpretation": "The usual order relation on real numbers.",
-      "effect_on_target": "It gives the standard meaning to all scalar and norm bounds.",
-      "paper_match": "It matches ordinary numerical inequalities.",
+      "name": "Real",
+      "interpretation": "The real-number scalar type.",
+      "effect_on_target": "All entries, norms, precision values, coefficients, and scalar error bounds are real.",
+      "paper_match": "This is an acceptable scalar specialization of the paper's matrix analysis.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "instHAdd",
-      "interpretation": "Adapter from homogeneous addition to overloaded HAdd.",
-      "effect_on_target": "It resolves scalar and matrix additions without changing their semantics.",
-      "paper_match": "It introduces no paper-level semantic discrepancy.",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary addition on real numbers.",
+      "effect_on_target": "It combines scalar norm bounds where needed.",
+      "paper_match": "It agrees with the arithmetic in equation (8).",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "Fin",
-      "interpretation": "The finite index type containing positions below n.",
-      "effect_on_target": "It supplies row, column, and summation index sets for n-by-n matrices.",
-      "paper_match": "It faithfully represents finite n-dimensional matrices.",
+      "name": "Real.instLE",
+      "interpretation": "The usual order relation on real numbers.",
+      "effect_on_target": "It interprets all nonnegativity and error-bound hypotheses and conclusions.",
+      "paper_match": "Normwise error estimates use the standard real order.",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "HMul.hMul",
-      "interpretation": "Overloaded multiplication resolved to real multiplication in scalar formulas.",
-      "effect_on_target": "It forms products of mu, epsilon, norms, and inherited-error bounds.",
-      "paper_match": "These are the ordinary scalar products printed in equation (8).",
+      "name": "instHAdd",
+      "interpretation": "The generic adapter turning an Add instance into homogeneous addition.",
+      "effect_on_target": "It resolves the addition notation to ordinary matrix or real addition.",
+      "paper_match": "It introduces no nonstandard operation.",
       "status": "pass"
     },
     {
       "id": "D033",
-      "name": "HPow.hPow",
-      "interpretation": "Overloaded exponentiation, here natural powers of reals.",
-      "effect_on_target": "It occurs in polynomial-growth and epsilon-squared assumptions.",
-      "paper_match": "Natural powers correctly express these proposed bounds, although the higher-order assumption's quantification is inadequate.",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication, instantiated as real multiplication or matrix multiplication.",
+      "effect_on_target": "It forms scalar error products and matrix products.",
+      "paper_match": "Both products have their ordinary meanings in the paper.",
       "status": "pass"
     },
     {
       "id": "D034",
-      "name": "LT.lt",
-      "interpretation": "Strict order.",
-      "effect_on_target": "It expresses positivity of n and epsilon.",
-      "paper_match": "Positive dimension and machine epsilon are consistent with the source.",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "It constructs the computed-minus-exact, quadratic-term-removed, remainder-removed error matrix.",
+      "paper_match": "It implements the forward-error comparison and first-order isolation.",
       "status": "pass"
     },
     {
       "id": "D035",
-      "name": "Matrix.add",
-      "interpretation": "Pointwise matrix addition.",
-      "effect_on_target": "It combines exact matrices with perturbations and adds local and higher-order error matrices.",
-      "paper_match": "Pointwise addition is the standard algebra for an explicit perturbation interpretation.",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-dispatched strict order.",
+      "effect_on_target": "It expresses n>0 and epsilon>0 in the run constructor.",
+      "paper_match": "Positive dimension and positive machine epsilon are compatible with the paper.",
       "status": "pass"
     },
     {
       "id": "D036",
-      "name": "Monoid.toNatPow",
-      "interpretation": "Natural-number exponentiation generated by real multiplication.",
-      "effect_on_target": "It interprets k^degree and epsilon^2.",
-      "paper_match": "The arithmetic operation itself is standard.",
+      "name": "Matrix",
+      "interpretation": "A matrix is a function from row and column indices to entries.",
+      "effect_on_target": "It gives extensional finite matrices with pointwise additive operations.",
+      "paper_match": "This is the standard formal representation of the paper's matrices.",
       "status": "pass"
     },
     {
       "id": "D037",
-      "name": "Nat.cast",
-      "interpretation": "Embedding of a natural number into the reals.",
-      "effect_on_target": "It converts the size k before taking the polynomial power.",
-      "paper_match": "This is the expected interpretation of polynomial growth in dimension.",
+      "name": "Matrix.sub",
+      "interpretation": "Pointwise subtraction of matrices.",
+      "effect_on_target": "It interprets every subtraction in the first-order error definition.",
+      "paper_match": "It matches ordinary matrix error subtraction.",
       "status": "pass"
     },
     {
       "id": "D038",
       "name": "OfNat.ofNat",
-      "interpretation": "Interpretation of numeric literals in their expected types.",
-      "effect_on_target": "It supplies zero, two, and other literals in positivity and power expressions.",
-      "paper_match": "It has no discrepant paper-level effect.",
+      "interpretation": "Generic interpretation of numeric literals.",
+      "effect_on_target": "It supplies zero in positivity and nonnegativity statements.",
+      "paper_match": "It has no paper-specific alteration and denotes ordinary zero.",
       "status": "pass"
     },
     {
       "id": "D039",
       "name": "Real.instLT",
       "interpretation": "The usual strict order on real numbers.",
-      "effect_on_target": "It gives epsilon_pos its ordinary meaning.",
-      "paper_match": "Positive epsilon is consistent with machine epsilon.",
+      "effect_on_target": "It interprets the epsilon>0 hypothesis.",
+      "paper_match": "Machine epsilon is positive in the paper's model.",
       "status": "pass"
     },
     {
       "id": "D040",
-      "name": "Real.instMonoid",
-      "interpretation": "The multiplicative monoid structure of the reals.",
-      "effect_on_target": "It supplies natural powers used in growth and remainder bounds.",
-      "paper_match": "It introduces no semantic discrepancy.",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "It forms mu(n) epsilon ||A|| ||B|| and ||A|| errB.",
+      "paper_match": "The factors and their multiplication match equations (1) and (8).",
       "status": "pass"
     },
     {
       "id": "D041",
-      "name": "Real.instMul",
-      "interpretation": "Ordinary real multiplication.",
-      "effect_on_target": "It supplies every scalar product in the three contributions.",
-      "paper_match": "It matches the coefficients and products in equation (8).",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "Through pointwise matrix subtraction it determines error-matrix differences.",
+      "paper_match": "It matches the usual computed-minus-exact convention.",
       "status": "pass"
     },
     {
       "id": "D042",
-      "name": "Real.instNatCast",
-      "interpretation": "The canonical natural-number embedding into the reals.",
-      "effect_on_target": "It supports the real polynomial bound on mu.",
-      "paper_match": "It is standard and faithful.",
+      "name": "Real.instZero",
+      "interpretation": "The real number zero.",
+      "effect_on_target": "It appears in positivity, nonnegativity, and norm-definiteness conditions.",
+      "paper_match": "It has its standard mathematical meaning.",
       "status": "pass"
     },
     {
       "id": "D043",
-      "name": "Real.instZero",
-      "interpretation": "The real number zero.",
-      "effect_on_target": "It occurs in positivity and nonnegativity assumptions.",
-      "paper_match": "It has the intended numerical meaning.",
+      "name": "Zero.toOfNat0",
+      "interpretation": "The adapter interpreting the numeral 0 from a Zero instance.",
+      "effect_on_target": "It resolves zero literals uniformly in real and matrix types.",
+      "paper_match": "It introduces no semantic difference.",
       "status": "pass"
     },
     {
       "id": "D044",
-      "name": "Zero.toOfNat0",
-      "interpretation": "The canonical interpretation of literal zero from a Zero instance.",
-      "effect_on_target": "It supplies zero for real and matrix conditions.",
-      "paper_match": "It introduces no paper-level discrepancy.",
+      "name": "instHMul",
+      "interpretation": "The generic adapter turning a Mul instance into homogeneous multiplication.",
+      "effect_on_target": "It resolves scalar products to ordinary real multiplication.",
+      "paper_match": "It preserves the ordinary products displayed by the paper.",
       "status": "pass"
     },
     {
       "id": "D045",
-      "name": "instHMul",
-      "interpretation": "Adapter from homogeneous multiplication to overloaded HMul.",
-      "effect_on_target": "It resolves real scalar multiplications.",
-      "paper_match": "It preserves ordinary multiplication semantics.",
+      "name": "instHSub",
+      "interpretation": "The generic adapter turning a Sub instance into homogeneous subtraction.",
+      "effect_on_target": "It resolves matrix-error subtraction.",
+      "paper_match": "It preserves ordinary subtraction.",
       "status": "pass"
     },
     {
       "id": "D046",
-      "name": "instHPow",
-      "interpretation": "Adapter from Pow to overloaded HPow.",
-      "effect_on_target": "It resolves real natural powers.",
-      "paper_match": "It preserves ordinary exponentiation semantics.",
+      "name": "instLTNat",
+      "interpretation": "The standard strict order on natural numbers.",
+      "effect_on_target": "It interprets the constructor requirement 0<n.",
+      "paper_match": "A positive matrix size is consistent with the source.",
       "status": "pass"
     },
     {
       "id": "D047",
-      "name": "instLTNat",
-      "interpretation": "The standard strict order on natural numbers.",
-      "effect_on_target": "It makes dimension_pos mean 0<n.",
-      "paper_match": "Positive matrix dimension is appropriate.",
+      "name": "instOfNatNat",
+      "interpretation": "The standard interpretation of a natural-number literal as itself.",
+      "effect_on_target": "It supplies the natural zero used in 0<n.",
+      "paper_match": "It introduces no semantic difference.",
       "status": "pass"
     },
     {
       "id": "D048",
-      "name": "instOfNatNat",
-      "interpretation": "Canonical natural-number literals.",
-      "effect_on_target": "It supplies dimensions, exponents, and order bounds.",
-      "paper_match": "It has no discrepant semantic effect.",
+      "name": "Fin.fintype",
+      "interpretation": "The finite enumeration of Fin n.",
+      "effect_on_target": "It makes the inner index of matrix multiplication a finite summation domain.",
+      "paper_match": "Standard n-dimensional matrix multiplication sums over exactly n indices.",
       "status": "pass"
     },
     {
       "id": "D049",
-      "name": "Fin.fintype",
-      "interpretation": "The finite enumeration of Fin n.",
-      "effect_on_target": "It permits the finite sum in matrix multiplication.",
-      "paper_match": "Finite summation over n coordinates matches standard matrix multiplication.",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "interpretation": "Matrix multiplication defined entrywise by the finite dot product sum over the shared index.",
+      "effect_on_target": "It fixes p10MatMul as ordinary algebraic matrix multiplication, including distributivity used by the decomposition.",
+      "paper_match": "It is exactly the conventional mathematical product A·B used in the paper.",
       "status": "pass"
     },
     {
       "id": "D050",
-      "name": "Matrix",
-      "interpretation": "A matrix is a function from row and column index types to entries.",
-      "effect_on_target": "With Fin n and Real it realizes exact n-by-n real matrices.",
-      "paper_match": "This is a faithful mathematical representation of the paper's matrices.",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative-monoid structure of the reals.",
+      "effect_on_target": "It supports finite dot-product sums and matrix addition.",
+      "paper_match": "It is standard real arithmetic.",
       "status": "pass"
     },
     {
       "id": "D051",
-      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
-      "interpretation": "Standard matrix multiplication defined entrywise by a finite dot product.",
-      "effect_on_target": "It determines the exact meaning of every p10MatMul expression.",
-      "paper_match": "It is the ordinary product C=A*B used by the paper.",
+      "name": "Algebra.id",
+      "interpretation": "The identity algebra structure of the reals over themselves.",
+      "effect_on_target": "It supplies ordinary real scalar multiplication in the norm homogeneity axiom.",
+      "paper_match": "It matches scalar multiplication of real matrices.",
       "status": "pass"
     },
     {
       "id": "D052",
-      "name": "Real.instAddCommMonoid",
-      "interpretation": "The additive commutative monoid structure of the reals.",
-      "effect_on_target": "It supports finite dot-product summation.",
-      "paper_match": "It has standard matrix-arithmetic semantics.",
+      "name": "Algebra.toSMul",
+      "interpretation": "The scalar-action projection from the real algebra structure.",
+      "effect_on_target": "It interprets scaling a real matrix by a real scalar.",
+      "paper_match": "It is the standard scaling operation required by a matrix norm.",
       "status": "pass"
     },
     {
       "id": "D053",
-      "name": "Algebra.id",
-      "interpretation": "The identity real algebra structure on Real.",
-      "effect_on_target": "It supplies ordinary real scalar action on real matrices.",
-      "paper_match": "It introduces no special norm or numerical interpretation.",
+      "name": "CommSemiring.toSemiring",
+      "interpretation": "The semiring structure inherited from a commutative semiring.",
+      "effect_on_target": "It supports the identity real algebra used for scalar multiplication.",
+      "paper_match": "It contributes only standard real algebraic structure.",
       "status": "pass"
     },
     {
       "id": "D054",
-      "name": "Algebra.toSMul",
-      "interpretation": "Extraction of scalar multiplication from an algebra structure.",
-      "effect_on_target": "It supports real scalar multiplication of matrices in the norm homogeneity axiom.",
-      "paper_match": "It matches ordinary matrix scaling.",
+      "name": "HSMul.hSMul",
+      "interpretation": "Typeclass-dispatched scalar multiplication.",
+      "effect_on_target": "It appears in the absolute-homogeneity axiom for the matrix norm.",
+      "paper_match": "Absolute homogeneity is a standard norm property compatible with the source.",
       "status": "pass"
     },
     {
       "id": "D055",
-      "name": "CommSemiring.toSemiring",
-      "interpretation": "The semiring structure inherited from the real commutative semiring.",
-      "effect_on_target": "It supports the identity algebra used for scalar multiplication.",
-      "paper_match": "It has no independent paper-level effect.",
+      "name": "Iff",
+      "interpretation": "Logical equivalence.",
+      "effect_on_target": "It states that the norm is zero exactly for the zero matrix.",
+      "paper_match": "This is standard norm definiteness.",
       "status": "pass"
     },
     {
       "id": "D056",
-      "name": "HSMul.hSMul",
-      "interpretation": "Overloaded scalar multiplication.",
-      "effect_on_target": "It appears in the norm's absolute-homogeneity axiom.",
-      "paper_match": "Absolute homogeneity is an appropriate matrix-norm property.",
+      "name": "Matrix.smul",
+      "interpretation": "Pointwise scalar multiplication of matrices.",
+      "effect_on_target": "It interprets the matrix argument in norm homogeneity.",
+      "paper_match": "It is ordinary scalar multiplication of a matrix.",
       "status": "pass"
     },
     {
       "id": "D057",
-      "name": "Iff",
-      "interpretation": "Logical equivalence.",
-      "effect_on_target": "It makes norm value zero exactly when the matrix is zero.",
-      "paper_match": "Norm definiteness is standard and compatible with the paper.",
+      "name": "Matrix.zero",
+      "interpretation": "The pointwise zero matrix.",
+      "effect_on_target": "It is used in norm definiteness.",
+      "paper_match": "It has the standard matrix meaning.",
       "status": "pass"
     },
     {
       "id": "D058",
-      "name": "Matrix.smul",
-      "interpretation": "Pointwise scalar multiplication of matrices.",
-      "effect_on_target": "It fixes the operation used by norm homogeneity.",
-      "paper_match": "It is ordinary matrix scaling.",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group structure of the reals.",
+      "effect_on_target": "It supplies negation and subtraction and participates in real absolute value.",
+      "paper_match": "It is standard real arithmetic.",
       "status": "pass"
     },
     {
       "id": "D059",
-      "name": "Matrix.zero",
-      "interpretation": "The pointwise zero matrix.",
-      "effect_on_target": "It appears in norm definiteness and permits zero-valued runs.",
-      "paper_match": "It has the expected matrix meaning.",
+      "name": "Real.instCommSemiring",
+      "interpretation": "The commutative-semiring structure of the reals.",
+      "effect_on_target": "It supports multiplication, addition, and the identity algebra used in norm homogeneity.",
+      "paper_match": "It is standard real arithmetic.",
       "status": "pass"
     },
     {
       "id": "D060",
-      "name": "Real.instAddGroup",
-      "interpretation": "The additive group structure of the reals.",
-      "effect_on_target": "It supports real absolute value in the norm homogeneity axiom.",
-      "paper_match": "It introduces no discrepancy.",
+      "name": "Real.lattice",
+      "interpretation": "The lattice order structure of the reals.",
+      "effect_on_target": "It participates in the definition of absolute value.",
+      "paper_match": "It yields the ordinary real absolute value required by norm homogeneity.",
       "status": "pass"
     },
     {
       "id": "D061",
-      "name": "Real.instCommSemiring",
-      "interpretation": "The real commutative-semiring structure.",
-      "effect_on_target": "It supports real algebra and scalar multiplication infrastructure.",
-      "paper_match": "It has standard arithmetic semantics.",
+      "name": "abs",
+      "interpretation": "Absolute value defined from the ordered additive-group structure.",
+      "effect_on_target": "It appears in the norm law ||cA||=|c|||A||.",
+      "paper_match": "This is the standard absolute homogeneity of a real norm.",
       "status": "pass"
     },
     {
       "id": "D062",
-      "name": "Real.lattice",
-      "interpretation": "The lattice order structure of the reals.",
-      "effect_on_target": "It supports the definition of absolute value.",
-      "paper_match": "It has no discrepant target effect.",
-      "status": "pass"
-    },
-    {
-      "id": "D063",
-      "name": "abs",
-      "interpretation": "The ordinary absolute value on reals.",
-      "effect_on_target": "It appears in the scalar-homogeneity law norm(cA)=abs(c)*norm(A).",
-      "paper_match": "This is the standard norm homogeneity law.",
-      "status": "pass"
-    },
-    {
-      "id": "D064",
       "name": "instHSMul",
-      "interpretation": "Adapter from scalar multiplication to overloaded HSMul.",
-      "effect_on_target": "It resolves real scalar multiplication of matrices.",
-      "paper_match": "It preserves ordinary scalar-action semantics.",
+      "interpretation": "The generic adapter turning a scalar-action instance into heterogeneous scalar multiplication.",
+      "effect_on_target": "It resolves scalar multiplication in the norm axioms to ordinary pointwise matrix scaling.",
+      "paper_match": "It introduces no nonstandard operation.",
       "status": "pass"
     }
   ],
@@ -522,165 +506,151 @@
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The inspected PDF is the 2007 Numerische Mathematik article, volume 108, pages 59-91. PDF page 2 contains equation (1), and PDF page 8, printed page 66, contains equation (8) and its triangular-inversion application.",
-      "lean_evidence": "The dossier targets P10-T1 and explicitly models the three contributions appearing in equation (8).",
-      "reasoning": "The version, source locations, and selected inherited-right term are correctly identified."
+      "paper_evidence": "PDF page 2, printed page 60, gives the stable multiplication model in equation (1); PDF page 8, printed page 66, introduces first-order absolute error and displays equation (8), including the middle term ||A|| err(B,n).",
+      "lean_evidence": "The target is P10InheritedRightEquation8Term over P10FirstOrderProductRun, with the equation-(8) decomposition and right-term bound explicitly unfolded.",
+      "reasoning": "The selected passage and surrounding recursive triangular-inversion context are the correct source for the inherited-right multiplication-error contribution."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "Equation (1) specifies n-by-n square matrices A and B; equation (8) is applied to n/2-by-n/2 recursive blocks.",
-      "lean_evidence": "P10Matrix n is Matrix (Fin n) (Fin n) Real, and P10FirstOrderProductRun requires 0<n.",
-      "reasoning": "The square dimension and operand roles are faithful. Restriction to real entries is an acceptable specialization."
+      "paper_evidence": "Equation (1) uses n-by-n square matrices; equation (8) uses compatible products and is subsequently applied to n/2-by-n/2 square blocks.",
+      "lean_evidence": "n is Nat with 0<n in each run, and P10Matrix n is Matrix (Fin n) (Fin n) Real.",
+      "reasoning": "The Lean binders give finite real square matrices of the intended common size. This is the square recursive instance supported directly by the paper."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper describes one stable multiplication algorithm with a dimension-dependent function mu and then applies its error rule to products arising during recursion.",
-      "lean_evidence": "The target quantifies over independent run records, each carrying its own norm, mu, growth witnesses, operands, and assumed local-error bound; it asserts no uniform algorithm or shared mu across runs.",
-      "reasoning": "Per-run conditional packaging loses the paper's uniform stable-algorithm scope and inherited execution provenance."
+      "status": "pass",
+      "paper_evidence": "The formula is generic in matrix size, operands, inherited errors, and the multiplication-error coefficient.",
+      "lean_evidence": "The theorem quantifies over every n and every run at n; all operands, perturbations, coefficients, errors, and witnesses are fields of that run and depend on n.",
+      "reasoning": "No witness is moved outside the scope on which it depends, and the universal run quantifier corresponds to applying the rule to any product satisfying the model."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The source assumes stable matrix multiplication, inherited errors from prior computations, and a first-order analysis with machine epsilon.",
-      "lean_evidence": "The run assumes a positive real epsilon, a global polynomial bound, an exact perturbation equation, and separate error bounds, but does not require epsilon to be machine precision or perturbations to arise from prior computations.",
-      "reasoning": "Several added premises narrow the domain while essential execution and small-parameter hypotheses are not represented."
+      "status": "pass",
+      "paper_evidence": "The paper assumes stable normwise multiplication, inherited operand errors, compatible products, and an explicitly first-order analysis; no inverse hypothesis belongs to generic equation (8).",
+      "lean_evidence": "The run requires positive n and epsilon, a consistent submultiplicative norm, a local-error bound, nonnegative inherited-error bounds, perturbation bounds, and an exact computed-product decomposition.",
+      "reasoning": "The relevant multiplication and inherited-error hypotheses are present. Low-degree growth of mu is unnecessary for this component lemma and its omission makes the conditional algebraic claim more general, not inconsistent."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Equation (8) presents the complete expression as err(C,n), with fresh, inherited-right, and inherited-left contributions.",
-      "lean_evidence": "The conclusion bounds only exactLeft*rightPerturbation and states that a defined scalar budget equals its own three summands. It never bounds or identifies the realized complete first-order product error.",
-      "reasoning": "The central left-hand-side linkage of equation (8) is absent."
+      "status": "pass",
+      "paper_evidence": "Equation (8) has fresh, right-inherited, and left-inherited contributions in additive order.",
+      "lean_evidence": "The first conjunct is firstOrderError = localFirstOrderError + (inheritedRightError + inheritedLeftError); the second conjunct bounds the selected right term. The run also contains the local and both perturbation bounds needed to derive the full normwise first-order upper bound.",
+      "reasoning": "The selected P10-T1 conclusion and its additive context are complete; the theorem does not substitute the right term for the other contributions."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The paper uses ordinary matrix multiplication, matrix norms, scalar products, and additive error bookkeeping.",
-      "lean_evidence": "The dossier unfolds the local definitions and external frontier: matrices are Fin-indexed real functions, multiplication is a finite dot product, and the norm package supplies the standard norm axioms.",
-      "reasoning": "The operators and definitions can be interpreted exactly; the semantic defect is in what the target asserts, not an opaque dependency."
+      "paper_evidence": "The source uses ordinary matrix multiplication, addition, absolute normwise errors, and multiplicative norm amplification.",
+      "lean_evidence": "All local definitions unfold to ordinary real finite matrices, dot-product matrix multiplication, pointwise addition and subtraction, a bundled norm, and standard real order and multiplication.",
+      "reasoning": "No imported operator changes the mathematical meaning of the source expression."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "Equation (1) distinguishes exact C=A*B from computed Ccomp, while equation (8) informally attributes inherited errors to A and B.",
-      "lean_evidence": "The run separately stores exactLeft, exactRight, perturbations, computedProduct, localFirstOrderError, and higherOrderRemainder.",
-      "reasoning": "Exact, perturbed, and computed objects are explicitly separated. The missing comparison between them and the budget is assessed under S05 and S13."
+      "paper_evidence": "Equation (1) distinguishes exact C=A·B from Ccomp, while equation (8) discusses errors inherited by A and B.",
+      "lean_evidence": "The run separately stores exactLeft, exactRight, leftPerturbation, rightPerturbation, computedProduct, localFirstOrderError, and higherOrderRemainder.",
+      "reasoning": "Exact operands, perturbed operands, the computed result, and error components are explicitly separated."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Equation (8) is used in recursive triangular inversion, including the chosen parenthesization (T11^-1*T12)*T22^-1.",
-      "lean_evidence": "P10FirstOrderProductRun is a generic one-product record and contains no triangular matrix, recursive subblocks, prior computation, parenthesization, or algorithm step.",
-      "reasoning": "The target is detached from the paper's algorithm and inherited-error provenance."
+      "status": "pass",
+      "paper_evidence": "Equation (8) is the generic product-error rule applied systematically to the two products used to form the off-diagonal inverse block.",
+      "lean_evidence": "P10FirstOrderProductRun models one finite-precision product and P10InheritedRightEquation8Term retains all three equation-(8) contributions in their correct additive roles.",
+      "reasoning": "The target formalizes the generic rule invoked by the recursive algorithm. It is not a theorem about the entire inversion recurrence, but that broader claim is outside this selected task."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "The paper uses an unspecified absolute normwise error and notes finite-dimensional norm equivalence; equation (8) prints coefficient-one amplification.",
-      "lean_evidence": "P10ConsistentMatrixNorm is abstract and requires coefficient-one submultiplicativity rather than choosing a spectral, Frobenius, or componentwise norm.",
-      "reasoning": "This is a faithful formal interpretation of the unnamed norm for the displayed coefficient-one rule, not an improper choice of a particular norm."
+      "paper_evidence": "The paper uses absolute normwise error and deliberately leaves the matrix norm unspecified, noting finite-dimensional norm equivalence.",
+      "lean_evidence": "P10ConsistentMatrixNorm is abstract and requires the standard norm laws plus submultiplicativity; no squared or componentwise norm is introduced.",
+      "reasoning": "The Lean statement preserves the normwise, unsquared meaning and imposes exactly the compatibility needed for ||A*dB||<=||A||||dB||."
     },
     {
       "id": "S10",
       "status": "pass",
-      "paper_evidence": "Equation (8) uses mu(n), epsilon, coefficient one on all three contributions, and the orientation norm(A)*err(B,n).",
-      "lean_evidence": "The budget is mu(n)*epsilon*norm(A)*norm(B) + norm(A)*rightInheritedError + leftInheritedError*norm(B).",
-      "reasoning": "The coefficients, parameter n, and left/right orientation match. The global polynomial witness is more restrictive than asymptotic big-O but does not alter the displayed value at n."
+      "paper_evidence": "The fresh term is mu(n) epsilon ||A|| ||B||, and the right-inherited term has coefficient one and size-indexed error err(B,n).",
+      "lean_evidence": "The run's local bound uses mu n * epsilon * ||A|| * ||B||, while the selected contribution is ||A|| * rightInheritedError with no extra coefficient or index shift.",
+      "reasoning": "All constants and factors relevant to equation (8) match. The absence of a low-degree-growth field for mu limits use as a full stability-complexity theorem but does not alter this propagation identity."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "Equation (1) calls epsilon machine epsilon and says it bounds roundoff, though the cited passages do not specify rounding mode or exceptional-value behavior.",
-      "lean_evidence": "Epsilon is only a positive Real, and computedProduct is governed by an assumed exact real equation. No floating-point type, rounding operation, precision, overflow, or underflow model appears.",
-      "reasoning": "The run is an abstract perturbation model, not a verified finite-precision execution model. It must not be presented as an exact floating-point claim."
+      "status": "pass",
+      "paper_evidence": "The cited passages identify epsilon as machine epsilon but state no rounding mode, exceptional-value, underflow, or overflow assumptions.",
+      "lean_evidence": "epsilon is a positive real, and fresh roundoff is abstracted by the local norm bound; no concrete floating-point datatype or incompatible exceptional-value claim is introduced.",
+      "reasoning": "The formal abstraction is at the same normwise error-model level as the cited paper."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "Equation (8) uses an equals sign for first-order error bookkeeping and is subsequently used to derive upper bounds.",
-      "lean_evidence": "Lean proves an inequality only for the inherited-right matrix term and an exact equality that merely unfolds the budget definition; it gives no equality or inequality connecting the complete budget to product error.",
-      "reasoning": "The relevant relation and its operands do not match the paper's complete error formula."
+      "status": "pass",
+      "paper_evidence": "Equation (8) is written as first-order error bookkeeping equality, while the surrounding recurrence analysis uses the terms as error bounds.",
+      "lean_evidence": "Lean gives an exact matrix identity for the explicitly remainder-stripped first-order error and a non-strict norm upper bound for A*dB.",
+      "reasoning": "The exact algebraic identity plus norm inequality is a rigorous rendering of the source's first-order bound contribution; the inequality direction is correct."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "The passage concerns absolute normwise forward error in a computed product, combining fresh and inherited errors.",
-      "lean_evidence": "The selected term is an absolute normwise perturbation bound, but no proposition concerns norm(computedProduct-exactLeft*exactRight) or a defined complete first-order forward-error matrix.",
-      "reasoning": "The right term has the correct error notion, but the complete forward-error assertion being benchmarked is missing."
+      "status": "pass",
+      "paper_evidence": "The paper explicitly analyzes absolute normwise error and the amplification of inherited forward errors.",
+      "lean_evidence": "The target bounds the norm of the additive forward-error matrix A*dB by an absolute scalar error bound, without normalization or residual reinterpretation.",
+      "reasoning": "No relative, backward, mixed, or componentwise error notion is substituted."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "Equation (1) contains O(epsilon^2), while equation (8) is explicitly first order and prints no remainder; inherited-error cross products are omitted.",
-      "lean_evidence": "The exact perturbed product contains leftPerturbation*rightPerturbation, yet neither perturbation is required to be O(epsilon). The separate higherOrderRemainder has a coefficient chosen per run, so its bound does not express a uniform big-O statement.",
-      "reasoning": "The model neither justifies excluding the cross term from the first-order budget nor faithfully formalizes the paper's asymptotic higher-order remainder."
+      "status": "pass",
+      "paper_evidence": "Equation (1) displays O(epsilon^2), whereas equation (8) is explicitly introduced as first order and displays no higher-order interaction.",
+      "lean_evidence": "p10FirstOrderProductError removes dA*dB and the supplied higherOrderRemainder before asserting the exact three-term identity.",
+      "reasoning": "The theorem does not falsely identify the full computed error with the first-order expression. Because the remainder has no asymptotic bound, the proposition must be read only as the selected first-order component statement, not as a formal proof of equation (1)'s O(epsilon^2) remainder."
     },
     {
       "id": "S15",
       "status": "pass",
-      "paper_evidence": "The cited stable-multiplication model is expressly for finite n-by-n square matrices and leaves the norm unspecified.",
-      "lean_evidence": "Lean specializes to finite real square matrices with an abstract coefficient-one consistent norm.",
-      "reasoning": "The real, finite, square, and consistent-norm choices form an acceptable specialization. The exact perturbation and execution-model defects are separate from this dimensional specialization."
+      "paper_evidence": "Equation (1) is square, and the use of equation (8) in section 3.1 is on square n/2 blocks; the norm itself is left abstract.",
+      "lean_evidence": "Lean uses real n-by-n matrices and quantifies over every bundled consistent norm at that size.",
+      "reasoning": "The real square setting is an explicit acceptable specialization of the paper's recursive application and still measures the inherited-right error argument."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "Equation (8)'s additive decomposition is meaningful because its sum is identified with the product-error quantity err(C,n).",
-      "lean_evidence": "Nonzero runs are satisfiable, for example with n=1, absolute value as the matrix norm, nonzero exactLeft and rightPerturbation, and matching rightInheritedError. Nevertheless, the budget equality reduces to reflexivity after unfolding p10FirstOrderProductErrorBudget.",
-      "reasoning": "The hypotheses are nonvacuous, but the claimed additive position is true for the unintended trivial reason that the budget was defined as that sum, without an error linkage."
+      "status": "pass",
+      "paper_evidence": "The paper applies the rule to ordinary nonzero block products carrying inherited errors, so the middle contribution is substantively meaningful.",
+      "lean_evidence": "The hypotheses admit nonzero examples, such as n=1 with the absolute-value matrix norm, A=2, dB=3, errB=3, dA=0, zero local error and remainder, and the computed product chosen by the constructor equation; the right bound is then attained.",
+      "reasoning": "The run type is satisfiable beyond the all-zero case, and the conclusion follows for the intended reasons: distributive expansion, cancellation, submultiplicativity, and the perturbation bound."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean proposition can hold while no relation is established between its scalar budget and the realized complete first-order product error, and while the run has no connection to recursive triangular inversion. Consequently it does not yield equation (8)'s complete error rule in the selected scope."
+      "verdict": "yes",
+      "reasoning": "From the target matrix identity, the norm triangle inequality, the target's right-term bound, the run's local-error bound, and the analogous derivable left-term bound, one obtains ||firstOrderError|| <= mu(n) epsilon ||A|| ||B|| + ||A|| errB + errA ||B||. This is the rigorous upper-bound interpretation of equation (8) and identifies the selected middle term with its correct additive position."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "After restricting to Lean's explicit perturbation runs and interpreting rightInheritedError as a bound on the right perturbation, coefficient-one submultiplicativity gives norm(A*dB)<=norm(A)*err(B,n), and equation (8) contains that term between the matching local and inherited-left terms. The extra run assumptions narrow the domain, while the budget equality is definitional."
+      "reasoning": "In the real square specialization, represent inherited operand errors by perturbation matrices dA and dB, fresh multiplication error by a matrix local term, and omitted interactions by a remainder. Expanding (A+dA)(B+dB) and removing dA*dB and the remainder gives the target matrix identity, while submultiplicativity and ||dB||<=err(B,n) give ||A*dB||<=||A|| err(B,n)."
     }
   },
-  "classification": "not-faithful-weaker",
-  "accepted": false,
+  "classification": "faithful-equivalent",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "missing-complete-error-linkage",
-      "paper_evidence": "PDF page 8, printed page 66, equation (8) identifies err(C,n) with the complete three-term first-order budget.",
-      "lean_evidence": "P10InheritedRightEquation8Term only bounds norm(exactLeft*rightPerturbation) and expands p10FirstOrderProductErrorBudget into the sum used to define it.",
-      "impact": "The theorem does not establish that the budget equals or bounds any realized complete first-order product error, so it does not prove the selected paper result."
-    },
-    {
-      "severity": "major",
-      "category": "uncontrolled-cross-term",
-      "paper_evidence": "Equation (8) is explicitly first order and omits products of inherited errors.",
-      "lean_evidence": "The run's exact equation uses (exactLeft+leftPerturbation)*(exactRight+rightPerturbation), which contains leftPerturbation*rightPerturbation, but the perturbations are not bounded proportionally to epsilon and the cross term is not assigned to the higher-order remainder.",
-      "impact": "The complete realized error cannot be reduced to the stated first-order budget plus a justified O(epsilon^2) remainder."
-    },
-    {
-      "severity": "major",
-      "category": "algorithm-linkage",
-      "paper_evidence": "The paper applies equation (8) to recursive triangular inversion and explicitly chooses the product order (T11^-1*T12)*T22^-1.",
-      "lean_evidence": "The target quantifies over a generic product run with no recursive blocks, inversion operation, parenthesization, or evidence that inherited errors came from prior computations.",
-      "impact": "The theorem does not retain the execution context and provenance required by the selected task scope."
-    },
-    {
-      "severity": "minor",
-      "category": "floating-point-interpretation",
-      "paper_evidence": "Equation (1) identifies epsilon as machine epsilon bounding roundoff, while leaving detailed rounding and exceptional-value behavior unstated.",
-      "lean_evidence": "Epsilon is an arbitrary positive real and all error relations are assumptions in exact real arithmetic.",
-      "impact": "The formal object is an explicit perturbation model only; it cannot support a claim that actual finite-precision execution has been formalized."
+      "severity": "note",
+      "category": "scope-specialization",
+      "paper_evidence": "Equation (8) is generic for compatible products but is applied in section 3.1 to square recursive blocks.",
+      "lean_evidence": "P10Matrix n fixes real n-by-n matrices.",
+      "impact": "The theorem covers the paper's recursive square instance but does not itself state a rectangular or complex-matrix generalization."
     },
     {
       "severity": "note",
-      "category": "norm-specialization",
-      "paper_evidence": "The source leaves the norm unnamed and prints coefficient-one amplification terms, while permitting norm changes with dimension-dependent factors.",
-      "lean_evidence": "P10ConsistentMatrixNorm quantifies abstractly over norms satisfying coefficient-one submultiplicativity.",
-      "impact": "This norm interpretation is faithful and is not the cause of rejection."
+      "category": "first-order-abstraction",
+      "paper_evidence": "Equation (8) is explicitly first order, while equation (1) separately displays an O(epsilon^2) remainder.",
+      "lean_evidence": "higherOrderRemainder is an unconstrained matrix that is subtracted from p10FirstOrderProductError.",
+      "impact": "The accepted correspondence is limited to the selected remainder-stripped first-order contribution; this theorem alone cannot certify a bound on the full computed-product error or prove that the remainder is O(epsilon^2)."
+    },
+    {
+      "severity": "note",
+      "category": "coefficient-growth-scope",
+      "paper_evidence": "The paper requires mu(n) to be a low-degree polynomial for its stability and complexity claims.",
+      "lean_evidence": "The run assumes only that mu is nonnegative.",
+      "impact": "This does not affect the coefficient-one inherited-right term, but the declaration should not be cited as a complete formalization of the paper's stable-algorithm definition."
     }
   ],
-  "rationale": "The Lean target faithfully represents and bounds the inherited-right matrix term A*dB and reproduces all three scalar expressions in the correct order. It is nevertheless a weaker result than equation (8) in the selected scope: the complete scalar budget is only a definition and is never related to the realized first-order product error, the explicit perturbation model leaves the cross term uncontrolled, and the recursive triangular-inversion linkage is absent. The assumptions are satisfiable in nonzero examples, so the defect is semantic incompleteness rather than vacuity."
+  "rationale": "The Lean proposition faithfully formalizes the selected equation-(8) claim. Its remainder-stripped error matrix decomposes into fresh, right-inherited, and left-inherited components in the paper's order, and submultiplicativity yields exactly the middle contribution ||A|| err(B,n). The abstract consistent norm respects the paper's unspecified norm convention, and the real square setting covers the recursive block application. The unconstrained remainder and unrestricted growth of mu limit the declaration to first-order component bookkeeping rather than a full matrix-multiplication stability theorem, but they do not weaken or alter the selected inherited-right result."
 }

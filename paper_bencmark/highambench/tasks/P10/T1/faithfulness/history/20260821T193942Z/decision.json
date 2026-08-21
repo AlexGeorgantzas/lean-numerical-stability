@@ -1,0 +1,66 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "round-trip judge requested adjudication",
+    "round-trip S07 is unclear",
+    "round-trip S15 is unclear"
+  ],
+  "classification": "not-faithful-weaker",
+  "completed_at_utc": "2026-08-15T07:51:03.625782+00:00",
+  "findings": [
+    {
+      "category": "missing-total-error-linkage",
+      "evidence": "Eq. (8) places ||A||err(B,n) inside err(C,n), whereas D002 mentions neither p10FirstOrderProductError nor computedProduct - exactLeft*exactRight and asserts no norm bound involving either quantity.",
+      "impact": "The selected term is not formally established as a contribution to total first-order product error, so the task's required semantic role is absent.",
+      "severity": "critical"
+    },
+    {
+      "category": "definitional-budget-equality",
+      "evidence": "D006 is defined as exactly D010 + (D009 + D007), which is the equality asserted by D002.",
+      "impact": "The claimed additive position follows by unfolding a definition and supplies no connection to a product-error quantity.",
+      "severity": "major"
+    },
+    {
+      "category": "restricted-applicability",
+      "evidence": "D005 requires positive dimension, real square matrices, a coefficient-one consistent norm, and an all-k polynomial bound on mu.",
+      "impact": "These choices narrow the source claim's applicability and cannot support a faithful-stronger classification.",
+      "severity": "minor"
+    },
+    {
+      "category": "valid-component-bound",
+      "evidence": "D021 supplies norm(A*DeltaB) <= norm(A)norm(DeltaB), D005 supplies norm(DeltaB) <= e_R, and D009 is norm(A)e_R.",
+      "impact": "The inherited-right inequality itself is genuine and nonvacuous; rejection is due to missing error linkage, not an incorrect orientation or a vacuous theorem.",
+      "severity": "note"
+    },
+    {
+      "category": "task-sensitive-scope",
+      "evidence": "Eq. (8) is stated generically before its recursive triangular-inversion application, and the cross term is separate from D008's exactLeft*rightPerturbation.",
+      "impact": "Neither missing triangular-block structure nor the uncontrolled cross term is an independent fatal defect for this isolated component task.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean conclusion can hold while its three-term budget remains unrelated to total first-order product error. It therefore establishes the magnitude of one propagated perturbation term but not its paper-level status as a summand of err(C,n).",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "Under Lean's explicit specialization, Eq. (8)'s inherited-right interpretation together with the assumed submultiplicative norm and norm(rightPerturbation) <= rightInheritedError yields the first conjunct. The second conjunct follows definitionally. Lean's extra premises only restrict the admissible cases.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-weaker",
+    "roundtrip": "not-faithful-weaker"
+  },
+  "rationale": "The run gives a reasonable explicit perturbation interpretation, and the theorem proves the correct nonvacuous bound for propagation of the right operand's inherited error. Real square matrices and a consistent abstract norm are acceptable specializations, while the generic T1 scope does not require triangular-inversion blocks. Nevertheless, Eq. (8) gives the selected term meaning by making it one contribution to total first-order product error. In Lean, p10FirstOrderProductErrorBudget is only the three-term scalar by definition, and the target's budget equality merely unfolds that definition. No asserted relation connects the component or budget to p10FirstOrderProductError, computedProduct - exactLeft*exactRight, or its norm. The paper therefore implies the weaker Lean conclusions under the explicit interpretation, but Lean does not imply the selected paper claim.",
+  "remaining_uncertainties": [
+    "Equation (8)'s equals sign may denote first-order bookkeeping that defines an error bound rather than equality with a realized error. Under either reading, the target asserts no relationship between its budget and a total-error quantity.",
+    "The cited passages do not conclusively establish whether Real is the paper's full scalar domain, although real n-by-n matrices are an acceptable specialization.",
+    "The paper does not uniquely determine an exact-plus-perturbation notation or sign convention for inherited operand errors; the run's chosen convention is reasonable but not canonical."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P10-T1"
+}

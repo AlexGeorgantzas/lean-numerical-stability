@@ -1,0 +1,133 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P10-T1",
+  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
+  "source_evidence": [
+    {
+      "pdf_page": 2,
+      "printed_page": "60",
+      "anchor": "equation (1), stable matrix-multiplication definition",
+      "observation": "For n-by-n square matrices with exact product C = A·B, stability means that the computed Ccomp satisfies ‖Ccomp − C‖ ≤ μ(n)ε‖A‖‖B‖ + O(ε²), where ε is machine epsilon and μ(n) = O(n^c) for some constant c. [PDF p. 2, printed p. 60, Eq. (1) and immediately following text]"
+    },
+    {
+      "pdf_page": 2,
+      "printed_page": "60",
+      "anchor": "paragraph immediately following equation (1)",
+      "observation": "The paper does not fix a particular norm there; it says norms may be exchanged using finite-dimensional norm equivalence, at the cost of additional n-dependent factors and a possible change in the polynomial exponent c. [PDF p. 2, printed p. 60, norm-equivalence paragraph after Eq. (1)]"
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "65",
+      "anchor": "section 3.1, recursive triangular matrix-inversion formula",
+      "observation": "The enclosing algorithm recursively inverts the n/2-by-n/2 diagonal blocks T11 and T22 and forms the off-diagonal inverse block −T11⁻¹·T12·T22⁻¹. [PDF p. 7, printed p. 65, section 3.1 block inverse display]"
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "66",
+      "anchor": "first-order-error-analysis paragraph and equation (8)",
+      "observation": "For C = A·B whose operands have errors inherited from prior computations, the displayed first-order error bookkeeping is err(C,n) = μ(n)ε‖A‖‖B‖ + ‖A‖err(B,n) + err(A,n)‖B‖. The annotations identify the middle term as amplification of B's error by ‖A‖. [PDF p. 8, printed p. 66, Eq. (8)]"
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "66",
+      "anchor": "recurrences immediately following equation (8)",
+      "observation": "In the triangular-inversion application, Eq. (8) is used at recursive size n/2, and the authors explicitly choose to premultiply T12 by T11⁻¹ first, hence the parenthesization (T11⁻¹·T12)·T22⁻¹. [PDF p. 8, printed p. 66, paragraph and recurrences following Eq. (8)]"
+    }
+  ],
+  "statement": {
+    "binders": [
+      "A matrix-size parameter n; the inherited multiplication model is explicitly stated for n-by-n square matrices. [PDF p. 2, printed p. 60, Eq. (1)]",
+      "Matrices A and B, with product C = A·B, carrying inherited errors err(A,n) and err(B,n) from prior computations. [PDF p. 8, printed p. 66, sentence introducing Eq. (8)]",
+      "Machine epsilon ε and a dimension-dependent polynomial factor μ(n). [PDF p. 2, printed p. 60, text following Eq. (1)]"
+    ],
+    "hypotheses": [
+      "Matrix multiplication obeys the normwise stability model of Eq. (1). [PDF p. 2, printed p. 60, Eq. (1)]",
+      "The operands A and B may already contain errors inherited from earlier computations. [PDF p. 8, printed p. 66, sentence introducing Eq. (8)]",
+      "The analysis retaining Eq. (8) is explicitly first order. [PDF p. 8, printed p. 66, first sentence of the error-analysis paragraph]"
+    ],
+    "conclusions": [
+      "The complete displayed propagation formula is err(C,n) = μ(n)ε‖A‖‖B‖ + ‖A‖err(B,n) + err(A,n)‖B‖. [PDF p. 8, printed p. 66, Eq. (8)]",
+      "The first additive term is attributed to roundoff in matrix multiplication, the second to amplification of the inherited error in B by ‖A‖, and the third to amplification of the inherited error in A by ‖B‖. [PDF p. 8, printed p. 66, annotations alongside Eq. (8)]",
+      "In particular, ‖A‖err(B,n) is one additive contribution to the total first-order product error; it is not presented as the complete error formula by itself. [PDF p. 8, printed p. 66, Eq. (8)]"
+    ],
+    "definitions_and_conventions": [
+      "In Eq. (1), C is the exact product A·B and Ccomp is its computed result. [PDF p. 2, printed p. 60, sentence introducing Eq. (1)]",
+      "The notation err is used in an analysis explicitly described as the absolute error in a computed matrix quantity; the later recursive variable err(n′) is described as a bound on normwise error. [PDF p. 8, printed p. 66, first-order-analysis paragraph and paragraph after Eq. (8)]",
+      "The parameter ε is machine epsilon and bounds roundoff error. [PDF p. 2, printed p. 60, text following Eq. (1)]",
+      "The function μ(n) is a low-degree polynomial, specified only asymptotically as O(n^c) for some constant c. [PDF p. 2, printed p. 60, text following Eq. (1)]"
+    ],
+    "implicit_context": [
+      "No formal quantifier order is printed; Eq. (8) is introduced in prose as a reusable rule whenever a product C = A·B is computed from operands with inherited errors. [PDF p. 8, printed p. 66, sentence introducing Eq. (8)]",
+      "Equation (8) belongs to the forward, absolute-error analysis of recursive triangular matrix inversion, although the three-term multiplication rule is stated generically. [PDF p. 8, printed p. 66, section 3.1 error-analysis paragraph]",
+      "Compatibility or submultiplicative behavior of the norm is used implicitly by the two amplification terms, but no separate norm axiom is stated at Eq. (8). [PDF p. 8, printed p. 66, Eq. (8); PDF p. 2, printed p. 60, norm-equivalence paragraph]"
+    ],
+    "algorithm_linkage": "Equation (8) is applied inside recursive triangular matrix inversion. The surrounding algorithm recursively inverts T11 and T22 and computes −T11⁻¹·T12·T22⁻¹; for the displayed recurrence the authors choose the parenthesization (T11⁻¹·T12)·T22⁻¹ by premultiplying T12 first. [PDF p. 7, printed p. 65, section 3.1 block inverse formula; PDF p. 8, printed p. 66, text following Eq. (8)]",
+    "numerical_model": [
+      "Fresh multiplication roundoff contributes μ(n)ε‖A‖‖B‖ under the stable normwise multiplication model. [PDF p. 2, printed p. 60, Eq. (1); PDF p. 8, printed p. 66, first line of Eq. (8)]",
+      "Errors already present in both operands are propagated additively at first order. [PDF p. 8, printed p. 66, Eq. (8)]",
+      "The cited passages do not specify a per-operation rounding equation beyond saying that ε is machine epsilon bounding roundoff. [PDF p. 2, printed p. 60, text following Eq. (1)]"
+    ],
+    "error_notions": [
+      "The error is normwise and absolute: neither Eq. (1) nor Eq. (8) divides by the norm of the exact result. [PDF p. 2, printed p. 60, Eq. (1); PDF p. 8, printed p. 66, Eq. (8)]",
+      "Equation (8) combines fresh computation error with forward propagation of errors inherited from the left and right operands. [PDF p. 8, printed p. 66, annotations alongside Eq. (8)]",
+      "Equation (8) is not written as a backward-perturbation statement about nearby exact inputs. [PDF p. 8, printed p. 66, Eq. (8)]"
+    ],
+    "norms": [
+      "The same norm notation ‖·‖ is used for operand magnitudes and product error. [PDF p. 2, printed p. 60, Eq. (1); PDF p. 8, printed p. 66, Eq. (8)]",
+      "No particular norm is fixed for Eq. (1) or Eq. (8); the introduction permits norm changes through finite-dimensional norm equivalence with extra n-dependent factors. [PDF p. 2, printed p. 60, paragraph following Eq. (1)]",
+      "The source therefore does not specifically require the spectral, Frobenius, or entrywise norm for this claim. [PDF p. 2, printed p. 60, norm-equivalence paragraph; PDF p. 8, printed p. 66, Eq. (8)]"
+    ],
+    "constants_and_indexing": [
+      "The displayed coefficients of all three terms in Eq. (8) are one; the only named dimension-dependent factor is μ(n). [PDF p. 8, printed p. 66, Eq. (8)]",
+      "Only the growth class μ(n) = O(n^c) for an unspecified constant c is supplied; no exact μ or numerical c is fixed. [PDF p. 2, printed p. 60, text following Eq. (1)]",
+      "Equation (8) uses the same size argument n in μ and all err expressions; its immediate recursive application substitutes n/2 for multiplication of n/2-by-n/2 blocks. [PDF p. 8, printed p. 66, Eq. (8) and following recurrences]"
+    ],
+    "higher_order_terms": [
+      "The base stable-multiplication bound Eq. (1) explicitly includes an O(ε²) remainder. [PDF p. 2, printed p. 60, Eq. (1)]",
+      "Equation (8) itself prints no O(ε²) or other remainder, but it is introduced as a first-order analysis. [PDF p. 8, printed p. 66, first-order-analysis sentence and Eq. (8)]",
+      "Consequently, interactions such as products of inherited operand errors are outside the retained first-order formula, but the paper does not enumerate or bound their exact omitted remainder at Eq. (8). [PDF p. 8, printed p. 66, first-order-analysis sentence and Eq. (8)]"
+    ],
+    "exceptional_values": [
+      "The cited multiplication passages state no explicit assumptions concerning overflow, underflow, NaNs, infinities, or other exceptional floating-point values. [PDF p. 2, printed p. 60, Eq. (1) and its definitions; PDF p. 8, printed p. 66, Eq. (8)]",
+      "Invertibility is required by the enclosing triangular-inversion formula, but Eq. (8), as a generic product-error rule, states no invertibility hypothesis on A or B. [PDF p. 7, printed p. 65, block inverse formula; PDF p. 8, printed p. 66, Eq. (8)]"
+    ]
+  },
+  "undebatable_constraints": [
+    "A faithful contract must retain all three additive contributions in Eq. (8), not only the right-operand term. [PDF p. 8, printed p. 66, Eq. (8)]",
+    "The right-operand contribution has the exact orientation ‖A‖err(B,n): the left factor's norm amplifies error inherited from the right operand. [PDF p. 8, printed p. 66, middle line and annotation of Eq. (8)]",
+    "The symmetric left-operand contribution err(A,n)‖B‖ is also part of the displayed result. [PDF p. 8, printed p. 66, final line of Eq. (8)]",
+    "The fresh matrix-multiplication contribution μ(n)ε‖A‖‖B‖ is additive and derives from the stable multiplication model. [PDF p. 2, printed p. 60, Eq. (1); PDF p. 8, printed p. 66, first line of Eq. (8)]",
+    "The claim concerns absolute normwise error at first order, not relative error or a standalone backward-error guarantee. [PDF p. 8, printed p. 66, first-order-analysis paragraph and Eq. (8)]",
+    "No specific matrix norm may be imposed as part of the source claim without an additional interpretation. [PDF p. 2, printed p. 60, norm-equivalence paragraph after Eq. (1)]",
+    "Equation (8) must not be presented as containing an explicit O(ε²) term; only Eq. (1) prints that remainder. [PDF p. 2, printed p. 60, Eq. (1); PDF p. 8, printed p. 66, Eq. (8)]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "Equation (8) does not restate matrix dimensions, whereas the model it invokes in Eq. (1) is expressly for n-by-n square matrices. [PDF p. 2, printed p. 60, Eq. (1); PDF p. 8, printed p. 66, sentence introducing Eq. (8)]",
+      "evidence": "The immediate application uses n/2-by-n/2 recursive blocks, but the generic sentence before Eq. (8) says only two matrices. [PDF p. 7, printed p. 65, block formula; PDF p. 8, printed p. 66, Eq. (8) and following recurrences]",
+      "impact": "Square n-by-n multiplication is directly supported; extension to arbitrary rectangular conformable matrices would require choosing how n and μ encode the dimensions. [PDF p. 2, printed p. 60, Eq. (1)]"
+    },
+    {
+      "issue": "The precise matrix norm and its multiplication-compatibility constant are not specified. [PDF p. 2, printed p. 60, norm-equivalence paragraph; PDF p. 8, printed p. 66, Eq. (8)]",
+      "evidence": "The paper permits changing norms with extra n-dependent factors, while Eq. (8) writes amplification factors with coefficient one. [PDF p. 2, printed p. 60, paragraph after Eq. (1); PDF p. 8, printed p. 66, Eq. (8)]",
+      "impact": "A formalization must either assume a submultiplicative norm with the displayed constants or explicitly absorb norm-equivalence constants into a dimension-dependent factor. [PDF p. 2, printed p. 60, norm-equivalence paragraph]"
+    },
+    {
+      "issue": "Equation (8) uses an equals sign even though it occurs in a first-order error analysis and is subsequently used to obtain bounds. [PDF p. 8, printed p. 66, Eq. (8) and following recurrence introduction]",
+      "evidence": "The prose calls the analysis first order and describes the resulting recurrences as bounding error growth. [PDF p. 8, printed p. 66, paragraph introducing Eq. (8) and paragraph following it]",
+      "impact": "The display may be bookkeeping that defines an error bound rather than an exact identity for realized errors; the source does not resolve that distinction formally. [PDF p. 8, printed p. 66, Eq. (8)]"
+    },
+    {
+      "issue": "The symbols A and B are said to have inherited errors, but separate exact and computed operands are not denoted by hats or perturbation variables. [PDF p. 8, printed p. 66, sentence introducing Eq. (8)]",
+      "evidence": "Only Eq. (1) explicitly distinguishes exact C from computed Ccomp; Eq. (8) instead uses err(A,n), err(B,n), and err(C,n). [PDF p. 2, printed p. 60, Eq. (1); PDF p. 8, printed p. 66, Eq. (8)]",
+      "impact": "Any formal perturbation model must introduce the exact and computed operands explicitly while preserving the three first-order contributions. [PDF p. 8, printed p. 66, Eq. (8)]"
+    },
+    {
+      "issue": "The exact form and scaling of the higher-order remainder for Eq. (8) are omitted. [PDF p. 8, printed p. 66, first-order-analysis sentence and Eq. (8)]",
+      "evidence": "Equation (1) prints O(ε²), whereas Eq. (8) has no displayed remainder despite being first order. [PDF p. 2, printed p. 60, Eq. (1); PDF p. 8, printed p. 66, Eq. (8)]",
+      "impact": "The passage does not justify an exact finite-precision identity or any particular explicit bound for cross terms beyond the stated first-order formula. [PDF p. 8, printed p. 66, Eq. (8)]"
+    }
+  ],
+  "contract_plain_english": "Under the paper's normwise stable matrix-multiplication model, multiplying n-by-n matrices contributes μ(n)ε‖A‖‖B‖ plus higher-order effects. [PDF p. 2, printed p. 60, Eq. (1)] If A and B already carry errors from prior computations, Eq. (8)'s first-order absolute-error bookkeeping adds three contributions: fresh multiplication error μ(n)ε‖A‖‖B‖, right-operand error amplified as ‖A‖err(B,n), and left-operand error amplified as err(A,n)‖B‖. [PDF p. 8, printed p. 66, Eq. (8)] The selected middle term is therefore an additive component of the complete propagation formula, not a standalone expression for the total product error. [PDF p. 8, printed p. 66, Eq. (8)] The norm is intentionally unspecified up to finite-dimensional norm equivalence, and Eq. (8) neither states an explicit higher-order remainder nor addresses exceptional floating-point values. [PDF p. 2, printed p. 60, norm-equivalence paragraph; PDF p. 8, printed p. 66, first-order-analysis paragraph and Eq. (8)]"
+}
