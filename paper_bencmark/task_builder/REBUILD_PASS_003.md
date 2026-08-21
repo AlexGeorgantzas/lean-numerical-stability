@@ -6,14 +6,15 @@
 - Baseline status: completed, with 59 fully validated eligible results
 - Pass-3 scope: the 25 fully validated Audit 2 results that were not accepted
 - Processing order: the order in the ledger below
-- Active task: `P09-T3`
-- Rebuilds started: 10/25
-- Rebuilds committed and pushed: 8/25
+- Active task: `P10-T1`
+- Rebuilds started: 11/25
+- Rebuilds committed and pushed: 9/25
 - Pass-3 audits accepted: 0/25
 
 `P04-T1`, `P04-T2`, `P05-T1`, `P05-T2`, `P05-T3`, and `P06-T1` have been
-rebuilt and pushed. `P07-T2` is blocked on source clarification; `P08-T3` and
-`P09-T2` have also been rebuilt and pushed, and `P09-T3` is in progress.
+rebuilt and pushed. `P07-T2` is blocked on source clarification; `P08-T3`,
+`P09-T2`, and `P09-T3` have also been rebuilt and pushed, and `P10-T1` is in
+progress.
 
 ## Operating rules
 
@@ -65,8 +66,8 @@ Audit 2 versions.
 | 7 | `P07-T2` | `not-faithful-weaker` | `no / yes` | `cef9fdfaa43e` | [decision](../highambench/tasks/P07/T2/faithfulness/decision.json), [report](../highambench/tasks/P07/T2/faithfulness/report.md) | `blocked` | - | source contradiction documented below |
 | 8 | `P08-T3` | `not-faithful-different` | `no / no` | `b172c68f6218` | [decision](../highambench/tasks/P08/T3/faithfulness/decision.json), [report](../highambench/tasks/P08/T3/faithfulness/report.md) | `rebuilt-pushed` | `e2fcbfdcb` | - |
 | 9 | `P09-T2` | `not-faithful-different` | `no / no` | `d184164e2187` | [decision](../highambench/tasks/P09/T2/faithfulness/decision.json), [report](../highambench/tasks/P09/T2/faithfulness/report.md) | `rebuilt-pushed` | `89fa203cc` | - |
-| 10 | `P09-T3` | `not-faithful-different` | `no / no` | `6b8ca8416867` | [decision](../highambench/tasks/P09/T3/faithfulness/decision.json), [report](../highambench/tasks/P09/T3/faithfulness/report.md) | `in-progress` | - | - |
-| 11 | `P10-T1` | `not-faithful-weaker` | `no / yes` | `624ef97f4f9f` | [decision](../highambench/tasks/P10/T1/faithfulness/decision.json), [report](../highambench/tasks/P10/T1/faithfulness/report.md) | `pending` | - | - |
+| 10 | `P09-T3` | `not-faithful-different` | `no / no` | `6b8ca8416867` | [decision](../highambench/tasks/P09/T3/faithfulness/decision.json), [report](../highambench/tasks/P09/T3/faithfulness/report.md) | `rebuilt-pushed` | `85d54831c` | - |
+| 11 | `P10-T1` | `not-faithful-weaker` | `no / yes` | `624ef97f4f9f` | [decision](../highambench/tasks/P10/T1/faithfulness/decision.json), [report](../highambench/tasks/P10/T1/faithfulness/report.md) | `in-progress` | - | - |
 | 12 | `P10-T2` | `not-faithful-different` | `no / no` | `ceb4251350f7` | [decision](../highambench/tasks/P10/T2/faithfulness/decision.json), [report](../highambench/tasks/P10/T2/faithfulness/report.md) | `pending` | - | - |
 | 13 | `P10-T3` | `not-faithful-different` | `no / no` | `c985025981ec` | [decision](../highambench/tasks/P10/T3/faithfulness/decision.json), [report](../highambench/tasks/P10/T3/faithfulness/report.md) | `pending` | - | - |
 | 14 | `P11-T1` | `not-faithful-weaker` | `no / yes` | `fd63257e85de` | [decision](../highambench/tasks/P11/T1/faithfulness/decision.json), [report](../highambench/tasks/P11/T1/faithfulness/report.md) | `pending` | - | - |
