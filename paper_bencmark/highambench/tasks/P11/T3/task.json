@@ -1,18 +1,18 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "faithfulness rebuild of the all-prefix CGS-P execution, Theorem 1(7), and its explicit finite second-order remainder",
+    "kind": "faithfulness rebuild of equation (7) with an operational CGS-P family and a uniform second-order remainder",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The dimensions m and n are positive, n <= m, and the real m-by-n input A has full column rank.",
-    "One proof-carrying successful normalized-range Algorithm 2 (CGS-P) trace links the common computed Q and upper-triangular R to every column step, including the pythagorean diagonal formula.",
-    "The machine unit satisfies 0 < epsilonM < 1; named local pseudo-code errors have finite first-order envelopes because the paper does not fix complete primitive evaluation orders.",
-    "Every leading R_k has a certified two-sided inverse, and the strict condition c4(m,k)*epsilonM*kappa2(R_k)^2 < 1 holds for all positive prefixes.",
-    "For every prefix, equations (4)-(5) and the reversed norm comparison used from (6) hold in the spectral 2-norm with separate explicit nonnegative coefficients multiplying epsilonM^2.",
-    "Only successful normalized finite real executions are modeled; breakdown and IEEE exceptional-value behavior left unspecified by the paper are outside the claim."
+    "The dimensions m and n are positive, n <= m, and one fixed real m-by-n input A has full column rank.",
+    "For every positive machine unit, an operation-linked successful normalized-range execution of Algorithm 2 (CGS-P) computes Q and upper-triangular R from the same A, including the pythagorean diagonal formula.",
+    "The arithmetic interface supplies normalized-range relative-error laws for norm, division, addition, subtraction, multiplication, square root, and dot-product operations; exceptional IEEE values and breakdown are outside the represented executions.",
+    "Every computed leading R_k has a certified two-sided inverse. The strict condition c4(m,k)*epsilonM*kappa2(R_k)^2 < 1 holds for all prefixes on one fixed positive right-neighborhood of zero.",
+    "The computed R_k norms and inverse norms are uniformly bounded on one fixed positive right-neighborhood of zero, as required to propagate a uniform second-order remainder through inverse multiplication.",
+    "Equations (4)-(5) and the reversed norm comparison from (6), which precede the selected equation (7), hold uniformly with nonnegative prefix coefficients and one radius fixed before epsilonM is selected."
   ],
-  "author_label": "Theorem 1",
+  "author_label": null,
   "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P11 shared files are present; the frozen NumStability library is also present.",
@@ -20,21 +20,21 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P11/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p11_t3_orthogonality_defect_bound {m n : Nat} (run : P11CGSPTheorem1Run m n) : forall k : Fin n, p11OpNorm2 (p11RectOrthogonalityDefect (p11ColumnPrefix run.Q k)) <= p11C4 m (k.val+1) * p11Kappa2 (p11LeadingBlock run.R k) (run.leadingInverse k)^2 * run.epsilonM + p11Theorem1OrthogonalityRemainderCoeff run k * run.epsilonM^2",
+    "lean_header": "theorem p11_t3_orthogonality_defect_bound {m n : Nat} (family : P11CGSPTheorem1Family m n) (analysis : P11Theorem1ResidualAsymptotics family) : forall epsilonM : P11PositiveEpsilon, epsilonM.1 <= p11Theorem1OrthogonalityRadius family analysis -> forall k : Fin n, p11OpNorm2 (p11RectOrthogonalityDefect (p11ColumnPrefix (family.run epsilonM).Q k)) <= p11C4 m (k.val+1) * p11Kappa2 (p11LeadingBlock (family.run epsilonM).R k) ((family.run epsilonM).leadingInverse k)^2 * epsilonM.1 + p11Theorem1OrthogonalityRemainderCoeff family analysis k * epsilonM.1^2",
     "namespace": "HighamBench",
-    "plain_language": "Every positive prefix of one successful rectangular CGS-P execution satisfies Theorem 1(7)'s spectral loss-of-orthogonality bound with exact leading coefficient c4(m,k)*kappa2(R_k)^2 and an explicit finite second-order remainder.",
+    "plain_language": "On one common small-precision neighborhood, every positive prefix of a fixed-input operational CGS-P execution family satisfies equation (7)'s spectral loss-of-orthogonality bound with the exact first-order coefficient and one second-order coefficient fixed independently of the selected machine unit.",
     "target_file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
     "theorem_name": "p11_t3_orthogonality_defect_bound"
   },
-  "informal_proof": "For each prefix, derive the exact page-312 inverse-conjugated identity from Q_k R_k=A_k+DeltaA_k and the certified inverse. Apply spectral transpose invariance, triangle inequalities, and submultiplicativity to obtain the paper's intermediate norm estimate. Substitute (4)-(5), use 0<epsilonM<1 to collect all hidden and quadratic terms into epsilonM^2, apply the reversed form of (6) to replace ||A_k||_2^2 by ||R_k||_2^2 to first order, and identify the leading factor as c4(m,k)*kappa2(R_k)^2.",
-  "informal_statement": "Theorem 1(7) for every prefix produced by the linked CGS-P execution, retaining the rectangular dimensions, strict condition (3), spectral norm, exact constants, computed R_k condition number, and an explicit finite interpretation of O(epsilonM squared).",
+  "informal_proof": "For each precision and prefix, define DeltaA_k as the actual factorization residual and E_k as the actual normal-equation residual. Derive the exact page-312 inverse-conjugated defect identity, then apply spectral transpose invariance, triangle inequalities, and submultiplicativity. Substitute the uniform forms of (4)-(5), use epsilonM<=1 and the reversed form of (6) to replace ||A_k||_2^2 by ||R_k||_2^2 to first order, and use the family-wide R_k and inverse bounds to obtain a second-order coefficient independent of epsilonM. The first-order term simplifies to c4(m,k)*kappa2(R_k)^2*epsilonM.",
+  "informal_statement": "Numbered equation (7) for every prefix of a fixed-input operational CGS-P family, retaining the rectangular dimensions, condition (3), spectral norm, corrected source constants, computed R_k condition number, and a uniform interpretation of O(epsilonM squared).",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
   },
   "paper_id": "P11",
   "paper_source": {
-    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf",
+    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram–Schmidt.pdf",
     "sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5"
   },
   "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
@@ -49,7 +49,7 @@
       "NumStability.opNorm2_matMul_le",
       "NumStability.rectMatMul_assoc"
     ],
-    "note": "All 24 modules in metadata/library_olean.json were searched. The mounted MatrixAlgebra object supplies exact spectral-norm adapters, including square-product submultiplicativity used by the L proof, but no CGS-P execution model, pythagorean column trace, all-prefix residual certificate, page-312 defect identity, or Theorem 1(7) remainder propagation. Broader source-only GramSchmidt modules are absent from the frozen object manifest and were not counted."
+    "note": "All 24 modules in metadata/library_olean.json were searched. The mounted MatrixAlgebra object supplies square spectral-norm submultiplicativity used directly by the L proof, but no CGS-P arithmetic model, operation-linked execution family, uniform residual asymptotics, page-312 defect identity, or equation-(7) remainder propagation. Broader source-only GramSchmidt modules are absent from the frozen object manifest and were not counted."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
@@ -65,9 +65,14 @@
     "p11C4",
     "p11Kappa2",
     "p11RectOrthogonalityDefect",
+    "P11CGSPNormalizedArithmetic",
     "P11CGSPColumnTrace",
-    "P11Theorem1PrefixCertificate",
     "P11CGSPTheorem1Run",
+    "P11PositiveEpsilon",
+    "P11CGSPTheorem1Family",
+    "p11Theorem1FactorizationResidual",
+    "P11Theorem1ResidualAsymptotics",
+    "p11Theorem1OrthogonalityRadius",
     "p11Theorem1OrthogonalityRemainderCoeff"
   ],
   "source_locations": [
@@ -86,27 +91,27 @@
       "section": "Algorithm 2"
     },
     {
-      "anchor": "Theorem 1, inequality (7)",
+      "anchor": "Theorem 1, numbered equation (7)",
       "pdf_page": 4,
       "printed_page": "302",
-      "role": "stated loss-of-orthogonality bound",
+      "role": "selected stated loss-of-orthogonality bound",
       "section": "Theorem 1"
     },
     {
-      "anchor": "unnumbered exact identity and following norm estimate deriving (7)",
+      "anchor": "exact identity and following norm estimates deriving equation (7)",
       "pdf_page": 14,
       "printed_page": "312",
-      "role": "proof decomposition into normal-equation and factorization-error terms",
+      "role": "proof decomposition and propagation of equations (4)-(6)",
       "section": "Appendix: Proof of Theorem 1"
     }
   ],
   "source_tags": [
-    "THM"
+    "EQN"
   ],
   "task_id": "P11-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "The L proof can directly reuse NumStability.opNorm2_matMul_le from the frozen MatrixAlgebra object, with nearby transpose and triangle adapters. It must still newly derive the rectangular inverse-conjugated identity, control all four spectral residual terms, propagate three explicit second-order coefficients, use the reversed equation-(6) comparison, and assemble the all-prefix c4*kappa2(R_k)^2 conclusion. No mounted declaration models the CGS-P trace or states this theorem.",
+  "tier_rationale": "The L proof directly reuses NumStability.opNorm2_matMul_le for square spectral-norm submultiplicativity. It must still derive the rectangular inverse-conjugated identity, control all four residual terms, propagate three uniform second-order coefficients through family-wide norm bounds, use the reversed equation-(6) comparison, and assemble the all-prefix c4*kappa2(R_k)^2 result. No mounted declaration models the CGS-P family or states equation (7).",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
     "mode": "shared automatic validator",

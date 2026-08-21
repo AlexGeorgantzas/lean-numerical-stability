@@ -45,7 +45,7 @@
     },
     {
       "candidate": "Theorem 1 clauses (4)-(6) and (8) as standalone T3 targets",
-      "reason": "These clauses support the selected main orthogonality result. T3 uses their exact residual relations and exposes their hidden second-order coefficients while deriving inequality (7), rather than replacing the selected conclusion with one supporting estimate."
+      "reason": "These clauses support the selected numbered orthogonality result. T3 uses uniform forms of (4)-(6) while deriving equation (7), rather than replacing the selected conclusion with one supporting estimate."
     },
     {
       "candidate": "Remark 1 and equations (9)-(10)",
@@ -87,7 +87,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 1(7) for every positive prefix of one linked rectangular CGS-P execution, preserving condition (3), spectral norms, c4(m,k), kappa2(R_k)^2, epsilonM, and an explicit finite coefficient for the source's O(epsilonM^2) remainder.",
+      "decision": "Use numbered equation (7) for every positive prefix of one fixed-input family of linked rectangular CGS-P executions, preserving condition (3), spectral norms, c4(m,k), kappa2(R_k)^2, and a uniform interpretation of the source's O(epsilonM^2) remainder.",
       "task_id": "P11-T3",
       "theorem_name": "p11_t3_orthogonality_defect_bound"
     }
@@ -96,7 +96,7 @@
   "selection_policy": [
     "Use correct claims proved in this paper and retain their algorithm, dimensions, hypotheses, norms, constants, and quantifier scope.",
     "Reject the explicitly incorrect cited lemma, experiments, heuristics, and definitions as standalone proof targets.",
-    "Represent every unspecified O(epsilon squared) term by a separate explicit finite coefficient without assigning an unprinted value or uniformity claim.",
+    "Represent each unspecified O(epsilon squared) term by coefficients and a radius fixed uniformly before selecting a positive machine unit.",
     "Keep the fixed Lean setting condition-neutral and paper-scoped.",
     "Assign tiers only after checking the mounted frozen object baseline, not broader source-only Gram-Schmidt modules."
   ],

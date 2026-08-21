@@ -68,7 +68,7 @@ the `theorem` command.
 | `P10-T3` | `EQN`, `TXT` | none | The displayed recurrence and equation (20) are completed by the following prose conclusion that SylR is logarithmically stable. |
 | `P11-T1` | `EQN` | none | The selected first-column residual estimate is equation (16). |
 | `P11-T2` | `UNL` | none | The selected exact defect identity is displayed but unnumbered in the proof of Theorem 1(7). |
-| `P11-T3` | `THM` | `Theorem 1` | The selected loss-of-orthogonality bound is the explicit conclusion (7) of Theorem 1. |
+| `P11-T3` | `EQN` | none | The selected loss-of-orthogonality result is numbered equation (7); equations (4)-(6) are its preceding source estimates. |
 | `P12-T1` | `EQN` | none | The selected nearest-addition error property is equation (10). |
 | `P12-T2` | `THM` | `Theorem 2` | The selected error-free transform is Theorem 2, with equations (3), (7), and (8) providing its certificate form. |
 | `P12-T3` | `LEM` | `Lemma 4` | The selected exact ThreeProduct identity is Lemma 4, equation (18). |

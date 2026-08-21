@@ -68,7 +68,7 @@ noncomputable def p11RectOpNorm2 {m n : ℕ}
 noncomputable def p11C1 (m k : ℕ) : ℝ :=
   if k = 1 then 1
   else
-    2 * Real.sqrt (2 * (m : ℝ)) * (k : ℝ) +
+    2 * Real.sqrt 2 * (m : ℝ) * (k : ℝ) +
       2 * Real.sqrt (k : ℝ)
 
 /-- The paper's normal-equations coefficient `c2(m,k)`. -/
@@ -301,106 +301,79 @@ noncomputable def p11CGSPColumnNorm {m n : ℕ}
     (A : P11RectMatrix m n) (k : Fin n) : ℝ :=
   p11VecNorm fun i ↦ A i k
 
-/-- Exact inner product underlying one entry of `s_k = Q_(k-1)^T a_k`. -/
-noncomputable def p11CGSPProjectionEntry {m n : ℕ}
-    (A Q : P11RectMatrix m n) (j k : Fin n) : ℝ :=
-  ∑ i : Fin m, Q i j * A i k
+/-- Values with indices before `k`, extended by zero to the full column set. -/
+def p11EarlierVector {n : ℕ} (k : Fin n) (x : Fin n → ℝ) : Fin n → ℝ :=
+  fun j ↦ if j.val < k.val then x j else 0
 
-/-- Exact residual underlying `v_k = a_k - Q_(k-1) s_k`. -/
-noncomputable def p11CGSPResidualEntry {m n : ℕ}
-    (A Q : P11RectMatrix m n) (s : Fin n → ℝ)
-    (i : Fin m) (k : Fin n) : ℝ :=
-  A i k - ∑ j ∈ Finset.univ.filter (fun j : Fin n ↦ j.val < k.val),
-    Q i j * s j
+/-- A normalized finite arithmetic interface for the operations that appear in
+Algorithm 2. Dot products expose componentwise accumulated relative errors;
+the scalar operations use the paper's normalized-range relative-error law. -/
+structure P11CGSPNormalizedArithmetic (epsilonM : ℝ)
+    extends P11NormalizedIEEEArithmetic epsilonM where
+  add : ℝ → ℝ → ℝ
+  subtract : ℝ → ℝ → ℝ
+  multiply : ℝ → ℝ → ℝ
+  squareRoot : ℝ → ℝ
+  dot : ∀ {dimension : ℕ}, (Fin dimension → ℝ) → (Fin dimension → ℝ) → ℝ
+  add_normalized : ∀ x y, normalized (x + y) →
+    ∃ delta : ℝ, |delta| ≤ epsilonM ∧ add x y = (x + y) * (1 + delta)
+  subtract_normalized : ∀ x y, normalized (x - y) →
+    ∃ delta : ℝ, |delta| ≤ epsilonM ∧ subtract x y = (x - y) * (1 + delta)
+  multiply_normalized : ∀ x y, normalized (x * y) →
+    ∃ delta : ℝ, |delta| ≤ epsilonM ∧ multiply x y = (x * y) * (1 + delta)
+  square_root_normalized : ∀ x, 0 ≤ x → normalized (Real.sqrt x) →
+    ∃ delta : ℝ,
+      |delta| ≤ epsilonM ∧ squareRoot x = Real.sqrt x * (1 + delta)
+  dot_error : ∀ {dimension : ℕ} (x y : Fin dimension → ℝ),
+    ∃ theta : Fin dimension → ℝ,
+      (∀ i, |theta i| ≤ (dimension : ℝ) * epsilonM) ∧
+        dot x y = ∑ i, x i * y i * (1 + theta i)
 
-/-- One column of a successful normalized-range CGS-P execution. The named
-local errors expose a permissive first-order envelope for the pseudo-code
-operations whose primitive evaluation order the paper leaves unspecified. -/
+/-- One column of a successful normalized-range execution of Algorithm 2.
+Every stored output is linked to the corresponding arithmetic operation; no
+factorization, normal-equation, or orthogonality estimate is stored here. -/
 structure P11CGSPColumnTrace {m n : ℕ}
-    (A Q : P11RectMatrix m n) (R : P11Matrix n)
-    (epsilonM : ℝ) (k : Fin n) where
+    (arithmetic : P11CGSPNormalizedArithmetic epsilonM)
+    (A Q : P11RectMatrix m n) (R : P11Matrix n) (k : Fin n) where
   s : Fin n → ℝ
   v : Fin m → ℝ
   psi : ℝ
   phi : ℝ
-  projectionError : Fin n → ℝ
-  residualError : Fin m → ℝ
-  psiError : ℝ
-  phiError : ℝ
-  diagonalError : ℝ
-  normalizationError : Fin m → ℝ
-  localErrorScale : ℝ
-  local_error_scale_nonneg : 0 ≤ localErrorScale
   projection_support : ∀ j : Fin n, k.val ≤ j.val → s j = 0
   first_diagonal_relation : k.val = 0 →
-    R k k = p11CGSPColumnNorm A k + diagonalError
+    R k k = arithmetic.computedNorm (fun i ↦ A i k)
+  first_division_normalized : k.val = 0 → ∀ i : Fin m,
+    arithmetic.normalized (A i k / R k k)
   first_normalization_relation : k.val = 0 → ∀ i : Fin m,
-    Q i k = A i k / R k k + normalizationError i
+    Q i k = arithmetic.divide (A i k) (R k k)
   later_projection_relation : 0 < k.val → ∀ j : Fin n,
     j.val < k.val →
-      s j = p11CGSPProjectionEntry A Q j k + projectionError j
+      s j = arithmetic.dot (fun i ↦ Q i j) (fun i ↦ A i k)
   later_upper_factor_relation : 0 < k.val → ∀ j : Fin n,
     j.val < k.val → R j k = s j
   later_residual_relation : 0 < k.val → ∀ i : Fin m,
-    v i = p11CGSPResidualEntry A Q s i k + residualError i
+    v i = arithmetic.subtract (A i k)
+      (arithmetic.dot (fun j ↦ Q i j) (p11EarlierVector k s))
   later_psi_relation : 0 < k.val →
-    psi = p11CGSPColumnNorm A k + psiError
+    psi = arithmetic.computedNorm (fun i ↦ A i k)
   later_phi_relation : 0 < k.val →
-    phi = p11VecNorm s + phiError
-  later_psi_nonneg : 0 < k.val → 0 ≤ psi
-  later_phi_nonneg : 0 < k.val → 0 ≤ phi
-  later_pythagorean_domain : 0 < k.val → 0 ≤ psi - phi
+    phi = arithmetic.computedNorm (p11EarlierVector k s)
+  later_pythagorean_domain : 0 < k.val →
+    0 ≤ arithmetic.subtract psi phi
   later_diagonal_relation : 0 < k.val →
-    R k k = Real.sqrt (psi - phi) * Real.sqrt (psi + phi) + diagonalError
+    R k k = arithmetic.multiply
+      (arithmetic.squareRoot (arithmetic.subtract psi phi))
+      (arithmetic.squareRoot (arithmetic.add psi phi))
+  later_division_normalized : 0 < k.val → ∀ i : Fin m,
+    arithmetic.normalized (v i / R k k)
   later_normalization_relation : 0 < k.val → ∀ i : Fin m,
-    Q i k = v i / R k k + normalizationError i
+    Q i k = arithmetic.divide (v i) (R k k)
   diagonal_pos : 0 < R k k
-  projection_error_bound : ∀ j,
-    |projectionError j| ≤ localErrorScale * epsilonM
-  residual_error_bound : ∀ i,
-    |residualError i| ≤ localErrorScale * epsilonM
-  psi_error_bound : |psiError| ≤ localErrorScale * epsilonM
-  phi_error_bound : |phiError| ≤ localErrorScale * epsilonM
-  diagonal_error_bound : |diagonalError| ≤ localErrorScale * epsilonM
-  normalization_error_bound : ∀ i,
-    |normalizationError i| ≤ localErrorScale * epsilonM
 
-/-- The source-level data used for one prefix in the proof of Theorem 1(7).
-The three coefficients expose the otherwise unspecified finite constants in
-the `O(epsilonM^2)` terms of (4), (5), and the reversed form of (6). -/
-structure P11Theorem1PrefixCertificate {m k : ℕ}
-    (A Q : P11RectMatrix m k) (R : P11Matrix k) (epsilonM : ℝ) where
-  deltaA : P11RectMatrix m k
-  normalEquationResidual : P11Matrix k
-  factorizationSecondOrderCoeff : ℝ
-  normalEquationSecondOrderCoeff : ℝ
-  reverseNormSecondOrderCoeff : ℝ
-  factorization_second_order_nonneg : 0 ≤ factorizationSecondOrderCoeff
-  normal_equation_second_order_nonneg :
-    0 ≤ normalEquationSecondOrderCoeff
-  reverse_norm_second_order_nonneg : 0 ≤ reverseNormSecondOrderCoeff
-  factorization_relation : p11RectMatMul Q R = A + deltaA
-  normal_equation_relation :
-    normalEquationResidual = p11RectNormalEquationResidual A R
-  factorization_bound :
-    p11RectOpNorm2 deltaA ≤
-      p11C1 m k * p11RectOpNorm2 A * epsilonM +
-        factorizationSecondOrderCoeff * epsilonM ^ 2
-  normal_equation_bound :
-    p11OpNorm2 normalEquationResidual ≤
-      p11C2 m k * p11RectOpNorm2 A ^ 2 * epsilonM +
-        normalEquationSecondOrderCoeff * epsilonM ^ 2
-  reverse_norm_bound :
-    p11RectOpNorm2 A ≤
-      (1 + p11C3 m k * epsilonM) * p11OpNorm2 R +
-        reverseNormSecondOrderCoeff * epsilonM ^ 2
-
-/-- A proof-carrying successful normalized-range CGS-P execution in the
-analytic model of Theorem 1. It keeps one rectangular input and one computed
-`Q,R` pair, then links every positive leading prefix to equations (3)--(6).
-The paper does not specify a complete primitive-operation semantics, so this
-contract records exactly the real-valued execution facts used to derive (7). -/
-structure P11CGSPTheorem1Run (m n : ℕ) where
+/-- One successful normalized finite CGS-P execution at machine unit
+`epsilonM`. Every leading inverse refers to the computed prefix from this
+execution; the family below imposes condition (3) on its common neighborhood. -/
+structure P11CGSPTheorem1Run (m n : ℕ) (epsilonM : ℝ) where
   row_dimension_pos : 0 < m
   column_dimension_pos : 0 < n
   columns_le_rows : n ≤ m
@@ -409,9 +382,7 @@ structure P11CGSPTheorem1Run (m n : ℕ) where
   R : P11Matrix n
   full_column_rank : Function.Injective A.mulVec
   R_upper_triangular : ∀ i j : Fin n, j.val < i.val → R i j = 0
-  epsilonM : ℝ
-  epsilonM_pos : 0 < epsilonM
-  epsilonM_lt_one : epsilonM < 1
+  arithmetic : P11CGSPNormalizedArithmetic epsilonM
   leadingInverse : ∀ k : Fin n, P11Matrix (k.val + 1)
   leading_left_inverse : ∀ k : Fin n,
     p11MatMul (k.val + 1) (leadingInverse k) (p11LeadingBlock R k) =
@@ -419,34 +390,108 @@ structure P11CGSPTheorem1Run (m n : ℕ) where
   leading_right_inverse : ∀ k : Fin n,
     p11MatMul (k.val + 1) (p11LeadingBlock R k) (leadingInverse k) =
       p11Identity (k.val + 1)
-  condition_3 : ∀ k : Fin n,
-    p11C4 m (k.val + 1) * epsilonM *
-        p11Kappa2 (p11LeadingBlock R k) (leadingInverse k) ^ 2 < 1
   algorithm2_trace : ∀ k : Fin n,
-    P11CGSPColumnTrace A Q R epsilonM k
-  prefixCertificate : ∀ k : Fin n,
-    P11Theorem1PrefixCertificate
-      (p11ColumnPrefix A k) (p11ColumnPrefix Q k)
-      (p11LeadingBlock R k) epsilonM
+    P11CGSPColumnTrace arithmetic A Q R k
 
-/-- The explicit finite coefficient multiplying `epsilonM^2` in the repaired
-form of Theorem 1(7). It is derived from the three source-level remainder
-coefficients fixed by the prefix certificate. -/
+/-- Positive machine units used to state the source's asymptotic first-order
+claim without choosing a remainder independently at one fixed precision. -/
+abbrev P11PositiveEpsilon := {epsilonM : ℝ // 0 < epsilonM}
+
+/-- A fixed-input family of operational CGS-P executions as machine precision
+tends to zero. The norm bounds record only the local boundedness needed to
+propagate a uniform second-order remainder through the computed inverses. -/
+structure P11CGSPTheorem1Family (m n : ℕ) where
+  A : P11RectMatrix m n
+  run : ∀ epsilonM : P11PositiveEpsilon,
+    P11CGSPTheorem1Run m n epsilonM.1
+  input_fixed : ∀ epsilonM, (run epsilonM).A = A
+  rNormBound : Fin n → ℝ
+  inverseNormBound : Fin n → ℝ
+  normBoundRadius : ℝ
+  conditionRadius : ℝ
+  r_norm_bound_nonneg : ∀ k, 0 ≤ rNormBound k
+  inverse_norm_bound_nonneg : ∀ k, 0 ≤ inverseNormBound k
+  norm_bound_radius_pos : 0 < normBoundRadius
+  condition_radius_pos : 0 < conditionRadius
+  r_norm_bound : ∀ epsilonM, epsilonM.1 ≤ normBoundRadius → ∀ k,
+    p11OpNorm2 (p11LeadingBlock (run epsilonM).R k) ≤ rNormBound k
+  inverse_norm_bound : ∀ epsilonM, epsilonM.1 ≤ normBoundRadius → ∀ k,
+    p11OpNorm2 ((run epsilonM).leadingInverse k) ≤ inverseNormBound k
+  condition_3 : ∀ epsilonM, epsilonM.1 ≤ conditionRadius → ∀ k,
+    p11C4 m (k.val + 1) * epsilonM.1 *
+        p11Kappa2 (p11LeadingBlock (run epsilonM).R k)
+          ((run epsilonM).leadingInverse k) ^ 2 < 1
+
+/-- The actual factorization residual for a family member and prefix. -/
+noncomputable def p11Theorem1FactorizationResidual {m n : ℕ}
+    (family : P11CGSPTheorem1Family m n) (epsilonM : P11PositiveEpsilon)
+    (k : Fin n) : P11RectMatrix m (k.val + 1) :=
+  p11RectMatMul (p11ColumnPrefix (family.run epsilonM).Q k)
+      (p11LeadingBlock (family.run epsilonM).R k) -
+    p11ColumnPrefix family.A k
+
+/-- Equations (4), (5), and the reversed form of (6), interpreted uniformly
+on one right neighborhood of zero. These are the preceding source results used
+in the appendix derivation of equation (7), not fields of an execution. -/
+structure P11Theorem1ResidualAsymptotics {m n : ℕ}
+    (family : P11CGSPTheorem1Family m n) where
+  factorizationSecondOrderCoeff : Fin n → ℝ
+  normalEquationSecondOrderCoeff : Fin n → ℝ
+  reverseNormSecondOrderCoeff : Fin n → ℝ
+  radius : ℝ
+  factorization_second_order_nonneg : ∀ k,
+    0 ≤ factorizationSecondOrderCoeff k
+  normal_equation_second_order_nonneg : ∀ k,
+    0 ≤ normalEquationSecondOrderCoeff k
+  reverse_norm_second_order_nonneg : ∀ k,
+    0 ≤ reverseNormSecondOrderCoeff k
+  radius_pos : 0 < radius
+  factorization_bound : ∀ epsilonM, epsilonM.1 ≤ radius → ∀ k,
+    p11RectOpNorm2 (p11Theorem1FactorizationResidual family epsilonM k) ≤
+      p11C1 m (k.val + 1) *
+          p11RectOpNorm2 (p11ColumnPrefix family.A k) * epsilonM.1 +
+        factorizationSecondOrderCoeff k * epsilonM.1 ^ 2
+  normal_equation_bound : ∀ epsilonM, epsilonM.1 ≤ radius → ∀ k,
+    p11OpNorm2
+        (p11RectNormalEquationResidual
+          (p11ColumnPrefix family.A k)
+          (p11LeadingBlock (family.run epsilonM).R k)) ≤
+      p11C2 m (k.val + 1) *
+          p11RectOpNorm2 (p11ColumnPrefix family.A k) ^ 2 * epsilonM.1 +
+        normalEquationSecondOrderCoeff k * epsilonM.1 ^ 2
+  reverse_norm_bound : ∀ epsilonM, epsilonM.1 ≤ radius → ∀ k,
+    p11RectOpNorm2 (p11ColumnPrefix family.A k) ≤
+      (1 + p11C3 m (k.val + 1) * epsilonM.1) *
+          p11OpNorm2 (p11LeadingBlock (family.run epsilonM).R k) +
+        reverseNormSecondOrderCoeff k * epsilonM.1 ^ 2
+
+/-- A common right-neighborhood radius on which the residual estimates,
+bounded computed factors, and `epsilonM ≤ 1` are all available. -/
+noncomputable def p11Theorem1OrthogonalityRadius {m n : ℕ}
+    (family : P11CGSPTheorem1Family m n)
+    (analysis : P11Theorem1ResidualAsymptotics family) : ℝ :=
+  min 1
+    (min family.normBoundRadius (min family.conditionRadius analysis.radius))
+
+/-- A uniform coefficient for the `O(epsilonM^2)` term produced by the
+appendix derivation of equation (7). It depends on the fixed family and the
+uniform remainders in the preceding equations, never on one chosen epsilon. -/
 noncomputable def p11Theorem1OrthogonalityRemainderCoeff {m n : ℕ}
-    (run : P11CGSPTheorem1Run m n) (k : Fin n) : ℝ :=
-  let certificate := run.prefixCertificate k
-  let a := p11RectOpNorm2 (p11ColumnPrefix run.A k)
-  let r := p11OpNorm2 (p11LeadingBlock run.R k)
-  let rinv := p11OpNorm2 (run.leadingInverse k)
+    (family : P11CGSPTheorem1Family m n)
+    (analysis : P11Theorem1ResidualAsymptotics family) (k : Fin n) : ℝ :=
+  let a := p11RectOpNorm2 (p11ColumnPrefix family.A k)
+  let rBound := family.rNormBound k
+  let inverseBound := family.inverseNormBound k
   let normSlope :=
-    p11C3 m (k.val + 1) * r + certificate.reverseNormSecondOrderCoeff
-  let aSquareRemainder := 2 * r * normSlope + normSlope ^ 2
+    p11C3 m (k.val + 1) * rBound +
+      analysis.reverseNormSecondOrderCoeff k
+  let aSquareRemainder := 2 * rBound * normSlope + normSlope ^ 2
   let coreRemainder :=
-    certificate.normalEquationSecondOrderCoeff +
-      2 * a * certificate.factorizationSecondOrderCoeff +
+    analysis.normalEquationSecondOrderCoeff k +
+      2 * a * analysis.factorizationSecondOrderCoeff k +
       (p11C1 m (k.val + 1) * a +
-          certificate.factorizationSecondOrderCoeff) ^ 2
-  rinv ^ 2 *
+          analysis.factorizationSecondOrderCoeff k) ^ 2
+  inverseBound ^ 2 *
     (p11C4 m (k.val + 1) * aSquareRemainder + coreRemainder)
 
 end HighamBench

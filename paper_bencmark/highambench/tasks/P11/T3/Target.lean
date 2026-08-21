@@ -2,19 +2,23 @@ import HighamBench.P11Definitions
 
 namespace HighamBench
 
-/-- P11-T3: the all-prefix spectral loss-of-orthogonality bound in
-Theorem 1(7), with the source's hidden second-order term exposed. -/
+/-- P11-T3: the uniform all-prefix form of equation (7), derived from the
+preceding residual estimates for one fixed-input CGS-P execution family. -/
 theorem p11_t3_orthogonality_defect_bound {m n : ℕ}
-    (run : P11CGSPTheorem1Run m n) :
-    ∀ k : Fin n,
+    (family : P11CGSPTheorem1Family m n)
+    (analysis : P11Theorem1ResidualAsymptotics family) :
+    ∀ epsilonM : P11PositiveEpsilon,
+      epsilonM.1 ≤ p11Theorem1OrthogonalityRadius family analysis →
+      ∀ k : Fin n,
       p11OpNorm2
-          (p11RectOrthogonalityDefect (p11ColumnPrefix run.Q k)) ≤
+          (p11RectOrthogonalityDefect
+            (p11ColumnPrefix (family.run epsilonM).Q k)) ≤
         p11C4 m (k.val + 1) *
-              p11Kappa2 (p11LeadingBlock run.R k)
-                  (run.leadingInverse k) ^ 2 *
-            run.epsilonM +
-          p11Theorem1OrthogonalityRemainderCoeff run k *
-            run.epsilonM ^ 2 := by
+              p11Kappa2 (p11LeadingBlock (family.run epsilonM).R k)
+                  ((family.run epsilonM).leadingInverse k) ^ 2 *
+            epsilonM.1 +
+          p11Theorem1OrthogonalityRemainderCoeff family analysis k *
+            epsilonM.1 ^ 2 := by
   -- PROOF_START
   sorry
 
