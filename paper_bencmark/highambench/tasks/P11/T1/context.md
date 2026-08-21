@@ -25,24 +25,33 @@ model is the paper's IEEE normalized-range relative-error model with machine
 unit `epsilonM`; overflow, subnormal underflow, infinities, and NaNs are not
 covered.
 
-For the computed first normalization, standard division error supplies an
+For the computed first normalization, standard division error produces an
 operator `G1` such that
 
 `q1 = (I + G1) * a1 / r11` and `||G1||_2 <= epsilonM`.
 
-The paper does not specify the entries or structure of `G1`, so the Lean model
-keeps it opaque. Its norm is the exact induced spectral 2-norm, not the
-Frobenius norm.
+The theorem concludes only that such a dimension-compatible `G1` exists; it
+does not assert unprinted structure or uniqueness. Its norm is the exact
+induced spectral 2-norm, not the Frobenius norm.
 
 ## Lean statement
 
 `P11CGSPFirstColumnRun m n` is a proof-carrying contract for the computed
 first column of an admissible CGS-P execution. It records the dimensions,
 input and computed factors, full column rank, triangular structure, certified
-inverses of all leading blocks, condition (3), nonnegative machine unit, and
-the normalized first-column perturbation relation.
+inverses of all leading blocks, condition (3), positive machine unit, and the
+actual first-column Algorithm 2 operations. In particular, `r11` is linked to
+a computed norm and each `q1` entry is linked to a normalized IEEE division.
+The arithmetic interface supplies primitive relative division errors bounded
+by `epsilonM`; it does not contain `G1` or equation (16).
 
-`P11Equation16 run` states all parts of the selected source passage:
+The computed norm relation retains the source's
+`(0.5*m+1)*epsilonM + O(epsilonM^2)` error. The unspecified higher-order term
+is represented by one nonnegative arithmetic-level coefficient, without
+assigning it a value.
+
+`P11Equation16 run` existentially produces `G1` and states all parts of the
+selected source passage:
 
 - the computed normalization relation;
 - the exact post-analysis identity `A1 - Q1*R1 = a1 - q1*r11`;
@@ -58,7 +67,9 @@ chain displayed in equation (16), with coefficient one. The matrix product
 and subtraction are exact post-analysis operations on computed factors. No
 additional rounding operation is introduced for evaluating the residual.
 
-The paper uses higher-order suppression in the surrounding Theorem 1 analysis,
-but equation (16) itself has no displayed `O(epsilonM^2)` remainder, so none is
-added here. The source does not identify a rounding mode more precisely than
-the stated IEEE normalized-range model.
+The proof may construct a diagonal witness from the componentwise division
+errors, but diagonality is not part of the public conclusion. The paper uses
+higher-order suppression in the surrounding Theorem 1 analysis, but equation
+(16) itself has no displayed `O(epsilonM^2)` remainder, so none is added to the
+residual bound. The source does not identify a rounding mode more precisely
+than the stated IEEE normalized-range model.

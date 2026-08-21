@@ -6,10 +6,10 @@
   },
   "assumptions": [
     "The dimensions m and n are positive, n is at most m, and the rectangular input A has full column rank.",
-    "Q and upper-triangular R are the computed factors represented by the proof-carrying CGS-P first-column execution contract.",
+    "Q and upper-triangular R are the computed factors represented by the proof-carrying CGS-P first-column execution contract, with r11 linked to the computed norm and q1 linked to componentwise division.",
     "Every leading block of R has a certified inverse and satisfies condition (3): c4(m,k)*epsilonM*kappa2(R_k)^2 < 1.",
-    "The machine unit epsilonM is nonnegative, the first diagonal r11 is positive, and the computed normalization has q1=(I+G1)*a1/r11 with induced spectral norm ||G1||_2 <= epsilonM.",
-    "The real-valued error certificate represents the paper's IEEE normalized finite regime; exceptional values and any higher-order terms suppressed by the surrounding analysis are outside the claim."
+    "The machine unit epsilonM is positive and less than one; normalized IEEE division has relative error at most epsilonM, and the computed norm has the paper's first-order error plus one unspecified nonnegative O(epsilonM^2) coefficient.",
+    "The real-valued arithmetic interface represents the paper's IEEE normalized finite regime; subnormals, overflow, infinities, NaNs, and higher-order contributions outside the recorded norm remainder are outside the claim."
   ],
   "author_label": null,
   "classification_frozen_before_runs": false,
@@ -25,7 +25,7 @@
     "target_file": "paper_bencmark/highambench/tasks/P11/T1/Target.lean",
     "theorem_name": "p11_t1_first_column_residual_action"
   },
-  "informal_proof": "Substitute the computed normalization relation into A1-Q1*R1 and cancel the positive r11 to obtain -G1*a1. Identify the one-column matrix norm with the Euclidean norm of its column, remove the minus sign, apply the exact spectral operator-norm action bound, and multiply ||G1||_2 <= epsilonM by the nonnegative norm of a1.",
+  "informal_proof": "Use the normalized IEEE division law at each first-column entry to obtain relative errors delta_i with |delta_i|<=epsilonM. The diagonal matrix with entries delta_i has induced 2-norm at most epsilonM and witnesses q1=(I+G1)*a1/r11. Substitute this relation into A1-Q1*R1, cancel the positive computed r11, identify the one-column matrix norm with its Euclidean column norm, and apply the spectral operator-norm action bound.",
   "informal_statement": "The exact computed CGS-P first-column residual identity and complete induced-2-norm chain in equation (16).",
   "limits": {
     "total_model_tokens": 5000000,
@@ -44,7 +44,7 @@
     "nearby_numstability_declarations": [
       "NumStability.opNorm2Le_opNorm2"
     ],
-    "note": "The complete mounted 24-module frozen baseline has no CGS-P execution model or equation-(16) residual theorem. NumStability.opNorm2Le_opNorm2 in NumStability/Analysis/MatrixAlgebra.lean directly supplies the nontrivial induced-2-norm action step; the remaining proof is exact first-column residual algebra and application of the run's source certificate."
+    "note": "The complete mounted 24-module frozen baseline has no CGS-P execution model or equation-(16) residual theorem. NumStability.opNorm2Le_opNorm2 in NumStability/Analysis/MatrixAlgebra.lean directly supplies the induced-2-norm action step; the remaining proof extracts primitive normalized-division errors, constructs the existential witness, and performs exact first-column residual algebra."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
@@ -55,9 +55,10 @@
     "p11OpNorm2",
     "p11C4",
     "p11Kappa2",
-    "P11NormalizedFirstColumn",
+    "P11NormalizedIEEEArithmetic",
     "P11CGSPFirstColumnRun",
     "p11FirstColumnFactorizationResidual",
+    "P11Equation16Witness",
     "P11Equation16"
   ],
   "source_locations": [
@@ -103,7 +104,7 @@
   "task_id": "P11-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "NumStability.opNorm2Le_opNorm2 in the frozen NumStability/Analysis/MatrixAlgebra.lean module is the close theorem for equation (16)'s only nontrivial norm step. The L proof directly specializes it to G1 and a1, then performs the source's exact one-column substitution, cancellation, norm identification, and supplied ||G1||_2 bound; no frozen declaration models the whole CGS-P result.",
+  "tier_rationale": "NumStability.opNorm2Le_opNorm2 in the frozen NumStability/Analysis/MatrixAlgebra.lean module is the close theorem for equation (16)'s operator-action step. The L proof directly specializes it after constructing G1 from normalized division errors, then performs the source's exact one-column substitution, cancellation, and norm identification; no frozen declaration models the CGS-P execution or produces G1.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P11/T1/Target.lean",
     "mode": "shared automatic validator",

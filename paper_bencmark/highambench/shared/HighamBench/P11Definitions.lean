@@ -90,16 +90,29 @@ noncomputable def p11C3 (m k : ℕ) : ℝ :=
 noncomputable def p11Kappa2 {n : ℕ} (R Rinv : P11Matrix n) : ℝ :=
   p11OpNorm2 R * p11OpNorm2 Rinv
 
-/-- Normalized-range floating-point certificate for Algorithm 2's first
-column division. It is exactly the standard-error-bound representation used
-immediately before equation (16), without assigning unprinted entries to G1. -/
-structure P11NormalizedFirstColumn {m : ℕ}
-    (a q : Fin m → ℝ) (r11 epsilonM : ℝ) where
-  G1 : P11Matrix m
-  denominator_pos : 0 < r11
-  representation : ∀ i : Fin m,
-    q i = (a i + p11MatVec G1 a i) / r11
-  opNorm_bound : p11OpNorm2 G1 ≤ epsilonM
+/-- The normalized finite part of the IEEE arithmetic used by Algorithm 2's
+first-column initialization. The computed norm carries the paper's explicit
+first-order error with its unspecified `O(epsilonM^2)` coefficient. A scalar
+division exposes only its primitive relative error; it does not supply the
+matrix witness that equation (16) is meant to produce. -/
+structure P11NormalizedIEEEArithmetic (epsilonM : ℝ) where
+  normalized : ℝ → Prop
+  divide : ℝ → ℝ → ℝ
+  computedNorm : ∀ {m : ℕ}, (Fin m → ℝ) → ℝ
+  normSecondOrderCoeff : ℕ → ℝ
+  norm_second_order_nonneg : ∀ m, 0 ≤ normSecondOrderCoeff m
+  computed_norm_error : ∀ {m : ℕ} (a : Fin m → ℝ),
+    ∃ delta : ℝ,
+      computedNorm a = p11VecNorm a * (1 + delta) ∧
+        |delta| ≤ ((1 / 2 : ℝ) * (m : ℝ) + 1) * epsilonM +
+          normSecondOrderCoeff m * epsilonM ^ 2
+  computed_norm_nonneg : ∀ {m : ℕ} (a : Fin m → ℝ),
+    0 ≤ computedNorm a
+  divide_normalized : ∀ x denominator,
+    denominator ≠ 0 → normalized (x / denominator) →
+      ∃ delta : ℝ,
+        |delta| ≤ epsilonM ∧
+          divide x denominator = (x / denominator) * (1 + delta)
 
 /-- Proof-carrying execution contract for the first column of CGS-P under the
 standing hypotheses of Theorem 1. Real-valued error equations represent only
@@ -114,7 +127,9 @@ structure P11CGSPFirstColumnRun (m n : ℕ) where
   full_column_rank : Function.Injective A.mulVec
   R_upper_triangular : ∀ i j : Fin n, j.val < i.val → R i j = 0
   epsilonM : ℝ
-  epsilonM_nonneg : 0 ≤ epsilonM
+  epsilonM_pos : 0 < epsilonM
+  epsilonM_lt_one : epsilonM < 1
+  arithmetic : P11NormalizedIEEEArithmetic epsilonM
   leadingInverse : ∀ k : Fin n, P11Matrix (k.val + 1)
   leading_left_inverse : ∀ k : Fin n,
     p11MatMul (k.val + 1) (leadingInverse k) (p11LeadingBlock R k) =
@@ -125,13 +140,22 @@ structure P11CGSPFirstColumnRun (m n : ℕ) where
   condition_3 : ∀ k : Fin n,
     p11C4 m (k.val + 1) * epsilonM *
         p11Kappa2 (p11LeadingBlock R k) (leadingInverse k) ^ 2 < 1
-  first_normalization :
-    P11NormalizedFirstColumn
-      (fun i => A i (p11FirstIndex column_dimension_pos))
-      (fun i => Q i (p11FirstIndex column_dimension_pos))
-      (R (p11FirstIndex column_dimension_pos)
-        (p11FirstIndex column_dimension_pos))
-      epsilonM
+  first_norm_computed :
+    R (p11FirstIndex column_dimension_pos)
+        (p11FirstIndex column_dimension_pos) =
+      arithmetic.computedNorm
+        (fun i => A i (p11FirstIndex column_dimension_pos))
+  first_division_normalized : ∀ i : Fin m,
+    arithmetic.normalized
+      (A i (p11FirstIndex column_dimension_pos) /
+        R (p11FirstIndex column_dimension_pos)
+          (p11FirstIndex column_dimension_pos))
+  first_division_computed : ∀ i : Fin m,
+    Q i (p11FirstIndex column_dimension_pos) =
+      arithmetic.divide
+        (A i (p11FirstIndex column_dimension_pos))
+        (R (p11FirstIndex column_dimension_pos)
+          (p11FirstIndex column_dimension_pos))
 
 /-- The one-column input matrix `A1`. -/
 def p11A1 {m n : ℕ} (run : P11CGSPFirstColumnRun m n) :
@@ -173,24 +197,37 @@ noncomputable def p11FirstColumnMatrixNorm2 {m : ℕ}
     (A : P11RectMatrix m 1) : ℝ :=
   p11VecNorm (fun i => A i 0)
 
-/-- The complete exact first-column residual identity and norm chain in (16). -/
-structure P11Equation16 {m n : ℕ} (run : P11CGSPFirstColumnRun m n) : Prop where
+/-- The computed-norm relation, exact first-column residual identity, and
+complete norm chain in equation (16), for one produced witness `G1`. -/
+structure P11Equation16Witness {m n : ℕ}
+    (run : P11CGSPFirstColumnRun m n) (G1 : P11Matrix m) : Prop where
+  denominator_pos :
+    0 < run.R (p11FirstIndex run.column_dimension_pos)
+      (p11FirstIndex run.column_dimension_pos)
+  norm_roundoff_relation : ∃ delta : ℝ,
+    run.R (p11FirstIndex run.column_dimension_pos)
+          (p11FirstIndex run.column_dimension_pos) =
+        p11VecNorm
+            (fun i => run.A i (p11FirstIndex run.column_dimension_pos)) *
+          (1 + delta) ∧
+      |delta| ≤ ((1 / 2 : ℝ) * (m : ℝ) + 1) * run.epsilonM +
+        run.arithmetic.normSecondOrderCoeff m * run.epsilonM ^ 2
   normalization_relation : ∀ i : Fin m,
     run.Q i (p11FirstIndex run.column_dimension_pos) =
       (run.A i (p11FirstIndex run.column_dimension_pos) +
-          p11MatVec run.first_normalization.G1
+          p11MatVec G1
             (fun j => run.A j (p11FirstIndex run.column_dimension_pos)) i) /
         run.R (p11FirstIndex run.column_dimension_pos)
           (p11FirstIndex run.column_dimension_pos)
   perturbation_opNorm_bound :
-    p11OpNorm2 run.first_normalization.G1 ≤ run.epsilonM
+    p11OpNorm2 G1 ≤ run.epsilonM
   factorization_residual_identity :
     p11FirstColumnFactorizationResidual run =
       fun i _ => p11FirstColumnResidualVector run i
   residual_action_identity :
     p11FirstColumnResidualVector run =
       fun i =>
-        -p11MatVec run.first_normalization.G1
+        -p11MatVec G1
           (fun j => run.A j (p11FirstIndex run.column_dimension_pos)) i
   matrix_vector_norm_identity :
     p11FirstColumnMatrixNorm2 (p11FirstColumnFactorizationResidual run) =
@@ -198,19 +235,23 @@ structure P11Equation16 {m n : ℕ} (run : P11CGSPFirstColumnRun m n) : Prop whe
   residual_action_norm_identity :
     p11VecNorm (p11FirstColumnResidualVector run) =
       p11VecNorm
-        (p11MatVec run.first_normalization.G1
+        (p11MatVec G1
           (fun j => run.A j (p11FirstIndex run.column_dimension_pos)))
   operator_action_bound :
     p11VecNorm
-        (p11MatVec run.first_normalization.G1
+        (p11MatVec G1
           (fun j => run.A j (p11FirstIndex run.column_dimension_pos))) ≤
-      p11OpNorm2 run.first_normalization.G1 *
+      p11OpNorm2 G1 *
         p11VecNorm (fun j => run.A j (p11FirstIndex run.column_dimension_pos))
   machine_unit_bound :
-    p11OpNorm2 run.first_normalization.G1 *
+    p11OpNorm2 G1 *
         p11VecNorm (fun j => run.A j (p11FirstIndex run.column_dimension_pos)) ≤
       run.epsilonM *
         p11VecNorm (fun j => run.A j (p11FirstIndex run.column_dimension_pos))
+
+/-- The source's witness-producing first-column claim. -/
+def P11Equation16 {m n : ℕ} (run : P11CGSPFirstColumnRun m n) : Prop :=
+  ∃ G1 : P11Matrix m, P11Equation16Witness run G1
 
 /-- The loss-of-orthogonality matrix appearing in Theorem 1(7). -/
 noncomputable def p11OrthogonalityDefect {n : ℕ}
