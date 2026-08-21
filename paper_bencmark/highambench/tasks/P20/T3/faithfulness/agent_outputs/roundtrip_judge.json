@@ -3,177 +3,177 @@
   "role": "roundtrip-judge",
   "task_id": "P20-T3",
   "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
-  "blind_translation_sha256": "239535a4e9833a8a053aa61e59dc02866b934ae9bca5affe60d68be15e25e8e8",
+  "blind_translation_sha256": "0aac426aa3fa48cc1fd7866564f7d984b768828c188dbc2d8e09ecfa9df2a24c",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The PDF hash matches the supplied hash. The source is SIAM Journal on Scientific Computing 47(4), B785-B800, and Theorem 4.1 with equations (4.29)-(4.33) appears on PDF p. 11, printed B795.",
-      "translation_evidence": "The blind translation identifies P20-T3 and translates the scaled p-word result, its four-term coefficient, and the surrounding Model 1 definitions.",
-      "reasoning": "The selected paper, theorem, and surrounding derivation are the correct source."
+      "paper_evidence": "The PDF title page identifies SIAM J. Sci. Comput. 47(4), B785-B800, published electronically July 1, 2025, DOI 10.1137/24M1685109. Theorem 4.1 and equations (4.29)-(4.33) appear on PDF page 11, printed B795.",
+      "translation_evidence": "The translation targets the scaled p-word algorithm, theta, and the four terms from equation (4.32).",
+      "reasoning": "The supplied PDF hash and the selected theorem, equations, and surrounding comparison are correct."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "Theorem 4.1 concerns fixed A in R^(m x n), B in R^(n x q), a p-word computation, fixed format parameters, and the computed m-by-q result.",
-      "translation_evidence": "The translation additionally binds an arbitrary parameter type iota, an arbitrary nonbottom filter l, and a parameter-dependent execution package; its run explicitly requires m,n,q,p all positive.",
-      "reasoning": "The matrix dimensions and word indices match, but the filter-indexed family and explicit positivity of both outer dimensions are additional binders and restrictions not stated by the paper."
+      "paper_evidence": "Theorem 4.1 binds A in R^(m x n), B in R^(n x q), diagonal scaling matrices, and p-word indices 0 through p-1 for one computation.",
+      "translation_evidence": "The translation additionally binds a type iota, a nonbottom filter l, a parameter-dependent arithmetic model and computed matrix, and a CertifiedExecution containing a run certificate.",
+      "reasoning": "The core matrix dimensions and word indices match, but the extra asymptotic-family and certified-execution binders materially change the theorem's domain."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "Theorem 4.1 assumes Model 1, scaling, word construction, and the triangular computation, then derives the error estimate. Equations (4.18)-(4.28) are preceding derived facts.",
-      "translation_evidence": "Universal quantification is over executions that already contain a LocalDef042/LocalDef050 certificate with the four component bounds and residual big-O property. The remainder witness may depend on that execution and filter.",
-      "reasoning": "Derived analysis has been moved under the quantifier into the data required to instantiate the theorem. The translation does not quantify over all runs satisfying only the paper's algorithmic hypotheses."
+      "paper_evidence": "The paper states a bound for the computed result of each fixed algorithmic instance; it introduces no filter or existential remainder witness.",
+      "translation_evidence": "For each certified parameterized execution, the conclusion existentially chooses r, requires r=O_l(S^2), and imposes the inequality only eventually along l.",
+      "reasoning": "Witness dependence and eventual scope replace the paper's fixed-instance assertion, and the execution certificate is quantified as input rather than obtained as part of the conclusion."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "On PDF pp. 9-11, equations (4.8)-(4.28) derive the decomposition, omitted-product estimate, accumulation estimate, and combined estimate from Model 1 and the scaling construction.",
-      "translation_evidence": "The execution certificate assumes all four final component estimates and assumes ||Rres||=O_l(E^2). It also selects a zero-vector scaling convention and requires positive m and q.",
-      "reasoning": "The decisive estimates are hypotheses rather than consequences. This makes the result circular and strictly restricts applicability relative to Theorem 4.1."
+      "paper_evidence": "Model 1, equations (2.3)-(2.4), and the scaling setup require the mixed-format error model, no overflow, exact external storage before and after scaling, and default round-to-nearest. Equations (3.4a)-(3.4b) supply maximal power-of-two scaling intervals.",
+      "translation_evidence": "LocalDef041 and LocalDef052 encode nested formats, error bounds, exclusivity, and maximal scales, but LocalDef042 and LocalDef050 additionally assume the error decomposition, all four first-order bounds, and an O_l(S^2) residual. The restrictions explicitly report no standalone overflow, representability, or rounding-mode assertion.",
+      "reasoning": "Some implicit scaling conditions are correctly restored, but conclusion-bearing certificate assumptions are added while source-level overflow, storage, and rounding-mode scope are not fully retained."
     },
     {
       "id": "S05",
       "status": "fail",
-      "paper_evidence": "Equation (4.32) is a single normwise forward-error lesssim conclusion for the computed output of the specified algorithm.",
-      "translation_evidence": "The first conjunct is only an eventual inequality for certified executions with an added O_l(E^2) remainder. The second conjunct merely expands the definition of C(t).",
-      "reasoning": "All four displayed coefficient terms occur, but the substantive theorem conclusion is replaced by conditional aggregation of assumed estimates. The coefficient-only conjunct adds no independent numerical conclusion."
+      "paper_evidence": "Equation (4.32) gives the four-term normwise bound; equation (4.33) and the B796 discussion identify the range-unrestricted terms and the equal order-u^(p-1) reduction of input rounding and underflow errors.",
+      "translation_evidence": "The translation concludes an eventual inequality with an O_l(S^2) remainder and a definitional identity for C. It does not assert equation (4.33) or the subsequent comparative conclusion.",
+      "reasoning": "All four coefficients are present, but the principal conclusion has altered semantics and the selected surrounding comparison is absent; the added coefficient identity contributes no corresponding substantive paper conclusion."
     },
     {
       "id": "S06",
-      "status": "pass",
-      "paper_evidence": "Model 1 and equations (2.1)-(2.4), (3.2), and (4.29)-(4.32) define u, U, g_min, G_min, theta, the weighted word recurrence, and the coefficient.",
-      "translation_evidence": "The dependency ledger explicitly unfolds the format quantities, matrix and vector infinity norms, theta, natural p-1, matrix multiplication, scale admissibility, word recurrences, and IsBigO.",
-      "reasoning": "The imported mathematical operators are explicitly interpreted. Whether the chosen IsBigO relation and operational folds match the source is addressed separately by S08, S12, and S14."
+      "status": "unclear",
+      "paper_evidence": "The paper uses powers of two, fl and FL, matrix infinity norms, and an informally explained lesssim relation; it does not give a formal hidden-constant definition of lesssim.",
+      "translation_evidence": "The dependency ledger unfolds nearly all operators, but D066 leaves the exponent type in the power-of-two predicate unclear, while D008 and D034 choose a filter-based O_l(S^2) interpretation of lesssim.",
+      "reasoning": "The operator ledger is extensive, but the unresolved exponent type can change admissible scales, and the source does not uniquely determine the selected asymptotic definition."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "Equations (4.21)-(4.25) distinguish the computed output hat C, exact AB, decomposition errors, accumulation error, omitted products, and total forward error E.",
-      "translation_evidence": "The translation distinguishes exact A and B, exact AB, exact reconstructed and truncated products, the rounded Ccomp, four error components, and a residual.",
-      "reasoning": "Exact, computed, and proof-only error quantities are not conflated."
+      "paper_evidence": "Equations (4.21)-(4.25) distinguish exact AB, the finite-precision computed C-hat, decomposition errors, accumulation error, omitted products, and total forward error.",
+      "translation_evidence": "LocalDef016 measures ||computed(t)-A*B||_inf, while LocalDef024, LocalDef058, and LocalDef084-L086 separately define the computed, reconstructed, inverse-scaled, and exact retained quantities.",
+      "reasoning": "The translation does not conflate exact AB with the rounded computed result."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Theorem 4.1 links the claim to power-of-two scaling, recurrences (4.29)-(4.30), pairs i+j<p, and accumulation-format inner products. The estimates supporting (4.32) are derived from that execution.",
-      "translation_evidence": "The run encodes the scaling, recurrences, and triangular product, but LocalDef050 separately assumes every estimate needed for the conclusion. LocalDef062 also chooses a specific fold round(s+x_k y_k), and LocalDef054 chooses a lexicographic rounded outer fold.",
-      "reasoning": "Although the algorithm is present in the package, it is not what establishes the theorem: the certificate does. The selected operational order and fused-looking dot-product step are also more specific than, and not identical to, the paper's operation model."
+      "paper_evidence": "Equations (4.29)-(4.31) prescribe input-format word extraction, triangular truncation i+j<p, inverse scaling, and accumulation-format inner products. Model 1 applies FL to accumulation operations, and the B790 analysis separately discusses multiplication and addition underflows.",
+      "translation_evidence": "LocalDef043, LocalDef054, and LocalDef067 preserve scaling, recursion, truncation, and inverse scaling, but LocalDef062 forms exact products x(k)y(k) and rounds only after adding each product to a left-fold accumulator.",
+      "reasoning": "The broad algorithm is linked correctly, but the translated dot product is a fixed fused-like left fold that omits the paper's separately modeled product rounding and underflow operations."
     },
     {
       "id": "S09",
-      "status": "pass",
-      "paper_evidence": "Equation (4.32) is a normwise absolute bound using the matrix infinity norm; the surrounding rowwise derivation supports the induced maximum absolute row-sum norm.",
-      "translation_evidence": "LocalDef029 defines max_i sum_j |X_ij|, and LocalDef016 applies it to Ccomp-AB.",
-      "reasoning": "The norm is unsquared, normwise, and of the intended matrix-infinity kind."
+      "status": "unclear",
+      "paper_evidence": "Equations (3.24), (4.28), and (4.32) use ||.||_infty normwise, but the inspected passages do not explicitly define whether the matrix norm is the induced row-sum norm or another infinity norm.",
+      "translation_evidence": "LocalDef029 explicitly chooses the maximum row sum of absolute entries, while LocalDef016 and LocalDef018 use it for the forward error and input factors.",
+      "reasoning": "The choice is consistent with the usual matrix infinity norm and the surrounding derivation, but the source passage does not explicitly settle the definition, so exact norm equivalence requires adjudication."
     },
     {
       "id": "S10",
       "status": "pass",
-      "paper_evidence": "Equation (4.32) has exactly (p+1)u^p, 4n u^(p-1) theta^(-1) g_min, (n+p^2)U, and 2p(p+1)n^2 theta^(-2)G_min. The algorithm retains i+j<p, and equation (4.26) has (p-1)u^p.",
-      "translation_evidence": "LocalDefs 012-015 and 031-032 reproduce the four coefficients exactly; p-1 is natural predecessor with p>0, dimensions are m-by-n, n-by-q, and m-by-q, and the retained pairs satisfy a+b<p.",
-      "reasoning": "The coefficients, p-1 exponent, common inner dimension n, powers, and triangular indexing match. Reordering the middle summands in the definitional coefficient identity is algebraically harmless."
+      "paper_evidence": "Equation (4.32) contains exactly (p+1)u^p, 4n u^(p-1) theta^(-1)g_min, (n+p^2)U, and 2p(p+1)n^2 theta^(-2)G_min; retained indices satisfy 0<=i,j<=p-1 and i+j<p.",
+      "translation_evidence": "LocalDef012-L015 and LocalDef031-L032 reproduce these coefficients, and LocalDef067 uses the triangular index condition. Valid runs require p>0.",
+      "reasoning": "The displayed constants, inner dimension n, exponents, and retained word indices match."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "Equations (2.3)-(2.4) use distinct input and accumulation formats, mutually exclusive relative and additive errors, round-to-nearest constants, and an explicit no-overflow scope. PDF p. 6, printed B790, separately discusses underflowing multiplications and additions.",
-      "translation_evidence": "The model contains matching error equations and format nesting, but does not require round-to-nearest or explicitly delimit overflow. LocalDef062 rounds s+x_k y_k once rather than separately representing accumulation-format multiplication and addition.",
-      "reasoning": "Important format formulas match, but the permitted rounding maps and the implemented inner-product operation do not exactly express the paper's stated numerical model."
+      "paper_evidence": "Equations (2.1)-(2.4) distinguish the two underflow regimes, impose eta*delta=0, assume no overflow, and default to round-to-nearest; directed modes require doubling u, g_min, U, and G_min.",
+      "translation_evidence": "LocalDef041, LocalDef045, and LocalDef047 encode format nesting, underflow branches, and error exclusivity, but the model consists of abstract real-valued rounding functions without an explicit rounding-mode tag, directed-rounding substitution, overflow domain, or finite representability condition.",
+      "reasoning": "The local error inequalities are retained, but the paper's rounding-mode and exceptional-value scope is not faithfully represented."
     },
     {
       "id": "S12",
-      "status": "unclear",
-      "paper_evidence": "The paper uses lesssim in (4.26)-(4.33) and only explains near (3.26) that it results from dropping second-order terms. It gives no quantified relation, hidden constant, asymptotic variable, or uniformity domain.",
-      "translation_evidence": "LocalDef008 requires an arbitrary-filter eventual literal inequality with an additive absolute remainder r satisfying r=O_l(E^2), while the execution certificate assumes the component bounds and residual property.",
-      "reasoning": "The certificate restriction definitely weakens theorem scope, but the exact strength of the translated inequality relative to the undefined lesssim relation cannot be determined from the paper. No source evidence licenses this particular arbitrary-filter semantics."
+      "status": "fail",
+      "paper_evidence": "Equation (4.32) uses lesssim after higher-order contributions have been dropped; it is not an exact <= statement and is stated for the computed result under the theorem's hypotheses.",
+      "translation_evidence": "LocalDef008 asserts an exact eventual <= inequality after adding the absolute value of an existential O_l(S^2) remainder.",
+      "reasoning": "An eventual exact inequality with an arbitrary asymptotic witness is not the same relation as the paper's locally informal first-order lesssim estimate."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Equation (4.32) bounds the absolute normwise forward error ||hat C-AB||_infinity.",
-      "translation_evidence": "The first conclusion bounds ||Ccomp-AB||_infinity, and its residual is defined from that same forward-error matrix.",
-      "reasoning": "No backward, residual-only, componentwise, or relative-error notion is substituted for the paper's forward error."
+      "paper_evidence": "Theorem 4.1 bounds the normwise absolute forward error ||C-hat-AB||_infty by a coefficient times ||A||_infty||B||_infty.",
+      "translation_evidence": "LocalDef016 and the first conclusion use exactly the norm of computed(t)-A*B and do not substitute a backward error, residual equation, or componentwise claim.",
+      "reasoning": "The principal error notion remains normwise forward error."
     },
     {
       "id": "S14",
-      "status": "unclear",
-      "paper_evidence": "Equation (4.28) explicitly contains zeta^2, while (4.32) suppresses higher-order terms with lesssim. The paper supplies neither an explicit big-O remainder nor a limiting regime.",
-      "translation_evidence": "The translation selects E=u^p+u^(p-1)theta^(-1)g+U+theta^(-2)G and assumes a residual O_l(E^2), but never assumes E tends to zero along l; l may be any nonbottom filter.",
-      "reasoning": "Without E tending to zero, O_l(E^2) need not be lower order than E and can absorb non-negligible error on constant or principal regimes. The paper does not provide enough semantics to decide whether its informal convention entails this formal relation."
+      "status": "fail",
+      "paper_evidence": "Equation (4.28) displays 2zeta+zeta^2+(p-1)u^p before simplification, while equations (4.26)-(4.27) already use lesssim. The paper only says such simplified bounds drop higher-order terms and supplies no filter-uniform O(S^2) theorem.",
+      "translation_evidence": "LocalDef017 defines S from the four leading scales, and LocalDef034 requires the entire residual to be O_l(S^2) along an arbitrary nonbottom filter.",
+      "reasoning": "The chosen square-scale remainder and its uniform filter dependence are stronger and more specific than the paper establishes; no hypothesis that S tends to zero is included."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The paper states a result for real conforming matrices and a fixed p-word computation, with only structurally implicit positivity of p and the inner dimension.",
-      "translation_evidence": "The translation restricts all four natural indices m,n,q,p to positive runs, generalizes the data to arbitrary parameter-indexed families and filters, and fixes particular operation orders and a zero-vector scale.",
-      "reasoning": "This is a mixture of restricted applicability and unsupported parameterized generalization, rather than a neutral formal specialization of the source theorem."
+      "paper_evidence": "The paper concerns one finite real matrix computation with unspecified evaluation order beyond the prescribed formats and retained products.",
+      "translation_evidence": "The translation restricts dimensions and p to positive naturals, fixes ordered left folds, and simultaneously generalizes the arithmetic parameters and computed result to functions on an arbitrary filtered type.",
+      "reasoning": "This mixture of execution-order specialization and asymptotic-family generalization is not a semantics-preserving restatement of the fixed paper theorem."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "Theorem 4.1 derives its estimate for every computation satisfying its model and scaling hypotheses; the four estimates are not assumed certificates.",
-      "translation_evidence": "No execution exists when any required dimension or p is zero, and an execution at positive indices exists only after supplying the four desired bounds and residual big-O property. NeBot excludes only the bottom filter.",
-      "reasoning": "The proposition is vacuous for excluded indices and true for existing executions chiefly by triangle-inequality aggregation of certificate fields. The arbitrary-filter O condition also lacks a small-scale requirement, so the result can hold for an unintended trivial reason."
+      "paper_evidence": "Theorem 4.1 derives its error estimate from Model 1, scaling, decomposition, and the prescribed product; the error bounds are not assumptions of a certified input object.",
+      "translation_evidence": "CertifiedExecution contains LocalDef042, whose constructor LocalDef050 assumes the four desired first-order norm bounds and an O_l(S^2) residual. The translation also notes that execution existence is not asserted and that constant-family big-O conditions can be weak.",
+      "reasoning": "The theorem is restricted to executions already carrying essentially the needed error certificate, creating circularity and vacuity risk absent from the paper."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The translation asserts nothing about a paper-admissible run unless the four component estimates and second-order residual have first been packaged into an execution certificate. It neither constructs such a certificate nor derives its fields from Model 1 and the algorithm, so it cannot recover Theorem 4.1 for all computations covered by the paper."
+      "reasoning": "The translated statement applies only to executions already supplied with a conclusion-bearing certificate and gives an eventual family-level inequality. It neither establishes certificate existence for every paper-valid computation nor supplies the paper's fixed-instance result."
     },
     "paper_implies_translation": {
-      "verdict": "yes",
-      "reasoning": "For any supplied translation execution, its certificate already gives the four component bounds and O_l(E^2) residual. The exact decomposition and triangle inequality yield the first conjunct, and the second conjunct is the definition of C(t). Thus the restricted conditional follows even without using Theorem 4.1; this implication records logical weakness, not faithful representation of lesssim."
+      "verdict": "no",
+      "reasoning": "The paper's fixed lesssim estimate does not establish a single existential remainder that is O_l(S^2) uniformly along every arbitrary filter, and it does not cover the translation's broader abstract rounding models or its altered dot-product semantics."
     }
   },
-  "classification": "not-faithful-weaker",
+  "classification": "not-faithful-different",
   "accepted": false,
   "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "circular-certified-hypotheses",
-      "paper_evidence": "Equations (4.18)-(4.28) say the decomposition and component estimates have been proven or obtained, and Theorem 4.1 summarizes their consequence in (4.32).",
-      "translation_evidence": "LocalDef042/LocalDef050 makes the four coefficient bounds and residual O_l(E^2) property fields required to construct every execution.",
-      "impact": "The translated proposition proves only an aggregation lemma for already-certified executions. It does not formalize the paper's derivation of the error bound from the arithmetic model and algorithm."
+      "category": "certificate-as-hypothesis",
+      "paper_evidence": "Equations (4.18)-(4.28) derive the decomposition and source estimates, and Theorem 4.1 concludes equation (4.32) from the numerical model and algorithm.",
+      "translation_evidence": "LocalDef042 and LocalDef050 package the exact decomposition, all four first-order bounds, and the O_l(S^2) residual into every CertifiedExecution quantified by the theorem.",
+      "impact": "The translated theorem assumes essentially the analysis it should prove, restricts its domain to pre-certified runs, and does not recover the paper theorem for arbitrary valid executions."
     },
     {
       "severity": "major",
-      "category": "unsupported-lesssim-semantics",
-      "paper_evidence": "The paper describes lesssim only as dropping second-order terms and provides no formal remainder, asymptotic variable, filter, constant, or convergence assumption.",
-      "translation_evidence": "The conclusion uses eventual <= plus |r| with r=O_l(E^2) along an arbitrary nonbottom filter, and no hypothesis states E tends to zero.",
-      "impact": "The chosen relation is not established as equivalent to the source convention. In constant or principal regimes, O(E^2) need not be negligible relative to E, substantially weakening the intended first-order reading."
+      "category": "asymptotic-relation",
+      "paper_evidence": "The paper uses lesssim as an informal simplified bound obtained by dropping higher-order terms from explicit finite-parameter estimates.",
+      "translation_evidence": "The conclusion introduces an arbitrary nonbottom filter, an existential r=O_l(S^2), and an eventual exact inequality, without requiring S to tend to zero.",
+      "impact": "The fixed numerical bound is replaced by a different asymptotic proposition; for constant or otherwise nonvanishing scales, the remainder condition may provide little numerical control."
     },
     {
       "severity": "major",
-      "category": "execution-model-mismatch",
-      "paper_evidence": "Model 1 applies accumulation-format rounding to arithmetic operations, and the analysis explicitly counts underflows from both multiplications and additions. Theorem 4.1 specifies accumulation-format inner products but leaves some operation ordering implicit.",
-      "translation_evidence": "LocalDef062 performs one rounding of s+x_k y_k, while LocalDef054 imposes a lexicographic rounded fold over word pairs.",
-      "impact": "The translated run selects an operational computation that can differ from the paper's multiplication-plus-accumulation model and adds an ordering not fixed by the theorem."
+      "category": "floating-point-model",
+      "paper_evidence": "Model 1 assumes no overflow, defaults to round-to-nearest, specifies directed-rounding parameter doubling, and the scaling setup assumes exact high-precision storage outside the MMA computation.",
+      "translation_evidence": "The abstract rounding maps retain only error equations and bounds; the translation reports no standalone overflow, representability, storage, or rounding-mode condition.",
+      "impact": "Executions permitted by the translation need not have the exceptional-value and rounding semantics under which the paper's result is stated."
+    },
+    {
+      "severity": "major",
+      "category": "accumulation-algorithm",
+      "paper_evidence": "Equation (2.4) models accumulation-format operations, and the B790 derivation treats multiplication and addition underflows separately.",
+      "translation_evidence": "LocalDef062 rounds a left-folded addition of each exact product rather than rounding multiplication and addition as separate accumulation-format operations.",
+      "impact": "The computed matrix can differ from the paper's MMA computation, changing both relative-error and underflow behavior."
     },
     {
       "severity": "minor",
-      "category": "binder-and-domain-drift",
-      "paper_evidence": "Theorem 4.1 is stated for fixed conforming real matrices and a p-word computation, without an arbitrary filter or explicit positivity requirements on both outer dimensions.",
-      "translation_evidence": "The target introduces iota and l, requires m,n,q,p>0 inside every run, and has no execution at excluded indices.",
-      "impact": "The theorem domain is both restricted and parameterized beyond the source, creating additional vacuity and specialization."
+      "category": "conclusion-coverage",
+      "paper_evidence": "Equation (4.33) and the B796 discussion identify the two range-unrestricted terms, the two additional underflow terms, and the equal order-u^(p-1) reduction.",
+      "translation_evidence": "The conclusions contain only the altered main bound and a definitional coefficient equality.",
+      "impact": "The selected surrounding comparison and qualitative conclusion are not represented."
     },
     {
       "severity": "minor",
-      "category": "coefficient-only-conjunct",
-      "paper_evidence": "The four terms occur as the coefficient inside the single forward-error estimate (4.32).",
-      "translation_evidence": "The second conjunct states only the exact defining expansion of C(t).",
-      "impact": "This conjunct correctly displays the four coefficients but is definitionally true and does not compensate for assuming the substantive component estimates."
-    },
-    {
-      "severity": "note",
-      "category": "preserved-numerical-data",
-      "paper_evidence": "Equation (4.32) contains the four stated coefficients, uses exponent p-1 in the input-underflow term, and measures an induced-infinity-norm forward error for m-by-n times n-by-q multiplication.",
-      "translation_evidence": "The coefficient definitions, natural predecessor under p>0, dimensions, triangular a+b<p indexing, and maximum absolute row-sum norm all agree.",
-      "impact": "The visible numerical coefficient and norm are accurate even though the proposition's logical content is weaker."
+      "category": "unresolved-definitions",
+      "paper_evidence": "The paper requires scaling coefficients that are powers of two and uses an undefined matrix infinity-norm notation in the inspected passages.",
+      "translation_evidence": "D066 does not reveal the exponent type for powers of two, and LocalDef029 chooses the induced row-sum norm.",
+      "impact": "If the exponent is natural, scales below one are excluded; the norm choice is plausible but not textually conclusive. These points require adjudication."
     }
   ],
-  "rationale": "The blind translation preserves the dimensions, induced infinity norm, scaled p-word recurrences, triangular indexing, p-1 exponent, and all four coefficients. Its central theorem content is nevertheless circular: an execution can be supplied only after assuming the component estimates and second-order residual that the paper derives. Consequently the translation does not imply Theorem 4.1, whereas the paper implies the restricted aggregation proposition because that proposition already assumes everything needed for its proof. The exact correspondence between the paper's informal lesssim convention and the arbitrary-filter O(E^2) remainder remains unclear, especially without E tending to zero, so independent adjudication is required."
+  "rationale": "The translation correctly preserves the matrix dimensions, theta, triangular p-word structure, exact-versus-computed distinction, normwise forward-error form, and all four displayed coefficients. It nevertheless changes the theorem substantially by quantifying only over executions already carrying the desired error certificate, replacing the paper's fixed lesssim estimate with an arbitrary-filter O_l(S^2) remainder statement, weakening or omitting numerical-model conditions, and using a different dot-product rounding semantics. Neither semantic implication is supported. The power-of-two exponent type and the paper's unstated matrix-norm definition remain unresolved, so adjudication is required even though the decisive certificate and relation mismatches make the translation unacceptable."
 }

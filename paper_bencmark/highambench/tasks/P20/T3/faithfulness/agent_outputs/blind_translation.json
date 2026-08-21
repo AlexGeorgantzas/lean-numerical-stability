@@ -6,1009 +6,1009 @@
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "Projects the m-by-n real matrix A from a run.",
-      "effect_on_target": "Supplies the matrix A whose infinity norm appears in the error bound and whose product with B is compared with the computed result.",
+      "meaning": "Projects the m-by-n real matrix A from a run record.",
+      "effect_on_target": "Supplies the first exact input matrix whose norm and product occur in the error bound.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "Projects the n-by-q real matrix B from a run.",
-      "effect_on_target": "Supplies the matrix B whose infinity norm appears in the error bound and whose product with A is compared with the computed result.",
+      "meaning": "Projects the n-by-q real matrix B from a run record.",
+      "effect_on_target": "Supplies the second exact input matrix whose norm and product occur in the error bound.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "Projects the parameter-dependent arithmetic model from a run.",
-      "effect_on_target": "Provides all format quantities and rounding operations used to define u, U, g, G, theta, the asymptotic scale, and the coefficient.",
+      "meaning": "Projects the parameter-dependent arithmetic model from a run record.",
+      "effect_on_target": "Supplies all input and accumulation format quantities used in the scale and coefficient.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "An indexed execution package depending on dimensions m,n,q,p, a parameter type, and a filter.",
-      "effect_on_target": "The sole substantive argument of the proposition; through its constructor it carries both a run and a certificate containing the component bounds and residual big-O assumption required for the conclusion.",
+      "meaning": "The type of certified executions indexed by m,n,q,p, a parameter type, and a filter.",
+      "effect_on_target": "The theorem quantifies over an execution of this type; its constructor packages a run and its error certificate.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "Projects the run stored in an execution package.",
-      "effect_on_target": "All matrices, model quantities, and computed results in the target are obtained through this projection.",
+      "meaning": "Projects the underlying run from a certified execution.",
+      "effect_on_target": "Exposes the matrices, model, and computed result used by both conclusions.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "LocalDef006",
-      "meaning": "For each parameter t, returns the accumulation format's additive underflow-error bound G(t).",
-      "effect_on_target": "Appears in the scale as theta(t)^(-2)G(t) and in the coefficient 2p(p+1)n^2 theta(t)^(-2)G(t).",
+      "meaning": "For each parameter t, returns the accumulation format underflow quantity Gmin(t).",
+      "effect_on_target": "Appears in the scale as theta(t)^(-2)Gmin(t) and in the final coefficient term.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "LocalDef007",
-      "meaning": "For each parameter t, returns the accumulation format unit roundoff U(t)=2^(-precision_acc(t)).",
-      "effect_on_target": "Appears directly in the asymptotic scale and in the coefficient term (n+p^2)U(t).",
+      "meaning": "For each parameter t, returns the accumulation unit roundoff U(t).",
+      "effect_on_target": "Appears directly in the scale and in the coefficient term (n+p^2)U(t).",
       "status": "understood"
     },
     {
       "id": "D008",
       "name": "LocalDef008",
-      "meaning": "For a filter l and functions scale, lhs, and rhs, asserts that there exists r with r=O_l(scale^2) and, eventually along l, lhs(t) <= rhs(t)+|r(t)|.",
-      "effect_on_target": "This is exactly the first conjunct of the target after substituting the error norm, the stated scale, and the coefficient times the two matrix norms.",
+      "meaning": "States that there exists a real remainder r with r=O_l(scale^2) and, eventually along l, lhs(t) <= rhs(t)+|r(t)|.",
+      "effect_on_target": "It is exactly the first conjunct, expressing the asymptotic forward-error bound.",
       "status": "understood"
     },
     {
       "id": "D009",
       "name": "LocalDef009",
-      "meaning": "For each t, returns the input format's additive underflow-error bound g(t).",
-      "effect_on_target": "Appears in the scale as u(t)^(p-1)theta(t)^(-1)g(t) and in the corresponding coefficient term.",
+      "meaning": "For each t, returns the input format underflow quantity gmin(t).",
+      "effect_on_target": "Appears in the mixed input-rounding/underflow terms of the scale and coefficient.",
       "status": "understood"
     },
     {
       "id": "D010",
       "name": "LocalDef010",
-      "meaning": "For each t, returns the input format unit roundoff u(t)=2^(-precision_in(t)).",
-      "effect_on_target": "Determines the word expansion base and appears throughout the scale and coefficient.",
+      "meaning": "For each t, returns the input unit roundoff u(t).",
+      "effect_on_target": "Appears in every input-precision contribution to the scale and coefficient.",
       "status": "understood"
     },
     {
       "id": "D011",
       "name": "LocalDef011",
-      "meaning": "Defines theta(t)=min(fmax_in(t), sqrt(Fmax_acc(t)/n)).",
-      "effect_on_target": "Controls scaling assumptions and appears through theta^(-1) and theta^(-2) in the scale and coefficient.",
+      "meaning": "Defines theta(t)=min(fmax(t),sqrt(Fmax(t)/n)), using the input and accumulation maximum finite magnitudes.",
+      "effect_on_target": "Controls inverse-theta factors in the scale and coefficient and the admissible scaling conditions carried by the run.",
       "status": "understood"
     },
     {
       "id": "D012",
       "name": "LocalDef012",
-      "meaning": "Defines the accumulation-underflow coefficient 2p(p+1)n^2 theta^(-2)G.",
-      "effect_on_target": "It is the fourth summand of the total coefficient and bounds the accumulation-underflow error component in the execution certificate.",
+      "meaning": "Defines 2*p*(p+1)*n^2*theta^(-2)*Gmin.",
+      "effect_on_target": "This is the accumulation-underflow contribution to the exact coefficient.",
       "status": "understood"
     },
     {
       "id": "D013",
       "name": "LocalDef013",
-      "meaning": "Defines the input-underflow coefficient 4n u^(p-1) theta^(-1)g, with p-1 computed by natural-number subtraction.",
-      "effect_on_target": "It is the third summand of the total coefficient and bounds the input-underflow error component in the execution certificate.",
+      "meaning": "Defines 4*n*u^(p-1)*theta^(-1)*gmin, where p-1 is natural-number subtraction.",
+      "effect_on_target": "This is the input-underflow contribution to the scale-derived coefficient.",
       "status": "understood"
     },
     {
       "id": "D014",
       "name": "LocalDef014",
-      "meaning": "Defines the total coefficient C as LocalDef015 plus the input-underflow coefficient plus the accumulation-underflow coefficient.",
-      "effect_on_target": "This C multiplies ||A||_infinity ||B||_infinity in the first conclusion; the second conclusion merely restates its defining sum.",
+      "meaning": "Defines C=(p+1)u^p+(n+p^2)U+4n*u^(p-1)*theta^(-1)gmin+2p(p+1)n^2*theta^(-2)Gmin.",
+      "effect_on_target": "C multiplies ||A||_inf||B||_inf in the first conjunct and is expanded by the second conjunct.",
       "status": "understood"
     },
     {
       "id": "D015",
       "name": "LocalDef015",
-      "meaning": "Defines the rounding subtotal (p+1)u^p+(n+p^2)U.",
-      "effect_on_target": "Combines the certified input-rounding and accumulation-rounding coefficients into the first part of C.",
+      "meaning": "Defines (p+1)u^p+(n+p^2)U.",
+      "effect_on_target": "Combines the leading input-rounding and accumulation-rounding coefficient terms.",
       "status": "understood"
     },
     {
       "id": "D016",
       "name": "LocalDef016",
-      "meaning": "At t, computes ||computed(t)-AB||_infinity using the maximum absolute row-sum matrix norm.",
-      "effect_on_target": "This is the left-hand side of the eventual forward-error inequality.",
+      "meaning": "Defines lhs(t)=||computed(t)-A*B||_inf.",
+      "effect_on_target": "It is the normwise forward error bounded in the first conjunct.",
       "status": "understood"
     },
     {
       "id": "D017",
       "name": "LocalDef017",
-      "meaning": "Defines E(t)=u(t)^p+u(t)^(p-1)theta(t)^(-1)g(t)+U(t)+theta(t)^(-2)G(t).",
-      "effect_on_target": "The existential remainder in the first conjunct is required to be O_l(E^2).",
+      "meaning": "Defines scale S(t)=u(t)^p+u(t)^(p-1)*theta(t)^(-1)*gmin(t)+U(t)+theta(t)^(-2)*Gmin(t).",
+      "effect_on_target": "The existential remainder is required to be big-O of S(t)^2.",
       "status": "understood"
     },
     {
       "id": "D018",
       "name": "LocalDef018",
-      "meaning": "Maps a scalar c and matrices A,B to c||A||_infinity||B||_infinity.",
+      "meaning": "Maps a scalar c and matrices A,B to c*||A||_inf*||B||_inf.",
       "effect_on_target": "Forms the principal right-hand side of the forward-error inequality.",
       "status": "understood"
     },
     {
       "id": "D019",
       "name": "LocalDef019",
-      "meaning": "The type of real m-by-n matrices, represented as functions Fin m -> Fin n -> Real.",
-      "effect_on_target": "Fixes all matrix dimensions used by the run, error decomposition, multiplication, and norms.",
+      "meaning": "The type of m-by-n real matrices, represented as functions Fin m -> Fin n -> Real.",
+      "effect_on_target": "Fixes all matrix dimensions and entry type in the execution and error formulas.",
       "status": "understood"
     },
     {
       "id": "D020",
       "name": "LocalDef020",
-      "meaning": "A parameter-dependent mixed arithmetic model carrying input and accumulation formats, rounding functions, error functions, and their axioms.",
-      "effect_on_target": "Its fields generate all arithmetic constants and algorithmic rounding operations used by the proposition.",
+      "meaning": "A parameter-dependent arithmetic model containing input and accumulation formats, rounding maps, relative errors, underflow errors, and their laws.",
+      "effect_on_target": "Determines u,U,gmin,Gmin,theta and the algorithm represented by a valid execution.",
       "status": "understood"
     },
     {
       "id": "D021",
       "name": "LocalDef021",
       "meaning": "Projects the accumulation format from an arithmetic model.",
-      "effect_on_target": "Used indirectly to define U, G, and Fmax.",
+      "effect_on_target": "Determines U, Gmin, and Fmax.",
       "status": "understood"
     },
     {
       "id": "D022",
       "name": "LocalDef022",
       "meaning": "Projects the input format from an arithmetic model.",
-      "effect_on_target": "Used indirectly to define u, g, and fmax.",
+      "effect_on_target": "Determines u, gmin, and fmax.",
       "status": "understood"
     },
     {
       "id": "D023",
       "name": "LocalDef023",
-      "meaning": "A run package containing positive dimensions, a mixed arithmetic model, matrices A and B, scales, word decompositions, and the computed matrix with defining equations and bounds.",
-      "effect_on_target": "Provides the concrete computation and all structural assumptions underlying the execution certificate.",
+      "meaning": "A run record containing positivity evidence, an arithmetic model, A and B, scaling data, word decompositions, and a computed result.",
+      "effect_on_target": "Provides all concrete data referenced by the certified execution.",
       "status": "understood"
     },
     {
       "id": "D024",
       "name": "LocalDef024",
       "meaning": "Projects the parameter-dependent computed m-by-q matrix from a run.",
-      "effect_on_target": "Its difference from AB is measured in the conclusion.",
+      "effect_on_target": "Its difference from A*B is measured by the target error norm.",
       "status": "understood"
     },
     {
       "id": "D025",
       "name": "LocalDef025",
-      "meaning": "Constructs an execution from a run and a certificate of type LocalDef042 for that run.",
-      "effect_on_target": "Shows explicitly that every execution argument already includes the componentwise norm bounds and residual big-O property used to prove the final estimate.",
+      "meaning": "Constructs a certified execution from a run and a certificate of type LocalDef042 for that run.",
+      "effect_on_target": "Ensures every quantified execution carries the detailed error decomposition and bounds needed for the conclusion.",
       "status": "understood"
     },
     {
       "id": "D026",
       "name": "LocalDef026",
-      "meaning": "Computes a format's largest finite magnitude 2^emax(2-2u).",
-      "effect_on_target": "Its input- and accumulation-format values define theta.",
+      "meaning": "For a format, defines its maximum finite magnitude as a function of precision and maximum exponent.",
+      "effect_on_target": "Used to form fmax, Fmax, and hence theta.",
       "status": "understood"
     },
     {
       "id": "D027",
       "name": "LocalDef027",
-      "meaning": "Computes a format's additive error bound: 2^emin/2 without subnormals, and u*2^emin with subnormals.",
-      "effect_on_target": "Produces g and G and bounds the eta terms in both rounding models.",
+      "meaning": "For a format, defines its underflow quantity from precision, minimum exponent, and the subnormal flag.",
+      "effect_on_target": "Produces gmin and Gmin in the target formulas.",
       "status": "understood"
     },
     {
       "id": "D028",
       "name": "LocalDef028",
-      "meaning": "Computes unit roundoff u=2^(-precision).",
-      "effect_on_target": "Produces the input and accumulation roundoffs and bounds the corresponding delta terms.",
+      "meaning": "For a format of precision s, defines unit roundoff as (1/2)^s.",
+      "effect_on_target": "Produces u and U and bounds the relative rounding errors.",
       "status": "understood"
     },
     {
       "id": "D029",
       "name": "LocalDef029",
-      "meaning": "Defines the matrix infinity norm as max_i sum_j |A_ij|, with finite supremum defaulting to zero on an empty row index.",
-      "effect_on_target": "Measures the forward error, A, B, every certified component matrix, and the residual matrix.",
+      "meaning": "Defines the matrix infinity norm as max over rows of the sum of absolute values in that row, with value zero for an empty row index set.",
+      "effect_on_target": "Measures the forward error, input sizes, and all certificate error matrices.",
       "status": "understood"
     },
     {
       "id": "D030",
       "name": "LocalDef030",
-      "meaning": "Supplies the proof that the natural numeral 1+1 is at least two.",
-      "effect_on_target": "Supports elaboration of the real numeral 2; it adds no mathematical hypothesis.",
+      "meaning": "Provides the typeclass proof that the natural numeral 2 is at least two.",
+      "effect_on_target": "Only supports elaboration of the numeral 2 in generic numeric operations; it adds no hypothesis.",
       "status": "understood"
     },
     {
       "id": "D031",
       "name": "LocalDef031",
-      "meaning": "Defines the accumulation-rounding coefficient (n+p^2)U.",
-      "effect_on_target": "Bounds the accumulation-rounding component and contributes to LocalDef015.",
+      "meaning": "Defines (n+p^2)U.",
+      "effect_on_target": "Is the accumulation-rounding part of LocalDef015 and one certificate bound.",
       "status": "understood"
     },
     {
       "id": "D032",
       "name": "LocalDef032",
-      "meaning": "Defines the input-rounding coefficient (p+1)u^p.",
-      "effect_on_target": "Bounds the designated input-rounding component and contributes to LocalDef015.",
+      "meaning": "Defines (p+1)u^p.",
+      "effect_on_target": "Is the leading input-rounding part of LocalDef015 and one certificate bound.",
       "status": "understood"
     },
     {
       "id": "D033",
       "name": "LocalDef033",
-      "meaning": "Defines theta as the minimum of the input maximum magnitude and the square root of the accumulation maximum magnitude divided by n.",
-      "effect_on_target": "Instantiated at every t to constrain scaling and to form inverse-theta terms.",
+      "meaning": "Defines theta=min(fmax,sqrt(Fmax/n)).",
+      "effect_on_target": "Supplies the effective range threshold used throughout the theorem.",
       "status": "understood"
     },
     {
       "id": "D034",
       "name": "LocalDef034",
-      "meaning": "Asserts remainder=O_l(scale^2) using the real norm.",
-      "effect_on_target": "Used both in the execution certificate for the residual norm and in the existential asymptotic conclusion.",
+      "meaning": "States Asymptotics.IsBigO l remainder (fun t => scale(t)^2).",
+      "effect_on_target": "Specifies the asymptotic order required of the remainder in the execution certificate and conclusion.",
       "status": "understood"
     },
     {
       "id": "D035",
       "name": "LocalDef035",
-      "meaning": "Supplies the proof that the natural numeral 3+1 is at least two.",
-      "effect_on_target": "Supports elaboration of the real numeral 4; it adds no mathematical hypothesis.",
+      "meaning": "Provides the typeclass proof that the natural numeral 4 is at least two.",
+      "effect_on_target": "Only supports elaboration of the coefficient 4; it adds no mathematical assumption.",
       "status": "understood"
     },
     {
       "id": "D036",
       "name": "LocalDef036",
-      "meaning": "A parameter-dependent floating-point format carrying precision, minimum exponent, maximum exponent, and a subnormal-number flag.",
-      "effect_on_target": "Defines the format data from which u, underflow bounds, and maximum finite magnitudes are computed.",
+      "meaning": "A parameter-dependent floating-point format descriptor with precision, minimum exponent, maximum exponent, and a subnormal flag.",
+      "effect_on_target": "Its fields determine unit roundoff, underflow quantities, and maximum finite magnitudes.",
       "status": "understood"
     },
     {
       "id": "D037",
       "name": "LocalDef037",
-      "meaning": "Projects the Boolean subnormal-number flag of a format.",
-      "effect_on_target": "Selects the branch in the additive underflow bound.",
+      "meaning": "Projects the Boolean has-subnormals flag of a format.",
+      "effect_on_target": "Selects the corresponding branch of the underflow-quantity definition.",
       "status": "understood"
     },
     {
       "id": "D038",
       "name": "LocalDef038",
-      "meaning": "Projects a format's integer maximum exponent.",
-      "effect_on_target": "Used to compute the largest finite magnitude.",
+      "meaning": "Projects the integer maximum exponent of a format.",
+      "effect_on_target": "Determines the maximum finite magnitude.",
       "status": "understood"
     },
     {
       "id": "D039",
       "name": "LocalDef039",
-      "meaning": "Projects a format's integer minimum exponent.",
-      "effect_on_target": "Used to compute the additive underflow bound.",
+      "meaning": "Projects the integer minimum exponent of a format.",
+      "effect_on_target": "Determines the underflow quantity.",
       "status": "understood"
     },
     {
       "id": "D040",
       "name": "LocalDef040",
-      "meaning": "Projects a format's natural-number precision.",
-      "effect_on_target": "Used to compute unit roundoff and constrained to be positive by the format constructor.",
+      "meaning": "Projects the natural-number precision of a format.",
+      "effect_on_target": "Determines unit roundoff and participates in range quantities.",
       "status": "understood"
     },
     {
       "id": "D041",
       "name": "LocalDef041",
-      "meaning": "Constructs a mixed arithmetic model from input and accumulation formats; format-containment assumptions; input and accumulation rounding maps; equations round(x)=x(1+delta)+eta; bounds |delta|<=u and |eta|<=g or G; and pointwise conditions eta*delta=0.",
-      "effect_on_target": "Makes all rounding-model assumptions fields of the run rather than conclusions. It also assumes input precision does not exceed accumulation precision and the accumulation exponent range contains the input range.",
+      "meaning": "Constructs an arithmetic model from nested input/accumulation formats and rounding maps satisfying round(x)=x(1+delta(x))+eta(x), |delta| bounded by unit roundoff, |eta| bounded by the underflow quantity, and eta*delta=0, separately for both formats.",
+      "effect_on_target": "Restricts executions to the stated mixed relative/additive rounding model and makes the accumulation format at least as precise and at least as wide-ranged as the input format.",
       "status": "understood"
     },
     {
       "id": "D042",
       "name": "LocalDef042",
-      "meaning": "An indexed certificate type attached to a run and filter.",
-      "effect_on_target": "Its constructor packages an error decomposition, four component norm bounds, and a second-order residual property; these are assumptions embedded in execution.",
+      "meaning": "The type of certificates asserting the error decomposition, component bounds, and second-order remainder property for a run.",
+      "effect_on_target": "A certificate is included in every execution and supports the final asymptotic inequality.",
       "status": "understood"
     },
     {
       "id": "D043",
       "name": "LocalDef043",
-      "meaning": "Constructs a run with m,n,q>0 and p>0; a model; A and B; admissible row and column scales; entrywise scaled bounds; p-word recursive rounded decompositions of A and B; and a computed matrix equal to the specified rounded, truncated, scaled multiplication.",
-      "effect_on_target": "Encodes all dimensions and algorithmic premises. In particular, positivity and component bounds are not separate target binders but are carried by the run.",
+      "meaning": "Constructs a run with m,n,q>0 and p>0; matrices A,B; admissible positive power-of-two row and column scales; scaled-entry bounds by theta; recursively rounded p-word expansions in powers of u; and a computed result obtained from the prescribed rounded truncated convolution and inverse scaling.",
+      "effect_on_target": "Encodes the dimensions, scaling hypotheses, word-generation algorithm, and exact meaning of computed(t) that are implicit in the execution binder.",
       "status": "understood"
     },
     {
       "id": "D044",
       "name": "LocalDef044",
-      "meaning": "Defines fmax=2^emax(2-2u), where u=2^(-precision).",
-      "effect_on_target": "Provides the maximum input and accumulation magnitudes used in theta.",
+      "meaning": "Defines fmax(s,emax)=2^emax*(2-2*(1/2)^s).",
+      "effect_on_target": "Gives each format's maximum finite magnitude used in theta.",
       "status": "understood"
     },
     {
       "id": "D045",
       "name": "LocalDef045",
-      "meaning": "Defines the additive underflow bound as 2^emin/2 when the subnormal flag is false and 2^(-precision)2^emin when it is true.",
-      "effect_on_target": "Provides g and G in the asymptotic scale and coefficient.",
+      "meaning": "Defines the underflow quantity as 2^emin/2 when subnormals are absent and as (1/2)^s*2^emin when subnormals are present.",
+      "effect_on_target": "Gives gmin and Gmin exactly, including their dependence on subnormal support.",
       "status": "understood"
     },
     {
       "id": "D046",
       "name": "LocalDef046",
-      "meaning": "Defines unit roundoff as (1/2)^precision.",
-      "effect_on_target": "Provides u and U.",
+      "meaning": "Defines unit roundoff for precision s as (1/2)^s=2^(-s).",
+      "effect_on_target": "Gives u and U.",
       "status": "understood"
     },
     {
       "id": "D047",
       "name": "LocalDef047",
-      "meaning": "Constructs a format from precision, exponent bounds, and a subnormal flag, assuming precision(t)>0 and emin(t)<=emax(t) for every t.",
-      "effect_on_target": "Ensures each format used by the model satisfies these validity conditions.",
+      "meaning": "Constructs a format from precision, exponent bounds, and a subnormal flag, requiring positive precision and emin<=emax at every parameter.",
+      "effect_on_target": "Carries the basic validity conditions of both formats used by the execution.",
       "status": "understood"
     },
     {
       "id": "D048",
       "name": "LocalDef048",
-      "meaning": "Projects the accumulation rounding function from the arithmetic model.",
-      "effect_on_target": "Used at every partial dot-product addition and every outer truncated-product accumulation.",
+      "meaning": "Projects the accumulation rounding function from an arithmetic model.",
+      "effect_on_target": "Defines every rounded accumulation in the computed matrix algorithm.",
       "status": "understood"
     },
     {
       "id": "D049",
       "name": "LocalDef049",
-      "meaning": "Projects the input rounding function from the arithmetic model.",
-      "effect_on_target": "Used in the recursive construction of every A-word and B-word entry.",
+      "meaning": "Projects the input rounding function from an arithmetic model.",
+      "effect_on_target": "Defines the recursive p-word representations of scaled A and B.",
       "status": "understood"
     },
     {
       "id": "D050",
       "name": "LocalDef050",
-      "meaning": "Constructs the run certificate from decomposition data plus four all-t bounds: ||Rin_round||<=((p+1)u^p)||A||||B||, ||Rin_under||<=(4n u^(p-1)theta^(-1)g)||A||||B||, ||Racc_round||<=((n+p^2)U)||A||||B||, and ||Racc_under||<=(2p(p+1)n^2theta^(-2)G)||A||||B||; it additionally assumes ||Rres||=O_l(E^2).",
-      "effect_on_target": "This dependency directly assumes every component estimate and the remainder property needed for the final result. The target aggregates these assumptions; it does not derive them from the rounding axioms.",
+      "meaning": "Constructs a run certificate from error-decomposition data, four pointwise matrix-norm bounds with coefficients (p+1)u^p, 4n*u^(p-1)*theta^(-1)gmin, (n+p^2)U, and 2p(p+1)n^2*theta^(-2)Gmin, and a residual norm that is O_l(S^2).",
+      "effect_on_target": "Supplies precisely the first-order terms and second-order remainder combined in the target bound.",
       "status": "understood"
     },
     {
       "id": "D051",
       "name": "LocalDef051",
-      "meaning": "Defines a finite vector infinity norm as max_i |x_i|, with zero for an empty index.",
-      "effect_on_target": "Used in the admissibility conditions for row and column scaling.",
+      "meaning": "Defines a finite real vector's infinity norm as the maximum absolute entry, with zero for an empty index set.",
+      "effect_on_target": "Used in admissibility intervals for row and column scaling factors.",
       "status": "understood"
     },
     {
       "id": "D052",
       "name": "LocalDef052",
-      "meaning": "Says lambda is a positive integer power of two and either the vector norm is zero with lambda=1, or the norm is positive and theta/(2 norm)<lambda<=theta/norm.",
-      "effect_on_target": "Constrains every row and column scale carried by the run.",
+      "meaning": "A scale lambda is admissible for threshold theta and norm v when lambda is a positive power of two and either v=0 with lambda=1, or v>0 with theta/(2v)<lambda<=theta/v.",
+      "effect_on_target": "Restricts every row and column scale carried by a run.",
       "status": "understood"
     },
     {
       "id": "D053",
       "name": "LocalDef053",
-      "meaning": "Maps an integer exponent e to the real number 2^e.",
-      "effect_on_target": "Used in the format underflow formulas.",
+      "meaning": "Defines the real value 2^emin for an integer exponent emin.",
+      "effect_on_target": "Used in both branches of the underflow-quantity formula.",
       "status": "understood"
     },
     {
       "id": "D054",
       "name": "LocalDef054",
-      "meaning": "Computes the m-by-q truncated word product by folding over ordered pairs (a,b) with a+b<p, starting at zero and repeatedly rounding sum+u^(a+b) times a rounded dot product of Aword[a] and Bword[b].",
-      "effect_on_target": "Defines the scaled core computation before row and column unscaling.",
+      "meaning": "For each output entry, left-folds over ordered pairs (i,j) in Fin p with i+j<p, rounding after each addition of u^(i+j) times a rounded dot product of Aword_i and Bword_j.",
+      "effect_on_target": "Defines the scaled, truncated, accumulation-rounded matrix that is inverse-scaled to obtain computed(t).",
       "status": "understood"
     },
     {
       "id": "D055",
       "name": "LocalDef055",
-      "meaning": "Column-scales B by (B*mu)_ij=B_ij mu_j.",
-      "effect_on_target": "Used in the B-word recurrence and its entrywise theta bound.",
+      "meaning": "Column-scales B by defining the (i,j) entry as B(i,j)*mu(j).",
+      "effect_on_target": "Used in the B-word recursion and scaled-entry bound.",
       "status": "understood"
     },
     {
       "id": "D056",
       "name": "LocalDef056",
-      "meaning": "Row-scales A by (lambda*A)_ij=lambda_i A_ij.",
-      "effect_on_target": "Used in the A-word recurrence and its entrywise theta bound.",
+      "meaning": "Row-scales A by defining the (i,j) entry as lambda(i)*A(i,j).",
+      "effect_on_target": "Used in the A-word recursion and scaled-entry bound.",
       "status": "understood"
     },
     {
       "id": "D057",
       "name": "LocalDef057",
-      "meaning": "Performs case analysis on a Boolean, selecting the false branch or true branch.",
-      "effect_on_target": "Selects the no-subnormal or subnormal formula for the additive underflow bound.",
+      "meaning": "Boolean case analysis selecting the false branch or true branch.",
+      "effect_on_target": "Implements the subnormal-dependent underflow formula.",
       "status": "understood"
     },
     {
       "id": "D058",
       "name": "LocalDef058",
-      "meaning": "Unscales an m-by-q matrix C entrywise as lambda_i^(-1) C_ij mu_j^(-1).",
-      "effect_on_target": "Converts scaled truncated products and tail matrices back to the original scaling.",
+      "meaning": "Inverse-scales a matrix C entrywise as lambda(i)^(-1)*C(i,j)*mu(j)^(-1).",
+      "effect_on_target": "Converts the scaled computation and polynomial terms back to the original matrix scaling.",
       "status": "understood"
     },
     {
       "id": "D059",
       "name": "LocalDef059",
-      "meaning": "An error-decomposition data package for a run.",
-      "effect_on_target": "Carries input rounding and underflow errors for A and B, accumulation rounding and underflow errors, and their exact decomposition equations.",
+      "meaning": "A package of six parameter-dependent error matrices together with exact reconstruction, computation, and zero-error compatibility identities.",
+      "effect_on_target": "Provides the decomposition whose norm bounds yield the theorem's principal coefficient and remainder.",
       "status": "understood"
     },
     {
       "id": "D060",
       "name": "LocalDef060",
       "meaning": "Projects the accumulation-rounding error matrix from decomposition data.",
-      "effect_on_target": "Its norm is one of the four quantities bounded by the execution certificate.",
+      "effect_on_target": "Its norm is bounded by (n+p^2)U||A||_inf||B||_inf.",
       "status": "understood"
     },
     {
       "id": "D061",
       "name": "LocalDef061",
       "meaning": "Projects the accumulation-underflow error matrix from decomposition data.",
-      "effect_on_target": "Its norm is one of the four quantities bounded by the execution certificate.",
+      "effect_on_target": "Its norm is bounded by 2p(p+1)n^2*theta^(-2)Gmin||A||_inf||B||_inf.",
       "status": "understood"
     },
     {
       "id": "D062",
       "name": "LocalDef062",
-      "meaning": "Computes a rounded dot product by folding k=0,...,n-1 from zero and replacing each partial sum s by round(s+x_k y_k).",
-      "effect_on_target": "Used inside every word-pair contribution to the computed truncated product.",
+      "meaning": "Computes a rounded dot product by left-folding products x(k)y(k) from zero and applying the supplied rounding map after each addition.",
+      "effect_on_target": "Defines inner products in the accumulation algorithm and fixes their evaluation order.",
       "status": "understood"
     },
     {
       "id": "D063",
       "name": "LocalDef063",
-      "meaning": "Defines the residual matrix Rres=(computed-AB)-Rin_round-Rin_under-Racc_round-Racc_under.",
-      "effect_on_target": "The execution certificate assumes ||Rres||=O_l(E^2), supplying the second-order remainder used in the final estimate.",
+      "meaning": "Defines the residual matrix as computed-A*B minus, successively, the input-rounding, input-underflow, accumulation-rounding, and accumulation-underflow error matrices.",
+      "effect_on_target": "The certificate requires its infinity norm to be O_l(S^2).",
       "status": "understood"
     },
     {
       "id": "D064",
       "name": "LocalDef064",
-      "meaning": "Defines the designated input-rounding matrix as -(EA_round B)-A EB_round-T, where T is the omitted high-degree word tail.",
-      "effect_on_target": "Its norm is assumed bounded by (p+1)u^p||A||||B||.",
+      "meaning": "Defines the input-rounding error contribution as -AInputRoundingError*B-A*BInputRoundingError minus the high-degree word-product tail.",
+      "effect_on_target": "Its norm receives the coefficient (p+1)u^p in the certificate.",
       "status": "understood"
     },
     {
       "id": "D065",
       "name": "LocalDef065",
-      "meaning": "Defines the designated input-underflow matrix as -(EA_under B)-A EB_under.",
-      "effect_on_target": "Its norm is assumed bounded by 4n u^(p-1)theta^(-1)g||A||||B||.",
+      "meaning": "Defines the input-underflow error contribution as -AInputUnderflowError*B-A*BInputUnderflowError.",
+      "effect_on_target": "Its norm receives the coefficient 4n*u^(p-1)*theta^(-1)gmin in the certificate.",
       "status": "understood"
     },
     {
       "id": "D066",
       "name": "LocalDef066",
-      "meaning": "Says a real lambda equals 2^e for some integer exponent e.",
-      "effect_on_target": "Makes admissible row and column scales dyadic.",
-      "status": "understood"
+      "meaning": "States that lambda equals 2 raised to some existentially quantified exponent; the displayed body suppresses that exponent's elaborated type.",
+      "effect_on_target": "Imposes the exact power-of-two requirement on every admissible row and column scale.",
+      "status": "unclear"
     },
     {
       "id": "D067",
       "name": "LocalDef067",
-      "meaning": "Lists pairs (a,b) in Fin p x Fin p with a+b<p, ordered by increasing a and then increasing b.",
-      "effect_on_target": "Fixes the order of the rounded fold defining the truncated word product.",
+      "meaning": "Lists pairs (i,j) in Fin p x Fin p satisfying i+j<p, ordered by outer i and then inner j.",
+      "effect_on_target": "Fixes the retained polynomial terms and their left-fold evaluation order.",
       "status": "understood"
     },
     {
       "id": "D068",
       "name": "LocalDef068",
       "meaning": "Projects the A input-rounding error matrix.",
-      "effect_on_target": "Used in A's decomposition and in the designated input-rounding component.",
+      "effect_on_target": "Participates in A reconstruction and LocalDef064.",
       "status": "understood"
     },
     {
       "id": "D069",
       "name": "LocalDef069",
       "meaning": "Projects the A input-underflow error matrix.",
-      "effect_on_target": "Used in A's decomposition and in the designated input-underflow component.",
+      "effect_on_target": "Participates in A reconstruction and LocalDef065.",
       "status": "understood"
     },
     {
       "id": "D070",
       "name": "LocalDef070",
       "meaning": "Projects the B input-rounding error matrix.",
-      "effect_on_target": "Used in B's decomposition and in the designated input-rounding component.",
+      "effect_on_target": "Participates in B reconstruction and LocalDef064.",
       "status": "understood"
     },
     {
       "id": "D071",
       "name": "LocalDef071",
       "meaning": "Projects the B input-underflow error matrix.",
-      "effect_on_target": "Used in B's decomposition and in the designated input-underflow component.",
+      "effect_on_target": "Participates in B reconstruction and LocalDef065.",
       "status": "understood"
     },
     {
       "id": "D072",
       "name": "LocalDef072",
       "meaning": "Projects the accumulation-rounding error matrix.",
-      "effect_on_target": "Used in the computed-result decomposition and its certified norm bound.",
+      "effect_on_target": "It is the same contribution exposed by LocalDef060 and bounded in the certificate.",
       "status": "understood"
     },
     {
       "id": "D073",
       "name": "LocalDef073",
       "meaning": "Projects the accumulation-underflow error matrix.",
-      "effect_on_target": "Used in the computed-result decomposition and its certified norm bound.",
+      "effect_on_target": "It is the same contribution exposed by LocalDef061 and bounded in the certificate.",
       "status": "understood"
     },
     {
       "id": "D074",
       "name": "LocalDef074",
-      "meaning": "Constructs decomposition data assuming A=Ahat+EA_round+EA_under, B=Bhat+EB_round+EB_under, truncated=Ahat*Bhat-T, and computed=truncated+Eacc_round+Eacc_under, together with implications making each error zero when its corresponding model error function is identically zero at t.",
-      "effect_on_target": "Provides exact algebraic decompositions behind the residual. It does not itself provide the four norm bounds or residual big-O property; those are separately assumed by LocalDef050.",
+      "meaning": "Constructs decomposition data satisfying A=Ahat+A-rounding-error+A-underflow-error, B=Bhat+B-rounding-error+B-underflow-error, retained-product=Ahat*Bhat-tail, and computed=retained-product+accumulation-rounding-error+accumulation-underflow-error; corresponding matrices vanish when their model error functions vanish.",
+      "effect_on_target": "Provides the exact algebraic decomposition behind the four first-order bounds and second-order residual.",
       "status": "understood"
     },
     {
       "id": "D075",
       "name": "LocalDef075",
-      "meaning": "Defines the unscaled omitted tail sum over word indices a,b with p<=a+b, weighted by u^(a+b) and using exact matrix products.",
-      "effect_on_target": "Included in the designated input-rounding component and in the identity relating the reconstructed-input product to the truncated product.",
+      "meaning": "Defines the inverse-scaled high-degree tail sum over word indices i,j with i+j>=p, with terms u^(i+j)*(Aword_i*Bword_j).",
+      "effect_on_target": "Appears in the input-rounding contribution and separates retained from discarded word-product degrees.",
       "status": "understood"
     },
     {
       "id": "D076",
       "name": "LocalDef076",
-      "meaning": "Projects the accumulation relative-error function delta_acc(t,x).",
-      "effect_on_target": "Its vanishing forces the packaged accumulation-rounding error to vanish.",
+      "meaning": "Projects the accumulation relative-error function delta from the arithmetic model.",
+      "effect_on_target": "Its vanishing forces the accumulation-rounding error matrix to vanish.",
       "status": "understood"
     },
     {
       "id": "D077",
       "name": "LocalDef077",
-      "meaning": "Projects the accumulation additive-error function eta_acc(t,x).",
-      "effect_on_target": "Its vanishing forces the packaged accumulation-underflow error to vanish.",
+      "meaning": "Projects the accumulation additive underflow-error function eta from the arithmetic model.",
+      "effect_on_target": "Its vanishing forces the accumulation-underflow error matrix to vanish.",
       "status": "understood"
     },
     {
       "id": "D078",
       "name": "LocalDef078",
-      "meaning": "Projects the input relative-error function delta_in(t,x).",
-      "effect_on_target": "Its vanishing forces the packaged A and B input-rounding errors to vanish.",
+      "meaning": "Projects the input relative-error function delta from the arithmetic model.",
+      "effect_on_target": "Its vanishing forces both input-rounding error matrices to vanish.",
       "status": "understood"
     },
     {
       "id": "D079",
       "name": "LocalDef079",
-      "meaning": "Projects the input additive-error function eta_in(t,x).",
-      "effect_on_target": "Its vanishing forces the packaged A and B input-underflow errors to vanish.",
+      "meaning": "Projects the input additive underflow-error function eta from the arithmetic model.",
+      "effect_on_target": "Its vanishing forces both input-underflow error matrices to vanish.",
       "status": "understood"
     },
     {
       "id": "D080",
       "name": "LocalDef080",
       "meaning": "Projects the p A-word matrices from a run.",
-      "effect_on_target": "Used to reconstruct A, form truncated products, and form the omitted tail.",
+      "effect_on_target": "These matrices form the rounded base-u expansion of row-scaled A.",
       "status": "understood"
     },
     {
       "id": "D081",
       "name": "LocalDef081",
       "meaning": "Projects the p B-word matrices from a run.",
-      "effect_on_target": "Used to reconstruct B, form truncated products, and form the omitted tail.",
+      "effect_on_target": "These matrices form the rounded base-u expansion of column-scaled B.",
       "status": "understood"
     },
     {
       "id": "D082",
       "name": "LocalDef082",
-      "meaning": "Projects the parameter-dependent column scales.",
-      "effect_on_target": "Used to scale B and unscale computed and tail matrices.",
+      "meaning": "Projects the parameter-dependent column scaling factors.",
+      "effect_on_target": "Used to scale B and inverse-scale the computed result.",
       "status": "understood"
     },
     {
       "id": "D083",
       "name": "LocalDef083",
-      "meaning": "Projects the parameter-dependent row scales.",
-      "effect_on_target": "Used to scale A and unscale computed and tail matrices.",
+      "meaning": "Projects the parameter-dependent row scaling factors.",
+      "effect_on_target": "Used to scale A and inverse-scale the computed result.",
       "status": "understood"
     },
     {
       "id": "D084",
       "name": "LocalDef084",
-      "meaning": "Reconstructs Ahat_ij=lambda_i^(-1) sum_a u^a Aword[a]_ij.",
-      "effect_on_target": "Appears in A's decomposition and in the exact truncated-product identity.",
+      "meaning": "Reconstructs Ahat by inverse row scaling of the finite sum sum_i u^i*Aword_i.",
+      "effect_on_target": "Appears in the exact reconstruction of A and in the retained-product identity.",
       "status": "understood"
     },
     {
       "id": "D085",
       "name": "LocalDef085",
-      "meaning": "Reconstructs Bhat_ij=(sum_b u^b Bword[b]_ij)mu_j^(-1).",
-      "effect_on_target": "Appears in B's decomposition and in the exact truncated-product identity.",
+      "meaning": "Reconstructs Bhat by inverse column scaling of the finite sum sum_i u^i*Bword_i.",
+      "effect_on_target": "Appears in the exact reconstruction of B and in the retained-product identity.",
       "status": "understood"
     },
     {
       "id": "D086",
       "name": "LocalDef086",
-      "meaning": "Defines the unscaled exact truncated word product over a+b<p, using exact matrix products rather than the rounded algorithm.",
-      "effect_on_target": "Serves as the reference truncated result in the decomposition of the computed matrix.",
+      "meaning": "Defines the inverse-scaled exact retained convolution over word pairs with i+j<p, without accumulation rounding.",
+      "effect_on_target": "Separates exact retained polynomial multiplication from accumulation errors.",
       "status": "understood"
     },
     {
       "id": "D087",
       "name": "And",
-      "meaning": "Logical conjunction.",
-      "effect_on_target": "Combines the asymptotic error estimate with the pointwise coefficient identity and also combines assumptions inside the data structures.",
+      "meaning": "Logical conjunction of two propositions.",
+      "effect_on_target": "Requires both the asymptotic error bound and the pointwise coefficient identity.",
       "status": "understood"
     },
     {
       "id": "D088",
       "name": "Eq",
       "meaning": "Propositional equality.",
-      "effect_on_target": "Expresses the coefficient identity and all exact model, recurrence, computation, and decomposition equations.",
+      "effect_on_target": "Expresses the second conjunct and the exact identities carried by execution data.",
       "status": "understood"
     },
     {
       "id": "D089",
       "name": "Filter",
       "meaning": "A filter on the parameter type.",
-      "effect_on_target": "Specifies the asymptotic regime and the meaning of eventual truth.",
+      "effect_on_target": "Specifies the asymptotic regime and the meaning of eventually.",
       "status": "understood"
     },
     {
       "id": "D090",
       "name": "Filter.NeBot",
-      "meaning": "The assertion that a filter is not the bottom filter.",
-      "effect_on_target": "Rules out the degenerate filter on which every proposition is eventually true.",
+      "meaning": "Asserts that a filter is not the bottom filter.",
+      "effect_on_target": "Prevents the eventual and big-O statements from being trivial solely because the filter is bottom.",
       "status": "understood"
     },
     {
       "id": "D091",
       "name": "HAdd.hAdd",
-      "meaning": "Typeclass-dispatched addition.",
-      "effect_on_target": "Instantiates ordinary real, natural, and pointwise matrix addition throughout the definitions.",
+      "meaning": "The overloaded heterogeneous addition operation.",
+      "effect_on_target": "Instantiates ordinary real addition in the coefficient and bound formulas.",
       "status": "understood"
     },
     {
       "id": "D092",
       "name": "Nat",
       "meaning": "The natural numbers.",
-      "effect_on_target": "Provides dimensions, precision, word count, and natural exponents.",
+      "effect_on_target": "Provides matrix dimensions, precision, truncation length, and natural exponents.",
       "status": "understood"
     },
     {
       "id": "D093",
       "name": "Real",
       "meaning": "The real numbers.",
-      "effect_on_target": "All matrix entries, scales, errors, norms, and coefficients are real.",
+      "effect_on_target": "All matrix entries, scales, norms, errors, and coefficients are real-valued.",
       "status": "understood"
     },
     {
       "id": "D094",
       "name": "Real.instAdd",
-      "meaning": "Ordinary addition on real numbers.",
-      "effect_on_target": "Gives the scalar sums in the scale, coefficient, folds, and inequalities.",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "Gives the sums in S, C, and the asymptotic inequality.",
       "status": "understood"
     },
     {
       "id": "D095",
       "name": "instHAdd",
-      "meaning": "Promotes a homogeneous Add instance to homogeneous heterogeneous-addition notation.",
-      "effect_on_target": "Routes hAdd expressions to ordinary addition without adding assumptions.",
+      "meaning": "Turns a homogeneous Add operation into homogeneous HAdd.",
+      "effect_on_target": "Routes overloaded additions to the ordinary real or natural additions used by definitions.",
       "status": "understood"
     },
     {
       "id": "D096",
       "name": "Exists",
       "meaning": "Existential quantification.",
-      "effect_on_target": "Quantifies the scalar remainder and the integer exponent witnessing that a scale is a power of two.",
+      "effect_on_target": "Quantifies the asymptotic remainder and the exponent in the power-of-two condition.",
       "status": "understood"
     },
     {
       "id": "D097",
       "name": "Filter.Eventually",
-      "meaning": "A predicate holds eventually along a filter when its truth set belongs to that filter.",
-      "effect_on_target": "Qualifies the forward-error inequality; it need not hold at every parameter.",
+      "meaning": "States that a predicate holds on a set belonging to a filter.",
+      "effect_on_target": "Makes the forward-error inequality eventual rather than pointwise for every t.",
       "status": "understood"
     },
     {
       "id": "D098",
       "name": "Fin",
       "meaning": "The finite index type {0,...,n-1}.",
-      "effect_on_target": "Indexes matrix rows and columns, words, and finite folds.",
+      "effect_on_target": "Indexes rows, columns, and p-word components.",
       "status": "understood"
     },
     {
       "id": "D099",
       "name": "Fin.fintype",
-      "meaning": "The finite-enumeration instance for Fin n.",
-      "effect_on_target": "Enables finite sums, maxima, and matrix multiplication over dimension indices.",
+      "meaning": "Provides finite enumeration of Fin n.",
+      "effect_on_target": "Enables all finite matrix sums, maxima, and word-index traversals.",
       "status": "understood"
     },
     {
       "id": "D100",
       "name": "HMul.hMul",
-      "meaning": "Typeclass-dispatched multiplication.",
-      "effect_on_target": "Instantiates real multiplication, scalar products, and matrix multiplication.",
+      "meaning": "The overloaded heterogeneous multiplication operation.",
+      "effect_on_target": "Represents scalar products, matrix products, and coefficient multiplication.",
       "status": "understood"
     },
     {
       "id": "D101",
       "name": "HPow.hPow",
-      "meaning": "Typeclass-dispatched exponentiation.",
-      "effect_on_target": "Provides natural powers and integer powers in all unit-roundoff, scaling, and coefficient formulas.",
+      "meaning": "The overloaded exponentiation operation.",
+      "effect_on_target": "Represents powers of u, theta inverses, dimensions, and powers of two.",
       "status": "understood"
     },
     {
       "id": "D102",
       "name": "HSub.hSub",
-      "meaning": "Typeclass-dispatched subtraction.",
-      "effect_on_target": "Forms matrix errors, residuals, natural p-1, and scalar differences.",
+      "meaning": "The overloaded heterogeneous subtraction operation.",
+      "effect_on_target": "Forms computed-A*B, residual matrices, and p-1.",
       "status": "understood"
     },
     {
       "id": "D103",
       "name": "Inv.inv",
       "meaning": "Multiplicative inversion.",
-      "effect_on_target": "Produces inverse scales and inverse powers of theta; over the reals this is total, including at zero.",
+      "effect_on_target": "Forms theta^(-1), inverse scaling factors, and related divisions.",
       "status": "understood"
     },
     {
       "id": "D104",
       "name": "LE.le",
-      "meaning": "Typeclass-dispatched non-strict order.",
-      "effect_on_target": "Expresses all real, natural, and integer upper-bound assumptions and conclusions.",
+      "meaning": "The overloaded less-than-or-equal relation.",
+      "effect_on_target": "Expresses all norm bounds, range nesting, scaled-entry bounds, and the eventual conclusion.",
       "status": "understood"
     },
     {
       "id": "D105",
       "name": "Matrix",
-      "meaning": "A matrix type represented by a doubly indexed function.",
-      "effect_on_target": "Provides the representation used by all matrix operations.",
+      "meaning": "A matrix is a function from row and column index types to entries.",
+      "effect_on_target": "Supplies the representation of all matrices in the execution.",
       "status": "understood"
     },
     {
       "id": "D106",
       "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
-      "meaning": "Ordinary finite matrix multiplication: (MN)_ik=sum_j M_ij N_jk.",
-      "effect_on_target": "Defines AB and every product of word or error matrices.",
+      "meaning": "Defines matrix multiplication by finite dot products over the shared index.",
+      "effect_on_target": "Interprets A*B and all matrix products in the decomposition.",
       "status": "understood"
     },
     {
       "id": "D107",
       "name": "Matrix.sub",
-      "meaning": "Pointwise matrix subtraction.",
-      "effect_on_target": "Forms computed-AB and the residual/error-component matrices.",
+      "meaning": "Defines matrix subtraction pointwise.",
+      "effect_on_target": "Forms the forward-error and decomposition residual matrices.",
       "status": "understood"
     },
     {
       "id": "D108",
       "name": "Monoid.toNatPow",
-      "meaning": "Natural-number exponentiation in a monoid.",
-      "effect_on_target": "Interprets u^p, u^(p-1), p^2, n^2, and theta^2-related natural powers.",
+      "meaning": "Provides natural-number powers in a monoid.",
+      "effect_on_target": "Interprets u^p, u^(p-1), n^2, p^2, and other natural powers.",
       "status": "understood"
     },
     {
       "id": "D109",
       "name": "Nat.cast",
-      "meaning": "Casts a natural number into a target number system.",
-      "effect_on_target": "Interprets m,n,p and their combinations as real coefficients.",
+      "meaning": "Casts a natural number into a type with NatCast.",
+      "effect_on_target": "Interprets m,n,p and their polynomial coefficients as real numbers.",
       "status": "understood"
     },
     {
       "id": "D110",
       "name": "OfNat.ofNat",
-      "meaning": "Interprets a numeric literal in a type.",
-      "effect_on_target": "Supplies literals such as 0,1,2, and 4 in the formulas.",
+      "meaning": "Interprets a numeric literal in a target type.",
+      "effect_on_target": "Supplies constants such as 0,1,2, and 4 in formulas.",
       "status": "understood"
     },
     {
       "id": "D111",
       "name": "One.toOfNat1",
-      "meaning": "Interprets the numeral 1 from a type's multiplicative identity.",
-      "effect_on_target": "Provides real and natural occurrences of 1.",
+      "meaning": "Provides the numeral 1 from a One instance.",
+      "effect_on_target": "Interprets the real and natural constant one.",
       "status": "understood"
     },
     {
       "id": "D112",
       "name": "Real.instAddCommMonoid",
-      "meaning": "The additive commutative monoid structure on the reals.",
-      "effect_on_target": "Supports finite sums and matrix multiplication.",
+      "meaning": "The additive commutative monoid structure of the reals.",
+      "effect_on_target": "Supports finite sums and matrix multiplication over real entries.",
       "status": "understood"
     },
     {
       "id": "D113",
       "name": "Real.instAddGroup",
-      "meaning": "The additive group structure on the reals.",
+      "meaning": "The additive group structure of the reals.",
       "effect_on_target": "Supports subtraction, negation, and absolute value.",
       "status": "understood"
     },
     {
       "id": "D114",
       "name": "Real.instInv",
-      "meaning": "The standard total inverse operation on real numbers.",
-      "effect_on_target": "Interprets theta^(-1), scale inverses, and 1/2.",
+      "meaning": "The standard total inverse operation on reals.",
+      "effect_on_target": "Interprets all inverse powers and inverse scaling, including inverse zero as defined in the real field structure.",
       "status": "understood"
     },
     {
       "id": "D115",
       "name": "Real.instLE",
-      "meaning": "The usual non-strict order on real numbers.",
-      "effect_on_target": "Interprets all real inequalities.",
+      "meaning": "The standard order relation on reals.",
+      "effect_on_target": "Interprets every real-valued inequality.",
       "status": "understood"
     },
     {
       "id": "D116",
       "name": "Real.instMonoid",
-      "meaning": "The multiplicative monoid structure on the reals.",
-      "effect_on_target": "Supports natural powers and products.",
+      "meaning": "The multiplicative monoid structure of the reals.",
+      "effect_on_target": "Supports natural powers in the formulas.",
       "status": "understood"
     },
     {
       "id": "D117",
       "name": "Real.instMul",
-      "meaning": "Ordinary real multiplication.",
-      "effect_on_target": "Interprets all scalar products and matrix entry products.",
+      "meaning": "Ordinary multiplication on reals.",
+      "effect_on_target": "Interprets scalar products and matrix entry products.",
       "status": "understood"
     },
     {
       "id": "D118",
       "name": "Real.instNatCast",
-      "meaning": "The standard embedding of natural numbers into real numbers.",
-      "effect_on_target": "Turns dimensions and word counts into scalar coefficients.",
+      "meaning": "The canonical cast from natural numbers to reals.",
+      "effect_on_target": "Turns n and p into real coefficient factors.",
       "status": "understood"
     },
     {
       "id": "D119",
       "name": "Real.instOne",
-      "meaning": "The real multiplicative identity 1.",
-      "effect_on_target": "Used in rounding formulas and dyadic-scale special cases.",
+      "meaning": "The real multiplicative identity.",
+      "effect_on_target": "Interprets constants and rounding expressions 1+delta.",
       "status": "understood"
     },
     {
       "id": "D120",
       "name": "Real.instSub",
-      "meaning": "Ordinary real subtraction, defined as addition of the negation.",
-      "effect_on_target": "Used in maximum-magnitude formulas and scalar recurrences.",
+      "meaning": "Ordinary real subtraction defined by addition of a negation.",
+      "effect_on_target": "Interprets residuals, 2-2u, and recursive word residuals.",
       "status": "understood"
     },
     {
       "id": "D121",
       "name": "Real.lattice",
-      "meaning": "The lattice structure induced by the usual real order.",
-      "effect_on_target": "Supports absolute value and minimum operations.",
+      "meaning": "The lattice structure on real numbers.",
+      "effect_on_target": "Supports absolute value and min/max operations.",
       "status": "understood"
     },
     {
       "id": "D122",
       "name": "abs",
-      "meaning": "Absolute value, max(x,-x), in an ordered additive group.",
-      "effect_on_target": "Measures scalar and entrywise magnitudes and the existential scalar remainder.",
+      "meaning": "Absolute value, defined as max(a,-a) in the ordered additive group.",
+      "effect_on_target": "Appears in the eventual remainder allowance, error bounds, and vector/matrix norms.",
       "status": "understood"
     },
     {
       "id": "D123",
       "name": "instHMul",
-      "meaning": "Promotes a homogeneous Mul instance to homogeneous heterogeneous-multiplication notation.",
-      "effect_on_target": "Routes scalar hMul expressions to ordinary multiplication.",
+      "meaning": "Turns a homogeneous Mul operation into homogeneous HMul.",
+      "effect_on_target": "Routes overloaded scalar multiplication to ordinary multiplication.",
       "status": "understood"
     },
     {
       "id": "D124",
       "name": "instHPow",
-      "meaning": "Promotes a Pow instance to homogeneous exponentiation notation.",
-      "effect_on_target": "Routes the displayed powers to their natural- or integer-power operations.",
+      "meaning": "Turns a Pow operation into homogeneous HPow.",
+      "effect_on_target": "Routes exponentiation notation to the relevant real power operation.",
       "status": "understood"
     },
     {
       "id": "D125",
       "name": "instHSub",
-      "meaning": "Promotes a homogeneous Sub instance to homogeneous heterogeneous-subtraction notation.",
-      "effect_on_target": "Routes scalar, natural, and matrix hSub expressions to subtraction.",
+      "meaning": "Turns a homogeneous Sub operation into homogeneous HSub.",
+      "effect_on_target": "Routes subtraction notation to real, natural, or matrix subtraction.",
       "status": "understood"
     },
     {
       "id": "D126",
       "name": "instOfNatAtLeastTwo",
-      "meaning": "Builds numeric literals at least two from natural-number casts.",
-      "effect_on_target": "Interprets real literals 2 and 4 without adding hypotheses.",
+      "meaning": "Constructs numeric literals at least two through NatCast.",
+      "effect_on_target": "Interprets real constants 2 and 4 and adds no substantive hypothesis.",
       "status": "understood"
     },
     {
       "id": "D127",
       "name": "instOfNatNat",
-      "meaning": "Interprets a natural-number literal as itself.",
-      "effect_on_target": "Supports natural literals in dimensions, exponents, and comparisons.",
+      "meaning": "Interprets every natural-number literal as itself.",
+      "effect_on_target": "Supplies natural constants in indices and exponents.",
       "status": "understood"
     },
     {
       "id": "D128",
       "name": "instSubNat",
       "meaning": "Natural-number subtraction truncated at zero.",
-      "effect_on_target": "Makes p-1 equal to truncated subtraction; execution entails p>0, so it has the usual predecessor value.",
+      "effect_on_target": "Makes p-1 a truncated natural subtraction; valid runs additionally require p>0.",
       "status": "understood"
     },
     {
       "id": "D129",
       "name": "Asymptotics.IsBigO",
-      "meaning": "The norm-based big-O relation between two functions along a filter.",
-      "effect_on_target": "Expresses that the residual or existential remainder is bounded by a constant multiple of E(t)^2 eventually along l.",
+      "meaning": "The normed big-O relation along a filter: the first function is eventually bounded in norm by a constant multiple of the second.",
+      "effect_on_target": "Specifies that the remainder is second order in S along l.",
       "status": "understood"
     },
     {
       "id": "D130",
       "name": "ConditionallyCompleteLinearOrderBot.toOrderBot",
-      "meaning": "Extracts a bottom element from a conditionally complete linear order with bottom.",
-      "effect_on_target": "Provides zero as the default value for finite suprema of nonnegative reals.",
+      "meaning": "Provides a bottom element and order structure from a conditionally complete linear order with bottom.",
+      "effect_on_target": "Supports finite suprema used to define infinity norms.",
       "status": "understood"
     },
     {
       "id": "D131",
       "name": "DivInvMonoid.toDiv",
-      "meaning": "Extracts division from a division-with-inverse monoid.",
-      "effect_on_target": "Interprets real divisions in theta and scale-admissibility formulas.",
+      "meaning": "Provides division from a division-inverse monoid.",
+      "effect_on_target": "Interprets real quotients in theta and scale admissibility.",
       "status": "understood"
     },
     {
       "id": "D132",
       "name": "Finset.sum",
-      "meaning": "A finite sum in an additive commutative monoid.",
-      "effect_on_target": "Defines row sums, matrix products, word recurrences, and tail sums.",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "Defines row sums, dot products, reconstructions, and polynomial tails.",
       "status": "understood"
     },
     {
       "id": "D133",
       "name": "Finset.sup",
-      "meaning": "The finite supremum of function values, with bottom as the empty-set value.",
-      "effect_on_target": "Defines vector and matrix infinity norms.",
+      "meaning": "Finite supremum with bottom as the empty-set value.",
+      "effect_on_target": "Defines maximum row and maximum entry norms.",
       "status": "understood"
     },
     {
       "id": "D134",
       "name": "Finset.univ",
       "meaning": "The finite set of all elements of a finite type.",
-      "effect_on_target": "Provides the complete row, column, word, and inner-dimension index sets.",
+      "effect_on_target": "Provides complete finite row, column, and inner-index ranges.",
       "status": "understood"
     },
     {
       "id": "D135",
       "name": "HDiv.hDiv",
-      "meaning": "Typeclass-dispatched division.",
-      "effect_on_target": "Interprets divisions in theta, scaling constraints, word recurrences, and format bounds.",
+      "meaning": "The overloaded heterogeneous division operation.",
+      "effect_on_target": "Represents Fmax/n, scaling intervals, and word-recursion divisions.",
       "status": "understood"
     },
     {
       "id": "D136",
       "name": "Min.min",
-      "meaning": "Typeclass-dispatched minimum.",
-      "effect_on_target": "Defines theta as the lesser of two real bounds.",
+      "meaning": "The overloaded minimum operation.",
+      "effect_on_target": "Defines theta as the minimum of two range bounds.",
       "status": "understood"
     },
     {
       "id": "D137",
       "name": "NNNorm.nnnorm",
-      "meaning": "A nonnegative-real-valued norm.",
-      "effect_on_target": "Converts |A_ij| to a nonnegative real before finite row summation and maximization.",
+      "meaning": "The nonnegative-valued norm operation.",
+      "effect_on_target": "Converts absolute real entries into NNReal values for row sums.",
       "status": "understood"
     },
     {
       "id": "D138",
       "name": "NNReal",
       "meaning": "The subtype of nonnegative real numbers.",
-      "effect_on_target": "Used internally to make finite suprema for matrix norms have a bottom element.",
+      "effect_on_target": "Provides nonnegative finite sums and suprema in the matrix infinity norm implementation.",
       "status": "understood"
     },
     {
       "id": "D139",
       "name": "NNReal.instConditionallyCompleteLinearOrderBot",
-      "meaning": "The conditionally complete linear order with bottom structure on nonnegative reals.",
-      "effect_on_target": "Supports finite maxima in the matrix norm.",
+      "meaning": "The conditionally complete ordered structure with bottom zero on NNReal.",
+      "effect_on_target": "Makes finite maxima of row norms well-defined, including empty maxima.",
       "status": "understood"
     },
     {
       "id": "D140",
       "name": "NNReal.toReal",
-      "meaning": "The inclusion of a nonnegative real into the reals.",
-      "effect_on_target": "Returns vector and matrix norm maxima as real numbers.",
+      "meaning": "Forgets the nonnegativity proof and returns the underlying real.",
+      "effect_on_target": "Converts the computed NNReal matrix norm to a real bound.",
       "status": "understood"
     },
     {
       "id": "D141",
       "name": "Nat.AtLeastTwo",
-      "meaning": "A proposition certifying that a natural number is at least two.",
-      "effect_on_target": "Used only to elaborate larger numeric literals.",
+      "meaning": "A proposition/typeclass certifying that a natural numeral is at least two.",
+      "effect_on_target": "Supports elaboration of generic numeric literals 2 and 4 only.",
       "status": "understood"
     },
     {
       "id": "D142",
       "name": "NonAssocSemiring.toNonUnitalNonAssocSemiring",
-      "meaning": "Forgets the unit from a nonassociative semiring structure.",
-      "effect_on_target": "Typeclass plumbing supporting finite sums and products on nonnegative reals; no separate mathematical premise.",
+      "meaning": "Forgets parts of a semiring structure while retaining addition and multiplication.",
+      "effect_on_target": "Typeclass plumbing supporting finite sums and products; it adds no target condition.",
       "status": "understood"
     },
     {
       "id": "D143",
       "name": "NonUnitalNonAssocSemiring.toAddCommMonoid",
       "meaning": "Extracts the additive commutative monoid from a nonunital nonassociative semiring.",
-      "effect_on_target": "Supports summing nonnegative row-entry norms.",
+      "effect_on_target": "Supports finite sums used in norms and products.",
       "status": "understood"
     },
     {
       "id": "D144",
       "name": "NonUnitalSeminormedCommRing.toNonUnitalSeminormedRing",
       "meaning": "Forgets commutativity from a nonunital seminormed commutative ring.",
-      "effect_on_target": "Typeclass plumbing for the real norm used by big-O and nonnegative norms.",
+      "effect_on_target": "Typeclass plumbing for real norm operations.",
       "status": "understood"
     },
     {
@@ -1022,224 +1022,224 @@
       "id": "D146",
       "name": "NormedCommRing.toSeminormedCommRing",
       "meaning": "Forgets norm separation from a normed commutative ring.",
-      "effect_on_target": "Typeclass plumbing for real normed algebra; no additional proposition.",
+      "effect_on_target": "Typeclass plumbing supporting the real norm and big-O relation.",
       "status": "understood"
     },
     {
       "id": "D147",
       "name": "Real.instDivInvMonoid",
-      "meaning": "The real multiplicative, inverse, division, and integer-power structure.",
-      "effect_on_target": "Supports division, inverse theta factors, inverse scales, and powers 2^e for integer e.",
+      "meaning": "The real division, inverse, natural-power, and integer-power structure.",
+      "effect_on_target": "Interprets division and signed powers of two used by format ranges.",
       "status": "understood"
     },
     {
       "id": "D148",
       "name": "Real.instMin",
-      "meaning": "The usual minimum operation on real numbers.",
+      "meaning": "The real minimum operation.",
       "effect_on_target": "Interprets theta=min(fmax,sqrt(Fmax/n)).",
       "status": "understood"
     },
     {
       "id": "D149",
       "name": "Real.norm",
-      "meaning": "The real norm ||x||=|x|.",
-      "effect_on_target": "Gives the norm used by the big-O predicate.",
+      "meaning": "The real norm, equal to absolute value.",
+      "effect_on_target": "Interprets scalar big-O and nonnegative norms of real entries.",
       "status": "understood"
     },
     {
       "id": "D150",
       "name": "Real.normedCommRing",
-      "meaning": "The standard normed commutative ring structure on the reals.",
-      "effect_on_target": "Supplies algebraic and norm structures required by matrix norms and asymptotics.",
+      "meaning": "The normed commutative ring structure on the reals.",
+      "effect_on_target": "Supplies algebraic and norm structures needed for big-O and norm calculations.",
       "status": "understood"
     },
     {
       "id": "D151",
       "name": "Real.sqrt",
-      "meaning": "The nonnegative real square root, implemented after truncating a negative input to zero.",
+      "meaning": "The standard nonnegative real square root, implemented through the nonnegative part of its input.",
       "effect_on_target": "Forms sqrt(Fmax/n) in theta.",
       "status": "understood"
     },
     {
       "id": "D152",
       "name": "SeminormedAddCommGroup.toSeminormedAddGroup",
-      "meaning": "Forgets additive commutativity from a seminormed additive commutative group.",
-      "effect_on_target": "Typeclass plumbing used to obtain nonnegative norms.",
+      "meaning": "Forgets commutativity from a seminormed additive commutative group.",
+      "effect_on_target": "Typeclass plumbing for nonnegative norms.",
       "status": "understood"
     },
     {
       "id": "D153",
       "name": "SeminormedAddGroup.toNNNorm",
-      "meaning": "Builds a nonnegative-real-valued norm from a seminorm.",
-      "effect_on_target": "Provides the nonnegative absolute values used in matrix row sums.",
+      "meaning": "Builds the nonnegative norm from a seminorm.",
+      "effect_on_target": "Makes each real matrix entry contribute its absolute value to the infinity norm.",
       "status": "understood"
     },
     {
       "id": "D154",
       "name": "SeminormedCommRing.toNonUnitalSeminormedCommRing",
-      "meaning": "Forgets the multiplicative unit from a seminormed commutative ring.",
-      "effect_on_target": "Typeclass plumbing for real nonnegative norms.",
+      "meaning": "Forgets the multiplicative identity from a seminormed commutative ring.",
+      "effect_on_target": "Typeclass plumbing for normed additive structures.",
       "status": "understood"
     },
     {
       "id": "D155",
       "name": "Semiring.toNonAssocSemiring",
-      "meaning": "Forgets associativity data from a semiring while retaining its operations.",
-      "effect_on_target": "Typeclass plumbing for summation over nonnegative reals.",
+      "meaning": "Forgets multiplication associativity from a semiring.",
+      "effect_on_target": "Typeclass plumbing for NNReal finite sums and products.",
       "status": "understood"
     },
     {
       "id": "D156",
       "name": "instAddNat",
-      "meaning": "Ordinary natural-number addition.",
-      "effect_on_target": "Forms p+1 and word-index sums a+b.",
+      "meaning": "Ordinary addition on natural numbers.",
+      "effect_on_target": "Computes p+1 and word-degree sums i+j.",
       "status": "understood"
     },
     {
       "id": "D157",
       "name": "instHDiv",
-      "meaning": "Promotes a homogeneous Div instance to homogeneous heterogeneous-division notation.",
-      "effect_on_target": "Routes real hDiv expressions to ordinary division.",
+      "meaning": "Turns a homogeneous Div operation into homogeneous HDiv.",
+      "effect_on_target": "Routes overloaded quotients to ordinary real division.",
       "status": "understood"
     },
     {
       "id": "D158",
       "name": "instSemilatticeSupNNReal",
       "meaning": "The maximum semilattice structure on nonnegative reals.",
-      "effect_on_target": "Supports finite maxima in vector and matrix norms.",
+      "effect_on_target": "Computes finite maxima in vector and matrix infinity norms.",
       "status": "understood"
     },
     {
       "id": "D159",
       "name": "instSemiringNNReal",
       "meaning": "The semiring structure on nonnegative reals.",
-      "effect_on_target": "Provides addition for row sums of entry norms.",
+      "effect_on_target": "Supports finite sums of nonnegative entry norms.",
       "status": "understood"
     },
     {
       "id": "D160",
       "name": "Bool",
-      "meaning": "The two-element Boolean type.",
-      "effect_on_target": "Records whether each format supports subnormal numbers.",
+      "meaning": "The two-valued Boolean type.",
+      "effect_on_target": "Records whether each format supports subnormals.",
       "status": "understood"
     },
     {
       "id": "D161",
       "name": "DivInvMonoid.toZPow",
-      "meaning": "Integer exponentiation in a division-with-inverse monoid.",
-      "effect_on_target": "Interprets 2^emin, 2^emax, and the integer power-of-two scaling witness.",
+      "meaning": "Provides integer powers in a division-inverse monoid.",
+      "effect_on_target": "Interprets 2^emin and 2^emax for integer exponent bounds.",
       "status": "understood"
     },
     {
       "id": "D162",
       "name": "Fin.val",
-      "meaning": "Returns the natural-number value of a finite index.",
-      "effect_on_target": "Supplies word exponents and comparisons such as k<i and a+b<p.",
+      "meaning": "Returns the natural value of a bounded finite index.",
+      "effect_on_target": "Supplies word degrees and comparisons such as i+j<p.",
       "status": "understood"
     },
     {
       "id": "D163",
       "name": "Finset.filter",
       "meaning": "Restricts a finite set to elements satisfying a decidable predicate.",
-      "effect_on_target": "Selects earlier word indices and the high-degree tail indices.",
+      "effect_on_target": "Selects earlier word indices and retained or discarded degree ranges.",
       "status": "understood"
     },
     {
       "id": "D164",
       "name": "Int",
       "meaning": "The integers.",
-      "effect_on_target": "Provides format exponents and dyadic scaling exponents.",
+      "effect_on_target": "Types format exponent bounds and signed powers of two.",
       "status": "understood"
     },
     {
       "id": "D165",
       "name": "Int.instLEInt",
-      "meaning": "The usual non-strict order on integers.",
-      "effect_on_target": "Expresses format exponent-range validity and containment.",
+      "meaning": "The standard order relation on integers.",
+      "effect_on_target": "Expresses emin<=emax and containment of input exponent range in accumulation range.",
       "status": "understood"
     },
     {
       "id": "D166",
       "name": "LT.lt",
-      "meaning": "Typeclass-dispatched strict order.",
-      "effect_on_target": "Expresses positive dimensions, positive scales and norms, and strict scaling inequalities.",
+      "meaning": "The overloaded strict-order relation.",
+      "effect_on_target": "Expresses positivity and strict scaling inequalities.",
       "status": "understood"
     },
     {
       "id": "D167",
       "name": "Nat.decLt",
-      "meaning": "Decidability of strict order on natural numbers.",
-      "effect_on_target": "Allows finite filtering by k<i and a+b<p; it adds no hypothesis.",
+      "meaning": "Decides strict inequality between natural numbers.",
+      "effect_on_target": "Makes finite filters such as k<i and i+j<p computationally definable.",
       "status": "understood"
     },
     {
       "id": "D168",
       "name": "Real.instZero",
-      "meaning": "The real number zero.",
-      "effect_on_target": "Initializes folds, states zero-error conditions, and defines zero matrices.",
+      "meaning": "The real additive identity.",
+      "effect_on_target": "Initializes folds and states zero-error conditions.",
       "status": "understood"
     },
     {
       "id": "D169",
       "name": "Unit",
       "meaning": "A one-element type.",
-      "effect_on_target": "Used only to encode the two branches of Boolean case analysis.",
+      "effect_on_target": "Carries no data and only supports Boolean branch selection.",
       "status": "understood"
     },
     {
       "id": "D170",
       "name": "Zero.toOfNat0",
-      "meaning": "Interprets numeral 0 from a type's zero element.",
-      "effect_on_target": "Provides scalar and matrix zeros.",
+      "meaning": "Provides the numeral zero from a Zero instance.",
+      "effect_on_target": "Interprets scalar and matrix zeros.",
       "status": "understood"
     },
     {
       "id": "D171",
       "name": "instLENat",
-      "meaning": "The usual non-strict order on natural numbers.",
-      "effect_on_target": "Expresses precision containment and conditions p<=a+b.",
+      "meaning": "The standard less-than-or-equal relation on natural numbers.",
+      "effect_on_target": "Expresses precision nesting and the high-degree condition p<=i+j.",
       "status": "understood"
     },
     {
       "id": "D172",
       "name": "instLTNat",
-      "meaning": "The usual strict order on natural numbers.",
-      "effect_on_target": "Expresses positive dimensions and word-index inequalities.",
+      "meaning": "The standard strict order on natural numbers.",
+      "effect_on_target": "Expresses positive dimensions, positive p, and retained-degree conditions.",
       "status": "understood"
     },
     {
       "id": "D173",
       "name": "Bool.casesOn",
-      "meaning": "Elimination by cases on false or true.",
-      "effect_on_target": "Implements the subnormal-dependent underflow formula.",
+      "meaning": "Eliminates a Boolean by selecting its false or true branch.",
+      "effect_on_target": "Implements the two underflow formulas.",
       "status": "understood"
     },
     {
       "id": "D174",
       "name": "Bool.false",
       "meaning": "The false Boolean value.",
-      "effect_on_target": "Selects the no-subnormal branch g=2^emin/2.",
+      "effect_on_target": "Selects the no-subnormals underflow branch.",
       "status": "understood"
     },
     {
       "id": "D175",
       "name": "Bool.true",
       "meaning": "The true Boolean value.",
-      "effect_on_target": "Selects the subnormal branch g=u*2^emin.",
+      "effect_on_target": "Selects the subnormals-supported underflow branch.",
       "status": "understood"
     },
     {
       "id": "D176",
       "name": "List.foldl",
-      "meaning": "Left fold over a list.",
-      "effect_on_target": "Fixes the sequential order of rounded dot products and outer accumulations, which matters because rounding is not assumed associative.",
+      "meaning": "Left-associative list folding in list order.",
+      "effect_on_target": "Fixes the exact sequential accumulation order of dot products and word-pair sums.",
       "status": "understood"
     },
     {
       "id": "D177",
       "name": "Or",
       "meaning": "Logical disjunction.",
-      "effect_on_target": "Separates the zero-vector and positive-vector cases in scale admissibility.",
+      "effect_on_target": "Separates zero-vector and positive-vector cases in scale admissibility.",
       "status": "understood"
     },
     {
@@ -1253,182 +1253,173 @@
       "id": "D179",
       "name": "Prod.fst",
       "meaning": "Projects the first component of a pair.",
-      "effect_on_target": "Selects the A-word index in truncated-product folds.",
+      "effect_on_target": "Selects the A-word index in convolution terms.",
       "status": "understood"
     },
     {
       "id": "D180",
       "name": "Prod.snd",
       "meaning": "Projects the second component of a pair.",
-      "effect_on_target": "Selects the B-word index in truncated-product folds.",
+      "effect_on_target": "Selects the B-word index in convolution terms.",
       "status": "understood"
     },
     {
       "id": "D181",
       "name": "Real.instLT",
-      "meaning": "The usual strict order on real numbers.",
-      "effect_on_target": "Interprets positivity and strict scale-admissibility inequalities.",
+      "meaning": "The standard strict order on real numbers.",
+      "effect_on_target": "Expresses positivity of scaling factors and strict lower scale bounds.",
       "status": "understood"
     },
     {
       "id": "D182",
       "name": "Real.toNNReal",
-      "meaning": "Maps a real x to the nonnegative real max(x,0).",
-      "effect_on_target": "Used internally by the square-root definition.",
+      "meaning": "Maps a real r to the nonnegative real max(r,0).",
+      "effect_on_target": "Supports the implementation of real square root and nonnegative norms.",
       "status": "understood"
     },
     {
       "id": "D183",
       "name": "Unit.unit",
-      "meaning": "The sole element of Unit.",
-      "effect_on_target": "Invokes the selected Boolean branch in the underflow formula.",
+      "meaning": "The unique inhabitant of Unit.",
+      "effect_on_target": "Supplies the vacuous argument to each Boolean branch.",
       "status": "understood"
     },
     {
       "id": "D184",
       "name": "Decidable.decide",
       "meaning": "Converts a decidable proposition to true or false.",
-      "effect_on_target": "Turns a+b<p into the Boolean predicate used to filter the word-index list.",
+      "effect_on_target": "Turns the condition i+j<p into the Boolean predicate used by list filtering.",
       "status": "understood"
     },
     {
       "id": "D185",
       "name": "List",
-      "meaning": "The type of finite ordered lists.",
-      "effect_on_target": "Represents ordered word-index pairs and ordered product lists for rounded folds.",
+      "meaning": "The finite ordered list type.",
+      "effect_on_target": "Represents ordered products and word-index pairs for sequential folds.",
       "status": "understood"
     },
     {
       "id": "D186",
       "name": "List.filter",
-      "meaning": "Retains list elements for which a Boolean predicate is true.",
-      "effect_on_target": "Restricts word-index pairs to total degree less than p.",
+      "meaning": "Retains list elements for which a Boolean predicate is true, preserving order.",
+      "effect_on_target": "Restricts word-index pairs to total degree below p.",
       "status": "understood"
     },
     {
       "id": "D187",
       "name": "List.flatten",
-      "meaning": "Concatenates a list of lists.",
-      "effect_on_target": "Combines the per-A-index lists into the ordered list of admissible word pairs.",
+      "meaning": "Concatenates a list of lists in order.",
+      "effect_on_target": "Combines per-i pair lists into the prescribed convolution traversal order.",
       "status": "understood"
     },
     {
       "id": "D188",
       "name": "List.ofFn",
-      "meaning": "Enumerates a function on Fin n as a list in increasing index order.",
-      "effect_on_target": "Fixes the order of dot-product terms and word-index pairs.",
+      "meaning": "Enumerates a function on Fin n as an ordered list from index zero upward.",
+      "effect_on_target": "Fixes the order of products and word-index enumeration.",
       "status": "understood"
     },
     {
       "id": "D189",
       "name": "Matrix.neg",
-      "meaning": "Pointwise matrix negation.",
-      "effect_on_target": "Forms the negative input-error product terms.",
+      "meaning": "Defines matrix negation pointwise.",
+      "effect_on_target": "Forms signed input-error contributions.",
       "status": "understood"
     },
     {
       "id": "D190",
       "name": "Neg.neg",
-      "meaning": "Typeclass-dispatched negation.",
-      "effect_on_target": "Interprets scalar and matrix negative values.",
+      "meaning": "The overloaded negation operation.",
+      "effect_on_target": "Negates matrices and real quantities in residual formulas.",
       "status": "understood"
     },
     {
       "id": "D191",
       "name": "Prod.mk",
       "meaning": "Constructs an ordered pair.",
-      "effect_on_target": "Builds pairs of word indices for the truncated-product list.",
+      "effect_on_target": "Builds word-index pairs for the convolution list.",
       "status": "understood"
     },
     {
       "id": "D192",
       "name": "Real.instNeg",
       "meaning": "Ordinary real negation.",
-      "effect_on_target": "Supplies pointwise matrix negation and real subtraction.",
+      "effect_on_target": "Supports real and pointwise matrix subtraction and absolute value.",
       "status": "understood"
     },
     {
       "id": "D193",
       "name": "Matrix.add",
-      "meaning": "Pointwise matrix addition.",
-      "effect_on_target": "Expresses all exact decompositions of A, B, and the computed matrix.",
+      "meaning": "Defines matrix addition pointwise.",
+      "effect_on_target": "Expresses exact matrix reconstructions and computed-result decompositions.",
       "status": "understood"
     },
     {
       "id": "D194",
       "name": "Matrix.zero",
-      "meaning": "The pointwise zero matrix.",
-      "effect_on_target": "Appears in zero-error implications and initializes matrix-valued equalities.",
+      "meaning": "Defines the zero matrix pointwise.",
+      "effect_on_target": "States that error matrices vanish when corresponding scalar error functions vanish.",
       "status": "understood"
     },
     {
       "id": "D195",
       "name": "Nat.decLe",
-      "meaning": "Decidability of non-strict order on natural numbers.",
-      "effect_on_target": "Allows filtering tail indices by p<=a+b; it adds no mathematical hypothesis.",
+      "meaning": "Decides less-than-or-equal between natural numbers.",
+      "effect_on_target": "Makes high-degree pair filtering computationally definable.",
       "status": "understood"
     },
     {
       "id": "D196",
       "name": "Pi.instZero",
-      "meaning": "The pointwise zero operation on dependent function types.",
-      "effect_on_target": "Makes a zero matrix the function whose every entry is zero.",
+      "meaning": "Defines the zero function pointwise from zeros in the codomain.",
+      "effect_on_target": "Interprets zero matrices and zero parameter-dependent functions.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "m, n, q, and p are natural numbers.",
-      "iota is an arbitrary parameter type.",
-      "l is a nonbottom filter on iota.",
-      "execution is an execution package indexed by m,n,q,p,iota,l; it contains a run and a certified error decomposition for that run."
+      "Natural numbers m,n,q,p.",
+      "A type iota and a filter l on iota, with a Filter.NeBot instance.",
+      "A certified execution whose underlying run contains an m-by-n real matrix A, an n-by-q real matrix B, an arithmetic model depending on t in iota, and a computed m-by-q matrix computed(t)."
     ],
     "hypotheses": [
-      "The run stored in execution entails m>0, n>0, q>0, and p>0.",
-      "The run contains real matrices A of size m-by-n and B of size n-by-q, a parameter-dependent mixed arithmetic model, row scales lambda_t(i), column scales mu_t(j), p A-word matrices, p B-word matrices, and a computed m-by-q matrix Ccomp(t).",
-      "Each input and accumulation format has positive precision and minimum exponent at most maximum exponent. At every t, input precision is at most accumulation precision, the accumulation minimum exponent is at most the input minimum exponent, and the input maximum exponent is at most the accumulation maximum exponent.",
-      "For each t and real x, inputRound_t(x)=x(1+delta_in(t,x))+eta_in(t,x), with |delta_in(t,x)|<=u(t), |eta_in(t,x)|<=g(t), and eta_in(t,x)delta_in(t,x)=0. The analogous accumulation equation holds with delta_acc, eta_acc, U(t), and G(t).",
-      "For every t and row i, lambda_t(i) is a positive integer power of two satisfying the stated scale-admissibility condition relative to theta(t) and the infinity norm of row i of A. For every t and column j, mu_t(j) satisfies the analogous condition for column j of B.",
-      "The scaled entries satisfy |lambda_t(i)A_ij|<=theta(t) and |B_ij mu_t(j)|<=theta(t) for all applicable indices.",
-      "The A-word and B-word entries satisfy their recursive input-rounded radix-u(t) extraction equations. The computed matrix is the row- and column-unscaled result of the ordered rounded truncated word-product algorithm over word pairs a+b<p.",
-      "Execution carries decomposition data satisfying exact decompositions of A, B, the exact truncated product, and Ccomp(t), together with the stated zero-error consistency implications.",
-      "Crucially, execution also carries as assumptions the four component bounds ||Rin_round(t)||_infinity<=((p+1)u(t)^p)||A||_infinity||B||_infinity, ||Rin_under(t)||_infinity<=(4n u(t)^(p-1)theta(t)^(-1)g(t))||A||_infinity||B||_infinity, ||Racc_round(t)||_infinity<=((n+p^2)U(t))||A||_infinity||B||_infinity, and ||Racc_under(t)||_infinity<=(2p(p+1)n^2theta(t)^(-2)G(t))||A||_infinity||B||_infinity, for every t.",
-      "Execution further carries the assumption ||Rres(t)||_infinity=O_l(E(t)^2), where Rres is the forward-error matrix after subtracting the four designated component matrices."
+      "The nonbottom condition on l is the only separate proposition-level assumption.",
+      "The execution package carries m>0, n>0, q>0, and p>0; valid input and accumulation formats; input precision no greater than accumulation precision; and an accumulation exponent range containing the input exponent range.",
+      "Both rounding maps satisfy round(x)=x(1+delta(x))+eta(x), with |delta| bounded by the corresponding unit roundoff, |eta| bounded by the corresponding underflow quantity, and eta(x)delta(x)=0.",
+      "The run carries admissible positive power-of-two row and column scales, scaled-entry bounds by theta, recursively input-rounded p-word expansions of the scaled matrices, and the specified sequentially accumulation-rounded truncated convolution as computed(t).",
+      "The execution certificate carries exact matrix error decompositions, four first-order norm bounds, and a residual matrix whose infinity norm is O_l(S^2)."
     ],
     "conclusions": [
-      "There exists a real-valued function r on iota such that r=O_l(E^2) and, eventually along l, ||Ccomp(t)-AB||_infinity <= C(t)||A||_infinity||B||_infinity+|r(t)|.",
-      "For every t, C(t)=((p+1)u(t)^p+(n+p^2)U(t))+4n u(t)^(p-1)theta(t)^(-1)g(t)+2p(p+1)n^2theta(t)^(-2)G(t)."
+      "There exists a real-valued remainder r on iota such that r=O_l(S^2) and, eventually along l, ||computed(t)-A*B||_inf <= C(t)||A||_inf||B||_inf+|r(t)|.",
+      "For every t, C(t) is exactly ((p+1)u(t)^p+(n+p^2)U(t))+4n*u(t)^(p-1)*theta(t)^(-1)gmin(t)+2p(p+1)n^2*theta(t)^(-2)Gmin(t)."
     ],
     "mathematical_definitions": [
-      "For a real matrix X, ||X||_infinity=max_i sum_j |X_ij|. The implementation computes the maximum in the nonnegative reals and returns zero if the row-index type is empty.",
-      "For a finite vector x, ||x||_infinity=max_i |x_i|, with zero for an empty index type.",
-      "For a format of precision s, minimum exponent emin, maximum exponent emax, and subnormal flag h, its unit roundoff is 2^(-s), its maximum finite magnitude is 2^emax(2-2^(1-s)), and its additive error bound is 2^emin/2 if h is false and 2^(-s)2^emin if h is true.",
-      "At t, write u(t) and g(t) for the input format's unit roundoff and additive error bound, and U(t) and G(t) for the corresponding accumulation-format quantities. Write fmax(t) and Fmax(t) for their maximum finite magnitudes.",
+      "For a format with precision s, minimum exponent emin, maximum exponent emax, and subnormal flag h, define unit roundoff ur=(1/2)^s, maximum finite magnitude xmax=2^emax(2-2ur), and underflow quantity xmin=2^emin/2 if h is false and xmin=ur*2^emin if h is true.",
+      "At each t, u(t), gmin(t), and fmax(t) are the input format's unit roundoff, underflow quantity, and maximum finite magnitude; U(t), Gmin(t), and Fmax(t) are the corresponding accumulation-format quantities.",
       "theta(t)=min(fmax(t),sqrt(Fmax(t)/n)).",
-      "E(t)=u(t)^p+u(t)^(p-1)theta(t)^(-1)g(t)+U(t)+theta(t)^(-2)G(t).",
-      "C(t)=((p+1)u(t)^p+(n+p^2)U(t))+4n u(t)^(p-1)theta(t)^(-1)g(t)+2p(p+1)n^2theta(t)^(-2)G(t), with real casts of natural coefficients.",
-      "Natural subtraction is truncated, so the displayed p-1 is Lean's natural-number p-1; because execution entails p>0, it is the ordinary predecessor.",
-      "A scale lambda is admissible for vector norm v at threshold theta when lambda=2^e for some integer e, lambda>0, and either v=0 with lambda=1, or v>0 with theta/(2v)<lambda<=theta/v.",
-      "The A-word recurrence is Aword_a(t,i,j)=inputRound_t((lambda_t(i)A_ij-sum_{k<a}u(t)^k Aword_k(t,i,j))/u(t)^a). The B-word recurrence is the analogous formula with B_ij mu_t(j).",
-      "A rounded dot product starts at zero and, in increasing inner-index order, replaces its partial sum s by accumulationRound_t(s+xy).",
-      "The scaled truncated word product starts at zero and, in lexicographic order over pairs (a,b) with a+b<p, replaces s by accumulationRound_t(s+u(t)^(a+b) roundedDot(Aword_a,Bword_b)). It is then unscaled entrywise by lambda_t(i)^(-1) and mu_t(j)^(-1) to give Ccomp(t).",
-      "For functions f and h, f=O_l(h) means the norm of f is eventually bounded along l by a fixed nonnegative constant times the norm of h. Here real norms are absolute values and h(t)=E(t)^2."
+      "For an a-by-b real matrix M, ||M||_inf=max over row indices i of sum over column indices j of |M(i,j)|, with zero for an empty row index type.",
+      "S(t)=u(t)^p+u(t)^(p-1)*theta(t)^(-1)gmin(t)+U(t)+theta(t)^(-2)Gmin(t).",
+      "C(t)=(p+1)u(t)^p+(n+p^2)U(t)+4n*u(t)^(p-1)*theta(t)^(-1)gmin(t)+2p(p+1)n^2*theta(t)^(-2)Gmin(t).",
+      "The principal bound is C(t)||A||_inf||B||_inf.",
+      "The exponent p-1 is truncated natural subtraction, although every valid run carries p>0.",
+      "The computation uses ordered left folds and therefore fixes a specific sequential rounding order for dot products and retained word-pair terms."
     ],
-    "proposition_plain_english": "For every certified execution of the described positive-dimensional, p-word, mixed-format matrix multiplication, the maximum absolute row-sum forward error is eventually bounded by C(t) times the product of the maximum absolute row-sum norms of A and B, up to the absolute value of a scalar remainder that is big-O of E(t)^2 along the nonbottom filter l. The proposition simultaneously states, for every parameter t, the exact expansion of C(t) into its input-rounding, accumulation-rounding, input-underflow, and accumulation-underflow coefficients. The execution structure already assumes the four component norm estimates and the second-order residual property needed for this aggregation."
+    "proposition_plain_english": "For every certified mixed-format, scaled p-word matrix-multiplication execution along a nonbottom filter, the infinity norm of the forward error computed(t)-A*B is eventually at most C(t) times the product of the input infinity norms, plus the absolute value of a remainder that is big-O along the filter of the square of S(t). The theorem also states pointwise that C(t) equals the displayed sum of its input-rounding, accumulation-rounding, input-underflow, and accumulation-underflow terms; this second statement unfolds the definition of C."
   },
   "restrictions_and_vacuity_risks": [
-    "The proposition is universally quantified over execution packages. If no execution package exists for chosen indices, model, filter, or scaling requirements, the implication is vacuous.",
-    "In particular, a run requires m,n,q,p all to be positive. Thus the target is vacuous for any zero dimension or p=0 because no run constructor, and hence no execution, can be supplied.",
-    "The four component norm bounds and the residual O_l(E^2) property are fields assumed by the execution certificate. The theorem does not derive those estimates from the lower-level rounding model, word recurrences, or scaling assumptions.",
-    "The forward-error inequality is only eventual along l, not pointwise for every t. The nonbottom hypothesis excludes the bottom filter but otherwise l is arbitrary.",
-    "The big-O assertion does not state that E(t) tends to zero, so it does not by itself assert that the remainder becomes small.",
-    "The existential scalar remainder is not stated to be unique or equal to any named residual norm, even though the packaged residual norm supplies a natural witness.",
-    "The second conclusion is an exact definitional decomposition of C, not an additional numerical estimate.",
-    "All inverse and division operations use Lean's total real operations. The target contains no explicit standalone assumptions theta(t)!=0 or lambda_t(i)!=0, although scale admissibility explicitly makes row and column scales positive and the format/run conditions support positivity of the format quantities.",
-    "The model assumes its rounding equations and error bounds for every real input x. No separate representability, overflow-event exclusion, probabilistic model, or hardware behavior is encoded beyond those fields.",
-    "The infinity norm is specifically the maximum absolute row-sum norm, not the spectral norm, Frobenius norm, or entrywise maximum norm.",
-    "The remainder is controlled only in absolute value in the final scalar inequality; no sign or exact expansion for it is asserted.",
-    "The zero-error implications in the decomposition data are one-way implications and are not used to assert that any error function actually vanishes."
+    "The theorem does not assert that a certified execution exists for arbitrary m,n,q,p. Since a run carries m,n,q,p>0, the universal statement is vacuous for zero dimensions or p=0.",
+    "Existence of the required scaling factors, word decompositions, computed result, and certificate is packaged into the execution type; parameter choices for which these data cannot be constructed are excluded silently.",
+    "Filter.NeBot rules out the bottom filter, but the inequality is only eventual along l and need not hold at every parameter t.",
+    "The big-O constant and eventual set are existential and unspecified; no uniform numerical constant is stated in the target.",
+    "The remainder is only constrained asymptotically by S^2. The target does not identify it pointwise with the certificate's residual norm.",
+    "All inverses and divisions use total real operations. The target itself does not separately state nonzero denominators, even though validity conditions may imply positivity in constructible executions.",
+    "The error statement is normwise in the matrix infinity norm, not componentwise, relative, spectral-norm, or Frobenius-norm error.",
+    "The rounding functions are abstract functions constrained only by the packaged error equations, bounds, orthogonality condition eta*delta=0, and zero-error compatibility properties.",
+    "The second conjunct is definitionally true from LocalDef014 and imposes no additional numerical restriction.",
+    "Natural powers and truncated natural subtraction are used; in particular p-1 is not an integer exponent operation.",
+    "The theorem contains no standalone overflow-avoidance assertion or representability assertion beyond what is encoded indirectly by the execution's scaling and format data."
   ],
-  "ambiguities": []
+  "ambiguities": [
+    "The one-level body of LocalDef066 does not expose the type of its existential exponent, so the packet alone does not determine whether admissible scales are powers 2^k for natural k, integer k, or another inferred exponent type. This affects whether power-of-two scales below one are permitted."
+  ]
 }

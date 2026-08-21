@@ -1,0 +1,260 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P20-T3",
+  "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
+  "source_evidence": [
+    {
+      "pdf_page": 2,
+      "printed_page": "B786",
+      "anchor": "Model 1 and equations (2.1)-(2.3)",
+      "observation": "The input format has precision t, exponent range [e_min,e_max], u=2^(-t), f_min=2^(e_min), f_max=2^(e_max)(2-2u), and underflow parameter g_min=f_min/2 without subnormals or u f_min with gradual underflow. The accumulation format has T>=t, a containing exponent range, U=2^(-T), analogous F_min and F_max, and G_min. Assuming no overflow, input rounding obeys fl(x)=x(1+delta)+eta with |delta|<=u, |eta|<=g_min, and eta delta=0."
+    },
+    {
+      "pdf_page": 3,
+      "printed_page": "B787",
+      "anchor": "Equation (2.4) and following rounding-mode paragraph",
+      "observation": "Accumulation-format operations obey FL(x op y)=(x op y)(1+delta)+eta with |delta|<=U, |eta|<=G_min, eta delta=0, and op in {+,-,multiplication,division}. The default model is round-to-nearest; directed rounding requires replacing u,g_min,U,G_min by twice those quantities."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "B788",
+      "anchor": "Equation (3.1) and scaling assumptions",
+      "observation": "A is m by n, B is n by q, and the exact target is C=AB. Lambda and M are nonsingular diagonal scaling matrices. Their entries are powers of two so scaling introduces no rounding, and the surrounding computation assumes no underflow or overflow before scaling or after unscaling."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "B789",
+      "anchor": "Equations (3.2) and (3.4a)-(3.4b)",
+      "observation": "A, B, and C are assumed exactly representable in a sufficiently high-precision storage format. The selected scale is theta=min(f_max,sqrt(F_max/n)). For a nonzero row x and column y, the maximal power-of-two factors satisfy theta/(2||x||_infinity)<lambda<=theta/||x||_infinity and theta/(2||y||_infinity)<mu<=theta/||y||_infinity."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "B791",
+      "anchor": "Equations (3.25)-(3.26) and the sentence introducing (3.26)",
+      "observation": "The paper introduces a lesssim bound by calling it a simplified version obtained by dropping second-order terms. It supplies no quantified constant, asymptotic variable, or formal definition of lesssim."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "B792",
+      "anchor": "Multiword definition and equations (4.1)-(4.3)",
+      "observation": "p is the number of low-precision words. The retained matrix products are the p(p+1)/2 pairs with i+j<p. The narrow-range variant rescales each residual before input-format rounding: w^(i)=fl((w-sum_{j=0}^{i-1}u^j w^(j))/u^i), for i=0,...,p-1."
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "B793",
+      "anchor": "Equations (4.4)-(4.13)",
+      "observation": "The scaled decomposition is applied elementwise to Lambda A and BM. The paper derives, rather than assumes, componentwise residual bounds ending with |Delta x^(p-1)|<=max(u^p|lambda x|,u^(p-1)g_min)."
+    },
+    {
+      "pdf_page": 10,
+      "printed_page": "B794",
+      "anchor": "Equations (4.18)-(4.20)",
+      "observation": "The derived matrix decompositions are A=sum_{i=0}^{p-1}u^i Lambda^(-1)A^(i)+Delta A and B=sum_{j=0}^{p-1}u^j B^(j)M^(-1)+Delta B, with ||Delta A||_infinity<=zeta||A||_infinity, ||Delta B||_infinity<=zeta||B||_infinity, and zeta=max(u^p,2n u^(p-1)theta^(-1)g_min)."
+    },
+    {
+      "pdf_page": 10,
+      "printed_page": "B794",
+      "anchor": "Equations (4.21)-(4.25)",
+      "observation": "The paper introduces proof-only errors Delta C and E and rewrites the computed output as the full p-by-p product sum minus omitted pairs i+j>=p, plus accumulation error. The exact decomposition ends with hat C=AB+E."
+    },
+    {
+      "pdf_page": 10,
+      "printed_page": "B794",
+      "anchor": "Equation (4.26)",
+      "observation": "The omitted-product contribution satisfies a lesssim estimate with displayed coefficient (p-1)u^p multiplying ||A||_infinity||B||_infinity."
+    },
+    {
+      "pdf_page": 11,
+      "printed_page": "B795",
+      "anchor": "Equations (4.27)-(4.28)",
+      "observation": "The accumulation estimate is printed as ||Delta C||_infinity lesssim ((n+p^2)U+4rn theta^(-2)G_min)||A||_infinity||B||_infinity, with r<=np(p+1)/2. The resulting total-error estimate has coefficient 2zeta+zeta^2+(p-1)u^p+(n+p^2)U+2p(p+1)n^2 theta^(-2)G_min."
+    },
+    {
+      "pdf_page": 11,
+      "printed_page": "B795",
+      "anchor": "Theorem 4.1 and equations (4.29)-(4.31)",
+      "observation": "The theorem specifies power-of-two diagonal scaling, input-format p-word residual rounding, and the triangular product sum Lambda^(-1)(sum_{i+j<p}u^(i+j)A^(i)B^(j))M^(-1). It explicitly says that inner products in A^(i)B^(j) are computed in the accumulation format."
+    },
+    {
+      "pdf_page": 11,
+      "printed_page": "B795",
+      "anchor": "Equation (4.32)",
+      "observation": "Theorem 4.1 gives the four-term coefficient (p+1)u^p + 4n u^(p-1)theta^(-1)g_min + (n+p^2)U + 2p(p+1)n^2 theta^(-2)G_min in a normwise lesssim forward-error bound."
+    },
+    {
+      "pdf_page": 11,
+      "printed_page": "B795",
+      "anchor": "Equation (4.33)",
+      "observation": "The range-unrestricted comparison retains only (p+1)u^p and (n+p^2)U."
+    },
+    {
+      "pdf_page": 12,
+      "printed_page": "B796",
+      "anchor": "Paragraphs following equation (4.33)",
+      "observation": "The paper identifies u^(p-1)theta^(-1)g_min and theta^(-2)G_min as the additional input- and accumulation-underflow orders. It says the two input-format terms are both reduced from the single-word case by a factor of order u^(p-1)."
+    }
+  ],
+  "statement": {
+    "binders": [
+      "A in R^(m x n), B in R^(n x q), and the exact target AB in R^(m x q); m,n,q are dimension parameters and n is the common inner dimension. [PDF p. 11, printed B795, Theorem 4.1]",
+      "p is the number of words, with word indices i,j in {0,...,p-1}; positivity and integrality of p are implicit in the phrase p-word and these index ranges, not separately stated. [PDF p. 8, printed B792, multiword definition and eqs. (4.1)-(4.3)]",
+      "The input-format parameters are t,e_min,e_max,u,f_min,f_max,g_min, and the accumulation-format parameters are T,E_min,E_max,U,F_min,F_max,G_min. [PDF p. 2, printed B786, Model 1 and eqs. (2.1)-(2.2)]",
+      "Lambda and M are dimension-compatible diagonal power-of-two scaling matrices; A^(i) and B^(j) are the computed input-format words. [PDF p. 11, printed B795, Theorem 4.1 and eqs. (4.29)-(4.30)]",
+      "Delta A, Delta B, Delta C, zeta, r, and E are proof quantities or error aggregates; they are not additional algorithm inputs. [PDF pp. 10-11, printed B794-B795, eqs. (4.18)-(4.28)]",
+      "hat C is the computed output, while AB is the exact real matrix product. The symbol C is overloaded in (4.31), but the theorem's conclusion explicitly compares hat C with AB. [PDF p. 11, printed B795, eqs. (4.31)-(4.32)]"
+    ],
+    "hypotheses": [
+      "The computation uses a mixed-precision MMA unit satisfying Model 1. The accumulation precision satisfies T>=t and its exponent range contains the input exponent range. [PDF p. 2, printed B786, Model 1]",
+      "The printed theorem is in the default round-to-nearest version of Model 1. Directed rounding is only covered after replacing u,g_min,U,G_min by 2u,2g_min,2U,2G_min. [PDF p. 3, printed B787, paragraph after eq. (2.4)]",
+      "Overflow is excluded from the rounding models. The scale theta=min(f_max,sqrt(F_max/n)) is chosen to prevent input and accumulation overflow. [PDF pp. 2 and 5, printed B786 and B789, eqs. (2.3) and (3.2)]",
+      "Lambda and M have power-of-two diagonal entries, and Theorem 4.1 explicitly requires every element of Lambda A and BM to be bounded in magnitude by theta. [PDF p. 11, printed B795, Theorem 4.1]",
+      "The full preceding scaling construction chooses maximal power-of-two row and column scales, giving theta/(2||x||_infinity)<lambda<=theta/||x||_infinity and theta/(2||y||_infinity)<mu<=theta/||y||_infinity for nonzero x,y. This inherited lower bound is used in the derivation although it is not restated in Theorem 4.1. [PDF p. 5, printed B789, eqs. (3.4a)-(3.4b); PDF p. 10, printed B794, eqs. (4.15)-(4.17)]",
+      "A, B, and the unscaled output are stored in sufficiently high precision to be represented exactly, with no underflow or overflow before scaling or after unscaling. [PDF pp. 4-5, printed B788-B789, paragraph spanning eq. (3.1)]",
+      "For i=0,...,p-1, A^(i)=fl((Lambda A-sum_{k=0}^{i-1}u^k A^(k))/u^i); for j=0,...,p-1, B^(j)=fl((BM-sum_{k=0}^{j-1}u^k B^(k))/u^j). The fl operation rounds to the input format. [PDF p. 11, printed B795, eqs. (4.29)-(4.30)]",
+      "The retained products are exactly those with i+j<p, and their inner products are computed in the accumulation format. [PDF p. 11, printed B795, eq. (4.31)]",
+      "No theorem hypothesis states p>1, an upper bound on p, an upper bound on m,n,q, or a smallness condition such as nU<1. Only conforming dimensions and the structurally implicit positive word and inner dimensions occur. [PDF pp. 8 and 11, printed B792 and B795, multiword definition and Theorem 4.1]",
+      "The estimates (4.18)-(4.28) are conclusions of the preceding derivation or imported analysis, not assumptions of Theorem 4.1. [PDF pp. 10-11, printed B794-B795, phrases 'we have therefore proven', 'we obtain', and 'In conclusion we have proven']"
+    ],
+    "conclusions": [
+      "Derived decomposition (4.18): A=sum_{i=0}^{p-1}u^i Lambda^(-1)A^(i)+Delta A and ||Delta A||_infinity<=zeta||A||_infinity. [PDF p. 10, printed B794, eq. (4.18)]",
+      "Derived decomposition (4.19): B=sum_{j=0}^{p-1}u^j B^(j)M^(-1)+Delta B and ||Delta B||_infinity<=zeta||B||_infinity. [PDF p. 10, printed B794, eq. (4.19)]",
+      "Definition (4.20): zeta=max(u^p,2n u^(p-1)theta^(-1)g_min). [PDF p. 10, printed B794, eq. (4.20)]",
+      "Proof representation (4.21): hat C=Lambda^(-1)(sum_{i+j<p}u^(i+j)A^(i)B^(j)+Delta C)M^(-1). [PDF p. 10, printed B794, eq. (4.21)]",
+      "Proof rewrite (4.22): the triangular sum is replaced by sum_{i=0}^{p-1}sum_{j=0}^{p-1}u^(i+j)A^(i)B^(j)-sum_{i+j>=p}u^(i+j)A^(i)B^(j), with Delta C retained inside the outer scalings; the second sum has the same implicit 0,...,p-1 index limits. [PDF p. 10, printed B794, eq. (4.22)]",
+      "Proof factorization (4.23): hat C=(sum_i u^i Lambda^(-1)A^(i))(sum_j u^j B^(j)M^(-1))+Lambda^(-1)(Delta C-sum_{i+j>=p}u^(i+j)A^(i)B^(j))M^(-1). [PDF p. 10, printed B794, eq. (4.23)]",
+      "Exact error decomposition (4.24): hat C=(A-Delta A)(B-Delta B)+Lambda^(-1)Delta C M^(-1)-sum_{i+j>=p}u^(i+j)Lambda^(-1)A^(i)B^(j)M^(-1). [PDF p. 10, printed B794, eq. (4.24)]",
+      "Definition of total forward error (4.25): hat C=AB+E. [PDF p. 10, printed B794, eq. (4.25)]",
+      "Omitted-product estimate (4.26): ||sum_{i+j>=p}u^(i+j)Lambda^(-1)A^(i)B^(j)M^(-1)||_infinity lesssim (p-1)u^p||A||_infinity||B||_infinity. [PDF p. 10, printed B794, eq. (4.26)]",
+      "Accumulation estimate as printed in (4.27): ||Delta C||_infinity lesssim ((n+p^2)U+4rn theta^(-2)G_min)||A||_infinity||B||_infinity, where r<=np(p+1)/2 bounds the maximum underflows in any output coefficient. [PDF p. 11, printed B795, eq. (4.27) and following sentence]",
+      "Combined estimate (4.28): ||E||_infinity lesssim (2zeta+zeta^2+(p-1)u^p+(n+p^2)U+2p(p+1)n^2 theta^(-2)G_min)||A||_infinity||B||_infinity. [PDF p. 11, printed B795, eq. (4.28)]",
+      "Theorem 4.1 conclusion (4.32): ||hat C-AB||_infinity lesssim ((p+1)u^p + 4n u^(p-1)theta^(-1)g_min + (n+p^2)U + 2p(p+1)n^2 theta^(-2)G_min)||A||_infinity||B||_infinity. These are exactly the four displayed coefficient terms. [PDF p. 11, printed B795, eq. (4.32)]",
+      "Range-unrestricted comparison (4.33): ||hat C-AB||_infinity lesssim ((p+1)u^p+(n+p^2)U)||A||_infinity||B||_infinity. It is a cited comparison that omits range limitations, not an additional narrow-range error term. [PDF p. 11, printed B795, eq. (4.33)]",
+      "Relative to (4.33), the additional terms in (4.32) are the input-underflow term of order u^(p-1)theta^(-1)g_min and the accumulation-underflow term of order theta^(-2)G_min. [PDF p. 12, printed B796, first paragraph]",
+      "The paper's qualitative conclusion is that multiword arithmetic reduces the input-format rounding and underflow terms by the same order-u^(p-1) factor, while sufficiently large p can leave accumulation-format errors dominant. [PDF p. 12, printed B796, comparison following eq. (4.33)]"
+    ],
+    "definitions_and_conventions": [
+      "u=2^(-t), f_min=2^(e_min), and f_max=2^(e_max)(2-2u); U=2^(-T), F_min=2^(E_min), and F_max=2^(E_max)(2-2U). [PDF p. 2, printed B786, Model 1]",
+      "g_min=f_min/2 without subnormals and g_min=u f_min with gradual underflow; G_min=F_min/2 without subnormals and G_min=U F_min with gradual underflow. [PDF p. 2, printed B786, eqs. (2.1)-(2.2)]",
+      "theta=min(f_max,sqrt(F_max/n)); f_max limits input magnitudes and sqrt(F_max/n) limits an n-term accumulation whose two scaled factors are bounded by theta. [PDF p. 5, printed B789, discussion and eq. (3.2)]",
+      "The scaled p-word convention is w+Delta w=sum_{i=0}^{p-1}u^i w^(i), rather than the unweighted sum used by the ordinary decomposition. [PDF pp. 8-9, printed B792-B793, eqs. (4.3)-(4.4)]",
+      "Absolute-value vector and matrix inequalities in the decomposition analysis are componentwise, and max in (4.8)-(4.20) is componentwise before conversion to a matrix norm. [PDF pp. 5 and 10, printed B789 and B794, text after eq. (3.6) and before eq. (4.14)]",
+      "r is a proof count bounding accumulation underflows in any one output coefficient, with r<=np(p+1)/2. [PDF p. 11, printed B795, paragraph after eq. (4.27)]",
+      "The symbol lesssim is used for a simplified or orderwise estimate after higher-order terms have been suppressed; the paper does not define it as a quantified mathematical relation. [PDF p. 7, printed B791, sentence before eq. (3.26); PDF pp. 10-11, printed B794-B795, eqs. (4.26)-(4.33)]"
+    ],
+    "implicit_context": [
+      "Theorem 4.1 extends the single-word scaling analysis and therefore relies on the section 3 power-of-two scaling and exact high-precision pre/post-storage context. [PDF pp. 4-5 and 11, printed B788-B789 and B795, eqs. (3.1)-(3.4) and introduction to Theorem 4.1]",
+      "The derivation uses lambda^(-1)<=2theta^(-1)||x||_infinity and its column analogue, which follow from maximal scaling (3.4), not from the theorem's weaker standalone phrase 'bounded by theta'. [PDF pp. 5 and 10, printed B789 and B794, eqs. (3.4) and (4.15)-(4.17)]",
+      "The residual expressions inside fl in (4.29)-(4.30) are written as composite exact arguments followed by one input-format rounding; separate rounding of their subtractions, sums, or divisions is not specified. [PDF p. 11, printed B795, eqs. (4.29)-(4.30)]",
+      "The paper imports the order-(n+p^2)U accumulation analysis from Fasi et al. and adds its underflow count; it does not state that estimate as an independent hypothesis. [PDF p. 11, printed B795, paragraph before eq. (4.27)]",
+      "The conventional empty sum for i=0 or j=0 must be zero for (4.29)-(4.30), although the paper does not state that convention explicitly. [PDF p. 11, printed B795, eqs. (4.29)-(4.30)]",
+      "The discussion explicitly applies beyond p=1, but Theorem 4.1 itself imposes no p>1 condition. [PDF p. 12, printed B796, sentence ending 'even when p>1'; PDF p. 11, printed B795, Theorem 4.1]"
+    ],
+    "algorithm_linkage": "The actual selected algorithm consists of the power-of-two scaling, the p input-format residual-rounding recurrences (4.29)-(4.30), and the triangular weighted product sum (4.31), whose matrix-product inner products use the accumulation format. The actual output is hat C. Delta A, Delta B, zeta, Delta C, r, E, the full p-by-p completion, and the omitted-product sum in (4.18)-(4.28) are proof devices or derived estimates, not extra computed stages or theorem assumptions. [PDF pp. 10-11, printed B794-B795, eqs. (4.18)-(4.32)]",
+    "numerical_model": [
+      "Input rounding uses fl(x)=x(1+delta)+eta with |delta|<=u, |eta|<=g_min, and eta delta=0, assuming no overflow. [PDF p. 2, printed B786, eq. (2.3)]",
+      "Accumulation operations use FL(x op y)=(x op y)(1+delta)+eta with |delta|<=U, |eta|<=G_min, eta delta=0, and op in {+,-,multiplication,division}, assuming no overflow. [PDF p. 3, printed B787, eq. (2.4)]",
+      "The relative rounding error and additive underflow error are mutually exclusive for each rounded operation, rather than simultaneously accumulated in the same operation. [PDF p. 3, printed B787, paragraph after eq. (2.4)]",
+      "Round-to-nearest is the default. The constants in Theorem 4.1 are therefore the round-to-nearest constants unless the model parameters are doubled as prescribed for directed rounding. [PDF p. 3, printed B787, rounding-mode paragraph]",
+      "The input format is nested in the accumulation format through T>=t and [E_min,E_max] containing [e_min,e_max]. [PDF p. 2, printed B786, Model 1]",
+      "Power-of-two scaling and sufficiently high-precision outer storage are treated as exact, subject to the stated absence of underflow and overflow outside the MMA computation. [PDF pp. 4-5, printed B788-B789, scaling paragraph around eq. (3.1)]"
+    ],
+    "error_notions": [
+      "Delta A and Delta B are normwise errors of the computed weighted word decompositions, bounded by zeta times the corresponding input norm. [PDF p. 10, printed B794, eqs. (4.18)-(4.20)]",
+      "Delta C aggregates errors arising while computing the retained A^(i)B^(j) contributions in the accumulation format. [PDF p. 10, printed B794, sentence before eq. (4.21)]",
+      "E is the total absolute forward error defined by hat C=AB+E. [PDF p. 10, printed B794, eq. (4.25)]",
+      "The final theorem is normwise and absolute: it bounds ||hat C-AB||_infinity by a coefficient times ||A||_infinity||B||_infinity. It is not stated as a componentwise bound or as a quotient. [PDF p. 11, printed B795, eq. (4.32)]",
+      "The four final sources are input-format rounding, input underflow, accumulation-format rounding, and accumulation underflow, in that order in (4.32). [PDF pp. 11-12, printed B795-B796, eq. (4.32) and comparison after eq. (4.33)]"
+    ],
+    "norms": [
+      "For vectors x and y, ||.||_infinity is the maximum absolute component, as shown by the scaling intervals based on the maximum row or column coefficient. [PDF p. 5, printed B789, discussion before eq. (3.2) and eqs. (3.4a)-(3.4b)]",
+      "For matrices, the paper uses ||.||_infinity as a matrix infinity norm in its normwise bounds. The derivation and standard numerical-linear-algebra convention indicate the induced maximum-row-sum norm, but the paper does not explicitly write its formula. [PDF pp. 6-7, printed B790-B791, eqs. (3.23)-(3.24); PDF p. 11, printed B795, eq. (4.32)]",
+      "Entrywise absolute-value inequalities and componentwise max bounds precede conversion to the matrix infinity norm. [PDF pp. 5 and 10, printed B789 and B794, text after eq. (3.6) and eqs. (4.15)-(4.20)]",
+      "Underflow prevents the paper from retaining a componentwise final bound; the surrounding analysis explicitly characterizes the result as normwise. [PDF p. 8, printed B792, paragraph beginning 'Finally, note that if underflows occur']"
+    ],
+    "constants_and_indexing": [
+      "Word indices are i,j=0,...,p-1, residual indices are k=0,...,i-1 or k=0,...,j-1, and the algorithm retains precisely i+j<p. [PDF p. 11, printed B795, eqs. (4.29)-(4.31)]",
+      "There are exactly p(p+1)/2 retained word-pair products. [PDF p. 8, printed B792, paragraph after eq. (4.2)]",
+      "The omitted-pair estimate carries the exact displayed coefficient (p-1)u^p. [PDF p. 10, printed B794, eq. (4.26)]",
+      "The maximum accumulation-underflow count is r<=np(p+1)/2, producing 2p(p+1)n^2 theta^(-2)G_min after substitution into 4rn theta^(-2)G_min. [PDF p. 11, printed B795, eqs. (4.27)-(4.28)]",
+      "The first coefficient in (4.32) is exactly (p+1)u^p. [PDF p. 11, printed B795, eq. (4.32)]",
+      "The second coefficient in (4.32) is exactly 4n u^(p-1)theta^(-1)g_min. [PDF p. 11, printed B795, eq. (4.32)]",
+      "The third coefficient in (4.32) is exactly (n+p^2)U. [PDF p. 11, printed B795, eq. (4.32)]",
+      "The fourth coefficient in (4.32) is exactly 2p(p+1)n^2 theta^(-2)G_min. [PDF p. 11, printed B795, eq. (4.32)]",
+      "The comparison (4.33) contains exactly (p+1)u^p+(n+p^2)U and no g_min or G_min terms. [PDF p. 11, printed B795, eq. (4.33)]"
+    ],
+    "higher_order_terms": [
+      "The paper explicitly explains its lesssim convention locally by describing (3.26) as obtained by dropping second-order terms from an exact <= bound. [PDF p. 7, printed B791, sentence before eq. (3.26)]",
+      "Equation (4.28) explicitly contains zeta^2. Equation (4.32) omits zeta^2; using zeta=max(u^p,2n u^(p-1)theta^(-1)g_min), the inequality 2zeta<=2u^p+4n u^(p-1)theta^(-1)g_min and addition of (p-1)u^p explain the displayed (p+1)u^p and 4n u^(p-1)theta^(-1)g_min terms. This is an algebraic reconstruction of the paper's simplification, not an additional stated theorem. [PDF pp. 10-11, printed B794-B795, eqs. (4.20), (4.28), and (4.32)]",
+      "Equations (4.26)-(4.28) already use lesssim, so factors and higher-order contributions hidden there are not enumerated by the paper. [PDF pp. 10-11, printed B794-B795, eqs. (4.26)-(4.28)]",
+      "Neither (4.32) nor (4.33) supplies an explicit big-O remainder, a hidden constant, its parameter dependence, or a threshold under which the omitted terms are valid. [PDF p. 11, printed B795, eqs. (4.32)-(4.33)]",
+      "Consequently, replacing lesssim by literal <= with the displayed right-hand side would strengthen the source claim and add semantics absent from the paper. [PDF p. 7, printed B791, introduction to eq. (3.26); PDF p. 11, printed B795, eq. (4.32)]"
+    ],
+    "exceptional_values": [
+      "The theorem operates on real matrices and the rounding models assume overflow does not occur. [PDF p. 2, printed B786, eq. (2.3); PDF p. 11, printed B795, Theorem 4.1]",
+      "The theta scaling is specifically selected to avoid overflow in both input conversion and n-term accumulation. [PDF p. 5, printed B789, discussion and eq. (3.2)]",
+      "Underflow is allowed and modeled in both flush/no-subnormal and gradual-underflow cases through g_min and G_min. [PDF p. 2, printed B786, eqs. (2.1)-(2.2)]",
+      "NaNs, infinities, saturation, signed zeros, and their propagation are not part of Model 1 or Theorem 4.1's claim; the proof assumes finite real arithmetic satisfying (2.3)-(2.4). [PDF pp. 2-3, printed B786-B787, Model 1 and eqs. (2.3)-(2.4)]",
+      "The inherited exact-storage assumption excludes underflow and overflow before Lambda,M scaling and after Lambda^(-1),M^(-1) unscaling. [PDF pp. 4-5, printed B788-B789, paragraph spanning eq. (3.1)]"
+    ]
+  },
+  "undebatable_constraints": [
+    "The exact target is the real product AB of A in R^(m x n) and B in R^(n x q), and the result concerns the computed hat C. [PDF p. 11, printed B795, Theorem 4.1 and eq. (4.32)]",
+    "The applicable arithmetic is Model 1 with nested input and accumulation formats and distinct parameters u,g_min and U,G_min. [PDF pp. 2-3, printed B786-B787, Model 1 and eqs. (2.1)-(2.4)]",
+    "The printed constants assume round-to-nearest; directed rounding requires the paper's stated doubling substitution. [PDF p. 3, printed B787, rounding-mode paragraph]",
+    "Overflow is excluded, while underflow is explicitly included. [PDF pp. 2-3, printed B786-B787, eqs. (2.3)-(2.4)]",
+    "The selected scale is theta=min(f_max,sqrt(F_max/n)), using diagonal power-of-two factors. [PDF pp. 5 and 11, printed B789 and B795, eq. (3.2) and Theorem 4.1]",
+    "The full derivation requires maximal row and column scaling satisfying the factor-of-two lower bounds in (3.4), not merely arbitrary scaled entries below theta. [PDF pp. 5 and 10, printed B789 and B794, eqs. (3.4) and (4.15)-(4.17)]",
+    "The word-generation algorithm is the scaled-residual variant (4.29)-(4.30), not the ordinary unweighted decomposition (4.1). [PDF pp. 8 and 11, printed B792 and B795, eqs. (4.1), (4.29), and (4.30)]",
+    "Only pairs i+j<p are computed, giving p(p+1)/2 retained matrix products. [PDF pp. 8 and 11, printed B792 and B795, multiword description and eq. (4.31)]",
+    "Inner products in every retained A^(i)B^(j) are computed in the accumulation format. [PDF p. 11, printed B795, sentence after eq. (4.31)]",
+    "Equations (4.18)-(4.28) are proof-derived decompositions and estimates, not hypotheses or additional algorithm stages. [PDF pp. 10-11, printed B794-B795, eqs. (4.18)-(4.28)]",
+    "The final narrow-range coefficient has exactly four displayed terms: (p+1)u^p, 4n u^(p-1)theta^(-1)g_min, (n+p^2)U, and 2p(p+1)n^2 theta^(-2)G_min. [PDF p. 11, printed B795, eq. (4.32)]",
+    "The range-free comparison has exactly the first rounding term and the accumulation-rounding term: (p+1)u^p+(n+p^2)U. [PDF p. 11, printed B795, eq. (4.33)]",
+    "The final claim is a normwise forward-error lesssim estimate, not a literal displayed <= theorem and not a componentwise result. [PDF pp. 8 and 11, printed B792 and B795, normwise discussion and eq. (4.32)]",
+    "No explicit theorem restriction requires p>1, theta>=1, bounded m or q, or a smallness condition on nU or pU. Such conditions must not be added silently. [PDF pp. 11-12, printed B795-B796, Theorem 4.1 and following discussion]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The lesssim relation has no formal semantics in the paper.",
+      "evidence": "The paper calls a prior lesssim bound a simplification obtained by dropping second-order terms, while (4.26)-(4.33) use the symbol without defining a constant, asymptotic variable, uniformity domain, or remainder. [PDF p. 7, printed B791, sentence before eq. (3.26); PDF pp. 10-11, printed B794-B795, eqs. (4.26)-(4.33)]",
+      "impact": "A faithful formalization cannot replace lesssim by <=, choose constant 1, or assert a conventional big-O statement without adding semantics. It must preserve an abstract approximate-bound relation or supply an explicitly acknowledged strengthening."
+    },
+    {
+      "issue": "The standalone wording of Theorem 4.1 understates the scaling condition used by its proof.",
+      "evidence": "The theorem only says that elements of Lambda A and BM are bounded by theta, but the derivation uses lambda^(-1)<=2theta^(-1)||x||_infinity and the analogous mu bound, which require the maximal intervals (3.4). [PDF p. 5, printed B789, eqs. (3.4a)-(3.4b); PDF pp. 10-11, printed B794-B795, eqs. (4.15)-(4.17) and Theorem 4.1]",
+      "impact": "Arbitrarily small power-of-two scales satisfy the theorem's literal upper-bound wording but invalidate the displayed underflow coefficient. A formal contract should either inherit (3.4) explicitly or record the theorem's statement/proof gap."
+    },
+    {
+      "issue": "Zero rows or columns are not covered cleanly by the maximal scaling formulas.",
+      "evidence": "The intervals in (3.4) divide by ||x||_infinity and ||y||_infinity, while Theorem 4.1 quantifies over arbitrary real matrices and supplies no zero-row or zero-column case. [PDF p. 5, printed B789, eqs. (3.4a)-(3.4b); PDF p. 11, printed B795, Theorem 4.1]",
+      "impact": "A formalization needs a separate arbitrary nonzero power-of-two scale for zero rows or columns, or must restrict the interval condition to nonzero rows and columns. The paper does not select one."
+    },
+    {
+      "issue": "The exact operational rounding of the residual recurrences and outer word-product sum is underspecified.",
+      "evidence": "Equations (4.29)-(4.30) place one fl around a composite residual quotient, and (4.31) explicitly specifies only that inner products in A^(i)B^(j) use the accumulation format. It does not separately specify rounding for residual summation, division, weighting by u^(i+j), summation across word products, or final unscaling. [PDF p. 11, printed B795, eqs. (4.29)-(4.31)]",
+      "impact": "Treating each internal operation as separately rounded defines a different algorithm. The source-level mathematical reading is exact evaluation of each fl argument followed by one rounding, with accumulation effects aggregated as in the proof, but a hardware-level operation sequence cannot be recovered uniquely."
+    },
+    {
+      "issue": "Delta C has a scaling inconsistency in the printed derivation.",
+      "evidence": "Equation (4.21) places Delta C inside Lambda^(-1)(... )M^(-1), and (4.24) consequently contains Lambda^(-1)Delta C M^(-1). Equation (4.27), however, is printed with ||Delta C||_infinity on the left while its right side is expressed using the unscaled ||A||_infinity||B||_infinity. [PDF p. 10, printed B794, eqs. (4.21) and (4.24); PDF p. 11, printed B795, eq. (4.27)]",
+      "impact": "The paper likely intends a bound on the externally scaled accumulation error, but the authoritative printed notation does not say so. A formalization must not silently change the left side without recording this discrepancy."
+    },
+    {
+      "issue": "The matrix infinity norm is conventional but not explicitly defined.",
+      "evidence": "The paper identifies a choice of matrix norm and then writes ||.||_infinity, while separately using vector infinity norms for maximum coefficients; no formula for the matrix norm is printed. [PDF pp. 5-7, printed B789-B791, eqs. (3.4) and (3.23)-(3.24)]",
+      "impact": "The derivation supports the standard induced maximum-row-sum norm, but a formal statement must define that norm explicitly rather than leaving the symbol polymorphic."
+    },
+    {
+      "issue": "p and matrix-dimension domains are implicit rather than quantified with explicit restrictions.",
+      "evidence": "p is called the number of words and appears in ranges 0,...,p-1; n appears in sqrt(F_max/n). Theorem 4.1 states no positivity, integrality, upper bounds, or smallness assumptions. [PDF pp. 8 and 11, printed B792 and B795, multiword definition and Theorem 4.1]",
+      "impact": "Positive integer p and positive inner dimension n are structurally necessary, but restrictions such as p>1, nU<1, or bounded dimensions would be additions not licensed by the source."
+    },
+    {
+      "issue": "Exceptional IEEE-style values and saturation behavior are outside the theorem model.",
+      "evidence": "Model 1 states real rounding equations under absence of overflow and Theorem 4.1 uses that model; it does not specify NaN, infinity, saturation, or signed-zero behavior. [PDF pp. 2-3, printed B786-B787, Model 1 and eqs. (2.3)-(2.4); PDF p. 11, printed B795, Theorem 4.1]",
+      "impact": "The contract applies only to finite real executions satisfying Model 1. Extending it to exceptional-value semantics would require assumptions not present in the theorem."
+    }
+  ],
+  "contract_plain_english": "For conforming real matrices A and B and an implicitly positive integer word count p, use the nested input and accumulation formats of Model 1, with round-to-nearest, no overflow, and underflow modeled by g_min and G_min. [PDF pp. 2-3, printed B786-B787, Model 1 and eqs. (2.1)-(2.4)] Scale rows and columns by maximal powers of two so their largest magnitudes lie within a factor of two of theta=min(f_max,sqrt(F_max/n)); the theorem only restates the upper bound, but the proof requires the lower factor-of-two condition. [PDF p. 5, printed B789, eqs. (3.2) and (3.4); PDF p. 11, printed B795, Theorem 4.1] Generate p weighted words by input-format rounding of the scaled residual quotients in (4.29)-(4.30), compute only the p(p+1)/2 products with i+j<p, and compute their inner products in the accumulation format; hat C is the resulting computed output and AB is exact. [PDF pp. 8 and 11, printed B792 and B795, multiword description and eqs. (4.29)-(4.31)] The proof-only errors in (4.18)-(4.28) lead to the normwise first-order estimate ||hat C-AB||_infinity lesssim ((p+1)u^p+4n u^(p-1)theta^(-1)g_min+(n+p^2)U+2p(p+1)n^2 theta^(-2)G_min)||A||_infinity||B||_infinity. [PDF pp. 10-11, printed B794-B795, eqs. (4.18)-(4.32)] Without range limitations, the cited comparison retains only (p+1)u^p+(n+p^2)U. [PDF p. 11, printed B795, eq. (4.33)] The lesssim symbol is informal and suppresses higher-order terms, including the explicit zeta^2 present in (4.28); the paper supplies no constant or remainder semantics that would justify replacing it by a literal inequality. [PDF p. 7, printed B791, introduction to eq. (3.26); PDF pp. 10-11, printed B794-B795, eqs. (4.28) and (4.32)]"
+}
