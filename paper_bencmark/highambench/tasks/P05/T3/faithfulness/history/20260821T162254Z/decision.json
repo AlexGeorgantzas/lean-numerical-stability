@@ -1,0 +1,63 @@
+{
+  "accepted": false,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "not-faithful-weaker",
+  "completed_at_utc": "2026-08-14T20:53:55.769725+00:00",
+  "findings": [
+    {
+      "category": "conclusion-assumed-by-domain",
+      "impact": "The Lean theorem does not prove the central local error estimates from the execution model. It quantifies only over runs already certified with them, making the benchmark proposition substantially weaker and partly circular.",
+      "lean_evidence": "D036 takes general_residual_bound and unit_residual_bound as constructor arguments, D037 takes sqrt_residual_bound, and D011 requires those certified executions for every relevant entry.",
+      "paper_evidence": "Theorem 4.4 assumes symmetry, successful completion, and no underflow or overflow; its proof derives (4.5a)-(4.5b) by applying Lemmas 4.1 and 4.3.",
+      "severity": "critical"
+    },
+    {
+      "category": "floating-point-model-mismatch",
+      "impact": "A P05CholeskyRun need not denote an execution in the paper's numerical model, so the formal domain is not a faithful encoding even apart from the embedded conclusions.",
+      "lean_evidence": "D017 permits arbitrary finite representable and safeRange predicates; the exponent fields are not connected to either predicate, symmetry of the floating set is absent, and D039 does not define overflow or inexact subnormal underflow.",
+      "paper_evidence": "The paper's F is the standard finite radix-beta, precision-p, exponent-bounded floating set, with a specific underflow definition and round-to-nearest arithmetic.",
+      "severity": "major"
+    },
+    {
+      "category": "computed-output-property-assumed",
+      "impact": "Representability of the computed factor is shifted from an execution consequence into the theorem's input domain, further narrowing the claim.",
+      "lean_evidence": "D011 requires RHat_representable before P05CholeskyRun can be constructed.",
+      "paper_evidence": "Theorem 4.4 states that the computed factor RHat belongs to F^(n by n) as part of the successful floating-point computation.",
+      "severity": "major"
+    },
+    {
+      "category": "local-error-bounds-assumed",
+      "impact": "The translation does not establish the central rounding-error result from the paper hypotheses; it reduces the proposition to repeating assumed local bounds and assembling them into a matrix bound.",
+      "paper_evidence": "The proof of Theorem 4.4 invokes Lemmas 4.1 and 4.3 to derive equations (4.5a)-(4.5b) from the floating-point execution.",
+      "severity": "critical",
+      "translation_evidence": "D036 and D037 include the corresponding residual inequalities as fields required for every off-diagonal and diagonal execution witness."
+    },
+    {
+      "category": "floating-point-model-mismatch",
+      "impact": "The translated run type admits numerical systems outside the paper's model and fails to express a required source hypothesis, so its apparent generality is not the same theorem.",
+      "paper_evidence": "The source assumes a standard radix-beta, precision-p floating-point set and excludes underflow and overflow, with round-to-nearest and arbitrary tie-breaking.",
+      "severity": "major",
+      "translation_evidence": "Rep and Safe are abstract predicates with weak axioms, exponent limits are disconnected from them, representability is not required to be symmetric, and Safe is not identified with absence of underflow and overflow."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean proposition applies only after P05CholeskyRun has been built, and building it requires the Lemma 4.1 and Lemma 4.3 residual inequalities that the paper derives. It therefore cannot establish Theorem 4.4 for an arbitrary paper-valid successful execution without first assuming the core result; its abstract format also does not ensure the paper's floating-point semantics.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "For a paper-valid execution, equations (4.5a)-(4.5b) provide exactly the stored entry estimates after the zero-based index shift, and equation (4.4) provides the target's exact relation and both global bounds. For the additional abstract certified runs, the target obligation already follows from the certificates' supplied residual fields, so the Lean statement imposes no stronger substantive conclusion.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-weaker",
+    "roundtrip": "not-faithful-weaker"
+  },
+  "rationale": "The algebraic content of the target is carefully encoded: transpose and matrix multiplication are exact, absolute matrix multiplication is componentwise, the backward identity has the correct orientation, and every zero-based coefficient matches (4.4)-(4.5). The decisive defect is the meaning of run. Its off-diagonal and diagonal execution objects can be constructed only after supplying the same residual inequalities that the target advertises as conclusions. The theorem therefore covers pre-certified runs rather than deriving the paper's error bounds for every successful conventional Cholesky execution. The underconstrained floating-point format creates an additional model mismatch. Consequently the paper result entails the restricted target, but the target does not recover the paper result.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P05-T3"
+}

@@ -3,149 +3,170 @@
   "role": "roundtrip-judge",
   "task_id": "P05-T3",
   "paper_sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6",
-  "blind_translation_sha256": "83a54d292e4d04488d76917919332bcf81cb4aed5bcf7025d847afd18d33492c",
+  "blind_translation_sha256": "c670b84538952b6485ddbfd4564517fb540b9119407c458ab781bb169deabe40",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "PDF pages 11-12, printed pages 694-695, contain Theorem 4.4, equation (4.4), the conventional Cholesky updates, and equations (4.5a)-(4.5b).",
-      "translation_evidence": "The translation addresses the computed upper-triangular Cholesky factor, the two local residual estimates, and the exact backward relation with both componentwise bounds.",
-      "reasoning": "The selected paper version and passages are the correct source for the translated result."
+      "paper_evidence": "The inspected PDF has the supplied SHA-256. Theorem 4.4 appears on printed pages 694-695, with equation (4.4), the conventional column updates, equations (4.5a)-(4.5b), and the symmetry argument.",
+      "translation_evidence": "The translation identifies P05-T3 as the Cholesky result and reproduces the factorization identity, local residual estimates, and two global bounds.",
+      "reasoning": "The selected version and passages are the correct primary source for the translated result."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "Theorem 4.4 uses an n by n symmetric floating-point matrix A, its computed n by n factor RHat, and an n by n real perturbation DeltaA, with one-based indices.",
-      "translation_evidence": "The translation quantifies n and a run containing real n by n matrices A and R with representable entries, then existentially quantifies one real n by n DeltaA. Indices use Fin n.",
-      "reasoning": "Representable real entries encode membership in the floating-point set, and the zero-based Fin n indexing has the intended dimension and one-based correspondence."
+      "paper_evidence": "The paper uses an n-by-n symmetric matrix, an n-by-n computed upper-triangular factor, one-based indices j=1,...,n and i=1,...,j-1, and an n-by-n perturbation.",
+      "translation_evidence": "The translation uses n with a packaged proof n>0, matrices indexed by Fin(n), traces for every zero-based i<j and every j, and an existential n-by-n Delta A.",
+      "reasoning": "Fin(n) supplies the same dimensions. The zero-based indices and their coefficient shifts consistently encode the paper's one-based indices."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper assumes symmetry, successful Cholesky execution, and absence of underflow and overflow, then derives the local estimates (4.5a)-(4.5b) before obtaining (4.4).",
-      "translation_evidence": "The universally quantified run must already contain off-diagonal and diagonal execution witnesses whose fields include the local residual inequalities later repeated as conclusions.",
-      "reasoning": "Substantive consequences of the paper hypotheses have been moved into the quantified run's antecedent. This changes quantifier scope and makes the translated conditional weaker."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.4 applies to each symmetric floating input and each successful conventional execution; Delta A is the residual determined after the computed factor is available.",
+      "translation_evidence": "The proposition universally quantifies over complete runs and then existentially quantifies one Delta A depending on the run; both global bounds apply to that same witness.",
+      "reasoning": "Witness dependence and the universal treatment of execution choices are preserved."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.4 assumes a symmetric floating-point A, completion of the conventional Cholesky algorithm, and no underflow or overflow; it does not assume the error estimates it proves.",
-      "translation_evidence": "D036 and D037 require the relevant local error inequalities as constructor fields. The run also uses an abstract Safe predicate rather than the paper's stated no-underflow/no-overflow condition.",
-      "reasoning": "The translation strengthens the hypotheses with the central local bounds and does not faithfully state the paper's exceptional-range hypothesis."
+      "status": "unclear",
+      "paper_evidence": "The paper assumes symmetry, successful completion, and absence of underflow and overflow under round-to-nearest arithmetic. It does not assume positive definiteness. Completion leaves breakdown conditions opaque.",
+      "translation_evidence": "A run assumes symmetry, upper-triangular zero support, per-entry traces, nonzero off-diagonal pivots, nonnegative diagonal numerators, and operations satisfying an abstract safe-range predicate. It assumes no positive definiteness.",
+      "reasoning": "The structural completion conditions match, but the translation does not define the exact correspondence between its safe-range predicate and the paper's underflow and overflow events. Therefore equivalence of the exceptional-value hypotheses is unclear."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Equation (4.4) gives the exact identity, the row-scaled componentwise bound, and the uniform bound; equations (4.5a)-(4.5b) give the local off-diagonal and diagonal estimates.",
-      "translation_evidence": "All two local families, the exact identity, and both bounds for the same DeltaA witness appear as translated conclusions.",
-      "reasoning": "The mathematical conclusion components are complete. Symmetry of DeltaA follows from the translated identity and symmetry assumptions, as in the paper."
+      "paper_evidence": "The paper gives both local estimates (4.5a)-(4.5b), the exact relation in (4.4), the row-dependent componentwise bound, and the uniform componentwise bound.",
+      "translation_evidence": "The conclusions explicitly contain representability of R_hat, both local estimates, and one Delta A satisfying the exact identity and both global bounds.",
+      "reasoning": "Every requested mathematical conclusion is present, and the two global bounds use one perturbation witness."
     },
     {
       "id": "S06",
-      "status": "pass",
-      "paper_evidence": "The paper uses transpose, ordinary matrix multiplication, entrywise absolute value and order, finite inner sums, and arbitrary binary-tree summation order.",
-      "translation_evidence": "D006-D010 and the mathematical definitions unfold the matrix operations and componentwise magnitude product; D040-D053 unfold the rounded reduction-tree machinery.",
-      "reasoning": "The dependency ledger interprets all target-relevant nontrivial operators, including the distinction between ordinary matrix multiplication and componentwise absolute values."
+      "status": "unclear",
+      "paper_evidence": "Equation (2.4) gives a precise arbitrary-order rounded-sum bound, equation (3.7) gives the precise square-root rounding relation, and equations (4.4)-(4.5) use ordinary exact products, transpose, sums, and entrywise absolute values.",
+      "translation_evidence": "D007-D010 and D014-D015 are explicitly interpreted, and D040's constructors are described. D018, however, refers only to 'the stated rounded-square-root error bound' without giving its formula, and its representable-set description does not unambiguously state whether the mantissa-exponent characterization is biconditional.",
+      "reasoning": "Most operators are fully interpreted, but two semantically decisive parts of the format dependency remain under-specified. Missing information must be treated as unclear."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "RHat denotes computed floating-point entries, while RHat^T RHat, A, and DeltaA in (4.4) are related in exact real arithmetic.",
-      "translation_evidence": "Rounded operations occur inside the execution records, their outputs are identified with entries of R, and the matrix product and backward identity are exact real expressions.",
-      "reasoning": "Computed values, rounded operations, exact products, and the perturbation are kept distinct."
+      "paper_evidence": "The hatted entries are computed floating-point values, while the residual sums, Gram product, Delta A identity, and displayed inequalities are exact real expressions evaluated retrospectively.",
+      "translation_evidence": "R_hat is linked to rounded execution traces, while C, S, W, matrix multiplication, and Delta A are defined using exact real arithmetic.",
+      "reasoning": "Computed and exact quantities are kept distinct."
     },
     {
       "id": "S08",
       "status": "pass",
-      "paper_evidence": "The proof specifies the conventional upper-triangular, column-by-column Cholesky quotient and square-root updates, permitting arbitrary evaluation orders for their sums.",
-      "translation_evidence": "For every i<j and every j, D020-D021 identify R entries with outputs of executions having exactly the corresponding prior-column products, pivot division, diagonal square root, and arbitrary reduction tree.",
-      "reasoning": "The collection of entrywise execution witnesses gives an extensional linkage to the conventional algorithm. The separate problem that these witnesses assume error estimates is assessed under hypotheses and relation strength."
+      "paper_evidence": "The conventional method computes each column j using the displayed off-diagonal division updates for i<j followed by the diagonal square-root update, with arbitrary association only inside the fixed sums.",
+      "translation_evidence": "D021 links every i<j entry to A_ij, the prefix products R_ki R_kj, divisor R_ii, and output R_ij. D020 links every diagonal entry to A_jj, the squared column prefix, and output R_jj. Arbitrary trees and permutations affect only the protected reduction.",
+      "reasoning": "Every computed upper-triangular entry is linked to the conventional column-wise formulas. The per-entry dependencies are acyclic and encode the paper's column order rather than an arbitrary Cholesky variant."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Equation (4.4) and its scalar derivation use entrywise inequalities; |RHat^T||RHat| is an ordinary matrix product and no matrix norm occurs.",
-      "translation_evidence": "The translation uses scalar absolute values for each entry and defines P_ij as the full sum of |R_ki||R_kj|.",
-      "reasoning": "The componentwise, non-normwise semantics are preserved."
+      "paper_evidence": "Theorem 4.4 is componentwise: matrix bars are entrywise absolute values, inequalities are entrywise, and the adjacent absolute-value matrices are multiplied ordinarily. No matrix norm occurs.",
+      "translation_evidence": "The local bounds use scalar absolute value, and W_ij is the ordinary sum over k of |R_ki||R_kj|. The global inequalities are asserted entrywise.",
+      "reasoning": "No normwise, Hadamard-product, or squared-norm substitution occurs."
     },
     {
       "id": "S10",
       "status": "pass",
-      "paper_evidence": "The one-based constants are iu off the diagonal, (j+1)u on the diagonal, (i+1)u in row i of the sharp matrix bound, and (n+1)u globally.",
-      "translation_evidence": "With zero-based indices, the translation uses (i+1)u off the diagonal, (j+2)u on the diagonal, (i+2)u in row i, and (n+1)u globally.",
-      "reasoning": "Each shifted coefficient and summation endpoint is exactly the zero-based form of the paper's coefficient and endpoint."
+      "paper_evidence": "For one-based indices, (4.5a) has coefficient iu and sums through i, (4.5b) has coefficient (j+1)u and sums through j, the diagonal scaling is (i+1)u, and the uniform coefficient is (n+1)u.",
+      "translation_evidence": "For zero-based indices, the coefficients are i.val+1, j.val+2, i.val+2, and n+1 respectively; C and S include k=i, and W sums over all k<n.",
+      "reasoning": "All coefficients and summation endpoints are the correct zero-based translations."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "The paper uses a standard finite radix-beta, precision-p floating-point set, round-to-nearest with arbitrary tie-breaking, and explicitly excludes underflow and overflow during execution.",
-      "translation_evidence": "D017 permits an arbitrary finite Rep predicate and arbitrary Safe predicate; the exponent bounds are disconnected from both, representability need not be symmetric, and no global no-underflow/no-overflow assertion is present.",
-      "reasoning": "Nearest rounding on Safe inputs and the unit-roundoff equation capture part of the model, but Safe is not defined to express the paper's range conditions and the admitted formats need not be standard floating-point systems."
+      "status": "unclear",
+      "paper_evidence": "The paper uses its finite radix-beta, precision-p floating-point system, round-to-nearest with unrestricted ties, and explicit absence of underflow and overflow. Its square-root estimate is the source-derived equation (3.7).",
+      "translation_evidence": "D018 supplies an abstract finite format, nearest rounding, a safe predicate, relative-error axioms, and an unspecified rounded-square-root law. The translation does not state how safe exactly corresponds to the paper's exceptional-value convention.",
+      "reasoning": "The model resembles the source, but the omitted square-root formula and missing safe-range correspondence prevent deciding whether it is equivalent, broader under source-licensed axioms, or mismatched."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The local inequalities and matrix backward bound are consequences of the paper's arithmetic and execution hypotheses.",
-      "translation_evidence": "The execution records assume the local inequalities, after which the displayed local conclusions are projections and the matrix bounds follow by symmetry, triangularity, and coefficient monotonicity.",
-      "reasoning": "Although equality directions and numerical inequalities match, the theorem-level logical relation is weaker because its main numerical estimates are antecedents."
+      "status": "pass",
+      "paper_evidence": "Equation (4.4) is an exact equality followed by two non-strict upper bounds; equations (4.5a)-(4.5b) are non-strict absolute residual bounds.",
+      "translation_evidence": "The translation uses exact function equality and non-strict scalar inequalities in the same directions, with both global inequalities conjunctively attached to one Delta A.",
+      "reasoning": "The displayed relations have the intended direction, strictness, and conjunction structure."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Equation (4.4) is a componentwise backward-error result measured against |RHat^T||RHat|, not a forward-error or normwise estimate.",
-      "translation_evidence": "The translation introduces DeltaA through R^T R=A+DeltaA and bounds each |DeltaA_ij| against the componentwise product formed from the computed R.",
-      "reasoning": "The backward-error notion and its reference quantity are preserved."
+      "paper_evidence": "Delta A is a componentwise backward error for the input matrix, while (4.5a)-(4.5b) are local scalar residual estimates.",
+      "translation_evidence": "Delta A makes the computed factor exact for A+Delta A, and the local clauses separately bound entry residuals against computed-factor envelopes.",
+      "reasoning": "Backward error and local residual error are represented without substitution by a forward or normwise notion."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Theorem 4.4 has constants linear in u, no O(u^2) remainder or gamma denominator, no smallness restriction, and an exact backward identity.",
-      "translation_evidence": "Every translated coefficient is linear in u, the identity is exact, and no higher-order term or smallness condition is introduced.",
-      "reasoning": "The higher-order treatment matches the paper."
+      "paper_evidence": "The constants in (4.4)-(4.5) are exactly linear in u, with no gamma term, quadratic remainder, big-O term, or dimension-smallness condition.",
+      "translation_evidence": "Every displayed bound is linear in u and contains no denominator, higher-order term, or hypothesis such as nu<1.",
+      "reasoning": "The improved unconditional constants are preserved exactly."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The source theorem concerns standard finite real floating-point arithmetic and its successfully completed Cholesky executions.",
-      "translation_evidence": "The translation ranges over abstract formats whose Rep and Safe predicates may not describe any standard floating-point set, while restricting runs through preassumed residual certificates.",
-      "reasoning": "This is not a justified faithful generalization or specialization: the arithmetic domain is broadened abstractly while the substantive numerical claim is restricted by stronger hypotheses."
+      "status": "unclear",
+      "paper_evidence": "The source theorem ranges over the paper's standard finite floating-point systems and real n-by-n matrices.",
+      "translation_evidence": "The matrices remain finite-dimensional and real, but D018 defines an abstract format using a representability predicate, a safe predicate, and additional axioms. The ledger does not establish exact equivalence to the paper's F or exhibit a non-paper model.",
+      "reasoning": "It cannot be determined whether the format abstraction is an equivalent presentation, a genuine inhabited generalization, or a specialization."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The nontrivial content of the proof is deriving (4.5a)-(4.5b) from rounding analysis and then assembling the matrix bound.",
-      "translation_evidence": "D036 and D037 store those same local bounds in every admissible execution. The first two conclusions therefore repeat assumptions, and the remaining conclusions are algebraic consequences of them.",
-      "reasoning": "Admissible positive-dimensional runs can exist, but the translated theorem obtains its core numerical content for an unintended circular reason. It is also vacuous whenever no structured run can be supplied."
+      "status": "unclear",
+      "paper_evidence": "The paper's theorem is conditional on successful execution, but ordinary standard formats admit simple successful cases such as a one-dimensional positive input.",
+      "translation_evidence": "The proposition quantifies only over packaged runs and asserts no run or format exists. A one-dimensional identity run appears plausible from D040's base case, but verification depends on the exact omitted D018 square-root law and safe-range semantics.",
+      "reasoning": "No contradiction is visible, but the supplied translation does not contain enough information to certify an inhabitant satisfying every format and run field."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translation cannot recover the paper's result from symmetry, successful conventional execution, and absence of underflow and overflow because constructing its run already requires the local residual estimates that the paper derives. Its abstract Rep/Safe format also does not enforce the paper's numerical model."
+      "verdict": "unclear",
+      "reasoning": "The algorithm, dimensions, residuals, constants, identity, and componentwise bounds align. However, deriving the paper theorem requires showing that every source floating-point execution instantiates D018, its safe predicate, its square-root law, and the required D040 certificates. The blind translation omits enough of that bridge that this implication cannot be certified."
     },
     "paper_implies_translation": {
-      "verdict": "yes",
-      "reasoning": "For source-admissible executions, equations (4.5a)-(4.5b) supply the translated local estimates after zero-based reindexing, and symmetry plus upper triangularity yields the exact DeltaA identity and both matrix bounds. More generally, the translated conclusions are already algebraic consequences of the stronger run hypotheses."
+      "verdict": "unclear",
+      "reasoning": "For standard source executions, the paper proves the displayed local and global claims. It is unclear whether all abstract D018 formats and packaged runs are source executions or instead form a broader domain. Without the exact format and square-root laws, the paper's result cannot be shown to cover the entire translated domain."
     }
   },
-  "classification": "not-faithful-weaker",
+  "classification": "undetermined",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
-      "severity": "critical",
-      "category": "local-error-bounds-assumed",
-      "paper_evidence": "The proof of Theorem 4.4 invokes Lemmas 4.1 and 4.3 to derive equations (4.5a)-(4.5b) from the floating-point execution.",
-      "translation_evidence": "D036 and D037 include the corresponding residual inequalities as fields required for every off-diagonal and diagonal execution witness.",
-      "impact": "The translation does not establish the central rounding-error result from the paper hypotheses; it reduces the proposition to repeating assumed local bounds and assembling them into a matrix bound."
+      "severity": "major",
+      "category": "square-root-law-under-specified",
+      "paper_evidence": "Corollary 3.2 proves equation (3.7), |y_hat^2-s_hat| <= 2u y_hat^2, and Lemma 4.3 combines that result with the rounded sum to obtain the (k+1)u bound.",
+      "translation_evidence": "D018 mentions only 'the stated rounded-square-root error bound' without its formula; D037 then uses that format together with a diagonal reduction trace.",
+      "impact": "The supplied evidence cannot establish whether the law is exactly the source-licensed equation (3.7), whether it has the correct premises, or whether it improperly assumes a stronger diagonal result. This blocks both implication judgments."
     },
     {
       "severity": "major",
-      "category": "floating-point-model-mismatch",
-      "paper_evidence": "The source assumes a standard radix-beta, precision-p floating-point set and excludes underflow and overflow, with round-to-nearest and arbitrary tie-breaking.",
-      "translation_evidence": "Rep and Safe are abstract predicates with weak axioms, exponent limits are disconnected from them, representability is not required to be symmetric, and Safe is not identified with absence of underflow and overflow.",
-      "impact": "The translated run type admits numerical systems outside the paper's model and fails to express a required source hypothesis, so its apparent generality is not the same theorem."
+      "category": "floating-point-domain-and-exception-model",
+      "paper_evidence": "The paper fixes a standard finite floating-point set and round-to-nearest map and expressly excludes underflow and overflow during the conventional execution.",
+      "translation_evidence": "D018 uses an abstract representability predicate and safe-range predicate, but the ledger neither gives an exact safe/no-underflow/no-overflow equivalence nor unambiguously states completeness of the mantissa-exponent representation.",
+      "impact": "The translated format might be equivalent, broader, or narrower. Its inhabitation and the source-to-run embedding therefore require adjudication."
+    },
+    {
+      "severity": "note",
+      "category": "protected-summation-certificate",
+      "paper_evidence": "Equation (2.4) supplies the q u times absolute-sum estimate for arbitrary-order summation of rounded real terms; equation (2.2) controls rounded additions. Lemmas 4.1 and 4.3 are later consequences.",
+      "translation_evidence": "D040 assumes only subtree facts of the form |z_s-e_s| <= q_s u s_s and composes them through safe rounded additions. It does not state Lemma 4.1, Lemma 4.3, equation (4.5a), or equation (4.5b) as a constructor premise.",
+      "impact": "No circular assumption of the target local estimates is visible. The certificate appears intended to package source-licensed generic summation evidence, subject to resolving the abstract safe-range model."
+    },
+    {
+      "severity": "note",
+      "category": "computed-factor-representability",
+      "paper_evidence": "Theorem 4.4 identifies the computed factor as belonging to F^(n x n), as expected for values produced by floating-point operations.",
+      "translation_evidence": "Representability of every R_hat entry is an explicit conclusion. Nevertheless, strict-upper entries are also required to be representable when used as diagonal-trace inputs, and all nonfinal pivots are required to be representable in later off-diagonal traces. Each entry is independently linked to a rounded output as well.",
+      "impact": "Representability is not globally assumed as one run field, but much of it is redundantly present through later operand requirements. This does not exclude genuine source executions, though the representability conjunct is not wholly assumption-free."
+    },
+    {
+      "severity": "note",
+      "category": "algorithm-and-conclusion-coverage",
+      "paper_evidence": "The proof computes every off-diagonal and diagonal entry by the conventional column formulas and derives both local estimates before using symmetry to establish equation (4.4).",
+      "translation_evidence": "D020-D021 cover every corresponding entry, and the conclusion includes both local bounds, exact identity, row-dependent global bound, and uniform global bound for one Delta A.",
+      "impact": "No omission or index error was found in the theorem's principal algorithmic and error-bound content."
     }
   ],
-  "rationale": "The translation correctly reproduces the dimensions, zero-based index shifts, conventional update formulas, exact-versus-computed distinction, componentwise product, constants, backward-error identity, and absence of higher-order terms. It is nevertheless not faithful because each execution witness assumes the local residual inequality that the paper's rounding analysis proves, while its abstract Rep/Safe format does not encode the stated standard floating-point and range model. Consequently the paper result entails the translated conditional, but the translated proposition cannot recover the paper result."
+  "rationale": "The blind translation accurately reproduces the conventional Cholesky entry formulas, positive dimension, symmetry without positive definiteness, upper-triangular support, zero-based index shifts, both local residual estimates, the exact backward identity, and both componentwise global bounds for one perturbation. Its D040 certificate does not visibly assume the target lemmas or local estimates. A definitive classification is nevertheless impossible because the dependency ledger omits the exact rounded-square-root axiom and does not establish how the abstract representability and safe-range model corresponds to the paper's floating-point, underflow, and overflow conventions. Those omissions also prevent certifying format/run inhabitation and both logical implications."
 }

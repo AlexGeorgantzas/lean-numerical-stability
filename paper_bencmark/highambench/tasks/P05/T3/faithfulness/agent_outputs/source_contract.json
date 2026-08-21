@@ -5,194 +5,165 @@
   "paper_sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6",
   "source_evidence": [
     {
-      "pdf_page": 1,
-      "printed_page": "684",
-      "anchor": "Introduction, definition of F and equation (1.1b)",
-      "observation": "F is introduced as a standard radix-beta, precision-p floating-point set, with unit roundoff u = (1/2) beta^(1-p). The introduction previews the exact Cholesky backward relation and the coarse componentwise bound with constant (n+1)u."
-    },
-    {
       "pdf_page": 3,
       "printed_page": "686",
-      "anchor": "equation (1.5c) and the following order-of-evaluation paragraph",
-      "observation": "The square-root backward identity is stated under absence of underflow and overflow for any summation order. Such an order is defined through rooted binary summation trees on the input term and products."
+      "anchor": "paragraph following equations (1.5a)-(1.5c)",
+      "observation": "The paper defines 'whatever order of evaluation' for these updates as any rooted binary summation tree for c and the products a_i b_i; the surrounding division or square root remains part of the stated update form. (PDF p. 3, anchor: paragraph following equations (1.5a)-(1.5c).)"
     },
     {
       "pdf_page": 4,
       "printed_page": "687",
-      "anchor": "paragraph following equation (1.8)",
-      "observation": "The improved bounds are stated to hold for any radix, any tie-breaking rule, any dimension, and any evaluation order, without quadratic terms in u or a smallness restriction on the dimension."
+      "anchor": "equation (1.8) and following summary paragraph",
+      "observation": "The improved bounds replace gamma terms by constants linear in u, contain no O(u^2) term or dimension restriction, and apply with round-to-nearest for any radix, tie-breaking rule, dimension, and summation order when underflow and overflow are absent. (PDF p. 4, anchor: equation (1.8) and following summary paragraph.)"
     },
     {
       "pdf_page": 5,
       "printed_page": "688",
-      "anchor": "Sections 2.1-2.2 and equations (2.1a)-(2.1b)",
-      "observation": "F is a symmetric set of finite floating-point numbers with base beta >= 2, precision p >= 1, exponent range [emin, emax], and zero. The rounding map is round-to-nearest with arbitrary tie-breaking, and u = (1/2) beta^(1-p) <= 1/2. Underflow means an inexact rounding of a real number in the subnormal range."
-    },
-    {
-      "pdf_page": 8,
-      "printed_page": "691",
-      "anchor": "Corollary 3.2",
-      "observation": "The division specialization requires a nonzero floating-point divisor. The square-root specialization requires a nonnegative computed argument and yields the coefficient (n+1)u."
+      "anchor": "sections 2.1-2.2 and equations (2.1a)-(2.1b)",
+      "observation": "F is a symmetric set of finite floating-point numbers containing zero, with radix beta, precision p, and an exponent range; fl is round-to-nearest with unrestricted tie-breaking, and u = (1/2) beta^(1-p) <= 1/2. The page also defines the paper's underflow convention. (PDF p. 5, anchor: sections 2.1-2.2 and equations (2.1a)-(2.1b).)"
     },
     {
       "pdf_page": 9,
       "printed_page": "692",
-      "anchor": "Section 4 notation paragraph",
-      "observation": "The notation diag(f(i)) denotes the n by n diagonal matrix with entry f(i) at position (i,i), with i implicitly ranging from 1 to n."
+      "anchor": "notation paragraph at the end of section 3",
+      "observation": "The paper writes a_ij for matrix entries and diag(f(i)) for the n by n diagonal matrix with diagonal entry f(i), with i implicitly ranging from 1 through n. (PDF p. 9, anchor: notation paragraph at the end of section 3.)"
     },
     {
       "pdf_page": 10,
       "printed_page": "693",
       "anchor": "Lemma 4.1",
-      "observation": "For a floating-point evaluation of a quotient of a sum, the divisor must be nonzero. In the absence of underflow and overflow, the lemma applies for any evaluation order and gives coefficient ku, reduced to (k-1)u when there is no division."
+      "observation": "For a floating-point evaluation of (c - sum_{i=1}^{k-1} a_i b_i)/b_k with nonzero floating-point b_k, Lemma 4.1 gives perturbation constants bounded by k u; if b_k = 1 and no division occurs, the bound is (k-1)u. It allows any summation order and assumes no underflow or overflow. (PDF p. 10, anchor: Lemma 4.1.)"
     },
     {
       "pdf_page": 11,
       "printed_page": "694",
-      "anchor": "Section 4.3 opening paragraph and Lemma 4.3",
-      "observation": "Cholesky factorization is defined as computation of the upper-triangular factor by the conventional algorithm. Lemma 4.3 treats a rounded square root of a nonnegative computed sum and gives coefficient (k+1)u for any evaluation order."
-    },
-    {
-      "pdf_page": 11,
-      "printed_page": "694",
-      "anchor": "Theorem 4.4 statement",
-      "observation": "The theorem assumes only that A belongs to F^(n by n), is symmetric, the Cholesky factorization runs to completion, and no underflow or overflow occurs. It states that the computed factor Rhat belongs to F^(n by n)."
+      "anchor": "section 4.3 opening, Lemma 4.3, and Theorem 4.4 statement",
+      "observation": "The section defines Cholesky factorization as computation of the upper-triangular factor by the conventional algorithm. Lemma 4.3 supplies the (k+1)u square-root-update constant. Theorem 4.4 assumes only a symmetric A in F^(n x n), successful completion, and absence of underflow and overflow, and identifies a computed factor R_hat in F^(n x n). (PDF p. 11, anchor: section 4.3 opening, Lemma 4.3, and Theorem 4.4 statement.)"
     },
     {
       "pdf_page": 12,
       "printed_page": "695",
       "anchor": "equation (4.4)",
-      "observation": "The complete conclusion is Rhat^T Rhat = A + DeltaA together with |DeltaA| <= diag((i+1)u)|Rhat^T||Rhat| <= (n+1)u|Rhat^T||Rhat|."
+      "observation": "Equation (4.4) states R_hat^T R_hat = A + DeltaA and the two componentwise bounds |DeltaA| <= diag((i+1)u)|R_hat^T||R_hat| <= (n+1)u|R_hat^T||R_hat|. (PDF p. 12, anchor: equation (4.4).)"
     },
     {
       "pdf_page": 12,
       "printed_page": "695",
-      "anchor": "conventional column-update formulas",
-      "observation": "For column j, the conventional algorithm computes off-diagonal entries from a quotient with denominator Rhat_ii and computes the diagonal entry from the square root of a diagonal residual."
+      "anchor": "conventional column-update formulas in the proof of Theorem 4.4",
+      "observation": "The conventional algorithm computes R_hat one column at a time. For column j it evaluates y_ij = (a_ij - sum_{k=1}^{i-1} r_hat_ki r_hat_kj)/r_hat_ii for i = 1,...,j-1 and y_jj = (a_jj - sum_{k=1}^{j-1} r_hat_kj^2)^(1/2), with r_hat_ij and r_hat_jj denoting the computed values. (PDF p. 12, anchor: conventional column-update formulas in the proof of Theorem 4.4.)"
     },
     {
       "pdf_page": 12,
       "printed_page": "695",
       "anchor": "equations (4.5a)-(4.5b) and closing symmetry sentence",
-      "observation": "The proof derives separate componentwise residual estimates with constants iu for off-diagonal entries and (j+1)u for diagonal entries, then completes the matrix result using symmetry of A - Rhat^T Rhat and Rhat^T Rhat."
+      "observation": "For 1 <= i < j <= n, equation (4.5a) has constant i u and sums through k = i. For 1 <= j <= n, equation (4.5b) has constant (j+1)u and sums through k = j. The proof completes the full matrix bound using symmetry. (PDF p. 12, anchor: equations (4.5a)-(4.5b) and closing symmetry sentence.)"
     }
   ],
   "statement": {
     "binders": [
-      "F is a fixed but arbitrary standard set of finite real floating-point numbers with base beta, precision p, and unit roundoff u = (1/2) beta^(1-p). [PDF p. 1 (printed 684), Introduction; PDF p. 5 (printed 688), Sections 2.1-2.2]",
-      "n is the matrix dimension, with indices running from 1 through n. [PDF p. 9 (printed 692), Section 4 notation paragraph]",
-      "A is the given symmetric matrix in F^(n by n). [PDF p. 11 (printed 694), Theorem 4.4]",
-      "Rhat is the factor in F^(n by n) produced by the successful floating-point execution of the conventional Cholesky algorithm. [PDF p. 11 (printed 694), Section 4.3 and Theorem 4.4; PDF p. 12 (printed 695), update formulas]",
-      "DeltaA is the backward perturbation introduced by the identity Rhat^T Rhat = A + DeltaA; the paper does not separately declare its scalar type. [PDF p. 12 (printed 695), equation (4.4)]"
+      "n is the implicitly positive integer matrix dimension; the theorem does not restate n in N_{>0}, but its n by n dimensions and loops j = 1,...,n inherit that convention. (PDF p. 11, anchor: Theorem 4.4 statement; PDF p. 12, anchor: conventional column-update formulas.)",
+      "A ranges over symmetric matrices in F^(n x n), where each input entry is a finite floating-point number. (PDF p. 11, anchor: Theorem 4.4 statement; PDF p. 5, anchor: section 2.1.)",
+      "R_hat in F^(n x n) denotes the factor actually computed by the conventional Cholesky execution, rather than the exact Cholesky factor of A. (PDF p. 11, anchor: section 4.3 opening and Theorem 4.4 statement.)",
+      "DeltaA is the n by n backward perturbation fixed by DeltaA = R_hat^T R_hat - A; equation (4.4) presents it through the equivalent exact relation R_hat^T R_hat = A + DeltaA. (PDF p. 12, anchor: equation (4.4).)",
+      "The proof quantifies columns j = 1,...,n, off-diagonal row indices i = 1,...,j-1, and summation indices k with the bounds shown in the update and residual formulas. (PDF p. 12, anchor: update formulas and equations (4.5a)-(4.5b).)"
     ],
     "hypotheses": [
-      "A has floating-point entries and is symmetric. [PDF p. 11 (printed 694), Theorem 4.4]",
-      "The conventional Cholesky factorization runs to completion and produces Rhat. [PDF p. 11 (printed 694), Theorem 4.4]",
-      "No underflow or overflow occurs during the relevant floating-point execution. [PDF p. 11 (printed 694), Theorem 4.4]",
-      "The inherited arithmetic model is round-to-nearest in base beta and precision p, with arbitrary tie-breaking. [PDF p. 5 (printed 688), Sections 2.1-2.2]",
-      "The inner sums may be evaluated in any order covered by the paper's binary-tree summation model. [PDF p. 3 (printed 686), paragraph following equation (1.5c); PDF p. 12 (printed 695), paragraph preceding equations (4.5a)-(4.5b)]",
-      "Positive definiteness is not a hypothesis of Theorem 4.4; the theorem replaces it by symmetry plus successful completion. [PDF p. 11 (printed 694), Section 4.3 opening and Theorem 4.4]"
+      "A is symmetric and floating-point-valued: A in F^(n x n). Positive definiteness is not a hypothesis of Theorem 4.4. (PDF p. 11, anchor: Theorem 4.4 statement.)",
+      "The conventional Cholesky factorization runs to completion on A. (PDF p. 11, anchor: Theorem 4.4 statement and section 4.3 opening.)",
+      "No underflow and no overflow occur during the execution. (PDF p. 11, anchor: Theorem 4.4 statement.)",
+      "Arithmetic uses the paper's standard finite floating-point system and rounding to nearest; ties may be broken by any rule. (PDF p. 5, anchor: sections 2.1-2.2.)",
+      "The summations inside the conventional updates may be evaluated in any order represented by a binary summation tree. (PDF p. 3, anchor: paragraph following equations (1.5a)-(1.5c); PDF p. 12, anchor: paragraph introducing equations (4.5a)-(4.5b).)"
     ],
     "conclusions": [
-      "The computed factor satisfies the exact backward relation Rhat^T Rhat = A + DeltaA. [PDF p. 12 (printed 695), equation (4.4)]",
-      "The perturbation satisfies the row-scaled componentwise bound |DeltaA| <= diag((i+1)u)|Rhat^T||Rhat|. [PDF p. 12 (printed 695), equation (4.4); PDF p. 9 (printed 692), diag convention]",
-      "It also satisfies the coarser componentwise bound |DeltaA| <= (n+1)u|Rhat^T||Rhat|. [PDF p. 12 (printed 695), equation (4.4)]",
-      "For 1 <= i <= j-1, the proof establishes |a_ij - sum_{k=1}^i Rhat_ki Rhat_kj| <= i u sum_{k=1}^i |Rhat_ki||Rhat_kj|. [PDF p. 12 (printed 695), equation (4.5a)]",
-      "For 1 <= j <= n, the proof establishes |a_jj - sum_{k=1}^j Rhat_kj^2| <= (j+1)u sum_{k=1}^j Rhat_kj^2. [PDF p. 12 (printed 695), equation (4.5b)]",
-      "DeltaA is symmetric because both A and Rhat^T Rhat are symmetric. [PDF p. 11 (printed 694), Theorem 4.4; PDF p. 12 (printed 695), closing symmetry sentence]"
+      "Exact backward relation: R_hat^T R_hat = A + DeltaA. The matrix products and subtraction in this relation are exact real operations on the completed floating-point data. (PDF p. 12, anchor: equation (4.4).)",
+      "First global bound: |DeltaA| <= diag((i+1)u) (|R_hat^T| |R_hat|), with diag indexed by i = 1,...,n. (PDF p. 12, anchor: equation (4.4); PDF p. 9, anchor: diag notation paragraph.)",
+      "Second global bound: |DeltaA| <= (n+1)u (|R_hat^T| |R_hat|). This is the second inequality in the chain in (4.4), not a replacement for the row-dependent first inequality. (PDF p. 12, anchor: equation (4.4).)",
+      "Local off-diagonal estimate: for every 1 <= i < j <= n, |a_ij - sum_{k=1}^i r_hat_ki r_hat_kj| <= i u sum_{k=1}^i |r_hat_ki||r_hat_kj|. (PDF p. 12, anchor: equation (4.5a) with the preceding j-loop.)",
+      "Local diagonal estimate: for every 1 <= j <= n, |a_jj - sum_{k=1}^j r_hat_kj^2| <= (j+1)u sum_{k=1}^j r_hat_kj^2. (PDF p. 12, anchor: equation (4.5b) with the preceding j-loop.)",
+      "The local upper-triangular estimates are completed to a whole-matrix result using the symmetry of A - R_hat^T R_hat and the Gram-product structure. (PDF p. 12, anchor: closing symmetry sentence after equations (4.5a)-(4.5b).)"
     ],
     "definitions_and_conventions": [
-      "F contains finite floating-point numbers, is symmetric, and contains zero; beta >= 2 and p >= 1. [PDF p. 5 (printed 688), Section 2.1]",
-      "fl(t) is any nearest floating-point value to t when overflow does not occur, so no particular tie-breaking strategy is imposed. [PDF p. 5 (printed 688), Section 2.1]",
-      "The unit roundoff is u = (1/2) beta^(1-p), and u <= 1/2. [PDF p. 1 (printed 684), Introduction; PDF p. 5 (printed 688), equation (2.1)]",
-      "diag(f(i)) is the n by n diagonal matrix with diagonal entries f(1), ..., f(n). Thus diag((i+1)u) has diagonal entries 2u, 3u, ..., (n+1)u. [PDF p. 9 (printed 692), Section 4 notation paragraph; PDF p. 12 (printed 695), equation (4.4)]",
-      "The hats distinguish computed floating-point quantities from exact mathematical values. [PDF p. 11 (printed 694), Lemma 4.3 and Theorem 4.4; PDF p. 12 (printed 695), update formulas]",
-      "The matrix absolute values and inequalities in (4.4) are componentwise, as confirmed by the scalar entrywise estimates (4.5a)-(4.5b); juxtaposition |Rhat^T||Rhat| denotes ordinary matrix multiplication of the entrywise-absolute matrices. [PDF p. 12 (printed 695), equations (4.4)-(4.5b)]",
-      "For a symmetric positive-definite real matrix, the preceding paragraph defines the exact Cholesky factor as the unique upper-triangular R with positive diagonal and A = R^T R; Cholesky factorization means computing it with the conventional algorithm. [PDF p. 11 (printed 694), Section 4.3 opening paragraph]"
+      "For symmetric positive definite real A, the section calls the unique upper-triangular R with positive diagonal and A = R^T R its Cholesky factor; 'Cholesky factorization' means computing R using the conventional algorithm. This section-level definition does not add positive definiteness to Theorem 4.4. (PDF p. 11, anchor: opening paragraph of section 4.3 and Theorem 4.4 statement.)",
+      "F is a symmetric set of finite floating-point numbers containing zero, with integer radix beta >= 2, precision p >= 1, and an exponent range. (PDF p. 5, anchor: section 2.1.)",
+      "fl rounds a real number to a nearest member of F when overflow does not occur, with no prescribed tie-breaking rule. (PDF p. 5, anchor: section 2.1.)",
+      "The unit roundoff is u = (1/2) beta^(1-p), hence u <= 1/2. (PDF p. 5, anchor: equations (2.1a)-(2.1b) and following paragraph.)",
+      "diag(f(i)) is the n by n diagonal matrix with entry f(i) in position (i,i), with i implicitly ranging from 1 to n. (PDF p. 9, anchor: notation paragraph at the end of section 3.)",
+      "In (4.4), bars on matrices denote entrywise absolute values, inequalities are entrywise, and juxtaposition |R_hat^T||R_hat| is ordinary matrix multiplication of the nonnegative absolute-value matrices; it cannot be a matrix norm because the row-scaling diagonal produces an n by n bound. (PDF p. 12, anchor: equation (4.4).)",
+      "Hatted entries are computed floating-point values, while the sums, products, squares, transpose, and residuals displayed in (4.4)-(4.5) are exact real expressions formed from those computed values. (PDF p. 12, anchor: update formulas, equation (4.4), and equations (4.5a)-(4.5b).)"
     ],
     "implicit_context": [
-      "The computed factor is the upper-triangular factor constructed one column at a time by the conventional method, not an arbitrary matrix satisfying a residual bound. [PDF p. 11 (printed 694), Section 4.3 opening; PDF p. 12 (printed 695), first proof paragraph]",
-      "The preceding positive-definite definition identifies the intended exact factor, but positive definiteness and existence of an exact positive-diagonal factor are not imported into the theorem's explicit hypotheses. [PDF p. 11 (printed 694), Section 4.3 opening and Theorem 4.4]",
-      "The result applies for any dimension n, including when (n+1)u is not less than one. [PDF p. 4 (printed 687), paragraph following equation (1.8)]",
-      "The arbitrary-order allowance concerns evaluation of the inner sums while the column progression j = 1, ..., n and the update dependencies remain those of the conventional algorithm. [PDF p. 3 (printed 686), order-of-evaluation definition; PDF p. 12 (printed 695), update formulas]",
-      "The proof obtains upper-triangular entry estimates and uses symmetry to cover the remaining entries. [PDF p. 12 (printed 695), equations (4.5a)-(4.5b) and closing sentence]"
+      "The output is upper triangular because the referenced conventional algorithm computes entries r_hat_ij for i <= j one column at a time; Theorem 4.4 itself records only R_hat in F^(n x n). (PDF p. 11, anchor: section 4.3 opening; PDF p. 12, anchor: conventional column-update formulas.)",
+      "Although the section introduces the exact Cholesky factor for symmetric positive definite matrices, the theorem deliberately weakens the matrix hypothesis to symmetry plus successful execution. (PDF p. 11, anchor: section 4.3 opening and Theorem 4.4 statement.)",
+      "Lemma 4.1 supplies the division-update constant k u for a nonzero denominator; its special no-division case has constant (k-1)u. The proof of Theorem 4.4 uses the division case to obtain the i u constant in (4.5a). (PDF p. 10, anchor: Lemma 4.1; PDF p. 12, anchor: equation (4.5a).)",
+      "Lemma 4.3 supplies the square-root-update constant (k+1)u when the computed pre-square-root quantity is nonnegative; with k = j this yields the (j+1)u constant in (4.5b). (PDF p. 11, anchor: Lemma 4.3; PDF p. 12, anchor: equation (4.5b).)",
+      "The exact perturbation DeltaA need not itself be floating-point-valued; it is an exact real matrix residual of the computed factorization. (PDF p. 12, anchor: equation (4.4).)"
     ],
-    "algorithm_linkage": "The theorem is tied to the conventional upper-triangular, column-by-column Cholesky algorithm. For j = 1, ..., n and i = 1, ..., j-1, it evaluates y_ij = (a_ij - sum_{k=1}^{i-1} Rhat_ki Rhat_kj) / Rhat_ii, and it evaluates y_jj = (a_jj - sum_{k=1}^{j-1} Rhat_kj^2)^(1/2). Rhat_ij and Rhat_jj are the resulting computed values, with arbitrary permitted evaluation order for the sums. [PDF p. 12 (printed 695), conventional update formulas and paragraph preceding equations (4.5a)-(4.5b)]",
+    "algorithm_linkage": "The result is tied to the conventional upper-triangular, column-oriented Cholesky method, not to an arbitrary Cholesky variant. For j = 1,...,n, after columns 1,...,j-1 are available, it evaluates y_ij = (a_ij - sum_{k=1}^{i-1} r_hat_ki r_hat_kj)/r_hat_ii for i = 1,...,j-1 and y_jj = (a_jj - sum_{k=1}^{j-1} r_hat_kj^2)^(1/2); r_hat_ij and r_hat_jj are the resulting computed values. Summation association may vary, but the column order, division placement, and square-root variant are fixed by these formulas. (PDF p. 11, anchor: section 4.3 opening; PDF p. 12, anchor: conventional column-update formulas; PDF p. 3, anchor: definition of evaluation order.)",
     "numerical_model": [
-      "Arithmetic uses a standard finite floating-point set with arbitrary radix beta >= 2 and precision p >= 1. [PDF p. 5 (printed 688), Section 2.1]",
-      "Operations are rounded to nearest, with no prescribed tie-breaking rule. [PDF p. 5 (printed 688), Section 2.1]",
-      "The unit roundoff is exactly u = (1/2) beta^(1-p). [PDF p. 1 (printed 684), Introduction; PDF p. 5 (printed 688), equation (2.1)]",
-      "The theorem covers every permitted order of evaluation of the inner sums. [PDF p. 3 (printed 686), order-of-evaluation paragraph; PDF p. 12 (printed 695), proof of Theorem 4.4]",
-      "No smallness condition such as (n+1)u < 1 is imposed. [PDF p. 4 (printed 687), paragraph following equation (1.8)]"
+      "The model is standard finite floating-point arithmetic in radix beta and precision p with round-to-nearest, unrestricted tie-breaking, and unit roundoff u = (1/2) beta^(1-p). (PDF p. 5, anchor: sections 2.1-2.2.)",
+      "The input entries and computed factor entries belong to F; real products and sums appearing in the retrospective error equations are exact expressions involving those represented floating-point values. (PDF p. 11, anchor: Theorem 4.4 statement; PDF p. 12, anchor: equations (4.4)-(4.5).)",
+      "The conventional updates contain floating-point products, summations, divisions, and square roots, with all rounding effects absorbed into the computed entries and the stated residual bounds. (PDF p. 12, anchor: conventional column-update formulas and equations (4.5a)-(4.5b).)",
+      "The theorem is valid for any radix, tie-breaking rule, dimension, and allowed summation order, subject to successful execution and absence of underflow and overflow. (PDF p. 4, anchor: summary paragraph following equation (1.8); PDF p. 11, anchor: Theorem 4.4 statement.)"
     ],
     "error_notions": [
-      "The result is a backward-error statement: the computed factor is the exact Cholesky-type factorization of the perturbed input A + DeltaA. [PDF p. 12 (printed 695), equation (4.4)]",
-      "The error bound is componentwise rather than normwise. [PDF p. 12 (printed 695), equations (4.4)-(4.5b)]",
-      "The componentwise envelope is measured against |Rhat^T||Rhat|, not against |A| and not against an exact Cholesky factor. [PDF p. 12 (printed 695), equation (4.4)]",
-      "The passage gives no forward-error estimate comparing Rhat with an exact factor R. [PDF p. 11 (printed 694), Theorem 4.4; PDF p. 12 (printed 695), equation (4.4)]",
-      "The input entries a_ij remain the exact data in the local residuals; DeltaA collects the discrepancy between those entries and the exact product of computed factor entries. [PDF p. 12 (printed 695), equations (4.5a)-(4.5b)]"
+      "DeltaA is a backward error on the input matrix: the already computed R_hat is an exact factor of A + DeltaA. (PDF p. 12, anchor: equation (4.4).)",
+      "The global error bound is componentwise and relative to the computed-factor envelope |R_hat^T||R_hat|, rather than relative to A or to a scalar matrix norm. (PDF p. 12, anchor: equation (4.4).)",
+      "Equations (4.5a)-(4.5b) are scalar absolute residual bounds for individual off-diagonal and diagonal entries and are the local estimates from which the global backward bound is assembled. (PDF p. 12, anchor: equations (4.5a)-(4.5b) and closing symmetry sentence.)"
     ],
     "norms": [
-      "No vector or matrix norm occurs in Theorem 4.4; all displayed absolute values and inequalities are entrywise. [PDF p. 12 (printed 695), equations (4.4)-(4.5b)]",
-      "|Rhat^T||Rhat| is an ordinary matrix product after taking entrywise absolute values, not a Hadamard product or a norm. [PDF p. 12 (printed 695), equation (4.4) and its derivation from equations (4.5a)-(4.5b)]"
+      "No vector or matrix norm occurs in Theorem 4.4. (PDF p. 12, anchor: equation (4.4).)",
+      "For matrices, |.| is entrywise absolute value and <= is componentwise order; |R_hat^T||R_hat| is a matrix product, not a Hadamard product or norm product. (PDF p. 12, anchor: equation (4.4).)",
+      "For the local estimates, |.| is ordinary scalar absolute value, while each right-hand sum is a nonnegative exact sum of absolute products or squares. (PDF p. 12, anchor: equations (4.5a)-(4.5b).)"
     ],
     "constants_and_indexing": [
-      "In diag((i+1)u), i ranges from 1 to n, so the row multipliers run from 2u through (n+1)u. [PDF p. 9 (printed 692), diag convention; PDF p. 12 (printed 695), equation (4.4)]",
-      "The first matrix bound scales row i of |Rhat^T||Rhat| by (i+1)u; the diagonal factor is on the left and must not be moved or replaced by a scalar in the sharper bound. [PDF p. 12 (printed 695), equation (4.4)]",
-      "The uniform bound uses the maximum diagonal multiplier, namely (n+1)u. [PDF p. 12 (printed 695), equation (4.4)]",
-      "For off-diagonal entry (i,j) with 1 <= i <= j-1, the local constant is iu and both residual and magnitude sums end at k = i. [PDF p. 12 (printed 695), equation (4.5a)]",
-      "For diagonal entry (j,j), the local constant is (j+1)u and both sums end at k = j. [PDF p. 12 (printed 695), equation (4.5b)]",
-      "The update formulas themselves use sums ending at i-1 for an off-diagonal entry and j-1 for a diagonal entry; the residual estimates include the newly computed kth endpoint. [PDF p. 12 (printed 695), update formulas and equations (4.5a)-(4.5b)]"
+      "The diagonal scaling in the first global bound is diag((i+1)u) for i = 1,...,n, so its diagonal entries are 2u, 3u, ..., (n+1)u. (PDF p. 12, anchor: equation (4.4); PDF p. 9, anchor: diag notation paragraph.)",
+      "The uniform global constant is exactly (n+1)u. (PDF p. 12, anchor: equation (4.4).)",
+      "For an off-diagonal position with 1 <= i < j <= n, the exact local constant is i u, and both sums in (4.5a) run from k = 1 through k = i. (PDF p. 12, anchor: equation (4.5a).)",
+      "For a diagonal position j with 1 <= j <= n, the exact local constant is (j+1)u, and both sums in (4.5b) run from k = 1 through k = j. (PDF p. 12, anchor: equation (4.5b).)",
+      "The computational off-diagonal numerator sums only through i-1 before division by r_hat_ii, whereas its residual estimate sums through i after incorporating the newly computed term r_hat_ii r_hat_ij. (PDF p. 12, anchor: off-diagonal update formula and equation (4.5a).)",
+      "The computational diagonal radicand sums only through j-1 before square root, whereas its residual estimate sums through j after incorporating r_hat_jj^2. (PDF p. 12, anchor: diagonal update formula and equation (4.5b).)"
     ],
     "higher_order_terms": [
-      "The bounds contain only constants linear in u: iu, (j+1)u, and (n+1)u. [PDF p. 12 (printed 695), equations (4.4)-(4.5b)]",
-      "There is no omitted O(u^2) remainder and no gamma_(n+1) denominator. [PDF p. 4 (printed 687), paragraph following equation (1.8); PDF p. 12 (printed 695), equation (4.4)]",
-      "The relation Rhat^T Rhat = A + DeltaA is exact; only the size of DeltaA is bounded. [PDF p. 12 (printed 695), equation (4.4)]"
+      "Equation (4.4) is exactly linear in u and contains no u^2 term, O(u^2) remainder, gamma factor, or other omitted higher-order term. (PDF p. 12, anchor: equation (4.4); PDF p. 4, anchor: summary following equation (1.8).)",
+      "There is no smallness hypothesis such as (n+1)u < 1 and no upper restriction on n beyond being a matrix dimension. (PDF p. 4, anchor: summary paragraph following equation (1.8); PDF p. 11, anchor: Theorem 4.4 statement.)",
+      "The local constants i u and (j+1)u in (4.5) are also exact stated bounds with no omitted higher-order terms. (PDF p. 12, anchor: equations (4.5a)-(4.5b).)"
     ],
     "exceptional_values": [
-      "The theorem excludes underflow and overflow during the floating-point computation. [PDF p. 11 (printed 694), Theorem 4.4]",
-      "The paper's underflow exclusion does not prohibit every subnormal value: underflow is defined as an inexact rounding of a real result lying in the subnormal range. [PDF p. 5 (printed 688), Section 2.1]",
-      "The scalar division lemma used in the proof requires a nonzero divisor, and the square-root lemma requires a nonnegative computed square-root argument. [PDF p. 10 (printed 693), Lemma 4.1; PDF p. 11 (printed 694), Lemma 4.3]",
-      "A and Rhat contain finite values because they belong to F. Infinities arise only as overflow results outside F, and NaNs are not explicitly modeled. [PDF p. 5 (printed 688), Section 2.1; PDF p. 11 (printed 694), Theorem 4.4]"
+      "Underflow and overflow must be absent throughout the successful factorization. (PDF p. 11, anchor: Theorem 4.4 statement.)",
+      "The paper defines underflow as rounding a real t in the subnormal range with fl(t) != t; floating-point addition cannot underflow under this convention, multiplication and division can, and square root cannot. (PDF p. 5, anchor: section 2.1.)",
+      "F contains only finite floating-point numbers; overflow may map outside F to an infinity, but that case is excluded by the theorem. (PDF p. 5, anchor: section 2.1; PDF p. 11, anchor: Theorem 4.4 statement.)",
+      "The theorem does not explicitly mention NaNs, signed zeros, zero divisors, or negative square-root arguments; such breakdowns are addressed only through the requirement that the conventional factorization run to completion. (PDF p. 11, anchor: Theorem 4.4 statement; PDF p. 12, anchor: update formulas.)",
+      "Symmetric indefiniteness is not itself excluded syntactically: positive definiteness is not required if the floating-point execution nevertheless runs to completion. (PDF p. 11, anchor: section 4.3 opening and Theorem 4.4 statement.)"
     ]
   },
   "undebatable_constraints": [
-    "The input must be an n by n symmetric matrix with entries in F; replacing this by an arbitrary real matrix changes the theorem. [PDF p. 11 (printed 694), Theorem 4.4]",
-    "Positive definiteness must not be added as an explicit theorem hypothesis: the stated condition is symmetry together with successful completion of the conventional algorithm. [PDF p. 11 (printed 694), Section 4.3 opening and Theorem 4.4]",
-    "Rhat must be the computed output of the conventional upper-triangular Cholesky process, not an existentially chosen approximate factor. [PDF p. 11 (printed 694), Section 4.3; PDF p. 12 (printed 695), update formulas]",
-    "The exact product is Rhat^T Rhat, in that order, and the backward relation is Rhat^T Rhat = A + DeltaA. [PDF p. 12 (printed 695), equation (4.4)]",
-    "Both parts of the bound must be preserved: the sharper row-scaled bound with diag((i+1)u) and the coarser bound with (n+1)u. [PDF p. 12 (printed 695), equation (4.4)]",
-    "The bounds are componentwise and use the ordinary matrix product |Rhat^T||Rhat|; they are not norm bounds. [PDF p. 12 (printed 695), equations (4.4)-(4.5b)]",
-    "The index offset is +1: the diagonal coefficient is (j+1)u and the global coefficient is (n+1)u, while the off-diagonal local coefficient is iu. [PDF p. 12 (printed 695), equations (4.4)-(4.5b)]",
-    "The result assumes round-to-nearest arithmetic, permits arbitrary tie-breaking and inner-sum evaluation order, and excludes underflow and overflow. [PDF p. 4 (printed 687), paragraph following equation (1.8); PDF p. 5 (printed 688), Section 2.1; PDF p. 11 (printed 694), Theorem 4.4]",
-    "No condition such as (n+1)u < 1 and no O(u^2) term may be introduced. [PDF p. 4 (printed 687), paragraph following equation (1.8); PDF p. 12 (printed 695), equation (4.4)]"
+    "The input hypothesis is symmetry of A in F^(n x n), not symmetric positive definiteness. (PDF p. 11, anchor: Theorem 4.4 statement.)",
+    "The algorithm is the conventional upper-triangular, column-at-a-time Cholesky method with the displayed division and square-root updates. (PDF p. 11, anchor: section 4.3 opening; PDF p. 12, anchor: update formulas.)",
+    "Successful completion and absence of both underflow and overflow are mandatory hypotheses. (PDF p. 11, anchor: Theorem 4.4 statement.)",
+    "The primary conclusion must include the exact equality R_hat^T R_hat = A + DeltaA. (PDF p. 12, anchor: equation (4.4).)",
+    "Both parts of the global bound must be preserved: the row-dependent diag((i+1)u) bound and the coarser uniform (n+1)u bound. (PDF p. 12, anchor: equation (4.4).)",
+    "The bound is componentwise and uses the computed-factor envelope |R_hat^T||R_hat|; replacing it by a norm bound, |A|, |R_hat^T R_hat|, or a Hadamard product changes the claim. (PDF p. 12, anchor: equation (4.4).)",
+    "The off-diagonal local bound has constant i u and sums through i, while the diagonal local bound has constant (j+1)u and sums through j. (PDF p. 12, anchor: equations (4.5a)-(4.5b).)",
+    "The constants contain no gamma term, no u^2 or O(u^2) remainder, and impose no condition such as (n+1)u < 1. (PDF p. 4, anchor: summary following equation (1.8); PDF p. 12, anchor: equation (4.4).)",
+    "Any-order language concerns the evaluation order of the sums inside the fixed conventional update formulas; it does not authorize an arbitrary Cholesky variant. (PDF p. 3, anchor: definition of evaluation order; PDF p. 12, anchor: update formulas.)",
+    "The final passage uses symmetry to extend the local triangular-entry estimates to the complete matrix inequality. (PDF p. 12, anchor: closing symmetry sentence.)"
   ],
   "ambiguities": [
     {
-      "issue": "The phrase runs to completion is not reduced to explicit algebraic side conditions.",
-      "evidence": "The theorem uses runs to completion without defining it locally; the proof divides by Rhat_ii, Lemma 4.1 requires a nonzero divisor, and Lemma 4.3 requires a nonnegative computed square-root argument. [PDF p. 10 (printed 693), Lemma 4.1; PDF p. 11 (printed 694), Lemma 4.3 and Theorem 4.4; PDF p. 12 (printed 695), update formulas]",
-      "impact": "A formal contract should retain an execution-success condition or define the algorithmic validity conditions explicitly. It should not silently replace successful completion by positive definiteness, and the passage does not resolve whether a zero final diagonal counts as completion."
+      "issue": "The phrase 'Cholesky factorization runs to completion' is not formally expanded into a complete list of breakdown conditions.",
+      "evidence": "The theorem states successful completion as a hypothesis, while the displayed algorithm contains divisions by r_hat_ii and square roots of computed radicands; the passage does not separately enumerate zero-pivot, negative-radicand, invalid-operation, or final-zero-pivot cases. (PDF p. 11, anchor: Theorem 4.4 statement; PDF p. 12, anchor: conventional update formulas.)",
+      "impact": "The source contract must retain successful completion as an opaque execution hypothesis. It should not silently replace it by positive definiteness, by a particular family of pivot inequalities, or by only nonzero denominators."
     },
     {
-      "issue": "DeltaA is introduced without an explicit binder or scalar type.",
-      "evidence": "Equation (4.4) directly writes Rhat^T Rhat = A + DeltaA and bounds DeltaA, but does not state DeltaA belongs to F^(n by n) or R^(n by n). [PDF p. 12 (printed 695), equation (4.4)]",
-      "impact": "The natural reading is the exact residual DeltaA = Rhat^T Rhat - A in real arithmetic; requiring DeltaA itself to have floating-point entries would add an unsupported condition."
+      "issue": "The exact scope of 'whatever the order of evaluation' is abbreviated in the theorem proof.",
+      "evidence": "The proof says the displayed values are computed whatever the order of evaluation, while the earlier formal explanation defines this freedom through rooted binary trees for the summation part of expressions c - sum a_i b_i. (PDF p. 12, anchor: paragraph before equations (4.5a)-(4.5b); PDF p. 3, anchor: paragraph following equations (1.5a)-(1.5c).)",
+      "impact": "The guaranteed freedom is arbitrary summation association inside each fixed update. The source does not thereby claim arbitrary column ordering, movement of division or square root, or equivalence for every Cholesky algorithm variant."
     },
     {
-      "issue": "The matrix absolute-value convention is not separately defined in the inspected passage.",
-      "evidence": "Equation (4.4) uses matrix bars and inequalities, while equations (4.5a)-(4.5b) provide scalar entrywise inequalities from which it is derived. [PDF p. 12 (printed 695), equations (4.4)-(4.5b)]",
-      "impact": "The derivation makes the componentwise interpretation clear, but a formalization must encode entrywise absolute values and order rather than select a matrix norm."
-    },
-    {
-      "issue": "Strict positivity of the computed diagonal is not stated as a theorem conclusion.",
-      "evidence": "The preceding exact-factor definition gives positive diagonal entries for a symmetric positive-definite input, whereas Theorem 4.4 assumes only symmetry and successful completion; the computed diagonal is produced by a rounded square root. [PDF p. 11 (printed 694), Section 4.3 opening and Theorem 4.4; PDF p. 12 (printed 695), diagonal update formula]",
-      "impact": "Strict positivity of every computed diagonal entry must not be added unless it follows from a separately specified execution-success semantics."
-    },
-    {
-      "issue": "Fused operations are not discussed.",
-      "evidence": "The paper specifies the conventional quotient and square-root update formulas and allows arbitrary binary-tree orders for their sums, but it does not state that fused multiply-add evaluations are included. [PDF p. 3 (printed 686), order-of-evaluation paragraph; PDF p. 12 (printed 695), update formulas]",
-      "impact": "The contract covers the stated standard-operation evaluation model and arbitrary summation order; extending it to an FMA-based Cholesky variant would require an additional argument."
+      "issue": "The paper describes F as 'similar to' IEEE 754-2008 rather than giving a complete bit-level datatype specification.",
+      "evidence": "Section 2.1 specifies finite F, radix, precision, exponent range, symmetry, zero, normal/subnormal ranges, and round-to-nearest behavior, but uses the phrase 'similar to those defined in the IEEE 754-2008 standard.' (PDF p. 5, anchor: section 2.1.)",
+      "impact": "A formalization should rely on the stated floating-point and rounding properties, not add an unstated requirement that F be exactly one particular IEEE interchange format."
     }
   ],
-  "contract_plain_english": "For any symmetric finite floating-point matrix A, run the conventional upper-triangular, column-by-column Cholesky algorithm in round-to-nearest arithmetic. Assume that the execution completes and that no underflow or overflow occurs; inner sums may use any permitted evaluation order. [PDF p. 5 (printed 688), Sections 2.1-2.2; PDF p. 11 (printed 694), Theorem 4.4; PDF p. 12 (printed 695), update formulas] The computed factor Rhat then exactly factors a perturbed input: Rhat^T Rhat = A + DeltaA, with the componentwise bounds |DeltaA| <= diag((i+1)u)|Rhat^T||Rhat| <= (n+1)u|Rhat^T||Rhat|, where i ranges from 1 to n. [PDF p. 9 (printed 692), diag convention; PDF p. 12 (printed 695), equation (4.4)] The proof's local constants are iu off the diagonal and (j+1)u on the diagonal. [PDF p. 12 (printed 695), equations (4.5a)-(4.5b)] Positive definiteness is not required by the theorem, there is no condition (n+1)u < 1, and no O(u^2) term is omitted. [PDF p. 4 (printed 687), paragraph following equation (1.8); PDF p. 11 (printed 694), Theorem 4.4]"
+  "contract_plain_english": "For any positive matrix dimension n and any symmetric floating-point matrix A, execute the conventional upper-triangular Cholesky algorithm one column at a time, allowing any summation order inside its fixed division and square-root updates. Assume that the execution runs to completion and that neither underflow nor overflow occurs; positive definiteness is not separately required. (PDF p. 11, anchor: section 4.3 opening and Theorem 4.4 statement; PDF p. 12, anchor: update formulas.) If R_hat is the computed floating-point factor, then in exact real arithmetic R_hat^T R_hat = A + DeltaA, where the componentwise backward error satisfies |DeltaA| <= diag((i+1)u)|R_hat^T||R_hat| <= (n+1)u|R_hat^T||R_hat|. (PDF p. 12, anchor: equation (4.4); PDF p. 9, anchor: diag notation paragraph.) Locally, for 1 <= i < j <= n the off-diagonal residual is bounded by i u times sum_{k=1}^i |r_hat_ki||r_hat_kj|, and for 1 <= j <= n the diagonal residual is bounded by (j+1)u times sum_{k=1}^j r_hat_kj^2; symmetry completes the full matrix bound. (PDF p. 12, anchor: equations (4.5a)-(4.5b) and closing symmetry sentence.) All constants are exactly linear in u, with no gamma term, higher-order remainder, or dimension-smallness restriction. (PDF p. 4, anchor: summary following equation (1.8); PDF p. 12, anchor: equation (4.4).)"
 }

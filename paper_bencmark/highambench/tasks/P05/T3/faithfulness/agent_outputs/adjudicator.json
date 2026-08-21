@@ -1,0 +1,91 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P05-T3",
+  "trigger": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "round-trip S04 is unclear",
+    "round-trip S06 is unclear",
+    "round-trip S11 is unclear",
+    "round-trip S15 is unclear",
+    "round-trip S16 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "The disagreement resolves to faithful-stronger. The complete declaration evidence supplies the format and execution details omitted by the compressed blind translation. The Lean proposition contains every selected paper conclusion and applies nonvacuously to strictly more numerical models.",
+      "primary_evidence": "The verified PDF states Theorem 4.4 and equations (4.4)-(4.5) on PDF pages 11-12. The exact target has the matching representability, local residual, exact identity, rowwise, and uniform conclusions. D018, D036-D046, and the complete P05CholeskyRun constructor establish the source embedding and the broader abstract domain."
+    },
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "Adjudication was warranted because the round-trip packet compressed decisive dependencies, but the complete declarations resolve all requested issues without remaining uncertainty.",
+      "primary_evidence": "D018 gives the full square-root formula and format axioms; D040, D045, and D046 give the complete protected-sum relation; D012 and D020-D021 give the complete conventional-Cholesky linkage."
+    },
+    {
+      "item": "round-trip judge classification is undetermined",
+      "resolution": "Both implications are determinate: Lean implies the paper result, while the paper result does not imply the proposition over every abstract Lean format. The resulting classification is faithful-stronger.",
+      "primary_evidence": "PDF pages 5-12 provide the standard-format laws, equation (2.4), equation (3.7), and Theorem 4.4. Every paper execution instantiates the Lean records, while D018's one-way radix-expansion condition admits sparse nonstandard representable sets."
+    },
+    {
+      "item": "round-trip S04 is unclear",
+      "resolution": "S04 resolves to pass, with a genuine generalization rather than added source restrictions. For paper instances, the run fields unpack symmetry, positive dimension, successful conventional execution, and operation-local absence of underflow and overflow. Positive definiteness is not assumed. Operand representability and the protected trace are consequences of computed floating outputs and equation (2.4), not assumptions of Lemma 4.1, Lemma 4.3, or the final result.",
+      "primary_evidence": "Theorem 4.4 on PDF page 11 assumes symmetric A in F^(n x n), completion, and no underflow or overflow. D012 requires represented symmetric A, upper-triangular support, and all conventional entry executions. D036-D037 require precisely nonzero used divisors, nonnegative square-root inputs, and safe products, additions, divisions, and square roots."
+    },
+    {
+      "item": "round-trip S06 is unclear",
+      "resolution": "S06 resolves to pass. The square-root field is exactly the source equation (3.7) law, not equation (4.5b). The protected trace assumes only equation (2.4)-shaped sibling bounds and rounded safe merges. Matrix products, transpose, prefix sums, absolute products, and all index ranges unfold to the intended exact real operations.",
+      "primary_evidence": "PDF page 9 gives |round(sqrt(x))^2-x| <= 2u|round(sqrt(x))^2| for nonnegative floating x. D018 states that exact formula with premises 0<=x, representable x, and safeRange(sqrt x). PDF page 6 gives equation (2.4); D046's only numerical sibling premise is |siblingComputed-siblingExact| <= siblingCount*u*siblingAbs. D007-D015 give the exact matrix and prefix operations."
+    },
+    {
+      "item": "round-trip S11 is unclear",
+      "resolution": "S11 resolves to pass under the stronger-domain classification. A paper format embeds by taking representable to be F, round to be fl, and safeRange to mean that the exact operation result incurs neither paper underflow nor overflow. Every executed product, internal addition, nontrivial division, and square root has the corresponding safety obligation. Infinities, NaNs, invalid square roots, and zero divisors introduce no mismatch because the paper uses finite real F and conditions on successful, no-overflow execution.",
+      "primary_evidence": "PDF page 5 defines finite F, round-to-nearest with arbitrary tie breaking, u=beta^(1-p)/2, and the underflow/overflow convention. D018 has the same radix, precision, finite representability, nearest-rounding, output-relative error, and exact-u laws. D036-D037 and D044 place safeRange at every relevant operation."
+    },
+    {
+      "item": "round-trip S15 is unclear",
+      "resolution": "S15 resolves to pass and supports faithful-stronger. D018 is strictly broader than the paper's standard formats because representable_radix_expansion is only a necessary condition; it does not require every permitted radix value to be representable. This broader domain is inhabited.",
+      "primary_evidence": "For example, D018 admits radix 2, precision 1, exponent bounds -1 and 1, representable set {-2,-1,0,1,2}, u=1/2, nearest rounding, and a safeRange containing the represented values and sqrt(2). All constructor laws hold, but this is not the paper's full standard format because it omits 1/2 despite the stated exponent range."
+    },
+    {
+      "item": "round-trip S16 is unclear",
+      "resolution": "S16 resolves to pass. The hypotheses are satisfiable in both paper and non-paper models, and the conclusion can have a nonzero, tight residual. The broader domain therefore yields genuine nonvacuous strength rather than reduced applicability.",
+      "primary_evidence": "In the non-paper format described for S15, take n=1, A_00=2, and RHat_00=1. D037 is inhabited by the one-leaf numerator 2 and round(sqrt(2))=1. The target then has DeltaA_00=-1, exact identity 1=2+(-1), and residual magnitude 1 equal to the local, rowwise, and uniform bound 2u*1=1."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Every standard paper format and successful no-underflow/no-overflow conventional Cholesky execution instantiates P05FiniteRoundToNearestFormat and P05CholeskyRun. Equation (2.4) supplies the protected-trace sibling bounds, equation (3.7) supplies the square-root field, and rounded outputs supply representability. The target then gives exactly equations (4.5a)-(4.5b) and both parts of (4.4), with the correct zero-based offsets."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper theorem ranges over standard finite floating-point systems. D018 additionally admits inhabited sparse radix formats and certified runs not belonging to that source domain, including the nonzero-residual example above. The paper result alone therefore does not establish the proposition for every Lean format and run."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "remaining_uncertainties": [],
+  "findings": [
+    {
+      "severity": "note",
+      "category": "source-licensed lower-level assumptions",
+      "evidence": "D018 states equation (3.7) with coefficient 2u and no product-sum residual; D046 states only the equation (2.4)-shaped sibling summation bound.",
+      "impact": "Neither dependency assumes Lemma 4.1, Lemma 4.3, equation (4.5), or the final matrix result."
+    },
+    {
+      "severity": "note",
+      "category": "computed-factor representability",
+      "evidence": "D012 has no global RHat-representable field. Diagonal and nonunit off-diagonal entries are rounded safe outputs, unit-pivot outputs are represented tree evaluations, and lower entries equal represented zero.",
+      "impact": "The first target conjunct is derived. Redundant operand-representability fields for already computed entries exclude no valid paper execution."
+    },
+    {
+      "severity": "note",
+      "category": "strict nonvacuous format generalization",
+      "evidence": "The one-way radix-expansion condition admits a sparse non-paper format with a valid n=1 run and nonzero DeltaA.",
+      "impact": "The additional domain is real mathematical coverage, so the yes/no implication pair warrants faithful-stronger rather than faithful-equivalent or a reduced-applicability classification."
+    }
+  ],
+  "rationale": "The PDF SHA-256 matches the required digest. The exact declarations preserve the conventional upper-triangular column algorithm, arbitrary ordering only within its sums, every index endpoint and coefficient, computed-versus-exact distinctions, both local estimates, the exact backward identity, and both global componentwise bounds. The operation certificates add only source-derived lower-level facts and range evidence, and every RHat entry remains linked to a rounded output. All paper executions embed, while an explicit non-paper format and nonzero-residual run show strict, nonvacuous additional coverage. Thus Lean implies the selected paper result, the paper result does not cover every Lean instance, and faithful-stronger is the implication-consistent accepted classification."
+}
