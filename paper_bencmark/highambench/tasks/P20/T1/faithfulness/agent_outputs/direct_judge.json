@@ -3,294 +3,686 @@
   "role": "direct-judge",
   "task_id": "P20-T1",
   "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
-  "dossier_sha256": "16d509be04c4afaf6c760bc56a869f25375758bb81d574e163bdc747fe34e2df",
+  "dossier_sha256": "61fe813b9dfc6db37c62b8afb05a4aa37450f28ec6d214e3e51adfa7510dc806",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "HighamBench.p20InfNormVec",
-      "interpretation": "The norm of a finite real-valued function under the standard Pi norm, hence the maximum absolute coordinate for Fin n.",
-      "effect_on_target": "It supplies the denominator in the scaling interval and ensures, with hn and hnorm, that a coordinate attaining the positive maximum exists.",
-      "paper_match": "This matches the vector infinity norm used in equation (3.4a).",
+      "interpretation": "The maximum absolute component of a finite real vector, computed by taking the supremum of all |x_i| in NNReal and coercing back to Real.",
+      "effect_on_target": "It supplies every row norm in the nonzero hypothesis and the two scaling-factor denominators.",
+      "paper_match": "This is the finite-dimensional vector infinity norm used in equation (3.4a).",
       "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p20ScaleVec",
-      "interpretation": "Componentwise exact real scaling: p20ScaleVec lambda x i equals lambda times x i.",
-      "effect_on_target": "The conclusion bounds the absolute values of the exact scaled-row entries.",
-      "paper_match": "This matches the exact quantity lambda x before input-format rounding.",
+      "name": "HighamBench.p20IsPowerOfTwo",
+      "interpretation": "A real lambda is a power of two when lambda = 2^k for some integer k.",
+      "effect_on_target": "It restricts every selected row factor to an unrestricted positive binary power.",
+      "paper_match": "The paper requires each diagonal scaling coefficient to be a power of two and gives no finite exponent range.",
       "status": "pass"
     },
     {
       "id": "D003",
-      "name": "And",
-      "interpretation": "Logical conjunction requiring both the componentwise upper bound and an attained strict lower bound.",
-      "effect_on_target": "It combines the two properties defining membership of the scaled-row maximum in the half-open interval.",
-      "paper_match": "Both endpoint conditions are simultaneous in the paper.",
+      "name": "HighamBench.p20LeftScaledMatrix",
+      "interpretation": "The exact real matrix product of the diagonal row-scaling matrix with A.",
+      "effect_on_target": "Its entries are the quantities whose absolute values are bounded above by theta and exceed theta/2 somewhere in each row.",
+      "paper_match": "It represents the exact pre-rounding matrix Lambda A from equation (3.1).",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "DivInvMonoid.toDiv",
-      "interpretation": "It exposes the division operation supplied by the real DivInvMonoid.",
-      "effect_on_target": "It gives ordinary real division in the lower and upper interval expressions.",
-      "paper_match": "The denominators are nonzero because hnorm is positive, matching the defined divisions in (3.4a).",
+      "name": "HighamBench.p20RowScaleFactor",
+      "interpretation": "The factor 2^k where k is the exponent selected by p20RowScaleExponent.",
+      "effect_on_target": "It provides a fixed, row-dependent witness for all factor and scaled-entry conclusions.",
+      "paper_match": "It Skolemizes the paper's per-row choice of a power-of-two lambda.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "Exists",
-      "interpretation": "Existential quantification over one coordinate index.",
-      "effect_on_target": "It expresses that some scaled coordinate is strictly larger than theta divided by two.",
-      "paper_match": "For a finite nonempty row, this is equivalent to the maximum magnitude exceeding theta divided by two.",
+      "name": "HighamBench.p20ScalingThreshold",
+      "interpretation": "theta = min(fmax, sqrt(Fmax divided by the real cast of n)).",
+      "effect_on_target": "It fixes the threshold used in every interval and scaled-entry bound.",
+      "paper_match": "It exactly preserves equation (3.2), including division by n inside the square root.",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "Fin",
-      "interpretation": "Fin n is the finite index type with n elements.",
-      "effect_on_target": "It indexes all n row entries and the coordinate witnessing the maximum.",
-      "paper_match": "It represents the paper's indices 1 through n up to harmless zero-based reindexing.",
-      "status": "pass"
+      "name": "HighamBench.p20IsPowerOfTwo._proof_1",
+      "interpretation": "Typeclass evidence that the natural numeral 2 is at least two.",
+      "effect_on_target": "It only permits Lean to elaborate the real numeral 2 in the power predicate.",
+      "paper_match": "This is elaboration plumbing and adds no mathematical condition.",
+      "status": "not-applicable"
     },
     {
       "id": "D007",
-      "name": "HDiv.hDiv",
-      "interpretation": "Overloaded division dispatching here to real division.",
-      "effect_on_target": "It interprets theta divided by the norm and theta divided by two.",
-      "paper_match": "These are the ordinary real quotients appearing in equations (3.4a) and the half-open range.",
+      "name": "HighamBench.p20RowScaleExponent",
+      "interpretation": "When theta divided by the row norm is positive, it chooses an integer k bracketing that ratio between 2^k inclusive and 2^(k+1) exclusive; otherwise it returns zero.",
+      "effect_on_target": "The target hypotheses make the positive branch active, producing the factor interval required by the theorem.",
+      "paper_match": "This is a valid selection rule for the paper's unrestricted power-of-two factor.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "HMul.hMul",
-      "interpretation": "Overloaded multiplication dispatching here to real multiplication.",
-      "effect_on_target": "It forms 2 times the norm and lambda times each coordinate.",
-      "paper_match": "Both products have their standard real-arithmetic meanings in the paper.",
+      "name": "HighamBench.p20RowScalingMatrix",
+      "interpretation": "The m by m diagonal matrix whose ith diagonal entry is the factor chosen from row A_i.",
+      "effect_on_target": "Multiplication by this matrix scales each row independently; positivity of the factors also makes it nonsingular.",
+      "paper_match": "It matches the row-scaling diagonal matrix Lambda in equation (3.1).",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "LE.le",
-      "interpretation": "The non-strict order relation supplied by the relevant ordered type.",
-      "effect_on_target": "It expresses nonnegative lambda, the upper scaling bound, and each non-strict component bound.",
-      "paper_match": "The upper endpoint in (3.4a) and the endpoint theta are non-strict.",
+      "name": "HighamBench.p20RowScaleExponent._proof_1",
+      "interpretation": "For every positive real ratio r, there is an integer k with 2^k <= r < 2^(k+1).",
+      "effect_on_target": "With r = theta/||x||_infinity, it yields r/2 < 2^k <= r and hence the exact factor bounds.",
+      "paper_match": "It supplies the standard binary-power existence underlying equation (3.4a).",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "LT.lt",
-      "interpretation": "The strict order relation supplied by Nat or Real instances.",
-      "effect_on_target": "It expresses positive n, positive norm, the strict lower scaling bound, and the strict lower scaled-coordinate bound.",
-      "paper_match": "The lower endpoint in (3.4a) and theta divided by two are strict.",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "It requires all factor, upper-bound, and lower-bound clauses simultaneously.",
+      "paper_match": "The selected row result requires these properties jointly.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "Nat",
-      "interpretation": "The natural-number type.",
-      "effect_on_target": "It represents the row length n.",
-      "paper_match": "The paper's inner-product length is a positive integer.",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "The division operation inherited from the real division-and-inversion structure.",
+      "effect_on_target": "It underlies theta/norm, theta/(2*norm), and Fmax/n.",
+      "paper_match": "These are ordinary exact real divisions as in equations (3.2) and (3.4a).",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "Nat.instAtLeastTwoHAddOfNat",
-      "interpretation": "Typeclass evidence used to elaborate a numeral known to be at least two.",
-      "effect_on_target": "It supports construction of the literal 2 in the explicit term.",
-      "paper_match": "The resulting literal is exactly the factor 2 required by (3.4a).",
+      "name": "Exists",
+      "interpretation": "Logical existential quantification.",
+      "effect_on_target": "It expresses both existence of an integer exponent and existence of a component above theta/2 in each row.",
+      "paper_match": "These witnesses express the power-of-two choice and the strict lower maximum bound.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "Nat.instNeZeroSucc",
-      "interpretation": "Evidence that a natural successor is nonzero.",
-      "effect_on_target": "It participates only in elaborating the literal 2.",
-      "paper_match": "It introduces no additional mathematical condition and preserves the paper's factor 2.",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite index type with values 0 through n-1.",
+      "effect_on_target": "It indexes matrix rows, columns, and lower-bound witnesses.",
+      "paper_match": "It is a harmless zero-based reindexing of the paper's finite matrix indices.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "OfNat.ofNat",
-      "interpretation": "Generic interpretation of natural-number literals in a target type.",
-      "effect_on_target": "It supplies the literals 0, 1, and 2 used by the proposition.",
-      "paper_match": "The literals acquire their standard natural or real values.",
+      "name": "HDiv.hDiv",
+      "interpretation": "The overloaded division operation selected by the Real instance.",
+      "effect_on_target": "It realizes all displayed real quotients.",
+      "paper_match": "It has the ordinary quotient meaning required by the paper.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "Real",
-      "interpretation": "The mathematical real-number type.",
-      "effect_on_target": "It types row entries, lambda, theta, norms, products, and quotients.",
-      "paper_match": "Section 3 takes the matrices and scaling quantities over the reals.",
+      "name": "HMul.hMul",
+      "interpretation": "The overloaded multiplication operation selected for real scalars or matrices.",
+      "effect_on_target": "It realizes 2*norm and the exact diagonal-matrix product.",
+      "paper_match": "Both uses have their standard mathematical meanings.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Real.instAddGroup",
-      "interpretation": "The standard additive-group structure on the reals.",
-      "effect_on_target": "It supplies negation used in the definition of absolute value.",
-      "paper_match": "It yields the usual real absolute value.",
+      "name": "LE.le",
+      "interpretation": "Non-strict order.",
+      "effect_on_target": "It gives the inclusive upper endpoints for lambda and scaled entries.",
+      "paper_match": "Equation (3.4a) and the interval (theta/2, theta] use inclusive upper endpoints.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "Real.instDivInvMonoid",
-      "interpretation": "The standard multiplicative inverse and division structure on the reals.",
-      "effect_on_target": "It interprets every quotient in the hypotheses and conclusion.",
-      "paper_match": "Although Lean division is total, hnorm excludes the zero norm that makes the paper's formula undefined.",
+      "name": "LT.lt",
+      "interpretation": "Strict order.",
+      "effect_on_target": "It expresses positivity and the strict lower endpoints.",
+      "paper_match": "The lower bounds in equation (3.4a) and (theta/2, theta] are strict.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "Real.instLE",
-      "interpretation": "The standard non-strict real order.",
-      "effect_on_target": "It interprets all real-valued less-than-or-equal comparisons.",
-      "paper_match": "It matches the paper's ordinary real inequalities.",
+      "name": "Matrix",
+      "interpretation": "A matrix is a function from a row index and column index to an entry.",
+      "effect_on_target": "A has shape Fin m by Fin n over the reals.",
+      "paper_match": "This matches a real m by n matrix.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "Real.instLT",
-      "interpretation": "The standard strict real order.",
-      "effect_on_target": "It interprets all strict real inequalities.",
-      "paper_match": "It preserves the strict lower endpoint.",
+      "name": "Nat",
+      "interpretation": "Natural numbers.",
+      "effect_on_target": "They parameterize the finite dimensions m and n.",
+      "paper_match": "The dimensions are finite nonnegative integers, with positivity imposed separately.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "Real.instMul",
-      "interpretation": "The standard multiplication operation on real numbers.",
-      "effect_on_target": "It forms scaled coordinates and the factor 2 times the norm.",
-      "paper_match": "It matches exact real scaling in the paper.",
-      "status": "pass"
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "interpretation": "Typeclass evidence used to elaborate numerals at least two.",
+      "effect_on_target": "It only supports the literal 2.",
+      "paper_match": "It has no separate paper-level meaning.",
+      "status": "not-applicable"
     },
     {
       "id": "D021",
-      "name": "Real.instNatCast",
-      "interpretation": "The standard embedding of natural numbers into the reals.",
-      "effect_on_target": "It interprets the numeral 2 as the real number two.",
-      "paper_match": "The coefficient is exactly the paper's factor 2.",
-      "status": "pass"
+      "name": "Nat.instNeZeroSucc",
+      "interpretation": "Evidence that a natural successor is nonzero.",
+      "effect_on_target": "It participates only in elaborating the numeral 2.",
+      "paper_match": "It has no separate paper-level meaning.",
+      "status": "not-applicable"
     },
     {
       "id": "D022",
-      "name": "Real.instZero",
-      "interpretation": "The standard real zero.",
-      "effect_on_target": "It is used in the nonnegativity and positivity hypotheses.",
-      "paper_match": "It gives the intended positivity tests.",
-      "status": "pass"
+      "name": "OfNat.ofNat",
+      "interpretation": "Generic numeral interpretation.",
+      "effect_on_target": "It interprets the literals 0, 1, and 2 in their inferred types.",
+      "paper_match": "This is elaboration machinery rather than an additional mathematical claim.",
+      "status": "not-applicable"
     },
     {
       "id": "D023",
-      "name": "Real.lattice",
-      "interpretation": "The standard lattice order on the reals.",
-      "effect_on_target": "It supports the max-based definition of absolute value.",
-      "paper_match": "It contributes to the ordinary magnitude of a real coefficient.",
+      "name": "Real",
+      "interpretation": "The mathematical real numbers.",
+      "effect_on_target": "Matrix entries, thresholds, norms, and factors all use exact real arithmetic.",
+      "paper_match": "The paper states the matrix and scaling relations over the reals.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "Zero.toOfNat0",
-      "interpretation": "It derives the numeral-zero interpretation from a Zero instance.",
-      "effect_on_target": "It elaborates the real zero in hlambda and hnorm.",
-      "paper_match": "It has the standard zero meaning and adds no substantive condition.",
+      "name": "Real.instAddGroup",
+      "interpretation": "The standard additive-group structure on the reals.",
+      "effect_on_target": "It supports negation in absolute value and matrix arithmetic.",
+      "paper_match": "It is standard real arithmetic.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "abs",
-      "interpretation": "Absolute value defined as the maximum of a real number and its negation.",
-      "effect_on_target": "It makes both conclusion clauses statements about coordinate magnitudes.",
-      "paper_match": "This matches the absolute magnitudes represented by the infinity norm.",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The standard real multiplication, inversion, division, and integer-power structure.",
+      "effect_on_target": "It supplies quotient semantics and 2 raised to integer exponents.",
+      "paper_match": "It matches exact real division and unrestricted integer binary powers.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "instHDiv",
-      "interpretation": "The homogeneous-division instance obtained from an ordinary division operation.",
-      "effect_on_target": "It routes HDiv expressions to real division.",
-      "paper_match": "It introduces no semantic change from ordinary real quotients.",
+      "name": "Real.instLE",
+      "interpretation": "The standard non-strict order on reals.",
+      "effect_on_target": "It interprets all <= relations.",
+      "paper_match": "It matches the paper's ordered real inequalities.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "instHMul",
-      "interpretation": "The homogeneous-multiplication instance obtained from an ordinary multiplication operation.",
-      "effect_on_target": "It routes HMul expressions to real multiplication.",
-      "paper_match": "It introduces no semantic change from ordinary real products.",
+      "name": "Real.instLT",
+      "interpretation": "The standard strict order on reals.",
+      "effect_on_target": "It interprets positivity and all strict lower bounds.",
+      "paper_match": "It matches the paper's strict inequalities.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "instLTNat",
-      "interpretation": "The standard strict order on natural numbers.",
-      "effect_on_target": "It interprets hn as 0 less than n.",
-      "paper_match": "Positive n is implicit in the paper's division by n and nonempty inner products.",
+      "name": "Real.instMul",
+      "interpretation": "Standard real multiplication.",
+      "effect_on_target": "It is used in 2*norm, powers, diagonal scaling, and matrix products.",
+      "paper_match": "It matches exact real multiplication.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "instOfNatAtLeastTwo",
-      "interpretation": "It constructs a numeral instance from a natural-number cast for numerals at least two.",
-      "effect_on_target": "It elaborates the real literal 2.",
-      "paper_match": "It preserves the exact coefficient 2.",
+      "name": "Real.instNatCast",
+      "interpretation": "The standard embedding of natural numbers into reals.",
+      "effect_on_target": "It converts n into the denominator in Fmax/n and interprets real numerals.",
+      "paper_match": "The n in equation (3.2) is the shared integer dimension used as a real divisor.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "instOfNatNat",
-      "interpretation": "The standard interpretation of each natural-number literal as itself.",
-      "effect_on_target": "It elaborates the natural literals used by hn and the construction of 2.",
-      "paper_match": "It has no independent paper-level content and is semantically standard.",
+      "name": "Real.instZero",
+      "interpretation": "The real number zero.",
+      "effect_on_target": "It appears in all positivity hypotheses and in diagonal off-diagonal entries.",
+      "paper_match": "It has its standard real meaning.",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "Fin.fintype",
-      "interpretation": "The finite enumeration of all elements of Fin n.",
-      "effect_on_target": "It permits the Pi norm to be a finite maximum and, with hn, ensures that maximum is attained.",
-      "paper_match": "The paper's row has finitely many entries indexed by the inner dimension.",
+      "name": "Real.lattice",
+      "interpretation": "The lattice structure induced by the real linear order.",
+      "effect_on_target": "It supports real absolute value.",
+      "paper_match": "It yields the usual absolute magnitude used by infinity norms.",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "Norm.norm",
-      "interpretation": "Projection of the norm operation from a Norm instance.",
-      "effect_on_target": "It evaluates the function-space norm used by p20InfNormVec.",
-      "paper_match": "Through the Pi instance, it yields the required infinity norm.",
-      "status": "pass"
+      "name": "Zero.toOfNat0",
+      "interpretation": "Conversion of a Zero instance into an interpretation of the numeral 0.",
+      "effect_on_target": "It only elaborates zero literals.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
     },
     {
       "id": "D033",
-      "name": "NormedCommRing.toNormedRing",
-      "interpretation": "Structural projection from a normed commutative ring to a normed ring.",
-      "effect_on_target": "It supplies the scalar normed-ring structure needed for the Pi normed ring.",
-      "paper_match": "It does not alter the standard real norm or arithmetic.",
+      "name": "abs",
+      "interpretation": "Absolute value defined as max(a,-a).",
+      "effect_on_target": "It converts scaled entries and row components to magnitudes.",
+      "paper_match": "It realizes the maximum-absolute-coefficient reading dictated by equation (3.4a)'s infinity norm.",
       "status": "pass"
     },
     {
       "id": "D034",
-      "name": "NormedRing.toNorm",
-      "interpretation": "Structural projection of the norm from a normed ring.",
-      "effect_on_target": "It exposes the norm used on the finite function space.",
-      "paper_match": "It preserves the standard finite-vector infinity norm.",
+      "name": "instHDiv",
+      "interpretation": "The homogeneous-division wrapper that delegates to real division.",
+      "effect_on_target": "It makes all Real/Real quotients use standard real division.",
+      "paper_match": "No alternate division semantics are introduced.",
       "status": "pass"
     },
     {
       "id": "D035",
-      "name": "Pi.normedRing",
-      "interpretation": "The standard normed-ring structure on a finite dependent function space, using the Pi supremum norm.",
-      "effect_on_target": "For Fin n to Real it makes p20InfNormVec x the maximum of the absolute coordinate values.",
-      "paper_match": "This is exactly the infinity-norm semantics needed for equation (3.4a).",
+      "name": "instHMul",
+      "interpretation": "The homogeneous-multiplication wrapper that delegates to the underlying multiplication.",
+      "effect_on_target": "It selects standard real multiplication where used.",
+      "paper_match": "No alternate scalar multiplication semantics are introduced.",
       "status": "pass"
     },
     {
       "id": "D036",
-      "name": "Real.normedCommRing",
-      "interpretation": "The standard normed commutative-ring structure on the reals, whose scalar norm is absolute value.",
-      "effect_on_target": "It supplies the coordinate norm from which the Pi infinity norm is constructed.",
-      "paper_match": "Real scalar magnitude agrees with the paper's absolute coefficient magnitude.",
+      "name": "instLTNat",
+      "interpretation": "The standard strict order on natural numbers.",
+      "effect_on_target": "It interprets hm and hn as m>0 and n>0.",
+      "paper_match": "Positive dimensions make equation (3.2) and the row maximum meaningful.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "It casts a natural numeral at least two into the target numeric type.",
+      "effect_on_target": "It ensures the displayed coefficient 2 is exactly the real number two.",
+      "paper_match": "The factor 2 in equation (3.4a) is preserved exactly.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "instOfNatNat",
+      "interpretation": "The canonical interpretation of a natural numeral as itself.",
+      "effect_on_target": "It supports natural literals in dimension and numeral elaboration.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D039",
+      "name": "ConditionallyCompleteLinearOrderBot.toOrderBot",
+      "interpretation": "It supplies a least element for NNReal so a finite supremum can default to zero.",
+      "effect_on_target": "It makes the infinity norm of an empty vector zero; hn>0 excludes that case.",
+      "paper_match": "The empty-vector convention has no effect on the selected nonempty-row result.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D040",
+      "name": "DivInvMonoid.toZPow",
+      "interpretation": "Integer exponentiation in a division monoid.",
+      "effect_on_target": "It interprets 2^k for positive, zero, and negative integer k.",
+      "paper_match": "Unrestricted integer powers of two are the natural reading of the paper's scaling factors.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "It defines the assertion lambda = 2^k.",
+      "paper_match": "The power-of-two property is expressed by exact equality.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "Fin.fintype",
+      "interpretation": "The finite enumeration of Fin n.",
+      "effect_on_target": "It makes the norm supremum and matrix dot products range over every relevant index.",
+      "paper_match": "It captures the paper's finite row and inner dimensions.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "Finset.sup",
+      "interpretation": "Finite supremum implemented as repeated maximum with bottom as the empty default.",
+      "effect_on_target": "It computes the largest absolute row component.",
+      "paper_match": "For hn>0 this is exactly the vector infinity norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "Finset.univ",
+      "interpretation": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It ensures no component is omitted from the row norm.",
+      "paper_match": "The paper's infinity norm ranges over the entire row.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "HPow.hPow",
+      "interpretation": "The overloaded exponentiation operation.",
+      "effect_on_target": "With the supplied instances it denotes real base 2 raised to an integer exponent.",
+      "paper_match": "It implements the required binary powers.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "Int",
+      "interpretation": "The integers.",
+      "effect_on_target": "They are the exponent domain for the power-of-two factors.",
+      "paper_match": "Integer exponents allow all positive binary powers without an unstated range restriction.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "interpretation": "Standard finite matrix multiplication using row-column dot products.",
+      "effect_on_target": "Multiplying the diagonal scaling matrix by A yields each entry lambda_i*A_ij.",
+      "paper_match": "This is the exact algebraic product Lambda A in equation (3.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "Min.min",
+      "interpretation": "The minimum operation selected by the Real instance.",
+      "effect_on_target": "It combines the input and accumulation overflow thresholds.",
+      "paper_match": "Equation (3.2) uses their minimum.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "NNReal",
+      "interpretation": "The subtype of nonnegative real numbers.",
+      "effect_on_target": "It lets the finite supremum of absolute values use zero as a bottom element.",
+      "paper_match": "The wrapper does not alter the resulting nonnegative infinity norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "NNReal.instConditionallyCompleteLinearOrderBot",
+      "interpretation": "The standard ordered structure on nonnegative reals with bottom zero.",
+      "effect_on_target": "It supports the finite maximum used by p20InfNormVec.",
+      "paper_match": "For nonempty rows it produces the usual maximum magnitude.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "NNReal.toReal",
+      "interpretation": "The coercion taking a nonnegative real subtype to its underlying real value.",
+      "effect_on_target": "It returns the finite maximum as an ordinary real norm.",
+      "paper_match": "It preserves the numerical value of the infinity norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "Nat.cast",
+      "interpretation": "The generic natural-number cast.",
+      "effect_on_target": "It converts n to a real before division in the threshold.",
+      "paper_match": "It preserves the exact dimension dependence Fmax/n.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The standard additive commutative monoid on reals.",
+      "effect_on_target": "It supports the finite sums in matrix multiplication.",
+      "paper_match": "It yields ordinary exact real matrix multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "Real.instMin",
+      "interpretation": "Real minimum, implemented by the infimum operation of the real linear order.",
+      "effect_on_target": "It makes p20ScalingThreshold the smaller of fmax and sqrt(Fmax/n).",
+      "paper_match": "It exactly realizes the min in equation (3.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square root, defined through NNReal.",
+      "effect_on_target": "It forms sqrt(Fmax/n); positivity of Fmax and n keeps its argument positive.",
+      "paper_match": "It is the ordinary square root appearing in equation (3.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "Real.toNNReal",
+      "interpretation": "It maps a real r to max(r,0) as a nonnegative real.",
+      "effect_on_target": "It is used internally by absolute-value maxima and square root; all relevant square-root arguments are positive.",
+      "paper_match": "Its negative-input convention is inactive under the target hypotheses.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "instHPow",
+      "interpretation": "The wrapper that delegates heterogeneous exponentiation to the supplied power operation.",
+      "effect_on_target": "It selects integer powers on Real.",
+      "paper_match": "It introduces no meaning beyond standard 2^k.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "instSemilatticeSupNNReal",
+      "interpretation": "The maximum semilattice on nonnegative reals.",
+      "effect_on_target": "It combines component magnitudes by maximum in the infinity norm.",
+      "paper_match": "This matches the maximum-magnitude semantics of the vector infinity norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "Classical.choose",
+      "interpretation": "A noncomputable selection of one witness from a proved existential statement.",
+      "effect_on_target": "It fixes one valid exponent for every positive theta-to-norm ratio.",
+      "paper_match": "The paper requires a valid factor but specifies neither a unique nor a constructive selection rule.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "DistribLattice.toLattice",
+      "interpretation": "An inherited lattice structure used in real-order instance construction.",
+      "effect_on_target": "It only supports standard real absolute value and order operations.",
+      "paper_match": "It has no independent numerical interpretation beyond ordinary real order.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D061",
+      "name": "DivisionSemiring.toGroupWithZero",
+      "interpretation": "An inherited algebraic structure used to obtain real inversion and integer powers.",
+      "effect_on_target": "It is instance plumbing beneath standard real division and zpow.",
+      "paper_match": "It adds no separate paper-level assumption.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D062",
+      "name": "Field.toSemifield",
+      "interpretation": "A structure projection used in constructing inherited real multiplicative instances.",
+      "effect_on_target": "It only supports standard real field operations.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D063",
+      "name": "GroupWithZero.toDivInvMonoid",
+      "interpretation": "A structure projection providing division and integer powers from a group-with-zero instance.",
+      "effect_on_target": "It is plumbing beneath real quotients and powers.",
+      "paper_match": "It adds no separate mathematical condition.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D064",
+      "name": "HAdd.hAdd",
+      "interpretation": "The overloaded addition operation.",
+      "effect_on_target": "It forms the successor exponent k+1.",
+      "paper_match": "This is ordinary integer addition in the binary bracketing relation.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "Int.instAdd",
+      "interpretation": "Standard integer addition.",
+      "effect_on_target": "It interprets k+1 in the upper bracketing power.",
+      "paper_match": "It correctly relates consecutive powers by 2^(k+1)=2*2^k.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "Lattice.toSemilatticeInf",
+      "interpretation": "An inherited order structure used to assemble real ordering instances.",
+      "effect_on_target": "It has no target-specific effect beyond standard real order.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D067",
+      "name": "Matrix.diagonal",
+      "interpretation": "The matrix with d_i on entries i=i and zero off the diagonal.",
+      "effect_on_target": "It ensures left matrix multiplication scales row i only by its own factor.",
+      "paper_match": "It exactly represents the diagonal matrix Lambda.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "Membership.mem",
+      "interpretation": "The generic membership relation.",
+      "effect_on_target": "It states that theta/||x|| lies in the selected half-open interval of powers.",
+      "paper_match": "Its unfolded interval meaning yields the required scale bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "Evidence that a natural numeral is at least two.",
+      "effect_on_target": "It is used only for numeral elaboration.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D070",
+      "name": "Not",
+      "interpretation": "Logical negation defined as implication to False.",
+      "effect_on_target": "It supplies the false-branch argument of the dependent conditional selecting an exponent.",
+      "paper_match": "The branch is inactive under the theorem hypotheses and adds no paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D071",
+      "name": "PartialOrder.toPreorder",
+      "interpretation": "An inherited preorder used in interval definitions.",
+      "effect_on_target": "It supports ordinary ordered-real interval membership.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D072",
+      "name": "Real.decidableLT",
+      "interpretation": "A decision procedure for strict real inequalities.",
+      "effect_on_target": "It selects whether theta/||x|| is positive in p20RowScaleExponent.",
+      "paper_match": "Under the hypotheses the positive branch is selected, with no semantic alteration.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "Real.instField",
+      "interpretation": "The standard field structure on the reals.",
+      "effect_on_target": "It supplies exact arithmetic, inverses, and powers throughout the definitions.",
+      "paper_match": "The selected scaling relations are exact real algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "Real.linearOrder",
+      "interpretation": "The standard linear order on the reals.",
+      "effect_on_target": "It controls min, positivity, interval endpoints, and absolute value.",
+      "paper_match": "It matches the ordered-real inequalities in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "Semifield.toDivisionSemiring",
+      "interpretation": "An inherited algebraic structure used while constructing real division instances.",
+      "effect_on_target": "It is implementation plumbing beneath standard real arithmetic.",
+      "paper_match": "It adds no separate paper-level condition.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D076",
+      "name": "SemilatticeInf.toPartialOrder",
+      "interpretation": "An inherited partial-order structure.",
+      "effect_on_target": "It supports the ordinary real and NNReal order hierarchy.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D077",
+      "name": "Set",
+      "interpretation": "A set of alpha is a predicate alpha to Prop.",
+      "effect_on_target": "It represents the half-open interval used to select the exponent.",
+      "paper_match": "It is only the representation of the required numeric interval.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "Set.Ico",
+      "interpretation": "The interval [a,b), meaning a <= x and x < b.",
+      "effect_on_target": "It gives 2^k <= theta/||x|| < 2^(k+1), which reverses to the strict-lower/inclusive-upper factor interval.",
+      "paper_match": "This endpoint orientation exactly yields theta/(2||x||) < lambda <= theta/||x||.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "Set.instMembership",
+      "interpretation": "Set membership evaluates the set predicate at the candidate element.",
+      "effect_on_target": "It unfolds the Ico assertion into its two inequalities.",
+      "paper_match": "It preserves the required half-open bracketing relation.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "dite",
+      "interpretation": "A dependent if-then-else selected by a decidable proposition.",
+      "effect_on_target": "It chooses the bracketing exponent when the ratio is positive and zero otherwise.",
+      "paper_match": "The target's positivity assumptions force the paper-relevant positive branch.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "instAddNat",
+      "interpretation": "Standard natural-number addition.",
+      "effect_on_target": "It only participates in numeral typeclass evidence.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D082",
+      "name": "instDecidableEqFin",
+      "interpretation": "Decidable equality on finite indices.",
+      "effect_on_target": "It lets Matrix.diagonal distinguish diagonal from off-diagonal entries.",
+      "paper_match": "It implements the standard Kronecker-delta behavior of a diagonal matrix.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "instDistribLatticeOfLinearOrder",
+      "interpretation": "The distributive lattice induced by a linear order.",
+      "effect_on_target": "It is instance support for standard real max, min, and absolute value.",
+      "paper_match": "It adds no independent mathematical condition.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D084",
+      "name": "instHAdd",
+      "interpretation": "The homogeneous-addition wrapper delegating to the underlying addition.",
+      "effect_on_target": "It makes k+1 use integer addition.",
+      "paper_match": "It preserves the consecutive-exponent relation.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "instOfNat",
+      "interpretation": "The canonical embedding of natural numerals into integers.",
+      "effect_on_target": "It interprets the 1 in k+1 as integer one.",
+      "paper_match": "It preserves the exact exponent increment.",
       "status": "pass"
     }
   ],
@@ -298,158 +690,158 @@
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF is SIAM Journal on Scientific Computing 47(4), B785-B800, published July 1, 2025. Equation (3.4a) is on PDF page 5, printed B789, in section 3.1.",
-      "lean_evidence": "The target contains the exact lower and upper expressions associated with equation (3.4a).",
-      "reasoning": "The cited paper version and passage are correct, and the surrounding equations (3.1)-(3.6) establish the intended scaling context."
+      "paper_evidence": "The hash-verified SIAM J. Sci. Comput. 47(4), published July 1, 2025, states equation (3.1) on B788 and theta plus the row interval in equations (3.2) and (3.4a) on B789.",
+      "lean_evidence": "The target defines theta with p20ScalingThreshold and states row-factor and scaled-row bounds.",
+      "reasoning": "The selected P20-T1 result is the row-scaling component of the cited passage, and the exact PDF hash and cited pages agree."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "The local result uses a row x in R^n, an integer inner-product length n, and real scalars lambda and theta.",
-      "lean_evidence": "The target uses n : Nat, x : Fin n -> Real, and lambda theta : Real.",
-      "reasoning": "The explicit binder types and finite index set correctly represent the rowwise mathematical objects; missing algorithmic relationships are assessed separately."
+      "paper_evidence": "The paper has A in R^(m by n), uses n as the row length and shared product dimension, and applies one lambda_i to each row.",
+      "lean_evidence": "A has type Matrix (Fin m) (Fin n) Real; i indexes Fin m and j indexes Fin n.",
+      "reasoning": "The types and dimensions match the row component. Zero-based Fin indexing is equivalent to the paper's conventional one-based indexing."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper selects, for each row, a row-specific power-of-two diagonal factor satisfying (3.4a).",
-      "lean_evidence": "The target universally quantifies an arbitrary lambda and assumes hlower and hupper; it neither selects nor existentially produces a lambda depending on x.",
-      "reasoning": "The scale-selection claim is replaced by a conditional statement about a pre-supplied witness."
+      "status": "pass",
+      "paper_evidence": "Each row receives its corresponding power-of-two factor after theta is fixed globally by equation (3.2).",
+      "lean_evidence": "theta depends only on n, fmax, and Fmax; p20RowScaleFactor theta (A i) then depends on theta and row i, and all rows are quantified universally.",
+      "reasoning": "The fixed choice function is a valid Skolemization of the paper's per-row witness and introduces no cross-row dependence."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "Lambda is a nonsingular power-of-two diagonal factor, theta equals min(f_max,sqrt(F_max/n)), and equation (3.4a) implicitly requires a nonzero row.",
-      "lean_evidence": "The target explicitly requires n > 0, lambda >= 0, and a positive norm, but has no power-of-two predicate, theta definition, diagonal-factor condition, or format assumptions.",
-      "reasoning": "The zero-row ambiguity is handled appropriately, and the interval forces strict positivity of lambda and theta, but several defining paper hypotheses are absent."
+      "status": "pass",
+      "paper_evidence": "Equation (3.2) presupposes positive n and format maxima, while equation (3.4a) is meaningful only for a nonzero row; the surrounding text assumes exact outer scaling without range exceptions.",
+      "lean_evidence": "The target assumes m>0, n>0, fmax>0, Fmax>0, and a strictly positive infinity norm for every row; all scaling arithmetic is over exact reals.",
+      "reasoning": "The Lean hypotheses make the selected row claim well-defined and explicitly exclude the paper's unresolved zero-row case. Exact real scaling is the scoped abstraction of the paper's outer exact-scaling assumption."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "The selected passage specifies the exact scale interval and identifies it with a scaled-row maximum in (theta/2,theta].",
-      "lean_evidence": "The interval itself appears only as hlower and hupper, while the conclusion contains only the scaled-coordinate consequence.",
-      "reasoning": "The central scale constraint and its selection are assumed rather than established, and only one direction of the stated equivalence is represented."
+      "status": "pass",
+      "paper_evidence": "For the row component, equation (3.4a) requires a power-of-two lambda in the stated interval, and the preceding prose gives the scaled-row maximum in (theta/2,theta].",
+      "lean_evidence": "For every row the target proves the power predicate, positivity, both factor bounds, all component upper bounds, and existence of a component strictly above theta/2.",
+      "reasoning": "These clauses are complete and equivalent for the selected row result. Equation (3.4b)'s column analogue and the full equation (3.1) algorithm are adjacent results outside this row-only task."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "Equation (3.4a) uses real division, multiplication, an infinity norm, strict and non-strict inequalities, and scaled coordinate magnitudes.",
-      "lean_evidence": "p20InfNormVec is the finite Pi supremum norm, p20ScaleVec is exact scalar multiplication, and the remaining operators are standard real arithmetic, order, and absolute value.",
-      "reasoning": "Every operator actually present in the Lean target has the intended mathematical interpretation."
+      "paper_evidence": "The relevant operators are real min, square root, division, infinity norm, absolute magnitude, binary powers, diagonal scaling, and strict/non-strict order.",
+      "lean_evidence": "D001 through D085 unfold these as the finite maximum absolute norm, min(fmax,sqrt(Fmax/n)), integer powers 2^k, exact diagonal matrix multiplication, and standard real order.",
+      "reasoning": "No imported operator changes the mathematical meaning of the selected result."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The scaling interval concerns exact lambda x; rounding appears later in fl(lambda x) and equations (3.5)-(3.6).",
-      "lean_evidence": "p20ScaleVec lambda x i is exactly lambda * x i and contains no rounding operation.",
-      "reasoning": "The target does not conflate exact scaling with conversion or accumulation."
+      "paper_evidence": "B788 distinguishes exact scaling from fl(Lambda A), and B789-B790 distinguish s from the later accumulation-computed s-hat.",
+      "lean_evidence": "The target concerns only the exact real matrix p20LeftScaledMatrix and contains no fl, s, s-hat, or computed-error claim.",
+      "reasoning": "The exact pre-rounding scaling quantity is not conflated with rounded or accumulation-computed quantities."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Lambda is the row-scaling matrix in algorithm (3.1), and lambda is its row-specific diagonal entry used in the scaled inner product (3.3).",
-      "lean_evidence": "The target has no matrices A, B, Lambda, or M, no inner product, no MMA operation, and no statement that lambda is a diagonal scaling factor.",
-      "reasoning": "The proposition is detached from the paper's algorithm and execution model."
+      "status": "pass",
+      "paper_evidence": "Equation (3.1) uses a diagonal Lambda to scale rows before input rounding, while equation (3.2) derives theta from the two overflow limits.",
+      "lean_evidence": "p20LeftScaledMatrix is the exact product of a diagonal factor matrix with A, and its theta is exactly the format-derived threshold.",
+      "reasoning": "This preserves linkage to the row-scaling stage. It does not purport to formalize input rounding, column scaling, multiplication, or inverse scaling."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Equation (3.4a) uses the unsquared vector infinity norm, representing the largest absolute row entry.",
-      "lean_evidence": "p20InfNormVec uses the finite Pi supremum norm, and the conclusion quantifies absolute coordinate values.",
-      "reasoning": "The norm kind, lack of squaring, and componentwise realization of the maximum all match."
+      "paper_evidence": "Equation (3.4a) uses the unsquared vector infinity norm, which controls maximum absolute component magnitude.",
+      "lean_evidence": "p20InfNormVec is the maximum of |x_i|, and the scaled-row clauses use absolute entry values.",
+      "reasoning": "The norm kind, absence of squaring, and component-to-maximum interpretation agree."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The lower denominator is exactly 2||x||_infinity, the lower relation is strict, the upper relation is non-strict, and theta=min(f_max,sqrt(F_max/n)).",
-      "lean_evidence": "The factor 2 and both endpoint relations are correct, but theta is an unconstrained real and the target contains no f_max, F_max, square root, or corresponding dependence on n.",
-      "reasoning": "The local interval constants match, but the defining parameter dependence of theta is missing."
+      "status": "pass",
+      "paper_evidence": "Equation (3.2) is theta=min(fmax,sqrt(Fmax/n)); equation (3.4a) has theta/(2||x||_infinity)<lambda<=theta/||x||_infinity.",
+      "lean_evidence": "D005 preserves the radical and division placement, while the target preserves the factor 2, strict lower endpoint, inclusive upper endpoint, and row/column index roles.",
+      "reasoning": "All constants, endpoint conventions, and dependence on n match exactly."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "Theta is chosen from the maximum input and accumulation values to prevent overflow, and power-of-two scaling is used to avoid scaling-roundoff error in Model 1.",
-      "lean_evidence": "The proposition is entirely over exact reals and carries no input format, accumulation format, overflow ceiling, rounding mode, underflow model, or power-of-two constraint.",
-      "reasoning": "Although the algebraic interval itself is exact, its floating-point meaning and safety guarantee are not represented."
+      "status": "not-applicable",
+      "paper_evidence": "Model 1 defines input and accumulation formats, rounding modes, underflow, and overflow; equations (3.1)-(3.4) use these to motivate theta and exact outer scaling.",
+      "lean_evidence": "The selected target is an exact real row-scaling lemma with positive parameters fmax and Fmax and contains no floating-point operation or computed value.",
+      "reasoning": "No floating-point behavior is asserted, so there is no conflicting rounding or exceptional-value model. The target alone must not be read as proving the paper's full overflow or execution claims."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper specifies a strict lower endpoint and non-strict upper endpoint for the selected scale and treats the scaled maximum condition as equivalent.",
-      "lean_evidence": "The endpoint directions are copied correctly, but they are hypotheses, and the target proves only interval-implies-range.",
-      "reasoning": "The inequalities are locally accurate, but their logical role and the completeness of the equivalence are weaker than the selected result."
+      "status": "pass",
+      "paper_evidence": "The paper uses a strict lower factor bound, non-strict upper factor bound, and a scaled maximum in the half-open interval (theta/2,theta].",
+      "lean_evidence": "The factor lower bound and per-row witness are strict, while the factor and component upper bounds are non-strict.",
+      "reasoning": "The directions and endpoint strengths are identical."
     },
     {
       "id": "S13",
-      "status": "pass",
-      "paper_evidence": "Equation (3.4a) is an exact scale-range condition; conversion-error bounds begin only at equation (3.5).",
-      "lean_evidence": "The target states only exact magnitude bounds and no forward, backward, residual, or rounding-error claim.",
-      "reasoning": "No error notion is substituted for the scaling statement."
+      "status": "not-applicable",
+      "paper_evidence": "Equations (3.1)-(3.4) are a scaling and range contract; error bounds begin later.",
+      "lean_evidence": "The target contains no forward, backward, residual, relative, or normwise error assertion.",
+      "reasoning": "No error notion is present to substitute or conflate."
     },
     {
       "id": "S14",
-      "status": "pass",
-      "paper_evidence": "Equation (3.4a) is exact and contains no asymptotic remainder, first-order truncation, or big-O term.",
-      "lean_evidence": "The target uses exact real inequalities without omitted terms.",
-      "reasoning": "The absence of higher-order terms is faithfully preserved."
+      "status": "not-applicable",
+      "paper_evidence": "The selected equations are exact definitions and inequalities with no big-O or discarded higher-order term.",
+      "lean_evidence": "The target consists entirely of exact definitions and propositions.",
+      "reasoning": "Higher-order-term handling does not arise."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The paper's domain consists of row-specific power-of-two factors and the particular overflow-safe theta from equation (3.2).",
-      "lean_evidence": "The Lean implication covers arbitrary real theta and every real lambda satisfying the interval, including non-power-of-two values.",
-      "reasoning": "This is a valid algebraic generalization of the implication, but it does not retain or establish the algorithm-specific benchmark claim."
+      "status": "pass",
+      "paper_evidence": "The surrounding passage treats both row scaling by Lambda and column scaling by M as parts of the full algorithm.",
+      "lean_evidence": "The target contains only A, the row factors, and Lambda A; it omits B, M, fl, the product, and inverse scaling.",
+      "reasoning": "This is explicitly classified as a faithful row-only specialization of equation (3.4a) and the corresponding scaled-row claim. It remains the selected P20-T1 row-scaling task but is not a formalization of the full algorithm or column result."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "For a nonzero finite row and positive theta, a power of two can be selected in the factor-two interval.",
-      "lean_evidence": "For n=1, x(0)=1, theta=1, and lambda=1, all hypotheses and both conclusions hold.",
-      "reasoning": "The formal hypotheses are satisfiable and not contradictory, although they assume the central interval instead of proving scale selection."
+      "paper_evidence": "For every positive theta and nonzero finite row, consecutive integer powers of two bracket theta/||x||, yielding the claimed interval.",
+      "lean_evidence": "For m=n=1, A_00=1, and fmax=Fmax=1, the hypotheses hold, theta=1, the chosen exponent is 0, and the factor and scaled-row conclusions hold nontrivially.",
+      "reasoning": "The hypotheses are satisfiable, theta is positive, and neither the strict lower bound nor the factor property is vacuous."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean theorem cannot produce or characterize the paper's row-specific power-of-two factor, cannot establish equation (3.4a) because it assumes both bounds, and does not define theta from f_max, F_max, and n or link the result to algorithm (3.1)."
+      "verdict": "yes",
+      "reasoning": "After unfolding the dependencies, Lean gives for every nonzero row a positive integer power of two satisfying exactly equation (3.4a), and its componentwise upper bound plus existential strict lower witness is equivalent to a scaled-row maximum in (theta/2,theta]. This implication is for the selected row component, not the adjacent column or full MMA algorithm."
     },
     "paper_implies_lean": {
-      "verdict": "no",
-      "reasoning": "The paper states the scaling relation only for its selected power-of-two factors and its format-defined theta. It does not quantify the generalized implication over arbitrary real theta and non-power-of-two lambda, even though that implication is independently true algebraically."
+      "verdict": "yes",
+      "reasoning": "On the intended nonzero-row domain, the paper's power-of-two row-factor assertion and equation (3.4a) provide the required witnesses. Classical Skolemization by the bracketing construction selects such a factor for each row, and exact diagonal multiplication yields all component upper bounds and a component attaining the finite row maximum above theta/2."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
+  "classification": "faithful-equivalent",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "central-result-assumed",
-      "paper_evidence": "Equation (3.4a) specifies the lower and upper bounds satisfied by the selected row factor.",
-      "lean_evidence": "Those exact bounds are hlower and hupper hypotheses rather than a conclusion or part of an existentially produced scale.",
-      "impact": "The theorem does not formalize the paper's scale-selection result; it proves only an elementary consequence after the principal condition has already been supplied."
-    },
-    {
-      "severity": "major",
-      "category": "missing-theta-definition",
-      "paper_evidence": "Equation (3.2) sets theta=min(f_max,sqrt(F_max/n)) to avoid input and accumulation overflow.",
-      "lean_evidence": "Theta is an arbitrary real with no f_max, F_max, square root, or overflow interpretation.",
-      "impact": "The formal statement cannot express the paper's overflow-safe ceiling or its dependence on the floating-point formats and inner dimension."
-    },
-    {
-      "severity": "major",
-      "category": "missing-algorithmic-hypotheses",
-      "paper_evidence": "Lambda is a nonsingular diagonal scaling matrix, and each lambda is a power of two associated with a row of A in the scaled MMA algorithm.",
-      "lean_evidence": "Lambda is only a nonnegative real scalar; no power-of-two predicate, matrix association, or MMA context is present.",
-      "impact": "The statement applies to a broader abstract domain but no longer establishes the algorithmic property claimed by the cited passage."
+      "severity": "note",
+      "category": "row-only-specialization",
+      "paper_evidence": "The surrounding passage includes both row and column scaling and embeds them in equation (3.1).",
+      "lean_evidence": "The target formalizes only the row factor, Lambda A, and the row maximum interval.",
+      "impact": "This is acceptable for the selected P20-T1 row-scaling result, but the declaration must not be cited as covering equation (3.4b) or the full scaled MMA recipe."
     },
     {
       "severity": "note",
-      "category": "correct-algebraic-core",
-      "paper_evidence": "For positive lambda, equation (3.4a) is equivalent to the scaled-row maximum lying in (theta/2,theta].",
-      "lean_evidence": "The finite Pi infinity norm, exact componentwise scaling, strict lower witness, and non-strict upper bound correctly prove one direction of that equivalence.",
-      "impact": "The Lean proposition is mathematically correct and nonvacuous as a standalone lemma, but this does not repair the missing paper-level selection and context."
+      "category": "zero-row-domain",
+      "paper_evidence": "Equation (3.4a) divides by ||x||_infinity and the paper gives no zero-row convention.",
+      "lean_evidence": "hrow requires every row infinity norm to be strictly positive.",
+      "impact": "Lean resolves the source's well-definedness gap by restricting to nonzero rows; this is a domain clarification, not additional theorem strength."
+    },
+    {
+      "severity": "note",
+      "category": "floating-point-abstraction",
+      "paper_evidence": "fmax and Fmax are maxima of specific input and accumulation formats, and the surrounding algorithm has explicit rounding and range assumptions.",
+      "lean_evidence": "fmax and Fmax are arbitrary positive reals, and all target operations are exact real operations.",
+      "impact": "The algebraic row-scaling result generalizes harmlessly, but the declaration alone establishes no floating-point representability, rounding, or overflow guarantee."
+    },
+    {
+      "severity": "note",
+      "category": "noncomputable-selection",
+      "paper_evidence": "The paper requires power-of-two factors satisfying the interval but does not specify an exponent range or a unique selection algorithm.",
+      "lean_evidence": "p20RowScaleExponent uses Classical.choose on an Archimedean bracketing existence theorem.",
+      "impact": "The proposition has the correct witness semantics but does not by itself provide an executable scaling-factor implementation."
     }
   ],
-  "rationale": "The target correctly proves a finite-dimensional real-analysis lemma: if a nonzero row and a supplied nonnegative scale already satisfy the exact interval from (3.4a), then the maximum magnitude of the exactly scaled row lies in (theta/2,theta]. However, it assumes the cited interval, does not select or establish a power-of-two row factor, leaves theta unrelated to min(f_max,sqrt(F_max/n)), and omits the diagonal-scaling MMA context. The paper-scoped statement and the generalized conditional therefore do not imply one another as complete propositions."
+  "rationale": "The hash-verified PDF passage defines theta exactly as min(fmax,sqrt(Fmax/n)) and requires each nonzero row factor to be a power of two in the strict-lower/inclusive-upper interval of equation (3.4a), yielding a scaled-row maximum in (theta/2,theta]. After all dependencies are unfolded, the Lean target states precisely those row claims, with an equivalent componentwise encoding of the maximum and an explicit nonzero-row restriction that repairs the paper's zero-row ambiguity. The target is therefore faithful-equivalent to the selected row-scaling result. The adjacent column scaling, rounding, matrix multiplication, inverse scaling, and later computed-error analysis remain outside this declaration's scope."
 }

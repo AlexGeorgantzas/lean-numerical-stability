@@ -5,17 +5,10 @@
   "paper_version": "SIAM Journal on Scientific Computing 47(4), B785-B800, published 2025-07-01",
   "source_locations": [
     {
-      "anchor": "equation (3.1) and preceding/following scaling assumptions",
-      "pdf_page": 4,
-      "printed_page": "B788",
-      "role": "diagonal row scaling, power-of-two factors, exact scaling, and range-exception scope",
-      "section": "3. Error analysis of matrix multiplication"
-    },
-    {
-      "anchor": "equations (3.2) and (3.4a) with the maximum-coefficient prose",
+      "anchor": "equation (3.4a), row scaling interval",
       "pdf_page": 5,
       "printed_page": "B789",
-      "role": "format-derived theta, row-specific scaling-factor interval, and scaled-row maximum in (theta/2,theta]",
+      "role": "upper and lower scaling-factor bounds that place the scaled row maximum in (theta/2, theta]",
       "section": "3.1. Analysis"
     }
   ],

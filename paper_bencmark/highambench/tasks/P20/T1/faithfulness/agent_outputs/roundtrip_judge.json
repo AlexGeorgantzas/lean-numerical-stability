@@ -3,163 +3,156 @@
   "role": "roundtrip-judge",
   "task_id": "P20-T1",
   "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
-  "blind_translation_sha256": "f0a2e3f893b82cdf46375fbe4023707ebd031405f7ffb39b214770880066e36d",
+  "blind_translation_sha256": "fe60576e17f0ece150a2dd3e239ac8c8d9285dcdc0a70bf432693d700809ca70",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "PDF page 5, printed B789, section 3.1 contains equation (3.4a) and its row-scaling context.",
-      "translation_evidence": "The translation identifies the lower and upper conditions theta/(2N) < lambda and lambda <= theta/N.",
-      "reasoning": "The selected passage is the correct row-scaling equation and the surrounding source context is correctly identified."
+      "paper_evidence": "The verified PDF is the 2025 SIAM J. Sci. Comput. article with SHA-256 ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2. The selected material is equation (3.1) on B788 and equations (3.2) and (3.4a) with the scaled-row prose on B789.",
+      "translation_evidence": "The translation concerns diagonal power-of-two scaling of rows of an m by n real matrix, using theta = min(fmax,sqrt(Fmax/n)) and the row-factor interval from (3.4a).",
+      "reasoning": "The paper version and the row-scaling passage selected for P20-T1 match the translated subject."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "The paper binds A in R^(m x n), B in R^(n x q), a row x of A, and the corresponding diagonal factor lambda of Lambda.",
-      "translation_evidence": "The translation binds only an arbitrary n, x : Fin n -> R, and arbitrary real lambda and theta.",
-      "reasoning": "The local vector dimension is represented correctly, but the matrix, row, and diagonal-factor meanings of x and lambda are absent."
+      "status": "pass",
+      "paper_evidence": "The paper has A in R^(m x n); a row x has n components, and its corresponding lambda is a real power-of-two factor. The common dimension n occurs in theta.",
+      "translation_evidence": "The binders are natural m,n, A : Fin m -> Fin n -> R, and real fmax,Fmax. Rows are indexed by Fin m and components by Fin n.",
+      "reasoning": "These are the intended types and dimensions for the selected row part. The omitted q-dimensional matrix B and column factor mu belong to the adjacent column/full-product material rather than the selected (3.4a) result."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper first fixes theta from the formats and then selects row-specific power-of-two factors satisfying (3.4a).",
-      "translation_evidence": "The proposition universally quantifies theta and lambda and places (3.4a) entirely in the antecedent.",
-      "reasoning": "A contextual scaling-factor selection has become a universal conditional lemma, changing quantifier scope and witness dependence."
+      "status": "pass",
+      "paper_evidence": "Equation (3.4a) assigns a corresponding scaling factor lambda to each row x, with lambda depending on theta and that row's infinity norm.",
+      "translation_evidence": "For every row i, the translation defines e(theta,A_i) by choosing a dyadic interval containing theta/r_i and sets lambda_i = 2^e.",
+      "reasoning": "This is a valid Skolemization of the rowwise choice: each witness depends only on theta and the selected row, and the existential lower-entry witness may depend on the row."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "Lambda is nonsingular, lambda is a power of two, theta=min(f_max,sqrt(F_max/n)), and x is implicitly nonzero because (3.4a) divides by ||x||_infinity.",
-      "translation_evidence": "The assumptions are n>0, lambda>=0, ||x||>0, and the two scaling inequalities; no power-of-two, theta-definition, or matrix-format assumptions occur.",
-      "reasoning": "The explicit nonzero formalization is reasonable, but essential paper hypotheses and parameter definitions are omitted."
+      "status": "pass",
+      "paper_evidence": "Model 1 makes fmax and Fmax positive format maxima, equation (3.2) requires positive n, and equation (3.4a) is meaningful only when ||x||_infinity is nonzero. The PDF does not state a zero-row convention.",
+      "translation_evidence": "The translation assumes m>0, n>0, fmax>0, Fmax>0, and r_i>0 for every row.",
+      "reasoning": "The relevant inherited positivity conditions are made explicit, and excluding zero rows is a sound resolution of the paper's otherwise undefined division and impossible lower range claim."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Equation (3.4a) gives the scaling-factor constraint itself, equivalently placing the scaled-row maximum in (theta/2,theta].",
-      "translation_evidence": "The scaling-factor constraint is assumed, while only the coordinate upper bound and existential lower bound are concluded.",
-      "reasoning": "The scaled-coordinate consequence is present, but the paper's factor choice or constraint is not asserted by the proposition."
+      "status": "pass",
+      "paper_evidence": "For the selected row result, (3.4a) gives theta/(2||x||_infinity) < lambda <= theta/||x||_infinity, and the preceding prose gives a scaled-row maximum in (theta/2,theta].",
+      "translation_evidence": "It concludes that lambda_i is a positive integral power of two, satisfies the same factor bounds, bounds every |lambda_i A_ij| by theta, and supplies an entry strictly exceeding theta/2 in every row.",
+      "reasoning": "For a finite nonempty row, the entrywise upper bound plus the existential strict lower witness is exactly the maximum-magnitude statement. Equation (3.4b) and the complete MMA recipe are adjacent results, not omitted conjuncts of the selected row claim."
     },
     {
       "id": "S06",
-      "status": "unclear",
-      "paper_evidence": "The paper uses the vector infinity norm, ordinary real arithmetic, and maximum absolute coordinate magnitude.",
-      "translation_evidence": "Real arithmetic and absolute value are interpreted, but D001, D035, and D036 leave the exact finite-Pi norm formula unresolved.",
-      "reasoning": "The translation matches only if the selected Pi norm is exactly the maximum coordinate absolute value; the supplied dependency ledger does not establish that."
+      "status": "pass",
+      "paper_evidence": "The nontrivial operations are the vector infinity norm, real division, minimum, square root, diagonal scaling, and integral powers of two.",
+      "translation_evidence": "The dependency ledger interprets the finite supremum as max_j |A_ij|, zpow as 2^e for integer e, Real.sqrt as the nonnegative square root, Min.min as real minimum, and matrix multiplication by the diagonal D as (DA)_ij=lambda_i A_ij.",
+      "reasoning": "The imported operations are unfolded sufficiently and have the intended meanings under the positivity and finite-index hypotheses."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "Equation (3.4a) is an exact scaling interval; rounding enters later through fl(lambda x) in equations (3.5)-(3.6).",
-      "translation_evidence": "All quantities in the proposition are exact real products, norms, divisions, and inequalities.",
-      "reasoning": "The translation does not conflate the exact scaling relation with rounded or computed values."
+      "paper_evidence": "The selected maximum and factor inequalities concern the exact pre-rounding matrix Lambda A. The PDF separately uses fl(Lambda A) in (3.1), s for rounded inputs in (3.3), and computed s-hat only in (3.17).",
+      "translation_evidence": "The translation discusses only exact real diagonal scaling D A and makes no assertion about fl, s, s-hat, or an accumulation-computed product.",
+      "reasoning": "No exact, rounded, or computed quantities are conflated. The translation must not be read as a formalization of the later computed-product claims."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Lambda and lambda belong to the scaled matrix multiplication algorithm (3.1), specialized to the inner product in (3.3).",
-      "translation_evidence": "The translation explicitly states that no algorithmic computation is encoded.",
-      "reasoning": "The proposition has been detached from the matrix algorithm and its row-specific scaling operation."
+      "status": "pass",
+      "paper_evidence": "Equation (3.1) uses Lambda A as the row-scaled input stage of the scaled MMA recipe, with lambda_i on the diagonal of Lambda.",
+      "translation_evidence": "It defines D as the diagonal matrix of lambda_i and the scaled matrix as D A, proving exactly that each entry is lambda_i A_ij.",
+      "reasoning": "The selected proposition remains linked to the row-scaling stage of the algorithm. It intentionally does not formalize input rounding, the second operand, multiplication, or inverse scaling."
     },
     {
       "id": "S09",
-      "status": "unclear",
-      "paper_evidence": "Equation (3.4a) uses ||x||_infinity, the maximum absolute coordinate magnitude.",
-      "translation_evidence": "N is the norm selected by Pi.normedRing, whose maximum-coordinate formula is stated only conditionally.",
-      "reasoning": "The norm would match under the standard finite-Pi semantics, but that dependency is unresolved in the supplied ledger."
+      "status": "pass",
+      "paper_evidence": "Equation (3.4a) uses the vector infinity norm ||x||_infinity, operationally the maximum absolute component magnitude.",
+      "translation_evidence": "It defines r_i as max_j |A_ij| and states the scaled-row range through absolute entry values.",
+      "reasoning": "The norm is neither squared nor replaced by a matrix norm, and the absolute-value interpretation is the one enforced by the infinity norm despite the paper's shorthand phrase 'maximum coefficient.'"
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The lower endpoint has factor 2 and is strict, the upper endpoint is non-strict, and theta=min(f_max,sqrt(F_max/n)).",
-      "translation_evidence": "The factor 2, endpoint strictness, and Fin n indexing are preserved, but theta is an unconstrained real parameter.",
-      "reasoning": "Local constants and indexing match, while the essential dependence of theta on f_max, F_max, and n is absent."
+      "status": "pass",
+      "paper_evidence": "Equation (3.2) is theta=min(fmax,sqrt(Fmax/n)); equation (3.4a) has the exact strict lower endpoint theta/(2||x||_infinity) and inclusive upper endpoint theta/||x||_infinity.",
+      "translation_evidence": "D005 retains min(fmax,sqrt(Fmax/n)), and the conclusions retain the factor 2, division by the row maximum, strict lower relation, inclusive upper relation, and row/column index roles.",
+      "reasoning": "All constants, endpoint strictness, and dependence on the common inner dimension n match."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "The context is Model 1, with input and accumulation formats, overflow prevention through theta, exact power-of-two scaling, and later permitted input underflow.",
-      "translation_evidence": "No floating-point format, rounding mode, overflow, underflow, exact-scaling, NaN, or infinity condition is encoded.",
-      "reasoning": "Although the interval itself is exact, its numerical-model assumptions and purpose are omitted."
+      "status": "not-applicable",
+      "paper_evidence": "Model 1 supplies the input and accumulation formats and motivates theta through overflow restrictions, but no rounded operation occurs in the selected pre-rounding row inequality itself.",
+      "translation_evidence": "The translation retains fmax, Fmax, n, and the exact theta formula but contains no precision, rounding mode, underflow, overflow, NaN, or infinity semantics.",
+      "reasoning": "Those operational details are necessary for the full algorithm and its error analysis, but they do not alter the exact algebraic row-scaling result selected here. The translation does not claim to establish the operational overflow guarantee."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper prescribes or assumes the exact strict/non-strict interval for the selected scaling factor.",
-      "translation_evidence": "The same endpoint directions occur only as hypotheses, from which a coordinatewise consequence is derived.",
-      "reasoning": "Endpoint strictness is preserved, but moving the central relation into an antecedent materially weakens and changes the asserted claim."
+      "status": "pass",
+      "paper_evidence": "The paper requires theta/(2||x||_infinity) < lambda <= theta/||x||_infinity and a scaled-row maximum in (theta/2,theta].",
+      "translation_evidence": "It uses the same strict and non-strict relations and expresses the maximum interval as universal upper and existential strict-lower entry bounds.",
+      "reasoning": "The inequality directions, endpoint strictness, and logical strength are preserved."
     },
     {
       "id": "S13",
-      "status": "pass",
-      "paper_evidence": "Equation (3.4a) is a scaling-factor bound rather than a forward, backward, residual, or rounding-error theorem.",
-      "translation_evidence": "The conclusion consists only of exact scaled-coordinate magnitude bounds.",
-      "reasoning": "No error notion is substituted for the paper's exact scaling condition."
+      "status": "not-applicable",
+      "paper_evidence": "Equations (3.2) and (3.4a) are a scaling and range prescription, not a forward-, backward-, mixed-, residual-, or stability-error bound.",
+      "translation_evidence": "No error bound or stability notion appears in the translation.",
+      "reasoning": "No error notion is present to be substituted or conflated."
     },
     {
       "id": "S14",
-      "status": "pass",
-      "paper_evidence": "Equation (3.4a) contains no asymptotic truncation, remainder, or omitted higher-order term.",
-      "translation_evidence": "The translation contains exact inequalities and no approximation or big-O term.",
-      "reasoning": "Higher-order treatment is faithfully absent."
+      "status": "not-applicable",
+      "paper_evidence": "The selected equations are exact definitions and inequalities with no discarded terms, asymptotic qualifiers, or big-O remainder.",
+      "translation_evidence": "All translated conclusions are exact and contain no approximation or higher-order truncation.",
+      "reasoning": "Higher-order treatment is absent on both sides."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The claim concerns real finite-dimensional rows of matrices within a particular scaled MMA computation.",
-      "translation_evidence": "The proposition concerns every finite real vector and arbitrary real theta and lambda satisfying its antecedent.",
-      "reasoning": "The scalar field and finite dimension match, but the statement is generalized beyond matrix rows and the paper-defined scaling parameters without classifying that change."
+      "status": "pass",
+      "paper_evidence": "The paper applies the row construction to finite real matrices and to fmax,Fmax arising as maxima of binary floating-point formats.",
+      "translation_evidence": "The translation retains finite real matrices but proves the algebraic construction for arbitrary positive real fmax and Fmax.",
+      "reasoning": "This is a genuine strengthening by parameter-domain generalization, not a change to the intended row result; actual format maxima form a covered special case."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "For a nonzero row and positive theta, a positive scaling factor can satisfy the half-open interval in (3.4a).",
-      "translation_evidence": "For example, n=1, x(0)=1, theta=1, and lambda=1 satisfy all hypotheses and both conclusions.",
-      "reasoning": "The proposition is satisfiable and not globally vacuous, although parameter choices with theta<=0 cannot satisfy all antecedents."
+      "paper_evidence": "For positive theta and a nonzero finite row, unrestricted integral powers of two provide a factor in the interval required by (3.4a).",
+      "translation_evidence": "Its positivity assumptions force theta/r_i>0, so the positive branch of the selector is used; positive-dimensional matrices with all rows nonzero satisfy the hypotheses.",
+      "reasoning": "The hypotheses are satisfiable, divisions are protected, and the lower scaled-entry conclusion is substantive rather than vacuous."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translation assumes the core interval and cannot establish the paper's row-specific power-of-two scaling factor, theta=min(f_max,sqrt(F_max/n)), or linkage to the scaled matrix algorithm."
+      "verdict": "yes",
+      "reasoning": "Instantiating the translation with the paper's positive format maxima yields a power-of-two factor satisfying (3.4a), and its entrywise conclusions are equivalent to the selected scaled-row maximum statement."
     },
     "paper_implies_translation": {
-      "verdict": "unclear",
-      "reasoning": "For the paper's chosen parameters, (3.4a) yields the translated coordinate bounds if the finite-Pi norm is exactly the infinity norm. That dependency is unresolved, and the translation additionally quantifies over arbitrary vectors, theta, and lambda outside the stated paper context."
+      "verdict": "no",
+      "reasoning": "The PDF states the construction for fmax and Fmax belonging to Model 1, whereas the translation universally proves it for arbitrary positive real fmax and Fmax and fixes a classically selected dyadic representative. The paper's stated parameter domain does not entail that broader theorem."
     }
   },
-  "classification": "undetermined",
-  "accepted": false,
-  "requires_adjudication": true,
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "core-claim-as-hypothesis",
-      "paper_evidence": "Equation (3.4a) specifies the interval satisfied by the selected row scaling factor.",
-      "translation_evidence": "Both inequalities from (3.4a) are antecedents, and the proposition only proves their scaled-coordinate consequence.",
-      "impact": "The proposition cannot recover or assert the paper's scaling-factor selection, so translation-implies-paper fails."
+      "severity": "minor",
+      "category": "parameter-domain generalization",
+      "paper_evidence": "On B786, fmax and Fmax are defined from the input and accumulation floating-point formats.",
+      "translation_evidence": "fmax and Fmax are arbitrary positive real binders with no format structure.",
+      "impact": "The translated algebraic theorem is stronger than the paper's stated domain, while still covering every intended format instance."
     },
     {
-      "severity": "major",
-      "category": "parameter-definition-omission",
-      "paper_evidence": "Equation (3.2) fixes theta=min(f_max,sqrt(F_max/n)) to prevent input and accumulation overflow.",
-      "translation_evidence": "Theta is an arbitrary real binder with no relationship to f_max, F_max, or n.",
-      "impact": "The result loses the constant's numerical meaning and overflow guarantee."
+      "severity": "note",
+      "category": "selected-result scope",
+      "paper_evidence": "Equation (3.1) gives the full two-sided scaled MMA recipe, and adjacent equation (3.4b) gives the analogous column factor.",
+      "translation_evidence": "Only D A and the row factors from (3.4a) are represented.",
+      "impact": "This is appropriate for the selected P20-T1 row-scaling result, but the translation must not be cited as a formalization of the adjacent column claim or the complete finite-precision algorithm."
     },
     {
-      "severity": "major",
-      "category": "algorithm-and-power-of-two-omission",
-      "paper_evidence": "Lambda is a nonsingular diagonal matrix in algorithm (3.1), and its row factors are powers of two so scaling is exact.",
-      "translation_evidence": "Lambda, A, B, the row association, and the power-of-two property are absent; lambda is merely nonnegative.",
-      "impact": "The statement is no longer about the paper's scaling algorithm or execution model."
-    },
-    {
-      "severity": "major",
-      "category": "unresolved-norm-semantics",
-      "paper_evidence": "The denominator and scaled-row maximum use the vector infinity norm.",
-      "translation_evidence": "The dependency ledger marks the finite-Pi norm construction and its coordinate interpretation as unclear.",
-      "impact": "Without confirming that the imported norm is the maximum absolute coordinate, paper-implies-translation cannot be decided."
+      "severity": "note",
+      "category": "zero-row domain",
+      "paper_evidence": "Equation (3.4a) divides by ||x||_infinity and the claimed lower scaled-row maximum cannot hold for x=0, while the PDF gives no zero-row convention.",
+      "translation_evidence": "It explicitly assumes every row maximum r_i is positive.",
+      "impact": "The translation resolves a source-domain omission without changing the meaningful nonzero-row claim."
     }
   ],
-  "rationale": "The translation preserves the factor 2, endpoint strictness, finite indexing, and the intended scaled-coordinate consequence of (3.4a). It nevertheless assumes the central paper constraint, omits the power-of-two row factor, the definition of theta, and all algorithmic and floating-point context, and generalizes the remaining conditional statement. The unresolved finite-Pi norm prevents a definitive reverse implication, so adjudication is required and the classification remains undetermined."
+  "rationale": "The blind translation faithfully captures the selected row component of the paper's scaling prescription: the exact theta constant, dyadic factor, endpoint strictness, infinity-norm semantics, diagonal row action, and equivalent scaled-row maximum bounds all match. The adjacent column scaling and the rest of equation (3.1) are outside the selected row result and are therefore scope notes rather than missing conclusions. Explicit positivity removes the paper's zero-row undefinedness. Because the translation proves the construction for arbitrary positive real range parameters rather than only format-derived maxima, it is a faithful strengthening rather than a strict equivalence."
 }
