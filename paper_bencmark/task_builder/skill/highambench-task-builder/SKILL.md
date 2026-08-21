@@ -101,8 +101,8 @@ user approval and then follows the full paper-task selection workflow.
 - Keep the target statement and controlled shared files condition-neutral. No
   NumStability name may occur there.
 - Keep `classification_frozen_before_runs` false during repair.
-- Update `Target.lean`, `context.md`, `task.json`, `paper.json`, and
-  central metadata only where the repaired mathematics requires it.
+- Update `Target.lean`, `context.md`, `task.json`, `paper.json`, and source tags
+  where the repaired mathematics requires it.
 - Keep source tags and result-form tags tied to the selected paper claim, not a
   supporting lemma.
 - Re-evaluate the tier against the frozen library. Do not weaken the theorem to
@@ -111,6 +111,22 @@ user approval and then follows the full paper-task selection workflow.
   coordinated change before renaming or replacing tasks.
 - Keep complete private N and L proofs outside the controlled task. Do not put a
   gold proof into `Target.lean`.
+
+## Defer corpus-wide snapshot hashes
+
+During an active multi-task rebuild cycle, do not run the full snapshot refresh
+or hand-edit global metadata merely to propagate hashes. In particular, leave
+`metadata/controlled/*.json`, `metadata/manifest.json`, `metadata/config.json`,
+`metadata/environment.json`, `metadata/release_files.json`, and
+`metadata/run_order.json` for the end-of-cycle snapshot checkpoint. Their stale
+construction values must not be used to authorize benchmark measurements.
+
+The current task may still be committed and independently audited: the audit
+uses the task-local files, imports, and PDF and computes its own hashes. Read
+`paper_bencmark/task_builder/WORKFLOW.md` when the user asks to finalize or
+refresh the complete snapshot. At that point, wait for all task and audit
+writers to finish, reconcile semantic metadata, refresh once, verify the whole
+snapshot, and commit the generated files together.
 
 ## Validate the repair
 
@@ -127,12 +143,11 @@ Before handoff:
    ```bash
    python3 paper_bencmark/highambench/tools/task_tags.py \
      --benchmark-root paper_bencmark/highambench
-   python3 paper_bencmark/highambench/tools/refresh_snapshot.py \
-     --benchmark-root paper_bencmark/highambench --phase construction
    ```
 
-6. Run the relevant construction, manifest-hash, and unit checks documented by
-   the repository. Never use `--phase measurement-ready` during repair.
+6. Run relevant task-local construction and unit checks. Defer global
+   manifest-hash and release-snapshot checks to the checkpoint described above.
+   Never use `--phase measurement-ready` during an individual repair.
 7. Confirm that no prior audit artifact or history entry changed.
 
 ## Handoff to the Auditor
@@ -147,6 +162,7 @@ Report:
 - old and new target hashes;
 - tier decision and library-search evidence;
 - compilation and N/L construction checks;
+- whether the corpus-wide snapshot refresh is deferred;
 - any residual uncertainty.
 
 End with `awaiting independent re-audit`. Do not state that the task is now

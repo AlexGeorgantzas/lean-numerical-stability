@@ -6,13 +6,14 @@ A fixed proof means that the theorem statement is chosen before a run and the
 agent may change only the proof.
 
 The current corpus contains 60 tasks drawn from papers P01--P20, with three
-fixed tasks per paper. The current snapshot is measurement-ready: its complete
-private construction check passed all 120 N/L proofs, and two fresh-context
-Codex review records cover all 60 tasks. Exact-target novelty rejections are
-retained and are ignored only under the recorded private-measurement exception;
-they still block public release. Paper titles, source hashes, exact task
-locations, and the ordered task catalog are recorded in
-`metadata/manifest.json`.
+fixed tasks per paper. Task rebuilding and independent faithfulness auditing are
+currently active. The committed global snapshot metadata may therefore describe
+an earlier checkpoint and must not be used to start measurements. A new
+construction snapshot will be generated after the active cycle settles, and a
+measurement-ready snapshot will be created only after all repairs, audits, tier
+decisions, and construction checks are complete. Paper titles, source hashes,
+exact task locations, and the ordered task catalog are recorded in
+`metadata/manifest.json` at each finalized checkpoint.
 
 ## Task types
 
@@ -75,8 +76,13 @@ Every paper and task in the measurement snapshot has
 statements, contexts, and Lean targets are fixed and must not change during the
 experiment. Any controlled change requires a new snapshot and a complete rerun.
 
-After any controlled benchmark, metadata, or tool edit, refresh all derived
-metadata with:
+During an active multi-task rebuild or audit cycle, task-local changes may be
+committed and audited before corpus-wide hashes are regenerated. Global snapshot
+metadata is intentionally provisional during that interval and no benchmark
+measurement may run.
+
+At a stable checkpoint, after all task and audit writers have finished, refresh
+all derived metadata once with:
 
 ```text
 python3 paper_bencmark/highambench/tools/refresh_snapshot.py \
