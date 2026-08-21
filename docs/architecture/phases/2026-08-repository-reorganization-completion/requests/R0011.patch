@@ -1,0 +1,791 @@
+diff --git a/NumStability/Algorithms.lean b/NumStability/Algorithms.lean
+index 494a0ccc2ff0803c35bd47f0d1bdf96d472a44f6..7e6cd7f1254cab58cfe0ea0356e91329bb874168 100644
+--- a/NumStability/Algorithms.lean
++++ b/NumStability/Algorithms.lean
+@@ -17,0 +18,7 @@
++import NumStability.Algorithms.LU.GaussianElimination
++import NumStability.Algorithms.LU.GrowthFactor
++import NumStability.Algorithms.LU.LUSolve
++import NumStability.Algorithms.LU.SpecialMatrices
++import NumStability.Algorithms.LU.Tridiagonal
++import NumStability.Algorithms.LU.TridiagonalCond
++import NumStability.Algorithms.LU.TridiagonalRecurrence
+@@ -26 +32,0 @@
+-import NumStability.Algorithms.LinearSystems.LeastSquares
+@@ -28,0 +35 @@
++import NumStability.Algorithms.LinearSystems.LeastSquares
+@@ -53,7 +60 @@
+-import NumStability.Algorithms.LU.GaussianElimination
+-import NumStability.Algorithms.LU.GrowthFactor
+-import NumStability.Algorithms.LU.LUSolve
+-import NumStability.Algorithms.LU.SpecialMatrices
+-import NumStability.Algorithms.LU.Tridiagonal
+-import NumStability.Algorithms.LU.TridiagonalCond
+-import NumStability.Algorithms.LU.TridiagonalRecurrence
++import NumStability.Algorithms.MMatrix
+@@ -61,0 +63,2 @@
++import NumStability.Algorithms.MatSeqProduct
++import NumStability.Algorithms.MatVec
+@@ -66,11 +68,0 @@
+-import NumStability.Algorithms.MatrixPowers
+-import NumStability.Algorithms.MatrixPowersComplex
+-import NumStability.Algorithms.MatrixPowersJordan
+-import NumStability.Algorithms.MatrixPowersLp
+-import NumStability.Algorithms.MatrixPowersLpJordan
+-import NumStability.Algorithms.MatrixPowersPseudospectral
+-import NumStability.Algorithms.MatrixPowersPseudospectralCriterion
+-import NumStability.Algorithms.MatrixPowersSpectral
+-import NumStability.Algorithms.MatSeqProduct
+-import NumStability.Algorithms.MatVec
+-import NumStability.Algorithms.MMatrix
+@@ -150,3 +142 @@
+-import NumStability.Analysis.BergerGeneral
+-import NumStability.Analysis.BergerInequality
+-import NumStability.Analysis.BergerResolvent
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra
+@@ -154,5 +144,3 @@
+-import NumStability.Analysis.DunfordResidue
+-import NumStability.Analysis.HenriciExtremal
+-import NumStability.Analysis.HenriciSharpConstant
+-import NumStability.Analysis.HenriciSharpConstantExact
+-import NumStability.Analysis.JordanNormalForm
++import NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.NormalMatrices
++import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalCharacterization
++import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SchurBinomialBounds
+@@ -159,0 +148,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ArcLengthPowerBounds
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.FiniteDimensionalPowerBounds
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarArcLength
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarCrossingBounds
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ResolventCoefficients
++import NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality
++import NumStability.Analysis.LinearOperators.Schur.Complex.NormalTriangular
+@@ -162,16 +156,0 @@
+-import NumStability.Analysis.MatrixPowersBaiDemmelGu
+-import NumStability.Analysis.MatrixPowersBaiDemmelGuDistance
+-import NumStability.Analysis.MatrixPowersBinomialBound
+-import NumStability.Analysis.MatrixPowersGautschi
+-import NumStability.Analysis.MatrixPowersHenrici
+-import NumStability.Analysis.MatrixPowersHenriciNormal
+-import NumStability.Analysis.MatrixPowersKreiss
+-import NumStability.Analysis.MatrixPowersKreissSpijker
+-import NumStability.Analysis.MatrixPowersLaszlo
+-import NumStability.Analysis.MatrixPowersLp185Primary
+-import NumStability.Analysis.MatrixPowersSchur
+-import NumStability.Analysis.MatrixPowersSpijkerClosure
+-import NumStability.Analysis.MatrixPowersSpijkerPlanar
+-import NumStability.Analysis.MatrixPowersSpijkerRational
+-import NumStability.Analysis.NilpotentJordanChain
+-import NumStability.Analysis.NumericalRadius
+@@ -180,4 +158,0 @@
+-import NumStability.Analysis.PseudospectralLowerBound
+-import NumStability.Analysis.PseudospectralPowerBound
+-import NumStability.Analysis.PseudospectralResolvent
+-import NumStability.Analysis.ResolventFunctionalCalculus
+@@ -249,0 +225 @@
++import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional
+diff --git a/NumStability/Algorithms/RandNLA/ElementwiseTraceMGF.lean b/NumStability/Algorithms/RandNLA/ElementwiseTraceMGF.lean
+index 519b68aafc5fcdce5bfcce60da4dfea8c0ea8e14..62ade230546b311db5c16b5dfc7c32dbecdb0d57 100644
+--- a/NumStability/Algorithms/RandNLA/ElementwiseTraceMGF.lean
++++ b/NumStability/Algorithms/RandNLA/ElementwiseTraceMGF.lean
+@@ -4 +4 @@
+-import NumStability.Analysis.LiebTrace
++import NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity
+diff --git a/NumStability/Algorithms/RandNLA/RowSamplingTraceMGF.lean b/NumStability/Algorithms/RandNLA/RowSamplingTraceMGF.lean
+index 2707d89e7ef91b8d70a3e0e2e56fbcc6c5268c65..f7a4dddef70183fb426ca339f7c28500a8eeb8f1 100644
+--- a/NumStability/Algorithms/RandNLA/RowSamplingTraceMGF.lean
++++ b/NumStability/Algorithms/RandNLA/RowSamplingTraceMGF.lean
+@@ -4 +4 @@
+-import NumStability.Analysis.LiebTrace
++import NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity
+diff --git a/NumStability/Algorithms/RandNLA/UniformRowSamplingMGF.lean b/NumStability/Algorithms/RandNLA/UniformRowSamplingMGF.lean
+index 836181294ef3e4b3a97616ecf8f3ed578827a4f9..81b1ae6d8ec3a14511b0c0234df7a4713282fa23 100644
+--- a/NumStability/Algorithms/RandNLA/UniformRowSamplingMGF.lean
++++ b/NumStability/Algorithms/RandNLA/UniformRowSamplingMGF.lean
+@@ -3 +2,0 @@
+-import NumStability.Analysis.LiebTrace
+@@ -4,0 +4 @@
++import NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity
+diff --git a/NumStability/Algorithms/RandomizedLinearAlgebra/Concentration/TraceMGF/LeverageScore.lean b/NumStability/Algorithms/RandomizedLinearAlgebra/Concentration/TraceMGF/LeverageScore.lean
+index 0e6ba7bb92437f5c98308c2ef9bc6044a761d465..a7ad55f4452ae2c13b91aa0e310f1babbf55b004 100644
+--- a/NumStability/Algorithms/RandomizedLinearAlgebra/Concentration/TraceMGF/LeverageScore.lean
++++ b/NumStability/Algorithms/RandomizedLinearAlgebra/Concentration/TraceMGF/LeverageScore.lean
+@@ -4 +4,2 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealOrder
+diff --git a/NumStability/Algorithms/RandomizedLinearAlgebra/Concentration/TraceMGF/UniformRows.lean b/NumStability/Algorithms/RandomizedLinearAlgebra/Concentration/TraceMGF/UniformRows.lean
+index 893de46955ad61937e8aaf1cb952becd06cbc05c..3f63b5972d87796924ba43f3f6077f7c71f0dd28 100644
+--- a/NumStability/Algorithms/RandomizedLinearAlgebra/Concentration/TraceMGF/UniformRows.lean
++++ b/NumStability/Algorithms/RandomizedLinearAlgebra/Concentration/TraceMGF/UniformRows.lean
+@@ -4 +3,0 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
+@@ -5,0 +5,2 @@
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealOrder
+diff --git a/NumStability/Algorithms/TestMatrices/Higham28Companion.lean b/NumStability/Algorithms/TestMatrices/Higham28Companion.lean
+index 8a06e932b87c9492751ee2a8f40adbb4cf3b96de..6c30290c4d2df0777121100cf4f7db2f7a135f90 100644
+--- a/NumStability/Algorithms/TestMatrices/Higham28Companion.lean
++++ b/NumStability/Algorithms/TestMatrices/Higham28Companion.lean
+@@ -3 +3 @@
+-import NumStability.Analysis.JordanNormalForm
++import NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition
+diff --git a/NumStability/Analysis.lean b/NumStability/Analysis.lean
+index 71f1b685eefd8997dca291c0c2fc34c09d2d6f4a..7763cda7595fefafcbd5865f5405c83c30a07e76 100644
+--- a/NumStability/Analysis.lean
++++ b/NumStability/Analysis.lean
+@@ -15,2 +14,0 @@
+-import NumStability.Analysis.BergerGeneral
+-import NumStability.Analysis.BergerInequality
+@@ -17,0 +16 @@
++import NumStability.Analysis.CStarMatrices
+@@ -23,4 +21,0 @@
+-import NumStability.Analysis.CStarMatrices
+-import NumStability.Analysis.CStarMatrixBridge
+-import NumStability.Analysis.CStarMatrixExpectation
+-import NumStability.Analysis.CStarMatrixTrace
+@@ -46 +40,0 @@
+-import NumStability.Analysis.HenriciSharpConstantExact
+@@ -49 +42,0 @@
+-import NumStability.Analysis.LiebTrace
+@@ -57,5 +49,0 @@
+-import NumStability.Analysis.MatrixPowersBinomialBound
+-import NumStability.Analysis.MatrixPowersGautschi
+-import NumStability.Analysis.MatrixPowersLaszlo
+-import NumStability.Analysis.MatrixPowersLp185Primary
+-import NumStability.Analysis.MatrixPowersSpijkerClosure
+@@ -64 +51,0 @@
+-import NumStability.Analysis.NilpotentJordanChain
+@@ -66 +52,0 @@
+-import NumStability.Analysis.OperatorLog
+@@ -73 +58,0 @@
+-import NumStability.Analysis.PseudospectralLowerBound
+@@ -190,0 +176 @@
++import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional
+diff --git a/NumStability/Analysis/CStarMatrices.lean b/NumStability/Analysis/CStarMatrices.lean
+index 69d53cd254b6c27db218f2ecca833ae0c1792c89..0153261c789ed435ffcae6533a0449f39533166c 100644
+--- a/NumStability/Analysis/CStarMatrices.lean
++++ b/NumStability/Analysis/CStarMatrices.lean
+@@ -2,0 +3 @@
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra
+diff --git a/NumStability/Analysis/CStarMatrices/Basic/All.lean b/NumStability/Analysis/CStarMatrices/Basic/All.lean
+index 8deda002b272537428573a7f60fa757a7edf106c..a6ea124de3334125367cd14a4f0e356746efeb6a 100644
+--- a/NumStability/Analysis/CStarMatrices/Basic/All.lean
++++ b/NumStability/Analysis/CStarMatrices/Basic/All.lean
+@@ -1 +1 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra
+diff --git a/NumStability/Analysis/CStarMatrices/Expectation/Finite.lean b/NumStability/Analysis/CStarMatrices/Expectation/Finite.lean
+index eade02deb850b01efbbe3332368b8b8e48dd946b..2398be8aeeef609dc84b740d77f6d247da7f0e62 100644
+--- a/NumStability/Analysis/CStarMatrices/Expectation/Finite.lean
++++ b/NumStability/Analysis/CStarMatrices/Expectation/Finite.lean
+@@ -1 +1,2 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.StrictPositivity
+diff --git a/NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra.lean b/NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..4942d6596d08f0ad339279ffbb2695b88975af36
+--- /dev/null
++++ b/NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra.lean
+@@ -0,0 +1,21 @@
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonal
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonalCompression
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPair
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairPinching
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeProjection
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeReflection
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteDimensional
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteMatrixOrder
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealOrder
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ProjectionReflection
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularCompression
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularMultiplication
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ReflectionAverage
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.StrictPositivity
++
++/-!
++# NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/CStarMatrices/Trace/Basic.lean b/NumStability/Analysis/CStarMatrices/Trace/Basic.lean
+index 0e8bcbb610dfb043edf31aca7a3a78026673baa6..82ae07fef1315a29da2ae7d586e70eeac8809c5e 100644
+--- a/NumStability/Analysis/CStarMatrices/Trace/Basic.lean
++++ b/NumStability/Analysis/CStarMatrices/Trace/Basic.lean
+@@ -2 +2 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
+diff --git a/NumStability/Analysis/FunctionalCalculus/OperatorLog/Monotonicity.lean b/NumStability/Analysis/FunctionalCalculus/OperatorLog/Monotonicity.lean
+index c055c449b065346e1d68082df63e322d51c26f8f..322319f5f09b9f6f7f506a5c25f915285f87a338 100644
+--- a/NumStability/Analysis/FunctionalCalculus/OperatorLog/Monotonicity.lean
++++ b/NumStability/Analysis/FunctionalCalculus/OperatorLog/Monotonicity.lean
+@@ -5 +5,3 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealOrder
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.StrictPositivity
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/All.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/All.lean
+index f008973c53d51267940791cd57830efe58437ff9..f30b4cc42ddd3eecab6c64eeea815360619d2d42 100644
+--- a/NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/All.lean
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/All.lean
+@@ -1,0 +2 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.NormalMatrices
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/NormalMatrices.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/NormalMatrices.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..9401f06a2eac7671c1479e0a5433d47e8dee1f8f
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/NormalMatrices.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.NormalMatrices.Powers
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.NormalMatrices
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/All.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/All.lean
+index c35c42e7c6d18ce6ec96c150e8d7d3e6d5a291f9..cc60f9c1ee0127f55886e768955492bc774ccbc6 100644
+--- a/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/All.lean
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/All.lean
+@@ -4,0 +5 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalCharacterization
+@@ -5,0 +7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SchurBinomialBounds
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/NormalCharacterization.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/NormalCharacterization.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..08991bd8906f055df9150601e1b7fae90189af68
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/NormalCharacterization.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalCharacterization.Schur
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalCharacterization
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/SchurBinomialBounds.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/SchurBinomialBounds.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..35aeec56dcccba3f903ee54a72e0d85f9357bef9
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/SchurBinomialBounds.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SchurBinomialBounds.Estimates
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SchurBinomialBounds
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/All.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/All.lean
+index 2028d4dd187c3e8404ff0b9f8e301380f70b2214..271ed5e46f381427a5d7b756d8d3084cd72044b5 100644
+--- a/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/All.lean
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/All.lean
+@@ -1 +1,2 @@
+-import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ArcLengthPowerBounds
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.FiniteDimensionalPowerBounds
+@@ -3,0 +5,2 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarArcLength
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarCrossingBounds
+@@ -5,0 +9 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ResolventCoefficients
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ArcLengthPowerBounds.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ArcLengthPowerBounds.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..73315d27706f662c73be14869f100b49b2b3a8be
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ArcLengthPowerBounds.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ArcLengthPowerBounds.FiniteDimension
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ArcLengthPowerBounds
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/FiniteDimensionalPowerBounds.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/FiniteDimensionalPowerBounds.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..9df711e347b6324b29bf51ce1bde466a703ac9e2
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/FiniteDimensionalPowerBounds.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.FiniteDimensionalPowerBounds.Kreiss
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.FiniteDimensionalPowerBounds
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarArcLength.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarArcLength.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..cc1b7f75d943621bcffb0054ccf642f2689e2518
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarArcLength.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarArcLength.Variation
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarArcLength
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarCrossingBounds.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarCrossingBounds.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..ecb269f837c0baaf7ba58005364da7f10649f958
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarCrossingBounds.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarCrossingBounds.Polynomial
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarCrossingBounds
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/Rational.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/Rational.lean
+index 8347dc8317200b2a42915f931c4a35f0f7aa1115..0942d5eacbc0c25df14b7ba72270388f12447b16 100644
+--- a/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/Rational.lean
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/Rational.lean
+@@ -3 +3 @@
+-import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ResolventCoefficients.Analytic
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ResolventCoefficients.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ResolventCoefficients.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..79558a46b8d0f7e6a557a2137f2f150a05a39568
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ResolventCoefficients.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ResolventCoefficients.Analytic
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ResolventCoefficients
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/NumericalRadius/Berger/All.lean b/NumStability/Analysis/LinearOperators/NumericalRadius/Berger/All.lean
+index 422b3aa99eaa187e9d6accbd5b5510da0c8f0260..e56141bc8f441c4b912b4e7288ad0eebc6af9e99 100644
+--- a/NumStability/Analysis/LinearOperators/NumericalRadius/Berger/All.lean
++++ b/NumStability/Analysis/LinearOperators/NumericalRadius/Berger/All.lean
+@@ -0,0 +1 @@
++import NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality
+diff --git a/NumStability/Analysis/LinearOperators/NumericalRadius/Berger/GeneralPowerInequality.lean b/NumStability/Analysis/LinearOperators/NumericalRadius/Berger/GeneralPowerInequality.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..00d50b5415ce8b55c58cfcd20a79f91491293a20
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/NumericalRadius/Berger/GeneralPowerInequality.lean
+@@ -0,0 +1,8 @@
++import NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality.Powers
++import NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality.PowersOfTwo
++
++/-!
++# NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/Schur/All.lean b/NumStability/Analysis/LinearOperators/Schur/All.lean
+index 1bb55795afd7f3bb79e36658186f8cc7d64190e4..e31bcb69af0845cb90a84f78704be62f599434a6 100644
+--- a/NumStability/Analysis/LinearOperators/Schur/All.lean
++++ b/NumStability/Analysis/LinearOperators/Schur/All.lean
+@@ -2,0 +3 @@
++import NumStability.Analysis.LinearOperators.Schur.Complex.NormalTriangular
+diff --git a/NumStability/Analysis/LinearOperators/Schur/Complex/NormalTriangular.lean b/NumStability/Analysis/LinearOperators/Schur/Complex/NormalTriangular.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..af43db139e8158e5fbfe55da71c38c55d9830e15
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/Schur/Complex/NormalTriangular.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.Schur.Complex.NormalTriangular.Diagonal
++
++/-!
++# NumStability.Analysis.LinearOperators.Schur.Complex.NormalTriangular
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Analysis/MatrixInequalities/LiebTrace/Concavity.lean b/NumStability/Analysis/MatrixInequalities/LiebTrace/Concavity.lean
+index a78028f30091188511cf16ffce05eed75eaf2530..643db1733b6f32c71bf3fd9a45db0f04173d9722 100644
+--- a/NumStability/Analysis/MatrixInequalities/LiebTrace/Concavity.lean
++++ b/NumStability/Analysis/MatrixInequalities/LiebTrace/Concavity.lean
+@@ -14 +13,0 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
+@@ -15,0 +15,9 @@
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonal
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonalCompression
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPair
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairPinching
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeReflection
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteMatrixOrder
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularCompression
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularMultiplication
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.StrictPositivity
+diff --git a/NumStability/Analysis/TestMatrices/Companion/Companion.lean b/NumStability/Analysis/TestMatrices/Companion/Companion.lean
+index ad09cec79b97318ef08ca057891f4f6e7e588582..5969d8d36f5bedb2a14d143a010f5b30caf79a15 100644
+--- a/NumStability/Analysis/TestMatrices/Companion/Companion.lean
++++ b/NumStability/Analysis/TestMatrices/Companion/Companion.lean
+@@ -99,0 +100 @@
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+@@ -101 +101,0 @@
+-import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+@@ -103 +103 @@
+-import NumStability.Analysis.JordanNormalForm
++import NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition
+diff --git a/NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean b/NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean
+index 5d688fd7c398f496c793f36a94b773046b163440..7fac8d45a11de3e6f127deeb3adbce1eb5523d25 100644
+--- a/NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean
++++ b/NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean
+@@ -99,0 +100 @@
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+@@ -101 +101,0 @@
+-import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+@@ -103 +103 @@
+-import NumStability.Analysis.JordanNormalForm
++import NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition
+diff --git a/NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm01/ElementwiseSampling/TraceMGF.lean b/NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm01/ElementwiseSampling/TraceMGF.lean
+index 799f97dc26122775da29c7a3e4d8259dc34c9161..e07da8044ac439f0f9ebd2e4169c4e571466530d 100644
+--- a/NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm01/ElementwiseSampling/TraceMGF.lean
++++ b/NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm01/ElementwiseSampling/TraceMGF.lean
+@@ -5 +4,0 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
+@@ -6,0 +6 @@
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
+diff --git a/NumStability/Source/DrineasMahoney/RandNLA2016/Equation02/SpectralApproximation/ElementwiseSpectral.lean b/NumStability/Source/DrineasMahoney/RandNLA2016/Equation02/SpectralApproximation/ElementwiseSpectral.lean
+index 26c46a8acbd771866c81db7b432462b68e7f6581..f1cac285086f3cc6fa8498c78bde6e312c53dcca 100644
+--- a/NumStability/Source/DrineasMahoney/RandNLA2016/Equation02/SpectralApproximation/ElementwiseSpectral.lean
++++ b/NumStability/Source/DrineasMahoney/RandNLA2016/Equation02/SpectralApproximation/ElementwiseSpectral.lean
+@@ -5 +4,0 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
+@@ -6,0 +6,2 @@
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealOrder
+diff --git a/NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/LeverageTraceMGF.lean b/NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/LeverageTraceMGF.lean
+index dc45882aee8eaba78b6177e4e34be6f9bf990bbb..584f94601ff5144a3ec348c955b9b80fad95a49e 100644
+--- a/NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/LeverageTraceMGF.lean
++++ b/NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/LeverageTraceMGF.lean
+@@ -5 +4,0 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
+@@ -6,0 +6 @@
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
+diff --git a/NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/RowNormTraceMGF.lean b/NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/RowNormTraceMGF.lean
+index 40b8cc76d011b67238cb8651ea200544dbe581eb..46a44a61b6a7f0606e910708f4acd00ea52ea9e0 100644
+--- a/NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/RowNormTraceMGF.lean
++++ b/NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/RowNormTraceMGF.lean
+@@ -4 +3,0 @@
+-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
+@@ -5,0 +5 @@
++import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
+diff --git a/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/All.lean b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/All.lean
+index 43ade32ec976f9143dbac9779e49f0dc7a41ff04..39e423d65f571bf0ef19869c6454334deafd20e4 100644
+--- a/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/All.lean
++++ b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/All.lean
+@@ -12,0 +13 @@
++import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional
+diff --git a/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreiss.lean b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreiss.lean
+index 4fcf58c8a14503a8d4c8cbba5dfc7e83ed54dd99..bdf8aaaedd21f04921fadc5db6b545bdbb6d0d36 100644
+--- a/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreiss.lean
++++ b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreiss.lean
+@@ -3 +3 @@
+-import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ArcLengthPowerBounds.FiniteDimension
+diff --git a/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreissUnconditional.lean b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreissUnconditional.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..4768ba545082170e4ac7ed56bc9353e27b24dc00
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreissUnconditional.lean
+@@ -0,0 +1,7 @@
++import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional.Bounds
++
++/-!
++# NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional
++
++Declaration-free aggregate for the canonical modules in this semantic family.
++-/
+diff --git a/NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean b/NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean
+index 2cf1f01d1c7674b2b7603609680195e789a87392..1def792c773648d55fd662d839e8e9d8a87707f4 100644
+--- a/NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean
++++ b/NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean
+@@ -16,0 +17 @@
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+@@ -18 +18,0 @@
+-import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+@@ -20 +20 @@
+-import NumStability.Analysis.JordanNormalForm
++import NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition
+diff --git a/NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean b/NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean
+index eb1341c4e731de5b12d6a03fe2f7067d67b7985b..c10c3f85a595c9ed73f8d5bfd35ae7ecad93594b 100644
+--- a/NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean
++++ b/NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean
+@@ -16,0 +17 @@
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+@@ -18 +18,0 @@
+-import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+@@ -20 +20 @@
+-import NumStability.Analysis.JordanNormalForm
++import NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition
+diff --git a/NumStabilityTest.lean b/NumStabilityTest.lean
+index 21ae3b5076f546bf342379a2f6fc0bff1a479e61..a194cd043e04a5cc26b4a363c49ea65475273f47 100644
+--- a/NumStabilityTest.lean
++++ b/NumStabilityTest.lean
+@@ -6 +5,0 @@
+-import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares
+@@ -29,0 +29 @@
++import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares
+@@ -82 +81,0 @@
+-import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares
+@@ -88,0 +88,2 @@
++import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUSPDFamilies
++import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUSPDSourceClosure
+@@ -91,2 +91,0 @@
+-import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUSPDFamilies
+-import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUSPDSourceClosure
+@@ -94,0 +94 @@
++import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares
+@@ -346,0 +347 @@
++import NumStabilityTest.Import.Source.Chapter13.Section03.SPDFactorBounds
+@@ -348 +348,0 @@
+-import NumStabilityTest.Import.Source.Chapter13.Section03.SPDFactorBounds
+@@ -528,0 +529 @@
++import NumStabilityTest.Reorganization.R07.All
+@@ -537,0 +539 @@
++import NumStabilityTest.Reorganization.W01.Canonical.RoundToEvenLocalError
+@@ -539 +540,0 @@
+-import NumStabilityTest.Reorganization.W01.Canonical.RoundToEvenLocalError
+diff --git a/docs/architecture/COMPATIBILITY.md b/docs/architecture/COMPATIBILITY.md
+index 1038bbc8a34316852fe0796ef0d947f09931e41d..a5f8eb501511a0417f2be70d1a987fd16249862b 100644
+--- a/docs/architecture/COMPATIBILITY.md
++++ b/docs/architecture/COMPATIBILITY.md
+@@ -297,0 +298,8 @@
++| `NumStability.Algorithms.MatrixPowers` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.BigOperators.Ring.Finset`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Analysis.SpecificLimits.Basic`, `Mathlib.Data.Fintype.BigOperators`, `Mathlib.Data.Real.Basic`, `Mathlib.Tactic.FieldSimp`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.MatVec`, `NumStability.Algorithms.MatrixPowers.ComputedIteration.Model`, `NumStability.Algorithms.PolynomialEvaluation.MatrixNorms`, `NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.Real`, `NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealDiagonal`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Analysis.Rounding`, `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.RealDiagonal`, `NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.ComputedIteration`, and `NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.RealCases` |
++| `NumStability.Algorithms.MatrixPowersComplex` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.BigOperators.Ring.Finset`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Analysis.SpecificLimits.Basic`, `Mathlib.Data.Fintype.BigOperators`, `Mathlib.Data.Real.Basic`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.MatrixPowersJordan`, `NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.Complex`, `NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.Complex`, `NumStability.Analysis.MatrixNorms.Basic`, `NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.ComplexSimilarity`, and `NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.ComplexJordan` |
++| `NumStability.Algorithms.MatrixPowersJordan` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.BigOperators.Ring.Finset`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Analysis.Complex.ExponentialBounds`, `Mathlib.Analysis.SpecificLimits.Basic`, `Mathlib.Data.Fintype.BigOperators`, `Mathlib.Data.Real.Basic`, `Mathlib.Tactic.FieldSimp`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.MatrixPowers`, `NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealJordan`, `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.RealJordan`, and `NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.RealJordan` |
++| `NumStability.Algorithms.MatrixPowersLp` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Data.Real.Basic`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.MatrixPowersComplex`, `NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds.ComplexDiagonal`, `NumStability.Analysis.MatrixNorms.Lp`, and `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.LpDiagonal` |
++| `NumStability.Algorithms.MatrixPowersLpJordan` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Data.Real.Basic`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.MatrixPowersLp`, `NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds.ComplexJordan`, `NumStability.Analysis.MatrixNorms.Lp`, and `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.LpJordan` |
++| `NumStability.Algorithms.MatrixPowersPseudospectral` | `NumStability.Algorithms.MatrixPowersComplex`, `NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation.Definitions`, `NumStability.Analysis.MatrixNorms.SpectralRadius`, and `NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.PseudospectralPackaging` |
++| `NumStability.Algorithms.MatrixPowersPseudospectralCriterion` | `NumStability.Algorithms.MatrixPowersPseudospectral`, `NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation.ConvergenceCriterion`, and `NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.PseudospectralCriterion` |
++| `NumStability.Algorithms.MatrixPowersSpectral` | `Mathlib.Analysis.Matrix.Normed`, `Mathlib.Analysis.Normed.Algebra.GelfandFormula`, `Mathlib.LinearAlgebra.Matrix.FiniteDimensional`, `NumStability.Algorithms.MatrixPowers`, `NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.SpectralRadius`, and `NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.SpectralCriterion` |
+@@ -457,0 +466,7 @@
++| `NumStability.Analysis.BergerGeneral` | `Mathlib.Algebra.BigOperators.Intervals`, `Mathlib.Algebra.Field.GeomSum`, `Mathlib.Analysis.CStarAlgebra.Matrix`, `Mathlib.Analysis.Complex.Polynomial.Basic`, `Mathlib.Analysis.InnerProductSpace.LinearMap`, `Mathlib.Analysis.InnerProductSpace.Rayleigh`, `Mathlib.Analysis.SpecialFunctions.Complex.Circle`, `Mathlib.FieldTheory.IsAlgClosed.Basic`, `Mathlib.RingTheory.RootsOfUnity.Complex`, `NumStability.Analysis.BergerResolvent`, `NumStability.Analysis.NumericalRadius`, and `NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality.Powers` |
++| `NumStability.Analysis.BergerInequality` | `Mathlib.Analysis.InnerProductSpace.Rayleigh`, `Mathlib.Analysis.InnerProductSpace.Symmetric`, `Mathlib.LinearAlgebra.Matrix.Hermitian`, `NumStability.Analysis.LinearOperators.NumericalRadius.Berger.Hermitian`, and `NumStability.Analysis.NumericalRadius` |
++| `NumStability.Analysis.BergerResolvent` | `Mathlib.Analysis.CStarAlgebra.Matrix`, `Mathlib.Analysis.Complex.Polynomial.Basic`, `Mathlib.Analysis.InnerProductSpace.LinearMap`, `Mathlib.Analysis.InnerProductSpace.Rayleigh`, `Mathlib.Data.Real.Pointwise`, `Mathlib.FieldTheory.IsAlgClosed.Basic`, `NumStability.Analysis.LinearOperators.NumericalRadius.Berger.PowerTwo`, `NumStability.Analysis.NumericalRadius`, and `NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality.PowersOfTwo` |
++| `NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge` | `Mathlib.Analysis.CStarAlgebra.CStarMatrix`, `Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Order`, `Mathlib.Analysis.Matrix.Order`, `Mathlib.Data.Matrix.Block`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonal`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonalCompression`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPair`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairPinching`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeProjection`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeReflection`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteDimensional`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteMatrixOrder`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealOrder`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ProjectionReflection`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularCompression`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularMultiplication`, `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ReflectionAverage`, and `NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.StrictPositivity` |
++| `NumStability.Analysis.CStarMatrixBridge` | `Mathlib.Analysis.CStarAlgebra.CStarMatrix`, `Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Order`, `Mathlib.Analysis.Matrix.Order`, `Mathlib.Data.Matrix.Block`, `NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge`, and `NumStability.Analysis.MatrixAlgebra` |
++| `NumStability.Analysis.CStarMatrixExpectation` | `NumStability.Analysis.CStarMatrices.Expectation.Finite`, `NumStability.Analysis.CStarMatrixTrace`, and `NumStability.Analysis.FiniteProbability` |
++| `NumStability.Analysis.CStarMatrixTrace` | `Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.ExpLog.Basic`, `NumStability.Analysis.CStarMatrices.Trace.Basic`, `NumStability.Analysis.MatrixSpectral`, and `NumStability.Analysis.OperatorLog` |
+@@ -463,0 +479 @@
++| `NumStability.Analysis.DunfordResidue` | `Mathlib.MeasureTheory.Integral.CircleIntegral`, `NumStability.Analysis.FunctionalCalculus.Resolvent.DunfordResidue`, and `NumStability.Analysis.ResolventFunctionalCalculus` |
+@@ -466,0 +483,3 @@
++| `NumStability.Analysis.HenriciExtremal` | `Mathlib.Algebra.Order.BigOperators.Ring.Finset`, `Mathlib.Data.Complex.BigOperators`, `Mathlib.Data.Real.Sqrt`, `NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.Extremal`, and `NumStability.Analysis.MatrixPowersHenrici` |
++| `NumStability.Analysis.HenriciSharpConstant` | `Mathlib.Algebra.Order.BigOperators.Ring.Finset`, `Mathlib.Data.Real.Sqrt`, `NumStability.Analysis.HenriciExtremal`, and `NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.ImprovedConstant` |
++| `NumStability.Analysis.HenriciSharpConstantExact` | `Mathlib.Algebra.Order.BigOperators.Ring.Finset`, `Mathlib.Data.Real.Sqrt`, `NumStability.Analysis.HenriciSharpConstant`, and `NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SharpConstant` |
+@@ -480,0 +500 @@
++| `NumStability.Analysis.JordanNormalForm` | `Mathlib.Algebra.DirectSum.Module`, `Mathlib.Analysis.Complex.Polynomial.Basic`, `Mathlib.Data.Complex.Basic`, `Mathlib.Data.Matrix.Block`, `Mathlib.FieldTheory.IsAlgClosed.Basic`, `Mathlib.LinearAlgebra.Eigenspace.Basic`, `Mathlib.LinearAlgebra.Eigenspace.Triangularizable`, `Mathlib.LinearAlgebra.Matrix.Basis`, `Mathlib.LinearAlgebra.Matrix.ToLin`, and `NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition` |
+@@ -481,0 +502,17 @@
++| `NumStability.Analysis.LiebTrace` | `Mathlib.Algebra.Polynomial.Basic`, `Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Integral`, `Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Pi`, `Mathlib.Analysis.Calculus.DSlope`, `Mathlib.Analysis.Convex.Basic`, `Mathlib.Analysis.Matrix.HermitianFunctionalCalculus`, `Mathlib.Analysis.Matrix.Order`, `Mathlib.Analysis.Normed.Module.Basic`, `Mathlib.Analysis.SpecialFunctions.Integrals.Basic`, `Mathlib.Analysis.SpecialFunctions.Log.NegMulLog`, `Mathlib.MeasureTheory.Integral.Bochner.Basic`, `Mathlib.Topology.Algebra.Polynomial`, `Mathlib.Topology.ContinuousMap.Weierstrass`, `NumStability.Analysis.CStarMatrixExpectation`, `NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity`, and `NumStability.Analysis.OperatorLog` |
++| `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge` | `Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts`, `NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge`, `NumStability.Analysis.FunctionalCalculus.Resolvent.Analyticity`, `NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu.DistanceToInstability`, `NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss.ResolventBound`, `NumStability.Analysis.MatrixNorms.Basic`, `NumStability.Analysis.SingularValues.Basic`, `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ArcLengthPowerBounds.FiniteDimension`, and `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ResolventCoefficients.Analytic` |
++| `NumStability.Analysis.MatrixPowersBaiDemmelGu` | `Mathlib.Analysis.CStarAlgebra.CStarMatrix`, `Mathlib.Analysis.Complex.ExponentialBounds`, `Mathlib.Analysis.SpecialFunctions.Log.Basic`, `NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu.StabilityRadius`, `NumStability.Analysis.PseudospectralPowerBound`, and `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.BaiDemmelGu` |
++| `NumStability.Analysis.MatrixPowersBaiDemmelGuDistance` | `NumStability.Analysis.Conditioning.DistanceToSingularity`, `NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu.DistanceToInstability`, and `NumStability.Analysis.MatrixPowersBaiDemmelGu` |
++| `NumStability.Analysis.MatrixPowersBinomialBound` | `Mathlib.Analysis.CStarAlgebra.Matrix`, `NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.BinomialPowerBound`, `NumStability.Analysis.MatrixPowersSchur`, and `NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SchurBinomialBounds.Estimates` |
++| `NumStability.Analysis.MatrixPowersGautschi` | `NumStability.Algorithms.MatrixPowersComplex`, `NumStability.Algorithms.MatrixPowersLpJordan`, `NumStability.Analysis.LinearOperators.MatrixPowers.Gautschi.Bounds`, `NumStability.Analysis.MatrixNorms.Comparisons`, and `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.Gautschi` |
++| `NumStability.Analysis.MatrixPowersHenrici` | `Mathlib.Data.Complex.Basic`, `Mathlib.LinearAlgebra.Matrix.Charpoly.Basic`, `Mathlib.LinearAlgebra.Matrix.Trace`, and `NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.DepartureFromNormality` |
++| `NumStability.Analysis.MatrixPowersHenriciNormal` | `NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalMatrices`, `NumStability.Analysis.MatrixPowersHenrici`, `NumStability.Analysis.MatrixPowersSchur`, and `NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalCharacterization.Schur` |
++| `NumStability.Analysis.MatrixPowersKreiss` | `Mathlib.Analysis.Complex.Exponential`, `NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss.ResolventBound`, `NumStability.Analysis.PseudospectralPowerBound`, and `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.Kreiss` |
++| `NumStability.Analysis.MatrixPowersKreissSpijker` | `Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts`, `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge`, `NumStability.Analysis.MatrixPowersBaiDemmelGuDistance`, `NumStability.Analysis.MatrixPowersKreiss`, and `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreiss` |
++| `NumStability.Analysis.MatrixPowersLaszlo` | `NumStability.Analysis.HenriciExtremal`, `NumStability.Analysis.LinearOperators.MatrixPowers.Laszlo.NearestNormal`, `NumStability.Analysis.MatrixPowersHenriciNormal`, and `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.Laszlo` |
++| `NumStability.Analysis.MatrixPowersLp185Primary` | `Mathlib.Data.Real.Basic`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.MatrixPowersJordan`, `NumStability.Algorithms.MatrixPowersLp`, `NumStability.Algorithms.MatrixPowersLpJordan`, `NumStability.Analysis.MatrixNorms.Lp`, and `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.Equation05Primary` |
++| `NumStability.Analysis.MatrixPowersSchur` | `Mathlib.Analysis.CStarAlgebra.Matrix`, `NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.Schur`, `NumStability.Analysis.LinearOperators.Schur.Complex.Triangulation`, `NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.NormalMatrices.Powers`, `NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalCharacterization.Schur`, and `NumStability.Analysis.LinearOperators.Schur.Complex.NormalTriangular.Diagonal` |
++| `NumStability.Analysis.MatrixPowersSpijkerClosure` | `NumStability.Analysis.MatrixPowersSpijkerPlanarAnalysis`, `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.FiniteDimensionalPowerBounds.Kreiss`, and `NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional.Bounds` |
++| `NumStability.Analysis.MatrixPowersSpijkerPlanar` | `Mathlib.Algebra.Polynomial.Reverse`, `Mathlib.Algebra.Polynomial.Roots`, `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarAlgebra`, `NumStability.Analysis.MatrixPowersSpijkerRational`, and `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarCrossingBounds.Polynomial` |
++| `NumStability.Analysis.MatrixPowersSpijkerPlanarAnalysis` | `Mathlib.MeasureTheory.Integral.IntervalIntegral.DerivIntegrable`, `Mathlib.MeasureTheory.Integral.Prod`, `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarAnalysis`, `NumStability.Analysis.MatrixPowersSpijkerPlanar`, `NumStability.Analysis.SpijkerProjectionIntegral`, and `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarArcLength.Variation` |
++| `NumStability.Analysis.MatrixPowersSpijkerRational` | `Mathlib.LinearAlgebra.Matrix.Charpoly.Basic`, `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.Rational`, and `NumStability.Analysis.MatrixPowersKreissSpijker` |
+@@ -484,0 +522 @@
++| `NumStability.Analysis.NilpotentJordanChain` | `Mathlib.Algebra.DirectSum.Module`, `Mathlib.Algebra.Module.PID`, `Mathlib.Algebra.Polynomial.Module.AEval`, `Mathlib.Data.Fin.Rev`, `Mathlib.LinearAlgebra.StdBasis`, `Mathlib.RingTheory.AdjoinRoot`, `NumStability.Analysis.JordanNormalForm`, and `NumStability.Analysis.LinearOperators.Jordan.NormalForm.NilpotentChains` |
+@@ -491,0 +530,2 @@
++| `NumStability.Analysis.NumericalRadius` | `Mathlib.Analysis.CStarAlgebra.Matrix`, `Mathlib.Analysis.InnerProductSpace.LinearMap`, `Mathlib.Analysis.InnerProductSpace.Rayleigh`, and `NumStability.Analysis.LinearOperators.NumericalRadius.Core.Basic` |
++| `NumStability.Analysis.OperatorLog` | `Mathlib.Analysis.CStarAlgebra.CStarMatrix`, `Mathlib.Analysis.CStarAlgebra.Classes`, `Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.ExpLog.Order`, `Mathlib.Topology.Instances.Matrix`, `NumStability.Analysis.CStarMatrixBridge`, and `NumStability.Analysis.FunctionalCalculus.OperatorLog.Monotonicity` |
+@@ -515,0 +556,3 @@
++| `NumStability.Analysis.PseudospectralLowerBound` | `NumStability.Algorithms.MatrixPowersPseudospectralCriterion`, `NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation.LowerBounds`, and `NumStability.Analysis.SingularValues.Basic` |
++| `NumStability.Analysis.PseudospectralPowerBound` | `NumStability.Analysis.DunfordResidue`, `NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds.Contour`, and `NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.PowerBound` |
++| `NumStability.Analysis.PseudospectralResolvent` | `Mathlib.Analysis.Normed.Algebra.Spectrum`, `Mathlib.Analysis.SpecificLimits.Normed`, `NumStability.Algorithms.MatrixPowersPseudospectralCriterion`, and `NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent.LowerBounds` |
+@@ -518,0 +562 @@
++| `NumStability.Analysis.ResolventFunctionalCalculus` | `Mathlib.Analysis.Calculus.FDeriv.Mul`, `Mathlib.Analysis.Complex.CauchyIntegral`, `Mathlib.Analysis.Normed.Algebra.GelfandFormula`, `NumStability.Analysis.FunctionalCalculus.Resolvent.Analyticity`, and `NumStability.Analysis.PseudospectralResolvent` |
+@@ -526,0 +571 @@
++| `NumStability.Analysis.SpijkerProjectionIntegral` | `Mathlib.Analysis.SpecialFunctions.Complex.Arg`, `Mathlib.Analysis.SpecialFunctions.Integrals.Basic`, `Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic`, and `NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ProjectionIntegral` |
+diff --git a/docs/architecture/layout-exceptions.json b/docs/architecture/layout-exceptions.json
+index d4d919b4256ec8d8ea96a0e1fa55ebf979dbf256..14a544c281b631c62ef69c04d08145c9bbc9d8c1 100644
+--- a/docs/architecture/layout-exceptions.json
++++ b/docs/architecture/layout-exceptions.json
+@@ -359,5 +359 @@
+-      "NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum",
+-      "NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge",
+-      "NumStability.Analysis.CStarMatrixBridge",
+-      "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge",
+-      "NumStability.Analysis.MatrixPowersSpijkerClosure"
++      "NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum"
+@@ -366,8 +361,0 @@
+-      "NumStability.Algorithms.MatrixPowers",
+-      "NumStability.Algorithms.MatrixPowersComplex",
+-      "NumStability.Algorithms.MatrixPowersJordan",
+-      "NumStability.Algorithms.MatrixPowersLp",
+-      "NumStability.Algorithms.MatrixPowersLpJordan",
+-      "NumStability.Algorithms.MatrixPowersPseudospectral",
+-      "NumStability.Algorithms.MatrixPowersPseudospectralCriterion",
+-      "NumStability.Algorithms.MatrixPowersSpectral",
+@@ -463,36 +451 @@
+-      "NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum",
+-      "NumStability.Analysis.BergerGeneral",
+-      "NumStability.Analysis.BergerInequality",
+-      "NumStability.Analysis.BergerResolvent",
+-      "NumStability.Analysis.CStarMatrixBridge",
+-      "NumStability.Analysis.CStarMatrixExpectation",
+-      "NumStability.Analysis.CStarMatrixTrace",
+-      "NumStability.Analysis.DunfordResidue",
+-      "NumStability.Analysis.HenriciExtremal",
+-      "NumStability.Analysis.HenriciSharpConstant",
+-      "NumStability.Analysis.HenriciSharpConstantExact",
+-      "NumStability.Analysis.JordanNormalForm",
+-      "NumStability.Analysis.LiebTrace",
+-      "NumStability.Analysis.MatrixPowersBaiDemmelGu",
+-      "NumStability.Analysis.MatrixPowersBaiDemmelGuDistance",
+-      "NumStability.Analysis.MatrixPowersBinomialBound",
+-      "NumStability.Analysis.MatrixPowersGautschi",
+-      "NumStability.Analysis.MatrixPowersHenrici",
+-      "NumStability.Analysis.MatrixPowersHenriciNormal",
+-      "NumStability.Analysis.MatrixPowersKreiss",
+-      "NumStability.Analysis.MatrixPowersKreissSpijker",
+-      "NumStability.Analysis.MatrixPowersLaszlo",
+-      "NumStability.Analysis.MatrixPowersLp185Primary",
+-      "NumStability.Analysis.MatrixPowersSchur",
+-      "NumStability.Analysis.MatrixPowersSpijkerClosure",
+-      "NumStability.Analysis.MatrixPowersSpijkerPlanar",
+-      "NumStability.Analysis.MatrixPowersSpijkerPlanarAnalysis",
+-      "NumStability.Analysis.MatrixPowersSpijkerRational",
+-      "NumStability.Analysis.NilpotentJordanChain",
+-      "NumStability.Analysis.NumericalRadius",
+-      "NumStability.Analysis.OperatorLog",
+-      "NumStability.Analysis.PseudospectralLowerBound",
+-      "NumStability.Analysis.PseudospectralPowerBound",
+-      "NumStability.Analysis.PseudospectralResolvent",
+-      "NumStability.Analysis.ResolventFunctionalCalculus",
+-      "NumStability.Analysis.SpijkerProjectionIntegral"
++      "NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum"
+diff --git a/docs/architecture/tiers.json b/docs/architecture/tiers.json
+index 30b89378516465f0ce97df6db31fb0b192976cfa..8e6fbb6a2dcf93b88337af41b991445c4e1804db 100644
+--- a/docs/architecture/tiers.json
++++ b/docs/architecture/tiers.json
+@@ -575,0 +576 @@
++    "NumStability.Algorithms.MatrixPowers": "compatibility",
+@@ -578,0 +580,7 @@
++    "NumStability.Algorithms.MatrixPowersComplex": "compatibility",
++    "NumStability.Algorithms.MatrixPowersJordan": "compatibility",
++    "NumStability.Algorithms.MatrixPowersLp": "compatibility",
++    "NumStability.Algorithms.MatrixPowersLpJordan": "compatibility",
++    "NumStability.Algorithms.MatrixPowersPseudospectral": "compatibility",
++    "NumStability.Algorithms.MatrixPowersPseudospectralCriterion": "compatibility",
++    "NumStability.Algorithms.MatrixPowersSpectral": "compatibility",
+@@ -832,0 +841,3 @@
++    "NumStability.Analysis.BergerGeneral": "compatibility",
++    "NumStability.Analysis.BergerInequality": "compatibility",
++    "NumStability.Analysis.BergerResolvent": "compatibility",
+@@ -837 +848 @@
+-    "NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge": "reusable",
++    "NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge": "compatibility",
+@@ -840,0 +852,16 @@
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra": "aggregate",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonal": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonalCompression": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPair": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairPinching": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeProjection": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeReflection": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteDimensional": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteMatrixOrder": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealOrder": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ProjectionReflection": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularCompression": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularMultiplication": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ReflectionAverage": "reusable",
++    "NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.StrictPositivity": "reusable",
+@@ -843,0 +871,3 @@
++    "NumStability.Analysis.CStarMatrixBridge": "compatibility",
++    "NumStability.Analysis.CStarMatrixExpectation": "compatibility",
++    "NumStability.Analysis.CStarMatrixTrace": "compatibility",
+@@ -856,0 +887 @@
++    "NumStability.Analysis.DunfordResidue": "compatibility",
+@@ -892,0 +924,3 @@
++    "NumStability.Analysis.HenriciExtremal": "compatibility",
++    "NumStability.Analysis.HenriciSharpConstant": "compatibility",
++    "NumStability.Analysis.HenriciSharpConstantExact": "compatibility",
+@@ -907,0 +942 @@
++    "NumStability.Analysis.JordanNormalForm": "compatibility",
+@@ -913,0 +949 @@
++    "NumStability.Analysis.LiebTrace": "compatibility",
+@@ -928,0 +965,2 @@
++    "NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.NormalMatrices": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.NormalMatrices.Powers": "reusable",
+@@ -940,0 +979,2 @@
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalCharacterization": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalCharacterization.Schur": "reusable",
+@@ -941,0 +982,2 @@
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SchurBinomialBounds": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SchurBinomialBounds.Estimates": "reusable",
+@@ -961 +1003,5 @@
+-    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ArcLengthPowerBounds": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ArcLengthPowerBounds.FiniteDimension": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.FiniteDimensionalPowerBounds": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.FiniteDimensionalPowerBounds.Kreiss": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge": "compatibility",
+@@ -963,0 +1010,4 @@
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarArcLength": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarArcLength.Variation": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarCrossingBounds": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarCrossingBounds.Polynomial": "reusable",
+@@ -965,0 +1016,2 @@
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ResolventCoefficients": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ResolventCoefficients.Analytic": "reusable",
+@@ -968,0 +1021,3 @@
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality": "aggregate",
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality.Powers": "reusable",
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality.PowersOfTwo": "reusable",
+@@ -969,0 +1025 @@
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Berger.Internal.HermitianEuclideanSpaceNotation": "internal",
+@@ -973,0 +1030 @@
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Core.Internal.EuclideanSpaceNotation": "internal",
+@@ -984,0 +1042 @@
++    "NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent.Internal.ScalarNotation": "internal",
+@@ -989,0 +1048,2 @@
++    "NumStability.Analysis.LinearOperators.Schur.Complex.NormalTriangular": "aggregate",
++    "NumStability.Analysis.LinearOperators.Schur.Complex.NormalTriangular.Diagonal": "reusable",
+@@ -1028,0 +1089,15 @@
++    "NumStability.Analysis.MatrixPowersBaiDemmelGu": "compatibility",
++    "NumStability.Analysis.MatrixPowersBaiDemmelGuDistance": "compatibility",
++    "NumStability.Analysis.MatrixPowersBinomialBound": "compatibility",
++    "NumStability.Analysis.MatrixPowersGautschi": "compatibility",
++    "NumStability.Analysis.MatrixPowersHenrici": "compatibility",
++    "NumStability.Analysis.MatrixPowersHenriciNormal": "compatibility",
++    "NumStability.Analysis.MatrixPowersKreiss": "compatibility",
++    "NumStability.Analysis.MatrixPowersKreissSpijker": "compatibility",
++    "NumStability.Analysis.MatrixPowersLaszlo": "compatibility",
++    "NumStability.Analysis.MatrixPowersLp185Primary": "compatibility",
++    "NumStability.Analysis.MatrixPowersSchur": "compatibility",
++    "NumStability.Analysis.MatrixPowersSpijkerClosure": "compatibility",
++    "NumStability.Analysis.MatrixPowersSpijkerPlanar": "compatibility",
++    "NumStability.Analysis.MatrixPowersSpijkerPlanarAnalysis": "compatibility",
++    "NumStability.Analysis.MatrixPowersSpijkerRational": "compatibility",
+@@ -1033,0 +1109 @@
++    "NumStability.Analysis.NilpotentJordanChain": "compatibility",
+@@ -1042,0 +1119,2 @@
++    "NumStability.Analysis.NumericalRadius": "compatibility",
++    "NumStability.Analysis.OperatorLog": "compatibility",
+@@ -1083,0 +1162,3 @@
++    "NumStability.Analysis.PseudospectralLowerBound": "compatibility",
++    "NumStability.Analysis.PseudospectralPowerBound": "compatibility",
++    "NumStability.Analysis.PseudospectralResolvent": "compatibility",
+@@ -1088,0 +1170 @@
++    "NumStability.Analysis.ResolventFunctionalCalculus": "compatibility",
+@@ -1108,0 +1191 @@
++    "NumStability.Analysis.SpijkerProjectionIntegral": "compatibility",
+@@ -1667,0 +1751,2 @@
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional.Bounds": "source",

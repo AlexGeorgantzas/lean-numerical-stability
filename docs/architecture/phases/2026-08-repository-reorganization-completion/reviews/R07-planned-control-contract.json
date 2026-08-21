@@ -1,0 +1,439 @@
+{
+ "accepted_control_sha": "52552c8e3ddd9381f36bec8ccb694cf8c830cd49",
+ "artifact_hash_scope": {
+  "lifecycle_mutable_paths": [
+   "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010.json",
+   "docs/architecture/phases/2026-08-repository-reorganization-completion/phase.json",
+   "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0010.json",
+   "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0011.json"
+  ],
+  "mode": "planned_state_only"
+ },
+ "artifacts": [
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0005-combined.json",
+   "sha256": "2FC0C95FFECF114A2EDB8C14DB8C2874BDBB85FCEBA722C345AA084B3E97C02A"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0005-combined.md",
+   "sha256": "69FF97AF03CD489AAA9A47240169217628293CD1DB33AAB02D174BF501B0EB49"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-R0011-import-manifest.tsv",
+   "sha256": "3F25D0F9A5F1BE095870F96ADD1F6A8E3341176668CB770D4AC917796A69D853"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-branch-prefixes.txt",
+   "sha256": "0805F884746515579CF24B774B59881FB38438F1C4553D501CAFA6E9E438C9C3"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-consumers.tsv",
+   "sha256": "2E057F3B6C28C86CEC5A52EF48E41AA86B08F3EE4BCA9A8D456C313A0FF2D90A"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-declaration-routes.tsv",
+   "sha256": "03C9D117716ABC19F64F9304DDE169FE7691A9215C139A08C70681F180DD9C16"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-destination-dag.tsv",
+   "sha256": "1C612EE6C59ECB9081E47FC9683F057D85C6050A22797363BE95DD6211583839"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-destination-modules.txt",
+   "sha256": "14AE6BCB1F51C2FA3E901CF34EBF5118B09AFEE5D0FE988D6B59891D0F47F02E"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-destination-prefixes.txt",
+   "sha256": "DE0CA9467D56AA605C2B421923E25ADE0AB80FE5C778BA7E5B2F169ECAE9EEBF"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-destinations.tsv",
+   "sha256": "36DDEFC49A8D94D02DF08866343E2210E9D525B89535482A47EEE6E4BE9FA976"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-external-owner-supply.tsv",
+   "sha256": "EC3E65376EA724B15A54A268731345A22EFF64AE2545754EC3BF6CFEFABFD9A9"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-inventory.tsv",
+   "sha256": "3BEE15970153A2205B522C78098E1FE865D2514772DBAD41B6B736C42C3446C3"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-module-routes.tsv",
+   "sha256": "A3025D8DF5940D206280E6B12DB892952111F46E31616FCA7D3D99105D6C074D"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-overlap-review.json",
+   "sha256": "8E7A013A43ED580CD76004616CAF63164803AF6CDEDD429E78B432133237B0DC"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-post-move-import-manifest.tsv",
+   "sha256": "788DC7987191EBF9325F8DE253DC793FAF3BF8AB1119F201B5E0918971C194E1"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-private-closure.tsv",
+   "sha256": "3D7B5DFFCEEE3C4F9AEB3AD6F3793F7457A7BE66BBF09F0C973D8195C7494C56"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-private-normalization.tsv",
+   "sha256": "CA0D8BF8C0FC6179A9DFD03F68B1BAA69A0D4EE78A0BEFCB0541B839EE755B16"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-scope-rules.tsv",
+   "sha256": "93EDAEEAC6F9E452E20104CFC5E246B025365BCE1BF6EF7D03D653B2E210D0C9"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-shared-request-paths.txt",
+   "sha256": "C05FA858BF0B5CC3A23F06DEC83F0738780566EA89A172DCA446D4F7129CB901"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-source-commands.tsv",
+   "sha256": "827F459AFDBFA75E55A59953681D2920D14961D62B1334452E33C839A30AE614"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-test-modules.txt",
+   "sha256": "95E8D145B5E25C0D4C7B251E169A793D47FC20244C3283D806F9793EC0EFB87C"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-test-plan.tsv",
+   "sha256": "60CDF737B207BF571176378D40BF484004D8E61DF252C84C37CD8885830E804F"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-tier-assignments.tsv",
+   "sha256": "DAB044B985A7856A9023F76F3CE5E3CB41E4E290F2781211339B933F69AC6D27"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010-wrapper-imports.tsv",
+   "sha256": "A1C9F75C769BC269AE55B1D50586C7777305AD3F817F4FF3D41334F712BEF19B"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0010.json",
+   "sha256": "7C1B62194444484976943ED664AF8692814C9978F85BDCE25CAF93AE7BDA22F2"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0005-inventory.tsv",
+   "sha256": "7C383B1AF57F65F9559C81402013412172CC93B623F7ED2E26968B9C7AFB4172"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0005.json",
+   "sha256": "CBC895B27F9A81C74EF885D4246776E3F29AB58D4095A45EEECF3D6CFBDFD47F"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/phase.json",
+   "sha256": "9C370520B4A3112753B6C641E3EB39253C4993599B2C752C3BCA4768E439B413"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0010.json",
+   "sha256": "DF459DA1FE80CC491C97CBDB2A55F03D82AC255BEA7DDE6D123CEBE151926AD1"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0010.tsv.gz",
+   "sha256": "BFAF298CE8BFB295552D48C04DF8D74DD717A2EBAA701E396C9651C798671F97"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0011-import-manifest.tsv",
+   "sha256": "3F25D0F9A5F1BE095870F96ADD1F6A8E3341176668CB770D4AC917796A69D853"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0011-postimages.tsv",
+   "sha256": "C7B86B602A290650F8ABEA64281DF02A7C6DF94202C4C3FEB5694566A748D0DE"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0011-request-plan.tsv",
+   "sha256": "9316DE9A594E7E924CC2213692ED23B49DCBB5BCCD21285642A60D5B0E09E35D"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0011.json",
+   "sha256": "EA1DB32ACE4243F8223696D2A2AFAAB43C24AC97187861D0A07462B722E4C28C"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0011.patch",
+   "sha256": "6C4BCAFDEB8CF97197F7A46D2CAA5BF05F5A1F81A1DAC4284A615B5AD8E9C122"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0005-acceptance-control-ci.json",
+   "sha256": "977AD3B2B9BCCF468A78F304A09B5D349413E69D83E970C98C20463313EECB86"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-COMPATIBILITY-postimage.md",
+   "sha256": "FB8C43F1FB8AB3974B0DF4AB1A646A440BCCDBB519D59E2B01773EFDA5B37D67"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-R0011-import-manifest.tsv",
+   "sha256": "3F25D0F9A5F1BE095870F96ADD1F6A8E3341176668CB770D4AC917796A69D853"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-R0011-render-review.json",
+   "sha256": "7540AC0423E0890180C8721D4C2D7D947248D5450D6AC1914802EC7042CE455B"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-R0011-request-plan.tsv",
+   "sha256": "9316DE9A594E7E924CC2213692ED23B49DCBB5BCCD21285642A60D5B0E09E35D"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-consumers.tsv",
+   "sha256": "2E057F3B6C28C86CEC5A52EF48E41AA86B08F3EE4BCA9A8D456C313A0FF2D90A"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-declaration-routes.tsv",
+   "sha256": "03C9D117716ABC19F64F9304DDE169FE7691A9215C139A08C70681F180DD9C16"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-destination-dag.tsv",
+   "sha256": "1C612EE6C59ECB9081E47FC9683F057D85C6050A22797363BE95DD6211583839"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-destinations.tsv",
+   "sha256": "36DDEFC49A8D94D02DF08866343E2210E9D525B89535482A47EEE6E4BE9FA976"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-external-owner-supply.tsv",
+   "sha256": "EC3E65376EA724B15A54A268731345A22EFF64AE2545754EC3BF6CFEFABFD9A9"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-inventory.tsv",
+   "sha256": "3BEE15970153A2205B522C78098E1FE865D2514772DBAD41B6B736C42C3446C3"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-module-routes.tsv",
+   "sha256": "A3025D8DF5940D206280E6B12DB892952111F46E31616FCA7D3D99105D6C074D"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-overlap-review.json",
+   "sha256": "8E7A013A43ED580CD76004616CAF63164803AF6CDEDD429E78B432133237B0DC"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-post-move-import-manifest.tsv",
+   "sha256": "788DC7987191EBF9325F8DE253DC793FAF3BF8AB1119F201B5E0918971C194E1"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-primary-human-review.json",
+   "sha256": "1F67DFA16363A0D61B4139071777194853F4F19EDB95C63569100B6C74CD676E"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-private-closure.tsv",
+   "sha256": "3D7B5DFFCEEE3C4F9AEB3AD6F3793F7457A7BE66BBF09F0C973D8195C7494C56"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-private-normalization.tsv",
+   "sha256": "CA0D8BF8C0FC6179A9DFD03F68B1BAA69A0D4EE78A0BEFCB0541B839EE755B16"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-projection-review.json",
+   "sha256": "5DFFA849C60AF9B7AE776816B427BE184FA4C6A1F8016D370C83D21353984D4E"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-review-packet.json",
+   "sha256": "8DB28D387917696E4F7C2E624D4C4E373D21F1E7D01E575853CCD71A7421C366"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-scope-rules.tsv",
+   "sha256": "93EDAEEAC6F9E452E20104CFC5E246B025365BCE1BF6EF7D03D653B2E210D0C9"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-source-commands.tsv",
+   "sha256": "827F459AFDBFA75E55A59953681D2920D14961D62B1334452E33C839A30AE614"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-test-plan.tsv",
+   "sha256": "60CDF737B207BF571176378D40BF484004D8E61DF252C84C37CD8885830E804F"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-tier-assignments.tsv",
+   "sha256": "DAB044B985A7856A9023F76F3CE5E3CB41E4E290F2781211339B933F69AC6D27"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-wrapper-imports.tsv",
+   "sha256": "A1C9F75C769BC269AE55B1D50586C7777305AD3F817F4FF3D41334F712BEF19B"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/selectors/R07.tsv",
+   "sha256": "62DE8B696298B5AE913FD10DC7736A1414E3B903C2652D6E883584FABEBCF715"
+  },
+  {
+   "path": "tools/architecture/generate_c0006_planning_controls.py",
+   "sha256": "3DF6DABF75581E524F77496F55D077D91F6DB2D12DE5F126187001C67080A670"
+  },
+  {
+   "path": "tools/architecture/r07_shared_postimages.py",
+   "sha256": "3ECC5D64FF466E2982CAF750B49F183F11907F460C3625744825ACB522FA5C86"
+  }
+ ],
+ "base_checkpoint_id": "C0005",
+ "base_code_sha": "ad92bbfae62d538f3e52829a269a846688a8e213",
+ "branch_id": "B0010",
+ "counts": {
+  "artifact_rows": 62,
+  "branch_prefixes": 17,
+  "consumer_edges": 121,
+  "declarations": 194,
+  "destination_dag_body_edges": 136,
+  "destination_dag_rows": 30,
+  "destination_dag_signature_edges": 31,
+  "destinations": 30,
+  "external_consumers": 24,
+  "external_import_edges": 73,
+  "external_owner_supply_rows": 31,
+  "forbidden_exact": 2804,
+  "forbidden_prefix": 6,
+  "internal_import_edges": 48,
+  "module_routes": 45,
+  "owners": 45,
+  "post_move_import_rows": 760,
+  "private_closure": 77,
+  "private_declarations": 44,
+  "private_normalization": 44,
+  "public_declarations": 150,
+  "request_paths": 46,
+  "scope_rows": 2918,
+  "source_commands": 194,
+  "test_rows": 102,
+  "tier_rows": 87,
+  "wrapper_rows": 45
+ },
+ "headers": {
+  "consumers": [
+   "consumer_module",
+   "consumer_path",
+   "consumer_scope",
+   "old_import",
+   "new_import"
+  ],
+  "declaration_routes": [
+   "baseline_owner_module",
+   "baseline_declaration_name",
+   "visibility",
+   "kind",
+   "projection_order",
+   "source_ordinal",
+   "destination_module",
+   "route_class",
+   "normalization_decision"
+  ],
+  "destination_dag": [
+   "from_destination",
+   "to_destination",
+   "signature_edges",
+   "body_edges"
+  ],
+  "external_owner_supply": [
+   "destination_module",
+   "referenced_owner_module",
+   "signature_edge_count",
+   "body_edge_count",
+   "recursive_frontier_direct",
+   "post_r0011_supply"
+  ],
+  "module_routes": [
+   "owner_module",
+   "path",
+   "base_blob_oid",
+   "current_tier",
+   "debt_flags",
+   "declaration_count",
+   "semantic_classification",
+   "destination_modules",
+   "compatibility_action",
+   "split_rationale",
+   "dependency_rationale",
+   "review_status"
+  ],
+  "post_move_import_manifest": [
+   "module",
+   "role",
+   "import_order",
+   "lean_import_line",
+   "provenance"
+  ],
+  "private_closure": [
+   "declaration",
+   "owner_module",
+   "visibility",
+   "selected_owner",
+   "closure_role",
+   "seed_memberships",
+   "membership_witnesses",
+   "co_route_component",
+   "minimum_depth",
+   "signature_edge_span",
+   "body_edge_span"
+  ],
+  "private_normalization": [
+   "old_private",
+   "new_private",
+   "destination_module"
+  ],
+  "request_plan": [
+   "path",
+   "base_blob_oid",
+   "transform",
+   "add_imports",
+   "remove_imports",
+   "declaration_use_witnesses",
+   "test_witnesses",
+   "rationale"
+  ],
+  "selector": [
+   "module",
+   "path"
+  ],
+  "source_commands": [
+   "owner_module",
+   "path",
+   "base_blob_oid",
+   "baseline_declaration_name",
+   "ilean_path",
+   "ilean_sha256",
+   "ilean_root",
+   "source_ordinal",
+   "start_line_0",
+   "start_column_0",
+   "end_line_0",
+   "end_column_0",
+   "selection_start_line_0",
+   "selection_start_column_0",
+   "selection_end_line_0",
+   "selection_end_column_0",
+   "command_sha256"
+  ],
+  "test_plan": [
+   "test_class",
+   "target",
+   "imports",
+   "expected_declarations",
+   "forbidden_imports",
+   "purpose"
+  ],
+  "tier_assignments": [
+   "module",
+   "tier",
+   "reason"
+  ],
+  "wrapper_plan": [
+   "owner_module",
+   "path",
+   "base_blob_oid",
+   "preserved_imports",
+   "appended_imports",
+   "post_imports"
+  ]
+ },
+ "lifecycle": {
+  "branch_status": "planned",
+  "milestone_status": "ready",
+  "projection_status": "active",
+  "request_status": "active"
+ },
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "projected_remaining_queue": {
+  "R09": 72,
+  "R10": 18
+ },
+ "projection_id": "P0010",
+ "record_kind": "r07_planned_control_contract",
+ "request_id": "R0011",
+ "review_id": "R07-C0005-semantic-v1",
+ "reviewed_at": "2026-08-21T11:11:01Z",
+ "schema_version": 1,
+ "wave_id": "R07"
+}

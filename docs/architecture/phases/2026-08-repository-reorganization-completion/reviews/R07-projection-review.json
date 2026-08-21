@@ -1,0 +1,18 @@
+{
+ "base_checkpoint_id": "C0005",
+ "base_code_sha": "ad92bbfae62d538f3e52829a269a846688a8e213",
+ "counts": {
+  "body_edges": 752,
+  "declarations": 194,
+  "signature_edges": 243,
+  "union_edges": 775
+ },
+ "graph_sha256": "85C7B3D06019C92B7234EF5422681E46A9825F733A1AC4AB58A3F8B9B91C345B",
+ "gzip_sha256": "BFAF298CE8BFB295552D48C04DF8D74DD717A2EBAA701E396C9651C798671F97",
+ "payload_sha256": "27313A98B70A8BFEC7F6DF1F2CBE796D4B420A03EE91D7BF136E8AF4F93E8A90",
+ "projection_id": "P0010",
+ "selected_inventory_count": 45,
+ "selector_count": 45,
+ "status": "review_candidate",
+ "wave_id": "R07"
+}

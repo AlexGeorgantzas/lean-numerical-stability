@@ -1,0 +1,202 @@
+{
+ "accepted_control": {
+  "checkpoint_id": "C0005",
+  "commit_sha": "52552c8e3ddd9381f36bec8ccb694cf8c830cd49",
+  "commit_tree_sha": "6240f606b7208cd39bf710f619278fa2c8c64f5f",
+  "committed_at": "2026-08-20T16:53:53Z",
+  "message": "chore(reorganization): accept C0005 R04 R08 epoch",
+  "parent_code_sha": "ad92bbfae62d538f3e52829a269a846688a8e213"
+ },
+ "attestation_id": "C0005-acceptance-control-ci",
+ "cardinality": {
+  "artifact_count": 0,
+  "job_count": 1,
+  "job_ids": [
+   96508922114
+  ],
+  "pull_request_count": 0,
+  "referenced_workflow_count": 0
+ },
+ "check_run": {
+  "app": {
+   "id": 15368,
+   "name": "GitHub Actions",
+   "slug": "github-actions"
+  },
+  "check_suite_id": 87818531615,
+  "completed_at": "2026-08-20T17:05:19Z",
+  "conclusion": "success",
+  "details_url": "https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/32394769969/job/96508922114",
+  "external_id": "6daad57d-0400-506d-a5da-70c142cefdb4",
+  "head_sha": "52552c8e3ddd9381f36bec8ccb694cf8c830cd49",
+  "id": 96508922114,
+  "name": "build",
+  "node_id": "CR_kwDORdQhas8AAAAWeGFJAg",
+  "started_at": "2026-08-20T16:56:06Z",
+  "status": "completed"
+ },
+ "check_suite": {
+  "after_sha": "52552c8e3ddd9381f36bec8ccb694cf8c830cd49",
+  "app": {
+   "id": 15368,
+   "name": "GitHub Actions",
+   "slug": "github-actions"
+  },
+  "before_sha": "ad92bbfae62d538f3e52829a269a846688a8e213",
+  "conclusion": "success",
+  "created_at": "2026-08-20T16:56:02Z",
+  "head_branch": "main",
+  "head_sha": "52552c8e3ddd9381f36bec8ccb694cf8c830cd49",
+  "id": 87818531615,
+  "latest_check_runs_count": 1,
+  "node_id": "CS_kwDORdQhas8AAAAUcmRzHw",
+  "status": "completed",
+  "updated_at": "2026-08-20T17:05:20Z"
+ },
+ "evidence_scope": {
+  "does_not_authorize_or_record": [
+   "B0008 branch retirement",
+   "B0009 branch retirement",
+   "remote ref deletion",
+   "worker worktree removal",
+   "R07 self-acceptance"
+  ],
+  "proves": [
+   "the exact C0005 acceptance-control commit completed GitHub Lean CI successfully",
+   "the sole recorded build job and every recorded job step completed successfully"
+  ],
+  "use": "R07 activation prerequisite only"
+ },
+ "job": {
+  "check_run_url": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/check-runs/96508922114",
+  "completed_at": "2026-08-20T17:05:19Z",
+  "conclusion": "success",
+  "created_at": "2026-08-20T16:56:02Z",
+  "head_branch": "main",
+  "head_sha": "52552c8e3ddd9381f36bec8ccb694cf8c830cd49",
+  "html_url": "https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/32394769969/job/96508922114",
+  "id": 96508922114,
+  "labels": [
+   "ubuntu-latest"
+  ],
+  "name": "build",
+  "node_id": "CR_kwDORdQhas8AAAAWeGFJAg",
+  "run_attempt": 1,
+  "run_id": 32394769969,
+  "run_url": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/actions/runs/32394769969",
+  "runner_group_id": 0,
+  "runner_group_name": "GitHub Actions",
+  "runner_id": 1000008975,
+  "runner_name": "GitHub Actions 1000008975",
+  "started_at": "2026-08-20T16:56:06Z",
+  "status": "completed",
+  "steps": [
+   {
+    "completed_at": "2026-08-20T16:56:08Z",
+    "conclusion": "success",
+    "name": "Set up job",
+    "number": 1,
+    "started_at": "2026-08-20T16:56:07Z",
+    "status": "completed"
+   },
+   {
+    "completed_at": "2026-08-20T16:56:36Z",
+    "conclusion": "success",
+    "name": "Run actions/checkout@v5",
+    "number": 2,
+    "started_at": "2026-08-20T16:56:08Z",
+    "status": "completed"
+   },
+   {
+    "completed_at": "2026-08-20T17:00:35Z",
+    "conclusion": "success",
+    "name": "Check architecture source graph and Python tooling",
+    "number": 3,
+    "started_at": "2026-08-20T16:56:36Z",
+    "status": "completed"
+   },
+   {
+    "completed_at": "2026-08-20T17:05:16Z",
+    "conclusion": "success",
+    "name": "Build library and smoke tests",
+    "number": 4,
+    "started_at": "2026-08-20T17:00:35Z",
+    "status": "completed"
+   },
+   {
+    "completed_at": "2026-08-20T17:05:16Z",
+    "conclusion": "success",
+    "name": "Post Run actions/checkout@v5",
+    "number": 8,
+    "started_at": "2026-08-20T17:05:16Z",
+    "status": "completed"
+   },
+   {
+    "completed_at": "2026-08-20T17:05:16Z",
+    "conclusion": "success",
+    "name": "Complete job",
+    "number": 9,
+    "started_at": "2026-08-20T17:05:16Z",
+    "status": "completed"
+   }
+  ],
+  "url": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/actions/jobs/96508922114",
+  "workflow_name": "Lean CI"
+ },
+ "record_kind": "checkpoint_external_ci_attestation",
+ "repository": {
+  "full_name": "AlexGeorgantzas/lean-numerical-stability",
+  "html_url": "https://github.com/AlexGeorgantzas/lean-numerical-stability",
+  "id": 1171530090,
+  "node_id": "R_kgDORdQhag"
+ },
+ "run": {
+  "actor": {
+   "id": 11722713,
+   "login": "kfoynt",
+   "node_id": "MDQ6VXNlcjExNzIyNzEz"
+  },
+  "check_suite_id": 87818531615,
+  "check_suite_node_id": "CS_kwDORdQhas8AAAAUcmRzHw",
+  "conclusion": "success",
+  "created_at": "2026-08-20T16:56:02Z",
+  "display_title": "chore(reorganization): accept C0005 R04 R08 epoch",
+  "event": "push",
+  "head_branch": "main",
+  "head_sha": "52552c8e3ddd9381f36bec8ccb694cf8c830cd49",
+  "html_url": "https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/32394769969",
+  "id": 32394769969,
+  "jobs_url": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/actions/runs/32394769969/jobs",
+  "name": "Lean CI",
+  "node_id": "WFR_kwLORdQhas8AAAAHiuD2MQ",
+  "run_attempt": 1,
+  "run_number": 8929,
+  "run_started_at": "2026-08-20T16:56:02Z",
+  "status": "completed",
+  "triggering_actor": {
+   "id": 11722713,
+   "login": "kfoynt",
+   "node_id": "MDQ6VXNlcjExNzIyNzEz"
+  },
+  "updated_at": "2026-08-20T17:05:20Z",
+  "url": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/actions/runs/32394769969",
+  "workflow_id": 240911818
+ },
+ "schema_version": 1,
+ "source_api": {
+  "accept": "application/vnd.github+json",
+  "api_version": "2022-11-28",
+  "check_run_endpoint": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/check-runs/96508922114",
+  "check_suite_endpoint": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/check-suites/87818531615",
+  "job_endpoint": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/actions/jobs/96508922114",
+  "jobs_endpoint": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/actions/runs/32394769969/jobs?filter=all&per_page=100",
+  "run_endpoint": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/actions/runs/32394769969"
+ },
+ "workflow": {
+  "file_blob_oid": "00e7ec449e46353f181eca7c9c8dfb538f1a4c47",
+  "file_sha256": "0A9E8B535D7A780623557A107E00D02B44513E650A4F6C5A259FC0323A435FD7",
+  "id": 240911818,
+  "name": "Lean CI",
+  "path": ".github/workflows/lean_action_ci.yml"
+ }
+}

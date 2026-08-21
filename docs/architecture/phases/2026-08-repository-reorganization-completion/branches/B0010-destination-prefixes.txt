@@ -1,0 +1,15 @@
+NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/
+NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/NormalMatrices/
+NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/NormalCharacterization/
+NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/SchurBinomialBounds/
+NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ArcLengthPowerBounds/
+NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/FiniteDimensionalPowerBounds/
+NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarArcLength/
+NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarCrossingBounds/
+NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ResolventCoefficients/
+NumStability/Analysis/LinearOperators/NumericalRadius/Berger/GeneralPowerInequality/
+NumStability/Analysis/LinearOperators/NumericalRadius/Berger/Internal/
+NumStability/Analysis/LinearOperators/NumericalRadius/Core/Internal/
+NumStability/Analysis/LinearOperators/Pseudospectra/Resolvent/Internal/
+NumStability/Analysis/LinearOperators/Schur/Complex/NormalTriangular/
+NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreissUnconditional/

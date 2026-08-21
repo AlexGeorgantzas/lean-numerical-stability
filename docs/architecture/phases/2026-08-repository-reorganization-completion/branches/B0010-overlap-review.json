@@ -1,0 +1,106 @@
+{
+ "base_checkpoint_id": "C0005",
+ "base_code_sha": "ad92bbfae62d538f3e52829a269a846688a8e213",
+ "consumer_counts": {
+  "external_consumers": 24,
+  "external_import_edges": 73,
+  "internal_import_edges": 48,
+  "total_import_edges": 121
+ },
+ "destination_contract": {
+  "all_new_casefold_vacant": true,
+  "branch_prefix_count": 17,
+  "branch_prefixes": [
+   "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/NormalMatrices/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/NormalCharacterization/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/SchurBinomialBounds/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ArcLengthPowerBounds/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/FiniteDimensionalPowerBounds/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarArcLength/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarCrossingBounds/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ResolventCoefficients/",
+   "NumStability/Analysis/LinearOperators/NumericalRadius/Berger/GeneralPowerInequality/",
+   "NumStability/Analysis/LinearOperators/NumericalRadius/Berger/Internal/",
+   "NumStability/Analysis/LinearOperators/NumericalRadius/Core/Internal/",
+   "NumStability/Analysis/LinearOperators/Pseudospectra/Resolvent/Internal/",
+   "NumStability/Analysis/LinearOperators/Schur/Complex/NormalTriangular/",
+   "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreissUnconditional/",
+   "NumStabilityTest/Reorganization/R07/",
+   "docs/architecture/deliveries/R07/"
+  ],
+  "count": 30,
+  "internal_count": 3,
+  "prefix_count": 15,
+  "prefixes": [
+   "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/NormalMatrices/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/NormalCharacterization/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/SchurBinomialBounds/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ArcLengthPowerBounds/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/FiniteDimensionalPowerBounds/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarArcLength/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarCrossingBounds/",
+   "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ResolventCoefficients/",
+   "NumStability/Analysis/LinearOperators/NumericalRadius/Berger/GeneralPowerInequality/",
+   "NumStability/Analysis/LinearOperators/NumericalRadius/Berger/Internal/",
+   "NumStability/Analysis/LinearOperators/NumericalRadius/Core/Internal/",
+   "NumStability/Analysis/LinearOperators/Pseudospectra/Resolvent/Internal/",
+   "NumStability/Analysis/LinearOperators/Schur/Complex/NormalTriangular/",
+   "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreissUnconditional/"
+  ],
+  "reusable_count": 26,
+  "source_count": 1
+ },
+ "overlap_facts": {
+  "R09": {
+   "direct_owner_import_edges": [
+    0,
+    1
+   ],
+   "proof_body_edges": [
+    0,
+    0
+   ],
+   "shared_direct_outside_consumers": [
+    "NumStability.Algorithms"
+   ],
+   "transitive_owner_reachability_pairs": [
+    0,
+    61
+   ],
+   "typed_signature_edges": [
+    0,
+    0
+   ]
+  },
+  "R10": {
+   "direct_owner_import_edges": [
+    0,
+    3
+   ],
+   "proof_body_edges": [
+    0,
+    0
+   ],
+   "shared_direct_outside_consumers": [
+    "NumStability.Algorithms"
+   ],
+   "transitive_owner_reachability_pairs": [
+    0,
+    66
+   ],
+   "typed_signature_edges": [
+    0,
+    0
+   ]
+  }
+ },
+ "projected_remaining_queue": {
+  "R09": 72,
+  "R10": 18
+ },
+ "scope_rule_count": 2918,
+ "status": "review_candidate",
+ "wave_id": "R07"
+}

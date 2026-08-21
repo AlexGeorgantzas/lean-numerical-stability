@@ -1,0 +1,120 @@
+{
+ "accepted_control_sha": "52552c8e3ddd9381f36bec8ccb694cf8c830cd49",
+ "artifacts": [
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0005-acceptance-control-ci.json",
+   "sha256": "977AD3B2B9BCCF468A78F304A09B5D349413E69D83E970C98C20463313EECB86"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-COMPATIBILITY-postimage.md",
+   "sha256": "FB8C43F1FB8AB3974B0DF4AB1A646A440BCCDBB519D59E2B01773EFDA5B37D67"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-R0011-import-manifest.tsv",
+   "sha256": "3F25D0F9A5F1BE095870F96ADD1F6A8E3341176668CB770D4AC917796A69D853"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-R0011-render-review.json",
+   "sha256": "7540AC0423E0890180C8721D4C2D7D947248D5450D6AC1914802EC7042CE455B"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-R0011-request-plan.tsv",
+   "sha256": "9316DE9A594E7E924CC2213692ED23B49DCBB5BCCD21285642A60D5B0E09E35D"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-consumers.tsv",
+   "sha256": "2E057F3B6C28C86CEC5A52EF48E41AA86B08F3EE4BCA9A8D456C313A0FF2D90A"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-declaration-routes.tsv",
+   "sha256": "03C9D117716ABC19F64F9304DDE169FE7691A9215C139A08C70681F180DD9C16"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-destination-dag.tsv",
+   "sha256": "1C612EE6C59ECB9081E47FC9683F057D85C6050A22797363BE95DD6211583839"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-destinations.tsv",
+   "sha256": "36DDEFC49A8D94D02DF08866343E2210E9D525B89535482A47EEE6E4BE9FA976"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-external-owner-supply.tsv",
+   "sha256": "EC3E65376EA724B15A54A268731345A22EFF64AE2545754EC3BF6CFEFABFD9A9"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-inventory.tsv",
+   "sha256": "3BEE15970153A2205B522C78098E1FE865D2514772DBAD41B6B736C42C3446C3"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-module-routes.tsv",
+   "sha256": "A3025D8DF5940D206280E6B12DB892952111F46E31616FCA7D3D99105D6C074D"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-overlap-review.json",
+   "sha256": "8E7A013A43ED580CD76004616CAF63164803AF6CDEDD429E78B432133237B0DC"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-post-move-import-manifest.tsv",
+   "sha256": "788DC7987191EBF9325F8DE253DC793FAF3BF8AB1119F201B5E0918971C194E1"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-private-closure.tsv",
+   "sha256": "3D7B5DFFCEEE3C4F9AEB3AD6F3793F7457A7BE66BBF09F0C973D8195C7494C56"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-private-normalization.tsv",
+   "sha256": "CA0D8BF8C0FC6179A9DFD03F68B1BAA69A0D4EE78A0BEFCB0541B839EE755B16"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-projection-review.json",
+   "sha256": "5DFFA849C60AF9B7AE776816B427BE184FA4C6A1F8016D370C83D21353984D4E"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-scope-rules.tsv",
+   "sha256": "93EDAEEAC6F9E452E20104CFC5E246B025365BCE1BF6EF7D03D653B2E210D0C9"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-source-commands.tsv",
+   "sha256": "827F459AFDBFA75E55A59953681D2920D14961D62B1334452E33C839A30AE614"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-test-plan.tsv",
+   "sha256": "60CDF737B207BF571176378D40BF484004D8E61DF252C84C37CD8885830E804F"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-tier-assignments.tsv",
+   "sha256": "DAB044B985A7856A9023F76F3CE5E3CB41E4E290F2781211339B933F69AC6D27"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R07-wrapper-imports.tsv",
+   "sha256": "A1C9F75C769BC269AE55B1D50586C7777305AD3F817F4FF3D41334F712BEF19B"
+  },
+  {
+   "path": "tools/architecture/generate_c0006_planning_controls.py",
+   "sha256": "3DF6DABF75581E524F77496F55D077D91F6DB2D12DE5F126187001C67080A670"
+  },
+  {
+   "path": "tools/architecture/r07_shared_postimages.py",
+   "sha256": "3ECC5D64FF466E2982CAF750B49F183F11907F460C3625744825ACB522FA5C86"
+  }
+ ],
+ "base_checkpoint_id": "C0005",
+ "base_code_sha": "ad92bbfae62d538f3e52829a269a846688a8e213",
+ "decision_requested": "primary-human exact semantic and planned-control approval",
+ "exclusions": [
+  "R07 integration",
+  "R07 self-acceptance",
+  "checkpoint acceptance",
+  "branch retirement"
+ ],
+ "graph_sha256": "85C7B3D06019C92B7234EF5422681E46A9825F733A1AC4AB58A3F8B9B91C345B",
+ "ids": {
+  "branch": "B0010",
+  "milestone": "M07",
+  "projection": "P0010",
+  "request": "R0011",
+  "wave": "R07"
+ },
+ "record_kind": "r07_review_packet",
+ "schema_version": 1
+}

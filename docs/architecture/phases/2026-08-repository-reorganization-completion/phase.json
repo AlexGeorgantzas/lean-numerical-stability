@@ -642,7 +642,31 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Algorithms/RandNLA/ElementwiseTraceMGF.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/RandNLA/RowSamplingTraceMGF.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/RandNLA/UniformRowSamplingMGF.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Concentration/TraceMGF/LeverageScore.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Concentration/TraceMGF/UniformRows.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Algorithms/StationaryIterationSeries.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/TestMatrices/Higham28Companion.lean"
     },
     {
       "match": "exact",
@@ -654,7 +678,99 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Analysis/CStarMatrices.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/CStarMatrices/Basic/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/CStarMatrices/Expectation/Finite.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/CStarMatrices/Trace/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/FunctionalCalculus/OperatorLog/Monotonicity.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/NormalMatrices.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/NormalCharacterization.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/SchurBinomialBounds.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ArcLengthPowerBounds.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/FiniteDimensionalPowerBounds.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarArcLength.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarCrossingBounds.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/Rational.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ResolventCoefficients.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/NumericalRadius/Berger/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/NumericalRadius/Berger/GeneralPowerInequality.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/Schur/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/Schur/Complex/NormalTriangular.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Analysis/MatrixAlgebra.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/MatrixInequalities/LiebTrace/Concavity.lean"
     },
     {
       "match": "exact",
@@ -742,6 +858,22 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm01/ElementwiseSampling/TraceMGF.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation02/SpectralApproximation/ElementwiseSpectral.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/LeverageTraceMGF.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/RowNormTraceMGF.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/Endpoints.lean"
     },
     {
@@ -771,6 +903,18 @@
     {
       "match": "exact",
       "path": "NumStability/Source/Higham/Chapter17/Equation22.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreiss.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreissUnconditional.lean"
     },
     {
       "match": "exact",

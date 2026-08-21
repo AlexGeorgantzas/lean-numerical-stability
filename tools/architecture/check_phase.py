@@ -42,6 +42,12 @@ SHA1_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9A-Fa-f]{64}$")
 ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
 CHECKPOINT_ID_RE = re.compile(r"^C[0-9]{4}$")
+RECORD_FILE_RE = {
+    "branches": re.compile(r"^B[0-9]{4}\.json$"),
+    "checkpoints": re.compile(r"^C[0-9]{4}\.json$"),
+    "projections": re.compile(r"^P[0-9]{4}\.json$"),
+    "requests": re.compile(r"^R[0-9]{4}[A-Z]?\.json$"),
+}
 
 PHASE_STATUSES = {"draft", "active", "integration", "closed", "superseded", "cancelled"}
 MILESTONE_STATUSES = {"planned", "ready", "accepted", "superseded", "cancelled"}
@@ -1365,7 +1371,17 @@ class PhaseValidator:
         if not directory.is_dir():
             self.problems.malformed(self.relative_context(directory), "required record directory is missing")
             return []
-        return sorted(directory.glob("*.json"), key=lambda path: path.name)
+        pattern = RECORD_FILE_RE.get(name)
+        if pattern is None:
+            self.problems.malformed(
+                self.relative_context(directory),
+                f"unknown record directory {name!r}",
+            )
+            return []
+        return sorted(
+            (path for path in directory.glob("*.json") if pattern.fullmatch(path.name)),
+            key=lambda path: path.name,
+        )
 
     def load_checkpoint_records(self) -> None:
         for path in self.json_files("checkpoints"):
@@ -3549,6 +3565,13 @@ def run_self_test() -> int:
             },
         }
         write_json(phase_dir / "requests/R0001.json", request)
+        for sidecar in (
+            phase_dir / "branches/B0001-overlap-review.json",
+            phase_dir / "checkpoints/C0000-acceptance-control-ci.json",
+            phase_dir / "projections/P0001-review.json",
+            phase_dir / "requests/R0001-render-review.json",
+        ):
+            write_json(sidecar, {"record_kind": "evidence_sidecar"})
 
         valid = PhaseValidator(root, phase_dir)
         valid_result = valid.validate()
