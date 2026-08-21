@@ -13,7 +13,7 @@ recoverable.
 
 | Audit | Scope | Status | Accepted | Repository snapshot |
 |---|---|---|---:|---|
-| [`audit_002`](audit_002/summary.md) | 59 eligible; 55 validated, 2 provisional, 2 pending | in progress | 31/55 validated; 32/57 including provisional | per-task commits through `f47b4d4e38b47005a87228564a678d60615b76a8` |
+| [`audit_002`](audit_002/summary.md) | 59 eligible; 57 validated, 2 pending | in progress | 32/57 validated | per-task commits through `d1ca8c6b6626ed750fec1eec727f02282344ae34` |
 | [`audit_001`](audit_001/summary.md) | P01-P20, T1-T3 | completed | 17/60 | `df483a11408fa7b7440bbc1907c93bb9b3e610fa` |
 
 ## Update rules

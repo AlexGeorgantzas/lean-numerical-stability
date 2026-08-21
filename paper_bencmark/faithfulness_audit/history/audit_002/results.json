@@ -2,7 +2,7 @@
   "schema_version": "highambench-audit-history-2",
   "audit_id": "audit_002",
   "status": "in-progress",
-  "recorded_at_utc": "2026-08-21T07:27:31Z",
+  "recorded_at_utc": "2026-08-21T09:13:19Z",
   "baseline_audit": {
     "audit_id": "audit_001",
     "repository_commit": "df483a11408fa7b7440bbc1907c93bb9b3e610fa",
@@ -11,11 +11,11 @@
   },
   "audit_window": {
     "earliest_second_pass_completed_at_utc": "2026-08-14T13:31:48.966150+00:00",
-    "latest_second_pass_completed_at_utc": "2026-08-21T05:54:19.627797+00:00"
+    "latest_second_pass_completed_at_utc": "2026-08-21T09:09:06.047857+00:00"
   },
   "repository_reference": {
     "branch": "benchmark_faithfulness_audit",
-    "latest_audit_commit": "f47b4d4e38b47005a87228564a678d60615b76a8",
+    "latest_audit_commit": "d1ca8c6b6626ed750fec1eec727f02282344ae34",
     "evidence_is_pinned_per_task": true
   },
   "scope": {
@@ -24,11 +24,11 @@
     "eligible_task_count": 59,
     "excluded_task_count": 1,
     "pending_task_count": 2,
-    "fully_validated_resolved_task_count": 55,
+    "fully_validated_resolved_task_count": 57,
     "reported_resolved_task_count_including_provisional": 57,
     "carried_forward_task_count": 17,
-    "second_pass_validated_task_count": 38,
-    "second_pass_provisional_task_count": 2,
+    "second_pass_validated_task_count": 40,
+    "second_pass_provisional_task_count": 0,
     "pending_tasks": [
       "P13-T1",
       "P20-T2"
@@ -40,70 +40,17 @@
   "validation": {
     "all_task_bundles_valid": false,
     "validated_carry_forward_count": 17,
-    "validated_second_pass_count": 38,
-    "provisional_unpinned_count": 2,
+    "validated_second_pass_count": 40,
+    "provisional_unpinned_count": 0,
     "notes": [
-      "All 38 second-pass-validated bundles passed complete-phase validation at their exact audit commits.",
+      "Thirty-eight second-pass bundles validate at their single evidence commits.",
+      "P20-T1 and P20-T3 passed complete-phase validation against exact controlled inputs committed at f29d0da116de60c6c23f7d79c75b70997693304d; their audit artifacts are committed separately and hash-pinned per task.",
       "All 17 carried-forward accepted results retain identical target and dependency semantics; 11 were checked by regenerated semantic inventories and six P01/P02 tasks had unchanged targets and paper-specific shared source.",
-      "P20-T1 and P20-T3 cannot be complete-phase validated from their audit commits because their audited controlled inputs were never committed.",
-      "P13-T1 has a rebuilt target but no second-pass audit."
+      "P13-T1 and the rebuilt P20-T2 have no current second-pass audit, so the corpus snapshot remains in progress."
     ]
   },
   "aggregates": {
     "fully_validated": {
-      "total": 55,
-      "accepted": 31,
-      "not_accepted": 24,
-      "adjudicated": 33,
-      "classifications": {
-        "faithful-equivalent": 12,
-        "faithful-stronger": 19,
-        "not-faithful-different": 12,
-        "not-faithful-weaker": 11,
-        "undetermined": 1
-      },
-      "implication_pairs": {
-        "no/no": 12,
-        "no/yes": 11,
-        "unclear/no": 1,
-        "yes/no": 19,
-        "yes/yes": 12
-      },
-      "by_tier": {
-        "T1": {
-          "total": 17,
-          "accepted": 11,
-          "classifications": {
-            "faithful-equivalent": 3,
-            "faithful-stronger": 8,
-            "not-faithful-different": 1,
-            "not-faithful-weaker": 4,
-            "undetermined": 1
-          }
-        },
-        "T2": {
-          "total": 19,
-          "accepted": 11,
-          "classifications": {
-            "faithful-equivalent": 6,
-            "faithful-stronger": 5,
-            "not-faithful-different": 5,
-            "not-faithful-weaker": 3
-          }
-        },
-        "T3": {
-          "total": 19,
-          "accepted": 9,
-          "classifications": {
-            "faithful-equivalent": 3,
-            "faithful-stronger": 6,
-            "not-faithful-different": 6,
-            "not-faithful-weaker": 4
-          }
-        }
-      }
-    },
-    "including_provisional_decisions": {
       "total": 57,
       "accepted": 32,
       "not_accepted": 25,
@@ -111,13 +58,12 @@
       "classifications": {
         "faithful-equivalent": 12,
         "faithful-stronger": 20,
-        "not-faithful-different": 12,
+        "not-faithful-different": 13,
         "not-faithful-weaker": 11,
-        "undetermined": 2
+        "undetermined": 1
       },
       "implication_pairs": {
-        "no/no": 12,
-        "no/unclear": 1,
+        "no/no": 13,
         "no/yes": 11,
         "unclear/no": 1,
         "yes/no": 20,
@@ -151,9 +97,61 @@
           "classifications": {
             "faithful-equivalent": 3,
             "faithful-stronger": 6,
-            "not-faithful-different": 6,
+            "not-faithful-different": 7,
+            "not-faithful-weaker": 4
+          }
+        }
+      }
+    },
+    "including_provisional_decisions": {
+      "total": 57,
+      "accepted": 32,
+      "not_accepted": 25,
+      "adjudicated": 35,
+      "classifications": {
+        "faithful-equivalent": 12,
+        "faithful-stronger": 20,
+        "not-faithful-different": 13,
+        "not-faithful-weaker": 11,
+        "undetermined": 1
+      },
+      "implication_pairs": {
+        "no/no": 13,
+        "no/yes": 11,
+        "unclear/no": 1,
+        "yes/no": 20,
+        "yes/yes": 12
+      },
+      "by_tier": {
+        "T1": {
+          "total": 18,
+          "accepted": 12,
+          "classifications": {
+            "faithful-equivalent": 3,
+            "faithful-stronger": 9,
+            "not-faithful-different": 1,
             "not-faithful-weaker": 4,
             "undetermined": 1
+          }
+        },
+        "T2": {
+          "total": 19,
+          "accepted": 11,
+          "classifications": {
+            "faithful-equivalent": 6,
+            "faithful-stronger": 5,
+            "not-faithful-different": 5,
+            "not-faithful-weaker": 3
+          }
+        },
+        "T3": {
+          "total": 20,
+          "accepted": 9,
+          "classifications": {
+            "faithful-equivalent": 3,
+            "faithful-stronger": 6,
+            "not-faithful-different": 7,
+            "not-faithful-weaker": 4
           }
         }
       }
@@ -161,8 +159,8 @@
   },
   "comparison_to_audit_001": {
     "baseline_accepted": 17,
-    "validated_accepted": 31,
-    "validated_net_gain": 14,
+    "validated_accepted": 32,
+    "validated_net_gain": 15,
     "reported_accepted_including_provisional": 32,
     "reported_net_gain_including_provisional": 15,
     "newly_accepted_validated": [
@@ -179,7 +177,8 @@
       "P16-T1",
       "P17-T2",
       "P17-T3",
-      "P18-T2"
+      "P18-T2",
+      "P20-T1"
     ],
     "newly_accepted_including_provisional": [
       "P03-T2",
@@ -222,7 +221,8 @@
       "P18-T1",
       "P18-T3",
       "P19-T2",
-      "P19-T3"
+      "P19-T3",
+      "P20-T3"
     ],
     "still_not_accepted_including_provisional": [
       "P04-T1",
@@ -258,8 +258,7 @@
       "not-faithful-different -> not-faithful-weaker": 11,
       "not-faithful-different -> undetermined": 1,
       "not-faithful-weaker -> faithful-equivalent": 1,
-      "not-faithful-weaker -> not-faithful-different": 1,
-      "not-faithful-weaker -> undetermined": 1,
+      "not-faithful-weaker -> not-faithful-different": 2,
       "undetermined -> faithful-equivalent": 1
     }
   },
@@ -5012,14 +5011,14 @@
           }
         }
       },
-      "disposition": "second-pass-provisional-unpinned",
-      "counted_in_validated_aggregate": false,
+      "disposition": "second-pass-validated",
+      "counted_in_validated_aggregate": true,
       "counted_in_reported_aggregate": true,
       "result": {
         "accepted": true,
         "adjudicated": true,
         "classification": "faithful-stronger",
-        "completed_at_utc": "2026-08-21T04:51:03.828774+00:00",
+        "completed_at_utc": "2026-08-21T09:07:18.840318+00:00",
         "implications": {
           "lean_implies_paper": "yes",
           "paper_implies_lean": "no"
@@ -5037,25 +5036,27 @@
         "artifacts": {
           "manifest": {
             "path": "paper_bencmark/highambench/tasks/P20/T1/faithfulness/manifest.json",
-            "sha256": "6925660b9c3e1c3cee825ba3076561068a088d65e304d73486034484fa7baf0b"
+            "sha256": "61b93aca3d2ea0a65628ea111c6711fa929a69499f2d7bb4b1933c7c86cb66cd"
           },
           "decision": {
             "path": "paper_bencmark/highambench/tasks/P20/T1/faithfulness/decision.json",
-            "sha256": "10f3c5585c710a8f4b1aab359be664f754427b826ae609cf7ccfe072f5df11bb"
+            "sha256": "2a68b0e39a425bb16349e675ffc0434b0870f638f91200fc9fdce01640655c4f"
           },
           "report": {
             "path": "paper_bencmark/highambench/tasks/P20/T1/faithfulness/report.md",
-            "sha256": "1397b6c00f9d3eaae47411449a536d840cf3ef2d09c932f1ff99c76720045cd8"
+            "sha256": "d3e7547c59447676f55e0aba5b9e10c98566c82b0fe9d0c508a9b579d4a4aa25"
           }
         }
       },
-      "evidence_commit": "5dc440840931bcdbc008e300a56efa3e7b69e78b",
+      "evidence_commit": "0bab8448e83936045e5b7ae15a03a6a1587ef35a",
       "validation": {
-        "status": "provisional",
-        "phase": "complete-at-run-time-only",
-        "validated_at_evidence_commit": false,
-        "reason": "The audit artifacts were committed without the exact rebuilt Target.lean, task metadata, context, and P20Definitions.lean inputs recorded by the manifest; complete-phase validation therefore cannot be reproduced from the commit."
-      }
+        "status": "validated",
+        "phase": "complete",
+        "validated_against_audit_input_commit": true,
+        "audit_artifacts_match_evidence_commit": true,
+        "provenance": "Exact controlled inputs and generated audit artifacts are pinned by separate commits because the intervening P20-T2 rebuild extended the shared P20 definitions."
+      },
+      "audit_input_commit": "f29d0da116de60c6c23f7d79c75b70997693304d"
     },
     {
       "task_id": "P20-T2",
@@ -5093,10 +5094,10 @@
           }
         }
       },
-      "disposition": "pending-rebuild",
+      "disposition": "pending-audit",
       "counted_in_validated_aggregate": false,
       "counted_in_reported_aggregate": false,
-      "reason": "The selected post-(3.26) comparison is false under the paper's literal Model 1. The task is awaiting source reselection and rebuild around equation (3.16), subject to an honest T2 dependency check.",
+      "reason": "Rebuilt from equation (3.13), but the rebuilt controlled inputs have not yet received a second-pass faithfulness audit.",
       "latest_attempt": {
         "accepted": false,
         "adjudicated": true,
@@ -5131,7 +5132,8 @@
           }
         }
       },
-      "latest_attempt_commit": "3f34421ab846462e62decccd002b42c39d6bdd81"
+      "latest_attempt_commit": "3f34421ab846462e62decccd002b42c39d6bdd81",
+      "latest_rebuild_commit": "e0f85adc65085b733efe5097e962bf52b6827123"
     },
     {
       "task_id": "P20-T3",
@@ -5169,17 +5171,17 @@
           }
         }
       },
-      "disposition": "second-pass-provisional-unpinned",
-      "counted_in_validated_aggregate": false,
+      "disposition": "second-pass-validated",
+      "counted_in_validated_aggregate": true,
       "counted_in_reported_aggregate": true,
       "result": {
         "accepted": false,
         "adjudicated": true,
-        "classification": "undetermined",
-        "completed_at_utc": "2026-08-21T05:54:19.627797+00:00",
+        "classification": "not-faithful-different",
+        "completed_at_utc": "2026-08-21T09:09:06.047857+00:00",
         "implications": {
           "lean_implies_paper": "no",
-          "paper_implies_lean": "unclear"
+          "paper_implies_lean": "no"
         },
         "protocol_version": "highambench-faithfulness-0.2",
         "target": {
@@ -5194,25 +5196,27 @@
         "artifacts": {
           "manifest": {
             "path": "paper_bencmark/highambench/tasks/P20/T3/faithfulness/manifest.json",
-            "sha256": "bf303a9a43421783e2b96fcd995b5bfb291bedf817a452c44c0818b37d474a5a"
+            "sha256": "d859b973ca9252009bb1b5a6f69f69a3d710866262bbc3e0d6f7c5759e4a3b3c"
           },
           "decision": {
             "path": "paper_bencmark/highambench/tasks/P20/T3/faithfulness/decision.json",
-            "sha256": "011a8d0f3725eb76c986f57bf6553da0826917d56a9f858d11a92846b5d8d2ce"
+            "sha256": "82efa75efdfa825cb4d034c741c815f597584f90b1e53627c3a403e4459c9554"
           },
           "report": {
             "path": "paper_bencmark/highambench/tasks/P20/T3/faithfulness/report.md",
-            "sha256": "e01b2e32213663e4285776e94e7aa70161d06640215d1d81e5c1ac9d53f40725"
+            "sha256": "db47ebf2f93c849fa923bd6311c26c69a2dd5c97be515de4c87a8fd4793c12b9"
           }
         }
       },
-      "evidence_commit": "f47b4d4e38b47005a87228564a678d60615b76a8",
+      "evidence_commit": "d1ca8c6b6626ed750fec1eec727f02282344ae34",
       "validation": {
-        "status": "provisional",
-        "phase": "complete-at-run-time-only",
-        "validated_at_evidence_commit": false,
-        "reason": "The audit artifacts were committed without the exact rebuilt Target.lean, task metadata, context, and P20Definitions.lean inputs recorded by the manifest; complete-phase validation therefore cannot be reproduced from the commit."
-      }
+        "status": "validated",
+        "phase": "complete",
+        "validated_against_audit_input_commit": true,
+        "audit_artifacts_match_evidence_commit": true,
+        "provenance": "Exact controlled inputs and generated audit artifacts are pinned by separate commits because the intervening P20-T2 rebuild extended the shared P20 definitions."
+      },
+      "audit_input_commit": "f29d0da116de60c6c23f7d79c75b70997693304d"
     }
   ]
 }
