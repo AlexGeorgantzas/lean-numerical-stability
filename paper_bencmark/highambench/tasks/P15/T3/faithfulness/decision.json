@@ -2,49 +2,76 @@
   "accepted": false,
   "adjudicated": true,
   "adjudication_reasons": [
-    "round-trip judge requested adjudication"
+    "direct judge requested adjudication",
+    "round-trip judge requested adjudication",
+    "direct D006 is unclear",
+    "direct D024 is unclear",
+    "direct D025 is unclear",
+    "direct D081 is unclear",
+    "direct S07 is unclear",
+    "direct S14 is unclear",
+    "round-trip S07 is unclear",
+    "round-trip S14 is unclear"
   ],
   "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-20T12:39:03.411473+00:00",
+  "completed_at_utc": "2026-08-21T22:53:00.863050+00:00",
   "findings": [
     {
-      "category": "execution-linkage-and-quantification",
-      "evidence": "Theorems 4.2-4.5 concern factors and solutions computed by Algorithms 1 or 2, with run-to-completion inherited. D027 instead assumes all factor and solve perturbation equations and bounds, while its algorithm tag has no semantic effect.",
-      "impact": "The target is an algebraic composition theorem over prepopulated certificates, not the paper's computation-to-backward-error guarantee.",
+      "category": "floating-point execution model",
+      "evidence": "Equation (2.5) applies error u to individual scalar operations. Equation (4.3) and Theorem 4.4 perturb operands and product contributions separately. D056, D067, D068, and D083 instead require one relative perturbation of complete residuals or matrix results.",
+      "impact": "Cancellation can make a paper-valid execution fail the Lean trace, while the abstract trace need not correspond to any operation-level run.",
       "severity": "critical"
     },
     {
-      "category": "original-versus-BLR-matrix",
-      "evidence": "Section 2.1 distinguishes dense A and BLR representation A_tilde; Theorem 4.5 introduces A_tilde but concludes with A. Lean has only run.A for all these roles.",
-      "impact": "No single source-to-Lean binder mapping preserves the solved matrix, perturbed matrix, BLR structure, and norm scale without silently resolving the paper's notation gap.",
+      "category": "BLR representation",
+      "evidence": "Equations (2.3)-(2.4) require orientation-specific truncated-SVD factors, orthonormal X columns, and the minimum threshold-satisfying rank. D049 requires only an unrestricted XY^T witness and a norm bound.",
+      "impact": "Lean admits approximation structures outside the paper's BLR and compression model.",
       "severity": "major"
     },
     {
-      "category": "rank-semantics",
-      "evidence": "The paper fixes r as the maximum rank of factor off-diagonal blocks. D043 is only an upper-bound predicate, and D027 imposes it on A, L, and U.",
-      "impact": "The target changes applicability and may weaken constants through an overestimated r, preventing either implication under the stated correspondence.",
+      "category": "quantifier and premise scope",
+      "evidence": "D028 packages Atilde, factors, solutions, errors, and traces uniformly for every admissible u and epsilon and assumes the component perturbation theorems as fields.",
+      "impact": "The target is a composition lemma over pre-certified families, not the paper's theorem for each successful computed execution. The added hypotheses reduce applicability rather than provide genuine stronger coverage.",
       "severity": "major"
     },
     {
-      "category": "higher-order-terms",
-      "evidence": "Equations (4.24)-(4.25) retain O(u*epsilon) and O(u^2). Lean uses a nonuniform run-local K for the matrix term and adds an explicit 16*c^2 coefficient for the right-hand-side term.",
-      "impact": "The matrix asymptotic guarantee is weakened while the right-hand-side conclusion is strengthened on a different domain, making the overall relation neither uniformly stronger nor uniformly weaker.",
+      "category": "triangular-solve dependency",
+      "evidence": "Theorem 4.4 uses c_tri=b+r^(3/2)+p. D028 permits lowerError and upperError up to gamma_c with c=b+2r^(3/2)+p and does not require invertible diagonal blocks in D056.",
+      "impact": "Some Lean-certified solve perturbations need not be outputs of the paper's triangular-solve theorem or successful block substitutions.",
       "severity": "major"
     },
     {
-      "category": "resolved-constructor-mapping-and-preserved-core",
-      "evidence": "The direct declarations map UFC/UCF, local/global, and with/without tags as intended, D020 matches all four Table 1 values, and D021-D022 match both exact perturbation products.",
-      "impact": "The blind constructor ambiguity is resolved and the central algebra is recognizable, but labels and correct coefficients do not supply the missing operational linkage.",
+      "category": "precision regime",
+      "evidence": "Printed page 955 assumes u is safely smaller than epsilon without a ratio. D017 substitutes the exact condition u<epsilon.",
+      "impact": "Lean can admit parameter regimes not justified by the stated source assumption.",
+      "severity": "major"
+    },
+    {
+      "category": "source notation",
+      "evidence": "Theorem 4.5 opens with A_tilde and A_tilde x=v but switches to A in equations (4.23)-(4.24) and its proof.",
+      "impact": "Lean's separation of A and Atilde is plausible, but its precise execution linkage cannot be certified from the source.",
+      "severity": "minor"
+    },
+    {
+      "category": "higher-order terms",
+      "evidence": "D020 and D021 match the exact products on printed page 975, but D024 and D025 fix signs, uniform limit cones, and hidden scales absent from equations (4.24)-(4.25).",
+      "impact": "These predicates add unstated formal commitments and obstruct paper_implies_lean, although they are not the decisive reason for the final classification.",
+      "severity": "minor"
+    },
+    {
+      "category": "displayed conclusion and nonvacuity",
+      "evidence": "The target preserves equations (4.23)-(4.25), Frobenius and Euclidean norms, c, gamma_(3c), all four xi values, and the exact perturbation compositions. Exact identity data with b=p=1 and r=0 can inhabit the run type.",
+      "impact": "The target is nonvacuous and its visible final formulas are accurate; rejection concerns its surrounding semantic domain.",
       "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean theorem applies only after an abstract record containing all component perturbation contracts has been supplied. It neither represents nor constructs such a record from every successful UFC/UCF computation. Its single A cannot simultaneously preserve the source's A_tilde and A roles, its common rank bound may exclude paper executions, and its run-local K does not express O(u*epsilon). Consequently it does not imply the paper's algorithm-linked asymptotic theorem.",
+      "reasoning": "The Lean theorem applies only to uniform certified families satisfying aggregate result-relative rounding traces. Cancellation-valid paper executions need not satisfy those traces or extend to such a family, so Lean does not establish Theorem 4.5 over the paper's full execution domain.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper theorem concerns actual computed executions and existential aggregate perturbations. It does not assert the target for every synthetic record satisfying assumed postconditions, does not require the input matrix and both factors to share one rank-at-most-r parameter, and does not state the target's F, H, and 16*c^2*u^2 conjuncts. Therefore it does not imply the complete Lean proposition under the supplied binder correspondence.",
+      "reasoning": "The paper does not supply the uniform family, exact D024/D025 witnesses, or aggregate trace certificates. Conversely, D049 and the larger solve-error allowance admit abstract records outside the paper's truncated-SVD and Theorem 4.4 interfaces.",
       "verdict": "no"
     }
   },
@@ -52,10 +79,11 @@
     "direct": "not-faithful-different",
     "roundtrip": "not-faithful-different"
   },
-  "rationale": "Primary PDF evidence and the complete declaration bodies establish a mixed result: dimensions, norms, c, gamma_(3c), all four xi_p values, the simultaneous backward equation, and both exact perturbation compositions are preserved. The nominal constructor mappings are also unambiguous once the direct dossier is considered. However, those constructors do not constrain an execution; all computed objects and component perturbation guarantees are assumed inside the run record. The target additionally collapses the unresolved A_tilde/A distinction, changes r from the actual factor rank to a shared upper bound, and translates the two big-O terms in incompatible ways. The explicit right-hand-side bound is a genuine nonvacuous strengthening only on this altered record domain, while the matrix K term loses uniform asymptotic content. These independent mismatches establish no implication in either direction, so the final classification is not-faithful-different.",
+  "rationale": "Primary evidence confirms that the Lean target reproduces the visible backward-error relation, both principal bounds, norms, constants, Table 1 cases, and exact perturbation products. It nevertheless changes the theorem's domain in opposing ways. Uniform family and aggregate-rounding requirements exclude valid paper executions, while the weakened BLR representation, looser triangular-solve interface, and pre-assumed perturbation fields admit abstract records not certified by the paper. The big-O choices are defensible but not compelled, and the A-versus-Atilde notation remains genuinely uncertain. These uncertainties do not prevent classification because the independent execution and representation defects already make both implications fail. The theorem is nonvacuous, but its added hypotheses are reduced applicability rather than genuine stronger coverage.",
   "remaining_uncertainties": [
-    "The PDF does not locally resolve whether A_tilde in Theorem 4.5's opening is intentional inherited notation or a typographical inconsistency. Section 2.1 strongly supports a distinct BLR-representation relationship, but no local equality connecting A_tilde and A is stated.",
-    "The PDF supplies no explicit uniform constants or quantified asymptotic range for O(u*epsilon) or O(u^2), so the authors' intended hidden constants cannot be identified with the Lean coefficients from primary source evidence."
+    "Theorem 4.5 itself uses A_tilde in its opening system but A in equations (4.23)-(4.24) and the proof; the source does not uniquely determine D028's A-versus-Atilde linkage.",
+    "The hidden constants, parameter dependence, and scales in O(u*epsilon) and O(u^2) are not explicitly defined. D024 and D025 are defensible choices but not uniquely compelled.",
+    "The qualitative phrase that u is safely smaller than epsilon has no stated numerical interpretation, so it cannot be identified exactly with u<epsilon."
   ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
