@@ -7,11 +7,12 @@
 - Pass-3 scope: the 25 fully validated Audit 2 results that were not accepted
 - Processing order: the order in the ledger below
 - Active task: none
-- Rebuilds started: 1/25
-- Rebuilds committed and pushed: 1/25
+- Rebuilds started: 2/25
+- Rebuilds committed and pushed: 2/25
 - Pass-3 audits accepted: 0/25
 
-`P04-T1` has been rebuilt and pushed. The next task is `P04-T2`.
+`P04-T1` and `P04-T2` have been rebuilt and pushed. The next task is
+`P05-T1`.
 
 ## Operating rules
 
@@ -55,7 +56,7 @@ Audit 2 versions.
 | # | Task | Audit 2 result | Implications L->P / P->L | Evidence commit | Audit 2 notes | Pass-3 status | Rebuild commit | Pass-3 audit |
 |---:|---|---|---|---|---|---|---|---|
 | 1 | `P04-T1` | `not-faithful-weaker` | `no / yes` | `0ab5d3555a22` | [decision](../highambench/tasks/P04/T1/faithfulness/decision.json), [report](../highambench/tasks/P04/T1/faithfulness/report.md) | `rebuilt-pushed` | `1d1dea9e3` | - |
-| 2 | `P04-T2` | `not-faithful-different` | `no / no` | `340f64c844ff` | [decision](../highambench/tasks/P04/T2/faithfulness/decision.json), [report](../highambench/tasks/P04/T2/faithfulness/report.md) | `pending` | - | - |
+| 2 | `P04-T2` | `not-faithful-different` | `no / no` | `340f64c844ff` | [decision](../highambench/tasks/P04/T2/faithfulness/decision.json), [report](../highambench/tasks/P04/T2/faithfulness/report.md) | `rebuilt-pushed` | `74a1dffee` | - |
 | 3 | `P05-T1` | `not-faithful-different` | `no / no` | `c75077eefad7` | [decision](../highambench/tasks/P05/T1/faithfulness/decision.json), [report](../highambench/tasks/P05/T1/faithfulness/report.md) | `pending` | - | - |
 | 4 | `P05-T2` | `not-faithful-different` | `no / no` | `eb1f4d90e3fd` | [decision](../highambench/tasks/P05/T2/faithfulness/decision.json), [report](../highambench/tasks/P05/T2/faithfulness/report.md) | `pending` | - | - |
 | 5 | `P05-T3` | `not-faithful-weaker` | `no / yes` | `406fab50515a` | [decision](../highambench/tasks/P05/T3/faithfulness/decision.json), [report](../highambench/tasks/P05/T3/faithfulness/report.md) | `pending` | - | - |
