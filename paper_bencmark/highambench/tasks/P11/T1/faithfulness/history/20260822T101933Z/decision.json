@@ -1,0 +1,54 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ"
+  ],
+  "classification": "not-faithful-weaker",
+  "completed_at_utc": "2026-08-21T20:53:33.764591+00:00",
+  "findings": [
+    {
+      "category": "constant-and-applicability-mismatch",
+      "evidence": "The source has 2*sqrt(2*m*k), whereas D026 has 2*sqrt(2)*m*k; D012 propagates this into the all-k condition in D003.",
+      "impact": "For n>=2, the formal theorem applies to a proper subset of the paper-admissible executions.",
+      "severity": "major"
+    },
+    {
+      "category": "faithful-local-arithmetic-abstraction",
+      "evidence": "D024 axiomatizes the normalized computed-norm and division errors used on printed page 308, while D006 still requires production of G1 and the full residual chain.",
+      "impact": "The abstraction broadens implementation representation without changing the selected mathematical claim.",
+      "severity": "note"
+    },
+    {
+      "category": "faithful-algorithm-prefix",
+      "evidence": "The selected proof uses only Algorithm 2's first norm and division step; later-column recurrences do not occur in equation (16).",
+      "impact": "Omitting irrelevant later execution traces is not an algorithm-linkage defect for P11-T1.",
+      "severity": "note"
+    },
+    {
+      "category": "higher-order-separation",
+      "evidence": "D006 includes an epsilonM-squared term only in the r11 roundoff relation and preserves the printed remainder-free G1 relation and equation-(16) inequalities.",
+      "impact": "The selected residual result retains the source's exact first-column form.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Lean's malformed larger c4 excludes some executions satisfying the paper's condition (3), so the Lean theorem does not recover the source result over its full stated domain.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "After the faithful identification of the abstract first-column operations with the source's normalized norm and division laws, restricting the paper result to Lean's stronger condition yields every Lean conclusion. The first-column prefix and explicit remainder coefficient introduce no conflicting conclusion.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-weaker",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The substantive k=1 witness, residual identity, norm meanings, signs, and full equation-(16) chain match the source. The arithmetic interface, first-column execution record, and localized second-order coefficient faithfully isolate the hypotheses actually used by that base-case argument. The sole classification-changing defect is the incorrectly grouped c1 formula used in the inherited all-k condition. Because it is strictly larger for every relevant k>=2, it narrows applicability without strengthening the conclusion, yielding not-faithful-weaker.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P11-T1"
+}

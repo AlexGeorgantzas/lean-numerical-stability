@@ -584,7 +584,7 @@ fun epsilonM self => self.4
 - Owner module: `LocalImport001`
 - Declaration kind: `def`
 - Distance from target type: `4`
-- Semantic SHA-256: `477c74b04fe05eb7235fbdc5068d7a787f7f81ae546651bd7ae8bbaed5c66b29`
+- Semantic SHA-256: `b7b08e3c7e58aa7c905346648ccb433c270d24b16ce1b39a791f3a8b77c4f09f`
 
 Type:
 
@@ -597,7 +597,8 @@ Definition body (one-level semantic boundary):
 ```lean
 fun m k =>
   ite (Eq k 1) 1
-    (instHAdd.hAdd (instHMul.hMul 2 (instHMul.hMul (instHMul.hMul 2 m.cast) k.cast).sqrt) (instHMul.hMul 2 k.cast.sqrt))
+    (instHAdd.hAdd (instHMul.hMul (instHMul.hMul (instHMul.hMul 2 (Real.sqrt 2)) m.cast) k.cast)
+      (instHMul.hMul 2 k.cast.sqrt))
 ```
 
 ### D027: `LocalDef027`

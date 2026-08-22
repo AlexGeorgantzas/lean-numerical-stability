@@ -1,0 +1,1136 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P11-T1",
+  "paper_sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
+  "dossier_sha256": "5567c0573de3987bd054b0cd193deb6fe45a3306ade997598eaee3d9dc50f666",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.P11CGSPFirstColumnRun",
+      "interpretation": "An execution-prefix package containing positive dimensions, real A, Q, R, full column rank, upper-triangular R, an abstract normalized arithmetic, leading-block inverses, condition (3), and the first norm and division operations.",
+      "effect_on_target": "It defines the domain over which the equation-(16) witness must be produced; it contains no G1 or residual conclusion.",
+      "paper_match": "The first-column operational linkage matches Algorithm 2, but its all-leading-block condition uses the incorrectly defined p11C1 through p11C4.",
+      "status": "fail"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.P11Equation16",
+      "interpretation": "The proposition that there exists an m-by-m real matrix G1 satisfying P11Equation16Witness for the run.",
+      "effect_on_target": "It gives the correct quantifier pattern: each completed run gets a run-dependent perturbation witness.",
+      "paper_match": "The paper asserts existence of a computation-dependent G1 with the normalization relation, norm bound, and residual chain.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.P11CGSPFirstColumnRun.mk",
+      "interpretation": "The sole constructor lists the complete run premises, including m,n positivity, n<=m, full rank, triangularity, epsilon bounds, explicit inverses, condition (3), computed r11, normalized quotients, and computed q1 entries.",
+      "effect_on_target": "These are the hypotheses available to derive G1; the division-error property is supplied only through the primitive arithmetic interface.",
+      "paper_match": "The premises do not assume the central G1 result, but condition_3 is narrower than the paper because p11C1 is malformed for k>=2.",
+      "status": "fail"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.P11Equation16Witness",
+      "interpretation": "An inductive proposition indexed by a run and an m-by-m perturbation matrix G1.",
+      "effect_on_target": "It packages all parts of the selected result for one common G1.",
+      "paper_match": "The common-witness organization preserves the paper's dependence between normalization, residual identity, and norm bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HighamBench.P11Matrix",
+      "interpretation": "An n-by-n matrix over the real numbers, represented as Matrix (Fin n) (Fin n) Real.",
+      "effect_on_target": "It types R, its leading blocks and inverses, and the m-by-m G1.",
+      "paper_match": "This matches the paper's real square matrices, including the conformably inferred m-by-m type of G1.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HighamBench.P11Equation16Witness.mk",
+      "interpretation": "The constructor requires positive r11, the norm-roundoff relation, q1=(a1+G1*a1)/r11, ||G1||2<=epsilonM, both residual identities, the initial norm equality, and both inequalities of equation (16).",
+      "effect_on_target": "It makes the existential conclusion equivalent to the complete displayed base-case derivation rather than only its final inequality.",
+      "paper_match": "All displayed relations from printed page 308 are present with the paper's A1-Q1R1 orientation and coefficient one.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic",
+      "interpretation": "An epsilon-indexed abstract interface for normalized results, scalar division, computed vector norms, and their error laws.",
+      "effect_on_target": "It supplies operation-level error premises from which the perturbation matrix must be constructed.",
+      "paper_match": "This abstracts the normalized-range norm and division operations used in the first step without postulating G1.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic.computedNorm",
+      "interpretation": "The projection selecting the modeled floating-point vector-norm operation.",
+      "effect_on_target": "The run equates R11 with this operation applied to a1.",
+      "paper_match": "It represents Algorithm 2's computed r11=fl(||a1||2).",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic.divide",
+      "interpretation": "The projection selecting the modeled floating-point scalar-division operation.",
+      "effect_on_target": "Each first-column entry of Q is linked to this operation.",
+      "paper_match": "It represents the component operations used to compute q1=a1/r11.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic.normalized",
+      "interpretation": "The predicate marking exact results to which the relative division-error law applies.",
+      "effect_on_target": "The run requires every exact first-column quotient to satisfy it.",
+      "paper_match": "It corresponds to the paper's restriction of its relative-error model to normalized-range results.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "HighamBench.P11RectMatrix",
+      "interpretation": "An m-by-n real matrix represented as Fin m -> Fin n -> Real.",
+      "effect_on_target": "It types A and Q and the m-by-1 residual matrices.",
+      "paper_match": "It matches A,Q in R^{m x n} and their first-column blocks.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "HighamBench.p11C4",
+      "interpretation": "The function c4(m,k)=p11C2(m,k)+2*p11C1(m,k).",
+      "effect_on_target": "It is the coefficient in every leading-block condition_3 premise.",
+      "paper_match": "The combining formula is printed correctly, but its resolved value is wrong for k>=2 because p11C1 is wrong.",
+      "status": "fail"
+    },
+    {
+      "id": "D013",
+      "name": "HighamBench.p11FirstIndex",
+      "interpretation": "The Fin n element with zero-based value 0, available when n>0.",
+      "effect_on_target": "It consistently selects a1, q1, and r11.",
+      "paper_match": "Zero-based index 0 correctly represents the paper's one-based first column.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "HighamBench.p11Identity",
+      "interpretation": "The n-by-n matrix identity.",
+      "effect_on_target": "It states the two-sided inverse equations for each leading block.",
+      "paper_match": "It matches the identity used implicitly in Rk^{-1} and explicitly in I+G1.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "HighamBench.p11Kappa2",
+      "interpretation": "The product of the induced matrix 2-norms of R and a supplied inverse.",
+      "effect_on_target": "Its square occurs in condition (3).",
+      "paper_match": "It matches kappa2(Rk)=||Rk||2||Rk^{-1}||2.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "HighamBench.p11LeadingBlock",
+      "interpretation": "The upper-left square block of R of size k.val+1.",
+      "effect_on_target": "It aligns Fin n's zero-based indices with paper leading blocks of sizes 1 through n.",
+      "paper_match": "The block and indexing convention match R1,...,Rn with no shift error.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "HighamBench.p11MatMul",
+      "interpretation": "Ordinary finite square-matrix multiplication.",
+      "effect_on_target": "It states both left- and right-inverse equations.",
+      "paper_match": "It gives the standard mathematical products used to interpret Rk^{-1}.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "HighamBench.P11CGSPFirstColumnRun.A",
+      "interpretation": "The input-matrix projection from a run.",
+      "effect_on_target": "It supplies a1 and all residual input entries.",
+      "paper_match": "It preserves A as exact input data.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "HighamBench.P11CGSPFirstColumnRun.Q",
+      "interpretation": "The computed-Q projection from a run.",
+      "effect_on_target": "Its first column supplies q1.",
+      "paper_match": "It denotes stored computed Q entries, as in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "HighamBench.P11CGSPFirstColumnRun.R",
+      "interpretation": "The computed square upper-triangular R projection.",
+      "effect_on_target": "It supplies r11, leading blocks, and the 1-by-1 factor R1.",
+      "paper_match": "It denotes the computed R from the modeled execution prefix.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "HighamBench.P11CGSPFirstColumnRun.arithmetic",
+      "interpretation": "The run's epsilon-indexed arithmetic-model projection.",
+      "effect_on_target": "It connects computedNorm, divide, normalized, and the error axioms used in the proof obligation.",
+      "paper_match": "It supplies the numerical model for the first-column primitive operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "HighamBench.P11CGSPFirstColumnRun.column_dimension_pos",
+      "interpretation": "The proof that n is positive.",
+      "effect_on_target": "It makes the first column and first diagonal index well-defined.",
+      "paper_match": "The paper's use of a1 and k=1 implicitly requires n>=1.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "HighamBench.P11CGSPFirstColumnRun.epsilonM",
+      "interpretation": "The real-valued machine-unit projection.",
+      "effect_on_target": "It is the perturbation bound and final coefficient in equation (16).",
+      "paper_match": "It matches the paper's epsilon_M.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic.mk",
+      "interpretation": "The arithmetic constructor assumes a nonnegative second-order coefficient, a computed-norm error law, nonnegative computed norms, and a normalized nonzero-denominator scalar-division relative-error law.",
+      "effect_on_target": "Per-entry division deltas with absolute value at most epsilonM are primitive premises; assembling them into G1 and proving its operator-norm bound remain conclusions.",
+      "paper_match": "These are operation-level bounds used by the paper's standard-error-bound step and do not assume the central G1 relation or equation (16).",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "HighamBench.P11NormalizedIEEEArithmetic.normSecondOrderCoeff",
+      "interpretation": "A nonnegative coefficient multiplying epsilonM squared in the explicit norm-roundoff remainder.",
+      "effect_on_target": "It records the preceding r11 error relation but does not enter the equation-(16) bound.",
+      "paper_match": "It is an explicit coefficient representation of the paper's O(epsilon_M^2) norm-computation term.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "HighamBench.p11C1",
+      "interpretation": "It returns 1 for k=1 and 2*sqrt(2)*m*k+2*sqrt(k) otherwise.",
+      "effect_on_target": "Through p11C4 it strengthens condition_3 for every leading size k>=2.",
+      "paper_match": "The PDF defines the second branch as 2*sqrt(2*m*k)+2*sqrt(k), not 2*sqrt(2)*m*k+2*sqrt(k).",
+      "status": "fail"
+    },
+    {
+      "id": "D027",
+      "name": "HighamBench.p11C1._proof_1",
+      "interpretation": "A typeclass proof that the numeral 2 is at least two.",
+      "effect_on_target": "It only enables elaboration of a numeric literal.",
+      "paper_match": "It has no independent paper-level mathematical content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D028",
+      "name": "HighamBench.p11C2",
+      "interpretation": "It returns m+2 for k=1 and 3.5*m*k^2-1.5*m*k+16*k otherwise.",
+      "effect_on_target": "It contributes to p11C4 in condition (3).",
+      "paper_match": "Both branches and their parameter dependence match equation (2).",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "HighamBench.p11FirstColumnFactorizationResidual",
+      "interpretation": "The m-by-1 matrix A1-Q1*R1 using exact mathematical subtraction and multiplication of stored factors.",
+      "effect_on_target": "It fixes the residual orientation and the leftmost norm in equation (16).",
+      "paper_match": "It exactly matches A1-Q1R1 on printed page 308.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "HighamBench.p11FirstColumnMatrixNorm2",
+      "interpretation": "The Euclidean norm of the sole column of an m-by-1 real matrix.",
+      "effect_on_target": "It interprets ||A1-Q1R1||2 as the residual-vector norm.",
+      "paper_match": "For an m-by-1 matrix this equals its matrix spectral 2-norm, matching equation (16).",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "HighamBench.p11FirstColumnResidualVector",
+      "interpretation": "The vector with entries A[i,0]-Q[i,0]*R[0,0].",
+      "effect_on_target": "It represents a1-q1*r11 and is equated to -G1*a1.",
+      "paper_match": "Its expression and sign match the exact residual identity.",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "HighamBench.p11LeadingBlock._proof_1",
+      "interpretation": "The bound k.val+1<=n for k in Fin n.",
+      "effect_on_target": "It permits embedding leading-block indices into the full matrix.",
+      "paper_match": "It is index-safety plumbing with no separate paper assertion.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D033",
+      "name": "HighamBench.p11MatVec",
+      "interpretation": "Ordinary matrix-vector multiplication.",
+      "effect_on_target": "It interprets the perturbation action G1*a1.",
+      "paper_match": "It matches the product G1 a1 in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "HighamBench.p11OpNorm2",
+      "interpretation": "Mathlib's L2 operator norm on a finite square real matrix.",
+      "effect_on_target": "It types ||G1||2 and the induced action inequality.",
+      "paper_match": "It matches the induced matrix 2-norm required by ||G1 a1||2<=||G1||2||a1||2.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "HighamBench.p11VecNorm",
+      "interpretation": "The square root of the sum of squared real coordinates.",
+      "effect_on_target": "It is used for a1, residual vectors, and G1*a1.",
+      "paper_match": "It is exactly the finite-dimensional Euclidean 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "HighamBench.p11A1",
+      "interpretation": "The m-by-1 matrix whose sole column is the first column of A.",
+      "effect_on_target": "It supplies A1 in the factorization residual.",
+      "paper_match": "It matches the paper's first-column block A1.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.p11C2._proof_1",
+      "interpretation": "A typeclass proof supporting the numeric literal 7.",
+      "effect_on_target": "It only elaborates the rational coefficient 7/2.",
+      "paper_match": "It has no separate paper-level semantic content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D038",
+      "name": "HighamBench.p11C2._proof_2",
+      "interpretation": "A typeclass proof supporting the numeric literal 3.",
+      "effect_on_target": "It only elaborates the rational coefficient 3/2.",
+      "paper_match": "It has no separate paper-level semantic content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.p11C2._proof_3",
+      "interpretation": "A typeclass proof supporting the numeric literal 16.",
+      "effect_on_target": "It only supports numeric elaboration in p11C2.",
+      "paper_match": "It has no separate paper-level semantic content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.p11FirstColumnMatrixNorm2._proof_1",
+      "interpretation": "A proof that the one-column index type is nonempty.",
+      "effect_on_target": "It permits use of the sole Fin 1 index.",
+      "paper_match": "It is formal index plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.p11Q1",
+      "interpretation": "The m-by-1 matrix formed by the first column of Q.",
+      "effect_on_target": "It supplies Q1 in Q1R1.",
+      "paper_match": "It matches Q1=(q1).",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.p11R1",
+      "interpretation": "The 1-by-1 matrix containing R[0,0].",
+      "effect_on_target": "It supplies R1=(r11) in the residual product.",
+      "paper_match": "It matches the paper's R1=(r11).",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.p11RectMatMul",
+      "interpretation": "Ordinary finite rectangular matrix multiplication.",
+      "effect_on_target": "It computes Q1R1 as an exact product of stored Q1 and R1.",
+      "paper_match": "This matches the exact residual-analysis product, not an extra rounded operation.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "Nat",
+      "interpretation": "The natural-number type.",
+      "effect_on_target": "It indexes dimensions and finite leading-block sizes.",
+      "paper_match": "It correctly represents positive integer matrix dimensions.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "Exists",
+      "interpretation": "Ordinary existential quantification.",
+      "effect_on_target": "It quantifies the run-dependent G1 and scalar rounding deltas.",
+      "paper_match": "It preserves the existential perturbation asserted by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "The typeclass projection providing real division.",
+      "effect_on_target": "It elaborates exact quotients such as a1_i/r11.",
+      "paper_match": "It is implementation plumbing for ordinary real division.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D047",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "It expresses exact operation linkages and residual identities.",
+      "paper_match": "The paper's displayed identities are represented as exact equalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "Fin",
+      "interpretation": "The finite index type with values below a natural bound.",
+      "effect_on_target": "It indexes matrix rows, columns, and leading sizes.",
+      "paper_match": "It gives the intended finite index sets.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "Fin.fintype",
+      "interpretation": "The finite enumeration instance for Fin n.",
+      "effect_on_target": "It enables finite sums, dot products, and matrix products.",
+      "paper_match": "It implements the finite-dimensional sums used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "Fin.val",
+      "interpretation": "The underlying natural value of a finite index.",
+      "effect_on_target": "It converts a zero-based leading index to block size k.val+1.",
+      "paper_match": "The conversion correctly covers paper indices 1 through n.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "Function.Injective",
+      "interpretation": "A function maps equal outputs only from equal inputs.",
+      "effect_on_target": "Applied to A.mulVec, it states that A has trivial kernel.",
+      "paper_match": "For a real m-by-n matrix this is equivalent to full column rank n.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition.",
+      "effect_on_target": "It elaborates real and natural additions in constants, dimensions, and perturbation formulas.",
+      "paper_match": "Resolved instances give ordinary addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched division.",
+      "effect_on_target": "It elaborates real quotients and rational coefficients.",
+      "paper_match": "Resolved instances give ordinary real division.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "It elaborates scalar products and matrix products.",
+      "paper_match": "Resolved instances give the intended real or matrix multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "It expresses epsilonM squared, k squared, and kappa squared.",
+      "paper_match": "All relevant exponents are the paper's ordinary squares.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "LE.le",
+      "interpretation": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "It states norm and absolute-error upper bounds.",
+      "paper_match": "It preserves the paper's <= inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-dispatched strict order.",
+      "effect_on_target": "It states positivity and condition (3)'s strict inequality.",
+      "paper_match": "It preserves the paper's positivity and strict <1 condition.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "Matrix",
+      "interpretation": "A matrix is a row-indexed and column-indexed function.",
+      "effect_on_target": "It supplies extensional finite real matrices.",
+      "paper_match": "It faithfully represents the paper's real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "Matrix.mulVec",
+      "interpretation": "Matrix-vector multiplication by finite dot products.",
+      "effect_on_target": "It defines full-column-rank injectivity and G1's action.",
+      "paper_match": "It matches ordinary matrix-vector multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number powers obtained from monoid multiplication.",
+      "effect_on_target": "It interprets real squares.",
+      "paper_match": "It is standard power-operation plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D061",
+      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
+      "interpretation": "An inherited real-algebra structure projection.",
+      "effect_on_target": "It supports the semiring instance needed by matrix-vector multiplication.",
+      "paper_match": "It adds no independent semantics beyond ordinary real arithmetic.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D062",
+      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
+      "interpretation": "An inherited real-ring structure projection.",
+      "effect_on_target": "It supports matrix arithmetic typeclass resolution.",
+      "paper_match": "It is elaboration infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D063",
+      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
+      "interpretation": "An inherited semiring structure projection.",
+      "effect_on_target": "It supplies addition, multiplication, and distributivity to mulVec.",
+      "paper_match": "It is standard algebraic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D064",
+      "name": "NonUnitalNormedCommRing.toNonUnitalCommRing",
+      "interpretation": "An inherited commutative-ring structure projection.",
+      "effect_on_target": "It supports ordinary real matrix operations.",
+      "paper_match": "It has no separate paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D065",
+      "name": "NormedCommRing.toNonUnitalNormedCommRing",
+      "interpretation": "An inherited normed-ring structure projection.",
+      "effect_on_target": "It supplies the algebraic and norm structure used by matrices.",
+      "paper_match": "It is typeclass infrastructure for the real numbers.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D066",
+      "name": "OfNat.ofNat",
+      "interpretation": "Interpretation of natural-number literals in a target type.",
+      "effect_on_target": "It elaborates constants such as 0, 1, 2, 3, 7, and 16.",
+      "paper_match": "It is numeral elaboration only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D067",
+      "name": "One.toOfNat1",
+      "interpretation": "The conversion from a multiplicative identity to the numeral 1.",
+      "effect_on_target": "It elaborates identity and unit constants.",
+      "paper_match": "It is numeral/typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D068",
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "It is the scalar type of all matrices, errors, and machine-unit parameters.",
+      "paper_match": "The paper works over R throughout the selected result.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The standard multiplicative and division structure on real numbers.",
+      "effect_on_target": "It gives exact real division in normalization formulas.",
+      "paper_match": "It matches the mathematical quotient used in the error analysis.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "Real.instLT",
+      "interpretation": "The standard strict order on real numbers.",
+      "effect_on_target": "It interprets positivity and strict condition (3).",
+      "paper_match": "It matches the paper's real inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "Real.instMonoid",
+      "interpretation": "The standard multiplicative monoid structure on reals.",
+      "effect_on_target": "It supports natural powers.",
+      "paper_match": "It is ordinary-real arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D072",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "It interprets constants, error products, and scalar residual products.",
+      "paper_match": "It matches paper multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "Real.instOne",
+      "interpretation": "The real multiplicative identity.",
+      "effect_on_target": "It appears in 1+delta, identities, and upper bounds.",
+      "paper_match": "It matches the paper's scalar one.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "Real.instZero",
+      "interpretation": "The real additive identity.",
+      "effect_on_target": "It appears in triangularity, positivity, and nonzero conditions.",
+      "paper_match": "It matches the paper's scalar zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "Real.normedCommRing",
+      "interpretation": "The standard normed commutative-ring structure on reals.",
+      "effect_on_target": "It supports matrix multiplication and norm infrastructure.",
+      "paper_match": "It introduces no nonstandard scalar semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D076",
+      "name": "Zero.toOfNat0",
+      "interpretation": "The conversion from a zero structure to the numeral 0.",
+      "effect_on_target": "It elaborates zero literals.",
+      "paper_match": "It is numeral/typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D077",
+      "name": "instAddNat",
+      "interpretation": "Ordinary natural-number addition.",
+      "effect_on_target": "It forms block dimensions k.val+1.",
+      "paper_match": "It correctly maps zero-based indices to one-based block sizes.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "instHAdd",
+      "interpretation": "The homogeneous addition instance used by HAdd.",
+      "effect_on_target": "It dispatches ordinary addition.",
+      "paper_match": "It is typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D079",
+      "name": "instHDiv",
+      "interpretation": "The homogeneous division instance used by HDiv.",
+      "effect_on_target": "It dispatches ordinary real division.",
+      "paper_match": "It is typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D080",
+      "name": "instHMul",
+      "interpretation": "The homogeneous multiplication instance used by HMul.",
+      "effect_on_target": "It dispatches ordinary scalar multiplication.",
+      "paper_match": "It is typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D081",
+      "name": "instHPow",
+      "interpretation": "The homogeneous-result power instance used by HPow.",
+      "effect_on_target": "It dispatches ordinary natural powers.",
+      "paper_match": "It is typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D082",
+      "name": "instLENat",
+      "interpretation": "The standard non-strict order on natural numbers.",
+      "effect_on_target": "It states n<=m and index-embedding bounds.",
+      "paper_match": "It matches the dimension condition m>=n.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "instLTNat",
+      "interpretation": "The standard strict order on natural numbers.",
+      "effect_on_target": "It states positive dimensions and finite-index bounds.",
+      "paper_match": "It correctly encodes positivity and indexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "instOfNatNat",
+      "interpretation": "The canonical interpretation of natural literals as natural numbers.",
+      "effect_on_target": "It elaborates dimension and index literals.",
+      "paper_match": "It is numeral plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D085",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "It keeps each rounding relation paired with its bound.",
+      "paper_match": "It preserves simultaneous paper requirements.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "Fin.castLE",
+      "interpretation": "The value-preserving embedding Fin r into Fin n when r<=n.",
+      "effect_on_target": "It embeds leading-block indices into R.",
+      "paper_match": "It selects the intended upper-left entries without reindexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "Fin.mk",
+      "interpretation": "Construction of a finite index from a value and bound proof.",
+      "effect_on_target": "It constructs the first index with value zero.",
+      "paper_match": "It is faithful finite-index construction.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "interpretation": "Matrix multiplication defined entrywise by finite dot products.",
+      "effect_on_target": "It implements p11MatMul and p11RectMatMul.",
+      "paper_match": "It is ordinary mathematical matrix multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "Matrix.one",
+      "interpretation": "The diagonal matrix with ones on the diagonal and zeros elsewhere.",
+      "effect_on_target": "It implements p11Identity.",
+      "paper_match": "It is the usual identity matrix.",
+      "status": "pass"
+    },
+    {
+      "id": "D090",
+      "name": "Nat.cast",
+      "interpretation": "The canonical cast of a natural number into the reals.",
+      "effect_on_target": "It interprets m and k in real-valued constants.",
+      "paper_match": "It preserves the paper's real polynomial dependence on integer dimensions.",
+      "status": "pass"
+    },
+    {
+      "id": "D091",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "interpretation": "A proof-producing instance for numerals of the form n+1 with n nonzero.",
+      "effect_on_target": "It supports elaboration of larger numeric literals.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D092",
+      "name": "Nat.instNeZeroSucc",
+      "interpretation": "A proof that every natural successor is nonzero.",
+      "effect_on_target": "It supports finite-index and numeral instances.",
+      "paper_match": "It is elaboration infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D093",
+      "name": "Nat.succ",
+      "interpretation": "Natural-number successor.",
+      "effect_on_target": "It appears in the proof that k.val+1<=n.",
+      "paper_match": "It correctly represents incrementing a zero-based index.",
+      "status": "pass"
+    },
+    {
+      "id": "D094",
+      "name": "Neg.neg",
+      "interpretation": "Typeclass-dispatched additive negation.",
+      "effect_on_target": "It expresses the residual action -G1*a1.",
+      "paper_match": "It preserves the paper's negative sign.",
+      "status": "pass"
+    },
+    {
+      "id": "D095",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary real addition.",
+      "effect_on_target": "It forms a1+G1*a1 and 1+delta.",
+      "paper_match": "It matches the paper's exact real addition in analytical identities.",
+      "status": "pass"
+    },
+    {
+      "id": "D096",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative-monoid structure on reals.",
+      "effect_on_target": "It supports finite sums and matrix multiplication.",
+      "paper_match": "It is standard algebraic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D097",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group structure on reals.",
+      "effect_on_target": "It supports subtraction, negation, and absolute value.",
+      "paper_match": "It is standard real-arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D098",
+      "name": "Real.instLE",
+      "interpretation": "The standard non-strict order on reals.",
+      "effect_on_target": "It interprets all error and norm bounds.",
+      "paper_match": "It preserves the paper's inequality directions.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Real.instNatCast",
+      "interpretation": "The canonical natural-number embedding into the reals.",
+      "effect_on_target": "It supplies m and k as real factors in c1, c2, and norm-error constants.",
+      "paper_match": "The cast itself is correct; the p11C1 multiplication surrounding it is not.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "Real.instNeg",
+      "interpretation": "Ordinary real negation.",
+      "effect_on_target": "It gives the sign in -G1*a1 and real subtraction.",
+      "paper_match": "It matches the exact residual identity.",
+      "status": "pass"
+    },
+    {
+      "id": "D101",
+      "name": "Real.lattice",
+      "interpretation": "The lattice-order structure on reals.",
+      "effect_on_target": "It supports the generic absolute-value definition.",
+      "paper_match": "It is order infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D102",
+      "name": "abs",
+      "interpretation": "The ordinary absolute value induced by the ordered additive group.",
+      "effect_on_target": "It bounds scalar rounding errors delta.",
+      "paper_match": "It matches |delta| in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D103",
+      "name": "instDecidableEqFin",
+      "interpretation": "Decidable equality for finite indices.",
+      "effect_on_target": "It supports identity matrices and the L2 matrix norm instance.",
+      "paper_match": "It is computational infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D104",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "The natural-cast interpretation of numeric literals at least two.",
+      "effect_on_target": "It elaborates real constants in c1, c2, and error bounds.",
+      "paper_match": "It is numeral infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D105",
+      "name": "Fin.instOfNat",
+      "interpretation": "Interpretation of a natural literal as a finite index in a nonempty Fin type.",
+      "effect_on_target": "It supplies the unique index 0 of Fin 1.",
+      "paper_match": "It correctly selects the sole first-column index.",
+      "status": "pass"
+    },
+    {
+      "id": "D106",
+      "name": "Finset.sum",
+      "interpretation": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It defines the sum of coordinate squares in p11VecNorm.",
+      "paper_match": "It matches the finite Euclidean norm sum.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "Finset.univ",
+      "interpretation": "The finite set of all elements of a finite type.",
+      "effect_on_target": "It makes p11VecNorm sum over every coordinate.",
+      "paper_match": "It covers exactly all vector entries.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "It forms A1-Q1R1 and a1-q1*r11.",
+      "paper_match": "It preserves the paper's residual orientation.",
+      "status": "pass"
+    },
+    {
+      "id": "D109",
+      "name": "Matrix.instL2OpNormedAddCommGroup",
+      "interpretation": "The matrix norm structure using the L2 operator norm over finite RCLike scalars.",
+      "effect_on_target": "It supplies the norm used by p11OpNorm2.",
+      "paper_match": "For real square matrices it is the induced spectral 2-norm used for G1 and kappa2.",
+      "status": "pass"
+    },
+    {
+      "id": "D110",
+      "name": "Matrix.sub",
+      "interpretation": "Pointwise matrix subtraction.",
+      "effect_on_target": "It implements A1-Q1R1 entry by entry.",
+      "paper_match": "It is ordinary exact matrix subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D111",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "A proposition supporting elaboration of natural literals at least two.",
+      "effect_on_target": "It has no mathematical role after numeral elaboration.",
+      "paper_match": "It has no paper-level counterpart.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D112",
+      "name": "Ne",
+      "interpretation": "Inequality defined as the negation of equality.",
+      "effect_on_target": "It states that a division denominator is nonzero.",
+      "paper_match": "It matches the nonzero divisor required for normalization.",
+      "status": "pass"
+    },
+    {
+      "id": "D113",
+      "name": "Norm.norm",
+      "interpretation": "The norm operation selected from a Norm instance.",
+      "effect_on_target": "It extracts the L2 operator norm of a matrix.",
+      "paper_match": "With D109 it denotes the intended induced 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D114",
+      "name": "NormedAddCommGroup.toNorm",
+      "interpretation": "The norm projection from a normed additive commutative group.",
+      "effect_on_target": "It exposes the matrix L2 norm operation.",
+      "paper_match": "It is typeclass projection plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D115",
+      "name": "Real.instRCLike",
+      "interpretation": "The RCLike structure identifying real scalars as a normed complete field.",
+      "effect_on_target": "It enables the matrix L2 operator norm construction.",
+      "paper_match": "It introduces no semantics beyond ordinary real linear algebra.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D116",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction defined by addition of a negation.",
+      "effect_on_target": "It computes every residual entry.",
+      "paper_match": "It matches exact real subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D117",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square-root function.",
+      "effect_on_target": "It defines Euclidean norms and the square-root terms in p11C1.",
+      "paper_match": "The operation is correct, but p11C1 applies it only to 2 instead of to 2*m*k.",
+      "status": "pass"
+    },
+    {
+      "id": "D118",
+      "name": "instDecidableEqNat",
+      "interpretation": "Decidable equality on natural numbers.",
+      "effect_on_target": "It selects the k=1 branches of p11C1 and p11C2.",
+      "paper_match": "It is branch-selection infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D119",
+      "name": "instHSub",
+      "interpretation": "The homogeneous subtraction instance used by HSub.",
+      "effect_on_target": "It dispatches real or pointwise-matrix subtraction.",
+      "paper_match": "It is typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D120",
+      "name": "ite",
+      "interpretation": "A decidable if-then-else expression.",
+      "effect_on_target": "It selects the k=1 and k>=2 constant formulas.",
+      "paper_match": "Piecewise selection is appropriate; the error is in p11C1's second branch expression, not in ite.",
+      "status": "pass"
+    },
+    {
+      "id": "D121",
+      "name": "NeZero",
+      "interpretation": "A typeclass proposition that a value is nonzero.",
+      "effect_on_target": "It supports nonempty finite-index and numeral instances.",
+      "paper_match": "It is elaboration infrastructure rather than a target hypothesis.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D122",
+      "name": "Zero.ofOfNat0",
+      "interpretation": "Construction of a Zero instance from an interpretation of the numeral 0.",
+      "effect_on_target": "It supports NeZero elaboration.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "Direct inspection of PDF pages 2-4 and 9-10 confirms the setting on printed page 300, Algorithm 2 and the IEEE model on 301, Theorem 1 and condition (3) on 302, positivity on 307, and the G1 relation and equation (16) on 308.",
+      "lean_evidence": "The target is P11-T1's universal P11CGSPFirstColumnRun-to-P11Equation16 declaration.",
+      "reasoning": "The selected source version, base-case passage, and surrounding theorem are the intended result."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "The paper has A in R^{m x n}, m>=n, full column rank, first-column objects A1,Q1,R1, and an inferred m-by-m G1.",
+      "lean_evidence": "The run requires positive m,n, n<=m, A,Q: Matrix (Fin m) (Fin n) Real, R: Matrix (Fin n) (Fin n) Real, injective A.mulVec, and G1: Matrix (Fin m) (Fin m) Real.",
+      "reasoning": "Dimensions, scalar types, first-column indexing, and G1's conformable type match."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "For each computed first-column run, standard error bounds provide a computation-dependent G1.",
+      "lean_evidence": "The elaborated target is forall run, exists G1, P11Equation16Witness run G1.",
+      "reasoning": "G1 is correctly scoped after and dependent on the run; it is not supplied as a run premise."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "Printed page 302 defines c1(m,k)=2*sqrt(2*m*k)+2*sqrt(k) for k>=2 and assumes c4(m,k)*epsilonM*kappa2(Rk)^2<1 for every k.",
+      "lean_evidence": "D026 defines the second branch as 2*sqrt(2)*m*k+2*sqrt(k), and D003 uses the resulting p11C4 in condition_3 for every leading block.",
+      "reasoning": "The formal all-k hypothesis is strictly stronger for k>=2, so the target has a narrower domain than the paper."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "Printed page 308 gives the r11 relation, q1=(I+G1)a1/r11, ||G1||2<=epsilonM, A1-Q1R1=a1-q1*r11=-G1*a1, and the complete equation-(16) chain.",
+      "lean_evidence": "D006 requires denominator positivity, norm_roundoff_relation, normalization_relation, perturbation_opNorm_bound, both residual identities, both norm equalities, and both inequalities.",
+      "reasoning": "Every selected conclusion and every link in equation (16) is present."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The radical in c1's second branch covers 2*m*k.",
+      "lean_evidence": "D026 multiplies sqrt(2) by m and k outside the radical.",
+      "reasoning": "Although matrix, norm, residual, and arithmetic operators are correctly interpreted, this nontrivial local definition has the wrong operator grouping."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper treats q1 and r11 as computed stored values and forms A1-Q1R1 as an exact analytical residual.",
+      "lean_evidence": "R11 and Q's first column are linked to arithmetic.computedNorm and arithmetic.divide, while p11RectMatMul and subtraction are exact real operations.",
+      "reasoning": "Computed operations and exact residual analysis are not conflated."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Algorithm 2 begins with r11=||a1||2 and q1=a1/r11; its distinguishing pythagorean operations occur only for k>=2.",
+      "lean_evidence": "The run links R11 to computedNorm(a1) and each Q first-column entry to divide(a1_i,R11). D024 supplies only primitive norm and scalar-division error laws.",
+      "reasoning": "The target models the execution prefix sufficient for k=1. It does not assume G1, its operator-norm bound, or the residual result."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "All norms in the selected passage are 2-norms: Euclidean for vectors and induced matrix 2-norm for G1.",
+      "lean_evidence": "p11VecNorm is sqrt(sum x_i^2), p11OpNorm2 uses Mathlib's L2 operator norm, and the m-by-1 residual norm is its sole-column Euclidean norm.",
+      "reasoning": "Norm kind, unsquared form, and normwise interpretation match."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The paper has c1(m,1)=1 and c1(m,k)=2*sqrt(2*m*k)+2*sqrt(k) for k>=2, with c4=c2+2*c1.",
+      "lean_evidence": "The k=1 branch and c2 are correct, but p11C1's k>=2 branch is 2*sqrt(2)*m*k+2*sqrt(k).",
+      "reasoning": "There is no index shift, but the parameter dependence of a coefficient used in condition (3) is wrong."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "The paper assumes IEEE arithmetic with machine unit epsilonM and states its relative model for normalized-range results; it gives no separate treatment of underflow, overflow, infinities, or NaNs in the selected analysis.",
+      "lean_evidence": "The arithmetic interface is indexed by epsilonM, has a normalized predicate, and applies its division error law only to normalized exact quotients with a nonzero denominator.",
+      "reasoning": "For the first-column operations, the formal abstraction matches the level of exceptional-value and precision detail actually used by the paper."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "Condition (3) uses the printed c4, while equation (16) uses exact equalities and non-strict upper bounds.",
+      "lean_evidence": "The equation-(16) relations have correct direction and strictness, but the malformed c1 makes condition_3 stricter for k>=2.",
+      "reasoning": "The conclusion relations match, but the theorem as an implication is logically weaker because of its narrower hypothesis."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The selected result is a normwise first-column factorization residual with an exact backward perturbation action.",
+      "lean_evidence": "The target concludes A1-Q1R1=-G1*a1 and bounds its Euclidean norm by epsilonM*||a1||2.",
+      "reasoning": "No orthogonality, forward-error, componentwise, or normal-equations notion is substituted."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The r11 relation includes O(epsilonM^2), while the displayed G1 relation and equation (16) contain no explicit higher-order addend.",
+      "lean_evidence": "The norm relation has an explicit nonnegative coefficient times epsilonM^2, but the normalization relation, residual identity, and final chain contain no such remainder.",
+      "reasoning": "The formal statement keeps second-order treatment separate and preserves equation (16) as printed."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "Equation (16) is the k=1 base case of Theorem 1 for arbitrary n>=1 under the paper's all-k condition (3).",
+      "lean_evidence": "The first-column execution-prefix specialization is appropriate, but for n>=2 the all-k premise uses a larger, incorrect c4.",
+      "reasoning": "The k=1 specialization itself still measures the intended primitive-error-to-residual argument, but the additional narrowing caused by the constant error makes the complete proposition a non-faithful weaker specialization."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "Full-rank matrices with well-conditioned leading blocks and sufficiently small machine unit satisfy the source assumptions.",
+      "lean_evidence": "For example, m=n=1 with A=Q=R=[1], exact modeled norm/division operations, positive epsilonM<1/5, identity leading inverse, and G1=0 satisfies the formal premises and conclusion; admissible nonzero division deltas also yield nonzero residuals.",
+      "reasoning": "The run type is inhabited, and equation (16) is not forced solely by an empty domain or an always-zero residual."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean theorem only covers runs satisfying the malformed, larger c4 condition for every k>=2. For m=5, n=2, R2=I and epsilonM=1/128, the paper's k=2 coefficient is about 110.54 and satisfies condition (3), while Lean's coefficient is about 149.23 and fails it. Thus Lean omits paper-valid cases."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "For positive m and k>=2, 2*sqrt(2)*m*k is at least 2*sqrt(2*m*k), so Lean's condition implies the paper's correct condition. On that narrower domain the first-column primitive premises and every requested G1 and equation-(16) conclusion match the paper."
+    }
+  },
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "major",
+      "category": "constant-and-hypothesis-mismatch",
+      "paper_evidence": "Printed page 302 defines c1(m,k)=2*sqrt(2*m*k)+2*sqrt(k) for k=2,...,n and c4=c2+2*c1.",
+      "lean_evidence": "D026 defines c1's second branch as 2*sqrt(2)*m*k+2*sqrt(k), which propagates through D012 into D003 condition_3.",
+      "impact": "The formal theorem requires a strictly stronger condition for leading blocks of size at least two and therefore proves the selected result on a proper subset of the paper's stated domain."
+    },
+    {
+      "severity": "note",
+      "category": "primitive-operation-premises",
+      "paper_evidence": "Printed page 308 derives q1=(I+G1)a1/r11 and ||G1||2<=epsilonM from standard error bounds for the computed normalization.",
+      "lean_evidence": "The run contains only computedNorm and per-entry divide linkages. D024 supplies scalar relative-error witnesses; G1, its operator-norm bound, and the residual chain occur only in P11Equation16.",
+      "impact": "The revised premises do not assume the central G1 result. They encode the primitive first-column operations needed to prove it."
+    },
+    {
+      "severity": "note",
+      "category": "nonvacuity",
+      "paper_evidence": "The paper's assumptions admit exact or sufficiently accurate executions on full-rank, well-conditioned matrices.",
+      "lean_evidence": "Exact one-column runs and runs with bounded nonzero scalar division errors satisfy the formal arithmetic interface and condition.",
+      "impact": "The theorem is substantively nonvacuous; the rejection is caused by the coefficient mismatch, not by an empty run type."
+    }
+  ],
+  "rationale": "Direct inspection confirms that the Lean witness accurately states the normalization perturbation, exact residual identity, and complete equation-(16) norm chain. The run premises model Algorithm 2's first computed norm and scalar divisions and do not assume G1 or the central residual result. However, p11C1 places m*k outside the square root for k>=2. Because p11C4 uses this value in the inherited all-leading-block condition (3), the formal theorem has a strictly narrower domain than the paper. Additional hypotheses do not make it stronger: the paper result implies this restricted statement, but the Lean statement does not recover all paper-valid cases."
+}

@@ -3,163 +3,156 @@
   "role": "roundtrip-judge",
   "task_id": "P11-T1",
   "paper_sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
-  "blind_translation_sha256": "ac4812748bd6d69800930fa077c4c5d30289190bbfe47e22472fc08e2fc3c62a",
+  "blind_translation_sha256": "5bf3e6185b63b4a215345536d39d255a3fb5f07ed6b339db7fa62b01cc121ace",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The inspected PDF is the 2006 Numerische Mathematik article, volume 105, pages 299-313, with SHA-256 72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5. The relevant source is Algorithm 2 on printed page 301, Theorem 1 on page 302, and its k=1 proof and equation (16) on page 308.",
-      "translation_evidence": "The translation targets the first column, R_00, Q[:,0], an m by m perturbation G1, and the first-column residual and bound.",
-      "reasoning": "The paper version and selected passage are correctly identified."
+      "paper_evidence": "The hash-verified journal PDF contains the rectangular full-rank setting on printed page 300, Algorithm 2 on page 301, Theorem 1 on page 302, Lemma 2 on pages 306-307, and the k=1 proof with equation (16) on page 308.",
+      "translation_evidence": "The translation identifies the first-column result, Algorithm-2-related constants, leading-block condition, normalization certificate, and equation-(16) residual chain.",
+      "reasoning": "The selected paper version, surrounding theorem, base case, and cited passages are correct."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "The paper has A and Q in R^(m by n), R in R^(n by n), m>=n, first columns a1 and q1, scalar r11, and a conformable m by m G1.",
-      "translation_evidence": "The translation uses positive natural dimensions m,n with n<=m, A,Q in R^(m by n), R in R^(n by n), zero-based first-column indices, and G1 in R^(m by m).",
-      "reasoning": "The matrix, vector, scalar, and leading-block dimensions and the conversion from one-based to zero-based indexing are correct."
+      "paper_evidence": "The paper uses positive dimensions m and n, A and Q in R^(m by n), R in R^(n by n), m at least n, rank(A)=n, and first-column objects a1, q1, r11, A1, Q1, and R1.",
+      "translation_evidence": "The translation uses natural m,n with positivity proofs, A,Q in R^(m by n), R in R^(n by n), an injective action of A, zero-based first-column indices, and G1 in R^(m by m).",
+      "reasoning": "Dimensions, scalar field, finite index sets, and the inferred dimension of G1 agree with the paper."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper fixes IEEE floating-point execution of Algorithm 2 and, for each admissible computation, obtains a computation-dependent G1.",
-      "translation_evidence": "The translation universally quantifies over run records containing an arbitrary arithmetic model, arbitrary supplied leading-block inverses, and matrices whose later columns need not arise from Algorithm 2; G1 then depends on that run.",
-      "reasoning": "The scope of G1 is correct, but universally quantifying over abstract models and non-algorithmic run records changes the quantified domain from the paper's fixed execution model."
+      "status": "pass",
+      "paper_evidence": "For each computed run satisfying the theorem hypotheses, the proof concludes that a suitable G1 exists; the norm-error delta likewise depends on the run.",
+      "translation_evidence": "A run and its arithmetic model and leading inverses are universally quantified before the existential G1 and delta witnesses.",
+      "reasoning": "Witness dependence and scope are preserved. Packaging inverse witnesses as run data is mathematically equivalent to asserting their existence and inverse equations."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The hypotheses are full column rank, output from Algorithm 2 under the IEEE normalized-range model, and c4(m,k) epsilonM kappa_2(Rk)^2<1 for every k, with the printed c4.",
-      "translation_evidence": "The run records first-column computedNorm and divide equations but does not require the complete Q and R to result from Algorithm 2. It also assumes componentwise normalized quotients and uses a different coefficient C(m,s) for s>=2.",
-      "reasoning": "Important paper hypotheses are replaced by an abstract first-column model, and the leading-block smallness hypothesis has the wrong coefficient."
+      "paper_evidence": "Theorem 1 assumes that Q and R result from Algorithm 2 in IEEE floating-point arithmetic, together with the full-rank matrix setting, condition (3), and normalized-range qualification.",
+      "translation_evidence": "The translated hypotheses instead describe an arbitrary upper-triangular run with supplied inverses, an abstract arithmetic model, and only first-column computedNorm and divide identities; they do not require Q and R to be Algorithm 2 outputs.",
+      "reasoning": "Most algebraic hypotheses are represented, but the defining algorithm and execution-model hypothesis is replaced by a different local axiomatization."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Printed page 308 states q1=(I+G1)a1/r11, ||G1||_2<=epsilonM, A1-Q1R1=a1-q1r11=-G1a1, and the complete equation-(16) norm chain.",
-      "translation_evidence": "The conclusion gives the componentwise equivalent perturbed-column equation, the G1 operator-norm bound, e=a-qr=-G1a, the one-column residual identification, and both induced-norm inequalities.",
-      "reasoning": "All substantive first-column conclusions are present. The theorem-oriented residual Q1R1-A1 is recoverable by negating the explicitly stated residual."
+      "paper_evidence": "Printed page 308 gives q1=(I+G1)a1/r11, ||G1||2 at most epsilonM, A1-Q1R1=a1-q1r11=-G1a1, and the complete norm chain ending in epsilonM||a1||2. Lemma 2 and the nonsingularity argument also provide the r11 error relation and positivity.",
+      "translation_evidence": "The certificate contains G1 existence, its normalization equation and norm bound, r positivity and norm-error witness, the exact residual identities, and every equality and inequality in the norm chain.",
+      "reasoning": "All selected conclusions are present; the additional r11 facts are also established in the cited surrounding paper proof."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The relevant operations are first-column extraction, ordinary matrix and matrix-vector multiplication, identity matrices, leading principal blocks, exact inverses, Euclidean norms, and induced matrix 2-norms.",
-      "translation_evidence": "The dependency ledger unfolds these operations, including Fin indexing, leading-block embeddings, matrix multiplication, Euclidean vector norm, l2 operator norm, residual matrices, and exact two-sided inverses.",
-      "reasoning": "The nontrivial mathematical operators are explicitly interpreted; the incorrect coefficient and abstract arithmetic semantics are assessed separately."
+      "paper_evidence": "The source uses leading blocks, condition numbers, matrix products, Euclidean vector norms, matrix 2-norms, one-column residuals, and the functions c1 through c4.",
+      "translation_evidence": "The dependency ledger unfolds matrix and vector multiplication, leading blocks and inverses, induced L2 operator norms, Euclidean norms, residual matrices, finite indices, and the piecewise constants.",
+      "reasoning": "The nontrivial operators and imported definitions affecting the proposition are interpreted completely."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper treats a1 as input data, q1 and r11 as stored computed quantities, and a1-q1r11 as an exact mathematical residual product.",
-      "translation_evidence": "The run sets r=computedNorm(a) and q_i=divide(a_i,r), while residuals and G1a are formed using exact real arithmetic.",
-      "reasoning": "The first-column computed values are distinguished from the exact algebra used to analyze their residual."
+      "paper_evidence": "Q and R are stored computed factors, while A1-Q1R1 is evaluated as an exact mathematical residual with no fl operator.",
+      "translation_evidence": "computedNorm and divide produce r and q, whereas E, e, matrix multiplication, and subtraction are exact real operations on the stored values.",
+      "reasoning": "Input data, computed quantities, perturbations, and exact residual evaluation are not conflated."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Theorem 1 explicitly concerns R resulting from Algorithm 2 and the computed Q and R; its first step is r11=||a1||_2 and q1=a1/r11.",
-      "translation_evidence": "Only abstract first-column computedNorm and divide equations are imposed. Later columns of Q and R may be arbitrary subject to triangularity, inverses, and smallness, with no Algorithm 2 recurrence.",
-      "reasoning": "Although the selected base-case operations resemble Algorithm 2's first step, the translated run is not required to be an execution or output of Algorithm 2."
+      "paper_evidence": "Theorem 1 and Lemma 2 explicitly concern factors resulting from Algorithm 2, the CGS-P algorithm, even though its first-column pseudocode is shared with Algorithm 1.",
+      "translation_evidence": "The restrictions explicitly state that no assertion makes the remaining columns of Q or R outputs of a particular algorithm; only local first-column norm and division equations are encoded.",
+      "reasoning": "The translation cannot distinguish a CGS-P execution from another computation satisfying the local axioms, so the paper's algorithm linkage is absent."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Equation (16) uses the Euclidean 2-norm for vectors and one-column residuals and the induced matrix 2-norm for G1; condition (3) squares the 2-norm condition number.",
-      "translation_evidence": "The translation defines vector norms by sqrt(sum x_i^2), matrix norms as l2 operator norms, the one-column residual norm as its column's Euclidean norm, and squares the condition factor.",
-      "reasoning": "Norm kinds, squared versus unsquared uses, and normwise residual semantics match."
+      "paper_evidence": "Equation (16) uses vector and matrix 2-norms, and condition (3) uses the square of ||Rk||2||Rk^(-1)||2.",
+      "translation_evidence": "Vectors use the Euclidean norm, square matrices use its induced operator norm, the condition factor is squared, and the m-by-1 residual norm is the Euclidean norm of its sole column.",
+      "reasoning": "These norms agree with the standard paper convention, including the equivalence between an m-by-1 matrix 2-norm and its column norm."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "On printed page 302, c1(m,1)=1 and c1(m,k)=2 sqrt(2mk)+2 sqrt(k) for k>=2, with c4=c2+2c1.",
-      "translation_evidence": "The translation defines beta(m,s)=2 sqrt(2) m s+2 sqrt(s) for s>=2 and C=alpha+2 beta.",
-      "reasoning": "The factor ms is incorrectly placed outside the square root. Consequently C(m,s) is not the paper's c4(m,s) for s>=2, even though the s=1 specialization and index range are correct."
+      "status": "pass",
+      "paper_evidence": "The paper has c1(m,1)=1, c2(m,1)=m+2, c4=c2+2c1, condition c4(m,k) epsilonM kappa2(Rk)^2<1, and the norm-computation coefficient 0.5m+1.",
+      "translation_evidence": "The translation gives C(m,1)=m+4, the correct p greater than 1 formula, p=k.val+1, the squared condition factor, m/2+1 in the norm bound, and final residual coefficient 1.",
+      "reasoning": "Constants, branches, zero-to-one index conversion, strictness, and parameter dependence match."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "Printed page 301 assumes IEEE floating-point arithmetic and states a relative-error rule only for normalized-range results, together with a first-order machine-unit convention.",
-      "translation_evidence": "The arithmetic model is an arbitrary normalized predicate, divide function, computedNorm function, and coefficient satisfying selected axioms. It fixes no IEEE format, rounding mode, or exceptional-value behavior.",
-      "reasoning": "The abstract axioms neither identify IEEE arithmetic nor preserve its execution and exceptional-value semantics. Componentwise normalized quotients are added as run hypotheses instead."
+      "paper_evidence": "The paper assumes IEEE floating-point arithmetic and limits its displayed relative-error guarantee to normalized-range results; it leaves other exceptional values outside the guarantee.",
+      "translation_evidence": "The translation quantifies over arbitrary real-valued computedNorm and divide functions. Its norm guarantee is unconditional for every real vector, its division guarantee uses an unconstrained normalized predicate, and it contains no IEEE format, rounding mode, overflow, underflow, subnormal, NaN, or infinity semantics.",
+      "reasoning": "The abstract model is a reconstruction, not an equivalent statement of the paper's execution model, and it mixes stronger global guarantees with weaker identification of actual IEEE behavior."
     },
     {
       "id": "S12",
       "status": "pass",
-      "paper_evidence": "The perturbation and residual statements are equalities, the norm bounds are non-strict, and condition (3) is strict. The proof residual is A1-Q1R1 while Theorem 1 uses the opposite sign.",
-      "translation_evidence": "The translation preserves the equalities, non-strict norm bounds, strict smallness relation, and the sign e=a-qr=-G1a.",
-      "reasoning": "The directions, strictness, and residual orientation of the selected relations are correct; the coefficient mismatch is recorded under S10."
+      "paper_evidence": "The paper uses strict condition (3), strict positivity of r11, exact residual equalities with negative sign, and non-strict norm bounds.",
+      "translation_evidence": "The translation preserves the strict smallness and positivity relations, exact equation directions and sign, and every non-strict norm inequality.",
+      "reasoning": "At the level of the displayed algebraic relations, equality, inequality direction, and strictness are correct."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Equation (16) is a normwise first-column factorization residual and G1 supplies a multiplicative backward perturbation; it is not an orthogonality or normal-equations error.",
-      "translation_evidence": "The translation concludes e=a-qr=-G1a and bounds its Euclidean norm by epsilonM||a||_2.",
-      "reasoning": "The translated error is the same normwise residual/backward-error notion."
+      "paper_evidence": "Equation (16) is a normwise first-column factorization residual bound, while G1 models normalization error.",
+      "translation_evidence": "The conclusion defines e=a-qr and E=A[:,0]-Q[:,0][r], identifies e=-G1a, and bounds its norm by epsilonM||a||2.",
+      "reasoning": "The translation preserves the residual/backward-error notion and does not substitute orthogonality or normal-equations error."
     },
     {
       "id": "S14",
       "status": "fail",
-      "paper_evidence": "Printed page 301 introduces the convention of neglecting O(epsilonM^2), Theorem 1 is qualified to within such terms, the r11 bound on page 308 contains O(epsilonM^2), and the displayed q1 relation and equation (16) contain no explicit remainder.",
-      "translation_evidence": "The r error is replaced by an exact bound involving c2(m)epsilonM^2 for an arbitrary model field c2, with no asymptotic or uniform big-O semantics. The residual chain itself remains exact.",
-      "reasoning": "The exact treatment of equation (16) is correct, but the surrounding first-order convention and r11 remainder are not faithfully represented by an unconstrained model-dependent coefficient."
+      "paper_evidence": "Lemma 2 writes an O(epsilonM^2) remainder, Theorem 1 has a global first-order qualification, and equation (16) itself has no displayed higher-order term.",
+      "translation_evidence": "The residual chain correctly has no remainder, but the norm model replaces O(epsilonM^2) by c(m)epsilonM^2 where c is run data in a model already indexed by the fixed epsilonM, without an asymptotic quantifier or threshold.",
+      "reasoning": "The selected residual treatment is correct, but the dependency ledger does not preserve the mathematical semantics of the paper's big-O term."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The paper concerns finite-dimensional real matrices computed by a specific IEEE execution of CGS-P.",
-      "translation_evidence": "Finite real dimensions are preserved, but the proposition is generalized to arbitrary arithmetic models and arbitrary run completions while simultaneously narrowed by the erroneous stronger smallness coefficient.",
-      "reasoning": "This is a mixed generalization and restriction, not a faithful finite-dimensional specialization of the paper result."
+      "status": "pass",
+      "paper_evidence": "The selected result is the finite-dimensional real k=1 case for an m-by-n rectangular matrix.",
+      "translation_evidence": "The translation remains finite-dimensional and real, uses the same m-by-n geometry, and selects exactly the zero-based first column.",
+      "reasoning": "There is no scalar, complex, infinite-dimensional, or dimensional specialization mismatch; the execution-model generalization is recorded separately under S08 and S11."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "Full-rank inputs such as the one-dimensional identity satisfy the paper's setting, and sufficiently small epsilonM satisfies condition (3).",
-      "translation_evidence": "For example, m=n=1, A=Q=R=H=[1], exact computedNorm and divide, normalized=true, c2=0, and epsilonM=0.01 satisfy the run assumptions; G1=0 satisfies the conclusion.",
-      "reasoning": "The translated run type is inhabited and the conclusion is not obtained solely through an empty quantified domain."
+      "paper_evidence": "Algorithm 2 has ordinary full-rank inputs satisfying condition (3) when epsilonM is sufficiently small.",
+      "translation_evidence": "For example, m=n=1 with A=Q=R=[1], exact computedNorm and divide, c=0, a universally true normalized predicate, and sufficiently small positive epsilonM satisfies the translated run conditions.",
+      "reasoning": "The translated hypotheses are jointly satisfiable, and the conclusion is not obtained solely through an empty run type or an impossible smallness condition."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translated smallness coefficient is strictly larger than the paper's coefficient for leading sizes at least two, so paper-admissible computations can fail the translated run condition. The translation therefore does not cover every case asserted by the paper."
+      "verdict": "unclear",
+      "reasoning": "The translated certificate contains the paper's first-column conclusion, but applying it to every paper execution requires showing that the paper's IEEE Algorithm 2 run induces the translation's global abstract arithmetic model. The paper does not state the required componentwise division model or unconditional all-vector computed-norm model, so that embedding cannot be established without adopting an extra reconstruction."
     },
     "paper_implies_translation": {
       "verdict": "no",
-      "reasoning": "The translation quantifies over arbitrary axiomatic arithmetic models and matrices not required to be Algorithm 2 outputs, and it imposes a specific exact second-order-coefficient formulation. The paper's result for IEEE CGS-P executions does not assert the translated proposition over that broader domain."
+      "reasoning": "The translation is universally quantified over abstract admissible runs that need not be IEEE executions or outputs of Algorithm 2. The paper theorem applies only to Algorithm 2 computed factors and therefore cannot entail the translated claim over that broader class."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "undetermined",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
-      "severity": "critical",
-      "category": "constant mismatch",
-      "paper_evidence": "The paper defines c1(m,k)=2 sqrt(2mk)+2 sqrt(k) for k>=2 and c4=c2+2c1.",
-      "translation_evidence": "The translation defines beta(m,k)=2 sqrt(2) m k+2 sqrt(k) and C=alpha+2 beta.",
-      "impact": "The leading-block smallness hypothesis changes for every k>=2, excluding cases allowed by the paper and breaking translation-implies-paper."
+      "severity": "major",
+      "category": "algorithm-linkage",
+      "paper_evidence": "Theorem 1 and Lemma 2 explicitly quantify over Q and R resulting from Algorithm 2 (CGS-P).",
+      "translation_evidence": "The run records only upper triangularity, leading-block conditions, and first-column operation identities, and explicitly lacks an assertion that the remaining factors were produced by any algorithm.",
+      "impact": "The translation states a local normalization theorem for a broader class of records and cannot be identified directly with the paper's Algorithm 2 result."
     },
     {
       "severity": "major",
-      "category": "algorithm linkage",
-      "paper_evidence": "Theorem 1 applies to the computed Q and R resulting from Algorithm 2.",
-      "translation_evidence": "A run constrains the first computed norm and divisions but does not encode Algorithm 2's later recurrences or require the full Q and R to be its output.",
-      "impact": "The translation asserts a result for records outside the paper's algorithmic domain."
+      "category": "floating-point-model",
+      "paper_evidence": "The paper invokes IEEE arithmetic, normalized-range qualification, and unspecified standard error bounds for the first-column division.",
+      "translation_evidence": "The model uses arbitrary real functions and an unconstrained normalization predicate, gives an unconditional norm guarantee for every real vector, and omits IEEE exceptional-value and rounding semantics.",
+      "impact": "It is unclear whether every paper execution is represented by a translated run, while translated runs can describe computations outside the paper's model."
     },
     {
-      "severity": "major",
-      "category": "floating-point model",
-      "paper_evidence": "The paper assumes IEEE floating-point arithmetic and restricts its relative-error rule to normalized-range results.",
-      "translation_evidence": "The model contains arbitrary functions and a predicate satisfying selected error axioms, with no IEEE format, rounding-mode, underflow, overflow, infinity, or NaN semantics.",
-      "impact": "The execution model is generalized and altered, so the paper cannot justify the translated universal statement."
-    },
-    {
-      "severity": "major",
-      "category": "higher-order treatment",
-      "paper_evidence": "The paper uses a first-order convention with O(epsilonM^2), while equation (16) itself is displayed without an O-term.",
-      "translation_evidence": "The norm-computation remainder is represented by c2(m)epsilonM^2 where c2 is merely a nonnegative field of each arithmetic model and need not be uniform as epsilonM varies.",
-      "impact": "The translation does not encode the paper's asymptotic big-O qualification, despite correctly leaving the equation-(16) chain remainder-free."
+      "severity": "minor",
+      "category": "higher-order-terms",
+      "paper_evidence": "The norm-computation estimate contains O(epsilonM^2), interpreted asymptotically, while equation (16) is remainder-free.",
+      "translation_evidence": "The residual remains remainder-free, but O(epsilonM^2) is replaced by a run-supplied c(m)epsilonM^2 term without asymptotic uniformity.",
+      "impact": "The auxiliary norm-error dependency is not equivalent to the source's higher-order statement, although the final equation-(16) coefficient is unchanged."
     }
   ],
-  "rationale": "The first-column dimensions, perturbation equation, residual sign, 2-norm semantics, and complete equation-(16) bound are translated correctly. However, the inherited smallness constant is mathematically wrong for every leading size above one, the complete factors are not required to come from CGS-P, and IEEE arithmetic plus the paper's first-order convention are replaced by a broader abstract model. These changes act in different logical directions, so neither statement implies the other over its stated domain."
+  "rationale": "The blind translation accurately captures the finite-dimensional first-column algebra, constants, norms, perturbation equation, residual identity, and complete equation-(16) bound. It does not preserve the paper's explicit Algorithm 2 and IEEE execution linkage, and its treatment of the floating-point and higher-order models is a non-equivalent reconstruction. Translation-implies-paper therefore depends on an unstated embedding of actual IEEE computations into the abstract run model, requiring adjudication; paper-implies-translation fails because the translated domain includes non-Algorithm-2, non-IEEE runs."
 }

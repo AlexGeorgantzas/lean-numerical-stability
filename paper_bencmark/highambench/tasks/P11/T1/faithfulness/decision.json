@@ -1,53 +1,52 @@
 {
-  "accepted": false,
+  "accepted": true,
   "adjudicated": true,
   "adjudication_reasons": [
-    "judge classifications differ"
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined"
   ],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-21T20:53:33.764591+00:00",
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-22T10:44:21.354804+00:00",
   "findings": [
     {
-      "category": "constant-and-applicability-mismatch",
-      "evidence": "The source has 2*sqrt(2*m*k), whereas D026 has 2*sqrt(2)*m*k; D012 propagates this into the all-k condition in D003.",
-      "impact": "For n>=2, the formal theorem applies to a proper subset of the paper-admissible executions.",
-      "severity": "major"
-    },
-    {
-      "category": "faithful-local-arithmetic-abstraction",
-      "evidence": "D024 axiomatizes the normalized computed-norm and division errors used on printed page 308, while D006 still requires production of G1 and the full residual chain.",
-      "impact": "The abstraction broadens implementation representation without changing the selected mathematical claim.",
+      "category": "algorithm-domain-strengthening",
+      "evidence": "The PDF explicitly specifies Algorithm 2 outputs, whereas D003 records only the first-column norm and division operations plus structural and conditioning hypotheses.",
+      "impact": "This rules out faithful-equivalent but creates genuine broader applicability because admissible non-Algorithm-2 records exist and receive the same first-column conclusion.",
       "severity": "note"
     },
     {
-      "category": "faithful-algorithm-prefix",
-      "evidence": "The selected proof uses only Algorithm 2's first norm and division step; later-column recurrences do not occur in equation (16).",
-      "impact": "Omitting irrelevant later execution traces is not an algorithm-linkage defect for P11-T1.",
-      "severity": "note"
+      "category": "floating-point-model-reconstruction",
+      "evidence": "The PDF assumes IEEE arithmetic in the normalized range and invokes unspecified standard error bounds; D024 instead uses arbitrary real-valued operations constrained by abstract error axioms.",
+      "impact": "The declaration is not a literal operational IEEE model, although its task-specific normalized-division effect is sufficient for and consistent with the printed first-column derivation.",
+      "severity": "minor"
     },
     {
-      "category": "higher-order-separation",
-      "evidence": "D006 includes an epsilonM-squared term only in the r11 roundoff relation and preserves the printed remainder-free G1 relation and equation-(16) inequalities.",
-      "impact": "The selected residual result retains the source's exact first-column form.",
-      "severity": "note"
+      "category": "higher-order-terms",
+      "evidence": "Equation (11) on printed page 306 contains O(epsilonM^2), while D024 uses a model-supplied coefficient multiplying epsilonM squared at fixed epsilonM.",
+      "impact": "Uniform asymptotic meaning is not preserved for that auxiliary norm estimate; equation (16) itself remains exactly remainder-free in both sources.",
+      "severity": "minor"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "Lean's malformed larger c4 excludes some executions satisfying the paper's condition (3), so the Lean theorem does not recover the source result over its full stated domain.",
-      "verdict": "no"
+      "reasoning": "Every normalized-range Algorithm 2 first-column execution satisfying the PDF's standing hypotheses supplies the local norm and division facts packaged by D003. D006 then yields exactly q1=(I+G1)a1/r11, ||G1||2<=epsilonM, A1-Q1R1=a1-q1r11=-G1a1, and the equation (16) norm chain. Omitting irrelevant later-column trace does not prevent application to the paper case.",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "After the faithful identification of the abstract first-column operations with the source's normalized norm and division laws, restricting the paper result to Lean's stronger condition yields every Lean conclusion. The first-column prefix and explicit remainder coefficient introduce no conflicting conclusion.",
-      "verdict": "yes"
+      "reasoning": "The PDF quantifies only over factors resulting from Algorithm 2. D003 admits additional records whose later Q entries are arbitrary while all first-column, invertibility, and conditioning fields hold. The paper theorem therefore does not, as a source-statement implication, establish the declaration for every Lean run.",
+      "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-weaker",
-    "roundtrip": "not-faithful-different"
+    "direct": "faithful-equivalent",
+    "roundtrip": "undetermined"
   },
-  "rationale": "The substantive k=1 witness, residual identity, norm meanings, signs, and full equation-(16) chain match the source. The arithmetic interface, first-column execution record, and localized second-order coefficient faithfully isolate the hypotheses actually used by that base-case argument. The sole classification-changing defect is the incorrectly grouped c1 formula used in the inherited all-k condition. Because it is strictly larger for every relevant k>=2, it narrows applicability without strengthening the conclusion, yielding not-faithful-weaker.",
-  "remaining_uncertainties": [],
+  "rationale": "The authoritative PDF hash matches the supplied SHA-256. Its Algorithm 2 linkage is explicit, but its k=1 proof uses only the first computed norm, componentwise normalization error, positivity, and ordinary norm algebra. The declaration isolates those sufficient hypotheses and reproduces every equation (16) identity, sign, norm, inequality direction, and coefficient. Because it also applies to inhabited records that are not complete Algorithm 2 executions, it is strictly and nonvacuously stronger rather than equivalent. The abstract IEEE and higher-order encodings leave documented modeling uncertainty but do not alter the selected first-column residual theorem.",
+  "remaining_uncertainties": [
+    "The PDF does not explicitly declare G1's dimension, structure, or existential quantifier, nor does it spell out the componentwise division-error rule; the m-by-m operator and abstract division interface remain dimensionally and numerically standard reconstructions.",
+    "D024's coefficient times epsilonM squared is attached to one fixed-epsilon arithmetic model and does not encode uniform asymptotic big-O semantics. This affects the auxiliary Lemma 2 relation, not the remainder-free equation (16) conclusion."
+  ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P11-T1"

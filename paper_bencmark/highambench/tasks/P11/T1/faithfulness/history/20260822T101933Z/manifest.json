@@ -121,11 +121,11 @@
     "module_count": 5166,
     "sorted_module_names_sha256": "075d801f7bde73eb40092417de373c990808f365218c2ea301d7777ed666ba52"
   },
-  "completed_at_utc": "2026-08-22T10:44:21.354804+00:00",
+  "completed_at_utc": "2026-08-21T20:53:33.764591+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P11/T1/context.md",
     "semantic_evidence": false,
-    "sha256": "2558e77b8086ccd233307d2a01fb97aed871f99214a523824c90c843fa8f8d84"
+    "sha256": "1372f5298a27e97ce46a8fdb06feae6990812c7a089854ce6ec7304f3b156aba"
   },
   "dependencies": [
     {
@@ -386,7 +386,7 @@
       "name": "HighamBench.p11C1",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "477c74b04fe05eb7235fbdc5068d7a787f7f81ae546651bd7ae8bbaed5c66b29"
+      "semantic_sha256": "b7b08e3c7e58aa7c905346648ccb433c270d24b16ce1b39a791f3a8b77c4f09f"
     },
     {
       "blind_name": "LocalDef027",
@@ -4150,27 +4150,27 @@
   "inputs": {
     "blind_dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/inputs/blind_dependency_inventory.json",
-      "sha256": "2ff4982c62a54ec66d674662daa90fce3e317bdfbc8648574dec313ef9736396"
+      "sha256": "b39a4adb71fba7b5e873a7fc4bf008788a9e8721ae1764657d533b5b6e004de8"
     },
     "blind_dossier": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/inputs/blind_dossier.md",
-      "sha256": "8d38580de8f174482a53c4d77159619de5d88503b403d7858d320659f1f5ba29"
+      "sha256": "e8b28cf7409e94f48257adbf68902d2cc8fbd2527471df3b61deb746b78d2909"
     },
     "blind_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/inputs/blind_review_packet.md",
-      "sha256": "8d38580de8f174482a53c4d77159619de5d88503b403d7858d320659f1f5ba29"
+      "sha256": "e8b28cf7409e94f48257adbf68902d2cc8fbd2527471df3b61deb746b78d2909"
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "3e57471d445712b9eaf9e6a83ba85e97910b32dffbb5fcf21e5f924e62117c31"
+      "sha256": "a25e178247aca01038b60b0d7a793ecbb158f57802a56564b80251444e933ab0"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/inputs/dependency_inventory.json",
-      "sha256": "9c3d269620d574d6e16026d36cf73448c172a9bddff4f1fcf7204f72e3ff8830"
+      "sha256": "51813b51de12a1ec8064775031368d0c7e108b48f29139a34ea3feccfd5da636"
     },
     "direct_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/inputs/direct_review_packet.md",
-      "sha256": "90c67c8f8b48d3cd9f3e16d1a9c51078b2f267cb21fa8d9ba298ee574b93a385"
+      "sha256": "5567c0573de3987bd054b0cd193deb6fe45a3306ade997598eaee3d9dc50f666"
     },
     "source_locator": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/inputs/source_locator.json",
@@ -4206,37 +4206,37 @@
       ],
       "module": "HighamBench.P11Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean",
-      "sha256": "6974a7fbb76e7578a62a26911b039cd6d9b90366378b2f4ddd37bd790b8e3fa4"
+      "sha256": "3ec45c6fbd29587ee731d6a89fead89df8b7935d00d5555ccb3393b5e8655466"
     }
   ],
   "outputs": {
     "adjudicator": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/agent_outputs/adjudicator.json",
-      "sha256": "bfe2c91b24b8d614cfe516164e2895d0b806308ae3e1b3b8f64fa874785f4a71"
+      "sha256": "bd21e56406d824642767efaf284d6fc4365bdc38d3a449477b8e669974e70431"
     },
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "5bf3e6185b63b4a215345536d39d255a3fb5f07ed6b339db7fa62b01cc121ace"
+      "sha256": "ac4812748bd6d69800930fa077c4c5d30289190bbfe47e22472fc08e2fc3c62a"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/decision.json",
-      "sha256": "d975544b4cdde8053088be2c404e3a5f239f0de267cdac9fe07a4f1ccc99d31e"
+      "sha256": "d69aab0cd0e89acdadb46357cb3b153e6c6ca75645343f619a7e6a8fc7c86fa3"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "5eaba206419e0879b8aa011a1a68cd41166d5db872279b21fd8542fbb2e37d55"
+      "sha256": "f341011ecf13911405ecb3ce250728d244d45163bb03dfcd698b0444126142bc"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/report.md",
-      "sha256": "1520bde7c6935464ab94986fc99fc7414594babbea9b07516b722cc2ddc9f38e"
+      "sha256": "446b3d98d7d0c9546eae1f8da58e8a944de4909e6c24192ec54d827d683d02fb"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "1dd29ffb9689cc3587f28201526650aa6587e2eb61058fb08f7ee811ff3f7596"
+      "sha256": "9e54f02b92655f900357f4063fec3232b43e9c0161fb7d71fedd5bbca65997d8"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P11/T1/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "63d53f6f35361be27691616239582a6ebf6ac67cdbe8aeeca87c1957afbfba8b"
+      "sha256": "f74ae09ffbf17709ed5e974f6125bc63240c3d603a9fedbfb61aa87437955442"
     }
   },
   "paper": {
@@ -4280,7 +4280,7 @@
       }
     ]
   },
-  "prepared_at_utc": "2026-08-22T10:19:33.767469+00:00",
+  "prepared_at_utc": "2026-08-21T20:31:10.497541+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
@@ -4374,6 +4374,6 @@
   "task_metadata": {
     "path": "paper_bencmark/highambench/tasks/P11/T1/task.json",
     "semantic_evidence": false,
-    "sha256": "c56a4d67393368a24a98c9c2921ece06e09d0befee3293a19b82ef17a5107101"
+    "sha256": "bd216cc4a77327547e91c4a478a080bc9b25ca367e2ffd1933a5ab1041e5159f"
   }
 }

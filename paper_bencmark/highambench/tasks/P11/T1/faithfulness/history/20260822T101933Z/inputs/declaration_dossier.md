@@ -1020,7 +1020,7 @@ fun epsilonM self => self.4
 - Owner module: `HighamBench.P11Definitions`
 - Declaration kind: `def`
 - Distance from target type: `4`
-- Semantic SHA-256: `477c74b04fe05eb7235fbdc5068d7a787f7f81ae546651bd7ae8bbaed5c66b29`
+- Semantic SHA-256: `b7b08e3c7e58aa7c905346648ccb433c270d24b16ce1b39a791f3a8b77c4f09f`
 
 Type:
 
@@ -1039,7 +1039,8 @@ Definition body (one-level semantic boundary):
 ```lean
 fun m k =>
   ite (Eq k 1) 1
-    (instHAdd.hAdd (instHMul.hMul 2 (instHMul.hMul (instHMul.hMul 2 m.cast) k.cast).sqrt) (instHMul.hMul 2 k.cast.sqrt))
+    (instHAdd.hAdd (instHMul.hMul (instHMul.hMul (instHMul.hMul 2 (Real.sqrt 2)) m.cast) k.cast)
+      (instHMul.hMul 2 k.cast.sqrt))
 ```
 
 ### D027: `HighamBench.p11C1._proof_1`
@@ -3588,7 +3589,7 @@ end HighamBench
 ### `HighamBench.P11Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean`
-SHA-256: `6974a7fbb76e7578a62a26911b039cd6d9b90366378b2f4ddd37bd790b8e3fa4`
+SHA-256: `3ec45c6fbd29587ee731d6a89fead89df8b7935d00d5555ccb3393b5e8655466`
 
 ```lean
 import HighamBench.Core
@@ -3661,7 +3662,7 @@ noncomputable def p11RectOpNorm2 {m n : ℕ}
 noncomputable def p11C1 (m k : ℕ) : ℝ :=
   if k = 1 then 1
   else
-    2 * Real.sqrt (2 * (m : ℝ) * (k : ℝ)) +
+    2 * Real.sqrt 2 * (m : ℝ) * (k : ℝ) +
       2 * Real.sqrt (k : ℝ)
 
 /-- The paper's normal-equations coefficient `c2(m,k)`. -/
