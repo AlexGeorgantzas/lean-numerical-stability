@@ -1,40 +1,40 @@
 {
-  "accepted": false,
+  "accepted": true,
   "adjudicated": false,
   "adjudication_reasons": [],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-21T22:19:41.040431+00:00",
+  "classification": "faithful-equivalent",
+  "completed_at_utc": "2026-08-22T11:09:17.384956+00:00",
   "findings": [
     {
-      "category": "second-product-grid-overconstraint",
-      "impact": "The run relation excludes valid nontrivial ThreeProduct executions. The theorem therefore covers a strict subset of the paper's domain and cannot faithfully represent Lemma 4.",
-      "lean_evidence": "D021 passes rightGrid=e(x2)+e(x3) to the second P12TwoProductExecution, and D049 therefore requires |a2|<=0.5*beta^p*beta^{e1+e2+e3}. With beta=2,p=3 and x1=x2=x3=7, the valid residual a2=16 violates the formal bound 4 while satisfying the paper's half-ULP bound 32.",
-      "paper_evidence": "For (s1,s'_2)=TwoProduct(x1,t_h), equation (17) analogously bounds |s'_2| by 0.5*ulp(x1*t_h). Printed page 397 explicitly allows |s'_2|<=0.5*beta^{2p} after input-grid normalization.",
-      "severity": "major"
+      "category": "supporting-source transcription",
+      "impact": "The inline source contract's use of the word floor is a supporting-text transcription error; the Lean definition matches the authoritative PDF, including for odd radices.",
+      "lean_evidence": "D002 computes beta^p-Nat.div(beta,2), which equals ceil(beta^p-beta/2).",
+      "paper_evidence": "Equation (7) on PDF page 5, printed page 387, visibly places ceiling brackets around beta^p-beta/2.",
+      "severity": "note"
     },
     {
-      "category": "added product-grid domain restriction",
-      "impact": "A valid nonzero ThreeProduct execution in the paper's arbitrary-radix, nearest-rounding, no-underflow/no-overflow model has no translation run. The formal theorem therefore covers a proper subset of Lemma 4's domain.",
-      "paper_evidence": "For the TwoProduct call on (x1,th), the paper requires a nearest high product, exact residual, and |a2|<=ulp(x1*th)/2 under no underflow or overflow. With beta=2, p=3 and x1=x2=x3=7, the valid values th=48, tl=1, s1=320, and a2=16 satisfy this because ulp(336)/2=32.",
-      "severity": "major",
-      "translation_evidence": "The corresponding split additionally requires |a2|<=(B/2)*scale(e1+e2+e3). The same example has B=8 and e1=e2=e3=0, so it requires 16<=4."
+      "category": "condition-(7)-coefficient",
+      "impact": "These expressions are equal for integral beta. Reading the PDF bracket as a floor would incorrectly create an odd-radix mismatch.",
+      "paper_evidence": "The authoritative PDF shows ceiling brackets around beta^p-beta/2 in equation (7) and again in the Lemma 4 proof.",
+      "severity": "note",
+      "translation_evidence": "The translation uses beta^p-(beta div 2)."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean theorem proves the paper conclusion only for traces admitting its stronger run witness. For beta=2,p=3,emin=0,emax=10 and x1=x2=x3=7, a valid paper execution is th=48, tl=1, s1=320, a2=16, a3=7, a4=0, s2=24, t=8, r=-1, s3=-1. Equation (17) permits a2 because ulp(336)=64 and 16<=32, but the formal second split demands 16<=0.5*8=4. Hence this valid paper execution has no run witness.",
-      "verdict": "no"
+      "reasoning": "For every trace admitted by P12ThreeProductExecution, the final conjunct is exactly equation (18), and the execution relation identifies that trace with the paper's ThreeProduct call sequence under its rounding and range assumptions.",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "Assuming the narrower formal run premise, equation (17), nearest rounding, the range assumptions, Theorem 2, and the proof of Lemma 4 establish the condition-(7) witness, both exact FastTwoSum subtractions, the merge identity, exact final addition, and equation (18). The erroneous low-grid clause is an extra premise, so it does not obstruct this implication direction.",
+      "reasoning": "For a paper-valid ThreeProduct execution, the delegated TwoProduct contracts and Lemma 4 proof provide the scaled bounds, a condition-(7) representation of s2', exact FastTwoSum subtractions and merge, exact final addition, and the three-term product identity required by the Lean conjunction.",
       "verdict": "yes"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-weaker",
-    "roundtrip": "not-faithful-weaker"
+    "direct": "faithful-equivalent",
+    "roundtrip": "faithful-equivalent"
   },
-  "rationale": "The format, representation semantics, ceiling scope, nearest rounding, operation order, noOverflow coverage, condition-(7) witness, and all stated intermediate conclusions otherwise match the cited paper. Least-representation witnesses are harmless because every representable value has a minimum feasible exponent in the finite exponent interval. The decisive defect is the second TwoProduct call's raw input-grid argument to D049: it imposes a half-beta^p grid bound where the paper permits a half-beta^{2p} bound. A nontrivial formal run demonstrates nonvacuity, while the explicit 7*7*7 execution demonstrates genuine loss of paper-valid behavior. Thus the proposition is a nonfaithful weaker specialization, not a stronger theorem.",
+  "rationale": "The proposition faithfully formalizes the ThreeProduct execution, the representation-dependent condition (7), exact FastTwoSum merge, exact final rounded addition, and equation (18). Its execution relation supplies precisely the paper's floating-point membership, nearest-rounding, delegated TwoProduct, no-underflow-error, and no-overflow context. The apparent threshold discrepancy is resolved directly from the PDF in Lean's favor: equation (7) uses a ceiling. Both implications hold for aligned executions, and an explicit nonzero execution demonstrates nonvacuity.",
   "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",

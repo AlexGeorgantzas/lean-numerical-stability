@@ -603,7 +603,7 @@ Fully explicit type:
 - Owner module: `HighamBench.P12Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `618f9b65b586ebe30fac081ef946989eadb7621c5449fba14ab2331467bb7767`
+- Semantic SHA-256: `a87bbcfaf3f5032935440ef74e9e981d6eb1b1dbdbfa3a29395d6f1d4a0cad4c`
 
 Type:
 
@@ -615,23 +615,17 @@ Type:
         (x2Rep : HighamBench.P12LeastRepresentation fmt x2) →
           (x3Rep : HighamBench.P12LeastRepresentation fmt x3) →
             (first : HighamBench.P12TwoProductExecution fmt x2Rep x3Rep x2Rep.exponent x3Rep.exponent tr.th tr.tl) →
-              HighamBench.P12TwoProductExecution fmt x1Rep first.highRep x1Rep.exponent first.highRep.exponent tr.s1
-                  tr.a2 →
+              HighamBench.P12TwoProductExecution fmt x1Rep first.highRep x1Rep.exponent
+                  (instHAdd.hAdd x2Rep.exponent x3Rep.exponent) tr.s1 tr.a2 →
                 HighamBench.P12TwoProductExecution fmt x1Rep first.lowRep x1Rep.exponent
                     (instHAdd.hAdd x2Rep.exponent x3Rep.exponent) tr.a3 tr.a4 →
-                  Real.instLE.le (abs tr.a2)
-                      (instHMul.hMul (instHDiv.hDiv (instHPow.hPow fmt.mantissaBound 2) 2)
-                        (fmt.scale (instHAdd.hAdd (instHAdd.hAdd x1Rep.exponent x2Rep.exponent) x3Rep.exponent))) →
-                    Real.instLE.le (abs tr.a3)
-                        (instHMul.hMul (instHDiv.hDiv (instHPow.hPow fmt.mantissaBound 2) 2)
-                          (fmt.scale (instHAdd.hAdd (instHAdd.hAdd x1Rep.exponent x2Rep.exponent) x3Rep.exponent))) →
-                      HighamBench.P12NearestFastTwoSumExecution fmt tr.a2 tr.a3 tr.mergeTrace →
-                        fmt.noOverflow (instHAdd.hAdd tr.a2 tr.a3) →
-                          fmt.noOverflow (instHSub.hSub tr.s2 tr.a2) →
-                            fmt.noOverflow (instHSub.hSub tr.a3 tr.t) →
-                              HighamBench.p12NearestInFormat fmt (instHAdd.hAdd tr.r tr.a4) tr.s3 →
-                                fmt.noOverflow (instHAdd.hAdd tr.r tr.a4) →
-                                  HighamBench.P12ThreeProductExecution fmt x1 x2 x3 tr
+                  HighamBench.P12NearestFastTwoSumExecution fmt tr.a2 tr.a3 tr.mergeTrace →
+                    fmt.noOverflow (instHAdd.hAdd tr.a2 tr.a3) →
+                      fmt.noOverflow (instHSub.hSub tr.s2 tr.a2) →
+                        fmt.noOverflow (instHSub.hSub tr.a3 tr.t) →
+                          HighamBench.p12NearestInFormat fmt (instHAdd.hAdd tr.r tr.a4) tr.s3 →
+                            fmt.noOverflow (instHAdd.hAdd tr.r tr.a4) →
+                              HighamBench.P12ThreeProductExecution fmt x1 x2 x3 tr
 ```
 
 Fully explicit type:
@@ -660,15 +654,11 @@ Fully explicit type:
                       (HighamBench.P12ThreeProductTrace.th tr) (HighamBench.P12ThreeProductTrace.tl tr) first)
                     (@HighamBench.P12Representation.exponent fmt x1
                       (@HighamBench.P12LeastRepresentation.toP12Representation fmt x1 x1Rep))
-                    (@HighamBench.P12Representation.exponent fmt (HighamBench.P12ThreeProductTrace.th tr)
-                      (@HighamBench.P12LeastRepresentation.toP12Representation fmt
-                        (HighamBench.P12ThreeProductTrace.th tr)
-                        (@HighamBench.P12TwoProductExecution.highRep fmt x2 x3 x2Rep x3Rep
-                          (@HighamBench.P12Representation.exponent fmt x2
-                            (@HighamBench.P12LeastRepresentation.toP12Representation fmt x2 x2Rep))
-                          (@HighamBench.P12Representation.exponent fmt x3
-                            (@HighamBench.P12LeastRepresentation.toP12Representation fmt x3 x3Rep))
-                          (HighamBench.P12ThreeProductTrace.th tr) (HighamBench.P12ThreeProductTrace.tl tr) first)))
+                    (@HAdd.hAdd.{0, 0, 0} Int Int Int (@instHAdd.{0} Int Int.instAdd)
+                      (@HighamBench.P12Representation.exponent fmt x2
+                        (@HighamBench.P12LeastRepresentation.toP12Representation fmt x2 x2Rep))
+                      (@HighamBench.P12Representation.exponent fmt x3
+                        (@HighamBench.P12LeastRepresentation.toP12Representation fmt x3 x3Rep)))
                     (HighamBench.P12ThreeProductTrace.s1 tr) (HighamBench.P12ThreeProductTrace.a2 tr)) →
                 (third :
                     @HighamBench.P12TwoProductExecution fmt x1 (HighamBench.P12ThreeProductTrace.tl tr) x1Rep
@@ -686,82 +676,31 @@ Fully explicit type:
                         (@HighamBench.P12Representation.exponent fmt x3
                           (@HighamBench.P12LeastRepresentation.toP12Representation fmt x3 x3Rep)))
                       (HighamBench.P12ThreeProductTrace.a3 tr) (HighamBench.P12ThreeProductTrace.a4 tr)) →
-                  (second_normalized_residual_bound :
-                      @LE.le.{0} Real Real.instLE
-                        (@abs.{0} Real Real.lattice Real.instAddGroup (HighamBench.P12ThreeProductTrace.a2 tr))
-                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                          (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                            (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                            (@HPow.hPow.{0, 0, 0} Real Nat Real
-                              (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                              (HighamBench.P12RadixFormat.mantissaBound fmt)
-                              (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))
-                            (@OfNat.ofNat.{0} Real (nat_lit 2)
-                              (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
-                                (@Nat.instAtLeastTwoHAddOfNat
-                                  (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
-                                  (@Nat.instNeZeroSucc
-                                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))))))
-                          (HighamBench.P12RadixFormat.scale fmt
-                            (@HAdd.hAdd.{0, 0, 0} Int Int Int (@instHAdd.{0} Int Int.instAdd)
-                              (@HAdd.hAdd.{0, 0, 0} Int Int Int (@instHAdd.{0} Int Int.instAdd)
-                                (@HighamBench.P12Representation.exponent fmt x1
-                                  (@HighamBench.P12LeastRepresentation.toP12Representation fmt x1 x1Rep))
-                                (@HighamBench.P12Representation.exponent fmt x2
-                                  (@HighamBench.P12LeastRepresentation.toP12Representation fmt x2 x2Rep)))
-                              (@HighamBench.P12Representation.exponent fmt x3
-                                (@HighamBench.P12LeastRepresentation.toP12Representation fmt x3 x3Rep)))))) →
-                    (third_normalized_high_bound :
-                        @LE.le.{0} Real Real.instLE
-                          (@abs.{0} Real Real.lattice Real.instAddGroup (HighamBench.P12ThreeProductTrace.a3 tr))
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                            (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                              (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                              (@HPow.hPow.{0, 0, 0} Real Nat Real
-                                (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                                (HighamBench.P12RadixFormat.mantissaBound fmt)
-                                (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))
-                              (@OfNat.ofNat.{0} Real (nat_lit 2)
-                                (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
-                                  (@Nat.instAtLeastTwoHAddOfNat
-                                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
-                                    (@Nat.instNeZeroSucc
-                                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))))))
-                            (HighamBench.P12RadixFormat.scale fmt
-                              (@HAdd.hAdd.{0, 0, 0} Int Int Int (@instHAdd.{0} Int Int.instAdd)
-                                (@HAdd.hAdd.{0, 0, 0} Int Int Int (@instHAdd.{0} Int Int.instAdd)
-                                  (@HighamBench.P12Representation.exponent fmt x1
-                                    (@HighamBench.P12LeastRepresentation.toP12Representation fmt x1 x1Rep))
-                                  (@HighamBench.P12Representation.exponent fmt x2
-                                    (@HighamBench.P12LeastRepresentation.toP12Representation fmt x2 x2Rep)))
-                                (@HighamBench.P12Representation.exponent fmt x3
-                                  (@HighamBench.P12LeastRepresentation.toP12Representation fmt x3 x3Rep)))))) →
-                      (merge :
-                          HighamBench.P12NearestFastTwoSumExecution fmt (HighamBench.P12ThreeProductTrace.a2 tr)
-                            (HighamBench.P12ThreeProductTrace.a3 tr) (HighamBench.P12ThreeProductTrace.mergeTrace tr)) →
-                        (merge_add_no_overflow :
+                  (merge :
+                      HighamBench.P12NearestFastTwoSumExecution fmt (HighamBench.P12ThreeProductTrace.a2 tr)
+                        (HighamBench.P12ThreeProductTrace.a3 tr) (HighamBench.P12ThreeProductTrace.mergeTrace tr)) →
+                    (merge_add_no_overflow :
+                        HighamBench.P12RadixFormat.noOverflow fmt
+                          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                            (HighamBench.P12ThreeProductTrace.a2 tr) (HighamBench.P12ThreeProductTrace.a3 tr))) →
+                      (merge_first_sub_no_overflow :
+                          HighamBench.P12RadixFormat.noOverflow fmt
+                            (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
+                              (HighamBench.P12ThreeProductTrace.s2 tr) (HighamBench.P12ThreeProductTrace.a2 tr))) →
+                        (merge_second_sub_no_overflow :
                             HighamBench.P12RadixFormat.noOverflow fmt
-                              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                (HighamBench.P12ThreeProductTrace.a2 tr) (HighamBench.P12ThreeProductTrace.a3 tr))) →
-                          (merge_first_sub_no_overflow :
-                              HighamBench.P12RadixFormat.noOverflow fmt
-                                (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-                                  (HighamBench.P12ThreeProductTrace.s2 tr) (HighamBench.P12ThreeProductTrace.a2 tr))) →
-                            (merge_second_sub_no_overflow :
+                              (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
+                                (HighamBench.P12ThreeProductTrace.a3 tr) (HighamBench.P12ThreeProductTrace.t tr))) →
+                          (final_add :
+                              HighamBench.p12NearestInFormat fmt
+                                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                  (HighamBench.P12ThreeProductTrace.r tr) (HighamBench.P12ThreeProductTrace.a4 tr))
+                                (HighamBench.P12ThreeProductTrace.s3 tr)) →
+                            (final_no_overflow :
                                 HighamBench.P12RadixFormat.noOverflow fmt
-                                  (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-                                    (HighamBench.P12ThreeProductTrace.a3 tr) (HighamBench.P12ThreeProductTrace.t tr))) →
-                              (final_add :
-                                  HighamBench.p12NearestInFormat fmt
-                                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                      (HighamBench.P12ThreeProductTrace.r tr) (HighamBench.P12ThreeProductTrace.a4 tr))
-                                    (HighamBench.P12ThreeProductTrace.s3 tr)) →
-                                (final_no_overflow :
-                                    HighamBench.P12RadixFormat.noOverflow fmt
-                                      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                        (HighamBench.P12ThreeProductTrace.r tr)
-                                        (HighamBench.P12ThreeProductTrace.a4 tr))) →
-                                  HighamBench.P12ThreeProductExecution fmt x1 x2 x3 tr
+                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                    (HighamBench.P12ThreeProductTrace.r tr) (HighamBench.P12ThreeProductTrace.a4 tr))) →
+                              HighamBench.P12ThreeProductExecution fmt x1 x2 x3 tr
 ```
 
 ### D022: `HighamBench.P12ThreeProductTrace.mk`
@@ -2426,33 +2365,7 @@ Definition body (one-level semantic boundary):
 { sub := Nat.sub }
 ```
 
-### D085: `DivInvMonoid.toDiv`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Group.Defs`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea`
-
-Type:
-
-```lean
-{G : Type u} → [self : DivInvMonoid G] → Div G
-```
-
-Fully explicit type:
-
-```lean
-{G : Type u} → [self : DivInvMonoid.{u} G] → Div.{u} G
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun G [self : DivInvMonoid G] => self.3
-```
-
-### D086: `Int.cast`
+### D085: `Int.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Int.Basic`
@@ -2478,7 +2391,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : IntCast R] => inst.intCast
 ```
 
-### D087: `Int.instAdd`
+### D086: `Int.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Int.Basic`
@@ -2504,7 +2417,7 @@ Definition body (one-level semantic boundary):
 { add := Int.add }
 ```
 
-### D088: `Int.instLEInt`
+### D087: `Int.instLEInt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Int.Basic`
@@ -2530,7 +2443,7 @@ Definition body (one-level semantic boundary):
 { le := Int.le }
 ```
 
-### D089: `LT.lt`
+### D088: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2556,53 +2469,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LT α] => self.1
 ```
 
-### D090: `Nat.instAtLeastTwoHAddOfNat`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Nat.Init`
-- Declaration kind: `theorem`
-- Distance from target type: `3`
-- Semantic SHA-256: `309ef94c4b7cfbe2e668952e6915279353921d5d48b6123a30f90dd932dac3e6`
-
-Type:
-
-```lean
-∀ (n : Nat) [NeZero n], (instHAdd.hAdd n 1).AtLeastTwo
-```
-
-Fully explicit type:
-
-```lean
-∀ (n : Nat) [@NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0))) n],
-  Nat.AtLeastTwo
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D091: `Nat.instNeZeroSucc`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Nat.Basic`
-- Declaration kind: `theorem`
-- Distance from target type: `3`
-- Semantic SHA-256: `a0735a528184c05594c4c79312c1225bb4dcffcdf0df7eb1a50c5733047c85ad`
-
-Type:
-
-```lean
-∀ {n : Nat}, NeZero (instHAdd.hAdd n 1)
-```
-
-Fully explicit type:
-
-```lean
-∀ {n : Nat},
-  @NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0)))
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D092: `Neg.neg`
+### D089: `Neg.neg`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2628,7 +2495,7 @@ Definition body (one-level semantic boundary):
 fun α [self : Neg α] => self.1
 ```
 
-### D093: `Real.instIntCast`
+### D090: `Real.instIntCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2654,7 +2521,7 @@ Definition body (one-level semantic boundary):
 { intCast := fun z => { cauchy := z.cast } }
 ```
 
-### D094: `Real.instLT`
+### D091: `Real.instLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2680,33 +2547,7 @@ Definition body (one-level semantic boundary):
 { lt := Real.lt✝ }
 ```
 
-### D095: `Real.instMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
-
-Type:
-
-```lean
-Monoid Real
-```
-
-Fully explicit type:
-
-```lean
-Monoid.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D096: `Real.instNeg`
+### D092: `Real.instNeg`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2732,7 +2573,7 @@ Definition body (one-level semantic boundary):
 { neg := Real.neg✝ }
 ```
 
-### D097: `instLENat`
+### D093: `instLENat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2758,7 +2599,7 @@ Definition body (one-level semantic boundary):
 { le := Nat.le }
 ```
 
-### D098: `instLTNat`
+### D094: `instLTNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2784,33 +2625,105 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D099: `instOfNatAtLeastTwo`
+### D095: `Real.instMonoid`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Data.Nat.Cast.Defs`
+- Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d`
+- Distance from target type: `4`
+- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
 
 Type:
 
 ```lean
-{R : Type u_1} → {n : Nat} → [NatCast R] → [n.AtLeastTwo] → OfNat R n
+Monoid Real
 ```
 
 Fully explicit type:
 
 ```lean
-{R : Type u_1} → {n : Nat} → [NatCast.{u_1} R] → [Nat.AtLeastTwo n] → OfNat.{u_1} R n
+Monoid.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
+inferInstance
 ```
 
-### D100: `Nonempty`
+### D096: `DivInvMonoid.toDiv`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea`
+
+Type:
+
+```lean
+{G : Type u} → [self : DivInvMonoid G] → Div G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : DivInvMonoid.{u} G] → Div.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G [self : DivInvMonoid G] => self.3
+```
+
+### D097: `Nat.instAtLeastTwoHAddOfNat`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Nat.Init`
+- Declaration kind: `theorem`
+- Distance from target type: `5`
+- Semantic SHA-256: `309ef94c4b7cfbe2e668952e6915279353921d5d48b6123a30f90dd932dac3e6`
+
+Type:
+
+```lean
+∀ (n : Nat) [NeZero n], (instHAdd.hAdd n 1).AtLeastTwo
+```
+
+Fully explicit type:
+
+```lean
+∀ (n : Nat) [@NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0))) n],
+  Nat.AtLeastTwo
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D098: `Nat.instNeZeroSucc`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Nat.Basic`
+- Declaration kind: `theorem`
+- Distance from target type: `5`
+- Semantic SHA-256: `a0735a528184c05594c4c79312c1225bb4dcffcdf0df7eb1a50c5733047c85ad`
+
+Type:
+
+```lean
+∀ {n : Nat}, NeZero (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+∀ {n : Nat},
+  @NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0)))
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D099: `Nonempty`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2830,7 +2743,7 @@ Fully explicit type:
 (α : Sort u) → Prop
 ```
 
-### D101: `One.toOfNat1`
+### D100: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -2856,7 +2769,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D102: `Real.instOne`
+### D101: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2880,6 +2793,32 @@ Definition body (one-level semantic boundary):
 
 ```lean
 { one := Real.one✝ }
+```
+
+### D102: `instOfNatAtLeastTwo`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Nat.Cast.Defs`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d`
+
+Type:
+
+```lean
+{R : Type u_1} → {n : Nat} → [NatCast R] → [n.AtLeastTwo] → OfNat R n
+```
+
+Fully explicit type:
+
+```lean
+{R : Type u_1} → {n : Nat} → [NatCast.{u_1} R] → [Nat.AtLeastTwo n] → OfNat.{u_1} R n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
 ```
 
 ### D103: `Ne`

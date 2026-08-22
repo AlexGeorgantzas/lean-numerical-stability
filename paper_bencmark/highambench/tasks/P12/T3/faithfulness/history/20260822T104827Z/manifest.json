@@ -121,11 +121,11 @@
     "module_count": 5158,
     "sorted_module_names_sha256": "c12055a5ee1a6e3939b0b4a7967922853d143a8c1807e898743ae52c1c3e080c"
   },
-  "completed_at_utc": "2026-08-22T11:09:17.384956+00:00",
+  "completed_at_utc": "2026-08-21T22:19:41.040431+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P12/T3/context.md",
     "semantic_evidence": false,
-    "sha256": "a0285f609e089d82de8650f00e540265d8c37b52e13097590b189e04ec2fd056"
+    "sha256": "fea3faccacf78a968269f62ab1e37b39bcba151bcd21c826ae2c0e70de851346"
   },
   "dependencies": [
     {
@@ -336,7 +336,7 @@
       "name": "HighamBench.P12ThreeProductExecution.mk",
       "owner_module": "HighamBench.P12Definitions",
       "role": "local",
-      "semantic_sha256": "618f9b65b586ebe30fac081ef946989eadb7621c5449fba14ab2331467bb7767"
+      "semantic_sha256": "a87bbcfaf3f5032935440ef74e9e981d6eb1b1dbdbfa3a29395d6f1d4a0cad4c"
     },
     {
       "blind_name": "LocalDef022",
@@ -969,19 +969,9 @@
       "semantic_sha256": "5b0e20a4d2b3e0a67bd35de1b5c84cc60d6dc867658112d84cad483055804868"
     },
     {
-      "blind_name": "DivInvMonoid.toDiv",
-      "distance": 3,
-      "id": "D085",
-      "kind": "abbrev",
-      "name": "DivInvMonoid.toDiv",
-      "owner_module": "Mathlib.Algebra.Group.Defs",
-      "role": "external-frontier",
-      "semantic_sha256": "cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea"
-    },
-    {
       "blind_name": "Int.cast",
       "distance": 3,
-      "id": "D086",
+      "id": "D085",
       "kind": "def",
       "name": "Int.cast",
       "owner_module": "Init.Data.Int.Basic",
@@ -991,7 +981,7 @@
     {
       "blind_name": "Int.instAdd",
       "distance": 3,
-      "id": "D087",
+      "id": "D086",
       "kind": "def",
       "name": "Int.instAdd",
       "owner_module": "Init.Data.Int.Basic",
@@ -1001,7 +991,7 @@
     {
       "blind_name": "Int.instLEInt",
       "distance": 3,
-      "id": "D088",
+      "id": "D087",
       "kind": "def",
       "name": "Int.instLEInt",
       "owner_module": "Init.Data.Int.Basic",
@@ -1011,7 +1001,7 @@
     {
       "blind_name": "LT.lt",
       "distance": 3,
-      "id": "D089",
+      "id": "D088",
       "kind": "abbrev",
       "name": "LT.lt",
       "owner_module": "Init.Prelude",
@@ -1019,29 +1009,9 @@
       "semantic_sha256": "fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009"
     },
     {
-      "blind_name": "Nat.instAtLeastTwoHAddOfNat",
-      "distance": 3,
-      "id": "D090",
-      "kind": "theorem",
-      "name": "Nat.instAtLeastTwoHAddOfNat",
-      "owner_module": "Mathlib.Data.Nat.Init",
-      "role": "external-frontier",
-      "semantic_sha256": "309ef94c4b7cfbe2e668952e6915279353921d5d48b6123a30f90dd932dac3e6"
-    },
-    {
-      "blind_name": "Nat.instNeZeroSucc",
-      "distance": 3,
-      "id": "D091",
-      "kind": "theorem",
-      "name": "Nat.instNeZeroSucc",
-      "owner_module": "Init.Data.Nat.Basic",
-      "role": "external-frontier",
-      "semantic_sha256": "a0735a528184c05594c4c79312c1225bb4dcffcdf0df7eb1a50c5733047c85ad"
-    },
-    {
       "blind_name": "Neg.neg",
       "distance": 3,
-      "id": "D092",
+      "id": "D089",
       "kind": "abbrev",
       "name": "Neg.neg",
       "owner_module": "Init.Prelude",
@@ -1051,7 +1021,7 @@
     {
       "blind_name": "Real.instIntCast",
       "distance": 3,
-      "id": "D093",
+      "id": "D090",
       "kind": "def",
       "name": "Real.instIntCast",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1061,7 +1031,7 @@
     {
       "blind_name": "Real.instLT",
       "distance": 3,
-      "id": "D094",
+      "id": "D091",
       "kind": "def",
       "name": "Real.instLT",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1069,19 +1039,9 @@
       "semantic_sha256": "573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a"
     },
     {
-      "blind_name": "Real.instMonoid",
-      "distance": 3,
-      "id": "D095",
-      "kind": "def",
-      "name": "Real.instMonoid",
-      "owner_module": "Mathlib.Data.Real.Basic",
-      "role": "external-frontier",
-      "semantic_sha256": "37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8"
-    },
-    {
       "blind_name": "Real.instNeg",
       "distance": 3,
-      "id": "D096",
+      "id": "D092",
       "kind": "def",
       "name": "Real.instNeg",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1091,7 +1051,7 @@
     {
       "blind_name": "instLENat",
       "distance": 3,
-      "id": "D097",
+      "id": "D093",
       "kind": "def",
       "name": "instLENat",
       "owner_module": "Init.Prelude",
@@ -1101,7 +1061,7 @@
     {
       "blind_name": "instLTNat",
       "distance": 3,
-      "id": "D098",
+      "id": "D094",
       "kind": "def",
       "name": "instLTNat",
       "owner_module": "Init.Prelude",
@@ -1109,19 +1069,49 @@
       "semantic_sha256": "4054f2341fdda887b2040c624c0867866ab56eabf3441d6ffc9451c94ae1663c"
     },
     {
-      "blind_name": "instOfNatAtLeastTwo",
-      "distance": 3,
-      "id": "D099",
+      "blind_name": "Real.instMonoid",
+      "distance": 4,
+      "id": "D095",
       "kind": "def",
-      "name": "instOfNatAtLeastTwo",
-      "owner_module": "Mathlib.Data.Nat.Cast.Defs",
+      "name": "Real.instMonoid",
+      "owner_module": "Mathlib.Data.Real.Basic",
       "role": "external-frontier",
-      "semantic_sha256": "37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d"
+      "semantic_sha256": "37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8"
+    },
+    {
+      "blind_name": "DivInvMonoid.toDiv",
+      "distance": 5,
+      "id": "D096",
+      "kind": "abbrev",
+      "name": "DivInvMonoid.toDiv",
+      "owner_module": "Mathlib.Algebra.Group.Defs",
+      "role": "external-frontier",
+      "semantic_sha256": "cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea"
+    },
+    {
+      "blind_name": "Nat.instAtLeastTwoHAddOfNat",
+      "distance": 5,
+      "id": "D097",
+      "kind": "theorem",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "owner_module": "Mathlib.Data.Nat.Init",
+      "role": "external-frontier",
+      "semantic_sha256": "309ef94c4b7cfbe2e668952e6915279353921d5d48b6123a30f90dd932dac3e6"
+    },
+    {
+      "blind_name": "Nat.instNeZeroSucc",
+      "distance": 5,
+      "id": "D098",
+      "kind": "theorem",
+      "name": "Nat.instNeZeroSucc",
+      "owner_module": "Init.Data.Nat.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "a0735a528184c05594c4c79312c1225bb4dcffcdf0df7eb1a50c5733047c85ad"
     },
     {
       "blind_name": "Nonempty",
       "distance": 5,
-      "id": "D100",
+      "id": "D099",
       "kind": "inductive",
       "name": "Nonempty",
       "owner_module": "Init.Prelude",
@@ -1131,7 +1121,7 @@
     {
       "blind_name": "One.toOfNat1",
       "distance": 5,
-      "id": "D101",
+      "id": "D100",
       "kind": "def",
       "name": "One.toOfNat1",
       "owner_module": "Init.Data.Zero",
@@ -1141,12 +1131,22 @@
     {
       "blind_name": "Real.instOne",
       "distance": 5,
-      "id": "D102",
+      "id": "D101",
       "kind": "def",
       "name": "Real.instOne",
       "owner_module": "Mathlib.Data.Real.Basic",
       "role": "external-frontier",
       "semantic_sha256": "b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81"
+    },
+    {
+      "blind_name": "instOfNatAtLeastTwo",
+      "distance": 5,
+      "id": "D102",
+      "kind": "def",
+      "name": "instOfNatAtLeastTwo",
+      "owner_module": "Mathlib.Data.Nat.Cast.Defs",
+      "role": "external-frontier",
+      "semantic_sha256": "37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d"
     },
     {
       "blind_name": "Ne",
@@ -2166,27 +2166,7 @@
       "parent": "HighamBench.P12ThreeProductExecution"
     },
     {
-      "child": "DivInvMonoid.toDiv",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
       "child": "HAdd.hAdd",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "HDiv.hDiv",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "HMul.hMul",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "HPow.hPow",
       "origin": "type",
       "parent": "HighamBench.P12ThreeProductExecution.mk"
     },
@@ -2216,17 +2196,7 @@
       "parent": "HighamBench.P12ThreeProductExecution.mk"
     },
     {
-      "child": "HighamBench.P12RadixFormat.mantissaBound",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
       "child": "HighamBench.P12RadixFormat.noOverflow",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "HighamBench.P12RadixFormat.scale",
       "origin": "type",
       "parent": "HighamBench.P12ThreeProductExecution.mk"
     },
@@ -2331,36 +2301,6 @@
       "parent": "HighamBench.P12ThreeProductExecution.mk"
     },
     {
-      "child": "LE.le",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "Monoid.toNatPow",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "Nat.instAtLeastTwoHAddOfNat",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "Nat.instNeZeroSucc",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "OfNat.ofNat",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
       "child": "Real",
       "origin": "type",
       "parent": "HighamBench.P12ThreeProductExecution.mk"
@@ -2371,47 +2311,7 @@
       "parent": "HighamBench.P12ThreeProductExecution.mk"
     },
     {
-      "child": "Real.instAddGroup",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "Real.instDivInvMonoid",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "Real.instLE",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "Real.instMonoid",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "Real.instMul",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "Real.instNatCast",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
       "child": "Real.instSub",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "Real.lattice",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "abs",
       "origin": "type",
       "parent": "HighamBench.P12ThreeProductExecution.mk"
     },
@@ -2421,32 +2321,7 @@
       "parent": "HighamBench.P12ThreeProductExecution.mk"
     },
     {
-      "child": "instHDiv",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "instHMul",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "instHPow",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
       "child": "instHSub",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "instOfNatAtLeastTwo",
-      "origin": "type",
-      "parent": "HighamBench.P12ThreeProductExecution.mk"
-    },
-    {
-      "child": "instOfNatNat",
       "origin": "type",
       "parent": "HighamBench.P12ThreeProductExecution.mk"
     },
@@ -3434,27 +3309,27 @@
   "inputs": {
     "blind_dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/inputs/blind_dependency_inventory.json",
-      "sha256": "f8e70c48479856cd9e4294595bc49886f00b659d057e2e868b832a1e6025b4fd"
+      "sha256": "c6b1adaa533d8390cb8dde32d22b823c7c3a281f2ef1186a3c0aa4e846aee5f9"
     },
     "blind_dossier": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/inputs/blind_dossier.md",
-      "sha256": "0aa1ccaa91c4620c6e8c8a86df39e795d54cf9c079dded666e49e78800257e1e"
+      "sha256": "15e877f9d91c388022cb3181f465051ac87e6479ef7c8d6a140f2e0f8513dab7"
     },
     "blind_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/inputs/blind_review_packet.md",
-      "sha256": "0aa1ccaa91c4620c6e8c8a86df39e795d54cf9c079dded666e49e78800257e1e"
+      "sha256": "15e877f9d91c388022cb3181f465051ac87e6479ef7c8d6a140f2e0f8513dab7"
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "8b64dd5f6f48fcff98544416fa999e630f68019ac5224d18111d2b092ce361f8"
+      "sha256": "482afb5e32edd1f8c05a2f52099adc2a20ef9f6beb9565b98cfe66b36eccb21f"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/inputs/dependency_inventory.json",
-      "sha256": "33b72196b3194748c25cc2d0ad9367c3b42e2961a7631406271a83a67ed7362f"
+      "sha256": "52c927634b7b7c6e9660b9825aa7f4d8b9fb25df6209948dd4f85892efd9785a"
     },
     "direct_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/inputs/direct_review_packet.md",
-      "sha256": "a8a3a59cb2ed6eb2ecb8969231848bc63a0233faab458068fc77b7a9b202f4d7"
+      "sha256": "30ab023ccc6e97a29bbc5697e1b679521bcf0aa6a8eb35077427084951dd4f09"
     },
     "source_locator": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/inputs/source_locator.json",
@@ -3489,33 +3364,33 @@
       ],
       "module": "HighamBench.P12Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean",
-      "sha256": "b2a25eace2e5472b3f277df9b1f48f03dc9fa3f3ad7849b9b0c6611d63820295"
+      "sha256": "46bf4ab1fa6101892881af97d833b2781bafdf1788ef98c62831ed48c3e186cc"
     }
   ],
   "outputs": {
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "f0195cb1a02dc751d7b7016e82542f1ded032bc47f87eeffac3c5ad97af233aa"
+      "sha256": "3c68ec45281674ad12b95d7c5655459d1cb143efe16c82e6b7d9f78eb582b669"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/decision.json",
-      "sha256": "8b4c2d6e6a9b57e944d7ca15af523626a5e33f4269b00156cade3fe2bc6304a0"
+      "sha256": "fb6a90ee1009f32cd01ee60e8d554424fb730b51089901fe3f701a009e79bcc9"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "19e7a9bafaf9004d1a9fd3729e2b11c773f3c210067e8d880f2f5a304c1825e2"
+      "sha256": "9897b2c9fb86e32f1be059d12ef28cb4a79fa31e8927cf9d453bad69eb5f1dbd"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/report.md",
-      "sha256": "67521d55a9b339a7cb03f9c414ac328b4161734d3fd038b7420959a5ce9c87b9"
+      "sha256": "149fa5f9479ff7ce5305ac1db7577a78a76ee9772d2479209d4e5b03654c11d1"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "8e05703f961d756d5a46555b25b2bd3170abdd8d9bf4eb8df8d1db235f020310"
+      "sha256": "0019f90be044c933cc5755f07ff8fb42683850cffc088cbd29449cc0de7e58ad"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P12/T3/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "1b9d60739a3307227f2caa38a2ffabd496fa4f42dd0cfa3b3186006fe75ef4af"
+      "sha256": "1b354a5cd2f347a947731b3dd6acebab802c9bd74e797ec1b49a9bfb9e19947f"
     }
   },
   "paper": {
@@ -3559,7 +3434,7 @@
       }
     ]
   },
-  "prepared_at_utc": "2026-08-22T10:48:27.405420+00:00",
+  "prepared_at_utc": "2026-08-21T21:55:40.283943+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
@@ -3653,6 +3528,6 @@
   "task_metadata": {
     "path": "paper_bencmark/highambench/tasks/P12/T3/task.json",
     "semantic_evidence": false,
-    "sha256": "4a56f7fa5cefdd205c0147c480d1309a2149dcf2ab297a746aff911509acbf7e"
+    "sha256": "bc963df2b620a6c7d60a0ab801953d9878585c0c063e30e26122997c33a2c10e"
   }
 }
