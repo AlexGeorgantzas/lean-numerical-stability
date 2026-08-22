@@ -3,796 +3,1258 @@
   "role": "direct-judge",
   "task_id": "P18-T3",
   "paper_sha256": "b18628ffc348d7aeec2da02efb989b6e012f0b0fae09b27fbff735bb8a5877cd",
-  "dossier_sha256": "bcb0f8726ef33a06c930585743583dfebce2985767ae909be217281a799a9447",
+  "dossier_sha256": "c70890b64218215f35b772c3b8a71b3fa99396f6824d0731fb284beab6e035e0",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.p18CoeffAbsDot",
-      "interpretation": "The sum over all stages of |x_i| |y_i|.",
-      "effect_on_target": "It defines the final strict lower bound showing that the signed cancellation b_tilde dot c_eps is not componentwise trivial.",
-      "paper_match": "It matches the absolute-value row-vector product used in the nonsmooth conditions on PDF p. 7, although the numerical lower bound is a derived certificate rather than a stated paper conclusion.",
+      "name": "HighamBench.P18AdditiveRKTableau.bPerturbation",
+      "interpretation": "Projection of the perturbation-weight vector from an additive Runge-Kutta tableau.",
+      "effect_on_target": "The first conclusion says all four perturbation weights are exactly zero.",
+      "paper_match": "This is the role of the paper's displayed b-epsilon=(0,0,0,0), although the projection alone does not identify the displayed tableau.",
       "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p18CoeffDot",
-      "interpretation": "The ordinary finite real dot product sum_i x_i y_i.",
-      "effect_on_target": "It expresses all consistency and simplified perturbation residuals.",
-      "paper_match": "It matches the row-vector/column-vector products in the conditions on PDF pp. 7-8.",
-      "status": "pass"
+      "name": "HighamBench.P18Method4s3pCSourceModel",
+      "interpretation": "An abstract wrapper whose constructor accepts any four-stage tableau satisfying three exact predicates.",
+      "effect_on_target": "The theorem quantifies over this wrapper as though it denoted Method 4s3pC.",
+      "paper_match": "It does not identify the specifically printed Method 4s3pC coefficients or prove that they inhabit the wrapper.",
+      "status": "fail"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p18CoeffHadamard",
-      "interpretation": "Componentwise multiplication, with output_i = x_i y_i.",
-      "effect_on_target": "It represents c_tilde squared, c_tilde times c_eps, and c_eps squared.",
-      "paper_match": "It matches the centered-dot componentwise products in the B-series conditions on PDF pp. 7-8.",
+      "name": "HighamBench.P18Method4s3pCSourceModel.tableau",
+      "interpretation": "Projection of the wrapped four-stage tableau.",
+      "effect_on_target": "All coefficient predicates in the conclusion are applied to this tableau.",
+      "paper_match": "The projection is structurally appropriate, but the wrapped tableau remains arbitrary rather than the paper's displayed tableau.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.p18CoeffMatVec",
-      "interpretation": "Standard matrix-vector multiplication, output_i = sum_j A_ij x_j.",
-      "effect_on_target": "It defines row sums and all A_tilde or A_eps actions occurring in the certificate.",
-      "paper_match": "It matches the matrix-vector products in the paper's order conditions.",
-      "status": "pass"
+      "name": "HighamBench.P18StableMethod4s3pCBranch",
+      "interpretation": "A certificate type indexed by a method and a chosen local perturbation exponent.",
+      "effect_on_target": "The smooth and nonsmooth arguments are separately indexed by exponents 4 and 3.",
+      "paper_match": "It packages a conditional accumulation argument, but the exponent index and regime label are not derived from analytic regularity or the tableau.",
+      "status": "fail"
     },
     {
       "id": "D005",
-      "name": "HighamBench.p18Method4s3pCAPerturbation",
-      "interpretation": "A four-by-four real matrix containing the ten printed A_eps entries, with every unlisted entry set to zero.",
-      "effect_on_target": "It fixes the perturbation tableau used to compute A_tilde, c_eps, and six nontrivial smooth-condition residuals.",
-      "paper_match": "All printed values and signs match PDF p. 18, including a_eps_41 = -2; zero-filling is the standard lower-triangular tableau interpretation of omitted entries.",
+      "name": "HighamBench.P18StableMethod4s3pCBranch.epsilon",
+      "interpretation": "Projection of one real perturbation-size parameter from a branch certificate.",
+      "effect_on_target": "It scales the perturbation component in the global bound.",
+      "paper_match": "The paper ultimately treats epsilon as one constant upper bound, so this scalar role is compatible.",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "HighamBench.p18Method4s3pCATilde",
-      "interpretation": "The entrywise matrix sum A_tilde = A + A_eps.",
-      "effect_on_target": "It supplies the combined tableau in consistency and perturbation products.",
-      "paper_match": "It matches the definition A_tilde = A + A_eps on PDF p. 5.",
-      "status": "pass"
+      "name": "HighamBench.P18StableMethod4s3pCBranch.globalError",
+      "interpretation": "Projection of a real-valued global-error function from the branch certificate.",
+      "effect_on_target": "It is the total error in each uniform two-term conclusion.",
+      "paper_match": "The constructor equates it to an endpoint norm, but the purported exact-state sequence has no exact-flow semantics.",
+      "status": "fail"
     },
     {
       "id": "D007",
-      "name": "HighamBench.p18Method4s3pCBPerturbation",
-      "interpretation": "The four-entry zero vector b_eps.",
-      "effect_on_target": "The first conjunct proves it is identically zero, making every condition with left factor b_eps automatic.",
-      "paper_match": "It exactly matches b_eps = (0,0,0,0) on PDF p. 18.",
+      "name": "HighamBench.P18StableMethod4s3pCBranch.globalPerturbationError",
+      "interpretation": "Projection of the perturbation component of global error.",
+      "effect_on_target": "Its absolute value receives the epsilon-dependent bound.",
+      "paper_match": "This reflects the paper's perturbation-error component, conditional on the missing semantic linkage.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "HighamBench.p18Method4s3pCBTilde",
-      "interpretation": "The pointwise sum b_tilde = b + b_eps.",
-      "effect_on_target": "It is the weight vector in every displayed residual and in the nonvacuity clause.",
-      "paper_match": "It matches the paper's definition b_tilde = b + b_eps; here it reduces to b.",
+      "name": "HighamBench.P18StableMethod4s3pCBranch.globalSchemeError",
+      "interpretation": "Projection of the classical scheme component of global error.",
+      "effect_on_target": "Its absolute value receives the third-order scheme bound.",
+      "paper_match": "This reflects the paper's scheme-error component, conditional on the missing semantic linkage.",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "HighamBench.p18Method4s3pCCPerturbation",
-      "interpretation": "The perturbation abscissa vector c_eps = A_eps e.",
-      "effect_on_target": "It appears in all nontrivial simplified perturbation conditions and the final absolute dot product.",
-      "paper_match": "It matches the standard Runge-Kutta convention required to read the conditions on PDF pp. 6-8.",
+      "name": "HighamBench.P18StableMethod4s3pCBranch.step",
+      "interpretation": "Projection of a real step-size function over an arbitrary index family.",
+      "effect_on_target": "Its powers 3 and 2 occur in the global inequalities.",
+      "paper_match": "It can represent a family of Delta-t values, although the paper does not introduce this indexing.",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HighamBench.p18Method4s3pCCTilde",
-      "interpretation": "The pointwise sum c_tilde = c + c_eps.",
-      "effect_on_target": "It supplies the combined abscissae in consistency and smooth perturbation residuals.",
-      "paper_match": "It matches the paper's use of c_tilde = c + c_eps and A_tilde e.",
-      "status": "pass"
+      "name": "HighamBench.P18StableMethod4s3pCBranch.tauRegime",
+      "interpretation": "Projection of an opaque two-valued regime tag.",
+      "effect_on_target": "Hypotheses identify the two branch tags as well-behaved and not-well-behaved.",
+      "paper_match": "The tag carries no differentiability, boundedness, Lipschitz, or chopping property and has no effect on the independently fixed exponents.",
+      "status": "fail"
     },
     {
       "id": "D011",
-      "name": "HighamBench.p18Method4s3pCE",
-      "interpretation": "The four-entry all-ones vector e.",
-      "effect_on_target": "It defines tableau row sums and the first consistency condition.",
-      "paper_match": "It matches the conventional e used in the paper's order conditions.",
-      "status": "pass"
+      "name": "HighamBench.P18TauRegime",
+      "interpretation": "A two-constructor enumeration with no semantic payload.",
+      "effect_on_target": "It supplies names for the two regime equalities.",
+      "paper_match": "The paper's regimes are analytic regularity distinctions, not bare labels.",
+      "status": "fail"
     },
     {
       "id": "D012",
-      "name": "HighamBench.p18PrintedCoeffTolerance",
-      "interpretation": "The exact real number 2 / 10^15 = 2e-15.",
-      "effect_on_target": "It replaces exact order equalities by bounded residual tests on the finite printed decimals.",
-      "paper_match": "The paper gives approximately fifteen decimal places but no tolerance. This is a derived printed-coefficient tolerance, not a paper error constant.",
-      "status": "pass"
+      "name": "HighamBench.P18TauRegime.notWellBehaved",
+      "interpretation": "The opaque tag for the nonsmooth regime.",
+      "effect_on_target": "It appears only in an equality hypothesis.",
+      "paper_match": "It does not assert the paper's non-Lipschitz or potentially nondifferentiable behavior.",
+      "status": "fail"
     },
     {
       "id": "D013",
-      "name": "HighamBench.p18Add",
-      "interpretation": "Pointwise addition of two finite real vectors.",
-      "effect_on_target": "It constructs b_tilde and c_tilde.",
-      "paper_match": "It correctly implements the paper's vector additions.",
-      "status": "pass"
+      "name": "HighamBench.P18TauRegime.wellBehaved",
+      "interpretation": "The opaque tag for the smooth regime.",
+      "effect_on_target": "It appears only in an equality hypothesis.",
+      "paper_match": "It does not assert existence or boundedness of the derivatives used by the paper.",
+      "status": "fail"
     },
     {
       "id": "D014",
-      "name": "HighamBench.p18CoeffMatAdd",
-      "interpretation": "Entrywise addition of two finite real matrices.",
-      "effect_on_target": "It constructs A_tilde.",
-      "paper_match": "It correctly implements A_tilde = A + A_eps.",
+      "name": "HighamBench.p18SmoothPerturbationOrderThree",
+      "interpretation": "The conjunction of all sixteen signed cancellation equations in (3.5a)-(3.5f) through perturbation order three.",
+      "effect_on_target": "It is asserted exactly for the wrapped tableau.",
+      "paper_match": "Its dot, matrix-vector, and Hadamard expressions reproduce the complete smooth hierarchy printed on PDF page 8.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "HighamBench.p18CorrectedMidpointA._proof_1",
-      "interpretation": "An elaboration proof that the natural numeral 1 + 1 is at least two.",
-      "effect_on_target": "It only enables numeral elaboration and contributes no mathematical coefficient or condition.",
-      "paper_match": "There is no paper-level semantic counterpart.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D016",
-      "name": "HighamBench.p18Method4s3pCA",
-      "interpretation": "A four-by-four real matrix containing the six printed A entries, with all unlisted entries zero.",
-      "effect_on_target": "It determines c and contributes to A_tilde.",
-      "paper_match": "Every value and sign matches PDF p. 18, including a_43 = -1.895660952342050; zero-filling follows the displayed tableau convention.",
+      "name": "HighamBench.p18ThirdOrderConsistency",
+      "interpretation": "The four classical consistency equations through order three for the combined tableau.",
+      "effect_on_target": "It is asserted exactly for the wrapped tableau.",
+      "paper_match": "It retains both third-order tree conditions and matches the hierarchy on PDF page 7.",
       "status": "pass"
     },
     {
+      "id": "D016",
+      "name": "HighamBench.p18UniformTwoTermGlobalOrder",
+      "interpretation": "An exact split plus two uniform inequalities with nonnegative constants over every member of an arbitrary index family.",
+      "effect_on_target": "It replaces each displayed big-O rate by finite-family bounds with exponents (3,3) and (3,2).",
+      "paper_match": "This is compatible with one concrete big-O interpretation, but no small-step threshold, limiting filter, or required step family makes it equivalent to the paper's undefined asymptotic notation.",
+      "status": "unclear"
+    },
+    {
       "id": "D017",
-      "name": "HighamBench.p18Method4s3pCB",
-      "interpretation": "The four-entry real weight vector b using the printed decimal values.",
-      "effect_on_target": "Because b_eps is zero, this is also b_tilde and controls all residuals.",
-      "paper_match": "All four entries and signs exactly reproduce the display on PDF p. 18.",
+      "name": "HighamBench.P18AdditiveRKTableau",
+      "interpretation": "A four-field container for A, A-epsilon, b, and b-epsilon at a fixed stage count.",
+      "effect_on_target": "It supplies the coefficient data used by all order predicates and one-step runs.",
+      "paper_match": "This matches the generic additive Runge-Kutta coefficient structure in (3.1).",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "HighamBench.p18Method4s3pCC",
-      "interpretation": "The abscissa vector c = A e.",
-      "effect_on_target": "It contributes to c_tilde.",
-      "paper_match": "It matches the standard Butcher row-sum convention used by the paper.",
+      "name": "HighamBench.P18AdditiveRKTableau.APerturbation",
+      "interpretation": "Projection of the A-epsilon matrix.",
+      "effect_on_target": "It contributes to combined coefficients, perturbation abscissae, and mixed-precision stages.",
+      "paper_match": "This matches the paper's perturbed stage matrix.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "HighamBench.p18PrintedCoeffTolerance._proof_1",
-      "interpretation": "An elaboration proof that the natural numeral 9 + 1 is at least two.",
-      "effect_on_target": "It only supports construction of the numeral 10 in 10^15.",
-      "paper_match": "There is no independent paper-level meaning.",
-      "status": "not-applicable"
+      "name": "HighamBench.P18Method4s3pCSourceModel.mk",
+      "interpretation": "Constructor from any four-stage tableau plus proofs of zero perturbation weights, third-order consistency, and all smooth order-three conditions.",
+      "effect_on_target": "The first three conclusions are already stored as constructor premises; no coefficient values occur.",
+      "paper_match": "The paper selects one numerically printed Method 4s3pC tableau. This constructor neither fixes it nor establishes that its rounded decimals satisfy the exact equations.",
+      "status": "fail"
     },
     {
       "id": "D020",
-      "name": "And",
-      "interpretation": "Logical conjunction requiring both component propositions.",
-      "effect_on_target": "It requires the zero-vector fact, every residual bound, and the nonvacuity inequality simultaneously.",
-      "paper_match": "Conjunction is the correct logic for jointly required order conditions.",
-      "status": "pass"
+      "name": "HighamBench.P18StableMethod4s3pCBranch.mk",
+      "interpretation": "Constructor packaging trajectories, one-step runs, local h^4 or epsilon*h^k bounds, stability accumulation inequalities, and a finite-horizon bound.",
+      "effect_on_target": "The global rates follow from local rates and accumulation hypotheses already supplied by each branch.",
+      "paper_match": "Stability accumulation is a legitimate formal hypothesis behind the paper's caveat, but assuming the claimed local scheme and perturbation orders bypasses the defining accuracy content; the constructor also lacks exact-flow and regime-regularity assumptions.",
+      "status": "fail"
     },
     {
       "id": "D021",
-      "name": "DivInvMonoid.toDiv",
-      "interpretation": "It exposes division from the real division-and-inverse structure.",
-      "effect_on_target": "It gives the standard meanings of 1/2, 1/3, 1/6, 1/100, and the tolerance.",
-      "paper_match": "The rational constants agree with the paper's real arithmetic.",
+      "name": "HighamBench.p18CoeffDot",
+      "interpretation": "Finite real dot product over all stage indices.",
+      "effect_on_target": "It expresses every scalar order condition.",
+      "paper_match": "This is the standard coefficient contraction used in the paper.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Eq",
-      "interpretation": "Propositional equality.",
-      "effect_on_target": "It states extensional equality of b_eps with the zero function.",
-      "paper_match": "This correctly formalizes b_eps = (0,0,0,0).",
+      "name": "HighamBench.p18CoeffHadamard",
+      "interpretation": "Componentwise product of two stage vectors.",
+      "effect_on_target": "It expresses products such as c-tilde dot c-epsilon in order conditions.",
+      "paper_match": "This matches the paper's componentwise dot notation inside coefficient vectors.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "Fin",
-      "interpretation": "Fin 4 is the index type with values 0,1,2,3.",
-      "effect_on_target": "It fixes exactly four vector entries and four-by-four matrices.",
-      "paper_match": "It matches four stages after the conventional offset from paper indices 1-4 to Lean indices 0-3.",
+      "name": "HighamBench.p18CoeffMatVec",
+      "interpretation": "Finite matrix-vector multiplication over stage indices.",
+      "effect_on_target": "It defines abscissae and matrix terms in the order conditions.",
+      "paper_match": "This matches the paper's tableau algebra.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "HDiv.hDiv",
-      "interpretation": "Typeclass-dispatched division.",
-      "effect_on_target": "At Real it performs ordinary real division in constants and tolerance.",
-      "paper_match": "It has the intended standard arithmetic meaning.",
-      "status": "pass"
-    },
-    {
-      "id": "D025",
-      "name": "HSub.hSub",
-      "interpretation": "Typeclass-dispatched subtraction.",
-      "effect_on_target": "It forms each residual as computed coefficient expression minus its target constant.",
-      "paper_match": "This is the correct residual orientation for the paper's equalities.",
-      "status": "pass"
-    },
-    {
-      "id": "D026",
-      "name": "LE.le",
-      "interpretation": "The non-strict order relation.",
-      "effect_on_target": "It states that each absolute residual is at most 2e-15.",
-      "paper_match": "This is a target-specific approximation of the paper's exact equalities, with standard inequality semantics.",
-      "status": "pass"
-    },
-    {
-      "id": "D027",
-      "name": "LT.lt",
-      "interpretation": "The strict order relation.",
-      "effect_on_target": "It requires 0.01 to be strictly below the absolute dot product.",
-      "paper_match": "The paper does not state this threshold, but it is a directly computed consequence of its displayed coefficients.",
-      "status": "pass"
-    },
-    {
-      "id": "D028",
-      "name": "Nat",
-      "interpretation": "Natural numbers used for dimensions, numeral construction, and exponents.",
-      "effect_on_target": "It fixes stage count four and exponent fifteen.",
-      "paper_match": "These natural-number uses agree with the four-stage display and decimal tolerance construction.",
-      "status": "pass"
-    },
-    {
-      "id": "D029",
-      "name": "Nat.instAtLeastTwoHAddOfNat",
-      "interpretation": "A proof-producing instance for natural numerals at least two.",
-      "effect_on_target": "It supports elaboration of multi-digit numerals only.",
-      "paper_match": "It has no paper-level semantic content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D030",
-      "name": "Nat.instNeZeroSucc",
-      "interpretation": "A proof that every natural successor is nonzero.",
-      "effect_on_target": "It supplies an elaboration side condition for numerals.",
-      "paper_match": "It has no paper-level semantic content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D031",
-      "name": "OfNat.ofNat",
-      "interpretation": "Interpretation of a natural numeral in a target type.",
-      "effect_on_target": "It constructs dimensions and real constants such as 0, 1, 2, 3, 4, 6, and 100.",
-      "paper_match": "The resulting constants have their ordinary mathematical meanings.",
-      "status": "pass"
-    },
-    {
-      "id": "D032",
-      "name": "One.toOfNat1",
-      "interpretation": "Instance wiring that interprets numeral 1 as the multiplicative identity.",
-      "effect_on_target": "It elaborates real and natural occurrences of 1.",
-      "paper_match": "It adds no independent paper-specific meaning.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D033",
-      "name": "Real",
-      "interpretation": "The exact mathematical real-number type.",
-      "effect_on_target": "All coefficients, products, residuals, and bounds are exact real quantities.",
-      "paper_match": "Real coefficients are appropriate for the paper's algebraic order conditions, but this does not model floating-point execution.",
-      "status": "pass"
-    },
-    {
-      "id": "D034",
-      "name": "Real.instAddGroup",
-      "interpretation": "The standard additive-group structure on real numbers.",
-      "effect_on_target": "It supports subtraction, negation, and absolute value.",
-      "paper_match": "It gives ordinary real arithmetic.",
-      "status": "pass"
-    },
-    {
-      "id": "D035",
-      "name": "Real.instDivInvMonoid",
-      "interpretation": "The standard real multiplication, inverse, and division structure.",
-      "effect_on_target": "It interprets rational targets and the tolerance.",
-      "paper_match": "It matches ordinary real division.",
-      "status": "pass"
-    },
-    {
-      "id": "D036",
-      "name": "Real.instLE",
-      "interpretation": "The standard less-than-or-equal order on real numbers.",
-      "effect_on_target": "It orders residual magnitudes against the tolerance.",
-      "paper_match": "It has the intended mathematical semantics.",
-      "status": "pass"
-    },
-    {
-      "id": "D037",
-      "name": "Real.instLT",
-      "interpretation": "The standard strict order on real numbers.",
-      "effect_on_target": "It interprets the final nonvacuity inequality.",
-      "paper_match": "It has the intended mathematical semantics.",
-      "status": "pass"
-    },
-    {
-      "id": "D038",
-      "name": "Real.instNatCast",
-      "interpretation": "The standard embedding of natural numbers into real numbers.",
-      "effect_on_target": "It constructs real integer constants used by divisions and powers.",
-      "paper_match": "It preserves the paper's numerical constants.",
-      "status": "pass"
-    },
-    {
-      "id": "D039",
-      "name": "Real.instOne",
-      "interpretation": "The real multiplicative identity.",
-      "effect_on_target": "It supplies the entries of e and the first consistency target.",
-      "paper_match": "It matches the scalar one in the paper.",
-      "status": "pass"
-    },
-    {
-      "id": "D040",
-      "name": "Real.instSub",
-      "interpretation": "Real subtraction defined as addition of the negation.",
-      "effect_on_target": "It forms signed coefficient residuals.",
-      "paper_match": "It is standard real subtraction.",
-      "status": "pass"
-    },
-    {
-      "id": "D041",
-      "name": "Real.instZero",
-      "interpretation": "The real additive identity.",
-      "effect_on_target": "It fills omitted tableau entries and defines b_eps and the zero function.",
-      "paper_match": "It implements the conventional zero-filled tableau and printed zero weights.",
-      "status": "pass"
-    },
-    {
-      "id": "D042",
-      "name": "Real.lattice",
-      "interpretation": "The standard lattice order on real numbers.",
-      "effect_on_target": "It supports the generic definition of absolute value.",
-      "paper_match": "It yields ordinary real absolute value.",
-      "status": "pass"
-    },
-    {
-      "id": "D043",
-      "name": "Zero.toOfNat0",
-      "interpretation": "Instance wiring that interprets numeral 0 as the additive identity.",
-      "effect_on_target": "It elaborates zero entries and the zero function.",
-      "paper_match": "It adds no independent paper-specific meaning.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D044",
-      "name": "abs",
-      "interpretation": "Absolute value, defined over reals as max(a,-a).",
-      "effect_on_target": "It converts signed residuals to magnitudes and defines the absolute dot product.",
-      "paper_match": "It matches scalar absolute value and the componentwise absolute values used by the paper.",
-      "status": "pass"
-    },
-    {
-      "id": "D045",
-      "name": "instHDiv",
-      "interpretation": "The homogeneous division instance induced by ordinary division.",
-      "effect_on_target": "It routes all real divisions to the standard real operation.",
-      "paper_match": "It preserves ordinary real arithmetic.",
-      "status": "pass"
-    },
-    {
-      "id": "D046",
-      "name": "instHSub",
-      "interpretation": "The homogeneous subtraction instance induced by ordinary subtraction.",
-      "effect_on_target": "It routes residual subtraction to real subtraction.",
-      "paper_match": "It preserves ordinary real arithmetic.",
-      "status": "pass"
-    },
-    {
-      "id": "D047",
-      "name": "instOfNatAtLeastTwo",
-      "interpretation": "It interprets natural numerals at least two through the real natural-number cast.",
-      "effect_on_target": "It constructs real denominators and integer constants.",
-      "paper_match": "It gives the expected real values.",
-      "status": "pass"
-    },
-    {
-      "id": "D048",
-      "name": "instOfNatNat",
-      "interpretation": "The canonical interpretation of each natural numeral as itself.",
-      "effect_on_target": "It elaborates dimensions and exponents.",
-      "paper_match": "It has no independent paper-level content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D049",
-      "name": "Bool.true",
-      "interpretation": "The true exponent-sign flag used by Lean's scientific-literal encoding.",
-      "effect_on_target": "It helps encode decimal fractions and negative decimal exponents exactly.",
-      "paper_match": "It reproduces the decimal tokens printed by the paper.",
-      "status": "pass"
-    },
-    {
-      "id": "D050",
-      "name": "DFunLike.coe",
-      "interpretation": "A coercion from a function-like structure to its underlying function.",
-      "effect_on_target": "It lets matrix equivalences be applied as functions without changing entries.",
-      "paper_match": "It is representation plumbing with no independent paper meaning.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D051",
-      "name": "Equiv",
-      "interpretation": "A type of bijections between two representations.",
-      "effect_on_target": "It supports the identity equivalence between nested functions and matrices.",
-      "paper_match": "It has no paper-level semantic content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D052",
-      "name": "Equiv.instEquivLike",
-      "interpretation": "The function-like instance for equivalences.",
-      "effect_on_target": "It enables coercion of Matrix.of to a function.",
-      "paper_match": "It is elaboration infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D053",
-      "name": "EquivLike.toFunLike",
-      "interpretation": "It forgets inverse data and exposes an equivalence as a function-like object.",
-      "effect_on_target": "It permits matrix construction without changing row or column order.",
-      "paper_match": "It is representation infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D054",
-      "name": "Fin.fintype",
-      "interpretation": "The finite enumeration of every member of Fin n.",
-      "effect_on_target": "It ensures sums range over all four stages exactly once.",
-      "paper_match": "It matches summation over stages 1 through 4.",
-      "status": "pass"
-    },
-    {
-      "id": "D055",
-      "name": "Finset.sum",
-      "interpretation": "Finite commutative summation.",
-      "effect_on_target": "It implements dot products, absolute dot products, and matrix-vector multiplication.",
-      "paper_match": "It matches the finite sums implicit in the paper's vector and matrix notation.",
-      "status": "pass"
-    },
-    {
-      "id": "D056",
-      "name": "Finset.univ",
-      "interpretation": "The finite set containing every element of the indexed finite type.",
-      "effect_on_target": "It selects all stages in each sum.",
-      "paper_match": "It matches complete stage summation.",
-      "status": "pass"
-    },
-    {
-      "id": "D057",
-      "name": "HMul.hMul",
-      "interpretation": "Typeclass-dispatched multiplication.",
-      "effect_on_target": "At Real it multiplies coefficient and vector entries.",
-      "paper_match": "It gives ordinary scalar multiplication.",
-      "status": "pass"
-    },
-    {
-      "id": "D058",
-      "name": "HPow.hPow",
-      "interpretation": "Typeclass-dispatched exponentiation.",
-      "effect_on_target": "It constructs 10^15 in the printed-coefficient tolerance.",
-      "paper_match": "It is a target-specific tolerance calculation with standard arithmetic meaning.",
-      "status": "pass"
-    },
-    {
-      "id": "D059",
-      "name": "Matrix",
-      "interpretation": "A matrix is represented as a function from row and column indices to entries.",
-      "effect_on_target": "It gives A and A_eps ordinary four-by-four functional semantics.",
-      "paper_match": "It matches the paper's coefficient arrays.",
-      "status": "pass"
-    },
-    {
-      "id": "D060",
-      "name": "Matrix.of",
-      "interpretation": "The identity equivalence between nested functions and matrices.",
-      "effect_on_target": "It introduces no transpose or reindexing when constructing the tableaus.",
-      "paper_match": "The resulting row and column arrangement matches the paper.",
-      "status": "pass"
-    },
-    {
-      "id": "D061",
-      "name": "Matrix.vecCons",
-      "interpretation": "Vector construction with a head at index zero followed by the tail.",
-      "effect_on_target": "It fixes the order of coefficient-vector entries and matrix rows and columns.",
-      "paper_match": "After the standard zero-based offset, the order matches paper stages 1 through 4.",
-      "status": "pass"
-    },
-    {
-      "id": "D062",
-      "name": "Matrix.vecEmpty",
-      "interpretation": "The unique empty vector indexed by Fin 0.",
-      "effect_on_target": "It terminates fixed-length vector construction without adding entries.",
-      "paper_match": "It preserves the intended four-entry dimensions.",
-      "status": "pass"
-    },
-    {
-      "id": "D063",
-      "name": "Monoid.toNatPow",
-      "interpretation": "Natural-number exponentiation in a multiplicative monoid.",
-      "effect_on_target": "For reals it gives the usual value of 10^15.",
-      "paper_match": "It has the intended arithmetic meaning for the derived tolerance.",
-      "status": "pass"
-    },
-    {
-      "id": "D064",
-      "name": "NNRatCast.toOfScientific",
-      "interpretation": "Scientific decimal literals are converted to exact nonnegative rationals and then cast.",
-      "effect_on_target": "Every printed positive decimal becomes an exact real rational rather than a floating-point value.",
-      "paper_match": "It reproduces the printed decimal strings exactly for a printed-coefficient certificate, while not resolving whether the paper intended hidden exact coefficients.",
-      "status": "pass"
-    },
-    {
-      "id": "D065",
-      "name": "Neg.neg",
-      "interpretation": "Typeclass-dispatched unary negation.",
-      "effect_on_target": "It supplies all negative tableau and weight entries.",
-      "paper_match": "Every affected sign agrees with PDF p. 18.",
-      "status": "pass"
-    },
-    {
-      "id": "D066",
-      "name": "OfScientific.ofScientific",
-      "interpretation": "The parser-level operation for a mantissa and signed decimal exponent.",
-      "effect_on_target": "It constructs the finite decimal coefficient literals.",
-      "paper_match": "It preserves the displayed decimal values.",
-      "status": "pass"
-    },
-    {
-      "id": "D067",
-      "name": "Real.instAddCommMonoid",
-      "interpretation": "The standard commutative additive monoid on reals.",
-      "effect_on_target": "It supplies zero and associative commutative addition for finite sums.",
-      "paper_match": "It gives ordinary real summation.",
-      "status": "pass"
-    },
-    {
-      "id": "D068",
-      "name": "Real.instMonoid",
-      "interpretation": "The standard multiplicative monoid on reals.",
-      "effect_on_target": "It supports natural powers such as 10^15.",
-      "paper_match": "It gives ordinary real multiplication and powers.",
-      "status": "pass"
-    },
-    {
-      "id": "D069",
-      "name": "Real.instMul",
-      "interpretation": "Standard real multiplication.",
-      "effect_on_target": "It multiplies entries in sums, Hadamard products, and matrix-vector products.",
-      "paper_match": "It matches the paper's algebraic products.",
-      "status": "pass"
-    },
-    {
-      "id": "D070",
-      "name": "Real.instNNRatCast",
-      "interpretation": "The exact embedding of nonnegative rational numbers into reals.",
-      "effect_on_target": "It gives exact real meanings to positive decimal literals.",
-      "paper_match": "It is appropriate for checking the literal printed coefficients.",
-      "status": "pass"
-    },
-    {
-      "id": "D071",
-      "name": "Real.instNeg",
-      "interpretation": "Standard real negation.",
-      "effect_on_target": "It constructs negative coefficients and supports subtraction and absolute value.",
-      "paper_match": "It preserves the paper's coefficient signs.",
-      "status": "pass"
-    },
-    {
-      "id": "D072",
-      "name": "instHMul",
-      "interpretation": "The homogeneous multiplication instance induced by ordinary multiplication.",
-      "effect_on_target": "It routes entry products to real multiplication.",
-      "paper_match": "It preserves ordinary coefficient arithmetic.",
-      "status": "pass"
-    },
-    {
-      "id": "D073",
-      "name": "instHPow",
-      "interpretation": "The heterogeneous power instance induced by an ordinary power operation.",
-      "effect_on_target": "It routes 10^15 to real natural exponentiation.",
-      "paper_match": "It has the intended standard arithmetic meaning.",
-      "status": "pass"
-    },
-    {
-      "id": "D074",
-      "name": "HAdd.hAdd",
-      "interpretation": "Typeclass-dispatched addition.",
-      "effect_on_target": "It performs pointwise coefficient additions and supports numeral construction.",
-      "paper_match": "At Real it implements the paper's ordinary additions.",
-      "status": "pass"
-    },
-    {
-      "id": "D075",
-      "name": "Nat.AtLeastTwo",
-      "interpretation": "A proposition used to certify that a natural numeral is at least two.",
-      "effect_on_target": "It only supports numeral elaboration.",
+      "name": "HighamBench.p18CorrectedMidpointA._proof_1",
+      "interpretation": "Compiler proof that the numeral two satisfies an AtLeastTwo requirement.",
+      "effect_on_target": "It only supports numeric-literal elaboration reached through dependencies.",
       "paper_match": "It has no independent paper-level meaning.",
       "status": "not-applicable"
     },
     {
+      "id": "D025",
+      "name": "HighamBench.p18TableauATilde",
+      "interpretation": "Pointwise definition A-tilde=A+A-epsilon.",
+      "effect_on_target": "The combined matrix enters consistency and smooth perturbation conditions.",
+      "paper_match": "This is exactly the paper's definition of A-tilde.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "HighamBench.p18TableauBTilde",
+      "interpretation": "Pointwise definition b-tilde=b+b-epsilon.",
+      "effect_on_target": "The combined weights enter consistency and perturbation conditions.",
+      "paper_match": "This is exactly the paper's definition of b-tilde.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "HighamBench.p18TableauCPerturbation",
+      "interpretation": "Definition c-epsilon=A-epsilon times the all-ones vector.",
+      "effect_on_target": "It supplies perturbation abscissae in all smooth conditions.",
+      "paper_match": "This is the conventional row-sum interpretation exhibited by the paper's Butcher arrays.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "HighamBench.p18TableauCTilde",
+      "interpretation": "Definition c-tilde=c+c-epsilon.",
+      "effect_on_target": "It supplies combined abscissae in consistency and perturbation conditions.",
+      "paper_match": "This matches the paper's displayed combined-abscissa convention.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "HighamBench.p18TableauE",
+      "interpretation": "The stage vector whose entries are all one.",
+      "effect_on_target": "It defines row sums and first-order weight sums.",
+      "paper_match": "This is the paper's e vector.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "HighamBench.p18ThirdOrderConsistency._proof_1",
+      "interpretation": "Compiler proof that the numeral three satisfies an AtLeastTwo requirement.",
+      "effect_on_target": "It only enables a real numeric literal in an order equation.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D031",
+      "name": "HighamBench.p18ThirdOrderConsistency._proof_2",
+      "interpretation": "Compiler proof that the numeral six satisfies an AtLeastTwo requirement.",
+      "effect_on_target": "It only enables a real numeric literal in an order equation.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D032",
+      "name": "HighamBench.P18AdditiveRKOneStepRun",
+      "interpretation": "A certificate container for one unperturbed combined-tableau step and one additive perturbed step.",
+      "effect_on_target": "Branch certificates use these runs to define local scheme and perturbation errors.",
+      "paper_match": "Its stage and output equations represent the paper's additive algorithm, subject to the reference-state defect in its constructor.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.F",
+      "interpretation": "Projection of the full-precision operator.",
+      "effect_on_target": "Branches require every step to use one common F.",
+      "paper_match": "This is the paper's F.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.FEpsilon",
+      "interpretation": "Projection of the perturbed or reduced-precision operator.",
+      "effect_on_target": "Branches require every perturbed step to use one common F-epsilon.",
+      "paper_match": "This is the paper's F-epsilon.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.a",
+      "interpretation": "Projection of the full-precision stage matrix used by a one-step run.",
+      "effect_on_target": "Branches equate it to the method tableau's A.",
+      "paper_match": "This matches the A term in (3.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.aPerturbation",
+      "interpretation": "Projection of the perturbed stage matrix used by a one-step run.",
+      "effect_on_target": "Branches equate it to the method tableau's A-epsilon.",
+      "paper_match": "This matches the A-epsilon term in (3.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.b",
+      "interpretation": "Projection of the full-precision output weights.",
+      "effect_on_target": "Branches equate it to the method tableau's b.",
+      "paper_match": "This matches the b term in (3.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.bPerturbation",
+      "interpretation": "Projection of the perturbed output weights.",
+      "effect_on_target": "Branches equate it to the method tableau's b-epsilon.",
+      "paper_match": "This matches the b-epsilon term in (3.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.epsilon",
+      "interpretation": "Projection of the nonzero perturbation scale for one run.",
+      "effect_on_target": "Branches equate it to the common positive epsilon.",
+      "paper_match": "This matches the paper's perturbation-size parameter and makes division in tau meaningful.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.initial",
+      "interpretation": "Projection of the initial state of a one-step run.",
+      "effect_on_target": "It is linked to the current computed trajectory state.",
+      "paper_match": "This is appropriate for advancing the computed numerical trajectory.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.perturbedNext",
+      "interpretation": "Projection of the additive perturbed method's next state.",
+      "effect_on_target": "It is linked to the next computed trajectory state.",
+      "paper_match": "This matches the output of the mixed-precision scheme.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.referenceNext",
+      "interpretation": "Projection of an arbitrary state supplied as the one-step reference output.",
+      "effect_on_target": "It is used to define scheme local error and is equated to the next element of exactState.",
+      "paper_match": "No field or equation makes it the exact ODE flow from the run's initial state under F.",
+      "status": "fail"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.step",
+      "interpretation": "Projection of the real step size for one run.",
+      "effect_on_target": "Branches require it to equal the family step size.",
+      "paper_match": "This corresponds to Delta t.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.tau",
+      "interpretation": "Projection of the normalized perturbation operator.",
+      "effect_on_target": "The run constructor requires epsilon*tau(y)=F(y)-F-epsilon(y).",
+      "paper_match": "This matches equation (2.3), while avoiding reliance on the sign-inconsistent rewrite (3.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "HighamBench.P18AdditiveRKTableau.A",
+      "interpretation": "Projection of the tableau's A matrix.",
+      "effect_on_target": "It is used in combined coefficients and all runs.",
+      "paper_match": "This is the paper's A matrix role.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "HighamBench.P18AdditiveRKTableau.b",
+      "interpretation": "Projection of the tableau's b vector.",
+      "effect_on_target": "It is used in combined weights and all runs.",
+      "paper_match": "This is the paper's b vector role.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "HighamBench.P18AdditiveRKTableau.mk",
+      "interpretation": "Constructor for arbitrary coefficient functions A, A-epsilon, b, and b-epsilon.",
+      "effect_on_target": "It permits any four-stage additive tableau without triangularity or printed-value constraints.",
+      "paper_match": "This is suitable for the paper's generic scheme but does not itself select Method 4s3pC.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "HighamBench.p18Add",
+      "interpretation": "Pointwise addition of stage vectors.",
+      "effect_on_target": "It forms b-tilde and c-tilde.",
+      "paper_match": "This is the intended coefficient addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "HighamBench.p18CoeffMatAdd",
+      "interpretation": "Pointwise addition of coefficient matrices.",
+      "effect_on_target": "It forms A-tilde.",
+      "paper_match": "This is the intended coefficient addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "HighamBench.p18PerturbationOneStepError",
+      "interpretation": "Difference between the unperturbed combined-tableau output and the perturbed output.",
+      "effect_on_target": "Its norm is assumed bounded by epsilon times a step-size power.",
+      "paper_match": "This captures the one-step perturbation-error component up to an irrelevant sign convention.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "HighamBench.p18SchemeOneStepError",
+      "interpretation": "Difference between referenceNext and the unperturbed combined-tableau output.",
+      "effect_on_target": "Its norm is assumed to be at most a constant times h^4.",
+      "paper_match": "It would be a scheme local error only if referenceNext were an exact flow from the same initial state, which is not required.",
+      "status": "fail"
+    },
+    {
+      "id": "D052",
+      "name": "HighamBench.p18TableauC",
+      "interpretation": "Definition c=A times the all-ones vector.",
+      "effect_on_target": "It supplies the full-precision row sums.",
+      "paper_match": "This is the conventional Runge-Kutta abscissa definition used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.mk",
+      "interpretation": "Constructor imposing the full-precision combined-tableau equations, the additive perturbed equations, and the exact algebraic relation between F, F-epsilon, and tau.",
+      "effect_on_target": "It links computed steps to the tableau but leaves referenceNext completely unconstrained by an ODE flow.",
+      "paper_match": "The algorithm equations match (3.1), but the absent exact-flow relation prevents its scheme error from representing the paper's local truncation error.",
+      "status": "fail"
+    },
+    {
+      "id": "D054",
+      "name": "HighamBench.P18AdditiveRKOneStepRun.schemeNext",
+      "interpretation": "Projection of the unperturbed combined-tableau output.",
+      "effect_on_target": "It is the intermediate state in both one-step error components.",
+      "paper_match": "This corresponds to applying the combined full-precision scheme.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "HighamBench.p18ModuleStageSum",
+      "interpretation": "Finite weighted sum of state vectors over all stages.",
+      "effect_on_target": "It implements every stage and output sum in the one-step equations.",
+      "paper_match": "This is the standard Runge-Kutta weighted sum.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "It bundles the coefficient and error-rate conclusions.",
+      "paper_match": "Neutral logical packaging.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "It expresses exact coefficient identities, trajectory links, and error decompositions.",
+      "paper_match": "Equality is appropriate, although exact satisfaction by rounded source coefficients is not established.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "Fin",
+      "interpretation": "Finite index type with values below a natural-number bound.",
+      "effect_on_target": "It indexes four stages and N+1 trajectory states.",
+      "paper_match": "This correctly represents finite stage and time-step indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "Nat",
+      "interpretation": "Natural numbers.",
+      "effect_on_target": "They represent stage counts, step counts, and integer exponents.",
+      "paper_match": "These roles match the discrete quantities in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "NormedAddCommGroup",
+      "interpretation": "A state type with additive-group operations and a real-valued norm.",
+      "effect_on_target": "It permits state differences and their norms.",
+      "paper_match": "The paper leaves its state space and norm unspecified; this is a reasonable ambient formal choice.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "NormedAddCommGroup.toSeminormedAddCommGroup",
+      "interpretation": "Typeclass coercion exposing the seminormed additive structure.",
+      "effect_on_target": "It supplies an instance required by NormedSpace elaboration.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D062",
+      "name": "NormedSpace",
+      "interpretation": "Real normed-vector-space structure on the state type.",
+      "effect_on_target": "It supplies real scalar multiplication for Runge-Kutta sums.",
+      "paper_match": "This is a reasonable formal state model for the paper's untyped ODE.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "OfNat.ofNat",
+      "interpretation": "Numeric-literal projection.",
+      "effect_on_target": "It elaborates constants such as 0, 1, 2, 3, 4, and 6.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D064",
+      "name": "Real",
+      "interpretation": "The exact real-number type.",
+      "effect_on_target": "It hosts coefficients, constants, step sizes, epsilon, and scalar errors.",
+      "paper_match": "Real arithmetic is appropriate for the paper's analytical coefficient and error formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "Real.instZero",
+      "interpretation": "The zero element of the real numbers.",
+      "effect_on_target": "It supplies zero in coefficient identities and nonnegativity statements.",
+      "paper_match": "Routine elaboration of source constants.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D066",
+      "name": "Real.normedField",
+      "interpretation": "The normed-field structure of the real numbers.",
+      "effect_on_target": "It supports the real normed-space state model.",
+      "paper_match": "Standard analytical infrastructure compatible with the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Conversion of a zero element into an OfNat-zero instance.",
+      "effect_on_target": "It elaborates literal zero.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D068",
+      "name": "instOfNatNat",
+      "interpretation": "Natural-number literal instance.",
+      "effect_on_target": "It elaborates stage counts and exponents.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D069",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Division operation obtained from the real multiplicative structure.",
+      "effect_on_target": "It interprets fractions such as 1/2, 1/3, and 1/6.",
+      "paper_match": "These are the paper's exact order-condition constants.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "Exists",
+      "interpretation": "Existential quantification.",
+      "effect_on_target": "It introduces global scheme and perturbation constants.",
+      "paper_match": "Existence of bounding constants is a conventional big-O ingredient.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "HAdd.hAdd",
+      "interpretation": "Overloaded addition operation.",
+      "effect_on_target": "It forms error splits, coefficient sums, state updates, and N+1.",
+      "paper_match": "These uses match the corresponding paper operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "HDiv.hDiv",
+      "interpretation": "Overloaded division operation.",
+      "effect_on_target": "It forms rational consistency constants.",
+      "paper_match": "This matches the paper's fractions.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "HMul.hMul",
+      "interpretation": "Overloaded multiplication operation.",
+      "effect_on_target": "It forms coefficient products and error majorants.",
+      "paper_match": "This matches the paper's scalar products.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "HPow.hPow",
+      "interpretation": "Overloaded exponentiation operation.",
+      "effect_on_target": "It raises step sizes to natural-number powers.",
+      "paper_match": "This represents the displayed Delta-t exponents.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "LE.le",
+      "interpretation": "Non-strict order relation.",
+      "effect_on_target": "It expresses nonnegativity, error bounds, and the finite horizon.",
+      "paper_match": "This is appropriate for explicit majorant inequalities.",
+      "status": "pass"
+    },
+    {
       "id": "D076",
-      "name": "Real.instAdd",
-      "interpretation": "Standard real addition.",
-      "effect_on_target": "It implements vector and matrix additions and finite sums.",
-      "paper_match": "It matches ordinary coefficient addition.",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number exponentiation supplied by a monoid.",
+      "effect_on_target": "It defines real powers h^p.",
+      "paper_match": "This is the intended power operation.",
       "status": "pass"
     },
     {
       "id": "D077",
-      "name": "instAddNat",
-      "interpretation": "Standard natural-number addition.",
-      "effect_on_target": "It is used in generated numeral side conditions.",
-      "paper_match": "It has no independent paper-level semantic content.",
+      "name": "One.toOfNat1",
+      "interpretation": "Conversion of a multiplicative identity into an OfNat-one instance.",
+      "effect_on_target": "It elaborates literal one.",
+      "paper_match": "No independent paper-level content.",
       "status": "not-applicable"
     },
     {
       "id": "D078",
-      "name": "instHAdd",
-      "interpretation": "The homogeneous addition instance induced by ordinary addition.",
-      "effect_on_target": "It routes vector-entry and matrix-entry additions to real addition.",
-      "paper_match": "It preserves the intended coefficient arithmetic.",
+      "name": "Real.instAdd",
+      "interpretation": "Real addition.",
+      "effect_on_target": "It adds scalar error components and coefficient entries.",
+      "paper_match": "This is the intended arithmetic.",
       "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "Real.instAddGroup",
+      "interpretation": "Real additive-group instance.",
+      "effect_on_target": "It supports subtraction and absolute value.",
+      "paper_match": "Routine arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D080",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "Real division and inverse structure.",
+      "effect_on_target": "It supplies division for rational order constants.",
+      "paper_match": "This supports the paper's exact fractions.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "Real.instLE",
+      "interpretation": "The usual order relation on real numbers.",
+      "effect_on_target": "It interprets all scalar inequalities.",
+      "paper_match": "This is the intended analytical order.",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "Real.instMonoid",
+      "interpretation": "Real multiplicative monoid structure.",
+      "effect_on_target": "It supplies natural powers.",
+      "paper_match": "This is the intended arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "Real.instMul",
+      "interpretation": "Real multiplication.",
+      "effect_on_target": "It interprets coefficient contractions and bounds.",
+      "paper_match": "This is the intended arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "Real.instNatCast",
+      "interpretation": "Embedding of natural numbers into the reals.",
+      "effect_on_target": "It forms stepCount times step in the horizon bound.",
+      "paper_match": "This is the standard interpretation of N Delta t.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "Real.instOne",
+      "interpretation": "The real multiplicative identity.",
+      "effect_on_target": "It supplies the first-order consistency constant and all-ones vector.",
+      "paper_match": "This matches the paper's constants.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "Real.lattice",
+      "interpretation": "Lattice structure on the real numbers.",
+      "effect_on_target": "It supports scalar absolute value.",
+      "paper_match": "Routine arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D087",
+      "name": "abs",
+      "interpretation": "Absolute value in an ordered additive group.",
+      "effect_on_target": "It bounds signed error components and makes epsilon's scale nonnegative.",
+      "paper_match": "This is a conventional scalar-bound interpretation; it is distinct from the componentwise bars in the paper's nonsmooth tableau conditions.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "instHAdd",
+      "interpretation": "Homogeneous overloaded-addition instance.",
+      "effect_on_target": "It routes overloaded addition to the underlying addition operation.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D089",
+      "name": "instHDiv",
+      "interpretation": "Homogeneous overloaded-division instance.",
+      "effect_on_target": "It routes overloaded division to real division.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D090",
+      "name": "instHMul",
+      "interpretation": "Homogeneous overloaded-multiplication instance.",
+      "effect_on_target": "It routes overloaded multiplication to the underlying operation.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D091",
+      "name": "instHPow",
+      "interpretation": "Overloaded-power instance.",
+      "effect_on_target": "It routes h^n to natural exponentiation.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D092",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Numeric-literal instance for natural values at least two.",
+      "effect_on_target": "It elaborates real literals such as 2, 3, 4, and 6.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D093",
+      "name": "AddGroup.toSubNegMonoid",
+      "interpretation": "Typeclass coercion exposing subtraction and negation.",
+      "effect_on_target": "It supplies subtraction on state and real values.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D094",
+      "name": "Fin.castSucc",
+      "interpretation": "Embedding of an index j below N into the first N positions below N+1.",
+      "effect_on_target": "It selects the current computed state for step j.",
+      "paper_match": "This is the intended trajectory indexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D095",
+      "name": "Fin.fintype",
+      "interpretation": "Finite enumeration of Fin N.",
+      "effect_on_target": "It permits summing local errors over all steps.",
+      "paper_match": "This is appropriate for finite-time accumulation.",
+      "status": "pass"
+    },
+    {
+      "id": "D096",
+      "name": "Fin.last",
+      "interpretation": "The final index N in Fin(N+1).",
+      "effect_on_target": "It selects endpoint exact and computed states for global error.",
+      "paper_match": "This represents the final state after N steps.",
+      "status": "pass"
+    },
+    {
+      "id": "D097",
+      "name": "Fin.succ",
+      "interpretation": "Successor embedding j to j+1 in Fin(N+1).",
+      "effect_on_target": "It links a one-step output to the next trajectory state.",
+      "paper_match": "This is the intended step-to-step indexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D098",
+      "name": "Finset.sum",
+      "interpretation": "Finite sum in an additive commutative monoid.",
+      "effect_on_target": "It accumulates scheme and perturbation local errors.",
+      "paper_match": "This is a reasonable explicit stability-accumulation hypothesis.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Finset.univ",
+      "interpretation": "The finite set of every value of a finite type.",
+      "effect_on_target": "It makes the accumulation cover every step index.",
+      "paper_match": "This correctly represents summation over all N steps.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "HSub.hSub",
+      "interpretation": "Overloaded subtraction operation.",
+      "effect_on_target": "It forms state errors and operator differences.",
+      "paper_match": "Subtraction is appropriate; the defect lies in what exactState denotes, not in this operation.",
+      "status": "pass"
+    },
+    {
+      "id": "D101",
+      "name": "LT.lt",
+      "interpretation": "Strict order relation.",
+      "effect_on_target": "It states positive epsilon and positive step counts.",
+      "paper_match": "Positive epsilon is a legitimate clarification needed by tau's normalization.",
+      "status": "pass"
+    },
+    {
+      "id": "D102",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "Proof class used to elaborate natural-number literals at least two.",
+      "effect_on_target": "It has only elaboration-level effects.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D103",
+      "name": "Nat.cast",
+      "interpretation": "Embedding of a natural number into a scalar type.",
+      "effect_on_target": "It converts the number of steps to a real in N*h<=T.",
+      "paper_match": "This is the intended finite-horizon arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "Norm.norm",
+      "interpretation": "The norm supplied by the chosen normed state space.",
+      "effect_on_target": "It defines local scheme error, perturbation error, and endpoint global error.",
+      "paper_match": "The paper never specifies an error norm, so this is a plausible but source-underdetermined choice.",
+      "status": "unclear"
+    },
+    {
+      "id": "D105",
+      "name": "NormedAddCommGroup.toAddCommGroup",
+      "interpretation": "Typeclass coercion exposing the additive commutative group.",
+      "effect_on_target": "It supplies algebra needed by one-step runs.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D106",
+      "name": "NormedAddCommGroup.toNorm",
+      "interpretation": "Projection of the norm structure.",
+      "effect_on_target": "It supplies the state norm used for errors.",
+      "paper_match": "Its source-level ambiguity is already captured by the unspecified norm; the coercion itself adds nothing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D107",
+      "name": "NormedAddCommGroup.toNormedAddGroup",
+      "interpretation": "Typeclass coercion to a normed additive group.",
+      "effect_on_target": "It supports downstream subtraction infrastructure.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D108",
+      "name": "NormedAddGroup.toAddGroup",
+      "interpretation": "Typeclass coercion to an additive group.",
+      "effect_on_target": "It supports state subtraction.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D109",
+      "name": "NormedSpace.toModule",
+      "interpretation": "Projection of module structure from a normed space.",
+      "effect_on_target": "It supplies scalar multiplication and finite linear combinations.",
+      "paper_match": "No independent paper-level content beyond the chosen real vector-space model.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D110",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "Real additive commutative monoid structure.",
+      "effect_on_target": "It permits finite sums of scalar local errors.",
+      "paper_match": "This is appropriate for error accumulation.",
+      "status": "pass"
+    },
+    {
+      "id": "D111",
+      "name": "Real.instLT",
+      "interpretation": "The usual strict order on real numbers.",
+      "effect_on_target": "It interprets epsilon>0.",
+      "paper_match": "This is the intended positivity relation.",
+      "status": "pass"
+    },
+    {
+      "id": "D112",
+      "name": "SubNegMonoid.toSub",
+      "interpretation": "Projection of subtraction from additive-group structure.",
+      "effect_on_target": "It supplies state subtraction.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D113",
+      "name": "instAddNat",
+      "interpretation": "Natural-number addition.",
+      "effect_on_target": "It forms trajectory length N+1.",
+      "paper_match": "This is the correct discrete indexing arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D114",
+      "name": "instHSub",
+      "interpretation": "Homogeneous overloaded-subtraction instance.",
+      "effect_on_target": "It routes subtraction to the underlying operation.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D115",
+      "name": "instLTNat",
+      "interpretation": "The usual strict order on natural numbers.",
+      "effect_on_target": "It requires every step count to be positive.",
+      "paper_match": "A positive number of steps is appropriate for a nonempty indexed branch.",
+      "status": "pass"
+    },
+    {
+      "id": "D116",
+      "name": "AddCommGroup",
+      "interpretation": "Commutative additive-group structure.",
+      "effect_on_target": "It supports state addition, negation, subtraction, and finite sums.",
+      "paper_match": "This is compatible with the vector-state setting implicit in Runge-Kutta analysis.",
+      "status": "pass"
+    },
+    {
+      "id": "D117",
+      "name": "AddCommGroup.toAddCommMonoid",
+      "interpretation": "Typeclass coercion to an additive commutative monoid.",
+      "effect_on_target": "It supports finite state sums and module structure.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D118",
+      "name": "AddCommGroup.toAddGroup",
+      "interpretation": "Typeclass coercion to an additive group.",
+      "effect_on_target": "It supports subtraction.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D119",
+      "name": "Module",
+      "interpretation": "Module structure over the real semiring.",
+      "effect_on_target": "It supplies scalar multiplication and linear combinations in stage equations.",
+      "paper_match": "This is appropriate for a real vector-valued ODE.",
+      "status": "pass"
+    },
+    {
+      "id": "D120",
+      "name": "Real.semiring",
+      "interpretation": "Real semiring structure.",
+      "effect_on_target": "It supports the real module instance.",
+      "paper_match": "Standard analytical infrastructure compatible with the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D121",
+      "name": "AddCommMagma.toAdd",
+      "interpretation": "Typeclass projection of addition.",
+      "effect_on_target": "It supplies state addition in expanded one-step equations.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D122",
+      "name": "AddCommMonoid.toAddCommSemigroup",
+      "interpretation": "Typeclass coercion within the additive hierarchy.",
+      "effect_on_target": "It supplies state addition infrastructure.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D123",
+      "name": "AddCommSemigroup.toAddCommMagma",
+      "interpretation": "Typeclass coercion within the additive hierarchy.",
+      "effect_on_target": "It supplies state addition infrastructure.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D124",
+      "name": "AddMonoid.toAddZeroClass",
+      "interpretation": "Typeclass coercion exposing addition and zero laws.",
+      "effect_on_target": "It supports scalar-action infrastructure.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D125",
+      "name": "AddZero.toZero",
+      "interpretation": "Projection of a zero element.",
+      "effect_on_target": "It supports scalar-action infrastructure.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D126",
+      "name": "AddZeroClass.toAddZero",
+      "interpretation": "Typeclass coercion exposing addition and zero.",
+      "effect_on_target": "It supports scalar-action infrastructure.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D127",
+      "name": "DistribMulAction.toDistribSMul",
+      "interpretation": "Typeclass coercion exposing distributive scalar multiplication.",
+      "effect_on_target": "It supports real scalar multiplication on states.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D128",
+      "name": "DistribSMul.toSMulZeroClass",
+      "interpretation": "Typeclass coercion exposing scalar multiplication compatible with zero.",
+      "effect_on_target": "It supports real scalar multiplication on states.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D129",
+      "name": "HSMul.hSMul",
+      "interpretation": "Overloaded scalar multiplication.",
+      "effect_on_target": "It forms h times stage sums and epsilon times tau.",
+      "paper_match": "This is the intended scalar multiplication in the paper's equations.",
+      "status": "pass"
+    },
+    {
+      "id": "D130",
+      "name": "Module.toDistribMulAction",
+      "interpretation": "Projection of a distributive scalar action from a module.",
+      "effect_on_target": "It supplies scalar-action instances.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D131",
+      "name": "Ne",
+      "interpretation": "Logical inequality defined as negated equality.",
+      "effect_on_target": "It requires epsilon to be nonzero in each one-step run.",
+      "paper_match": "This is a legitimate clarification required by tau=(F-F-epsilon)/epsilon.",
+      "status": "pass"
+    },
+    {
+      "id": "D132",
+      "name": "SMulZeroClass.toSMul",
+      "interpretation": "Projection of scalar multiplication from its zero-compatible structure.",
+      "effect_on_target": "It supplies the state scalar action.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D133",
+      "name": "SubNegMonoid.toAddMonoid",
+      "interpretation": "Typeclass coercion exposing additive-monoid structure.",
+      "effect_on_target": "It supports module and scalar-action infrastructure.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D134",
+      "name": "instHSMul",
+      "interpretation": "Overloaded scalar-multiplication instance.",
+      "effect_on_target": "It routes scalar multiplication to the module action.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
-      "status": "pass",
-      "paper_evidence": "The verified PDF is the 2022 Journal of Scientific Computing article, SHA-256 b18628ffc348d7aeec2da02efb989b6e012f0b0fae09b27fbff735bb8a5877cd. Relevant context is on PDF pp. 5-8 and 17-19.",
-      "lean_evidence": "The declaration is specifically the Method 4s3pC printed-coefficient order certificate and uses the page-18 coefficient data.",
-      "reasoning": "The selected source version, method, order-condition context, and surrounding error statements are the correct ones."
+      "status": "fail",
+      "paper_evidence": "PDF pages 17-18 select Section 4.3's specifically displayed four-stage Method 4s3pC and attach two regime-dependent global rates to it.",
+      "lean_evidence": "The theorem quantifies over any P18Method4s3pCSourceModel, whose constructor accepts any four-stage tableau satisfying abstract exact predicates and contains no printed coefficient values.",
+      "reasoning": "source-selection: the Lean proposition does not select or identify the paper's actual Method 4s3pC tableau."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "The paper's result belongs to an s-stage additive Runge-Kutta framework binding F, F_eps, epsilon, Delta t, stages, and solution/error quantities; Method 4s3pC has s = 4.",
-      "lean_evidence": "The target is a closed proposition over Fin 4 real arrays. It binds no operators, step size, perturbation scale, state space, numerical solution, or error.",
-      "reasoning": "Fin 4 correctly captures the coefficient dimension, but most binders and types needed for the paper result are absent."
+      "status": "pass",
+      "paper_evidence": "The paper leaves the ODE state space, scalar field, and norm unspecified while fixing four stages for Method 4s3pC.",
+      "lean_evidence": "Lean uses an arbitrary real normed vector space, Fin 4 stage indices, real coefficients, and an arbitrary family index.",
+      "reasoning": "binders-and-types: the real normed-space choice is a reasonable completion of source-omitted ambient typing; the substantive quantifier mismatch is assessed separately."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "The global conclusions are conditional on stability and split according to whether tau is well behaved; the approximation model applies for relevant arguments y.",
-      "lean_evidence": "The target has no binders or hypotheses and is only a closed conjunction of arithmetic facts.",
-      "reasoning": "The conditional and quantified scope of the analytic result is not represented."
+      "paper_evidence": "The source discusses one printed method under two regularity regimes and makes its global expectations conditional on stability.",
+      "lean_evidence": "Lean universally quantifies over every abstract source-model package and every pair of branch certificates, with the desired local exponents already used as type indices.",
+      "reasoning": "quantifier-scope: the arbitrary-tableau universal scope is not linked to the coefficient-specific paper claim."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "PDF pp. 4-6 require F_eps(y)-F(y)=O(epsilon), distinguish bounded-derivative and nonsmooth cases, and condition global error interpretation on stability.",
-      "lean_evidence": "No approximation, regularity, stability, positivity, or step-size hypotheses occur in the proposition.",
-      "reasoning": "The hypotheses governing both error branches are omitted."
+      "paper_evidence": "The paper derives local exponents from consistency and perturbation conditions, distinguishes regimes by analytic behavior, and separately assumes stability for global accumulation.",
+      "lean_evidence": "Each branch assumes the h^4 scheme bound, the epsilon*h^4 or epsilon*h^3 perturbation bound, stability accumulation, and a finite horizon; regime equalities impose no analytic property.",
+      "reasoning": "hypotheses: stability accumulation is a legitimate formal hypothesis, but assuming the claimed local orders and leaving regularity as an inert tag assumes away defining accuracy content."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "PDF p. 18 states both Error = O(Delta t^3)+O(epsilon Delta t^3) for well-behaved tau and Error = O(Delta t^3)+O(epsilon Delta t^2) otherwise, in addition to presenting Method 4s3pC as satisfying the simplified conditions.",
-      "lean_evidence": "The target concludes only b_eps = 0, ten approximate coefficient residual bounds, and one absolute-dot lower bound.",
-      "reasoning": "Neither global error branch, the inherited local error forms, nor the stability dependence is present."
+      "status": "pass",
+      "paper_evidence": "PDF page 18 displays global terms O(Delta t^3)+O(epsilon Delta t^3) and O(Delta t^3)+O(epsilon Delta t^2), while pages 7-8 provide the relevant coefficient conditions.",
+      "lean_evidence": "The conclusion includes zero b-epsilon, all four third-order consistency equations, all sixteen smooth perturbation equations, and global exponents (3,3) and (3,2).",
+      "reasoning": "conclusion-completeness: the advertised exponents and coefficient-condition hierarchy are present at the abstract surface, despite failures in source linkage and derivation."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "PDF pp. 7-8 use ordinary dot products, matrix-vector products, componentwise products, A_tilde, b_tilde, c_eps, c_tilde, and e.",
-      "lean_evidence": "D002-D014 explicitly define those operations and combined coefficients using finite sums, pointwise products, row sums, and additions.",
-      "reasoning": "Every nontrivial operator actually imported into the coefficient certificate has a correct explicit interpretation."
+      "paper_evidence": "Equations (2.3), (3.1), and pages 7-8 use F, F-epsilon, A-tilde, b-tilde, row sums, dot products, and componentwise products.",
+      "lean_evidence": "Lean defines the original additive scheme directly, epsilon*tau=F-F-epsilon, A-tilde=A+A-epsilon, b-tilde=b+b-epsilon, and standard finite coefficient algebra.",
+      "reasoning": "operators-and-definitions: these definitions faithfully represent the source's additive algorithm and order-condition algebra without relying on the sign-inconsistent printed rewrite (3.2)."
     },
     {
       "id": "S07",
-      "status": "pass",
-      "paper_evidence": "PDF p. 18 prints finite decimal coefficients, while PDF pp. 7-8 state exact equalities and provide no exact generating values or rounding tolerance.",
-      "lean_evidence": "The decimals are exact real rationals, but the target asserts residuals at most 2e-15 rather than exact equalities.",
-      "reasoning": "The proposition explicitly treats itself as a certificate for printed coefficients and avoids conflating their computed residuals with exact satisfaction."
+      "status": "fail",
+      "paper_evidence": "The scheme error in the paper is the local approximation error relative to the exact ODE evolution, and global Error concerns exact versus computed evolution.",
+      "lean_evidence": "referenceNext is an arbitrary constructor field; exactState is an arbitrary sequence. No equation relates either to an exact flow under F, and the run starts from computedState rather than exactState.",
+      "reasoning": "exact-versus-computed: the supplied names and endpoint subtraction do not provide sufficient exact-flow semantics."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "PDF p. 4 defines the additive method in which A,b multiply F and A_eps,b_eps multiply F_eps; PDF p. 18 supplies Method 4s3pC's coefficients for that scheme.",
-      "lean_evidence": "The target contains arrays and algebraic products but no stage recurrence, update equation, F, or F_eps.",
-      "reasoning": "The proposition is not logically linked to execution of the paper's algorithm."
+      "paper_evidence": "Section 4.3 prints numerical values for A, A-epsilon, b, and b-epsilon and calls that coefficient set Method 4s3pC.",
+      "lean_evidence": "No coefficient equality identifies the wrapped tableau with those values; the source-model constructor is merely a subtype-like package of assumed properties.",
+      "reasoning": "algorithm-linkage: arbitrary tableaus satisfying abstract order predicates remain unconnected to the specifically printed method."
     },
     {
       "id": "S09",
-      "status": "pass",
-      "paper_evidence": "The paper does not specify a norm for Error or the big-O bounds.",
-      "lean_evidence": "The target does not invent an error norm. Its absolute values apply only to scalar coefficient residuals.",
-      "reasoning": "No normwise, componentwise, squared, or unsquared error notion is substituted, although the error conclusion itself is omitted."
+      "status": "unclear",
+      "paper_evidence": "The paper specifies no state norm or error norm for its approximation, local-error, global-error, or Figure 6 quantities.",
+      "lean_evidence": "Lean chooses the norm of an arbitrary real normed vector space and scalar absolute values for error components.",
+      "reasoning": "norm-semantics: this is a plausible instantiation but cannot be shown equivalent to the source's undefined norm semantics."
     },
     {
       "id": "S10",
-      "status": "pass",
-      "paper_evidence": "PDF p. 18 prints six A entries, ten A_eps entries, four b entries, and zero b_eps using one-based stage indices.",
-      "lean_evidence": "D005, D007, D016, and D017 preserve all printed values and signs; Fin 4 uses the conventional zero-based offset and omitted entries are zero-filled.",
-      "reasoning": "The core coefficients, dimensions, signs, rational order constants, and index ordering match. The tolerance and 0.01 threshold are derived certificate constants, not altered paper coefficients."
+      "status": "fail",
+      "paper_evidence": "PDF page 18 gives selected nonzero coefficients as finite decimals and does not say they are exact, rounded, or backed by an exact algebraic tableau; omitted entries are not verbally declared zero.",
+      "lean_evidence": "Lean states no coefficient values and requires exact consistency and cancellation equalities in the source-model constructor.",
+      "reasoning": "constants-and-indexing: literal printed decimals are not justified as exact solutions of the Lean equations, while the Lean model never identifies the intended coefficients. The supporting extraction reports a nonzero residual for one literal-decimal cancellation identity."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "PDF pp. 3-6 use the abstract model F_eps-F=O(epsilon), discuss chopping as bounded but non-Lipschitz, and distinguish mixed-precision behavior, while specifying no detailed IEEE exceptional-value model.",
-      "lean_evidence": "The target performs exact real arithmetic on decimal coefficients and contains no F_eps approximation, precision, chopping, rounding, overflow, or underflow model.",
-      "reasoning": "The paper's abstract perturbation and mixed-precision execution model is omitted rather than formalized."
+      "status": "pass",
+      "paper_evidence": "The paper treats epsilon as an abstract perturbation scale or constant upper bound and gives no IEEE rounding mode, unit-roundoff law, exception model, or accumulation model.",
+      "lean_evidence": "Lean uses exact real arithmetic and the exact normalization epsilon*tau=F-F-epsilon, without inventing an IEEE model.",
+      "reasoning": "floating-point-model: the abstraction level is compatible with the paper's analytical perturbation framework; neither source supplies a detailed floating-point semantics."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The consistency and simplified perturbation conditions on PDF pp. 7-8 are exact equalities, and PDF p. 18 makes big-O error claims.",
-      "lean_evidence": "The target proves only residual inequalities with tolerance 2e-15 and no error relation.",
-      "reasoning": "Approximate satisfaction of rounded coefficient equations is strictly insufficient to entail the paper's exact order conditions or error conclusions."
+      "paper_evidence": "The Introduction says global-error expectations are valid only under assumed stability, and pages 18-19 describe expected rates supported by experiments rather than a theorem-level guarantee.",
+      "lean_evidence": "Lean is a theorem proving exact inequalities, but only for certificates that already contain the local rates, accumulation estimates, error split, and horizon assumptions.",
+      "reasoning": "relation-strength: this is neither an unconditional strengthening nor an equivalent formal theorem; it is a narrower propagation statement that presupposes central rate content."
     },
     {
       "id": "S13",
       "status": "fail",
-      "paper_evidence": "PDF p. 5 distinguishes one-step scheme and perturbation errors from the stability-dependent accumulated/global Error used on PDF p. 18.",
-      "lean_evidence": "No local error, global error, forward error, or stability notion occurs.",
-      "reasoning": "The required error notion is absent."
+      "paper_evidence": "The paper's capitalized Error is global error but leaves its reference solution, norm, time sampling, and endpoint/max-in-time meaning unspecified.",
+      "lean_evidence": "Lean defines globalError as an endpoint norm between arbitrary exactState and computedState sequences and splits it into arbitrary signed components.",
+      "reasoning": "error-notion: the endpoint form is plausible, but absent exact-flow semantics prevents it from faithfully instantiating the paper's global solution error."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "The paper retains separate O(Delta t^3) and O(epsilon Delta t^3) or O(epsilon Delta t^2) global contributions, inherited from corresponding one-step orders.",
-      "lean_evidence": "The target has no Delta t, epsilon, remainder, limiting regime, or big-O predicate.",
-      "reasoning": "None of the higher-order or asymptotic terms in the selected result is represented."
+      "status": "unclear",
+      "paper_evidence": "The paper gives undefined two-term big-O formulas, no constants, threshold, limiting filter, or two-parameter convention, and treats epsilon as a fixed upper bound.",
+      "lean_evidence": "Lean gives all-index uniform inequalities for one fixed epsilon and exact powers, with no small-step condition or requirement that indexed steps approach zero.",
+      "reasoning": "higher-order-terms: the inequalities can model one finite-horizon reading of the displayed rates, but they are not equivalent to asymptotic big-O without additional family or filter conditions."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The selected result concerns Method 4s3pC as an additive Runge-Kutta algorithm and gives smooth and nonsmooth error behavior.",
-      "lean_evidence": "The proposition specializes to a closed exact-real computation on the rounded four-stage coefficient display.",
-      "reasoning": "This is a useful coefficient-certificate specialization, but it does not retain the benchmark's claimed analytic task and therefore is not an acceptable equivalent specialization."
+      "paper_evidence": "The selected result is specifically about Method 4s3pC and distinguishes smooth bounded-derivative tau from nonsmooth behavior such as chopping.",
+      "lean_evidence": "The method is generalized to any exact-order tableau, while regime tags have no semantic force and exponents 4 and 3 are independently fixed in certificate types.",
+      "reasoning": "specialization: this is not a justified source-specific specialization or a source-linked generalization."
     },
     {
       "id": "S16",
-      "status": "pass",
-      "paper_evidence": "Method 4s3pC is supplied by explicit nonzero coefficients and is designed to rely on signed smooth-case cancellations.",
-      "lean_evidence": "Exact arithmetic gives a largest listed residual of about 1.3933e-15, below 2e-15, while p18CoeffAbsDot b_tilde c_eps is about 0.030846, strictly above 0.01.",
-      "reasoning": "The closed proposition is satisfiable and true, the tolerance is small, and the final lower bound demonstrates that the smooth cancellation is not true for the unintended componentwise-zero reason."
+      "status": "fail",
+      "paper_evidence": "The paper presents an actual four-stage method and nonempty numerical experiments, although exact inhabitation of the printed decimal tableau is not formalized.",
+      "lean_evidence": "The family type may be empty, making all trajectory and bound obligations vacuous. Abstract source and branch packages can be inhabited by other exact tableaus and trivial zero dynamics, but no inhabitant tied to the printed Method 4s3pC is provided.",
+      "reasoning": "nonvacuity: the proposition is not logically uninhabited, but it admits empty-family witnesses and does not demonstrate a nonvacuous certificate for the paper's actual method."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The closed arithmetic certificate can hold without any operators F or F_eps, perturbation model, regularity assumption, stable Runge-Kutta execution, or error predicate. Moreover, residual bounds within 2e-15 do not imply the paper's exact order equalities. It therefore cannot entail either page-18 global error statement."
+      "reasoning": "The Lean theorem does not identify the printed Method 4s3pC coefficients, does not give tau-regime or exact-flow semantics, and assumes the local rates needed for the global conclusion. Therefore it does not establish the paper's coefficient-specific stability-conditional expectations."
     },
     "paper_implies_lean": {
-      "verdict": "yes",
-      "reasoning": "Using the standard four-stage zero-filled tableau reading of the coefficients printed on PDF p. 18, the target is a direct exact-arithmetic certificate of that display: b_eps is zero; the largest asserted residual is approximately 1.3933e-15, below 2e-15; and the absolute dot product is approximately 0.030846, above 0.01. These facts follow from the displayed data even though the paper does not state the chosen thresholds."
+      "verdict": "no",
+      "reasoning": "The paper's claim concerns one displayed method and informal expected big-O rates under stability. It does not imply exact predicates for every abstract source-model tableau, exact all-index inequalities, the particular endpoint error model, or the branch certificate's detailed assumptions."
     }
   },
-  "classification": "not-faithful-weaker",
+  "classification": "not-faithful-different",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "omitted-error-conclusions",
-      "paper_evidence": "PDF p. 18 states smooth global error O(Delta t^3)+O(epsilon Delta t^3) and nonsmooth global error O(Delta t^3)+O(epsilon Delta t^2), with stability inherited from PDF pp. 2 and 5.",
-      "lean_evidence": "The target contains no Error, Delta t, epsilon, big-O relation, regularity branch, or stability condition.",
-      "impact": "The Lean theorem does not formalize the central result selected from the paper."
+      "category": "algorithm-linkage",
+      "paper_evidence": "Section 4.3 defines Method 4s3pC by a specific displayed four-stage coefficient set.",
+      "lean_evidence": "P18Method4s3pCSourceModel.mk accepts any four-stage tableau with assumed abstract predicates and records no coefficient equalities.",
+      "impact": "The theorem is not about the identifiable source method, so neither implication holds."
     },
     {
       "severity": "major",
-      "category": "approximate-certificate-only",
-      "paper_evidence": "PDF pp. 7-8 formulate the consistency and simplified perturbation conditions as exact equalities.",
-      "lean_evidence": "The target proves only that residuals computed from the finite printed decimals are at most 2e-15.",
-      "impact": "The theorem certifies numerical proximity of rounded data but does not establish exact order conditions or their analytic consequences."
+      "category": "assumed-defining-content",
+      "paper_evidence": "The paper's order analysis is intended to explain the local exponents, while only stability is explicitly external to the global expectation.",
+      "lean_evidence": "Branch constructors assume the h^4 scheme local bound, epsilon*h^4 or epsilon*h^3 perturbation local bound, stability accumulation, and the error split.",
+      "impact": "The theorem proves an accumulation consequence after central method-accuracy content has already been supplied."
     },
     {
       "severity": "major",
-      "category": "algorithm-and-hypotheses-omitted",
-      "paper_evidence": "PDF pp. 4-6 define the additive Runge-Kutta recurrence, F_eps-F=O(epsilon), tau, regularity cases, and stability dependence.",
-      "lean_evidence": "Only coefficient arrays and finite real algebra occur.",
-      "impact": "The certificate remains disconnected from the algorithm and cannot support the claimed smooth or nonsmooth execution behavior."
+      "category": "exact-flow-semantics",
+      "paper_evidence": "Scheme and global errors concern approximation to the ODE evolution under F.",
+      "lean_evidence": "referenceNext and exactState have no exact-flow equation, and each one-step initial state is the computed state.",
+      "impact": "The quantities called local scheme error and global error need not measure error against the ODE solution."
+    },
+    {
+      "severity": "major",
+      "category": "regime-semantics",
+      "paper_evidence": "Well-behaved tau requires bounded derivatives; the nonsmooth case includes non-Lipschitz chopping behavior.",
+      "lean_evidence": "P18TauRegime is an opaque enumeration, and branch exponents are fixed independently of its tags.",
+      "impact": "The smooth/nonsmooth distinction does not justify or constrain either claimed rate."
+    },
+    {
+      "severity": "major",
+      "category": "coefficient-exactness",
+      "paper_evidence": "The nonzero Method 4s3pC coefficients are printed only as unqualified finite decimals, with no exact algebraic source.",
+      "lean_evidence": "The source-model constructor requires exact real equalities but neither states the decimals nor proves their exact satisfaction.",
+      "impact": "The intended printed method cannot be instantiated from the authoritative source without resolving rounding or supplying additional coefficient data."
     },
     {
       "severity": "minor",
-      "category": "inferred-printed-tableau-model",
-      "paper_evidence": "PDF p. 18 prints only selected lower-triangular entries and does not say whether the decimals are exact or rounded.",
-      "lean_evidence": "The definitions zero-fill omitted entries and interpret every printed decimal as an exact real rational before applying a target-selected tolerance.",
-      "impact": "The modeling choice is reasonable for a printed-coefficient certificate but is not itself specified by the paper."
+      "category": "big-O-semantics",
+      "paper_evidence": "The global O-notation has no stated norm, constants, threshold, horizon, or limiting convention.",
+      "lean_evidence": "p18UniformTwoTermGlobalOrder imposes uniform inequalities over an arbitrary family but no limiting filter or small-step domain.",
+      "impact": "The formal inequalities are compatible with one interpretation but not demonstrably equivalent; adjudication is required."
     },
     {
       "severity": "note",
-      "category": "nonvacuous-smooth-cancellation",
-      "paper_evidence": "PDF pp. 6-8 distinguish signed cancellations available for well-behaved tau from componentwise absolute conditions used when tau is not well behaved.",
-      "lean_evidence": "The final clause proves sum_i |b_tilde_i||c_eps_i| > 0.01 while the signed dot residual is below 2e-15.",
-      "impact": "This correctly demonstrates a genuine signed cancellation, but it is an auxiliary computed fact and does not recover the missing error theorem."
+      "category": "source-claim-status",
+      "paper_evidence": "The source expressly conditions global expectations on unproved stability and discusses experimentally observed expected rates.",
+      "lean_evidence": "The Lean declaration is a theorem only because detailed rate and stability certificates are hypotheses.",
+      "impact": "The formal theorem should not be described as a direct theorem-level guarantee proved by the paper."
     }
   ],
-  "rationale": "The proposition is a correct, nonvacuous certificate that the literal page-18 coefficient display approximately satisfies all four third-order consistency equations and all nontrivial simplified smooth perturbation equations after b_eps is proved zero. It is nevertheless only a closed coefficient computation. It omits the additive algorithm, approximation and regularity hypotheses, stability, exact order satisfaction, and both smooth and nonsmooth global error conclusions. Thus the paper result entails the certificate, but the certificate does not entail the paper result, giving the classification not-faithful-weaker."
+  "rationale": "The authoritative source gives coefficient-specific, stability-conditional expected global rates for Method 4s3pC. The Lean declaration instead proves a projection and finite-horizon accumulation result for any tableau packaged with exact order predicates and any branches already carrying the required local bounds and stability estimates. It neither identifies the printed coefficients nor supplies analytic regime or exact-flow semantics. The finite uniform inequalities are only one possible reading of the source's undefined big-O notation, and literal-decimal exactness remains conflicted. Both implication directions therefore fail, yielding not-faithful-different. The paper, dossier, and supporting source-contract hashes were verified, including source_contract_sha256 d0918011606cc198b942b36708a8103ee2ca60bd75633b3af5b46c0b428b6d47."
 }

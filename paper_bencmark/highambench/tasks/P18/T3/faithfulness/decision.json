@@ -1,97 +1,70 @@
 {
   "accepted": false,
-  "adjudicated": false,
-  "adjudication_reasons": [],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-21T03:42:56.330078+00:00",
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "direct judge requested adjudication",
+    "round-trip judge requested adjudication",
+    "direct D016 is unclear",
+    "direct D104 is unclear",
+    "direct S09 is unclear",
+    "direct S14 is unclear",
+    "round-trip S09 is unclear"
+  ],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-22T00:47:26.049116+00:00",
   "findings": [
     {
-      "category": "omitted-error-conclusions",
-      "impact": "The Lean theorem does not formalize the central result selected from the paper.",
-      "lean_evidence": "The target contains no Error, Delta t, epsilon, big-O relation, regularity branch, or stability condition.",
-      "paper_evidence": "PDF p. 18 states smooth global error O(Delta t^3)+O(epsilon Delta t^3) and nonsmooth global error O(Delta t^3)+O(epsilon Delta t^2), with stability inherited from PDF pp. 2 and 5.",
+      "category": "method identity and coefficient exactness",
+      "evidence": "PDF page 18 identifies Method 4s3pC by finite decimal coefficients. Under the conventional row-sum interpretation, treating those decimals literally gives b-tilde c-epsilon = -3.56016364770570e-16 rather than the exact zero required by (3.5b). The declaration omits the decimals and postulates an arbitrary exact tableau satisfying the identities.",
+      "impact": "No exact source-supported equality identifies the Lean tableau with Method 4s3pC; an unspecified underlying rounded tableau cannot supply that linkage.",
       "severity": "critical"
     },
     {
-      "category": "approximate-certificate-only",
-      "impact": "The theorem certifies numerical proximity of rounded data but does not establish exact order conditions or their analytic consequences.",
-      "lean_evidence": "The target proves only that residuals computed from the finite printed decimals are at most 2e-15.",
-      "paper_evidence": "PDF pp. 7-8 formulate the consistency and simplified perturbation conditions as exact equalities.",
+      "category": "regime and assumed content",
+      "evidence": "PDF page 6 describes bounded derivatives in the well-behaved case and non-Lipschitz behavior for chopping. D010-D013 are inert tags, while D004/D020 independently impose local perturbation powers and assume the corresponding local bounds.",
+      "impact": "The theorem does not derive the two rates from the paper's regularity distinction and presupposes central accuracy content.",
       "severity": "major"
     },
     {
-      "category": "algorithm-and-hypotheses-omitted",
-      "impact": "The certificate remains disconnected from the algorithm and cannot support the claimed smooth or nonsmooth execution behavior.",
-      "lean_evidence": "Only coefficient arrays and finite real algebra occur.",
-      "paper_evidence": "PDF pp. 4-6 define the additive Runge-Kutta recurrence, F_eps-F=O(epsilon), tau, regularity cases, and stability dependence.",
+      "category": "exact-flow semantics",
+      "evidence": "The paper's scheme error concerns approximation of the ODE evolution. D053 places no evolution condition on referenceNext, and D020 places none on exactState beyond linkages and an endpoint norm.",
+      "impact": "Certificates can measure arbitrary stored-state differences rather than truncation or global error against an exact solution.",
       "severity": "major"
     },
     {
-      "category": "inferred-printed-tableau-model",
-      "impact": "The modeling choice is reasonable for a printed-coefficient certificate but is not itself specified by the paper.",
-      "lean_evidence": "The definitions zero-fill omitted entries and interpret every printed decimal as an exact real rational before applying a target-selected tolerance.",
-      "paper_evidence": "PDF p. 18 prints only selected lower-triangular entries and does not say whether the decimals are exact or rounded.",
-      "severity": "minor"
+      "category": "big-O semantics",
+      "evidence": "The paper uses asymptotic O-notation and discusses rates as Delta t decreases. D016 imposes bounds over an arbitrary index type without a small-step threshold or convergence condition.",
+      "impact": "The formal predicate has no fixed implication relationship with the source's standard asymptotic reading.",
+      "severity": "major"
     },
     {
-      "category": "nonvacuous-smooth-cancellation",
-      "impact": "This correctly demonstrates a genuine signed cancellation, but it is an auxiliary computed fact and does not recover the missing error theorem.",
-      "lean_evidence": "The final clause proves sum_i |b_tilde_i||c_eps_i| > 0.01 while the signed dot residual is below 2e-15.",
-      "paper_evidence": "PDF pp. 6-8 distinguish signed cancellations available for well-behaved tau from componentwise absolute conditions used when tau is not well behaved.",
+      "category": "norm semantics",
+      "evidence": "The PDF does not specify a state or error norm, while Lean quantifies the norm as part of an arbitrary real normed state space.",
+      "impact": "This is an admissible explicit interpretation and does not alter the negative classification.",
       "severity": "note"
-    },
-    {
-      "category": "algorithm-and-error-result-omitted",
-      "impact": "It cannot imply the principal Method 4s3pC result.",
-      "paper_evidence": "Equations (3.1), the local-to-global statement on PDF p. 5, and PDF p. 18 specify an additive Runge-Kutta method and two regularity-dependent global-error forms.",
-      "severity": "critical",
-      "translation_evidence": "The translation is only a closed coefficient conjunction and contains no algorithm or error-order statement."
-    },
-    {
-      "category": "unsupported-tolerance-and-exactness",
-      "impact": "The translation is an approximate certificate rather than the exact order-condition assertion made by the paper.",
-      "paper_evidence": "The paper gives exact order-condition equalities but only finite decimal coefficient displays, with no residual tolerance.",
-      "severity": "major",
-      "translation_evidence": "The decimals become exact rational reals and the equalities become inequalities with tolerance 2/10^15."
-    },
-    {
-      "category": "perturbation-parameter-conflation",
-      "impact": "The numerical-model parameter has been replaced by an unrelated verification tolerance.",
-      "paper_evidence": "Paper epsilon measures F^epsilon-F and appears in the global perturbation error terms.",
-      "severity": "major",
-      "translation_evidence": "Translation epsilon is fixed at 2/10^15 and bounds coefficient residuals."
-    },
-    {
-      "category": "added-nonsmooth-condition-failure-certificate",
-      "impact": "This useful noncancellation fact is not the paper's nonsmooth error conclusion and cannot replace that branch.",
-      "paper_evidence": "Condition (3.4b) uses the componentwise absolute pairing as an exact zero requirement, while PDF p. 18 separately states a nonsmooth error form.",
-      "severity": "major",
-      "translation_evidence": "The translation instead proves 1/100 < sum_i |x_i||u_i|."
-    },
-    {
-      "category": "coefficient-condition-mapping",
-      "impact": "The coefficient-level algebra is substantially and correctly mapped despite the missing theorem context.",
-      "paper_evidence": "The four consistency equalities and all simplified m=3 conditions are listed on PDF pp. 7-8.",
-      "severity": "note",
-      "translation_evidence": "After z=b^epsilon=0, the ten residual bounds correspond to the four consistency conditions and the six remaining nontrivial simplified perturbation conditions."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The closed arithmetic certificate can hold without any operators F or F_eps, perturbation model, regularity assumption, stable Runge-Kutta execution, or error predicate. Moreover, residual bounds within 2e-15 do not imply the paper's exact order equalities. It therefore cannot entail either page-18 global error statement.",
+      "reasoning": "The declaration can apply to an arbitrary exact tableau package rather than the printed Method 4s3pC, while its regime tags constrain nothing and its local orders, stability accumulation, and error split are assumed. Its referenceNext and exactState need not follow the ODE flow, and D016 need not describe a small-step family. Consequently it can hold without establishing either source rate for the identified method.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "Using the standard four-stage zero-filled tableau reading of the coefficients printed on PDF p. 18, the target is a direct exact-arithmetic certificate of that display: b_eps is zero; the largest asserted residual is approximately 1.3933e-15, below 2e-15; and the absolute dot product is approximately 0.030846, above 0.01. These facts follow from the displayed data even though the paper does not state the chosen thresholds.",
-      "verdict": "yes"
+      "reasoning": "The paper gives stability-conditional expected rates for one displayed decimal tableau. It supplies neither an exact unrounded tableau satisfying all constructor equalities nor the declaration's exact local bounds, arbitrary-family inequalities, sum-stability certificates, endpoint error decomposition, or exact-state data. The paper therefore does not entail the Lean proposition under its formal quantifiers.",
+      "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-weaker",
-    "roundtrip": "not-faithful-weaker"
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
   },
-  "rationale": "The proposition is a correct, nonvacuous certificate that the literal page-18 coefficient display approximately satisfies all four third-order consistency equations and all nontrivial simplified smooth perturbation equations after b_eps is proved zero. It is nevertheless only a closed coefficient computation. It omits the additive algorithm, approximation and regularity hypotheses, stability, exact order satisfaction, and both smooth and nonsmooth global error conclusions. Thus the paper result entails the certificate, but the certificate does not entail the paper result, giving the classification not-faithful-weaker.",
-  "remaining_uncertainties": [],
+  "rationale": "The inspected PDF has the required SHA-256 and supports the source packet. The declaration preserves the two exponents and the printed consistency and smooth-cancellation equation patterns, but it changes the subject and proof content: an arbitrary exact tableau replaces the identifiable decimal method; analytic regimes become inert labels; local orders and stability propagation are supplied as certificate assumptions; and purported exact states lack ODE-flow semantics. The decimal residual prevents exact identification without unprinted coefficient data, and D016 does not encode a required small-step family. Accepting the arbitrary normed-space choice cannot repair these independent failures. Both implication directions therefore fail, so the stable adjudicated classification is not-faithful-different.",
+  "remaining_uncertainties": [
+    "The PDF does not identify the exact unrounded nonzero coefficients, so existence and uniqueness of an exact tableau rounding to every displayed Method 4s3pC entry cannot be established from the source.",
+    "The particular state or error norm intended for the narrative formulas and Figure 6 remains unspecified, although treating the norm as a formal parameter is admissible.",
+    "The paper does not define the threshold, filter, constant dependence, or joint epsilon/Delta t convention for its big-O notation.",
+    "The source does not fully reconcile its generic nonsmooth sufficient conditions with the stated Method 4s3pC nonsmooth expected rate."
+  ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P18-T3"

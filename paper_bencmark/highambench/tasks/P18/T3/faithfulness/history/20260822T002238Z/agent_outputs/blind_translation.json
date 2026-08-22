@@ -1,0 +1,596 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "eb41a9cd082b8fdaef6adcd3f2c02a1e3630dfea7e30d70ac2f926a172b40c5e",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For two real vectors p and q indexed by Fin s, this is the nonnegative scalar sum over all indices i of |p_i||q_i|.",
+      "effect_on_target": "It defines the quantity in the final strict inequality: sum_i |x_i||u_i|. This is an absolute-component pairing, not the absolute value of the signed dot product.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For real vectors p and q indexed by Fin s, this is their dot product sum_i p_i q_i.",
+      "effect_on_target": "It defines every signed scalar product in the ten absolute-error inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "For vectors p and q, this is their componentwise product, with component i equal to p_i q_i.",
+      "effect_on_target": "It forms y componentwise-multiplied by y, y componentwise-multiplied by u, and u componentwise-multiplied by u.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "For an s by s real matrix M and vector p, this is the matrix-vector product whose i-th component is sum_j M_ij p_j.",
+      "effect_on_target": "It defines u=Ae, v=Ee, and the vectors Ay, By, Bu, Au appearing in the conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "This is the explicit 4 by 4 lower-triangular real matrix A with rows [0.511243008730995, 0, 0, 0], [-1.999347282862640, 1.957161067302390, 0, 0], [0.443312893511937, -0.573131033672219, 0.128283796414019, 0], and [-2, -0.160330320741428, 0.579597314161362, 1.484688928981990].",
+      "effect_on_target": "It determines u=Ae, contributes to y and B, and occurs directly in Ay and Au.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "This is the pointwise matrix sum B=E+A, where E is LocalDef016 and A is LocalDef005.",
+      "effect_on_target": "It is the matrix used in By and Bu.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "This is the four-dimensional vector z=(0,0,0,0).",
+      "effect_on_target": "The first conjunct asserts that z equals the constant-zero function, and z is also added to LocalDef017 when defining x.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "This is x=LocalDef017+z, hence x=(0.002837446974069, 0.336264433650450, 0.806376720267787, -0.145478600892306).",
+      "effect_on_target": "It is the left vector in every dot product and in the final absolute-component pairing.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "This is u=Ae, where e=(1,1,1,1), so u=(0.511243008730995, -0.042186215560250, -0.001534343746263, -0.096044077598076).",
+      "effect_on_target": "It appears in x dot u, Bu, y componentwise-multiplied by u, Au, u componentwise-multiplied by u, and the final absolute-component pairing.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "This is y=(Ee)+(Ae)=Be, namely y=(0.511243008730995, -0.092656582087780, 0.640583397862049, -0.090425317984324).",
+      "effect_on_target": "It appears in x dot y, y componentwise-multiplied by y, By, Ay, and y componentwise-multiplied by u.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "This is the four-dimensional all-ones vector e=(1,1,1,1).",
+      "effect_on_target": "It is used in the first dot-product condition and to define u=Ae and Ee.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "This is the exact real number epsilon=2/(10^15)=0.000000000000002.",
+      "effect_on_target": "It is the common upper bound in all ten non-strict absolute-value inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "This is pointwise vector addition: (p+q)_i=p_i+q_i.",
+      "effect_on_target": "It defines x=LocalDef017+z and y=(Ee)+(Ae).",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LocalDef014",
+      "meaning": "This is pointwise matrix addition: (M+N)_ij=M_ij+N_ij.",
+      "effect_on_target": "It defines B=E+A.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "LocalDef015",
+      "meaning": "This is type-level evidence that the natural number 1+1=2 is at least two.",
+      "effect_on_target": "It supports elaboration of the numeral 2 in epsilon and contributes no hypothesis or mathematical conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LocalDef016",
+      "meaning": "This is the explicit 4 by 4 matrix E with rows [0,0,0,0], [-0.050470366527530,0,0,0], [0.368613367355336,0.273504374252976,0,0], and [1.803794668975043,0.097485042980759,-1.895660952342050,0].",
+      "effect_on_target": "It contributes to B=E+A and to y through Ee.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "LocalDef017",
+      "meaning": "This is the vector c=(0.002837446974069, 0.336264433650450, 0.806376720267787, -0.145478600892306).",
+      "effect_on_target": "Adding the zero vector to c defines x, so these are the components used throughout the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "LocalDef018",
+      "meaning": "This is v=Ee=(0, -0.050470366527530, 0.642117741608312, 0.005618759613752).",
+      "effect_on_target": "It is added to u=Ae to define y.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "LocalDef019",
+      "meaning": "This is type-level evidence that the natural number 9+1=10 is at least two.",
+      "effect_on_target": "It supports elaboration of the real numeral 10 in 10^15 and contributes no hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "And",
+      "meaning": "This is logical conjunction.",
+      "effect_on_target": "It requires all twelve displayed clauses to hold simultaneously.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This extracts the division operation from a division-and-inversion monoid structure.",
+      "effect_on_target": "For the reals it supplies ordinary real division in 1/2, 1/3, 1/6, 1/100, and epsilon.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Eq",
+      "meaning": "This is propositional equality of two terms of the same type.",
+      "effect_on_target": "It expresses equality of the explicit zero vector with the constant-zero function.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type containing exactly the natural indices 0 through n-1.",
+      "effect_on_target": "Fin 4 fixes every vector and both matrix dimensions to four.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "HDiv.hDiv",
+      "meaning": "This applies the division operation supplied by an HDiv instance.",
+      "effect_on_target": "Resolved over the reals, it forms all exact fractions and epsilon.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "HSub.hSub",
+      "meaning": "This applies the subtraction operation supplied by an HSub instance.",
+      "effect_on_target": "It forms the differences from 1, 1/2, 1/3, and 1/6 inside the first four absolute-value bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "LE.le",
+      "meaning": "This applies a non-strict order relation.",
+      "effect_on_target": "For real numbers it expresses each bound of the form |quantity| <= epsilon.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "LT.lt",
+      "meaning": "This applies a strict order relation.",
+      "effect_on_target": "For real numbers it expresses the final strict inequality 1/100 < sum_i |x_i||u_i|.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Nat",
+      "meaning": "This is the type of natural numbers.",
+      "effect_on_target": "Natural numbers specify dimensions, finite indices, numeral construction, and the exponent 15.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "For nonzero n, this proves that n+1 is a natural number at least two.",
+      "effect_on_target": "It supplies type-level evidence needed to elaborate real numerals at least two, including denominators and bases; it adds no premise.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "This proves that every natural successor n+1 is nonzero.",
+      "effect_on_target": "It supports the numeral-evidence construction used for real literals at least two and adds no mathematical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural numeral in a type equipped with the corresponding OfNat instance.",
+      "effect_on_target": "It interprets dimensions as natural numbers and integer-valued constants as real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "One.toOfNat1",
+      "meaning": "This turns a type's distinguished one into its interpretation of the numeral 1.",
+      "effect_on_target": "It supplies the real constant 1 used in the ones vector and the fractions.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Real",
+      "meaning": "This is the type of mathematical real numbers.",
+      "effect_on_target": "All vector entries, matrix entries, products, sums, absolute values, and comparisons are in exact real arithmetic.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instAddGroup",
+      "meaning": "This is the standard additive-group structure on the real numbers.",
+      "effect_on_target": "It supplies real addition, negation, and the additive structure required by scalar absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This is the standard real multiplicative, inverse, and division structure.",
+      "effect_on_target": "It makes the displayed quotients ordinary exact real quotients.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instLE",
+      "meaning": "This is the standard non-strict order on the real numbers.",
+      "effect_on_target": "It gives the usual meaning to all ten <= comparisons.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instLT",
+      "meaning": "This is the standard strict order on the real numbers.",
+      "effect_on_target": "It gives the usual meaning to the final strict comparison.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Real.instNatCast",
+      "meaning": "This is the standard embedding of natural numbers into the real numbers.",
+      "effect_on_target": "It interprets real numerals such as 2, 3, 6, 10, and 100 exactly.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "Real.instOne",
+      "meaning": "This is the standard multiplicative identity 1 in the real numbers.",
+      "effect_on_target": "It supplies the real entries of e and the numerators and target constant involving 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "Real.instSub",
+      "meaning": "This is real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "It supplies the subtraction inside the first four error expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Real.instZero",
+      "meaning": "This is the standard real zero.",
+      "effect_on_target": "It supplies zero matrix/vector entries, the constant-zero function, and error expressions with no subtracted target.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "Real.lattice",
+      "meaning": "This is the standard lattice structure induced by the real order.",
+      "effect_on_target": "Together with the additive group, it defines scalar absolute value as max(a,-a).",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "Zero.toOfNat0",
+      "meaning": "This turns a type's distinguished zero into its interpretation of the numeral 0.",
+      "effect_on_target": "It interprets all displayed real zero literals.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "abs",
+      "meaning": "For an ordered additive group element a, this is max(a,-a); over the reals it is the ordinary scalar absolute value |a|.",
+      "effect_on_target": "It measures each scalar residual and each component magnitude in the final absolute-component sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "instHDiv",
+      "meaning": "This converts an ordinary homogeneous division operation into an HDiv operation.",
+      "effect_on_target": "It routes the quotient syntax to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "instHSub",
+      "meaning": "This converts an ordinary homogeneous subtraction operation into an HSub operation.",
+      "effect_on_target": "It routes subtraction syntax to ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "Given a natural-number cast and evidence that n is at least two, this interprets the numeral n by casting it.",
+      "effect_on_target": "It supplies exact real interpretations of numerals at least two; it imposes no proposition-level assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "instOfNatNat",
+      "meaning": "This interprets every natural numeral n as the same natural number n.",
+      "effect_on_target": "It supplies natural literals such as the dimension 4 and exponent 15.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "Bool.true",
+      "meaning": "This is the Boolean value true.",
+      "effect_on_target": "It is an elaboration flag used in constructing exact decimal or scientific literals and does not add a Boolean proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "DFunLike.coe",
+      "meaning": "This coerces a dependent function-like object to its underlying function.",
+      "effect_on_target": "It participates in treating Matrix.of as a function when constructing the two explicit matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "Equiv",
+      "meaning": "This is the type of equivalences between two types.",
+      "effect_on_target": "It supports Matrix.of, the identity equivalence between a two-argument function and a matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Equiv.instEquivLike",
+      "meaning": "This equips equivalences with their standard coercion to forward functions.",
+      "effect_on_target": "It lets Matrix.of be applied to the nested row-vector data defining A and E.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "EquivLike.toFunLike",
+      "meaning": "This derives a function-like coercion from an equivalence-like structure.",
+      "effect_on_target": "It is coercion machinery for applying Matrix.of and does not alter the matrix entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Fin.fintype",
+      "meaning": "This gives Fin n its finite enumeration containing each index exactly once.",
+      "effect_on_target": "It enables sums over every vector or matrix index.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "Finset.sum",
+      "meaning": "This sums the values of a function over a finite set in an additive commutative monoid.",
+      "effect_on_target": "It implements dot products, absolute-component pairings, and matrix-vector products as finite real sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "Finset.univ",
+      "meaning": "This is the finite set of all elements of a finite type.",
+      "effect_on_target": "It makes every relevant sum range over all four indices 0, 1, 2, and 3.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "HMul.hMul",
+      "meaning": "This applies the multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "Resolved over the reals, it supplies all component products in dot products, matrix-vector products, and componentwise products.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "HPow.hPow",
+      "meaning": "This applies the exponentiation operation supplied by an HPow instance.",
+      "effect_on_target": "It forms the exact natural power 10^15 in epsilon.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Matrix",
+      "meaning": "A matrix with row type m, column type n, and entries in alpha is definitionally a function m -> n -> alpha.",
+      "effect_on_target": "It makes A, E, and B ordinary 4 by 4 arrays of real-valued entries indexed by Fin 4.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "Matrix.of",
+      "meaning": "This is the identity equivalence between a two-argument function and the corresponding matrix.",
+      "effect_on_target": "It interprets the nested vectors in LocalDef005 and LocalDef016 directly as matrix rows and columns without changing values.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "Matrix.vecCons",
+      "meaning": "This prepends a head entry to a length-n finite vector, producing a vector of length n+1.",
+      "effect_on_target": "Repeated use fixes the displayed order of all vector components and matrix rows and columns.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "Matrix.vecEmpty",
+      "meaning": "This is the unique empty vector indexed by Fin 0.",
+      "effect_on_target": "It terminates the nested constructions of the explicit length-four vectors and matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Monoid.toNatPow",
+      "meaning": "This supplies natural-number exponentiation in a monoid by repeated multiplication.",
+      "effect_on_target": "For the reals it gives the standard exact meaning to 10^15.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "NNRatCast.toOfScientific",
+      "meaning": "This interprets nonnegative decimal and scientific notation by constructing a nonnegative rational and casting it into the target type.",
+      "effect_on_target": "It makes the displayed finite decimals and scientific literals exact rational real numbers, not floating-point approximations.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Neg.neg",
+      "meaning": "This applies the unary negation operation.",
+      "effect_on_target": "It supplies all negative vector and matrix entries and the negative argument used by absolute value and subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "OfScientific.ofScientific",
+      "meaning": "This applies a type's scientific-number interpretation to a mantissa, notation flag, and decimal exponent data.",
+      "effect_on_target": "It constructs all decimal/scientific constants occurring in A, E, and x.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This is the standard additive commutative monoid structure on the reals.",
+      "effect_on_target": "It permits the finite sums defining dot products and matrix-vector products.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instMonoid",
+      "meaning": "This is the standard multiplicative monoid structure on the reals.",
+      "effect_on_target": "It supports ordinary real multiplication and the natural power 10^15.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instMul",
+      "meaning": "This is ordinary multiplication of real numbers.",
+      "effect_on_target": "It gives the standard product used in every dot product, componentwise product, matrix-vector product, and absolute-component term.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Real.instNNRatCast",
+      "meaning": "This is the exact embedding of nonnegative rational numbers into the reals.",
+      "effect_on_target": "It ensures all nonnegative decimal/scientific literals denote exact real rationals.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "Real.instNeg",
+      "meaning": "This is ordinary additive negation on the real numbers.",
+      "effect_on_target": "It interprets negative entries and supports real subtraction and absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "instHMul",
+      "meaning": "This converts ordinary homogeneous multiplication into an HMul operation.",
+      "effect_on_target": "It routes multiplication syntax to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "instHPow",
+      "meaning": "This converts an ordinary power operation into an HPow operation.",
+      "effect_on_target": "It routes exponentiation syntax in 10^15 to natural-number real exponentiation.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "HAdd.hAdd",
+      "meaning": "This applies the addition operation supplied by an HAdd instance.",
+      "effect_on_target": "Resolved appropriately, it supplies pointwise real additions, matrix entry additions, and auxiliary natural-number additions used by numeral evidence.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "This is a type-level proposition certifying that a natural number is at least two.",
+      "effect_on_target": "It licenses casting numerals at least two into the reals and is not a hypothesis of the translated proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "Real.instAdd",
+      "meaning": "This is ordinary addition of real numbers.",
+      "effect_on_target": "It defines vector and matrix sums, finite-sum accumulation, and subtraction via addition of a negative.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "instAddNat",
+      "meaning": "This is ordinary addition of natural numbers.",
+      "effect_on_target": "It is used in constructing type-level numeral certificates such as 1+1 and 9+1 and has no independent proposition-level effect.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "instHAdd",
+      "meaning": "This converts ordinary homogeneous addition into an HAdd operation.",
+      "effect_on_target": "It routes addition syntax to ordinary real or natural addition as required.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [],
+    "hypotheses": [],
+    "conclusions": [
+      "z equals the zero function on I.",
+      "|x dot e - 1| <= epsilon; in fact, the displayed components give x dot e=1 exactly.",
+      "|x dot y - 1/2| <= epsilon.",
+      "|x dot (y componentwise-multiplied by y) - 1/3| <= epsilon.",
+      "|x dot (B y) - 1/6| <= epsilon.",
+      "|x dot u| <= epsilon.",
+      "|x dot (A y)| <= epsilon.",
+      "|x dot (B u)| <= epsilon.",
+      "|x dot (y componentwise-multiplied by u)| <= epsilon.",
+      "|x dot (A u)| <= epsilon.",
+      "|x dot (u componentwise-multiplied by u)| <= epsilon.",
+      "1/100 < sum_i |x_i||u_i|."
+    ],
+    "mathematical_definitions": [
+      "Let I=Fin 4, identified in construction order with {0,1,2,3}. Vectors are elements of R^4 and matrices are real 4 by 4 matrices.",
+      "For vectors p,q, define p dot q=sum_{i in I} p_i q_i and (p componentwise-multiplied by q)_i=p_i q_i. For a matrix M, (Mp)_i=sum_{j in I} M_ij p_j.",
+      "Define A by rows: [0.511243008730995, 0, 0, 0]; [-1.999347282862640, 1.957161067302390, 0, 0]; [0.443312893511937, -0.573131033672219, 0.128283796414019, 0]; [-2, -0.160330320741428, 0.579597314161362, 1.484688928981990].",
+      "Define E by rows: [0,0,0,0]; [-0.050470366527530,0,0,0]; [0.368613367355336,0.273504374252976,0,0]; [1.803794668975043,0.097485042980759,-1.895660952342050,0].",
+      "Define B=E+A. Its rows are [0.511243008730995,0,0,0]; [-2.049817649390170,1.957161067302390,0,0]; [0.811926260867273,-0.299626659419243,0.128283796414019,0]; [-0.196205331024957,-0.062845277760669,-1.316063638180688,1.484688928981990].",
+      "Define z=(0,0,0,0), c=(0.002837446974069,0.336264433650450,0.806376720267787,-0.145478600892306), and x=c+z=c.",
+      "Define e=(1,1,1,1).",
+      "Define u=Ae=(0.511243008730995,-0.042186215560250,-0.001534343746263,-0.096044077598076).",
+      "Define v=Ee=(0,-0.050470366527530,0.642117741608312,0.005618759613752) and y=v+u=Be=(0.511243008730995,-0.092656582087780,0.640583397862049,-0.090425317984324).",
+      "Define epsilon=2/(10^15)=0.000000000000002 exactly.",
+      "The final quantity is exactly |0.002837446974069||0.511243008730995| + |0.336264433650450||-0.042186215560250| + |0.806376720267787||-0.001534343746263| + |-0.145478600892306||-0.096044077598076|.",
+      "Every displayed integer, finite decimal, and scientific literal denotes an exact real rational; no floating-point rounding semantics is present."
+    ],
+    "proposition_plain_english": "This is a closed conjunction about the explicit four-dimensional data above. It asserts that z is the zero vector; that ten specified signed dot products or moment-like expressions have scalar absolute error at most 2/10^15 from the respective targets 1, 1/2, 1/3, 1/6, or 0; and simultaneously that the sum of the componentwise absolute products of x and u=Ae is strictly greater than 1/100."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The proposition has no binders, quantifiers, hypotheses, implications, or existential witnesses. Consequently there is no false-premise or missing-witness vacuity; it is a closed numerical conjunction.",
+    "All dimensions are fixed at four. The statement gives no result for arbitrary dimensions, matrices, or vectors.",
+    "The absolute values in the ten bounds are scalar absolute values. No vector norm or matrix norm occurs.",
+    "The final quantity sum_i |x_i||u_i| is not |x dot u|. Thus the proposition explicitly allows cancellation to make |x dot u| at most epsilon while the uncancelled absolute-component sum exceeds 0.01.",
+    "The equality z=0 is immediate from the definition of z and contributes no substantive condition on the other data.",
+    "The constants are exact real rationals encoded by decimal/scientific notation, so the proposition does not model machine floating-point values, rounding modes, computed-error semantics, or implementation behavior.",
+    "The proposition does not assert invertibility, nonsingularity, conditioning, stability, provenance of the data, or any algorithmic relationship beyond the explicitly defined sums, products, and inequalities."
+  ],
+  "ambiguities": []
+}

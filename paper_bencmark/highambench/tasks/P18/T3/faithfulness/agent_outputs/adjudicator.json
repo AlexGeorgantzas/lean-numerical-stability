@@ -1,0 +1,102 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P18-T3",
+  "trigger": [
+    "direct judge requested adjudication",
+    "round-trip judge requested adjudication",
+    "direct D016 is unclear",
+    "direct D104 is unclear",
+    "direct S09 is unclear",
+    "direct S14 is unclear",
+    "round-trip S09 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "direct judge requested adjudication",
+      "resolution": "The direct judge's no/no implications and not-faithful-different classification are confirmed. The norm choice is an acceptable nonunique interpretation, while the big-O predicate is not asymptotically equivalent as written. Neither point repairs the method-identity, regime, assumed-order, or exact-flow defects.",
+      "primary_evidence": "The verified PDF identifies Method 4s3pC by the coefficients on page 18 and conditions its global expectations on stability on pages 2 and 5. D002/D019 instead package any tableau satisfying assumed identities; D020 assumes local rates and accumulation; D042/D053 leave the reference state without exact-flow semantics."
+    },
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "The round-trip judge's no/no implications and not-faithful-different classification are confirmed. Its S09 uncertainty is resolved in favor of accepting the parameterized norm, but the arbitrary method package, decorative regime tags, presupposed rates, missing exact evolution, and absent asymptotic filter independently sustain the result.",
+      "primary_evidence": "PDF pages 6-8 attach the rate distinction to analytic behavior of tau, while pages 17-18 select a particular tableau. D010-D013 impose only tag equalities, and D004/D020 index and assume the local perturbation powers independently of those tags."
+    },
+    {
+      "item": "direct D016 is unclear",
+      "resolution": "D016 is not faithful-equivalent to the paper's big-O claims. It is compatible only if the index type is separately understood to be a selected sufficiently-small step family. The declaration requires no such interpretation: the index may be empty, finite, or have steps bounded away from zero, and constants may depend on the entire certificate. Thus its all-index inequalities can be vacuous or order-insensitive, while on a family containing large steps they can be stronger than eventual big-O.",
+      "primary_evidence": "PDF page 5 uses O(Delta t^p)+O(epsilon Delta t^m), and pages 18-19 discuss behavior as Delta t decreases, without defining constants or a filter. D016 quantifies over every t in an arbitrary type but contains no threshold, convergence-to-zero condition, or limiting filter."
+    },
+    {
+      "item": "direct D104 is unclear",
+      "resolution": "The arbitrary normed-real-vector-space formulation is an acceptable explicit completion of the paper's omitted ambient state space and norm, not a material faithfulness defect. Parameterizing the norm does not assert that it is the unique norm intended by the source. It still cannot identify the norm used in Figure 6, but that residual source ambiguity does not affect the classification.",
+      "primary_evidence": "The ODE on PDF page 1 is untyped, and the error formulas on pages 5 and 18 specify no norm. D060/D062 make the state an arbitrary real normed space, and D104 consistently applies that supplied norm rather than fixing an unsupported particular norm."
+    },
+    {
+      "item": "direct S09 is unclear",
+      "resolution": "S09 is resolved as acceptable with a qualification: the Lean norm is a legitimate parameterized interpretation of the source's unspecified error norm. No equivalence to a particular experimental norm can be claimed, but norm choice alone does not make the theorem unfaithful.",
+      "primary_evidence": "No state or error norm accompanies the formulas on PDF pages 1, 5, or 18, and Figure 6 labels only Error. The declaration leaves State and its norm universally parameterized."
+    },
+    {
+      "item": "direct S14 is unclear",
+      "resolution": "S14 is resolved as fail. Exact inequalities over an unconstrained index type do not encode the source's small-step asymptotics or remainder scope. Adding a cofinal step family or an eventual small-step predicate could make this a reasonable interpretation, but neither is present. This reinforces, but is not needed for, the independently established not-faithful-different result.",
+      "primary_evidence": "PDF page 5 states only the local/global O-form correspondence, page 18 prints the two O-form rates, and page 19 describes changes as the step decreases. D016 has fixed certificate-relative constants and all-index powers but no asymptotic domain."
+    },
+    {
+      "item": "round-trip S09 is unclear",
+      "resolution": "Round-trip S09 is likewise resolved in favor of the arbitrary normed-space choice being admissible. The source remains silent about the particular norm, so the formalization is noncanonical but not materially incompatible; the decisive failures lie elsewhere.",
+      "primary_evidence": "PDF pages 1, 5, and 18-19 contain no norm definition. D104 uses exactly the norm supplied by the universally quantified NormedAddCommGroup instance."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The declaration can apply to an arbitrary exact tableau package rather than the printed Method 4s3pC, while its regime tags constrain nothing and its local orders, stability accumulation, and error split are assumed. Its referenceNext and exactState need not follow the ODE flow, and D016 need not describe a small-step family. Consequently it can hold without establishing either source rate for the identified method."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper gives stability-conditional expected rates for one displayed decimal tableau. It supplies neither an exact unrounded tableau satisfying all constructor equalities nor the declaration's exact local bounds, arbitrary-family inequalities, sum-stability certificates, endpoint error decomposition, or exact-state data. The paper therefore does not entail the Lean proposition under its formal quantifiers."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The PDF does not identify the exact unrounded nonzero coefficients, so existence and uniqueness of an exact tableau rounding to every displayed Method 4s3pC entry cannot be established from the source.",
+    "The particular state or error norm intended for the narrative formulas and Figure 6 remains unspecified, although treating the norm as a formal parameter is admissible.",
+    "The paper does not define the threshold, filter, constant dependence, or joint epsilon/Delta t convention for its big-O notation.",
+    "The source does not fully reconcile its generic nonsmooth sufficient conditions with the stated Method 4s3pC nonsmooth expected rate."
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "method identity and coefficient exactness",
+      "evidence": "PDF page 18 identifies Method 4s3pC by finite decimal coefficients. Under the conventional row-sum interpretation, treating those decimals literally gives b-tilde c-epsilon = -3.56016364770570e-16 rather than the exact zero required by (3.5b). The declaration omits the decimals and postulates an arbitrary exact tableau satisfying the identities.",
+      "impact": "No exact source-supported equality identifies the Lean tableau with Method 4s3pC; an unspecified underlying rounded tableau cannot supply that linkage."
+    },
+    {
+      "severity": "major",
+      "category": "regime and assumed content",
+      "evidence": "PDF page 6 describes bounded derivatives in the well-behaved case and non-Lipschitz behavior for chopping. D010-D013 are inert tags, while D004/D020 independently impose local perturbation powers and assume the corresponding local bounds.",
+      "impact": "The theorem does not derive the two rates from the paper's regularity distinction and presupposes central accuracy content."
+    },
+    {
+      "severity": "major",
+      "category": "exact-flow semantics",
+      "evidence": "The paper's scheme error concerns approximation of the ODE evolution. D053 places no evolution condition on referenceNext, and D020 places none on exactState beyond linkages and an endpoint norm.",
+      "impact": "Certificates can measure arbitrary stored-state differences rather than truncation or global error against an exact solution."
+    },
+    {
+      "severity": "major",
+      "category": "big-O semantics",
+      "evidence": "The paper uses asymptotic O-notation and discusses rates as Delta t decreases. D016 imposes bounds over an arbitrary index type without a small-step threshold or convergence condition.",
+      "impact": "The formal predicate has no fixed implication relationship with the source's standard asymptotic reading."
+    },
+    {
+      "severity": "note",
+      "category": "norm semantics",
+      "evidence": "The PDF does not specify a state or error norm, while Lean quantifies the norm as part of an arbitrary real normed state space.",
+      "impact": "This is an admissible explicit interpretation and does not alter the negative classification."
+    }
+  ],
+  "rationale": "The inspected PDF has the required SHA-256 and supports the source packet. The declaration preserves the two exponents and the printed consistency and smooth-cancellation equation patterns, but it changes the subject and proof content: an arbitrary exact tableau replaces the identifiable decimal method; analytic regimes become inert labels; local orders and stability propagation are supplied as certificate assumptions; and purported exact states lack ODE-flow semantics. The decimal residual prevents exact identification without unprinted coefficient data, and D016 does not encode a required small-step family. Accepting the arbitrary normed-space choice cannot repair these independent failures. Both implication directions therefore fail, so the stable adjudicated classification is not-faithful-different."
+}

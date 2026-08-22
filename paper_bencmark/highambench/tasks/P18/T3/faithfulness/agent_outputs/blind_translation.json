@@ -1,596 +1,1015 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "eb41a9cd082b8fdaef6adcd3f2c02a1e3630dfea7e30d70ac2f926a172b40c5e",
+  "dossier_sha256": "bc9e30efbef354b21298ec4818f476b95b46389ff0607d2dd0fe65e009a5858e",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For two real vectors p and q indexed by Fin s, this is the nonnegative scalar sum over all indices i of |p_i||q_i|.",
-      "effect_on_target": "It defines the quantity in the final strict inequality: sum_i |x_i||u_i|. This is an absolute-component pairing, not the absolute value of the signed dot product.",
+      "meaning": "For an s-stage tableau, this is its fourth stored field, a vector bDelta : Fin s → Real, called bPerturbation in the target.",
+      "effect_on_target": "For the four-stage method tableau, the first conclusion says that this vector is identically zero. It also occurs throughout the coefficient identities.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "For real vectors p and q indexed by Fin s, this is their dot product sum_i p_i q_i.",
-      "effect_on_target": "It defines every signed scalar product in the ten absolute-error inequalities.",
+      "meaning": "This is the method-package type. Its supplied constructor stores a four-stage tableau together with proofs that bDelta is zero and that the tableau satisfies LocalDef015 and LocalDef014.",
+      "effect_on_target": "The quantified method already contains the first three requested conclusion components as constructor data.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "For vectors p and q, this is their componentwise product, with component i equal to p_i q_i.",
-      "effect_on_target": "It forms y componentwise-multiplied by y, y componentwise-multiplied by u, and u componentwise-multiplied by u.",
+      "meaning": "This projects the first field of a method package: its four-stage tableau.",
+      "effect_on_target": "Every coefficient condition in the target is imposed on this projected tableau.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "For an s by s real matrix M and vector p, this is the matrix-vector product whose i-th component is sum_j M_ij p_j.",
-      "effect_on_target": "It defines u=Ae, v=Ee, and the vectors Ay, By, Bu, Au appearing in the conclusions.",
+      "meaning": "This is an analysis-certificate type indexed by a real normed state space, an index type, a method, and a natural local perturbation exponent. Its fields are supplied by D020.",
+      "effect_on_target": "The target quantifies one certificate at exponent 4 and another at exponent 3. Their stored assumptions imply the two global-error predicates in the conclusion.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "This is the explicit 4 by 4 lower-triangular real matrix A with rows [0.511243008730995, 0, 0, 0], [-1.999347282862640, 1.957161067302390, 0, 0], [0.443312893511937, -0.573131033672219, 0.128283796414019, 0], and [-2, -0.160330320741428, 0.579597314161362, 1.484688928981990].",
-      "effect_on_target": "It determines u=Ae, contributes to y and B, and occurs directly in Ay and Au.",
+      "meaning": "This projects the third field of an analysis certificate, its real perturbation parameter epsilon.",
+      "effect_on_target": "The global perturbation-error estimates contain |epsilon|. Internally epsilon is required to be strictly positive.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "LocalDef006",
-      "meaning": "This is the pointwise matrix sum B=E+A, where E is LocalDef016 and A is LocalDef005.",
-      "effect_on_target": "It is the matrix used in By and Bu.",
+      "meaning": "This projects the total global-error function E : ι → Real from an analysis certificate.",
+      "effect_on_target": "It is the first error argument of LocalDef016 and must equal the sum of the two component errors pointwise.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "LocalDef007",
-      "meaning": "This is the four-dimensional vector z=(0,0,0,0).",
-      "effect_on_target": "The first conjunct asserts that z equals the constant-zero function, and z is also added to LocalDef017 when defining x.",
+      "meaning": "This projects the global perturbation-error component Epert : ι → Real.",
+      "effect_on_target": "Its absolute value is bounded by a nonnegative constant times |epsilon| times h^3 in the exponent-4 certificate and h^2 in the exponent-3 certificate.",
       "status": "understood"
     },
     {
       "id": "D008",
       "name": "LocalDef008",
-      "meaning": "This is x=LocalDef017+z, hence x=(0.002837446974069, 0.336264433650450, 0.806376720267787, -0.145478600892306).",
-      "effect_on_target": "It is the left vector in every dot product and in the final absolute-component pairing.",
+      "meaning": "This projects the global scheme-error component Esch : ι → Real.",
+      "effect_on_target": "Its absolute value is bounded by a nonnegative constant times h^3 in both certificates.",
       "status": "understood"
     },
     {
       "id": "D009",
       "name": "LocalDef009",
-      "meaning": "This is u=Ae, where e=(1,1,1,1), so u=(0.511243008730995, -0.042186215560250, -0.001534343746263, -0.096044077598076).",
-      "effect_on_target": "It appears in x dot u, Bu, y componentwise-multiplied by u, Au, u componentwise-multiplied by u, and the final absolute-component pairing.",
+      "meaning": "This projects the step-size function h : ι → Real from an analysis certificate.",
+      "effect_on_target": "Its powers occur in all local and global estimates. The certificate requires h(t) ≥ 0 for every t.",
       "status": "understood"
     },
     {
       "id": "D010",
       "name": "LocalDef010",
-      "meaning": "This is y=(Ee)+(Ae)=Be, namely y=(0.511243008730995, -0.092656582087780, 0.640583397862049, -0.090425317984324).",
-      "effect_on_target": "It appears in x dot y, y componentwise-multiplied by y, By, Ay, and y componentwise-multiplied by u.",
+      "meaning": "This projects the first field of an analysis certificate, a value of the regime-tag type LocalDef011.",
+      "effect_on_target": "The two explicit hypotheses equate these fields to D013 and D012 respectively. No numerical field or estimate depends on the tag.",
       "status": "understood"
     },
     {
       "id": "D011",
       "name": "LocalDef011",
-      "meaning": "This is the four-dimensional all-ones vector e=(1,1,1,1).",
-      "effect_on_target": "It is used in the first dot-product condition and to define u=Ae and Ee.",
+      "meaning": "This is an opaque regime-tag type with the supplied constructors D012 and D013.",
+      "effect_on_target": "It types the two tag hypotheses only; the supplied definitions encode no mathematical relation between a tag and any numerical assumptions.",
       "status": "understood"
     },
     {
       "id": "D012",
       "name": "LocalDef012",
-      "meaning": "This is the exact real number epsilon=2/(10^15)=0.000000000000002.",
-      "effect_on_target": "It is the common upper bound in all ten non-strict absolute-value inequalities.",
+      "meaning": "This is one constructor of the regime-tag type.",
+      "effect_on_target": "The exponent-3 certificate is assumed to carry exactly this tag.",
       "status": "understood"
     },
     {
       "id": "D013",
       "name": "LocalDef013",
-      "meaning": "This is pointwise vector addition: (p+q)_i=p_i+q_i.",
-      "effect_on_target": "It defines x=LocalDef017+z and y=(Ee)+(Ae).",
+      "meaning": "This is another constructor of the regime-tag type.",
+      "effect_on_target": "The exponent-4 certificate is assumed to carry exactly this tag.",
       "status": "understood"
     },
     {
       "id": "D014",
       "name": "LocalDef014",
-      "meaning": "This is pointwise matrix addition: (M+N)_ij=M_ij+N_ij.",
-      "effect_on_target": "It defines B=E+A.",
+      "meaning": "For a tableau, this is the conjunction of sixteen exact zero identities involving dot products of bDelta, b+bDelta, ADelta, A+ADelta, c=Ae, d=ADelta e, and c+d, including matrix-vector and componentwise products.",
+      "effect_on_target": "It is the third coefficient conclusion and is already stored as a proof in the method package. All sixteen equations are expanded in the translation.",
       "status": "understood"
     },
     {
       "id": "D015",
       "name": "LocalDef015",
-      "meaning": "This is type-level evidence that the natural number 1+1=2 is at least two.",
-      "effect_on_target": "It supports elaboration of the numeral 2 in epsilon and contributes no hypothesis or mathematical conclusion.",
+      "meaning": "For a tableau, this is the conjunction <b+bDelta,e>=1, <b+bDelta,c+d>=1/2, <b+bDelta,(c+d)⊙(c+d)>=1/3, and <b+bDelta,(A+ADelta)(c+d)>=1/6.",
+      "effect_on_target": "It is the second coefficient conclusion and is already stored as a proof in the method package.",
       "status": "understood"
     },
     {
       "id": "D016",
       "name": "LocalDef016",
-      "meaning": "This is the explicit 4 by 4 matrix E with rows [0,0,0,0], [-0.050470366527530,0,0,0], [0.368613367355336,0.273504374252976,0,0], and [1.803794668975043,0.097485042980759,-1.895660952342050,0].",
-      "effect_on_target": "It contributes to B=E+A and to y through Ee.",
+      "meaning": "Given E, Esch, Epert, h, epsilon and natural exponents p,m, this asserts E(t)=Esch(t)+Epert(t) for every t and the existence of nonnegative constants Cs,Cp, uniform over t, such that |Esch(t)|≤Cs h(t)^p and |Epert(t)|≤Cp |epsilon| h(t)^m.",
+      "effect_on_target": "It is asserted with (p,m)=(3,3) for the exponent-4 certificate and (3,2) for the exponent-3 certificate.",
       "status": "understood"
     },
     {
       "id": "D017",
       "name": "LocalDef017",
-      "meaning": "This is the vector c=(0.002837446974069, 0.336264433650450, 0.806376720267787, -0.145478600892306).",
-      "effect_on_target": "Adding the zero vector to c defines x, so these are the components used throughout the proposition.",
+      "meaning": "This is the s-stage tableau type. By D047 it stores matrices A, ADelta : Fin s → Fin s → Real and vectors b, bDelta : Fin s → Real.",
+      "effect_on_target": "The method tableau has exactly four stages and supplies all coefficients used by D014 and D015.",
       "status": "understood"
     },
     {
       "id": "D018",
       "name": "LocalDef018",
-      "meaning": "This is v=Ee=(0, -0.050470366527530, 0.642117741608312, 0.005618759613752).",
-      "effect_on_target": "It is added to u=Ae to define y.",
+      "meaning": "This projects the second tableau field, the perturbation matrix ADelta.",
+      "effect_on_target": "It enters the transformed matrix A+ADelta, the vectors d and c+d, the sixteen zero identities, and every linked one-step run.",
       "status": "understood"
     },
     {
       "id": "D019",
       "name": "LocalDef019",
-      "meaning": "This is type-level evidence that the natural number 9+1=10 is at least two.",
-      "effect_on_target": "It supports elaboration of the real numeral 10 in 10^15 and contributes no hypothesis.",
+      "meaning": "This constructs a method from a four-stage tableau, a proof bDelta=0, a proof of LocalDef015, and a proof of LocalDef014.",
+      "effect_on_target": "It shows that the target's first three conjuncts are data already carried by every quantified method, rather than new properties forced by the regime hypotheses.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "And",
-      "meaning": "This is logical conjunction.",
-      "effect_on_target": "It requires all twelve displayed clauses to hold simultaneously.",
+      "name": "LocalDef020",
+      "meaning": "This constructs an analysis certificate from a regime tag; h, epsilon, positive step counts, nonnegative horizon and constants; functions F, FEpsilon, tau; computed and reference sequences; four-stage one-step runs linked to those sequences and the method tableau; local errors defined as norms and bounded by h^4 and |epsilon|h^q; global errors with an exact final-state norm formula and additive decomposition; stability bounds by sums of local errors; and the horizon inequality N(t)h(t)≤H.",
+      "effect_on_target": "The additive global-error decomposition is already a field. Combining the stored local bounds, stability bounds, and horizon bound yields global exponents 3 and q-1, hence (3,3) when q=4 and (3,2) when q=3.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "DivInvMonoid.toDiv",
-      "meaning": "This extracts the division operation from a division-and-inversion monoid structure.",
-      "effect_on_target": "For the reals it supplies ordinary real division in 1/2, 1/3, 1/6, 1/100, and epsilon.",
+      "name": "LocalDef021",
+      "meaning": "This is the finite dot product <x,y>=Σ_{i∈Fin s} x_i y_i.",
+      "effect_on_target": "It gives the scalar products in every coefficient identity.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "Eq",
-      "meaning": "This is propositional equality of two terms of the same type.",
-      "effect_on_target": "It expresses equality of the explicit zero vector with the constant-zero function.",
+      "name": "LocalDef022",
+      "meaning": "This is pointwise vector multiplication: (x⊙y)_i=x_i y_i.",
+      "effect_on_target": "It forms the quadratic componentwise products in D014 and D015.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "Fin",
-      "meaning": "Fin n is the finite index type containing exactly the natural indices 0 through n-1.",
-      "effect_on_target": "Fin 4 fixes every vector and both matrix dimensions to four.",
+      "name": "LocalDef023",
+      "meaning": "This is matrix-vector multiplication: (Ax)_i=Σ_j A_{ij}x_j.",
+      "effect_on_target": "It defines c, d and all matrix-vector expressions in the coefficient conditions.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "HDiv.hDiv",
-      "meaning": "This applies the division operation supplied by an HDiv instance.",
-      "effect_on_target": "Resolved over the reals, it forms all exact fractions and epsilon.",
+      "name": "LocalDef024",
+      "meaning": "This proves that the natural number 1+1 is at least two.",
+      "effect_on_target": "It supports elaboration of the real numeral 2 in the exact coefficient 1/2 and has no independent mathematical hypothesis.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "HSub.hSub",
-      "meaning": "This applies the subtraction operation supplied by an HSub instance.",
-      "effect_on_target": "It forms the differences from 1, 1/2, 1/3, and 1/6 inside the first four absolute-value bounds.",
+      "name": "LocalDef025",
+      "meaning": "This is the pointwise matrix sum Atilde=A+ADelta.",
+      "effect_on_target": "Atilde occurs in the 1/6 condition and several zero identities.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "LE.le",
-      "meaning": "This applies a non-strict order relation.",
-      "effect_on_target": "For real numbers it expresses each bound of the form |quantity| <= epsilon.",
+      "name": "LocalDef026",
+      "meaning": "This is the pointwise vector sum btilde=b+bDelta.",
+      "effect_on_target": "It is the weight vector in all four D015 identities and several D014 identities.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "LT.lt",
-      "meaning": "This applies a strict order relation.",
-      "effect_on_target": "For real numbers it expresses the final strict inequality 1/100 < sum_i |x_i||u_i|.",
+      "name": "LocalDef027",
+      "meaning": "This is d=ADelta e, where e is the all-ones vector.",
+      "effect_on_target": "It occurs in the perturbed-abscissa vector and in many of the sixteen zero identities.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "Nat",
-      "meaning": "This is the type of natural numbers.",
-      "effect_on_target": "Natural numbers specify dimensions, finite indices, numeral construction, and the exponent 15.",
+      "name": "LocalDef028",
+      "meaning": "This is ctilde=c+d, where c=Ae and d=ADelta e.",
+      "effect_on_target": "It occurs in three of the four D015 identities and throughout D014.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "Nat.instAtLeastTwoHAddOfNat",
-      "meaning": "For nonzero n, this proves that n+1 is a natural number at least two.",
-      "effect_on_target": "It supplies type-level evidence needed to elaborate real numerals at least two, including denominators and bases; it adds no premise.",
+      "name": "LocalDef029",
+      "meaning": "This is the all-ones vector e on Fin s.",
+      "effect_on_target": "It defines row-sum vectors c=Ae and d=ADelta e and appears in the normalization identities.",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "Nat.instNeZeroSucc",
-      "meaning": "This proves that every natural successor n+1 is nonzero.",
-      "effect_on_target": "It supports the numeral-evidence construction used for real literals at least two and adds no mathematical condition.",
+      "name": "LocalDef030",
+      "meaning": "This proves that the natural number 2+1 is at least two.",
+      "effect_on_target": "It supports elaboration of the real numeral 3 in the exact coefficient 1/3.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "OfNat.ofNat",
-      "meaning": "This interprets a natural numeral in a type equipped with the corresponding OfNat instance.",
-      "effect_on_target": "It interprets dimensions as natural numbers and integer-valued constants as real numbers.",
+      "name": "LocalDef031",
+      "meaning": "This proves that the natural number 5+1 is at least two.",
+      "effect_on_target": "It supports elaboration of the real numeral 6 in the exact coefficient 1/6.",
       "status": "understood"
     },
     {
       "id": "D032",
-      "name": "One.toOfNat1",
-      "meaning": "This turns a type's distinguished one into its interpretation of the numeral 1.",
-      "effect_on_target": "It supplies the real constant 1 used in the ones vector and the fractions.",
+      "name": "LocalDef032",
+      "meaning": "This is an s-stage one-step-run package over a real module. Its fields include step, nonzero epsilon, initial and reference-next states, F, FEpsilon, tau, tableau coefficients, stage arrays, scheme-next and perturbed-next states, and the equations listed in D053.",
+      "effect_on_target": "Each analysis certificate contains one such run with s=4 for every index t and step j. These runs are explicitly linked to the global sequences and method coefficients.",
       "status": "understood"
     },
     {
       "id": "D033",
-      "name": "Real",
-      "meaning": "This is the type of mathematical real numbers.",
-      "effect_on_target": "All vector entries, matrix entries, products, sums, absolute values, and comparisons are in exact real arithmetic.",
+      "name": "LocalDef033",
+      "meaning": "This projects the F : State → State field of a one-step run.",
+      "effect_on_target": "Every linked run is required to use the analysis certificate's common function F.",
       "status": "understood"
     },
     {
       "id": "D034",
-      "name": "Real.instAddGroup",
-      "meaning": "This is the standard additive-group structure on the real numbers.",
-      "effect_on_target": "It supplies real addition, negation, and the additive structure required by scalar absolute value.",
+      "name": "LocalDef034",
+      "meaning": "This projects the FEpsilon : State → State field of a one-step run.",
+      "effect_on_target": "Every linked run is required to use the analysis certificate's common perturbed function FEpsilon.",
       "status": "understood"
     },
     {
       "id": "D035",
-      "name": "Real.instDivInvMonoid",
-      "meaning": "This is the standard real multiplicative, inverse, and division structure.",
-      "effect_on_target": "It makes the displayed quotients ordinary exact real quotients.",
+      "name": "LocalDef035",
+      "meaning": "This projects the base coefficient matrix a from a one-step run.",
+      "effect_on_target": "It is equated pointwise, run by run, to the method tableau's A.",
       "status": "understood"
     },
     {
       "id": "D036",
-      "name": "Real.instLE",
-      "meaning": "This is the standard non-strict order on the real numbers.",
-      "effect_on_target": "It gives the usual meaning to all ten <= comparisons.",
+      "name": "LocalDef036",
+      "meaning": "This projects the perturbation coefficient matrix aPerturbation from a one-step run.",
+      "effect_on_target": "It is equated to the method tableau's ADelta.",
       "status": "understood"
     },
     {
       "id": "D037",
-      "name": "Real.instLT",
-      "meaning": "This is the standard strict order on the real numbers.",
-      "effect_on_target": "It gives the usual meaning to the final strict comparison.",
+      "name": "LocalDef037",
+      "meaning": "This projects the base weight vector b from a one-step run.",
+      "effect_on_target": "It is equated to the method tableau's b.",
       "status": "understood"
     },
     {
       "id": "D038",
-      "name": "Real.instNatCast",
-      "meaning": "This is the standard embedding of natural numbers into the real numbers.",
-      "effect_on_target": "It interprets real numerals such as 2, 3, 6, 10, and 100 exactly.",
+      "name": "LocalDef038",
+      "meaning": "This projects the perturbation weight vector bPerturbation from a one-step run.",
+      "effect_on_target": "It is equated to the method tableau's bDelta.",
       "status": "understood"
     },
     {
       "id": "D039",
-      "name": "Real.instOne",
-      "meaning": "This is the standard multiplicative identity 1 in the real numbers.",
-      "effect_on_target": "It supplies the real entries of e and the numerators and target constant involving 1.",
+      "name": "LocalDef039",
+      "meaning": "This projects epsilon from a one-step run.",
+      "effect_on_target": "Every run's epsilon is equated to the certificate's common strictly positive epsilon.",
       "status": "understood"
     },
     {
       "id": "D040",
-      "name": "Real.instSub",
-      "meaning": "This is real subtraction, defined as addition of the additive inverse.",
-      "effect_on_target": "It supplies the subtraction inside the first four error expressions.",
+      "name": "LocalDef040",
+      "meaning": "This projects the initial state of a one-step run.",
+      "effect_on_target": "For step j it is equated to computedState(t,j) using the castSucc embedding.",
       "status": "understood"
     },
     {
       "id": "D041",
-      "name": "Real.instZero",
-      "meaning": "This is the standard real zero.",
-      "effect_on_target": "It supplies zero matrix/vector entries, the constant-zero function, and error expressions with no subtracted target.",
+      "name": "LocalDef041",
+      "meaning": "This projects the perturbed-next state of a one-step run.",
+      "effect_on_target": "For step j it is equated to computedState(t,j+1).",
       "status": "understood"
     },
     {
       "id": "D042",
-      "name": "Real.lattice",
-      "meaning": "This is the standard lattice structure induced by the real order.",
-      "effect_on_target": "Together with the additive group, it defines scalar absolute value as max(a,-a).",
+      "name": "LocalDef042",
+      "meaning": "This projects the stored reference-next state of a one-step run.",
+      "effect_on_target": "For step j it is equated to exactState(t,j+1); the run constructor imposes no separate evolution equation on this reference state.",
       "status": "understood"
     },
     {
       "id": "D043",
-      "name": "Zero.toOfNat0",
-      "meaning": "This turns a type's distinguished zero into its interpretation of the numeral 0.",
-      "effect_on_target": "It interprets all displayed real zero literals.",
+      "name": "LocalDef043",
+      "meaning": "This projects the real step size of a one-step run.",
+      "effect_on_target": "Every run at a fixed t is required to use h(t).",
       "status": "understood"
     },
     {
       "id": "D044",
-      "name": "abs",
-      "meaning": "For an ordered additive group element a, this is max(a,-a); over the reals it is the ordinary scalar absolute value |a|.",
-      "effect_on_target": "It measures each scalar residual and each component magnitude in the final absolute-component sum.",
+      "name": "LocalDef044",
+      "meaning": "This projects tau : State → State from a one-step run.",
+      "effect_on_target": "Every run uses the certificate's common tau, and internally satisfies epsilon tau(y)=F(y)-FEpsilon(y).",
       "status": "understood"
     },
     {
       "id": "D045",
-      "name": "instHDiv",
-      "meaning": "This converts an ordinary homogeneous division operation into an HDiv operation.",
-      "effect_on_target": "It routes the quotient syntax to ordinary real division.",
+      "name": "LocalDef045",
+      "meaning": "This projects the first tableau field, the matrix A.",
+      "effect_on_target": "A determines c=Ae, participates in A+ADelta, and is linked to every one-step run.",
       "status": "understood"
     },
     {
       "id": "D046",
-      "name": "instHSub",
-      "meaning": "This converts an ordinary homogeneous subtraction operation into an HSub operation.",
-      "effect_on_target": "It routes subtraction syntax to ordinary real subtraction.",
+      "name": "LocalDef046",
+      "meaning": "This projects the third tableau field, the vector b.",
+      "effect_on_target": "b participates in b+bDelta and is linked to every one-step run.",
       "status": "understood"
     },
     {
       "id": "D047",
-      "name": "instOfNatAtLeastTwo",
-      "meaning": "Given a natural-number cast and evidence that n is at least two, this interprets the numeral n by casting it.",
-      "effect_on_target": "It supplies exact real interpretations of numerals at least two; it imposes no proposition-level assumption.",
+      "name": "LocalDef047",
+      "meaning": "This constructs an s-stage tableau from two s-by-s real matrices A, ADelta and two length-s real vectors b, bDelta.",
+      "effect_on_target": "It fixes the complete hidden data representation of the four-stage method tableau.",
       "status": "understood"
     },
     {
       "id": "D048",
-      "name": "instOfNatNat",
-      "meaning": "This interprets every natural numeral n as the same natural number n.",
-      "effect_on_target": "It supplies natural literals such as the dimension 4 and exponent 15.",
+      "name": "LocalDef048",
+      "meaning": "This is pointwise vector addition.",
+      "effect_on_target": "It defines btilde=b+bDelta and ctilde=c+d.",
       "status": "understood"
     },
     {
       "id": "D049",
-      "name": "Bool.true",
-      "meaning": "This is the Boolean value true.",
-      "effect_on_target": "It is an elaboration flag used in constructing exact decimal or scientific literals and does not add a Boolean proposition.",
+      "name": "LocalDef049",
+      "meaning": "This is pointwise matrix addition.",
+      "effect_on_target": "It defines Atilde=A+ADelta.",
       "status": "understood"
     },
     {
       "id": "D050",
-      "name": "DFunLike.coe",
-      "meaning": "This coerces a dependent function-like object to its underlying function.",
-      "effect_on_target": "It participates in treating Matrix.of as a function when constructing the two explicit matrices.",
+      "name": "LocalDef050",
+      "meaning": "For a one-step run, this is the state difference schemeNext-perturbedNext.",
+      "effect_on_target": "The stored local perturbation error is exactly the norm of this difference.",
       "status": "understood"
     },
     {
       "id": "D051",
-      "name": "Equiv",
-      "meaning": "This is the type of equivalences between two types.",
-      "effect_on_target": "It supports Matrix.of, the identity equivalence between a two-argument function and a matrix.",
+      "name": "LocalDef051",
+      "meaning": "For a one-step run, this is the state difference referenceNext-schemeNext.",
+      "effect_on_target": "The stored local scheme error is exactly the norm of this difference.",
       "status": "understood"
     },
     {
       "id": "D052",
-      "name": "Equiv.instEquivLike",
-      "meaning": "This equips equivalences with their standard coercion to forward functions.",
-      "effect_on_target": "It lets Matrix.of be applied to the nested row-vector data defining A and E.",
+      "name": "LocalDef052",
+      "meaning": "This is c=Ae, the vector of row sums of A.",
+      "effect_on_target": "Together with d=ADelta e it defines ctilde=c+d.",
       "status": "understood"
     },
     {
       "id": "D053",
-      "name": "EquivLike.toFunLike",
-      "meaning": "This derives a function-like coercion from an equivalence-like structure.",
-      "effect_on_target": "It is coercion machinery for applying Matrix.of and does not alter the matrix entries.",
+      "name": "LocalDef053",
+      "meaning": "This constructs an s-stage run, assuming s>0 and epsilon≠0. It stores y0, a reference-next state, F, FEpsilon, tau with epsilon tau(y)=F(y)-FEpsilon(y), matrices A,ADelta, vectors b,bDelta, scheme and perturbed stages, and next states. Scheme stages and schemeNext use F in both base and perturbation terms; perturbed stages and perturbedNext use F in base terms and FEpsilon in perturbation terms.",
+      "effect_on_target": "It supplies the exact semantics of the four-stage runs hidden inside each analysis certificate. It does not itself certify that referenceNext is an exact solution value.",
       "status": "understood"
     },
     {
       "id": "D054",
-      "name": "Fin.fintype",
-      "meaning": "This gives Fin n its finite enumeration containing each index exactly once.",
-      "effect_on_target": "It enables sums over every vector or matrix index.",
+      "name": "LocalDef054",
+      "meaning": "This projects schemeNext from a one-step run.",
+      "effect_on_target": "It is the intermediate state used in both local error differences.",
       "status": "understood"
     },
     {
       "id": "D055",
-      "name": "Finset.sum",
-      "meaning": "This sums the values of a function over a finite set in an additive commutative monoid.",
-      "effect_on_target": "It implements dot products, absolute-component pairings, and matrix-vector products as finite real sums.",
+      "name": "LocalDef055",
+      "meaning": "This is the finite real linear combination Σ_j weights_j • values_j in State.",
+      "effect_on_target": "It gives the weighted stage sums in all four one-step update equations.",
       "status": "understood"
     },
     {
       "id": "D056",
-      "name": "Finset.univ",
-      "meaning": "This is the finite set of all elements of a finite type.",
-      "effect_on_target": "It makes every relevant sum range over all four indices 0, 1, 2, and 3.",
+      "name": "And",
+      "meaning": "This is logical conjunction.",
+      "effect_on_target": "It combines the five top-level conclusion components and all nested coefficient and bound conditions.",
       "status": "understood"
     },
     {
       "id": "D057",
-      "name": "HMul.hMul",
-      "meaning": "This applies the multiplication operation supplied by an HMul instance.",
-      "effect_on_target": "Resolved over the reals, it supplies all component products in dot products, matrix-vector products, and componentwise products.",
+      "name": "Eq",
+      "meaning": "This is propositional equality.",
+      "effect_on_target": "It expresses tag equalities, function equality, exact coefficient identities, run linkages, and error decompositions.",
       "status": "understood"
     },
     {
       "id": "D058",
-      "name": "HPow.hPow",
-      "meaning": "This applies the exponentiation operation supplied by an HPow instance.",
-      "effect_on_target": "It forms the exact natural power 10^15 in epsilon.",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type {0,...,n-1}.",
+      "effect_on_target": "It indexes four-stage coefficients, stages, step numbers, and sequence positions.",
       "status": "understood"
     },
     {
       "id": "D059",
-      "name": "Matrix",
-      "meaning": "A matrix with row type m, column type n, and entries in alpha is definitionally a function m -> n -> alpha.",
-      "effect_on_target": "It makes A, E, and B ordinary 4 by 4 arrays of real-valued entries indexed by Fin 4.",
+      "name": "Nat",
+      "meaning": "This is the type of natural numbers.",
+      "effect_on_target": "It supplies stage counts, local and global powers, and per-index step counts.",
       "status": "understood"
     },
     {
       "id": "D060",
-      "name": "Matrix.of",
-      "meaning": "This is the identity equivalence between a two-argument function and the corresponding matrix.",
-      "effect_on_target": "It interprets the nested vectors in LocalDef005 and LocalDef016 directly as matrix rows and columns without changing values.",
+      "name": "NormedAddCommGroup",
+      "meaning": "This equips State with a commutative additive group and a compatible real-valued norm.",
+      "effect_on_target": "It permits state subtraction and norms in the local and global error definitions.",
       "status": "understood"
     },
     {
       "id": "D061",
-      "name": "Matrix.vecCons",
-      "meaning": "This prepends a head entry to a length-n finite vector, producing a vector of length n+1.",
-      "effect_on_target": "Repeated use fixes the displayed order of all vector components and matrix rows and columns.",
+      "name": "NormedAddCommGroup.toSeminormedAddCommGroup",
+      "meaning": "This forgets part of a normed additive commutative group to obtain its seminormed additive commutative group structure.",
+      "effect_on_target": "It provides the ambient structure required by the NormedSpace instance; it adds no independent hypothesis.",
       "status": "understood"
     },
     {
       "id": "D062",
-      "name": "Matrix.vecEmpty",
-      "meaning": "This is the unique empty vector indexed by Fin 0.",
-      "effect_on_target": "It terminates the nested constructions of the explicit length-four vectors and matrices.",
+      "name": "NormedSpace",
+      "meaning": "This equips State with a real module structure whose scalar multiplication is compatible with the norm.",
+      "effect_on_target": "It makes State a real normed vector space and supports the linear combinations in one-step runs.",
       "status": "understood"
     },
     {
       "id": "D063",
-      "name": "Monoid.toNatPow",
-      "meaning": "This supplies natural-number exponentiation in a monoid by repeated multiplication.",
-      "effect_on_target": "For the reals it gives the standard exact meaning to 10^15.",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural-number literal in a type with the corresponding OfNat instance.",
+      "effect_on_target": "It elaborates the literals 0,2,3,4,6 and other natural or real numerals used in the proposition.",
       "status": "understood"
     },
     {
       "id": "D064",
-      "name": "NNRatCast.toOfScientific",
-      "meaning": "This interprets nonnegative decimal and scientific notation by constructing a nonnegative rational and casting it into the target type.",
-      "effect_on_target": "It makes the displayed finite decimals and scientific literals exact rational real numbers, not floating-point approximations.",
+      "name": "Real",
+      "meaning": "This is the type of real numbers.",
+      "effect_on_target": "All coefficients, steps, constants, errors, norms, and epsilon are real-valued.",
       "status": "understood"
     },
     {
       "id": "D065",
-      "name": "Neg.neg",
-      "meaning": "This applies the unary negation operation.",
-      "effect_on_target": "It supplies all negative vector and matrix entries and the negative argument used by absolute value and subtraction.",
+      "name": "Real.instZero",
+      "meaning": "This supplies the real number zero.",
+      "effect_on_target": "It interprets the zero vector condition, zero coefficient identities, and nonnegativity bounds.",
       "status": "understood"
     },
     {
       "id": "D066",
-      "name": "OfScientific.ofScientific",
-      "meaning": "This applies a type's scientific-number interpretation to a mantissa, notation flag, and decimal exponent data.",
-      "effect_on_target": "It constructs all decimal/scientific constants occurring in A, E, and x.",
+      "name": "Real.normedField",
+      "meaning": "This is the standard normed-field structure on the real numbers.",
+      "effect_on_target": "It supplies the scalar field required for NormedSpace and the standard real arithmetic in all estimates.",
       "status": "understood"
     },
     {
       "id": "D067",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "This is the standard additive commutative monoid structure on the reals.",
-      "effect_on_target": "It permits the finite sums defining dot products and matrix-vector products.",
+      "name": "Zero.toOfNat0",
+      "meaning": "This turns a zero element into the interpretation of the numeral 0.",
+      "effect_on_target": "It elaborates real and natural zero literals without adding a hypothesis.",
       "status": "understood"
     },
     {
       "id": "D068",
-      "name": "Real.instMonoid",
-      "meaning": "This is the standard multiplicative monoid structure on the reals.",
-      "effect_on_target": "It supports ordinary real multiplication and the natural power 10^15.",
+      "name": "instOfNatNat",
+      "meaning": "This interprets the natural literal n as the natural number n.",
+      "effect_on_target": "It fixes the exact natural indices and exponents 2,3,4 and related literals.",
       "status": "understood"
     },
     {
       "id": "D069",
-      "name": "Real.instMul",
-      "meaning": "This is ordinary multiplication of real numbers.",
-      "effect_on_target": "It gives the standard product used in every dot product, componentwise product, matrix-vector product, and absolute-component term.",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This extracts division from a division-inverse monoid.",
+      "effect_on_target": "It supplies real division in 1/2, 1/3, and 1/6.",
       "status": "understood"
     },
     {
       "id": "D070",
-      "name": "Real.instNNRatCast",
-      "meaning": "This is the exact embedding of nonnegative rational numbers into the reals.",
-      "effect_on_target": "It ensures all nonnegative decimal/scientific literals denote exact real rationals.",
+      "name": "Exists",
+      "meaning": "This is existential quantification.",
+      "effect_on_target": "Each global-error predicate existentially quantifies one scheme constant and one perturbation constant.",
       "status": "understood"
     },
     {
       "id": "D071",
-      "name": "Real.instNeg",
-      "meaning": "This is ordinary additive negation on the real numbers.",
-      "effect_on_target": "It interprets negative entries and supports real subtraction and absolute value.",
+      "name": "HAdd.hAdd",
+      "meaning": "This invokes heterogeneous addition through its typeclass operation.",
+      "effect_on_target": "It denotes ordinary real or natural addition and state addition in the elaborated definitions.",
       "status": "understood"
     },
     {
       "id": "D072",
-      "name": "instHMul",
-      "meaning": "This converts ordinary homogeneous multiplication into an HMul operation.",
-      "effect_on_target": "It routes multiplication syntax to ordinary real multiplication.",
+      "name": "HDiv.hDiv",
+      "meaning": "This invokes heterogeneous division through its typeclass operation.",
+      "effect_on_target": "It denotes ordinary real division in the exact fractional coefficients.",
       "status": "understood"
     },
     {
       "id": "D073",
-      "name": "instHPow",
-      "meaning": "This converts an ordinary power operation into an HPow operation.",
-      "effect_on_target": "It routes exponentiation syntax in 10^15 to natural-number real exponentiation.",
+      "name": "HMul.hMul",
+      "meaning": "This invokes heterogeneous multiplication through its typeclass operation.",
+      "effect_on_target": "It denotes real multiplication in dot products, powers, constants, and error estimates.",
       "status": "understood"
     },
     {
       "id": "D074",
-      "name": "HAdd.hAdd",
-      "meaning": "This applies the addition operation supplied by an HAdd instance.",
-      "effect_on_target": "Resolved appropriately, it supplies pointwise real additions, matrix entry additions, and auxiliary natural-number additions used by numeral evidence.",
+      "name": "HPow.hPow",
+      "meaning": "This invokes exponentiation through its typeclass operation.",
+      "effect_on_target": "It forms h(t)^p in local and global error bounds.",
       "status": "understood"
     },
     {
       "id": "D075",
-      "name": "Nat.AtLeastTwo",
-      "meaning": "This is a type-level proposition certifying that a natural number is at least two.",
-      "effect_on_target": "It licenses casting numerals at least two into the reals and is not a hypothesis of the translated proposition.",
+      "name": "LE.le",
+      "meaning": "This invokes the less-than-or-equal relation.",
+      "effect_on_target": "It expresses all nonnegativity, local-error, stability, horizon, and global-error bounds.",
       "status": "understood"
     },
     {
       "id": "D076",
-      "name": "Real.instAdd",
-      "meaning": "This is ordinary addition of real numbers.",
-      "effect_on_target": "It defines vector and matrix sums, finite-sum accumulation, and subtraction via addition of a negative.",
+      "name": "Monoid.toNatPow",
+      "meaning": "This supplies natural-number powers in a monoid.",
+      "effect_on_target": "It gives the standard real powers h^2, h^3, and h^4.",
       "status": "understood"
     },
     {
       "id": "D077",
-      "name": "instAddNat",
-      "meaning": "This is ordinary addition of natural numbers.",
-      "effect_on_target": "It is used in constructing type-level numeral certificates such as 1+1 and 9+1 and has no independent proposition-level effect.",
+      "name": "One.toOfNat1",
+      "meaning": "This interprets the numeral 1 using a type's multiplicative identity.",
+      "effect_on_target": "It supplies real one in normalization identities and natural one in successor dimensions.",
       "status": "understood"
     },
     {
       "id": "D078",
+      "name": "Real.instAdd",
+      "meaning": "This is ordinary addition on the real numbers.",
+      "effect_on_target": "It is used in error decompositions and pointwise coefficient sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "Real.instAddGroup",
+      "meaning": "This is the additive-group structure on the real numbers.",
+      "effect_on_target": "It supports negation and the absolute-value definition.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This supplies real multiplication, inverse, and division as a division-inverse monoid.",
+      "effect_on_target": "It interprets the fractions 1/2, 1/3, and 1/6.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "Real.instLE",
+      "meaning": "This is the standard order relation ≤ on real numbers.",
+      "effect_on_target": "It gives the intended meanings of every nonnegativity and upper-bound condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "Real.instMonoid",
+      "meaning": "This is the multiplicative monoid structure on the real numbers.",
+      "effect_on_target": "It supports natural powers of real step sizes.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "Real.instMul",
+      "meaning": "This is ordinary multiplication on the real numbers.",
+      "effect_on_target": "It supplies products in coefficient algebra and all error bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Real.instNatCast",
+      "meaning": "This casts natural numbers into the real numbers.",
+      "effect_on_target": "It interprets real numerals and the real-valued factor N(t) in the horizon bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Real.instOne",
+      "meaning": "This supplies the real multiplicative identity 1.",
+      "effect_on_target": "It appears in the coefficient normalization and fractional constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "Real.lattice",
+      "meaning": "This supplies the lattice order on the real numbers.",
+      "effect_on_target": "Together with the additive group, it defines absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "abs",
+      "meaning": "For a real number a, this is |a|=max(a,-a).",
+      "effect_on_target": "It is applied to epsilon and to both signed global-error components.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
       "name": "instHAdd",
-      "meaning": "This converts ordinary homogeneous addition into an HAdd operation.",
-      "effect_on_target": "It routes addition syntax to ordinary real or natural addition as required.",
+      "meaning": "This turns ordinary homogeneous addition into the HAdd operation.",
+      "effect_on_target": "It resolves additions of reals, naturals, and states in the elaborated terms.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "instHDiv",
+      "meaning": "This turns ordinary homogeneous division into the HDiv operation.",
+      "effect_on_target": "It resolves the real fractional coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "instHMul",
+      "meaning": "This turns ordinary homogeneous multiplication into the HMul operation.",
+      "effect_on_target": "It resolves real products throughout the definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "instHPow",
+      "meaning": "This turns an ordinary power operation into HPow.",
+      "effect_on_target": "It resolves real step sizes raised to natural exponents.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "This interprets a natural numeral n≥2 in a type with a natural-number cast.",
+      "effect_on_target": "It supplies the real numerals 2,3,4, and 6 appearing in dimensions, exponents, and fractions.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "AddGroup.toSubNegMonoid",
+      "meaning": "This extracts subtraction and negation structure from an additive group.",
+      "effect_on_target": "It supports state and real subtraction used in error vectors and absolute values.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "Fin.castSucc",
+      "meaning": "This embeds j : Fin N as the same index j in Fin (N+1).",
+      "effect_on_target": "It links a run's initial state at step j to computedState(t,j).",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "Fin.fintype",
+      "meaning": "This supplies the finite-type structure on Fin n.",
+      "effect_on_target": "It permits sums over all stage and step indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "Fin.last",
+      "meaning": "Fin.last N is the final index N in Fin (N+1).",
+      "effect_on_target": "The total global error is the norm of exactState(t,N)-computedState(t,N).",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "Fin.succ",
+      "meaning": "This maps j : Fin N to the successor index j+1 in Fin (N+1).",
+      "effect_on_target": "It links run outputs to computedState(t,j+1) and exactState(t,j+1).",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "Finset.sum",
+      "meaning": "This is finite summation in an additive commutative monoid.",
+      "effect_on_target": "It defines dot products, matrix-vector products, weighted state sums, and accumulated local-error bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Finset.univ",
+      "meaning": "This is the finite set of all elements of a finite type.",
+      "effect_on_target": "It makes all sums range over every stage or every step.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "HSub.hSub",
+      "meaning": "This invokes heterogeneous subtraction.",
+      "effect_on_target": "It forms referenceNext-schemeNext, schemeNext-perturbedNext, F-FEpsilon, and final exact-minus-computed differences.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "LT.lt",
+      "meaning": "This invokes the strict less-than relation.",
+      "effect_on_target": "It expresses positivity of epsilon, positivity of each step count, and positivity of the one-step stage count.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "This proposition certifies that a natural number is at least two.",
+      "effect_on_target": "It is used only to elaborate larger numeric literals in Real.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "Nat.cast",
+      "meaning": "This maps a natural number into a type with a NatCast instance.",
+      "effect_on_target": "It casts N(t) to Real in N(t)h(t)≤H and supplies real numeral values.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "Norm.norm",
+      "meaning": "This applies the norm of a normed type.",
+      "effect_on_target": "It defines both local errors and the total final-state global error as exact real quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "NormedAddCommGroup.toAddCommGroup",
+      "meaning": "This extracts the additive commutative group from a normed additive commutative group.",
+      "effect_on_target": "It supplies the algebraic state operations required by one-step runs.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "NormedAddCommGroup.toNorm",
+      "meaning": "This extracts the norm from a normed additive commutative group.",
+      "effect_on_target": "It supplies the State norm used in all exact error definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "NormedAddCommGroup.toNormedAddGroup",
+      "meaning": "This forgets commutativity while retaining the normed additive-group structure.",
+      "effect_on_target": "It supports inherited additive-group operations; it adds no separate assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "NormedAddGroup.toAddGroup",
+      "meaning": "This extracts the additive group from a normed additive group.",
+      "effect_on_target": "It supplies state subtraction in the error definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "NormedSpace.toModule",
+      "meaning": "This extracts the real module structure from a real normed-space structure.",
+      "effect_on_target": "It supplies scalar multiplication and finite real linear combinations in State.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This is the additive commutative monoid structure on Real.",
+      "effect_on_target": "It supports finite sums of real coefficients and local errors.",
+      "status": "understood"
+    },
+    {
+      "id": "D111",
+      "name": "Real.instLT",
+      "meaning": "This is the standard strict order < on Real.",
+      "effect_on_target": "It gives the meaning epsilon>0.",
+      "status": "understood"
+    },
+    {
+      "id": "D112",
+      "name": "SubNegMonoid.toSub",
+      "meaning": "This extracts subtraction from a subtraction-negation monoid.",
+      "effect_on_target": "It resolves state subtraction in local and global differences.",
+      "status": "understood"
+    },
+    {
+      "id": "D113",
+      "name": "instAddNat",
+      "meaning": "This is ordinary addition on natural numbers.",
+      "effect_on_target": "It forms N(t)+1 and successor dimensions.",
+      "status": "understood"
+    },
+    {
+      "id": "D114",
+      "name": "instHSub",
+      "meaning": "This turns ordinary homogeneous subtraction into HSub.",
+      "effect_on_target": "It resolves all state and real subtraction expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D115",
+      "name": "instLTNat",
+      "meaning": "This is the standard strict order on natural numbers.",
+      "effect_on_target": "It expresses 0<N(t) and the positivity of the stage count.",
+      "status": "understood"
+    },
+    {
+      "id": "D116",
+      "name": "AddCommGroup",
+      "meaning": "This is a commutative additive group structure.",
+      "effect_on_target": "It is inherited by State and underlies state addition, subtraction, and finite sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D117",
+      "name": "AddCommGroup.toAddCommMonoid",
+      "meaning": "This extracts an additive commutative monoid from an additive commutative group.",
+      "effect_on_target": "It permits finite sums of State-valued stage contributions.",
+      "status": "understood"
+    },
+    {
+      "id": "D118",
+      "name": "AddCommGroup.toAddGroup",
+      "meaning": "This extracts an additive group from an additive commutative group.",
+      "effect_on_target": "It supplies state negation and subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D119",
+      "name": "Module",
+      "meaning": "This is a module structure over a semiring, here a real vector-space structure on State.",
+      "effect_on_target": "It gives real scalar multiplication and distributivity in one-step formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D120",
+      "name": "Real.semiring",
+      "meaning": "This is the semiring structure on Real.",
+      "effect_on_target": "It supplies the scalar algebra required by the real module structure.",
+      "status": "understood"
+    },
+    {
+      "id": "D121",
+      "name": "AddCommMagma.toAdd",
+      "meaning": "This extracts addition from an additive commutative magma.",
+      "effect_on_target": "It ultimately resolves addition in finite State-valued sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D122",
+      "name": "AddCommMonoid.toAddCommSemigroup",
+      "meaning": "This forgets the zero element of an additive commutative monoid, retaining associative commutative addition.",
+      "effect_on_target": "It is inherited infrastructure for finite additions and adds no proposition-specific condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D123",
+      "name": "AddCommSemigroup.toAddCommMagma",
+      "meaning": "This forgets associativity while retaining commutative addition.",
+      "effect_on_target": "It provides inherited addition infrastructure only.",
+      "status": "understood"
+    },
+    {
+      "id": "D124",
+      "name": "AddMonoid.toAddZeroClass",
+      "meaning": "This extracts addition, zero, and the zero laws from an additive monoid.",
+      "effect_on_target": "It supports zero-valued finite sums and scalar-action inheritance.",
+      "status": "understood"
+    },
+    {
+      "id": "D125",
+      "name": "AddZero.toZero",
+      "meaning": "This extracts a zero element from a type with addition and zero.",
+      "effect_on_target": "It supplies the zero state used as the empty finite sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D126",
+      "name": "AddZeroClass.toAddZero",
+      "meaning": "This extracts addition and zero from an additive-zero class.",
+      "effect_on_target": "It is inherited algebraic infrastructure for State-valued sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D127",
+      "name": "DistribMulAction.toDistribSMul",
+      "meaning": "This extracts a scalar action distributing over addition from a distributive multiplicative action.",
+      "effect_on_target": "It supports distribution of real scalar multiplication over State addition in the module structure.",
+      "status": "understood"
+    },
+    {
+      "id": "D128",
+      "name": "DistribSMul.toSMulZeroClass",
+      "meaning": "This extracts scalar multiplication and its zero law from a distributive scalar action.",
+      "effect_on_target": "It supplies inherited scalar multiplication infrastructure.",
+      "status": "understood"
+    },
+    {
+      "id": "D129",
+      "name": "HSMul.hSMul",
+      "meaning": "This invokes heterogeneous scalar multiplication.",
+      "effect_on_target": "It denotes real scalar multiplication of State values in epsilon tau and all one-step formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D130",
+      "name": "Module.toDistribMulAction",
+      "meaning": "This extracts the distributive multiplicative action from a module.",
+      "effect_on_target": "It provides the real scalar action used by the weighted stage sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D131",
+      "name": "Ne",
+      "meaning": "Ne a b means not(a=b).",
+      "effect_on_target": "Every one-step run requires epsilon≠0; the outer certificate's stronger condition epsilon>0 ensures compatibility.",
+      "status": "understood"
+    },
+    {
+      "id": "D132",
+      "name": "SMulZeroClass.toSMul",
+      "meaning": "This extracts scalar multiplication from a scalar action respecting zero.",
+      "effect_on_target": "It supplies the underlying real action on State.",
+      "status": "understood"
+    },
+    {
+      "id": "D133",
+      "name": "SubNegMonoid.toAddMonoid",
+      "meaning": "This extracts an additive monoid from a subtraction-negation monoid.",
+      "effect_on_target": "It supplies inherited addition and zero operations for State.",
+      "status": "understood"
+    },
+    {
+      "id": "D134",
+      "name": "instHSMul",
+      "meaning": "This turns ordinary scalar multiplication into the HSMul operation.",
+      "effect_on_target": "It resolves all real-scalar-times-State expressions in one-step runs.",
       "status": "understood"
     }
   ],
   "translation": {
-    "binders": [],
-    "hypotheses": [],
+    "binders": [
+      "State is an arbitrary type equipped with a normed additive commutative group structure and a normed real vector-space structure.",
+      "ι is an arbitrary index type; no order, topology, finiteness, or inhabitance assumption is imposed on ι.",
+      "method is an arbitrary inhabitant of the method-package type LocalDef002.",
+      "smooth is an analysis certificate over State, ι, and method whose type index localPerturbationPower is exactly 4.",
+      "nonsmooth is an analysis certificate over the same State, ι, and method whose type index localPerturbationPower is exactly 3."
+    ],
+    "hypotheses": [
+      "The regime field of smooth equals the constructor LocalDef013.",
+      "The regime field of nonsmooth equals the constructor LocalDef012.",
+      "Because method is a method package, it carries a four-stage tableau and stored proofs that bDelta is identically zero and that the tableau satisfies all conditions C and Z defined below.",
+      "Each analysis certificate carries all sign, one-step linkage, local-error, stability, global-error, and horizon assumptions described below. For smooth the local perturbation exponent q is 4; for nonsmooth it is 3.",
+      "For each certificate, h(t)≥0 for every t, epsilon>0, N(t)>0 for every t, and H, Ls, Lp, and S are nonnegative.",
+      "For each certificate and every t and j∈Fin N(t), the stored four-stage run uses the common h(t), epsilon, F, FEpsilon, tau, A, ADelta, b, and bDelta; starts at computedState(t,j); has perturbedNext equal to computedState(t,j+1); and has referenceNext equal to exactState(t,j+1).",
+      "The local scheme and perturbation errors are exact norms and satisfy ls(t,j)≤Ls h(t)^4 and lp(t,j)≤Lp |epsilon| h(t)^q.",
+      "The total global error is exactly ||exactState(t,N(t))-computedState(t,N(t))||, is also assumed to equal Esch(t)+Epert(t), and its components satisfy |Esch(t)|≤S Σ_j ls(t,j) and |Epert(t)|≤S Σ_j lp(t,j).",
+      "The horizon condition is (N(t) cast to Real) h(t)≤H for every t."
+    ],
     "conclusions": [
-      "z equals the zero function on I.",
-      "|x dot e - 1| <= epsilon; in fact, the displayed components give x dot e=1 exactly.",
-      "|x dot y - 1/2| <= epsilon.",
-      "|x dot (y componentwise-multiplied by y) - 1/3| <= epsilon.",
-      "|x dot (B y) - 1/6| <= epsilon.",
-      "|x dot u| <= epsilon.",
-      "|x dot (A y)| <= epsilon.",
-      "|x dot (B u)| <= epsilon.",
-      "|x dot (y componentwise-multiplied by u)| <= epsilon.",
-      "|x dot (A u)| <= epsilon.",
-      "|x dot (u componentwise-multiplied by u)| <= epsilon.",
-      "1/100 < sum_i |x_i||u_i|."
+      "For the four-stage tableau of method, bDelta is the zero function: bDelta_i=0 for every i∈Fin 4.",
+      "The tableau satisfies C: <btilde,e>=1, <btilde,ctilde>=1/2, <btilde,ctilde⊙ctilde>=1/3, and <btilde,Atilde ctilde>=1/6.",
+      "The tableau satisfies all sixteen exact zero identities Z listed in the mathematical definitions.",
+      "For smooth, E=Esch+Epert pointwise and there exist constants Cs,Cp≥0, independent of t, such that |Esch(t)|≤Cs h(t)^3 and |Epert(t)|≤Cp |epsilon| h(t)^3 for every t.",
+      "For nonsmooth, E=Esch+Epert pointwise and there exist constants Cs,Cp≥0, independent of t, such that |Esch(t)|≤Cs h(t)^3 and |Epert(t)|≤Cp |epsilon| h(t)^2 for every t."
     ],
     "mathematical_definitions": [
-      "Let I=Fin 4, identified in construction order with {0,1,2,3}. Vectors are elements of R^4 and matrices are real 4 by 4 matrices.",
-      "For vectors p,q, define p dot q=sum_{i in I} p_i q_i and (p componentwise-multiplied by q)_i=p_i q_i. For a matrix M, (Mp)_i=sum_{j in I} M_ij p_j.",
-      "Define A by rows: [0.511243008730995, 0, 0, 0]; [-1.999347282862640, 1.957161067302390, 0, 0]; [0.443312893511937, -0.573131033672219, 0.128283796414019, 0]; [-2, -0.160330320741428, 0.579597314161362, 1.484688928981990].",
-      "Define E by rows: [0,0,0,0]; [-0.050470366527530,0,0,0]; [0.368613367355336,0.273504374252976,0,0]; [1.803794668975043,0.097485042980759,-1.895660952342050,0].",
-      "Define B=E+A. Its rows are [0.511243008730995,0,0,0]; [-2.049817649390170,1.957161067302390,0,0]; [0.811926260867273,-0.299626659419243,0.128283796414019,0]; [-0.196205331024957,-0.062845277760669,-1.316063638180688,1.484688928981990].",
-      "Define z=(0,0,0,0), c=(0.002837446974069,0.336264433650450,0.806376720267787,-0.145478600892306), and x=c+z=c.",
-      "Define e=(1,1,1,1).",
-      "Define u=Ae=(0.511243008730995,-0.042186215560250,-0.001534343746263,-0.096044077598076).",
-      "Define v=Ee=(0,-0.050470366527530,0.642117741608312,0.005618759613752) and y=v+u=Be=(0.511243008730995,-0.092656582087780,0.640583397862049,-0.090425317984324).",
-      "Define epsilon=2/(10^15)=0.000000000000002 exactly.",
-      "The final quantity is exactly |0.002837446974069||0.511243008730995| + |0.336264433650450||-0.042186215560250| + |0.806376720267787||-0.001534343746263| + |-0.145478600892306||-0.096044077598076|.",
-      "Every displayed integer, finite decimal, and scientific literal denotes an exact real rational; no floating-point rounding semantics is present."
+      "For s-stage vectors, e denotes the all-ones vector, <x,y>=Σ_{i∈Fin s}x_i y_i, (x⊙y)_i=x_i y_i, and (Mx)_i=Σ_{j∈Fin s}M_{ij}x_j.",
+      "The method tableau has exactly four stages and consists of A,ADelta : Fin 4×Fin 4→Real and b,bDelta : Fin 4→Real. Define Atilde=A+ADelta, btilde=b+bDelta, c=Ae, d=ADelta e, and ctilde=c+d.",
+      "Condition C is the conjunction <btilde,e>=1, <btilde,ctilde>=1/2, <btilde,ctilde⊙ctilde>=1/3, and <btilde,Atilde ctilde>=1/6.",
+      "Condition Z is the conjunction of exactly these sixteen equations, in order: <bDelta,e>=0; <bDelta,ctilde>=0; <btilde,d>=0; <bDelta,d>=0; <bDelta,Atilde ctilde>=0; <btilde,ADelta ctilde>=0; <btilde,Atilde d>=0; <bDelta,ctilde⊙ctilde>=0; <btilde,ctilde⊙d>=0; <bDelta,ADelta ctilde>=0; <bDelta,Atilde d>=0; <btilde,ADelta d>=0; <bDelta,d⊙ctilde>=0; <btilde,d⊙d>=0; <bDelta,ADelta d>=0; and <bDelta,d⊙d>=0.",
+      "A generic s-stage one-step run stores h, epsilon≠0, an initial state y0, a reference-next state yref, functions F,FEpsilon,tau satisfying epsilon tau(y)=F(y)-FEpsilon(y) for every y, coefficient arrays A,ADelta,b,bDelta, scheme stages Y_i, perturbed stages Yhat_i, and next states yscheme,ypert.",
+      "The one-step equations are Y_i=y0+h Σ_j A_ij F(Y_j)+h Σ_j ADelta_ij F(Y_j); yscheme=y0+h Σ_j b_j F(Y_j)+h Σ_j bDelta_j F(Y_j); Yhat_i=y0+h Σ_j A_ij F(Yhat_j)+h Σ_j ADelta_ij FEpsilon(Yhat_j); and ypert=y0+h Σ_j b_j F(Yhat_j)+h Σ_j bDelta_j FEpsilon(Yhat_j). No equation in the run constructor constrains yref beyond storing it.",
+      "For an analysis certificate with local perturbation exponent q, the hidden data are a regime tag rho; h:ι→Real; epsilon:Real; N:ι→Nat; H,Ls,Lp,S:Real; F,FEpsilon,tau:State→State; computed and exact sequences indexed by Fin(N(t)+1); a four-stage run R(t,j) for every j∈Fin N(t); local errors ls,lp; and global errors Esch,Epert,E.",
+      "The run linkages are R(t,j).step=h(t), R(t,j).epsilon=epsilon, R(t,j).F=F, R(t,j).FEpsilon=FEpsilon, R(t,j).tau=tau, and its four coefficient arrays equal A,ADelta,b,bDelta. Its initial, perturbed-next, and reference-next states are respectively computedState(t,j), computedState(t,j+1), and exactState(t,j+1).",
+      "The exact local quantities are ls(t,j)=||R(t,j).referenceNext-R(t,j).schemeNext|| and lp(t,j)=||R(t,j).schemeNext-R(t,j).perturbedNext||.",
+      "The exact total global quantity is E(t)=||exactState(t,N(t))-computedState(t,N(t))||. Separately, the certificate stores E(t)=Esch(t)+Epert(t), |Esch(t)|≤S Σ_{j∈Fin N(t)}ls(t,j), and |Epert(t)|≤S Σ_{j∈Fin N(t)}lp(t,j).",
+      "From the local bounds and N(t)h(t)≤H, suitable output witnesses are Cs=S Ls H and Cp=S Lp H. They are nonnegative and yield the scheme exponent 4-1=3 and perturbation exponent q-1."
     ],
-    "proposition_plain_english": "This is a closed conjunction about the explicit four-dimensional data above. It asserts that z is the zero vector; that ten specified signed dot products or moment-like expressions have scalar absolute error at most 2/10^15 from the respective targets 1, 1/2, 1/3, 1/6, or 0; and simultaneously that the sum of the componentwise absolute products of x and u=Ae is strictly greater than 1/100."
+    "proposition_plain_english": "For every real normed vector space State, every index type ι, every packaged four-stage method, every packaged analysis of that method with local perturbation exponent 4, and every packaged analysis with local perturbation exponent 3, if the first analysis has regime tag LocalDef013 and the second has regime tag LocalDef012, then the method tableau has zero perturbation weights and satisfies the four exact conditions C and the sixteen exact zero conditions Z. Moreover, the exponent-4 analysis has an exact additive global-error decomposition whose scheme and perturbation components admit uniform-in-t bounds of orders h^3 and |epsilon|h^3, while the exponent-3 analysis has the same scheme order h^3 and perturbation order |epsilon|h^2. The coefficient conclusions and both additive decompositions are already stored in the quantified packages; the power-law bounds are obtained from the stored local bounds, stability bounds, and finite-horizon inequalities."
   },
   "restrictions_and_vacuity_risks": [
-    "The proposition has no binders, quantifiers, hypotheses, implications, or existential witnesses. Consequently there is no false-premise or missing-witness vacuity; it is a closed numerical conjunction.",
-    "All dimensions are fixed at four. The statement gives no result for arbitrary dimensions, matrices, or vectors.",
-    "The absolute values in the ten bounds are scalar absolute values. No vector norm or matrix norm occurs.",
-    "The final quantity sum_i |x_i||u_i| is not |x dot u|. Thus the proposition explicitly allows cancellation to make |x dot u| at most epsilon while the uncancelled absolute-component sum exceeds 0.01.",
-    "The equality z=0 is immediate from the definition of z and contributes no substantive condition on the other data.",
-    "The constants are exact real rationals encoded by decimal/scientific notation, so the proposition does not model machine floating-point values, rounding modes, computed-error semantics, or implementation behavior.",
-    "The proposition does not assert invertibility, nonsingularity, conditioning, stability, provenance of the data, or any algorithmic relationship beyond the explicitly defined sums, products, and inequalities."
+    "The implication is vacuously true whenever either regime-field equality fails.",
+    "The regime tags have no encoded effect on h, epsilon, local powers, constants, functions, runs, or numerical estimates. In particular, no relation connects a regime tag to tau or to the localPerturbationPower index.",
+    "The distinction between exponents 4 and 3 is imposed directly by the types of smooth and nonsmooth, not derived from their regime tags.",
+    "The first three conclusions are constructor data already stored in method. The pointwise decompositions E=Esch+Epert are likewise already stored in each analysis certificate. Only the existence of the displayed global power-bound constants must be derived.",
+    "The derived constants may be chosen as S Ls H and S Lp H for each certificate. The proposition does not require constants shared between the two certificates.",
+    "Although the output constants are uniform over t, the formal statement does not encode uniformity over varying h, epsilon, methods, certificates, horizons, or other problem data. The existential constants may depend on the entire quantified certificate.",
+    "The index type ι may be empty. Then all pointwise run, error, and bound statements are vacuous, although scalar fields such as epsilon and the nonnegative constants still belong to an analysis certificate.",
+    "The proposition does not assert that a method package or either analysis certificate exists. Their constructors demand many exact equations and bounds, so universal quantification over these types can be vacuous if they are uninhabited for a chosen context.",
+    "The state space may be the trivial normed vector space; no nontriviality assumption is present.",
+    "Step sizes are only nonnegative, not strictly positive. If h(t)=0, the positive-power local bounds force both local norm errors at that t to be zero, and the stability bounds then force both global components to vanish.",
+    "Step counts are strictly positive at every existing t, but no common step count, boundedness condition, or relation between different t values is required.",
+    "Epsilon is strictly positive in an analysis certificate, hence nonzero. No smallness condition, upper bound, or coupling between epsilon and h is encoded.",
+    "The only step-size upper control is N(t)h(t)≤H with H≥0. No asymptotic limiting process or big-O quantification is present.",
+    "The one-step runs are linked to computedState at their initial and perturbed-next states and to exactState at referenceNext. However, exactState(t,j) is not required to satisfy any exact evolution equation, and referenceNext is an unconstrained run field apart from its linkage.",
+    "The scheme-next state is not linked to a separate global sequence. It is used only inside the two local error norms.",
+    "There is no requirement relating exactState(t,0) and computedState(t,0), and no initial-error term appears in the stability assumptions.",
+    "The global component errors Esch and Epert are arbitrary real-valued functions subject to their stored sum equality and absolute-value bounds; they are not themselves defined as norms and may be signed.",
+    "The total global error is defined as a norm and hence nonnegative, but the conclusion gives no single combined upper bound for E beyond the decomposition and separate component bounds.",
+    "The local and global stability estimates are assumptions stored in each certificate, not consequences of the coefficient identities or one-step equations within this proposition.",
+    "The coefficient matrices have no triangularity, explicitness, invertibility, boundedness, or sparsity restriction. The stage equations may therefore be implicit.",
+    "Because bDelta is identically zero, every D014 equation containing bDelta as the left dot-product vector is automatically satisfied, but D014 also contains conditions involving btilde, ADelta, and d that need not follow from bDelta=0 alone.",
+    "No interpretation as a particular differential equation, exact flow, smoothness class, nonsmoothness class, or numerical method family is encoded beyond the displayed algebraic packages."
   ],
-  "ambiguities": []
+  "ambiguities": [
+    "The dossier gives no mathematical interpretation for the two opaque regime constructors LocalDef012 and LocalDef013; they can only be translated as distinct tags.",
+    "Names such as smooth, nonsmooth, exactState, referenceNext, schemeError, and perturbationError suggest intended roles, but only the supplied fields and equations enforce meaning. In particular, no analytic smoothness or exact-solution property is encoded.",
+    "The proposition itself is structurally unambiguous once the opaque tags are left uninterpreted."
+  ]
 }

@@ -6,235 +6,105 @@ Judges must interpret every dependency entry and may not infer semantics from na
 ## Exact source declaration
 
 ```lean
-theorem p18_t3_method4s3pc_order_certificate :
-    p18Method4s3pCBPerturbation = (fun _ => 0) ∧
-      |p18CoeffDot p18Method4s3pCBTilde p18Method4s3pCE - 1| ≤
-        p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde p18Method4s3pCCTilde - 1 / 2| ≤
-        p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffHadamard p18Method4s3pCCTilde
-            p18Method4s3pCCTilde) - 1 / 3| ≤
-        p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffMatVec p18Method4s3pCATilde
-            p18Method4s3pCCTilde) - 1 / 6| ≤
-        p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          p18Method4s3pCCPerturbation| ≤ p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffMatVec p18Method4s3pCAPerturbation
-            p18Method4s3pCCTilde)| ≤ p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffMatVec p18Method4s3pCATilde
-            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffHadamard p18Method4s3pCCTilde
-            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffMatVec p18Method4s3pCAPerturbation
-            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffHadamard p18Method4s3pCCPerturbation
-            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
-      1 / 100 < p18CoeffAbsDot p18Method4s3pCBTilde
-        p18Method4s3pCCPerturbation
+theorem p18_t3_method4s3pc_global_error_regimes
+    {State : Type*} [NormedAddCommGroup State] [NormedSpace ℝ State]
+    {ι : Type*} (method : P18Method4s3pCSourceModel)
+    (smooth : P18StableMethod4s3pCBranch State ι method 4)
+    (nonsmooth : P18StableMethod4s3pCBranch State ι method 3)
+    (hsmooth : smooth.tauRegime = P18TauRegime.wellBehaved)
+    (hnonsmooth :
+      nonsmooth.tauRegime = P18TauRegime.notWellBehaved) :
+    method.tableau.bPerturbation = (fun _ ↦ 0) ∧
+      p18ThirdOrderConsistency method.tableau ∧
+      p18SmoothPerturbationOrderThree method.tableau ∧
+      p18UniformTwoTermGlobalOrder smooth.globalError
+        smooth.globalSchemeError smooth.globalPerturbationError
+        smooth.step smooth.epsilon 3 3 ∧
+      p18UniformTwoTermGlobalOrder nonsmooth.globalError
+        nonsmooth.globalSchemeError nonsmooth.globalPerturbationError
+        nonsmooth.step nonsmooth.epsilon 3 2
 ```
 
 ## Elaborated target type
 
 ```lean
-And (Eq HighamBench.p18Method4s3pCBPerturbation fun x => 0)
-  (And
-    (Real.instLE.le
-      (abs (instHSub.hSub (HighamBench.p18CoeffDot HighamBench.p18Method4s3pCBTilde HighamBench.p18Method4s3pCE) 1))
-      HighamBench.p18PrintedCoeffTolerance)
-    (And
-      (Real.instLE.le
-        (abs
-          (instHSub.hSub (HighamBench.p18CoeffDot HighamBench.p18Method4s3pCBTilde HighamBench.p18Method4s3pCCTilde)
-            (1 / 2)))
-        HighamBench.p18PrintedCoeffTolerance)
-      (And
-        (Real.instLE.le
-          (abs
-            (instHSub.hSub
-              (HighamBench.p18CoeffDot HighamBench.p18Method4s3pCBTilde
-                (HighamBench.p18CoeffHadamard HighamBench.p18Method4s3pCCTilde HighamBench.p18Method4s3pCCTilde))
-              (1 / 3)))
-          HighamBench.p18PrintedCoeffTolerance)
-        (And
-          (Real.instLE.le
-            (abs
-              (instHSub.hSub
-                (HighamBench.p18CoeffDot HighamBench.p18Method4s3pCBTilde
-                  (HighamBench.p18CoeffMatVec HighamBench.p18Method4s3pCATilde HighamBench.p18Method4s3pCCTilde))
-                (1 / 6)))
-            HighamBench.p18PrintedCoeffTolerance)
-          (And
-            (Real.instLE.le
-              (abs (HighamBench.p18CoeffDot HighamBench.p18Method4s3pCBTilde HighamBench.p18Method4s3pCCPerturbation))
-              HighamBench.p18PrintedCoeffTolerance)
+∀ {State : Type u_1} [inst : NormedAddCommGroup State] [inst_1 : NormedSpace Real State] {ι : Type u_2}
+  (method : HighamBench.P18Method4s3pCSourceModel) (smooth : HighamBench.P18StableMethod4s3pCBranch State ι method 4)
+  (nonsmooth : HighamBench.P18StableMethod4s3pCBranch State ι method 3),
+  Eq smooth.tauRegime HighamBench.P18TauRegime.wellBehaved →
+    Eq nonsmooth.tauRegime HighamBench.P18TauRegime.notWellBehaved →
+      And (Eq method.tableau.bPerturbation fun x => 0)
+        (And (HighamBench.p18ThirdOrderConsistency method.tableau)
+          (And (HighamBench.p18SmoothPerturbationOrderThree method.tableau)
             (And
-              (Real.instLE.le
-                (abs
-                  (HighamBench.p18CoeffDot HighamBench.p18Method4s3pCBTilde
-                    (HighamBench.p18CoeffMatVec HighamBench.p18Method4s3pCAPerturbation
-                      HighamBench.p18Method4s3pCCTilde)))
-                HighamBench.p18PrintedCoeffTolerance)
-              (And
-                (Real.instLE.le
-                  (abs
-                    (HighamBench.p18CoeffDot HighamBench.p18Method4s3pCBTilde
-                      (HighamBench.p18CoeffMatVec HighamBench.p18Method4s3pCATilde
-                        HighamBench.p18Method4s3pCCPerturbation)))
-                  HighamBench.p18PrintedCoeffTolerance)
-                (And
-                  (Real.instLE.le
-                    (abs
-                      (HighamBench.p18CoeffDot HighamBench.p18Method4s3pCBTilde
-                        (HighamBench.p18CoeffHadamard HighamBench.p18Method4s3pCCTilde
-                          HighamBench.p18Method4s3pCCPerturbation)))
-                    HighamBench.p18PrintedCoeffTolerance)
-                  (And
-                    (Real.instLE.le
-                      (abs
-                        (HighamBench.p18CoeffDot HighamBench.p18Method4s3pCBTilde
-                          (HighamBench.p18CoeffMatVec HighamBench.p18Method4s3pCAPerturbation
-                            HighamBench.p18Method4s3pCCPerturbation)))
-                      HighamBench.p18PrintedCoeffTolerance)
-                    (And
-                      (Real.instLE.le
-                        (abs
-                          (HighamBench.p18CoeffDot HighamBench.p18Method4s3pCBTilde
-                            (HighamBench.p18CoeffHadamard HighamBench.p18Method4s3pCCPerturbation
-                              HighamBench.p18Method4s3pCCPerturbation)))
-                        HighamBench.p18PrintedCoeffTolerance)
-                      (Real.instLT.lt (1 / 100)
-                        (HighamBench.p18CoeffAbsDot HighamBench.p18Method4s3pCBTilde
-                          HighamBench.p18Method4s3pCCPerturbation))))))))))))
+              (HighamBench.p18UniformTwoTermGlobalOrder smooth.globalError smooth.globalSchemeError
+                smooth.globalPerturbationError smooth.step smooth.epsilon 3 3)
+              (HighamBench.p18UniformTwoTermGlobalOrder nonsmooth.globalError nonsmooth.globalSchemeError
+                nonsmooth.globalPerturbationError nonsmooth.step nonsmooth.epsilon 3 2))))
 ```
 
 ## Fully explicit elaborated target type
 
 ```lean
-And
-  (@Eq.{1} (Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real)
-    HighamBench.p18Method4s3pCBPerturbation
-    fun (x : Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))) =>
-    @OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-  (And
-    (@LE.le.{0} Real Real.instLE
-      (@abs.{0} Real Real.lattice Real.instAddGroup
-        (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-          (@HighamBench.p18CoeffDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-            HighamBench.p18Method4s3pCBTilde HighamBench.p18Method4s3pCE)
-          (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))))
-      HighamBench.p18PrintedCoeffTolerance)
+∀ {State : Type u_1} [inst : NormedAddCommGroup.{u_1} State]
+  [inst_1 :
+    @NormedSpace.{0, u_1} Real State Real.normedField (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)]
+  {ι : Type u_2} (method : HighamBench.P18Method4s3pCSourceModel)
+  (smooth :
+    @HighamBench.P18StableMethod4s3pCBranch.{u_1, u_2} State inst inst_1 ι method
+      (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))))
+  (nonsmooth :
+    @HighamBench.P18StableMethod4s3pCBranch.{u_1, u_2} State inst inst_1 ι method
+      (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3))))
+  (hsmooth :
+    @Eq.{1} HighamBench.P18TauRegime
+      (@HighamBench.P18StableMethod4s3pCBranch.tauRegime.{u_1, u_2} State inst inst_1 ι method
+        (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) smooth)
+      HighamBench.P18TauRegime.wellBehaved)
+  (hnonsmooth :
+    @Eq.{1} HighamBench.P18TauRegime
+      (@HighamBench.P18StableMethod4s3pCBranch.tauRegime.{u_1, u_2} State inst inst_1 ι method
+        (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3))) nonsmooth)
+      HighamBench.P18TauRegime.notWellBehaved),
+  And
+    (@Eq.{1} (Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real)
+      (@HighamBench.P18AdditiveRKTableau.bPerturbation (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+        (HighamBench.P18Method4s3pCSourceModel.tableau method))
+      fun (x : Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))) =>
+      @OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
     (And
-      (@LE.le.{0} Real Real.instLE
-        (@abs.{0} Real Real.lattice Real.instAddGroup
-          (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-            (@HighamBench.p18CoeffDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-              HighamBench.p18Method4s3pCBTilde HighamBench.p18Method4s3pCCTilde)
-            (@HDiv.hDiv.{0, 0, 0} Real Real Real
-              (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-              (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
-              (@OfNat.ofNat.{0} Real (nat_lit 2)
-                (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
-                  (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
-                    (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))))))))
-        HighamBench.p18PrintedCoeffTolerance)
+      (@HighamBench.p18ThirdOrderConsistency (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+        (HighamBench.P18Method4s3pCSourceModel.tableau method))
       (And
-        (@LE.le.{0} Real Real.instLE
-          (@abs.{0} Real Real.lattice Real.instAddGroup
-            (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-              (@HighamBench.p18CoeffDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                HighamBench.p18Method4s3pCBTilde
-                (@HighamBench.p18CoeffHadamard (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                  HighamBench.p18Method4s3pCCTilde HighamBench.p18Method4s3pCCTilde))
-              (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
-                (@OfNat.ofNat.{0} Real (nat_lit 3)
-                  (@instOfNatAtLeastTwo.{0} Real (nat_lit 3) Real.instNatCast
-                    (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))
-                      (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))))))
-          HighamBench.p18PrintedCoeffTolerance)
+        (@HighamBench.p18SmoothPerturbationOrderThree (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+          (HighamBench.P18Method4s3pCSourceModel.tableau method))
         (And
-          (@LE.le.{0} Real Real.instLE
-            (@abs.{0} Real Real.lattice Real.instAddGroup
-              (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-                (@HighamBench.p18CoeffDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                  HighamBench.p18Method4s3pCBTilde
-                  (@HighamBench.p18CoeffMatVec (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                    HighamBench.p18Method4s3pCATilde HighamBench.p18Method4s3pCCTilde))
-                (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                  (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                  (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
-                  (@OfNat.ofNat.{0} Real (nat_lit 6)
-                    (@instOfNatAtLeastTwo.{0} Real (nat_lit 6) Real.instNatCast
-                      (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5)))
-                        (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))))))))))
-            HighamBench.p18PrintedCoeffTolerance)
-          (And
-            (@LE.le.{0} Real Real.instLE
-              (@abs.{0} Real Real.lattice Real.instAddGroup
-                (@HighamBench.p18CoeffDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                  HighamBench.p18Method4s3pCBTilde HighamBench.p18Method4s3pCCPerturbation))
-              HighamBench.p18PrintedCoeffTolerance)
-            (And
-              (@LE.le.{0} Real Real.instLE
-                (@abs.{0} Real Real.lattice Real.instAddGroup
-                  (@HighamBench.p18CoeffDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                    HighamBench.p18Method4s3pCBTilde
-                    (@HighamBench.p18CoeffMatVec (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                      HighamBench.p18Method4s3pCAPerturbation HighamBench.p18Method4s3pCCTilde)))
-                HighamBench.p18PrintedCoeffTolerance)
-              (And
-                (@LE.le.{0} Real Real.instLE
-                  (@abs.{0} Real Real.lattice Real.instAddGroup
-                    (@HighamBench.p18CoeffDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                      HighamBench.p18Method4s3pCBTilde
-                      (@HighamBench.p18CoeffMatVec (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                        HighamBench.p18Method4s3pCATilde HighamBench.p18Method4s3pCCPerturbation)))
-                  HighamBench.p18PrintedCoeffTolerance)
-                (And
-                  (@LE.le.{0} Real Real.instLE
-                    (@abs.{0} Real Real.lattice Real.instAddGroup
-                      (@HighamBench.p18CoeffDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                        HighamBench.p18Method4s3pCBTilde
-                        (@HighamBench.p18CoeffHadamard (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                          HighamBench.p18Method4s3pCCTilde HighamBench.p18Method4s3pCCPerturbation)))
-                    HighamBench.p18PrintedCoeffTolerance)
-                  (And
-                    (@LE.le.{0} Real Real.instLE
-                      (@abs.{0} Real Real.lattice Real.instAddGroup
-                        (@HighamBench.p18CoeffDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                          HighamBench.p18Method4s3pCBTilde
-                          (@HighamBench.p18CoeffMatVec (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                            HighamBench.p18Method4s3pCAPerturbation HighamBench.p18Method4s3pCCPerturbation)))
-                      HighamBench.p18PrintedCoeffTolerance)
-                    (And
-                      (@LE.le.{0} Real Real.instLE
-                        (@abs.{0} Real Real.lattice Real.instAddGroup
-                          (@HighamBench.p18CoeffDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                            HighamBench.p18Method4s3pCBTilde
-                            (@HighamBench.p18CoeffHadamard (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                              HighamBench.p18Method4s3pCCPerturbation HighamBench.p18Method4s3pCCPerturbation)))
-                        HighamBench.p18PrintedCoeffTolerance)
-                      (@LT.lt.{0} Real Real.instLT
-                        (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                          (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                          (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
-                          (@OfNat.ofNat.{0} Real (nat_lit 100)
-                            (@instOfNatAtLeastTwo.{0} Real (nat_lit 100) Real.instNatCast
-                              (@Nat.instAtLeastTwoHAddOfNat
-                                (@OfNat.ofNat.{0} Nat (nat_lit 99) (instOfNatNat (nat_lit 99)))
-                                (@Nat.instNeZeroSucc
-                                  (@OfNat.ofNat.{0} Nat (nat_lit 98) (instOfNatNat (nat_lit 98))))))))
-                        (@HighamBench.p18CoeffAbsDot (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-                          HighamBench.p18Method4s3pCBTilde HighamBench.p18Method4s3pCCPerturbation))))))))))))
+          (@HighamBench.p18UniformTwoTermGlobalOrder.{u_2} ι
+            (@HighamBench.P18StableMethod4s3pCBranch.globalError.{u_1, u_2} State inst inst_1 ι method
+              (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) smooth)
+            (@HighamBench.P18StableMethod4s3pCBranch.globalSchemeError.{u_1, u_2} State inst inst_1 ι method
+              (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) smooth)
+            (@HighamBench.P18StableMethod4s3pCBranch.globalPerturbationError.{u_1, u_2} State inst inst_1 ι method
+              (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) smooth)
+            (@HighamBench.P18StableMethod4s3pCBranch.step.{u_1, u_2} State inst inst_1 ι method
+              (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) smooth)
+            (@HighamBench.P18StableMethod4s3pCBranch.epsilon.{u_1, u_2} State inst inst_1 ι method
+              (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) smooth)
+            (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3)))
+            (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3))))
+          (@HighamBench.p18UniformTwoTermGlobalOrder.{u_2} ι
+            (@HighamBench.P18StableMethod4s3pCBranch.globalError.{u_1, u_2} State inst inst_1 ι method
+              (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3))) nonsmooth)
+            (@HighamBench.P18StableMethod4s3pCBranch.globalSchemeError.{u_1, u_2} State inst inst_1 ι method
+              (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3))) nonsmooth)
+            (@HighamBench.P18StableMethod4s3pCBranch.globalPerturbationError.{u_1, u_2} State inst inst_1 ι method
+              (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3))) nonsmooth)
+            (@HighamBench.P18StableMethod4s3pCBranch.step.{u_1, u_2} State inst inst_1 ι method
+              (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3))) nonsmooth)
+            (@HighamBench.P18StableMethod4s3pCBranch.epsilon.{u_1, u_2} State inst inst_1 ι method
+              (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3))) nonsmooth)
+            (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3)))
+            (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))))
 ```
 
 ## Local import graph
@@ -247,38 +117,1235 @@ And
 
 `local` entries are recursively followed through their types and bodies. `external-frontier` entries are the exact Lean/mathlib declarations where that recursive traversal stops; their types and one-level bodies are still shown.
 
-### D001: `HighamBench.p18CoeffAbsDot`
+### D001: `HighamBench.P18AdditiveRKTableau.bPerturbation`
 
 - Role: `local`
 - Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
+- Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `7e32a3976cd9c6452f67f1af32fa787b9558b077a4296ba345b436d4681da878`
+- Semantic SHA-256: `a4b3003dd7215c8a0cd285151ca1b0c1db2de401de3efd09290c9b97e1fe8763`
 
 Type:
 
 ```lean
-{s : Nat} → (Fin s → Real) → (Fin s → Real) → Real
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Fin s → Real
 ```
 
 Fully explicit type:
 
 ```lean
-{s : Nat} → (x y : Fin s → Real) → Real
+{s : Nat} → (self : HighamBench.P18AdditiveRKTableau s) → Fin s → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {s} x y => Finset.univ.sum fun i => instHMul.hMul (abs (x i)) (abs (y i))
+fun s self => self.4
 ```
 
-### D002: `HighamBench.p18CoeffDot`
+### D002: `HighamBench.P18Method4s3pCSourceModel`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `a6fb2fb6e65d499557115b25f84fde1305e8ded046187f9a66fe511dd42adcd1`
+
+Type:
+
+```lean
+Type
+```
+
+Fully explicit type:
+
+```lean
+Type
+```
+
+### D003: `HighamBench.P18Method4s3pCSourceModel.tableau`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `479eb24cb883cb3e8b2a44a6d2a457fb56f19c7e03af0b8ca3c49bc7249944b1`
+
+Type:
+
+```lean
+HighamBench.P18Method4s3pCSourceModel → HighamBench.P18AdditiveRKTableau 4
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P18Method4s3pCSourceModel) →
+  HighamBench.P18AdditiveRKTableau (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.1
+```
+
+### D004: `HighamBench.P18StableMethod4s3pCBranch`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `9881bdcce05a6bec0c2d42910be6e8d56064723bc1b2be0eb37af75c0f41d26b`
+
+Type:
+
+```lean
+(State : Type u_1) →
+  [inst : NormedAddCommGroup State] →
+    [NormedSpace Real State] → Type u_2 → HighamBench.P18Method4s3pCSourceModel → Nat → Type (max u_1 u_2)
+```
+
+Fully explicit type:
+
+```lean
+(State : Type u_1) →
+  [inst : NormedAddCommGroup.{u_1} State] →
+    [@NormedSpace.{0, u_1} Real State Real.normedField
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)] →
+      (ι : Type u_2) →
+        (method : HighamBench.P18Method4s3pCSourceModel) → (localPerturbationPower : Nat) → Type (max u_1 u_2)
+```
+
+### D005: `HighamBench.P18StableMethod4s3pCBranch.epsilon`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `77335368a7b06c5f8afb8d927aacd49b62f92d9a09d0906901c6f0512a0c7e40`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup State] →
+    [inst_1 : NormedSpace Real State] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            HighamBench.P18StableMethod4s3pCBranch State ι method localPerturbationPower → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup.{u_1} State] →
+    [inst_1 :
+        @NormedSpace.{0, u_1} Real State Real.normedField
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            (self :
+                @HighamBench.P18StableMethod4s3pCBranch.{u_1, u_2} State inst inst_1 ι method localPerturbationPower) →
+              Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [NormedAddCommGroup State] [NormedSpace Real State] ι method localPerturbationPower self => self.3
+```
+
+### D006: `HighamBench.P18StableMethod4s3pCBranch.globalError`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `6b3374be604d1122a7c33dce773678d22c1d3b5af2147418187b724319bceca3`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup State] →
+    [inst_1 : NormedSpace Real State] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            HighamBench.P18StableMethod4s3pCBranch State ι method localPerturbationPower → ι → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup.{u_1} State] →
+    [inst_1 :
+        @NormedSpace.{0, u_1} Real State Real.normedField
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            (self :
+                @HighamBench.P18StableMethod4s3pCBranch.{u_1, u_2} State inst inst_1 ι method localPerturbationPower) →
+              ι → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [NormedAddCommGroup State] [NormedSpace Real State] ι method localPerturbationPower self => self.42
+```
+
+### D007: `HighamBench.P18StableMethod4s3pCBranch.globalPerturbationError`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `c2c56ec256c037fc95646603fc27aa47c9cae611e62f1a1511d1c618a3ba59ee`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup State] →
+    [inst_1 : NormedSpace Real State] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            HighamBench.P18StableMethod4s3pCBranch State ι method localPerturbationPower → ι → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup.{u_1} State] →
+    [inst_1 :
+        @NormedSpace.{0, u_1} Real State Real.normedField
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            (self :
+                @HighamBench.P18StableMethod4s3pCBranch.{u_1, u_2} State inst inst_1 ι method localPerturbationPower) →
+              ι → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [NormedAddCommGroup State] [NormedSpace Real State] ι method localPerturbationPower self => self.41
+```
+
+### D008: `HighamBench.P18StableMethod4s3pCBranch.globalSchemeError`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `d389b576943d2450b1e7d1303ff81197db814e16482d13afbd43595da1578200`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup State] →
+    [inst_1 : NormedSpace Real State] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            HighamBench.P18StableMethod4s3pCBranch State ι method localPerturbationPower → ι → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup.{u_1} State] →
+    [inst_1 :
+        @NormedSpace.{0, u_1} Real State Real.normedField
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            (self :
+                @HighamBench.P18StableMethod4s3pCBranch.{u_1, u_2} State inst inst_1 ι method localPerturbationPower) →
+              ι → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [NormedAddCommGroup State] [NormedSpace Real State] ι method localPerturbationPower self => self.40
+```
+
+### D009: `HighamBench.P18StableMethod4s3pCBranch.step`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `e59c1525660117fc3eb45d0e0338a20eacef61d6ba7627d69b15ce801e7f9878`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup State] →
+    [inst_1 : NormedSpace Real State] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            HighamBench.P18StableMethod4s3pCBranch State ι method localPerturbationPower → ι → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup.{u_1} State] →
+    [inst_1 :
+        @NormedSpace.{0, u_1} Real State Real.normedField
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            (self :
+                @HighamBench.P18StableMethod4s3pCBranch.{u_1, u_2} State inst inst_1 ι method localPerturbationPower) →
+              ι → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [NormedAddCommGroup State] [NormedSpace Real State] ι method localPerturbationPower self => self.2
+```
+
+### D010: `HighamBench.P18StableMethod4s3pCBranch.tauRegime`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `719d8a6cd7c40d824226c706f218b85d8daa59b6e14a888d6497cad33e04688a`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup State] →
+    [inst_1 : NormedSpace Real State] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            HighamBench.P18StableMethod4s3pCBranch State ι method localPerturbationPower → HighamBench.P18TauRegime
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup.{u_1} State] →
+    [inst_1 :
+        @NormedSpace.{0, u_1} Real State Real.normedField
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            (self :
+                @HighamBench.P18StableMethod4s3pCBranch.{u_1, u_2} State inst inst_1 ι method localPerturbationPower) →
+              HighamBench.P18TauRegime
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [NormedAddCommGroup State] [NormedSpace Real State] ι method localPerturbationPower self => self.1
+```
+
+### D011: `HighamBench.P18TauRegime`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `b767c21406e3044231f5207172a34a9fbfb2a3741a8c94714c57cd114d7f4866`
+
+Type:
+
+```lean
+Type
+```
+
+Fully explicit type:
+
+```lean
+Type
+```
+
+### D012: `HighamBench.P18TauRegime.notWellBehaved`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `1`
+- Semantic SHA-256: `1a1d7bb7e96d74e34a79e3214b3956e68d53dcf79e554184000bd6db71928e9f`
+
+Type:
+
+```lean
+HighamBench.P18TauRegime
+```
+
+Fully explicit type:
+
+```lean
+HighamBench.P18TauRegime
+```
+
+### D013: `HighamBench.P18TauRegime.wellBehaved`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `1`
+- Semantic SHA-256: `e9ef4b0ed8703b256897b553882291d8a5d39585e0f05f9ba4ac902bcc360cd2`
+
+Type:
+
+```lean
+HighamBench.P18TauRegime
+```
+
+Fully explicit type:
+
+```lean
+HighamBench.P18TauRegime
+```
+
+### D014: `HighamBench.p18SmoothPerturbationOrderThree`
 
 - Role: `local`
 - Owner module: `HighamBench.P18Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
+- Semantic SHA-256: `12fc6ac2c8eab760c27bef7eb98d65be71cc67d9edd121e4d4794a6040369463`
+
+Type:
+
+```lean
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Prop
+```
+
+Fully explicit type:
+
+```lean
+{s : Nat} → (tableau : HighamBench.P18AdditiveRKTableau s) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {s} tableau =>
+  And (Eq (HighamBench.p18CoeffDot tableau.bPerturbation HighamBench.p18TableauE) 0)
+    (And (Eq (HighamBench.p18CoeffDot tableau.bPerturbation (HighamBench.p18TableauCTilde tableau)) 0)
+      (And
+        (Eq
+          (HighamBench.p18CoeffDot (HighamBench.p18TableauBTilde tableau) (HighamBench.p18TableauCPerturbation tableau))
+          0)
+        (And (Eq (HighamBench.p18CoeffDot tableau.bPerturbation (HighamBench.p18TableauCPerturbation tableau)) 0)
+          (And
+            (Eq
+              (HighamBench.p18CoeffDot tableau.bPerturbation
+                (HighamBench.p18CoeffMatVec (HighamBench.p18TableauATilde tableau)
+                  (HighamBench.p18TableauCTilde tableau)))
+              0)
+            (And
+              (Eq
+                (HighamBench.p18CoeffDot (HighamBench.p18TableauBTilde tableau)
+                  (HighamBench.p18CoeffMatVec tableau.APerturbation (HighamBench.p18TableauCTilde tableau)))
+                0)
+              (And
+                (Eq
+                  (HighamBench.p18CoeffDot (HighamBench.p18TableauBTilde tableau)
+                    (HighamBench.p18CoeffMatVec (HighamBench.p18TableauATilde tableau)
+                      (HighamBench.p18TableauCPerturbation tableau)))
+                  0)
+                (And
+                  (Eq
+                    (HighamBench.p18CoeffDot tableau.bPerturbation
+                      (HighamBench.p18CoeffHadamard (HighamBench.p18TableauCTilde tableau)
+                        (HighamBench.p18TableauCTilde tableau)))
+                    0)
+                  (And
+                    (Eq
+                      (HighamBench.p18CoeffDot (HighamBench.p18TableauBTilde tableau)
+                        (HighamBench.p18CoeffHadamard (HighamBench.p18TableauCTilde tableau)
+                          (HighamBench.p18TableauCPerturbation tableau)))
+                      0)
+                    (And
+                      (Eq
+                        (HighamBench.p18CoeffDot tableau.bPerturbation
+                          (HighamBench.p18CoeffMatVec tableau.APerturbation (HighamBench.p18TableauCTilde tableau)))
+                        0)
+                      (And
+                        (Eq
+                          (HighamBench.p18CoeffDot tableau.bPerturbation
+                            (HighamBench.p18CoeffMatVec (HighamBench.p18TableauATilde tableau)
+                              (HighamBench.p18TableauCPerturbation tableau)))
+                          0)
+                        (And
+                          (Eq
+                            (HighamBench.p18CoeffDot (HighamBench.p18TableauBTilde tableau)
+                              (HighamBench.p18CoeffMatVec tableau.APerturbation
+                                (HighamBench.p18TableauCPerturbation tableau)))
+                            0)
+                          (And
+                            (Eq
+                              (HighamBench.p18CoeffDot tableau.bPerturbation
+                                (HighamBench.p18CoeffHadamard (HighamBench.p18TableauCPerturbation tableau)
+                                  (HighamBench.p18TableauCTilde tableau)))
+                              0)
+                            (And
+                              (Eq
+                                (HighamBench.p18CoeffDot (HighamBench.p18TableauBTilde tableau)
+                                  (HighamBench.p18CoeffHadamard (HighamBench.p18TableauCPerturbation tableau)
+                                    (HighamBench.p18TableauCPerturbation tableau)))
+                                0)
+                              (And
+                                (Eq
+                                  (HighamBench.p18CoeffDot tableau.bPerturbation
+                                    (HighamBench.p18CoeffMatVec tableau.APerturbation
+                                      (HighamBench.p18TableauCPerturbation tableau)))
+                                  0)
+                                (Eq
+                                  (HighamBench.p18CoeffDot tableau.bPerturbation
+                                    (HighamBench.p18CoeffHadamard (HighamBench.p18TableauCPerturbation tableau)
+                                      (HighamBench.p18TableauCPerturbation tableau)))
+                                  0)))))))))))))))
+```
+
+### D015: `HighamBench.p18ThirdOrderConsistency`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `288fc8df50fd034593361abbf0fc0cb1a2fd88f7bd55a457cc7d2eff5db71d49`
+
+Type:
+
+```lean
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Prop
+```
+
+Fully explicit type:
+
+```lean
+{s : Nat} → (tableau : HighamBench.P18AdditiveRKTableau s) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {s} tableau =>
+  And (Eq (HighamBench.p18CoeffDot (HighamBench.p18TableauBTilde tableau) HighamBench.p18TableauE) 1)
+    (And
+      (Eq (HighamBench.p18CoeffDot (HighamBench.p18TableauBTilde tableau) (HighamBench.p18TableauCTilde tableau))
+        (1 / 2))
+      (And
+        (Eq
+          (HighamBench.p18CoeffDot (HighamBench.p18TableauBTilde tableau)
+            (HighamBench.p18CoeffHadamard (HighamBench.p18TableauCTilde tableau)
+              (HighamBench.p18TableauCTilde tableau)))
+          (1 / 3))
+        (Eq
+          (HighamBench.p18CoeffDot (HighamBench.p18TableauBTilde tableau)
+            (HighamBench.p18CoeffMatVec (HighamBench.p18TableauATilde tableau) (HighamBench.p18TableauCTilde tableau)))
+          (1 / 6))))
+```
+
+### D016: `HighamBench.p18UniformTwoTermGlobalOrder`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `857b1fa0013d8b7c827b923215409f73134c4af272d8ce63a936c72263964b27`
+
+Type:
+
+```lean
+{ι : Type u_1} → (ι → Real) → (ι → Real) → (ι → Real) → (ι → Real) → Real → Nat → Nat → Prop
+```
+
+Fully explicit type:
+
+```lean
+{ι : Type u_1} → (error schemeError perturbationError step : ι → Real) → (epsilon : Real) → (p m : Nat) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {ι} error schemeError perturbationError step epsilon p m =>
+  And (∀ (t : ι), Eq (error t) (instHAdd.hAdd (schemeError t) (perturbationError t)))
+    (Exists fun schemeConstant =>
+      Exists fun perturbationConstant =>
+        And (Real.instLE.le 0 schemeConstant)
+          (And (Real.instLE.le 0 perturbationConstant)
+            (∀ (t : ι),
+              And (Real.instLE.le (abs (schemeError t)) (instHMul.hMul schemeConstant (instHPow.hPow (step t) p)))
+                (Real.instLE.le (abs (perturbationError t))
+                  (instHMul.hMul (instHMul.hMul perturbationConstant (abs epsilon)) (instHPow.hPow (step t) m))))))
+```
+
+### D017: `HighamBench.P18AdditiveRKTableau`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `2`
+- Semantic SHA-256: `4707776dcdcfe568ae7f5bbf7c1d612e65746b37c13c21cfe4a3d7ebfca46681`
+
+Type:
+
+```lean
+Nat → Type
+```
+
+Fully explicit type:
+
+```lean
+(s : Nat) → Type
+```
+
+### D018: `HighamBench.P18AdditiveRKTableau.APerturbation`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `429ca72b523a839090da99ea321174af9d58b75e8d3278be921b1037d2d5567a`
+
+Type:
+
+```lean
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Fin s → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{s : Nat} → (self : HighamBench.P18AdditiveRKTableau s) → Fin s → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun s self => self.2
+```
+
+### D019: `HighamBench.P18Method4s3pCSourceModel.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `2b73edfc2c9c2edb49544a566236fb9b49bd9cad2df0e5b917330e56f3153bdd`
+
+Type:
+
+```lean
+(tableau : HighamBench.P18AdditiveRKTableau 4) →
+  (Eq tableau.bPerturbation fun x => 0) →
+    HighamBench.p18ThirdOrderConsistency tableau →
+      HighamBench.p18SmoothPerturbationOrderThree tableau → HighamBench.P18Method4s3pCSourceModel
+```
+
+Fully explicit type:
+
+```lean
+(tableau : HighamBench.P18AdditiveRKTableau (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))) →
+  (perturbation_weights_zero :
+      @Eq.{1} (Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real)
+        (@HighamBench.P18AdditiveRKTableau.bPerturbation (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+          tableau)
+        fun (x : Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))) =>
+        @OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) →
+    (third_order_consistency :
+        @HighamBench.p18ThirdOrderConsistency (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) tableau) →
+      (smooth_perturbation_order_three :
+          @HighamBench.p18SmoothPerturbationOrderThree (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+            tableau) →
+        HighamBench.P18Method4s3pCSourceModel
+```
+
+### D020: `HighamBench.P18StableMethod4s3pCBranch.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `224a522c55dcc76379285e44bf7b71abb90a4a6a1a6626f661bfc913eaeb9b59`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup State] →
+    [inst_1 : NormedSpace Real State] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            HighamBench.P18TauRegime →
+              (step : ι → Real) →
+                (epsilon : Real) →
+                  (stepCount : ι → Nat) →
+                    (horizon localSchemeConstant localPerturbationConstant stabilityConstant : Real) →
+                      (∀ (t : ι), Real.instLE.le 0 (step t)) →
+                        Real.instLT.lt 0 epsilon →
+                          (∀ (t : ι), instLTNat.lt 0 (stepCount t)) →
+                            Real.instLE.le 0 horizon →
+                              Real.instLE.le 0 localSchemeConstant →
+                                Real.instLE.le 0 localPerturbationConstant →
+                                  Real.instLE.le 0 stabilityConstant →
+                                    (F FEpsilon tau : State → State) →
+                                      (computedState exactState :
+                                          (t : ι) → Fin (instHAdd.hAdd (stepCount t) 1) → State) →
+                                        (oneStep :
+                                            (t : ι) → Fin (stepCount t) → HighamBench.P18AdditiveRKOneStepRun State 4) →
+                                          (∀ (t : ι) (j : Fin (stepCount t)), Eq (oneStep t j).step (step t)) →
+                                            (∀ (t : ι) (j : Fin (stepCount t)), Eq (oneStep t j).epsilon epsilon) →
+                                              (∀ (t : ι) (j : Fin (stepCount t)), Eq (oneStep t j).F F) →
+                                                (∀ (t : ι) (j : Fin (stepCount t)),
+                                                    Eq (oneStep t j).FEpsilon FEpsilon) →
+                                                  (∀ (t : ι) (j : Fin (stepCount t)), Eq (oneStep t j).tau tau) →
+                                                    (∀ (t : ι) (j : Fin (stepCount t)),
+                                                        Eq (oneStep t j).a method.tableau.A) →
+                                                      (∀ (t : ι) (j : Fin (stepCount t)),
+                                                          Eq (oneStep t j).aPerturbation method.tableau.APerturbation) →
+                                                        (∀ (t : ι) (j : Fin (stepCount t)),
+                                                            Eq (oneStep t j).b method.tableau.b) →
+                                                          (∀ (t : ι) (j : Fin (stepCount t)),
+                                                              Eq (oneStep t j).bPerturbation
+                                                                method.tableau.bPerturbation) →
+                                                            (∀ (t : ι) (j : Fin (stepCount t)),
+                                                                Eq (oneStep t j).initial (computedState t j.castSucc)) →
+                                                              (∀ (t : ι) (j : Fin (stepCount t)),
+                                                                  Eq (oneStep t j).perturbedNext
+                                                                    (computedState t j.succ)) →
+                                                                (∀ (t : ι) (j : Fin (stepCount t)),
+                                                                    Eq (oneStep t j).referenceNext
+                                                                      (exactState t j.succ)) →
+                                                                  (schemeLocalError perturbationLocalError :
+                                                                      (t : ι) → Fin (stepCount t) → Real) →
+                                                                    (∀ (t : ι) (j : Fin (stepCount t)),
+                                                                        Eq (schemeLocalError t j)
+                                                                          (inst.norm
+                                                                            (HighamBench.p18SchemeOneStepError
+                                                                              (oneStep t j)))) →
+                                                                      (∀ (t : ι) (j : Fin (stepCount t)),
+                                                                          Eq (perturbationLocalError t j)
+                                                                            (inst.norm
+                                                                              (HighamBench.p18PerturbationOneStepError
+                                                                                (oneStep t j)))) →
+                                                                        (∀ (t : ι) (j : Fin (stepCount t)),
+                                                                            Real.instLE.le (schemeLocalError t j)
+                                                                              (instHMul.hMul localSchemeConstant
+                                                                                (instHPow.hPow (step t) 4))) →
+                                                                          (∀ (t : ι) (j : Fin (stepCount t)),
+                                                                              Real.instLE.le
+                                                                                (perturbationLocalError t j)
+                                                                                (instHMul.hMul
+                                                                                  (instHMul.hMul
+                                                                                    localPerturbationConstant
+                                                                                    (abs epsilon))
+                                                                                  (instHPow.hPow (step t)
+                                                                                    localPerturbationPower))) →
+                                                                            (globalSchemeError globalPerturbationError
+                                                                                globalError : ι → Real) →
+                                                                              (∀ (t : ι),
+                                                                                  Eq (globalError t)
+                                                                                    (inst.norm
+                                                                                      (instHSub.hSub
+                                                                                        (exactState t
+                                                                                          (Fin.last (stepCount t)))
+                                                                                        (computedState t
+                                                                                          (Fin.last (stepCount t)))))) →
+                                                                                (∀ (t : ι),
+                                                                                    Eq (globalError t)
+                                                                                      (instHAdd.hAdd
+                                                                                        (globalSchemeError t)
+                                                                                        (globalPerturbationError t))) →
+                                                                                  (∀ (t : ι),
+                                                                                      Real.instLE.le
+                                                                                        (abs (globalSchemeError t))
+                                                                                        (instHMul.hMul stabilityConstant
+                                                                                          (Finset.univ.sum fun j =>
+                                                                                            schemeLocalError t j))) →
+                                                                                    (∀ (t : ι),
+                                                                                        Real.instLE.le
+                                                                                          (abs
+                                                                                            (globalPerturbationError t))
+                                                                                          (instHMul.hMul
+                                                                                            stabilityConstant
+                                                                                            (Finset.univ.sum fun j =>
+                                                                                              perturbationLocalError t
+                                                                                                j))) →
+                                                                                      (∀ (t : ι),
+                                                                                          Real.instLE.le
+                                                                                            (instHMul.hMul
+                                                                                              (stepCount t).cast
+                                                                                              (step t))
+                                                                                            horizon) →
+                                                                                        HighamBench.P18StableMethod4s3pCBranch
+                                                                                          State ι method
+                                                                                          localPerturbationPower
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : NormedAddCommGroup.{u_1} State] →
+    [inst_1 :
+        @NormedSpace.{0, u_1} Real State Real.normedField
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)] →
+      {ι : Type u_2} →
+        {method : HighamBench.P18Method4s3pCSourceModel} →
+          {localPerturbationPower : Nat} →
+            (tauRegime : HighamBench.P18TauRegime) →
+              (step : ι → Real) →
+                (epsilon : Real) →
+                  (stepCount : ι → Nat) →
+                    (horizon localSchemeConstant localPerturbationConstant stabilityConstant : Real) →
+                      (step_nonneg :
+                          ∀ (t : ι),
+                            @LE.le.{0} Real Real.instLE
+                              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) (step t)) →
+                        (epsilon_pos :
+                            @LT.lt.{0} Real Real.instLT
+                              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) epsilon) →
+                          (step_count_pos :
+                              ∀ (t : ι),
+                                @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
+                                  (stepCount t)) →
+                            (horizon_nonneg :
+                                @LE.le.{0} Real Real.instLE
+                                  (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) horizon) →
+                              (local_scheme_constant_nonneg :
+                                  @LE.le.{0} Real Real.instLE
+                                    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                                    localSchemeConstant) →
+                                (local_perturbation_constant_nonneg :
+                                    @LE.le.{0} Real Real.instLE
+                                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                                      localPerturbationConstant) →
+                                  (stability_constant_nonneg :
+                                      @LE.le.{0} Real Real.instLE
+                                        (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                                        stabilityConstant) →
+                                    (F FEpsilon tau : State → State) →
+                                      (computedState exactState :
+                                          (t : ι) →
+                                            Fin
+                                                (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                                                  (stepCount t)
+                                                  (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+                                              State) →
+                                        (oneStep :
+                                            (t : ι) →
+                                              Fin (stepCount t) →
+                                                @HighamBench.P18AdditiveRKOneStepRun.{u_1} State
+                                                  (@NormedAddCommGroup.toAddCommGroup.{u_1} State inst)
+                                                  (@NormedSpace.toModule.{0, u_1} Real State Real.normedField
+                                                    (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)
+                                                    inst_1)
+                                                  (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))) →
+                                          (run_step :
+                                              ∀ (t : ι) (j : Fin (stepCount t)),
+                                                @Eq.{1} Real
+                                                  (@HighamBench.P18AdditiveRKOneStepRun.step.{u_1} State
+                                                    (@NormedAddCommGroup.toAddCommGroup.{u_1} State inst)
+                                                    (@NormedSpace.toModule.{0, u_1} Real State Real.normedField
+                                                      (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)
+                                                      inst_1)
+                                                    (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+                                                    (oneStep t j))
+                                                  (step t)) →
+                                            (run_epsilon :
+                                                ∀ (t : ι) (j : Fin (stepCount t)),
+                                                  @Eq.{1} Real
+                                                    (@HighamBench.P18AdditiveRKOneStepRun.epsilon.{u_1} State
+                                                      (@NormedAddCommGroup.toAddCommGroup.{u_1} State inst)
+                                                      (@NormedSpace.toModule.{0, u_1} Real State Real.normedField
+                                                        (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State inst)
+                                                        inst_1)
+                                                      (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+                                                      (oneStep t j))
+                                                    epsilon) →
+                                              (run_F :
+                                                  ∀ (t : ι) (j : Fin (stepCount t)),
+                                                    @Eq.{u_1 + 1} (State → State)
+                                                      (@HighamBench.P18AdditiveRKOneStepRun.F.{u_1} State
+                                                        (@NormedAddCommGroup.toAddCommGroup.{u_1} State inst)
+                                                        (@NormedSpace.toModule.{0, u_1} Real State Real.normedField
+                                                          (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State
+                                                            inst)
+                                                          inst_1)
+                                                        (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+                                                        (oneStep t j))
+                                                      F) →
+                                                (run_FEpsilon :
+                                                    ∀ (t : ι) (j : Fin (stepCount t)),
+                                                      @Eq.{u_1 + 1} (State → State)
+                                                        (@HighamBench.P18AdditiveRKOneStepRun.FEpsilon.{u_1} State
+                                                          (@NormedAddCommGroup.toAddCommGroup.{u_1} State inst)
+                                                          (@NormedSpace.toModule.{0, u_1} Real State Real.normedField
+                                                            (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State
+                                                              inst)
+                                                            inst_1)
+                                                          (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+                                                          (oneStep t j))
+                                                        FEpsilon) →
+                                                  (run_tau :
+                                                      ∀ (t : ι) (j : Fin (stepCount t)),
+                                                        @Eq.{u_1 + 1} (State → State)
+                                                          (@HighamBench.P18AdditiveRKOneStepRun.tau.{u_1} State
+                                                            (@NormedAddCommGroup.toAddCommGroup.{u_1} State inst)
+                                                            (@NormedSpace.toModule.{0, u_1} Real State Real.normedField
+                                                              (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1} State
+                                                                inst)
+                                                              inst_1)
+                                                            (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                              (instOfNatNat (nat_lit 4)))
+                                                            (oneStep t j))
+                                                          tau) →
+                                                    (run_A :
+                                                        ∀ (t : ι) (j : Fin (stepCount t)),
+                                                          @Eq.{1}
+                                                            (Fin
+                                                                (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                  (instOfNatNat (nat_lit 4))) →
+                                                              Fin
+                                                                  (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                    (instOfNatNat (nat_lit 4))) →
+                                                                Real)
+                                                            (@HighamBench.P18AdditiveRKOneStepRun.a.{u_1} State
+                                                              (@NormedAddCommGroup.toAddCommGroup.{u_1} State inst)
+                                                              (@NormedSpace.toModule.{0, u_1} Real State
+                                                                Real.normedField
+                                                                (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1}
+                                                                  State inst)
+                                                                inst_1)
+                                                              (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                (instOfNatNat (nat_lit 4)))
+                                                              (oneStep t j))
+                                                            (@HighamBench.P18AdditiveRKTableau.A
+                                                              (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                (instOfNatNat (nat_lit 4)))
+                                                              (HighamBench.P18Method4s3pCSourceModel.tableau method))) →
+                                                      (run_APerturbation :
+                                                          ∀ (t : ι) (j : Fin (stepCount t)),
+                                                            @Eq.{1}
+                                                              (Fin
+                                                                  (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                    (instOfNatNat (nat_lit 4))) →
+                                                                Fin
+                                                                    (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                      (instOfNatNat (nat_lit 4))) →
+                                                                  Real)
+                                                              (@HighamBench.P18AdditiveRKOneStepRun.aPerturbation.{u_1}
+                                                                State
+                                                                (@NormedAddCommGroup.toAddCommGroup.{u_1} State inst)
+                                                                (@NormedSpace.toModule.{0, u_1} Real State
+                                                                  Real.normedField
+                                                                  (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1}
+                                                                    State inst)
+                                                                  inst_1)
+                                                                (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                  (instOfNatNat (nat_lit 4)))
+                                                                (oneStep t j))
+                                                              (@HighamBench.P18AdditiveRKTableau.APerturbation
+                                                                (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                  (instOfNatNat (nat_lit 4)))
+                                                                (HighamBench.P18Method4s3pCSourceModel.tableau
+                                                                  method))) →
+                                                        (run_b :
+                                                            ∀ (t : ι) (j : Fin (stepCount t)),
+                                                              @Eq.{1}
+                                                                (Fin
+                                                                    (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                      (instOfNatNat (nat_lit 4))) →
+                                                                  Real)
+                                                                (@HighamBench.P18AdditiveRKOneStepRun.b.{u_1} State
+                                                                  (@NormedAddCommGroup.toAddCommGroup.{u_1} State inst)
+                                                                  (@NormedSpace.toModule.{0, u_1} Real State
+                                                                    Real.normedField
+                                                                    (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1}
+                                                                      State inst)
+                                                                    inst_1)
+                                                                  (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                    (instOfNatNat (nat_lit 4)))
+                                                                  (oneStep t j))
+                                                                (@HighamBench.P18AdditiveRKTableau.b
+                                                                  (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                    (instOfNatNat (nat_lit 4)))
+                                                                  (HighamBench.P18Method4s3pCSourceModel.tableau
+                                                                    method))) →
+                                                          (run_bPerturbation :
+                                                              ∀ (t : ι) (j : Fin (stepCount t)),
+                                                                @Eq.{1}
+                                                                  (Fin
+                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                        (instOfNatNat (nat_lit 4))) →
+                                                                    Real)
+                                                                  (@HighamBench.P18AdditiveRKOneStepRun.bPerturbation.{u_1}
+                                                                    State
+                                                                    (@NormedAddCommGroup.toAddCommGroup.{u_1} State
+                                                                      inst)
+                                                                    (@NormedSpace.toModule.{0, u_1} Real State
+                                                                      Real.normedField
+                                                                      (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1}
+                                                                        State inst)
+                                                                      inst_1)
+                                                                    (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                      (instOfNatNat (nat_lit 4)))
+                                                                    (oneStep t j))
+                                                                  (@HighamBench.P18AdditiveRKTableau.bPerturbation
+                                                                    (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                      (instOfNatNat (nat_lit 4)))
+                                                                    (HighamBench.P18Method4s3pCSourceModel.tableau
+                                                                      method))) →
+                                                            (run_initial :
+                                                                ∀ (t : ι) (j : Fin (stepCount t)),
+                                                                  @Eq.{u_1 + 1} State
+                                                                    (@HighamBench.P18AdditiveRKOneStepRun.initial.{u_1}
+                                                                      State
+                                                                      (@NormedAddCommGroup.toAddCommGroup.{u_1} State
+                                                                        inst)
+                                                                      (@NormedSpace.toModule.{0, u_1} Real State
+                                                                        Real.normedField
+                                                                        (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1}
+                                                                          State inst)
+                                                                        inst_1)
+                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                        (instOfNatNat (nat_lit 4)))
+                                                                      (oneStep t j))
+                                                                    (computedState t (@Fin.castSucc (stepCount t) j))) →
+                                                              (run_perturbed_next :
+                                                                  ∀ (t : ι) (j : Fin (stepCount t)),
+                                                                    @Eq.{u_1 + 1} State
+                                                                      (@HighamBench.P18AdditiveRKOneStepRun.perturbedNext.{u_1}
+                                                                        State
+                                                                        (@NormedAddCommGroup.toAddCommGroup.{u_1} State
+                                                                          inst)
+                                                                        (@NormedSpace.toModule.{0, u_1} Real State
+                                                                          Real.normedField
+                                                                          (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1}
+                                                                            State inst)
+                                                                          inst_1)
+                                                                        (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                          (instOfNatNat (nat_lit 4)))
+                                                                        (oneStep t j))
+                                                                      (computedState t (@Fin.succ (stepCount t) j))) →
+                                                                (run_reference_next :
+                                                                    ∀ (t : ι) (j : Fin (stepCount t)),
+                                                                      @Eq.{u_1 + 1} State
+                                                                        (@HighamBench.P18AdditiveRKOneStepRun.referenceNext.{u_1}
+                                                                          State
+                                                                          (@NormedAddCommGroup.toAddCommGroup.{u_1}
+                                                                            State inst)
+                                                                          (@NormedSpace.toModule.{0, u_1} Real State
+                                                                            Real.normedField
+                                                                            (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1}
+                                                                              State inst)
+                                                                            inst_1)
+                                                                          (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                            (instOfNatNat (nat_lit 4)))
+                                                                          (oneStep t j))
+                                                                        (exactState t (@Fin.succ (stepCount t) j))) →
+                                                                  (schemeLocalError perturbationLocalError :
+                                                                      (t : ι) → Fin (stepCount t) → Real) →
+                                                                    (scheme_local_error_eq :
+                                                                        ∀ (t : ι) (j : Fin (stepCount t)),
+                                                                          @Eq.{1} Real (schemeLocalError t j)
+                                                                            (@Norm.norm.{u_1} State
+                                                                              (@NormedAddCommGroup.toNorm.{u_1} State
+                                                                                inst)
+                                                                              (@HighamBench.p18SchemeOneStepError.{u_1}
+                                                                                State
+                                                                                (@NormedAddCommGroup.toAddCommGroup.{u_1}
+                                                                                  State inst)
+                                                                                (@NormedSpace.toModule.{0, u_1} Real
+                                                                                  State Real.normedField
+                                                                                  (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1}
+                                                                                    State inst)
+                                                                                  inst_1)
+                                                                                (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                                  (instOfNatNat (nat_lit 4)))
+                                                                                (oneStep t j)))) →
+                                                                      (perturbation_local_error_eq :
+                                                                          ∀ (t : ι) (j : Fin (stepCount t)),
+                                                                            @Eq.{1} Real (perturbationLocalError t j)
+                                                                              (@Norm.norm.{u_1} State
+                                                                                (@NormedAddCommGroup.toNorm.{u_1} State
+                                                                                  inst)
+                                                                                (@HighamBench.p18PerturbationOneStepError.{u_1}
+                                                                                  State
+                                                                                  (@NormedAddCommGroup.toAddCommGroup.{u_1}
+                                                                                    State inst)
+                                                                                  (@NormedSpace.toModule.{0, u_1} Real
+                                                                                    State Real.normedField
+                                                                                    (@NormedAddCommGroup.toSeminormedAddCommGroup.{u_1}
+                                                                                      State inst)
+                                                                                    inst_1)
+                                                                                  (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                                    (instOfNatNat (nat_lit 4)))
+                                                                                  (oneStep t j)))) →
+                                                                        (scheme_local_bound :
+                                                                            ∀ (t : ι) (j : Fin (stepCount t)),
+                                                                              @LE.le.{0} Real Real.instLE
+                                                                                (schemeLocalError t j)
+                                                                                (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                                  (@instHMul.{0} Real Real.instMul)
+                                                                                  localSchemeConstant
+                                                                                  (@HPow.hPow.{0, 0, 0} Real Nat Real
+                                                                                    (@instHPow.{0, 0} Real Nat
+                                                                                      (@Monoid.toNatPow.{0} Real
+                                                                                        Real.instMonoid))
+                                                                                    (step t)
+                                                                                    (@OfNat.ofNat.{0} Nat (nat_lit 4)
+                                                                                      (instOfNatNat (nat_lit 4)))))) →
+                                                                          (perturbation_local_bound :
+                                                                              ∀ (t : ι) (j : Fin (stepCount t)),
+                                                                                @LE.le.{0} Real Real.instLE
+                                                                                  (perturbationLocalError t j)
+                                                                                  (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                                    (@instHMul.{0} Real Real.instMul)
+                                                                                    (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                                      (@instHMul.{0} Real Real.instMul)
+                                                                                      localPerturbationConstant
+                                                                                      (@abs.{0} Real Real.lattice
+                                                                                        Real.instAddGroup epsilon))
+                                                                                    (@HPow.hPow.{0, 0, 0} Real Nat Real
+                                                                                      (@instHPow.{0, 0} Real Nat
+                                                                                        (@Monoid.toNatPow.{0} Real
+                                                                                          Real.instMonoid))
+                                                                                      (step t)
+                                                                                      localPerturbationPower))) →
+                                                                            (globalSchemeError globalPerturbationError
+                                                                                globalError : ι → Real) →
+                                                                              (global_error_eq :
+                                                                                  ∀ (t : ι),
+                                                                                    @Eq.{1} Real (globalError t)
+                                                                                      (@Norm.norm.{u_1} State
+                                                                                        (@NormedAddCommGroup.toNorm.{u_1}
+                                                                                          State inst)
+                                                                                        (@HSub.hSub.{u_1, u_1, u_1}
+                                                                                          State State State
+                                                                                          (@instHSub.{u_1} State
+                                                                                            (@SubNegMonoid.toSub.{u_1}
+                                                                                              State
+                                                                                              (@AddGroup.toSubNegMonoid.{u_1}
+                                                                                                State
+                                                                                                (@NormedAddGroup.toAddGroup.{u_1}
+                                                                                                  State
+                                                                                                  (@NormedAddCommGroup.toNormedAddGroup.{u_1}
+                                                                                                    State inst)))))
+                                                                                          (exactState t
+                                                                                            (Fin.last (stepCount t)))
+                                                                                          (computedState t
+                                                                                            (Fin.last
+                                                                                              (stepCount t)))))) →
+                                                                                (global_split :
+                                                                                    ∀ (t : ι),
+                                                                                      @Eq.{1} Real (globalError t)
+                                                                                        (@HAdd.hAdd.{0, 0, 0} Real Real
+                                                                                          Real
+                                                                                          (@instHAdd.{0} Real
+                                                                                            Real.instAdd)
+                                                                                          (globalSchemeError t)
+                                                                                          (globalPerturbationError
+                                                                                            t))) →
+                                                                                  (stable_scheme_accumulation :
+                                                                                      ∀ (t : ι),
+                                                                                        @LE.le.{0} Real Real.instLE
+                                                                                          (@abs.{0} Real Real.lattice
+                                                                                            Real.instAddGroup
+                                                                                            (globalSchemeError t))
+                                                                                          (@HMul.hMul.{0, 0, 0} Real
+                                                                                            Real Real
+                                                                                            (@instHMul.{0} Real
+                                                                                              Real.instMul)
+                                                                                            stabilityConstant
+                                                                                            (@Finset.sum.{0, 0}
+                                                                                              (Fin (stepCount t)) Real
+                                                                                              Real.instAddCommMonoid
+                                                                                              (@Finset.univ.{0}
+                                                                                                (Fin (stepCount t))
+                                                                                                (Fin.fintype
+                                                                                                  (stepCount t)))
+                                                                                              fun
+                                                                                                (j :
+                                                                                                  Fin (stepCount t)) =>
+                                                                                              schemeLocalError t j))) →
+                                                                                    (stable_perturbation_accumulation :
+                                                                                        ∀ (t : ι),
+                                                                                          @LE.le.{0} Real Real.instLE
+                                                                                            (@abs.{0} Real Real.lattice
+                                                                                              Real.instAddGroup
+                                                                                              (globalPerturbationError
+                                                                                                t))
+                                                                                            (@HMul.hMul.{0, 0, 0} Real
+                                                                                              Real Real
+                                                                                              (@instHMul.{0} Real
+                                                                                                Real.instMul)
+                                                                                              stabilityConstant
+                                                                                              (@Finset.sum.{0, 0}
+                                                                                                (Fin (stepCount t)) Real
+                                                                                                Real.instAddCommMonoid
+                                                                                                (@Finset.univ.{0}
+                                                                                                  (Fin (stepCount t))
+                                                                                                  (Fin.fintype
+                                                                                                    (stepCount t)))
+                                                                                                fun
+                                                                                                  (j :
+                                                                                                    Fin
+                                                                                                      (stepCount t)) =>
+                                                                                                perturbationLocalError t
+                                                                                                  j))) →
+                                                                                      (finite_time_horizon :
+                                                                                          ∀ (t : ι),
+                                                                                            @LE.le.{0} Real Real.instLE
+                                                                                              (@HMul.hMul.{0, 0, 0} Real
+                                                                                                Real Real
+                                                                                                (@instHMul.{0} Real
+                                                                                                  Real.instMul)
+                                                                                                (@Nat.cast.{0} Real
+                                                                                                  Real.instNatCast
+                                                                                                  (stepCount t))
+                                                                                                (step t))
+                                                                                              horizon) →
+                                                                                        @HighamBench.P18StableMethod4s3pCBranch.{u_1,
+                                                                                              u_2}
+                                                                                          State inst inst_1 ι method
+                                                                                          localPerturbationPower
+```
+
+### D021: `HighamBench.p18CoeffDot`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
 - Semantic SHA-256: `bd9b2b87931791a0513395de521f55820ffea08ecd6e5327f9285fb57802653d`
 
 Type:
@@ -299,12 +1366,12 @@ Definition body (one-level semantic boundary):
 fun {s} x y => Finset.univ.sum fun i => instHMul.hMul (x i) (y i)
 ```
 
-### D003: `HighamBench.p18CoeffHadamard`
+### D022: `HighamBench.p18CoeffHadamard`
 
 - Role: `local`
 - Owner module: `HighamBench.P18Definitions`
 - Declaration kind: `def`
-- Distance from target type: `1`
+- Distance from target type: `2`
 - Semantic SHA-256: `9744d86b4fa53b459dbaebbe4af9ed542fc9df730bcfb949971f292acb657aa1`
 
 Type:
@@ -325,12 +1392,12 @@ Definition body (one-level semantic boundary):
 fun {s} x y i => instHMul.hMul (x i) (y i)
 ```
 
-### D004: `HighamBench.p18CoeffMatVec`
+### D023: `HighamBench.p18CoeffMatVec`
 
 - Role: `local`
 - Owner module: `HighamBench.P18Definitions`
 - Declaration kind: `def`
-- Distance from target type: `1`
+- Distance from target type: `2`
 - Semantic SHA-256: `6d6065bfcec4876b221aaa96bfe3d07b5525312256365327c3ca230674119e64`
 
 Type:
@@ -351,283 +1418,7 @@ Definition body (one-level semantic boundary):
 fun {s} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
 ```
 
-### D005: `HighamBench.p18Method4s3pCAPerturbation`
-
-- Role: `local`
-- Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `7a67cace1a40b012320ffef3e09252bb2ff0dc641aa170fe4343dbbe67fdf9c4`
-
-Type:
-
-```lean
-Fin 4 → Fin 4 → Real
-```
-
-Fully explicit type:
-
-```lean
-Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) →
-  Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-EquivLike.toFunLike.coe Matrix.of
-  (Matrix.vecCons
-    (Matrix.vecCons 0.511243008730995 (Matrix.vecCons 0 (Matrix.vecCons 0 (Matrix.vecCons 0 Matrix.vecEmpty))))
-    (Matrix.vecCons
-      (Matrix.vecCons (Real.instNeg.neg 1.999347282862640)
-        (Matrix.vecCons 1.957161067302390 (Matrix.vecCons 0 (Matrix.vecCons 0 Matrix.vecEmpty))))
-      (Matrix.vecCons
-        (Matrix.vecCons 0.443312893511937
-          (Matrix.vecCons (Real.instNeg.neg 0.573131033672219)
-            (Matrix.vecCons 0.128283796414019 (Matrix.vecCons 0 Matrix.vecEmpty))))
-        (Matrix.vecCons
-          (Matrix.vecCons (-2)
-            (Matrix.vecCons (Real.instNeg.neg 0.160330320741428)
-              (Matrix.vecCons 0.579597314161362 (Matrix.vecCons 1.484688928981990 Matrix.vecEmpty))))
-          Matrix.vecEmpty))))
-```
-
-### D006: `HighamBench.p18Method4s3pCATilde`
-
-- Role: `local`
-- Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `570fbbd76f311900e3eac6c2b636e11fde499d1a07e435056fa7d1315ba56904`
-
-Type:
-
-```lean
-Fin 4 → Fin 4 → Real
-```
-
-Fully explicit type:
-
-```lean
-Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) →
-  Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-HighamBench.p18CoeffMatAdd HighamBench.p18Method4s3pCA HighamBench.p18Method4s3pCAPerturbation
-```
-
-### D007: `HighamBench.p18Method4s3pCBPerturbation`
-
-- Role: `local`
-- Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `69775b489476c6ecbe51ee265877065402533479b40317d4df09dde4f8da2db5`
-
-Type:
-
-```lean
-Fin 4 → Real
-```
-
-Fully explicit type:
-
-```lean
-Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-Matrix.vecCons 0 (Matrix.vecCons 0 (Matrix.vecCons 0 (Matrix.vecCons 0 Matrix.vecEmpty)))
-```
-
-### D008: `HighamBench.p18Method4s3pCBTilde`
-
-- Role: `local`
-- Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `edc4091f790eca1e9654480be0f42c18de2a5548f826a454b2348cb689197c1c`
-
-Type:
-
-```lean
-Fin 4 → Real
-```
-
-Fully explicit type:
-
-```lean
-Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-HighamBench.p18Add HighamBench.p18Method4s3pCB HighamBench.p18Method4s3pCBPerturbation
-```
-
-### D009: `HighamBench.p18Method4s3pCCPerturbation`
-
-- Role: `local`
-- Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `bb902564fe6db78b1f9476daa8751e86dd619935a5adbcf51b48687c67abd17e`
-
-Type:
-
-```lean
-Fin 4 → Real
-```
-
-Fully explicit type:
-
-```lean
-Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-HighamBench.p18CoeffMatVec HighamBench.p18Method4s3pCAPerturbation HighamBench.p18Method4s3pCE
-```
-
-### D010: `HighamBench.p18Method4s3pCCTilde`
-
-- Role: `local`
-- Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `a88499b88aef26e52ef5c4e4d6233ea321dd23961bbec880c5a25f1ea1bf5810`
-
-Type:
-
-```lean
-Fin 4 → Real
-```
-
-Fully explicit type:
-
-```lean
-Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-HighamBench.p18Add HighamBench.p18Method4s3pCC HighamBench.p18Method4s3pCCPerturbation
-```
-
-### D011: `HighamBench.p18Method4s3pCE`
-
-- Role: `local`
-- Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `760cef8178686529b3bf57f252b31ee6d01bb900cb7f3d86b62948729285d1eb`
-
-Type:
-
-```lean
-Fin 4 → Real
-```
-
-Fully explicit type:
-
-```lean
-Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-Matrix.vecCons 1 (Matrix.vecCons 1 (Matrix.vecCons 1 (Matrix.vecCons 1 Matrix.vecEmpty)))
-```
-
-### D012: `HighamBench.p18PrintedCoeffTolerance`
-
-- Role: `local`
-- Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `5aec3c5eac7bdf53b9c6dc8db2ed6bf5a703036add869b4ac24898da40eaf103`
-
-Type:
-
-```lean
-Real
-```
-
-Fully explicit type:
-
-```lean
-Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-instHDiv.hDiv 2 (instHPow.hPow 10 15)
-```
-
-### D013: `HighamBench.p18Add`
-
-- Role: `local`
-- Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `a618ade07a852d5fd95ede3f352cb8e1b2123e6bc0d9cc7b34857ff4b7502a01`
-
-Type:
-
-```lean
-{n : Nat} → (Fin n → Real) → (Fin n → Real) → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (x y : Fin n → Real) → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} x y i => instHAdd.hAdd (x i) (y i)
-```
-
-### D014: `HighamBench.p18CoeffMatAdd`
-
-- Role: `local`
-- Owner module: `HighamBench.P18Definitions`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `56b7797f070c648392187943e282e7b0bd11f79ea8e2fa3f5d933012f7f63e9c`
-
-Type:
-
-```lean
-{s : Nat} → (Fin s → Fin s → Real) → (Fin s → Fin s → Real) → Fin s → Fin s → Real
-```
-
-Fully explicit type:
-
-```lean
-{s : Nat} → (A B : Fin s → Fin s → Real) → Fin s → Fin s → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {s} A B i j => instHAdd.hAdd (A i j) (B i j)
-```
-
-### D015: `HighamBench.p18CorrectedMidpointA._proof_1`
+### D024: `HighamBench.p18CorrectedMidpointA._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P18Definitions`
@@ -650,111 +1441,148 @@ Nat.AtLeastTwo
     (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D016: `HighamBench.p18Method4s3pCA`
+### D025: `HighamBench.p18TableauATilde`
 
 - Role: `local`
 - Owner module: `HighamBench.P18Definitions`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `10abd914ca1f0fb0ac862cd1266e6483df16523e3e8ee700ced315fef2df57d8`
+- Semantic SHA-256: `ee8220c148f360ca2c5581b83d4a26c93a56906d502543cb9d7960e7a62a6d88`
 
 Type:
 
 ```lean
-Fin 4 → Fin 4 → Real
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Fin s → Fin s → Real
 ```
 
 Fully explicit type:
 
 ```lean
-Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) →
-  Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real
+{s : Nat} → (tableau : HighamBench.P18AdditiveRKTableau s) → Fin s → Fin s → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-EquivLike.toFunLike.coe Matrix.of
-  (Matrix.vecCons (Matrix.vecCons 0 (Matrix.vecCons 0 (Matrix.vecCons 0 (Matrix.vecCons 0 Matrix.vecEmpty))))
-    (Matrix.vecCons
-      (Matrix.vecCons (Real.instNeg.neg 50470366527530e-15)
-        (Matrix.vecCons 0 (Matrix.vecCons 0 (Matrix.vecCons 0 Matrix.vecEmpty))))
-      (Matrix.vecCons
-        (Matrix.vecCons 0.368613367355336
-          (Matrix.vecCons 0.273504374252976 (Matrix.vecCons 0 (Matrix.vecCons 0 Matrix.vecEmpty))))
-        (Matrix.vecCons
-          (Matrix.vecCons 1.803794668975043
-            (Matrix.vecCons 97485042980759e-15
-              (Matrix.vecCons (Real.instNeg.neg 1.895660952342050) (Matrix.vecCons 0 Matrix.vecEmpty))))
-          Matrix.vecEmpty))))
+fun {s} tableau => HighamBench.p18CoeffMatAdd tableau.A tableau.APerturbation
 ```
 
-### D017: `HighamBench.p18Method4s3pCB`
+### D026: `HighamBench.p18TableauBTilde`
 
 - Role: `local`
 - Owner module: `HighamBench.P18Definitions`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `fe369ccc2bc8ba45c478f5b78677aea891e401e70146e25b10f8acd963b2c7a8`
+- Semantic SHA-256: `75e5557b9f1d25c9fc334bbb26be595e568a8e1c1ea0336a2763f55723d6edcd`
 
 Type:
 
 ```lean
-Fin 4 → Real
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Fin s → Real
 ```
 
 Fully explicit type:
 
 ```lean
-Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real
+{s : Nat} → (tableau : HighamBench.P18AdditiveRKTableau s) → Fin s → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-Matrix.vecCons 2837446974069e-15
-  (Matrix.vecCons 0.336264433650450
-    (Matrix.vecCons 0.806376720267787 (Matrix.vecCons (Real.instNeg.neg 0.145478600892306) Matrix.vecEmpty)))
+fun {s} tableau => HighamBench.p18Add tableau.b tableau.bPerturbation
 ```
 
-### D018: `HighamBench.p18Method4s3pCC`
+### D027: `HighamBench.p18TableauCPerturbation`
 
 - Role: `local`
 - Owner module: `HighamBench.P18Definitions`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `f51ca73d3629dd2d9bf2f0f30be4198518b61e4a9795d5ae902087e338f38bd0`
+- Semantic SHA-256: `3e5040c5d4123ace5781f5d5fd1a125734ba9089b6dcdb677aefb7bc3fa0742d`
 
 Type:
 
 ```lean
-Fin 4 → Real
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Fin s → Real
 ```
 
 Fully explicit type:
 
 ```lean
-Fin (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4))) → Real
+{s : Nat} → (tableau : HighamBench.P18AdditiveRKTableau s) → Fin s → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-HighamBench.p18CoeffMatVec HighamBench.p18Method4s3pCA HighamBench.p18Method4s3pCE
+fun {s} tableau => HighamBench.p18CoeffMatVec tableau.APerturbation HighamBench.p18TableauE
 ```
 
-### D019: `HighamBench.p18PrintedCoeffTolerance._proof_1`
+### D028: `HighamBench.p18TableauCTilde`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `94ced9dc72e33e54e521deaacff695cfc380e2a480195b71a78e5489b47e640a`
+
+Type:
+
+```lean
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{s : Nat} → (tableau : HighamBench.P18AdditiveRKTableau s) → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {s} tableau => HighamBench.p18Add (HighamBench.p18TableauC tableau) (HighamBench.p18TableauCPerturbation tableau)
+```
+
+### D029: `HighamBench.p18TableauE`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `7f9f543d69d4b74969293f396c6f6ea54c726476744bc18edb84b55ece100b83`
+
+Type:
+
+```lean
+{s : Nat} → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{s : Nat} → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {s} x => 1
+```
+
+### D030: `HighamBench.p18ThirdOrderConsistency._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P18Definitions`
 - Declaration kind: `theorem`
 - Distance from target type: `2`
-- Semantic SHA-256: `e6ff41ab4cd4feb1e53af23280a19cb8ecc3d04041572ad1706c9b5bf65fd661`
+- Semantic SHA-256: `a08ab4402398c6bd1f68f19c36b1f99fa188c4d2b9ddc5c58819fbef332199e7`
 
 Type:
 
 ```lean
-(instHAdd.hAdd 9 1).AtLeastTwo
+(instHAdd.hAdd 2 1).AtLeastTwo
 ```
 
 Fully explicit type:
@@ -762,11 +1590,1061 @@ Fully explicit type:
 ```lean
 Nat.AtLeastTwo
   (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-    (@OfNat.ofNat.{0} Nat (nat_lit 9) (instOfNatNat (nat_lit 9)))
+    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))
     (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D020: `And`
+### D031: `HighamBench.p18ThirdOrderConsistency._proof_2`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `theorem`
+- Distance from target type: `2`
+- Semantic SHA-256: `70330146196be1e0bd3bb184c8f7f9f37293db5721456c8e46d7ecd135c088cc`
+
+Type:
+
+```lean
+(instHAdd.hAdd 5 1).AtLeastTwo
+```
+
+Fully explicit type:
+
+```lean
+Nat.AtLeastTwo
+  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+    (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5)))
+    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D032: `HighamBench.P18AdditiveRKOneStepRun`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `4c512f909553739d8245d47f3d97a108f4a069876d1feee55f76c3f6aa038014`
+
+Type:
+
+```lean
+(State : Type u_1) → [inst : AddCommGroup State] → [Module Real State] → Nat → Type u_1
+```
+
+Fully explicit type:
+
+```lean
+(State : Type u_1) →
+  [inst : AddCommGroup.{u_1} State] →
+    [@Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] → (s : Nat) → Type u_1
+```
+
+### D033: `HighamBench.P18AdditiveRKOneStepRun.F`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `e42a2eeda3ea18fa7313f4ba335dc74ba57edd03fb85a03be332937a93d335fa`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → State → State
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → State → State
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.7
+```
+
+### D034: `HighamBench.P18AdditiveRKOneStepRun.FEpsilon`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `5226c0a1e113fe0f09b44792dc7022c39f02b8dcf23a83f32b55322353fd05bc`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → State → State
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → State → State
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.8
+```
+
+### D035: `HighamBench.P18AdditiveRKOneStepRun.a`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `0f9c153d0cd46b9791739d00a4768217bb7c8c6fde5416b08c99c12b7fa3497d`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → Fin s → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → Fin s → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.11
+```
+
+### D036: `HighamBench.P18AdditiveRKOneStepRun.aPerturbation`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `9a3bf9a637c1264ca777e2bfbc389a858ba65c40f2de15e85ba7af199dcb2dee`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → Fin s → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → Fin s → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.12
+```
+
+### D037: `HighamBench.P18AdditiveRKOneStepRun.b`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `ceb7a6600e85f6a2bf2de9f45dadbed72a0ff514865dda9e440ac6a791dd18a1`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.13
+```
+
+### D038: `HighamBench.P18AdditiveRKOneStepRun.bPerturbation`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `d12ea3a87a148169bb229f66ffb7174e2d8f098b6c8793c1444f7bf12384c72d`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.14
+```
+
+### D039: `HighamBench.P18AdditiveRKOneStepRun.epsilon`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `b8f3fdd154bd6f63357f69d7dfe27513624444bd796b6152e818628c0c7b341a`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.3
+```
+
+### D040: `HighamBench.P18AdditiveRKOneStepRun.initial`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `a1d9a129ef7f7ff51092afa79cb5b7510ea48203531575727b2ec8061645c016`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → State
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → State
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.5
+```
+
+### D041: `HighamBench.P18AdditiveRKOneStepRun.perturbedNext`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `a38f7923d0cb393f05b4a4c92a50688763c1db75b9c563c94ccb2652c64438ac`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → State
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → State
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.18
+```
+
+### D042: `HighamBench.P18AdditiveRKOneStepRun.referenceNext`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `fd4e081863cd62f76e9db2ceb9b145f276d0a4eedd7e4cda4ebd33f66ed7405a`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → State
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → State
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.6
+```
+
+### D043: `HighamBench.P18AdditiveRKOneStepRun.step`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `d0976a090c6dae82baef623c82ef56b8b42f5cc02c053a83e66c2a8093a76770`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → Real
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.2
+```
+
+### D044: `HighamBench.P18AdditiveRKOneStepRun.tau`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `fba1f2a6ed49485a5bf5b6dd06ec358aa020f06b6341a6b58fa15d8a0e1b1577`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → State → State
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → State → State
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.9
+```
+
+### D045: `HighamBench.P18AdditiveRKTableau.A`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `9c294a133dc31407762d606ef5236571d24d78c08b8136987df454e3a7a6072a`
+
+Type:
+
+```lean
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Fin s → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{s : Nat} → (self : HighamBench.P18AdditiveRKTableau s) → Fin s → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun s self => self.1
+```
+
+### D046: `HighamBench.P18AdditiveRKTableau.b`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `bc1a09a3bf27bdb80e4ec9aaea5a9f788dde8b3bddf7443e41f00e147cc59aea`
+
+Type:
+
+```lean
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{s : Nat} → (self : HighamBench.P18AdditiveRKTableau s) → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun s self => self.3
+```
+
+### D047: `HighamBench.P18AdditiveRKTableau.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `3`
+- Semantic SHA-256: `c7bf0253d56b9ad83cb43ab3220b7425bdf19ae60ad08a231d32de9892ba92c7`
+
+Type:
+
+```lean
+{s : Nat} →
+  (Fin s → Fin s → Real) → (Fin s → Fin s → Real) → (Fin s → Real) → (Fin s → Real) → HighamBench.P18AdditiveRKTableau s
+```
+
+Fully explicit type:
+
+```lean
+{s : Nat} →
+  (A APerturbation : Fin s → Fin s → Real) → (b bPerturbation : Fin s → Real) → HighamBench.P18AdditiveRKTableau s
+```
+
+### D048: `HighamBench.p18Add`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `a618ade07a852d5fd95ede3f352cb8e1b2123e6bc0d9cc7b34857ff4b7502a01`
+
+Type:
+
+```lean
+{n : Nat} → (Fin n → Real) → (Fin n → Real) → Fin n → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (x y : Fin n → Real) → Fin n → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} x y i => instHAdd.hAdd (x i) (y i)
+```
+
+### D049: `HighamBench.p18CoeffMatAdd`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `56b7797f070c648392187943e282e7b0bd11f79ea8e2fa3f5d933012f7f63e9c`
+
+Type:
+
+```lean
+{s : Nat} → (Fin s → Fin s → Real) → (Fin s → Fin s → Real) → Fin s → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{s : Nat} → (A B : Fin s → Fin s → Real) → Fin s → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {s} A B i j => instHAdd.hAdd (A i j) (B i j)
+```
+
+### D050: `HighamBench.p18PerturbationOneStepError`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `09abeed8ae96fb7a31cd61d38eb7629f8ee3003852fe777d1cb3f38717f69557`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → State
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (run : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → State
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {State} [AddCommGroup State] [Module Real State] {s} run => instHSub.hSub run.schemeNext run.perturbedNext
+```
+
+### D051: `HighamBench.p18SchemeOneStepError`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `2fbb85c21e4fdaca5622a0ce43ab76cb8111863146ff8f1b1411a5ac72b633dc`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → State
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (run : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → State
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {State} [AddCommGroup State] [Module Real State] {s} run => instHSub.hSub run.referenceNext run.schemeNext
+```
+
+### D052: `HighamBench.p18TableauC`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `2e0354735cf2ca33d0bbfb256d00c7c118a4b8aa88c70d94590150143dfd5fcc`
+
+Type:
+
+```lean
+{s : Nat} → HighamBench.P18AdditiveRKTableau s → Fin s → Real
+```
+
+Fully explicit type:
+
+```lean
+{s : Nat} → (tableau : HighamBench.P18AdditiveRKTableau s) → Fin s → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {s} tableau => HighamBench.p18CoeffMatVec tableau.A HighamBench.p18TableauE
+```
+
+### D053: `HighamBench.P18AdditiveRKOneStepRun.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `4`
+- Semantic SHA-256: `b1aa5279aeb049f8d8fcfbe1882be62cb98e3a458e01ee7586762d6a2a219147`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] →
+      {s : Nat} →
+        instLTNat.lt 0 s →
+          (step epsilon : Real) →
+            Ne epsilon 0 →
+              (initial : State) →
+                State →
+                  (F FEpsilon tau : State → State) →
+                    (∀ (y : State), Eq (instHSMul.hSMul epsilon (tau y)) (instHSub.hSub (F y) (FEpsilon y))) →
+                      (a aPerturbation : Fin s → Fin s → Real) →
+                        (b bPerturbation : Fin s → Real) →
+                          (schemeStages perturbedStages : Fin s → State) →
+                            (schemeNext perturbedNext : State) →
+                              (∀ (i : Fin s),
+                                  Eq (schemeStages i)
+                                    (instHAdd.hAdd
+                                      (instHAdd.hAdd initial
+                                        (instHSMul.hSMul step
+                                          (HighamBench.p18ModuleStageSum (a i) fun j => F (schemeStages j))))
+                                      (instHSMul.hSMul step
+                                        (HighamBench.p18ModuleStageSum (aPerturbation i) fun j =>
+                                          F (schemeStages j))))) →
+                                Eq schemeNext
+                                    (instHAdd.hAdd
+                                      (instHAdd.hAdd initial
+                                        (instHSMul.hSMul step
+                                          (HighamBench.p18ModuleStageSum b fun j => F (schemeStages j))))
+                                      (instHSMul.hSMul step
+                                        (HighamBench.p18ModuleStageSum bPerturbation fun j => F (schemeStages j)))) →
+                                  (∀ (i : Fin s),
+                                      Eq (perturbedStages i)
+                                        (instHAdd.hAdd
+                                          (instHAdd.hAdd initial
+                                            (instHSMul.hSMul step
+                                              (HighamBench.p18ModuleStageSum (a i) fun j => F (perturbedStages j))))
+                                          (instHSMul.hSMul step
+                                            (HighamBench.p18ModuleStageSum (aPerturbation i) fun j =>
+                                              FEpsilon (perturbedStages j))))) →
+                                    Eq perturbedNext
+                                        (instHAdd.hAdd
+                                          (instHAdd.hAdd initial
+                                            (instHSMul.hSMul step
+                                              (HighamBench.p18ModuleStageSum b fun j => F (perturbedStages j))))
+                                          (instHSMul.hSMul step
+                                            (HighamBench.p18ModuleStageSum bPerturbation fun j =>
+                                              FEpsilon (perturbedStages j)))) →
+                                      HighamBench.P18AdditiveRKOneStepRun State s
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} →
+        (stage_count_pos : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) s) →
+          (step epsilon : Real) →
+            (epsilon_ne_zero :
+                @Ne.{1} Real epsilon (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
+              (initial referenceNext : State) →
+                (F FEpsilon tau : State → State) →
+                  (operator_perturbation :
+                      ∀ (y : State),
+                        @Eq.{u_1 + 1} State
+                          (@HSMul.hSMul.{0, u_1, u_1} Real State State
+                            (@instHSMul.{0, u_1} Real State
+                              (@SMulZeroClass.toSMul.{0, u_1} Real State
+                                (@AddZero.toZero.{u_1} State
+                                  (@AddZeroClass.toAddZero.{u_1} State
+                                    (@AddMonoid.toAddZeroClass.{u_1} State
+                                      (@SubNegMonoid.toAddMonoid.{u_1} State
+                                        (@AddGroup.toSubNegMonoid.{u_1} State
+                                          (@AddCommGroup.toAddGroup.{u_1} State inst))))))
+                                (@DistribSMul.toSMulZeroClass.{0, u_1} Real State
+                                  (@AddMonoid.toAddZeroClass.{u_1} State
+                                    (@SubNegMonoid.toAddMonoid.{u_1} State
+                                      (@AddGroup.toSubNegMonoid.{u_1} State
+                                        (@AddCommGroup.toAddGroup.{u_1} State inst))))
+                                  (@DistribMulAction.toDistribSMul.{0, u_1} Real State Real.instMonoid
+                                    (@SubNegMonoid.toAddMonoid.{u_1} State
+                                      (@AddGroup.toSubNegMonoid.{u_1} State
+                                        (@AddCommGroup.toAddGroup.{u_1} State inst)))
+                                    (@Module.toDistribMulAction.{0, u_1} Real State Real.semiring
+                                      (@AddCommGroup.toAddCommMonoid.{u_1} State inst) inst_1)))))
+                            epsilon (tau y))
+                          (@HSub.hSub.{u_1, u_1, u_1} State State State
+                            (@instHSub.{u_1} State
+                              (@SubNegMonoid.toSub.{u_1} State
+                                (@AddGroup.toSubNegMonoid.{u_1} State (@AddCommGroup.toAddGroup.{u_1} State inst))))
+                            (F y) (FEpsilon y))) →
+                    (a aPerturbation : Fin s → Fin s → Real) →
+                      (b bPerturbation : Fin s → Real) →
+                        (schemeStages perturbedStages : Fin s → State) →
+                          (schemeNext perturbedNext : State) →
+                            (scheme_stage_equation :
+                                ∀ (i : Fin s),
+                                  @Eq.{u_1 + 1} State (schemeStages i)
+                                    (@HAdd.hAdd.{u_1, u_1, u_1} State State State
+                                      (@instHAdd.{u_1} State
+                                        (@AddCommMagma.toAdd.{u_1} State
+                                          (@AddCommSemigroup.toAddCommMagma.{u_1} State
+                                            (@AddCommMonoid.toAddCommSemigroup.{u_1} State
+                                              (@AddCommGroup.toAddCommMonoid.{u_1} State inst)))))
+                                      (@HAdd.hAdd.{u_1, u_1, u_1} State State State
+                                        (@instHAdd.{u_1} State
+                                          (@AddCommMagma.toAdd.{u_1} State
+                                            (@AddCommSemigroup.toAddCommMagma.{u_1} State
+                                              (@AddCommMonoid.toAddCommSemigroup.{u_1} State
+                                                (@AddCommGroup.toAddCommMonoid.{u_1} State inst)))))
+                                        initial
+                                        (@HSMul.hSMul.{0, u_1, u_1} Real State State
+                                          (@instHSMul.{0, u_1} Real State
+                                            (@SMulZeroClass.toSMul.{0, u_1} Real State
+                                              (@AddZero.toZero.{u_1} State
+                                                (@AddZeroClass.toAddZero.{u_1} State
+                                                  (@AddMonoid.toAddZeroClass.{u_1} State
+                                                    (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                      (@AddGroup.toSubNegMonoid.{u_1} State
+                                                        (@AddCommGroup.toAddGroup.{u_1} State inst))))))
+                                              (@DistribSMul.toSMulZeroClass.{0, u_1} Real State
+                                                (@AddMonoid.toAddZeroClass.{u_1} State
+                                                  (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                    (@AddGroup.toSubNegMonoid.{u_1} State
+                                                      (@AddCommGroup.toAddGroup.{u_1} State inst))))
+                                                (@DistribMulAction.toDistribSMul.{0, u_1} Real State Real.instMonoid
+                                                  (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                    (@AddGroup.toSubNegMonoid.{u_1} State
+                                                      (@AddCommGroup.toAddGroup.{u_1} State inst)))
+                                                  (@Module.toDistribMulAction.{0, u_1} Real State Real.semiring
+                                                    (@AddCommGroup.toAddCommMonoid.{u_1} State inst) inst_1)))))
+                                          step
+                                          (@HighamBench.p18ModuleStageSum.{u_1} State inst inst_1 s (a i)
+                                            fun (j : Fin s) => F (schemeStages j))))
+                                      (@HSMul.hSMul.{0, u_1, u_1} Real State State
+                                        (@instHSMul.{0, u_1} Real State
+                                          (@SMulZeroClass.toSMul.{0, u_1} Real State
+                                            (@AddZero.toZero.{u_1} State
+                                              (@AddZeroClass.toAddZero.{u_1} State
+                                                (@AddMonoid.toAddZeroClass.{u_1} State
+                                                  (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                    (@AddGroup.toSubNegMonoid.{u_1} State
+                                                      (@AddCommGroup.toAddGroup.{u_1} State inst))))))
+                                            (@DistribSMul.toSMulZeroClass.{0, u_1} Real State
+                                              (@AddMonoid.toAddZeroClass.{u_1} State
+                                                (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                  (@AddGroup.toSubNegMonoid.{u_1} State
+                                                    (@AddCommGroup.toAddGroup.{u_1} State inst))))
+                                              (@DistribMulAction.toDistribSMul.{0, u_1} Real State Real.instMonoid
+                                                (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                  (@AddGroup.toSubNegMonoid.{u_1} State
+                                                    (@AddCommGroup.toAddGroup.{u_1} State inst)))
+                                                (@Module.toDistribMulAction.{0, u_1} Real State Real.semiring
+                                                  (@AddCommGroup.toAddCommMonoid.{u_1} State inst) inst_1)))))
+                                        step
+                                        (@HighamBench.p18ModuleStageSum.{u_1} State inst inst_1 s (aPerturbation i)
+                                          fun (j : Fin s) => F (schemeStages j))))) →
+                              (scheme_output_equation :
+                                  @Eq.{u_1 + 1} State schemeNext
+                                    (@HAdd.hAdd.{u_1, u_1, u_1} State State State
+                                      (@instHAdd.{u_1} State
+                                        (@AddCommMagma.toAdd.{u_1} State
+                                          (@AddCommSemigroup.toAddCommMagma.{u_1} State
+                                            (@AddCommMonoid.toAddCommSemigroup.{u_1} State
+                                              (@AddCommGroup.toAddCommMonoid.{u_1} State inst)))))
+                                      (@HAdd.hAdd.{u_1, u_1, u_1} State State State
+                                        (@instHAdd.{u_1} State
+                                          (@AddCommMagma.toAdd.{u_1} State
+                                            (@AddCommSemigroup.toAddCommMagma.{u_1} State
+                                              (@AddCommMonoid.toAddCommSemigroup.{u_1} State
+                                                (@AddCommGroup.toAddCommMonoid.{u_1} State inst)))))
+                                        initial
+                                        (@HSMul.hSMul.{0, u_1, u_1} Real State State
+                                          (@instHSMul.{0, u_1} Real State
+                                            (@SMulZeroClass.toSMul.{0, u_1} Real State
+                                              (@AddZero.toZero.{u_1} State
+                                                (@AddZeroClass.toAddZero.{u_1} State
+                                                  (@AddMonoid.toAddZeroClass.{u_1} State
+                                                    (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                      (@AddGroup.toSubNegMonoid.{u_1} State
+                                                        (@AddCommGroup.toAddGroup.{u_1} State inst))))))
+                                              (@DistribSMul.toSMulZeroClass.{0, u_1} Real State
+                                                (@AddMonoid.toAddZeroClass.{u_1} State
+                                                  (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                    (@AddGroup.toSubNegMonoid.{u_1} State
+                                                      (@AddCommGroup.toAddGroup.{u_1} State inst))))
+                                                (@DistribMulAction.toDistribSMul.{0, u_1} Real State Real.instMonoid
+                                                  (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                    (@AddGroup.toSubNegMonoid.{u_1} State
+                                                      (@AddCommGroup.toAddGroup.{u_1} State inst)))
+                                                  (@Module.toDistribMulAction.{0, u_1} Real State Real.semiring
+                                                    (@AddCommGroup.toAddCommMonoid.{u_1} State inst) inst_1)))))
+                                          step
+                                          (@HighamBench.p18ModuleStageSum.{u_1} State inst inst_1 s b fun (j : Fin s) =>
+                                            F (schemeStages j))))
+                                      (@HSMul.hSMul.{0, u_1, u_1} Real State State
+                                        (@instHSMul.{0, u_1} Real State
+                                          (@SMulZeroClass.toSMul.{0, u_1} Real State
+                                            (@AddZero.toZero.{u_1} State
+                                              (@AddZeroClass.toAddZero.{u_1} State
+                                                (@AddMonoid.toAddZeroClass.{u_1} State
+                                                  (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                    (@AddGroup.toSubNegMonoid.{u_1} State
+                                                      (@AddCommGroup.toAddGroup.{u_1} State inst))))))
+                                            (@DistribSMul.toSMulZeroClass.{0, u_1} Real State
+                                              (@AddMonoid.toAddZeroClass.{u_1} State
+                                                (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                  (@AddGroup.toSubNegMonoid.{u_1} State
+                                                    (@AddCommGroup.toAddGroup.{u_1} State inst))))
+                                              (@DistribMulAction.toDistribSMul.{0, u_1} Real State Real.instMonoid
+                                                (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                  (@AddGroup.toSubNegMonoid.{u_1} State
+                                                    (@AddCommGroup.toAddGroup.{u_1} State inst)))
+                                                (@Module.toDistribMulAction.{0, u_1} Real State Real.semiring
+                                                  (@AddCommGroup.toAddCommMonoid.{u_1} State inst) inst_1)))))
+                                        step
+                                        (@HighamBench.p18ModuleStageSum.{u_1} State inst inst_1 s bPerturbation
+                                          fun (j : Fin s) => F (schemeStages j))))) →
+                                (perturbed_stage_equation :
+                                    ∀ (i : Fin s),
+                                      @Eq.{u_1 + 1} State (perturbedStages i)
+                                        (@HAdd.hAdd.{u_1, u_1, u_1} State State State
+                                          (@instHAdd.{u_1} State
+                                            (@AddCommMagma.toAdd.{u_1} State
+                                              (@AddCommSemigroup.toAddCommMagma.{u_1} State
+                                                (@AddCommMonoid.toAddCommSemigroup.{u_1} State
+                                                  (@AddCommGroup.toAddCommMonoid.{u_1} State inst)))))
+                                          (@HAdd.hAdd.{u_1, u_1, u_1} State State State
+                                            (@instHAdd.{u_1} State
+                                              (@AddCommMagma.toAdd.{u_1} State
+                                                (@AddCommSemigroup.toAddCommMagma.{u_1} State
+                                                  (@AddCommMonoid.toAddCommSemigroup.{u_1} State
+                                                    (@AddCommGroup.toAddCommMonoid.{u_1} State inst)))))
+                                            initial
+                                            (@HSMul.hSMul.{0, u_1, u_1} Real State State
+                                              (@instHSMul.{0, u_1} Real State
+                                                (@SMulZeroClass.toSMul.{0, u_1} Real State
+                                                  (@AddZero.toZero.{u_1} State
+                                                    (@AddZeroClass.toAddZero.{u_1} State
+                                                      (@AddMonoid.toAddZeroClass.{u_1} State
+                                                        (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                          (@AddGroup.toSubNegMonoid.{u_1} State
+                                                            (@AddCommGroup.toAddGroup.{u_1} State inst))))))
+                                                  (@DistribSMul.toSMulZeroClass.{0, u_1} Real State
+                                                    (@AddMonoid.toAddZeroClass.{u_1} State
+                                                      (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                        (@AddGroup.toSubNegMonoid.{u_1} State
+                                                          (@AddCommGroup.toAddGroup.{u_1} State inst))))
+                                                    (@DistribMulAction.toDistribSMul.{0, u_1} Real State Real.instMonoid
+                                                      (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                        (@AddGroup.toSubNegMonoid.{u_1} State
+                                                          (@AddCommGroup.toAddGroup.{u_1} State inst)))
+                                                      (@Module.toDistribMulAction.{0, u_1} Real State Real.semiring
+                                                        (@AddCommGroup.toAddCommMonoid.{u_1} State inst) inst_1)))))
+                                              step
+                                              (@HighamBench.p18ModuleStageSum.{u_1} State inst inst_1 s (a i)
+                                                fun (j : Fin s) => F (perturbedStages j))))
+                                          (@HSMul.hSMul.{0, u_1, u_1} Real State State
+                                            (@instHSMul.{0, u_1} Real State
+                                              (@SMulZeroClass.toSMul.{0, u_1} Real State
+                                                (@AddZero.toZero.{u_1} State
+                                                  (@AddZeroClass.toAddZero.{u_1} State
+                                                    (@AddMonoid.toAddZeroClass.{u_1} State
+                                                      (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                        (@AddGroup.toSubNegMonoid.{u_1} State
+                                                          (@AddCommGroup.toAddGroup.{u_1} State inst))))))
+                                                (@DistribSMul.toSMulZeroClass.{0, u_1} Real State
+                                                  (@AddMonoid.toAddZeroClass.{u_1} State
+                                                    (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                      (@AddGroup.toSubNegMonoid.{u_1} State
+                                                        (@AddCommGroup.toAddGroup.{u_1} State inst))))
+                                                  (@DistribMulAction.toDistribSMul.{0, u_1} Real State Real.instMonoid
+                                                    (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                      (@AddGroup.toSubNegMonoid.{u_1} State
+                                                        (@AddCommGroup.toAddGroup.{u_1} State inst)))
+                                                    (@Module.toDistribMulAction.{0, u_1} Real State Real.semiring
+                                                      (@AddCommGroup.toAddCommMonoid.{u_1} State inst) inst_1)))))
+                                            step
+                                            (@HighamBench.p18ModuleStageSum.{u_1} State inst inst_1 s (aPerturbation i)
+                                              fun (j : Fin s) => FEpsilon (perturbedStages j))))) →
+                                  (perturbed_output_equation :
+                                      @Eq.{u_1 + 1} State perturbedNext
+                                        (@HAdd.hAdd.{u_1, u_1, u_1} State State State
+                                          (@instHAdd.{u_1} State
+                                            (@AddCommMagma.toAdd.{u_1} State
+                                              (@AddCommSemigroup.toAddCommMagma.{u_1} State
+                                                (@AddCommMonoid.toAddCommSemigroup.{u_1} State
+                                                  (@AddCommGroup.toAddCommMonoid.{u_1} State inst)))))
+                                          (@HAdd.hAdd.{u_1, u_1, u_1} State State State
+                                            (@instHAdd.{u_1} State
+                                              (@AddCommMagma.toAdd.{u_1} State
+                                                (@AddCommSemigroup.toAddCommMagma.{u_1} State
+                                                  (@AddCommMonoid.toAddCommSemigroup.{u_1} State
+                                                    (@AddCommGroup.toAddCommMonoid.{u_1} State inst)))))
+                                            initial
+                                            (@HSMul.hSMul.{0, u_1, u_1} Real State State
+                                              (@instHSMul.{0, u_1} Real State
+                                                (@SMulZeroClass.toSMul.{0, u_1} Real State
+                                                  (@AddZero.toZero.{u_1} State
+                                                    (@AddZeroClass.toAddZero.{u_1} State
+                                                      (@AddMonoid.toAddZeroClass.{u_1} State
+                                                        (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                          (@AddGroup.toSubNegMonoid.{u_1} State
+                                                            (@AddCommGroup.toAddGroup.{u_1} State inst))))))
+                                                  (@DistribSMul.toSMulZeroClass.{0, u_1} Real State
+                                                    (@AddMonoid.toAddZeroClass.{u_1} State
+                                                      (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                        (@AddGroup.toSubNegMonoid.{u_1} State
+                                                          (@AddCommGroup.toAddGroup.{u_1} State inst))))
+                                                    (@DistribMulAction.toDistribSMul.{0, u_1} Real State Real.instMonoid
+                                                      (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                        (@AddGroup.toSubNegMonoid.{u_1} State
+                                                          (@AddCommGroup.toAddGroup.{u_1} State inst)))
+                                                      (@Module.toDistribMulAction.{0, u_1} Real State Real.semiring
+                                                        (@AddCommGroup.toAddCommMonoid.{u_1} State inst) inst_1)))))
+                                              step
+                                              (@HighamBench.p18ModuleStageSum.{u_1} State inst inst_1 s b
+                                                fun (j : Fin s) => F (perturbedStages j))))
+                                          (@HSMul.hSMul.{0, u_1, u_1} Real State State
+                                            (@instHSMul.{0, u_1} Real State
+                                              (@SMulZeroClass.toSMul.{0, u_1} Real State
+                                                (@AddZero.toZero.{u_1} State
+                                                  (@AddZeroClass.toAddZero.{u_1} State
+                                                    (@AddMonoid.toAddZeroClass.{u_1} State
+                                                      (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                        (@AddGroup.toSubNegMonoid.{u_1} State
+                                                          (@AddCommGroup.toAddGroup.{u_1} State inst))))))
+                                                (@DistribSMul.toSMulZeroClass.{0, u_1} Real State
+                                                  (@AddMonoid.toAddZeroClass.{u_1} State
+                                                    (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                      (@AddGroup.toSubNegMonoid.{u_1} State
+                                                        (@AddCommGroup.toAddGroup.{u_1} State inst))))
+                                                  (@DistribMulAction.toDistribSMul.{0, u_1} Real State Real.instMonoid
+                                                    (@SubNegMonoid.toAddMonoid.{u_1} State
+                                                      (@AddGroup.toSubNegMonoid.{u_1} State
+                                                        (@AddCommGroup.toAddGroup.{u_1} State inst)))
+                                                    (@Module.toDistribMulAction.{0, u_1} Real State Real.semiring
+                                                      (@AddCommGroup.toAddCommMonoid.{u_1} State inst) inst_1)))))
+                                            step
+                                            (@HighamBench.p18ModuleStageSum.{u_1} State inst inst_1 s bPerturbation
+                                              fun (j : Fin s) => FEpsilon (perturbedStages j))))) →
+                                    @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s
+```
+
+### D054: `HighamBench.P18AdditiveRKOneStepRun.schemeNext`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `4`
+- Semantic SHA-256: `f5eca8d21dd1d785c492f5dd48f58f095a520f9b7626a3f86c66816c619b52ff`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] →
+    [inst_1 : Module Real State] → {s : Nat} → HighamBench.P18AdditiveRKOneStepRun State s → State
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [inst_1 : @Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (self : @HighamBench.P18AdditiveRKOneStepRun.{u_1} State inst inst_1 s) → State
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun State [AddCommGroup State] [Module Real State] s self => self.17
+```
+
+### D055: `HighamBench.p18ModuleStageSum`
+
+- Role: `local`
+- Owner module: `HighamBench.P18Definitions`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `74be2b397af53a5ddc8dce13bb3c6a3e28b0b28fee66c0a836eaabe5374b8515`
+
+Type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup State] → [Module Real State] → {s : Nat} → (Fin s → Real) → (Fin s → State) → State
+```
+
+Fully explicit type:
+
+```lean
+{State : Type u_1} →
+  [inst : AddCommGroup.{u_1} State] →
+    [@Module.{0, u_1} Real State Real.semiring (@AddCommGroup.toAddCommMonoid.{u_1} State inst)] →
+      {s : Nat} → (weights : Fin s → Real) → (values : Fin s → State) → State
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {State} [AddCommGroup State] [Module Real State] {s} weights values =>
+  Finset.univ.sum fun j => instHSMul.hSMul (weights j) (values j)
+```
+
+### D056: `And`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -786,33 +2664,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D021: `DivInvMonoid.toDiv`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Group.Defs`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea`
-
-Type:
-
-```lean
-{G : Type u} → [self : DivInvMonoid G] → Div G
-```
-
-Fully explicit type:
-
-```lean
-{G : Type u} → [self : DivInvMonoid.{u} G] → Div.{u} G
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun G [self : DivInvMonoid G] => self.3
-```
-
-### D022: `Eq`
+### D057: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -832,7 +2684,7 @@ Fully explicit type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D023: `Fin`
+### D058: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -852,111 +2704,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D024: `HDiv.hDiv`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b`
-
-Type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HDiv α β γ] → α → β → γ
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HDiv.{u, v, w} α β γ] → α → β → γ
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α β {γ} [self : HDiv α β γ] => self.1
-```
-
-### D025: `HSub.hSub`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `98025b38d523c0eadea77ba4961a20b2a913b23c079c4bfeba24a7bfaa24a4bc`
-
-Type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HSub α β γ] → α → β → γ
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HSub.{u, v, w} α β γ] → α → β → γ
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α β {γ} [self : HSub α β γ] => self.1
-```
-
-### D026: `LE.le`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48`
-
-Type:
-
-```lean
-{α : Type u} → [self : LE α] → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : LE.{u} α] → α → α → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : LE α] => self.1
-```
-
-### D027: `LT.lt`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
-
-Type:
-
-```lean
-{α : Type u} → [self : LT α] → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : LT.{u} α] → α → α → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : LT α] => self.1
-```
-
-### D028: `Nat`
+### D059: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -976,53 +2724,76 @@ Fully explicit type:
 Type
 ```
 
-### D029: `Nat.instAtLeastTwoHAddOfNat`
+### D060: `NormedAddCommGroup`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Data.Nat.Init`
-- Declaration kind: `theorem`
+- Owner module: `Mathlib.Analysis.Normed.Group.Defs`
+- Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `309ef94c4b7cfbe2e668952e6915279353921d5d48b6123a30f90dd932dac3e6`
+- Semantic SHA-256: `7289fc1f1aac42f488a1fe69c897c4d418a0fa8699118dd0f273085d7d95b741`
 
 Type:
 
 ```lean
-∀ (n : Nat) [NeZero n], (instHAdd.hAdd n 1).AtLeastTwo
+Type u_8 → Type u_8
 ```
 
 Fully explicit type:
 
 ```lean
-∀ (n : Nat) [@NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0))) n],
-  Nat.AtLeastTwo
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+(E : Type u_8) → Type u_8
 ```
 
-### D030: `Nat.instNeZeroSucc`
+### D061: `NormedAddCommGroup.toSeminormedAddCommGroup`
 
 - Role: `external-frontier`
-- Owner module: `Init.Data.Nat.Basic`
-- Declaration kind: `theorem`
+- Owner module: `Mathlib.Analysis.Normed.Group.Defs`
+- Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `a0735a528184c05594c4c79312c1225bb4dcffcdf0df7eb1a50c5733047c85ad`
+- Semantic SHA-256: `7327759e5e9417c54393e7566584cd72d79c77b4ca018ea408c5d024667587be`
 
 Type:
 
 ```lean
-∀ {n : Nat}, NeZero (instHAdd.hAdd n 1)
+{E : Type u_5} → [NormedAddCommGroup E] → SeminormedAddCommGroup E
 ```
 
 Fully explicit type:
 
 ```lean
-∀ {n : Nat},
-  @NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0)))
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+{E : Type u_5} → [NormedAddCommGroup.{u_5} E] → SeminormedAddCommGroup.{u_5} E
 ```
 
-### D031: `OfNat.ofNat`
+Definition body (one-level semantic boundary):
+
+```lean
+fun {E} [inst : NormedAddCommGroup E] =>
+  have __src := inst;
+  { toNorm := __src.toNorm, toAddCommGroup := __src.toAddCommGroup, toPseudoMetricSpace := __src.toPseudoMetricSpace,
+    dist_eq := ⋯ }
+```
+
+### D062: `NormedSpace`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.Normed.Module.Basic`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `6b6b5b2582dac5d94b5d2a99eac51e4b8bee1f8e652cdec27b52f9c5d5ca5960`
+
+Type:
+
+```lean
+(𝕜 : Type u_6) → (E : Type u_7) → [NormedField 𝕜] → [SeminormedAddCommGroup E] → Type (max u_6 u_7)
+```
+
+Fully explicit type:
+
+```lean
+(𝕜 : Type u_6) → (E : Type u_7) → [NormedField.{u_6} 𝕜] → [SeminormedAddCommGroup.{u_7} E] → Type (max u_6 u_7)
+```
+
+### D063: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1048,33 +2819,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D032: `One.toOfNat1`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Zero`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5`
-
-Type:
-
-```lean
-{α : Type u_1} → [One α] → OfNat α 1
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [One.{u_1} α] → OfNat.{u_1} α (nat_lit 1)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : One α] => { ofNat := inst.one }
-```
-
-### D033: `Real`
+### D064: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1094,191 +2839,7 @@ Fully explicit type:
 Type
 ```
 
-### D034: `Real.instAddGroup`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0`
-
-Type:
-
-```lean
-AddGroup Real
-```
-
-Fully explicit type:
-
-```lean
-AddGroup.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D035: `Real.instDivInvMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3`
-
-Type:
-
-```lean
-DivInvMonoid Real
-```
-
-Fully explicit type:
-
-```lean
-DivInvMonoid.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ toMonoid := Real.instMonoid, toInv := Real.instInv, div := DivInvMonoid.div',
-  div_eq_mul_inv := Real.instDivInvMonoid._proof_1, zpow := zpowRec, zpow_zero' := Real.instDivInvMonoid._proof_2,
-  zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
-```
-
-### D036: `Real.instLE`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3`
-
-Type:
-
-```lean
-LE Real
-```
-
-Fully explicit type:
-
-```lean
-LE.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ le := Real.le✝ }
-```
-
-### D037: `Real.instLT`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a`
-
-Type:
-
-```lean
-LT Real
-```
-
-Fully explicit type:
-
-```lean
-LT.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ lt := Real.lt✝ }
-```
-
-### D038: `Real.instNatCast`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
-
-Type:
-
-```lean
-NatCast Real
-```
-
-Fully explicit type:
-
-```lean
-NatCast.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ natCast := fun n => { cauchy := n.cast } }
-```
-
-### D039: `Real.instOne`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81`
-
-Type:
-
-```lean
-One Real
-```
-
-Fully explicit type:
-
-```lean
-One.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ one := Real.one✝ }
-```
-
-### D040: `Real.instSub`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `926d9e8fcca2819a885d446e168b20c7c8aac2e542d59ed2b48e32c9a4659a36`
-
-Type:
-
-```lean
-Sub Real
-```
-
-Fully explicit type:
-
-```lean
-Sub.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
-```
-
-### D041: `Real.instZero`
+### D065: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1304,33 +2865,49 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D042: `Real.lattice`
+### D066: `Real.normedField`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
+- Owner module: `Mathlib.Analysis.Normed.Field.Basic`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510`
+- Semantic SHA-256: `3249555a2824aa1e4e9c966b630ef876ae52df63ed09d0838da173aa28c0f77b`
 
 Type:
 
 ```lean
-Lattice Real
+NormedField Real
 ```
 
 Fully explicit type:
 
 ```lean
-Lattice.{0} Real
+NormedField.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-inferInstance
+let __src := Real.normedAddCommGroup;
+let __src_1 := Real.instField;
+{ toNorm := __src.toNorm, toAddMonoid := __src.toAddMonoid, add_comm := Real.normedField._proof_1,
+  toMul := __src_1.toMul, left_distrib := Real.normedField._proof_2, right_distrib := Real.normedField._proof_3,
+  zero_mul := Real.normedField._proof_4, mul_zero := Real.normedField._proof_5, mul_assoc := Real.normedField._proof_6,
+  toOne := __src_1.toOne, one_mul := Real.normedField._proof_7, mul_one := Real.normedField._proof_8,
+  toNatCast := __src_1.toNatCast, natCast_zero := Real.normedField._proof_9, natCast_succ := Real.normedField._proof_10,
+  npow := __src_1.npow, npow_zero := Real.normedField._proof_11, npow_succ := Real.normedField._proof_12,
+  toNeg := __src.toNeg, toSub := __src.toSub, sub_eq_add_neg := Real.normedField._proof_13, zsmul := __src.zsmul,
+  zsmul_zero' := Real.normedField._proof_14, zsmul_succ' := Real.normedField._proof_15,
+  zsmul_neg' := Real.normedField._proof_16, neg_add_cancel := Real.normedField._proof_17,
+  toIntCast := __src_1.toIntCast, intCast_ofNat := Real.normedField._proof_18,
+  intCast_negSucc := Real.normedField._proof_19, mul_comm := Real.normedField._proof_20, toInv := __src_1.toInv,
+  toDiv := __src_1.toDiv, div_eq_mul_inv := ⋯, zpow := __src_1.zpow, zpow_zero' := ⋯, zpow_succ' := ⋯, zpow_neg' := ⋯,
+  toNontrivial := ⋯, toNNRatCast := __src_1.toNNRatCast, toRatCast := __src_1.toRatCast, mul_inv_cancel := ⋯,
+  inv_zero := ⋯, nnratCast_def := ⋯, nnqsmul := __src_1.nnqsmul, nnqsmul_def := ⋯, ratCast_def := ⋯,
+  qsmul := __src_1.qsmul, qsmul_def := ⋯, toMetricSpace := __src.toMetricSpace, dist_eq := ⋯, norm_mul := ⋯ }
 ```
 
-### D043: `Zero.toOfNat0`
+### D067: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -1356,112 +2933,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D044: `abs`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b`
-
-Type:
-
-```lean
-{α : Type u_1} → [Lattice α] → [AddGroup α] → α → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Lattice.{u_1} α] → [AddGroup.{u_1} α] → (a : α) → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [Lattice α] [AddGroup α] a =>
-  SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
-```
-
-### D045: `instHDiv`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `ea3478ce3daf37e2cbdcd4bfaf7b5142fd7d274b56d75d2fae007c15e1b89871`
-
-Type:
-
-```lean
-{α : Type u_1} → [Div α] → HDiv α α α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Div.{u_1} α] → HDiv.{u_1, u_1, u_1} α α α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
-```
-
-### D046: `instHSub`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `aa782f2b5af3d068f4c5340de4b32b193fece2c659a45582cc3024a19b550c87`
-
-Type:
-
-```lean
-{α : Type u_1} → [Sub α] → HSub α α α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Sub.{u_1} α] → HSub.{u_1, u_1, u_1} α α α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
-```
-
-### D047: `instOfNatAtLeastTwo`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Nat.Cast.Defs`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d`
-
-Type:
-
-```lean
-{R : Type u_1} → {n : Nat} → [NatCast R] → [n.AtLeastTwo] → OfNat R n
-```
-
-Fully explicit type:
-
-```lean
-{R : Type u_1} → {n : Nat} → [NatCast.{u_1} R] → [Nat.AtLeastTwo n] → OfNat.{u_1} R n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
-```
-
-### D048: `instOfNatNat`
+### D068: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1487,205 +2959,105 @@ Definition body (one-level semantic boundary):
 fun n => { ofNat := n }
 ```
 
-### D049: `Bool.true`
+### D069: `DivInvMonoid.toDiv`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea`
+
+Type:
+
+```lean
+{G : Type u} → [self : DivInvMonoid G] → Div G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : DivInvMonoid.{u} G] → Div.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G [self : DivInvMonoid G] => self.3
+```
+
+### D070: `Exists`
+
+- Role: `external-frontier`
+- Owner module: `Init.Core`
+- Declaration kind: `inductive`
+- Distance from target type: `2`
+- Semantic SHA-256: `a24a6eb72dcf5b3765659a28bb9d3814ed7ebd3e3fa1fd11e8f3c7acc80e0dde`
+
+Type:
+
+```lean
+{α : Sort u} → (α → Prop) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (p : α → Prop) → Prop
+```
+
+### D071: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
-- Declaration kind: `constructor`
-- Distance from target type: `2`
-- Semantic SHA-256: `97e763ea95d8452117cf5762fd67acddd549677f08ccfa348c4bf23db7eaa9d8`
-
-Type:
-
-```lean
-Bool
-```
-
-Fully explicit type:
-
-```lean
-Bool
-```
-
-### D050: `DFunLike.coe`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.FunLike.Basic`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `9db5c150b3c86d10b50e19602d0c0af9e5012dfe5f13b0d7b57925729f2478f0`
+- Semantic SHA-256: `e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59`
 
 Type:
 
 ```lean
-{F : Sort u_1} → {α : outParam (Sort u_2)} → {β : outParam (α → Sort u_3)} → [self : DFunLike F α β] → F → (a : α) → β a
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HAdd α β γ] → α → β → γ
 ```
 
 Fully explicit type:
 
 ```lean
-{F : Sort u_1} →
-  {α : outParam.{u_2 + 1} (Sort u_2)} →
-    {β : outParam.{max u_2 (u_3 + 1)} (α → Sort u_3)} → [self : DFunLike.{u_1, u_2, u_3} F α β] → F → (a : α) → β a
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HAdd.{u, v, w} α β γ] → α → β → γ
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun F {α} {β} [self : DFunLike F α β] => self.1
+fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D051: `Equiv`
+### D072: `HDiv.hDiv`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Logic.Equiv.Defs`
-- Declaration kind: `inductive`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `d7f2b85e220b17e17ce92ad10d5015da5d4751cd914568e619a1f288341c64e3`
+- Semantic SHA-256: `10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b`
 
 Type:
 
 ```lean
-Sort u_1 → Sort u_2 → Sort (max (max 1 u_1) u_2)
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HDiv α β γ] → α → β → γ
 ```
 
 Fully explicit type:
 
 ```lean
-(α : Sort u_1) → (β : Sort u_2) → Sort (max (max 1 u_1) u_2)
-```
-
-### D052: `Equiv.instEquivLike`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Logic.Equiv.Defs`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `c53ba65c6bd0e248eb34b05badc813675bd3ab80452ae652c8efe8beb0652559`
-
-Type:
-
-```lean
-{α : Sort u} → {β : Sort v} → EquivLike (Equiv α β) α β
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u} → {β : Sort v} → EquivLike.{max (max 1 v) u, u, v} (Equiv.{u, v} α β) α β
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HDiv.{u, v, w} α β γ] → α → β → γ
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {α} {β} => { coe := Equiv.toFun, inv := Equiv.invFun, left_inv := ⋯, right_inv := ⋯, coe_injective' := ⋯ }
+fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D053: `EquivLike.toFunLike`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.FunLike.Equiv`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `0f60978070e976ff8040a5b974a5b08a27d74758a8f4361a6276a17c12a1d96a`
-
-Type:
-
-```lean
-{E : Sort u_1} → {α : Sort u_3} → {β : Sort u_4} → [EquivLike E α β] → FunLike E α β
-```
-
-Fully explicit type:
-
-```lean
-{E : Sort u_1} → {α : Sort u_3} → {β : Sort u_4} → [EquivLike.{u_1, u_3, u_4} E α β] → FunLike.{u_1, u_3, u_4} E α β
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {E} {α} {β} [inst : EquivLike E α β] => { coe := inst.coe, coe_injective' := ⋯ }
-```
-
-### D054: `Fin.fintype`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Fintype.Basic`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `e7038d0981813ab904ddadd5c858e1d87d6d42413a72872c71b6e0413db6bb44`
-
-Type:
-
-```lean
-(n : Nat) → Fintype (Fin n)
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) → Fintype.{0} (Fin n)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
-```
-
-### D055: `Finset.sum`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `931ceac4e9efb5833f58970d10ced4621362e020ea1119492a8d379b7e692372`
-
-Type:
-
-```lean
-{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid M] → Finset ι → (ι → M) → M
-```
-
-Fully explicit type:
-
-```lean
-{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid.{u_3} M] → (s : Finset.{u_1} ι) → (f : ι → M) → M
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
-```
-
-### D056: `Finset.univ`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Fintype.Defs`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `194413a784fbc0b27d0cb6b1ab67ed060210172bf16ba24045aa439e58f9a8c7`
-
-Type:
-
-```lean
-{α : Type u_1} → [Fintype α] → Finset α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Fintype.{u_1} α] → Finset.{u_1} α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Fintype α] => inst.elems
-```
-
-### D057: `HMul.hMul`
+### D073: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1711,7 +3083,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D058: `HPow.hPow`
+### D074: `HPow.hPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1737,115 +3109,33 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HPow α β γ] => self.1
 ```
 
-### D059: `Matrix`
+### D075: `LE.le`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
-- Declaration kind: `def`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `e552ffc8c85b917dca38e5965ad91773fdb989246623a528d91526b75d68c2f1`
+- Semantic SHA-256: `54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48`
 
 Type:
 
 ```lean
-Type u → Type u' → Type v → Type (max u u' v)
+{α : Type u} → [self : LE α] → α → α → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-(m : Type u) → (n : Type u') → (α : Type v) → Type (max u u' v)
+{α : Type u} → [self : LE.{u} α] → α → α → Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun m n α => m → n → α
+fun α [self : LE α] => self.1
 ```
 
-### D060: `Matrix.of`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `2fd11c1f258b666a5be58a830ae21c93bc674ab3014a8a722530d141dddb3638`
-
-Type:
-
-```lean
-{m : Type u_2} → {n : Type u_3} → {α : Type v} → Equiv (m → n → α) (Matrix m n α)
-```
-
-Fully explicit type:
-
-```lean
-{m : Type u_2} →
-  {n : Type u_3} →
-    {α : Type v} →
-      Equiv.{max (max (u_2 + 1) (u_3 + 1)) (v + 1), max (max (v + 1) (u_3 + 1)) (u_2 + 1)} (m → n → α)
-        (Matrix.{u_2, u_3, v} m n α)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m} {n} {α} => Equiv.refl (m → n → α)
-```
-
-### D061: `Matrix.vecCons`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Fin.VecNotation`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `6d598529744fc7ed189026f2f83ca39c93930021427c51096eca547bc6750a25`
-
-Type:
-
-```lean
-{α : Type u} → {n : Nat} → α → (Fin n → α) → Fin n.succ → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {n : Nat} → (h : α) → (t : Fin n → α) → Fin (Nat.succ n) → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} {n} h t => Fin.cons h t
-```
-
-### D062: `Matrix.vecEmpty`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Fin.VecNotation`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `43307adb40ece2d70b6319d8e8f7f5551cf96af32e64c2288a2ca8610f456de1`
-
-Type:
-
-```lean
-{α : Type u} → Fin 0 → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → Fin (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} => Fin.elim0
-```
-
-### D063: `Monoid.toNatPow`
+### D076: `Monoid.toNatPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -1871,102 +3161,76 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
 ```
 
-### D064: `NNRatCast.toOfScientific`
+### D077: `One.toOfNat1`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Order.Ring.Unbundled.Rat`
+- Owner module: `Init.Data.Zero`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `cd07bd77da24569af2062c2bed58ee77100bffdb8fcba677c84f7bb0f0e0e218`
+- Semantic SHA-256: `cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5`
 
 Type:
 
 ```lean
-{K : Type u_1} → [NNRatCast K] → OfScientific K
+{α : Type u_1} → [One α] → OfNat α 1
 ```
 
 Fully explicit type:
 
 ```lean
-{K : Type u_1} → [NNRatCast.{u_1} K] → OfScientific.{u_1} K
+{α : Type u_1} → [One.{u_1} α] → OfNat.{u_1} α (nat_lit 1)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {K} [NNRatCast K] => { ofScientific := fun m b d => NNRat.cast ⟨Rat.ofScientific m b d, ⋯⟩ }
+fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D065: `Neg.neg`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `0c56662a5d917c211c3cb741ca747b4a6710082af615cf071342ef70dee3a2c7`
-
-Type:
-
-```lean
-{α : Type u} → [self : Neg α] → α → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : Neg.{u} α] → α → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : Neg α] => self.1
-```
-
-### D066: `OfScientific.ofScientific`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.OfScientific`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `2e86ffcefde3a128235ad8657546e1e75f8adc5e0f719edfcd04466913c5ad0e`
-
-Type:
-
-```lean
-{α : Type u} → [self : OfScientific α] → Nat → Bool → Nat → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : OfScientific.{u} α] → (mantissa : Nat) → (exponentSign : Bool) → (decimalExponent : Nat) → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : OfScientific α] => self.1
-```
-
-### D067: `Real.instAddCommMonoid`
+### D078: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `11a549e6c9caa007a4627570dd86aea756ada755f141da0356b8766788f2eef7`
+- Semantic SHA-256: `f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce`
 
 Type:
 
 ```lean
-AddCommMonoid Real
+Add Real
 ```
 
 Fully explicit type:
 
 ```lean
-AddCommMonoid.{0} Real
+Add.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ add := Real.add✝ }
+```
+
+### D079: `Real.instAddGroup`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0`
+
+Type:
+
+```lean
+AddGroup Real
+```
+
+Fully explicit type:
+
+```lean
+AddGroup.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -1975,7 +3239,61 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D068: `Real.instMonoid`
+### D080: `Real.instDivInvMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3`
+
+Type:
+
+```lean
+DivInvMonoid Real
+```
+
+Fully explicit type:
+
+```lean
+DivInvMonoid.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ toMonoid := Real.instMonoid, toInv := Real.instInv, div := DivInvMonoid.div',
+  div_eq_mul_inv := Real.instDivInvMonoid._proof_1, zpow := zpowRec, zpow_zero' := Real.instDivInvMonoid._proof_2,
+  zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
+```
+
+### D081: `Real.instLE`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3`
+
+Type:
+
+```lean
+LE Real
+```
+
+Fully explicit type:
+
+```lean
+LE.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ le := Real.le✝ }
+```
+
+### D082: `Real.instMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2001,7 +3319,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D069: `Real.instMul`
+### D083: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2027,59 +3345,164 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D070: `Real.instNNRatCast`
+### D084: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `305e7c9b667d948e846364178de3be991ff25bd848da3810d89241f9b532b584`
+- Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
 
 Type:
 
 ```lean
-NNRatCast Real
+NatCast Real
 ```
 
 Fully explicit type:
 
 ```lean
-NNRatCast.{0} Real
+NatCast.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-{ nnratCast := fun q => { cauchy := q.cast } }
+{ natCast := fun n => { cauchy := n.cast } }
 ```
 
-### D071: `Real.instNeg`
+### D085: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `000951397468b3d1f8a2a1cca1de3812bc024916ff842cfd5454811130093b41`
+- Semantic SHA-256: `b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81`
 
 Type:
 
 ```lean
-Neg Real
+One Real
 ```
 
 Fully explicit type:
 
 ```lean
-Neg.{0} Real
+One.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-{ neg := Real.neg✝ }
+{ one := Real.one✝ }
 ```
 
-### D072: `instHMul`
+### D086: `Real.lattice`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510`
+
+Type:
+
+```lean
+Lattice Real
+```
+
+Fully explicit type:
+
+```lean
+Lattice.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D087: `abs`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b`
+
+Type:
+
+```lean
+{α : Type u_1} → [Lattice α] → [AddGroup α] → α → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Lattice.{u_1} α] → [AddGroup.{u_1} α] → (a : α) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [Lattice α] [AddGroup α] a =>
+  SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
+```
+
+### D088: `instHAdd`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981`
+
+Type:
+
+```lean
+{α : Type u_1} → [Add α] → HAdd α α α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Add.{u_1} α] → HAdd.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
+```
+
+### D089: `instHDiv`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `ea3478ce3daf37e2cbdcd4bfaf7b5142fd7d274b56d75d2fae007c15e1b89871`
+
+Type:
+
+```lean
+{α : Type u_1} → [Div α] → HDiv α α α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Div.{u_1} α] → HDiv.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
+```
+
+### D090: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2105,7 +3528,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D073: `instHPow`
+### D091: `instHPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2131,33 +3554,278 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
-### D074: `HAdd.hAdd`
+### D092: `instOfNatAtLeastTwo`
 
 - Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59`
+- Owner module: `Mathlib.Data.Nat.Cast.Defs`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d`
 
 Type:
 
 ```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HAdd α β γ] → α → β → γ
+{R : Type u_1} → {n : Nat} → [NatCast R] → [n.AtLeastTwo] → OfNat R n
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HAdd.{u, v, w} α β γ] → α → β → γ
+{R : Type u_1} → {n : Nat} → [NatCast.{u_1} R] → [Nat.AtLeastTwo n] → OfNat.{u_1} R n
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun α β {γ} [self : HAdd α β γ] => self.1
+fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
 ```
 
-### D075: `Nat.AtLeastTwo`
+### D093: `AddGroup.toSubNegMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `8c0fca6ee264d934b25c679f16be6b83bb2a2f7c58a8ac0afab0c146219e16a1`
+
+Type:
+
+```lean
+{A : Type u} → [self : AddGroup A] → SubNegMonoid A
+```
+
+Fully explicit type:
+
+```lean
+{A : Type u} → [self : AddGroup.{u} A] → SubNegMonoid.{u} A
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun A [self : AddGroup A] => self.1
+```
+
+### D094: `Fin.castSucc`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `1a33a8aafc4da9c57254d511b91e1e2a293b6b2e6a304786fbdb535a2fe20bc6`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  Fin n →
+    Fin
+      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} => Fin.castAdd 1
+```
+
+### D095: `Fin.fintype`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Fintype.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `e7038d0981813ab904ddadd5c858e1d87d6d42413a72872c71b6e0413db6bb44`
+
+Type:
+
+```lean
+(n : Nat) → Fintype (Fin n)
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Fintype.{0} (Fin n)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
+```
+
+### D096: `Fin.last`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `b7cf2c761ad02a28a34dfdeee30ac4ec7bd4c3ff77700313e3ed2f37d473f5f2`
+
+Type:
+
+```lean
+(n : Nat) → Fin (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) →
+  Fin
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => ⟨n, ⋯⟩
+```
+
+### D097: `Fin.succ`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `72d7aaf169e5a264dac79e6aeec8a81c4436ffab27e5dbad2956eaeb4a147cad`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  Fin n →
+    Fin
+      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} x => Fin.succ.match_1 (fun x => Fin (instHAdd.hAdd n 1)) x fun i h => ⟨instHAdd.hAdd i 1, ⋯⟩
+```
+
+### D098: `Finset.sum`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `931ceac4e9efb5833f58970d10ced4621362e020ea1119492a8d379b7e692372`
+
+Type:
+
+```lean
+{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid M] → Finset ι → (ι → M) → M
+```
+
+Fully explicit type:
+
+```lean
+{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid.{u_3} M] → (s : Finset.{u_1} ι) → (f : ι → M) → M
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
+```
+
+### D099: `Finset.univ`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Fintype.Defs`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `194413a784fbc0b27d0cb6b1ab67ed060210172bf16ba24045aa439e58f9a8c7`
+
+Type:
+
+```lean
+{α : Type u_1} → [Fintype α] → Finset α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Fintype.{u_1} α] → Finset.{u_1} α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Fintype α] => inst.elems
+```
+
+### D100: `HSub.hSub`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `98025b38d523c0eadea77ba4961a20b2a913b23c079c4bfeba24a7bfaa24a4bc`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HSub α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HSub.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HSub α β γ] => self.1
+```
+
+### D101: `LT.lt`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
+
+Type:
+
+```lean
+{α : Type u} → [self : LT α] → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : LT.{u} α] → α → α → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : LT α] => self.1
+```
+
+### D102: `Nat.AtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Init`
@@ -2177,33 +3845,278 @@ Fully explicit type:
 (n : Nat) → Prop
 ```
 
-### D076: `Real.instAdd`
+### D103: `Nat.cast`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
+- Owner module: `Init.Data.Cast`
 - Declaration kind: `def`
 - Distance from target type: `3`
-- Semantic SHA-256: `f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce`
+- Semantic SHA-256: `6e24327ea908b1837083bb15aef27d593e950a2ff8ade81d8aa94bfe33b64450`
 
 Type:
 
 ```lean
-Add Real
+{R : Type u} → [NatCast R] → Nat → R
 ```
 
 Fully explicit type:
 
 ```lean
-Add.{0} Real
+{R : Type u} → [NatCast.{u} R] → Nat → R
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-{ add := Real.add✝ }
+fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D077: `instAddNat`
+### D104: `Norm.norm`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.Normed.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `25f5aa97df9bb1faeacd7e5e6446ecbd367452a7105f098063355423713fe15a`
+
+Type:
+
+```lean
+{E : Type u_8} → [self : Norm E] → E → Real
+```
+
+Fully explicit type:
+
+```lean
+{E : Type u_8} → [self : Norm.{u_8} E] → E → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun E [self : Norm E] => self.1
+```
+
+### D105: `NormedAddCommGroup.toAddCommGroup`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.Normed.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `c92bdde4376567f29ebdebaf4a7dd986bfb96211cd0306e14540b80cd23009d2`
+
+Type:
+
+```lean
+{E : Type u_8} → [self : NormedAddCommGroup E] → AddCommGroup E
+```
+
+Fully explicit type:
+
+```lean
+{E : Type u_8} → [self : NormedAddCommGroup.{u_8} E] → AddCommGroup.{u_8} E
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun E [self : NormedAddCommGroup E] => self.2
+```
+
+### D106: `NormedAddCommGroup.toNorm`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.Normed.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `702f98e978ba8cf9fe1b4ce130f011682d6d486d71ba0f7d12f36ec9925cd59b`
+
+Type:
+
+```lean
+{E : Type u_8} → [self : NormedAddCommGroup E] → Norm E
+```
+
+Fully explicit type:
+
+```lean
+{E : Type u_8} → [self : NormedAddCommGroup.{u_8} E] → Norm.{u_8} E
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun E [self : NormedAddCommGroup E] => self.1
+```
+
+### D107: `NormedAddCommGroup.toNormedAddGroup`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.Normed.Group.Defs`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `cdc7999c66248f7b0f68477de30ff4d9ea7a7f0df0bc6f092bc024f699d646fe`
+
+Type:
+
+```lean
+{E : Type u_5} → [NormedAddCommGroup E] → NormedAddGroup E
+```
+
+Fully explicit type:
+
+```lean
+{E : Type u_5} → [NormedAddCommGroup.{u_5} E] → NormedAddGroup.{u_5} E
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {E} [inst : NormedAddCommGroup E] =>
+  have __src := inst;
+  { toNorm := __src.toNorm, toAddGroup := __src.toAddGroup, toMetricSpace := __src.toMetricSpace, dist_eq := ⋯ }
+```
+
+### D108: `NormedAddGroup.toAddGroup`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.Normed.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `06ba17aab699c28aaa8877d0b107536ebd2aefd8bf59143b2357c84bb820d89e`
+
+Type:
+
+```lean
+{E : Type u_8} → [self : NormedAddGroup E] → AddGroup E
+```
+
+Fully explicit type:
+
+```lean
+{E : Type u_8} → [self : NormedAddGroup.{u_8} E] → AddGroup.{u_8} E
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun E [self : NormedAddGroup E] => self.2
+```
+
+### D109: `NormedSpace.toModule`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.Normed.Module.Basic`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `5ced27e2d9cc2259d662cced299ca3071b9598822fc551dad5a5d6dd0f3a9df4`
+
+Type:
+
+```lean
+{𝕜 : Type u_6} →
+  {E : Type u_7} → {inst : NormedField 𝕜} → {inst_1 : SeminormedAddCommGroup E} → [self : NormedSpace 𝕜 E] → Module 𝕜 E
+```
+
+Fully explicit type:
+
+```lean
+{𝕜 : Type u_6} →
+  {E : Type u_7} →
+    {inst : NormedField.{u_6} 𝕜} →
+      {inst_1 : SeminormedAddCommGroup.{u_7} E} →
+        [self : @NormedSpace.{u_6, u_7} 𝕜 E inst inst_1] →
+          @Module.{u_6, u_7} 𝕜 E
+            (@DivisionSemiring.toSemiring.{u_6} 𝕜
+              (@Semifield.toDivisionSemiring.{u_6} 𝕜 (@Field.toSemifield.{u_6} 𝕜 (@NormedField.toField.{u_6} 𝕜 inst))))
+            (@AddCommGroup.toAddCommMonoid.{u_7} E (@SeminormedAddCommGroup.toAddCommGroup.{u_7} E inst_1))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun 𝕜 E {inst} {inst_1} [self : NormedSpace 𝕜 E] => self.1
+```
+
+### D110: `Real.instAddCommMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `11a549e6c9caa007a4627570dd86aea756ada755f141da0356b8766788f2eef7`
+
+Type:
+
+```lean
+AddCommMonoid Real
+```
+
+Fully explicit type:
+
+```lean
+AddCommMonoid.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D111: `Real.instLT`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a`
+
+Type:
+
+```lean
+LT Real
+```
+
+Fully explicit type:
+
+```lean
+LT.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Real.lt✝ }
+```
+
+### D112: `SubNegMonoid.toSub`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `f60885ee7a5e97dbc3d343ecb54849b15ae9ca7cc989f350d3b7fee2d2d0724b`
+
+Type:
+
+```lean
+{G : Type u} → [self : SubNegMonoid G] → Sub G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : SubNegMonoid.{u} G] → Sub.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G [self : SubNegMonoid G] => self.3
+```
+
+### D113: `instAddNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2229,28 +4142,555 @@ Definition body (one-level semantic boundary):
 { add := Nat.add }
 ```
 
-### D078: `instHAdd`
+### D114: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `def`
 - Distance from target type: `3`
-- Semantic SHA-256: `38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981`
+- Semantic SHA-256: `aa782f2b5af3d068f4c5340de4b32b193fece2c659a45582cc3024a19b550c87`
 
 Type:
 
 ```lean
-{α : Type u_1} → [Add α] → HAdd α α α
+{α : Type u_1} → [Sub α] → HSub α α α
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u_1} → [Add.{u_1} α] → HAdd.{u_1, u_1, u_1} α α α
+{α : Type u_1} → [Sub.{u_1} α] → HSub.{u_1, u_1, u_1} α α α
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
+fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
+```
+
+### D115: `instLTNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `4054f2341fdda887b2040c624c0867866ab56eabf3441d6ffc9451c94ae1663c`
+
+Type:
+
+```lean
+LT Nat
+```
+
+Fully explicit type:
+
+```lean
+LT.{0} Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Nat.lt }
+```
+
+### D116: `AddCommGroup`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `inductive`
+- Distance from target type: `4`
+- Semantic SHA-256: `087ff419a44ee7e835bedcf1beda5a1fee5971b4ef4f17124a5a63cd2b0beb30`
+
+Type:
+
+```lean
+Type u → Type u
+```
+
+Fully explicit type:
+
+```lean
+(G : Type u) → Type u
+```
+
+### D117: `AddCommGroup.toAddCommMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `4`
+- Semantic SHA-256: `f727c3f01db957bd004eab61d742db6d02c6f9b2cdad465fa6f0ac214e09ccfd`
+
+Type:
+
+```lean
+{G : Type u} → [self : AddCommGroup G] → AddCommMonoid G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : AddCommGroup.{u} G] → AddCommMonoid.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G self => { toAddMonoid := self.toAddMonoid, add_comm := ⋯ }
+```
+
+### D118: `AddCommGroup.toAddGroup`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `4`
+- Semantic SHA-256: `7f49725cf4bc16610110860af8f38e6d0fe472c7c1af93721407bad8c7375729`
+
+Type:
+
+```lean
+{G : Type u} → [self : AddCommGroup G] → AddGroup G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : AddCommGroup.{u} G] → AddGroup.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G [self : AddCommGroup G] => self.1
+```
+
+### D119: `Module`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Module.Defs`
+- Declaration kind: `inductive`
+- Distance from target type: `4`
+- Semantic SHA-256: `132ed119db2ae117b4c85e91594e4fcde0e02a8fde0fb2ee5c57a7a9263c219c`
+
+Type:
+
+```lean
+(R : Type u) → (M : Type v) → [Semiring R] → [AddCommMonoid M] → Type (max u v)
+```
+
+Fully explicit type:
+
+```lean
+(R : Type u) → (M : Type v) → [Semiring.{u} R] → [AddCommMonoid.{v} M] → Type (max u v)
+```
+
+### D120: `Real.semiring`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `c0106cafec59cbaa840a6e4c7ee72e629b4456feb6db98c6bf8c3085fcac475c`
+
+Type:
+
+```lean
+Semiring Real
+```
+
+Fully explicit type:
+
+```lean
+Semiring.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D121: `AddCommMagma.toAdd`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `78a12fabc3611bc39705a2dcf3fa82ed1f226d804e888d57546b885fefae4453`
+
+Type:
+
+```lean
+{G : Type u} → [self : AddCommMagma G] → Add G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : AddCommMagma.{u} G] → Add.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G [self : AddCommMagma G] => self.1
+```
+
+### D122: `AddCommMonoid.toAddCommSemigroup`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `dc7cae9f3611bf7a48fc6ba815db5cffeba3ac95ae33d26bec77b827bd041f26`
+
+Type:
+
+```lean
+{M : Type u} → [self : AddCommMonoid M] → AddCommSemigroup M
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u} → [self : AddCommMonoid.{u} M] → AddCommSemigroup.{u} M
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun M self => { toAddSemigroup := self.toAddSemigroup, add_comm := ⋯ }
+```
+
+### D123: `AddCommSemigroup.toAddCommMagma`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `78f90c6bc01ad86e28d84a9011670656947204c6d8963785407a1b8eb54844ab`
+
+Type:
+
+```lean
+{G : Type u} → [self : AddCommSemigroup G] → AddCommMagma G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : AddCommSemigroup.{u} G] → AddCommMagma.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G self => { toAdd := self.toAdd, add_comm := ⋯ }
+```
+
+### D124: `AddMonoid.toAddZeroClass`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `4b5cfcaa0e3b1157089b486d5bfd51b9d15b881ea9cad302a6c8f701cae9ef1a`
+
+Type:
+
+```lean
+{M : Type u} → [self : AddMonoid M] → AddZeroClass M
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u} → [self : AddMonoid.{u} M] → AddZeroClass.{u} M
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun M self => { toZero := self.toZero, toAdd := self.toAdd, zero_add := ⋯, add_zero := ⋯ }
+```
+
+### D125: `AddZero.toZero`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `aa06299f9d38f11e9dad40701d7541d8eba2a4ac673c643f4c5f5ce1369490cc`
+
+Type:
+
+```lean
+{M : Type u_2} → [self : AddZero M] → Zero M
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u_2} → [self : AddZero.{u_2} M] → Zero.{u_2} M
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun M [self : AddZero M] => self.1
+```
+
+### D126: `AddZeroClass.toAddZero`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `8f64c653a96443ff67b52a5edb3fc264d279905b936c7303e9dd2469af000213`
+
+Type:
+
+```lean
+{M : Type u} → [self : AddZeroClass M] → AddZero M
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u} → [self : AddZeroClass.{u} M] → AddZero.{u} M
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun M [self : AddZeroClass M] => self.1
+```
+
+### D127: `DistribMulAction.toDistribSMul`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.GroupWithZero.Action.Defs`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `17a3c7e66a4c2897891d468da70a58e73aa0b8e044ea0cc90d8d6e9e51c08f02`
+
+Type:
+
+```lean
+{M : Type u_1} → {A : Type u_7} → [inst : Monoid M] → [inst_1 : AddMonoid A] → [DistribMulAction M A] → DistribSMul M A
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u_1} →
+  {A : Type u_7} →
+    [inst : Monoid.{u_1} M] →
+      [inst_1 : AddMonoid.{u_7} A] →
+        [@DistribMulAction.{u_1, u_7} M A inst inst_1] →
+          @DistribSMul.{u_1, u_7} M A (@AddMonoid.toAddZeroClass.{u_7} A inst_1)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {M} {A} [Monoid M] [AddMonoid A] [inst_2 : DistribMulAction M A] =>
+  let __src := inst_2;
+  { toSMul := __src.toSMul, smul_zero := ⋯, smul_add := ⋯ }
+```
+
+### D128: `DistribSMul.toSMulZeroClass`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.GroupWithZero.Action.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `f640928ea31b161891006aaf9950d636ac5e1fbda413a7712f36546c938b3fdf`
+
+Type:
+
+```lean
+{M : Type u_12} → {A : Type u_13} → {inst : AddZeroClass A} → [self : DistribSMul M A] → SMulZeroClass M A
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u_12} →
+  {A : Type u_13} →
+    {inst : AddZeroClass.{u_13} A} →
+      [self : @DistribSMul.{u_12, u_13} M A inst] →
+        @SMulZeroClass.{u_12, u_13} M A (@AddZero.toZero.{u_13} A (@AddZeroClass.toAddZero.{u_13} A inst))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun M A {inst} [self : DistribSMul M A] => self.1
+```
+
+### D129: `HSMul.hSMul`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `f1757307432fadbd23925bbf0a318b8da57d17711478e1073a19ce64c21d55f4`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HSMul α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HSMul.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HSMul α β γ] => self.1
+```
+
+### D130: `Module.toDistribMulAction`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Module.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `88cb31241158a61c2eaae8459f700e8db39d9fca998e95d4fa73b87b68be8c60`
+
+Type:
+
+```lean
+{R : Type u} →
+  {M : Type v} → {inst : Semiring R} → {inst_1 : AddCommMonoid M} → [self : Module R M] → DistribMulAction R M
+```
+
+Fully explicit type:
+
+```lean
+{R : Type u} →
+  {M : Type v} →
+    {inst : Semiring.{u} R} →
+      {inst_1 : AddCommMonoid.{v} M} →
+        [self : @Module.{u, v} R M inst inst_1] →
+          @DistribMulAction.{u, v} R M (@MonoidWithZero.toMonoid.{u} R (@Semiring.toMonoidWithZero.{u} R inst))
+            (@AddCommMonoid.toAddMonoid.{v} M inst_1)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun R M {inst} {inst_1} [self : Module R M] => self.1
+```
+
+### D131: `Ne`
+
+- Role: `external-frontier`
+- Owner module: `Init.Core`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `635adc1f9e4a981a5c01b21338fdf89e637bd4ef0aa6911bda4dc03acfe9fba6`
+
+Type:
+
+```lean
+{α : Sort u} → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (a b : α) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} a b => Not (Eq a b)
+```
+
+### D132: `SMulZeroClass.toSMul`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.GroupWithZero.Action.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `a8cadadddb0c9fd4a7bcb7c57401fafb43a1f330afa35fdacacb6d0e82d0bcf6`
+
+Type:
+
+```lean
+{M : Type u_12} → {A : Type u_13} → {inst : Zero A} → [self : SMulZeroClass M A] → SMul M A
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u_12} →
+  {A : Type u_13} → {inst : Zero.{u_13} A} → [self : @SMulZeroClass.{u_12, u_13} M A inst] → SMul.{u_12, u_13} M A
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun M A {inst} [self : SMulZeroClass M A] => self.1
+```
+
+### D133: `SubNegMonoid.toAddMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `9e6f6ef922e3c39bdc8dcf74fa873f2e393c916c08aa49739c9dcafb3f96877b`
+
+Type:
+
+```lean
+{G : Type u} → [self : SubNegMonoid G] → AddMonoid G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : SubNegMonoid.{u} G] → AddMonoid.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G [self : SubNegMonoid G] => self.1
+```
+
+### D134: `instHSMul`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `04ea7c06812eccb8531b763b7aa28fd8f968befff069e74166ff1b406f7512e3`
+
+Type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [SMul α β] → HSMul α β β
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [SMul.{u_1, u_2} α β] → HSMul.{u_1, u_2, u_2} α β β
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} {β} [inst : SMul α β] => { hSMul := inst.smul }
 ```
