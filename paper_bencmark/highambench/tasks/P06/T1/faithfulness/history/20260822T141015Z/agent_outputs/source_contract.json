@@ -1,0 +1,163 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P06-T1",
+  "paper_sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79",
+  "source_evidence": [
+    {
+      "pdf_page": 2,
+      "printed_page": "1147",
+      "anchor": "opening conventions; equations (1.4) and (1.6); Definition 1.3",
+      "observation": "The paper defines the vector 2-norm, its subordinate matrix norm, the Frobenius norm, column notation a_j, and the c_i convention; it states fl(x op y)=(x op y)(1+delta), |delta|<=u; defines gamma_tilde_n(lambda)=exp((lambda*sqrt(n)*u+n*u^2)/(1-u))-1=lambda*sqrt(n)*u+O(u^2) for lambda>0; and defines mean independence by conditional expectation on preceding errors."
+    },
+    {
+      "pdf_page": 3,
+      "printed_page": "1148",
+      "anchor": "Model 1.5 and the following first-order-analysis paragraph",
+      "observation": "Rounding errors are generated in computation order, satisfy (1.4), and are mean-independent random variables of mean zero. The paper says its probabilistic bounds are stated to first order in u and that higher-order terms will be analyzed separately."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "1149",
+      "anchor": "Lemma 2.2 and equation (2.4)",
+      "observation": "For the Householder-vector construction, the computed vector differs componentwise from the exact vector by a relative perturbation bounded by c4*gamma_tilde_n(lambda)+O(u^2), on the stated high-probability event. This is the cross-reference used in the proof of Theorem 4.4."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "1151",
+      "anchor": "section 4 setup, Lemma 4.1, and equations (4.1)-(4.2)",
+      "observation": "Applying r exact Householder matrices is represented as a product of perturbed factors (P_r+Delta P_r)...(P_1+Delta P_1), with ||Delta P_j||_2<=c5*gamma_tilde_m(lambda) for every j on an event of probability at least 1-2*r*m*exp(-lambda^2/2). The section later specializes the vector and matrix results to Householder QR."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "1152",
+      "anchor": "paragraph preceding Lemma 4.2 and Lemma 4.2",
+      "observation": "All remaining results in section 4 explicitly assume that the local bound (4.2) holds with probability 1 for every j. Under that strengthened assumption, Lemma 4.2 gives the vector backward error with probability at least 1-2*m*exp(-lambda^2)."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "1153",
+      "anchor": "equations (4.12)-(4.14) and transition to the matrix case",
+      "observation": "The concentration argument bounds the norm of the sum of first-order perturbations and obtains ||Delta b||_2<=c6*lambda*sqrt(r)*gamma_tilde_m(lambda)*||b||_2+O(u^2), with probability at least 1-2*m*exp(-lambda^2)."
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "1154",
+      "anchor": "Lemma 4.3; Theorem 4.4; equations (4.16)-(4.17); proof",
+      "observation": "A union bound makes the column bounds simultaneous and gives p4(lambda,m,n)=1-2*m*n*exp(-lambda^2). Theorem 4.4 states A+Delta A=Q*R_hat for an exact orthogonal Q and the computed upper-trapezoidal R_hat, with ||Delta a_j||_2<=c6*lambda*sqrt(n)*gamma_tilde_m(lambda)*||a_j||_2+O(u^2), j=1:n. Its proof links the general reflector analysis to QR's explicitly set zeros and to computed, history-dependent Householder vectors."
+    },
+    {
+      "pdf_page": 10,
+      "printed_page": "1155",
+      "anchor": "equations (4.18)-(4.20) and surrounding discussion",
+      "observation": "The paper estimates the omitted second-order contribution as approximately n^2*m*u^2 times the vector norm when constants and lambda are omitted, contrasts it with first-order sqrt(m*n)*u dependence, and gives m^(1/2)*n^(3/2)*u<1 as the condition for first-order growth to dominate. It calls out the probability-one local assumption and derives ||Delta A||_F<=c6*lambda*sqrt(n)*gamma_tilde_m(lambda)*||A||_F+O(u^2)."
+    }
+  ],
+  "statement": {
+    "binders": [
+      "m and n are positive matrix dimensions, A is an exact real m-by-n input matrix, and the paper's standing tall-matrix context is m>=n. [PDF p. 9 (printed 1154), Theorem 4.4; PDF p. 10 (printed 1155), discussion after (4.19)]",
+      "lambda is the positive tail parameter inherited from gamma_tilde_k(lambda), and u is the relative-error bound appearing in (1.4). [PDF p. 2 (printed 1147), equations (1.4) and (1.6)]",
+      "R_hat in R^(m-by-n) is the computed upper-trapezoidal QR factor produced from A by the Householder QR algorithm. [PDF p. 9 (printed 1154), Theorem 4.4]",
+      "a_j and Delta a_j denote the jth columns of A and Delta A, respectively, for j=1:n. [PDF p. 2 (printed 1147), opening conventions; PDF p. 9 (printed 1154), equation (4.17)]"
+    ],
+    "hypotheses": [
+      "The computation satisfies Model 1.5: its rounding errors occur in computation order, satisfy fl(x op y)=(x op y)(1+delta) with |delta|<=u, are mean independent relative to preceding errors, and each has mean zero. [PDF p. 2 (printed 1147), equation (1.4) and Definition 1.3; PDF p. 3 (printed 1148), Model 1.5]",
+      "In addition to Model 1.5, the hypothesis inherited from Lemma 4.2 is that ||Delta P_j||_2<=c5*gamma_tilde_m(lambda) holds with probability 1 for every local Householder application j. [PDF p. 6 (printed 1151), equation (4.2); PDF p. 7 (printed 1152), paragraph preceding Lemma 4.2]",
+      "The input-to-output linkage is specifically the Householder QR algorithm, including its explicit assignment of annihilated entries to zero and its computed Householder vectors. [PDF p. 9 (printed 1154), proof of Theorem 4.4]"
+    ],
+    "conclusions": [
+      "There exists an exact orthogonal matrix Q in R^(m-by-m) and a backward perturbation Delta A in R^(m-by-n) such that A+Delta A=Q*R_hat. [PDF p. 9 (printed 1154), Theorem 4.4 and equation (4.16)]",
+      "The columnwise inequalities ||Delta a_j||_2<=c6*lambda*sqrt(n)*gamma_tilde_m(lambda)*||a_j||_2+O(u^2) hold simultaneously for j=1:n with probability at least p4(lambda,m,n)=1-2*m*n*exp(-lambda^2). [PDF p. 9 (printed 1154), Lemma 4.3 union-bound proof and Theorem 4.4 equation (4.17)]",
+      "On the same successful column event, the induced Frobenius backward-error consequence is ||Delta A||_F<=c6*lambda*sqrt(n)*gamma_tilde_m(lambda)*||A||_F+O(u^2). [PDF p. 10 (printed 1155), implication sentence and equation (4.20); PDF p. 9 (printed 1154), probability attached to (4.17)]"
+    ],
+    "definitions_and_conventions": [
+      "gamma_tilde_k(lambda)=exp((lambda*sqrt(k)*u+k*u^2)/(1-u))-1, and for fixed k and lambda it is lambda*sqrt(k)*u+O(u^2); Theorem 4.4 uses k=m. [PDF p. 2 (printed 1147), equation (1.6); PDF p. 9 (printed 1154), equation (4.17)]",
+      "Mean independence means E(delta_k | delta_(k-1),...,delta_1)=E(delta_k), and Model 1.5 additionally sets E(delta_k)=0. [PDF p. 2 (printed 1147), Definition 1.3; PDF p. 3 (printed 1148), Model 1.5]",
+      "The constants c0,c1,c2,..., including c5 and c6, are described globally as integer constants of modest size; no numerical value for c6 is stated. [PDF p. 2 (printed 1147), opening conventions; PDF p. 8 (printed 1153), equations (4.12)-(4.13)]",
+      "The equality is a backward relation for the computed R_hat: A is perturbed, while Q is an exact orthogonal witness. It is not a statement that a computed Q_hat is exactly orthogonal. [PDF p. 9 (printed 1154), Theorem 4.4 and equation (4.16); PDF p. 10 (printed 1155), transition to the separate Theorem 4.5 about computed Q_hat]"
+    ],
+    "implicit_context": [
+      "Although Theorem 4.4 does not repeat m>=n in its displayed statement, the paper's QR setup uses m>=n and the higher-order discussion explicitly says 'Since we have m>=n'. [PDF p. 2 (printed 1147), Theorem 1.1; PDF p. 10 (printed 1155), paragraph after equation (4.19)]",
+      "The positive-lambda domain is inherited from the definition of gamma_tilde in (1.6); Theorem 4.4 itself does not restate a lambda quantifier. [PDF p. 2 (printed 1147), equation (1.6); PDF p. 9 (printed 1154), Theorem 4.4]",
+      "The QR specialization takes r=n Householder transformations, turning the sqrt(r) factor from Lemmas 4.2-4.3 into sqrt(n). [PDF p. 9 (printed 1154), Lemma 4.3 and equation (4.17); PDF p. 10 (printed 1155), instruction to set r=n]",
+      "No full-rank, nonsingularity, or nonzero-pivot condition is stated in Theorem 4.4. [PDF p. 9 (printed 1154), Theorem 4.4]"
+    ],
+    "algorithm_linkage": "Section 4 first represents application of exact reflectors P_j=I-v_j*v_j^T, v_j^T*v_j=2, as perturbed local factors, then applies the result columnwise and specializes r=n to Householder QR. In the QR specialization, entries intended to be annihilated are explicitly set to zero, which only zeroes rows of Delta P_i and does not increase its 2-norm; actual v_j are computed and depend on prior computed quantities, but their construction error contributes u*c4*gamma_tilde_m(lambda)=O(u^2) to Delta P_j and hence does not alter the first-order coefficient in (4.17). [PDF p. 6 (printed 1151), section 4 setup and equations (4.1)-(4.2); PDF p. 4 (printed 1149), equation (2.4); PDF p. 9 (printed 1154), proof of Theorem 4.4]",
+    "numerical_model": [
+      "Every elementary operation used by the computation is assumed to obey the relative-error equation fl(x op y)=(x op y)(1+delta), |delta|<=u. [PDF p. 2 (printed 1147), equation (1.4)]",
+      "The deltas are indexed in actual computation order, have zero mean, and are mean independent conditional on all preceding deltas; Model 1.5 does not state that they are mutually independent or identically distributed. [PDF p. 2 (printed 1147), Definition 1.3; PDF p. 3 (printed 1148), Model 1.5]",
+      "The probability-one bound on each local Delta P_j is an extra assumption, not the direct probability supplied by Lemma 4.1: Lemma 4.1 proves all local bounds only with probability at least 1-2*r*m*exp(-lambda^2/2), whereas Lemma 4.2 and Theorem 4.4 assume them almost surely. [PDF p. 6 (printed 1151), Lemma 4.1 and equation (4.2); PDF p. 7 (printed 1152), paragraph before Lemma 4.2; PDF p. 10 (printed 1155), discussion before equation (4.20)]",
+      "The theorem's reported failure term 2*m*n*exp(-lambda^2) comes from the concentration bound for one column followed by a union bound over all n columns; it is not combined with the discarded local-bound failure probability because the local bound is assumed to hold with probability 1. [PDF p. 7 (printed 1152), Lemma 4.2; PDF p. 9 (printed 1154), Lemma 4.3 and Theorem 4.4]"
+    ],
+    "error_notions": [
+      "Delta A is a backward error: the computed R_hat is related exactly to the perturbed input A+Delta A by an exact orthogonal Q. [PDF p. 9 (printed 1154), equation (4.16)]",
+      "Equation (4.17) is columnwise relative to each original column norm ||a_j||_2 and is simultaneous across all columns on the p4 event. [PDF p. 9 (printed 1154), equation (4.17) and Lemma 4.3 proof]",
+      "Equation (4.20) is the normwise Frobenius consequence of the simultaneous columnwise bounds, relative to ||A||_F. [PDF p. 10 (printed 1155), implication sentence and equation (4.20)]"
+    ],
+    "norms": [
+      "For vectors, ||x||_2=(x^T*x)^(1/2); for matrices, ||.||_2 is the corresponding subordinate matrix norm. [PDF p. 2 (printed 1147), opening norm conventions]",
+      "The Frobenius norm is ||A||_F=trace(A^T*A)^(1/2). [PDF p. 2 (printed 1147), opening norm conventions]",
+      "The local reflector perturbation uses the subordinate matrix 2-norm, the column bounds use the vector 2-norm, and the selected normwise consequence uses the Frobenius norm. [PDF p. 6 (printed 1151), equation (4.2); PDF p. 9 (printed 1154), equation (4.17); PDF p. 10 (printed 1155), equation (4.20)]"
+    ],
+    "constants_and_indexing": [
+      "The exact displayed first-order coefficient is c6*lambda*sqrt(n)*gamma_tilde_m(lambda); gamma_tilde_m itself contains another lambda, so its fixed-dimension leading expansion is c6*lambda^2*sqrt(m*n)*u. [PDF p. 2 (printed 1147), equation (1.6); PDF p. 9 (printed 1154), equation (4.17); PDF p. 10 (printed 1155), equation (4.20)]",
+      "The column index is j=1:n and the p4 event covers every one of those n inequalities simultaneously. [PDF p. 9 (printed 1154), Lemma 4.3 proof and equation (4.17)]",
+      "The local index is j=1:r in Lemmas 4.1-4.2, and r is specialized to n for QR. [PDF p. 6 (printed 1151), Lemma 4.1; PDF p. 10 (printed 1155), higher-order discussion setting r=n]",
+      "c5 controls each local operator perturbation and c6 controls the accumulated concentration bound; the proof passes from the explicit factor 2*sqrt(2)*c5 in (4.12) to the paper's modest-integer constant c6 in (4.13). [PDF p. 8 (printed 1153), equations (4.12)-(4.13)]",
+      "The final success lower bound is p4(lambda,m,n)=1-2*m*n*exp(-lambda^2). [PDF p. 9 (printed 1154), Lemma 4.3 and Theorem 4.4]"
+    ],
+    "higher_order_terms": [
+      "Theorem 4.4 and equation (4.20) are first-order bounds and retain an additive O(u^2) term; the O(u^2) term must not be deleted or interpreted as an explicit zero. [PDF p. 9 (printed 1154), paragraph after the proof of Theorem 4.4; PDF p. 10 (printed 1155), equation (4.20)]",
+      "For fixed m and lambda, gamma_tilde_m(lambda)=lambda*sqrt(m)*u+O(u^2), so the displayed leading term in (4.17) and (4.20) has sqrt(m*n)*u dimension dependence, with c6*lambda^2 as its displayed fixed-lambda multiplier. [PDF p. 2 (printed 1147), equation (1.6); PDF p. 10 (printed 1155), discussion after equation (4.20)]",
+      "The computed Householder-vector error contributes u*c4*gamma_tilde_m(lambda)=O(u^2) to each local perturbation and is therefore placed in the omitted higher-order term rather than the first-order coefficient. [PDF p. 4 (printed 1149), equation (2.4); PDF p. 9 (printed 1154), proof of Theorem 4.4]",
+      "With constants c_i and lambda omitted, the paper estimates the dropped second-order accumulation by n^2*gamma_tilde_m(lambda)^2*||b||_2 approximately equal to n^2*m*u^2*||b||_2. It gives m^(1/2)*n^(3/2)*u<1 as the effective condition for the first-order sqrt(m*n)*u growth to dominate; this is an interpretation condition, not an extra hypothesis written inside Theorem 4.4. [PDF p. 9 (printed 1154), last paragraph; PDF p. 10 (printed 1155), equation (4.18) and preceding discussion]"
+    ],
+    "exceptional_values": [
+      "The cited theorem states no separate overflow, underflow, subnormal, NaN, or infinity exclusions; instead it assumes that all generated errors satisfy the relative-error model (1.4). [PDF p. 2 (printed 1147), equation (1.4); PDF p. 3 (printed 1148), Model 1.5; PDF p. 9 (printed 1154), Theorem 4.4]",
+      "The cited theorem states no rank or nonsingularity exception for A. [PDF p. 9 (printed 1154), Theorem 4.4]"
+    ]
+  },
+  "undebatable_constraints": [
+    "The output matrix in the selected claim is the computed R_hat, but Q is an exact orthogonal existence witness; substituting a computed Q_hat changes the claim. [PDF p. 9 (printed 1154), equation (4.16); PDF p. 10 (printed 1155), separate transition to Theorem 4.5]",
+    "The exact relation is A+Delta A=Q*R_hat, not A=Q*R_hat+Delta A and not a forward-error statement. [PDF p. 9 (printed 1154), equation (4.16)]",
+    "The coefficient in both selected bounds is c6*lambda*sqrt(n)*gamma_tilde_m(lambda), preserving the outer lambda, sqrt(n), and the m index on gamma_tilde. [PDF p. 9 (printed 1154), equation (4.17); PDF p. 10 (printed 1155), equation (4.20)]",
+    "The j=1:n column inequalities are simultaneous on one event with probability at least 1-2*m*n*exp(-lambda^2), rather than separate per-column guarantees. [PDF p. 9 (printed 1154), Lemma 4.3 proof and Theorem 4.4]",
+    "The theorem is conditional on the probability-one local bound (4.2); replacing it by Lemma 4.1's merely high-probability bound without a new argument is not the paper's theorem. [PDF p. 7 (printed 1152), paragraph before Lemma 4.2; PDF p. 10 (printed 1155), discussion before equation (4.20)]",
+    "Model 1.5 requires zero mean and computation-order mean independence in addition to the pointwise relative-error bound. [PDF p. 2 (printed 1147), equation (1.4) and Definition 1.3; PDF p. 3 (printed 1148), Model 1.5]",
+    "Equation (4.20) is a Frobenius backward-error consequence and retains +O(u^2). [PDF p. 10 (printed 1155), implication sentence and equation (4.20)]",
+    "The O(u^2) notation is part of the selected claim and hides higher-order accumulation; the paper does not provide a numerical all-orders replacement in (4.17) or (4.20). [PDF p. 9 (printed 1154), discussion after Theorem 4.4; PDF p. 10 (printed 1155), equations (4.18)-(4.20)]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "Theorem 4.4 does not restate the tall-matrix inequality m>=n in its own sentence.",
+      "evidence": "The analogous Theorem 1.1 explicitly writes m>=n, and the later higher-order discussion says 'Since we have m>=n', while Theorem 4.4 itself only displays A,R_hat in R^(m-by-n). [PDF p. 2 (printed 1147), Theorem 1.1; PDF p. 9 (printed 1154), Theorem 4.4; PDF p. 10 (printed 1155), paragraph after (4.19)]",
+      "impact": "A formal contract should record m>=n as inherited paper context, while noting that it is not locally restated in Theorem 4.4. [PDF p. 10 (printed 1155), paragraph after (4.19)]"
+    },
+    {
+      "issue": "Theorem 4.4 does not explicitly quantify lambda.",
+      "evidence": "Equation (1.6) defines gamma_tilde_n(lambda) with lambda>0, while Theorem 4.4 uses lambda in its coefficient and probability without repeating the domain. [PDF p. 2 (printed 1147), equation (1.6); PDF p. 9 (printed 1154), Theorem 4.4 and equation (4.17)]",
+      "impact": "The natural recovered domain is lambda>0 from (1.6), but a formalization must make this inherited quantifier explicit rather than infer a different domain. [PDF p. 2 (printed 1147), equation (1.6)]"
+    },
+    {
+      "issue": "The numeric value and sharp dependence of c6 are not specified.",
+      "evidence": "The paper globally calls c_i modest-size integer constants; the proof bounds with 2*sqrt(2)*c5 and then writes c6, but gives no numerical assignment for c5 or c6. [PDF p. 2 (printed 1147), opening conventions; PDF p. 8 (printed 1153), equations (4.12)-(4.13)]",
+      "impact": "The contract can preserve c6 as the paper's unspecified constant, but cannot replace it by a claimed numerical value. [PDF p. 8 (printed 1153), equation (4.13)]"
+    },
+    {
+      "issue": "The additive O(u^2) terms in (4.17) and (4.20) have no explicit constant, sign, uniformity statement, or displayed data-norm factor.",
+      "evidence": "Both equations append +O(u^2). The following discussion suppresses c_i and lambda and estimates a vector-level second-order term by approximately n^2*m*u^2*||b||_2, then imposes (4.18) for first-order dominance. [PDF p. 9 (printed 1154), equation (4.17) and following paragraph; PDF p. 10 (printed 1155), equation (4.18) and equation (4.20)]",
+      "impact": "One may record a first-order asymptotic claim and the paper's dominance condition, but cannot turn O(u^2) into a concrete finite-u inequality, assume uniformity in m,n,lambda, or silently drop the term. [PDF p. 10 (printed 1155), equations (4.18)-(4.20)]"
+    },
+    {
+      "issue": "The paper does not formalize the outcome dependence or exact quantifier scope of Q and Delta A relative to the probability event.",
+      "evidence": "Theorem 4.4 first says there exists an orthogonal Q satisfying (4.16), then says the bounds (4.17) hold with the stated probability; Lemma 4.3 explicitly identifies the union-bound event as simultaneous across columns. [PDF p. 9 (printed 1154), Lemma 4.3 and Theorem 4.4]",
+      "impact": "The unambiguous event content is the simultaneous family of column bounds, and (4.20) inherits that event; a fully measure-theoretic formalization must choose and state measurability and outcome-dependent witnesses without pretending that the paper did so. [PDF p. 9 (printed 1154), equation (4.17); PDF p. 10 (printed 1155), equation (4.20)]"
+    },
+    {
+      "issue": "The relative-error model does not separately describe exceptional floating-point values.",
+      "evidence": "The cited passages impose (1.4) on generated errors and Model 1.5 on their statistics, but do not separately discuss overflow, underflow, subnormals, NaNs, or infinities in Theorem 4.4. [PDF p. 2 (printed 1147), equation (1.4); PDF p. 3 (printed 1148), Model 1.5; PDF p. 9 (printed 1154), Theorem 4.4]",
+      "impact": "A source-faithful contract should assume (1.4) directly and should not invent additional exceptional-value hypotheses from unstated implementation details. [PDF p. 2 (printed 1147), equation (1.4)]"
+    }
+  ],
+  "contract_plain_english": "For an exact tall real matrix A, let R_hat be the upper-trapezoidal factor actually computed by Householder QR. Under the computation-order, zero-mean, mean-independent relative-error Model 1.5 and the additional almost-sure local reflector bound (4.2), the paper supplies an exact orthogonal Q and a backward perturbation Delta A with A+Delta A=Q*R_hat. [PDF p. 3 (printed 1148), Model 1.5; PDF p. 7 (printed 1152), Lemma 4.2 assumption; PDF p. 9 (printed 1154), equation (4.16)] With probability at least 1-2*m*n*exp(-lambda^2), all columns simultaneously satisfy ||Delta a_j||_2<=c6*lambda*sqrt(n)*gamma_tilde_m(lambda)*||a_j||_2+O(u^2), and therefore ||Delta A||_F<=c6*lambda*sqrt(n)*gamma_tilde_m(lambda)*||A||_F+O(u^2). [PDF p. 9 (printed 1154), equation (4.17); PDF p. 10 (printed 1155), equation (4.20)] Here gamma_tilde_m(lambda)=exp((lambda*sqrt(m)*u+m*u^2)/(1-u))-1, Q is exact rather than computed, c6 is an unspecified modest integer constant, and the O(u^2) terms remain part of the claim; the paper's first-order-dominance interpretation uses m^(1/2)*n^(3/2)*u<1. [PDF p. 2 (printed 1147), equation (1.6) and constant convention; PDF p. 9 (printed 1154), Theorem 4.4; PDF p. 10 (printed 1155), equations (4.18)-(4.20)]"
+}

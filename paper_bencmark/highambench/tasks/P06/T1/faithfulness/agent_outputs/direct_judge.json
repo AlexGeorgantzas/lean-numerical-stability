@@ -3,1325 +3,622 @@
   "role": "direct-judge",
   "task_id": "P06-T1",
   "paper_sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79",
-  "dossier_sha256": "c1cd201b5edfa3b4e2c2a0b4b39f347fdcb910fde5fac0d9b829417ef3bda35d",
+  "dossier_sha256": "3725f3cdc6ba7c2a9cd7f6ebbc17534834566657ced2350e5ea16c8b83dd1056",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.P06HouseholderQRRun",
-      "interpretation": "An inductive package for a purported Householder QR execution; D016 supplies its semantics.",
-      "effect_on_target": "Makes the target conditional on packaged dimensions, reflector states, perturbations, exact Q, and RHat.",
-      "paper_match": "The nominal objects match, but the rounded trace and perturbations are not tied to the Model 1.5 error sequence.",
-      "status": "fail"
+      "name": "HighamBench.p06FrobNorm",
+      "interpretation": "The square root of the sum of the squares of all entries of a finite real matrix.",
+      "effect_on_target": "It supplies the matrix norm in the conclusion for both DeltaA u and A.",
+      "paper_match": "This is exactly the paper's Frobenius norm, since trace(A^T A) is the sum of all squared entries.",
+      "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.P06HouseholderQRRun.RHat",
-      "interpretation": "Projection of the run's outcome-dependent real m-by-n output matrix.",
-      "effect_on_target": "Used as the computed upper-trapezoidal factor in the exact backward relation.",
-      "paper_match": "Its shape and role match RHat, but its computed provenance relies on the deficient linkage in D016.",
-      "status": "fail"
+      "name": "HighamBench.p06QRLeadingCoefficient",
+      "interpretation": "The real number c6 * lambda * sqrt(n) * p06GammaTilde m lambda u, with c6 and n cast from naturals.",
+      "effect_on_target": "It is the identical multiplier used in every column premise and in the Frobenius conclusion.",
+      "paper_match": "It matches c6 lambda sqrt(n) gamma_tilde_m(lambda) and introduces no extra column-count factor.",
+      "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.P06Lemma42Assumption",
-      "interpretation": "Package for the almost-sure local perturbation hypothesis, defined through D017.",
-      "effect_on_target": "Adds the probability-one bound on every local Delta P_j.",
-      "paper_match": "Matches the strengthened assumption preceding Lemma 4.2 and inherited by Theorem 4.4.",
+      "name": "HighamBench.p06SecondOrderAtZeroRight",
+      "interpretation": "The remainder is Big-O of u^2 as u approaches zero through 0 < u < 1, using the real norm.",
+      "effect_on_target": "It gives explicit asymptotic meaning to every column O(u^2) term and to the existential normwise remainder.",
+      "paper_match": "This is a standard right-sided formalization of the paper's O(u^2), whose hidden constants and parameter dependence are not otherwise specified.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.P06Lemma42ColumnCertificate",
-      "interpretation": "Per-column certificate containing an event, exact column relation, O(u^2) remainder, and column bound.",
-      "effect_on_target": "The target assumes one certificate for every column.",
-      "paper_match": "Lemma 4.2 should supply this in a proof; taking it as an unconstrained proposition-level premise weakens Theorem 4.4.",
-      "status": "fail"
+      "name": "HighamBench.p06VecNorm2",
+      "interpretation": "The square root of the finite sum of squared real vector components.",
+      "effect_on_target": "It measures each column of A and DeltaA u in the premise.",
+      "paper_match": "It is the Euclidean vector 2-norm used in equation (4.17).",
+      "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HighamBench.P06Model15",
-      "interpretation": "Package for a probability law and finite ordered rounding-error sequence, with fields supplied by D019.",
-      "effect_on_target": "Supplies unit roundoff, exact/computed values, errors, and statistical assumptions.",
-      "paper_match": "As a standalone error-sequence model it captures (1.4), zero means, and mean independence; QR coupling fails separately.",
+      "name": "HighamBench.p06GammaTilde",
+      "interpretation": "exp(((lambda * sqrt(k) * u) + k * u^2) / (1-u)) - 1.",
+      "effect_on_target": "With k=m it determines the probabilistic leading coefficient.",
+      "paper_match": "It exactly matches equation (1.6), including the denominator 1-u and both numerator terms.",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "HighamBench.P06Model15.probability",
-      "interpretation": "Projection of the normalized measure stored in P06Model15.",
-      "effect_on_target": "Measures local, column, and final events.",
-      "paper_match": "Matches the paper's probability law.",
+      "name": "And",
+      "interpretation": "Logical conjunction of two propositions.",
+      "effect_on_target": "It requires the constructed normwise remainder to be second order and its norm inequality to hold eventually.",
+      "paper_match": "Both properties are needed to realize the single printed additive O(u^2) conclusion.",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "HighamBench.P06Model15.unitRoundoff",
-      "interpretation": "Projection of the real unit-roundoff parameter u.",
-      "effect_on_target": "Feeds gamma-tilde and second-order controls.",
-      "paper_match": "Represents unit roundoff with 0 <= u < 1; u=0 is a limiting case.",
+      "name": "Exists",
+      "interpretation": "Existential quantification over a witness satisfying the stated predicate.",
+      "effect_on_target": "It introduces a normwise remainder that may depend on all preceding data and hypotheses.",
+      "paper_match": "An existential bounded remainder is an appropriate explicit interpretation of the conclusion's O(u^2).",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "HighamBench.P06SecondOrderControl",
-      "interpretation": "For fixed u0 it chooses C >= 0, requires remainder=O(u^2) at zero, and bounds it by C*u^2 up to |u0|.",
-      "effect_on_target": "Constants are chosen separately after u0 and each outcome are fixed.",
-      "paper_match": "For u0>0 any finite value at u0 can be embedded in a quadratic function with an outcome-dependent C, so this does not nonvacuously encode the paper's additive O(u^2).",
-      "status": "fail"
+      "name": "Filter.Eventually",
+      "interpretation": "The predicate's truth set belongs to the supplied filter.",
+      "effect_on_target": "It states both the simultaneous column inequalities and the normwise inequality for all sufficiently small positive u.",
+      "paper_match": "This supplies the eventual quantification implicit in asymptotic O(u^2) notation.",
+      "status": "pass"
     },
     {
       "id": "D009",
-      "name": "HighamBench.p06FrobNorm",
-      "interpretation": "Square root of the sum of squares of all matrix entries.",
-      "effect_on_target": "Defines the normwise backward-error inequality.",
-      "paper_match": "Exactly the Frobenius norm in (4.20).",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite type of natural indices strictly below n.",
+      "effect_on_target": "Fin m indexes rows and Fin n indexes columns.",
+      "paper_match": "Its zero-based indices are a bijective reindexing of the paper's 1:m and 1:n indices.",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HighamBench.p06Orthogonal",
-      "interpretation": "Requires all column inner products of square Q to equal the finite identity.",
-      "effect_on_target": "Makes Q an exact orthogonal witness.",
-      "paper_match": "For square real Q this is Q^T Q=I, matching the paper.",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-selected heterogeneous addition, instantiated here as ordinary real addition.",
+      "effect_on_target": "It adds the leading norm term and the absolute remainder.",
+      "paper_match": "This is ordinary addition in the displayed error bounds.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "HighamBench.p06P4",
-      "interpretation": "1-2*m*n*exp(-lambda^2), with dimensions cast to reals.",
-      "effect_on_target": "Lower-bounds the final event probability.",
-      "paper_match": "Exactly p4(lambda,m,n).",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-selected heterogeneous multiplication, instantiated here as ordinary real multiplication.",
+      "effect_on_target": "It forms the coefficient and multiplies it by vector or Frobenius norms.",
+      "paper_match": "This is ordinary scalar multiplication in equations (4.17) and (4.20).",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "HighamBench.p06QRLeadingCoefficient",
-      "interpretation": "c6*lambda*sqrt(n)*p06GammaTilde(m,lambda,u).",
-      "effect_on_target": "Multiplies every original column norm and the Frobenius norm.",
-      "paper_match": "Matches the coefficient and m/n dependence in (4.17) and (4.20).",
+      "name": "LE.le",
+      "interpretation": "The typeclass-selected non-strict order relation, instantiated as real less-than-or-equal.",
+      "effect_on_target": "It gives the direction and non-strictness of all error bounds.",
+      "paper_match": "The paper also uses non-strict upper bounds.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "HighamBench.p06RectMatMul",
-      "interpretation": "Finite matrix product (QR)_{ij}=sum_k Q_{ik}R_{kj}.",
-      "effect_on_target": "Interprets A+DeltaA=Q*RHat.",
-      "paper_match": "Matches ordinary real matrix multiplication in (4.16).",
+      "name": "LT.lt",
+      "interpretation": "The typeclass-selected strict order relation.",
+      "effect_on_target": "It expresses 0 < c6, 0 < lambda, and the strict interval endpoints for u.",
+      "paper_match": "lambda > 0 matches equation (1.6); positivity of the error constant and positive unit roundoff are consistent with the paper.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "HighamBench.p06UpperTrapezoidal",
-      "interpretation": "Requires R_{ij}=0 whenever i.val>j.val.",
-      "effect_on_target": "Asserts zeros below the diagonal.",
-      "paper_match": "Correctly translates the upper-trapezoidal convention to zero-based indices.",
+      "name": "Nat",
+      "interpretation": "The natural-number type including zero.",
+      "effect_on_target": "It types m, n, and c6.",
+      "paper_match": "Matrix dimensions and the paper's integer constant c6 are naturally represented, although the Lean theorem also admits zero dimensions.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "HighamBench.p06VecNorm2",
-      "interpretation": "Square root of the finite sum of coordinate squares.",
-      "effect_on_target": "Defines column 2-norms and the operator-bound helper.",
-      "paper_match": "Exactly the Euclidean vector 2-norm used by the paper.",
+      "name": "OfNat.ofNat",
+      "interpretation": "Conversion of a numeral into the selected type.",
+      "effect_on_target": "It supplies the real and natural constants 0 and 1.",
+      "paper_match": "The numerals retain their ordinary mathematical meanings.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "HighamBench.P06HouseholderQRRun.mk",
-      "interpretation": "Packages n<=m, n>0, abstract reflector construction, state transitions, normalized reflectors, explicit zeros, exact reflector-product Q, and selected computed output values.",
-      "effect_on_target": "Provides the only link among A, local perturbations, reflector history, RHat, and Model 1.5.",
-      "paper_match": "Local perturbations and rounded states are not derived from model.error or operation indices; reflectorBuilder is not linked to the computed Householder construction; outputIndex need not preserve operation order or uniqueness.",
-      "status": "fail"
+      "name": "One.toOfNat1",
+      "interpretation": "The numeral 1 obtained from a type's One instance.",
+      "effect_on_target": "It provides the upper endpoint of (0,1) and the 1 in the gamma denominator and subtraction.",
+      "paper_match": "It denotes the ordinary real number one.",
+      "status": "pass"
     },
     {
       "id": "D017",
-      "name": "HighamBench.P06Lemma42Assumption.mk",
-      "interpretation": "Builds a measurable event exactly characterizing all local operator-norm bounds and having measure one.",
-      "effect_on_target": "Makes the local bound simultaneous over every j almost surely.",
-      "paper_match": "Faithfully encodes the assumption preceding Lemma 4.2.",
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "interpretation": "The uniform structure induced by a pseudometric space.",
+      "effect_on_target": "It contributes the standard real topology used by the neighborhood filter.",
+      "paper_match": "It gives ordinary real convergence and adds no altered numerical semantics.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "HighamBench.P06Lemma42ColumnCertificate.mk",
-      "interpretation": "Builds a certificate from a per-column good event, failure bound, exact relation, remainder, and desired norm bound.",
-      "effect_on_target": "Transfers nearly all of Lemma 4.2's source work into an explicit target hypothesis.",
-      "paper_match": "Its content is source-shaped, but using it as a premise weakens the proposition, and its remainder inherits D008's defect.",
-      "status": "fail"
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "It types matrix entries, u, lambda, coefficients, norms, and remainders.",
+      "paper_match": "The paper works over real matrices and real scalar parameters.",
+      "status": "pass"
     },
     {
       "id": "D019",
-      "name": "HighamBench.P06Model15.mk",
-      "interpretation": "Constructs a normalized finite error sequence satisfying computed=exact*(1+error), |error|<=u, measurability, integrability, zero mean, and mean independence.",
-      "effect_on_target": "Establishes the formal probabilistic floating-point assumptions.",
-      "paper_match": "Faithfully abstracts Model 1.5 itself, but does not connect those errors to the QR run.",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary addition on real numbers.",
+      "effect_on_target": "It implements additions in coefficients and error bounds.",
+      "paper_match": "It matches real arithmetic in the paper.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "HighamBench.p06FiniteId",
-      "interpretation": "Real Kronecker delta, equal to 1 on equal indices and 0 otherwise.",
-      "effect_on_target": "Defines identity matrices.",
-      "paper_match": "Matches the ordinary identity matrix.",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group structure of the reals, including negation and subtraction.",
+      "effect_on_target": "It supports absolute values and signed remainder functions.",
+      "paper_match": "It is standard real arithmetic and does not change the bound.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "HighamBench.p06GammaTilde",
-      "interpretation": "exp((lambda*sqrt(k)*u+k*u^2)/(1-u))-1.",
-      "effect_on_target": "Defines local and accumulated coefficients.",
-      "paper_match": "Exactly equation (1.6), with k=m in the target.",
+      "name": "Real.instLE",
+      "interpretation": "The usual non-strict linear order on real numbers.",
+      "effect_on_target": "It interprets each displayed inequality.",
+      "paper_match": "It matches the paper's real-valued inequalities.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "HighamBench.p06P4._proof_1",
-      "interpretation": "Proof that the numeral 2 is at least two.",
-      "effect_on_target": "Only elaborates a numeric literal.",
-      "paper_match": "No independent paper semantics.",
-      "status": "not-applicable"
+      "name": "Real.instLT",
+      "interpretation": "The usual strict order on real numbers.",
+      "effect_on_target": "It interprets lambda positivity and the interval 0 < u < 1.",
+      "paper_match": "It gives the intended ordinary positivity conditions.",
+      "status": "pass"
     },
     {
       "id": "D023",
-      "name": "HighamBench.p06SecondOrderAtZero",
-      "interpretation": "Asymptotics.IsBigO at nhds 0 relative to u^2.",
-      "effect_on_target": "Provides the genuine local asymptotic clause inside D008.",
-      "paper_match": "This primitive matches O(u^2); the failure is its witness scope in D008.",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "It implements products in the coefficient, gamma formula, and norm bounds.",
+      "paper_match": "It matches the paper's scalar products.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "HighamBench.P06HouseholderQRRun.exactQ",
-      "interpretation": "Projection of the run's exact-Q field.",
-      "effect_on_target": "Provides the common Q for certificates and final factorization.",
-      "paper_match": "Its intended exact reflector-product role matches, subject to D016's deficient run linkage.",
+      "name": "Real.instOne",
+      "interpretation": "The multiplicative identity real number 1.",
+      "effect_on_target": "It appears in 1-u and in the interval endpoint.",
+      "paper_match": "It has the intended ordinary value.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "HighamBench.P06HouseholderQRRun.localPerturbation",
-      "interpretation": "Projection of arbitrary local perturbation matrices stored in the run.",
-      "effect_on_target": "Feeds the almost-sure norm assumption and rounded state recurrence.",
-      "paper_match": "The paper's Delta P_j is generated by specific ordered rounding errors; this field is not linked to them.",
-      "status": "fail"
+      "name": "Real.instPreorder",
+      "interpretation": "The preorder underlying the usual real order.",
+      "effect_on_target": "It determines membership in the open interval (0,1).",
+      "paper_match": "It supplies the standard ordering intended for positive unit roundoff.",
+      "status": "pass"
     },
     {
       "id": "D026",
-      "name": "HighamBench.P06Lemma42Assumption.localEvent",
-      "interpretation": "Projection of the probability-one local-bound event.",
-      "effect_on_target": "Requires column events to lie inside the local event.",
-      "paper_match": "Matches the common local event used by Lemma 4.2.",
+      "name": "Real.instZero",
+      "interpretation": "The additive identity real number 0.",
+      "effect_on_target": "It is the asymptotic limit point and the lower interval endpoint.",
+      "paper_match": "It has the intended ordinary value.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "HighamBench.P06Model15.computedValue",
-      "interpretation": "Projection of the generic computed-value sequence.",
-      "effect_on_target": "D016 equates each RHat entry with one selected computed value.",
-      "paper_match": "Distinguishes computed from exact values, but does not identify the intervening QR operations.",
+      "name": "Real.lattice",
+      "interpretation": "The lattice structure induced by the usual real order.",
+      "effect_on_target": "It participates in the definition of real absolute value.",
+      "paper_match": "It yields the standard absolute magnitude of a real remainder.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "HighamBench.P06Model15.operationCount",
-      "interpretation": "Projection of the finite operation count.",
-      "effect_on_target": "Indexes exact values, computed values, errors, and output selections.",
-      "paper_match": "Compatible with computation order; the missing QR association is in D016.",
+      "name": "Real.pseudoMetricSpace",
+      "interpretation": "The standard real pseudometric with distance abs(x-y).",
+      "effect_on_target": "It induces ordinary neighborhoods and convergence at zero.",
+      "paper_match": "It gives the conventional real asymptotic topology.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "HighamBench.p06HouseholderForActiveColumn",
-      "interpretation": "Requires v to vanish above row j and its exact reflector to annihilate the active column below j.",
-      "effect_on_target": "Constrains each history-dependent reflector.",
-      "paper_match": "Matches Householder QR active-column annihilation.",
+      "name": "Set.Ioo",
+      "interpretation": "The open interval containing exactly x with a < x and x < b.",
+      "effect_on_target": "With endpoints 0 and 1 it restricts asymptotics to positive u below one.",
+      "paper_match": "The positive side matches unit roundoff, and restricting to u<1 is compatible with the denominator 1-u without changing the germ at zero.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "HighamBench.p06HouseholderMatrix",
-      "interpretation": "Defines P=I-v*v^T, with D016 separately requiring v^T v=2.",
-      "effect_on_target": "Builds exact reflectors for state recurrences.",
-      "paper_match": "Matches the normalized Householder representation in section 4.",
+      "name": "UniformSpace.toTopologicalSpace",
+      "interpretation": "The topology induced by a uniform space.",
+      "effect_on_target": "It supplies the standard topological structure used by nhdsWithin.",
+      "paper_match": "It realizes ordinary real limits and introduces no semantic discrepancy.",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "HighamBench.p06HouseholderQRStep",
-      "interpretation": "Sets current-column entries below the pivot to zero and otherwise returns P*B.",
-      "effect_on_target": "Defines each abstract rounded state transition.",
-      "paper_match": "Captures the paper's explicit-zero convention abstractly; perturbation provenance still fails through D016 and D025.",
+      "name": "Zero.toOfNat0",
+      "interpretation": "The numeral 0 obtained from a type's Zero instance.",
+      "effect_on_target": "It provides zero for positivity tests, interval endpoints, and the limit point.",
+      "paper_match": "It denotes the ordinary zero.",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "HighamBench.p06MeanIndependent",
-      "interpretation": "Requires E[g(prior)*error_k]=E[g(prior)]E[error_k] for every integrable test function of prior errors.",
-      "effect_on_target": "Imposes computation-order mean independence.",
-      "paper_match": "Matches conditional mean independence for a finite real prior-error vector; D019 separately imposes zero means.",
+      "name": "abs",
+      "interpretation": "For reals, max(a,-a), the usual absolute value.",
+      "effect_on_target": "It turns each signed remainder into a nonnegative additive allowance.",
+      "paper_match": "Using the magnitude of an O(u^2) remainder is consistent with an upper error bound and preserves its order.",
       "status": "pass"
     },
     {
       "id": "D033",
-      "name": "HighamBench.p06RectOpNorm2Le",
-      "interpretation": "Requires ||Ax||_2<=L||x||_2 for every finite vector x.",
-      "effect_on_target": "Expresses each local subordinate operator 2-norm bound.",
-      "paper_match": "Equivalent to ||Delta P_j||_2<=L.",
+      "name": "instHAdd",
+      "interpretation": "It promotes a homogeneous Add operation to the corresponding HAdd operation.",
+      "effect_on_target": "For reals it routes HAdd.hAdd to ordinary real addition.",
+      "paper_match": "It is implementation plumbing for standard addition.",
       "status": "pass"
     },
     {
       "id": "D034",
-      "name": "HighamBench.p06MatVec",
-      "interpretation": "Finite real matrix-vector multiplication.",
-      "effect_on_target": "Supports reflector annihilation and operator-norm bounds.",
-      "paper_match": "Matches standard matrix-vector multiplication.",
+      "name": "instHMul",
+      "interpretation": "It promotes a homogeneous Mul operation to the corresponding HMul operation.",
+      "effect_on_target": "For reals it routes HMul.hMul to ordinary real multiplication.",
+      "paper_match": "It is implementation plumbing for standard multiplication.",
       "status": "pass"
     },
     {
       "id": "D035",
-      "name": "HighamBench.p06PriorErrors",
-      "interpretation": "Returns errors with indices strictly smaller than k.",
-      "effect_on_target": "Supplies the history observed by mean independence.",
-      "paper_match": "Correctly represents preceding computation-order errors.",
+      "name": "instLTNat",
+      "interpretation": "The usual strict order on natural numbers.",
+      "effect_on_target": "It interprets the hypothesis 0 < c6.",
+      "paper_match": "It enforces a positive integer error constant, consistent with the paper's c6.",
       "status": "pass"
     },
     {
       "id": "D036",
-      "name": "HighamBench.p06PriorErrors._proof_1",
-      "interpretation": "Proof that each prior-error index is valid in the full sequence.",
-      "effect_on_target": "Discharges a Fin bound.",
-      "paper_match": "No independent paper content.",
-      "status": "not-applicable"
+      "name": "instOfNatNat",
+      "interpretation": "A natural numeral is interpreted as that same natural number.",
+      "effect_on_target": "It supplies natural zero in 0 < c6.",
+      "paper_match": "It has the ordinary intended meaning.",
+      "status": "pass"
     },
     {
       "id": "D037",
-      "name": "And",
-      "interpretation": "Logical conjunction.",
-      "effect_on_target": "Combines simultaneous obligations.",
-      "paper_match": "Matches conjunction of paper requirements.",
+      "name": "nhdsWithin",
+      "interpretation": "The infimum of the neighborhood filter at a point and the principal filter of a restricting set.",
+      "effect_on_target": "It represents approaching zero while remaining inside 0 < u < 1.",
+      "paper_match": "This is the correct one-sided asymptotic regime for positive unit roundoff.",
       "status": "pass"
     },
     {
       "id": "D038",
-      "name": "Eq",
-      "interpretation": "Propositional equality.",
-      "effect_on_target": "States exact recurrences and factorization.",
-      "paper_match": "Matches exact paper equalities.",
+      "name": "Asymptotics.IsBigO",
+      "interpretation": "The norm of the first function is eventually bounded by a constant multiple of the norm of the second along the specified filter.",
+      "effect_on_target": "It makes second-order remainder bounds quantitative up to an unspecified constant.",
+      "paper_match": "It is the standard mathematical content of O(u^2), subject to the paper's acknowledged lack of explicit uniformity conventions.",
       "status": "pass"
     },
     {
       "id": "D039",
-      "name": "Exists",
-      "interpretation": "Dependent existential quantification.",
-      "effect_on_target": "Introduces event, Q, DeltaA, and remainder witnesses.",
-      "paper_match": "Matches existence language, apart from D008's witness-scope defect.",
+      "name": "Fin.fintype",
+      "interpretation": "The finite enumeration of every member of Fin n.",
+      "effect_on_target": "It permits sums over all rows and columns.",
+      "paper_match": "It covers each matrix index exactly once.",
       "status": "pass"
     },
     {
       "id": "D040",
-      "name": "Fin",
-      "interpretation": "Finite index type {0,...,n-1}.",
-      "effect_on_target": "Indexes dimensions, steps, and operations.",
-      "paper_match": "Correctly translates one-based paper indices.",
+      "name": "Finset.sum",
+      "interpretation": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It sums squared vector components and matrix entries.",
+      "paper_match": "These finite sums are exactly those underlying Euclidean and Frobenius norms.",
       "status": "pass"
     },
     {
       "id": "D041",
-      "name": "HAdd.hAdd",
-      "interpretation": "Typeclass-resolved addition.",
-      "effect_on_target": "Provides real and pointwise matrix addition.",
-      "paper_match": "Matches ordinary addition.",
+      "name": "Finset.univ",
+      "interpretation": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It makes each norm sum range over all applicable indices.",
+      "paper_match": "It realizes the complete row and column ranges.",
       "status": "pass"
     },
     {
       "id": "D042",
-      "name": "HMul.hMul",
-      "interpretation": "Typeclass-resolved multiplication.",
-      "effect_on_target": "Provides products in coefficients, sums, and bounds.",
-      "paper_match": "Matches ordinary multiplication.",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-selected exponentiation.",
+      "effect_on_target": "It computes squares of entries and u^2.",
+      "paper_match": "The exponent is the natural number 2, so this is ordinary squaring.",
       "status": "pass"
     },
     {
       "id": "D043",
-      "name": "LE.le",
-      "interpretation": "Non-strict order relation.",
-      "effect_on_target": "Expresses probability and norm inequalities.",
-      "paper_match": "Matches every displayed <= direction.",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number exponentiation obtained by repeated monoid multiplication.",
+      "effect_on_target": "It supplies real squaring for norms, gamma, and second-order comparison.",
+      "paper_match": "It implements the ordinary square operation appearing throughout the paper.",
       "status": "pass"
     },
     {
       "id": "D044",
-      "name": "LT.lt",
-      "interpretation": "Strict order relation.",
-      "effect_on_target": "Expresses positivity and index comparisons.",
-      "paper_match": "Matches strict positivity and below-diagonal tests.",
+      "name": "Nat.cast",
+      "interpretation": "The canonical cast of a natural number into a target type with NatCast.",
+      "effect_on_target": "It converts c6, m, and n to reals inside the coefficient and gamma.",
+      "paper_match": "It preserves their ordinary nonnegative numerical values.",
       "status": "pass"
     },
     {
       "id": "D045",
-      "name": "MeasurableSet",
-      "interpretation": "Membership in the sigma-algebra.",
-      "effect_on_target": "Requires probability events to be measurable.",
-      "paper_match": "Appropriate for the source events.",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The commutative additive-monoid structure of the reals.",
+      "effect_on_target": "It supports order-independent finite summation.",
+      "paper_match": "It realizes ordinary sums of squared real entries.",
       "status": "pass"
     },
     {
       "id": "D046",
-      "name": "MeasurableSpace",
-      "interpretation": "Sigma-algebra structure on outcomes.",
-      "effect_on_target": "Provides a measurable sample space.",
-      "paper_match": "Standard probability infrastructure.",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative monoid structure of the reals.",
+      "effect_on_target": "It supports natural powers such as x^2.",
+      "paper_match": "It realizes ordinary real multiplication and squaring.",
       "status": "pass"
     },
     {
       "id": "D047",
-      "name": "MeasureTheory.Measure.real",
-      "interpretation": "Converts an ENNReal measure value to Real.",
-      "effect_on_target": "Compares event probabilities with real p4 coefficients.",
-      "paper_match": "For the normalized finite measure this is ordinary real probability.",
+      "name": "Real.instNatCast",
+      "interpretation": "The canonical embedding of natural numbers into the reals.",
+      "effect_on_target": "It interprets dimension and constant values as real scalars.",
+      "paper_match": "It gives the intended real values of m, n, and c6.",
       "status": "pass"
     },
     {
       "id": "D048",
-      "name": "Membership.mem",
-      "interpretation": "Typeclass-resolved membership.",
-      "effect_on_target": "States outcome membership in events.",
-      "paper_match": "Matches event membership.",
+      "name": "Real.norm",
+      "interpretation": "The real norm defined as absolute value.",
+      "effect_on_target": "It determines the magnitude comparison inside IsBigO.",
+      "paper_match": "It is the standard scalar magnitude used in real asymptotics.",
       "status": "pass"
     },
     {
       "id": "D049",
-      "name": "Nat",
-      "interpretation": "Natural-number type.",
-      "effect_on_target": "Types dimensions, constants, and operation counts.",
-      "paper_match": "Matches finite dimensions and integer c_i constants.",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square root, defined through the nonnegative reals.",
+      "effect_on_target": "It forms vector and Frobenius norms and the factors sqrt(m) and sqrt(n).",
+      "paper_match": "All its arguments here are nonnegative, so it matches every square root in equations (1.6), (4.17), and (4.20).",
       "status": "pass"
     },
     {
       "id": "D050",
-      "name": "OfNat.ofNat",
-      "interpretation": "Typeclass interpretation of numeric literals.",
-      "effect_on_target": "Supplies literals 0, 1, and 2.",
-      "paper_match": "No independent semantic content.",
-      "status": "not-applicable"
+      "name": "instHPow",
+      "interpretation": "It promotes a Pow operation to the corresponding homogeneous HPow operation.",
+      "effect_on_target": "It routes real powers by natural exponents to ordinary natural-power evaluation.",
+      "paper_match": "It is implementation plumbing for standard squaring.",
+      "status": "pass"
     },
     {
       "id": "D051",
-      "name": "Pi.instAdd",
-      "interpretation": "Pointwise addition on function spaces.",
-      "effect_on_target": "Makes A+DeltaA entrywise matrix addition.",
-      "paper_match": "Matches (4.16).",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "The division operation supplied by a division-inverse monoid.",
+      "effect_on_target": "It supplies real division in the exponent defining gamma_tilde.",
+      "paper_match": "It realizes division by 1-u in equation (1.6).",
       "status": "pass"
     },
     {
       "id": "D052",
-      "name": "Real",
-      "interpretation": "Mathematical real-number type.",
-      "effect_on_target": "Types entries, errors, lambda, u, and bounds.",
-      "paper_match": "Matches the paper's real setting.",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-selected heterogeneous division, instantiated here as ordinary real division.",
+      "effect_on_target": "It divides the gamma exponent's numerator by 1-u.",
+      "paper_match": "It matches the quotient in equation (1.6).",
       "status": "pass"
     },
     {
       "id": "D053",
-      "name": "Real.instAdd",
-      "interpretation": "Real addition.",
-      "effect_on_target": "Evaluates real sums.",
-      "paper_match": "Matches ordinary addition.",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-selected heterogeneous subtraction, instantiated here as ordinary real subtraction.",
+      "effect_on_target": "It forms 1-u and subtracts 1 from the exponential.",
+      "paper_match": "Both subtractions exactly match equation (1.6).",
       "status": "pass"
     },
     {
       "id": "D054",
-      "name": "Real.instAddGroup",
-      "interpretation": "Real additive-group structure.",
-      "effect_on_target": "Supports subtraction and absolute value.",
-      "paper_match": "Infrastructure only.",
-      "status": "not-applicable"
+      "name": "Real.exp",
+      "interpretation": "The ordinary real exponential function.",
+      "effect_on_target": "It is the outer function in gamma_tilde.",
+      "paper_match": "It matches exp in equation (1.6).",
+      "status": "pass"
     },
     {
       "id": "D055",
-      "name": "Real.instLE",
-      "interpretation": "Usual real <= relation.",
-      "effect_on_target": "Orders probabilities and norms.",
-      "paper_match": "Matches non-strict real inequalities.",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The standard real multiplicative, inverse, and division structure.",
+      "effect_on_target": "It supplies the division operation used in gamma_tilde.",
+      "paper_match": "On 0 < u < 1 the denominator 1-u is nonzero, so Lean division has exactly the paper's ordinary meaning.",
       "status": "pass"
     },
     {
       "id": "D056",
-      "name": "Real.instLT",
-      "interpretation": "Usual real < relation.",
-      "effect_on_target": "Expresses lambda>0 and u<1.",
-      "paper_match": "Matches strict real inequalities.",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction defined by addition of the additive inverse.",
+      "effect_on_target": "It implements 1-u and exp(x)-1.",
+      "paper_match": "It matches the subtraction operations in equation (1.6).",
       "status": "pass"
     },
     {
       "id": "D057",
-      "name": "Real.instMul",
-      "interpretation": "Real multiplication.",
-      "effect_on_target": "Evaluates coefficients and products.",
-      "paper_match": "Matches ordinary multiplication.",
+      "name": "instHDiv",
+      "interpretation": "It promotes a homogeneous Div operation to the corresponding HDiv operation.",
+      "effect_on_target": "For reals it routes HDiv.hDiv to ordinary real division.",
+      "paper_match": "It is implementation plumbing for the quotient in gamma_tilde.",
       "status": "pass"
     },
     {
       "id": "D058",
-      "name": "Real.instZero",
-      "interpretation": "Real zero.",
-      "effect_on_target": "Supplies zero entries, means, and lower bounds.",
-      "paper_match": "Matches numeric zero.",
-      "status": "pass"
-    },
-    {
-      "id": "D059",
-      "name": "Real.lattice",
-      "interpretation": "Usual lattice order on reals.",
-      "effect_on_target": "Supports absolute value.",
-      "paper_match": "Gives standard absolute-value semantics.",
-      "status": "pass"
-    },
-    {
-      "id": "D060",
-      "name": "Set",
-      "interpretation": "Predicates on outcomes.",
-      "effect_on_target": "Represents probability events.",
-      "paper_match": "Matches events and subsets.",
-      "status": "pass"
-    },
-    {
-      "id": "D061",
-      "name": "Set.instMembership",
-      "interpretation": "Function application as set membership.",
-      "effect_on_target": "Interprets omega in goodEvent.",
-      "paper_match": "Matches event membership.",
-      "status": "pass"
-    },
-    {
-      "id": "D062",
-      "name": "Zero.toOfNat0",
-      "interpretation": "Derives literal 0 from a Zero instance.",
-      "effect_on_target": "Elaborates zero literals.",
-      "paper_match": "No independent paper content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D063",
-      "name": "abs",
-      "interpretation": "Standard absolute value.",
-      "effect_on_target": "Bounds rounding errors and column remainder magnitude.",
-      "paper_match": "Matches |delta| and an O(u^2) magnitude, but does not repair D008.",
-      "status": "pass"
-    },
-    {
-      "id": "D064",
-      "name": "instHAdd",
-      "interpretation": "Lifts Add to homogeneous HAdd.",
-      "effect_on_target": "Routes addition notation.",
-      "paper_match": "Notation infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D065",
-      "name": "instHMul",
-      "interpretation": "Lifts Mul to homogeneous HMul.",
-      "effect_on_target": "Routes multiplication notation.",
-      "paper_match": "Notation infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D066",
-      "name": "instLTNat",
-      "interpretation": "Usual strict order on naturals.",
-      "effect_on_target": "Expresses positivity and index order.",
-      "paper_match": "Matches finite index order.",
-      "status": "pass"
-    },
-    {
-      "id": "D067",
-      "name": "instOfNatNat",
-      "interpretation": "Natural-number literal instance.",
-      "effect_on_target": "Elaborates natural literals.",
-      "paper_match": "No independent paper content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D068",
-      "name": "Fin.fintype",
-      "interpretation": "Finite enumeration of Fin n.",
-      "effect_on_target": "Makes sums range over all indices.",
-      "paper_match": "Matches complete finite-dimensional summation.",
-      "status": "pass"
-    },
-    {
-      "id": "D069",
-      "name": "Fin.val",
-      "interpretation": "Underlying natural value of a Fin index.",
-      "effect_on_target": "Compares positions and builds histories.",
-      "paper_match": "Correct zero-based index semantics.",
-      "status": "pass"
-    },
-    {
-      "id": "D070",
-      "name": "Finset.sum",
-      "interpretation": "Finite commutative sum.",
-      "effect_on_target": "Defines norms, products, and inner products.",
-      "paper_match": "Matches finite Euclidean sums.",
-      "status": "pass"
-    },
-    {
-      "id": "D071",
-      "name": "Finset.univ",
-      "interpretation": "Finite set of every index.",
-      "effect_on_target": "Sets all finite summation ranges.",
-      "paper_match": "Matches summation over all coordinates.",
-      "status": "pass"
-    },
-    {
-      "id": "D072",
-      "name": "HPow.hPow",
-      "interpretation": "Typeclass-resolved exponentiation.",
-      "effect_on_target": "Forms entry, u, and lambda squares.",
-      "paper_match": "Matches squared quantities.",
-      "status": "pass"
-    },
-    {
-      "id": "D073",
-      "name": "HSub.hSub",
-      "interpretation": "Typeclass-resolved subtraction.",
-      "effect_on_target": "Forms p4, gamma-tilde, and Householder entries.",
-      "paper_match": "Matches ordinary subtraction.",
-      "status": "pass"
-    },
-    {
-      "id": "D074",
-      "name": "MeasureTheory.Measure",
-      "interpretation": "Countably additive ENNReal-valued measure.",
-      "effect_on_target": "Types the probability law.",
-      "paper_match": "Appropriate probability infrastructure.",
-      "status": "pass"
-    },
-    {
-      "id": "D075",
-      "name": "Monoid.toNatPow",
-      "interpretation": "Natural-power instance from a monoid.",
-      "effect_on_target": "Interprets real squares.",
-      "paper_match": "Algebraic infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D076",
-      "name": "Nat.cast",
-      "interpretation": "Casts naturals to reals.",
-      "effect_on_target": "Forms real-valued constants and probabilities.",
-      "paper_match": "Matches arithmetic use of m, n, c5, and c6.",
-      "status": "pass"
-    },
-    {
-      "id": "D077",
-      "name": "Neg.neg",
-      "interpretation": "Unary negation.",
-      "effect_on_target": "Forms exp(-lambda^2).",
-      "paper_match": "Matches the negative exponent.",
-      "status": "pass"
-    },
-    {
-      "id": "D078",
-      "name": "One.toOfNat1",
-      "interpretation": "Derives literal 1 from a One instance.",
-      "effect_on_target": "Elaborates one literals.",
-      "paper_match": "No independent paper content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D079",
-      "name": "Real.exp",
-      "interpretation": "Real exponential.",
-      "effect_on_target": "Defines gamma-tilde and p4.",
-      "paper_match": "Matches equations (1.6) and p4.",
-      "status": "pass"
-    },
-    {
-      "id": "D080",
-      "name": "Real.instAddCommMonoid",
-      "interpretation": "Real additive commutative monoid.",
-      "effect_on_target": "Supports finite sums.",
-      "paper_match": "Infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D081",
-      "name": "Real.instMonoid",
-      "interpretation": "Real multiplicative monoid.",
-      "effect_on_target": "Supports natural powers.",
-      "paper_match": "Infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D082",
-      "name": "Real.instNatCast",
-      "interpretation": "Natural-to-real casting.",
-      "effect_on_target": "Interprets dimensions and integer constants.",
-      "paper_match": "Matches paper arithmetic.",
-      "status": "pass"
-    },
-    {
-      "id": "D083",
-      "name": "Real.instNeg",
-      "interpretation": "Real negation.",
-      "effect_on_target": "Interprets negative exponents and subtraction.",
-      "paper_match": "Matches ordinary negation.",
-      "status": "pass"
-    },
-    {
-      "id": "D084",
-      "name": "Real.instOne",
-      "interpretation": "Real one.",
-      "effect_on_target": "Supplies normalization and formulas.",
-      "paper_match": "Matches numeric one.",
-      "status": "pass"
-    },
-    {
-      "id": "D085",
-      "name": "Real.instSub",
-      "interpretation": "Real subtraction.",
-      "effect_on_target": "Evaluates p4, gamma-tilde, and Householder entries.",
-      "paper_match": "Matches ordinary subtraction.",
-      "status": "pass"
-    },
-    {
-      "id": "D086",
-      "name": "Real.sqrt",
-      "interpretation": "Nonnegative real square root.",
-      "effect_on_target": "Defines norms and sqrt dimension factors.",
-      "paper_match": "Matches all source square roots.",
-      "status": "pass"
-    },
-    {
-      "id": "D087",
-      "name": "instDecidableEqFin",
-      "interpretation": "Decidable equality on finite indices.",
-      "effect_on_target": "Supports construction of finite identities.",
-      "paper_match": "Computational infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D088",
-      "name": "instHPow",
-      "interpretation": "Lifts Pow to HPow.",
-      "effect_on_target": "Routes exponent notation.",
-      "paper_match": "Notation infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D089",
       "name": "instHSub",
-      "interpretation": "Lifts Sub to HSub.",
-      "effect_on_target": "Routes subtraction notation.",
-      "paper_match": "Notation infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D090",
-      "name": "instOfNatAtLeastTwo",
-      "interpretation": "Casts numerals at least two through NatCast.",
-      "effect_on_target": "Elaborates real 2.",
-      "paper_match": "No independent paper content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D091",
-      "name": "AddCommMonoidWithOne.toAddMonoidWithOne",
-      "interpretation": "Forgets additive commutativity.",
-      "effect_on_target": "Supports ENNReal literal 1.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D092",
-      "name": "AddMonoidWithOne.toOne",
-      "interpretation": "Projects the One instance.",
-      "effect_on_target": "Supports ENNReal literal 1.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D093",
-      "name": "Asymptotics.IsBigO",
-      "interpretation": "Norm-based big-O relation along a filter.",
-      "effect_on_target": "States remainder=O(u^2) near zero.",
-      "paper_match": "The primitive is standard; D008's quantifier placement causes the mismatch.",
+      "interpretation": "It promotes a homogeneous Sub operation to the corresponding HSub operation.",
+      "effect_on_target": "For reals it routes HSub.hSub to ordinary real subtraction.",
+      "paper_match": "It is implementation plumbing for the subtractions in gamma_tilde.",
       "status": "pass"
-    },
-    {
-      "id": "D094",
-      "name": "Compl.compl",
-      "interpretation": "Set complement.",
-      "effect_on_target": "Defines certificate failure events.",
-      "paper_match": "Matches complement of a good event.",
-      "status": "pass"
-    },
-    {
-      "id": "D095",
-      "name": "DFunLike.coe",
-      "interpretation": "Coercion of a measure to a set function.",
-      "effect_on_target": "Evaluates event measures.",
-      "paper_match": "Standard measure evaluation.",
-      "status": "pass"
-    },
-    {
-      "id": "D096",
-      "name": "DecidableEq",
-      "interpretation": "Decidable equality predicate.",
-      "effect_on_target": "Supports identities and conditionals.",
-      "paper_match": "Computational infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D097",
-      "name": "DivInvMonoid.toDiv",
-      "interpretation": "Projects real division.",
-      "effect_on_target": "Interprets denominator 1-u.",
-      "paper_match": "Matches division in (1.6).",
-      "status": "pass"
-    },
-    {
-      "id": "D098",
-      "name": "ENNReal",
-      "interpretation": "Extended nonnegative reals.",
-      "effect_on_target": "Codomain of measure values.",
-      "paper_match": "Standard measure representation of probability.",
-      "status": "pass"
-    },
-    {
-      "id": "D099",
-      "name": "Fin.castSucc",
-      "interpretation": "Embeds j into Fin(n+1) without changing its value.",
-      "effect_on_target": "Selects each pre-step state.",
-      "paper_match": "Correct trace indexing.",
-      "status": "pass"
-    },
-    {
-      "id": "D100",
-      "name": "Fin.instOfNat",
-      "interpretation": "Interprets 0 in Fin(n+1).",
-      "effect_on_target": "Selects initial states.",
-      "paper_match": "Correct trace indexing.",
-      "status": "pass"
-    },
-    {
-      "id": "D101",
-      "name": "Fin.last",
-      "interpretation": "Index n in Fin(n+1).",
-      "effect_on_target": "Selects final state and Q product.",
-      "paper_match": "Correctly represents completion after n reflectors.",
-      "status": "pass"
-    },
-    {
-      "id": "D102",
-      "name": "Fin.succ",
-      "interpretation": "Maps j to j+1 in Fin(n+1).",
-      "effect_on_target": "Selects post-step states.",
-      "paper_match": "Correct step offset.",
-      "status": "pass"
-    },
-    {
-      "id": "D103",
-      "name": "HDiv.hDiv",
-      "interpretation": "Typeclass-resolved division.",
-      "effect_on_target": "Evaluates gamma-tilde's denominator.",
-      "paper_match": "Matches ordinary real division.",
-      "status": "pass"
-    },
-    {
-      "id": "D104",
-      "name": "HasSubset.Subset",
-      "interpretation": "Typeclass-resolved subset relation.",
-      "effect_on_target": "Requires good events inside the local event.",
-      "paper_match": "Matches event inclusion.",
-      "status": "pass"
-    },
-    {
-      "id": "D105",
-      "name": "Iff",
-      "interpretation": "Logical equivalence.",
-      "effect_on_target": "Makes localEvent exactly the all-local-bounds event.",
-      "paper_match": "Correctly gives a two-way characterization.",
-      "status": "pass"
-    },
-    {
-      "id": "D106",
-      "name": "InnerProductSpace.toNormedSpace",
-      "interpretation": "Projects a normed-space instance.",
-      "effect_on_target": "Supports Bochner integrals of real errors.",
-      "paper_match": "Analytic infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D107",
-      "name": "Measurable",
-      "interpretation": "Measurability by measurable preimages.",
-      "effect_on_target": "Requires each error random variable measurable.",
-      "paper_match": "Matches requirements for expectations.",
-      "status": "pass"
-    },
-    {
-      "id": "D108",
-      "name": "MeasureTheory.Integrable",
-      "interpretation": "Strong measurability plus finite integral.",
-      "effect_on_target": "Ensures errors and test products have expectations.",
-      "paper_match": "Matches integrability prerequisites.",
-      "status": "pass"
-    },
-    {
-      "id": "D109",
-      "name": "MeasureTheory.Measure.instFunLike",
-      "interpretation": "Views a measure as a set-to-ENNReal function.",
-      "effect_on_target": "Evaluates event probabilities.",
-      "paper_match": "Standard probability notation.",
-      "status": "pass"
-    },
-    {
-      "id": "D110",
-      "name": "MeasureTheory.integral",
-      "interpretation": "Bochner integral with respect to the model measure.",
-      "effect_on_target": "Represents expectations of errors and test products.",
-      "paper_match": "Matches expectations in Definition 1.3 and Model 1.5.",
-      "status": "pass"
-    },
-    {
-      "id": "D111",
-      "name": "Nat.AtLeastTwo",
-      "interpretation": "Proof class for numerals at least two.",
-      "effect_on_target": "Supports literal 2.",
-      "paper_match": "No independent paper content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D112",
-      "name": "Nat.instAtLeastTwoHAddOfNat",
-      "interpretation": "Proof that n+1 is at least two when n is nonzero.",
-      "effect_on_target": "Supports numeral elaboration.",
-      "paper_match": "No independent paper content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D113",
-      "name": "Nat.instNeZeroSucc",
-      "interpretation": "Proof that n+1 is nonzero.",
-      "effect_on_target": "Supports Fin(n+1) instances.",
-      "paper_match": "No independent paper content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D114",
-      "name": "NonUnitalSeminormedCommRing.toNonUnitalSeminormedRing",
-      "interpretation": "Forgets commutativity in the normed-ring hierarchy.",
-      "effect_on_target": "Supports real analytic instances.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D115",
-      "name": "NonUnitalSeminormedRing.toSeminormedAddCommGroup",
-      "interpretation": "Projects additive normed structure.",
-      "effect_on_target": "Supports integration and norms.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D116",
-      "name": "NormedAddCommGroup.toSeminormedAddCommGroup",
-      "interpretation": "Forgets norm separation data.",
-      "effect_on_target": "Supports Bochner integration.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D117",
-      "name": "NormedCommRing.toSeminormedCommRing",
-      "interpretation": "Forgets normed-ring strength.",
-      "effect_on_target": "Supports real analytic instances.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D118",
-      "name": "PseudoMetricSpace.toUniformSpace",
-      "interpretation": "Projects the uniform structure.",
-      "effect_on_target": "Supports topology and integrability.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D119",
-      "name": "RCLike.toInnerProductSpaceReal",
-      "interpretation": "Builds a real inner-product-space instance.",
-      "effect_on_target": "Supports the real normed-space integral.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D120",
-      "name": "Real.instDivInvMonoid",
-      "interpretation": "Real division and inverse structure.",
-      "effect_on_target": "Supplies division to gamma-tilde.",
-      "paper_match": "Arithmetic infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D121",
-      "name": "Real.instRCLike",
-      "interpretation": "RCLike structure on reals.",
-      "effect_on_target": "Supports inner-product and integration instances.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D122",
-      "name": "Real.measurableSpace",
-      "interpretation": "Borel measurable space on reals.",
-      "effect_on_target": "Types measurable error random variables.",
-      "paper_match": "Matches ordinary real-valued random variables.",
-      "status": "pass"
-    },
-    {
-      "id": "D123",
-      "name": "Real.norm",
-      "interpretation": "Real norm |r|.",
-      "effect_on_target": "Defines scalar norms in IsBigO and integrability.",
-      "paper_match": "Matches absolute-value asymptotics.",
-      "status": "pass"
-    },
-    {
-      "id": "D124",
-      "name": "Real.normedAddCommGroup",
-      "interpretation": "Normed additive group on reals.",
-      "effect_on_target": "Supports integration and asymptotics.",
-      "paper_match": "Analytic infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D125",
-      "name": "Real.normedCommRing",
-      "interpretation": "Normed commutative ring on reals.",
-      "effect_on_target": "Supports products and asymptotics.",
-      "paper_match": "Analytic infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D126",
-      "name": "Real.pseudoMetricSpace",
-      "interpretation": "Real metric precursor with distance |x-y|.",
-      "effect_on_target": "Supports nhds 0.",
-      "paper_match": "Gives the ordinary real topology.",
-      "status": "pass"
-    },
-    {
-      "id": "D127",
-      "name": "SeminormedAddCommGroup.toSeminormedAddGroup",
-      "interpretation": "Forgets additive commutativity.",
-      "effect_on_target": "Supports continuous-norm instances.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D128",
-      "name": "SeminormedAddGroup.toContinuousENorm",
-      "interpretation": "Builds a continuous extended norm.",
-      "effect_on_target": "Supports real-valued Integrable.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D129",
-      "name": "SeminormedCommRing.toNonUnitalSeminormedCommRing",
-      "interpretation": "Forgets the multiplicative identity.",
-      "effect_on_target": "Supports real analytic instances.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D130",
-      "name": "Set.instCompl",
-      "interpretation": "Pointwise logical set complement.",
-      "effect_on_target": "Defines failure events.",
-      "paper_match": "Matches event complementation.",
-      "status": "pass"
-    },
-    {
-      "id": "D131",
-      "name": "Set.instHasSubset",
-      "interpretation": "Pointwise implication as set inclusion.",
-      "effect_on_target": "Interprets goodEvent subset localEvent.",
-      "paper_match": "Matches subset semantics.",
-      "status": "pass"
-    },
-    {
-      "id": "D132",
-      "name": "Set.univ",
-      "interpretation": "Set containing every outcome.",
-      "effect_on_target": "States probability normalization.",
-      "paper_match": "Matches the total sample space.",
-      "status": "pass"
-    },
-    {
-      "id": "D133",
-      "name": "UniformSpace.toTopologicalSpace",
-      "interpretation": "Projects topology from a uniform space.",
-      "effect_on_target": "Supports neighborhoods and integrability.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D134",
-      "name": "instAddCommMonoidWithOneENNReal",
-      "interpretation": "Additive monoid with one on ENNReal.",
-      "effect_on_target": "Elaborates probability mass 1.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D135",
-      "name": "instAddNat",
-      "interpretation": "Natural addition.",
-      "effect_on_target": "Builds the n+1 state length.",
-      "paper_match": "Correctly allocates n transitions and n+1 states.",
-      "status": "pass"
-    },
-    {
-      "id": "D136",
-      "name": "instHDiv",
-      "interpretation": "Lifts Div to HDiv.",
-      "effect_on_target": "Routes division notation.",
-      "paper_match": "Notation infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D137",
-      "name": "instLENat",
-      "interpretation": "Usual natural <= relation.",
-      "effect_on_target": "States n<=m.",
-      "paper_match": "Matches m>=n.",
-      "status": "pass"
-    },
-    {
-      "id": "D138",
-      "name": "instNeZeroNatHAdd_1",
-      "interpretation": "Proof that adding a nonzero natural yields a nonzero result.",
-      "effect_on_target": "Supports Fin(n+1) instances.",
-      "paper_match": "No independent paper content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D139",
-      "name": "ite",
-      "interpretation": "Decidable if-then-else.",
-      "effect_on_target": "Defines identity entries and explicit QR zeros.",
-      "paper_match": "Correctly implements those cases.",
-      "status": "pass"
-    },
-    {
-      "id": "D140",
-      "name": "nhds",
-      "interpretation": "Neighborhood filter.",
-      "effect_on_target": "Makes D023 asymptotic as u tends to zero.",
-      "paper_match": "Matches the local meaning of O(u^2).",
-      "status": "pass"
-    },
-    {
-      "id": "D141",
-      "name": "Nat.decLt",
-      "interpretation": "Decision procedure for natural <.",
-      "effect_on_target": "Elaborates index conditionals.",
-      "paper_match": "Computational infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D142",
-      "name": "instDecidableAnd",
-      "interpretation": "Decision procedure for conjunction.",
-      "effect_on_target": "Elaborates the QR-step branch.",
-      "paper_match": "Computational infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D143",
-      "name": "Fin.mk",
-      "interpretation": "Constructs a bounded natural index.",
-      "effect_on_target": "Builds prior-error vectors.",
-      "paper_match": "Index infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D144",
-      "name": "Nat.instPreorder",
-      "interpretation": "Preorder structure on naturals.",
-      "effect_on_target": "Supports prior-index validity.",
-      "paper_match": "Order infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D145",
-      "name": "Preorder.toLT",
-      "interpretation": "Projects strict order from a preorder.",
-      "effect_on_target": "Supports prior-index validity.",
-      "paper_match": "Order infrastructure only.",
-      "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The published 2023 SIAM paper, Model 1.5, Lemmas 4.2-4.3, Theorem 4.4, and equations (4.16)-(4.20) are the correct source chain.",
-      "lean_evidence": "The target is shaped around Householder QR, p4, gamma-tilde, the Lemma 4.2 assumption, column bounds, and the Frobenius consequence.",
-      "reasoning": "The selected version and passage are correct."
+      "paper_evidence": "The verified published PDF gives gamma_tilde in equation (1.6), the simultaneous column bound in Theorem 4.4 equation (4.17), and the columnwise-to-Frobenius implication in equation (4.20).",
+      "lean_evidence": "The target is explicitly a columnwise-to-Frobenius theorem using definitions that reproduce those norms and the coefficient.",
+      "reasoning": "The paper version, selected passage, and directly supporting definitions are correctly identified."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "Theorem 4.4 uses real A and RHat in R^(m x n), exact Q in R^(m x m), m>=n, positive lambda, and j=1:n.",
-      "lean_evidence": "The matrices have corresponding Fin-indexed real types; D016 enforces n<=m and n>0; lambda is positive.",
-      "reasoning": "Dimensions and finite index sets match."
+      "paper_evidence": "A and Delta A are m-by-n real matrices, and j ranges over 1:n.",
+      "lean_evidence": "A and DeltaA u have type Fin m -> Fin n -> Real, and j has type Fin n.",
+      "reasoning": "The matrix and column types match up to zero-based finite indexing. Allowing all natural m,n, including m<n and zero dimensions, is a harmless generalization of this algebraic implication and is classified under S15."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.4 derives its result from Model 1.5 and the local Lemma 4.2 assumption; O(u^2) describes a first-order family as u tends to zero.",
-      "lean_evidence": "The target adds perColumn and chooses each remainder after the fixed model, unitRoundoff, and outcome are known.",
-      "reasoning": "Per-column theorem content is Skolemized into a premise, while post-u0 outcome-dependent constants destroy the intended remainder dependence."
+      "status": "pass",
+      "paper_evidence": "Equation (4.17) holds simultaneously for every column before the paper derives the single Frobenius bound.",
+      "lean_evidence": "One eventual hypothesis contains forall j, after which an existential normwise remainder is produced and may depend on all preceding data.",
+      "reasoning": "Simultaneity and witness dependence are preserved; the target does not incorrectly replace the joint premise by separate unrelated events."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The source assumes Model 1.5, positive lambda, m>=n, and the probability-one local bound, but not per-column backward-error certificates.",
-      "lean_evidence": "The source hypotheses are represented, but perColumn is an additional substantial premise.",
-      "reasoning": "The extra hypothesis narrows applicability and is not source-licensed at proposition level."
+      "status": "pass",
+      "paper_evidence": "The direct implication assumes all column bounds with coefficient c6 lambda sqrt(n) gamma_tilde_m(lambda), and equation (1.6) requires lambda > 0.",
+      "lean_evidence": "hcolumn is exactly the simultaneous family, hlambda states 0 < lambda, hc6 states c6 is positive, and the asymptotic filter uses 0 < u < 1.",
+      "reasoning": "The hypotheses needed for the selected deterministic implication match. Householder and probabilistic assumptions generate hcolumn in the enclosing theorem but are not needed once hcolumn is assumed."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Theorem 4.4 gives exact factorization and simultaneous column bounds; (4.20) gives the Frobenius consequence.",
-      "lean_evidence": "The conclusion contains a common measurable event, exact orthogonal Q, upper-trapezoidal RHat, exact factorization, all column inequalities, and the Frobenius inequality.",
-      "reasoning": "All visible conclusion components are present structurally."
+      "paper_evidence": "Equation (4.20) concludes a Frobenius bound with the same coefficient and an additive O(u^2).",
+      "lean_evidence": "The conclusion constructs a second-order normwiseRemainder and eventually bounds p06FrobNorm (DeltaA u) by the same coefficient times p06FrobNorm A plus its absolute value.",
+      "reasoning": "Every part of the selected norm implication is present. The target does not purport to reproduce the separate QR existence and probability claims of Theorem 4.4."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The source uses exact norm, gamma-tilde, p4, computed QR execution, and additive O(u^2) semantics.",
-      "lean_evidence": "Norm, gamma, p4, orthogonality, and multiplication unfold correctly, but D008, D016, D018, and D025 do not implement their source roles faithfully.",
-      "reasoning": "Several nontrivial imported definitions have materially deficient semantics."
+      "status": "pass",
+      "paper_evidence": "The paper defines the two norms and gamma_tilde explicitly and uses ordinary real arithmetic and asymptotic O notation.",
+      "lean_evidence": "The dossier unfolds both norm definitions, the exact coefficient, gamma_tilde, right-sided Big-O, filters, arithmetic, casts, powers, square roots, and exponential.",
+      "reasoning": "All nontrivial local definitions and external dependencies affecting the proposition have an explicit compatible interpretation."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "RHat is actually computed by Householder QR, while Q is exact and DeltaA perturbs the exact input.",
-      "lean_evidence": "Q and A/DeltaA are distinguished correctly, but RHat is connected only to selected generic computedValue entries without intervening QR-operation linkage.",
-      "reasoning": "Computed provenance is not established."
+      "status": "not-applicable",
+      "paper_evidence": "In Theorem 4.4, Q is exact and orthogonal, R-hat is computed, and Delta A satisfies A + Delta A = Q R-hat.",
+      "lean_evidence": "The selected Lean lemma mentions only A and an arbitrary DeltaA family and makes no assertion about Q, R-hat, or a computation.",
+      "reasoning": "No exact and computed quantities are conflated, but their relation belongs to the enclosing theorem rather than the selected algebraic implication."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "The proof relies on actual rounded reflector applications, explicit zeros, computed history-dependent v_j, and later computation-order errors.",
-      "lean_evidence": "D016 has states, abstract history dependence, and explicit zeros, but reflectorBuilder and localPerturbation are unrelated to model.error or operation indices.",
-      "reasoning": "Model 1.5 is not genuinely linked to the QR execution."
+      "status": "not-applicable",
+      "paper_evidence": "Theorem 4.4 links equation (4.17) to Householder QR, Model 1.5, and the probability-one local perturbation assumption; the later sentence derives (4.20) solely from (4.17).",
+      "lean_evidence": "The target takes the simultaneous column bounds as its direct hypothesis and contains no algorithm or execution model.",
+      "reasoning": "This is faithful only as the specifically selected standalone columnwise-to-Frobenius implication, not as a formalization of the whole Householder QR theorem."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "The source uses subordinate matrix 2-norm, vector 2-norm, and Frobenius norm, all unsquared.",
-      "lean_evidence": "D033, D015, and D009 implement exactly those norms.",
-      "reasoning": "Norm semantics match."
+      "paper_evidence": "Equation (4.17) uses unsquared Euclidean column norms and equation (4.20) uses the unsquared Frobenius matrix norm.",
+      "lean_evidence": "p06VecNorm2 and p06FrobNorm are square roots of sums of squares and appear unsquared in the respective inequalities.",
+      "reasoning": "The norm kinds, levels, and unsquared forms match exactly."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The coefficient uses the derived fixed constant c6*lambda*sqrt(n)*gammaTilde_m(lambda), with p4=1-2mn exp(-lambda^2).",
-      "lean_evidence": "The formulas and indices match, but c6 is an arbitrary positive input whose adequacy is assumed inside perColumn.",
-      "reasoning": "Constant provenance and quantifier dependence are weakened."
+      "status": "pass",
+      "paper_evidence": "Both equations use exactly c6 lambda sqrt(n) gamma_tilde_m(lambda), with columns j=1:n and no extra sqrt(n) in equation (4.20).",
+      "lean_evidence": "One p06QRLeadingCoefficient definition, c6 * lambda * sqrt(n) * p06GammaTilde m lambda u, is reused unchanged in premise and conclusion.",
+      "reasoning": "Constants, dimension dependence, and indexing match. The Fin n indexing is merely shifted from 1-based notation."
     },
     {
       "id": "S11",
-      "status": "pass",
-      "paper_evidence": "Model 1.5 requires ordered relative errors bounded by u, zero means, and mean independence, with no separate exceptional-value rules.",
-      "lean_evidence": "D019 and D032 encode those assumptions with 0<=u<1, normalization, measurability, and integrability.",
-      "reasoning": "The standalone floating-point stochastic model matches; algorithm coupling is assessed by S08."
+      "status": "not-applicable",
+      "paper_evidence": "The enclosing theorem uses the relative-error model, chronological mean independence, mean zero errors, and a probability-one local perturbation assumption; exceptional IEEE behavior is not specified.",
+      "lean_evidence": "The target models no floating-point operations or random errors and assumes the resulting column bounds directly.",
+      "reasoning": "The selected implication is deterministic norm algebra. It neither replaces nor contradicts the floating-point model, but it cannot serve as a formalization of that model."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The source asserts the result from Model 1.5 and the almost-sure local bound, using exact equality and non-strict error inequalities.",
-      "lean_evidence": "Relation directions are correct, but the target assumes perColumn and admits arbitrary actual-u O(u^2) slack.",
-      "reasoning": "The proposition is logically weaker."
+      "status": "pass",
+      "paper_evidence": "The paper states non-strict upper inequalities and says the simultaneous column bound implies the Frobenius bound.",
+      "lean_evidence": "The target uses real less-than-or-equal in the same direction and implication from hcolumn to an existential conclusion.",
+      "reasoning": "Direction, strictness, and conditional structure are preserved."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "DeltaA is a backward perturbation satisfying A+DeltaA=Q*RHat.",
-      "lean_evidence": "The target uses that exact relation and bounds DeltaA relative to A.",
-      "reasoning": "No forward, residual, or mixed error is substituted."
+      "paper_evidence": "Within Theorem 4.4, Delta A is a backward perturbation because A + Delta A = Q R-hat.",
+      "lean_evidence": "The target proves a norm implication for arbitrary DeltaA and does not label it as a forward error, residual, or other substituted notion.",
+      "reasoning": "Applied to the theorem's actual backward perturbation, the Lean conclusion is exactly its Frobenius bound. The standalone lemma does not independently certify backwardness."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "The paper retains additive O(u^2), estimates accumulated second-order growth, and states a first-order-dominance regime.",
-      "lean_evidence": "D008 supplies constants separately for each outcome after u0 is fixed, with no relation to the QR expansion, dimensions, or data norm.",
-      "reasoning": "The actual-u slack can be arbitrary, so the higher-order term is not encoded nonvacuously."
+      "status": "pass",
+      "paper_evidence": "Both equations (4.17) and (4.20) retain additive O(u^2), and the paper explicitly describes Theorem 4.4 as first order.",
+      "lean_evidence": "Each column has an explicit right-sided O(u^2) remainder, and the conclusion constructs another right-sided O(u^2) remainder instead of deleting it.",
+      "reasoning": "Higher-order terms are preserved. The target resolves the paper's informal notation through explicit remainder functions without asserting an all-orders bound."
     },
     {
       "id": "S15",
       "status": "pass",
-      "paper_evidence": "The source concerns finite real tall m-by-n matrices.",
-      "lean_evidence": "The target is finite-dimensional over Real and D016 enforces m>=n with positive n.",
-      "reasoning": "This is the intended source domain."
+      "paper_evidence": "The paper's QR setting has real m-by-n matrices with m >= n and a fixed symbolic integer constant c6.",
+      "lean_evidence": "The target works over finite real matrices for every natural m,n and every positive natural c6.",
+      "reasoning": "This is a genuine generalization of the algebraic implication, including m<n and zero-dimensional cases. It retains every paper instance and motivates the faithful-stronger classification."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The paper's bounds constrain QR backward error through concentration and controlled higher-order terms.",
-      "lean_evidence": "For fixed u0>0 any finite slack can be realized by a quadratic remainder with an outcome-dependent constant; factorization can use DeltaA=Q*RHat-A, and perColumn may be uninhabited.",
-      "reasoning": "The numerical bounds can hold for an unintended trivial reason, while the extra premise can make instances vacuous."
+      "status": "pass",
+      "paper_evidence": "The paper applies the implication to nontrivial QR backward perturbations satisfying simultaneous column estimates.",
+      "lean_evidence": "The hypotheses are satisfiable, for example with positive c6 and lambda and zero remainders; they also permit nonzero DeltaA when the column inequalities hold. The conclusion is not unconditional.",
+      "reasoning": "The theorem is nonvacuous, and degenerate finite dimensions do not make its intended positive-dimensional instances trivial."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean proposition requires per-column certificates that the paper derives, permits runs whose perturbations are unrelated to Model 1.5 errors, and permits arbitrary pointwise actual-u O(u^2) slack. It therefore does not establish Theorem 4.4 from the paper's hypotheses."
+      "verdict": "yes",
+      "reasoning": "For the selected deterministic implication, instantiate the Lean theorem with the paper's m-by-n A and Delta A family and explicit representatives of the column O(u^2) terms. Its conclusion is equation (4.20) with exactly the paper's coefficient and no additional sqrt(n). The enclosing algorithmic assumptions and probability are used to obtain hcolumn, not to perform this implication."
     },
     "paper_implies_lean": {
-      "verdict": "yes",
-      "reasoning": "For a source-conforming QR execution, Lemma 4.2 supplies the per-column facts, Lemma 4.3 supplies the simultaneous event and p4 coefficient, and Theorem 4.4 plus (4.20) supplies the exact relation and meaningful O(u^2) bounds, which instantiate the weaker formal conclusion."
+      "verdict": "no",
+      "reasoning": "The printed paper claim is situated in the m >= n Householder QR setting, treats c6 as a fixed paper constant, and leaves the remainder functions and their uniform asymptotic meaning implicit. It therefore does not strictly state the target's universal result for arbitrary finite dimensions, arbitrary matrix families, arbitrary positive c6, and explicit right-sided Big-O witnesses, even though the same Frobenius-norm argument supports those generalizations."
     }
   },
-  "classification": "not-faithful-weaker",
-  "accepted": false,
+  "classification": "faithful-stronger",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "hypotheses-and-quantifier-scope",
-      "paper_evidence": "Theorem 4.4 assumes Model 1.5 and the probability-one local bound; Lemma 4.2 is a preceding proved result, not an added per-column backward-relation assumption.",
-      "lean_evidence": "The target takes perColumn : forall j, P06Lemma42ColumnCertificate, whose constructor requires the per-column event, exact relation, remainder, and desired bound.",
-      "impact": "A substantial part of the selected theorem is assumed, so Lean does not imply the paper theorem."
+      "severity": "note",
+      "category": "scope-boundary",
+      "paper_evidence": "Theorem 4.4 supplies the Householder QR computation, Model 1.5 assumptions, probability-one local premise, exact orthogonal Q, relation A + Delta A = Q R-hat, and probability at least 1 - 2mn exp(-lambda^2); the later sentence says only that equation (4.17) implies equation (4.20).",
+      "lean_evidence": "The target starts from the simultaneous column inequalities and proves only their Frobenius consequence.",
+      "impact": "The target is faithful as the selected columnwise-to-Frobenius lemma, but it must not be cited as a formalization of all of Theorem 4.4 or its probabilistic provenance."
     },
     {
-      "severity": "critical",
-      "category": "higher-order-terms-and-nonvacuity",
-      "paper_evidence": "Equations (4.17) and (4.20) retain QR-derived additive O(u^2) terms, with dimensional growth analyzed after Theorem 4.4.",
-      "lean_evidence": "P06SecondOrderControl is instantiated after unitRoundoff and separately per outcome. For u0>0 an arbitrary value at u0 can be extended as K*u^2 with an outcome-dependent K.",
-      "impact": "The column and Frobenius inequalities admit arbitrarily large slack and do not assert the paper's nontrivial backward-error bound."
+      "severity": "note",
+      "category": "domain-generalization",
+      "paper_evidence": "The surrounding QR problem assumes m >= n and uses one fixed symbolic integer constant c6.",
+      "lean_evidence": "The target quantifies over all natural m,n, including m<n and zero dimensions, and all positive natural c6.",
+      "impact": "The Lean proposition is strictly broader than the source-context statement while retaining every intended paper instance."
     },
     {
-      "severity": "major",
-      "category": "algorithm-linkage",
-      "paper_evidence": "Theorem 4.4's proof uses actual operation order, generated local perturbations, explicit zeros, computed history-dependent reflectors, and later rounding errors.",
-      "lean_evidence": "The run has an abstract state recurrence and explicit zeros, but reflectorBuilder and localPerturbation are unrelated to P06Model15.error/exactValue; RHat is linked only to selected terminal computed values.",
-      "impact": "Model 1.5 may describe a different error sequence from the packaged QR run."
-    },
-    {
-      "severity": "major",
-      "category": "constant-provenance",
-      "paper_evidence": "c5 and c6 are derived modest integer constants in the section 4 analysis.",
-      "lean_evidence": "They are arbitrary positive inputs, and adequacy of c6 is transferred into the perColumn premise.",
-      "impact": "The target does not establish the paper's universal coefficient, despite reproducing its displayed formula."
+      "severity": "note",
+      "category": "asymptotic-formalization",
+      "paper_evidence": "Equations (4.17) and (4.20) use bare O(u^2) terms without specifying hidden constants, uniformity in columns, or an asymptotic regime.",
+      "lean_evidence": "The target chooses explicit signed remainder functions, bounds their magnitudes, and requires IsBigO along u approaching zero through (0,1).",
+      "impact": "This is a coherent standard formalization and preserves rather than deletes the higher-order terms, but it is more explicit than the paper's printed statement."
     }
   ],
-  "rationale": "The target reproduces the source's dimensions, factorization orientation, exact Q versus computed RHat distinction at the surface, simultaneous event shape, norms, gamma-tilde, coefficient, and probability formula. It is nevertheless not faithful: it assumes per-column certificates containing nearly the Lemma 4.2 conclusion, does not couple the QR run to the Model 1.5 operation/error trace, and uses post-unit-roundoff pointwise O(u^2) witnesses that make the numerical bounds vacuous for positive u. The paper result can instantiate this weaker target, but the target cannot recover the paper theorem from the paper's hypotheses."
+  "rationale": "The target exactly formalizes the selected algebraic passage from simultaneous Euclidean column bounds to a Frobenius bound. Its norm definitions, gamma_tilde formula, coefficient c6 lambda sqrt(n) gamma_tilde_m(lambda), positivity of lambda, simultaneous finite-column quantification, inequality direction, and additive second-order remainder all match the PDF. It introduces no extra sqrt(n). By making O(u^2) explicit and proving the implication for arbitrary finite real matrices and positive natural c6, it is broader than the paper's QR-context statement, hence faithful-stronger rather than strictly equivalent. The omitted Householder algorithm, backward-factorization relation, rounding model, and probability are outside this selected standalone implication and remain necessary for any claim to formalize the enclosing Theorem 4.4."
 }

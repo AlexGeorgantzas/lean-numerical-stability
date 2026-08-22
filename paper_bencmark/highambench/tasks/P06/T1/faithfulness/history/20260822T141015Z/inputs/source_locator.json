@@ -1,0 +1,51 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P06_PROBABILISTIC ROUNDING ERROR ANALYSIS OFHOUSEHOLDER QR FACTORIZATION.pdf",
+  "paper_sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79",
+  "paper_version": "published journal version; volume 44, issue 3, 2023, printed pages 1146-1163",
+  "source_locations": [
+    {
+      "anchor": "equations (1.4), (1.6), and Definition 1.3",
+      "pdf_page": 2,
+      "printed_page": "1147",
+      "role": "relative-error model, gammaTilde, lambda domain, and mean-independence definition",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "Model 1.5",
+      "pdf_page": 3,
+      "printed_page": "1148",
+      "role": "computation-order mean independence and zero-mean assumptions",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "equations (4.1)-(4.2)",
+      "pdf_page": 6,
+      "printed_page": "1151",
+      "role": "perturbed Householder execution and local operator-norm bound",
+      "section": "4. Application of a sequence of Householder matrices"
+    },
+    {
+      "anchor": "paragraph preceding Lemma 4.2 and Lemma 4.2 hypothesis",
+      "pdf_page": 7,
+      "printed_page": "1152",
+      "role": "probability-one strengthening of the local-bound assumption",
+      "section": "4. Application of a sequence of Householder matrices"
+    },
+    {
+      "anchor": "Theorem 4.4 and equations (4.16)-(4.17)",
+      "pdf_page": 9,
+      "printed_page": "1154",
+      "role": "computed factor, exact orthogonal backward relation, simultaneous column bounds, coefficient, and event probability",
+      "section": "4. Application of a sequence of Householder matrices"
+    },
+    {
+      "anchor": "equations (4.18)-(4.20) and the implication sentence preceding (4.20)",
+      "pdf_page": 10,
+      "printed_page": "1155",
+      "role": "higher-order interpretation and the selected Frobenius backward-error consequence",
+      "section": "4. Application of a sequence of Householder matrices"
+    }
+  ],
+  "task_id": "P06-T1"
+}

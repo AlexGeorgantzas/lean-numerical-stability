@@ -3,170 +3,177 @@
   "role": "roundtrip-judge",
   "task_id": "P06-T1",
   "paper_sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79",
-  "blind_translation_sha256": "544a5bd20d19168c238fe0f9bd31dd521f494430bd0a172b1b3ff0e4dcf3ea84",
+  "blind_translation_sha256": "27b4c1d5ec410bc85d25c5ae73d45f0ece798cf16a9bd1adc5abd2ec34e33e67",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The published SIAM J. Matrix Anal. Appl. 44(3), 2023 version contains Theorem 4.4 and equations (4.16)-(4.17) on printed page 1154, with the Frobenius consequence (4.20) on printed page 1155.",
-      "translation_evidence": "The translation identifies the Householder QR result with the exact backward relation, coefficient c6 lambda sqrt(n) gamma_m(lambda,u), probability 1-2mn exp(-lambda^2), and Frobenius consequence.",
-      "reasoning": "The selected paper version, theorem, surrounding assumptions, and normwise consequence are the intended source."
+      "paper_evidence": "The selected passage is equation (4.17) on printed page 1154 and its stated implication to equation (4.20) on printed page 1155, with gamma_tilde defined by equation (1.6) on printed page 1147.",
+      "translation_evidence": "The translation states a simultaneous columnwise premise and a Frobenius-norm conclusion using the exponential coefficient from equation (1.6).",
+      "reasoning": "The translation targets the correct algebraic passage and coefficient, although the intended inclusion of the enclosing theorem remains a scope question addressed below."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "The paper concerns positive tall dimensions m>=n, an exact real m-by-n input A, its computed m-by-n upper-trapezoidal factor RHat, a positive lambda, and fixed modest integer constants c5 and c6.",
-      "translation_evidence": "The run guard correctly entails 0<n<=m and the matrix types are correct, but the proposition additionally binds an arithmetic model, certified run, hlocal, a family of per-column certificates, and arbitrary positive natural c5 and c6.",
-      "reasoning": "The dimensions and matrix types match, but the conclusion-bearing certificate binders and universal treatment of the paper's constants materially change the binder structure."
+      "paper_evidence": "The standing QR setting has real m-by-n matrices with m >= n, a fixed paper constant c6, and a backward perturbation Delta A associated with a computed factorization.",
+      "translation_evidence": "The translation quantifies arbitrary natural m and n, including zero and m < n, arbitrary positive natural c6, and an arbitrary u-parameterized matrix family DeltaA.",
+      "reasoning": "The matrix entry types agree, but the dimension domain, status of c6, and semantic type of the perturbation do not exactly match the paper context."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "Under Model 1.5 and the almost-sure local bound, Theorem 4.4 derives Q, DeltaA, and one simultaneous high-probability family of column bounds.",
-      "translation_evidence": "The translation has universal hlocal and perColumn binders before the existential goodEvent, Q, DeltaA, and remainder witnesses; those witnesses may depend on the supplied certificates.",
-      "reasoning": "The per-column conclusions are Skolemized into assumptions instead of being derived from the paper hypotheses, changing quantifier order and witness dependence."
+      "status": "unclear",
+      "paper_evidence": "The direct implication assumes bounds simultaneously for j = 1:n, while Theorem 4.4 existentially supplies Q and Delta A on a common probabilistic event.",
+      "translation_evidence": "The translation universally binds DeltaA and the column remainders, places every column inequality inside one eventual neighborhood, and existentially introduces only the normwise remainder.",
+      "reasoning": "The quantifier scope matches the standalone deterministic implication, but it does not match the existential and event-dependent scope of the enclosing Householder theorem."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The paper assumes Model 1.5, the probability-one local reflector bound (4.2), and that RHat is produced by Householder QR.",
-      "translation_evidence": "D018 additionally assumes for every column a measurable event, its failure bound, an exact backward relation, a perturbation bound, and a quadratic remainder.",
-      "reasoning": "Each per-column certificate assumes a substantial part of Lemma 4.3 and Theorem 4.4, so the formal hypotheses are strictly stronger than the paper hypotheses."
+      "paper_evidence": "Besides the simultaneous column premise and lambda > 0, the surrounding result inherits m >= n, Householder QR, Model 1.5, and the probability-one local perturbation premise used by Lemma 4.2.",
+      "translation_evidence": "The translation assumes positivity of c6 and lambda, individual big-O conditions, and one simultaneous eventual column bound, but none of the algorithmic or probabilistic hypotheses.",
+      "reasoning": "It has all hypotheses needed for the abstract norm implication but omits hypotheses required for the paper theorem that produces those bounds."
     },
     {
       "id": "S05",
-      "status": "pass",
-      "paper_evidence": "Equations (4.16), (4.17), and (4.20) give the exact QR backward relation, simultaneous columnwise bounds, their probability, and the Frobenius consequence.",
-      "translation_evidence": "The conclusions include an exact orthogonal Q, upper-trapezoidal computed RHat, A+DeltaA=Q RHat, all column bounds on one event, its exact probability threshold, and the Frobenius bound.",
-      "reasoning": "The substantive conclusion clauses are all represented, although crucial column-level versions are also assumed in the premises."
+      "status": "unclear",
+      "paper_evidence": "Equation (4.20) is the Frobenius conclusion; in the enclosing theorem Delta A also satisfies A + Delta A = Q R_hat and the conclusion holds on the event of probability at least 1 - 2mn exp(-lambda^2).",
+      "translation_evidence": "The translation concludes only an eventual Frobenius inequality with an existential second-order remainder.",
+      "reasoning": "The displayed conclusion is present, but the backward-factorization relation and inherited probability conclusion are absent. Completeness therefore depends on whether the task is the standalone implication or the enclosing theorem."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The paper defines gamma_tilde, vector and subordinate matrix 2-norms, the Frobenius norm, orthogonality, matrix products, mean independence, and big-O notation in the cited context.",
-      "translation_evidence": "D008-D015, D019-D023, D030-D033, D047, and D093 unfold the remainder condition, norms, matrix operations, gamma factor, arithmetic model, operator bound, probability conversion, and big-O relation.",
-      "reasoning": "The dependency ledger interprets the nontrivial operators needed to read the proposition, with no unresolved dependency entries."
+      "paper_evidence": "The paper defines gamma_tilde_m(lambda) as exp((lambda sqrt(m)u + mu^2)/(1-u)) - 1 and uses Euclidean column norms and the Frobenius matrix norm.",
+      "translation_evidence": "The dependency ledger unfolds the exponential, square roots, finite sums, Euclidean norm, Frobenius norm, eventual filter, absolute value, and asymptotic big-O relation.",
+      "reasoning": "The nontrivial operators used by the deterministic implication are explicitly interpreted and the gamma_tilde formula is exact."
     },
     {
       "id": "S07",
-      "status": "pass",
-      "paper_evidence": "In (4.16), A is exact, RHat is the computed QR factor, Q is an exact orthogonal witness, and DeltaA is a backward perturbation.",
-      "translation_evidence": "D002 and D027 identify RHat as the run's computed output, while Q is required to satisfy exact orthogonality and the exact identity with A and DeltaA.",
-      "reasoning": "The translation does not substitute a computed Qhat for the exact Q or conflate A with a computed input."
+      "status": "fail",
+      "paper_evidence": "Theorem 4.4 distinguishes the computed upper-trapezoidal R_hat from an exact orthogonal Q and an input perturbation Delta A satisfying A + Delta A = Q R_hat.",
+      "translation_evidence": "A and DeltaA are arbitrary matrix data, and no Q, R_hat, orthogonality condition, computation, or factorization equation appears.",
+      "reasoning": "The translation does not preserve the exact-versus-computed distinctions of the surrounding result."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "The proof of Theorem 4.4 uses Householder vectors computed from prior states, their dependence only on earlier errors, explicit assignment of annihilated entries to zero, and later rounding errors in each local application.",
-      "translation_evidence": "D016, D029-D031 structurally encode reflectors, elimination, state recurrence, and explicit zeros, but the ledger supplies no adaptedness condition tying reflector or local-perturbation fields to preceding model errors; D027 only identifies output entries with designated computed values.",
-      "reasoning": "There is structural QR linkage, but not the paper's operation-level and computation-history linkage between the stochastic arithmetic model and the local perturbations. The assumed per-column certificates replace that analytic connection."
+      "paper_evidence": "The column bounds arise from the standard Householder QR algorithm and the sequence of perturbed Householder transformations.",
+      "translation_evidence": "The proposition contains no algorithm, execution trace, Householder transformation, or computed QR factor.",
+      "reasoning": "The formalized norm implication is completely detached from the paper's algorithmic provenance."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Equation (4.2) uses the subordinate matrix 2-norm, (4.17) uses vector 2-norms of columns, and (4.20) uses the Frobenius norm.",
-      "translation_evidence": "D015 defines the Euclidean column norm, D033 defines the induced operator bound, and D009 defines the Frobenius norm without squaring it.",
-      "reasoning": "Norm kinds, squared versus unsquared forms, and columnwise versus normwise roles match."
+      "paper_evidence": "Equation (4.17) uses unsquared Euclidean 2-norms for columns, and equation (4.20) uses the unsquared Frobenius norm for matrices.",
+      "translation_evidence": "The translation defines both norms as square roots of sums of squares and applies them respectively to columns and full matrices.",
+      "reasoning": "Norm kind, squaring convention, and columnwise-versus-normwise roles match."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "The coefficient is exactly c6 lambda sqrt(n) gamma_tilde_m(lambda), columns are j=1:n, and the simultaneous success probability is 1-2mn exp(-lambda^2); c5 and c6 denote fixed modest constants arising in the analysis.",
-      "translation_evidence": "D011-D012 preserve the coefficient and probability and Fin n preserves the column range, but c5 and c6 are arbitrary universally quantified positive naturals with no derivation or required relationship.",
-      "reasoning": "The numerical formula and indexing are correct, but the constants' quantification and dependence are not: unsuitable values merely make certificate types uninhabited."
+      "paper_evidence": "For j = 1:n, both bounds use exactly c6 lambda sqrt(n) gamma_tilde_m(lambda), with c6 a fixed paper constant and no extra sqrt(n) factor.",
+      "translation_evidence": "Fin n indexes exactly n columns and beta has the exact displayed multiplier with no extra column factor, but c6 is universally quantified as any positive natural number.",
+      "reasoning": "The coefficient and indexing are exact, but the translation changes the status of c6 from a fixed paper constant to a theorem parameter."
     },
     {
       "id": "S11",
-      "status": "pass",
-      "paper_evidence": "Model 1.5 requires computation-order relative errors satisfying |delta|<=u, zero means, and mean independence; it adds no separate overflow, underflow, NaN, infinity, or mandatory rounding-mode hypothesis.",
-      "translation_evidence": "D019 imposes computed=exact(1+error), |error|<=u, normalization, measurability, integrability, and zero means. D032 gives factorization against every integrable function of preceding errors.",
-      "reasoning": "For bounded real errors on a probability space, D032 is the standard test-function characterization of the paper's conditional-mean independence. The absence of separate exceptional-value assumptions also matches."
+      "status": "fail",
+      "paper_evidence": "The provenance uses fl(x op y) = (x op y)(1 + delta), |delta| <= u, chronologically mean-independent zero-mean errors, the probability-one local perturbation premise, and probability at least 1 - 2mn exp(-lambda^2).",
+      "translation_evidence": "The translation treats u as a real asymptotic parameter in (0,1) and contains no rounding operations, random errors, probability space, independence, or local perturbation event.",
+      "reasoning": "It does not encode the paper's floating-point or probabilistic model. Neither source specifies exceptional IEEE behavior, but that shared omission does not repair the missing model."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper derives A+DeltaA=Q RHat and upper bounds with non-strict inequalities directly from its numerical-model and local-bound assumptions.",
-      "translation_evidence": "The equality direction and individual inequality directions are correct, but the proposition is conditional on D018 certificates already containing the exact column relations and bounds.",
-      "reasoning": "At the whole-proposition level the logical strength is substantially weaker even though the displayed relation symbols are correct."
+      "status": "pass",
+      "paper_evidence": "The paper uses non-strict upper bounds and states that the simultaneous column bounds imply a Frobenius upper bound with the identical first-order coefficient.",
+      "translation_evidence": "The translation uses non-strict inequalities, a common simultaneous premise, and the same beta in the conclusion.",
+      "reasoning": "For the standalone deterministic implication, the inequality direction and coefficient strength are preserved."
     },
     {
       "id": "S13",
-      "status": "pass",
-      "paper_evidence": "Theorem 4.4 is a backward-error result: the computed RHat exactly factors a perturbed input through an exact orthogonal Q.",
-      "translation_evidence": "DeltaA perturbs A in A+DeltaA=Q RHat; its columns are bounded relative to original column norms and its Frobenius norm relative to ||A||F.",
-      "reasoning": "No forward error, residual error, computed-Q orthogonality error, or other stability notion is substituted."
+      "status": "fail",
+      "paper_evidence": "Delta A is a backward error certified by A + Delta A = Q R_hat, rather than merely an arbitrary matrix with a small norm.",
+      "translation_evidence": "DeltaA is arbitrary and is constrained only by column-norm inequalities.",
+      "reasoning": "The translation preserves the norm measurement but not the backward-error meaning of the perturbation in the enclosing theorem."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "Equations (4.17) and (4.20) retain first-order additive O(u^2) terms; the discussion estimates accumulated second-order growth by approximately n^2 m u^2 and gives m^(1/2)n^(3/2)u<1 for first-order dominance.",
-      "translation_evidence": "D008 introduces arbitrary remainder functions after a fixed model and run, with constants depending separately on each outcome, and requires a finite-window bound. Column bounds use |r_j| while the Frobenius bound adds a signed rho with no explicit nonnegativity or linkage to the column remainders.",
-      "reasoning": "The witnesses are not tied to a family of executions as precision varies and can be manufactured to fit a single positive u, so they do not faithfully express the paper's asymptotic higher-order contribution. The differing sign conventions add another unsupported choice."
+      "status": "unclear",
+      "paper_evidence": "Equations (4.17) and (4.20) retain additive O(u^2) terms, but their constants, uniformity, and parameter dependence are unspecified; the paper separately describes second-order dimension dependence as mn^2u^2.",
+      "translation_evidence": "Each column has an explicit remainder function that is O(u^2) on a one-sided filter, and the conclusion existentially supplies another such function with constants allowed to depend on all fixed data.",
+      "reasoning": "The translation does not delete the higher-order terms and gives a mathematically workable interpretation, but that particular asymptotic quantification and its unrestricted hidden dependence are not uniquely determined by the paper."
     },
     {
       "id": "S15",
-      "status": "pass",
-      "paper_evidence": "The selected theorem is for finite-dimensional real tall matrices with no rank, nonsingularity, or nonzero-pivot hypothesis.",
-      "translation_evidence": "Matrices use finite real index types Fin m and Fin n; run inhabitation entails 0<n<=m, and no rank or pivot condition is added.",
-      "reasoning": "The finite real specialization and tall-matrix domain match; zero-based Fin indexing is only a renumbering."
+      "status": "fail",
+      "paper_evidence": "The selected implication occurs in the real Householder QR setting with m >= n and the sequence length specialized to n.",
+      "translation_evidence": "The proposition applies to every finite real matrix shape, including m < n and zero dimensions, and to arbitrary positive natural c6.",
+      "reasoning": "This is a genuine generalization of the deterministic norm lemma, not the same specialization as the paper."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The paper asserts the result from Model 1.5, an actual Householder QR execution, and the almost-sure local bound; it does not assume the existence of columnwise backward-error certificates.",
-      "translation_evidence": "The proposition is universal over run, hlocal, and a dependent family of per-column certificates. The translation itself records that absent inhabitants make these universal cases vacuous.",
-      "reasoning": "The main conclusion need not be established for a model and run unless certificates encoding that conclusion are already supplied. This is an unintended vacuity mechanism."
+      "status": "unclear",
+      "paper_evidence": "The paper states no rank or nonzero-column condition, but its numerical-linear-algebra setting conventionally concerns nonempty matrix dimensions without explicitly discussing zero-dimensional cases.",
+      "translation_evidence": "For n = 0 the column premise is vacuous and both Frobenius norms vanish; for m = 0 all matrix and column norms vanish.",
+      "reasoning": "The translation introduces explicit vacuous cases. The cited paper passages do not state enough about admissible zero dimensions to decide whether those cases are intended."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translation does not prove that per-column certificates exist from Model 1.5, the QR run, and the probability-one local bound. When they are unavailable its universal certificate binder is vacuous, so it cannot recover Theorem 4.4 from the paper hypotheses."
+      "verdict": "unclear",
+      "reasoning": "Restricted to the displayed deterministic implication and the paper's dimensions and fixed c6, the translation yields equation (4.20) with the exact coefficient and retained O(u^2) remainder. It does not yield the Householder factorization relation, floating-point assumptions, or probability statement of the enclosing theorem, so the implication depends on the intended statement scope."
     },
     "paper_implies_translation": {
-      "verdict": "yes",
-      "reasoning": "Under the translation's extra per-column hypotheses, intersecting their finitely many events gives the stated simultaneous probability by a union bound; choosing Q=run.exactQ and assembling DeltaA from their column perturbations gives the exact factorization. Minkowski's inequality gives the Frobenius bound with the Euclidean aggregate of the column remainders, which remains second order. Thus the translation follows from its own certificates, even without using the full paper theorem."
+      "verdict": "no",
+      "reasoning": "The paper's result is stated in the m >= n Householder setting for its fixed constant and a perturbation produced by the algorithm. It does not assert the translation's universal theorem for arbitrary matrix shapes, arbitrary positive natural c6, arbitrary DeltaA families, or the translation's specific one-sided functional interpretation of every O(u^2) term."
     }
   },
-  "classification": "not-faithful-weaker",
+  "classification": "undetermined",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "conclusion-as-hypothesis",
-      "paper_evidence": "Lemma 4.3 and Theorem 4.4 derive per-column backward relations, error bounds, and failure probabilities from Model 1.5 and the almost-sure local bound.",
-      "translation_evidence": "D018 assumes those relations, bounds, remainders, and probabilities separately for every column before the target conclusion.",
-      "impact": "The translated proposition is primarily a certificate-gluing lemma and can hold vacuously where the paper must establish the numerical result."
+      "category": "statement-scope",
+      "paper_evidence": "The sentence before equation (4.20) is an algebraic implication from (4.17), but (4.17) belongs to Theorem 4.4 with Householder, backward-error, and probabilistic context.",
+      "translation_evidence": "The translation formalizes only the abstract columnwise-to-Frobenius implication.",
+      "impact": "It is close to equivalent if the selected result is intentionally standalone, but materially incomplete if P06-T1 is intended to retain the enclosing theorem. This scope choice requires adjudication."
     },
     {
       "severity": "major",
-      "category": "algorithm-linkage",
-      "paper_evidence": "Theorem 4.4's proof relies on history-dependent computed Householder vectors, later operation errors, local perturbed applications, and explicit zero assignments.",
-      "translation_evidence": "The run encodes reflector recurrences and zeros but the dependency ledger gives no adaptedness or operation-level equation connecting its reflector and local-perturbation fields to the ordered arithmetic-model errors.",
-      "impact": "The stochastic execution represented by the formal assumptions is not demonstrably the execution analyzed in the paper."
+      "category": "algorithm-and-backward-error",
+      "paper_evidence": "The paper supplies exact orthogonal Q and computed R_hat with A + Delta A = Q R_hat.",
+      "translation_evidence": "No Q, R_hat, orthogonality, computed quantity, or matrix equation is represented.",
+      "impact": "The translated proposition cannot express the paper's Householder QR backward-stability claim."
     },
     {
       "severity": "major",
-      "category": "constants-and-quantifiers",
-      "paper_evidence": "c5 and c6 are fixed modest integer constants produced by the local and concentration analyses.",
-      "translation_evidence": "They are arbitrary positive natural inputs, and certificate existence absorbs whether a chosen pair is adequate.",
-      "impact": "The theorem's constant claim is replaced by a conditional parameterization that is vacuous for unsupported constants."
+      "category": "probabilistic-numerical-model",
+      "paper_evidence": "Theorem 4.4 relies on Model 1.5, the probability-one local perturbation premise, and a simultaneous event of probability at least 1 - 2mn exp(-lambda^2).",
+      "translation_evidence": "There is no probability space, rounding-error model, local perturbation assumption, or probability lower bound.",
+      "impact": "The translation cannot recover why the column premise holds or place the Frobenius conclusion on the paper's high-probability event."
     },
     {
       "severity": "major",
-      "category": "higher-order-terms",
-      "paper_evidence": "The O(u^2) terms describe omitted higher-order accumulation in a first-order rounding-error analysis.",
-      "translation_evidence": "Remainders are outcome-wise existential functions selected after fixing one model unit roundoff, with nonuniform constants and inconsistent explicit sign treatment.",
-      "impact": "The formal remainder conditions can fit a single finite-u discrepancy without representing the paper's asymptotic execution family."
+      "category": "domain-generalization",
+      "paper_evidence": "The standing QR setting has m >= n and uses a fixed symbolic constant c6.",
+      "translation_evidence": "The binders admit m < n, m = 0, n = 0, and every positive natural c6.",
+      "impact": "The deterministic theorem is stronger in domain than the cited paper statement and includes unintended vacuous cases."
+    },
+    {
+      "severity": "minor",
+      "category": "higher-order-formalization",
+      "paper_evidence": "The paper leaves the additive O(u^2) terms and their hidden uniformity unspecified.",
+      "translation_evidence": "The translation chooses explicit per-column functions, absolute values, one-sided eventual bounds, and an existential normwise remainder.",
+      "impact": "This is a plausible formal interpretation, but it is not uniquely forced by the source and does not encode the discussed mn^2 second-order dimension dependence."
     },
     {
       "severity": "note",
-      "category": "preserved-core-content",
-      "paper_evidence": "Equations (4.16), (4.17), and (4.20) specify the exact backward relation, coefficient, simultaneous probability, column norms, and Frobenius norm.",
-      "translation_evidence": "Those formulas, dimensions, norm choices, exact-versus-computed distinction, and probability expression are reproduced correctly.",
-      "impact": "The algebraic surface of the selected result is recognizable despite the material hypothesis and quantifier defects."
+      "category": "deterministic-core",
+      "paper_evidence": "Equations (4.17) and (4.20) use the same c6 lambda sqrt(n) gamma_tilde_m(lambda) coefficient, Euclidean column norms, and Frobenius matrix norms.",
+      "translation_evidence": "The translation reproduces those norms and the exact exponential coefficient without an additional sqrt(n) factor.",
+      "impact": "The central columnwise-to-Frobenius calculation is represented accurately."
     }
   ],
-  "rationale": "The translation preserves the displayed QR backward relation, norms, coefficient, indexing, and simultaneous probability. Its decisive defect is that per-column certificates already containing the paper's main analytic conclusions are universally assumed rather than derived. Together with missing stochastic execution linkage, altered constant quantification, vacuity, and unsupported second-order witness semantics, this makes the proposition logically weaker than the paper result rather than a faithful formal translation."
+  "rationale": "The blind translation accurately captures the deterministic mathematical kernel of the passage: simultaneous Euclidean column bounds imply a Frobenius bound with the identical coefficient and a retained second-order remainder. It nevertheless changes the binder domain and omits every feature tying Delta A to computed Householder QR, backward error, Model 1.5, and the inherited probability event. Because the source itself permits both a standalone-lemma reading and an enclosing-theorem reading, the two statements cannot be given a definitive faithfulness classification without adjudicating the intended scope."
 }

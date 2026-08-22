@@ -1,90 +1,56 @@
 {
-  "accepted": false,
-  "adjudicated": false,
-  "adjudication_reasons": [],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-21T17:27:03.412180+00:00",
+  "accepted": true,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "round-trip S03 is unclear",
+    "round-trip S05 is unclear",
+    "round-trip S14 is unclear",
+    "round-trip S16 is unclear"
+  ],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-22T14:34:28.638586+00:00",
   "findings": [
     {
-      "category": "hypotheses-and-quantifier-scope",
-      "impact": "A substantial part of the selected theorem is assumed, so Lean does not imply the paper theorem.",
-      "lean_evidence": "The target takes perColumn : forall j, P06Lemma42ColumnCertificate, whose constructor requires the per-column event, exact relation, remainder, and desired bound.",
-      "paper_evidence": "Theorem 4.4 assumes Model 1.5 and the probability-one local bound; Lemma 4.2 is a preceding proved result, not an added per-column backward-relation assumption.",
-      "severity": "critical"
+      "category": "scope-boundary",
+      "evidence": "The sentence preceding (4.20) on printed page 1155 refers only to the columnwise bound (4.17), whereas Theorem 4.4's algorithmic and probabilistic material appears earlier on printed page 1154.",
+      "impact": "The declaration is faithful as the selected columnwise-to-Frobenius implication but must not be represented as a formalization of all of Theorem 4.4.",
+      "severity": "note"
     },
     {
-      "category": "higher-order-terms-and-nonvacuity",
-      "impact": "The column and Frobenius inequalities admit arbitrarily large slack and do not assert the paper's nontrivial backward-error bound.",
-      "lean_evidence": "P06SecondOrderControl is instantiated after unitRoundoff and separately per outcome. For u0>0 an arbitrary value at u0 can be extended as K*u^2 with an outcome-dependent K.",
-      "paper_evidence": "Equations (4.17) and (4.20) retain QR-derived additive O(u^2) terms, with dimensional growth analyzed after Theorem 4.4.",
-      "severity": "critical"
+      "category": "genuine-generalization",
+      "evidence": "The paper uses m >= n and a fixed symbolic c6; Lean covers all natural dimensions and every positive natural c6.",
+      "impact": "Positive m < n instances and additional c6 values provide nonvacuous broader applicability, supporting faithful-stronger rather than faithful-equivalent.",
+      "severity": "note"
     },
     {
-      "category": "algorithm-linkage",
-      "impact": "Model 1.5 may describe a different error sequence from the packaged QR run.",
-      "lean_evidence": "The run has an abstract state recurrence and explicit zeros, but reflectorBuilder and localPerturbation are unrelated to P06Model15.error/exactValue; RHat is linked only to selected terminal computed values.",
-      "paper_evidence": "Theorem 4.4's proof uses actual operation order, generated local perturbations, explicit zeros, computed history-dependent reflectors, and later rounding errors.",
-      "severity": "major"
-    },
-    {
-      "category": "constant-provenance",
-      "impact": "The target does not establish the paper's universal coefficient, despite reproducing its displayed formula.",
-      "lean_evidence": "They are arbitrary positive inputs, and adequacy of c6 is transferred into the perColumn premise.",
-      "paper_evidence": "c5 and c6 are derived modest integer constants in the section 4 analysis.",
-      "severity": "major"
-    },
-    {
-      "category": "conclusion-as-hypothesis",
-      "impact": "The translated proposition is primarily a certificate-gluing lemma and can hold vacuously where the paper must establish the numerical result.",
-      "paper_evidence": "Lemma 4.3 and Theorem 4.4 derive per-column backward relations, error bounds, and failure probabilities from Model 1.5 and the almost-sure local bound.",
-      "severity": "critical",
-      "translation_evidence": "D018 assumes those relations, bounds, remainders, and probabilities separately for every column before the target conclusion."
-    },
-    {
-      "category": "algorithm-linkage",
-      "impact": "The stochastic execution represented by the formal assumptions is not demonstrably the execution analyzed in the paper.",
-      "paper_evidence": "Theorem 4.4's proof relies on history-dependent computed Householder vectors, later operation errors, local perturbed applications, and explicit zero assignments.",
-      "severity": "major",
-      "translation_evidence": "The run encodes reflector recurrences and zeros but the dependency ledger gives no adaptedness or operation-level equation connecting its reflector and local-perturbation fields to the ordered arithmetic-model errors."
-    },
-    {
-      "category": "constants-and-quantifiers",
-      "impact": "The theorem's constant claim is replaced by a conditional parameterization that is vacuous for unsupported constants.",
-      "paper_evidence": "c5 and c6 are fixed modest integer constants produced by the local and concentration analyses.",
-      "severity": "major",
-      "translation_evidence": "They are arbitrary positive natural inputs, and certificate existence absorbs whether a chosen pair is adequate."
-    },
-    {
-      "category": "higher-order-terms",
-      "impact": "The formal remainder conditions can fit a single finite-u discrepancy without representing the paper's asymptotic execution family.",
-      "paper_evidence": "The O(u^2) terms describe omitted higher-order accumulation in a first-order rounding-error analysis.",
-      "severity": "major",
-      "translation_evidence": "Remainders are outcome-wise existential functions selected after fixing one model unit roundoff, with nonuniform constants and inconsistent explicit sign treatment."
-    },
-    {
-      "category": "preserved-core-content",
-      "impact": "The algebraic surface of the selected result is recognizable despite the material hypothesis and quantifier defects.",
-      "paper_evidence": "Equations (4.16), (4.17), and (4.20) specify the exact backward relation, coefficient, simultaneous probability, column norms, and Frobenius norm.",
-      "severity": "note",
-      "translation_evidence": "Those formulas, dimensions, norm choices, exact-versus-computed distinction, and probability expression are reproduced correctly."
+      "category": "higher-order-formalization",
+      "evidence": "The PDF prints bare O(u^2) terms in (4.17) and (4.20), while Lean supplies explicit right-sided Big-O witnesses and permits hidden bounds to depend on fixed data.",
+      "impact": "The higher-order terms are preserved coherently, but their exact source-side uniformity remains unspecified.",
+      "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean proposition requires per-column certificates that the paper derives, permits runs whose perturbations are unrelated to Model 1.5 errors, and permits arbitrary pointwise actual-u O(u^2) slack. It therefore does not establish Theorem 4.4 from the paper's hypotheses.",
-      "verdict": "no"
+      "reasoning": "Restrict the Lean theorem to the paper's m >= n dimensions and fixed positive integer c6, and instantiate the explicit remainder functions with representatives of the printed O(u^2) terms. The simultaneous premise then yields (4.20) with the exact Euclidean and Frobenius norms, exact gamma_tilde formula, identical coefficient, and no additional sqrt(n).",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "For a source-conforming QR execution, Lemma 4.2 supplies the per-column facts, Lemma 4.3 supplies the simultaneous event and p4 coefficient, and Theorem 4.4 plus (4.20) supplies the exact relation and meaningful O(u^2) bounds, which instantiate the weaker formal conclusion.",
-      "verdict": "yes"
+      "reasoning": "The selected paper statement is made in the standing m >= n QR domain and uses its fixed symbolic c6. It does not assert the universal conditional theorem for positive-dimensional m < n matrices or for every positive natural c6. The failure of this direction is genuine broader applicability, not reduced applicability or reliance on zero-dimensional vacuity.",
+      "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-weaker",
-    "roundtrip": "not-faithful-weaker"
+    "direct": "faithful-stronger",
+    "roundtrip": "undetermined"
   },
-  "rationale": "The target reproduces the source's dimensions, factorization orientation, exact Q versus computed RHat distinction at the surface, simultaneous event shape, norms, gamma-tilde, coefficient, and probability formula. It is nevertheless not faithful: it assumes per-column certificates containing nearly the Lemma 4.2 conclusion, does not couple the QR run to the Model 1.5 operation/error trace, and uses post-unit-roundoff pointwise O(u^2) witnesses that make the numerical bounds vacuous for positive u. The paper result can instantiate this weaker target, but the target cannot recover the paper theorem from the paper's hypotheses.",
-  "remaining_uncertainties": [],
+  "rationale": "The authoritative PDF hash matches the supplied locator. The mandated boundary selects the deterministic sentence taking (4.17) to (4.20), so omissions concerning Householder execution, Q, R-hat, backward-error provenance, Model 1.5, and probability are not defects in this declaration. The declaration exactly preserves simultaneity across columns, Euclidean and Frobenius norms, inequality direction, gamma_tilde, lambda positivity, the coefficient c6 lambda sqrt(n) gamma_tilde_m(lambda), and additive second-order terms. It is strictly broader because it proves the same conditional implication for positive wide matrices and every positive natural c6. Those extensions have nontrivial instances, while the added zero-dimensional cases are merely trivial. Therefore Lean implies the selected paper result, the paper does not imply the full Lean generalization, and the accepted classification is faithful-stronger.",
+  "remaining_uncertainties": [
+    "The PDF does not specify the hidden constants, parameter dependence, or uniformity convention of its O(u^2) terms. The Lean right-sided witness interpretation is faithful but not uniquely forced by the source.",
+    "The PDF does not explicitly say whether zero-dimensional matrices are admissible. This does not affect the classification because the Lean zero-dimensional cases are trivial and are not used as evidence of genuine strength."
+  ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P06-T1"
