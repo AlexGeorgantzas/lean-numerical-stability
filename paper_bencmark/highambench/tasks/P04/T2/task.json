@@ -8,7 +8,7 @@
     "The matrix dimensions m, n, and t and block dimensions b1, b, and b2 are positive.",
     "The block counts p, q, and r are positive and satisfy m = p*b1, n = q*b, and t = r*b2.",
     "Both inputs are converted componentwise to the low precision through standard relative errors bounded by uLow.",
-    "The FMA-output and requested-output unit roundoffs are each one of the paper's low/high formats, with uHigh <= uLow; the internal unit roundoff satisfies uBar <= uFma.",
+    "The block-FMA output unit roundoff is one of the paper's low/high formats, with uHigh <= uLow; Algorithm 3.1's final working/output roundoff is an independent nonnegative precision parameter, and the internal unit roundoff satisfies uBar <= uFma.",
     "Every computed output entry is the final state of a linked q-block P04BlockFmaDotRun over the corresponding converted row and column.",
     "Each entry trace starts at zero and satisfies the local recurrence (3.2), including its primitive error bounds, evaluation-order semantics, and equation (3.3)'s prioritized effective roundoff.",
     "The two relevant gamma denominators are positive.",

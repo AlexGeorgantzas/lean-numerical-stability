@@ -43,10 +43,11 @@ This is the paper's standard relative-error representation of
 immediately before Theorem 3.2, including at zero entries.
 
 The block-FMA framework has low- and high-precision unit roundoffs `uLow` and
-`uHigh`, with `uHigh <= uLow`. The FMA output roundoff `uFma` and requested
-output roundoff `uOut` must each be one of those two formats. The internal
-evaluation roundoff `uBar` satisfies `uBar <= uFma`. All are nonnegative, and
-the gamma denominators used in (3.6) are positive.
+`uHigh`, with `uHigh <= uLow`. The block-FMA output roundoff `uFma` must be one
+of those two formats. Algorithm 3.1's final working/output roundoff `uOut` is
+an independent nonnegative precision parameter. The internal evaluation
+roundoff `uBar` satisfies `uBar <= uFma`. The gamma denominators used in (3.6)
+are positive.
 
 For each output entry `(i,j)`, `entryRun i j` is a
 `P04BlockFmaDotRun n b q`:

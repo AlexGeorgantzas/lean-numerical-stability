@@ -168,9 +168,10 @@ structure contains neither the compact `alpha`/`beta` factors nor equation
 (3.6); both must be derived from the conversion errors and local block-FMA
 traces.
 
-The low/high format constraints express the block-FMA framework on printed
-pages C126--C127. All modeled values are finite reals, so the structure has the
-paper's stated no-underflow/no-overflow scope and its deliberate
+The block-FMA output precision is one of the low/high formats on printed pages
+C126--C127. Algorithm 3.1's final working/output precision is independent of
+those two formats. All modeled values are finite reals, so the structure has
+the paper's stated no-underflow/no-overflow scope and its deliberate
 single-rounding simplification. -/
 structure P04MixedInputMatMulRun
     (m n t b1 b b2 p q r : ℕ) where
@@ -202,7 +203,6 @@ structure P04MixedInputMatMulRun
   uOut_nonneg : 0 ≤ uOut
   uHigh_le_uLow : uHigh ≤ uLow
   uFma_allowed : uFma = uLow ∨ uFma = uHigh
-  uOut_allowed : uOut = uLow ∨ uOut = uHigh
   uBar_le_uFma : uBar ≤ uFma
   effective_gamma_valid :
     GammaValid (p04EffectiveFmaRoundoff uBar uFma uOut) q
