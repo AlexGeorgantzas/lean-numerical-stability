@@ -1,0 +1,200 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P10-T3",
+  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
+  "blind_translation_sha256": "dca565d427a0de5c30d17f12cd7dbd73afd746d961f6a2b7a756e87fc337c7fe",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The independently verified PDF hash matches the supplied hash. The journal version is Numerische Mathematik 108 (2007), and printed pages 84-86 contain Section 6.3, equations (13)-(20), SylR, and the logarithmic-stability conclusion.",
+      "translation_evidence": "The translation targets P10-T3 and formalizes the ordinary recursive Sylvester error recurrence and an equation-(20)-shaped root bound.",
+      "reasoning": "The selected paper version and ordinary-Sylvester passage are correct. Arithmetic cost and the subsequent generalized sketch are not needed to identify the selected error-analysis result."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Printed pages 84-85 use square, equally dimensioned n-by-n matrices with n a power of two, upper-triangular A and B, and recursively conformal n/2 blocks. The scalar field is not stated.",
+      "translation_evidence": "The binders are an arbitrary depth d and an arbitrary ValidRun containing real matrices indexed by recursively doubled types of cardinality 2^k; d=0 is allowed.",
+      "reasoning": "The correspondence n=2^d is sound, but the paper's matrix inputs and their SylR computation have been replaced by an arbitrary certified hierarchy. The additional commitment to real scalars is not authorized by the passage."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "SylR recursively determines four subproblems from one input problem, in the fixed dependency order R21, R11, R22, R12.",
+      "translation_evidence": "A ValidRun universally packages arbitrary node types, child maps, local certificates, and separate existential witnesses attaining each envelope value.",
+      "reasoning": "The quantification is over abstract certified hierarchies rather than executions generated from paper inputs. The attainment witnesses and child maps need not represent the nodes and dependencies of one actual SylR execution."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes disjoint spectra, stable first-order matrix multiplication, inherited-error rule (8), recursive separation inequality (19), and an inductive error majorant.",
+      "translation_evidence": "The run assumes the four simplified local block-error bounds themselves, an explicit initial bound, envelope attainment, global root norm domination, monotone polynomially bounded mu, and epsilon<=1. It does not assume an actual stable-multiplication execution.",
+      "reasoning": "Several paper conclusions are promoted to hypotheses, while the floating-point hypothesis from which the paper derives them is absent. Multiple additional restrictions narrow applicability."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Printed page 86 derives all four block-error inequalities, sums them into the affine recurrence, obtains the big-O bound (20), compares it with a conventional forward bound, and concludes that SylR is logarithmically stable.",
+      "translation_evidence": "The conclusions are an envelope recurrence, an exact finite U bound, a factorization identity, and a natural-logarithm identity. The block estimates are hypotheses, and neither the conventional comparison nor logarithmic stability is concluded.",
+      "reasoning": "Essential conclusions of the selected ordinary-Sylvester analysis are either assumed or omitted, while auxiliary exact identities are added."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The passage defines the Sylvester operator, Frobenius separation, recursive block extraction, forward error, and logarithmic exponents.",
+      "translation_evidence": "The dependency ledger unfolds matrix multiplication, block extraction, the Sylvester operator, attained separation, Frobenius norm, natural and real logarithms, natural powers, Real.rpow, and all constants.",
+      "reasoning": "The nontrivial formal operators that occur are interpretable rather than opaque. Whether those interpreted operators match the paper is assessed separately."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The paper distinguishes exact block solutions, computed block solutions, and perturbations introduced while forming recursive right-hand sides.",
+      "translation_evidence": "Each problem distinguishes X from X_hat, but for children 11, 22, and 12 the stored C and stored exact X are not identified with the intended right-hand side and parent exact block. Their local errors instead compare the child computed solution directly with the parent exact block.",
+      "reasoning": "The exact-versus-computed distinction exists locally but is not coherently linked across recursive calls. The explicit child-error estimates bypass the missing relationship."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Printed page 85 specifies the scalar division base case and the ordered calls R21, R11, R22, R12, with later right-hand sides depending on earlier computed results.",
+      "translation_evidence": "The run has four child maps and block certificates but no operational evaluation order, scalar division, rounding execution, exhaustiveness, injectivity, distinctness, or global execution-tree consistency.",
+      "reasoning": "The hierarchy reflects some block shapes but does not establish that it is an execution of ordinary SylR. In particular, the page-86 estimates are assumed rather than proved for that algorithm."
+    },
+    {
+      "id": "S09",
+      "status": "unclear",
+      "paper_evidence": "Printed page 85 explicitly uses the Frobenius norm only in the definition of sep(A,B). Printed page 86 uses unsubscripted norms for matrices and errors, while the earlier multiplication model permits norm changes with dimension-dependent factors.",
+      "translation_evidence": "Every matrix norm, residual, separation inequality, and forward error is specifically Frobenius.",
+      "reasoning": "The source does not identify all bare norms. A Frobenius specialization may be intended, but norm conversion can alter polynomial factors and cannot justify the translation's exact coefficients and constant without further evidence."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The recurrence has coefficients 4, 2, 3, and 2, and equation (20) contains n^(1+log_2(3)), mu(n/2), and conditioning exponent 1+log_2(n), all inside unspecified big-O.",
+      "translation_evidence": "For d>0, n=2^d and m=mu(2^(d-1)) reproduce the displayed indexing, but U adds an exact universal prefactor 2. At d=0, truncated subtraction makes m=mu(1).",
+      "reasoning": "Most symbolic coefficients and exponents match, but the exact constant 2 is absent from the paper, and the d=0 interpretation of mu(n/2) is not part of the source recurrence."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The analysis uses machine epsilon, stable normwise multiplication, inherited operand errors, and first-order rounding formulas with O(epsilon^2) omitted. Exceptional floating-point behavior is not discussed.",
+      "translation_evidence": "Epsilon is an exact positive real parameter, and all rounding effects are represented only by assumed exact residual and block-error inequalities. No arithmetic execution, rounding mode, precision, overflow, underflow, or exceptional-value model is present.",
+      "reasoning": "The translation does not formalize the paper's floating-point execution model and cannot show that SylR produces a valid run."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper first gives upper inequalities for realized block errors, then defines an upper-bound recurrence, and finally states asymptotic big-O inequalities.",
+      "translation_evidence": "The local inequalities are hypotheses; envelope values are required to be attained; and the conclusion is an exact universal inequality with a fixed finite U plus exact factorization identities.",
+      "reasoning": "The direction of the displayed recurrence inequality is compatible, but the logical strength is changed substantially by assuming the local result and replacing asymptotic existence of a constant with an exact constant."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The analyzed quantity is absolute normwise forward error. The final comparison converts its conditioning dependence into the claim that SylR is logarithmically stable, not backward stable.",
+      "translation_evidence": "The conclusion gives only an absolute Frobenius forward-error bound and does not state the conventional forward comparison or logarithmic-stability classification.",
+      "reasoning": "No backward or residual error is substituted for forward error, but the selected stability notion and its comparison are missing."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Equation (1) explicitly contains O(epsilon^2), rule (8) and page 86 are first-order analyses, and equation (20) has unspecified big-O constants and lower-order terms.",
+      "translation_evidence": "All local assumptions and conclusions are exact real inequalities; no second-order remainder or asymptotic quantification appears, and U has exact prefactor 2.",
+      "reasoning": "The first-order analysis has been treated as an exact finite model, and the paper's unspecified asymptotic constant has been replaced by a specific one."
+    },
+    {
+      "id": "S15",
+      "status": "unclear",
+      "paper_evidence": "The source supports square power-of-two dimensions but does not state whether the scalar field is real or complex and does not identify every bare norm.",
+      "translation_evidence": "The translation specializes to real matrices and Frobenius norms throughout while otherwise retaining dimensions 2^d.",
+      "reasoning": "The dimensional specialization matches. The field and norm specializations cannot be classified as authorized or unauthorized from this passage alone."
+    },
+    {
+      "id": "S16",
+      "status": "unclear",
+      "paper_evidence": "For disjoint spectra, the displayed SylR pseudocode gives recursive calls down to a nonzero scalar denominator.",
+      "translation_evidence": "The theorem does not assert existence of a ValidRun for any paper input and explicitly permits vacuity if the run type is empty. Envelope attainment and the packaged local estimates impose additional existence obligations.",
+      "reasoning": "No construction connects an actual SylR execution to an inhabitant of ValidRun. Satisfiability for all intended inputs therefore cannot be established from the translation."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The exact bound applies only to abstract runs already carrying the page-86 block estimates and an explicit base bound. It does not show that a floating-point SylR execution yields such a run, preserve the required execution order, or conclude the paper's logarithmic-stability comparison. Thus it cannot establish the paper result."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper supplies only a first-order big-O bound with no scalar base estimate or fixed constant. It does not imply the exact universal prefactor 2, exact omission of higher-order terms, envelope attainment, arbitrary-run theorem, or added growth and domination hypotheses."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "assumed-error-analysis",
+      "paper_evidence": "Printed page 86 derives the four block estimates from rule (8), right-hand-side perturbation, separation, and induction.",
+      "translation_evidence": "The ValidRun constructor assumes explicit upper bounds for e21, e11, e22, and e12 at every local step.",
+      "impact": "The formal conclusion largely sums assumptions that already encode the selected result, rather than proving the estimates from the paper's numerical model."
+    },
+    {
+      "severity": "critical",
+      "category": "algorithm-linkage",
+      "paper_evidence": "SylR has a scalar division base case and an ordered dependency chain R21, R11, R22, R12.",
+      "translation_evidence": "Child maps and certificates have no execution order or scalar arithmetic, and the 11, 22, and 12 child problems do not identify their stored exact solutions and right-hand sides with the intended parent blocks.",
+      "impact": "Certified hierarchies need not denote executions of the algorithm whose stability the paper proves."
+    },
+    {
+      "severity": "major",
+      "category": "exact-constant-versus-big-o",
+      "paper_evidence": "Equation (20) is an asymptotic big-O statement with unspecified constant and lower-order dependence.",
+      "translation_evidence": "U is an exact finite expression with universal prefactor 2.",
+      "impact": "This is a genuinely stronger numerical conclusion only on a more restricted, certificate-heavy domain. It is not supported by the paper and does not make the translation faithfully stronger."
+    },
+    {
+      "severity": "major",
+      "category": "base-case-and-depth-zero",
+      "paper_evidence": "The paper gives R=-C/(A-B) at n=1 but no scalar rounding bound or value err(1).",
+      "translation_evidence": "The run assumes E(0)<=mu(2^(d-1))*epsilon*||X_root||_F*q and permits d=0, where truncated subtraction makes the growth argument equal to 1.",
+      "impact": "The exact root theorem depends on an additional base estimate and extends equation (20) to a case for which the paper supplies no corresponding finite constant."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point-and-higher-order-model",
+      "paper_evidence": "The source is a first-order floating-point analysis with machine epsilon, stable multiplication, and omitted O(epsilon^2) terms.",
+      "translation_evidence": "It uses exact real inequalities and assumes residual certificates without defining any rounded execution.",
+      "impact": "The translation neither captures higher-order treatment nor proves that real floating-point computations satisfy its certificates."
+    },
+    {
+      "severity": "major",
+      "category": "missing-stability-conclusion",
+      "paper_evidence": "The source compares equation (20) with a conventional forward bound and concludes that SylR is logarithmically stable.",
+      "translation_evidence": "No conventional comparison, relative-error statement, or logarithmic-stability conclusion is present.",
+      "impact": "A central conclusion of the selected result is absent."
+    },
+    {
+      "severity": "major",
+      "category": "norm-and-field-specialization",
+      "paper_evidence": "Only sep is explicitly Frobenius, the remaining norms are bare, and the scalar field is unstated.",
+      "translation_evidence": "All matrices are real and every norm is Frobenius.",
+      "impact": "Adjudication is required because these specializations may alter constants and applicability, particularly for the claimed exact bound."
+    },
+    {
+      "severity": "major",
+      "category": "nonvacuity",
+      "paper_evidence": "The paper gives an executable recursive algorithm for admissible inputs.",
+      "translation_evidence": "No ValidRun existence theorem or construction from a SylR execution is asserted.",
+      "impact": "The universal statement can be vacuous for intended depths or inputs, and its applicability to the paper algorithm is unestablished."
+    },
+    {
+      "severity": "note",
+      "category": "matched-algebraic-structure",
+      "paper_evidence": "Equations (15)-(18), the recurrence coefficients, separation direction, and equation-(20) exponents appear on printed pages 84-86.",
+      "translation_evidence": "The block signs, coefficient pairs, n=2^d dimensions, coefficients 4, 2, 3, and 2, separation comparison, and final symbolic exponents agree for d>0.",
+      "impact": "The translation preserves much of the displayed algebra, but these matches do not repair the altered hypotheses, execution semantics, and conclusion strength."
+    }
+  ],
+  "rationale": "Both implication directions fail. The translation gives an exact recurrence theorem for abstract runs whose certificates already assume the paper's local block estimates, while the paper proves a first-order asymptotic result for actual SylR executions. Conversely, the paper cannot justify the translation's exact constant 2, explicit base bound, exact higher-order treatment, or auxiliary hierarchy requirements. The result is therefore not-faithful-different. Adjudication is required for the unstated scalar field, the bare norm semantics, and nonvacuity of the run packaging."
+}

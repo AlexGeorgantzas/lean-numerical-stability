@@ -1,0 +1,1014 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "f40408bd1390d2dd9aed9d6702462e2a0904e56c3db426937898f208ef3fb3dd",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a depth-d run, this is the conjunction of: the envelope recurrence E(k+1) <= (4+2q)E(k)+beta for every k<d; the root forward error being at most the stated bound U; an exact factorization identity for U; and the natural-number identity 1+log2Nat(2^d)=d+1.",
+      "effect_on_target": "This definition is exactly the proposition asserted for every run.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "A depth-indexed type of valid run records. Its constructor packages epsilon, the growth function mu, a hierarchy of matrix problems, an attained error envelope, child maps, local block-error hypotheses, global norm and separation comparisons, and an initial error bound.",
+      "effect_on_target": "The target is conditional on an arbitrary inhabitant of this record type, so all packaged data and proofs are hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "The projection of a run's error-envelope function E : Nat -> Real.",
+      "effect_on_target": "It supplies E(k) and E(k+1) in the recurrence and the envelope hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "The constructor for a valid run. It requires 0<epsilon<=1; a nonnegative, monotone mu with mu(n)>=1 for n>0 and an optional polynomial upper bound; level-indexed nodes and matrix problems; an envelope that bounds and attains every level error; four child maps; the local block relation at every non-root transition; root domination of A-, B-, and exact-solution norms; root separation no larger than every local separation; and E(0)<=mu(2^(d-1))*epsilon*||X_root||_F*(||A_root||_F+||B_root||_F)/s_root.",
+      "effect_on_target": "It determines all substantive assumptions under which the four conclusions are claimed.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "The root ratio q=(||A_root||_F+||B_root||_F)/s_root, where s_root is the root separation value.",
+      "effect_on_target": "It occurs in the recurrence multiplier, the initial bound, and the final power q^(d+1).",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "The quantity epsilon*||X_root||_F*q.",
+      "effect_on_target": "It appears in the factorized equality for the final bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "The final bound U=2*((2^d as a real)^(1+log_2(3)))*mu(2^(d-1))*epsilon*||X_root||_F*q^(1+log2Nat(2^d)).",
+      "effect_on_target": "The root forward error is asserted to be at most U, and U is also related to an equivalent factorization.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "For a matrix problem, the absolute forward error ||X_hat-X||_F between its computed and exact solutions.",
+      "effect_on_target": "It defines both the errors bounded by the envelope and the root error in the main conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "The growth value m=mu(2^(d-1)), with natural subtraction truncated at zero.",
+      "effect_on_target": "It enters the initial bound, recurrence additive term, local error assumptions, and final bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "The recurrence additive term beta=(epsilon/s_root)*(3||C_root||_F+2m(||A_root||_F+||B_root||_F)||X_root||_F).",
+      "effect_on_target": "It is the additive constant in E(k+1) <= (4+2q)E(k)+beta.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "The recurrence multiplier alpha=4+2q.",
+      "effect_on_target": "It multiplies E(k) in every recurrence step.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "The root problem obtained by evaluating the run's problem family at level d and at the distinguished top node.",
+      "effect_on_target": "It supplies the root matrices, solutions, separation, and root forward error.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "A proof that the auxiliary numeral condition holds for 2+1, enabling the numeral 3.",
+      "effect_on_target": "It supports elaboration of the exact coefficient 3 in beta.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LocalDef014",
+      "meaning": "A proof that the auxiliary numeral condition holds for 1+1, enabling the numeral 2.",
+      "effect_on_target": "It supports elaboration of exact real numeral 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "LocalDef015",
+      "meaning": "The recursive index type I_0=Fin 1 and I_(k+1)=I_k disjoint-union I_k; hence it has 2^k elements.",
+      "effect_on_target": "It fixes the row and column dimensions of every level-k matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LocalDef016",
+      "meaning": "The type of real square matrices indexed by I_d in both dimensions, equivalently real 2^d by 2^d matrices up to the recursive index representation.",
+      "effect_on_target": "All A, B, C, exact-solution, and computed-solution quantities have this level-dependent matrix type.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "LocalDef017",
+      "meaning": "An indexed local-step proposition relating one level-(k+1) parent problem to four level-k child problems under block identities, residual bounds, error decomposition, and child-error estimates.",
+      "effect_on_target": "Every parent node below the root is required by the run to satisfy this local relation with smallerError=E(k) and root-level global constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "LocalDef018",
+      "meaning": "A level-indexed matrix-problem record containing A, B, C, an exact solution X, a computed solution X_hat, a proof AX-XB=-C, and a separation certificate for A and B.",
+      "effect_on_target": "It is the mathematical object attached to every node and provides the errors and norms used throughout.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "LocalDef019",
+      "meaning": "The A-matrix projection of a matrix problem.",
+      "effect_on_target": "It supplies A in norms, block decompositions, and the Sylvester operator.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "LocalDef020",
+      "meaning": "The B-matrix projection of a matrix problem.",
+      "effect_on_target": "It supplies B in norms, block decompositions, and the Sylvester operator.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "LocalDef021",
+      "meaning": "The C-matrix projection of a matrix problem.",
+      "effect_on_target": "It supplies the right-hand-side matrix in AX-XB=-C and the residual terms.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "LocalDef022",
+      "meaning": "The computed-solution matrix X_hat of a problem.",
+      "effect_on_target": "It is compared with exact solutions to form forward errors.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "LocalDef023",
+      "meaning": "The exact-solution matrix X of a problem.",
+      "effect_on_target": "It satisfies AX-XB=-C and is used in all forward-error and final-bound quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "LocalDef024",
+      "meaning": "The separation certificate associated with a problem's A and B matrices.",
+      "effect_on_target": "Its positive value is the denominator s in q, beta, local estimates, and the initial bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "LocalDef025",
+      "meaning": "The epsilon projection of a run.",
+      "effect_on_target": "It supplies the positive parameter epsilon in all local and global bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "LocalDef026",
+      "meaning": "The mu : Nat -> Real projection of a run.",
+      "effect_on_target": "It supplies the growth factor mu(2^(d-1)).",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "LocalDef027",
+      "meaning": "The run's problem-family projection, assigning a level-k problem to every node at every k<=d.",
+      "effect_on_target": "It defines the root and all local parent and child problems.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "LocalDef028",
+      "meaning": "The distinguished top node at level d.",
+      "effect_on_target": "Evaluating the problem family at this node selects the root problem.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "LocalDef029",
+      "meaning": "The real value s stored in a separation certificate.",
+      "effect_on_target": "It is the positive separation constant used in denominators and comparison assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "LocalDef030",
+      "meaning": "The Frobenius norm of a real square matrix.",
+      "effect_on_target": "Every matrix norm and forward error in the proposition is specifically a Frobenius norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "LocalDef031",
+      "meaning": "A proof that the auxiliary numeral condition holds for 3+1, enabling the numeral 4.",
+      "effect_on_target": "It supports elaboration of the exact coefficient 4 in the recurrence multiplier.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "LocalDef032",
+      "meaning": "A natural-number case splitter choosing a base case at zero and a successor case otherwise.",
+      "effect_on_target": "It implements the recursive definition of the matrix index types.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "LocalDef033",
+      "meaning": "The constructor of the local-step relation. It requires lower-left blocks A21=B21=0; prescribed A, B, C, and exact-solution data for the 21 child and prescribed A/B data for the other children; equality of the four computed child solutions with the corresponding computed parent blocks; exact block Sylvester equations; three residual perturbation bounds; a bound of the parent error by the sum of four block errors; and explicit upper bounds for all four block errors.",
+      "effect_on_target": "Through the run hypotheses, these detailed block assumptions are available at every k<d and underpin the asserted envelope recurrence.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "LocalDef034",
+      "meaning": "The constructor of a matrix problem from A, B, C, exact X, computed X_hat, a proof AX-XB=-C, and a separation certificate.",
+      "effect_on_target": "It ensures every problem object packages the exact Sylvester equation and separation data.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "LocalDef035",
+      "meaning": "The run's level-indexed node-type projection.",
+      "effect_on_target": "It supplies the domains quantified over in the hierarchy and envelope assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "LocalDef036",
+      "meaning": "A type of separation certificates for a pair of matrices A and B.",
+      "effect_on_target": "Its constructor makes the separation value positive, a global lower bound for X |-> AX-XB, and exactly attained on a unit-Frobenius-norm matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "LocalDef037",
+      "meaning": "A decidable-equality instance for the recursive index type I_d.",
+      "effect_on_target": "It permits construction of the Frobenius norm and finite matrix operations; it adds no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "LocalDef038",
+      "meaning": "A finite-type instance for I_d.",
+      "effect_on_target": "It makes matrix sums, multiplication, and the Frobenius norm finite and well-defined.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "LocalDef039",
+      "meaning": "The separation-certificate constructor: it takes s>0, proves s||Y||_F<=||AY-YB||_F for every Y, and provides a Y with ||Y||_F=1 and ||AY-YB||_F=s.",
+      "effect_on_target": "Thus s is an attained minimum gain of the Sylvester operator, not merely an arbitrary denominator.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "LocalDef040",
+      "meaning": "The 11 block of a level-(k+1) matrix under the recursive two-by-two block decomposition.",
+      "effect_on_target": "It defines A11, B11, C11, X11, and computed 11 blocks in local hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "LocalDef041",
+      "meaning": "The 12 block of a level-(k+1) matrix.",
+      "effect_on_target": "It defines the off-diagonal A12, B12, C12, X12, and computed 12 blocks.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "LocalDef042",
+      "meaning": "The 21 block of a level-(k+1) matrix.",
+      "effect_on_target": "It defines the required zero lower-left A and B blocks and the 21 child data.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "LocalDef043",
+      "meaning": "The 22 block of a level-(k+1) matrix.",
+      "effect_on_target": "It defines A22, B22, C22, X22, and computed 22 blocks.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "LocalDef044",
+      "meaning": "The 11 block error ||X_hat_child11-X11_parent||_F.",
+      "effect_on_target": "It is one summand in the parent-error decomposition and receives a local upper bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "LocalDef045",
+      "meaning": "The 12 block error ||X_hat_child12-X12_parent||_F.",
+      "effect_on_target": "It is one summand in the parent-error decomposition and receives the largest local upper bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "LocalDef046",
+      "meaning": "The 21 block error ||X_hat_child21-X21_parent||_F.",
+      "effect_on_target": "It is bounded directly by the smaller-level envelope and enters the 11 and 22 residual estimates.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "LocalDef047",
+      "meaning": "The 22 block error ||X_hat_child22-X22_parent||_F.",
+      "effect_on_target": "It is one summand in the parent-error decomposition and enters the 12 residual estimate.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "LocalDef048",
+      "meaning": "The intended 11 child right-hand side R11=C11+A12*X21.",
+      "effect_on_target": "It occurs in the exact 11 block equation and the perturbation bound for the actual child11 C matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "LocalDef049",
+      "meaning": "The intended 12 child right-hand side R12=C12-X11*B12+A12*X22.",
+      "effect_on_target": "It occurs in the exact 12 block equation and the perturbation bound for the actual child12 C matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "LocalDef050",
+      "meaning": "The intended 22 child right-hand side R22=C22-X21*B12.",
+      "effect_on_target": "It occurs in the exact 22 block equation and the perturbation bound for the actual child22 C matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "LocalDef051",
+      "meaning": "The Sylvester operator L_(A,B)(X)=AX-XB.",
+      "effect_on_target": "It defines exact problem equations, block equations, and separation lower bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Nat",
+      "meaning": "The natural numbers.",
+      "effect_on_target": "They index depth, levels, growth-function arguments, dimensions, and natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It combines the recurrence, error bound, factorization, and logarithm identity into one proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It expresses all exact matrix identities, attained-envelope equalities, and the two final exact equalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "HAdd.hAdd",
+      "meaning": "The overloaded addition operation selected by the relevant typeclass.",
+      "effect_on_target": "It realizes ordinary addition on naturals, reals, and matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "HMul.hMul",
+      "meaning": "The overloaded multiplication operation selected by the relevant typeclass.",
+      "effect_on_target": "It realizes real scalar multiplication and other homogeneous products appearing in the formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "HPow.hPow",
+      "meaning": "The overloaded exponentiation operation selected by the relevant typeclass.",
+      "effect_on_target": "It realizes natural powers such as 2^d and q^n and the real-power factor with a real exponent.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "LE.le",
+      "meaning": "The overloaded non-strict order relation.",
+      "effect_on_target": "It expresses every upper or lower inequality in the run assumptions and conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "LT.lt",
+      "meaning": "The overloaded strict order relation.",
+      "effect_on_target": "It expresses k<d, positivity of epsilon and separation, and positive-natural side conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "Monoid.toNatPow",
+      "meaning": "Natural-number exponentiation in a monoid.",
+      "effect_on_target": "It gives ordinary repeated multiplication for natural powers of naturals and reals.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "Nat.cast",
+      "meaning": "The canonical cast of a natural number into a type with natural-number literals.",
+      "effect_on_target": "It casts 2^d and growth arguments into the reals where required.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "Nat.instMonoid",
+      "meaning": "The multiplicative monoid structure on natural numbers.",
+      "effect_on_target": "It makes 2^d a natural-number power.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Nat.log2",
+      "meaning": "The natural binary logarithm: zero on 0 and 1, and recursively 1+log2(floor(n/2)) for n>=2.",
+      "effect_on_target": "It determines the natural exponents and yields the asserted exact identity log2Nat(2^d)=d.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of a natural numeral in the ambient type.",
+      "effect_on_target": "It supplies exact constants 0, 1, 2, 3, and 4 in naturals and reals.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "One.toOfNat1",
+      "meaning": "Construction of the numeral 1 from a type's multiplicative identity.",
+      "effect_on_target": "It interprets every occurrence of 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Real",
+      "meaning": "The real numbers.",
+      "effect_on_target": "All scalar parameters, norms, errors, separations, and bounds are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary addition on real numbers.",
+      "effect_on_target": "It interprets all real sums in the bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instLE",
+      "meaning": "The ordinary non-strict order on real numbers.",
+      "effect_on_target": "It gives the standard meaning to all real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure on the reals.",
+      "effect_on_target": "It defines natural powers q^n and real multiplicative products.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Real.instMul",
+      "meaning": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "It interprets all products of constants, norms, errors, and growth factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "Real.instNatCast",
+      "meaning": "The canonical embedding of natural numbers into the reals.",
+      "effect_on_target": "It interprets natural dimensions and numerals as exact real values.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Real.instOne",
+      "meaning": "The real multiplicative identity.",
+      "effect_on_target": "It supplies real numeral 1 in exponents and inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "Real.instPow",
+      "meaning": "Real exponentiation by a real exponent, implemented as Real.rpow.",
+      "effect_on_target": "The factor (2^d as a real)^(1+log_2(3)) is a real power, not a natural repeated product.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "Real.logb",
+      "meaning": "The real logarithm to base b, log_b(x)=ln(x)/ln(b).",
+      "effect_on_target": "It makes log_2(3) exactly ln(3)/ln(2) in the final constant.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "instAddNat",
+      "meaning": "Ordinary natural-number addition.",
+      "effect_on_target": "It interprets k+1, d+1, and natural exponents such as 1+log2Nat(2^d).",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "instHAdd",
+      "meaning": "The homogeneous overloaded-addition wrapper for a type with addition.",
+      "effect_on_target": "It routes overloaded addition to ordinary type-specific addition without adding assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "instHMul",
+      "meaning": "The homogeneous overloaded-multiplication wrapper for a type with multiplication.",
+      "effect_on_target": "It routes overloaded multiplication to ordinary type-specific multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "instHPow",
+      "meaning": "The overloaded-power wrapper for an existing power operation.",
+      "effect_on_target": "It selects natural or real exponentiation according to the exponent type.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "instLTNat",
+      "meaning": "The standard strict order on natural numbers.",
+      "effect_on_target": "It gives the usual meaning to k<d and n>0.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "Construction of a numeral at least 2 by casting its natural value.",
+      "effect_on_target": "It interprets exact real numerals such as 2, 3, and 4.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "instOfNatNat",
+      "meaning": "The natural-number numeral instance mapping n to itself.",
+      "effect_on_target": "It interprets natural literals exactly.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "The division operation induced by a multiplicative group with inverses.",
+      "effect_on_target": "It provides ordinary real division in q, beta, and separation-based estimates.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It expresses attainment of each envelope value and attainment of the separation minimum.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "HDiv.hDiv",
+      "meaning": "The overloaded division operation.",
+      "effect_on_target": "It realizes division by positive separation values and the logarithm-base quotient.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "HSub.hSub",
+      "meaning": "The overloaded subtraction operation.",
+      "effect_on_target": "It forms matrix forward errors, residual differences, natural d-1, and Sylvester expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "Iff.mpr",
+      "meaning": "Backward use of a logical equivalence.",
+      "effect_on_target": "It is proof plumbing for converting k<d into a successor-level inequality and adds no mathematical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "Matrix.sub",
+      "meaning": "Entrywise subtraction of matrices.",
+      "effect_on_target": "It defines X_hat-X, AX-XB, and residual perturbation differences.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "Monotone",
+      "meaning": "For mu : Nat -> Real, monotonicity means a<=b implies mu(a)<=mu(b).",
+      "effect_on_target": "It is one of the packaged growth-function hypotheses, although the displayed final bound retains mu(2^(d-1)) explicitly.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "An auxiliary proposition on naturals used by numeral elaboration for values such as 2, 3, and 4.",
+      "effect_on_target": "Its supplied inhabitants enable exact numeral casts; it contributes no independent hypothesis about the run.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "Nat.instPreorder",
+      "meaning": "The standard preorder on natural numbers.",
+      "effect_on_target": "It supplies the domain order in the monotonicity assumption on mu.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "Nat.le_of_lt",
+      "meaning": "The implication n<m => n<=m for naturals.",
+      "effect_on_target": "It supplies level-bound proofs needed to evaluate problems at child levels.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "Nat.succ",
+      "meaning": "The natural-number successor operation.",
+      "effect_on_target": "It represents levels k+1 and supports recursive dimensions.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "Nat.succ_le_iff",
+      "meaning": "The equivalence m+1<=n if and only if m<n.",
+      "effect_on_target": "It converts the local condition k<d into the proof that level k+1 lies within the hierarchy.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The multiplicative division and inverse structure on the reals.",
+      "effect_on_target": "It gives every real quotient its ordinary exact meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "Real.instLT",
+      "meaning": "The ordinary strict order on the reals.",
+      "effect_on_target": "It interprets epsilon>0 and separation>0.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "Real.instPreorder",
+      "meaning": "The standard preorder on the reals.",
+      "effect_on_target": "It supplies the codomain order for monotonicity of mu.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction.",
+      "effect_on_target": "It underlies entrywise subtraction of real matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "Real.instZero",
+      "meaning": "The real number zero.",
+      "effect_on_target": "It appears in positivity, nonnegativity, and zero-block assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Zero.toOfNat0",
+      "meaning": "Construction of the numeral 0 from a type's zero.",
+      "effect_on_target": "It interprets all zero literals.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "instHDiv",
+      "meaning": "The homogeneous overloaded-division wrapper.",
+      "effect_on_target": "It routes overloaded division to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "instHSub",
+      "meaning": "The homogeneous overloaded-subtraction wrapper.",
+      "effect_on_target": "It routes overloaded subtraction to natural, real, or matrix subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "instLENat",
+      "meaning": "The standard non-strict order on natural numbers.",
+      "effect_on_target": "It expresses k<=d in the problem and envelope hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "instSubNat",
+      "meaning": "Truncated subtraction on natural numbers.",
+      "effect_on_target": "The argument d-1 in mu(2^(d-1)) equals zero when d=0.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "le_rfl",
+      "meaning": "Reflexivity of a preorder: a<=a.",
+      "effect_on_target": "It supplies the proof d<=d used to select the root problem.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "Fin",
+      "meaning": "The finite type of natural indices less than a given bound.",
+      "effect_on_target": "Fin 1 is the base matrix index type I_0.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "Matrix",
+      "meaning": "A matrix over row type m and column type n is a function m -> n -> scalar.",
+      "effect_on_target": "It supplies the underlying representation of every matrix quantity.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "Matrix.frobeniusNormedRing",
+      "meaning": "The normed-ring structure on finite square matrices whose norm is the Frobenius norm.",
+      "effect_on_target": "It fixes LocalDef030 as the standard Frobenius norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "Nat.below",
+      "meaning": "The dependent collection of recursive values at all smaller natural arguments.",
+      "effect_on_target": "It supports course-of-values construction of the recursive index type.",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "Nat.brecOn",
+      "meaning": "Course-of-values recursion on natural numbers.",
+      "effect_on_target": "It constructs I_d from the previously constructed index types.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "Norm.norm",
+      "meaning": "The norm operation supplied by a norm structure.",
+      "effect_on_target": "Applied to matrices, it returns their Frobenius norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D111",
+      "name": "NormedRing.toNorm",
+      "meaning": "The norm component extracted from a normed-ring structure.",
+      "effect_on_target": "It exposes the Frobenius norm used by LocalDef030.",
+      "status": "understood"
+    },
+    {
+      "id": "D112",
+      "name": "Real.instRCLike",
+      "meaning": "The real numbers viewed as an RCLike scalar field.",
+      "effect_on_target": "It enables the standard Frobenius normed structure on real matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D113",
+      "name": "Sum",
+      "meaning": "The disjoint sum of two types.",
+      "effect_on_target": "It doubles the index set at each depth and induces the two-by-two block decomposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D114",
+      "name": "Unit",
+      "meaning": "A one-element type.",
+      "effect_on_target": "It is recursion plumbing for the depth-zero index construction.",
+      "status": "understood"
+    },
+    {
+      "id": "D115",
+      "name": "DecidableEq",
+      "meaning": "A procedure deciding equality of any two elements of a type.",
+      "effect_on_target": "It is required computational structure for finite matrix norms and contributes no theorem hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D116",
+      "name": "Fin.fintype",
+      "meaning": "The canonical finite enumeration of Fin n.",
+      "effect_on_target": "It provides finiteness of the base index type Fin 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D117",
+      "name": "Fintype",
+      "meaning": "A type equipped with a finite enumeration.",
+      "effect_on_target": "It permits finite sums in matrix multiplication and the Frobenius norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D118",
+      "name": "Matrix.neg",
+      "meaning": "Entrywise negation of a matrix.",
+      "effect_on_target": "It interprets the right-hand side -C and the negated block residuals.",
+      "status": "understood"
+    },
+    {
+      "id": "D119",
+      "name": "Matrix.zero",
+      "meaning": "The entrywise zero matrix.",
+      "effect_on_target": "It gives the exact meaning of the assumptions A21=0 and B21=0.",
+      "status": "understood"
+    },
+    {
+      "id": "D120",
+      "name": "Nat.casesOn",
+      "meaning": "Case analysis on whether a natural number is zero or a successor.",
+      "effect_on_target": "It implements the helper used in the recursive index-type definition.",
+      "status": "understood"
+    },
+    {
+      "id": "D121",
+      "name": "Nat.recAux",
+      "meaning": "Ordinary induction or recursion on natural numbers.",
+      "effect_on_target": "It recursively builds finite-type and decidable-equality instances for I_d.",
+      "status": "understood"
+    },
+    {
+      "id": "D122",
+      "name": "Neg.neg",
+      "meaning": "The overloaded unary negation operation.",
+      "effect_on_target": "It applies ordinary entrywise matrix negation in AX-XB=-C.",
+      "status": "understood"
+    },
+    {
+      "id": "D123",
+      "name": "Real.instNeg",
+      "meaning": "Ordinary negation on the reals.",
+      "effect_on_target": "It induces entrywise negation on real matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D124",
+      "name": "Unit.unit",
+      "meaning": "The unique inhabitant of Unit.",
+      "effect_on_target": "It supplies the base argument in recursion and has no mathematical effect.",
+      "status": "understood"
+    },
+    {
+      "id": "D125",
+      "name": "id",
+      "meaning": "The identity function.",
+      "effect_on_target": "It is used only to pass inferred instances through recursion.",
+      "status": "understood"
+    },
+    {
+      "id": "D126",
+      "name": "inferInstance",
+      "meaning": "Retrieval of an available typeclass instance.",
+      "effect_on_target": "It supplies standard algebraic, order, finite, and decidability structures without adding explicit assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D127",
+      "name": "instDecidableEqFin",
+      "meaning": "Decidable equality on Fin n.",
+      "effect_on_target": "It initializes decidable equality for I_0.",
+      "status": "understood"
+    },
+    {
+      "id": "D128",
+      "name": "instDecidableEqSum",
+      "meaning": "Decidable equality on a disjoint sum when both summands have decidable equality.",
+      "effect_on_target": "It propagates decidable equality from I_k to I_(k+1).",
+      "status": "understood"
+    },
+    {
+      "id": "D129",
+      "name": "instFintypeSum",
+      "meaning": "A finite enumeration of a disjoint sum of two finite types.",
+      "effect_on_target": "It propagates finiteness from I_k to I_(k+1).",
+      "status": "understood"
+    },
+    {
+      "id": "D130",
+      "name": "Matrix.add",
+      "meaning": "Entrywise matrix addition.",
+      "effect_on_target": "It forms block right-hand sides such as C11+A12X21 and C12-X11B12+A12X22.",
+      "status": "understood"
+    },
+    {
+      "id": "D131",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "meaning": "Standard finite matrix multiplication, with entries given by row-column dot products.",
+      "effect_on_target": "Every product AX, XB, A12X21, X21B12, and related block product is ordinary matrix multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D132",
+      "name": "Matrix.toBlocks₁₁",
+      "meaning": "Restriction of a matrix on disjoint-sum indices to left-summand rows and left-summand columns.",
+      "effect_on_target": "It is the exact 11 block extraction operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D133",
+      "name": "Matrix.toBlocks₁₂",
+      "meaning": "Restriction to left-summand rows and right-summand columns.",
+      "effect_on_target": "It is the exact 12 block extraction operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D134",
+      "name": "Matrix.toBlocks₂₁",
+      "meaning": "Restriction to right-summand rows and left-summand columns.",
+      "effect_on_target": "It is the exact 21 block extraction operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D135",
+      "name": "Matrix.toBlocks₂₂",
+      "meaning": "Restriction to right-summand rows and right-summand columns.",
+      "effect_on_target": "It is the exact 22 block extraction operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D136",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative-monoid structure on the reals.",
+      "effect_on_target": "It supplies finite summation of products in standard real matrix multiplication.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "An arbitrary natural number d, called the depth.",
+      "An arbitrary valid depth-d run r, including all data and proofs packaged by LocalDef002 d."
+    ],
+    "hypotheses": [
+      "The run contains a real epsilon with 0<epsilon<=1.",
+      "The run contains mu : Nat -> Real such that mu(n)>=0 for every n, mu is monotone, and mu(n)>=1 whenever n>0.",
+      "It also contains a natural degree p and a real C_mu>=0 such that mu(n)<=C_mu*(n as a real)^p whenever n>0.",
+      "For every level k there is a node type Node(k); there is a distinguished top node at level d; and each node at every k<=d carries a level-k matrix problem.",
+      "Every level-k problem consists of real 2^k by 2^k matrices A, B, C, an exact solution X, and a computed solution X_hat, with AX-XB=-C.",
+      "Every problem has a separation value s>0 satisfying s||Y||_F<=||AY-YB||_F for every matrix Y, and this lower bound is attained by some Y with ||Y||_F=1.",
+      "There is an envelope E : Nat -> Real such that ||X_hat-X||_F<=E(k) for every node at every k<=d, and for each such k there exists a node whose error equals E(k).",
+      "For every k<d, four maps select child21, child11, child22, and child12 nodes at level k from each parent node at level k+1.",
+      "For each such parent, writing its two-by-two blocks as Aij, Bij, Cij, Xij, and X_hat_ij, the local relation assumes A21=0 and B21=0. The 21 child has A=A22, B=B11, C=C21, and exact solution X21. The 11, 22, and 12 children respectively have coefficient pairs (A11,B11), (A22,B22), and (A11,B22).",
+      "The computed solutions of child21, child11, child22, and child12 equal X_hat_21, X_hat_11, X_hat_22, and X_hat_12 respectively. The exact parent blocks satisfy A22X21-X21B11=-C21, A11X11-X11B11=-(C11+A12X21), A22X22-X22B22=-(C22-X21B12), and A11X12-X12B22=-(C12-X11B12+A12X22).",
+      "Define e21=||X_hat_child21-X21||_F, e11=||X_hat_child11-X11||_F, e22=||X_hat_child22-X22||_F, and e12=||X_hat_child12-X12||_F. With m=mu(2^(d-1)), the local residual assumptions are ||C_child11-(C11+A12X21)||_F<=epsilon||C11||_F+||A12||_F e21+m epsilon ||A12||_F||X21||_F; ||C_child22-(C22-X21B12)||_F<=epsilon||C22||_F+||B12||_F e21+m epsilon ||B12||_F||X21||_F; and ||C_child12-(C12-X11B12+A12X22)||_F<=epsilon||C12||_F+||B12||_F e11+m epsilon ||B12||_F||X11||_F+||A12||_F e22+m epsilon ||A12||_F||X22||_F.",
+      "The local relation assumes the parent error is at most e21+e11+e22+e12.",
+      "At level k, the local child bounds are e21<=E(k); e11<=E(k)+(epsilon||C_root||_F+||A_root||_F E(k)+m epsilon ||A_root||_F||X_root||_F)/s_root; e22<=E(k)+(epsilon||C_root||_F+||B_root||_F E(k)+m epsilon ||B_root||_F||X_root||_F)/s_root; and e12<=E(k)+(epsilon||C_root||_F+(||A_root||_F+||B_root||_F)E(k)+m epsilon (||A_root||_F+||B_root||_F)||X_root||_F)/s_root.",
+      "For every node at every k<=d, its A norm, B norm, and exact-solution norm are at most the corresponding root norms, while its separation is at least the root separation.",
+      "The initial envelope satisfies E(0)<=m epsilon ||X_root||_F q, where q=(||A_root||_F+||B_root||_F)/s_root."
+    ],
+    "conclusions": [
+      "For every natural k<d, E(k+1)<=(4+2q)E(k)+(epsilon/s_root)*(3||C_root||_F+2m(||A_root||_F+||B_root||_F)||X_root||_F).",
+      "The root absolute forward error satisfies ||X_hat_root-X_root||_F<=U, where U=2*((2^d as a real)^(1+log_2(3)))*m*epsilon*||X_root||_F*q^(1+log2Nat(2^d)).",
+      "Exactly, U=2*((2^d as a real)^(1+log_2(3)))*m*(epsilon||X_root||_F q)*q^(log2Nat(2^d)).",
+      "As an exact natural-number equality, 1+log2Nat(2^d)=d+1."
+    ],
+    "mathematical_definitions": [
+      "I_0=Fin 1 and I_(k+1)=I_k disjoint-union I_k, so |I_k|=2^k. A level-k matrix is a real I_k by I_k matrix.",
+      "For a problem P=(A,B,C,X,X_hat,s), the exact equation is AX-XB=-C and its forward error is err(P)=||X_hat-X||_F.",
+      "Its separation s is positive, satisfies s||Y||_F<=||AY-YB||_F for all Y, and is attained for some unit-Frobenius-norm Y.",
+      "The root problem is the problem at the distinguished level-d top node. Write its data as A_root, B_root, C_root, X_root, X_hat_root, and s_root.",
+      "Natural subtraction is truncated, so m=mu(2^(d-1)) uses mu(1) when d=0.",
+      "q=(||A_root||_F+||B_root||_F)/s_root, alpha=4+2q, and beta=(epsilon/s_root)*(3||C_root||_F+2m(||A_root||_F+||B_root||_F)||X_root||_F).",
+      "log_2(3)=ln(3)/ln(2), whereas log2Nat is the natural binary logarithm. The power ((2^d as a real)^(1+log_2(3))) is Real.rpow, while powers q^n use natural-number exponentiation.",
+      "U=2*((2^d as a real)^(1+log_2(3)))*m*epsilon*||X_root||_F*q^(1+log2Nat(2^d))."
+    ],
+    "proposition_plain_english": "For every depth and every run satisfying the packaged hierarchy, Sylvester-equation, separation, growth, block-recursion, residual, norm-comparison, envelope-attainment, and initial-error assumptions, the attained levelwise error envelope obeys the stated affine recurrence. Consequently, the Frobenius-norm forward error of the computed root solution is bounded by the explicit exact quantity U. The proposition additionally asserts the algebraic factorization of U obtained by separating one factor of q and the exact identity 1+log2Nat(2^d)=d+1."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The theorem does not assert that a valid run exists. For a depth at which LocalDef002 d is empty, the universal statement is vacuous.",
+    "Depth d=0 is allowed. Then there are no k<d recurrence or local-step obligations, d-1 is truncated to 0, m=mu(1), and the root bound is obtained from the packaged initial envelope bound.",
+    "The envelope is constrained only at levels k<=d. Its values outside that range are unrestricted.",
+    "Because every E(k) for k<=d is both an upper bound and attained by some node, it is an exact levelwise maximum over the supplied node family, not merely an arbitrary majorant.",
+    "The recursive matrix index type is not literally Fin(2^k); it is a recursively nested disjoint sum with cardinality 2^k.",
+    "The separation hypothesis is stronger than positivity alone: it is a globally valid and attained lower gain for X |-> AX-XB. Hence every division by the root separation uses a strictly positive denominator.",
+    "For child11, child22, and child12, the local relation fixes the coefficient matrices and separately states equations for the corresponding parent exact blocks, but it does not explicitly identify those child problems' stored C matrices or stored exact solutions with the intended residuals and parent blocks. Their computed solutions are compared directly with the parent exact blocks in the local errors.",
+    "The conclusion is an absolute Frobenius-norm forward-error bound. It does not state a relative, componentwise, backward-error, probabilistic, or asymptotic bound.",
+    "The polynomial-growth degree p and constant C_mu are assumptions on mu but are not substituted into the displayed conclusion; the bound retains the exact value mu(2^(d-1)).",
+    "No floating-point semantics or algorithm implementation is asserted beyond the exact local equalities and inequalities packaged in the run.",
+    "The child maps are only required to select four children for each parent. The proposition does not assert that they are exhaustive, injective, mutually distinct, or globally tree-consistent.",
+    "All constants, powers, norms, envelope values, computed solutions, and inequalities are exact mathematical quantities; no big-O notation or omitted lower-order terms occur."
+  ],
+  "ambiguities": []
+}

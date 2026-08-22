@@ -1,0 +1,109 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P10-T3",
+  "trigger": [
+    "round-trip judge requested adjudication",
+    "round-trip S09 is unclear",
+    "round-trip S15 is unclear",
+    "round-trip S16 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "Trigger: round-trip judge requested adjudication - implications and classification",
+      "resolution": "Neither implication holds. The declaration is not merely weaker or genuinely stronger: it proves an exact result over a restricted, pre-certified run domain, while the paper derives a first-order asymptotic result for SylR executions. The classification is not-faithful-different.",
+      "primary_evidence": "The verified PDF has SHA-256 0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269. Printed pages 85-86 specify SylR and derive the local inequalities, big-O equation (20), and logarithmic-stability conclusion. D001 instead concludes a constant-2 bound for every D002 run, while D004 and D033 require the local inequalities, separation inheritance, envelope attainment, and a base bound as run-construction premises."
+    },
+    {
+      "item": "Trigger: round-trip S09 is unclear - Frobenius and bare-norm semantics",
+      "resolution": "The all-Frobenius choice is a defensible concrete specialization of the paper's normwise analysis and is not independently a faithfulness failure. The coefficient-one perturbation statement using the explicitly Frobenius sep strongly indicates that the associated solution and right-hand-side norms on page 86 are Frobenius. Equation (1)'s norm-change statement also permits transfer to Frobenius after absorbing dimension-polynomial factors into mu and big-O. This evidence does not, however, justify Lean's exact leading constant 2.",
+      "primary_evidence": "Printed page 85 defines sep(A,B)=min_{||R||_F=1}||AR-RB||_F. Printed page 86 immediately uses x/sep(A,B) with no norm-conversion coefficient and then writes bare norms throughout the recurrence. Printed page 60 permits changing norms at the cost of dimension-dependent polynomial factors. D030 is exactly the Frobenius norm and D039 gives the corresponding attained variational sep, whereas D007 fixes an exact constant absent from the norm-change and big-O statements."
+    },
+    {
+      "item": "Trigger: round-trip S15 is unclear - real scalar specialization",
+      "resolution": "Real matrices form a coherent specialization, but the paper passage does not determine whether the intended domain is real, complex, or both. Any loss of complex cases is reduced applicability, not theorem strength.",
+      "primary_evidence": "Printed pages 84-86 use transpose and singular-value notation without declaring a scalar field. D016 fixes every matrix entry to Real."
+    },
+    {
+      "item": "Trigger: round-trip S15 is unclear - all-Frobenius specialization",
+      "resolution": "Using Frobenius norms throughout is supported as an asymptotically faithful norm specialization for this analysis. It cannot turn the paper's unspecified big-O constant into the declaration's exact constant or exact first-order theorem.",
+      "primary_evidence": "The Frobenius sep and coefficient-one perturbation step appear on printed pages 85-86, while printed page 60 says norm changes introduce polynomial dimension factors. D005-D011 and D030 consistently use Frobenius quantities, but D007 replaces equation (20)'s O-bound by a fixed finite expression."
+    },
+    {
+      "item": "Trigger: round-trip S15 is unclear - dyadic dimensions",
+      "resolution": "The dyadic dimension restriction is faithful: depth d represents square dimension n=2^d, including the paper's scalar case n=1 at d=0.",
+      "primary_evidence": "Printed pages 84-85 explicitly assume equally dimensioned square matrices with n a power of two and give an n=1 base case. D015 has cardinality 2^d by recursive doubling, and D016 uses it for both matrix indices."
+    },
+    {
+      "item": "Trigger: round-trip S15 is unclear - certificate-heavy run domain",
+      "resolution": "The run domain is materially narrower than the paper's admissible inputs and executions. The exact constant-2 conclusion on that domain is not a genuine stronger version of the paper result because applicability is reduced and central page-86 estimates are antecedent certificates.",
+      "primary_evidence": "Printed page 86 derives the four block-error estimates from rule (8), separation, and induction. D004 requires a D017 certificate at every non-base node, and D033's constructor takes the right-hand-side bounds, four block bounds, and aggregate error bound as premises. D004 additionally requires envelope attainment and a base_rounding_bound."
+    },
+    {
+      "item": "Trigger: round-trip S16 is unclear - global inhabitation",
+      "resolution": "The formal run type is globally nonempty, indeed inhabitable at every depth, so the target is not vacuous solely because its binder type is empty.",
+      "primary_evidence": "From D004, D033, D034, D039, and D051 one can choose singleton node types, A=I, B=C=exactSolution=computedSolution=0, separation value 1, mu=1, a positive epsilon at most 1, and errorEnvelope=0. The Sylvester action is then X, a unit Frobenius witness attains sep=1, all residual and error obligations reduce to 0<=0, and child identity norms are bounded by the root identity norm."
+    },
+    {
+      "item": "Trigger: round-trip S16 is unclear - coverage of intended inputs and executions",
+      "resolution": "Global inhabitation does not establish coverage. No supplied declaration constructs a run from every upper-triangular disjoint-spectrum input or every floating-point execution of SylR. Consequently, task-specific applicability remains unproved even though trivial certified runs exist.",
+      "primary_evidence": "Printed page 85 defines an executable recursion with rounded products and scalar division. The theorem binds only run:P10SylRRun depth. D004 accepts abstract child maps and assumed certificates, and neither D001 nor any constructor states that an arbitrary SylR input or execution yields such a run."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean theorem covers only pre-certified run records and supplies no representation theorem for every admissible SylR input or floating-point execution. Global nonvacuity of that record type does not recover the paper's algorithm-wide logarithmic-stability claim."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper gives first-order big-O bounds with no fixed constant, no displayed scalar base estimate, and no envelope-attainment or certificate-record obligations. It therefore does not imply the exact constant-2 Lean bound or the additional run requirements."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The selected passage never states whether its scalar domain is real, complex, or both.",
+    "The page-86 norms remain textually unsubscripted; context strongly supports the Frobenius specialization for the asymptotic argument, but supplies no exact norm-conversion constants.",
+    "Whether every intended finite SylR execution can be equipped with the formal certificates is not established by the paper or declarations."
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "assumed-local-analysis",
+      "evidence": "Printed page 86 derives the local right-hand-side and block-error inequalities, while D004 and D033 require those inequalities as fields of every run.",
+      "impact": "The declaration changes the proof boundary and does not derive the selected numerical result from the paper's stable-arithmetic model."
+    },
+    {
+      "severity": "major",
+      "category": "restricted-algorithm-coverage",
+      "evidence": "The paper specifies SylR on admissible matrix inputs; the target quantifies only over P10SylRRun values and contains no input-to-run or execution-to-run construction.",
+      "impact": "The formal result cannot establish the paper's claim for all intended inputs or executions."
+    },
+    {
+      "severity": "major",
+      "category": "asymptotic-to-exact-bound",
+      "evidence": "Equation (20) is an O-bound with omitted higher-order terms and unspecified constants, whereas D007 fixes the leading constant 2 and D001 asserts an exact inequality.",
+      "impact": "The paper does not imply the formal conclusion, even after accepting the Frobenius and dyadic specializations."
+    },
+    {
+      "severity": "major",
+      "category": "unsupported-base-and-first-order-model",
+      "evidence": "The paper gives the n=1 division but no err(1) estimate; D004 assumes a concrete base_rounding_bound, and all formal arithmetic is exact Real arithmetic with first-order inequalities supplied as certificates.",
+      "impact": "The finite bound depends on assumptions absent from the source and is not linked to actual floating-point behavior."
+    },
+    {
+      "severity": "minor",
+      "category": "scalar-domain-specialization",
+      "evidence": "The paper does not identify the scalar field, while D016 permits only real matrices.",
+      "impact": "Potentially omitted complex cases represent narrower applicability and cannot support a faithful-stronger classification."
+    },
+    {
+      "severity": "note",
+      "category": "resolved-norm-and-nonvacuity",
+      "evidence": "The Frobenius sep and coefficient-one perturbation argument support D030's norm choice, and the declarations admit zero-error identity/zero runs at every depth.",
+      "impact": "S09's norm choice and global emptiness are not decisive failures; the remaining failure is coverage and the altered hypothesis/conclusion boundary."
+    }
+  ],
+  "rationale": "The declaration preserves the ordinary equation, block signs, solve dependencies, dyadic dimensions, variational separation, recurrence coefficients, and equation-(20) exponent shape. Frobenius norms are a defensible specialization, and certified runs are globally inhabited. Nevertheless, the theorem applies only after the central local error analysis and a source-absent base bound have been packaged as assumptions, does not connect those records to every SylR execution, and replaces a first-order big-O result with an exact constant-2 inequality. The real-only scope may also be narrower. These facts make both implication directions fail, so the result is not-faithful-different rather than faithful-stronger or merely weaker."
+}
