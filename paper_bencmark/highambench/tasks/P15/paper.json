@@ -54,7 +54,7 @@
     },
     {
       "candidate": "Theorem 4.1 blockwise UFC factorization expansion",
-      "reason": "Its full blockwise recurrence is below the source-level Theorems 4.2-4.4 interface selected for Theorem 4.5; the T3 precision family still records the UFC/UCF block updates, factor/compress order, floating-point operations, compression semantics, output provenance, and successful completion before composing those established guarantees."
+      "reason": "Its full blockwise recurrence is below the source-level Theorems 4.2-4.4 interface selected for Theorem 4.5; the T3 pointwise execution still records the UFC/UCF block updates, factor/compress order, floating-point operations, compression semantics, output provenance, and successful completion before composing those established guarantees."
     },
     {
       "candidate": "Corollary 4.1 and Theorems 4.2-4.3 factorization bounds",
@@ -84,7 +84,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 4.5 over a precision family of completed UFC or UCF executions, retaining dense A versus represented Atilde with the equation-(2.3)-(2.4) orientation, orthonormality, and minimum-rank semantics, exact computed-factor rank semantics, algorithm-specific threshold and recompression traces, both ordered equation-(4.22) solves with their c_tri bound, existential aggregate perturbations, and uniform O(u epsilon) and O(u^2) remainders.",
+      "decision": "Use Theorem 4.5 for one completed UFC or UCF execution, retaining dense A versus represented Atilde with the equation-(2.3)-(2.4) orientation, orthonormality, and minimum-rank semantics, exact computed-factor rank semantics, j<k update indexing, equation-(2.9) matrix-solve residuals, algorithm-specific threshold and recompression traces, both ordered equation-(4.22) solves with their c_tri bound, existential aggregate perturbations, and O(u epsilon) and O(u^2) remainder functions evaluated at the execution precision.",
       "task_id": "P15-T3",
       "theorem_name": "p15_t3_blr_lu_solve_backward_error"
     }
@@ -93,7 +93,7 @@
   "selection_policy": [
     "Use results proved or exact norm properties explicitly adopted in this paper, not empirical plots or results delegated to earlier sources.",
     "Preserve the paper's Frobenius-norm setting and distinguish low-rank truncation errors from floating-point errors.",
-    "Formalize big-O terms uniformly over precision families; do not replace them by coefficients selected after an isolated run or expose proof-only finite coefficients in a controlled target.",
+    "Formalize big-O terms with quantified remainder functions, while keeping Theorem 4.5 pointwise in one completed execution; do not expose proof-only finite coefficients in a controlled target.",
     "Keep every public definition paper-scoped and free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."
   ],

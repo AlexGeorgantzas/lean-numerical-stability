@@ -314,28 +314,32 @@ noncomputable def p15BLRCompressionBase {p b : ℕ}
   | .local => p15FrobNorm (p15MatrixBlock A i k)
   | .global => p15FrobNorm A
 
-/-- The exact block update in lines 4 and 6 of Algorithms 1 and 2, including
-the optional intermediate-recompression terms from Section 4.1.3. -/
+/-- The exact target-block update at factorization step `k` in lines 4 and 6
+of Algorithms 1 and 2, including the optional intermediate-recompression
+terms from Section 4.1.3. Every target block uses only factors from steps
+strictly before `k`. -/
 noncomputable def p15BLRUpdatedBlock {p b : ℕ}
     (A L U : P15Matrix (p * b))
     (recompressionError : Fin p → Fin p → Fin p → P15Matrix b)
-    (i k : Fin p) : P15Matrix b :=
-  p15MatrixBlock A i k -
+    (k row col : Fin p) : P15Matrix b :=
+  p15MatrixBlock A row col -
     ∑ j ∈ Finset.univ.filter (fun j : Fin p => j < k),
-      (p15MatMul (p15MatrixBlock L i j) (p15MatrixBlock U j k) +
-        recompressionError i k j)
+      (p15MatMul (p15MatrixBlock L row j) (p15MatrixBlock U j col) +
+        recompressionError row col j)
 
 /-- The recompression errors are absent in the `without` case and satisfy the
-Section 4.1.3 threshold bound in the `with` case. -/
+Section 4.1.3 threshold bound in the `with` case. A product can occur in the
+update of target block `(row, col)` only when its factor index precedes both
+target indices. -/
 def p15RecompressionModel {p b : ℕ}
     (choice : P15BLRRecompression) (threshold : P15BLRThreshold)
     (epsilon : ℝ) (A : P15Matrix (p * b))
     (error : Fin p → Fin p → Fin p → P15Matrix b) : Prop :=
   match choice with
   | .without => ∀ i k j, error i k j = 0
-  | .with => ∀ i k j, j < k →
-      p15FrobNorm (error i k j) ≤
-        epsilon * p15BLRCompressionBase threshold A i k
+  | .with => ∀ row col j, j < row → j < col →
+      p15FrobNorm (error row col j) ≤
+        epsilon * p15BLRCompressionBase threshold A row col
 
 /-- Earlier factor blocks participating in iteration `k`. -/
 noncomputable def p15EarlierBlocks {p : ℕ} (k : Fin p) : Finset (Fin p) := by
@@ -348,26 +352,27 @@ the product computation has its own normwise error. -/
 def p15ComputedBLRUpdate {p b : ℕ} (r : ℕ) (u : ℝ)
     (A L U : P15Matrix (p * b))
     (recompressionError : Fin p → Fin p → Fin p → P15Matrix b)
-    (i k : Fin p) (rounded : P15Matrix b) : Prop :=
+    (k row col : Fin p) (rounded : P15Matrix b) : Prop :=
   ∃ product : Fin p → P15Matrix b,
     ∃ productError : Fin p → P15Matrix b,
       ∃ inputRelativeError : P15Matrix b,
         ∃ productRelativeError : Fin p → P15Matrix b,
           (∀ j ∈ p15EarlierBlocks k,
             product j =
-              p15MatMul (p15MatrixBlock L i j) (p15MatrixBlock U j k) +
-                recompressionError i k j + productError j) ∧
+              p15MatMul (p15MatrixBlock L row j)
+                  (p15MatrixBlock U j col) +
+                recompressionError row col j + productError j) ∧
           (∀ j ∈ p15EarlierBlocks k,
             p15FrobNorm (productError j) ≤
               p15GammaReal (p15BLRSolveCost b p r) u *
-                p15FrobNorm (p15MatrixBlock L i j) *
-                p15FrobNorm (p15MatrixBlock U j k)) ∧
+                p15FrobNorm (p15MatrixBlock L row j) *
+                p15FrobNorm (p15MatrixBlock U j col)) ∧
           (∀ row col,
             |inputRelativeError row col| ≤ p15GammaReal (p : ℝ) u) ∧
           (∀ j ∈ p15EarlierBlocks k, ∀ row col,
             |productRelativeError j row col| ≤ p15GammaReal (p : ℝ) u) ∧
           rounded =
-            p15MatrixHadamard (p15MatrixBlock A i k)
+            p15MatrixHadamard (p15MatrixBlock A row col)
                 (p15OnesMatrix b + inputRelativeError) -
               ∑ j ∈ p15EarlierBlocks k,
                 p15MatrixHadamard (product j)
@@ -382,21 +387,23 @@ def p15ComputedDenseLU {b : ℕ} (u : ℝ)
       p15FrobNorm error ≤
         p15GammaReal (b : ℝ) u * p15FrobNorm L * p15FrobNorm U
 
-/-- Backward-error interface of Lemma 2.2 for a computed right triangular
-solve `X*T = rhs`. -/
+/-- Residual interface of Lemma 2.2, equation (2.9), for a computed right
+triangular solve `X*T = rhs`. -/
 def p15ComputedRightTriangularSolve {b : ℕ} (u : ℝ)
     (rhs X T : P15Matrix b) : Prop :=
-  ∃ error : P15Matrix b,
-    p15MatMul X (T + error) = rhs ∧
-      p15FrobNorm error ≤ p15GammaReal (b : ℝ) u * p15FrobNorm T
+  ∃ residual : P15Matrix b,
+    p15MatMul X T = rhs + residual ∧
+      p15FrobNorm residual ≤
+        p15GammaReal (b : ℝ) u * p15FrobNorm T * p15FrobNorm X
 
-/-- Backward-error interface of Lemma 2.2 for a computed left triangular
-solve `T*X = rhs`. -/
+/-- Residual interface of Lemma 2.2, equation (2.9), for a computed left
+triangular solve `T*X = rhs`. -/
 def p15ComputedLeftTriangularSolve {b : ℕ} (u : ℝ)
     (rhs T X : P15Matrix b) : Prop :=
-  ∃ error : P15Matrix b,
-    p15MatMul (T + error) X = rhs ∧
-      p15FrobNorm error ≤ p15GammaReal (b : ℝ) u * p15FrobNorm T
+  ∃ residual : P15Matrix b,
+    p15MatMul T X = rhs + residual ∧
+      p15FrobNorm residual ≤
+        p15GammaReal (b : ℝ) u * p15FrobNorm T * p15FrobNorm X
 
 /-- A source-level execution of Algorithm 1. The exact update formulas feed
 the factor step, and the off-diagonal factor blocks are compressed only after
@@ -415,10 +422,10 @@ structure P15CompletedUFCFactorization {p b : ℕ} (r : ℕ)
   lower_triangular : p15IsBlockLowerTriangular L
   upper_triangular : p15IsBlockUpperTriangular U
   update_column : ∀ k i, k ≤ i →
-    p15ComputedBLRUpdate r u A L U recompressionError i k
+    p15ComputedBLRUpdate r u A L U recompressionError k i k
       (updatedColumn k i)
   update_row : ∀ k i, k ≤ i →
-    p15ComputedBLRUpdate r u A L U recompressionError k i
+    p15ComputedBLRUpdate r u A L U recompressionError k k i
       (updatedRow k i)
   diagonal_updates_agree : ∀ k, updatedColumn k k = updatedRow k k
   diagonal_factor : ∀ k,
@@ -460,10 +467,10 @@ structure P15CompletedUCFFactorization {p b : ℕ} (r : ℕ)
   lower_triangular : p15IsBlockLowerTriangular L
   upper_triangular : p15IsBlockUpperTriangular U
   update_column : ∀ k i, k ≤ i →
-    p15ComputedBLRUpdate r u A L U recompressionError i k
+    p15ComputedBLRUpdate r u A L U recompressionError k i k
       (updatedColumn k i)
   update_row : ∀ k i, k ≤ i →
-    p15ComputedBLRUpdate r u A L U recompressionError k i
+    p15ComputedBLRUpdate r u A L U recompressionError k k i
       (updatedRow k i)
   diagonal_updates_agree : ∀ k, updatedColumn k k = updatedRow k k
   lower_compression : ∀ k i, k < i →
@@ -586,13 +593,12 @@ structure P15CompletedTriangularSolve {p b : ℕ} (r : ℕ)
           p15VecHadamard (productValue i j)
             (p15OnesVector b + productRelativeError i j)
 
-/-- A precision family for the fixed input problem in Theorem 4.5. The trace
-fields encode the two permitted algorithms and the ordered solves. The
-component perturbation fields are the source-level interfaces supplied by
-Theorems 4.2--4.4; aggregate system perturbations are deliberately absent and
-are constructed by P15-T3. The factorization remainder is one uniform
-two-parameter function, rather than a constant chosen after a run. -/
-structure P15BLRLinearSolveFamily (b p r : ℕ) where
+/-- One completed computation from Theorem 4.5. The trace links a single
+admissible `(u, epsilon)` execution to Algorithm 1 or 2 and to the two ordered
+block triangular solves. The component perturbations are the source-level
+interfaces supplied by Theorems 4.2--4.4; the aggregate system perturbations
+are deliberately absent and are constructed by P15-T3. -/
+structure P15BLRLinearSolveExecution (b p r : ℕ) where
   block_size_pos : 0 < b
   block_count_pos : 0 < p
   rank_le_block_size : r ≤ b
@@ -600,78 +606,59 @@ structure P15BLRLinearSolveFamily (b p r : ℕ) where
   threshold : P15BLRThreshold
   recompression : P15BLRRecompression
   A : P15Matrix (p * b)
+  Atilde : P15Matrix (p * b)
+  L : P15Matrix (p * b)
+  U : P15Matrix (p * b)
   v : P15Vector (p * b)
+  yHat : P15Vector (p * b)
+  xHat : P15Vector (p * b)
+  unitRoundoff : ℝ
+  epsilon : ℝ
+  precision : p15AdmissiblePrecision
+    (p15BLRSolveCost b p r) unitRoundoff epsilon
   A_nonsingular : p15IsNonsingular A
-  Atilde : ℝ → P15Matrix (p * b)
-  L : ℝ → ℝ → P15Matrix (p * b)
-  U : ℝ → ℝ → P15Matrix (p * b)
-  yHat : ℝ → ℝ → P15Vector (p * b)
-  xHat : ℝ → ℝ → P15Vector (p * b)
-  represents : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      p15BLRRepresents threshold epsilon A (Atilde epsilon)
-  factor_rank : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      p15IsFactorBLRRank r (L u epsilon) (U u epsilon)
-  factorization_completed : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      P15CompletedBLRFactorization r algorithm threshold recompression
-        u epsilon (Atilde epsilon) (L u epsilon) (U u epsilon)
-  factorError : ℝ → ℝ → P15Matrix (p * b)
+  represents : p15BLRRepresents threshold epsilon A Atilde
+  factor_rank : p15IsFactorBLRRank r L U
+  factorization_completed :
+    P15CompletedBLRFactorization r algorithm threshold recompression
+      unitRoundoff epsilon Atilde L U
+  factorError : P15Matrix (p * b)
   factorRemainder : ℝ → ℝ → ℝ
-  factorization_eq : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      A + factorError u epsilon = p15MatMul (L u epsilon) (U u epsilon)
-  factorError_le : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      p15FrobNorm (factorError u epsilon) ≤
-        (p15BLRXi p threshold recompression * epsilon +
-            p15GammaReal (p : ℝ) u) * p15FrobNorm A +
-          p15GammaReal (p15BLRSolveCost b p r) u *
-            p15FrobNorm (L u epsilon) * p15FrobNorm (U u epsilon) +
-          factorRemainder u epsilon
-  factorRemainder_nonneg : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      0 ≤ factorRemainder u epsilon
+  factorization_eq : A + factorError = p15MatMul L U
+  factorError_le :
+    p15FrobNorm factorError ≤
+      (p15BLRXi p threshold recompression * epsilon +
+          p15GammaReal (p : ℝ) unitRoundoff) * p15FrobNorm A +
+        p15GammaReal (p15BLRSolveCost b p r) unitRoundoff *
+          p15FrobNorm L * p15FrobNorm U +
+        factorRemainder unitRoundoff epsilon
   factorRemainder_bigO : p15IsBigOMixedAtZero factorRemainder
-  lowerError : ℝ → ℝ → P15Matrix (p * b)
-  upperError : ℝ → ℝ → P15Matrix (p * b)
-  lowerRhsError : ℝ → ℝ → P15Vector (p * b)
-  upperRhsError : ℝ → ℝ → P15Vector (p * b)
-  lower_completed : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      Nonempty (P15CompletedTriangularSolve r .lower u (L u epsilon) v
-        (yHat u epsilon))
-  upper_completed : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      Nonempty (P15CompletedTriangularSolve r .upper u (U u epsilon)
-        (yHat u epsilon) (xHat u epsilon))
-  lowerSolve_eq : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      p15MatVec (L u epsilon + lowerError u epsilon) (yHat u epsilon) =
-        v + lowerRhsError u epsilon
-  upperSolve_eq : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      p15MatVec (U u epsilon + upperError u epsilon) (xHat u epsilon) =
-        yHat u epsilon + upperRhsError u epsilon
-  lowerError_le : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      p15FrobNorm (lowerError u epsilon) ≤
-        p15GammaReal (p15BLRTriangularSolveCost b p r) u *
-          p15FrobNorm (L u epsilon)
-  upperError_le : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      p15FrobNorm (upperError u epsilon) ≤
-        p15GammaReal (p15BLRTriangularSolveCost b p r) u *
-          p15FrobNorm (U u epsilon)
-  lowerRhsError_le : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      p15VecNorm (lowerRhsError u epsilon) ≤
-        p15GammaReal (p : ℝ) u * p15VecNorm v
-  upperRhsError_le : ∀ u epsilon,
-    p15AdmissiblePrecision (p15BLRSolveCost b p r) u epsilon →
-      p15VecNorm (upperRhsError u epsilon) ≤
-        p15GammaReal (p : ℝ) u * p15VecNorm (yHat u epsilon)
+  lowerError : P15Matrix (p * b)
+  upperError : P15Matrix (p * b)
+  lowerRhsError : P15Vector (p * b)
+  upperRhsError : P15Vector (p * b)
+  lower_completed : Nonempty
+    (P15CompletedTriangularSolve r .lower unitRoundoff L v yHat)
+  upper_completed : Nonempty
+    (P15CompletedTriangularSolve r .upper unitRoundoff U yHat xHat)
+  lowerSolve_eq :
+    p15MatVec (L + lowerError) yHat = v + lowerRhsError
+  upperSolve_eq :
+    p15MatVec (U + upperError) xHat = yHat + upperRhsError
+  lowerError_le :
+    p15FrobNorm lowerError ≤
+      p15GammaReal (p15BLRTriangularSolveCost b p r) unitRoundoff *
+        p15FrobNorm L
+  upperError_le :
+    p15FrobNorm upperError ≤
+      p15GammaReal (p15BLRTriangularSolveCost b p r) unitRoundoff *
+        p15FrobNorm U
+  lowerRhsError_le :
+    p15VecNorm lowerRhsError ≤
+      p15GammaReal (p : ℝ) unitRoundoff * p15VecNorm v
+  upperRhsError_le :
+    p15VecNorm upperRhsError ≤
+      p15GammaReal (p : ℝ) unitRoundoff * p15VecNorm yHat
 
 /-- Exact matrix perturbation obtained by composing a perturbed factorization
 with perturbed forward and backward substitutions. -/

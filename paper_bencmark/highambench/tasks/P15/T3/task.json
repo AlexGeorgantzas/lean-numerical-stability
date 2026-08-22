@@ -1,16 +1,16 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, precision-family UFC/UCF execution semantics, and uniform asymptotic formalization of Theorem 4.5",
+    "kind": "source selection, tier label, pointwise UFC/UCF execution semantics, and asymptotic formalization of Theorem 4.5",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "A is a fixed nonsingular dense real matrix of order p*b, while Atilde(epsilon) is its distinct Section 2.1 BLR representation: diagonal blocks are exact, each off-diagonal block has the equation-(2.3) orientation and an orthonormal X factor, and its rank is the minimum satisfying the selected local/global truncation bound (2.4).",
+    "A is a fixed nonsingular dense real matrix of order p*b, while Atilde is its distinct Section 2.1 BLR representation: diagonal blocks are exact, each off-diagonal block has the equation-(2.3) orientation and an orthonormal X factor, and its rank is the minimum satisfying the selected local/global truncation bound (2.4).",
     "The fixed factor rank r <= b is the least common off-diagonal rank bound of each computed L and U pair; it is neither the input BLR rank nor an arbitrary overestimate.",
-    "The precision family fixes Algorithm 1 (UFC) or Algorithm 2 (UCF), threshold kind, and recompression choice before u and epsilon. Every admissible pair has a completed trace with the cancellation-safe equation-(4.3) input/product perturbations, Lemma-2.2/2.3 diagonal-factor and block-solve backward errors, algorithm-specific factor/compress ordering, Assumption-2.1 compression, and the source's scaled or unscaled thresholds.",
-    "Theorems 4.2 or 4.3 supply the factorization perturbation interface for the traced factors, with xi_p fixed by Table 1 and one uniform O(u*epsilon) remainder function.",
+    "One pointwise execution fixes Algorithm 1 (UFC) or Algorithm 2 (UCF), threshold kind, recompression choice, u, and epsilon. Its completed trace uses j<k at factorization step k, the cancellation-safe equation-(4.3) input/product perturbations, the equation-(2.9) residual model for matrix triangular solves, Lemma 2.3 for diagonal factorization, algorithm-specific factor/compress ordering, Assumption-2.1 compression, and the source's scaled or unscaled thresholds.",
+    "Theorem 4.2 or 4.3 supplies the pointwise factorization perturbation interface for the traced factors, with xi_p fixed by Table 1 and an O(u*epsilon) remainder function evaluated at the execution's precision.",
     "The two ordered traced block triangular solves use L then U. Their traces retain the separate product, summation, and nonsingular diagonal-solve perturbations of equation (4.22), and their aggregate Theorem 4.4 interfaces use c_tri = b + r*sqrt(r) + p; the final system perturbations are not premises.",
-    "For every admissible pair, u and epsilon are positive, u < epsilon, and 3*c*u < 1 for c = b + 2*r*sqrt(r) + p.",
+    "For the completed execution, u and epsilon are positive, u < epsilon, and 3*c*u < 1 for c = b + 2*r*sqrt(r) + p. The inequality u<epsilon records the paper's qualitative safely-smaller regime without inventing a stronger ratio.",
     "The real-valued standard model excludes overflow, underflow, NaNs, and infinities."
   ],
   "author_label": "Theorem 4.5",
@@ -21,14 +21,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P15/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p15_t3_blr_lu_solve_backward_error {b p r : Nat} (run : P15BLRLinearSolveFamily b p r) : let c := p15BLRSolveCost b p r; let xi := p15BLRXi p run.threshold run.recompression; let solveScale := ...; exists matrixError rhsError rhsRemainder, matrixError = ... and rhsError = ... and p15IsBigOMixedAtZero run.factorRemainder and p15IsBigOSquareRelativeAtZero rhsRemainder solveScale and forall u epsilon, p15AdmissiblePrecision c u epsilon -> ...",
+    "lean_header": "theorem p15_t3_blr_lu_solve_backward_error {b p r : Nat} (run : P15BLRLinearSolveExecution b p r) : let c := p15BLRSolveCost b p r; let gammaP := p15GammaReal p run.unitRoundoff; let gamma3C := p15GammaReal (3*c) run.unitRoundoff; let xi := p15BLRXi p run.threshold run.recompression; let solveScale := ...; exists matrixError rhsError rhsRemainder, matrixError = ... and rhsError = ... and p15IsBigOMixedAtZero run.factorRemainder and p15IsBigOSquareRelativeAtZero rhsRemainder (fun _ _ => solveScale) and ...",
     "namespace": "HighamBench",
-    "plain_language": "For a fixed problem and a traced family of successful UFC or UCF factorizations and ordered BLR solves, the target constructs aggregate perturbations satisfying equation (4.23) and the uniform O(u*epsilon) and O(u^2) bounds (4.24)-(4.25), while retaining distinct dense and represented matrices and the exact factor-rank meaning.",
+    "plain_language": "For one traced successful UFC or UCF factorization and its two ordered BLR solves, the target constructs aggregate perturbations satisfying equation (4.23) and the O(u*epsilon) and O(u^2) bounds (4.24)-(4.25), while retaining distinct dense and represented matrices and the exact factor-rank meaning.",
     "target_file": "paper_bencmark/highambench/tasks/P15/T3/Target.lean",
     "theorem_name": "p15_t3_blr_lu_solve_backward_error"
   },
-  "informal_proof": "For each admissible precision pair, expand (L+dL)(U+dU), substitute the Theorem 4.2/4.3 factorization relation, and compose the two ordered Theorem 4.4 solve relations. Frobenius triangle and submultiplicativity give 3*gamma_c+gamma_c^2, which is bounded by gamma_(3c). Solving the upper-solve feedback inequality yields a remainder coefficient uniformly O(u^2); package it with the displayed solve scale. The factorization remainder is already one uniformly O(u*epsilon) family, so both asymptotic witnesses have the required quantifier order.",
-  "informal_statement": "Theorem 4.5 equations (4.23)-(4.25) for a precision family of successful UFC or UCF BLR solves: existential aggregate backward perturbations, the exact displayed constants, and uniform O(u epsilon) and O(u^2) remainders.",
+  "informal_proof": "For the completed execution, expand (L+dL)(U+dU), substitute the Theorem 4.2/4.3 factorization relation, and compose the two ordered Theorem 4.4 solve relations. Monotonicity of gamma replaces the triangular-solve index b+r^(3/2)+p by c=b+2*r^(3/2)+p. Frobenius triangle and submultiplicativity give 3*gamma_c+gamma_c^2, which is bounded by gamma_(3c). Solving the upper-solve feedback inequality yields an O(u^2) remainder relative to the displayed solve scale. The inherited factorization remainder remains O(u*epsilon).",
+  "informal_statement": "Theorem 4.5 equations (4.23)-(4.25) for one successful UFC or UCF BLR solve: existential aggregate backward perturbations, the exact displayed constants, and O(u epsilon) and O(u^2) remainders.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -97,7 +97,7 @@
     "p15VectorBlock",
     "p15VecHadamard",
     "p15OnesVector",
-    "P15BLRLinearSolveFamily",
+    "P15BLRLinearSolveExecution",
     "p15ComposedMatrixError",
     "p15ComposedRhsError"
   ],
@@ -179,7 +179,7 @@
   "task_id": "P15-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "Condition L materially combines NumStability.frobNormRect_nonneg, frobNormRect_add_le, frobNorm_matMul_le, vecNorm2_add_le, vecNorm2_matMulVec_le_frobNorm_mul, matMulVec_matMul, matMulVec_add_left, and matMulVec_add_right. The frozen library has no BLR representation, UFC/UCF trace, exact factor-rank model, Table 1 case semantics, asymptotic precision family, or Theorem 4.5 composition. The proof must add those interfaces, construct both aggregate perturbations, prove the gamma_(3c) comparison, and derive a uniform relative O(u^2) remainder, so the task remains T3.",
+  "tier_rationale": "Condition L materially combines NumStability.frobNormRect_nonneg, frobNormRect_add_le, frobNorm_matMul_le, vecNorm2_add_le, vecNorm2_matMulVec_le_frobNorm_mul, matMulVec_matMul, matMulVec_add_left, and matMulVec_add_right. The frozen library has no BLR representation, UFC/UCF execution trace, exact factor-rank model, Table 1 case semantics, or Theorem 4.5 composition. The proof must construct both aggregate perturbations, compare the triangular-solve gamma index with c, prove the gamma_(3c) comparison, and derive a relative O(u^2) remainder, so the task remains T3.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P15/T3/Target.lean",
     "mode": "shared automatic validator",

@@ -2,46 +2,37 @@ import HighamBench.P15Definitions
 
 namespace HighamBench
 
-/-- P15-T3: Theorem 4.5, equations (4.23)--(4.25), uniformly over a
-successful UFC or UCF BLR solve family. -/
+/-- P15-T3: Theorem 4.5, equations (4.23)--(4.25), for one completed UFC or
+UCF BLR factorization followed by the two ordered block triangular solves. -/
 theorem p15_t3_blr_lu_solve_backward_error {b p r : ℕ}
-    (run : P15BLRLinearSolveFamily b p r) :
+    (run : P15BLRLinearSolveExecution b p r) :
     let c := p15BLRSolveCost b p r
+    let gammaP := p15GammaReal (p : ℝ) run.unitRoundoff
+    let gamma3C := p15GammaReal (3 * c) run.unitRoundoff
     let xi := p15BLRXi p run.threshold run.recompression
-    let solveScale := fun u epsilon =>
-      p15FrobNorm (run.L u epsilon) *
-        p15FrobNorm (run.U u epsilon) *
-        p15VecNorm (run.xHat u epsilon)
-    ∃ matrixError : ℝ → ℝ → P15Matrix (p * b),
-      ∃ rhsError : ℝ → ℝ → P15Vector (p * b),
+    let solveScale :=
+      p15FrobNorm run.L * p15FrobNorm run.U * p15VecNorm run.xHat
+    ∃ matrixError : P15Matrix (p * b),
+      ∃ rhsError : P15Vector (p * b),
         ∃ rhsRemainder : ℝ → ℝ → ℝ,
-          matrixError = (fun u epsilon =>
-            p15ComposedMatrixError (run.factorError u epsilon)
-              (run.lowerError u epsilon) (run.upperError u epsilon)
-              (run.L u epsilon) (run.U u epsilon)) ∧
-          rhsError = (fun u epsilon =>
-            p15ComposedRhsError (run.lowerRhsError u epsilon)
-              (run.upperRhsError u epsilon) (run.L u epsilon)
-              (run.lowerError u epsilon)) ∧
+          matrixError =
+            p15ComposedMatrixError run.factorError run.lowerError
+              run.upperError run.L run.U ∧
+          rhsError =
+            p15ComposedRhsError run.lowerRhsError run.upperRhsError
+              run.L run.lowerError ∧
           p15IsBigOMixedAtZero run.factorRemainder ∧
-          p15IsBigOSquareRelativeAtZero rhsRemainder solveScale ∧
-          ∀ u epsilon,
-            p15AdmissiblePrecision c u epsilon →
-              let gammaP := p15GammaReal (p : ℝ) u
-              let gamma3C := p15GammaReal (3 * c) u
-              0 ≤ run.factorRemainder u epsilon ∧
-              0 ≤ rhsRemainder u epsilon ∧
-              p15MatVec (run.A + matrixError u epsilon)
-                  (run.xHat u epsilon) =
-                run.v + rhsError u epsilon ∧
-              p15FrobNorm (matrixError u epsilon) ≤
-                (xi * epsilon + gammaP) * p15FrobNorm run.A +
-                  gamma3C * p15FrobNorm (run.L u epsilon) *
-                    p15FrobNorm (run.U u epsilon) +
-                  run.factorRemainder u epsilon ∧
-              p15VecNorm (rhsError u epsilon) ≤
-                gammaP * (p15VecNorm run.v + solveScale u epsilon) +
-                  rhsRemainder u epsilon := by
+          p15IsBigOSquareRelativeAtZero rhsRemainder
+            (fun _ _ => solveScale) ∧
+          p15MatVec (run.A + matrixError) run.xHat =
+            run.v + rhsError ∧
+          p15FrobNorm matrixError ≤
+            (xi * run.epsilon + gammaP) * p15FrobNorm run.A +
+              gamma3C * p15FrobNorm run.L * p15FrobNorm run.U +
+              run.factorRemainder run.unitRoundoff run.epsilon ∧
+          p15VecNorm rhsError ≤
+            gammaP * (p15VecNorm run.v + solveScale) +
+              rhsRemainder run.unitRoundoff run.epsilon := by
   -- PROOF_START
   sorry
 
