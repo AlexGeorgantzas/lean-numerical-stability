@@ -7,114 +7,96 @@ low-rank linear systems by LU factorization is numerically stable*. The local
 PDF SHA-256 is
 `a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7`.
 
-The selected result is Theorem 4.5, equations (4.23)--(4.25), and its proof on
-PDF pages 24--25 (printed pages 974--975). Its inherited inputs are Algorithm 1
-and Theorem 4.2 on PDF pages 13 and 19, Algorithm 2 and Theorem 4.3 on PDF page
-21, and Theorem 4.4 on PDF pages 23--24.
+The selected result remains Theorem 4.5, equations (4.23)--(4.25), and its
+proof on PDF pages 24--25 (printed pages 974--975). The proof invokes Theorems
+4.2 and 4.3 for the factorization and Theorem 4.4 for each triangular solve.
 
 ## Quantification and matrix roles
 
-`P15BLRLinearSolveExecution b p r` records one completed computation, matching
-the pointwise quantification of Theorem 4.5. It fixes the dense matrix `A`, its
-BLR representation `Atilde`, the right-hand side `v`, the computed `L`, `U`,
-`yHat`, and `xHat`, the algorithm, threshold kind, recompression choice, and
-the actual precision pair `(u, epsilon)`. Admissibility means
+`P15BLRLinearSolveExecution b p r` records one completed computation. It fixes
+the dense matrix `A`, its Section 2.1 BLR representation `Atilde`, the computed
+factors `L` and `U`, the right-hand side `v`, the intermediate solution `yHat`,
+the final solution `xHat`, and one actual precision pair `(u, epsilon)`.
+
+The dimensions are finite real dimensions with matrix order `p*b`. The block
+size and block count are positive, `r <= b`, and `r` is the least common
+off-diagonal rank bound of the computed factors. `p15BLRRepresents` keeps the
+dense and represented matrices distinct and records the paper's oriented,
+minimum-rank truncation semantics. The exact backward equation and norm scale
+use `A`, following the displayed equations and proof of Theorem 4.5. The
+paper's switch between `Atilde` and `A` remains a source notation ambiguity;
+the formalization does not silently identify them.
+
+Admissibility is
 
 ```text
 0 < u < epsilon,     0 < epsilon,     3*c*u < 1,
 c = b + 2*r*sqrt(r) + p.
 ```
 
-The paper describes `u` as "safely smaller" than `epsilon` but supplies no
-quantitative ratio. The formal execution records the explicit positive
-separation `u < epsilon`, without inventing a stronger numerical margin.
+The paper says that `u` is safely smaller than `epsilon` but gives no numerical
+ratio. The explicit inequality `u < epsilon` is the weakest positive ordering
+used here. The real standard model excludes overflow, underflow, NaNs, and
+infinities.
 
-The paper has a real notation gap: Theorem 4.5 introduces `Atilde` as the BLR
-system matrix but equations (4.23)--(4.24) and the proof use `A`. Section 2.1
-calls `Atilde` a BLR representation of dense `A`. The execution retains both
-objects and makes that inherited relation explicit with `p15BLRRepresents`.
-Diagonal blocks are unchanged. Each off-diagonal block of `Atilde` has its own
-minimum threshold-satisfying rank, the equation-(2.3)
-lower/upper factor orientation, and an orthonormal `X` factor. Its truncation
-error is bounded by `epsilon` times the local or global Section 2.1 scale. The
-final backward equation and norm scale use dense `A`, exactly as the displayed
-equations do.
+## Factorization theorem
 
-The source's `r` is the maximum off-diagonal rank of the computed factors, not
-the input BLR rank and not an arbitrary upper estimate. `p15IsFactorBLRRank`
-therefore says that `r` is the least common rank bound for `L` and `U`.
-`Atilde` has independent per-block ranks.
+`P15CompletedBLRFactorization` contains a raw UFC or UCF trace on `Atilde` and
+the four distinct error contributions accumulated in the proofs of Theorems
+4.1--4.3:
 
-## Computed execution
+```text
+compression error + rounded-input error
+  + factor-arithmetic error + mixed error.
+```
 
-`P15CompletedBLRFactorization` is tied to the selected algorithm. At
-factorization step `k`, both target blocks `(i,k)` and `(k,i)` sum exactly over
-the already computed factors `j < k`, as Algorithms 1 and 2 require. The trace
-uses the cancellation-safe equation-(4.3) form: the input block and each
-computed product have distinct componentwise perturbations, and each product
-has its own normwise error. Diagonal LU factorizations use Lemma 2.3.
-Off-diagonal matrix triangular solves use the equation-(2.9) residual form
-`X*T = rhs + Delta` or `T*X = rhs + Delta`, with
-`||Delta|| <= gamma_b*||T||*||X||`; they do not assume a single coefficient
-perturbation. Every stored low-rank block has an explicit minimum-rank
-truncated-SVD Assumption-2.1 compression witness. For UFC,
-off-diagonal factor blocks are solved before compression; for UCF, updated
-off-diagonal blocks are compressed before the factor solves. UFC compression
-uses the diagonal-norm-scaled local/global thresholds of equations
-(4.13)--(4.14); UCF compression uses the unscaled choices. The recompression
-variant controls whether the earlier-product errors in each block update are
-zero or satisfy the corresponding threshold bound. Thus the algorithm,
-threshold, and recompression fields all constrain actual block equations and
-cannot act as labels only.
+The raw trace retains the `j < k` updates, cancellation-safe equation-(4.3)
+operand perturbations, Lemma-2.3 diagonal factorizations, equation-(2.9)
+matrix-solve residuals, Assumption-2.1 compressions, algorithm-specific
+factor/compress ordering, threshold scaling, and optional recompression.
 
-`P15CompletedTriangularSolve` records the separate low-rank product errors,
-right-hand-side and product summation errors, and diagonal-solve errors in
-equation (4.22). It does not apply one relative perturbation to the complete
-residual, which would be invalid under cancellation. Every diagonal block is
-nonsingular. Lower solves use earlier block components and upper solves use
-later components. Their aggregate Theorem 4.4 perturbations use
-`c_tri = b + r*sqrt(r) + p`; the larger `c = b + 2*r*sqrt(r) + p` is retained
-only where Theorems 4.2--4.5 use it. The execution requires the lower solve with
-`L` and `v` first, then the upper solve with `U` and the computed `yHat`.
+The four analysis terms remain separate. Their bounds respectively use
+`xi_p*epsilon*||A||`, `gamma_p*||A||`,
+`gamma_c*||L||*||U||`, and an `O(u*epsilon)` remainder. The imported theorem
+`p15CompletedBLRFactorization_backwardError` applies Frobenius triangle
+inequalities to derive the single Theorem-4.2/4.3 perturbation. That aggregate
+perturbation, equation, and bound are not fields of the final execution.
 
-The perturbations supplied by Theorems 4.2--4.4 are retained as the
-source-level interface at which the proof of Theorem 4.5 begins. They are tied
-to the same traced `L`, `U`, `yHat`, and `xHat`. The execution contains no
-final system perturbation and no equation-(4.23) certificate. The target
-constructs those aggregate objects from the exact products printed on page
-975.
+## Triangular-solve theorem
+
+Each `P15CompletedTriangularSolve` contains an operation-level block trace of
+equation (4.22). Product errors, right-hand-side summation errors, product
+summation errors, and diagonal-solve errors remain distinct, and every diagonal
+block is nonsingular. Lower solves use prior blocks; upper solves use later
+blocks.
+
+The gathered source analysis retains three matrix contributions with
+coefficients `gamma_d`, `gamma_p`, and `gamma_d*gamma_p`, where
+`d = b + r*sqrt(r)`. The imported theorem
+`p15CompletedTriangularSolve_backwardError` proves their sum is bounded by
+`gamma_(d+p)*||T||` and derives the equation-(4.21) perturbation and
+right-hand-side bound. Thus the two Theorem-4.4 interfaces used by P15-T3 are
+conclusions obtained from the two completed solves, not caller-supplied
+certificates.
 
 ## Higher-order terms
 
-`factorRemainder` is a function of both precision parameters satisfying
-`p15IsBigOMixedAtZero`: there are constants `C` and `delta` such that its
-absolute value is at most `C*u*epsilon` throughout the positive neighborhood
-with `u < epsilon`. The pointwise factor bound evaluates that function only at
-the execution's actual `(u, epsilon)`, so the theorem does not require a
-completed computation at any other precision.
+`p15IsBigOMixedAtRun remainder u epsilon` gives separate positive radii for
+`u` and `epsilon`, a uniform `C*u*epsilon` bound in that neighborhood, and
+requires the actual execution pair to lie inside it. Consequently the value
+used in equation (4.24) is controlled by the same big-O witness; an isolated
+spike at the current precision is impossible.
 
-The target existentially constructs a right-hand-side remainder function and
-proves `p15IsBigOSquareRelativeAtZero`. It is `O(u^2)` relative to the displayed
-solve scale `||L||*||U||*||xHat||`, and the final bound evaluates it only at the
-execution's precision. The private proof may establish an explicit supporting
-coefficient, but no such coefficient or extra inequality appears in the
-controlled target; equation (4.25) retains its asymptotic form.
+The target constructs the right-hand-side remainder and proves
+`p15IsBigOSquareRelativeAtRun` relative to
+`||L||*||U||*||xHat||`. Its certified neighborhood also contains the actual
+execution pair. The proof derives the explicit supporting coefficient
+`16*c^2`, but the controlled target retains the paper's `O(u^2)` form.
 
 ## Derived result
 
-For one completed execution, the theorem existentially constructs matrix and
-right-hand-side perturbations and proves
-
-```text
-(A + DeltaA) * xHat = v + Deltav,
-
-||DeltaA|| <= (xi_p*epsilon + gamma_p)*||A||
-              + gamma_(3c)*||L||*||U|| + O(u*epsilon),
-
-||Deltav|| <= gamma_p*(||v|| + ||L||*||U||*||xHat||) + O(u^2).
-```
-
-The constructed perturbations are exactly
+The target first derives witnesses for Theorems 4.2--4.4 from the completed
+traces. It then constructs exactly the perturbations printed on page 975:
 
 ```text
 DeltaA = factorError + lowerError*U + L*upperError
@@ -123,8 +105,18 @@ Deltav = lowerRhsError + L*upperRhsError
            + lowerError*upperRhsError.
 ```
 
-All matrix norms are the unsquared, unnormalized Frobenius norm and all vector
-norms are Euclidean. The model is real-valued and follows the paper's standard
-relative-error convention; exceptional IEEE values are outside its scope. A
-private construction instantiates a complete exact one-block UFC execution,
-so the hypotheses are satisfiable.
+It proves
+
+```text
+(A + DeltaA) * xHat = v + Deltav,
+
+||DeltaA|| <= (xi_p*epsilon + gamma_p)*||A||
+              + gamma_(3c)*||L||*||U|| + O(u*epsilon),
+
+||Deltav|| <= gamma_p*(||v|| + ||L||*||U||*||xHat||)
+              + O(u^2).
+```
+
+Matrix norms are unsquared, unnormalized Frobenius norms and vector norms are
+Euclidean. A private one-block exact UFC construction witnesses satisfiability
+of the complete execution and predecessor-analysis interfaces.

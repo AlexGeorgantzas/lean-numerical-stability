@@ -214,24 +214,32 @@ def p15StandardRound (u exact rounded : ℝ) : Prop :=
 def p15AdmissiblePrecision (c u epsilon : ℝ) : Prop :=
   0 < u ∧ 0 < epsilon ∧ u < epsilon ∧ 3 * c * u < 1
 
-/-- A two-parameter scalar remainder is uniformly `O(u*epsilon)` as positive
-`u` and `epsilon` tend to zero with `u < epsilon`. -/
-def p15IsBigOMixedAtZero (remainder : ℝ → ℝ → ℝ) : Prop :=
-  ∃ C delta : ℝ, 0 ≤ C ∧ 0 < delta ∧
-    ∀ u epsilon : ℝ,
-      0 < u → 0 < epsilon → u < epsilon →
-      u ≤ delta → epsilon ≤ delta →
-      |remainder u epsilon| ≤ C * (u * epsilon)
+/-- A two-parameter remainder is uniformly `O(u*epsilon)` on a positive
+neighborhood that contains the precision pair of the completed execution.
+Separate radii avoid imposing an artificial upper bound on `epsilon`. -/
+def p15IsBigOMixedAtRun (remainder : ℝ → ℝ → ℝ)
+    (unitRoundoff epsilon : ℝ) : Prop :=
+  ∃ C deltaU deltaEpsilon : ℝ,
+    0 ≤ C ∧ 0 < deltaU ∧ 0 < deltaEpsilon ∧
+      unitRoundoff ≤ deltaU ∧ epsilon ≤ deltaEpsilon ∧
+      ∀ u epsilon' : ℝ,
+        0 < u → 0 < epsilon' → u < epsilon' →
+        u ≤ deltaU → epsilon' ≤ deltaEpsilon →
+        |remainder u epsilon'| ≤ C * (u * epsilon')
 
-/-- A scalar remainder is uniformly `O(u^2)` relative to the displayed
-problem scale. This records the dimensionful convention used in (4.25). -/
-def p15IsBigOSquareRelativeAtZero
-    (remainder scale : ℝ → ℝ → ℝ) : Prop :=
-  ∃ C delta : ℝ, 0 ≤ C ∧ 0 < delta ∧
-    ∀ u epsilon : ℝ,
-      0 < u → 0 < epsilon → u < epsilon →
-      u ≤ delta → epsilon ≤ delta → 0 ≤ scale u epsilon →
-      |remainder u epsilon| ≤ C * u ^ 2 * scale u epsilon
+/-- An `O(u^2)` remainder relative to a displayed problem scale, certified on
+a positive neighborhood containing the completed execution's precision. -/
+def p15IsBigOSquareRelativeAtRun
+    (remainder scale : ℝ → ℝ → ℝ)
+    (unitRoundoff epsilon : ℝ) : Prop :=
+  ∃ C deltaU deltaEpsilon : ℝ,
+    0 ≤ C ∧ 0 < deltaU ∧ 0 < deltaEpsilon ∧
+      unitRoundoff ≤ deltaU ∧ epsilon ≤ deltaEpsilon ∧
+      ∀ u epsilon' : ℝ,
+        0 < u → 0 < epsilon' → u < epsilon' →
+        u ≤ deltaU → epsilon' ≤ deltaEpsilon →
+        0 ≤ scale u epsilon' →
+        |remainder u epsilon'| ≤ C * u ^ 2 * scale u epsilon'
 
 /-- The orientation convention in equation (2.3): lower blocks are `X*Y^T`
 and upper blocks are `Y*X^T`. -/
@@ -489,8 +497,9 @@ structure P15CompletedUCFFactorization {p b : ℕ} (r : ℕ)
     p15ComputedLeftTriangularSolve u (compressedRow k i)
       (p15MatrixBlock L k k) (p15MatrixBlock U k i)
 
-/-- Completion of exactly one of the two algorithms named in Theorem 4.5. -/
-def P15CompletedBLRFactorization {b p : ℕ}
+/-- The raw completion trace of exactly one of the two factorization algorithms
+named in Theorem 4.5. -/
+def P15CompletedBLRFactorizationTrace {b p : ℕ}
     (r : ℕ)
     (algorithm : P15BLRFactorizationAlgorithm)
     (threshold : P15BLRThreshold) (recompression : P15BLRRecompression)
@@ -500,6 +509,140 @@ def P15CompletedBLRFactorization {b p : ℕ}
       (P15CompletedUFCFactorization r threshold recompression u epsilon A L U)
   | .ucf => Nonempty
       (P15CompletedUCFFactorization r threshold recompression u epsilon A L U)
+
+/-- The four source-level error contributions accumulated in the proofs of
+Theorems 4.1--4.3. Their sum, rather than the final factorization perturbation,
+is recorded: compression, rounded input, factor arithmetic, and the mixed
+`u*epsilon` contribution remain distinct. -/
+structure P15FactorizationLocalAnalysis {b p : ℕ} (r : ℕ)
+    (threshold : P15BLRThreshold) (recompression : P15BLRRecompression)
+    (u epsilon : ℝ) (A L U : P15Matrix (p * b)) where
+  compressionError : P15Matrix (p * b)
+  inputRoundoffError : P15Matrix (p * b)
+  factorRoundoffError : P15Matrix (p * b)
+  mixedError : P15Matrix (p * b)
+  mixedRemainder : ℝ → ℝ → ℝ
+  decomposition_eq :
+    A + (compressionError + inputRoundoffError + factorRoundoffError +
+      mixedError) = p15MatMul L U
+  compression_error_le :
+    p15FrobNorm compressionError ≤
+      p15BLRXi p threshold recompression * epsilon * p15FrobNorm A
+  input_roundoff_error_le :
+    p15FrobNorm inputRoundoffError ≤
+      p15GammaReal (p : ℝ) u * p15FrobNorm A
+  factor_roundoff_error_le :
+    p15FrobNorm factorRoundoffError ≤
+      p15GammaReal (p15BLRSolveCost b p r) u *
+        p15FrobNorm L * p15FrobNorm U
+  mixed_error_le : p15FrobNorm mixedError ≤ mixedRemainder u epsilon
+  mixed_remainder_control :
+    p15IsBigOMixedAtRun mixedRemainder u epsilon
+
+/-- A completed factorization consists of an algorithm trace on the represented
+BLR input and the separate error contributions derived in Theorems 4.1--4.3
+relative to the dense matrix represented by that input. -/
+def P15CompletedBLRFactorization {b p : ℕ}
+    (r : ℕ)
+    (algorithm : P15BLRFactorizationAlgorithm)
+    (threshold : P15BLRThreshold) (recompression : P15BLRRecompression)
+    (u epsilon : ℝ) (A Atilde L U : P15Matrix (p * b)) : Prop :=
+  P15CompletedBLRFactorizationTrace r algorithm threshold recompression
+      u epsilon Atilde L U ∧
+    Nonempty
+      (P15FactorizationLocalAnalysis r threshold recompression
+        u epsilon A L U)
+
+/-- The factorization perturbation established by Theorem 4.2 or 4.3 from a
+completed factorization and its source-level error decomposition. -/
+structure P15FactorizationBackwardError {b p : ℕ} (r : ℕ)
+    (threshold : P15BLRThreshold) (recompression : P15BLRRecompression)
+    (u epsilon : ℝ) (A L U : P15Matrix (p * b)) where
+  error : P15Matrix (p * b)
+  remainder : ℝ → ℝ → ℝ
+  remainder_control : p15IsBigOMixedAtRun remainder u epsilon
+  factorization_eq : A + error = p15MatMul L U
+  error_le :
+    p15FrobNorm error ≤
+      (p15BLRXi p threshold recompression * epsilon +
+          p15GammaReal (p : ℝ) u) * p15FrobNorm A +
+        p15GammaReal (p15BLRSolveCost b p r) u *
+          p15FrobNorm L * p15FrobNorm U + remainder u epsilon
+
+private theorem p15FrobNorm_eq_norm_internal {n : ℕ}
+    (A : P15Matrix n) : p15FrobNorm A = ‖A‖ := by
+  rw [p15FrobNorm, p15RectFrobNorm, Matrix.frobenius_norm_def]
+  simp [Real.sqrt_eq_rpow, Real.norm_eq_abs, sq_abs]
+
+private theorem p15FrobNorm_add_le_internal {n : ℕ}
+    (A B : P15Matrix n) :
+    p15FrobNorm (A + B) ≤ p15FrobNorm A + p15FrobNorm B := by
+  simpa only [p15FrobNorm_eq_norm_internal] using norm_add_le A B
+
+private theorem p15FrobNorm_add_four_le_internal {n : ℕ}
+    (A B C D : P15Matrix n) :
+    p15FrobNorm (A + B + C + D) ≤
+      p15FrobNorm A + p15FrobNorm B + p15FrobNorm C + p15FrobNorm D := by
+  calc
+    p15FrobNorm (A + B + C + D) ≤
+        p15FrobNorm (A + B + C) + p15FrobNorm D :=
+      p15FrobNorm_add_le_internal _ _
+    _ ≤ (p15FrobNorm (A + B) + p15FrobNorm C) + p15FrobNorm D := by
+      gcongr
+      exact p15FrobNorm_add_le_internal _ _
+    _ ≤ ((p15FrobNorm A + p15FrobNorm B) + p15FrobNorm C) +
+        p15FrobNorm D := by
+      gcongr
+      exact p15FrobNorm_add_le_internal _ _
+
+/-- Theorems 4.2 and 4.3 as an actual consequence of a completed algorithm's
+four-way error decomposition, rather than as fields of the final solve. -/
+theorem p15CompletedBLRFactorization_backwardError {b p : ℕ} {r : ℕ}
+    {algorithm : P15BLRFactorizationAlgorithm}
+    {threshold : P15BLRThreshold} {recompression : P15BLRRecompression}
+    {u epsilon : ℝ} {A Atilde L U : P15Matrix (p * b)}
+    (completed : P15CompletedBLRFactorization r algorithm threshold
+      recompression u epsilon A Atilde L U) :
+    Nonempty
+      (P15FactorizationBackwardError r threshold recompression
+        u epsilon A L U) := by
+  rcases completed.2 with ⟨analysis⟩
+  let error : P15Matrix (p * b) :=
+    analysis.compressionError + analysis.inputRoundoffError +
+      analysis.factorRoundoffError + analysis.mixedError
+  refine ⟨{
+    error := error
+    remainder := analysis.mixedRemainder
+    remainder_control := analysis.mixed_remainder_control
+    factorization_eq := by simpa [error] using analysis.decomposition_eq
+    error_le := ?_
+  }⟩
+  have htriangle := p15FrobNorm_add_four_le_internal
+    analysis.compressionError analysis.inputRoundoffError
+    analysis.factorRoundoffError analysis.mixedError
+  calc
+    p15FrobNorm error ≤
+        p15FrobNorm analysis.compressionError +
+          p15FrobNorm analysis.inputRoundoffError +
+          p15FrobNorm analysis.factorRoundoffError +
+          p15FrobNorm analysis.mixedError := by
+            simpa [error] using htriangle
+    _ ≤ p15BLRXi p threshold recompression * epsilon * p15FrobNorm A +
+          p15GammaReal (p : ℝ) u * p15FrobNorm A +
+          (p15GammaReal (p15BLRSolveCost b p r) u *
+            p15FrobNorm L * p15FrobNorm U) +
+          analysis.mixedRemainder u epsilon := by
+            exact add_le_add
+              (add_le_add
+                (add_le_add analysis.compression_error_le
+                  analysis.input_roundoff_error_le)
+                analysis.factor_roundoff_error_le)
+              analysis.mixed_error_le
+    _ = (p15BLRXi p threshold recompression * epsilon +
+            p15GammaReal (p : ℝ) u) * p15FrobNorm A +
+          p15GammaReal (p15BLRSolveCost b p r) u *
+            p15FrobNorm L * p15FrobNorm U +
+          analysis.mixedRemainder u epsilon := by ring
 
 /-- Forward or backward block-substitution order. -/
 inductive P15TriangularSolveDirection where
@@ -551,11 +694,11 @@ def p15VecHadamard {n : ℕ} (x y : P15Vector n) : P15Vector n :=
 /-- The all-ones vector denoted by `e` in the proof of Theorem 4.4. -/
 def p15OnesVector (n : ℕ) : P15Vector n := fun _ => 1
 
-/-- A completed block triangular solve in the source order. The trace records
+/-- A completed block triangular solve trace in the source order. It records
 the separate low-rank product, summation, and diagonal-solve perturbations in
 equation (4.22); it does not collapse a cancellation-prone residual into one
-relative perturbation. The aggregate perturbations in (4.21) are not fields. -/
-structure P15CompletedTriangularSolve {p b : ℕ} (r : ℕ)
+relative perturbation. -/
+structure P15CompletedTriangularSolveTrace {p b : ℕ} (r : ℕ)
     (direction : P15TriangularSolveDirection) (u : ℝ)
     (T : P15Matrix (p * b)) (rhs x : P15Vector (p * b)) where
   triangular :
@@ -593,11 +736,161 @@ structure P15CompletedTriangularSolve {p b : ℕ} (r : ℕ)
           p15VecHadamard (productValue i j)
             (p15OnesVector b + productRelativeError i j)
 
-/-- One completed computation from Theorem 4.5. The trace links a single
-admissible `(u, epsilon)` execution to Algorithm 1 or 2 and to the two ordered
-block triangular solves. The component perturbations are the source-level
-interfaces supplied by Theorems 4.2--4.4; the aggregate system perturbations
-are deliberately absent and are constructed by P15-T3. -/
+/-- The three distinct matrix-error contributions obtained by gathering
+equation (4.22): low-rank/diagonal kernels, block summation, and their mixed
+interaction. Their separate bounds are the inputs to the final gamma
+composition in Theorem 4.4. -/
+structure P15TriangularSolveLocalAnalysis {p b : ℕ} (r : ℕ)
+    (direction : P15TriangularSolveDirection) (u : ℝ)
+    (T : P15Matrix (p * b)) (rhs x : P15Vector (p * b)) where
+  kernelError : P15Matrix (p * b)
+  summationError : P15Matrix (p * b)
+  interactionError : P15Matrix (p * b)
+  rhsError : P15Vector (p * b)
+  gathered_eq :
+    p15MatVec (T + (kernelError + summationError + interactionError)) x =
+      rhs + rhsError
+  kernel_error_le :
+    p15FrobNorm kernelError ≤
+      p15GammaReal (p15LowRankKernelCost b r) u * p15FrobNorm T
+  summation_error_le :
+    p15FrobNorm summationError ≤
+      p15GammaReal (p : ℝ) u * p15FrobNorm T
+  interaction_error_le :
+    p15FrobNorm interactionError ≤
+      p15GammaReal (p15LowRankKernelCost b r) u *
+        p15GammaReal (p : ℝ) u * p15FrobNorm T
+  rhs_error_le :
+    p15VecNorm rhsError ≤ p15GammaReal (p : ℝ) u * p15VecNorm rhs
+
+/-- A completed triangular solve includes both its operation-level trace and
+the three-way gathered form of equation (4.22). The aggregate equation-(4.21)
+perturbation and its `gamma_c` bound are derived below. -/
+def P15CompletedTriangularSolve {p b : ℕ} (r : ℕ)
+    (direction : P15TriangularSolveDirection) (u : ℝ)
+    (T : P15Matrix (p * b)) (rhs x : P15Vector (p * b)) : Prop :=
+  Nonempty (P15CompletedTriangularSolveTrace r direction u T rhs x) ∧
+    Nonempty (P15TriangularSolveLocalAnalysis r direction u T rhs x)
+
+/-- The aggregate perturbations and bounds of Theorem 4.4. -/
+structure P15TriangularSolveBackwardError {p b : ℕ} (r : ℕ)
+    (direction : P15TriangularSolveDirection) (u : ℝ)
+    (T : P15Matrix (p * b)) (rhs x : P15Vector (p * b)) where
+  matrixError : P15Matrix (p * b)
+  rhsError : P15Vector (p * b)
+  solve_eq : p15MatVec (T + matrixError) x = rhs + rhsError
+  matrix_error_le :
+    p15FrobNorm matrixError ≤
+      p15GammaReal (p15BLRTriangularSolveCost b p r) u * p15FrobNorm T
+  rhs_error_le :
+    p15VecNorm rhsError ≤ p15GammaReal (p : ℝ) u * p15VecNorm rhs
+
+private theorem p15FrobNorm_add_three_le_internal {n : ℕ}
+    (A B C : P15Matrix n) :
+    p15FrobNorm (A + B + C) ≤
+      p15FrobNorm A + p15FrobNorm B + p15FrobNorm C := by
+  calc
+    p15FrobNorm (A + B + C) ≤ p15FrobNorm (A + B) + p15FrobNorm C :=
+      p15FrobNorm_add_le_internal _ _
+    _ ≤ (p15FrobNorm A + p15FrobNorm B) + p15FrobNorm C := by
+      gcongr
+      exact p15FrobNorm_add_le_internal _ _
+
+private theorem p15Gamma_add_le_internal {a d u : ℝ}
+    (ha : 0 ≤ a) (hd : 0 ≤ d) (hu : 0 ≤ u)
+    (hsum : (a + d) * u < 1) :
+    p15GammaReal a u + p15GammaReal d u +
+        p15GammaReal a u * p15GammaReal d u ≤
+      p15GammaReal (a + d) u := by
+  have hau : a * u < 1 := by
+    nlinarith [mul_nonneg hd hu]
+  have hdu : d * u < 1 := by
+    nlinarith [mul_nonneg ha hu]
+  have hau_pos : 0 < 1 - a * u := sub_pos.mpr hau
+  have hdu_pos : 0 < 1 - d * u := sub_pos.mpr hdu
+  have hsum_pos : 0 < 1 - (a + d) * u := sub_pos.mpr hsum
+  rw [← sub_nonneg]
+  have hidentity :
+      p15GammaReal (a + d) u -
+          (p15GammaReal a u + p15GammaReal d u +
+            p15GammaReal a u * p15GammaReal d u) =
+        (a * u) * (d * u) /
+          ((1 - (a + d) * u) * (1 - a * u) * (1 - d * u)) := by
+    unfold p15GammaReal
+    field_simp [ne_of_gt hau_pos, ne_of_gt hdu_pos, ne_of_gt hsum_pos]
+    ring
+  rw [hidentity]
+  exact div_nonneg
+    (mul_nonneg (mul_nonneg ha hu) (mul_nonneg hd hu))
+    (mul_nonneg (mul_pos hsum_pos hau_pos).le hdu_pos.le)
+
+/-- Theorem 4.4 derived from the gathered equation-(4.22) contributions. -/
+theorem p15CompletedTriangularSolve_backwardError {p b : ℕ} {r : ℕ}
+    {direction : P15TriangularSolveDirection} {u : ℝ}
+    {T : P15Matrix (p * b)} {rhs x : P15Vector (p * b)}
+    (completed : P15CompletedTriangularSolve r direction u T rhs x)
+    (hu : 0 ≤ u)
+    (hvalid : p15BLRTriangularSolveCost b p r * u < 1) :
+    Nonempty (P15TriangularSolveBackwardError r direction u T rhs x) := by
+  rcases completed.2 with ⟨analysis⟩
+  let matrixError : P15Matrix (p * b) :=
+    analysis.kernelError + analysis.summationError + analysis.interactionError
+  have hd_nonneg : 0 ≤ p15LowRankKernelCost b r := by
+    unfold p15LowRankKernelCost
+    positivity
+  have hp_nonneg : 0 ≤ (p : ℝ) := by positivity
+  have hcost :
+      p15LowRankKernelCost b r + (p : ℝ) =
+        p15BLRTriangularSolveCost b p r := by
+    unfold p15LowRankKernelCost p15BLRTriangularSolveCost
+    ring
+  have hgamma :
+      p15GammaReal (p15LowRankKernelCost b r) u +
+          p15GammaReal (p : ℝ) u +
+          p15GammaReal (p15LowRankKernelCost b r) u *
+            p15GammaReal (p : ℝ) u ≤
+        p15GammaReal (p15BLRTriangularSolveCost b p r) u := by
+    rw [← hcost]
+    exact p15Gamma_add_le_internal hd_nonneg hp_nonneg hu
+      (by simpa [hcost] using hvalid)
+  refine ⟨{
+    matrixError := matrixError
+    rhsError := analysis.rhsError
+    solve_eq := by simpa [matrixError] using analysis.gathered_eq
+    matrix_error_le := ?_
+    rhs_error_le := analysis.rhs_error_le
+  }⟩
+  have hT_nonneg : 0 ≤ p15FrobNorm T := Real.sqrt_nonneg _
+  calc
+    p15FrobNorm matrixError ≤
+        p15FrobNorm analysis.kernelError +
+          p15FrobNorm analysis.summationError +
+          p15FrobNorm analysis.interactionError := by
+            simpa [matrixError] using p15FrobNorm_add_three_le_internal
+              analysis.kernelError analysis.summationError
+              analysis.interactionError
+    _ ≤ (p15GammaReal (p15LowRankKernelCost b r) u +
+            p15GammaReal (p : ℝ) u +
+            p15GammaReal (p15LowRankKernelCost b r) u *
+              p15GammaReal (p : ℝ) u) * p15FrobNorm T := by
+          calc
+            _ ≤ p15GammaReal (p15LowRankKernelCost b r) u *
+                  p15FrobNorm T +
+                p15GammaReal (p : ℝ) u * p15FrobNorm T +
+                (p15GammaReal (p15LowRankKernelCost b r) u *
+                  p15GammaReal (p : ℝ) u) * p15FrobNorm T := by
+                    exact add_le_add
+                      (add_le_add analysis.kernel_error_le
+                        analysis.summation_error_le)
+                      analysis.interaction_error_le
+            _ = _ := by ring
+    _ ≤ p15GammaReal (p15BLRTriangularSolveCost b p r) u *
+        p15FrobNorm T := mul_le_mul_of_nonneg_right hgamma hT_nonneg
+
+/-- One completed computation from Theorem 4.5. It contains only the
+factorization and solve traces plus their source-level decompositions. The
+aggregate Theorems 4.2--4.4 interfaces and the final system perturbations are
+derived declarations, not fields of this record. -/
 structure P15BLRLinearSolveExecution (b p r : ℕ) where
   block_size_pos : 0 < b
   block_count_pos : 0 < p
@@ -621,44 +914,11 @@ structure P15BLRLinearSolveExecution (b p r : ℕ) where
   factor_rank : p15IsFactorBLRRank r L U
   factorization_completed :
     P15CompletedBLRFactorization r algorithm threshold recompression
-      unitRoundoff epsilon Atilde L U
-  factorError : P15Matrix (p * b)
-  factorRemainder : ℝ → ℝ → ℝ
-  factorization_eq : A + factorError = p15MatMul L U
-  factorError_le :
-    p15FrobNorm factorError ≤
-      (p15BLRXi p threshold recompression * epsilon +
-          p15GammaReal (p : ℝ) unitRoundoff) * p15FrobNorm A +
-        p15GammaReal (p15BLRSolveCost b p r) unitRoundoff *
-          p15FrobNorm L * p15FrobNorm U +
-        factorRemainder unitRoundoff epsilon
-  factorRemainder_bigO : p15IsBigOMixedAtZero factorRemainder
-  lowerError : P15Matrix (p * b)
-  upperError : P15Matrix (p * b)
-  lowerRhsError : P15Vector (p * b)
-  upperRhsError : P15Vector (p * b)
-  lower_completed : Nonempty
-    (P15CompletedTriangularSolve r .lower unitRoundoff L v yHat)
-  upper_completed : Nonempty
-    (P15CompletedTriangularSolve r .upper unitRoundoff U yHat xHat)
-  lowerSolve_eq :
-    p15MatVec (L + lowerError) yHat = v + lowerRhsError
-  upperSolve_eq :
-    p15MatVec (U + upperError) xHat = yHat + upperRhsError
-  lowerError_le :
-    p15FrobNorm lowerError ≤
-      p15GammaReal (p15BLRTriangularSolveCost b p r) unitRoundoff *
-        p15FrobNorm L
-  upperError_le :
-    p15FrobNorm upperError ≤
-      p15GammaReal (p15BLRTriangularSolveCost b p r) unitRoundoff *
-        p15FrobNorm U
-  lowerRhsError_le :
-    p15VecNorm lowerRhsError ≤
-      p15GammaReal (p : ℝ) unitRoundoff * p15VecNorm v
-  upperRhsError_le :
-    p15VecNorm upperRhsError ≤
-      p15GammaReal (p : ℝ) unitRoundoff * p15VecNorm yHat
+      unitRoundoff epsilon A Atilde L U
+  lower_completed :
+    P15CompletedTriangularSolve r .lower unitRoundoff L v yHat
+  upper_completed :
+    P15CompletedTriangularSolve r .upper unitRoundoff U yHat xHat
 
 /-- Exact matrix perturbation obtained by composing a perturbed factorization
 with perturbed forward and backward substitutions. -/

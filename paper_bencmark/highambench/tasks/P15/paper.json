@@ -54,15 +54,15 @@
     },
     {
       "candidate": "Theorem 4.1 blockwise UFC factorization expansion",
-      "reason": "Its full blockwise recurrence is below the source-level Theorems 4.2-4.4 interface selected for Theorem 4.5; the T3 pointwise execution still records the UFC/UCF block updates, factor/compress order, floating-point operations, compression semantics, output provenance, and successful completion before composing those established guarantees."
+      "reason": "Its blockwise recurrence and four global error contributions are retained as the source-level factorization analysis from which the imported Theorem-4.2/4.3 interface is derived; Theorem 4.5 remains the selected target."
     },
     {
       "candidate": "Corollary 4.1 and Theorems 4.2-4.3 factorization bounds",
-      "reason": "They are central algorithm-level guarantees recorded in the P15-T3 completed UFC/UCF execution certificate, but Theorem 4.5 extends them through both ordered triangular solves and is the paper's final stability theorem."
+      "reason": "These factorization bounds are predecessor results derived inside the P15 paper development and then consumed by the selected final linear-system theorem."
     },
     {
       "candidate": "Theorem 4.4 BLR triangular-system bound",
-      "reason": "Its exact equations and bounds are recorded as the two solve stages in P15-T3; selecting the final theorem tests their nontrivial composition with the UFC/UCF factorization."
+      "reason": "Its aggregate interface is derived from each completed equation-(4.22) solve trace and then consumed twice by the selected final theorem."
     },
     {
       "candidate": "Tables, Figures 1-9, SuiteSparse experiments, flop comparisons, and implementation recommendations",
@@ -84,7 +84,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 4.5 for one completed UFC or UCF execution, retaining dense A versus represented Atilde with the equation-(2.3)-(2.4) orientation, orthonormality, and minimum-rank semantics, exact computed-factor rank semantics, j<k update indexing, equation-(2.9) matrix-solve residuals, algorithm-specific threshold and recompression traces, both ordered equation-(4.22) solves with their c_tri bound, existential aggregate perturbations, and O(u epsilon) and O(u^2) remainder functions evaluated at the execution precision.",
+      "decision": "Use Theorem 4.5 for one completed UFC or UCF execution. Preserve dense A versus represented Atilde, exact factor-rank semantics, j<k algorithm traces, residual rounding models, algorithm-specific compression, derived Theorem-4.2--4.4 perturbation witnesses, exact aggregate compositions, and O(u epsilon)/O(u^2) controls whose certified neighborhoods contain the actual execution precision.",
       "task_id": "P15-T3",
       "theorem_name": "p15_t3_blr_lu_solve_backward_error"
     }
@@ -93,7 +93,7 @@
   "selection_policy": [
     "Use results proved or exact norm properties explicitly adopted in this paper, not empirical plots or results delegated to earlier sources.",
     "Preserve the paper's Frobenius-norm setting and distinguish low-rank truncation errors from floating-point errors.",
-    "Formalize big-O terms with quantified remainder functions, while keeping Theorem 4.5 pointwise in one completed execution; do not expose proof-only finite coefficients in a controlled target.",
+    "Formalize big-O terms with quantified remainder functions whose certified neighborhoods contain the pointwise execution precision; do not permit uncontrolled current-point values.",
     "Keep every public definition paper-scoped and free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."
   ],
