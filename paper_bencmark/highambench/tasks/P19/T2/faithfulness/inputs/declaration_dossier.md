@@ -7,138 +7,77 @@ Judges must interpret every dependency entry and may not infer semantics from na
 
 ```lean
 theorem p19_t2_modular_gmres_forward_error
-    {n : ℕ} {ι : Type*} {l : Filter ι} [l.NeBot]
-    (execution : P19Theorem31Execution (n := n) l) :
-    ∃ k : ℕ,
-      k = execution.run.keyDimension ∧
-        0 < k ∧ k ≤ n ∧
-          (∀ᶠ t in l,
-            1 / (execution.run.vHatSpectrum t).sigmaMin ≤ 4 / 3 ∧
-              (execution.run.vHatSpectrum t).sigmaMax ≤ 4 / 3) ∧
-          ∀ (MR MRinv : P19Matrix n) (hMR : p19InversePair MR MRinv),
-            let analysis := execution.forwardAnalysis MR MRinv hMR
-            p19FirstOrderLeAt l (p19PrecisionScale execution.run)
-              (fun t ↦ p19ForwardError execution.run.xExact (execution.run.xHat t))
-              (fun t ↦
-                p19PolynomialFactorValue execution.run.polynomialFactor n k *
-                  p19Xi execution.run MR MRinv analysis.quantities t *
-                  p19ConditionNumberF
-                    (p19SplitOperator execution.run MRinv)
-                    (p19SplitInverse execution.run MR))
+    {n : ℕ} (semantics : P19FirstOrderSemantics)
+    (family : P19Theorem31Family n semantics)
+    (mgs : P19MGSSelectionLaw family)
+    (appendix : P19StaticAppendixATheory family) :
+    ∃ k : P19Theorem31Dimension n,
+      p19IterationWellConditioned (family.iteration k) ∧
+        (P19Algorithm2Conditions (family.iteration k) →
+        ∀ (MR MRinv : P19Matrix n) (hMR : p19InversePair MR MRinv),
+          let q := appendix.rightQuantities k MR MRinv hMR
+          p19FirstOrderLe semantics
+            (p19ForwardError family.system.xExact
+              (family.iteration k).xHat)
+            ((family.iteration k).dimensionFactor *
+              p19StaticXi MR MRinv q *
+              p19ConditionNumberF
+                (p19StaticSplitOperator family.system MRinv)
+                (p19StaticSplitInverse family.system MR)))
 ```
 
 ## Elaborated target type
 
 ```lean
-∀ {n : Nat} {ι : Type u_1} {l : Filter ι} [l.NeBot] (execution : HighamBench.P19Theorem31Execution l),
-  Exists fun k =>
-    And (Eq k execution.run.keyDimension)
-      (And (instLTNat.lt 0 k)
-        (And (instLENat.le k n)
-          (And
-            (Filter.Eventually
-              (fun t =>
-                And (Real.instLE.le (instHDiv.hDiv 1 (execution.run.vHatSpectrum t).sigmaMin) (4 / 3))
-                  (Real.instLE.le (execution.run.vHatSpectrum t).sigmaMax (4 / 3)))
-              l)
-            (∀ (MR MRinv : HighamBench.P19Matrix n) (hMR : HighamBench.p19InversePair MR MRinv),
-              have analysis := execution.forwardAnalysis MR MRinv hMR;
-              HighamBench.p19FirstOrderLeAt l (HighamBench.p19PrecisionScale execution.run)
-                (fun t => HighamBench.p19ForwardError execution.run.xExact (execution.run.xHat t)) fun t =>
-                instHMul.hMul
-                  (instHMul.hMul (HighamBench.p19PolynomialFactorValue execution.run.polynomialFactor n k)
-                    (HighamBench.p19Xi execution.run MR MRinv analysis.quantities t))
-                  (HighamBench.p19ConditionNumberF (HighamBench.p19SplitOperator execution.run MRinv)
-                    (HighamBench.p19SplitInverse execution.run MR))))))
+∀ {n : Nat} (semantics : HighamBench.P19FirstOrderSemantics) (family : HighamBench.P19Theorem31Family n semantics),
+  HighamBench.P19MGSSelectionLaw family →
+    ∀ (appendix : HighamBench.P19StaticAppendixATheory family),
+      Exists fun k =>
+        And (HighamBench.p19IterationWellConditioned (family.iteration k))
+          (HighamBench.P19Algorithm2Conditions (family.iteration k) →
+            ∀ (MR MRinv : HighamBench.P19Matrix n) (hMR : HighamBench.p19InversePair MR MRinv),
+              have q := appendix.rightQuantities k MR MRinv hMR;
+              HighamBench.p19FirstOrderLe semantics
+                (HighamBench.p19ForwardError family.system.xExact (family.iteration k).xHat)
+                (instHMul.hMul (instHMul.hMul (family.iteration k).dimensionFactor (HighamBench.p19StaticXi MR MRinv q))
+                  (HighamBench.p19ConditionNumberF (HighamBench.p19StaticSplitOperator family.system MRinv)
+                    (HighamBench.p19StaticSplitInverse family.system MR))))
 ```
 
 ## Fully explicit elaborated target type
 
 ```lean
-∀ {n : Nat} {ι : Type u_1} {l : Filter.{u_1} ι} [@Filter.NeBot.{u_1} ι l]
-  (execution : @HighamBench.P19Theorem31Execution.{u_1} n ι l),
-  @Exists.{1} Nat fun (k : Nat) =>
+∀ {n : Nat} (semantics : HighamBench.P19FirstOrderSemantics) (family : HighamBench.P19Theorem31Family n semantics)
+  (mgs : @HighamBench.P19MGSSelectionLaw n semantics family)
+  (appendix : @HighamBench.P19StaticAppendixATheory n semantics family),
+  @Exists.{1} (HighamBench.P19Theorem31Dimension n) fun (k : HighamBench.P19Theorem31Dimension n) =>
     And
-      (@Eq.{1} Nat k
-        (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l
-          (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution)))
-      (And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
-        (And (@LE.le.{0} Nat instLENat k n)
-          (And
-            (@Filter.Eventually.{u_1} ι
-              (fun (t : ι) =>
-                And
-                  (@LE.le.{0} Real Real.instLE
-                    (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                      (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                      (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
-                      (@HighamBench.P19SingularValueData.sigmaMin n
-                        (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l
-                          (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution))
-                        (@HighamBench.P19ModularGMRESRun.vHat.{u_1} n ι l
-                          (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution) t)
-                        (@HighamBench.P19ModularGMRESRun.vHatSpectrum.{u_1} n ι l
-                          (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution) t)))
-                    (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                      (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                      (@OfNat.ofNat.{0} Real (nat_lit 4)
-                        (@instOfNatAtLeastTwo.{0} Real (nat_lit 4) Real.instNatCast
-                          (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3)))
-                            (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))))
-                      (@OfNat.ofNat.{0} Real (nat_lit 3)
-                        (@instOfNatAtLeastTwo.{0} Real (nat_lit 3) Real.instNatCast
-                          (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))
-                            (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))))))
-                  (@LE.le.{0} Real Real.instLE
-                    (@HighamBench.P19SingularValueData.sigmaMax n
-                      (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l
-                        (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution))
-                      (@HighamBench.P19ModularGMRESRun.vHat.{u_1} n ι l
-                        (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution) t)
-                      (@HighamBench.P19ModularGMRESRun.vHatSpectrum.{u_1} n ι l
-                        (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution) t))
-                    (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                      (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                      (@OfNat.ofNat.{0} Real (nat_lit 4)
-                        (@instOfNatAtLeastTwo.{0} Real (nat_lit 4) Real.instNatCast
-                          (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3)))
-                            (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))))
-                      (@OfNat.ofNat.{0} Real (nat_lit 3)
-                        (@instOfNatAtLeastTwo.{0} Real (nat_lit 3) Real.instNatCast
-                          (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))
-                            (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))))))
-              l)
-            (∀ (MR MRinv : HighamBench.P19Matrix n) (hMR : @HighamBench.p19InversePair n MR MRinv),
-              have analysis :
-                @HighamBench.P19ForwardAnalysis.{u_1} n ι l
-                  (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution) MR MRinv :=
-                @HighamBench.P19Theorem31Execution.forwardAnalysis.{u_1} n ι l execution MR MRinv hMR;
-              @HighamBench.p19FirstOrderLeAt.{u_1} ι l
-                (@HighamBench.p19PrecisionScale.{u_1} n ι l
-                  (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution))
-                (fun (t : ι) =>
-                  @HighamBench.p19ForwardError n
-                    (@HighamBench.P19ModularGMRESRun.xExact.{u_1} n ι l
-                      (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution))
-                    (@HighamBench.P19ModularGMRESRun.xHat.{u_1} n ι l
-                      (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution) t))
-                fun (t : ι) =>
-                @HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                    (HighamBench.p19PolynomialFactorValue
-                      (@HighamBench.P19ModularGMRESRun.polynomialFactor.{u_1} n ι l
-                        (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution))
-                      n k)
-                    (@HighamBench.p19Xi.{u_1} n ι l (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution) MR
-                      MRinv
-                      (@HighamBench.P19ForwardAnalysis.quantities.{u_1} n ι l
-                        (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution) MR MRinv analysis)
-                      t))
-                  (@HighamBench.p19ConditionNumberF n
-                    (@HighamBench.p19SplitOperator.{u_1} n ι l
-                      (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution) MRinv)
-                    (@HighamBench.p19SplitInverse.{u_1} n ι l
-                      (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l execution) MR))))))
+      (@HighamBench.p19IterationWellConditioned n (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+        (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+        (@HighamBench.P19Theorem31Family.iteration n semantics family k))
+      (@HighamBench.P19Algorithm2Conditions n (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+          (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+          (@HighamBench.P19Theorem31Family.iteration n semantics family k) →
+        ∀ (MR MRinv : HighamBench.P19Matrix n) (hMR : @HighamBench.p19InversePair n MR MRinv),
+          have q : @HighamBench.P19StaticRightQuantities n semantics family k MR MRinv :=
+            @HighamBench.P19StaticAppendixATheory.rightQuantities n semantics family appendix k MR MRinv hMR;
+          HighamBench.p19FirstOrderLe semantics
+            (@HighamBench.p19ForwardError n
+              (@HighamBench.P19Theorem31System.xExact n (@HighamBench.P19Theorem31Family.system n semantics family))
+              (@HighamBench.P19Algorithm2Iteration.xHat n (@HighamBench.P19Theorem31Family.system n semantics family)
+                semantics (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                (@HighamBench.P19Theorem31Family.iteration n semantics family k)))
+            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                (@HighamBench.P19Algorithm2Iteration.dimensionFactor n
+                  (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+                  (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                  (@HighamBench.P19Theorem31Family.iteration n semantics family k))
+                (@HighamBench.p19StaticXi n semantics family k MR MRinv q))
+              (@HighamBench.p19ConditionNumberF n
+                (@HighamBench.p19StaticSplitOperator n (@HighamBench.P19Theorem31Family.system n semantics family)
+                  MRinv)
+                (@HighamBench.p19StaticSplitInverse n (@HighamBench.P19Theorem31Family.system n semantics family) MR))))
 ```
 
 ## Local import graph
@@ -151,69 +90,150 @@ theorem p19_t2_modular_gmres_forward_error
 
 `local` entries are recursively followed through their types and bodies. `external-frontier` entries are the exact Lean/mathlib declarations where that recursive traversal stops; their types and one-level bodies are still shown.
 
-### D001: `HighamBench.P19ForwardAnalysis`
+### D001: `HighamBench.P19Algorithm2Conditions`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `b9ac83a09bfd7bab55e17ae5c7fc00b601ce16d2b27a44f15a85ddee2cb21891`
+- Semantic SHA-256: `f3da5a71d70cb6862c8500b208a4f5a9a8679a38a6b7d68318ea1e5a3fa54eb0`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19Matrix n → HighamBench.P19Matrix n → Type u_1
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → Prop
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → (MR MRinv : HighamBench.P19Matrix n) → Type u_1
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (iteration : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → Prop
 ```
 
-### D002: `HighamBench.P19ForwardAnalysis.quantities`
+### D002: `HighamBench.P19Algorithm2Iteration.dimensionFactor`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `0b438ee8658c81f0e84c7639a3f4e9c6775ef1bef01c5a58c2a3dc11dac2c356`
+- Semantic SHA-256: `8bd61c8f1e579e2bc426d5a08c59735f265c1098959fb615dd750676b8f5f9f9`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      {run : HighamBench.P19ModularGMRESRun l} →
-        {MR MRinv : HighamBench.P19Matrix n} →
-          HighamBench.P19ForwardAnalysis run MR MRinv → HighamBench.P19RightPreconditionedQuantities run MR MRinv
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → Real
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      {run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l} →
-        {MR MRinv : HighamBench.P19Matrix n} →
-          (self : @HighamBench.P19ForwardAnalysis.{u_1} n ι l run MR MRinv) →
-            @HighamBench.P19RightPreconditionedQuantities.{u_1} n ι l run MR MRinv
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l run MR MRinv self => self.1
+fun n system semantics basisFamily k self => self.1
 ```
 
-### D003: `HighamBench.P19Matrix`
+### D003: `HighamBench.P19Algorithm2Iteration.xHat`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `0f616cd1d9ce48e6eb27c83d2c4a4c2df84dd67d173d645b05f7301f1c36da83`
+
+Type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → HighamBench.P19Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → HighamBench.P19Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n system semantics basisFamily k self => self.25
+```
+
+### D004: `HighamBench.P19FirstOrderSemantics`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `a20664f9def445da45faf4e94b9d57628f2c92d716d878ab43853aebfc279a4f`
+
+Type:
+
+```lean
+Type
+```
+
+Fully explicit type:
+
+```lean
+Type
+```
+
+### D005: `HighamBench.P19MGSSelectionLaw`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `b67e2d9f04acecbc78207a030a90d981c008234f8a4032f60100150823aba8a3`
+
+Type:
+
+```lean
+{n : Nat} → {semantics : HighamBench.P19FirstOrderSemantics} → HighamBench.P19Theorem31Family n semantics → Prop
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} → (family : HighamBench.P19Theorem31Family n semantics) → Prop
+```
+
+### D006: `HighamBench.P19Matrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -239,322 +259,260 @@ Definition body (one-level semantic boundary):
 fun n => Matrix (Fin n) (Fin n) Real
 ```
 
-### D004: `HighamBench.P19ModularGMRESRun.keyDimension`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `767f69e4769c4c0becd2befca856b405e9162005c29c09510ea257270525ec38`
-
-Type:
-
-```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → Nat
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n ι l self => self.13
-```
-
-### D005: `HighamBench.P19ModularGMRESRun.polynomialFactor`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `553771567bab00d42d3938d46e9b207922460f90b77e05070799f49270fe1140`
-
-Type:
-
-```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19PolynomialFactor
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → HighamBench.P19PolynomialFactor
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n ι l self => self.16
-```
-
-### D006: `HighamBench.P19ModularGMRESRun.vHat`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `4ac504c95889845aa9c51165baec4964b1578a4c41ec218261e98f1d6e05954b`
-
-Type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} → (self : HighamBench.P19ModularGMRESRun l) → ι → HighamBench.P19RectMatrix n self.keyDimension
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) →
-        ι → HighamBench.P19RectMatrix n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l self)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n ι l self => self.31
-```
-
-### D007: `HighamBench.P19ModularGMRESRun.vHatSpectrum`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `14279e80ea4d996a83bca8b47cd3e87afc7ca5416e052d656cb43d2fe52058e0`
-
-Type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      (self : HighamBench.P19ModularGMRESRun l) → (t : ι) → HighamBench.P19SingularValueData (self.vHat t)
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) →
-        (t : ι) →
-          @HighamBench.P19SingularValueData n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l self)
-            (@HighamBench.P19ModularGMRESRun.vHat.{u_1} n ι l self t)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n ι l self => self.52
-```
-
-### D008: `HighamBench.P19ModularGMRESRun.xExact`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `cc197682e9da3daeb8ee25b764ecc2be7634b595dbf390f0b556c107ac5399c0`
-
-Type:
-
-```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19Vector n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} → {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → HighamBench.P19Vector n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n ι l self => self.7
-```
-
-### D009: `HighamBench.P19ModularGMRESRun.xHat`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `2324897d125aa383706a0f450a66a8a3717e5ab91749b471f1b1311eeb85e105`
-
-Type:
-
-```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → ι → HighamBench.P19Vector n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → ι → HighamBench.P19Vector n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n ι l self => self.47
-```
-
-### D010: `HighamBench.P19SingularValueData.sigmaMax`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `39b1024085d127c92aa430d39d98d3d00a99a5d1c44ea3bcaff897aa19328ba4`
-
-Type:
-
-```lean
-{m k : Nat} → {A : HighamBench.P19RectMatrix m k} → HighamBench.P19SingularValueData A → Real
-```
-
-Fully explicit type:
-
-```lean
-{m k : Nat} → {A : HighamBench.P19RectMatrix m k} → (self : @HighamBench.P19SingularValueData m k A) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun m k A self => self.2
-```
-
-### D011: `HighamBench.P19SingularValueData.sigmaMin`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `1013716a93aaa4244e940de911b2c7afefa568b957b54095b8426864b032c52c`
-
-Type:
-
-```lean
-{m k : Nat} → {A : HighamBench.P19RectMatrix m k} → HighamBench.P19SingularValueData A → Real
-```
-
-Fully explicit type:
-
-```lean
-{m k : Nat} → {A : HighamBench.P19RectMatrix m k} → (self : @HighamBench.P19SingularValueData m k A) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun m k A self => self.1
-```
-
-### D012: `HighamBench.P19Theorem31Execution`
+### D007: `HighamBench.P19StaticAppendixATheory`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `5b717643c51c82887357e2b74e5fa20e19cb0901d113af9598f0354a6996fd66`
+- Semantic SHA-256: `f878ea97002c4b2194fa2f73c12e0f0c4b72630967712bbf65fa43c50ff031fa`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → Filter ι → Type u_1
+{n : Nat} → {semantics : HighamBench.P19FirstOrderSemantics} → HighamBench.P19Theorem31Family n semantics → Type
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → (l : Filter.{u_1} ι) → Type u_1
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} → (family : HighamBench.P19Theorem31Family n semantics) → Type
 ```
 
-### D013: `HighamBench.P19Theorem31Execution.forwardAnalysis`
+### D008: `HighamBench.P19StaticAppendixATheory.rightQuantities`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `e1b834f84752ac6d0222710bc13db30a366a5efd6161ae03c36f2945c568a341`
+- Semantic SHA-256: `79c3a6536a92b7a762cd0d7c31fc8459e7439753c676c7c63292a9e9c21108b1`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      (self : HighamBench.P19Theorem31Execution l) →
-        (MR MRinv : HighamBench.P19Matrix n) →
-          HighamBench.p19InversePair MR MRinv → HighamBench.P19ForwardAnalysis self.run MR MRinv
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      HighamBench.P19StaticAppendixATheory family →
+        (k : HighamBench.P19Theorem31Dimension n) →
+          (MR MRinv : HighamBench.P19Matrix n) →
+            HighamBench.p19InversePair MR MRinv → HighamBench.P19StaticRightQuantities family k MR MRinv
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (self : @HighamBench.P19Theorem31Execution.{u_1} n ι l) →
-        (MR MRinv : HighamBench.P19Matrix n) →
-          @HighamBench.p19InversePair n MR MRinv →
-            @HighamBench.P19ForwardAnalysis.{u_1} n ι l (@HighamBench.P19Theorem31Execution.run.{u_1} n ι l self) MR
-              MRinv
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      (self : @HighamBench.P19StaticAppendixATheory n semantics family) →
+        (k : HighamBench.P19Theorem31Dimension n) →
+          (MR MRinv : HighamBench.P19Matrix n) →
+            @HighamBench.p19InversePair n MR MRinv → @HighamBench.P19StaticRightQuantities n semantics family k MR MRinv
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.2
+fun n semantics family self => self.1
 ```
 
-### D014: `HighamBench.P19Theorem31Execution.run`
+### D009: `HighamBench.P19StaticRightQuantities`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `cdb178e57a28c2c5ee320fc7a43c465f7e981c77a239d21d1559d69277e7a564`
+
+Type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    HighamBench.P19Theorem31Family n semantics →
+      HighamBench.P19Theorem31Dimension n → HighamBench.P19Matrix n → HighamBench.P19Matrix n → Type
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    (family : HighamBench.P19Theorem31Family n semantics) →
+      (k : HighamBench.P19Theorem31Dimension n) → (MR MRinv : HighamBench.P19Matrix n) → Type
+```
+
+### D010: `HighamBench.P19Theorem31Dimension`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `a13cc3e797365b0c4a89dfb8193b07af59cf5be5cc83ee580f94bd18113eb0ee`
+- Semantic SHA-256: `ba4d761a25f81cfb346c892740752ac617f111a2ec0eef599d417bd7f7d3e658`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19Theorem31Execution l → HighamBench.P19ModularGMRESRun l
+Nat → Type
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Type
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => Subtype fun k => And (instLTNat.lt 0 k) (instLENat.le k n)
+```
+
+### D011: `HighamBench.P19Theorem31Family`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `cc83d8798f9a47a79576057c89bdc261929f89427a25b80ab5445df3cd5f82a3`
+
+Type:
+
+```lean
+Nat → HighamBench.P19FirstOrderSemantics → Type
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → (semantics : HighamBench.P19FirstOrderSemantics) → Type
+```
+
+### D012: `HighamBench.P19Theorem31Family.basisFamily`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `48b8971fe31959b7c84e4fa154d6726a70bcbe3b6bc2717c09056064d86842e0`
+
+Type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    (self : HighamBench.P19Theorem31Family n semantics) → HighamBench.P19Theorem31BasisFamily self.system
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (self : @HighamBench.P19Theorem31Execution.{u_1} n ι l) → @HighamBench.P19ModularGMRESRun.{u_1} n ι l
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    (self : HighamBench.P19Theorem31Family n semantics) →
+      @HighamBench.P19Theorem31BasisFamily n (@HighamBench.P19Theorem31Family.system n semantics self)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.1
+fun n semantics self => self.2
 ```
 
-### D015: `HighamBench.p19ConditionNumberF`
+### D013: `HighamBench.P19Theorem31Family.iteration`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `19b31c6eb7cb832d22efb7b1839ce0bc1843824506aa8009381c2a4b584f2da2`
+
+Type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    (self : HighamBench.P19Theorem31Family n semantics) →
+      (k : HighamBench.P19Theorem31Dimension n) →
+        HighamBench.P19Algorithm2Iteration self.system semantics self.basisFamily k
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    (self : HighamBench.P19Theorem31Family n semantics) →
+      (k : HighamBench.P19Theorem31Dimension n) →
+        @HighamBench.P19Algorithm2Iteration n (@HighamBench.P19Theorem31Family.system n semantics self) semantics
+          (@HighamBench.P19Theorem31Family.basisFamily n semantics self) k
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n semantics self => self.3
+```
+
+### D014: `HighamBench.P19Theorem31Family.system`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `f9b5cc522a99882317f849e0f893e587ce7572ee9af8b6bcf8da993caceb2a83`
+
+Type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    HighamBench.P19Theorem31Family n semantics → HighamBench.P19Theorem31System n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    (self : HighamBench.P19Theorem31Family n semantics) → HighamBench.P19Theorem31System n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n semantics self => self.1
+```
+
+### D015: `HighamBench.P19Theorem31System.xExact`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `c060fd2e6cb0459f8835569f03cacb0ab0a92b86296d51c2585bb7100236edd6`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P19Theorem31System n) → HighamBench.P19Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.7
+```
+
+### D016: `HighamBench.p19ConditionNumberF`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -580,36 +538,34 @@ Definition body (one-level semantic boundary):
 fun {n} A Ainv => instHMul.hMul (HighamBench.p19FrobNorm Ainv) (HighamBench.p19FrobNorm A)
 ```
 
-### D016: `HighamBench.p19FirstOrderLeAt`
+### D017: `HighamBench.p19FirstOrderLe`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `762c7d3a1b43802433562110427d7f354a4212f105bf0df6b4094874cda3499e`
+- Semantic SHA-256: `35e87ffbddb5973e07dcc90dac89a3894e57974b204159105b2394786a93ec95`
 
 Type:
 
 ```lean
-{ι : Type u_1} → Filter ι → (ι → Real) → (ι → Real) → (ι → Real) → Prop
+HighamBench.P19FirstOrderSemantics → Real → Real → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-{ι : Type u_1} → (l : Filter.{u_1} ι) → (scale lhs rhs : ι → Real) → Prop
+(semantics : HighamBench.P19FirstOrderSemantics) → (lhs rhs : Real) → Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {ι} l scale lhs rhs =>
-  Exists fun remainder =>
-    And (HighamBench.p19SecondOrderAt l scale remainder)
-      (Filter.Eventually (fun t => Real.instLE.le (lhs t) (instHAdd.hAdd (rhs t) (abs (remainder t)))) l)
+fun semantics lhs rhs =>
+  Exists fun remainder => And (semantics.secondOrder remainder) (Real.instLE.le lhs (instHAdd.hAdd rhs (abs remainder)))
 ```
 
-### D017: `HighamBench.p19ForwardError`
+### D018: `HighamBench.p19ForwardError`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -635,7 +591,7 @@ Definition body (one-level semantic boundary):
 fun {n} x xHat => instHDiv.hDiv (HighamBench.p19VecNorm2 (instHSub.hSub xHat x)) (HighamBench.p19VecNorm2 x)
 ```
 
-### D018: `HighamBench.p19InversePair`
+### D019: `HighamBench.p19InversePair`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -663,835 +619,723 @@ fun {n} A Ainv =>
     (∀ (x : HighamBench.P19Vector n), Eq (HighamBench.p19MatVec A (HighamBench.p19MatVec Ainv x)) x)
 ```
 
-### D019: `HighamBench.p19PolynomialFactorValue`
+### D020: `HighamBench.p19IterationWellConditioned`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `e32297e66203da021d9ce43ebf603a182f9ddfad04cfab209bfb4f1246022f1d`
+- Semantic SHA-256: `837ad167b07baa790538584ded0302c4a219440403d2a43dfcb0dfd365ded950`
 
 Type:
 
 ```lean
-HighamBench.P19PolynomialFactor → Nat → Nat → Real
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-(c : HighamBench.P19PolynomialFactor) → (n k : Nat) → Real
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (iteration : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun c n k =>
-  Finset.univ.sum fun i =>
-    Finset.univ.sum fun j =>
-      instHMul.hMul (instHMul.hMul (c.coefficient i j) (instHPow.hPow n.cast i.val)) (instHPow.hPow k.cast j.val)
+fun {n} {system} {semantics} {basisFamily} {k} iteration =>
+  And (Real.instLE.le (instHDiv.hDiv 1 iteration.vHatSpectrum.sigmaMin) (4 / 3))
+    (Real.instLE.le iteration.vHatSpectrum.sigmaMax (4 / 3))
 ```
 
-### D020: `HighamBench.p19PrecisionScale`
+### D021: `HighamBench.p19StaticSplitInverse`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `fad5b1a69feb7a1d2c4461019923c00ea4539e608602c407f6db7cbeb1f645a2`
+- Semantic SHA-256: `4cb66673cf665323a02c7eb0c2c6dc429e9bd04200a6e3229334df0c1b9d3f4b`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → ι → Real
+{n : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19Matrix n → HighamBench.P19Matrix n
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter.{u_1} ι} → (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → ι → Real
+{n : Nat} → (system : HighamBench.P19Theorem31System n) → (MR : HighamBench.P19Matrix n) → HighamBench.P19Matrix n
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} {ι} {l} run t =>
-  instHAdd.hAdd (instHAdd.hAdd (instHAdd.hAdd (run.epsilonC t) (run.epsilonB t)) (run.ug t)) (run.epsilonX t)
+fun {n} system MR => HighamBench.p19SquareRectMul MR (HighamBench.p19SquareRectMul system.Ainv system.ML)
 ```
 
-### D021: `HighamBench.p19SplitInverse`
+### D022: `HighamBench.p19StaticSplitOperator`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `9477aec818a5cb51663615169812c4e799cb323f77050999d8483829388a05be`
+- Semantic SHA-256: `c25f2199e58a4a4de5edf313b6a5d571be22105c7937a8116262d0e4917f09a1`
 
 Type:
 
 ```lean
-{n : Nat} →
-  {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19Matrix n → HighamBench.P19Matrix n
+{n : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19Matrix n → HighamBench.P19Matrix n
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → (MR : HighamBench.P19Matrix n) → HighamBench.P19Matrix n
+{n : Nat} → (system : HighamBench.P19Theorem31System n) → (MRinv : HighamBench.P19Matrix n) → HighamBench.P19Matrix n
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} {ι} {l} run MR => HighamBench.p19SquareRectMul MR (HighamBench.p19SquareRectMul run.Ainv run.ML)
+fun {n} system MRinv => HighamBench.p19SquareRectMul system.MLinv (HighamBench.p19SquareRectMul system.A MRinv)
 ```
 
-### D022: `HighamBench.p19SplitOperator`
+### D023: `HighamBench.p19StaticXi`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `4865bff1cf8cab324d5e100bf3645aa19c2a7d74b2d0f8fe3be2945b09440241`
+- Semantic SHA-256: `f2bb3e83a46a0dfed93d2a90100870ec073df2ef99f0582cc00b88a6ba6e4ca8`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19Matrix n → HighamBench.P19Matrix n
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        (MR MRinv : HighamBench.P19Matrix n) → HighamBench.P19StaticRightQuantities family k MR MRinv → Real
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → (MRinv : HighamBench.P19Matrix n) → HighamBench.P19Matrix n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} {ι} {l} run MRinv => HighamBench.p19SquareRectMul run.MLinv (HighamBench.p19SquareRectMul run.A MRinv)
-```
-
-### D023: `HighamBench.p19Xi`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `fe707534cb683a4ab207547ffb88e334426fe75e025851328be68292e8485852`
-
-Type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      (run : HighamBench.P19ModularGMRESRun l) →
-        (MR MRinv : HighamBench.P19Matrix n) → HighamBench.P19RightPreconditionedQuantities run MR MRinv → ι → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
         (MR MRinv : HighamBench.P19Matrix n) →
-          (q : @HighamBench.P19RightPreconditionedQuantities.{u_1} n ι l run MR MRinv) → (t : ι) → Real
+          (q : @HighamBench.P19StaticRightQuantities n semantics family k MR MRinv) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} {ι} {l} run MR MRinv q t =>
-  HighamBench.p19ModularEnvelope (HighamBench.p19Alpha run MR MRinv q t) (HighamBench.p19Beta run MR MRinv q t)
-    (HighamBench.p19Lambda run MR MRinv) (run.epsilonC t) (run.epsilonB t) (run.ug t) (run.epsilonX t)
+fun {n} {semantics} {family} {k} MR MRinv q =>
+  have run := family.iteration k;
+  HighamBench.p19ModularEnvelope (HighamBench.p19StaticAlpha MR MRinv q) (HighamBench.p19StaticBeta MR MRinv q)
+    (HighamBench.p19StaticLambda family.system MR MRinv) run.epsilonC run.epsilonB run.ug run.epsilonX
 ```
 
-### D024: `HighamBench.P19ForwardAnalysis.mk`
+### D024: `HighamBench.P19Algorithm2Conditions.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `f65902c46b4d8ef84c868f62ccb61d08728a331e93f2c6a1cbcc883f46c9603e`
+- Semantic SHA-256: `255e05d9169cf68160ec75d831b67a6c01b7321d65c3244a232270c4e9a6a0f2`
 
 Type:
 
 ```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      {run : HighamBench.P19ModularGMRESRun l} →
-        {MR MRinv : HighamBench.P19Matrix n} →
-          (quantities : HighamBench.P19RightPreconditionedQuantities run MR MRinv) →
-            (computationPropagation : ι → HighamBench.P19RectMatrix n run.keyDimension → HighamBench.P19Vector n) →
-              (rhsPropagation leastSquaresBPropagation : ι → HighamBench.P19Vector n → HighamBench.P19Vector n) →
-                (leastSquaresCPropagation :
-                    ι → HighamBench.P19RectMatrix n run.keyDimension → HighamBench.P19Vector n) →
-                  (solutionPropagation : ι → HighamBench.P19Vector n → HighamBench.P19Vector n) →
-                    (computationContribution rhsContribution gmresContribution solutionContribution remainder :
-                        ι → HighamBench.P19Vector n) →
-                      (∀ (t : ι), Eq (computationContribution t) (computationPropagation t (run.deltaC t))) →
-                        (∀ (t : ι), Eq (rhsContribution t) (rhsPropagation t (run.deltaB t))) →
-                          (∀ (t : ι),
-                              Eq (gmresContribution t)
-                                (instHAdd.hAdd (leastSquaresBPropagation t (run.leastSquaresDeltaB t))
-                                  (leastSquaresCPropagation t (run.leastSquaresDeltaC t)))) →
-                            (∀ (t : ι), Eq (solutionContribution t) (solutionPropagation t (run.deltaX t))) →
-                              (∀ (t : ι), Eq (computationPropagation t 0) 0) →
-                                (∀ (t : ι), Eq (rhsPropagation t 0) 0) →
-                                  (∀ (t : ι), Eq (leastSquaresBPropagation t 0) 0) →
-                                    (∀ (t : ι), Eq (leastSquaresCPropagation t 0) 0) →
-                                      (∀ (t : ι), Eq (solutionPropagation t 0) 0) →
-                                        (∀ (t : ι),
-                                            Eq (instHSub.hSub (run.xHat t) run.xExact)
-                                              (instHAdd.hAdd
-                                                (instHAdd.hAdd
-                                                  (instHAdd.hAdd
-                                                    (instHAdd.hAdd (computationContribution t) (rhsContribution t))
-                                                    (gmresContribution t))
-                                                  (solutionContribution t))
-                                                (remainder t))) →
-                                          (∀ (t : ι),
-                                              Real.instLE.le
-                                                (instHDiv.hDiv (HighamBench.p19VecNorm2 (computationContribution t))
-                                                  (HighamBench.p19VecNorm2 run.xExact))
-                                                (instHMul.hMul
-                                                  (instHMul.hMul
-                                                    (HighamBench.p19PolynomialFactorValue run.polynomialFactor n
-                                                      run.keyDimension)
-                                                    (HighamBench.p19ConditionNumberF
-                                                      (HighamBench.p19SplitOperator run MRinv)
-                                                      (HighamBench.p19SplitInverse run MR)))
-                                                  (instHMul.hMul (HighamBench.p19Alpha run MR MRinv quantities t)
-                                                    (run.epsilonC t)))) →
-                                            (∀ (t : ι),
-                                                Real.instLE.le
-                                                  (instHDiv.hDiv (HighamBench.p19VecNorm2 (rhsContribution t))
-                                                    (HighamBench.p19VecNorm2 run.xExact))
-                                                  (instHMul.hMul
-                                                    (instHMul.hMul
-                                                      (HighamBench.p19PolynomialFactorValue run.polynomialFactor n
-                                                        run.keyDimension)
-                                                      (HighamBench.p19ConditionNumberF
-                                                        (HighamBench.p19SplitOperator run MRinv)
-                                                        (HighamBench.p19SplitInverse run MR)))
-                                                    (instHMul.hMul (HighamBench.p19Beta run MR MRinv quantities t)
-                                                      (run.epsilonB t)))) →
-                                              (∀ (t : ι),
-                                                  Real.instLE.le
-                                                    (instHDiv.hDiv (HighamBench.p19VecNorm2 (gmresContribution t))
-                                                      (HighamBench.p19VecNorm2 run.xExact))
-                                                    (instHMul.hMul
-                                                      (instHMul.hMul
-                                                        (HighamBench.p19PolynomialFactorValue run.polynomialFactor n
-                                                          run.keyDimension)
-                                                        (HighamBench.p19ConditionNumberF
-                                                          (HighamBench.p19SplitOperator run MRinv)
-                                                          (HighamBench.p19SplitInverse run MR)))
-                                                      (instHMul.hMul (HighamBench.p19Beta run MR MRinv quantities t)
-                                                        (run.ug t)))) →
-                                                (∀ (t : ι),
-                                                    Real.instLE.le
-                                                      (instHDiv.hDiv (HighamBench.p19VecNorm2 (solutionContribution t))
-                                                        (HighamBench.p19VecNorm2 run.xExact))
-                                                      (instHMul.hMul
-                                                        (instHMul.hMul
-                                                          (HighamBench.p19PolynomialFactorValue run.polynomialFactor n
-                                                            run.keyDimension)
-                                                          (HighamBench.p19ConditionNumberF
-                                                            (HighamBench.p19SplitOperator run MRinv)
-                                                            (HighamBench.p19SplitInverse run MR)))
-                                                        (instHMul.hMul (HighamBench.p19Lambda run MR MRinv)
-                                                          (run.epsilonX t)))) →
-                                                  (HighamBench.p19SecondOrderAt l (HighamBench.p19PrecisionScale run)
-                                                      fun t =>
-                                                      instHDiv.hDiv (HighamBench.p19VecNorm2 (remainder t))
-                                                        (HighamBench.p19VecNorm2 run.xExact)) →
-                                                    HighamBench.P19ForwardAnalysis run MR MRinv
+∀ {n : Nat} {system : HighamBench.P19Theorem31System n} {semantics : HighamBench.P19FirstOrderSemantics}
+  {basisFamily : HighamBench.P19Theorem31BasisFamily system} {k : HighamBench.P19Theorem31Dimension n}
+  {iteration : HighamBench.P19Algorithm2Iteration system semantics basisFamily k},
+  And (Real.instLE.le 0 iteration.epsilonC)
+      (And (Real.instLE.le 0 iteration.epsilonB)
+        (And (Real.instLE.le 0 iteration.ug) (Real.instLE.le 0 iteration.epsilonX))) →
+    Real.instLE.le (HighamBench.p19FrobNorm iteration.deltaC)
+        (instHMul.hMul iteration.epsilonC
+          (HighamBench.p19FrobNorm (HighamBench.p19StaticExactC system (basisFamily.basis k.val)))) →
+      Real.instLE.le (HighamBench.p19VecNorm2 iteration.deltaB)
+          (instHMul.hMul iteration.epsilonB (HighamBench.p19VecNorm2 (HighamBench.p19StaticExactB system))) →
+        HighamBench.p19IsLeastSquaresSolution (instHAdd.hAdd iteration.computedC iteration.leastSquaresDeltaC)
+            (instHAdd.hAdd iteration.computedB iteration.leastSquaresDeltaB) iteration.yHat →
+          (∀ (j : Fin (instHAdd.hAdd k.val 1)),
+              Real.instLE.le
+                (HighamBench.p19VecNorm2
+                  (HighamBench.p19Column
+                    (HighamBench.p19Augment iteration.leastSquaresDeltaB iteration.leastSquaresDeltaC) j))
+                (instHMul.hMul (instHMul.hMul iteration.dimensionFactor iteration.ug)
+                  (HighamBench.p19VecNorm2
+                    (HighamBench.p19Column (HighamBench.p19Augment iteration.computedB iteration.computedC) j)))) →
+            semantics.small
+                (instHMul.hMul iteration.ug
+                  (HighamBench.p19RectConditionF2 iteration.computedC iteration.computedCSpectrum.sigmaMin)) →
+              semantics.small
+                  (instHMul.hMul (instHAdd.hAdd (instHAdd.hAdd iteration.epsilonC iteration.epsilonB) iteration.ug)
+                    (HighamBench.p19RectConditionF2 (HighamBench.p19StaticExactC system (basisFamily.basis k.val))
+                      iteration.exactCSpectrum.sigmaMin)) →
+                Real.instLE.le (HighamBench.p19VecNorm2 iteration.deltaX)
+                    (instHMul.hMul iteration.epsilonX
+                      (HighamBench.p19VecNorm2 (HighamBench.p19RectMatVec (basisFamily.basis k.val) iteration.yHat))) →
+                  semantics.small iteration.epsilonX → HighamBench.P19Algorithm2Conditions iteration
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      {run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l} →
-        {MR MRinv : HighamBench.P19Matrix n} →
-          (quantities : @HighamBench.P19RightPreconditionedQuantities.{u_1} n ι l run MR MRinv) →
-            (computationPropagation :
-                ι →
-                  HighamBench.P19RectMatrix n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run) →
-                    HighamBench.P19Vector n) →
-              (rhsPropagation leastSquaresBPropagation : ι → HighamBench.P19Vector n → HighamBench.P19Vector n) →
-                (leastSquaresCPropagation :
-                    ι →
-                      HighamBench.P19RectMatrix n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run) →
-                        HighamBench.P19Vector n) →
-                  (solutionPropagation : ι → HighamBench.P19Vector n → HighamBench.P19Vector n) →
-                    (computationContribution rhsContribution gmresContribution solutionContribution remainder :
-                        ι → HighamBench.P19Vector n) →
-                      (computation_link :
-                          ∀ (t : ι),
-                            @Eq.{1} (HighamBench.P19Vector n) (computationContribution t)
-                              (computationPropagation t (@HighamBench.P19ModularGMRESRun.deltaC.{u_1} n ι l run t))) →
-                        (rhs_link :
-                            ∀ (t : ι),
-                              @Eq.{1} (HighamBench.P19Vector n) (rhsContribution t)
-                                (rhsPropagation t (@HighamBench.P19ModularGMRESRun.deltaB.{u_1} n ι l run t))) →
-                          (gmres_link :
-                              ∀ (t : ι),
-                                @Eq.{1} (HighamBench.P19Vector n) (gmresContribution t)
-                                  (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n) (HighamBench.P19Vector n)
-                                    (HighamBench.P19Vector n)
-                                    (@instHAdd.{0} (HighamBench.P19Vector n)
-                                      (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
-                                        Real.instAdd))
-                                    (leastSquaresBPropagation t
-                                      (@HighamBench.P19ModularGMRESRun.leastSquaresDeltaB.{u_1} n ι l run t))
-                                    (leastSquaresCPropagation t
-                                      (@HighamBench.P19ModularGMRESRun.leastSquaresDeltaC.{u_1} n ι l run t)))) →
-                            (solution_link :
-                                ∀ (t : ι),
-                                  @Eq.{1} (HighamBench.P19Vector n) (solutionContribution t)
-                                    (solutionPropagation t
-                                      (@HighamBench.P19ModularGMRESRun.deltaX.{u_1} n ι l run t))) →
-                              (computationPropagation_zero :
-                                  ∀ (t : ι),
-                                    @Eq.{1} (HighamBench.P19Vector n)
-                                      (computationPropagation t
-                                        (@OfNat.ofNat.{0}
-                                          (HighamBench.P19RectMatrix n
-                                            (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run))
-                                          (nat_lit 0)
-                                          (@Zero.toOfNat0.{0}
-                                            (HighamBench.P19RectMatrix n
-                                              (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run))
-                                            (@Matrix.zero.{0, 0, 0} (Fin n)
-                                              (Fin (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run)) Real
-                                              Real.instZero))))
-                                      (@OfNat.ofNat.{0} (HighamBench.P19Vector n) (nat_lit 0)
-                                        (@Zero.toOfNat0.{0} (HighamBench.P19Vector n)
-                                          (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
-                                            Real.instZero)))) →
-                                (rhsPropagation_zero :
-                                    ∀ (t : ι),
-                                      @Eq.{1} (HighamBench.P19Vector n)
-                                        (rhsPropagation t
-                                          (@OfNat.ofNat.{0} (HighamBench.P19Vector n) (nat_lit 0)
-                                            (@Zero.toOfNat0.{0} (HighamBench.P19Vector n)
-                                              (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
-                                                Real.instZero))))
-                                        (@OfNat.ofNat.{0} (HighamBench.P19Vector n) (nat_lit 0)
-                                          (@Zero.toOfNat0.{0} (HighamBench.P19Vector n)
-                                            (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
-                                              Real.instZero)))) →
-                                  (leastSquaresBPropagation_zero :
-                                      ∀ (t : ι),
-                                        @Eq.{1} (HighamBench.P19Vector n)
-                                          (leastSquaresBPropagation t
-                                            (@OfNat.ofNat.{0} (HighamBench.P19Vector n) (nat_lit 0)
-                                              (@Zero.toOfNat0.{0} (HighamBench.P19Vector n)
-                                                (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                  fun (i : Fin n) => Real.instZero))))
-                                          (@OfNat.ofNat.{0} (HighamBench.P19Vector n) (nat_lit 0)
-                                            (@Zero.toOfNat0.{0} (HighamBench.P19Vector n)
-                                              (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
-                                                Real.instZero)))) →
-                                    (leastSquaresCPropagation_zero :
-                                        ∀ (t : ι),
-                                          @Eq.{1} (HighamBench.P19Vector n)
-                                            (leastSquaresCPropagation t
-                                              (@OfNat.ofNat.{0}
-                                                (HighamBench.P19RectMatrix n
-                                                  (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run))
-                                                (nat_lit 0)
-                                                (@Zero.toOfNat0.{0}
-                                                  (HighamBench.P19RectMatrix n
-                                                    (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run))
-                                                  (@Matrix.zero.{0, 0, 0} (Fin n)
-                                                    (Fin (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run))
-                                                    Real Real.instZero))))
-                                            (@OfNat.ofNat.{0} (HighamBench.P19Vector n) (nat_lit 0)
-                                              (@Zero.toOfNat0.{0} (HighamBench.P19Vector n)
-                                                (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                  fun (i : Fin n) => Real.instZero)))) →
-                                      (solutionPropagation_zero :
-                                          ∀ (t : ι),
-                                            @Eq.{1} (HighamBench.P19Vector n)
-                                              (solutionPropagation t
-                                                (@OfNat.ofNat.{0} (HighamBench.P19Vector n) (nat_lit 0)
-                                                  (@Zero.toOfNat0.{0} (HighamBench.P19Vector n)
-                                                    (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                      fun (i : Fin n) => Real.instZero))))
-                                              (@OfNat.ofNat.{0} (HighamBench.P19Vector n) (nat_lit 0)
-                                                (@Zero.toOfNat0.{0} (HighamBench.P19Vector n)
-                                                  (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                    fun (i : Fin n) => Real.instZero)))) →
-                                        (error_decomposition :
-                                            ∀ (t : ι),
-                                              @Eq.{1} (HighamBench.P19Vector n)
-                                                (@HSub.hSub.{0, 0, 0} (HighamBench.P19Vector n)
-                                                  (HighamBench.P19Vector n) (HighamBench.P19Vector n)
-                                                  (@instHSub.{0} (HighamBench.P19Vector n)
-                                                    (@Pi.instSub.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                      fun (i : Fin n) => Real.instSub))
-                                                  (@HighamBench.P19ModularGMRESRun.xHat.{u_1} n ι l run t)
-                                                  (@HighamBench.P19ModularGMRESRun.xExact.{u_1} n ι l run))
-                                                (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n)
-                                                  (HighamBench.P19Vector n) (HighamBench.P19Vector n)
-                                                  (@instHAdd.{0} (HighamBench.P19Vector n)
-                                                    (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                      fun (i : Fin n) => Real.instAdd))
-                                                  (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n)
-                                                    (HighamBench.P19Vector n) (HighamBench.P19Vector n)
-                                                    (@instHAdd.{0} (HighamBench.P19Vector n)
-                                                      (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                        fun (i : Fin n) => Real.instAdd))
-                                                    (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n)
-                                                      (HighamBench.P19Vector n) (HighamBench.P19Vector n)
-                                                      (@instHAdd.{0} (HighamBench.P19Vector n)
-                                                        (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                          fun (i : Fin n) => Real.instAdd))
-                                                      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n)
-                                                        (HighamBench.P19Vector n) (HighamBench.P19Vector n)
-                                                        (@instHAdd.{0} (HighamBench.P19Vector n)
-                                                          (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                            fun (i : Fin n) => Real.instAdd))
-                                                        (computationContribution t) (rhsContribution t))
-                                                      (gmresContribution t))
-                                                    (solutionContribution t))
-                                                  (remainder t))) →
-                                          (computation_bound :
-                                              ∀ (t : ι),
-                                                @LE.le.{0} Real Real.instLE
-                                                  (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                                                    (@instHDiv.{0} Real
-                                                      (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                                    (@HighamBench.p19VecNorm2 n (computationContribution t))
-                                                    (@HighamBench.p19VecNorm2 n
-                                                      (@HighamBench.P19ModularGMRESRun.xExact.{u_1} n ι l run)))
-                                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                    (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                      (@instHMul.{0} Real Real.instMul)
-                                                      (HighamBench.p19PolynomialFactorValue
-                                                        (@HighamBench.P19ModularGMRESRun.polynomialFactor.{u_1} n ι l
-                                                          run)
-                                                        n
-                                                        (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run))
-                                                      (@HighamBench.p19ConditionNumberF n
-                                                        (@HighamBench.p19SplitOperator.{u_1} n ι l run MRinv)
-                                                        (@HighamBench.p19SplitInverse.{u_1} n ι l run MR)))
-                                                    (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                      (@instHMul.{0} Real Real.instMul)
-                                                      (@HighamBench.p19Alpha.{u_1} n ι l run MR MRinv quantities t)
-                                                      (@HighamBench.P19ModularGMRESRun.epsilonC.{u_1} n ι l run t)))) →
-                                            (rhs_bound :
-                                                ∀ (t : ι),
-                                                  @LE.le.{0} Real Real.instLE
-                                                    (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                                                      (@instHDiv.{0} Real
-                                                        (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                                      (@HighamBench.p19VecNorm2 n (rhsContribution t))
-                                                      (@HighamBench.p19VecNorm2 n
-                                                        (@HighamBench.P19ModularGMRESRun.xExact.{u_1} n ι l run)))
-                                                    (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                      (@instHMul.{0} Real Real.instMul)
-                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                        (@instHMul.{0} Real Real.instMul)
-                                                        (HighamBench.p19PolynomialFactorValue
-                                                          (@HighamBench.P19ModularGMRESRun.polynomialFactor.{u_1} n ι l
-                                                            run)
-                                                          n
-                                                          (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l
-                                                            run))
-                                                        (@HighamBench.p19ConditionNumberF n
-                                                          (@HighamBench.p19SplitOperator.{u_1} n ι l run MRinv)
-                                                          (@HighamBench.p19SplitInverse.{u_1} n ι l run MR)))
-                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                        (@instHMul.{0} Real Real.instMul)
-                                                        (@HighamBench.p19Beta.{u_1} n ι l run MR MRinv quantities t)
-                                                        (@HighamBench.P19ModularGMRESRun.epsilonB.{u_1} n ι l run
-                                                          t)))) →
-                                              (gmres_bound :
-                                                  ∀ (t : ι),
-                                                    @LE.le.{0} Real Real.instLE
-                                                      (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                                                        (@instHDiv.{0} Real
-                                                          (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                                        (@HighamBench.p19VecNorm2 n (gmresContribution t))
-                                                        (@HighamBench.p19VecNorm2 n
-                                                          (@HighamBench.P19ModularGMRESRun.xExact.{u_1} n ι l run)))
-                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                        (@instHMul.{0} Real Real.instMul)
-                                                        (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                          (@instHMul.{0} Real Real.instMul)
-                                                          (HighamBench.p19PolynomialFactorValue
-                                                            (@HighamBench.P19ModularGMRESRun.polynomialFactor.{u_1} n ι
-                                                              l run)
-                                                            n
-                                                            (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l
-                                                              run))
-                                                          (@HighamBench.p19ConditionNumberF n
-                                                            (@HighamBench.p19SplitOperator.{u_1} n ι l run MRinv)
-                                                            (@HighamBench.p19SplitInverse.{u_1} n ι l run MR)))
-                                                        (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                          (@instHMul.{0} Real Real.instMul)
-                                                          (@HighamBench.p19Beta.{u_1} n ι l run MR MRinv quantities t)
-                                                          (@HighamBench.P19ModularGMRESRun.ug.{u_1} n ι l run t)))) →
-                                                (solution_bound :
-                                                    ∀ (t : ι),
-                                                      @LE.le.{0} Real Real.instLE
-                                                        (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                                                          (@instHDiv.{0} Real
-                                                            (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                                          (@HighamBench.p19VecNorm2 n (solutionContribution t))
-                                                          (@HighamBench.p19VecNorm2 n
-                                                            (@HighamBench.P19ModularGMRESRun.xExact.{u_1} n ι l run)))
-                                                        (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                          (@instHMul.{0} Real Real.instMul)
-                                                          (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                            (@instHMul.{0} Real Real.instMul)
-                                                            (HighamBench.p19PolynomialFactorValue
-                                                              (@HighamBench.P19ModularGMRESRun.polynomialFactor.{u_1} n
-                                                                ι l run)
-                                                              n
-                                                              (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l
-                                                                run))
-                                                            (@HighamBench.p19ConditionNumberF n
-                                                              (@HighamBench.p19SplitOperator.{u_1} n ι l run MRinv)
-                                                              (@HighamBench.p19SplitInverse.{u_1} n ι l run MR)))
-                                                          (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                            (@instHMul.{0} Real Real.instMul)
-                                                            (@HighamBench.p19Lambda.{u_1} n ι l run MR MRinv)
-                                                            (@HighamBench.P19ModularGMRESRun.epsilonX.{u_1} n ι l run
-                                                              t)))) →
-                                                  (remainder_second_order :
-                                                      @HighamBench.p19SecondOrderAt.{u_1} ι l
-                                                        (@HighamBench.p19PrecisionScale.{u_1} n ι l run) fun (t : ι) =>
-                                                        @HDiv.hDiv.{0, 0, 0} Real Real Real
-                                                          (@instHDiv.{0} Real
-                                                            (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                                          (@HighamBench.p19VecNorm2 n (remainder t))
-                                                          (@HighamBench.p19VecNorm2 n
-                                                            (@HighamBench.P19ModularGMRESRun.xExact.{u_1} n ι l run))) →
-                                                    @HighamBench.P19ForwardAnalysis.{u_1} n ι l run MR MRinv
+∀ {n : Nat} {system : HighamBench.P19Theorem31System n} {semantics : HighamBench.P19FirstOrderSemantics}
+  {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} {k : HighamBench.P19Theorem31Dimension n}
+  {iteration : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k}
+  (accuracy_nonneg :
+    And
+      (@LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+        (@HighamBench.P19Algorithm2Iteration.epsilonC n system semantics basisFamily k iteration))
+      (And
+        (@LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+          (@HighamBench.P19Algorithm2Iteration.epsilonB n system semantics basisFamily k iteration))
+        (And
+          (@LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+            (@HighamBench.P19Algorithm2Iteration.ug n system semantics basisFamily k iteration))
+          (@LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+            (@HighamBench.P19Algorithm2Iteration.epsilonX n system semantics basisFamily k iteration)))))
+  (computation_error_bound :
+    @LE.le.{0} Real Real.instLE
+      (@HighamBench.p19FrobNorm n
+        (@Subtype.val.{1} Nat
+          (fun (k : Nat) =>
+            And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+              (@LE.le.{0} Nat instLENat k n))
+          k)
+        (@HighamBench.P19Algorithm2Iteration.deltaC n system semantics basisFamily k iteration))
+      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+        (@HighamBench.P19Algorithm2Iteration.epsilonC n system semantics basisFamily k iteration)
+        (@HighamBench.p19FrobNorm n
+          (@Subtype.val.{1} Nat
+            (fun (k : Nat) =>
+              And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                (@LE.le.{0} Nat instLENat k n))
+            k)
+          (@HighamBench.p19StaticExactC n
+            (@Subtype.val.{1} Nat
+              (fun (k : Nat) =>
+                And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                  (@LE.le.{0} Nat instLENat k n))
+              k)
+            system
+            (@HighamBench.P19Theorem31BasisFamily.basis n system basisFamily
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k))))))
+  (rhs_error_bound :
+    @LE.le.{0} Real Real.instLE
+      (@HighamBench.p19VecNorm2 n
+        (@HighamBench.P19Algorithm2Iteration.deltaB n system semantics basisFamily k iteration))
+      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+        (@HighamBench.P19Algorithm2Iteration.epsilonB n system semantics basisFamily k iteration)
+        (@HighamBench.p19VecNorm2 n (@HighamBench.p19StaticExactB n system))))
+  (least_squares_solution :
+    @HighamBench.p19IsLeastSquaresSolution n
+      (@Subtype.val.{1} Nat
+        (fun (k : Nat) =>
+          And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+            (@LE.le.{0} Nat instLENat k n))
+        k)
+      (@HAdd.hAdd.{0, 0, 0}
+        (HighamBench.P19RectMatrix n
+          (@Subtype.val.{1} Nat
+            (fun (k : Nat) =>
+              And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                (@LE.le.{0} Nat instLENat k n))
+            k))
+        (HighamBench.P19RectMatrix n
+          (@Subtype.val.{1} Nat
+            (fun (k : Nat) =>
+              And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                (@LE.le.{0} Nat instLENat k n))
+            k))
+        (HighamBench.P19RectMatrix n
+          (@Subtype.val.{1} Nat
+            (fun (k : Nat) =>
+              And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                (@LE.le.{0} Nat instLENat k n))
+            k))
+        (@instHAdd.{0}
+          (HighamBench.P19RectMatrix n
+            (@Subtype.val.{1} Nat
+              (fun (k : Nat) =>
+                And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                  (@LE.le.{0} Nat instLENat k n))
+              k))
+          (@Matrix.add.{0, 0, 0} (Fin n)
+            (Fin
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k))
+            Real Real.instAdd))
+        (@HighamBench.P19Algorithm2Iteration.computedC n system semantics basisFamily k iteration)
+        (@HighamBench.P19Algorithm2Iteration.leastSquaresDeltaC n system semantics basisFamily k iteration))
+      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n) (HighamBench.P19Vector n) (HighamBench.P19Vector n)
+        (@instHAdd.{0} (HighamBench.P19Vector n)
+          (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
+        (@HighamBench.P19Algorithm2Iteration.computedB n system semantics basisFamily k iteration)
+        (@HighamBench.P19Algorithm2Iteration.leastSquaresDeltaB n system semantics basisFamily k iteration))
+      (@HighamBench.P19Algorithm2Iteration.yHat n system semantics basisFamily k iteration))
+  (least_squares_column_bound :
+    ∀
+      (j :
+        Fin
+          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+            (@Subtype.val.{1} Nat
+              (fun (k : Nat) =>
+                And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                  (@LE.le.{0} Nat instLENat k n))
+              k)
+            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))),
+      @LE.le.{0} Real Real.instLE
+        (@HighamBench.p19VecNorm2 n
+          (@HighamBench.p19Column n
+            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
+              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+            (@HighamBench.p19Augment n
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
+              (@HighamBench.P19Algorithm2Iteration.leastSquaresDeltaB n system semantics basisFamily k iteration)
+              (@HighamBench.P19Algorithm2Iteration.leastSquaresDeltaC n system semantics basisFamily k iteration))
+            j))
+        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+            (@HighamBench.P19Algorithm2Iteration.dimensionFactor n system semantics basisFamily k iteration)
+            (@HighamBench.P19Algorithm2Iteration.ug n system semantics basisFamily k iteration))
+          (@HighamBench.p19VecNorm2 n
+            (@HighamBench.p19Column n
+              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                (@Subtype.val.{1} Nat
+                  (fun (k : Nat) =>
+                    And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                      (@LE.le.{0} Nat instLENat k n))
+                  k)
+                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+              (@HighamBench.p19Augment n
+                (@Subtype.val.{1} Nat
+                  (fun (k : Nat) =>
+                    And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                      (@LE.le.{0} Nat instLENat k n))
+                  k)
+                (@HighamBench.P19Algorithm2Iteration.computedB n system semantics basisFamily k iteration)
+                (@HighamBench.P19Algorithm2Iteration.computedC n system semantics basisFamily k iteration))
+              j))))
+  (computedC_numerically_nonsingular :
+    HighamBench.P19FirstOrderSemantics.small semantics
+      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+        (@HighamBench.P19Algorithm2Iteration.ug n system semantics basisFamily k iteration)
+        (@HighamBench.p19RectConditionF2 n
+          (@Subtype.val.{1} Nat
+            (fun (k : Nat) =>
+              And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                (@LE.le.{0} Nat instLENat k n))
+            k)
+          (@HighamBench.P19Algorithm2Iteration.computedC n system semantics basisFamily k iteration)
+          (@HighamBench.P19SingularValueData.sigmaMin n
+            (@Subtype.val.{1} Nat
+              (fun (k : Nat) =>
+                And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                  (@LE.le.{0} Nat instLENat k n))
+              k)
+            (@HighamBench.P19Algorithm2Iteration.computedC n system semantics basisFamily k iteration)
+            (@HighamBench.P19Algorithm2Iteration.computedCSpectrum n system semantics basisFamily k iteration)))))
+  (combined_model_small :
+    HighamBench.P19FirstOrderSemantics.small semantics
+      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+            (@HighamBench.P19Algorithm2Iteration.epsilonC n system semantics basisFamily k iteration)
+            (@HighamBench.P19Algorithm2Iteration.epsilonB n system semantics basisFamily k iteration))
+          (@HighamBench.P19Algorithm2Iteration.ug n system semantics basisFamily k iteration))
+        (@HighamBench.p19RectConditionF2 n
+          (@Subtype.val.{1} Nat
+            (fun (k : Nat) =>
+              And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                (@LE.le.{0} Nat instLENat k n))
+            k)
+          (@HighamBench.p19StaticExactC n
+            (@Subtype.val.{1} Nat
+              (fun (k : Nat) =>
+                And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                  (@LE.le.{0} Nat instLENat k n))
+              k)
+            system
+            (@HighamBench.P19Theorem31BasisFamily.basis n system basisFamily
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)))
+          (@HighamBench.P19SingularValueData.sigmaMin n
+            (@Subtype.val.{1} Nat
+              (fun (k : Nat) =>
+                And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                  (@LE.le.{0} Nat instLENat k n))
+              k)
+            (@HighamBench.p19StaticExactC n
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
+              system
+              (@HighamBench.P19Theorem31BasisFamily.basis n system basisFamily
+                (@Subtype.val.{1} Nat
+                  (fun (k : Nat) =>
+                    And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                      (@LE.le.{0} Nat instLENat k n))
+                  k)))
+            (@HighamBench.P19Algorithm2Iteration.exactCSpectrum n system semantics basisFamily k iteration)))))
+  (solution_error_bound :
+    @LE.le.{0} Real Real.instLE
+      (@HighamBench.p19VecNorm2 n
+        (@HighamBench.P19Algorithm2Iteration.deltaX n system semantics basisFamily k iteration))
+      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+        (@HighamBench.P19Algorithm2Iteration.epsilonX n system semantics basisFamily k iteration)
+        (@HighamBench.p19VecNorm2 n
+          (@HighamBench.p19RectMatVec n
+            (@Subtype.val.{1} Nat
+              (fun (k : Nat) =>
+                And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                  (@LE.le.{0} Nat instLENat k n))
+              k)
+            (@HighamBench.P19Theorem31BasisFamily.basis n system basisFamily
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k))
+            (@HighamBench.P19Algorithm2Iteration.yHat n system semantics basisFamily k iteration)))))
+  (solution_small :
+    HighamBench.P19FirstOrderSemantics.small semantics
+      (@HighamBench.P19Algorithm2Iteration.epsilonX n system semantics basisFamily k iteration)),
+  @HighamBench.P19Algorithm2Conditions n system semantics basisFamily k iteration
 ```
 
-### D025: `HighamBench.P19ModularGMRESRun`
+### D025: `HighamBench.P19Algorithm2Iteration`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `inductive`
 - Distance from target type: `2`
-- Semantic SHA-256: `6c5961570fb514c1634dc4e0e0a4185d234ac058cd3dfb106326004fc13fdbda`
+- Semantic SHA-256: `f4879bef746a587dacfe91ab1a424bce7078d52c23f5781d3d8d85d64b2e912e`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → Filter ι → Type u_1
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → {ι : Type u_1} → (l : Filter.{u_1} ι) → Type u_1
-```
-
-### D026: `HighamBench.P19ModularGMRESRun.A`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `0ce3a906eed62528020a8c781eb29417572547dfafaeed377c4b63b4562b14c2`
-
-Type:
-
-```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19Matrix n
+{n : Nat} →
+  (system : HighamBench.P19Theorem31System n) →
+    HighamBench.P19FirstOrderSemantics →
+      HighamBench.P19Theorem31BasisFamily system → HighamBench.P19Theorem31Dimension n → Type
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} → {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → HighamBench.P19Matrix n
+  (system : HighamBench.P19Theorem31System n) →
+    (semantics : HighamBench.P19FirstOrderSemantics) →
+      (basisFamily : @HighamBench.P19Theorem31BasisFamily n system) → (k : HighamBench.P19Theorem31Dimension n) → Type
 ```
 
-Definition body (one-level semantic boundary):
-
-```lean
-fun n ι l self => self.2
-```
-
-### D027: `HighamBench.P19ModularGMRESRun.Ainv`
+### D026: `HighamBench.P19Algorithm2Iteration.epsilonB`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `71cdba8088718feb6bf0c74041ed1089da00356008a16b896dfe855d1e95a6a7`
+- Semantic SHA-256: `f8030bfc92643eceb346f953d6858c99670b9bac33003239e0d7a3301ae7fe23`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19Matrix n
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → Real
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} → {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → HighamBench.P19Matrix n
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.3
+fun n system semantics basisFamily k self => self.4
 ```
 
-### D028: `HighamBench.P19ModularGMRESRun.ML`
+### D027: `HighamBench.P19Algorithm2Iteration.epsilonC`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `b481783919dde74d3043e6900772f3a93ea4e0ed28802a1668d3238d6fa50ecd`
+- Semantic SHA-256: `fbab99a9750c59d1a1e583743df520e7d44c5cc91bb8f953dd579b781c71de46`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19Matrix n
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → Real
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} → {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → HighamBench.P19Matrix n
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.4
+fun n system semantics basisFamily k self => self.3
 ```
 
-### D029: `HighamBench.P19ModularGMRESRun.MLinv`
+### D028: `HighamBench.P19Algorithm2Iteration.epsilonX`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `f770cefa03e5dfb30cbeaa365932555ca4822ad26ee0dee8f64159af97cb8696`
+- Semantic SHA-256: `f7561b0267689d981281ecd75c09df38fe7833e3c39fc79174e4f25762311905`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19Matrix n
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → Real
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} → {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → HighamBench.P19Matrix n
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.5
+fun n system semantics basisFamily k self => self.6
 ```
 
-### D030: `HighamBench.P19ModularGMRESRun.epsilonB`
+### D029: `HighamBench.P19Algorithm2Iteration.ug`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `432a7da4065c28bef283f93899aa0e147a4eb1d543ceeee6de6da6304d8df53c`
+- Semantic SHA-256: `4719f7a83a03368282078d24f181cee29a7a4a469c3c34d7ae10554be584afb9`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → ι → Real
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → Real
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → ι → Real
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.18
+fun n system semantics basisFamily k self => self.5
 ```
 
-### D031: `HighamBench.P19ModularGMRESRun.epsilonC`
+### D030: `HighamBench.P19Algorithm2Iteration.vHat`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `bcc2a28e246363fff15906f5bf38b406f655185faac9565c2d08ec471ceab3ce`
+- Semantic SHA-256: `e8833827bd3a748534cb2317f9f1b570eb9df72748910ae72b2f34cd8d63c4a3`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → ι → Real
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → HighamBench.P19RectMatrix n k.val
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → ι → Real
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) →
+            HighamBench.P19RectMatrix n
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.17
+fun n system semantics basisFamily k self => self.13
 ```
 
-### D032: `HighamBench.P19ModularGMRESRun.epsilonX`
+### D031: `HighamBench.P19Algorithm2Iteration.vHatSpectrum`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `a79118e51524a23c26ab3bf88605cc5ad6b9dbc9e6867e9eca95f0f3a4250ba5`
+- Semantic SHA-256: `6c6a21a70e9a127eec34be18a02b5156e7c6fd3553d869f8a57f86ef151cbc57`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → ι → Real
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : HighamBench.P19Algorithm2Iteration system semantics basisFamily k) →
+            HighamBench.P19SingularValueData self.vHat
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → ι → Real
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) →
+            @HighamBench.P19SingularValueData n
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
+              (@HighamBench.P19Algorithm2Iteration.vHat n system semantics basisFamily k self)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.20
+fun n system semantics basisFamily k self => self.28
 ```
 
-### D033: `HighamBench.P19ModularGMRESRun.ug`
+### D032: `HighamBench.P19FirstOrderSemantics.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `a249dfd13648ccda052f87210f4319154f5c284c54962efd48e215532eae0d6b`
+
+Type:
+
+```lean
+(Real → Prop) → (secondOrder : Real → Prop) → secondOrder 0 → HighamBench.P19FirstOrderSemantics
+```
+
+Fully explicit type:
+
+```lean
+(small secondOrder : Real → Prop) →
+  (zero_secondOrder : secondOrder (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
+    HighamBench.P19FirstOrderSemantics
+```
+
+### D033: `HighamBench.P19FirstOrderSemantics.secondOrder`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `d1fafdb6c4a35d493154f8a360635ed5256777015c8239006ace146575fc2161`
+- Semantic SHA-256: `ddf671e3d58393ee511310b987314be908539f15467ae3cf73e66807e455755c`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → ι → Real
+HighamBench.P19FirstOrderSemantics → Real → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → ι → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n ι l self => self.19
-```
-
-### D034: `HighamBench.P19PolynomialFactor`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `2`
-- Semantic SHA-256: `a277c56923b73b8cbd2ff65bc6ad14878794606b603837ef0396952b58e944d9`
-
-Type:
-
-```lean
-Type
-```
-
-Fully explicit type:
-
-```lean
-Type
-```
-
-### D035: `HighamBench.P19PolynomialFactor.coefficient`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `9621c065f238974bb2a7f1cd1fe45a52c03304d6ef88994300d1147e3391dbdc`
-
-Type:
-
-```lean
-(self : HighamBench.P19PolynomialFactor) →
-  Fin (instHAdd.hAdd self.degreeN 1) → Fin (instHAdd.hAdd self.degreeK 1) → Real
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P19PolynomialFactor) →
-  Fin
-      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (HighamBench.P19PolynomialFactor.degreeN self)
-        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
-    Fin
-        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (HighamBench.P19PolynomialFactor.degreeK self)
-          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
-      Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.3
-```
-
-### D036: `HighamBench.P19PolynomialFactor.degreeK`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `a01c1f807284de44bbe07bbd3a2d026399a18a1fbba970fb07b404a97a078f97`
-
-Type:
-
-```lean
-HighamBench.P19PolynomialFactor → Nat
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P19PolynomialFactor) → Nat
+(self : HighamBench.P19FirstOrderSemantics) → Real → Prop
 ```
 
 Definition body (one-level semantic boundary):
@@ -1500,137 +1344,524 @@ Definition body (one-level semantic boundary):
 fun self => self.2
 ```
 
-### D037: `HighamBench.P19PolynomialFactor.degreeN`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `747b227a49e80a41dfe67147163421d6a73f878c21d1a01b7b51e6c425ff7a6f`
-
-Type:
-
-```lean
-HighamBench.P19PolynomialFactor → Nat
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P19PolynomialFactor) → Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.1
-```
-
-### D038: `HighamBench.P19RectMatrix`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `439dd553c0545a1da7e92aa2fe36a24aa581a6f27bc01f3f2b81504fea271a29`
-
-Type:
-
-```lean
-Nat → Nat → Type
-```
-
-Fully explicit type:
-
-```lean
-(m k : Nat) → Type
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun m k => Matrix (Fin m) (Fin k) Real
-```
-
-### D039: `HighamBench.P19RightPreconditionedQuantities`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `2`
-- Semantic SHA-256: `ecfe7f38d457064664c1e9d39d7e4ce312574c629a9618863967a345704ba3d4`
-
-Type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19Matrix n → HighamBench.P19Matrix n → Type u_1
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → (MR MRinv : HighamBench.P19Matrix n) → Type u_1
-```
-
-### D040: `HighamBench.P19SingularValueData`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `2`
-- Semantic SHA-256: `85567c4b733cfc54d0f17c00f8808d0788e69e1dc928b327259677770bdad8dd`
-
-Type:
-
-```lean
-{m k : Nat} → HighamBench.P19RectMatrix m k → Type
-```
-
-Fully explicit type:
-
-```lean
-{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → Type
-```
-
-### D041: `HighamBench.P19Theorem31Execution.mk`
+### D034: `HighamBench.P19MGSSelectionLaw.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `9ad26490b78040e4a2cce78f162e37d95460fd67371e05744ce5b9388396fd19`
+- Semantic SHA-256: `1497d719068f8d8895ba60bd603e9d3c8c9016560b59759954bd461a979d201f`
+
+Type:
+
+```lean
+∀ {n : Nat} {semantics : HighamBench.P19FirstOrderSemantics} {family : HighamBench.P19Theorem31Family n semantics},
+  HighamBench.p19IterationWellConditioned (family.iteration ⟨1, ⋯⟩) →
+    (∀ (k : Nat) (hkpos : instLTNat.lt 0 k) (hklt : instLTNat.lt k n),
+        let current := ⟨k, ⋯⟩;
+        let next := ⟨instHAdd.hAdd k 1, ⋯⟩;
+        Not (HighamBench.p19IterationWellConditioned (family.iteration next)) →
+          HighamBench.p19MGSNearDependence (family.iteration current)) →
+      HighamBench.P19MGSSelectionLaw family
+```
+
+Fully explicit type:
+
+```lean
+∀ {n : Nat} {semantics : HighamBench.P19FirstOrderSemantics} {family : HighamBench.P19Theorem31Family n semantics}
+  (first_dimension_good :
+    @HighamBench.p19IterationWellConditioned n (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+      (@HighamBench.P19Theorem31Family.basisFamily n semantics family)
+      (@Subtype.mk.{1} Nat
+        (fun (k : Nat) =>
+          And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+            (@LE.le.{0} Nat instLENat k n))
+        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
+        (@And.intro
+          (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
+            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+          (@LE.le.{0} Nat instLENat (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))) n) Nat.zero_lt_one
+          (@HighamBench.P19Theorem31System.dimension_pos n
+            (@HighamBench.P19Theorem31Family.system n semantics family))))
+      (@HighamBench.P19Theorem31Family.iteration n semantics family
+        (@Subtype.mk.{1} Nat
+          (fun (k : Nat) =>
+            And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+              (@LE.le.{0} Nat instLENat k n))
+          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
+          (@And.intro
+            (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
+              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+            (@LE.le.{0} Nat instLENat (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))) n) Nat.zero_lt_one
+            (@HighamBench.P19Theorem31System.dimension_pos n
+              (@HighamBench.P19Theorem31Family.system n semantics family))))))
+  (loss_implies_near_dependence :
+    ∀ (k : Nat) (hkpos : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+      (hklt : @LT.lt.{0} Nat instLTNat k n),
+      let current : HighamBench.P19Theorem31Dimension n :=
+        @Subtype.mk.{1} Nat
+          (fun (k : Nat) =>
+            And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+              (@LE.le.{0} Nat instLENat k n))
+          k
+          (@And.intro (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+            (@LE.le.{0} Nat instLENat k n) hkpos (@Nat.le_of_lt k n hklt));
+      let next : HighamBench.P19Theorem31Dimension n :=
+        @Subtype.mk.{1} Nat
+          (fun (k : Nat) =>
+            And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+              (@LE.le.{0} Nat instLENat k n))
+          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) k
+            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+          (@And.intro
+            (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
+              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) k
+                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+            (@LE.le.{0} Nat instLENat
+              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) k
+                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+              n)
+            (Nat.succ_pos k)
+            (@Iff.mpr (@LE.le.{0} Nat instLENat (Nat.succ k) n) (@LT.lt.{0} Nat instLTNat k n) (@Nat.succ_le_iff k n)
+              hklt));
+      Not
+          (@HighamBench.p19IterationWellConditioned n (@HighamBench.P19Theorem31Family.system n semantics family)
+            semantics (@HighamBench.P19Theorem31Family.basisFamily n semantics family) next
+            (@HighamBench.P19Theorem31Family.iteration n semantics family next)) →
+        @HighamBench.p19MGSNearDependence n (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+          (@HighamBench.P19Theorem31Family.basisFamily n semantics family) current
+          (@HighamBench.P19Theorem31Family.iteration n semantics family current)),
+  @HighamBench.P19MGSSelectionLaw n semantics family
+```
+
+### D035: `HighamBench.P19SingularValueData.sigmaMax`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `39b1024085d127c92aa430d39d98d3d00a99a5d1c44ea3bcaff897aa19328ba4`
+
+Type:
+
+```lean
+{m k : Nat} → {A : HighamBench.P19RectMatrix m k} → HighamBench.P19SingularValueData A → Real
+```
+
+Fully explicit type:
+
+```lean
+{m k : Nat} → {A : HighamBench.P19RectMatrix m k} → (self : @HighamBench.P19SingularValueData m k A) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m k A self => self.2
+```
+
+### D036: `HighamBench.P19SingularValueData.sigmaMin`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `1013716a93aaa4244e940de911b2c7afefa568b957b54095b8426864b032c52c`
+
+Type:
+
+```lean
+{m k : Nat} → {A : HighamBench.P19RectMatrix m k} → HighamBench.P19SingularValueData A → Real
+```
+
+Fully explicit type:
+
+```lean
+{m k : Nat} → {A : HighamBench.P19RectMatrix m k} → (self : @HighamBench.P19SingularValueData m k A) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m k A self => self.1
+```
+
+### D037: `HighamBench.P19StaticAppendixATheory.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `0b99057edf7eba18d77a5822550ccb3122e66f1ce382e968b86ae4de5c4dcaf6`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      (run : HighamBench.P19ModularGMRESRun l) →
-        ((MR MRinv : HighamBench.P19Matrix n) →
-            HighamBench.p19InversePair MR MRinv → HighamBench.P19ForwardAnalysis run MR MRinv) →
-          HighamBench.P19Theorem31Execution l
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      (rightQuantities :
+          (k : HighamBench.P19Theorem31Dimension n) →
+            (MR MRinv : HighamBench.P19Matrix n) →
+              HighamBench.p19InversePair MR MRinv → HighamBench.P19StaticRightQuantities family k MR MRinv) →
+        ((k : HighamBench.P19Theorem31Dimension n) →
+            HighamBench.p19IterationWellConditioned (family.iteration k) →
+              Or (Eq k.val n) (HighamBench.p19MGSNearDependence (family.iteration k)) →
+                HighamBench.P19Algorithm2Conditions (family.iteration k) →
+                  (MR MRinv : HighamBench.P19Matrix n) →
+                    (hMR : HighamBench.p19InversePair MR MRinv) →
+                      HighamBench.P19StaticAppendixAExpansion family k MR MRinv (rightQuantities k MR MRinv hMR)) →
+          HighamBench.P19StaticAppendixATheory family
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) →
-        (forwardAnalysis :
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      (rightQuantities :
+          (k : HighamBench.P19Theorem31Dimension n) →
             (MR MRinv : HighamBench.P19Matrix n) →
-              @HighamBench.p19InversePair n MR MRinv → @HighamBench.P19ForwardAnalysis.{u_1} n ι l run MR MRinv) →
-          @HighamBench.P19Theorem31Execution.{u_1} n ι l
+              @HighamBench.p19InversePair n MR MRinv →
+                @HighamBench.P19StaticRightQuantities n semantics family k MR MRinv) →
+        (expansion :
+            (k : HighamBench.P19Theorem31Dimension n) →
+              @HighamBench.p19IterationWellConditioned n (@HighamBench.P19Theorem31Family.system n semantics family)
+                  semantics (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                  (@HighamBench.P19Theorem31Family.iteration n semantics family k) →
+                Or
+                    (@Eq.{1} Nat
+                      (@Subtype.val.{1} Nat
+                        (fun (k : Nat) =>
+                          And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                            (@LE.le.{0} Nat instLENat k n))
+                        k)
+                      n)
+                    (@HighamBench.p19MGSNearDependence n (@HighamBench.P19Theorem31Family.system n semantics family)
+                      semantics (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                      (@HighamBench.P19Theorem31Family.iteration n semantics family k)) →
+                  @HighamBench.P19Algorithm2Conditions n (@HighamBench.P19Theorem31Family.system n semantics family)
+                      semantics (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                      (@HighamBench.P19Theorem31Family.iteration n semantics family k) →
+                    (MR MRinv : HighamBench.P19Matrix n) →
+                      (hMR : @HighamBench.p19InversePair n MR MRinv) →
+                        @HighamBench.P19StaticAppendixAExpansion n semantics family k MR MRinv
+                          (rightQuantities k MR MRinv hMR)) →
+          @HighamBench.P19StaticAppendixATheory n semantics family
 ```
 
-### D042: `HighamBench.P19Vector`
+### D038: `HighamBench.P19StaticRightQuantities.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `54b2fb2699fdda10cec4cd98026ef5d71f8ac18d3e70b55e827d0943bb0eb135`
+
+Type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        {MR MRinv : HighamBench.P19Matrix n} →
+          (mrzSpectrum :
+              HighamBench.P19SingularValueData (HighamBench.p19SquareRectMul MR (family.basisFamily.basis k.val))) →
+            Real.instLT.lt 0 mrzSpectrum.sigmaMin →
+              Real.instLT.lt 0
+                  (HighamBench.p19FrobNorm
+                    (HighamBench.p19StaticExactC family.system (family.basisFamily.basis k.val))) →
+                Real.instLT.lt 0 (HighamBench.p19FrobNorm (HighamBench.p19StaticSplitOperator family.system MRinv)) →
+                  Real.instLT.lt 0 (HighamBench.p19ConditionNumberF MR MRinv) →
+                    Real.instLT.lt 0
+                        (HighamBench.p19ConditionNumberF (HighamBench.p19StaticSplitOperator family.system MRinv)
+                          (HighamBench.p19StaticSplitInverse family.system MR)) →
+                      HighamBench.P19StaticRightQuantities family k MR MRinv
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        {MR MRinv : HighamBench.P19Matrix n} →
+          (mrzSpectrum :
+              @HighamBench.P19SingularValueData n
+                (@Subtype.val.{1} Nat
+                  (fun (k : Nat) =>
+                    And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                      (@LE.le.{0} Nat instLENat k n))
+                  k)
+                (@HighamBench.p19SquareRectMul n
+                  (@Subtype.val.{1} Nat
+                    (fun (k : Nat) =>
+                      And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                        (@LE.le.{0} Nat instLENat k n))
+                    k)
+                  MR
+                  (@HighamBench.P19Theorem31BasisFamily.basis n
+                    (@HighamBench.P19Theorem31Family.system n semantics family)
+                    (@HighamBench.P19Theorem31Family.basisFamily n semantics family)
+                    (@Subtype.val.{1} Nat
+                      (fun (k : Nat) =>
+                        And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                          (@LE.le.{0} Nat instLENat k n))
+                      k)))) →
+            (mrz_sigmaMin_pos :
+                @LT.lt.{0} Real Real.instLT (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                  (@HighamBench.P19SingularValueData.sigmaMin n
+                    (@Subtype.val.{1} Nat
+                      (fun (k : Nat) =>
+                        And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                          (@LE.le.{0} Nat instLENat k n))
+                      k)
+                    (@HighamBench.p19SquareRectMul n
+                      (@Subtype.val.{1} Nat
+                        (fun (k : Nat) =>
+                          And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                            (@LE.le.{0} Nat instLENat k n))
+                        k)
+                      MR
+                      (@HighamBench.P19Theorem31BasisFamily.basis n
+                        (@HighamBench.P19Theorem31Family.system n semantics family)
+                        (@HighamBench.P19Theorem31Family.basisFamily n semantics family)
+                        (@Subtype.val.{1} Nat
+                          (fun (k : Nat) =>
+                            And
+                              (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                              (@LE.le.{0} Nat instLENat k n))
+                          k)))
+                    mrzSpectrum)) →
+              (exactC_norm_pos :
+                  @LT.lt.{0} Real Real.instLT
+                    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                    (@HighamBench.p19FrobNorm n
+                      (@Subtype.val.{1} Nat
+                        (fun (k : Nat) =>
+                          And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                            (@LE.le.{0} Nat instLENat k n))
+                        k)
+                      (@HighamBench.p19StaticExactC n
+                        (@Subtype.val.{1} Nat
+                          (fun (k : Nat) =>
+                            And
+                              (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                              (@LE.le.{0} Nat instLENat k n))
+                          k)
+                        (@HighamBench.P19Theorem31Family.system n semantics family)
+                        (@HighamBench.P19Theorem31BasisFamily.basis n
+                          (@HighamBench.P19Theorem31Family.system n semantics family)
+                          (@HighamBench.P19Theorem31Family.basisFamily n semantics family)
+                          (@Subtype.val.{1} Nat
+                            (fun (k : Nat) =>
+                              And
+                                (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
+                                  k)
+                                (@LE.le.{0} Nat instLENat k n))
+                            k))))) →
+                (split_operator_norm_pos :
+                    @LT.lt.{0} Real Real.instLT
+                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                      (@HighamBench.p19FrobNorm n n
+                        (@HighamBench.p19StaticSplitOperator n
+                          (@HighamBench.P19Theorem31Family.system n semantics family) MRinv))) →
+                  (mr_condition_pos :
+                      @LT.lt.{0} Real Real.instLT
+                        (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                        (@HighamBench.p19ConditionNumberF n MR MRinv)) →
+                    (split_condition_pos :
+                        @LT.lt.{0} Real Real.instLT
+                          (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                          (@HighamBench.p19ConditionNumberF n
+                            (@HighamBench.p19StaticSplitOperator n
+                              (@HighamBench.P19Theorem31Family.system n semantics family) MRinv)
+                            (@HighamBench.p19StaticSplitInverse n
+                              (@HighamBench.P19Theorem31Family.system n semantics family) MR))) →
+                      @HighamBench.P19StaticRightQuantities n semantics family k MR MRinv
+```
+
+### D039: `HighamBench.P19Theorem31BasisFamily`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `2`
+- Semantic SHA-256: `cd7346b530ce5e5d6ba1c2e5416ee7c43d715dd345875961bcce92cbe5f41e14`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P19Theorem31System n → Type
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (system : HighamBench.P19Theorem31System n) → Type
+```
+
+### D040: `HighamBench.P19Theorem31Family.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `0f076c552518a53410edcb7f11b49475fb90d812b0212bc30431c42bf011d836`
+
+Type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    (system : HighamBench.P19Theorem31System n) →
+      (basisFamily : HighamBench.P19Theorem31BasisFamily system) →
+        ((k : HighamBench.P19Theorem31Dimension n) →
+            HighamBench.P19Algorithm2Iteration system semantics basisFamily k) →
+          HighamBench.P19Theorem31Family n semantics
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    (system : HighamBench.P19Theorem31System n) →
+      (basisFamily : @HighamBench.P19Theorem31BasisFamily n system) →
+        (iteration :
+            (k : HighamBench.P19Theorem31Dimension n) →
+              @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) →
+          HighamBench.P19Theorem31Family n semantics
+```
+
+### D041: `HighamBench.P19Theorem31System`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `2`
+- Semantic SHA-256: `e1fc353b1b432c0c1ef430f4cf2ff9afcfbed92f49cf465d778ddda0a635dd4d`
+
+Type:
+
+```lean
+Nat → Type
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Type
+```
+
+### D042: `HighamBench.P19Theorem31System.A`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `4bfdf1aea21b236835dd2c7582c4c22271b794da188a0ba1ccc5a694afff4be4`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19Matrix n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P19Theorem31System n) → HighamBench.P19Matrix n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.2
+```
+
+### D043: `HighamBench.P19Theorem31System.Ainv`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `5af7fc516b339d9009da5411f78f824a75063e508c6084b47f8ef7e44f62db8e`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19Matrix n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P19Theorem31System n) → HighamBench.P19Matrix n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.3
+```
+
+### D044: `HighamBench.P19Theorem31System.ML`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `49bf2034c91342a98820db7017c34f0a2e9d1c3aaff5c66811d036bd3b1a1dcf`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19Matrix n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P19Theorem31System n) → HighamBench.P19Matrix n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.4
+```
+
+### D045: `HighamBench.P19Theorem31System.MLinv`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `ef0cd4e713f0114adf6c09b9205814f09e9a4779fd1ba97cdfa6d00458ff172c`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19Matrix n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P19Theorem31System n) → HighamBench.P19Matrix n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.5
+```
+
+### D046: `HighamBench.P19Vector`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -1656,87 +1887,7 @@ Definition body (one-level semantic boundary):
 fun n => Fin n → Real
 ```
 
-### D043: `HighamBench.p19Alpha`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `a56cbd7beb408e81cc0a8e5a16bd3803326cbca2db7a8b5f7df6483ee236b456`
-
-Type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      (run : HighamBench.P19ModularGMRESRun l) →
-        (MR MRinv : HighamBench.P19Matrix n) → HighamBench.P19RightPreconditionedQuantities run MR MRinv → ι → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) →
-        (MR MRinv : HighamBench.P19Matrix n) →
-          (q : @HighamBench.P19RightPreconditionedQuantities.{u_1} n ι l run MR MRinv) → (t : ι) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} {ι} {l} run MR MRinv q t =>
-  instHMul.hMul (instHDiv.hDiv (HighamBench.p19ConditionNumberF MR MRinv) (q.mrzSpectrum t).sigmaMin)
-    (instHDiv.hDiv (HighamBench.p19FrobNorm (HighamBench.p19ExactC run t))
-      (HighamBench.p19FrobNorm (HighamBench.p19SplitOperator run MRinv)))
-```
-
-### D044: `HighamBench.p19Beta`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `ccf45d1b3776c1251f48b362abde5d03cc4fc98635c4acddcfa679d206528bed`
-
-Type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      (run : HighamBench.P19ModularGMRESRun l) →
-        (MR MRinv : HighamBench.P19Matrix n) → HighamBench.P19RightPreconditionedQuantities run MR MRinv → ι → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) →
-        (MR MRinv : HighamBench.P19Matrix n) →
-          (q : @HighamBench.P19RightPreconditionedQuantities.{u_1} n ι l run MR MRinv) → (t : ι) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} {ι} {l} run MR MRinv q t =>
-  instHMul.hMul
-    (Real.instMax.max 1
-      (instHDiv.hDiv
-        (instHDiv.hDiv (HighamBench.p19FrobNorm (HighamBench.p19ExactC run t))
-          (HighamBench.p19FrobNorm (HighamBench.p19SplitOperator run MRinv)))
-        (q.mrzSpectrum t).sigmaMin))
-    (HighamBench.p19ConditionNumberF MR MRinv)
-```
-
-### D045: `HighamBench.p19FrobNorm`
+### D047: `HighamBench.p19FrobNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -1762,40 +1913,53 @@ Definition body (one-level semantic boundary):
 fun {m k} A => Matrix.frobeniusNormedAddCommGroup.norm A
 ```
 
-### D046: `HighamBench.p19Lambda`
+### D048: `HighamBench.p19IterationWellConditioned._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
+- Declaration kind: `theorem`
 - Distance from target type: `2`
-- Semantic SHA-256: `a4138ec36bd4cba05513fd06dbc017aea3f59e262d7bde78e234fcd23b2326b0`
+- Semantic SHA-256: `e36ed6bfde9948e287453e8e216377bb07ab71b2d92789cf0f62d8ac7d27adbb`
 
 Type:
 
 ```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19Matrix n → HighamBench.P19Matrix n → Real
+(instHAdd.hAdd 3 1).AtLeastTwo
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → (MR MRinv : HighamBench.P19Matrix n) → Real
+Nat.AtLeastTwo
+  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+    (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3)))
+    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-Definition body (one-level semantic boundary):
+### D049: `HighamBench.p19IterationWellConditioned._proof_2`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `theorem`
+- Distance from target type: `2`
+- Semantic SHA-256: `a53f13b94d3dbfd1b78203ce451bfa60bbd01b058daa3f65ff6c7d30ec55b8bd`
+
+Type:
 
 ```lean
-fun {n} {ι} {l} run MR MRinv =>
-  instHDiv.hDiv 1
-    (HighamBench.p19ConditionNumberF (HighamBench.p19SplitOperator run MRinv) (HighamBench.p19SplitInverse run MR))
+(instHAdd.hAdd 2 1).AtLeastTwo
 ```
 
-### D047: `HighamBench.p19MatVec`
+Fully explicit type:
+
+```lean
+Nat.AtLeastTwo
+  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))
+    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D050: `HighamBench.p19MatVec`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -1821,7 +1985,7 @@ Definition body (one-level semantic boundary):
 fun {n} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
 ```
 
-### D048: `HighamBench.p19ModularEnvelope`
+### D051: `HighamBench.p19ModularEnvelope`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -1850,33 +2014,7 @@ fun alpha beta lambda epsilonC epsilonB ug epsilonX =>
     (instHMul.hMul lambda epsilonX)
 ```
 
-### D049: `HighamBench.p19SecondOrderAt`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `be18d1baa6a2642eef71fd1188d02fbf532849ff793b47048d71b3ff31a20335`
-
-Type:
-
-```lean
-{ι : Type u_1} → Filter ι → (ι → Real) → (ι → Real) → Prop
-```
-
-Fully explicit type:
-
-```lean
-{ι : Type u_1} → (l : Filter.{u_1} ι) → (scale remainder : ι → Real) → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {ι} l scale remainder => Asymptotics.IsBigO l remainder fun t => instHPow.hPow (scale t) 2
-```
-
-### D050: `HighamBench.p19SquareRectMul`
+### D052: `HighamBench.p19SquareRectMul`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -1902,7 +2040,118 @@ Definition body (one-level semantic boundary):
 fun {n k} A B i j => Finset.univ.sum fun q => instHMul.hMul (A i q) (B q j)
 ```
 
-### D051: `HighamBench.p19VecNorm2`
+### D053: `HighamBench.p19StaticAlpha`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `94ad6765fd2d1d76a7cf6f5e694fe696559cc294ae4aa2092584da7318d86f0e`
+
+Type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        (MR MRinv : HighamBench.P19Matrix n) → HighamBench.P19StaticRightQuantities family k MR MRinv → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        (MR MRinv : HighamBench.P19Matrix n) →
+          (q : @HighamBench.P19StaticRightQuantities n semantics family k MR MRinv) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} {semantics} {family} {k} MR MRinv q =>
+  instHMul.hMul (instHDiv.hDiv (HighamBench.p19ConditionNumberF MR MRinv) q.mrzSpectrum.sigmaMin)
+    (instHDiv.hDiv
+      (HighamBench.p19FrobNorm (HighamBench.p19StaticExactC family.system (family.basisFamily.basis k.val)))
+      (HighamBench.p19FrobNorm (HighamBench.p19StaticSplitOperator family.system MRinv)))
+```
+
+### D054: `HighamBench.p19StaticBeta`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `cc6616164dde51b36dde0851bbe04442ce448feaf37560cbf0eb1c080b14ab56`
+
+Type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        (MR MRinv : HighamBench.P19Matrix n) → HighamBench.P19StaticRightQuantities family k MR MRinv → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        (MR MRinv : HighamBench.P19Matrix n) →
+          (q : @HighamBench.P19StaticRightQuantities n semantics family k MR MRinv) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} {semantics} {family} {k} MR MRinv q =>
+  instHMul.hMul
+    (Real.instMax.max 1
+      (instHDiv.hDiv
+        (instHDiv.hDiv
+          (HighamBench.p19FrobNorm (HighamBench.p19StaticExactC family.system (family.basisFamily.basis k.val)))
+          (HighamBench.p19FrobNorm (HighamBench.p19StaticSplitOperator family.system MRinv)))
+        q.mrzSpectrum.sigmaMin))
+    (HighamBench.p19ConditionNumberF MR MRinv)
+```
+
+### D055: `HighamBench.p19StaticLambda`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `ef76c331af6971ea383a0e720b65e84633e2cc7d764624ac05082af69c1970f0`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19Matrix n → HighamBench.P19Matrix n → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (system : HighamBench.P19Theorem31System n) → (MR MRinv : HighamBench.P19Matrix n) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} system MR MRinv =>
+  instHDiv.hDiv 1
+    (HighamBench.p19ConditionNumberF (HighamBench.p19StaticSplitOperator system MRinv)
+      (HighamBench.p19StaticSplitInverse system MR))
+```
+
+### D056: `HighamBench.p19VecNorm2`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -1928,1065 +2177,1378 @@ Definition body (one-level semantic boundary):
 fun {n} x => (HighamBench.p19VecNorm2Sq x).sqrt
 ```
 
-### D052: `HighamBench.P19IncreasingBasisFamily.basis`
+### D057: `HighamBench.P19Algorithm2Iteration.computedB`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `ea70ac01cbc08de52a454d21e6f55d67e23415834c4fb2a7940ceb5c80c625ea`
+- Semantic SHA-256: `0a36228ab177e3d96350f260b42b0b39cdbb2e3af19df1b61a4bdbe4767eb7c1`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → HighamBench.P19IncreasingBasisFamily n ι → (k : Nat) → ι → HighamBench.P19RectMatrix n k
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → HighamBench.P19Vector n
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    (self : HighamBench.P19IncreasingBasisFamily.{u_1} n ι) → (k : Nat) → ι → HighamBench.P19RectMatrix n k
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → HighamBench.P19Vector n
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι self => self.1
+fun n system semantics basisFamily k self => self.10
 ```
 
-### D053: `HighamBench.P19ModularGMRESRun.basisFamily`
+### D058: `HighamBench.P19Algorithm2Iteration.computedC`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `feda3a60d7050f57efdd50df71f0c36c7444163064341d357a47344c0d29e661`
+- Semantic SHA-256: `50a6535dd8ce1360428870bf95756a470737cd826b008cdbfad61b0808d02dee`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → HighamBench.P19IncreasingBasisFamily n ι
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → HighamBench.P19RectMatrix n k.val
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → HighamBench.P19IncreasingBasisFamily.{u_1} n ι
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) →
+            HighamBench.P19RectMatrix n
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.12
+fun n system semantics basisFamily k self => self.7
 ```
 
-### D054: `HighamBench.P19ModularGMRESRun.deltaB`
+### D059: `HighamBench.P19Algorithm2Iteration.computedCSpectrum`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `d22832f89b0e15884606c8362a4d72a1625e89283cd8ce30c1f839cba9a7a703`
+- Semantic SHA-256: `7824e63acaf19271f33d66772ca09d12cc7c9a38fa97405a605ee999bc4894e9`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → ι → HighamBench.P19Vector n
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : HighamBench.P19Algorithm2Iteration system semantics basisFamily k) →
+            HighamBench.P19SingularValueData self.computedC
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → ι → HighamBench.P19Vector n
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) →
+            @HighamBench.P19SingularValueData n
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
+              (@HighamBench.P19Algorithm2Iteration.computedC n system semantics basisFamily k self)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.28
+fun n system semantics basisFamily k self => self.23
 ```
 
-### D055: `HighamBench.P19ModularGMRESRun.deltaC`
+### D060: `HighamBench.P19Algorithm2Iteration.deltaB`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `429a7a1f66277b258a86c83b66387d1fc1c862f79b8dd9fc6dd9d157051262f5`
+- Semantic SHA-256: `737380e55e6f4d002c09906b6bcf025c9bda8e34cbadd9e15e1eacd15618ad5b`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} → (self : HighamBench.P19ModularGMRESRun l) → ι → HighamBench.P19RectMatrix n self.keyDimension
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → HighamBench.P19Vector n
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) →
-        ι → HighamBench.P19RectMatrix n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l self)
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → HighamBench.P19Vector n
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.24
+fun n system semantics basisFamily k self => self.11
 ```
 
-### D056: `HighamBench.P19ModularGMRESRun.deltaX`
+### D061: `HighamBench.P19Algorithm2Iteration.deltaC`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `a6637cee9f79cabbed0a9d377c77096d77165a541c22205e8316c5ed64a4a9c5`
+- Semantic SHA-256: `8b975d7f99cb27792acfddfe57d6c62419fd06a5e22f149738ab976b8c92053c`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → ι → HighamBench.P19Vector n
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → HighamBench.P19RectMatrix n k.val
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → ι → HighamBench.P19Vector n
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) →
+            HighamBench.P19RectMatrix n
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.48
+fun n system semantics basisFamily k self => self.8
 ```
 
-### D057: `HighamBench.P19ModularGMRESRun.leastSquaresDeltaB`
+### D062: `HighamBench.P19Algorithm2Iteration.deltaX`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `e74dc228173db84ea616b718ea11d8b43e0f7fbd545bbaab8e4a92662285f8ac`
+- Semantic SHA-256: `c769c6055e58ce13a82154d73aaa12e36f093be38b8a1ef2590884646050568e`
 
 Type:
 
 ```lean
-{n : Nat} → {ι : Type u_1} → {l : Filter ι} → HighamBench.P19ModularGMRESRun l → ι → HighamBench.P19Vector n
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → HighamBench.P19Vector n
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} → (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) → ι → HighamBench.P19Vector n
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → HighamBench.P19Vector n
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.38
+fun n system semantics basisFamily k self => self.26
 ```
 
-### D058: `HighamBench.P19ModularGMRESRun.leastSquaresDeltaC`
+### D063: `HighamBench.P19Algorithm2Iteration.exactCSpectrum`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `9a0e064298849ae0d2110809ff753ce1bcbf99b53936f5efd4d91874308b9ed9`
+- Semantic SHA-256: `68907e28bc6082835e07880ef0723e3331dc590838e9ae56902d97687d8e0975`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} → (self : HighamBench.P19ModularGMRESRun l) → ι → HighamBench.P19RectMatrix n self.keyDimension
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k →
+            HighamBench.P19SingularValueData (HighamBench.p19StaticExactC system (basisFamily.basis k.val))
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (self : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) →
-        ι → HighamBench.P19RectMatrix n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l self)
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) →
+            @HighamBench.P19SingularValueData n
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
+              (@HighamBench.p19StaticExactC n
+                (@Subtype.val.{1} Nat
+                  (fun (k : Nat) =>
+                    And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                      (@LE.le.{0} Nat instLENat k n))
+                  k)
+                system
+                (@HighamBench.P19Theorem31BasisFamily.basis n system basisFamily
+                  (@Subtype.val.{1} Nat
+                    (fun (k : Nat) =>
+                      And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                        (@LE.le.{0} Nat instLENat k n))
+                    k)))
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l self => self.39
+fun n system semantics basisFamily k self => self.24
 ```
 
-### D059: `HighamBench.P19ModularGMRESRun.mk`
+### D064: `HighamBench.P19Algorithm2Iteration.leastSquaresDeltaB`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `09771da30686fc5e2cf381c4665caae33df2500d4d8fef9e37d1cf8a4130281b`
+
+Type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → HighamBench.P19Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → HighamBench.P19Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n system semantics basisFamily k self => self.20
+```
+
+### D065: `HighamBench.P19Algorithm2Iteration.leastSquaresDeltaC`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `1474e23e024f85a3713cc0794a6573e2e4071d9d614f92fe14145947ab293054`
+
+Type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → HighamBench.P19RectMatrix n k.val
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) →
+            HighamBench.P19RectMatrix n
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n system semantics basisFamily k self => self.21
+```
+
+### D066: `HighamBench.P19Algorithm2Iteration.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `3`
-- Semantic SHA-256: `8b3be08a29236a310e5547e060c838db69a40536fc680c23a42640826bd2af54`
+- Semantic SHA-256: `7878f8fc84c9629c27889bbc10be4df2f10323a0af9ee7131d71f631b0264ce2`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      instLTNat.lt 0 n →
-        (A Ainv ML MLinv : HighamBench.P19Matrix n) →
-          (b xExact : HighamBench.P19Vector n) →
-            HighamBench.p19InversePair A Ainv →
-              HighamBench.p19InversePair ML MLinv →
-                Ne b 0 →
-                  Eq (HighamBench.p19MatVec A xExact) b →
-                    (basisFamily : HighamBench.P19IncreasingBasisFamily n ι) →
-                      (keyDimension : Nat) →
-                        instLTNat.lt 0 keyDimension →
-                          instLENat.le keyDimension n →
-                            (polynomialFactor : HighamBench.P19PolynomialFactor) →
-                              (epsilonC epsilonB ug epsilonX : ι → Real) →
-                                (∀ (t : ι),
-                                    And (Real.instLE.le 0 (epsilonC t))
-                                      (And (Real.instLE.le 0 (epsilonB t))
-                                        (And (Real.instLE.le 0 (ug t)) (Real.instLE.le 0 (epsilonX t))))) →
-                                  And (Filter.Tendsto epsilonC l (nhds 0))
-                                      (And (Filter.Tendsto epsilonB l (nhds 0))
-                                        (And (Filter.Tendsto ug l (nhds 0)) (Filter.Tendsto epsilonX l (nhds 0)))) →
-                                    (computedC deltaC : ι → HighamBench.P19RectMatrix n keyDimension) →
-                                      (∀ (t : ι),
-                                          Eq (computedC t)
-                                            (instHAdd.hAdd
-                                              (HighamBench.p19SquareRectMul MLinv
-                                                (HighamBench.p19SquareRectMul A (basisFamily.basis keyDimension t)))
-                                              (deltaC t))) →
-                                        (∀ (t : ι),
-                                            Real.instLE.le (HighamBench.p19FrobNorm (deltaC t))
-                                              (instHMul.hMul (epsilonC t)
-                                                (HighamBench.p19FrobNorm
-                                                  (HighamBench.p19SquareRectMul MLinv
-                                                    (HighamBench.p19SquareRectMul A
-                                                      (basisFamily.basis keyDimension t)))))) →
-                                          (computedB deltaB : ι → HighamBench.P19Vector n) →
-                                            (∀ (t : ι),
-                                                Eq (computedB t)
-                                                  (instHAdd.hAdd (HighamBench.p19MatVec MLinv b) (deltaB t))) →
-                                              (∀ (t : ι),
-                                                  Real.instLE.le (HighamBench.p19VecNorm2 (deltaB t))
-                                                    (instHMul.hMul (epsilonB t)
-                                                      (HighamBench.p19VecNorm2 (HighamBench.p19MatVec MLinv b)))) →
-                                                (vHat : ι → HighamBench.P19RectMatrix n keyDimension) →
-                                                  (vHatNext :
-                                                      ι → HighamBench.P19RectMatrix n (instHAdd.hAdd keyDimension 1)) →
-                                                    (beta : ι → Real) →
-                                                      (hessenberg :
-                                                          ι →
-                                                            HighamBench.P19RectMatrix (instHAdd.hAdd keyDimension 1)
-                                                              keyDimension) →
-                                                        (∀ (t : ι), HighamBench.p19IsUpperHessenberg (hessenberg t)) →
-                                                          (∀ (t : ι),
-                                                              Eq (HighamBench.p19Augment (computedB t) (computedC t))
-                                                                (HighamBench.p19RectMatMul (vHatNext t)
-                                                                  (HighamBench.p19Augment
-                                                                    (HighamBench.p19ScaledFirstBasisVector (beta t))
-                                                                    (hessenberg t)))) →
-                                                            (∀ (t : ι) (i : Fin n) (j : Fin keyDimension),
-                                                                Eq (vHat t i j) (vHatNext t i j.castSucc)) →
-                                                              (leastSquaresDeltaB : ι → HighamBench.P19Vector n) →
-                                                                (leastSquaresDeltaC :
-                                                                    ι → HighamBench.P19RectMatrix n keyDimension) →
-                                                                  (yHat : ι → HighamBench.P19Vector keyDimension) →
-                                                                    (∀ (t : ι),
-                                                                        HighamBench.p19IsLeastSquaresSolution
-                                                                          (instHAdd.hAdd (computedC t)
-                                                                            (leastSquaresDeltaC t))
-                                                                          (instHAdd.hAdd (computedB t)
-                                                                            (leastSquaresDeltaB t))
-                                                                          (yHat t)) →
-                                                                      (∀ (t : ι)
-                                                                          (j : Fin (instHAdd.hAdd keyDimension 1)),
-                                                                          Real.instLE.le
-                                                                            (HighamBench.p19VecNorm2
-                                                                              (HighamBench.p19Column
-                                                                                (HighamBench.p19Augment
-                                                                                  (leastSquaresDeltaB t)
-                                                                                  (leastSquaresDeltaC t))
-                                                                                j))
-                                                                            (instHMul.hMul
-                                                                              (instHMul.hMul
-                                                                                (HighamBench.p19PolynomialFactorValue
-                                                                                  polynomialFactor n keyDimension)
-                                                                                (ug t))
-                                                                              (HighamBench.p19VecNorm2
-                                                                                (HighamBench.p19Column
-                                                                                  (HighamBench.p19Augment (computedB t)
-                                                                                    (computedC t))
-                                                                                  j)))) →
-                                                                        (computedCSpectrum :
-                                                                            (t : ι) →
-                                                                              HighamBench.P19SingularValueData
-                                                                                (computedC t)) →
-                                                                          (HighamBench.p19MuchLessThanOneAt l fun t =>
-                                                                              instHMul.hMul (ug t)
-                                                                                (HighamBench.p19RectConditionF2
-                                                                                  (computedC t)
-                                                                                  (computedCSpectrum t).sigmaMin)) →
-                                                                            (exactCSpectrum :
-                                                                                (t : ι) →
-                                                                                  HighamBench.P19SingularValueData
-                                                                                    (HighamBench.p19SquareRectMul MLinv
-                                                                                      (HighamBench.p19SquareRectMul A
-                                                                                        (basisFamily.basis keyDimension
-                                                                                          t)))) →
-                                                                              (HighamBench.p19MuchLessThanOneAt l
-                                                                                  fun t =>
-                                                                                  instHMul.hMul
-                                                                                    (instHAdd.hAdd
-                                                                                      (instHAdd.hAdd (epsilonC t)
-                                                                                        (epsilonB t))
-                                                                                      (ug t))
-                                                                                    (HighamBench.p19RectConditionF2
-                                                                                      (HighamBench.p19SquareRectMul
-                                                                                        MLinv
-                                                                                        (HighamBench.p19SquareRectMul A
-                                                                                          (basisFamily.basis
-                                                                                            keyDimension t)))
-                                                                                      (exactCSpectrum t).sigmaMin)) →
-                                                                                (xHat deltaX :
-                                                                                    ι → HighamBench.P19Vector n) →
-                                                                                  (∀ (t : ι),
-                                                                                      Eq (xHat t)
-                                                                                        (instHAdd.hAdd
-                                                                                          (HighamBench.p19RectMatVec
-                                                                                            (basisFamily.basis
-                                                                                              keyDimension t)
-                                                                                            (yHat t))
-                                                                                          (deltaX t))) →
-                                                                                    (∀ (t : ι),
-                                                                                        Real.instLE.le
-                                                                                          (HighamBench.p19VecNorm2
-                                                                                            (deltaX t))
-                                                                                          (instHMul.hMul (epsilonX t)
-                                                                                            (HighamBench.p19VecNorm2
-                                                                                              (HighamBench.p19RectMatVec
-                                                                                                (basisFamily.basis
-                                                                                                  keyDimension t)
-                                                                                                (yHat t))))) →
-                                                                                      HighamBench.p19MuchLessThanOneAt l
-                                                                                          epsilonX →
-                                                                                        (vHatSpectrum :
-                                                                                            (t : ι) →
-                                                                                              HighamBench.P19SingularValueData
-                                                                                                (vHat t)) →
-                                                                                          (mgsOrthogonalityDefect :
-                                                                                              ι → Real) →
-                                                                                            (∀ (t : ι),
-                                                                                                Real.instLE.le 0
-                                                                                                  (mgsOrthogonalityDefect
-                                                                                                    t)) →
-                                                                                              Filter.Eventually
-                                                                                                  (fun t =>
-                                                                                                    Real.instLE.le
-                                                                                                      (mgsOrthogonalityDefect
-                                                                                                        t)
-                                                                                                      (7 / 16))
-                                                                                                  l →
-                                                                                                (∀ (t : ι),
-                                                                                                    Real.instLE.le
-                                                                                                      (instHSub.hSub 1
-                                                                                                        (mgsOrthogonalityDefect
-                                                                                                          t))
-                                                                                                      (instHPow.hPow
-                                                                                                        (vHatSpectrum
-                                                                                                            t).sigmaMin
-                                                                                                        2)) →
-                                                                                                  (∀ (t : ι),
-                                                                                                      Real.instLE.le
-                                                                                                        (instHPow.hPow
-                                                                                                          (vHatSpectrum
-                                                                                                              t).sigmaMax
-                                                                                                          2)
-                                                                                                        (instHAdd.hAdd 1
-                                                                                                          (mgsOrthogonalityDefect
-                                                                                                            t))) →
-                                                                                                    HighamBench.P19ModularGMRESRun
-                                                                                                      l
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (dimensionFactor : Real) →
+            Real.instLE.le 1 dimensionFactor →
+              Real →
+                Real →
+                  Real →
+                    Real →
+                      (computedC deltaC : HighamBench.P19RectMatrix n k.val) →
+                        Eq computedC
+                            (instHAdd.hAdd (HighamBench.p19StaticExactC system (basisFamily.basis k.val)) deltaC) →
+                          (computedB deltaB : HighamBench.P19Vector n) →
+                            Eq computedB (instHAdd.hAdd (HighamBench.p19StaticExactB system) deltaB) →
+                              (vHat : HighamBench.P19RectMatrix n k.val) →
+                                (vHatNext : HighamBench.P19RectMatrix n (instHAdd.hAdd k.val 1)) →
+                                  (beta : Real) →
+                                    (hessenberg : HighamBench.P19RectMatrix (instHAdd.hAdd k.val 1) k.val) →
+                                      HighamBench.p19IsUpperHessenberg hessenberg →
+                                        Eq (HighamBench.p19Augment computedB computedC)
+                                            (HighamBench.p19RectMatMul vHatNext
+                                              (HighamBench.p19Augment (HighamBench.p19ScaledFirstBasisVector beta)
+                                                hessenberg)) →
+                                          (∀ (i : Fin n) (j : Fin k.val), Eq (vHat i j) (vHatNext i j.castSucc)) →
+                                            HighamBench.P19Vector n →
+                                              HighamBench.P19RectMatrix n k.val →
+                                                (yHat : HighamBench.P19Vector k.val) →
+                                                  HighamBench.P19SingularValueData computedC →
+                                                    HighamBench.P19SingularValueData
+                                                        (HighamBench.p19StaticExactC system (basisFamily.basis k.val)) →
+                                                      (xHat deltaX : HighamBench.P19Vector n) →
+                                                        Eq xHat
+                                                            (instHAdd.hAdd
+                                                              (HighamBench.p19RectMatVec (basisFamily.basis k.val) yHat)
+                                                              deltaX) →
+                                                          HighamBench.P19SingularValueData vHat →
+                                                            HighamBench.P19Algorithm2Iteration system semantics
+                                                              basisFamily k
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (dimension_pos : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n) →
-        (A Ainv ML MLinv : HighamBench.P19Matrix n) →
-          (b xExact : HighamBench.P19Vector n) →
-            (A_inverse : @HighamBench.p19InversePair n A Ainv) →
-              (ML_inverse : @HighamBench.p19InversePair n ML MLinv) →
-                (b_nonzero :
-                    @Ne.{1} (HighamBench.P19Vector n) b
-                      (@OfNat.ofNat.{0} (HighamBench.P19Vector n) (nat_lit 0)
-                        (@Zero.toOfNat0.{0} (HighamBench.P19Vector n)
-                          (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instZero)))) →
-                  (exact_solution : @Eq.{1} (HighamBench.P19Vector n) (@HighamBench.p19MatVec n A xExact) b) →
-                    (basisFamily : HighamBench.P19IncreasingBasisFamily.{u_1} n ι) →
-                      (keyDimension : Nat) →
-                        (keyDimension_pos :
-                            @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
-                              keyDimension) →
-                          (keyDimension_le : @LE.le.{0} Nat instLENat keyDimension n) →
-                            (polynomialFactor : HighamBench.P19PolynomialFactor) →
-                              (epsilonC epsilonB ug epsilonX : ι → Real) →
-                                (accuracy_nonneg :
-                                    ∀ (t : ι),
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (dimensionFactor : Real) →
+            (dimensionFactor_one_le :
+                @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
+                  dimensionFactor) →
+              (epsilonC epsilonB ug epsilonX : Real) →
+                (computedC deltaC :
+                    HighamBench.P19RectMatrix n
+                      (@Subtype.val.{1} Nat
+                        (fun (k : Nat) =>
+                          And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                            (@LE.le.{0} Nat instLENat k n))
+                        k)) →
+                  (computation_equation :
+                      @Eq.{1}
+                        (HighamBench.P19RectMatrix n
+                          (@Subtype.val.{1} Nat
+                            (fun (k : Nat) =>
+                              And
+                                (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
+                                  k)
+                                (@LE.le.{0} Nat instLENat k n))
+                            k))
+                        computedC
+                        (@HAdd.hAdd.{0, 0, 0}
+                          (HighamBench.P19RectMatrix n
+                            (@Subtype.val.{1} Nat
+                              (fun (k : Nat) =>
+                                And
+                                  (@LT.lt.{0} Nat instLTNat
+                                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                  (@LE.le.{0} Nat instLENat k n))
+                              k))
+                          (HighamBench.P19RectMatrix n
+                            (@Subtype.val.{1} Nat
+                              (fun (k : Nat) =>
+                                And
+                                  (@LT.lt.{0} Nat instLTNat
+                                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                  (@LE.le.{0} Nat instLENat k n))
+                              k))
+                          (HighamBench.P19RectMatrix n
+                            (@Subtype.val.{1} Nat
+                              (fun (k : Nat) =>
+                                And
+                                  (@LT.lt.{0} Nat instLTNat
+                                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                  (@LE.le.{0} Nat instLENat k n))
+                              k))
+                          (@instHAdd.{0}
+                            (HighamBench.P19RectMatrix n
+                              (@Subtype.val.{1} Nat
+                                (fun (k : Nat) =>
+                                  And
+                                    (@LT.lt.{0} Nat instLTNat
+                                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                    (@LE.le.{0} Nat instLENat k n))
+                                k))
+                            (@Matrix.add.{0, 0, 0} (Fin n)
+                              (Fin
+                                (@Subtype.val.{1} Nat
+                                  (fun (k : Nat) =>
+                                    And
+                                      (@LT.lt.{0} Nat instLTNat
+                                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                      (@LE.le.{0} Nat instLENat k n))
+                                  k))
+                              Real Real.instAdd))
+                          (@HighamBench.p19StaticExactC n
+                            (@Subtype.val.{1} Nat
+                              (fun (k : Nat) =>
+                                And
+                                  (@LT.lt.{0} Nat instLTNat
+                                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                  (@LE.le.{0} Nat instLENat k n))
+                              k)
+                            system
+                            (@HighamBench.P19Theorem31BasisFamily.basis n system basisFamily
+                              (@Subtype.val.{1} Nat
+                                (fun (k : Nat) =>
+                                  And
+                                    (@LT.lt.{0} Nat instLTNat
+                                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                    (@LE.le.{0} Nat instLENat k n))
+                                k)))
+                          deltaC)) →
+                    (computedB deltaB : HighamBench.P19Vector n) →
+                      (rhs_equation :
+                          @Eq.{1} (HighamBench.P19Vector n) computedB
+                            (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n) (HighamBench.P19Vector n)
+                              (HighamBench.P19Vector n)
+                              (@instHAdd.{0} (HighamBench.P19Vector n)
+                                (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
+                              (@HighamBench.p19StaticExactB n system) deltaB)) →
+                        (vHat :
+                            HighamBench.P19RectMatrix n
+                              (@Subtype.val.{1} Nat
+                                (fun (k : Nat) =>
+                                  And
+                                    (@LT.lt.{0} Nat instLTNat
+                                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                    (@LE.le.{0} Nat instLENat k n))
+                                k)) →
+                          (vHatNext :
+                              HighamBench.P19RectMatrix n
+                                (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                                  (@Subtype.val.{1} Nat
+                                    (fun (k : Nat) =>
                                       And
-                                        (@LE.le.{0} Real Real.instLE
-                                          (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                                          (epsilonC t))
-                                        (And
-                                          (@LE.le.{0} Real Real.instLE
-                                            (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                                            (epsilonB t))
-                                          (And
-                                            (@LE.le.{0} Real Real.instLE
-                                              (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                (@Zero.toOfNat0.{0} Real Real.instZero))
-                                              (ug t))
-                                            (@LE.le.{0} Real Real.instLE
-                                              (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                (@Zero.toOfNat0.{0} Real Real.instZero))
-                                              (epsilonX t))))) →
-                                  (accuracy_tendsto_zero :
-                                      And
-                                        (@Filter.Tendsto.{u_1, 0} ι Real epsilonC l
-                                          (@nhds.{0} Real
-                                            (@UniformSpace.toTopologicalSpace.{0} Real
-                                              (@PseudoMetricSpace.toUniformSpace.{0} Real Real.pseudoMetricSpace))
-                                            (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                              (@Zero.toOfNat0.{0} Real Real.instZero))))
-                                        (And
-                                          (@Filter.Tendsto.{u_1, 0} ι Real epsilonB l
-                                            (@nhds.{0} Real
-                                              (@UniformSpace.toTopologicalSpace.{0} Real
-                                                (@PseudoMetricSpace.toUniformSpace.{0} Real Real.pseudoMetricSpace))
-                                              (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                (@Zero.toOfNat0.{0} Real Real.instZero))))
-                                          (And
-                                            (@Filter.Tendsto.{u_1, 0} ι Real ug l
-                                              (@nhds.{0} Real
-                                                (@UniformSpace.toTopologicalSpace.{0} Real
-                                                  (@PseudoMetricSpace.toUniformSpace.{0} Real Real.pseudoMetricSpace))
-                                                (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                  (@Zero.toOfNat0.{0} Real Real.instZero))))
-                                            (@Filter.Tendsto.{u_1, 0} ι Real epsilonX l
-                                              (@nhds.{0} Real
-                                                (@UniformSpace.toTopologicalSpace.{0} Real
-                                                  (@PseudoMetricSpace.toUniformSpace.{0} Real Real.pseudoMetricSpace))
-                                                (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                  (@Zero.toOfNat0.{0} Real Real.instZero))))))) →
-                                    (computedC deltaC : ι → HighamBench.P19RectMatrix n keyDimension) →
-                                      (computation_equation :
-                                          ∀ (t : ι),
-                                            @Eq.{1} (HighamBench.P19RectMatrix n keyDimension) (computedC t)
-                                              (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19RectMatrix n keyDimension)
-                                                (HighamBench.P19RectMatrix n keyDimension)
-                                                (HighamBench.P19RectMatrix n keyDimension)
-                                                (@instHAdd.{0} (HighamBench.P19RectMatrix n keyDimension)
-                                                  (@Matrix.add.{0, 0, 0} (Fin n) (Fin keyDimension) Real Real.instAdd))
-                                                (@HighamBench.p19SquareRectMul n keyDimension MLinv
-                                                  (@HighamBench.p19SquareRectMul n keyDimension A
-                                                    (@HighamBench.P19IncreasingBasisFamily.basis.{u_1} n ι basisFamily
-                                                      keyDimension t)))
-                                                (deltaC t))) →
-                                        (computation_error_bound :
-                                            ∀ (t : ι),
-                                              @LE.le.{0} Real Real.instLE
-                                                (@HighamBench.p19FrobNorm n keyDimension (deltaC t))
-                                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                  (epsilonC t)
-                                                  (@HighamBench.p19FrobNorm n keyDimension
-                                                    (@HighamBench.p19SquareRectMul n keyDimension MLinv
-                                                      (@HighamBench.p19SquareRectMul n keyDimension A
-                                                        (@HighamBench.P19IncreasingBasisFamily.basis.{u_1} n ι
-                                                          basisFamily keyDimension t)))))) →
-                                          (computedB deltaB : ι → HighamBench.P19Vector n) →
-                                            (rhs_equation :
-                                                ∀ (t : ι),
-                                                  @Eq.{1} (HighamBench.P19Vector n) (computedB t)
-                                                    (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n)
-                                                      (HighamBench.P19Vector n) (HighamBench.P19Vector n)
-                                                      (@instHAdd.{0} (HighamBench.P19Vector n)
-                                                        (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                          fun (i : Fin n) => Real.instAdd))
-                                                      (@HighamBench.p19MatVec n MLinv b) (deltaB t))) →
-                                              (rhs_error_bound :
-                                                  ∀ (t : ι),
-                                                    @LE.le.{0} Real Real.instLE (@HighamBench.p19VecNorm2 n (deltaB t))
-                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                        (@instHMul.{0} Real Real.instMul) (epsilonB t)
-                                                        (@HighamBench.p19VecNorm2 n
-                                                          (@HighamBench.p19MatVec n MLinv b)))) →
-                                                (vHat : ι → HighamBench.P19RectMatrix n keyDimension) →
-                                                  (vHatNext :
-                                                      ι →
-                                                        HighamBench.P19RectMatrix n
-                                                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                            (@instHAdd.{0} Nat instAddNat) keyDimension
-                                                            (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                              (instOfNatNat (nat_lit 1))))) →
-                                                    (beta : ι → Real) →
-                                                      (hessenberg :
-                                                          ι →
-                                                            HighamBench.P19RectMatrix
-                                                              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                (@instHAdd.{0} Nat instAddNat) keyDimension
-                                                                (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                  (instOfNatNat (nat_lit 1))))
-                                                              keyDimension) →
-                                                        (hessenberg_upper :
-                                                            ∀ (t : ι),
-                                                              @HighamBench.p19IsUpperHessenberg keyDimension
-                                                                (hessenberg t)) →
-                                                          (mgs_givens_relation :
-                                                              ∀ (t : ι),
-                                                                @Eq.{1}
-                                                                  (HighamBench.P19RectMatrix n
-                                                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                      (@instHAdd.{0} Nat instAddNat) keyDimension
-                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                        (instOfNatNat (nat_lit 1)))))
-                                                                  (@HighamBench.p19Augment n keyDimension (computedB t)
-                                                                    (computedC t))
-                                                                  (@HighamBench.p19RectMatMul n
-                                                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                      (@instHAdd.{0} Nat instAddNat) keyDimension
-                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                        (instOfNatNat (nat_lit 1))))
-                                                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                      (@instHAdd.{0} Nat instAddNat) keyDimension
-                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                        (instOfNatNat (nat_lit 1))))
-                                                                    (vHatNext t)
-                                                                    (@HighamBench.p19Augment
-                                                                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                        (@instHAdd.{0} Nat instAddNat) keyDimension
-                                                                        (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                          (instOfNatNat (nat_lit 1))))
-                                                                      keyDimension
-                                                                      (@HighamBench.p19ScaledFirstBasisVector
-                                                                        keyDimension (beta t))
-                                                                      (hessenberg t)))) →
-                                                            (vHat_prefix :
-                                                                ∀ (t : ι) (i : Fin n) (j : Fin keyDimension),
-                                                                  @Eq.{1} Real (vHat t i j)
-                                                                    (vHatNext t i (@Fin.castSucc keyDimension j))) →
-                                                              (leastSquaresDeltaB : ι → HighamBench.P19Vector n) →
-                                                                (leastSquaresDeltaC :
-                                                                    ι → HighamBench.P19RectMatrix n keyDimension) →
-                                                                  (yHat : ι → HighamBench.P19Vector keyDimension) →
-                                                                    (least_squares_solution :
-                                                                        ∀ (t : ι),
-                                                                          @HighamBench.p19IsLeastSquaresSolution n
-                                                                            keyDimension
-                                                                            (@HAdd.hAdd.{0, 0, 0}
-                                                                              (HighamBench.P19RectMatrix n keyDimension)
-                                                                              (HighamBench.P19RectMatrix n keyDimension)
-                                                                              (HighamBench.P19RectMatrix n keyDimension)
-                                                                              (@instHAdd.{0}
-                                                                                (HighamBench.P19RectMatrix n
-                                                                                  keyDimension)
-                                                                                (@Matrix.add.{0, 0, 0} (Fin n)
-                                                                                  (Fin keyDimension) Real Real.instAdd))
-                                                                              (computedC t) (leastSquaresDeltaC t))
-                                                                            (@HAdd.hAdd.{0, 0, 0}
-                                                                              (HighamBench.P19Vector n)
-                                                                              (HighamBench.P19Vector n)
-                                                                              (HighamBench.P19Vector n)
-                                                                              (@instHAdd.{0} (HighamBench.P19Vector n)
-                                                                                (@Pi.instAdd.{0, 0} (Fin n)
-                                                                                  (fun (a : Fin n) => Real)
-                                                                                  fun (i : Fin n) => Real.instAdd))
-                                                                              (computedB t) (leastSquaresDeltaB t))
-                                                                            (yHat t)) →
-                                                                      (least_squares_column_bound :
-                                                                          ∀ (t : ι)
-                                                                            (j :
-                                                                              Fin
-                                                                                (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                                  (@instHAdd.{0} Nat instAddNat)
-                                                                                  keyDimension
-                                                                                  (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                                    (instOfNatNat (nat_lit 1))))),
-                                                                            @LE.le.{0} Real Real.instLE
-                                                                              (@HighamBench.p19VecNorm2 n
-                                                                                (@HighamBench.p19Column n
-                                                                                  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                                    (@instHAdd.{0} Nat instAddNat)
-                                                                                    keyDimension
-                                                                                    (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                                      (instOfNatNat (nat_lit 1))))
-                                                                                  (@HighamBench.p19Augment n
-                                                                                    keyDimension (leastSquaresDeltaB t)
-                                                                                    (leastSquaresDeltaC t))
-                                                                                  j))
-                                                                              (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                                                (@instHMul.{0} Real Real.instMul)
-                                                                                (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                                                  (@instHMul.{0} Real Real.instMul)
-                                                                                  (HighamBench.p19PolynomialFactorValue
-                                                                                    polynomialFactor n keyDimension)
-                                                                                  (ug t))
-                                                                                (@HighamBench.p19VecNorm2 n
-                                                                                  (@HighamBench.p19Column n
-                                                                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                                      (@instHAdd.{0} Nat instAddNat)
-                                                                                      keyDimension
-                                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                                        (instOfNatNat (nat_lit 1))))
-                                                                                    (@HighamBench.p19Augment n
-                                                                                      keyDimension (computedB t)
-                                                                                      (computedC t))
-                                                                                    j)))) →
-                                                                        (computedCSpectrum :
-                                                                            (t : ι) →
-                                                                              @HighamBench.P19SingularValueData n
-                                                                                keyDimension (computedC t)) →
-                                                                          (computedC_numerically_nonsingular :
-                                                                              @HighamBench.p19MuchLessThanOneAt.{u_1} ι
-                                                                                l fun (t : ι) =>
-                                                                                @HMul.hMul.{0, 0, 0} Real Real Real
-                                                                                  (@instHMul.{0} Real Real.instMul)
-                                                                                  (ug t)
-                                                                                  (@HighamBench.p19RectConditionF2 n
-                                                                                    keyDimension (computedC t)
-                                                                                    (@HighamBench.P19SingularValueData.sigmaMin
-                                                                                      n keyDimension (computedC t)
-                                                                                      (computedCSpectrum t)))) →
-                                                                            (exactCSpectrum :
-                                                                                (t : ι) →
-                                                                                  @HighamBench.P19SingularValueData n
-                                                                                    keyDimension
-                                                                                    (@HighamBench.p19SquareRectMul n
-                                                                                      keyDimension MLinv
-                                                                                      (@HighamBench.p19SquareRectMul n
-                                                                                        keyDimension A
-                                                                                        (@HighamBench.P19IncreasingBasisFamily.basis.{u_1}
-                                                                                          n ι basisFamily keyDimension
-                                                                                          t)))) →
-                                                                              (combined_model_small :
-                                                                                  @HighamBench.p19MuchLessThanOneAt.{u_1}
-                                                                                    ι l fun (t : ι) =>
-                                                                                    @HMul.hMul.{0, 0, 0} Real Real Real
-                                                                                      (@instHMul.{0} Real Real.instMul)
-                                                                                      (@HAdd.hAdd.{0, 0, 0} Real Real
-                                                                                        Real
-                                                                                        (@instHAdd.{0} Real
-                                                                                          Real.instAdd)
-                                                                                        (@HAdd.hAdd.{0, 0, 0} Real Real
-                                                                                          Real
-                                                                                          (@instHAdd.{0} Real
-                                                                                            Real.instAdd)
-                                                                                          (epsilonC t) (epsilonB t))
-                                                                                        (ug t))
-                                                                                      (@HighamBench.p19RectConditionF2 n
-                                                                                        keyDimension
-                                                                                        (@HighamBench.p19SquareRectMul n
-                                                                                          keyDimension MLinv
-                                                                                          (@HighamBench.p19SquareRectMul
-                                                                                            n keyDimension A
-                                                                                            (@HighamBench.P19IncreasingBasisFamily.basis.{u_1}
-                                                                                              n ι basisFamily
-                                                                                              keyDimension t)))
-                                                                                        (@HighamBench.P19SingularValueData.sigmaMin
-                                                                                          n keyDimension
-                                                                                          (@HighamBench.p19SquareRectMul
-                                                                                            n keyDimension MLinv
-                                                                                            (@HighamBench.p19SquareRectMul
-                                                                                              n keyDimension A
-                                                                                              (@HighamBench.P19IncreasingBasisFamily.basis.{u_1}
-                                                                                                n ι basisFamily
-                                                                                                keyDimension t)))
-                                                                                          (exactCSpectrum t)))) →
-                                                                                (xHat deltaX :
-                                                                                    ι → HighamBench.P19Vector n) →
-                                                                                  (solution_equation :
-                                                                                      ∀ (t : ι),
-                                                                                        @Eq.{1}
-                                                                                          (HighamBench.P19Vector n)
-                                                                                          (xHat t)
-                                                                                          (@HAdd.hAdd.{0, 0, 0}
-                                                                                            (HighamBench.P19Vector n)
-                                                                                            (HighamBench.P19Vector n)
-                                                                                            (HighamBench.P19Vector n)
-                                                                                            (@instHAdd.{0}
-                                                                                              (HighamBench.P19Vector n)
-                                                                                              (@Pi.instAdd.{0, 0}
-                                                                                                (Fin n)
-                                                                                                (fun (a : Fin n) =>
-                                                                                                  Real)
-                                                                                                fun (i : Fin n) =>
-                                                                                                Real.instAdd))
-                                                                                            (@HighamBench.p19RectMatVec
-                                                                                              n keyDimension
-                                                                                              (@HighamBench.P19IncreasingBasisFamily.basis.{u_1}
-                                                                                                n ι basisFamily
-                                                                                                keyDimension t)
-                                                                                              (yHat t))
-                                                                                            (deltaX t))) →
-                                                                                    (solution_error_bound :
-                                                                                        ∀ (t : ι),
-                                                                                          @LE.le.{0} Real Real.instLE
-                                                                                            (@HighamBench.p19VecNorm2 n
-                                                                                              (deltaX t))
-                                                                                            (@HMul.hMul.{0, 0, 0} Real
-                                                                                              Real Real
-                                                                                              (@instHMul.{0} Real
-                                                                                                Real.instMul)
-                                                                                              (epsilonX t)
-                                                                                              (@HighamBench.p19VecNorm2
-                                                                                                n
-                                                                                                (@HighamBench.p19RectMatVec
-                                                                                                  n keyDimension
-                                                                                                  (@HighamBench.P19IncreasingBasisFamily.basis.{u_1}
-                                                                                                    n ι basisFamily
-                                                                                                    keyDimension t)
-                                                                                                  (yHat t))))) →
-                                                                                      (solution_small :
-                                                                                          @HighamBench.p19MuchLessThanOneAt.{u_1}
-                                                                                            ι l epsilonX) →
-                                                                                        (vHatSpectrum :
-                                                                                            (t : ι) →
-                                                                                              @HighamBench.P19SingularValueData
-                                                                                                n keyDimension
-                                                                                                (vHat t)) →
-                                                                                          (mgsOrthogonalityDefect :
-                                                                                              ι → Real) →
-                                                                                            (mgs_defect_nonneg :
-                                                                                                ∀ (t : ι),
-                                                                                                  @LE.le.{0} Real
-                                                                                                    Real.instLE
-                                                                                                    (@OfNat.ofNat.{0}
-                                                                                                      Real (nat_lit 0)
-                                                                                                      (@Zero.toOfNat0.{0}
-                                                                                                        Real
-                                                                                                        Real.instZero))
-                                                                                                    (mgsOrthogonalityDefect
-                                                                                                      t)) →
-                                                                                              (mgs_defect_small :
-                                                                                                  @Filter.Eventually.{u_1}
-                                                                                                    ι
-                                                                                                    (fun (t : ι) =>
-                                                                                                      @LE.le.{0} Real
-                                                                                                        Real.instLE
-                                                                                                        (mgsOrthogonalityDefect
-                                                                                                          t)
-                                                                                                        (@HDiv.hDiv.{0,
-                                                                                                              0, 0}
-                                                                                                          Real Real Real
-                                                                                                          (@instHDiv.{0}
-                                                                                                            Real
-                                                                                                            (@DivInvMonoid.toDiv.{0}
-                                                                                                              Real
-                                                                                                              Real.instDivInvMonoid))
-                                                                                                          (@OfNat.ofNat.{0}
-                                                                                                            Real
-                                                                                                            (nat_lit 7)
-                                                                                                            (@instOfNatAtLeastTwo.{0}
-                                                                                                              Real
-                                                                                                              (nat_lit
-                                                                                                                7)
-                                                                                                              Real.instNatCast
-                                                                                                              (@Nat.instAtLeastTwoHAddOfNat
-                                                                                                                (@OfNat.ofNat.{0}
-                                                                                                                  Nat
-                                                                                                                  (nat_lit
-                                                                                                                    6)
-                                                                                                                  (instOfNatNat
-                                                                                                                    (nat_lit
-                                                                                                                      6)))
-                                                                                                                (@Nat.instNeZeroSucc
-                                                                                                                  (@OfNat.ofNat.{0}
-                                                                                                                    Nat
-                                                                                                                    (nat_lit
-                                                                                                                      5)
-                                                                                                                    (instOfNatNat
-                                                                                                                      (nat_lit
-                                                                                                                        5)))))))
-                                                                                                          (@OfNat.ofNat.{0}
-                                                                                                            Real
-                                                                                                            (nat_lit 16)
-                                                                                                            (@instOfNatAtLeastTwo.{0}
-                                                                                                              Real
-                                                                                                              (nat_lit
-                                                                                                                16)
-                                                                                                              Real.instNatCast
-                                                                                                              (@Nat.instAtLeastTwoHAddOfNat
-                                                                                                                (@OfNat.ofNat.{0}
-                                                                                                                  Nat
-                                                                                                                  (nat_lit
-                                                                                                                    15)
-                                                                                                                  (instOfNatNat
-                                                                                                                    (nat_lit
-                                                                                                                      15)))
-                                                                                                                (@Nat.instNeZeroSucc
-                                                                                                                  (@OfNat.ofNat.{0}
-                                                                                                                    Nat
-                                                                                                                    (nat_lit
-                                                                                                                      14)
-                                                                                                                    (instOfNatNat
-                                                                                                                      (nat_lit
-                                                                                                                        14)))))))))
-                                                                                                    l) →
-                                                                                                (mgs_sigmaMin_sq_lower :
-                                                                                                    ∀ (t : ι),
-                                                                                                      @LE.le.{0} Real
-                                                                                                        Real.instLE
-                                                                                                        (@HSub.hSub.{0,
-                                                                                                              0, 0}
-                                                                                                          Real Real Real
-                                                                                                          (@instHSub.{0}
-                                                                                                            Real
-                                                                                                            Real.instSub)
-                                                                                                          (@OfNat.ofNat.{0}
-                                                                                                            Real
-                                                                                                            (nat_lit 1)
-                                                                                                            (@One.toOfNat1.{0}
-                                                                                                              Real
-                                                                                                              Real.instOne))
-                                                                                                          (mgsOrthogonalityDefect
-                                                                                                            t))
-                                                                                                        (@HPow.hPow.{0,
-                                                                                                              0, 0}
-                                                                                                          Real Nat Real
-                                                                                                          (@instHPow.{0,
-                                                                                                                0}
-                                                                                                            Real Nat
-                                                                                                            (@Monoid.toNatPow.{0}
-                                                                                                              Real
-                                                                                                              Real.instMonoid))
-                                                                                                          (@HighamBench.P19SingularValueData.sigmaMin
-                                                                                                            n
-                                                                                                            keyDimension
-                                                                                                            (vHat t)
-                                                                                                            (vHatSpectrum
-                                                                                                              t))
-                                                                                                          (@OfNat.ofNat.{0}
-                                                                                                            Nat
-                                                                                                            (nat_lit 2)
-                                                                                                            (instOfNatNat
-                                                                                                              (nat_lit
-                                                                                                                2))))) →
-                                                                                                  (mgs_sigmaMax_sq_upper :
-                                                                                                      ∀ (t : ι),
-                                                                                                        @LE.le.{0} Real
-                                                                                                          Real.instLE
-                                                                                                          (@HPow.hPow.{0,
-                                                                                                                0, 0}
-                                                                                                            Real Nat
-                                                                                                            Real
-                                                                                                            (@instHPow.{0,
-                                                                                                                  0}
-                                                                                                              Real Nat
-                                                                                                              (@Monoid.toNatPow.{0}
-                                                                                                                Real
-                                                                                                                Real.instMonoid))
-                                                                                                            (@HighamBench.P19SingularValueData.sigmaMax
-                                                                                                              n
-                                                                                                              keyDimension
-                                                                                                              (vHat t)
-                                                                                                              (vHatSpectrum
-                                                                                                                t))
-                                                                                                            (@OfNat.ofNat.{0}
-                                                                                                              Nat
-                                                                                                              (nat_lit
-                                                                                                                2)
-                                                                                                              (instOfNatNat
-                                                                                                                (nat_lit
-                                                                                                                  2))))
-                                                                                                          (@HAdd.hAdd.{0,
-                                                                                                                0, 0}
-                                                                                                            Real Real
-                                                                                                            Real
-                                                                                                            (@instHAdd.{0}
-                                                                                                              Real
-                                                                                                              Real.instAdd)
-                                                                                                            (@OfNat.ofNat.{0}
-                                                                                                              Real
-                                                                                                              (nat_lit
-                                                                                                                1)
-                                                                                                              (@One.toOfNat1.{0}
-                                                                                                                Real
-                                                                                                                Real.instOne))
-                                                                                                            (mgsOrthogonalityDefect
-                                                                                                              t))) →
-                                                                                                    @HighamBench.P19ModularGMRESRun.{u_1}
-                                                                                                      n ι l
+                                        (@LT.lt.{0} Nat instLTNat
+                                          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                        (@LE.le.{0} Nat instLENat k n))
+                                    k)
+                                  (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))) →
+                            (beta : Real) →
+                              (hessenberg :
+                                  HighamBench.P19RectMatrix
+                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                                      (@Subtype.val.{1} Nat
+                                        (fun (k : Nat) =>
+                                          And
+                                            (@LT.lt.{0} Nat instLTNat
+                                              (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                            (@LE.le.{0} Nat instLENat k n))
+                                        k)
+                                      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+                                    (@Subtype.val.{1} Nat
+                                      (fun (k : Nat) =>
+                                        And
+                                          (@LT.lt.{0} Nat instLTNat
+                                            (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                          (@LE.le.{0} Nat instLENat k n))
+                                      k)) →
+                                (hessenberg_upper :
+                                    @HighamBench.p19IsUpperHessenberg
+                                      (@Subtype.val.{1} Nat
+                                        (fun (k : Nat) =>
+                                          And
+                                            (@LT.lt.{0} Nat instLTNat
+                                              (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                            (@LE.le.{0} Nat instLENat k n))
+                                        k)
+                                      hessenberg) →
+                                  (mgs_givens_relation :
+                                      @Eq.{1}
+                                        (HighamBench.P19RectMatrix n
+                                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                                            (@Subtype.val.{1} Nat
+                                              (fun (k : Nat) =>
+                                                And
+                                                  (@LT.lt.{0} Nat instLTNat
+                                                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                  (@LE.le.{0} Nat instLENat k n))
+                                              k)
+                                            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+                                        (@HighamBench.p19Augment n
+                                          (@Subtype.val.{1} Nat
+                                            (fun (k : Nat) =>
+                                              And
+                                                (@LT.lt.{0} Nat instLTNat
+                                                  (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                (@LE.le.{0} Nat instLENat k n))
+                                            k)
+                                          computedB computedC)
+                                        (@HighamBench.p19RectMatMul n
+                                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                                            (@Subtype.val.{1} Nat
+                                              (fun (k : Nat) =>
+                                                And
+                                                  (@LT.lt.{0} Nat instLTNat
+                                                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                  (@LE.le.{0} Nat instLENat k n))
+                                              k)
+                                            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+                                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                                            (@Subtype.val.{1} Nat
+                                              (fun (k : Nat) =>
+                                                And
+                                                  (@LT.lt.{0} Nat instLTNat
+                                                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                  (@LE.le.{0} Nat instLENat k n))
+                                              k)
+                                            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+                                          vHatNext
+                                          (@HighamBench.p19Augment
+                                            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                                              (@Subtype.val.{1} Nat
+                                                (fun (k : Nat) =>
+                                                  And
+                                                    (@LT.lt.{0} Nat instLTNat
+                                                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                    (@LE.le.{0} Nat instLENat k n))
+                                                k)
+                                              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+                                            (@Subtype.val.{1} Nat
+                                              (fun (k : Nat) =>
+                                                And
+                                                  (@LT.lt.{0} Nat instLTNat
+                                                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                  (@LE.le.{0} Nat instLENat k n))
+                                              k)
+                                            (@HighamBench.p19ScaledFirstBasisVector
+                                              (@Subtype.val.{1} Nat
+                                                (fun (k : Nat) =>
+                                                  And
+                                                    (@LT.lt.{0} Nat instLTNat
+                                                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                    (@LE.le.{0} Nat instLENat k n))
+                                                k)
+                                              beta)
+                                            hessenberg))) →
+                                    (vHat_prefix :
+                                        ∀ (i : Fin n)
+                                          (j :
+                                            Fin
+                                              (@Subtype.val.{1} Nat
+                                                (fun (k : Nat) =>
+                                                  And
+                                                    (@LT.lt.{0} Nat instLTNat
+                                                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                    (@LE.le.{0} Nat instLENat k n))
+                                                k)),
+                                          @Eq.{1} Real (vHat i j)
+                                            (vHatNext i
+                                              (@Fin.castSucc
+                                                (@Subtype.val.{1} Nat
+                                                  (fun (k : Nat) =>
+                                                    And
+                                                      (@LT.lt.{0} Nat instLTNat
+                                                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                      (@LE.le.{0} Nat instLENat k n))
+                                                  k)
+                                                j))) →
+                                      (leastSquaresDeltaB : HighamBench.P19Vector n) →
+                                        (leastSquaresDeltaC :
+                                            HighamBench.P19RectMatrix n
+                                              (@Subtype.val.{1} Nat
+                                                (fun (k : Nat) =>
+                                                  And
+                                                    (@LT.lt.{0} Nat instLTNat
+                                                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                    (@LE.le.{0} Nat instLENat k n))
+                                                k)) →
+                                          (yHat :
+                                              HighamBench.P19Vector
+                                                (@Subtype.val.{1} Nat
+                                                  (fun (k : Nat) =>
+                                                    And
+                                                      (@LT.lt.{0} Nat instLTNat
+                                                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                      (@LE.le.{0} Nat instLENat k n))
+                                                  k)) →
+                                            (computedCSpectrum :
+                                                @HighamBench.P19SingularValueData n
+                                                  (@Subtype.val.{1} Nat
+                                                    (fun (k : Nat) =>
+                                                      And
+                                                        (@LT.lt.{0} Nat instLTNat
+                                                          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
+                                                          k)
+                                                        (@LE.le.{0} Nat instLENat k n))
+                                                    k)
+                                                  computedC) →
+                                              (exactCSpectrum :
+                                                  @HighamBench.P19SingularValueData n
+                                                    (@Subtype.val.{1} Nat
+                                                      (fun (k : Nat) =>
+                                                        And
+                                                          (@LT.lt.{0} Nat instLTNat
+                                                            (@OfNat.ofNat.{0} Nat (nat_lit 0)
+                                                              (instOfNatNat (nat_lit 0)))
+                                                            k)
+                                                          (@LE.le.{0} Nat instLENat k n))
+                                                      k)
+                                                    (@HighamBench.p19StaticExactC n
+                                                      (@Subtype.val.{1} Nat
+                                                        (fun (k : Nat) =>
+                                                          And
+                                                            (@LT.lt.{0} Nat instLTNat
+                                                              (@OfNat.ofNat.{0} Nat (nat_lit 0)
+                                                                (instOfNatNat (nat_lit 0)))
+                                                              k)
+                                                            (@LE.le.{0} Nat instLENat k n))
+                                                        k)
+                                                      system
+                                                      (@HighamBench.P19Theorem31BasisFamily.basis n system basisFamily
+                                                        (@Subtype.val.{1} Nat
+                                                          (fun (k : Nat) =>
+                                                            And
+                                                              (@LT.lt.{0} Nat instLTNat
+                                                                (@OfNat.ofNat.{0} Nat (nat_lit 0)
+                                                                  (instOfNatNat (nat_lit 0)))
+                                                                k)
+                                                              (@LE.le.{0} Nat instLENat k n))
+                                                          k)))) →
+                                                (xHat deltaX : HighamBench.P19Vector n) →
+                                                  (solution_equation :
+                                                      @Eq.{1} (HighamBench.P19Vector n) xHat
+                                                        (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n)
+                                                          (HighamBench.P19Vector n) (HighamBench.P19Vector n)
+                                                          (@instHAdd.{0} (HighamBench.P19Vector n)
+                                                            (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
+                                                              fun (i : Fin n) => Real.instAdd))
+                                                          (@HighamBench.p19RectMatVec n
+                                                            (@Subtype.val.{1} Nat
+                                                              (fun (k : Nat) =>
+                                                                And
+                                                                  (@LT.lt.{0} Nat instLTNat
+                                                                    (@OfNat.ofNat.{0} Nat (nat_lit 0)
+                                                                      (instOfNatNat (nat_lit 0)))
+                                                                    k)
+                                                                  (@LE.le.{0} Nat instLENat k n))
+                                                              k)
+                                                            (@HighamBench.P19Theorem31BasisFamily.basis n system
+                                                              basisFamily
+                                                              (@Subtype.val.{1} Nat
+                                                                (fun (k : Nat) =>
+                                                                  And
+                                                                    (@LT.lt.{0} Nat instLTNat
+                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 0)
+                                                                        (instOfNatNat (nat_lit 0)))
+                                                                      k)
+                                                                    (@LE.le.{0} Nat instLENat k n))
+                                                                k))
+                                                            yHat)
+                                                          deltaX)) →
+                                                    (vHatSpectrum :
+                                                        @HighamBench.P19SingularValueData n
+                                                          (@Subtype.val.{1} Nat
+                                                            (fun (k : Nat) =>
+                                                              And
+                                                                (@LT.lt.{0} Nat instLTNat
+                                                                  (@OfNat.ofNat.{0} Nat (nat_lit 0)
+                                                                    (instOfNatNat (nat_lit 0)))
+                                                                  k)
+                                                                (@LE.le.{0} Nat instLENat k n))
+                                                            k)
+                                                          vHat) →
+                                                      @HighamBench.P19Algorithm2Iteration n system semantics basisFamily
+                                                        k
 ```
 
-### D060: `HighamBench.P19PolynomialFactor.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `3`
-- Semantic SHA-256: `d58684bdda1ea68b662f7a64d90373af65ef0a9d2ae7c566f7f577b882df1bbb`
-
-Type:
-
-```lean
-(degreeN degreeK : Nat) →
-  (coefficient : Fin (instHAdd.hAdd degreeN 1) → Fin (instHAdd.hAdd degreeK 1) → Real) →
-    (∀ (i : Fin (instHAdd.hAdd degreeN 1)) (j : Fin (instHAdd.hAdd degreeK 1)), Real.instLE.le 0 (coefficient i j)) →
-      HighamBench.P19PolynomialFactor
-```
-
-Fully explicit type:
-
-```lean
-(degreeN degreeK : Nat) →
-  (coefficient :
-      Fin
-          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) degreeN
-            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
-        Fin
-            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) degreeK
-              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
-          Real) →
-    (coefficient_nonneg :
-        ∀
-          (i :
-            Fin
-              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) degreeN
-                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-          (j :
-            Fin
-              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) degreeK
-                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))),
-          @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-            (coefficient i j)) →
-      HighamBench.P19PolynomialFactor
-```
-
-### D061: `HighamBench.P19RightPreconditionedQuantities.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `3`
-- Semantic SHA-256: `0c3f47600c05b183f7722f41b79ef5c4b7faff9a6900372e65146ed02e54da98`
-
-Type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      {run : HighamBench.P19ModularGMRESRun l} →
-        {MR MRinv : HighamBench.P19Matrix n} →
-          (mrzSpectrum :
-              (t : ι) →
-                HighamBench.P19SingularValueData
-                  (HighamBench.p19SquareRectMul MR (run.basisFamily.basis run.keyDimension t))) →
-            (∀ (t : ι), Real.instLT.lt 0 (mrzSpectrum t).sigmaMin) →
-              HighamBench.P19RightPreconditionedQuantities run MR MRinv
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      {run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l} →
-        {MR MRinv : HighamBench.P19Matrix n} →
-          (mrzSpectrum :
-              (t : ι) →
-                @HighamBench.P19SingularValueData n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run)
-                  (@HighamBench.p19SquareRectMul n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run) MR
-                    (@HighamBench.P19IncreasingBasisFamily.basis.{u_1} n ι
-                      (@HighamBench.P19ModularGMRESRun.basisFamily.{u_1} n ι l run)
-                      (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run) t))) →
-            (mrz_sigmaMin_pos :
-                ∀ (t : ι),
-                  @LT.lt.{0} Real Real.instLT
-                    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                    (@HighamBench.P19SingularValueData.sigmaMin n
-                      (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run)
-                      (@HighamBench.p19SquareRectMul n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run) MR
-                        (@HighamBench.P19IncreasingBasisFamily.basis.{u_1} n ι
-                          (@HighamBench.P19ModularGMRESRun.basisFamily.{u_1} n ι l run)
-                          (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run) t))
-                      (mrzSpectrum t))) →
-              @HighamBench.P19RightPreconditionedQuantities.{u_1} n ι l run MR MRinv
-```
-
-### D062: `HighamBench.P19RightPreconditionedQuantities.mrzSpectrum`
+### D067: `HighamBench.P19Algorithm2Iteration.yHat`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `fa4d18c7380daa3f66d2f771770298f12d6c9d2b454bd697a6fdf28177e01cfe`
+- Semantic SHA-256: `17f32ecc0179dc60da4f31e7911e5c48e15e77ecc3d4689d7406db80def04525`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} →
-      {run : HighamBench.P19ModularGMRESRun l} →
-        {MR MRinv : HighamBench.P19Matrix n} →
-          HighamBench.P19RightPreconditionedQuantities run MR MRinv →
-            (t : ι) →
-              HighamBench.P19SingularValueData
-                (HighamBench.p19SquareRectMul MR (run.basisFamily.basis run.keyDimension t))
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → HighamBench.P19Vector k.val
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      {run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l} →
-        {MR MRinv : HighamBench.P19Matrix n} →
-          (self : @HighamBench.P19RightPreconditionedQuantities.{u_1} n ι l run MR MRinv) →
-            (t : ι) →
-              @HighamBench.P19SingularValueData n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run)
-                (@HighamBench.p19SquareRectMul n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run) MR
-                  (@HighamBench.P19IncreasingBasisFamily.basis.{u_1} n ι
-                    (@HighamBench.P19ModularGMRESRun.basisFamily.{u_1} n ι l run)
-                    (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run) t))
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (self : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) →
+            HighamBench.P19Vector
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n ι l run MR MRinv self => self.1
+fun n system semantics basisFamily k self => self.22
 ```
 
-### D063: `HighamBench.P19SingularValueData.mk`
+### D068: `HighamBench.P19FirstOrderSemantics.small`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `1bc30297c5d6628f7a45cd5221fd0209542b9615afa5f93728f12b0e31dc32b5`
+
+Type:
+
+```lean
+HighamBench.P19FirstOrderSemantics → Real → Prop
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P19FirstOrderSemantics) → Real → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.1
+```
+
+### D069: `HighamBench.P19RectMatrix`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `439dd553c0545a1da7e92aa2fe36a24aa581a6f27bc01f3f2b81504fea271a29`
+
+Type:
+
+```lean
+Nat → Nat → Type
+```
+
+Fully explicit type:
+
+```lean
+(m k : Nat) → Type
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m k => Matrix (Fin m) (Fin k) Real
+```
+
+### D070: `HighamBench.P19SingularValueData`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `85567c4b733cfc54d0f17c00f8808d0788e69e1dc928b327259677770bdad8dd`
+
+Type:
+
+```lean
+{m k : Nat} → HighamBench.P19RectMatrix m k → Type
+```
+
+Fully explicit type:
+
+```lean
+{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → Type
+```
+
+### D071: `HighamBench.P19StaticAppendixAExpansion`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `65eed1fd067dfb3e5a580791ed563e989356533e3bad89d99fd5a0ade6de3581`
+
+Type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    (family : HighamBench.P19Theorem31Family n semantics) →
+      (k : HighamBench.P19Theorem31Dimension n) →
+        (MR MRinv : HighamBench.P19Matrix n) → HighamBench.P19StaticRightQuantities family k MR MRinv → Type
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    (family : HighamBench.P19Theorem31Family n semantics) →
+      (k : HighamBench.P19Theorem31Dimension n) →
+        (MR MRinv : HighamBench.P19Matrix n) →
+          (q : @HighamBench.P19StaticRightQuantities n semantics family k MR MRinv) → Type
+```
+
+### D072: `HighamBench.P19StaticRightQuantities.mrzSpectrum`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `4eb7527f6531dcb13870aa8043a1b097765583fdd88a79a19aa96217957c326c`
+
+Type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        {MR MRinv : HighamBench.P19Matrix n} →
+          HighamBench.P19StaticRightQuantities family k MR MRinv →
+            HighamBench.P19SingularValueData (HighamBench.p19SquareRectMul MR (family.basisFamily.basis k.val))
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        {MR MRinv : HighamBench.P19Matrix n} →
+          (self : @HighamBench.P19StaticRightQuantities n semantics family k MR MRinv) →
+            @HighamBench.P19SingularValueData n
+              (@Subtype.val.{1} Nat
+                (fun (k : Nat) =>
+                  And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                    (@LE.le.{0} Nat instLENat k n))
+                k)
+              (@HighamBench.p19SquareRectMul n
+                (@Subtype.val.{1} Nat
+                  (fun (k : Nat) =>
+                    And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                      (@LE.le.{0} Nat instLENat k n))
+                  k)
+                MR
+                (@HighamBench.P19Theorem31BasisFamily.basis n
+                  (@HighamBench.P19Theorem31Family.system n semantics family)
+                  (@HighamBench.P19Theorem31Family.basisFamily n semantics family)
+                  (@Subtype.val.{1} Nat
+                    (fun (k : Nat) =>
+                      And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                        (@LE.le.{0} Nat instLENat k n))
+                    k)))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n semantics family k MR MRinv self => self.1
+```
+
+### D073: `HighamBench.P19Theorem31BasisFamily.basis`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `e068250f38486d591a2adfb1d7f2c918bc70608277fca9f7321223a7e5e37cbb`
+
+Type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    HighamBench.P19Theorem31BasisFamily system → (k : Nat) → HighamBench.P19RectMatrix n k
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    (self : @HighamBench.P19Theorem31BasisFamily n system) → (k : Nat) → HighamBench.P19RectMatrix n k
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n system self => self.1
+```
+
+### D074: `HighamBench.P19Theorem31BasisFamily.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `3`
+- Semantic SHA-256: `436dbb701a39337ce5332902d90e6973e9b3a19d7776ff8eb60c5b47e5d23e93`
+
+Type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    (basis : (k : Nat) → HighamBench.P19RectMatrix n k) →
+      (∀ (k : Nat), instLTNat.lt 0 k → instLENat.le k n → HighamBench.p19FullColumnRank (basis k)) →
+        (∀ (k : Nat),
+            instLTNat.lt k n → ∀ (i : Fin n) (j : Fin k), Eq (basis k i j) (basis (instHAdd.hAdd k 1) i j.castSucc)) →
+          HighamBench.P19Theorem31BasisFamily system
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    (basis : (k : Nat) → HighamBench.P19RectMatrix n k) →
+      (full_rank :
+          ∀ (k : Nat),
+            @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k →
+              @LE.le.{0} Nat instLENat k n → @HighamBench.p19FullColumnRank n k (basis k)) →
+        (column_prefix :
+            ∀ (k : Nat),
+              @LT.lt.{0} Nat instLTNat k n →
+                ∀ (i : Fin n) (j : Fin k),
+                  @Eq.{1} Real (basis k i j)
+                    (basis
+                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) k
+                        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+                      i (@Fin.castSucc k j))) →
+          @HighamBench.P19Theorem31BasisFamily n system
+```
+
+### D075: `HighamBench.P19Theorem31System.dimension_pos`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `theorem`
+- Distance from target type: `3`
+- Semantic SHA-256: `7bcc8692a7674f34e3a15ff70ef2f751cd9c1fac7daae1fce18d92dbba9eb545`
+
+Type:
+
+```lean
+∀ {n : Nat} (self : HighamBench.P19Theorem31System n), instLTNat.lt 0 n
+```
+
+Fully explicit type:
+
+```lean
+∀ {n : Nat} (self : HighamBench.P19Theorem31System n),
+  @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n
+```
+
+### D076: `HighamBench.P19Theorem31System.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `3`
+- Semantic SHA-256: `b6ce3331a8ec6712c83ccceaf2dca3a6a89ee6e003288845219a21bd32c3a9a7`
+
+Type:
+
+```lean
+{n : Nat} →
+  instLTNat.lt 0 n →
+    (A Ainv ML MLinv : HighamBench.P19Matrix n) →
+      (b xExact : HighamBench.P19Vector n) →
+        HighamBench.p19InversePair A Ainv →
+          HighamBench.p19InversePair ML MLinv →
+            Ne b 0 → Eq (HighamBench.p19MatVec A xExact) b → HighamBench.P19Theorem31System n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  (dimension_pos : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n) →
+    (A Ainv ML MLinv : HighamBench.P19Matrix n) →
+      (b xExact : HighamBench.P19Vector n) →
+        (A_inverse : @HighamBench.p19InversePair n A Ainv) →
+          (ML_inverse : @HighamBench.p19InversePair n ML MLinv) →
+            (b_nonzero :
+                @Ne.{1} (HighamBench.P19Vector n) b
+                  (@OfNat.ofNat.{0} (HighamBench.P19Vector n) (nat_lit 0)
+                    (@Zero.toOfNat0.{0} (HighamBench.P19Vector n)
+                      (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instZero)))) →
+              (exact_solution : @Eq.{1} (HighamBench.P19Vector n) (@HighamBench.p19MatVec n A xExact) b) →
+                HighamBench.P19Theorem31System n
+```
+
+### D077: `HighamBench.p19Augment`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `2fe0e06752730d60394b59adb4b76c6f22ea6681023a70406cbdcfc4ba900101`
+
+Type:
+
+```lean
+{n k : Nat} → HighamBench.P19Vector n → HighamBench.P19RectMatrix n k → HighamBench.P19RectMatrix n (instHAdd.hAdd k 1)
+```
+
+Fully explicit type:
+
+```lean
+{n k : Nat} →
+  (b : HighamBench.P19Vector n) →
+    (C : HighamBench.P19RectMatrix n k) →
+      HighamBench.P19RectMatrix n
+        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) k
+          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n k} b C i i_1 => Fin.cases (b i) (fun j => C i j) i_1
+```
+
+### D078: `HighamBench.p19Column`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `d1c96c67d25102fa9368afc8215a13cc0626a5b92b4ea3b4e4f9c82429d0c977`
+
+Type:
+
+```lean
+{m k : Nat} → HighamBench.P19RectMatrix m k → Fin k → HighamBench.P19Vector m
+```
+
+Fully explicit type:
+
+```lean
+{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → (j : Fin k) → HighamBench.P19Vector m
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m k} A j i => A i j
+```
+
+### D079: `HighamBench.p19IsLeastSquaresSolution`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `3007f611ab5087af1f0566bf60dfd75fc71f78dad5e293cff7cd63de4c42ed91`
+
+Type:
+
+```lean
+{m k : Nat} → HighamBench.P19RectMatrix m k → HighamBench.P19Vector m → HighamBench.P19Vector k → Prop
+```
+
+Fully explicit type:
+
+```lean
+{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → (b : HighamBench.P19Vector m) → (y : HighamBench.P19Vector k) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m k} A b y =>
+  ∀ (z : HighamBench.P19Vector k),
+    Real.instLE.le (HighamBench.p19VecNorm2 (instHSub.hSub b (HighamBench.p19RectMatVec A y)))
+      (HighamBench.p19VecNorm2 (instHSub.hSub b (HighamBench.p19RectMatVec A z)))
+```
+
+### D080: `HighamBench.p19MGSNearDependence`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `bebe1d1e8d8d001aa18eb0792f2f6a1ee4a0fc6ffe41d08bf7c18d43bb054680`
+
+Type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : HighamBench.P19Theorem31BasisFamily system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          HighamBench.P19Algorithm2Iteration system semantics basisFamily k → Prop
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {system : HighamBench.P19Theorem31System n} →
+    {semantics : HighamBench.P19FirstOrderSemantics} →
+      {basisFamily : @HighamBench.P19Theorem31BasisFamily n system} →
+        {k : HighamBench.P19Theorem31Dimension n} →
+          (iteration : @HighamBench.P19Algorithm2Iteration n system semantics basisFamily k) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} {system} {semantics} {basisFamily} {k} iteration =>
+  ∀ (phi : Real),
+    Real.instLT.lt 0 phi →
+      HighamBench.p19NearRankDeficient
+        (HighamBench.p19Augment (fun i => instHMul.hMul (HighamBench.p19StaticExactB system i) phi)
+          (HighamBench.p19StaticExactC system (basisFamily.basis k.val)))
+        (instHMul.hMul (instHMul.hMul iteration.dimensionFactor (instHAdd.hAdd iteration.ug iteration.epsilonC))
+          (HighamBench.p19FrobNorm
+            (HighamBench.p19Augment (fun i => instHMul.hMul (HighamBench.p19StaticExactB system i) phi)
+              (HighamBench.p19StaticExactC system (basisFamily.basis k.val)))))
+```
+
+### D081: `HighamBench.p19RectConditionF2`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `4be40f532556d3e77ff183d73f58ca53c39906eff20cfa2a95d74371577bb95c`
+
+Type:
+
+```lean
+{m k : Nat} → HighamBench.P19RectMatrix m k → Real → Real
+```
+
+Fully explicit type:
+
+```lean
+{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → (sigmaMin : Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m k} A sigmaMin => instHDiv.hDiv (HighamBench.p19FrobNorm A) sigmaMin
+```
+
+### D082: `HighamBench.p19RectMatVec`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `5e9563ecebb7f14ef3dfee0df9571dc5b992f9e32c9c0c19c6b34001b872d8e1`
+
+Type:
+
+```lean
+{m k : Nat} → HighamBench.P19RectMatrix m k → HighamBench.P19Vector k → HighamBench.P19Vector m
+```
+
+Fully explicit type:
+
+```lean
+{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → (x : HighamBench.P19Vector k) → HighamBench.P19Vector m
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m k} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
+```
+
+### D083: `HighamBench.p19StaticExactB`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `4319e900a6bd10e9333ccb65413a9942cdbde8a752183b6e91ddff40f73fa205`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (system : HighamBench.P19Theorem31System n) → HighamBench.P19Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} system => HighamBench.p19MatVec system.MLinv system.b
+```
+
+### D084: `HighamBench.p19StaticExactC`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `76bb6b06369be7ce2a16c093984eddc2dcc6362f2a005d765bda96800c51fcdd`
+
+Type:
+
+```lean
+{n k : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19RectMatrix n k → HighamBench.P19RectMatrix n k
+```
+
+Fully explicit type:
+
+```lean
+{n k : Nat} →
+  (system : HighamBench.P19Theorem31System n) → (Z : HighamBench.P19RectMatrix n k) → HighamBench.P19RectMatrix n k
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n k} system Z => HighamBench.p19SquareRectMul system.MLinv (HighamBench.p19SquareRectMul system.A Z)
+```
+
+### D085: `HighamBench.p19VecNorm2Sq`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `e29dbb51f77b0df1c2e4cbb308e8a6e36e232c2b0ce38cd883c0b946cd01ea97`
+
+Type:
+
+```lean
+{n : Nat} → (Fin n → Real) → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (x : Fin n → Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} x => Finset.univ.sum fun i => instHPow.hPow (x i) 2
+```
+
+### D086: `HighamBench.P19SingularValueData.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `4`
 - Semantic SHA-256: `785b5c97bf75f07f40320aa93a7623aeb13039753f9b0be30629411ab231dca4`
 
 Type:
@@ -3054,172 +3616,344 @@ Fully explicit type:
                   @HighamBench.P19SingularValueData m k A
 ```
 
-### D064: `HighamBench.p19ExactC`
+### D087: `HighamBench.P19StaticAppendixAExpansion.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `d53169450812b017abdf4df9c66e1a9b6df67cc41fa03b150e209b66934af9ab`
+- Declaration kind: `constructor`
+- Distance from target type: `4`
+- Semantic SHA-256: `622a39b4a5db3cb07f08c52b8caccba0945c736ad923945fcec0d054401588b8`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter ι} → (run : HighamBench.P19ModularGMRESRun l) → ι → HighamBench.P19RectMatrix n run.keyDimension
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        {MR MRinv : HighamBench.P19Matrix n} →
+          {q : HighamBench.P19StaticRightQuantities family k MR MRinv} →
+            (computationContribution rhsContribution gmresContribution solutionContribution remainder :
+                HighamBench.P19Vector n) →
+              Eq (instHSub.hSub (family.iteration k).xHat family.system.xExact)
+                  (instHAdd.hAdd
+                    (instHAdd.hAdd
+                      (instHAdd.hAdd (instHAdd.hAdd computationContribution rhsContribution) gmresContribution)
+                      solutionContribution)
+                    remainder) →
+                semantics.secondOrder
+                    (instHDiv.hDiv (HighamBench.p19VecNorm2 remainder) (HighamBench.p19VecNorm2 family.system.xExact)) →
+                  Real.instLE.le
+                      (instHDiv.hDiv (HighamBench.p19VecNorm2 computationContribution)
+                        (HighamBench.p19VecNorm2 family.system.xExact))
+                      (instHMul.hMul
+                        (instHMul.hMul (family.iteration k).dimensionFactor
+                          (HighamBench.p19ConditionNumberF (HighamBench.p19StaticSplitOperator family.system MRinv)
+                            (HighamBench.p19StaticSplitInverse family.system MR)))
+                        (instHMul.hMul (HighamBench.p19StaticAlpha MR MRinv q)
+                          (HighamBench.p19SafeRelativeMagnitude (HighamBench.p19FrobNorm (family.iteration k).deltaC)
+                            (HighamBench.p19FrobNorm
+                              (HighamBench.p19StaticExactC family.system (family.basisFamily.basis k.val)))))) →
+                    Real.instLE.le
+                        (instHDiv.hDiv (HighamBench.p19VecNorm2 rhsContribution)
+                          (HighamBench.p19VecNorm2 family.system.xExact))
+                        (instHMul.hMul
+                          (instHMul.hMul (family.iteration k).dimensionFactor
+                            (HighamBench.p19ConditionNumberF (HighamBench.p19StaticSplitOperator family.system MRinv)
+                              (HighamBench.p19StaticSplitInverse family.system MR)))
+                          (instHMul.hMul (HighamBench.p19StaticBeta MR MRinv q)
+                            (HighamBench.p19SafeRelativeMagnitude (HighamBench.p19VecNorm2 (family.iteration k).deltaB)
+                              (HighamBench.p19VecNorm2 (HighamBench.p19StaticExactB family.system))))) →
+                      Real.instLE.le
+                          (instHDiv.hDiv (HighamBench.p19VecNorm2 gmresContribution)
+                            (HighamBench.p19VecNorm2 family.system.xExact))
+                          (instHMul.hMul
+                            (instHMul.hMul (family.iteration k).dimensionFactor
+                              (HighamBench.p19ConditionNumberF (HighamBench.p19StaticSplitOperator family.system MRinv)
+                                (HighamBench.p19StaticSplitInverse family.system MR)))
+                            (instHMul.hMul (HighamBench.p19StaticBeta MR MRinv q) (family.iteration k).ug)) →
+                        Real.instLE.le
+                            (instHDiv.hDiv (HighamBench.p19VecNorm2 solutionContribution)
+                              (HighamBench.p19VecNorm2 family.system.xExact))
+                            (instHMul.hMul
+                              (HighamBench.p19ConditionNumberF (HighamBench.p19StaticSplitOperator family.system MRinv)
+                                (HighamBench.p19StaticSplitInverse family.system MR))
+                              (instHMul.hMul (HighamBench.p19StaticLambda family.system MR MRinv)
+                                (HighamBench.p19SafeRelativeMagnitude
+                                  (HighamBench.p19VecNorm2 (family.iteration k).deltaX)
+                                  (HighamBench.p19VecNorm2
+                                    (HighamBench.p19RectMatVec (family.basisFamily.basis k.val)
+                                      (family.iteration k).yHat))))) →
+                          HighamBench.P19StaticAppendixAExpansion family k MR MRinv q
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {ι : Type u_1} →
-    {l : Filter.{u_1} ι} →
-      (run : @HighamBench.P19ModularGMRESRun.{u_1} n ι l) →
-        (t : ι) → HighamBench.P19RectMatrix n (@HighamBench.P19ModularGMRESRun.keyDimension.{u_1} n ι l run)
+  {semantics : HighamBench.P19FirstOrderSemantics} →
+    {family : HighamBench.P19Theorem31Family n semantics} →
+      {k : HighamBench.P19Theorem31Dimension n} →
+        {MR MRinv : HighamBench.P19Matrix n} →
+          {q : @HighamBench.P19StaticRightQuantities n semantics family k MR MRinv} →
+            (computationContribution rhsContribution gmresContribution solutionContribution remainder :
+                HighamBench.P19Vector n) →
+              (error_decomposition :
+                  @Eq.{1} (HighamBench.P19Vector n)
+                    (@HSub.hSub.{0, 0, 0} (HighamBench.P19Vector n) (HighamBench.P19Vector n) (HighamBench.P19Vector n)
+                      (@instHSub.{0} (HighamBench.P19Vector n)
+                        (@Pi.instSub.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instSub))
+                      (@HighamBench.P19Algorithm2Iteration.xHat n
+                        (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+                        (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                        (@HighamBench.P19Theorem31Family.iteration n semantics family k))
+                      (@HighamBench.P19Theorem31System.xExact n
+                        (@HighamBench.P19Theorem31Family.system n semantics family)))
+                    (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n) (HighamBench.P19Vector n) (HighamBench.P19Vector n)
+                      (@instHAdd.{0} (HighamBench.P19Vector n)
+                        (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
+                      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n) (HighamBench.P19Vector n)
+                        (HighamBench.P19Vector n)
+                        (@instHAdd.{0} (HighamBench.P19Vector n)
+                          (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
+                        (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n) (HighamBench.P19Vector n)
+                          (HighamBench.P19Vector n)
+                          (@instHAdd.{0} (HighamBench.P19Vector n)
+                            (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
+                          (@HAdd.hAdd.{0, 0, 0} (HighamBench.P19Vector n) (HighamBench.P19Vector n)
+                            (HighamBench.P19Vector n)
+                            (@instHAdd.{0} (HighamBench.P19Vector n)
+                              (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
+                            computationContribution rhsContribution)
+                          gmresContribution)
+                        solutionContribution)
+                      remainder)) →
+                (remainder_second_order :
+                    HighamBench.P19FirstOrderSemantics.secondOrder semantics
+                      (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                        (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                        (@HighamBench.p19VecNorm2 n remainder)
+                        (@HighamBench.p19VecNorm2 n
+                          (@HighamBench.P19Theorem31System.xExact n
+                            (@HighamBench.P19Theorem31Family.system n semantics family))))) →
+                  (computation_gain_bound :
+                      @LE.le.{0} Real Real.instLE
+                        (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                          (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                          (@HighamBench.p19VecNorm2 n computationContribution)
+                          (@HighamBench.p19VecNorm2 n
+                            (@HighamBench.P19Theorem31System.xExact n
+                              (@HighamBench.P19Theorem31Family.system n semantics family))))
+                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                            (@HighamBench.P19Algorithm2Iteration.dimensionFactor n
+                              (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+                              (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                              (@HighamBench.P19Theorem31Family.iteration n semantics family k))
+                            (@HighamBench.p19ConditionNumberF n
+                              (@HighamBench.p19StaticSplitOperator n
+                                (@HighamBench.P19Theorem31Family.system n semantics family) MRinv)
+                              (@HighamBench.p19StaticSplitInverse n
+                                (@HighamBench.P19Theorem31Family.system n semantics family) MR)))
+                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                            (@HighamBench.p19StaticAlpha n semantics family k MR MRinv q)
+                            (HighamBench.p19SafeRelativeMagnitude
+                              (@HighamBench.p19FrobNorm n
+                                (@Subtype.val.{1} Nat
+                                  (fun (k : Nat) =>
+                                    And
+                                      (@LT.lt.{0} Nat instLTNat
+                                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                      (@LE.le.{0} Nat instLENat k n))
+                                  k)
+                                (@HighamBench.P19Algorithm2Iteration.deltaC n
+                                  (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+                                  (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                                  (@HighamBench.P19Theorem31Family.iteration n semantics family k)))
+                              (@HighamBench.p19FrobNorm n
+                                (@Subtype.val.{1} Nat
+                                  (fun (k : Nat) =>
+                                    And
+                                      (@LT.lt.{0} Nat instLTNat
+                                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                      (@LE.le.{0} Nat instLENat k n))
+                                  k)
+                                (@HighamBench.p19StaticExactC n
+                                  (@Subtype.val.{1} Nat
+                                    (fun (k : Nat) =>
+                                      And
+                                        (@LT.lt.{0} Nat instLTNat
+                                          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                        (@LE.le.{0} Nat instLENat k n))
+                                    k)
+                                  (@HighamBench.P19Theorem31Family.system n semantics family)
+                                  (@HighamBench.P19Theorem31BasisFamily.basis n
+                                    (@HighamBench.P19Theorem31Family.system n semantics family)
+                                    (@HighamBench.P19Theorem31Family.basisFamily n semantics family)
+                                    (@Subtype.val.{1} Nat
+                                      (fun (k : Nat) =>
+                                        And
+                                          (@LT.lt.{0} Nat instLTNat
+                                            (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                          (@LE.le.{0} Nat instLENat k n))
+                                      k)))))))) →
+                    (rhs_gain_bound :
+                        @LE.le.{0} Real Real.instLE
+                          (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                            (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                            (@HighamBench.p19VecNorm2 n rhsContribution)
+                            (@HighamBench.p19VecNorm2 n
+                              (@HighamBench.P19Theorem31System.xExact n
+                                (@HighamBench.P19Theorem31Family.system n semantics family))))
+                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                              (@HighamBench.P19Algorithm2Iteration.dimensionFactor n
+                                (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+                                (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                                (@HighamBench.P19Theorem31Family.iteration n semantics family k))
+                              (@HighamBench.p19ConditionNumberF n
+                                (@HighamBench.p19StaticSplitOperator n
+                                  (@HighamBench.P19Theorem31Family.system n semantics family) MRinv)
+                                (@HighamBench.p19StaticSplitInverse n
+                                  (@HighamBench.P19Theorem31Family.system n semantics family) MR)))
+                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                              (@HighamBench.p19StaticBeta n semantics family k MR MRinv q)
+                              (HighamBench.p19SafeRelativeMagnitude
+                                (@HighamBench.p19VecNorm2 n
+                                  (@HighamBench.P19Algorithm2Iteration.deltaB n
+                                    (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+                                    (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                                    (@HighamBench.P19Theorem31Family.iteration n semantics family k)))
+                                (@HighamBench.p19VecNorm2 n
+                                  (@HighamBench.p19StaticExactB n
+                                    (@HighamBench.P19Theorem31Family.system n semantics family))))))) →
+                      (gmres_gain_bound :
+                          @LE.le.{0} Real Real.instLE
+                            (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                              (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                              (@HighamBench.p19VecNorm2 n gmresContribution)
+                              (@HighamBench.p19VecNorm2 n
+                                (@HighamBench.P19Theorem31System.xExact n
+                                  (@HighamBench.P19Theorem31Family.system n semantics family))))
+                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                (@HighamBench.P19Algorithm2Iteration.dimensionFactor n
+                                  (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+                                  (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                                  (@HighamBench.P19Theorem31Family.iteration n semantics family k))
+                                (@HighamBench.p19ConditionNumberF n
+                                  (@HighamBench.p19StaticSplitOperator n
+                                    (@HighamBench.P19Theorem31Family.system n semantics family) MRinv)
+                                  (@HighamBench.p19StaticSplitInverse n
+                                    (@HighamBench.P19Theorem31Family.system n semantics family) MR)))
+                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                (@HighamBench.p19StaticBeta n semantics family k MR MRinv q)
+                                (@HighamBench.P19Algorithm2Iteration.ug n
+                                  (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+                                  (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                                  (@HighamBench.P19Theorem31Family.iteration n semantics family k))))) →
+                        (solution_gain_bound :
+                            @LE.le.{0} Real Real.instLE
+                              (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                                (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                                (@HighamBench.p19VecNorm2 n solutionContribution)
+                                (@HighamBench.p19VecNorm2 n
+                                  (@HighamBench.P19Theorem31System.xExact n
+                                    (@HighamBench.P19Theorem31Family.system n semantics family))))
+                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                (@HighamBench.p19ConditionNumberF n
+                                  (@HighamBench.p19StaticSplitOperator n
+                                    (@HighamBench.P19Theorem31Family.system n semantics family) MRinv)
+                                  (@HighamBench.p19StaticSplitInverse n
+                                    (@HighamBench.P19Theorem31Family.system n semantics family) MR))
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                  (@HighamBench.p19StaticLambda n
+                                    (@HighamBench.P19Theorem31Family.system n semantics family) MR MRinv)
+                                  (HighamBench.p19SafeRelativeMagnitude
+                                    (@HighamBench.p19VecNorm2 n
+                                      (@HighamBench.P19Algorithm2Iteration.deltaX n
+                                        (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+                                        (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                                        (@HighamBench.P19Theorem31Family.iteration n semantics family k)))
+                                    (@HighamBench.p19VecNorm2 n
+                                      (@HighamBench.p19RectMatVec n
+                                        (@Subtype.val.{1} Nat
+                                          (fun (k : Nat) =>
+                                            And
+                                              (@LT.lt.{0} Nat instLTNat
+                                                (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                              (@LE.le.{0} Nat instLENat k n))
+                                          k)
+                                        (@HighamBench.P19Theorem31BasisFamily.basis n
+                                          (@HighamBench.P19Theorem31Family.system n semantics family)
+                                          (@HighamBench.P19Theorem31Family.basisFamily n semantics family)
+                                          (@Subtype.val.{1} Nat
+                                            (fun (k : Nat) =>
+                                              And
+                                                (@LT.lt.{0} Nat instLTNat
+                                                  (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) k)
+                                                (@LE.le.{0} Nat instLENat k n))
+                                            k))
+                                        (@HighamBench.P19Algorithm2Iteration.yHat n
+                                          (@HighamBench.P19Theorem31Family.system n semantics family) semantics
+                                          (@HighamBench.P19Theorem31Family.basisFamily n semantics family) k
+                                          (@HighamBench.P19Theorem31Family.iteration n semantics family k)))))))) →
+                          @HighamBench.P19StaticAppendixAExpansion n semantics family k MR MRinv q
+```
+
+### D088: `HighamBench.P19Theorem31System.b`
+
+- Role: `local`
+- Owner module: `HighamBench.P19Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `4`
+- Semantic SHA-256: `f2a130fd36774a5574504267aaab72b46108b1c686d97df059b452f44cf66199`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P19Theorem31System n → HighamBench.P19Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P19Theorem31System n) → HighamBench.P19Vector n
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} {ι} {l} run t =>
-  HighamBench.p19SquareRectMul run.MLinv (HighamBench.p19SquareRectMul run.A (run.basisFamily.basis run.keyDimension t))
+fun n self => self.6
 ```
 
-### D065: `HighamBench.p19VecNorm2Sq`
+### D089: `HighamBench.p19FullColumnRank`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `e29dbb51f77b0df1c2e4cbb308e8a6e36e232c2b0ce38cd883c0b946cd01ea97`
+- Distance from target type: `4`
+- Semantic SHA-256: `84de5f440851ab2c3f7c3f00b48f7e6daa85ef2eb14e213077a5d2a91ee34c06`
 
 Type:
 
 ```lean
-{n : Nat} → (Fin n → Real) → Real
+{m k : Nat} → HighamBench.P19RectMatrix m k → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (x : Fin n → Real) → Real
+{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} x => Finset.univ.sum fun i => instHPow.hPow (x i) 2
+fun {m k} A => Function.Injective (HighamBench.p19RectMatVec A)
 ```
 
-### D066: `HighamBench.P19IncreasingBasisFamily`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `4`
-- Semantic SHA-256: `7964a4dd38133453ceffb7b7c9c982dc1c8ac2e6beb707f90bc36f96a00f0897`
-
-Type:
-
-```lean
-Nat → Type u_1 → Type u_1
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) → (ι : Type u_1) → Type u_1
-```
-
-### D067: `HighamBench.p19Augment`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `2fe0e06752730d60394b59adb4b76c6f22ea6681023a70406cbdcfc4ba900101`
-
-Type:
-
-```lean
-{n k : Nat} → HighamBench.P19Vector n → HighamBench.P19RectMatrix n k → HighamBench.P19RectMatrix n (instHAdd.hAdd k 1)
-```
-
-Fully explicit type:
-
-```lean
-{n k : Nat} →
-  (b : HighamBench.P19Vector n) →
-    (C : HighamBench.P19RectMatrix n k) →
-      HighamBench.P19RectMatrix n
-        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) k
-          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n k} b C i i_1 => Fin.cases (b i) (fun j => C i j) i_1
-```
-
-### D068: `HighamBench.p19Column`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `d1c96c67d25102fa9368afc8215a13cc0626a5b92b4ea3b4e4f9c82429d0c977`
-
-Type:
-
-```lean
-{m k : Nat} → HighamBench.P19RectMatrix m k → Fin k → HighamBench.P19Vector m
-```
-
-Fully explicit type:
-
-```lean
-{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → (j : Fin k) → HighamBench.P19Vector m
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m k} A j i => A i j
-```
-
-### D069: `HighamBench.p19IsLeastSquaresSolution`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `3007f611ab5087af1f0566bf60dfd75fc71f78dad5e293cff7cd63de4c42ed91`
-
-Type:
-
-```lean
-{m k : Nat} → HighamBench.P19RectMatrix m k → HighamBench.P19Vector m → HighamBench.P19Vector k → Prop
-```
-
-Fully explicit type:
-
-```lean
-{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → (b : HighamBench.P19Vector m) → (y : HighamBench.P19Vector k) → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m k} A b y =>
-  ∀ (z : HighamBench.P19Vector k),
-    Real.instLE.le (HighamBench.p19VecNorm2 (instHSub.hSub b (HighamBench.p19RectMatVec A y)))
-      (HighamBench.p19VecNorm2 (instHSub.hSub b (HighamBench.p19RectMatVec A z)))
-```
-
-### D070: `HighamBench.p19IsUpperHessenberg`
+### D090: `HighamBench.p19IsUpperHessenberg`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -3251,61 +3985,36 @@ Definition body (one-level semantic boundary):
 fun {k} H => ∀ (i : Fin (instHAdd.hAdd k 1)) (j : Fin k), instLTNat.lt (instHAdd.hAdd j.val 1) i.val → Eq (H i j) 0
 ```
 
-### D071: `HighamBench.p19MuchLessThanOneAt`
+### D091: `HighamBench.p19NearRankDeficient`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `def`
 - Distance from target type: `4`
-- Semantic SHA-256: `94328ed94fae4c0bd138ee6906d87a85bd518264114896318c738e9c53ae1bf3`
+- Semantic SHA-256: `16466bbe231c4c118f1c0663cc1bb4687beb871eeebede56fe75c840088e6a50`
 
 Type:
 
 ```lean
-{ι : Type u_1} → Filter ι → (ι → Real) → Prop
+{m k : Nat} → HighamBench.P19RectMatrix m k → Real → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-{ι : Type u_1} → (l : Filter.{u_1} ι) → (theta : ι → Real) → Prop
+{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → (threshold : Real) → Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {ι} l theta =>
-  And (Filter.Tendsto theta l (nhds 0))
-    (Filter.Eventually (fun t => And (Real.instLE.le 0 (theta t)) (Real.instLT.lt (theta t) 1)) l)
+fun {m k} A threshold =>
+  Exists fun x =>
+    And (Eq (HighamBench.p19VecNorm2 x) 1)
+      (Real.instLT.lt (HighamBench.p19VecNorm2 (HighamBench.p19RectMatVec A x)) threshold)
 ```
 
-### D072: `HighamBench.p19RectConditionF2`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `4be40f532556d3e77ff183d73f58ca53c39906eff20cfa2a95d74371577bb95c`
-
-Type:
-
-```lean
-{m k : Nat} → HighamBench.P19RectMatrix m k → Real → Real
-```
-
-Fully explicit type:
-
-```lean
-{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → (sigmaMin : Real) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m k} A sigmaMin => instHDiv.hDiv (HighamBench.p19FrobNorm A) sigmaMin
-```
-
-### D073: `HighamBench.p19RectMatMul`
+### D092: `HighamBench.p19RectMatMul`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -3332,33 +4041,7 @@ Definition body (one-level semantic boundary):
 fun {m k q} A B i j => Finset.univ.sum fun r => instHMul.hMul (A i r) (B r j)
 ```
 
-### D074: `HighamBench.p19RectMatVec`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `5e9563ecebb7f14ef3dfee0df9571dc5b992f9e32c9c0c19c6b34001b872d8e1`
-
-Type:
-
-```lean
-{m k : Nat} → HighamBench.P19RectMatrix m k → HighamBench.P19Vector k → HighamBench.P19Vector m
-```
-
-Fully explicit type:
-
-```lean
-{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → (x : HighamBench.P19Vector k) → HighamBench.P19Vector m
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m k} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
-```
-
-### D075: `HighamBench.p19ScaledFirstBasisVector`
+### D093: `HighamBench.p19ScaledFirstBasisVector`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
@@ -3388,72 +4071,33 @@ Definition body (one-level semantic boundary):
 fun {k} beta i => ite (Eq i.val 0) beta 0
 ```
 
-### D076: `HighamBench.P19IncreasingBasisFamily.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P19Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `5`
-- Semantic SHA-256: `26222588e9ab394aa206f7d4ca98e516b1b333815c6d509644d3f2240ed3816f`
-
-Type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    (basis : (k : Nat) → ι → HighamBench.P19RectMatrix n k) →
-      (∀ (k : Nat), instLENat.le k n → ∀ (t : ι), HighamBench.p19FullColumnRank (basis k t)) →
-        (∀ (k : Nat) (t : ι) (i : Fin n) (j : Fin k),
-            instLTNat.lt k n → Eq (basis k t i j) (basis (instHAdd.hAdd k 1) t i j.castSucc)) →
-          HighamBench.P19IncreasingBasisFamily n ι
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {ι : Type u_1} →
-    (basis : (k : Nat) → ι → HighamBench.P19RectMatrix n k) →
-      (full_rank :
-          ∀ (k : Nat), @LE.le.{0} Nat instLENat k n → ∀ (t : ι), @HighamBench.p19FullColumnRank n k (basis k t)) →
-        (column_prefix :
-            ∀ (k : Nat) (t : ι) (i : Fin n) (j : Fin k),
-              @LT.lt.{0} Nat instLTNat k n →
-                @Eq.{1} Real (basis k t i j)
-                  (basis
-                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) k
-                      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-                    t i (@Fin.castSucc k j))) →
-          HighamBench.P19IncreasingBasisFamily.{u_1} n ι
-```
-
-### D077: `HighamBench.p19FullColumnRank`
+### D094: `HighamBench.p19SafeRelativeMagnitude`
 
 - Role: `local`
 - Owner module: `HighamBench.P19Definitions`
 - Declaration kind: `def`
-- Distance from target type: `6`
-- Semantic SHA-256: `84de5f440851ab2c3f7c3f00b48f7e6daa85ef2eb14e213077a5d2a91ee34c06`
+- Distance from target type: `5`
+- Semantic SHA-256: `e90ca3fde1791e8677db326faa8ac6b95895f175f7ab0b517236d9c16c6a1872`
 
 Type:
 
 ```lean
-{m k : Nat} → HighamBench.P19RectMatrix m k → Prop
+Real → Real → Real
 ```
 
 Fully explicit type:
 
 ```lean
-{m k : Nat} → (A : HighamBench.P19RectMatrix m k) → Prop
+(actual reference : Real) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {m k} A => Function.Injective (HighamBench.p19RectMatVec A)
+fun actual reference => ite (Eq reference 0) 0 (instHDiv.hDiv actual reference)
 ```
 
-### D078: `And`
+### D095: `And`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3473,53 +4117,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D079: `DivInvMonoid.toDiv`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Group.Defs`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea`
-
-Type:
-
-```lean
-{G : Type u} → [self : DivInvMonoid G] → Div G
-```
-
-Fully explicit type:
-
-```lean
-{G : Type u} → [self : DivInvMonoid.{u} G] → Div.{u} G
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun G [self : DivInvMonoid G] => self.3
-```
-
-### D080: `Eq`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7`
-
-Type:
-
-```lean
-{α : Sort u_1} → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u_1} → α → α → Prop
-```
-
-### D081: `Exists`
+### D096: `Exists`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -3539,99 +4137,7 @@ Fully explicit type:
 {α : Sort u} → (p : α → Prop) → Prop
 ```
 
-### D082: `Filter`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Order.Filter.Defs`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `f178b01470c6b39d870c442162d6d76a8f2124db69fab7f84fe3f0f559dd4616`
-
-Type:
-
-```lean
-Type u_1 → Type u_1
-```
-
-Fully explicit type:
-
-```lean
-(α : Type u_1) → Type u_1
-```
-
-### D083: `Filter.Eventually`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Order.Filter.Defs`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `48c8fc03616b0f899835653f1d062e3de4f566255a80b15231ebdedcb0a5c4c4`
-
-Type:
-
-```lean
-{α : Type u_1} → (α → Prop) → Filter α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → (p : α → Prop) → (f : Filter.{u_1} α) → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} p f => Filter.instMembership.mem f (setOf fun x => p x)
-```
-
-### D084: `Filter.NeBot`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Order.Filter.Defs`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `b1a9231cff02beea54a4a940464dcfebb9366c023dc4486941e5650f09abbe2c`
-
-Type:
-
-```lean
-{α : Type u_1} → Filter α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → (f : Filter.{u_1} α) → Prop
-```
-
-### D085: `HDiv.hDiv`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b`
-
-Type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HDiv α β γ] → α → β → γ
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HDiv.{u, v, w} α β γ] → α → β → γ
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α β {γ} [self : HDiv α β γ] => self.1
-```
-
-### D086: `HMul.hMul`
+### D097: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3657,59 +4163,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D087: `LE.le`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48`
-
-Type:
-
-```lean
-{α : Type u} → [self : LE α] → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : LE.{u} α] → α → α → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : LE α] => self.1
-```
-
-### D088: `LT.lt`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
-
-Type:
-
-```lean
-{α : Type u} → [self : LT α] → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : LT.{u} α] → α → α → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : LT α] => self.1
-```
-
-### D089: `Nat`
+### D098: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3729,105 +4183,7 @@ Fully explicit type:
 Type
 ```
 
-### D090: `Nat.instAtLeastTwoHAddOfNat`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Nat.Init`
-- Declaration kind: `theorem`
-- Distance from target type: `1`
-- Semantic SHA-256: `309ef94c4b7cfbe2e668952e6915279353921d5d48b6123a30f90dd932dac3e6`
-
-Type:
-
-```lean
-∀ (n : Nat) [NeZero n], (instHAdd.hAdd n 1).AtLeastTwo
-```
-
-Fully explicit type:
-
-```lean
-∀ (n : Nat) [@NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0))) n],
-  Nat.AtLeastTwo
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D091: `Nat.instNeZeroSucc`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Nat.Basic`
-- Declaration kind: `theorem`
-- Distance from target type: `1`
-- Semantic SHA-256: `a0735a528184c05594c4c79312c1225bb4dcffcdf0df7eb1a50c5733047c85ad`
-
-Type:
-
-```lean
-∀ {n : Nat}, NeZero (instHAdd.hAdd n 1)
-```
-
-Fully explicit type:
-
-```lean
-∀ {n : Nat},
-  @NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0)))
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D092: `OfNat.ofNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead`
-
-Type:
-
-```lean
-{α : Type u} → (x : Nat) → [self : OfNat α x] → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → (x : Nat) → [self : OfNat.{u} α x] → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α x [self : OfNat α x] => self.1
-```
-
-### D093: `One.toOfNat1`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Zero`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5`
-
-Type:
-
-```lean
-{α : Type u_1} → [One α] → OfNat α 1
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [One.{u_1} α] → OfNat.{u_1} α (nat_lit 1)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : One α] => { ofNat := inst.one }
-```
-
-### D094: `Real`
+### D099: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3847,61 +4203,7 @@ Fully explicit type:
 Type
 ```
 
-### D095: `Real.instDivInvMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3`
-
-Type:
-
-```lean
-DivInvMonoid Real
-```
-
-Fully explicit type:
-
-```lean
-DivInvMonoid.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ toMonoid := Real.instMonoid, toInv := Real.instInv, div := DivInvMonoid.div',
-  div_eq_mul_inv := Real.instDivInvMonoid._proof_1, zpow := zpowRec, zpow_zero' := Real.instDivInvMonoid._proof_2,
-  zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
-```
-
-### D096: `Real.instLE`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3`
-
-Type:
-
-```lean
-LE Real
-```
-
-Fully explicit type:
-
-```lean
-LE.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ le := Real.le✝ }
-```
-
-### D097: `Real.instMul`
+### D100: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3925,84 +4227,6 @@ Definition body (one-level semantic boundary):
 
 ```lean
 { mul := Real.mul✝ }
-```
-
-### D098: `Real.instNatCast`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
-
-Type:
-
-```lean
-NatCast Real
-```
-
-Fully explicit type:
-
-```lean
-NatCast.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ natCast := fun n => { cauchy := n.cast } }
-```
-
-### D099: `Real.instOne`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81`
-
-Type:
-
-```lean
-One Real
-```
-
-Fully explicit type:
-
-```lean
-One.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ one := Real.one✝ }
-```
-
-### D100: `instHDiv`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `ea3478ce3daf37e2cbdcd4bfaf7b5142fd7d274b56d75d2fae007c15e1b89871`
-
-Type:
-
-```lean
-{α : Type u_1} → [Div α] → HDiv α α α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Div.{u_1} α] → HDiv.{u_1, u_1, u_1} α α α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
 ### D101: `instHMul`
@@ -4031,111 +4255,53 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D102: `instLENat`
+### D102: `DivInvMonoid.toDiv`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea`
+
+Type:
+
+```lean
+{G : Type u} → [self : DivInvMonoid G] → Div G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : DivInvMonoid.{u} G] → Div.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G [self : DivInvMonoid G] => self.3
+```
+
+### D103: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `002e628e28a06e89ab80e69408fa3be9fc3e200fafd33e0f71d9111a8944875e`
+- Declaration kind: `inductive`
+- Distance from target type: `2`
+- Semantic SHA-256: `63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7`
 
 Type:
 
 ```lean
-LE Nat
+{α : Sort u_1} → α → α → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-LE.{0} Nat
+{α : Sort u_1} → α → α → Prop
 ```
 
-Definition body (one-level semantic boundary):
-
-```lean
-{ le := Nat.le }
-```
-
-### D103: `instLTNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `4054f2341fdda887b2040c624c0867866ab56eabf3441d6ffc9451c94ae1663c`
-
-Type:
-
-```lean
-LT Nat
-```
-
-Fully explicit type:
-
-```lean
-LT.{0} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ lt := Nat.lt }
-```
-
-### D104: `instOfNatAtLeastTwo`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Nat.Cast.Defs`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d`
-
-Type:
-
-```lean
-{R : Type u_1} → {n : Nat} → [NatCast R] → [n.AtLeastTwo] → OfNat R n
-```
-
-Fully explicit type:
-
-```lean
-{R : Type u_1} → {n : Nat} → [NatCast.{u_1} R] → [Nat.AtLeastTwo n] → OfNat.{u_1} R n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
-```
-
-### D105: `instOfNatNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
-
-Type:
-
-```lean
-(n : Nat) → OfNat Nat n
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) → OfNat.{0} Nat n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n => { ofNat := n }
-```
-
-### D106: `Fin`
+### D104: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4155,111 +4321,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D107: `Fin.fintype`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Fintype.Basic`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `e7038d0981813ab904ddadd5c858e1d87d6d42413a72872c71b6e0413db6bb44`
-
-Type:
-
-```lean
-(n : Nat) → Fintype (Fin n)
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) → Fintype.{0} (Fin n)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
-```
-
-### D108: `Fin.val`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Nat
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : Fin n) → Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.1
-```
-
-### D109: `Finset.sum`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `931ceac4e9efb5833f58970d10ced4621362e020ea1119492a8d379b7e692372`
-
-Type:
-
-```lean
-{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid M] → Finset ι → (ι → M) → M
-```
-
-Fully explicit type:
-
-```lean
-{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid.{u_3} M] → (s : Finset.{u_1} ι) → (f : ι → M) → M
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
-```
-
-### D110: `Finset.univ`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Fintype.Defs`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `194413a784fbc0b27d0cb6b1ab67ed060210172bf16ba24045aa439e58f9a8c7`
-
-Type:
-
-```lean
-{α : Type u_1} → [Fintype α] → Finset α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Fintype.{u_1} α] → Finset.{u_1} α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Fintype α] => inst.elems
-```
-
-### D111: `HAdd.hAdd`
+### D105: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4285,33 +4347,33 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D112: `HPow.hPow`
+### D106: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8`
+- Semantic SHA-256: `10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b`
 
 Type:
 
 ```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HPow α β γ] → α → β → γ
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HDiv α β γ] → α → β → γ
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HPow.{u, v, w} α β γ] → α → β → γ
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HDiv.{u, v, w} α β γ] → α → β → γ
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun α β {γ} [self : HPow α β γ] => self.1
+fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D113: `HSub.hSub`
+### D107: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4337,7 +4399,59 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D114: `Matrix`
+### D108: `LE.le`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48`
+
+Type:
+
+```lean
+{α : Type u} → [self : LE α] → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : LE.{u} α] → α → α → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : LE α] => self.1
+```
+
+### D109: `LT.lt`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
+
+Type:
+
+```lean
+{α : Type u} → [self : LT α] → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : LT.{u} α] → α → α → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : LT α] => self.1
+```
+
+### D110: `Matrix`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -4363,59 +4477,59 @@ Definition body (one-level semantic boundary):
 fun m n α => m → n → α
 ```
 
-### D115: `Monoid.toNatPow`
+### D111: `OfNat.ofNat`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Group.Defs`
-- Declaration kind: `def`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a`
+- Semantic SHA-256: `6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead`
 
 Type:
 
 ```lean
-{M : Type u_2} → [Monoid M] → Pow M Nat
+{α : Type u} → (x : Nat) → [self : OfNat α x] → α
 ```
 
 Fully explicit type:
 
 ```lean
-{M : Type u_2} → [Monoid.{u_2} M] → Pow.{u_2, 0} M Nat
+{α : Type u} → (x : Nat) → [self : OfNat.{u} α x] → α
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
+fun α x [self : OfNat α x] => self.1
 ```
 
-### D116: `Nat.cast`
+### D112: `One.toOfNat1`
 
 - Role: `external-frontier`
-- Owner module: `Init.Data.Cast`
+- Owner module: `Init.Data.Zero`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `6e24327ea908b1837083bb15aef27d593e950a2ff8ade81d8aa94bfe33b64450`
+- Semantic SHA-256: `cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5`
 
 Type:
 
 ```lean
-{R : Type u} → [NatCast R] → Nat → R
+{α : Type u_1} → [One α] → OfNat α 1
 ```
 
 Fully explicit type:
 
 ```lean
-{R : Type u} → [NatCast.{u} R] → Nat → R
+{α : Type u_1} → [One.{u_1} α] → OfNat.{u_1} α (nat_lit 1)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {R} [inst : NatCast R] => inst.natCast
+fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D117: `Pi.instSub`
+### D113: `Pi.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
@@ -4441,7 +4555,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {G} [(i : ι) → Sub (G i)] => { sub := fun f g i => instHSub.hSub (f i) (g i) }
 ```
 
-### D118: `Real.instAdd`
+### D114: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4467,33 +4581,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D119: `Real.instAddCommMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `11a549e6c9caa007a4627570dd86aea756ada755f141da0356b8766788f2eef7`
-
-Type:
-
-```lean
-AddCommMonoid Real
-```
-
-Fully explicit type:
-
-```lean
-AddCommMonoid.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D120: `Real.instAddGroup`
+### D115: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4519,33 +4607,113 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D121: `Real.instMonoid`
+### D116: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
+- Semantic SHA-256: `166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3`
 
 Type:
 
 ```lean
-Monoid Real
+DivInvMonoid Real
 ```
 
 Fully explicit type:
 
 ```lean
-Monoid.{0} Real
+DivInvMonoid.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-inferInstance
+{ toMonoid := Real.instMonoid, toInv := Real.instInv, div := DivInvMonoid.div',
+  div_eq_mul_inv := Real.instDivInvMonoid._proof_1, zpow := zpowRec, zpow_zero' := Real.instDivInvMonoid._proof_2,
+  zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D122: `Real.instSub`
+### D117: `Real.instLE`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3`
+
+Type:
+
+```lean
+LE Real
+```
+
+Fully explicit type:
+
+```lean
+LE.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ le := Real.le✝ }
+```
+
+### D118: `Real.instNatCast`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
+
+Type:
+
+```lean
+NatCast Real
+```
+
+Fully explicit type:
+
+```lean
+NatCast.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ natCast := fun n => { cauchy := n.cast } }
+```
+
+### D119: `Real.instOne`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81`
+
+Type:
+
+```lean
+One Real
+```
+
+Fully explicit type:
+
+```lean
+One.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ one := Real.one✝ }
+```
+
+### D120: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4571,7 +4739,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D123: `Real.lattice`
+### D121: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4595,6 +4763,52 @@ Definition body (one-level semantic boundary):
 
 ```lean
 inferInstance
+```
+
+### D122: `Subtype`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `2`
+- Semantic SHA-256: `3b0bb8433bd0c981dbdb4d6256bf74c50e9883207dae8d309dcb705135cf932c`
+
+Type:
+
+```lean
+{α : Sort u} → (α → Prop) → Sort (max 1 u)
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (p : α → Prop) → Sort (max 1 u)
+```
+
+### D123: `Subtype.val`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `69c61ab82498e5563eaf5f0313ea7f2164c284c3dc742024a30332372a46663d`
+
+Type:
+
+```lean
+{α : Sort u} → {p : α → Prop} → Subtype p → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → {p : α → Prop} → (self : @Subtype.{u} α p) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α p self => self.1
 ```
 
 ### D124: `abs`
@@ -4624,33 +4838,7 @@ fun {α} [Lattice α] [AddGroup α] a =>
   SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
 ```
 
-### D125: `instAddNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `a1534bcd3e1888406ac787d30eeff8a284cb6688c23f5e8de09351dda91a280c`
-
-Type:
-
-```lean
-Add Nat
-```
-
-Fully explicit type:
-
-```lean
-Add.{0} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ add := Nat.add }
-```
-
-### D126: `instHAdd`
+### D125: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4676,33 +4864,33 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D127: `instHPow`
+### D126: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4`
+- Semantic SHA-256: `ea3478ce3daf37e2cbdcd4bfaf7b5142fd7d274b56d75d2fae007c15e1b89871`
 
 Type:
 
 ```lean
-{α : Type u_1} → {β : Type u_2} → [Pow α β] → HPow α β α
+{α : Type u_1} → [Div α] → HDiv α α α
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u_1} → {β : Type u_2} → [Pow.{u_1, u_2} α β] → HPow.{u_1, u_2, u_1} α β α
+{α : Type u_1} → [Div.{u_1} α] → HDiv.{u_1, u_1, u_1} α α α
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
+fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
-### D128: `instHSub`
+### D127: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4728,35 +4916,255 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D129: `Asymptotics.IsBigO`
+### D128: `instLENat`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Analysis.Asymptotics.Defs`
+- Owner module: `Init.Prelude`
 - Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `06a15067a593fd57b03eac5fd3b1be5d0a4500012f1c2bd1c892def6eda93919`
+- Distance from target type: `2`
+- Semantic SHA-256: `002e628e28a06e89ab80e69408fa3be9fc3e200fafd33e0f71d9111a8944875e`
 
 Type:
 
 ```lean
-{α : Type u_18} → {E : Type u_19} → {F : Type u_20} → [Norm E] → [Norm F] → Filter α → (α → E) → (α → F) → Prop
+LE Nat
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u_18} →
-  {E : Type u_19} →
-    {F : Type u_20} → [Norm.{u_19} E] → [Norm.{u_20} F] → (l : Filter.{u_18} α) → (f : α → E) → (g : α → F) → Prop
+LE.{0} Nat
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-Asymptotics.wrapped✝.1
+{ le := Nat.le }
 ```
 
-### D130: `Matrix.frobeniusNormedAddCommGroup`
+### D129: `instLTNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `4054f2341fdda887b2040c624c0867866ab56eabf3441d6ffc9451c94ae1663c`
+
+Type:
+
+```lean
+LT Nat
+```
+
+Fully explicit type:
+
+```lean
+LT.{0} Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Nat.lt }
+```
+
+### D130: `instOfNatAtLeastTwo`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Nat.Cast.Defs`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d`
+
+Type:
+
+```lean
+{R : Type u_1} → {n : Nat} → [NatCast R] → [n.AtLeastTwo] → OfNat R n
+```
+
+Fully explicit type:
+
+```lean
+{R : Type u_1} → {n : Nat} → [NatCast.{u_1} R] → [Nat.AtLeastTwo n] → OfNat.{u_1} R n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
+```
+
+### D131: `instOfNatNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
+
+Type:
+
+```lean
+(n : Nat) → OfNat Nat n
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → OfNat.{0} Nat n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => { ofNat := n }
+```
+
+### D132: `And.intro`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `constructor`
+- Distance from target type: `3`
+- Semantic SHA-256: `232593c5c388d46173a03223cb6b55ff2a132de1d4dfae47c09b5ba49b1e4f83`
+
+Type:
+
+```lean
+∀ {a b : Prop}, a → b → And a b
+```
+
+Fully explicit type:
+
+```lean
+∀ {a b : Prop} (left : a) (right : b), And a b
+```
+
+### D133: `Fin.fintype`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Fintype.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `e7038d0981813ab904ddadd5c858e1d87d6d42413a72872c71b6e0413db6bb44`
+
+Type:
+
+```lean
+(n : Nat) → Fintype (Fin n)
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Fintype.{0} (Fin n)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
+```
+
+### D134: `Finset.sum`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `931ceac4e9efb5833f58970d10ced4621362e020ea1119492a8d379b7e692372`
+
+Type:
+
+```lean
+{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid M] → Finset ι → (ι → M) → M
+```
+
+Fully explicit type:
+
+```lean
+{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid.{u_3} M] → (s : Finset.{u_1} ι) → (f : ι → M) → M
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
+```
+
+### D135: `Finset.univ`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Fintype.Defs`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `194413a784fbc0b27d0cb6b1ab67ed060210172bf16ba24045aa439e58f9a8c7`
+
+Type:
+
+```lean
+{α : Type u_1} → [Fintype α] → Finset α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Fintype.{u_1} α] → Finset.{u_1} α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Fintype α] => inst.elems
+```
+
+### D136: `Iff.mpr`
+
+- Role: `external-frontier`
+- Owner module: `Init.Core`
+- Declaration kind: `theorem`
+- Distance from target type: `3`
+- Semantic SHA-256: `abcae2cc4e99f1dc596c9080dca30ec894770912ebfc2b6ad2910b661baa68ed`
+
+Type:
+
+```lean
+∀ {a b : Prop}, Iff a b → b → a
+```
+
+Fully explicit type:
+
+```lean
+∀ {a b : Prop} (self : Iff a b), b → a
+```
+
+### D137: `Matrix.add`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `c5598ac688001263050581cba0ba1df7931dce7913c28fb123463641833aae55`
+
+Type:
+
+```lean
+{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Add α] → Add (Matrix m n α)
+```
+
+Fully explicit type:
+
+```lean
+{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Add.{v} α] → Add.{max (max v u_3) u_2} (Matrix.{u_2, u_3, v} m n α)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m} {n} {α} [Add α] => Pi.instAdd
+```
+
+### D138: `Matrix.frobeniusNormedAddCommGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Matrix.Normed`
@@ -4789,33 +5197,7 @@ Definition body (one-level semantic boundary):
 fun {m} {n} {α} [Fintype m] [Fintype n] [NormedAddCommGroup α] => PiLp.normedAddCommGroupToPi 2 fun a => n → α
 ```
 
-### D131: `Matrix.zero`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `45e19d9662cc9574dcc02fdb90fcedc0c56420c6369edc144bdd857c8d5e99d4`
-
-Type:
-
-```lean
-{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Zero α] → Zero (Matrix m n α)
-```
-
-Fully explicit type:
-
-```lean
-{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Zero.{v} α] → Zero.{max (max v u_3) u_2} (Matrix.{u_2, u_3, v} m n α)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m} {n} {α} [Zero α] => Pi.instZero
-```
-
-### D132: `Max.max`
+### D139: `Max.max`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4841,7 +5223,128 @@ Definition body (one-level semantic boundary):
 fun α [self : Max α] => self.1
 ```
 
-### D133: `Norm.norm`
+### D140: `Nat.AtLeastTwo`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Nat.Init`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `318e11b8f9340f2f451d638786dd4fca470dece62824f4adc3bd18b5289aa911`
+
+Type:
+
+```lean
+Nat → Prop
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Prop
+```
+
+### D141: `Nat.le_of_lt`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Nat.Basic`
+- Declaration kind: `theorem`
+- Distance from target type: `3`
+- Semantic SHA-256: `ff212a95500662f3fc7ee2c8e4193476d63a9914c09b07b917a87fc24a0c94ad`
+
+Type:
+
+```lean
+∀ {n m : Nat}, instLTNat.lt n m → instLENat.le n m
+```
+
+Fully explicit type:
+
+```lean
+∀ {n m : Nat}, @LT.lt.{0} Nat instLTNat n m → @LE.le.{0} Nat instLENat n m
+```
+
+### D142: `Nat.succ`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `constructor`
+- Distance from target type: `3`
+- Semantic SHA-256: `c069f332a974e3dbf1dc48acb0a49ab7d732c776b5cccdbe836db99ce812bdb2`
+
+Type:
+
+```lean
+Nat → Nat
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Nat
+```
+
+### D143: `Nat.succ_le_iff`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Nat.Basic`
+- Declaration kind: `theorem`
+- Distance from target type: `3`
+- Semantic SHA-256: `d5b55de88f550a3dcb1879518a5688ec9a4d8ca18878d7d0d8df30740c0ae92b`
+
+Type:
+
+```lean
+∀ {m n : Nat}, Iff (instLENat.le m.succ n) (instLTNat.lt m n)
+```
+
+Fully explicit type:
+
+```lean
+∀ {m n : Nat}, Iff (@LE.le.{0} Nat instLENat (Nat.succ m) n) (@LT.lt.{0} Nat instLTNat m n)
+```
+
+### D144: `Nat.succ_pos`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `theorem`
+- Distance from target type: `3`
+- Semantic SHA-256: `0e7e3546875c3c758b7e9f771f5146afbe4374a7356e205021f87835237aeaa7`
+
+Type:
+
+```lean
+∀ (n : Nat), instLTNat.lt 0 n.succ
+```
+
+Fully explicit type:
+
+```lean
+∀ (n : Nat), @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) (Nat.succ n)
+```
+
+### D145: `Nat.zero_lt_one`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Nat.Basic`
+- Declaration kind: `theorem`
+- Distance from target type: `3`
+- Semantic SHA-256: `7af00b6e71ddbd58776e8dc3a2c9845b1099ebd1b1c29b6b3d4e09c80c3bc1a7`
+
+Type:
+
+```lean
+instLTNat.lt 0 1
+```
+
+Fully explicit type:
+
+```lean
+@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
+  (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
+```
+
+### D146: `Norm.norm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
@@ -4867,7 +5370,7 @@ Definition body (one-level semantic boundary):
 fun E [self : Norm E] => self.1
 ```
 
-### D134: `NormedAddCommGroup.toNorm`
+### D147: `NormedAddCommGroup.toNorm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
@@ -4893,7 +5396,53 @@ Definition body (one-level semantic boundary):
 fun E [self : NormedAddCommGroup E] => self.1
 ```
 
-### D135: `Pi.instAdd`
+### D148: `Not`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `0bfdacbe07f6cbb8995b354e36299fd742f29398c188d7cc23dedcdc47f57a9a`
+
+Type:
+
+```lean
+Prop → Prop
+```
+
+Fully explicit type:
+
+```lean
+(a : Prop) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun a => a → False
+```
+
+### D149: `Or`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `de438fb54053199506d3db7df89e4ed6f1bc296d2e49a7e63e7a4b73a1b23d7e`
+
+Type:
+
+```lean
+Prop → Prop → Prop
+```
+
+Fully explicit type:
+
+```lean
+(a b : Prop) → Prop
+```
+
+### D150: `Pi.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
@@ -4919,33 +5468,59 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [(i : ι) → Add (M i)] => { add := fun f g i => instHAdd.hAdd (f i) (g i) }
 ```
 
-### D136: `Pi.instZero`
+### D151: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
+- Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
 - Distance from target type: `3`
-- Semantic SHA-256: `eb5c70d9b813d7099537e8db11f59a65a3f5ad951da7314a1aa554471a122049`
+- Semantic SHA-256: `11a549e6c9caa007a4627570dd86aea756ada755f141da0356b8766788f2eef7`
 
 Type:
 
 ```lean
-{ι : Type u_1} → {M : ι → Type u_5} → [(i : ι) → Zero (M i)] → Zero ((i : ι) → M i)
+AddCommMonoid Real
 ```
 
 Fully explicit type:
 
 ```lean
-{ι : Type u_1} → {M : ι → Type u_5} → [(i : ι) → Zero.{u_5} (M i)] → Zero.{max u_1 u_5} ((i : ι) → M i)
+AddCommMonoid.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {ι} {M} [(i : ι) → Zero (M i)] => { zero := fun x => 0 }
+inferInstance
 ```
 
-### D137: `Real.instMax`
+### D152: `Real.instLT`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a`
+
+Type:
+
+```lean
+LT Real
+```
+
+Fully explicit type:
+
+```lean
+LT.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Real.lt✝ }
+```
+
+### D153: `Real.instMax`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4971,7 +5546,7 @@ Definition body (one-level semantic boundary):
 { max := Real.sup✝ }
 ```
 
-### D138: `Real.instZero`
+### D154: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4997,33 +5572,7 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D139: `Real.norm`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Analysis.Normed.Group.Real`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `e6d33c73e5cb8fae7d8c501ead6aad9e275f7969a4d8b80f94b9f3b5001bfe3a`
-
-Type:
-
-```lean
-Norm Real
-```
-
-Fully explicit type:
-
-```lean
-Norm.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ norm := fun r => abs r }
-```
-
-### D140: `Real.normedAddCommGroup`
+### D155: `Real.normedAddCommGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Real`
@@ -5049,7 +5598,7 @@ Definition body (one-level semantic boundary):
 { toNorm := Real.norm, toAddCommGroup := Real.instAddCommGroup, toMetricSpace := Real.metricSpace, dist_eq := ⋯ }
 ```
 
-### D141: `Real.sqrt`
+### D156: `Real.sqrt`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Sqrt`
@@ -5075,7 +5624,27 @@ Definition body (one-level semantic boundary):
 fun x => ((instFunLikeOrderIso NNReal NNReal).coe NNReal.sqrt x.toNNReal).toReal
 ```
 
-### D142: `Zero.toOfNat0`
+### D157: `Subtype.mk`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `constructor`
+- Distance from target type: `3`
+- Semantic SHA-256: `488ac61b6d3c07fb9a2f54a03a39e6001a4c7cedfd07515f0f9865e7fef9ef51`
+
+Type:
+
+```lean
+{α : Sort u} → {p : α → Prop} → (val : α) → p val → Subtype p
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → {p : α → Prop} → (val : α) → (property : p val) → @Subtype.{u} α p
+```
+
+### D158: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -5101,252 +5670,38 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D143: `Filter.Tendsto`
+### D159: `instAddNat`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Order.Filter.Defs`
+- Owner module: `Init.Prelude`
 - Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `7e5f54349644c32198960083c0e0eb6c033c80a8656d02a78b3eae9a4f5131f2`
+- Distance from target type: `3`
+- Semantic SHA-256: `a1534bcd3e1888406ac787d30eeff8a284cb6688c23f5e8de09351dda91a280c`
 
 Type:
 
 ```lean
-{α : Type u_1} → {β : Type u_2} → (α → β) → Filter α → Filter β → Prop
+Add Nat
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u_1} → {β : Type u_2} → (f : α → β) → (l₁ : Filter.{u_1} α) → (l₂ : Filter.{u_2} β) → Prop
+Add.{0} Nat
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {α} {β} f l₁ l₂ => Filter.instPartialOrder.le (Filter.map f l₁) l₂
+{ add := Nat.add }
 ```
 
-### D144: `Fin.castSucc`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Fin.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `1a33a8aafc4da9c57254d511b91e1e2a293b6b2e6a304786fbdb535a2fe20bc6`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  Fin n →
-    Fin
-      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} => Fin.castAdd 1
-```
-
-### D145: `Matrix.add`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `c5598ac688001263050581cba0ba1df7931dce7913c28fb123463641833aae55`
-
-Type:
-
-```lean
-{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Add α] → Add (Matrix m n α)
-```
-
-Fully explicit type:
-
-```lean
-{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Add.{v} α] → Add.{max (max v u_3) u_2} (Matrix.{u_2, u_3, v} m n α)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m} {n} {α} [Add α] => Pi.instAdd
-```
-
-### D146: `Ne`
-
-- Role: `external-frontier`
-- Owner module: `Init.Core`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `635adc1f9e4a981a5c01b21338fdf89e637bd4ef0aa6911bda4dc03acfe9fba6`
-
-Type:
-
-```lean
-{α : Sort u} → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u} → (a b : α) → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} a b => Not (Eq a b)
-```
-
-### D147: `PseudoMetricSpace.toUniformSpace`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Topology.MetricSpace.Pseudo.Defs`
-- Declaration kind: `abbrev`
-- Distance from target type: `4`
-- Semantic SHA-256: `a6831039b3ad5e37bd0e7692fd995a699d8bef791976e20262da929990521799`
-
-Type:
-
-```lean
-{α : Type u} → [self : PseudoMetricSpace α] → UniformSpace α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : PseudoMetricSpace.{u} α] → UniformSpace.{u} α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : PseudoMetricSpace α] => self.7
-```
-
-### D148: `Real.instLT`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a`
-
-Type:
-
-```lean
-LT Real
-```
-
-Fully explicit type:
-
-```lean
-LT.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ lt := Real.lt✝ }
-```
-
-### D149: `Real.pseudoMetricSpace`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Topology.MetricSpace.Pseudo.Defs`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `9c0d1d56a04dd3ae3fce36b5fb3c2f4fe632c2bdaed84b5667c1a60a03491a3e`
-
-Type:
-
-```lean
-PseudoMetricSpace Real
-```
-
-Fully explicit type:
-
-```lean
-PseudoMetricSpace.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ dist := fun x y => abs (instHSub.hSub x y), dist_self := Real.pseudoMetricSpace._proof_1, dist_comm := ⋯,
-  dist_triangle := ⋯, edist_dist := Real.pseudoMetricSpace._proof_2, uniformity_dist := Real.pseudoMetricSpace._proof_3,
-  cobounded_sets := Real.pseudoMetricSpace._proof_4 }
-```
-
-### D150: `UniformSpace.toTopologicalSpace`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Topology.UniformSpace.Defs`
-- Declaration kind: `abbrev`
-- Distance from target type: `4`
-- Semantic SHA-256: `4d18df801a98905221e0935ec2ddacda684a1430b8d198ebc23fad0643bce2a8`
-
-Type:
-
-```lean
-{α : Type u} → [self : UniformSpace α] → TopologicalSpace α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : UniformSpace.{u} α] → TopologicalSpace.{u} α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : UniformSpace α] => self.1
-```
-
-### D151: `nhds`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Topology.Defs.Filter`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `8eb445823f4b15a765f7e0cd634f73196d36b4f09054d2aef43a69d3138c6ce8`
-
-Type:
-
-```lean
-{X : Type u_3} → [TopologicalSpace X] → X → Filter X
-```
-
-Fully explicit type:
-
-```lean
-{X : Type u_3} → [TopologicalSpace.{u_3} X] → (x : X) → Filter.{u_3} X
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-wrapped✝.1
-```
-
-### D152: `Fin.cases`
+### D160: `Fin.cases`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Lemmas`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `4`
 - Semantic SHA-256: `38edd2256cd8f4f33f2c43ce7c36a1e1c7aded652580ec57a0adaf0ec346b64d`
 
 Type:
@@ -5393,7 +5748,245 @@ Definition body (one-level semantic boundary):
 fun {n} {motive} zero succ i => Fin.induction zero (fun i x => succ i) i
 ```
 
-### D153: `instDecidableEqNat`
+### D161: `Fin.castSucc`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `1a33a8aafc4da9c57254d511b91e1e2a293b6b2e6a304786fbdb535a2fe20bc6`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  Fin n →
+    Fin
+      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} => Fin.castAdd 1
+```
+
+### D162: `HPow.hPow`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `4`
+- Semantic SHA-256: `6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HPow α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HPow.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HPow α β γ] => self.1
+```
+
+### D163: `Monoid.toNatPow`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a`
+
+Type:
+
+```lean
+{M : Type u_2} → [Monoid M] → Pow M Nat
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u_2} → [Monoid.{u_2} M] → Pow.{u_2, 0} M Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
+```
+
+### D164: `Ne`
+
+- Role: `external-frontier`
+- Owner module: `Init.Core`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `635adc1f9e4a981a5c01b21338fdf89e637bd4ef0aa6911bda4dc03acfe9fba6`
+
+Type:
+
+```lean
+{α : Sort u} → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (a b : α) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} a b => Not (Eq a b)
+```
+
+### D165: `Pi.instZero`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `eb5c70d9b813d7099537e8db11f59a65a3f5ad951da7314a1aa554471a122049`
+
+Type:
+
+```lean
+{ι : Type u_1} → {M : ι → Type u_5} → [(i : ι) → Zero (M i)] → Zero ((i : ι) → M i)
+```
+
+Fully explicit type:
+
+```lean
+{ι : Type u_1} → {M : ι → Type u_5} → [(i : ι) → Zero.{u_5} (M i)] → Zero.{max u_1 u_5} ((i : ι) → M i)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {ι} {M} [(i : ι) → Zero (M i)] => { zero := fun x => 0 }
+```
+
+### D166: `Real.instMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
+
+Type:
+
+```lean
+Monoid Real
+```
+
+Fully explicit type:
+
+```lean
+Monoid.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D167: `instHPow`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4`
+
+Type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [Pow α β] → HPow α β α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [Pow.{u_1, u_2} α β] → HPow.{u_1, u_2, u_1} α β α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
+```
+
+### D168: `Fin.val`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Nat
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : Fin n) → Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.1
+```
+
+### D169: `Function.Injective`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Function`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `d947e6344cfd1327deca4c84f2eba89bf752b6e852fc0c680177dfaae4418776`
+
+Type:
+
+```lean
+{α : Sort u_1} → {β : Sort u_2} → (α → β) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u_1} → {β : Sort u_2} → (f : α → β) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} {β} f => ∀ ⦃a₁ a₂ : α⦄, Eq (f a₁) (f a₂) → Eq a₁ a₂
+```
+
+### D170: `instDecidableEqNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5419,7 +6012,7 @@ Definition body (one-level semantic boundary):
 Nat.decEq
 ```
 
-### D154: `ite`
+### D171: `ite`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5445,30 +6038,30 @@ Definition body (one-level semantic boundary):
 fun {α} c [h : Decidable c] t e => Decidable.casesOn h (fun x => e) fun x => t
 ```
 
-### D155: `Function.Injective`
+### D172: `Real.decidableEq`
 
 - Role: `external-frontier`
-- Owner module: `Init.Data.Function`
+- Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `d947e6344cfd1327deca4c84f2eba89bf752b6e852fc0c680177dfaae4418776`
+- Distance from target type: `6`
+- Semantic SHA-256: `58b21b2d8719c9bf9f6e23c4dbf1284069f5ce6f35c64915e45284792e8a5bcf`
 
 Type:
 
 ```lean
-{α : Sort u_1} → {β : Sort u_2} → (α → β) → Prop
+(a b : Real) → Decidable (Eq a b)
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Sort u_1} → {β : Sort u_2} → (f : α → β) → Prop
+(a b : Real) → Decidable (@Eq.{1} Real a b)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {α} {β} f => ∀ ⦃a₁ a₂ : α⦄, Eq (f a₁) (f a₂) → Eq a₁ a₂
+fun a b => inferInstance
 ```
 
 ## Complete local imported sources
@@ -5532,7 +6125,7 @@ end HighamBench
 ### `HighamBench.P19Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P19Definitions.lean`
-SHA-256: `759c84ed6e94f963fc82ca1563591d08c7d575325e9d2e9944dcc5f9be16f803`
+SHA-256: `d1ee3760a4b34e9b845d1f5a65909aed6737cf7fb411c3607928aed8ed72ee27`
 
 ```lean
 import HighamBench.Core
@@ -5963,6 +6556,384 @@ structure P19Theorem31Execution {n : ℕ} {ι : Type*} (l : Filter ι) where
   forwardAnalysis : ∀ (MR MRinv : P19Matrix n),
     p19InversePair MR MRinv → P19ForwardAnalysis run MR MRinv
 
+/-- Static semantics for the source's qualitative first-order notation. The
+paper deliberately supplies neither a limiting parameter nor a numerical
+smallness threshold, so both predicates remain part of the interpretation. -/
+structure P19FirstOrderSemantics where
+  small : ℝ → Prop
+  secondOrder : ℝ → Prop
+  zero_secondOrder : secondOrder 0
+
+/-- The source relation `lhs lesssim rhs`: an exact inequality after retaining
+one term classified as negligible and second order by the chosen semantics. -/
+def p19FirstOrderLe (semantics : P19FirstOrderSemantics)
+    (lhs rhs : ℝ) : Prop :=
+  ∃ remainder : ℝ,
+    semantics.secondOrder remainder ∧ lhs ≤ rhs + |remainder|
+
+/-- A ratio that remains defined when its reference magnitude is zero. Source
+error inequalities force the numerator to vanish in that case. -/
+noncomputable def p19SafeRelativeMagnitude (actual reference : ℝ) : ℝ :=
+  if reference = 0 then 0 else actual / reference
+
+/-- A dimension admitted by Theorem 3.1. -/
+abbrev P19Theorem31Dimension (n : ℕ) :=
+  {k : ℕ // 0 < k ∧ k ≤ n}
+
+/-- Static nonsingular linear-system data shared by all Algorithm 2
+dimensions. -/
+structure P19Theorem31System (n : ℕ) where
+  dimension_pos : 0 < n
+  A : P19Matrix n
+  Ainv : P19Matrix n
+  ML : P19Matrix n
+  MLinv : P19Matrix n
+  b : P19Vector n
+  xExact : P19Vector n
+  A_inverse : p19InversePair A Ainv
+  ML_inverse : p19InversePair ML MLinv
+  b_nonzero : b ≠ 0
+  exact_solution : p19MatVec A xExact = b
+
+/-- The increasing full-rank search-space input from Theorem 3.1. -/
+structure P19Theorem31BasisFamily {n : ℕ}
+    (system : P19Theorem31System n) where
+  basis : (k : ℕ) → P19RectMatrix n k
+  full_rank : ∀ k, 0 < k → k ≤ n → p19FullColumnRank (basis k)
+  column_prefix : ∀ k, k < n → ∀ i (j : Fin k),
+    basis k i j = basis (k + 1) i j.castSucc
+
+/-- Exact left-preconditioned basis product in equation (3.2). -/
+noncomputable def p19StaticExactC {n k : ℕ}
+    (system : P19Theorem31System n) (Z : P19RectMatrix n k) :
+    P19RectMatrix n k :=
+  p19SquareRectMul system.MLinv (p19SquareRectMul system.A Z)
+
+/-- Exact left-preconditioned right-hand side in equation (3.3). -/
+noncomputable def p19StaticExactB {n : ℕ}
+    (system : P19Theorem31System n) : P19Vector n :=
+  p19MatVec system.MLinv system.b
+
+/-- One fixed-precision execution of all four modules of Algorithm 2 at one
+positive dimension. No selected key dimension or final error bound is stored. -/
+structure P19Algorithm2Iteration {n : ℕ}
+    (system : P19Theorem31System n)
+    (semantics : P19FirstOrderSemantics)
+    (basisFamily : P19Theorem31BasisFamily system)
+    (k : P19Theorem31Dimension n) where
+  dimensionFactor : ℝ
+  dimensionFactor_one_le : 1 ≤ dimensionFactor
+  epsilonC : ℝ
+  epsilonB : ℝ
+  ug : ℝ
+  epsilonX : ℝ
+  computedC : P19RectMatrix n k.1
+  deltaC : P19RectMatrix n k.1
+  computation_equation :
+    computedC = p19StaticExactC system (basisFamily.basis k.1) + deltaC
+  computedB : P19Vector n
+  deltaB : P19Vector n
+  rhs_equation : computedB = p19StaticExactB system + deltaB
+  vHat : P19RectMatrix n k.1
+  vHatNext : P19RectMatrix n (k.1 + 1)
+  beta : ℝ
+  hessenberg : P19RectMatrix (k.1 + 1) k.1
+  hessenberg_upper : p19IsUpperHessenberg hessenberg
+  mgs_givens_relation :
+    p19Augment computedB computedC =
+      p19RectMatMul vHatNext
+        (p19Augment (p19ScaledFirstBasisVector beta) hessenberg)
+  vHat_prefix : ∀ i (j : Fin k.1),
+    vHat i j = vHatNext i j.castSucc
+  leastSquaresDeltaB : P19Vector n
+  leastSquaresDeltaC : P19RectMatrix n k.1
+  yHat : P19Vector k.1
+  computedCSpectrum : P19SingularValueData computedC
+  exactCSpectrum :
+    P19SingularValueData
+      (p19StaticExactC system (basisFamily.basis k.1))
+  xHat : P19Vector n
+  deltaX : P19Vector n
+  solution_equation :
+    xHat = p19RectMatVec (basisFamily.basis k.1) yHat + deltaX
+  vHatSpectrum : P19SingularValueData vHat
+
+/-- Equations (3.2)-(3.6) and the MGS/Givens least-squares model at one
+specific Algorithm 2 dimension. Theorem 3.1 requires these only at the
+dimension selected by the MGS argument. -/
+structure P19Algorithm2Conditions {n : ℕ}
+    {system : P19Theorem31System n}
+    {semantics : P19FirstOrderSemantics}
+    {basisFamily : P19Theorem31BasisFamily system}
+    {k : P19Theorem31Dimension n}
+    (iteration : P19Algorithm2Iteration system semantics basisFamily k) where
+  accuracy_nonneg :
+    0 ≤ iteration.epsilonC ∧ 0 ≤ iteration.epsilonB ∧
+      0 ≤ iteration.ug ∧ 0 ≤ iteration.epsilonX
+  computation_error_bound :
+    p19FrobNorm iteration.deltaC ≤
+      iteration.epsilonC *
+        p19FrobNorm (p19StaticExactC system (basisFamily.basis k.1))
+  rhs_error_bound :
+    p19VecNorm2 iteration.deltaB ≤
+      iteration.epsilonB * p19VecNorm2 (p19StaticExactB system)
+  least_squares_solution :
+    p19IsLeastSquaresSolution
+      (iteration.computedC + iteration.leastSquaresDeltaC)
+      (iteration.computedB + iteration.leastSquaresDeltaB) iteration.yHat
+  least_squares_column_bound : ∀ j : Fin (k.1 + 1),
+    p19VecNorm2
+        (p19Column
+          (p19Augment iteration.leastSquaresDeltaB
+            iteration.leastSquaresDeltaC) j) ≤
+      iteration.dimensionFactor * iteration.ug *
+        p19VecNorm2
+          (p19Column
+            (p19Augment iteration.computedB iteration.computedC) j)
+  computedC_numerically_nonsingular :
+    semantics.small
+      (iteration.ug *
+        p19RectConditionF2 iteration.computedC
+          iteration.computedCSpectrum.sigmaMin)
+  combined_model_small :
+    semantics.small
+      ((iteration.epsilonC + iteration.epsilonB + iteration.ug) *
+        p19RectConditionF2
+          (p19StaticExactC system (basisFamily.basis k.1))
+          iteration.exactCSpectrum.sigmaMin)
+  solution_error_bound :
+    p19VecNorm2 iteration.deltaX ≤
+      iteration.epsilonX *
+        p19VecNorm2 (p19RectMatVec (basisFamily.basis k.1) iteration.yHat)
+  solution_small : semantics.small iteration.epsilonX
+
+/-- The two explicit conditioning inequalities in equation (3.7). -/
+def p19IterationWellConditioned {n : ℕ}
+    {system : P19Theorem31System n}
+    {semantics : P19FirstOrderSemantics}
+    {basisFamily : P19Theorem31BasisFamily system}
+    {k : P19Theorem31Dimension n}
+    (iteration : P19Algorithm2Iteration system semantics basisFamily k) : Prop :=
+  1 / iteration.vHatSpectrum.sigmaMin ≤ 4 / 3 ∧
+    iteration.vHatSpectrum.sigmaMax ≤ 4 / 3
+
+/-- Witness form of an upper bound on the smallest singular value. -/
+def p19NearRankDeficient {m k : ℕ} (A : P19RectMatrix m k)
+    (threshold : ℝ) : Prop :=
+  ∃ x : P19Vector k,
+    p19VecNorm2 x = 1 ∧
+      p19VecNorm2 (p19RectMatVec A x) < threshold
+
+/-- The input-near-dependence alternative (A.1), required only before the
+full dimension. -/
+def p19MGSNearDependence {n : ℕ}
+    {system : P19Theorem31System n}
+    {semantics : P19FirstOrderSemantics}
+    {basisFamily : P19Theorem31BasisFamily system}
+    {k : P19Theorem31Dimension n}
+    (iteration : P19Algorithm2Iteration system semantics basisFamily k) : Prop :=
+  ∀ phi : ℝ, 0 < phi →
+    p19NearRankDeficient
+      (p19Augment
+        (fun i ↦ p19StaticExactB system i * phi)
+        (p19StaticExactC system (basisFamily.basis k.1)))
+      (iteration.dimensionFactor * (iteration.ug + iteration.epsilonC) *
+        p19FrobNorm
+          (p19Augment
+            (fun i ↦ p19StaticExactB system i * phi)
+            (p19StaticExactC system (basisFamily.basis k.1))))
+
+/-- Static Algorithm 2 executions at every increasing dimension. -/
+structure P19Theorem31Family (n : ℕ)
+    (semantics : P19FirstOrderSemantics) where
+  system : P19Theorem31System n
+  basisFamily : P19Theorem31BasisFamily system
+  iteration : ∀ k : P19Theorem31Dimension n,
+    P19Algorithm2Iteration system semantics basisFamily k
+
+/-- The reusable MGS result invoked through [11, equations (5.15)-(5.17)] and
+the Paige MGS analysis: the first basis is well conditioned, and loss at the
+next dimension forces (A.1) for the current input. It contains no selected
+dimension. -/
+structure P19MGSSelectionLaw {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics) where
+  first_dimension_good :
+    p19IterationWellConditioned
+      (family.iteration
+        ⟨1, Nat.zero_lt_one, family.system.dimension_pos⟩)
+  loss_implies_near_dependence : ∀ (k : ℕ)
+      (hkpos : 0 < k) (hklt : k < n),
+    let current : P19Theorem31Dimension n :=
+      ⟨k, hkpos, Nat.le_of_lt hklt⟩
+    let next : P19Theorem31Dimension n :=
+      ⟨k + 1, Nat.succ_pos k, Nat.succ_le_iff.mpr hklt⟩
+    ¬ p19IterationWellConditioned (family.iteration next) →
+      p19MGSNearDependence (family.iteration current)
+
+/-- The split-preconditioned operator for the static Theorem 3.1 model. -/
+noncomputable def p19StaticSplitOperator {n : ℕ}
+    (system : P19Theorem31System n) (MRinv : P19Matrix n) :
+    P19Matrix n :=
+  p19SquareRectMul system.MLinv (p19SquareRectMul system.A MRinv)
+
+/-- A certified inverse of the static split-preconditioned operator. -/
+noncomputable def p19StaticSplitInverse {n : ℕ}
+    (system : P19Theorem31System n) (MR : P19Matrix n) :
+    P19Matrix n :=
+  p19SquareRectMul MR (p19SquareRectMul system.Ainv system.ML)
+
+/-- Singular-value and positivity evidence used to interpret the displayed
+`alpha`, `beta`, and `lambda` for one analytical right preconditioner. -/
+structure P19StaticRightQuantities {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics)
+    (k : P19Theorem31Dimension n)
+    (MR MRinv : P19Matrix n) where
+  mrzSpectrum :
+    P19SingularValueData
+      (p19SquareRectMul MR (family.basisFamily.basis k.1))
+  mrz_sigmaMin_pos : 0 < mrzSpectrum.sigmaMin
+  exactC_norm_pos :
+    0 < p19FrobNorm
+      (p19StaticExactC family.system (family.basisFamily.basis k.1))
+  split_operator_norm_pos :
+    0 < p19FrobNorm (p19StaticSplitOperator family.system MRinv)
+  mr_condition_pos : 0 < p19ConditionNumberF MR MRinv
+  split_condition_pos :
+    0 < p19ConditionNumberF
+      (p19StaticSplitOperator family.system MRinv)
+      (p19StaticSplitInverse family.system MR)
+
+/-- `alpha` below equation (3.8), with the paper-authorized Frobenius
+interpretation of unqualified square condition numbers. -/
+noncomputable def p19StaticAlpha {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {k : P19Theorem31Dimension n}
+    (MR MRinv : P19Matrix n)
+    (q : P19StaticRightQuantities family k MR MRinv) : ℝ :=
+  (p19ConditionNumberF MR MRinv / q.mrzSpectrum.sigmaMin) *
+    (p19FrobNorm
+        (p19StaticExactC family.system (family.basisFamily.basis k.1)) /
+      p19FrobNorm (p19StaticSplitOperator family.system MRinv))
+
+/-- `beta` below equation (3.8). -/
+noncomputable def p19StaticBeta {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {k : P19Theorem31Dimension n}
+    (MR MRinv : P19Matrix n)
+    (q : P19StaticRightQuantities family k MR MRinv) : ℝ :=
+  max 1
+      ((p19FrobNorm
+          (p19StaticExactC family.system (family.basisFamily.basis k.1)) /
+          p19FrobNorm (p19StaticSplitOperator family.system MRinv)) /
+        q.mrzSpectrum.sigmaMin) *
+    p19ConditionNumberF MR MRinv
+
+/-- `lambda` below equation (3.8). -/
+noncomputable def p19StaticLambda {n : ℕ}
+    (system : P19Theorem31System n) (MR MRinv : P19Matrix n) : ℝ :=
+  1 /
+    p19ConditionNumberF
+      (p19StaticSplitOperator system MRinv)
+      (p19StaticSplitInverse system MR)
+
+/-- The exact four-source coefficient `xi` in equation (3.8). -/
+noncomputable def p19StaticXi {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {k : P19Theorem31Dimension n}
+    (MR MRinv : P19Matrix n)
+    (q : P19StaticRightQuantities family k MR MRinv) : ℝ :=
+  let run := family.iteration k
+  p19ModularEnvelope (p19StaticAlpha MR MRinv q)
+    (p19StaticBeta MR MRinv q)
+    (p19StaticLambda family.system MR MRinv)
+    run.epsilonC run.epsilonB run.ug run.epsilonX
+
+/-- Raw Appendix-A first-order expansion. Its gain bounds are expressed in
+terms of the actual module-relative errors. In particular, none of the four
+source epsilons and no final Theorem 3.1 inequality is stored here. -/
+structure P19StaticAppendixAExpansion {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics)
+    (k : P19Theorem31Dimension n)
+    (MR MRinv : P19Matrix n)
+    (q : P19StaticRightQuantities family k MR MRinv) where
+  computationContribution : P19Vector n
+  rhsContribution : P19Vector n
+  gmresContribution : P19Vector n
+  solutionContribution : P19Vector n
+  remainder : P19Vector n
+  error_decomposition :
+    (family.iteration k).xHat - family.system.xExact =
+      computationContribution + rhsContribution + gmresContribution +
+        solutionContribution + remainder
+  remainder_second_order :
+    semantics.secondOrder
+      (p19VecNorm2 remainder / p19VecNorm2 family.system.xExact)
+  computation_gain_bound :
+    p19VecNorm2 computationContribution /
+          p19VecNorm2 family.system.xExact ≤
+      (family.iteration k).dimensionFactor *
+        p19ConditionNumberF
+          (p19StaticSplitOperator family.system MRinv)
+          (p19StaticSplitInverse family.system MR) *
+        (p19StaticAlpha MR MRinv q *
+          p19SafeRelativeMagnitude
+            (p19FrobNorm (family.iteration k).deltaC)
+            (p19FrobNorm
+              (p19StaticExactC family.system
+                (family.basisFamily.basis k.1))))
+  rhs_gain_bound :
+    p19VecNorm2 rhsContribution / p19VecNorm2 family.system.xExact ≤
+      (family.iteration k).dimensionFactor *
+        p19ConditionNumberF
+          (p19StaticSplitOperator family.system MRinv)
+          (p19StaticSplitInverse family.system MR) *
+        (p19StaticBeta MR MRinv q *
+          p19SafeRelativeMagnitude
+            (p19VecNorm2 (family.iteration k).deltaB)
+            (p19VecNorm2 (p19StaticExactB family.system)))
+  gmres_gain_bound :
+    p19VecNorm2 gmresContribution / p19VecNorm2 family.system.xExact ≤
+      (family.iteration k).dimensionFactor *
+        p19ConditionNumberF
+          (p19StaticSplitOperator family.system MRinv)
+          (p19StaticSplitInverse family.system MR) *
+        (p19StaticBeta MR MRinv q * (family.iteration k).ug)
+  solution_gain_bound :
+    p19VecNorm2 solutionContribution /
+          p19VecNorm2 family.system.xExact ≤
+      p19ConditionNumberF
+          (p19StaticSplitOperator family.system MRinv)
+          (p19StaticSplitInverse family.system MR) *
+        (p19StaticLambda family.system MR MRinv *
+          p19SafeRelativeMagnitude
+            (p19VecNorm2 (family.iteration k).deltaX)
+            (p19VecNorm2
+              (p19RectMatVec (family.basisFamily.basis k.1)
+                (family.iteration k).yHat)))
+
+/-- The reusable Appendix-A analysis invoked by Theorem 3.1. It is uniform in
+the dimension and right preconditioner and supplies only the raw expansion
+above, not a selected dimension or the theorem's collected bound. -/
+structure P19StaticAppendixATheory {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics) where
+  rightQuantities : ∀ (k : P19Theorem31Dimension n)
+      (MR MRinv : P19Matrix n), p19InversePair MR MRinv →
+    P19StaticRightQuantities family k MR MRinv
+  expansion : ∀ (k : P19Theorem31Dimension n),
+    p19IterationWellConditioned (family.iteration k) →
+    (k.1 = n ∨ p19MGSNearDependence (family.iteration k)) →
+    P19Algorithm2Conditions (family.iteration k) →
+    ∀ (MR MRinv : P19Matrix n) (hMR : p19InversePair MR MRinv),
+      P19StaticAppendixAExpansion family k MR MRinv
+        (rightQuantities k MR MRinv hMR)
+
 /-- Paper-scoped exact matrix operator 2-norm. -/
 noncomputable def p19OpNorm2 {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
   @norm (Matrix (Fin n) (Fin n) ℝ)
@@ -6279,6 +7250,364 @@ structure P19FlexibleTheorem34Execution {n : ℕ} {ι : Type*}
   run : P19FixedRightGMRESRun system l
   algorithm : P19FlexibleGMRESRun run
   analysis : P19FlexibleForwardAnalysis algorithm
+
+/-- The two square-matrix condition-number readings that Section 2 explicitly
+allows when it subsequently writes an unqualified `kappa`. -/
+inductive P19StaticSquareKappaChoice where
+  | frobenius
+  | inducedTwo
+
+/-- A source-authorized interpretation of an unqualified square condition
+number. The inverse argument remains attached to the matrix it inverts. -/
+noncomputable def p19StaticKappa (choice : P19StaticSquareKappaChoice)
+    {n : ℕ} (A Ainv : P19Matrix n) : ℝ :=
+  match choice with
+  | .frobenius => p19ConditionNumberF A Ainv
+  | .inducedTwo => p19Kappa2 A Ainv
+
+/-- One fixed nonsingular right preconditioner for a static Algorithm 2
+family. The two identity equations express `M_L = I`. -/
+structure P19StaticFixedRightPreconditioner {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics) where
+  MR : P19Matrix n
+  MRinv : P19Matrix n
+  MR_inverse : p19InversePair MR MRinv
+  right_operator_inverse :
+    p19InversePair (p19SquareRectMul family.system.A MRinv)
+      (p19SquareRectMul MR family.system.Ainv)
+  nontrivial : MR ≠ 1
+  left_preconditioner_identity : family.system.ML = 1
+  left_preconditioner_inverse_identity : family.system.MLinv = 1
+
+/-- The condition number of the original matrix in Theorems 3.3-3.4. -/
+noncomputable def p19StaticSystemKappa
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics) : ℝ :=
+  p19StaticKappa choice family.system.A family.system.Ainv
+
+/-- The condition number of the fixed right preconditioner. -/
+noncomputable def p19StaticRightPreconditionerKappa
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    (preconditioner : P19StaticFixedRightPreconditioner family) : ℝ :=
+  p19StaticKappa choice preconditioner.MR preconditioner.MRinv
+
+/-- The condition number of `A M_R^{-1}`. -/
+noncomputable def p19StaticRightOperatorKappa
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    (preconditioner : P19StaticFixedRightPreconditioner family) : ℝ :=
+  p19StaticKappa choice
+    (p19SquareRectMul family.system.A preconditioner.MRinv)
+    (p19SquareRectMul preconditioner.MR family.system.Ainv)
+
+/-- The complete five-entry maximum in condition (3.16), with no numerical
+threshold added to the paper's qualitative smallness notation. -/
+noncomputable def p19StaticCondition316Value
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (ug um ua etaR rhoAR : ℝ) : ℝ :=
+  max (ug * p19StaticRightOperatorKappa choice preconditioner)
+    (max (ug * p19StaticRightPreconditionerKappa choice preconditioner)
+      (max (um * etaR *
+          p19StaticRightPreconditionerKappa choice preconditioner)
+        (max (ua * p19StaticSystemKappa choice family * rhoAR)
+          (ua * p19StaticRightOperatorKappa choice preconditioner *
+            p19StaticRightPreconditionerKappa choice preconditioner))))
+
+/-- The three source terms in equation (3.17). -/
+noncomputable def p19StaticRightAttainableEnvelope
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (ug um ua etaR rhoAR : ℝ) : ℝ :=
+  ug * p19StaticRightOperatorKappa choice preconditioner *
+      p19StaticRightPreconditionerKappa choice preconditioner +
+    um * etaR * p19StaticRightPreconditionerKappa choice preconditioner +
+      ua * p19StaticSystemKappa choice family * rhoAR
+
+/-- The two source terms in equation (3.20). -/
+noncomputable def p19StaticFlexibleAttainableEnvelope
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (ug ua rhoAR : ℝ) : ℝ :=
+  ug * p19StaticRightOperatorKappa choice preconditioner *
+      p19StaticRightPreconditionerKappa choice preconditioner +
+    ua * p19StaticSystemKappa choice family * rhoAR
+
+/-- Raw fixed-preconditioner data shared by the right and flexible paths at
+one dimension. The inaccessible basis is linked by (C.2); no error bound or
+attainable dimension is stored. -/
+structure P19StaticFixedRightCore {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics)
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (k : P19Theorem31Dimension n) where
+  ug : ℝ
+  um : ℝ
+  ua : ℝ
+  etaR : ℝ
+  rhoAR : ℝ
+  zHat : P19RectMatrix n k.1
+  preconditionerDelta : Fin k.1 → P19Matrix n
+  preconditioner_application : ∀ j,
+    p19Column zHat j =
+      p19MatVec (preconditioner.MRinv + preconditionerDelta j)
+        (p19Column (family.iteration k).vHat j)
+  matrixDelta : Fin k.1 → P19Matrix n
+  matrix_application : ∀ j,
+    p19Column (family.iteration k).computedC j =
+      p19MatVec (family.system.A + matrixDelta j) (p19Column zHat j)
+  search_space_equation : ∀ j,
+    p19Column (family.basisFamily.basis k.1) j =
+      p19Column zHat j +
+        p19MatVec family.system.Ainv
+          (p19MatVec (matrixDelta j) (p19Column zHat j))
+  computation_exact : (family.iteration k).deltaC = 0
+  computation_accuracy_zero : (family.iteration k).epsilonC = 0
+  rhs_exact : (family.iteration k).deltaB = 0
+  rhs_accuracy_zero : (family.iteration k).epsilonB = 0
+  gmresMagnitude : ℝ
+  basisPreconditionerMagnitude : ℝ
+  matrixMagnitude : ℝ
+
+/-- The source models (3.14), (C.1), (3.15), the MGS/Givens perturbation,
+and the full qualitative condition (3.16) at one candidate dimension. These
+bound actual perturbations, not propagated forward-error contributions. -/
+structure P19StaticFixedRightCoreConditions
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {preconditioner : P19StaticFixedRightPreconditioner family}
+    {k : P19Theorem31Dimension n}
+    (core : P19StaticFixedRightCore family preconditioner k) where
+  parameters_nonneg :
+    0 ≤ core.ug ∧ 0 ≤ core.um ∧ 0 ≤ core.ua ∧ 0 ≤ core.etaR ∧
+      0 ≤ core.rhoAR
+  magnitudes_nonneg :
+    0 ≤ core.gmresMagnitude ∧ 0 ≤ core.basisPreconditionerMagnitude ∧
+      0 ≤ core.matrixMagnitude
+  least_squares_solution :
+    p19IsLeastSquaresSolution
+      ((family.iteration k).computedC +
+        (family.iteration k).leastSquaresDeltaC)
+      ((family.iteration k).computedB +
+        (family.iteration k).leastSquaresDeltaB)
+      (family.iteration k).yHat
+  least_squares_error_covered : ∀ j : Fin (k.1 + 1),
+    p19VecNorm2
+        (p19Column
+          (p19Augment (family.iteration k).leastSquaresDeltaB
+            (family.iteration k).leastSquaresDeltaC) j) ≤
+      core.gmresMagnitude *
+        p19VecNorm2
+          (p19Column
+            (p19Augment (family.iteration k).computedB
+              (family.iteration k).computedC) j)
+  basis_preconditioner_error_covered : ∀ j,
+    p19FrobNorm (core.preconditionerDelta j) ≤
+      core.basisPreconditionerMagnitude * p19FrobNorm preconditioner.MRinv
+  matrix_error_covered : ∀ j i q,
+    |core.matrixDelta j i q| ≤ core.matrixMagnitude * |family.system.A i q|
+  gmres_magnitude_bound :
+    core.gmresMagnitude ≤ (family.iteration k).dimensionFactor * core.ug
+  basis_preconditioner_magnitude_bound :
+    core.basisPreconditionerMagnitude ≤
+      (family.iteration k).dimensionFactor * core.um * core.etaR
+  matrix_magnitude_bound :
+    core.matrixMagnitude ≤ (family.iteration k).dimensionFactor * core.ua
+  rho_denominator_pos :
+    0 < p19VecNorm2
+      (p19RectMatVec core.zHat (family.iteration k).yHat)
+  rho_equation :
+    core.rhoAR =
+      p19VecNorm2 (p19AbsRectMatVec core.zHat (family.iteration k).yHat) /
+        p19VecNorm2 (p19RectMatVec core.zHat (family.iteration k).yHat)
+  condition316 :
+    semantics.small
+      (p19StaticCondition316Value choice preconditioner
+        core.ug core.um core.ua core.etaR core.rhoAR)
+
+/-- Right-preconditioned solution formation: a product with `V_hat` followed
+by a fresh application of `M_R^{-1}`. -/
+structure P19StaticRightIteration {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics)
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (k : P19Theorem31Dimension n) where
+  core : P19StaticFixedRightCore family preconditioner k
+  solutionBasisDelta : P19RectMatrix n k.1
+  solutionPreconditionerDelta : P19Matrix n
+  solution_equation :
+    (family.iteration k).xHat =
+      p19MatVec (preconditioner.MRinv + solutionPreconditionerDelta)
+        (p19RectMatVec
+          ((family.iteration k).vHat + solutionBasisDelta)
+          (family.iteration k).yHat)
+  reapplicationMagnitude : ℝ
+
+/-- Fixed-precision source error bounds for right solution formation. -/
+structure P19StaticRightConditions
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {preconditioner : P19StaticFixedRightPreconditioner family}
+    {k : P19Theorem31Dimension n}
+    (iteration : P19StaticRightIteration family preconditioner k) where
+  core : P19StaticFixedRightCoreConditions choice iteration.core
+  reapplication_magnitude_nonneg : 0 ≤ iteration.reapplicationMagnitude
+  solution_basis_error_covered : ∀ i j,
+    |iteration.solutionBasisDelta i j| ≤
+      iteration.core.gmresMagnitude * |(family.iteration k).vHat i j|
+  solution_preconditioner_error_covered :
+    p19FrobNorm iteration.solutionPreconditionerDelta ≤
+      iteration.reapplicationMagnitude * p19FrobNorm preconditioner.MRinv
+  reapplication_magnitude_bound :
+    iteration.reapplicationMagnitude ≤
+      (family.iteration k).dimensionFactor *
+        iteration.core.um * iteration.core.etaR
+
+/-- Flexible solution formation: a direct product with the persistently stored
+computed basis `Z_hat`, with no fresh preconditioner application. -/
+structure P19StaticFlexibleIteration {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics)
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (k : P19Theorem31Dimension n) where
+  core : P19StaticFixedRightCore family preconditioner k
+  solutionBasisDelta : P19RectMatrix n k.1
+  solution_equation :
+    (family.iteration k).xHat =
+      p19RectMatVec (core.zHat + solutionBasisDelta)
+        (family.iteration k).yHat
+
+/-- Fixed-precision source error bounds for flexible solution formation. -/
+structure P19StaticFlexibleConditions
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {preconditioner : P19StaticFixedRightPreconditioner family}
+    {k : P19Theorem31Dimension n}
+    (iteration : P19StaticFlexibleIteration family preconditioner k) where
+  core : P19StaticFixedRightCoreConditions choice iteration.core
+  solution_basis_error_covered : ∀ i j,
+    |iteration.solutionBasisDelta i j| ≤
+      iteration.core.gmresMagnitude * |iteration.core.zHat i j|
+
+/-- Static right-preconditioned executions at all admissible dimensions. -/
+structure P19StaticRightFamily (n : ℕ)
+    (semantics : P19FirstOrderSemantics) where
+  family : P19Theorem31Family n semantics
+  preconditioner : P19StaticFixedRightPreconditioner family
+  iteration : ∀ k : P19Theorem31Dimension n,
+    P19StaticRightIteration family preconditioner k
+
+/-- Static fixed-preconditioner flexible executions at all admissible
+dimensions. -/
+structure P19StaticFlexibleFamily (n : ℕ)
+    (semantics : P19FirstOrderSemantics) where
+  family : P19Theorem31Family n semantics
+  preconditioner : P19StaticFixedRightPreconditioner family
+  iteration : ∀ k : P19Theorem31Dimension n,
+    P19StaticFlexibleIteration family preconditioner k
+
+/-- Raw Appendix-C propagation at one dimension. The gains multiply actual
+source-error magnitudes; neither `c(n,k)` nor (3.17) is stored. -/
+structure P19StaticRightAppendixCExpansion
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (right : P19StaticRightFamily n semantics)
+    (k : P19Theorem31Dimension n) where
+  gmresContribution : P19Vector n
+  reapplicationContribution : P19Vector n
+  matrixContribution : P19Vector n
+  remainder : P19Vector n
+  error_decomposition :
+    (right.family.iteration k).xHat - right.family.system.xExact =
+      gmresContribution + reapplicationContribution + matrixContribution +
+        remainder
+  remainder_second_order :
+    semantics.secondOrder
+      (p19VecNorm2 remainder / p19VecNorm2 right.family.system.xExact)
+  gmres_gain_bound :
+    p19VecNorm2 gmresContribution /
+          p19VecNorm2 right.family.system.xExact ≤
+      (right.iteration k).core.gmresMagnitude *
+        p19StaticRightOperatorKappa choice right.preconditioner *
+          p19StaticRightPreconditionerKappa choice right.preconditioner
+  reapplication_gain_bound :
+    p19VecNorm2 reapplicationContribution /
+          p19VecNorm2 right.family.system.xExact ≤
+      (right.iteration k).reapplicationMagnitude *
+        p19StaticRightPreconditionerKappa choice right.preconditioner
+  matrix_gain_bound :
+    p19VecNorm2 matrixContribution /
+          p19VecNorm2 right.family.system.xExact ≤
+      (right.iteration k).core.matrixMagnitude *
+        p19StaticSystemKappa choice right.family *
+          (right.iteration k).core.rhoAR
+
+/-- Raw Appendix-D propagation at one dimension. It has no reapplication
+contribution and stores neither `c(n,k)` nor (3.20). -/
+structure P19StaticFlexibleAppendixDExpansion
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (flexible : P19StaticFlexibleFamily n semantics)
+    (k : P19Theorem31Dimension n) where
+  gmresContribution : P19Vector n
+  matrixContribution : P19Vector n
+  remainder : P19Vector n
+  error_decomposition :
+    (flexible.family.iteration k).xHat - flexible.family.system.xExact =
+      gmresContribution + matrixContribution + remainder
+  remainder_second_order :
+    semantics.secondOrder
+      (p19VecNorm2 remainder / p19VecNorm2 flexible.family.system.xExact)
+  gmres_gain_bound :
+    p19VecNorm2 gmresContribution /
+          p19VecNorm2 flexible.family.system.xExact ≤
+      (flexible.iteration k).core.gmresMagnitude *
+        p19StaticRightOperatorKappa choice flexible.preconditioner *
+          p19StaticRightPreconditionerKappa choice flexible.preconditioner
+  matrix_gain_bound :
+    p19VecNorm2 matrixContribution /
+          p19VecNorm2 flexible.family.system.xExact ≤
+      (flexible.iteration k).core.matrixMagnitude *
+        p19StaticSystemKappa choice flexible.family *
+          (flexible.iteration k).core.rhoAR
+
+/-- Uniform Appendix-C dependency. It receives the MGS-selected dimension and
+the source conditions and supplies only the raw propagation above. -/
+structure P19StaticRightAppendixCTheory
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (right : P19StaticRightFamily n semantics) where
+  expansion : ∀ (k : P19Theorem31Dimension n),
+    p19IterationWellConditioned (right.family.iteration k) →
+    (k.1 = n ∨ p19MGSNearDependence (right.family.iteration k)) →
+    P19StaticRightConditions choice (right.iteration k) →
+      P19StaticRightAppendixCExpansion choice right k
+
+/-- Uniform Appendix-D dependency, again without a selected dimension or the
+collected theorem bound. -/
+structure P19StaticFlexibleAppendixDTheory
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (flexible : P19StaticFlexibleFamily n semantics) where
+  expansion : ∀ (k : P19Theorem31Dimension n),
+    p19IterationWellConditioned (flexible.family.iteration k) →
+    (k.1 = n ∨ p19MGSNearDependence (flexible.family.iteration k)) →
+    P19StaticFlexibleConditions choice (flexible.iteration k) →
+      P19StaticFlexibleAppendixDExpansion choice flexible k
 
 end HighamBench
 ```

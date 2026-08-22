@@ -1,0 +1,225 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P19-T2",
+  "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
+  "source_evidence": [
+    {
+      "pdf_page": 3,
+      "printed_page": "2",
+      "anchor": "equation (1.1)",
+      "observation": "The standing problem is a square nonsingular real linear system Ax = b with A ∈ R^{n×n} and 0 ≠ b ∈ R^n."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "3",
+      "anchor": "Algorithm 1, Preconditioned MGS-GMRES in mixed precision",
+      "observation": "The analyzed GMRES implementation uses modified Gram-Schmidt; preconditioner applications use precision u_m, products with A use u_a, and the remaining GMRES operations use u_g. The paper fixes M_R across iterations even for the flexible variant."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "4",
+      "anchor": "Section 2, Notations, paragraphs defining precisions and fl",
+      "observation": "During Section 3, u_m, u_a, and u_g may denote an arithmetic or its unit roundoff, remain unspecified, and may represent any floating-point arithmetic whose unit roundoff is substantially below 1. The paper invokes the standard floating-point model and writes fl(·) for a computed value."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "5",
+      "anchor": "Section 2, paragraphs defining c(n,k), ≲, norms, condition numbers, and equation (2.1)",
+      "observation": "The analysis is worst-case; c(n,k) denotes unspecified low-degree polynomials in n and k. The symbols ≲ and ≈ drop negligible second-order terms. Vector and induced matrix 2-norms and the Frobenius norm are used. The normalized forward error is ||x̂-x||_2/||x||_2. The paper defines κ_F, κ_2, and κ_{F,2}, but often writes only κ when it does not differentiate them."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "6",
+      "anchor": "Algorithm 2, Modular GMRES, and equation (3.1)",
+      "observation": "Algorithm 2 takes the search-space basis Z̃_k as input, computes C_k = M_L^{-1}AZ̃_k and b̃ = M_L^{-1}b, solves the least-squares problem using MGS and Givens rotations, and forms x_k = Z̃_k y_k. In exact arithmetic the text gives Z̃_k ≡ Z_k = M_R^{-1}V_k, while in finite precision it deliberately distinguishes Z̃_k from the natural computed basis Ẑ_k."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "7",
+      "anchor": "equations (3.2)-(3.4) and the MGS/Givens least-squares model",
+      "observation": "The modular models are Ĉ_k = M_L^{-1}AZ̃_k + Δ_c with ||Δ_c||_F ≤ ε_c||M_L^{-1}AZ̃_k||_F; b̂ = b̃ + Δ_b with ||Δ_b||_2 ≤ ε_b||b̃||_2; and x̂_k = Z̃_k ŷ_k + Δ_x with ||Δ_x||_2 ≤ ε_x||Z̃_k ŷ_k||_2. The computed least-squares solution is an exact minimizer for columnwise perturbations bounded by c(n,k)u_g, provided u_g κ(Ĉ_k) ≪ 1."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "7",
+      "anchor": "equations (3.5)-(3.6)",
+      "observation": "The required smallness conditions are (ε_c + ε_b + u_g)κ(M_L^{-1}AZ̃_k) ≪ 1 and ε_x ≪ 1."
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "8",
+      "anchor": "Theorem 3.1 and equation (3.7)",
+      "observation": "For a full-rank increasing search-space basis and nonsingular M_L, the theorem asserts existence of a dimension k ≤ n at which σ_min(V̂_k)^{-1} ≤ 4/3 and σ_max(V̂_k) ≤ 4/3."
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "8",
+      "anchor": "Theorem 3.1 and equation (3.8)",
+      "observation": "At that dimension, under (3.2)-(3.6), for any nonsingular M_R the computed solution satisfies ||x̂_k-x||_2/||x||_2 ≲ c(n,k) ξ κ(M_L^{-1}AM_R^{-1}), where ξ = αε_c + βε_b + βu_g + λε_x and α, β, and λ have the displayed basis-, preconditioner-, and norm-dependent definitions."
+    },
+    {
+      "pdf_page": 36,
+      "printed_page": "35",
+      "anchor": "Appendix A, equation (A.1) and the paragraph selecting k",
+      "observation": "The proof selects k before introducing M_R, using an MGS result for any full-rank basis of increasing dimension. Besides (3.7), the selected k satisfies the auxiliary singular-value condition (A.1) for every φ > 0 when k ≤ n-1; (A.1) is proof-derived rather than an additional stated hypothesis of Theorem 3.1."
+    },
+    {
+      "pdf_page": 37,
+      "printed_page": "36",
+      "anchor": "Appendix A, equation (A.4)",
+      "observation": "The proof defines x̂_k^R = M_R Z̃_k ŷ_k as a mathematical artifice, explicitly not an algorithmically computed quantity; x_R is the exact solution of the split-preconditioned system."
+    },
+    {
+      "pdf_page": 39,
+      "printed_page": "38",
+      "anchor": "equation (A.11) and closing sentence recovering (3.8)",
+      "observation": "After dropping second-order terms and using ||x_R||_2 ≤ ||M_R||_F||x||_2, the proof obtains ||x̂_k-x||_2/||x||_2 ≲ c(n,k)ξ''κ(M_L^{-1}AM_R^{-1})κ(M_R) + ε_x and states that this recovers (3.8)."
+    }
+  ],
+  "statement": {
+    "binders": [
+      "[PDF p. 3, anchor: equation (1.1)] The standing data are n, a nonsingular A ∈ R^{n×n}, a nonzero b ∈ R^n, and the exact solution x of Ax = b.",
+      "[PDF p. 9, anchor: Theorem 3.1] Algorithm 2 is applied with a full-rank Z̃_k ∈ R^{n×k} whose dimension increases with k ≤ n, and with a nonsingular left preconditioner M_L ∈ R^{n×n}.",
+      "[PDF p. 8, anchor: equations (3.2)-(3.6)] The rounding-model parameters ε_c, ε_b, and ε_x are given, and u_g is the unit roundoff used in the MGS/Givens least-squares computation.",
+      "[PDF p. 9, anchor: Theorem 3.1] The written quantifier order is: there exists a dimension k ≤ n satisfying (3.7), and at that dimension, if (3.2)-(3.6) hold, then the error conclusion holds for every nonsingular M_R ∈ R^{n×n}.",
+      "[PDF p. 36, anchor: equation (A.1) and selection of k] The proof chooses the existential k from A, b, M_L, the increasing basis, and the MGS computation before introducing the arbitrary M_R."
+    ],
+    "hypotheses": [
+      "[PDF p. 3, anchor: equation (1.1)] A is square and nonsingular and b is nonzero.",
+      "[PDF p. 9, anchor: Theorem 3.1] M_L is nonsingular and Z̃_k is full rank at each relevant increasing dimension k ≤ n.",
+      "[PDF p. 8, anchor: equation (3.2)] Ĉ_k = fl(M_L^{-1}AZ̃_k) = M_L^{-1}AZ̃_k + Δ_c and ||Δ_c||_F ≤ ε_c||M_L^{-1}AZ̃_k||_F.",
+      "[PDF p. 8, anchor: equation (3.3)] b̂ = fl(M_L^{-1}b) = b̃ + Δ_b, where b̃ = M_L^{-1}b, and ||Δ_b||_2 ≤ ε_b||b̃||_2.",
+      "[PDF p. 8, anchor: MGS/Givens least-squares model] ŷ_k = arg min_y ||b̂ + Δ_b^{ls} - (Ĉ_k + Δ_C^{ls})y||_2, with ||[Δ_b^{ls},Δ_C^{ls}]e_j||_2 ≤ c(n,k)u_g||[b̂,Ĉ_k]e_j||_2 for every j ≤ k+1.",
+      "[PDF p. 8, anchor: MGS/Givens least-squares model] The least-squares guarantee requires Ĉ_k not to be numerically singular, stated as u_g κ(Ĉ_k) ≪ 1.",
+      "[PDF p. 8, anchor: equation (3.4)] x̂_k = fl(Z̃_k ŷ_k) = Z̃_k ŷ_k + Δ_x and ||Δ_x||_2 ≤ ε_x||Z̃_k ŷ_k||_2.",
+      "[PDF p. 8, anchor: equation (3.5)] (ε_c + ε_b + u_g)κ(M_L^{-1}AZ̃_k) ≪ 1.",
+      "[PDF p. 8, anchor: equation (3.6)] ε_x ≪ 1.",
+      "[PDF p. 9, anchor: Theorem 3.1] For the forward-error conclusion, M_R ∈ R^{n×n} is arbitrary but nonsingular."
+    ],
+    "conclusions": [
+      "[PDF p. 9, anchor: equation (3.7)] There exists a dimension k ≤ n at which the computed Krylov basis satisfies both σ_min(V̂_k)^{-1} ≤ 4/3 and σ_max(V̂_k) ≤ 4/3.",
+      "[PDF p. 9, anchor: equation (3.8)] At that k, for every nonsingular M_R, ||x̂_k-x||_2/||x||_2 ≲ c(n,k) ξ κ(M_L^{-1}AM_R^{-1}).",
+      "[PDF p. 9, anchor: equation (3.8)] The error coefficient is exactly decomposed as ξ = αε_c + βε_b + βu_g + λε_x.",
+      "[PDF p. 9, anchor: definitions following equation (3.8)] α = [κ(M_R)/σ_min(M_R Z̃_k)] [||M_L^{-1}AZ̃_k||_F/||M_L^{-1}AM_R^{-1}||_F].",
+      "[PDF p. 9, anchor: definitions following equation (3.8)] β = max(1, [||M_L^{-1}AZ̃_k||_F/||M_L^{-1}AM_R^{-1}||_F]/σ_min(M_R Z̃_k)) κ(M_R).",
+      "[PDF p. 9, anchor: definitions following equation (3.8)] λ = 1/κ(M_L^{-1}AM_R^{-1}).",
+      "[PDF p. 39, anchor: equation (A.11)] The proof's first-order form is ||x̂_k-x||_2/||x||_2 ≲ c(n,k)ξ''κ(M_L^{-1}AM_R^{-1})κ(M_R) + ε_x; the paper states that this recovers (3.8)."
+    ],
+    "definitions_and_conventions": [
+      "[PDF p. 6, anchor: equation (2.1)] x is exact, x̂_k is computed, and the reported forward error is normalized by ||x||_2.",
+      "[PDF p. 7, anchor: Algorithm 2] Z̃_k is an input search-space basis; C_k = M_L^{-1}AZ̃_k, b̃ = M_L^{-1}b, y_k solves the associated least-squares problem, and x_k = Z̃_k y_k.",
+      "[PDF p. 7, anchor: text surrounding equation (3.1)] In exact arithmetic the paper writes Z̃_k ≡ Z_k = M_R^{-1}V_k, with V_k the exact orthogonal Krylov basis.",
+      "[PDF p. 7, anchor: paragraph preceding Algorithm 2] In finite precision, V̂_k is the inexactly computed Krylov basis and Z̃_k is intentionally kept distinct from the natural computed basis Ẑ_k = [ẑ_1,…,ẑ_k], ẑ_j = fl(M_R^{-1}v̂_j).",
+      "[PDF p. 37, anchor: equation (A.4)] x̂_k^R = M_R Z̃_k ŷ_k is proof-only and is not a computed algorithmic value; x_R = M_Rx is the exact split-preconditioned solution.",
+      "[PDF p. 6, anchor: norm definitions] σ_min and σ_max denote the smallest and largest singular values; ||·||_2 is Euclidean for vectors and induced for matrices, and ||·||_F is Frobenius.",
+      "[PDF p. 6, anchor: condition-number definitions] κ_F(B) = ||B^{-1}||_F||B||_F, κ_2(B) = σ_max(B)/σ_min(B), and κ_{F,2}(B) = ||B||_F/σ_min(B); the unqualified κ is used when the paper does not distinguish these quantities.",
+      "[PDF p. 6, anchor: notation c(n,k)] c(n,k) denotes generic, pessimistic, low-degree polynomials in n and k whose precise values are not always tracked.",
+      "[PDF p. 6, anchor: notation ≲ and ≈] The symbols ≲ and ≈ indicate that negligible second-order terms have been dropped."
+    ],
+    "implicit_context": [
+      "[PDF p. 3, anchor: equation (1.1)] Nonsingularity of A and nonzeroness of b are inherited from the paper's standing linear-system setup; Theorem 3.1 itself only says that Algorithm 2 is used to solve Ax = b.",
+      "[PDF p. 7, anchor: Section 3.1 opening paragraphs] The theorem is specialized to GMRES using modified Gram-Schmidt rather than being orthogonalization-method independent.",
+      "[PDF p. 5, anchor: Section 2 standard-model paragraph] The standard floating-point model is inherited from the notation section and is not restated in Theorem 3.1.",
+      "[PDF p. 36, anchor: equation (A.1)] The auxiliary condition (A.1), including its 'for all φ > 0' clause when k ≤ n-1, is used by the proof to obtain the existential k but is not an extra premise imposed on a caller of Theorem 3.1.",
+      "[PDF p. 37, anchor: equation (A.9)] Full rank of M_R Z̃_k, needed for σ_min(M_R Z̃_k) in the coefficients, follows from nonsingularity of M_R and full rank of Z̃_k.",
+      "[PDF p. 39, anchor: equation (A.11)] The separate +ε_x term in (A.11) is absorbed into the generic c(n,k) form of (3.8) using λκ(M_L^{-1}AM_R^{-1}) = 1."
+    ],
+    "algorithm_linkage": "[PDF p. 7, anchor: Algorithm 2] The selected result concerns the four-module Modular GMRES algorithm: form M_L^{-1}AZ̃_k, form M_L^{-1}b, solve the resulting least-squares problem specifically by MGS followed by Givens rotations and a triangular solve, and form Z̃_k y_k. [PDF p. 7, anchor: paragraphs surrounding Algorithm 2] Z̃_k spans the search space and is not required to equal the finite-precision basis Ẑ_k. [PDF p. 9, anchor: Theorem 3.1] M_R does not occur as a separate operation in Algorithm 2; it is universally quantified in the theorem's analytical split-preconditioning bound.",
+    "numerical_model": [
+      "[PDF p. 5, anchor: Section 2 standard-model paragraph] Computed expressions use the standard floating-point model and are denoted fl(·).",
+      "[PDF p. 5, anchor: Section 2 precision paragraph] Section 3 leaves the arithmetic underlying u_m, u_a, and u_g unspecified, requiring only associated unit roundoffs substantially below 1.",
+      "[PDF p. 8, anchor: equations (3.2)-(3.4)] ε_c, ε_b, and ε_x are abstract relative-error accuracy parameters for the product, preconditioned right-hand side, and final basis-vector product modules.",
+      "[PDF p. 8, anchor: MGS/Givens least-squares model] MGS, Givens rotations, and the triangular solve contribute a columnwise perturbation proportional to c(n,k)u_g.",
+      "[PDF p. 8, anchor: equations (3.5)-(3.6)] The result is conditional on qualitative smallness relations using ≪, not explicit numerical thresholds."
+    ],
+    "error_notions": [
+      "[PDF p. 6, anchor: equation (2.1)] The theorem's reported quantity is normwise relative forward error in the original system: ||x̂_k-x||_2/||x||_2.",
+      "[PDF p. 7, anchor: opening paragraph of Section 3.1] The section states that its analysis focuses solely on forward error rather than presenting an original-system backward-error conclusion.",
+      "[PDF p. 38, anchor: equations (A.9)-(A.10)] A normwise backward error and then a forward error for the split-preconditioned system are intermediate proof devices.",
+      "[PDF p. 39, anchor: equation (A.11)] The final original-system estimate is a first-order attainable-error bound, not an exact equality."
+    ],
+    "norms": [
+      "[PDF p. 6, anchor: norm definitions] All forward-error vectors use ||·||_2; matrix 2-norms are induced norms.",
+      "[PDF p. 8, anchor: equations (3.2)-(3.4)] Δ_c and the matrix products in (3.2) use Frobenius norms, whereas Δ_b, Δ_x, and the associated vectors use 2-norms.",
+      "[PDF p. 9, anchor: coefficient definitions after equation (3.8)] α and β use Frobenius norms of M_L^{-1}AZ̃_k and M_L^{-1}AM_R^{-1}, σ_min(M_R Z̃_k), and an unqualified κ(M_R).",
+      "[PDF p. 9, anchor: equation (3.8)] The outer conditioning factor is the unqualified κ(M_L^{-1}AM_R^{-1}).",
+      "[PDF p. 6, anchor: condition-number convention] The paper expressly permits κ to stand for different normwise condition quantities when it regards their distinction as unnecessary."
+    ],
+    "constants_and_indexing": [
+      "[PDF p. 9, anchor: equation (3.7)] The two conditioning constants are exactly 4/3, with one applied to the reciprocal smallest singular value and one to the largest singular value.",
+      "[PDF p. 9, anchor: Theorem 3.1] The result is existential in an iteration/dimension k satisfying k ≤ n; it does not claim the estimates at every k.",
+      "[PDF p. 7, anchor: equation (3.1)] V_{k+1} ∈ R^{n×(k+1)}, H̄_k ∈ R^{(k+1)×k}, and e_1 ∈ R^{k+1}.",
+      "[PDF p. 8, anchor: MGS/Givens least-squares model] The columnwise least-squares perturbation bound is required for every j ≤ k+1.",
+      "[PDF p. 9, anchor: equation (3.8)] ε_b and u_g share coefficient β, while ε_c has α and ε_x has λ.",
+      "[PDF p. 9, anchor: coefficient definitions after equation (3.8)] The factors σ_min(M_R Z̃_k), κ(M_R), and κ(M_L^{-1}AM_R^{-1}) must retain their displayed locations; in particular λ is the reciprocal of the latter condition number.",
+      "[PDF p. 6, anchor: notation c(n,k)] No precise coefficients or polynomial degree for c(n,k) are supplied beyond 'low degree.'"
+    ],
+    "higher_order_terms": [
+      "[PDF p. 6, anchor: definition of ≲] The relation ≲ means that negligible second-order terms have been omitted.",
+      "[PDF p. 39, anchor: equation (A.11)] The proof explicitly says it drops second-order terms immediately before deriving (A.11).",
+      "[PDF p. 6, anchor: c(n,k) convention] The omitted factors hidden in c(n,k) are not numerically specified.",
+      "[PDF p. 9, anchor: equation (3.8)] No explicit big-O remainder or quantitative bound on the discarded second-order terms accompanies (3.8)."
+    ],
+    "exceptional_values": [
+      "[PDF p. 3, anchor: equation (1.1)] A must be nonsingular and b must be nonzero; consequently the exact solution used in the relative denominator is nonzero.",
+      "[PDF p. 9, anchor: Theorem 3.1] M_L and every admitted M_R must be nonsingular, and Z̃_k must be full rank.",
+      "[PDF p. 8, anchor: MGS/Givens least-squares model] Ĉ_k must not be numerically singular, quantified qualitatively by u_g κ(Ĉ_k) ≪ 1.",
+      "[PDF p. 8, anchor: equations (3.5)-(3.6)] The modular perturbations must be small enough to satisfy both displayed ≪ conditions.",
+      "[PDF p. 5, anchor: standard floating-point model paragraph] The selected text does not separately state rules for overflow, underflow, subnormals, infinities, or NaNs; it only invokes the external standard floating-point model."
+    ]
+  },
+  "undebatable_constraints": [
+    "[PDF p. 9, anchor: Theorem 3.1] The result must assert existence of at least one k ≤ n, not correctness for every iteration.",
+    "[PDF p. 9, anchor: equation (3.7)] Both σ_min(V̂_k)^{-1} ≤ 4/3 and σ_max(V̂_k) ≤ 4/3 must be preserved.",
+    "[PDF p. 9, anchor: Theorem 3.1] The forward-error statement is conditional on all of (3.2)-(3.6), including the MGS/Givens least-squares accuracy context.",
+    "[PDF p. 9, anchor: Theorem 3.1] The selected k precedes the universal quantification over every nonsingular M_R.",
+    "[PDF p. 9, anchor: equation (3.8)] The conclusion concerns the computed x̂_k and exact x and uses the normalized 2-norm error ||x̂_k-x||_2/||x||_2.",
+    "[PDF p. 9, anchor: equation (3.8)] The outer matrix-conditioning factor is κ(M_L^{-1}AM_R^{-1}).",
+    "[PDF p. 9, anchor: equation (3.8)] ξ must remain αε_c + βε_b + βu_g + λε_x; no summand may be dropped or assigned a different coefficient.",
+    "[PDF p. 9, anchor: coefficient definitions after equation (3.8)] α must retain κ(M_R), σ_min(M_R Z̃_k), and the Frobenius-norm ratio in their displayed multiplicative and divisive positions.",
+    "[PDF p. 9, anchor: coefficient definitions after equation (3.8)] β must retain max(1, norm-ratio/σ_min(M_R Z̃_k))κ(M_R), and λ must remain 1/κ(M_L^{-1}AM_R^{-1}).",
+    "[PDF p. 7, anchor: Algorithm 2 and surrounding text] Z̃_k is the search-space input and must not be silently identified with the computed Ẑ_k in finite precision.",
+    "[PDF p. 8, anchor: equations (3.2)-(3.4)] The Δ_c estimate is Frobenius-norm relative, while the Δ_b and Δ_x estimates are 2-norm relative.",
+    "[PDF p. 6, anchor: definition of ≲; PDF p. 39, anchor: equation (A.11)] The forward-error relation is first-order and suppresses second-order terms; it is not an exact ≤ statement with a known constant.",
+    "[PDF p. 6, anchor: notation c(n,k)] c(n,k) is an unspecified low-degree polynomial factor and cannot be replaced by a fixed numerical constant from this passage."
+  ],
+  "ambiguities": [
+    {
+      "issue": "[PDF p. 6, anchor: condition-number definitions] The unqualified symbol κ is intentionally not tied to one uniquely specified normwise condition number.",
+      "evidence": "[PDF p. 6, anchor: condition-number paragraph] After defining κ_F, κ_2, and κ_{F,2}, the paper says it often simply writes κ because it does not need to differentiate them. [PDF p. 8, anchor: equation (3.5)] κ is also applied to the rectangular matrix M_L^{-1}AZ̃_k.",
+      "impact": "A formal contract cannot silently choose κ_2, κ_F, or κ_{F,2}, especially for the rectangular factor in (3.5); the chosen interpretation must be declared or the ambiguity preserved."
+    },
+    {
+      "issue": "[PDF p. 6, anchor: definitions of ≲ and c(n,k)] The theorem does not provide an exact inequality constant or a quantified remainder.",
+      "evidence": "[PDF p. 6, anchor: notation paragraphs] ≲ drops negligible second-order terms and c(n,k) has an untracked precise value. [PDF p. 39, anchor: equation (A.11)] The proof again explicitly drops second-order terms.",
+      "impact": "The conclusion should not be strengthened into an exact finite-precision inequality or a conventional big-O statement with a specified asymptotic variable."
+    },
+    {
+      "issue": "[PDF p. 8, anchor: equations (3.5)-(3.6)] The relation ≪ has no numerical threshold in the selected material.",
+      "evidence": "[PDF p. 6, anchor: notation Θ_1 ≫ Θ_2] The paper explains 'much greater than' only qualitatively and allows polynomial factors c(n,k); equations (3.5)-(3.6) use the corresponding qualitative smallness relation.",
+      "impact": "A formalization must either parameterize the smallness assumptions or introduce an explicitly documented interpretation rather than selecting a threshold from the source."
+    },
+    {
+      "issue": "[PDF p. 9, anchor: phrase 'basis Z̃_k of increasing dimension'] The paper does not formally define whether increasing dimension means a nested prefix sequence or only a family indexed by k.",
+      "evidence": "[PDF p. 7, anchor: basis descriptions] Bases are written as column lists such as V_k = [v_1,…,v_k], suggesting prefixes, while [PDF p. 9, anchor: Theorem 3.1] states only that Z̃_k has increasing dimension.",
+      "impact": "A translation should preserve an increasing family of full-rank bases without inventing a stronger nesting equation unless that equation is separately justified."
+    },
+    {
+      "issue": "[PDF p. 7, anchor: exact-arithmetic basis relation] The relation Z̃_k ≡ M_R^{-1}V_k is explanatory exact-arithmetic context, not an explicit finite-precision hypothesis of Theorem 3.1.",
+      "evidence": "[PDF p. 7, anchor: paragraphs before Algorithm 2] The paper distinguishes Z̃_k from the computed Ẑ_k specifically to absorb rounding errors. [PDF p. 9, anchor: Theorem 3.1] The theorem assumes only that Z̃_k is full rank and later quantifies over any nonsingular M_R.",
+      "impact": "Imposing Z̃_k = M_R^{-1}V_k or Z̃_k = Ẑ_k in the theorem would narrow the paper's modular result and alter its quantifier structure."
+    },
+    {
+      "issue": "[PDF p. 8, anchor: accuracy parameters ε_c, ε_b, ε_x] Explicit domains such as nonnegativity and upper ranges for the ε parameters are not separately declared.",
+      "evidence": "[PDF p. 8, anchor: equations (3.2)-(3.6)] They are described as error-magnitude or accuracy parameters and are constrained through norm bounds and qualitative smallness assumptions, but no formal domain is displayed.",
+      "impact": "A mechanized statement may need explicit nonnegativity assumptions as a conventional completion, but those assumptions should be marked inferred rather than quoted as theorem text."
+    },
+    {
+      "issue": "[PDF p. 5, anchor: standard floating-point model paragraph] Exceptional floating-point behavior is delegated to an external standard-model reference.",
+      "evidence": "[PDF p. 5, anchor: notation fl(·)] The paper invokes the standard model without restating assumptions about overflow, underflow, subnormals, infinities, or NaNs.",
+      "impact": "The selected passage alone does not justify a specific exceptional-value semantics beyond whatever is inherited from that referenced model."
+    }
+  ],
+  "contract_plain_english": "[PDF p. 3, anchor: equation (1.1); PDF p. 7, anchor: Algorithm 2] Start from a nonsingular real system Ax = b and apply the four-module MGS/Givens version of Modular GMRES while a full-rank search basis Z̃_k grows up to dimension n. [PDF p. 9, anchor: equations (3.7)-(3.8)] The paper claims that at least one dimension k ≤ n has a computed Krylov basis whose reciprocal smallest singular value and largest singular value are both at most 4/3; at that same k, if the modular rounding-error models and qualitative smallness conditions hold, then for every nonsingular M_R the computed solution's relative 2-norm forward error is bounded, to first order, by c(n,k)κ(M_L^{-1}AM_R^{-1}) times αε_c + βε_b + βu_g + λε_x, with α, β, and λ exactly as displayed in Theorem 3.1. [PDF p. 6, anchor: definitions of κ, c(n,k), and ≲; PDF p. 39, anchor: equation (A.11)] The claim is existential rather than per-iteration, uses an intentionally unqualified condition-number notation, hides unspecified low-degree dimension factors, and omits unquantified second-order terms."
+}

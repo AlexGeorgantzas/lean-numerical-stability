@@ -3,184 +3,184 @@
   "role": "roundtrip-judge",
   "task_id": "P19-T2",
   "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
-  "blind_translation_sha256": "1fce5e1534fd1862d1d68f63bd2cd9b0b17e4a8639c8d390742780c5cec1ccbd",
+  "blind_translation_sha256": "91ea59064870c06f4b7584a4ddd6c0c6f28f57e4dca61b894bbc8152b94ea101",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF has the supplied SHA-256. PDF p. 9, printed p. 8, contains Theorem 3.1 and equations (3.7)-(3.8), with Algorithm 2 and models (3.2)-(3.6) on PDF pp. 7-8.",
-      "translation_evidence": "The translation identifies the existential dimension, both 4/3 spectral bounds, the normalized forward-error bound, and the alpha, beta, lambda coefficient structure of Theorem 3.1.",
-      "reasoning": "The selected paper version and target passage are correct."
+      "paper_evidence": "PDF p. 9, Theorem 3.1 and (3.7)-(3.8), together with PDF pp. 36-39, Appendix A and (A.1)-(A.11), give the selected-dimension conditioning and attainable forward-error result.",
+      "translation_evidence": "The translation centers on an existential valid k satisfying Good(k), the Algorithm 2 stability conditions, the near-singularity alternative, and a conditional normalized forward-error bound.",
+      "reasoning": "The translation targets the correct theorem and appendix argument rather than a different result from the paper."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "Theorem 3.1 is a static finite-dimensional statement about real matrices and vectors, an increasing basis indexed by k <= n, and a dimension selected from that family.",
-      "translation_evidence": "The translation adds an arbitrary index type, a nonbottom filter, time-dependent matrices and errors, an execution object, explicit inverse matrices, and a stored keyDimension k0.",
-      "reasoning": "Although the finite matrix dimensions are mostly represented correctly, the added asymptotic index and execution types materially change the binders and the meaning of the data."
+      "paper_evidence": "Theorem 3.1 fixes a nonsingular system, nonsingular ML, and an increasing full-rank search-space sequence, then selects k before quantifying nonsingular MR.",
+      "translation_evidence": "The translation additionally universally binds an arbitrary semantics object, an mgs certificate, and an appendix certificate; the latter contains rightQuantities and a function producing the substantive error-decomposition certificate.",
+      "reasoning": "The finite real matrix types and explicit inverse pairs are compatible with the paper, but the extra certificate and semantics binders are mathematically material assumptions, not mere type elaboration."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "Theorem 3.1 and Appendix A select an existential k from the increasing basis and MGS computation before introducing the arbitrary nonsingular MR.",
-      "translation_evidence": "The execution already contains k0 and forwardAnalysis certificates for every inverse pair MR, MRinv; the existential witness is constrained to satisfy k = k0.",
-      "reasoning": "The paper-derived witness is replaced by an input field, and the universal MR-indexed analysis is assumed before the conclusion rather than established after selecting k."
+      "paper_evidence": "The same k from (A.1) works for every phi>0 and is selected before the arbitrary nonsingular MR introduced in (A.4).",
+      "translation_evidence": "NearSingular(k) correctly places the unit-vector existential inside the universal phi>0 quantifier, and k precedes MR and MRinv, but the existential k follows the appendix binder and may formally depend on that certificate.",
+      "reasoning": "The essential k-before-MR and one-k-for-all-phi orders are preserved, but allowing k to depend on an appendix object containing later error-analysis data is absent from the paper and changes the proposition's scope."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The paper assumes full rank and increasing dimension, the modular models (3.2)-(3.4), the MGS/Givens least-squares perturbation model, numerical nonsingularity, and qualitative smallness conditions (3.5)-(3.6).",
-      "translation_evidence": "The run additionally assumes convergence of all error parameters, nestedness, several spectrum certificates, an eventual 7/16 orthogonality-defect bound, a complete perturbation decomposition, four componentwise forward-error bounds, and a second-order remainder for every inverse pair.",
-      "reasoning": "The translation imposes substantial hypotheses absent from the theorem, including certificates encoding results that the paper derives."
+      "paper_evidence": "PDF p. 8 requires the four operation guarantees, the MGS/Givens least-squares guarantee under ug*kappa(computed C)<<1, condition (3.5), and epsilonX<<1.",
+      "translation_evidence": "D001 contains analogous perturbation inequalities and least-squares optimality, but expresses all three qualitative smallness requirements using a completely arbitrary predicate small. The mgs and appendix results are additional assumed certificate fields.",
+      "reasoning": "An arbitrary predicate does not enforce the paper's numerical smallness conditions, and the assumed mgs and appendix certificates shift substantive source reasoning into hypotheses."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Equations (3.7)-(3.8) contain two spectral inequalities and a normalized forward-error estimate with xi = alpha epsilonC + beta epsilonB + beta ug + lambda epsilonX.",
-      "translation_evidence": "The conclusion contains both 4/3 inequalities, the normalized forward error, all four weighted summands, the outer composite condition factor, and universal inverse-pair quantification.",
-      "reasoning": "The displayed conclusion components are all present. Their altered scope and relation strength are assessed separately in S03, S12, and S14."
+      "paper_evidence": "Theorem 3.1 concludes both separate bounds in (3.7) and, for the same selected k, the conditional forward-error estimate (3.8) for every nonsingular MR.",
+      "translation_evidence": "The conclusion includes one valid k, both displayed Good(k) inequalities, and for that same k a conditional bound for every certified right inverse pair.",
+      "reasoning": "No top-level source conclusion is structurally omitted. The altered force of the reciprocal and error relation is assessed in later checks."
     },
     {
       "id": "S06",
       "status": "fail",
-      "paper_evidence": "The paper deliberately leaves kappa unqualified, treats c(n,k) as an unspecified low-degree polynomial factor, uses qualitative much-less-than assumptions, and defines the less-than-or-approximately relation by discarding negligible second-order terms.",
-      "translation_evidence": "The translation fixes Frobenius inverse-norm products, stores a concrete polynomial descriptor, interprets smallness through convergence and eventual bounds below one, and defines the final approximation through an explicit Big-O remainder.",
-      "reasoning": "Several central informal operators are not merely unfolded; they are replaced by new formal definitions not supplied by the paper."
+      "paper_evidence": "In (3.7), reciprocal sigmaMin is used for the computed basis in the ordinary positive singular-value setting; full rank and nonsingularity protect the coefficient denominators in (3.8).",
+      "translation_evidence": "Real division is totalized, so 1/sigmaMin(VHat_k) evaluates to 0 when sigmaMin=0. No positivity premise protects this occurrence. safeRatio also returns 0 at a zero reference in appendix component bounds.",
+      "reasoning": "The algebraic alpha, beta, and lambda forms are largely recognizable, but totalization changes the conditioning predicate and guarded ratios change exceptional-value behavior."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper distinguishes the exact solution x, computed solution xHat, input search-space basis ZTilde, computed Krylov basis VHat, computed products, and perturbations.",
-      "translation_evidence": "The translation separately represents xExact, xHat, the search basis family, vHat, computedC, computedB, deltaC, deltaB, least-squares perturbations, and deltaX.",
-      "reasoning": "Despite renaming the search basis as V, the translation keeps it distinct from vHat and does not conflate exact, computed, and perturbed quantities."
+      "paper_evidence": "Equations (3.2)-(3.4) distinguish exact MLinv*A*Z and MLinv*b from computed C and b, and distinguish Z*yHat from computed xHat; VHat is the computed MGS basis.",
+      "translation_evidence": "The iteration stores exact C and bTilde separately from computedC and computedB, uses VHat for the computed basis, and states xHat=Z*yHat+deltaX.",
+      "reasoning": "The principal exact-versus-computed distinctions are preserved."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Algorithm 2 forms the projected matrix and right-hand side, solves the least-squares problem specifically using MGS, Givens rotations, and a triangular solve, and then forms the approximation. Appendix A derives the bound from this model.",
-      "translation_evidence": "The execution stores an algebraic Hessenberg relation and a perturbed least-squares minimizer, but does not encode the MGS/Givens/triangular-solve execution. It additionally assumes forwardAnalysis certificates containing the resulting error estimates.",
-      "reasoning": "The proposition is linked to a packaged algebraic certificate rather than deriving the analysis from the paper's specified algorithm and execution model."
+      "paper_evidence": "Algorithm 2 computes C and b, solves the least-squares problem by MGS, Givens rotations, and a triangular solve, and forms x. Appendix A imports the first-loss and early residual analysis before developing the split-system propagation.",
+      "translation_evidence": "The QR relation, least-squares property, first-loss implication, exact error expansion, and four component bounds are preloaded data or certificate fields. D037 assumes the function producing D071.",
+      "reasoning": "The analytical MR remains correctly separate from the algorithm, but the translation does not derive the MGS or appendix consequences from the represented computation; it assumes the substantive result needed for aggregation."
     },
     {
       "id": "S09",
       "status": "unclear",
-      "paper_evidence": "The paper uses Euclidean vector norms and Frobenius norms in the displayed modular estimates and coefficient ratios, but intentionally leaves each unqualified kappa unresolved among related condition quantities.",
-      "translation_evidence": "Vector norms are Euclidean and the displayed matrix ratios are Frobenius, but every square-matrix kappa is fixed to the Frobenius product of a matrix and its supplied inverse.",
-      "reasoning": "The explicit norms match, but the source does not determine whether every unqualified kappa in (3.8) should be exactly the Frobenius condition number chosen by the translation."
+      "paper_evidence": "PDF p. 6 distinguishes Euclidean vector norm, induced matrix 2-norm, and Frobenius norm, but suppresses the choice among kappaF, kappa2, and kappaF,2 in several formulas, including rectangular smallness conditions.",
+      "translation_evidence": "Vectors use the Euclidean norm, spectra use induced action bounds, and every matrix condition product and ratio is fixed to Frobenius norms.",
+      "reasoning": "The basic norm meanings are compatible, and Frobenius kappa is a plausible specialization, but the paper does not provide enough information to prove exact equivalence for every unqualified kappa occurrence."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "The constants 4/3, the k <= n indexing, the k+1 least-squares columns, and the alpha, beta, lambda placements are displayed explicitly. The factor c(n,k) is only specified as a generic low-degree polynomial.",
-      "translation_evidence": "The translation preserves the numerical constants, offsets, and four coefficient placements, but stores one arbitrary nonnegative-coefficient polynomial with unrestricted degrees.",
-      "reasoning": "The principal constants and indices match, but the permitted polynomial factor is not restricted to low degree and is treated as fixed execution data, so its parameter semantics differ."
+      "paper_evidence": "Equation (A.1) uses the strict threshold (c(n,k)*ug+epsilonC) times the Frobenius norm. The least-squares and final bounds use generic low-degree polynomial factors c(n,k).",
+      "translation_evidence": "NearSingular(k) uses d_k*(ug+epsilonC), the columnwise least-squares bound uses d_k*ug, and the final bound uses d_k, where d_k is arbitrary iteration data constrained only by d_k>=1.",
+      "reasoning": "The endpoint k=n, strict inequality, k+1 column indexing, and universal phi order are correct, but d_k is not constrained to be a low-degree polynomial and incorrectly scales epsilonC in the near-dependence threshold."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "Section 2 invokes the standard floating-point model; ug is a unit roundoff, while equations (3.2)-(3.4) describe computed fl operations and the theorem uses qualitative numerical-smallness conditions.",
-      "translation_evidence": "The translation uses real-valued perturbation functions converging to zero along an arbitrary filter and supplies no rounding operation, arithmetic precision, rounding mode, overflow, underflow, or exceptional-value semantics.",
-      "reasoning": "An asymptotic real perturbation family is not the paper's fixed floating-point execution model."
+      "paper_evidence": "PDF pp. 5 and 8 invoke the standard floating-point model, identify ug as the MGS/Givens unit roundoff, use fl for computed quantities, and condition the least-squares guarantee on numerical nonsingularity.",
+      "translation_evidence": "All quantities are real-valued stored data; ug is merely a nonnegative scalar, computed relations are constructor equations, and small is arbitrary. No floating-point operation semantics links the stored data to MGS, Givens rotations, or a triangular solve.",
+      "reasoning": "The perturbation inequalities resemble the modular model, but the floating-point and unit-roundoff interpretation is not preserved."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "Equation (3.8) uses an informal first-order less-than-or-approximately relation, and conditions (3.5)-(3.6) use an unquantified qualitative smallness relation.",
-      "translation_evidence": "LocalDef016 asserts an exact eventual inequality with an absolute remainder that satisfies a formal Big-O condition; smallness is replaced by convergence and eventual membership in [0,1).",
-      "reasoning": "The inequality direction is retained, but both the conclusion relation and the hypotheses have different formal strength."
+      "paper_evidence": "Equation (3.8) is a first-order approximate inequality using the paper's convention of dropping negligible second-order terms.",
+      "translation_evidence": "Bound_semantics is the exact assertion that there exists rho with secondOrder(rho) and lhs<=rhs+abs(rho), where secondOrder is arbitrary apart from containing 0.",
+      "reasoning": "This relation can be exact with no slack when secondOrder contains only 0 or essentially vacuous when it contains every real, so it has no fixed strength corresponding to the paper's first-order relation."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Theorem 3.1 reports the original-system normwise relative forward error ||xHat_k-x||_2/||x||_2.",
-      "translation_evidence": "LocalDef017 is exactly ||xHat-xExact||_2/||xExact||_2, and the final conclusion uses this quantity.",
-      "reasoning": "No backward-error, residual, componentwise-error, or mixed-error notion replaces the paper's reported forward error."
+      "paper_evidence": "Equations (2.1) and (3.8) concern the Euclidean normwise forward error ||xHat-x||/||x|| for the original system Ax=b.",
+      "translation_evidence": "The final lhs is ||xHat-xExact||_2/||xExact||_2, with xExact satisfying A*xExact=b and b nonzero.",
+      "reasoning": "The solution, normalization, norm, and forward-error notion match, and the denominator is indirectly nonzero."
     },
     {
       "id": "S14",
       "status": "fail",
-      "paper_evidence": "Section 2 says negligible second-order terms are dropped, and Appendix A explicitly drops them before (A.11); no remainder function, asymptotic variable, or quantitative Big-O statement is supplied.",
-      "translation_evidence": "The execution assumes a normalized remainder of order eta squared, and the conclusion asserts an MR-dependent scalar remainder r = O(eta^2) along l.",
-      "reasoning": "The explicit asymptotic remainder is an unsupported strengthening and is also assumed inside the execution certificate."
+      "paper_evidence": "PDF p. 6 gives only the qualitative convention that negligible second-order terms are dropped, and PDF p. 39 explicitly drops such terms in obtaining (A.11).",
+      "translation_evidence": "The only axiom is secondOrder(0); neither the appendix vector remainder nor the final scalar rho has an asymptotic variable, magnitude bound, closure property, or relation to the error parameters.",
+      "reasoning": "The existential remainder does not encode mathematical second-order smallness and can make the conclusion either exact or trivial depending on the arbitrary predicate."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The paper result concerns finite-dimensional real data and fixed rounding-error parameters at an existentially selected GMRES dimension.",
-      "translation_evidence": "The translation retains finite real matrices but replaces the fixed problem by an arbitrary filter-indexed family, requires convergence to zero, enforces nested bases, and requires 0 < k.",
-      "reasoning": "This is not merely a harmless finite or real specialization; it changes the theorem into an asymptotic-family statement with stronger structural assumptions."
+      "paper_evidence": "The source permits generic equivalent condition norms and an informal low-degree c(n,k), while deriving or importing the selected-k and error-propagation results.",
+      "translation_evidence": "The translation fixes Frobenius products, requires prefix nesting and extensive certificates, permits arbitrary d_k>=1, and assumes the first-loss and error-decomposition implications.",
+      "reasoning": "These changes do not form a coherent faithful specialization: they combine narrower representation choices with unrestricted constants and hypotheses that contain the substantive conclusion."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "Appendix A derives both the special dimension and the forward-error estimate from the increasing full-rank basis, MGS behavior, and modular error models.",
-      "translation_evidence": "The spectral-defect assumptions directly imply the eventual 4/3 bounds, while forwardAnalysis already supplies the decomposition, each first-order component bound, and the second-order remainder needed to obtain the final inequality by the triangle inequality.",
-      "reasoning": "The nonbottom filter avoids one form of vacuity, but the substantive conclusions are effectively assumed in the execution package, making the proposition a certificate-unpacking result rather than the paper's theorem."
+      "paper_evidence": "Nonsingular A and ML, nonzero b, full-rank Z, and the numerical-nonsingularity conditions make the paper's normalized result an ordinary conditional numerical statement.",
+      "translation_evidence": "The theorem has no obligation when mgs or appendix certificate types are uninhabited, its error branch is vacuous without D001, arbitrary small may make D001 impossible, arbitrary secondOrder may trivialize the bound, and Good(k) may hold with sigmaMin=0.",
+      "reasoning": "Although valid indices, inverse matrices, and the forward-error denominator are protected, multiple certificate and predicate choices permit vacuous or semantically trivial instances not present in the paper contract."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The translation only applies after supplying a filter-indexed execution with a predetermined k0, spectral-defect control, and complete forward-analysis certificates. The paper covers admissible Algorithm 2 instances without those extra certificates, so the translated proposition cannot establish the paper result for the paper's full domain."
+      "reasoning": "The translated theorem can be discharged from assumed mgs and appendix certificates, accepts sigmaMin(VHat)=0 through totalized reciprocal, uses unrestricted d_k, and permits trivial small and secondOrder predicates. It therefore does not recover the paper's MGS-derived conditioning, qualitative smallness, low-degree c(n,k), or substantive first-order error statement."
     },
     "paper_implies_translation": {
-      "verdict": "no",
-      "reasoning": "The paper supplies a static informal first-order estimate at an existentially selected dimension. It does not supply a fixed k0 valid eventually along an arbitrary filter, an exact Big-O remainder, convergence hypotheses, or the universally quantified certificate structure required by the translation."
+      "verdict": "yes",
+      "reasoning": "As a conditional theorem over the translation's enriched inputs, it is weaker: the mgs certificate already supplies the finite selection law and the appendix certificate already supplies the exact expansion, secondOrder remainder, and component bounds from which the aggregate inequality follows. Thus a paper instance equipped with these stronger certificate assumptions satisfies the translated conclusion, even though the certificates are not faithful translations of what the paper proves."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "not-faithful-weaker",
   "accepted": false,
   "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "assumed-forward-analysis-conclusion",
-      "paper_evidence": "Appendix A derives the backward-error and forward-error estimates culminating in (A.11) and then recovers (3.8).",
-      "translation_evidence": "LocalDef024 and execution.forwardAnalysis assume, for every inverse pair, the decomposition, all four first-order component bounds, and an O(eta^2) normalized remainder.",
-      "impact": "The main forward-error result is already encoded in the principal hypothesis and is merely recombined in the conclusion."
+      "category": "substantive-result-assumed",
+      "paper_evidence": "Appendix A imports the first-loss and initial residual analysis and then develops the split-preconditioned error propagation through (A.11).",
+      "translation_evidence": "D034 assumes the first-loss implication, while D037 and D087 assume an exact error expansion, a secondOrder remainder, and four component bounds; the target only aggregates them.",
+      "impact": "The translated declaration is a theorem from certificates containing the essential result, not a formal counterpart of the paper's theorem and proof dependencies."
     },
     {
       "severity": "critical",
-      "category": "assumed-spectral-witness",
-      "paper_evidence": "Theorem 3.1 and Appendix A derive existence of a suitable k from the increasing full-rank basis and the MGS result.",
-      "translation_evidence": "The witness is the stored keyDimension, and the run assumes eventual defect at most 7/16 together with inequalities that directly force the two 4/3 spectral bounds.",
-      "impact": "The existential achievement of a well-conditioned computed basis is replaced by a predetermined, already-certified dimension."
+      "category": "qualitative-semantics",
+      "paper_evidence": "The paper uses qualitative << and a first-order approximate inequality obtained by dropping negligible second-order terms.",
+      "translation_evidence": "small is unconstrained and secondOrder has only the axiom secondOrder(0); the final relation existentially adds abs(rho).",
+      "impact": "The hypotheses can impose no numerical smallness and the conclusion can range from exact to vacuous, so its mathematical force is not the paper's."
     },
     {
       "severity": "major",
-      "category": "quantifier-and-domain-change",
-      "paper_evidence": "The paper selects one static k before universally quantifying nonsingular MR.",
-      "translation_evidence": "An execution containing k0 and certificates for every MR is quantified first, while all numerical quantities vary over an arbitrary filtered index type.",
-      "impact": "Neither the witness dependence nor the theorem's domain agrees with the paper."
+      "category": "constants-and-near-dependence",
+      "paper_evidence": "Equation (A.1) has threshold c(n,k)*ug+epsilonC, and c(n,k) denotes generic low-degree polynomials.",
+      "translation_evidence": "The threshold is d_k*(ug+epsilonC), and d_k is arbitrary data with only d_k>=1.",
+      "impact": "The epsilonC coefficient is changed and no polynomial dependence on n and k is retained."
     },
     {
       "severity": "major",
-      "category": "higher-order-reformulation",
-      "paper_evidence": "The less-than-or-approximately notation only records that unspecified negligible second-order terms were dropped.",
-      "translation_evidence": "The final relation is an exact eventual inequality with an explicitly quantified MR-dependent remainder satisfying filter-based Big-O of eta squared.",
-      "impact": "The translation asserts asymptotic information and a remainder structure not established by the source."
+      "category": "zero-reciprocal-conditioning",
+      "paper_evidence": "The first part of (3.7) expresses genuine reciprocal conditioning of the computed basis.",
+      "translation_evidence": "At sigmaMin=0, totalized real division makes 1/sigmaMin equal 0, so the inequality passes.",
+      "impact": "A singular computed basis may satisfy Good(k), defeating the selected basis-conditioning conclusion."
+    },
+    {
+      "severity": "major",
+      "category": "quantifier-scope",
+      "paper_evidence": "The selected k is fixed from the search-space and MGS sequence before arbitrary MR and works for every phi>0.",
+      "translation_evidence": "The MR and phi ordering is retained, but k is existentially quantified after the appendix certificate and may depend on it.",
+      "impact": "The witness may depend on an object containing later right-preconditioned error-analysis data that the paper does not use for dimension selection."
     },
     {
       "severity": "major",
       "category": "algorithm-and-floating-point-linkage",
-      "paper_evidence": "The result is for Modular GMRES with the MGS, Givens-rotation, and triangular-solve least-squares implementation under the standard floating-point model.",
-      "translation_evidence": "The run stores real perturbation equations and minimization certificates but omits the specified floating-point operations and assumes the resulting analysis certificates.",
-      "impact": "The formal proposition does not establish the paper's result from the stated algorithmic numerical model."
-    },
-    {
-      "severity": "major",
-      "category": "condition-number-interpretation",
-      "paper_evidence": "The paper intentionally leaves unqualified kappa ambiguous among several normwise condition quantities.",
-      "translation_evidence": "The translation fixes every square condition factor to a Frobenius-norm inverse product.",
-      "impact": "The exact norm interpretation cannot be confirmed from the paper and requires adjudication, although this ambiguity does not repair the other mismatches."
+      "paper_evidence": "Algorithm 2 and the standard floating-point model connect computed C, b, VHat, yHat, and xHat to MGS, Givens rotations, a triangular solve, and unit roundoff ug.",
+      "translation_evidence": "Computed objects, factorization relations, least-squares optimality, and ug are preloaded real data and certificate fields without operational floating-point semantics.",
+      "impact": "The formal proposition can apply to synthetic data not produced by the paper's algorithm or numerical model."
     },
     {
       "severity": "minor",
-      "category": "polynomial-factor",
-      "paper_evidence": "The paper describes c(n,k) as an unspecified generic polynomial of low degree.",
-      "translation_evidence": "The run stores one polynomial with nonnegative coefficients and unrestricted natural degrees.",
-      "impact": "High-degree and zero polynomial descriptors are admitted, and a generic analysis constant is turned into fixed execution data."
+      "category": "norm-selection",
+      "paper_evidence": "The paper suppresses distinctions among several equivalent condition numbers and leaves rectangular kappa notation under-specified.",
+      "translation_evidence": "The translation selects Frobenius condition products and Frobenius-over-sigmaMin ratios throughout.",
+      "impact": "This is plausible but cannot be established as exactly equivalent from the paper, so norm-specific implications require adjudication."
     }
   ],
-  "rationale": "The translation retains the visible shape of (3.7)-(3.8), the normalized forward-error notion, and the alpha, beta, lambda decomposition. It nevertheless changes the statement fundamentally: k is supplied rather than derived, the spectral result and forward-analysis estimates are packed into the execution hypotheses, fixed floating-point reasoning is replaced by filter asymptotics, and the paper's informal suppression of second-order terms becomes an exact Big-O remainder assertion. Consequently neither implication holds and the result is not-faithful-different. Adjudication is requested for the unresolved interpretation of the paper's unqualified condition numbers, not for the overall rejection."
+  "rationale": "The translation recognizes the correct theorem, preserves the core exact/computed distinctions, keeps k before MR, retains the universal phi order, and reproduces the visible coefficient pattern and normalized forward-error notion. It is nevertheless not faithful because unrestricted semantics replace the qualitative numerical conditions, an arbitrary d_k replaces c(n,k) and changes (A.1), totalized reciprocal admits a singular VHat, and the mgs and appendix certificates assume the key selection and error-decomposition results. These stronger antecedents make the translated declaration a weaker certificate-aggregation theorem rather than an independent formalization of Theorem 3.1."
 }
