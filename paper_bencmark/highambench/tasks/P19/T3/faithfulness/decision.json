@@ -2,83 +2,84 @@
   "accepted": false,
   "adjudicated": true,
   "adjudication_reasons": [
-    "judge classifications differ",
     "direct judge requested adjudication",
     "round-trip judge requested adjudication",
-    "direct D019 is unclear",
-    "direct D031 is unclear",
-    "direct D040 is unclear",
-    "direct D052 is unclear",
+    "direct D025 is unclear",
+    "direct D038 is unclear",
+    "direct D061 is unclear",
+    "direct D062 is unclear",
+    "direct D075 is unclear",
     "direct D076 is unclear",
-    "direct D089 is unclear",
-    "direct D106 is unclear",
-    "direct D133 is unclear",
-    "direct D153 is unclear",
-    "direct D164 is unclear",
-    "direct S08 is unclear",
-    "direct S11 is unclear",
-    "direct S14 is unclear"
+    "direct D077 is unclear",
+    "direct S03 is unclear",
+    "direct S09 is unclear",
+    "round-trip S09 is unclear"
   ],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-21T04:32:01.827704+00:00",
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-22T01:49:47.947030+00:00",
   "findings": [
     {
-      "category": "assumed analysis and reduced applicability",
-      "evidence": "Appendices C-D derive the solution-error decompositions and first-order source bounds. Lean constructors D065 and D067 require those decompositions, the final component estimates, and second-order remainder properties as inputs to D046 and D050.",
-      "impact": "The target is a consequence-extraction theorem for already-certified packages and may be vacuous when no package exists; this makes it weaker, not genuinely stronger.",
+      "category": "proof-derived results assumed",
+      "evidence": "Appendices C and D derive the decompositions and contribution bounds, whereas D053, D057, D118, and D119 require structures already containing them.",
+      "impact": "The main existential bounds are conditional on much of their mathematical substance and may hold vacuously when those structures are unavailable.",
       "severity": "critical"
     },
     {
-      "category": "attainable witness collapse",
-      "evidence": "Theorem 3.1 and Appendix C derive some k<=n with the required basis properties. Lean's witness is forced to equal run.keyDimension, whose positivity and upper bound are already fields of D043.",
-      "impact": "The substantive attainable-iteration conclusion is absent, so Lean cannot imply the paper.",
-      "severity": "critical"
-    },
-    {
-      "category": "invented asymptotic semantics",
-      "evidence": "The PDF uses qualitative lesssim and much-less-than notation after dropping terms. D019, D040, D076, D089, D106, D133, D153, and D164 introduce a filter, convergence to zero, eventual inequalities, and exact O(scale^2) remainders.",
-      "impact": "The numerical regime and logical relation differ from the source; because these properties are largely assumed in the bundles, they further restrict the theorem's domain.",
+      "category": "uncontrolled constants and semantics",
+      "evidence": "D079 permits any dimensionFactor>=1, and D044 gives small and secondOrder no substantive axioms beyond secondOrder(0).",
+      "impact": "The low-degree c(n,k) restriction is lost, and the approximate inequality can range from exact to trivial while applicability can become uninhabited.",
       "severity": "major"
     },
     {
-      "category": "extra package restrictions",
-      "evidence": "D028 requires a nonzero initial residual, D043 assumes fixed-k data including full rank of zHat and a positive rho denominator, and the target requires simultaneous right and flexible execution arguments.",
-      "impact": "The proposition does not cover all executions addressed separately by Theorems 3.3 and 3.4.",
+      "category": "precision disconnection",
+      "evidence": "D041 controls the MGS selection predicate, while D008 controls condition (3.16) and both final envelopes; no declaration equates them.",
+      "impact": "Selection and the attainable-error conclusion can refer to different values despite the paper using one u_g.",
       "severity": "major"
     },
     {
-      "category": "polynomial-factor mismatch",
-      "evidence": "Section 2 guarantees unspecified low-degree polynomials c(n,k). D049 allows arbitrary degrees and requires nonnegative coefficients.",
-      "impact": "The formal polynomial class neither preserves the low-degree guarantee nor follows the source's intentionally unspecified representation.",
+      "category": "totalized reciprocal",
+      "evidence": "D034 has no sigmaMin positivity premise, D116 allows sigmaMin=0, and Lean evaluates 1/0 as zero.",
+      "impact": "A rank-deficient computed basis can satisfy the encoded well-conditioning condition.",
       "severity": "major"
     },
     {
-      "category": "residual sign mismatch",
-      "evidence": "Algorithm 1 displays A*x0-b, while D052 defines b-A*xInitial; both use xInitial plus a correction.",
-      "impact": "Lean does not literally match the displayed algorithm, although the paper may contain a sign error.",
+      "category": "Remark 4 exactness",
+      "evidence": "The target adds an exact universal identity between envelope definitions, while Remark 4 compares first-order bounds with separate existential iterations.",
+      "impact": "The identity is algebraically valid but must not be interpreted as exact equality of attainable errors or complete theorem bounds.",
       "severity": "minor"
+    },
+    {
+      "category": "condition scope ambiguity",
+      "evidence": "Condition (3.16) contains k-dependent rho_A^R before the existential k, and Appendix C reasons at arbitrary well-conditioned k.",
+      "impact": "The target's uniform applicability scope is conservative but cannot be declared either equivalent or contradictory from the PDF alone.",
+      "severity": "note"
+    },
+    {
+      "category": "condition-number interpretation",
+      "evidence": "The PDF suppresses distinctions among norm-equivalent condition quantities, while the target globally chooses Frobenius or induced-two products.",
+      "impact": "This remains an explicit interpretive uncertainty and is not needed for the rejection.",
+      "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "Lean asserts consequences only for already-inhabited right and flexible execution bundles whose stored analysis records contain the essential Appendix C/D estimates. It neither constructs such bundles from model (3.14) and condition (3.16) nor derives the well-conditioned-basis iteration supplied by Theorem 3.1. It therefore cannot recover the paper's general attainable-iteration results.",
+      "reasoning": "The Lean declaration does not establish Appendix C/D packages or uniform applicability for computations satisfying the paper's stated hypotheses. Its conclusion can also be weakened by arbitrary dimensionFactor and secondOrder semantics, and its selected k may pass well-conditioning through sigmaMin=0. Therefore it does not yield Theorems 3.3 and 3.4 for the intended executions.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "For every pair of values quantified by the complete Lean proposition, D043 already supplies the witness dimensions and D065/D067 already supply the decompositions, component bounds, and O(scale^2) remainders. The two D019 conclusions follow from norm triangle inequalities, and the final envelope equality follows algebraically from D020 and D023. The proposition requires no existence of these packages, so it is a weaker conditional statement implied independently of the paper's additional content.",
-      "verdict": "yes"
+      "reasoning": "The PDF does not entail a proposition universally parameterized by unrestricted small and secondOrder predicates, disconnected u_g fields, arbitrary per-iteration dimension factors, totalized reciprocal semantics, and supplied appendix structures. The exact envelope identity is algebraically true but does not bridge those differences.",
+      "verdict": "no"
     }
   },
   "judge_classifications": {
     "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-weaker"
+    "roundtrip": "not-faithful-different"
   },
-  "rationale": "The formulas for the five-entry condition, rhoAR, relative forward error, the right three-source envelope, the flexible two-source envelope, and the omitted reapplication term are recognizable. The complete proposition nevertheless assumes fixed-dimension execution and analysis packages containing the central estimates that the paper derives. Its witnesses merely expose stored fields, and it asserts no package existence for ordinary paper-admissible GMRES executions. Therefore Lean does not imply the paper. Conversely, every inhabited Lean input already contains enough evidence to derive the target, and the remaining identity is algebraic, so the paper implies this weaker conditional proposition. The correct classification is not-faithful-weaker.",
+  "rationale": "The declaration preserves the visible three-term and two-term envelopes, all five entries of (3.16), fixed M_R with M_L=I, the exact rho_A^R numerator, relative 2-norm forward error, and independent right and flexible witnesses. Those formula-level successes do not overcome the statement-level changes. The Appendix C/D results are premises rather than derived dependencies, c(n,k) is replaced by an arbitrary real, the two uses of u_g are disconnected, first-order semantics are unrestricted, and the reciprocal well-conditioning test admits sigmaMin=0. The unresolved scope of (3.16) and unqualified kappa are genuine source ambiguities but do not affect the fixed classification. The exact envelope identity is only a true algebraic supplement, not evidence that the conditional Lean result is stronger than the paper theorem.",
   "remaining_uncertainties": [
-    "The PDF does not reveal whether Algorithm 1's residual A*x0-b is intentional or a typographical reversal of the conventional b-A*x0.",
-    "The qualitative symbols lesssim and much-less-than and the phrase negligible second-order terms do not determine a unique exact remainder relation, threshold, or limiting regime.",
-    "Because rhoAR and condition (3.16) are written using k before the theorem introduces its existential iteration, the paper does not completely formalize whether smallness is required at the eventual witness or over all candidate iterations.",
-    "Generic kappa notation permits a 2-norm interpretation up to norm-equivalence and polynomial factors, but the source does not determine exact constants for that specialization."
+    "The PDF does not settle whether condition (3.16) is required only at the selected MGS witness, existentially together with that witness, or uniformly over all admissible candidates.",
+    "The PDF does not select one exact condition-number norm for every displayed kappa; the target's uniform two-choice interpretation is plausible but not source-determined.",
+    "The PDF supplies no quantitative threshold, comparison constant, or remainder semantics for its qualitative much-less-than and first-order symbols."
   ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",

@@ -1,0 +1,1203 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "d525b31f2874d3b228aec6bcad849e1a9201cababb5e35510a7c88ef7d20db6d",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "Projects the run's real-valued function etaR.",
+      "effect_on_target": "etaR enters the scale function and the right-hand first-order term um etaR kappaR.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "Projects the run's natural-number key dimension.",
+      "effect_on_target": "Each existential witness k is required to equal this dimension.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "Projects the run's nonnegative-coefficient bivariate polynomial-factor record.",
+      "effect_on_target": "Its evaluation at the ambient dimension n and witness k multiplies each leading error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "Projects the run's real-valued function rhoAR.",
+      "effect_on_target": "rhoAR multiplies the matrix-error term and is also part of the scale function.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "Projects the run's real-valued function ua.",
+      "effect_on_target": "ua scales the matrix perturbation contribution in both bounds and in the scale function.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "Projects the run's real-valued function ug.",
+      "effect_on_target": "ug scales the basis or inner-solve contribution in both leading bounds and in the scale function.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "Projects the run's real-valued function um.",
+      "effect_on_target": "um appears in the right-run reapplication term and in the common scale function.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "The type of an n-dimensional system package containing matrices, inverse data, vectors, and proofs described by its constructor D028.",
+      "effect_on_target": "All condition numbers, the exact solution, and the structural assumptions of the proposition come from this system package.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "Projects the system's exact n-vector xExact.",
+      "effect_on_target": "xExact is the reference vector in both relative forward errors.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "Projects xHat(t) from the algorithm used by a LocalDef011 package.",
+      "effect_on_target": "This is the computed solution in the flexible package's relative forward error.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "A package consisting of a run, a LocalDef029 solution algorithm, and a LocalDef046 error-analysis certificate.",
+      "effect_on_target": "It supplies the flexible run and the certified bound that omits a separate preconditioner-reapplication leading term.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "Projects the LocalDef029 algorithm from a LocalDef011 package.",
+      "effect_on_target": "It exposes the flexible package's computed solution and basis perturbation.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "Projects the run from a LocalDef011 package.",
+      "effect_on_target": "All flexible key-dimension, polynomial, error-parameter, and run data are obtained through this projection.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LocalDef014",
+      "meaning": "Projects xHat(t) from the algorithm used by a LocalDef015 package.",
+      "effect_on_target": "This is the computed solution in the right package's relative forward error.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "LocalDef015",
+      "meaning": "A package consisting of a run, a LocalDef035 solution algorithm, and a LocalDef050 error-analysis certificate.",
+      "effect_on_target": "It supplies the right run and the certified bound containing the additional preconditioner-reapplication term.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LocalDef016",
+      "meaning": "Projects the LocalDef035 algorithm from a LocalDef015 package.",
+      "effect_on_target": "It exposes the right package's computed solution and its two solution-stage perturbations.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "LocalDef017",
+      "meaning": "Projects the run from a LocalDef015 package.",
+      "effect_on_target": "All right key-dimension, polynomial, error-parameter, and run data are obtained through this projection.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "LocalDef018",
+      "meaning": "For parameters ug, um, ua, etaR, and rhoAR, defines theta as max(ug*kappaAR, ug*kappaR, um*etaR*kappaR, ua*kappaA*rhoAR, ua*kappaAR*kappaR).",
+      "effect_on_target": "This theta is the common asymptotic scale whose square controls the remainder in both conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "LocalDef019",
+      "meaning": "For scale, lhs, and rhs, asserts that there is a real remainder r with r = O_l(scale^2) and, eventually along l, lhs(t) <= rhs(t) + |r(t)|.",
+      "effect_on_target": "It gives the exact logical meaning of each asserted asymptotic forward-error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "LocalDef020",
+      "meaning": "Defines ug*kappaAR*kappaR + ua*kappaA*rhoAR.",
+      "effect_on_target": "This is the flexible leading expression and the right expression with its um etaR term removed.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "LocalDef021",
+      "meaning": "Defines the relative Euclidean error ||xHat-x||_2 / ||x||_2.",
+      "effect_on_target": "It is the left-hand side of both asymptotic inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "LocalDef022",
+      "meaning": "Evaluates a polynomial record c at natural numbers n and k as sum_i sum_j c_ij (n:Real)^i (k:Real)^j over all recorded degrees.",
+      "effect_on_target": "This exact computed scalar multiplies each leading bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "LocalDef023",
+      "meaning": "Defines (ug*kappaAR*kappaR + um*etaR*kappaR) + ua*kappaA*rhoAR.",
+      "effect_on_target": "It is the right package's leading expression and the left side of the final pointwise identity.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "LocalDef024",
+      "meaning": "Defines kappaR = ||MR||_2op ||MRinv||_2op.",
+      "effect_on_target": "kappaR occurs in the leading expressions, the scale, and the final identity.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "LocalDef025",
+      "meaning": "The run-data type constructed by D043, containing a key dimension, polynomial, error parameters, Krylov-style matrices and vectors, perturbations, and their proofs.",
+      "effect_on_target": "Its fields provide every run-dependent quantity in the proposition and enforce substantial assumptions on admissible right and flexible inputs.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "LocalDef026",
+      "meaning": "Projects the system's fourth matrix field, MR.",
+      "effect_on_target": "MR is used in kappaR, the inverse relations, and the preconditioned condition number.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "LocalDef027",
+      "meaning": "Projects the system's fifth matrix field, MRinv.",
+      "effect_on_target": "MRinv is used in kappaR, the preconditioned matrix, and solution reconstruction assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "LocalDef028",
+      "meaning": "Constructs a system from n>0; n-by-n matrices A, Ainv, MR, MRinv; two-sided inverse proofs for A/Ainv, MR/MRinv, and A*MRinv with inverse MR*Ainv; MR not equal to the identity; vectors b, xExact, xInitial; b nonzero; A*xExact=b; and b-A*xInitial nonzero.",
+      "effect_on_target": "These are the encoded system hypotheses under which right and flexible packages can be quantified.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "LocalDef029",
+      "meaning": "The flexible solution-algorithm type, constructed from a perturbed solution basis and a computed solution as specified by D047.",
+      "effect_on_target": "It determines the flexible xHat and records the solution-basis perturbation model.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "LocalDef030",
+      "meaning": "Constructs a LocalDef011 value from a run, a LocalDef029 algorithm, and a LocalDef046 certificate.",
+      "effect_on_target": "It ensures that every flexible binder carries both algorithm data and a certified forward-error analysis.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "LocalDef031",
+      "meaning": "The type of a bivariate polynomial-factor record with two degrees, coefficients, and nonnegativity evidence supplied by D049.",
+      "effect_on_target": "Each run carries one such record, whose evaluation scales its leading bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "LocalDef032",
+      "meaning": "Projects the coefficient c_ij of a polynomial-factor record.",
+      "effect_on_target": "These coefficients are summed in the exact polynomial evaluation multiplying the bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "LocalDef033",
+      "meaning": "Projects the polynomial record's degree in its k argument.",
+      "effect_on_target": "It determines the range of the inner coefficient sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "LocalDef034",
+      "meaning": "Projects the polynomial record's degree in its n argument.",
+      "effect_on_target": "It determines the range of the outer coefficient sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "LocalDef035",
+      "meaning": "The right solution-algorithm type, constructed from a basis perturbation, a solution-stage preconditioner perturbation, and xHat as specified by D051.",
+      "effect_on_target": "It determines the right xHat and records the source of the additional um etaR contribution.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "LocalDef036",
+      "meaning": "Constructs a LocalDef015 value from a run, a LocalDef035 algorithm, and a LocalDef050 certificate.",
+      "effect_on_target": "It ensures that every right binder carries both algorithm data and a certified forward-error analysis.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "LocalDef037",
+      "meaning": "Defines an n-vector as a function Fin n -> Real.",
+      "effect_on_target": "It fixes the dimensions and scalar field of exact solutions, computed solutions, residuals, and contribution vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "LocalDef038",
+      "meaning": "For square matrices B and Binv, defines ||B||_2op ||Binv||_2op.",
+      "effect_on_target": "It supplies the three condition-number-like constants kappaR, kappaAR, and kappaA.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "LocalDef039",
+      "meaning": "Defines kappaAR = ||A*MRinv||_2op ||MR*Ainv||_2op.",
+      "effect_on_target": "kappaAR enters the ug contribution and two components of the asymptotic scale.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "LocalDef040",
+      "meaning": "Asserts remainder = O_l(scale^2) in the normed real-valued sense.",
+      "effect_on_target": "It is the second-order remainder condition used directly by LocalDef019 and by the packaged certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "LocalDef041",
+      "meaning": "Defines kappaA = ||A||_2op ||Ainv||_2op.",
+      "effect_on_target": "kappaA multiplies the ua*rhoAR matrix contribution in both bounds and in the scale.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "LocalDef042",
+      "meaning": "Defines the Euclidean norm of a finite real vector as sqrt(sum_i x_i^2).",
+      "effect_on_target": "It defines relative errors, residual norms, least-squares conditions, rhoAR, and certificate contribution bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "LocalDef043",
+      "meaning": "Constructs a run with 0<k<=n; a nonnegative polynomial factor; pointwise nonnegative ug, um, ua, etaR, rhoAR; matrices V, Vnext, Z, computedAZ and H; an upper-Hessenberg condition; the exact augmented relation [r0,computedAZ]=Vnext*[beta*e1,H]; V equal to the first k columns of Vnext; least-squares perturbations deltaB and deltaC with a polynomial-times-ug columnwise bound; a least-squares minimizer y; injectivity of Z; columnwise preconditioner perturbations satisfying Z_j=(MRinv+deltaMR_j)V_j and Frobenius bounds; columnwise matrix perturbations satisfying computedAZ_j=(A+deltaA_j)Z_j and componentwise bounds; ||Zy||_2>0; rhoAR=|||Z||y|||_2/||Zy||_2; and theta tending to zero while eventually lying in [0,1).",
+      "effect_on_target": "It makes the key-dimension restrictions and small-parameter regime intrinsic to every run and supplies the perturbation data underlying both certified bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "LocalDef044",
+      "meaning": "Projects the system matrix A.",
+      "effect_on_target": "A determines kappaA, kappaAR, the exact system equation, residuals, and matrix perturbation model.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "LocalDef045",
+      "meaning": "Projects the system matrix Ainv.",
+      "effect_on_target": "Ainv enters the inverse assumptions and the definitions of kappaA and kappaAR.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "LocalDef046",
+      "meaning": "The certificate type for a LocalDef029 algorithm; D065 supplies a decomposition and normalized first-order bounds with an O(theta^2) remainder.",
+      "effect_on_target": "Its existence inside the flexible package certifies the flexible LocalDef019 conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "LocalDef047",
+      "meaning": "Constructs the flexible algorithm from deltaZ and xHat, with |deltaZ_ij| <= p(n,k) ug |Z_ij| and xHat=xInitial+(Z+deltaZ)y.",
+      "effect_on_target": "It specifies exactly which computed solution is bounded in the flexible conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "LocalDef048",
+      "meaning": "Defines an n-by-n real matrix as Matrix (Fin n) (Fin n) Real.",
+      "effect_on_target": "It fixes the dimensions of system matrices and all square perturbation matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "LocalDef049",
+      "meaning": "Constructs a polynomial-factor record from degrees degreeN and degreeK, real coefficients c_ij for 0<=i<=degreeN and 0<=j<=degreeK, and proofs that every coefficient is nonnegative.",
+      "effect_on_target": "It ensures the polynomial multipliers used in the bounds have nonnegative coefficients, but imposes no size or degree bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "LocalDef050",
+      "meaning": "The certificate type for a LocalDef035 algorithm; D067 supplies a decomposition with gmres, reapplication, and matrix contributions plus an O(theta^2) remainder.",
+      "effect_on_target": "Its existence inside the right package certifies the right LocalDef019 conclusion including the um etaR term.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "LocalDef051",
+      "meaning": "Constructs the right algorithm from deltaV, deltaMRsol, and xHat, with |deltaV_ij| <= p(n,k) ug |V_ij|, ||deltaMRsol||_F <= p(n,k) um etaR ||MRinv||_F, and xHat=xInitial+(MRinv+deltaMRsol)(V+deltaV)y.",
+      "effect_on_target": "It specifies the right computed solution and the perturbation responsible for the separate reapplication contribution.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "LocalDef052",
+      "meaning": "Defines the residual b-A*xInitial.",
+      "effect_on_target": "This nonzero vector is the first column in the run's augmented relation and least-squares problem.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "LocalDef053",
+      "meaning": "Asserts that two square matrices are two-sided inverses as linear maps on all vectors.",
+      "effect_on_target": "It encodes invertibility of A, MR, and the right-preconditioned matrix in the system package.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "LocalDef054",
+      "meaning": "Defines ordinary finite matrix-vector multiplication.",
+      "effect_on_target": "It is used in system equations, residuals, perturbation relations, and solution reconstruction.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "LocalDef055",
+      "meaning": "Returns the induced Euclidean operator norm of a finite real matrix.",
+      "effect_on_target": "It defines all condition-number-like constants in the target.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "LocalDef056",
+      "meaning": "Defines the right-preconditioned matrix A*MRinv.",
+      "effect_on_target": "Its operator norm is the first factor of kappaAR.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "LocalDef057",
+      "meaning": "Defines MR*Ainv.",
+      "effect_on_target": "It is the encoded inverse of A*MRinv and its norm is the second factor of kappaAR.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "LocalDef058",
+      "meaning": "Defines ordinary finite matrix multiplication of an n-by-n matrix with an n-by-k matrix.",
+      "effect_on_target": "It forms preconditioned matrices and appears in the run's exact perturbation relations.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "LocalDef059",
+      "meaning": "Defines the sum of squares sum_i x_i^2 of a finite real vector.",
+      "effect_on_target": "Taking its real square root gives the Euclidean norm used throughout the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "LocalDef060",
+      "meaning": "Projects the run's n-by-k matrix V(t).",
+      "effect_on_target": "V appears in the run relation and in the right algorithm's solution-stage perturbation model.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "LocalDef061",
+      "meaning": "Projects the run's k-vector yHat(t).",
+      "effect_on_target": "It is the least-squares solution used in both reconstructed computed solutions and in rhoAR.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "LocalDef062",
+      "meaning": "Projects the run's n-by-k matrix zHat(t).",
+      "effect_on_target": "Z appears in the flexible solution reconstruction, preconditioner relation, injectivity assumption, and rhoAR.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "LocalDef063",
+      "meaning": "Projects the system right-hand-side vector b.",
+      "effect_on_target": "b is nonzero, satisfies A*xExact=b, and defines the initial residual.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "LocalDef064",
+      "meaning": "Projects the system initial vector xInitial.",
+      "effect_on_target": "It defines the initial residual and is the base point for both computed-solution reconstructions.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "LocalDef065",
+      "meaning": "Constructs the flexible certificate using propagation maps and vectors g, a, and r such that xHat-xExact=g+a+r; the propagation maps vanish at zero perturbations; ||g||/||xExact|| <= p ug kappaAR kappaR; ||a||/||xExact|| <= p ua kappaA rhoAR; and ||r||/||xExact|| = O_l(theta^2).",
+      "effect_on_target": "These data and inequalities yield the flexible eventual bound with no separate um etaR leading term.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "LocalDef066",
+      "meaning": "Defines an m-by-k real matrix as Matrix (Fin m) (Fin k) Real.",
+      "effect_on_target": "It fixes the dimensions of all rectangular basis, Hessenberg, augmented, and perturbation matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "LocalDef067",
+      "meaning": "Constructs the right certificate using propagation maps and vectors g, q, a, and r such that xHat-xExact=g+q+a+r; the maps vanish at zero perturbations; ||g||/||xExact|| <= p ug kappaAR kappaR; ||q||/||xExact|| <= p um etaR kappaR; ||a||/||xExact|| <= p ua kappaA rhoAR; and ||r||/||xExact|| = O_l(theta^2).",
+      "effect_on_target": "These data and inequalities yield the right eventual bound and its additional reapplication term.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "LocalDef068",
+      "meaning": "Defines the nonnegative vector |A||x| componentwise by sum_j |A_ij||x_j|.",
+      "effect_on_target": "It forms the numerator in the exact definition of rhoAR.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "LocalDef069",
+      "meaning": "Defines componentwise vector addition.",
+      "effect_on_target": "It expresses xHat as xInitial plus a computed correction.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "LocalDef070",
+      "meaning": "Prepends a vector b as column zero of a matrix C, producing the augmented matrix [b,C].",
+      "effect_on_target": "It expresses the run's augmented Arnoldi-style relation and augmented least-squares perturbation bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "LocalDef071",
+      "meaning": "Extracts a specified column of a matrix as a vector.",
+      "effect_on_target": "It makes the run's perturbation relations and bounds columnwise.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "LocalDef072",
+      "meaning": "Returns the Frobenius norm of a finite real matrix.",
+      "effect_on_target": "It measures preconditioner perturbations in the run and right solution algorithm.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "LocalDef073",
+      "meaning": "Asserts that matrix-vector multiplication by a matrix is injective.",
+      "effect_on_target": "Every run requires Z(t) to have an injective associated linear map.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "LocalDef074",
+      "meaning": "Asserts that y minimizes ||b-Ay||_2 over all vectors z of the same dimension.",
+      "effect_on_target": "It records the exact least-squares condition for the perturbed run problem.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "LocalDef075",
+      "meaning": "Asserts that a (k+1)-by-k matrix H is upper Hessenberg: H_ij=0 whenever i>j+1.",
+      "effect_on_target": "This structural property is required of each run's Hessenberg matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "LocalDef076",
+      "meaning": "Asserts theta(t) tends to 0 along l and is eventually nonnegative and strictly less than 1.",
+      "effect_on_target": "Every run is restricted to this asymptotically small-error regime.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "LocalDef077",
+      "meaning": "Defines ordinary finite multiplication of two rectangular matrices.",
+      "effect_on_target": "It forms the right side of the run's exact augmented matrix relation.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "LocalDef078",
+      "meaning": "Defines ordinary finite matrix-vector multiplication for a rectangular matrix.",
+      "effect_on_target": "It is used in least squares, solution reconstruction, injectivity, and the denominator of rhoAR.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "LocalDef079",
+      "meaning": "Defines the length-(k+1) vector beta*e1, with beta in coordinate zero and zero elsewhere.",
+      "effect_on_target": "It supplies the first column of the small augmented matrix in the run relation.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "LocalDef080",
+      "meaning": "Projects the run's least-squares right-hand-side perturbation deltaB(t).",
+      "effect_on_target": "It is one input to the flexible and right gmres-contribution propagation maps.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "LocalDef081",
+      "meaning": "Projects the run's least-squares matrix perturbation deltaC(t).",
+      "effect_on_target": "It is another input to the gmres-contribution propagation maps.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "LocalDef082",
+      "meaning": "Projects the run's family of columnwise matrix perturbations deltaA_j(t).",
+      "effect_on_target": "It is the input to the matrix-contribution propagation maps in both certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "LocalDef083",
+      "meaning": "Projects the flexible algorithm's solution-basis perturbation deltaZ(t).",
+      "effect_on_target": "It is the third perturbation input to the flexible gmres-contribution map.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "LocalDef084",
+      "meaning": "Projects the right algorithm's solution-basis perturbation deltaV(t).",
+      "effect_on_target": "It is the third perturbation input to the right gmres-contribution map.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "LocalDef085",
+      "meaning": "Projects the right algorithm's solution-stage preconditioner perturbation deltaMRsol(t).",
+      "effect_on_target": "It is the input to the right certificate's separate reapplication-contribution map.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It requires all three principal conclusions simultaneously and combines conditions inside the existential witnesses.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It enforces equality of each witness with its stored key dimension and the final exact scalar identity.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It introduces each natural witness k and, through LocalDef019, each remainder function.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "Filter",
+      "meaning": "A filter on the index type.",
+      "effect_on_target": "It specifies the limiting notion for eventual inequalities, convergence, and big-O estimates.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "Filter.NeBot",
+      "meaning": "The assertion that a filter is not the bottom filter.",
+      "effect_on_target": "The target assumes l is nontrivial, excluding the filter under which every proposition is eventually true.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "HAdd.hAdd",
+      "meaning": "Typeclass-mediated addition.",
+      "effect_on_target": "With the selected instances it denotes ordinary real, natural, vector, or matrix addition in all displayed formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "HMul.hMul",
+      "meaning": "Typeclass-mediated multiplication.",
+      "effect_on_target": "With the selected real instance it denotes ordinary multiplication of the scalar factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "LE.le",
+      "meaning": "Typeclass-mediated non-strict order.",
+      "effect_on_target": "It expresses k<=n, eventual error inequalities, and the embedded perturbation bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "LT.lt",
+      "meaning": "Typeclass-mediated strict order.",
+      "effect_on_target": "It expresses 0<k and strict positivity or smallness conditions in the embedded structures.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "Nat",
+      "meaning": "The natural numbers.",
+      "effect_on_target": "n, both witnesses k, dimensions, polynomial degrees, and finite indices are natural-number based.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "OfNat.ofNat",
+      "meaning": "Interprets a natural numeral in a type with an OfNat instance.",
+      "effect_on_target": "It supplies the literal zero in the positivity conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "Real",
+      "meaning": "The real numbers.",
+      "effect_on_target": "All scalar errors, coefficients, norms, bounds, and matrix entries are real.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "Real.instAdd",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "It fixes additions in the leading expressions and final identity as real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Real.instMul",
+      "meaning": "The ordinary multiplication operation on real numbers.",
+      "effect_on_target": "It fixes all products in the polynomial, condition numbers, scale, and bounds as real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "instHAdd",
+      "meaning": "Builds homogeneous addition from an ordinary Add instance.",
+      "effect_on_target": "It resolves HAdd on reals, naturals, vectors, and matrices to their ordinary additions.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "instHMul",
+      "meaning": "Builds homogeneous multiplication from an ordinary Mul instance.",
+      "effect_on_target": "It resolves the target's scalar HMul expressions to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "instLENat",
+      "meaning": "The standard non-strict order on natural numbers.",
+      "effect_on_target": "Thus the witness condition is the usual k<=n.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "instLTNat",
+      "meaning": "The standard strict order on natural numbers.",
+      "effect_on_target": "Thus the witness condition is the usual 0<k.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "instOfNatNat",
+      "meaning": "The standard interpretation of a natural numeral as itself.",
+      "effect_on_target": "The numeral in 0<k is exactly the natural number zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "Extracts division from a division-inverse monoid.",
+      "effect_on_target": "It supplies ordinary real division in relative errors and rhoAR.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "Filter.Eventually",
+      "meaning": "Asserts that a predicate holds on a set belonging to a filter.",
+      "effect_on_target": "The error inequalities and theta range are required only eventually along l.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with values 0 through n-1.",
+      "effect_on_target": "It indexes every finite vector, matrix, polynomial coefficient, and columnwise condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "Fin.fintype",
+      "meaning": "The canonical finite enumeration of Fin n.",
+      "effect_on_target": "It makes all sums over vector, matrix, and polynomial indices finite and exhaustive.",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "Fin.val",
+      "meaning": "Returns the natural-number value of a finite index.",
+      "effect_on_target": "It supplies polynomial exponents and index comparisons in structural matrix conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It defines polynomial evaluation, matrix products, and Euclidean norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D111",
+      "name": "Finset.univ",
+      "meaning": "The finite set of all elements of a finite type.",
+      "effect_on_target": "Every finite sum ranges over all applicable coordinates.",
+      "status": "understood"
+    },
+    {
+      "id": "D112",
+      "name": "HDiv.hDiv",
+      "meaning": "Typeclass-mediated division.",
+      "effect_on_target": "With the real instance it gives the quotients defining relative error and rhoAR.",
+      "status": "understood"
+    },
+    {
+      "id": "D113",
+      "name": "HPow.hPow",
+      "meaning": "Typeclass-mediated exponentiation.",
+      "effect_on_target": "It supplies natural powers in polynomial evaluation and squares in norms and asymptotic scales.",
+      "status": "understood"
+    },
+    {
+      "id": "D114",
+      "name": "HSub.hSub",
+      "meaning": "Typeclass-mediated subtraction.",
+      "effect_on_target": "It defines vector errors, residuals, and least-squares residuals.",
+      "status": "understood"
+    },
+    {
+      "id": "D115",
+      "name": "Max.max",
+      "meaning": "Typeclass-mediated maximum.",
+      "effect_on_target": "For reals it combines the five first-order quantities into theta.",
+      "status": "understood"
+    },
+    {
+      "id": "D116",
+      "name": "Monoid.toNatPow",
+      "meaning": "Provides natural-number powers in a monoid.",
+      "effect_on_target": "It makes the powers in polynomial evaluation and real squares ordinary natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D117",
+      "name": "Nat.cast",
+      "meaning": "Casts a natural number into a type with a NatCast instance.",
+      "effect_on_target": "It interprets n and k as real arguments of the polynomial factor.",
+      "status": "understood"
+    },
+    {
+      "id": "D118",
+      "name": "Pi.instSub",
+      "meaning": "Defines subtraction of functions pointwise.",
+      "effect_on_target": "Vector differences such as xHat-xExact and b-A*xInitial are coordinatewise.",
+      "status": "understood"
+    },
+    {
+      "id": "D119",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure of the reals.",
+      "effect_on_target": "It supports all finite real sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D120",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive group structure of the reals.",
+      "effect_on_target": "It supports subtraction, negation, and absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D121",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The multiplicative division and inversion structure of the reals, with totalized division.",
+      "effect_on_target": "Relative-error and rhoAR quotients are Lean's total real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D122",
+      "name": "Real.instLE",
+      "meaning": "The standard non-strict order on real numbers.",
+      "effect_on_target": "All real inequalities are ordinary <= inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D123",
+      "name": "Real.instMax",
+      "meaning": "The standard maximum operation on real numbers.",
+      "effect_on_target": "LocalDef018 is the ordinary maximum of its five displayed real terms.",
+      "status": "understood"
+    },
+    {
+      "id": "D124",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure of the reals.",
+      "effect_on_target": "It supplies ordinary natural powers of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D125",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the reals.",
+      "effect_on_target": "Polynomial arguments n and k use their ordinary real values.",
+      "status": "understood"
+    },
+    {
+      "id": "D126",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction.",
+      "effect_on_target": "It underlies coordinatewise vector subtraction and real differences.",
+      "status": "understood"
+    },
+    {
+      "id": "D127",
+      "name": "Real.lattice",
+      "meaning": "The lattice structure of the ordered reals.",
+      "effect_on_target": "It supports ordinary real maxima and absolute values.",
+      "status": "understood"
+    },
+    {
+      "id": "D128",
+      "name": "abs",
+      "meaning": "Absolute value in an ordered additive group; for reals, the usual |x|.",
+      "effect_on_target": "It appears in the eventual remainder allowance and all componentwise perturbation bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D129",
+      "name": "instAddNat",
+      "meaning": "Ordinary addition on natural numbers.",
+      "effect_on_target": "It forms dimensions and degree bounds such as k+1 and degree+1.",
+      "status": "understood"
+    },
+    {
+      "id": "D130",
+      "name": "instHDiv",
+      "meaning": "Builds homogeneous division from an ordinary Div instance.",
+      "effect_on_target": "It resolves real quotients to ordinary totalized real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D131",
+      "name": "instHPow",
+      "meaning": "Builds homogeneous exponentiation from a Pow instance.",
+      "effect_on_target": "It resolves all powers to the applicable real natural-power operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D132",
+      "name": "instHSub",
+      "meaning": "Builds homogeneous subtraction from an ordinary Sub instance.",
+      "effect_on_target": "It resolves real and pointwise vector differences used in errors and residuals.",
+      "status": "understood"
+    },
+    {
+      "id": "D133",
+      "name": "Asymptotics.IsBigO",
+      "meaning": "The standard filter-based big-O relation between normed functions.",
+      "effect_on_target": "It means that the absolute size of the remainder is eventually bounded by a fixed constant times the absolute size of theta squared.",
+      "status": "understood"
+    },
+    {
+      "id": "D134",
+      "name": "Matrix.one",
+      "meaning": "The identity square matrix.",
+      "effect_on_target": "The system constructor requires MR to differ from this identity matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D135",
+      "name": "Ne",
+      "meaning": "Inequality, defined as the negation of equality.",
+      "effect_on_target": "It expresses MR not identity, b nonzero, and the initial residual nonzero in the system package.",
+      "status": "understood"
+    },
+    {
+      "id": "D136",
+      "name": "One.toOfNat1",
+      "meaning": "Interprets the numeral one using a type's multiplicative identity.",
+      "effect_on_target": "It identifies the matrix numeral 1 in MR != 1 with the identity matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D137",
+      "name": "Pi.instZero",
+      "meaning": "Defines the zero function pointwise.",
+      "effect_on_target": "It supplies zero vectors, zero matrix families, and zero propagation inputs in the certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D138",
+      "name": "Real.instOne",
+      "meaning": "The real number one.",
+      "effect_on_target": "It supports real powers and the standard real algebra used by the formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D139",
+      "name": "Real.instZero",
+      "meaning": "The real number zero.",
+      "effect_on_target": "It supplies zero coordinates, matrices, vectors, and comparison endpoints.",
+      "status": "understood"
+    },
+    {
+      "id": "D140",
+      "name": "Real.norm",
+      "meaning": "The norm on the reals, equal to absolute value.",
+      "effect_on_target": "It determines the normed meaning of real-valued big-O.",
+      "status": "understood"
+    },
+    {
+      "id": "D141",
+      "name": "Real.sqrt",
+      "meaning": "The nonnegative real square root.",
+      "effect_on_target": "It turns sums of coordinate squares into Euclidean vector norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D142",
+      "name": "Zero.toOfNat0",
+      "meaning": "Interprets the numeral zero using a type's zero element.",
+      "effect_on_target": "It supplies zero reals, vectors, and matrices in embedded assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D143",
+      "name": "instDecidableEqFin",
+      "meaning": "Decidable equality on finite indices.",
+      "effect_on_target": "It supports identity matrices and finite index-dependent constructions.",
+      "status": "understood"
+    },
+    {
+      "id": "D144",
+      "name": "Fin.castSucc",
+      "meaning": "Embeds Fin k into Fin (k+1) while preserving its numerical value.",
+      "effect_on_target": "It states that V is exactly the first k columns of Vnext.",
+      "status": "understood"
+    },
+    {
+      "id": "D145",
+      "name": "Matrix",
+      "meaning": "A matrix with row type m, column type n, and entries in alpha is a function m -> n -> alpha.",
+      "effect_on_target": "All matrix equalities and operations are extensional coordinatewise statements over finite indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D146",
+      "name": "Matrix.add",
+      "meaning": "Pointwise matrix addition.",
+      "effect_on_target": "Perturbed matrices such as A+deltaA and MRinv+deltaMR are formed entrywise.",
+      "status": "understood"
+    },
+    {
+      "id": "D147",
+      "name": "Matrix.instL2OpNormedAddCommGroup",
+      "meaning": "The normed additive-group structure on finite matrices using the induced Euclidean operator norm.",
+      "effect_on_target": "It fixes the matrix norm used in kappaA, kappaR, and kappaAR.",
+      "status": "understood"
+    },
+    {
+      "id": "D148",
+      "name": "Norm.norm",
+      "meaning": "Extracts the norm function from a Norm instance.",
+      "effect_on_target": "It evaluates the selected vector and matrix norms throughout the definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D149",
+      "name": "NormedAddCommGroup.toNorm",
+      "meaning": "Extracts a norm from a normed additive commutative group.",
+      "effect_on_target": "It supplies the concrete matrix norm selected by the relevant normed-group instance.",
+      "status": "understood"
+    },
+    {
+      "id": "D150",
+      "name": "Pi.instAdd",
+      "meaning": "Defines addition of functions pointwise.",
+      "effect_on_target": "Vector and matrix additions in perturbation and decomposition formulas are coordinatewise.",
+      "status": "understood"
+    },
+    {
+      "id": "D151",
+      "name": "Real.instLT",
+      "meaning": "The standard strict order on real numbers.",
+      "effect_on_target": "It gives the ordinary meanings of positivity and theta<1 in run assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D152",
+      "name": "Real.instRCLike",
+      "meaning": "The real numbers viewed as an RCLike scalar field.",
+      "effect_on_target": "It supports the induced Euclidean operator-norm instance for real matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D153",
+      "name": "Filter.Tendsto",
+      "meaning": "Filter convergence of a function from a source filter to a target filter.",
+      "effect_on_target": "It states that each run's theta converges to zero along l.",
+      "status": "understood"
+    },
+    {
+      "id": "D154",
+      "name": "Fin.cases",
+      "meaning": "Defines a function on Fin (k+1) by a value at zero and values on successor indices.",
+      "effect_on_target": "It implements the augmented-column construction [b,C].",
+      "status": "understood"
+    },
+    {
+      "id": "D155",
+      "name": "Function.Injective",
+      "meaning": "A function is injective when equal outputs imply equal inputs.",
+      "effect_on_target": "The run requires multiplication by Z(t) to be injective.",
+      "status": "understood"
+    },
+    {
+      "id": "D156",
+      "name": "Matrix.frobeniusNormedAddCommGroup",
+      "meaning": "The normed additive-group structure on finite matrices using the Frobenius norm.",
+      "effect_on_target": "It fixes the norm used for preconditioner perturbation bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D157",
+      "name": "Matrix.zero",
+      "meaning": "The all-zero matrix.",
+      "effect_on_target": "It supplies zero perturbation matrices in certificate normalization conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D158",
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "meaning": "Extracts the uniform structure induced by a pseudometric space.",
+      "effect_on_target": "It contributes to the standard topology used for real convergence to zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D159",
+      "name": "Real.normedAddCommGroup",
+      "meaning": "The standard normed additive commutative group structure of the reals.",
+      "effect_on_target": "It supports real-valued big-O and Frobenius matrix norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D160",
+      "name": "Real.pseudoMetricSpace",
+      "meaning": "The standard real metric structure with distance |x-y|.",
+      "effect_on_target": "It underlies the topology in which theta tends to zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D161",
+      "name": "UniformSpace.toTopologicalSpace",
+      "meaning": "Extracts the topology induced by a uniform space.",
+      "effect_on_target": "It supplies the standard real neighborhood topology used by nhds 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D162",
+      "name": "instDecidableEqNat",
+      "meaning": "Decidable equality on natural numbers.",
+      "effect_on_target": "It decides whether a finite index has value zero in the definition of beta*e1.",
+      "status": "understood"
+    },
+    {
+      "id": "D163",
+      "name": "ite",
+      "meaning": "The if-then-else operation for a decidable proposition.",
+      "effect_on_target": "It makes beta*e1 equal beta in coordinate zero and zero in every other coordinate.",
+      "status": "understood"
+    },
+    {
+      "id": "D164",
+      "name": "nhds",
+      "meaning": "The neighborhood filter of a point in a topological space.",
+      "effect_on_target": "nhds 0 is the target filter in the assertion theta tends to zero.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "A natural number n.",
+      "An arbitrary type iota, a filter l on iota, and an instance asserting that l is not the bottom filter.",
+      "An n-dimensional system package containing n-by-n real matrices A, Ainv, MR, and MRinv and n-vectors b, xExact, and xInitial.",
+      "A right package over this system and filter, consisting of a run, a right solution algorithm, and its error-analysis certificate.",
+      "A flexible package over the same system and filter, consisting of a run, a flexible solution algorithm, and its error-analysis certificate.",
+      "In the conclusions, existential natural witnesses kR and kF, each constrained to equal the corresponding run's stored key dimension, and existential real-valued remainder functions supplied by the two asymptotic-bound assertions."
+    ],
+    "hypotheses": [
+      "The filter l is nonbottom.",
+      "The system package encodes n>0; two-sided inverse relations for A and Ainv and for MR and MRinv; a two-sided inverse relation between A*MRinv and MR*Ainv; MR is not the identity; b is nonzero; A*xExact=b; and the initial residual b-A*xInitial is nonzero.",
+      "Each right or flexible run encodes a stored key dimension k with 0<k<=n, a bivariate polynomial factor with nonnegative coefficients, and pointwise nonnegative functions ug, um, ua, etaR, and rhoAR.",
+      "Each run also encodes the stated augmented matrix relation, upper-Hessenberg structure, least-squares minimizer and perturbation bounds, injectivity of Z, preconditioner and matrix perturbation relations and bounds, positivity of ||Z*yHat||_2, the exact ratio rhoAR=|||Z||yHat|||_2/||Z*yHat||_2, and convergence of its scale theta to zero with 0<=theta<1 eventually.",
+      "The flexible algorithm encodes |deltaZ_ij|<=p(n,k) ug |Z_ij| and xHat=xInitial+(Z+deltaZ)yHat. Its certificate decomposes xHat-xExact into gmres, matrix, and remainder contributions, bounds the first two normalized norms by p(n,k) ug kappaAR kappaR and p(n,k) ua kappaA rhoAR, and makes the normalized remainder O_l(theta^2).",
+      "The right algorithm encodes |deltaV_ij|<=p(n,k) ug |V_ij|, ||deltaMRsol||_F<=p(n,k) um etaR ||MRinv||_F, and xHat=xInitial+(MRinv+deltaMRsol)(V+deltaV)yHat. Its certificate adds a separate reapplication contribution bounded in normalized norm by p(n,k) um etaR kappaR, alongside the same gmres and matrix bounds and an O_l(theta^2) normalized remainder."
+    ],
+    "conclusions": [
+      "There exists a natural number kR equal to the right run's key dimension such that 0<kR<=n and there exists rR:iota->Real with rR=O_l(thetaR^2) for which, eventually along l, ER(t) <= pR(n,kR)*((ugR(t)*kappaAR*kappaR + umR(t)*etaR(t)*kappaR) + uaR(t)*kappaA*rhoR(t)) + |rR(t)|.",
+      "There exists a natural number kF equal to the flexible run's key dimension such that 0<kF<=n and there exists rF:iota->Real with rF=O_l(thetaF^2) for which, eventually along l, EF(t) <= pF(n,kF)*(ugF(t)*kappaAR*kappaR + uaF(t)*kappaA*rhoF(t)) + |rF(t)|.",
+      "For every t in iota, the right leading expression satisfies the exact equality ((ugR(t)*kappaAR*kappaR + umR(t)*etaR(t)*kappaR) + uaR(t)*kappaA*rhoR(t)) = (ugR(t)*kappaAR*kappaR + uaR(t)*kappaA*rhoR(t)) + umR(t)*etaR(t)*kappaR."
+    ],
+    "mathematical_definitions": [
+      "An n-vector is a function Fin n -> Real, and an m-by-k matrix is a function Fin m -> Fin k -> Real.",
+      "The vector norm is ||x||_2=sqrt(sum_i x_i^2). Square-matrix condition factors use the induced Euclidean operator norm, while encoded preconditioner perturbations use the Frobenius norm.",
+      "Define kappaR=||MR||_2op||MRinv||_2op, kappaAR=||A*MRinv||_2op||MR*Ainv||_2op, and kappaA=||A||_2op||Ainv||_2op.",
+      "For a polynomial record c with degrees dN and dK, define p_c(n,k)=sum_{i=0}^{dN} sum_{j=0}^{dK} c_ij n^i k^j, where n and k are cast to real numbers and every c_ij is nonnegative.",
+      "For either package X, define EX(t)=||xHatX(t)-xExact||_2/||xExact||_2.",
+      "For either package X, define thetaX(t)=max(ugX(t)kappaAR, ugX(t)kappaR, umX(t)etaX(t)kappaR, uaX(t)kappaA rhoX(t), uaX(t)kappaAR kappaR).",
+      "The notation r=O_l(theta^2) means the real-valued remainder is big-O of t |-> theta(t)^2 along l; equivalently, its absolute value is eventually bounded by some fixed nonnegative constant times |theta(t)^2|.",
+      "The flexible leading quantity is ugF*kappaAR*kappaR + uaF*kappaA*rhoF. The right leading quantity is (ugR*kappaAR*kappaR + umR*etaR*kappaR) + uaR*kappaA*rhoR."
+    ],
+    "proposition_plain_english": "For every admissible system and every certified right and flexible package over a nonbottom filter, each package's stored positive key dimension, bounded by n, can be used as the polynomial argument in a certified eventual relative-forward-error estimate. The right estimate has three leading contributions: ug times the condition factors of A*MRinv and MR, um times etaR and the condition factor of MR, and ua times the condition factor of A and rhoAR. The flexible estimate has only the first and third of these contributions. In both cases the complete leading expression is multiplied by the package's explicitly evaluated nonnegative-coefficient polynomial p(n,k), and the inequality permits an absolute remainder that is O along l of the square of the five-term maximum theta. Finally, pointwise for the right run, its three-term leading expression is exactly the two-term flexible-form expression plus the omitted um*etaR*kappaR term."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The existential witnesses kR and kF are not freely chosen tuning parameters: each is forced by equality to be the corresponding run's already stored key dimension. Their positivity and upper bounds are already fields of the run packages.",
+    "The theorem is universally quantified only over inhabitants of highly constrained system, run, algorithm, and certificate types. If no such package exists for particular outer data, the implication-free universal statement is vacuous for those data.",
+    "The nonbottom assumption excludes the bottom filter, but the eventual conclusions still depend on the chosen filter and need not hold pointwise for every t.",
+    "The two error inequalities are one-sided eventual upper bounds. They do not assert an asymptotic equality, a lower bound, or a bound valid at every index.",
+    "The big-O constants are existential and unspecified. No explicit numerical threshold or convergence rate is given.",
+    "The polynomial factors are run data. Their coefficients are nonnegative, but the proposition imposes no uniform bound on their coefficients or degrees.",
+    "Real division in Lean is totalized. The relative-error expressions themselves contain no explicit denominator-nonzero premise, although the encoded equations b!=0 and A*xExact=b imply xExact!=0 in ordinary linear algebra.",
+    "The scale uses a maximum of five products without absolute values; their nonnegativity is supplied by the run package's pointwise assumptions and by nonnegativity of norms.",
+    "The proposition does not compare the right and flexible computed solutions, key dimensions, polynomial factors, or numerical bound sizes. They share only the system and filter.",
+    "The final equality concerns only the right run and is an algebraic rearrangement of real sums. It does not assert equivalence of the right and flexible algorithms or their bounds.",
+    "No probabilistic model, floating-point format, machine precision constant, iteration count outside the stored key dimension, or claim about attainability/sharpness is stated beyond the data and certificates encoded in the package types."
+  ],
+  "ambiguities": []
+}

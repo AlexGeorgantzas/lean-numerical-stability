@@ -1,0 +1,167 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P19-T3",
+  "trigger": [
+    "judge classifications differ",
+    "direct judge requested adjudication",
+    "round-trip judge requested adjudication",
+    "direct D019 is unclear",
+    "direct D031 is unclear",
+    "direct D040 is unclear",
+    "direct D052 is unclear",
+    "direct D076 is unclear",
+    "direct D089 is unclear",
+    "direct D106 is unclear",
+    "direct D133 is unclear",
+    "direct D153 is unclear",
+    "direct D164 is unclear",
+    "direct S08 is unclear",
+    "direct S11 is unclear",
+    "direct S14 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "The correct classification is not-faithful-weaker. Lean does not imply the paper result, but the paper implies the complete Lean proposition because Lean universally quantifies only over execution packages that already contain the required analysis certificates.",
+      "primary_evidence": "Theorems 3.3 and 3.4 and Appendices C-D derive the attainable bounds from the algorithmic models. By contrast, D030/D036 require D046/D050 analysis records, and D065/D067 require the error decompositions, all leading contribution bounds, and the second-order remainder property. D043 also stores an already positive keyDimension bounded by n."
+    },
+    {
+      "item": "direct judge requested adjudication",
+      "resolution": "The direct judge's paper-implies-Lean verdict is reversed to yes. The complete Lean proposition does not require the paper to construct a stored key dimension or either execution package; it says only that every already-certified pair of packages has the stated consequences.",
+      "primary_evidence": "D043 supplies keyDimension_pos and keyDimension_le. D065 and D067 supply precisely the component inequalities and O(scale^2) remainder needed to prove D019. D020 and D023 make the final envelope equality an algebraic rearrangement."
+    },
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "The round-trip judge's not-faithful-weaker classification and implication directions are upheld. Its rejection remains correct even though the induced-2 condition-number choice alone is not treated as a decisive failure.",
+      "primary_evidence": "The PDF derives an iteration through Theorem 3.1 and Appendix C, whereas the translated proposition assumes certified fixed-dimension packages. Consequently the translated proposition is true on a narrower, potentially empty domain and does not recover the paper's attainment theorem."
+    },
+    {
+      "item": "direct D019 is unclear",
+      "resolution": "Resolved as a paper mismatch. D019 invents an exact filtered semantics for the qualitative lesssim notation: an eventually valid inequality with an absolute remainder that is O(scale^2).",
+      "primary_evidence": "Section 2, PDF p. 6 (printed p. 5), says only that lesssim and approximately-equal are used when negligible second-order terms are dropped. It gives no filter, eventual quantifier, remainder function, or Big-O assertion. D019 explicitly requires all four."
+    },
+    {
+      "item": "direct D031 is unclear",
+      "resolution": "Resolved as a paper mismatch. The polynomial record fails to encode the source's low-degree restriction and additionally requires nonnegative coefficients, which the source does not specify.",
+      "primary_evidence": "Section 2, PDF p. 6 (printed p. 5), guarantees that c(n,k) is a polynomial of low degree but does not track its precise value. D049 permits arbitrary natural degrees and requires every coefficient to be nonnegative."
+    },
+    {
+      "item": "direct D040 is unclear",
+      "resolution": "Resolved as a paper mismatch. The exact IsBigO(scale^2) condition is one possible formal convention, not a proposition asserted by the PDF.",
+      "primary_evidence": "Section 2 and Appendix C state that negligible second-order terms are dropped. Equations (3.17) and (3.20) provide no exact remainder or asymptotic regime. D040 instead requires a specific filter-based Big-O relation."
+    },
+    {
+      "item": "direct D052 is unclear",
+      "resolution": "A literal mismatch is established, while the author's intended sign remains uncertain. Lean uses b-A*xInitial; displayed Algorithm 1 uses A*x0-b. The source does not reconcile this with its plus-correction formula.",
+      "primary_evidence": "Algorithm 1, PDF p. 4 (printed p. 3), displays r0=A*x0-b and xk=x0 plus a correction. Algorithm 2, PDF p. 7 (printed p. 6), suppresses x0 and does not resolve the sign. D052 defines b-A*xInitial."
+    },
+    {
+      "item": "direct D076 is unclear",
+      "resolution": "Resolved as a paper mismatch. Requiring theta to converge to zero and eventually lie in [0,1) replaces the paper's fixed qualitative theta much-less-than-one hypothesis with a stronger asymptotic-family assumption.",
+      "primary_evidence": "Equation (3.16), PDF p. 11 (printed p. 10), is a qualitative smallness condition on the five displayed quantities. D076 requires Filter.Tendsto theta l (nhds 0) and an eventual range condition."
+    },
+    {
+      "item": "direct D089 is unclear",
+      "resolution": "Resolved as unsupported task-specific structure. A filter is mathematically standard, but the paper's theorem has no filter-indexed execution family.",
+      "primary_evidence": "Section 2 treats um, ua, and ug as the arithmetics or unit roundoffs used by an execution, and Theorems 3.3-3.4 state fixed qualitative bounds. The Lean target binds an arbitrary Filter and uses it throughout all parameter families and conclusions."
+    },
+    {
+      "item": "direct D106 is unclear",
+      "resolution": "Resolved as a paper mismatch. Eventual validity along a precision filter is not the quantifier used by the paper's attainable-iteration conclusions.",
+      "primary_evidence": "Theorems 3.3 and 3.4 assert that a computed solution at some iteration k<=n satisfies a qualitative lesssim bound. D019 and D076 use Filter.Eventually over a separate index t."
+    },
+    {
+      "item": "direct D133 is unclear",
+      "resolution": "Resolved as a paper mismatch. IsBigO supplies an exact asymptotic remainder theorem that the source never states.",
+      "primary_evidence": "Appendix C explicitly drops second-order terms in (C.3), and the final equations retain lesssim notation. D133, through D040, requires norm-based Big-O with an unspecified but fixed asymptotic constant."
+    },
+    {
+      "item": "direct D153 is unclear",
+      "resolution": "Resolved as a paper mismatch. Tendsto makes the five-term condition scale vary and converge to zero, whereas the paper analyzes fixed arithmetic choices whose unit roundoffs are assumed substantially below one.",
+      "primary_evidence": "Section 2, PDF p. 6 (printed p. 5), describes um, ua, and ug as unspecified floating-point arithmetics or their unit roundoffs. D076 uses D153 to require convergence of a real-valued parameter family."
+    },
+    {
+      "item": "direct D164 is unclear",
+      "resolution": "Resolved as part of the unsupported asymptotic reinterpretation. The real neighborhood filter is standard, but nhds 0 has no role in the paper's theorem statement.",
+      "primary_evidence": "The paper supplies qualitative much-less-than notation without a topology or limiting variable. D164 is used by D076 to define convergence of theta to zero."
+    },
+    {
+      "item": "direct S08 is unclear",
+      "resolution": "Resolved as fail for literal algorithm linkage, with residual uncertainty about a likely source sign error. A faithfulness judgment cannot silently replace the displayed residual.",
+      "primary_evidence": "Algorithm 1 displays r0=A*x0-b while also displaying xk=x0 plus a correction. Lean's D052 uses b-A*xInitial and D047/D051 also add the correction to xInitial. Algorithm 2 does not settle the discrepancy."
+    },
+    {
+      "item": "direct S11 is unclear",
+      "resolution": "Resolved as fail. The Lean declaration models arbitrary real-valued asymptotic families and admitted perturbation certificates rather than the source's fixed standard-floating-point execution. Exceptional-value behavior remains unspecified by both sources.",
+      "primary_evidence": "Section 2 invokes the standard floating-point model and unit roundoffs substantially below one. D043 accepts functions ug, um, ua, etaR, and rhoAR, while D076 makes their combined scale tend to zero along an arbitrary filter."
+    },
+    {
+      "item": "direct S14 is unclear",
+      "resolution": "Resolved as fail. The exact quadratic Big-O remainder is not supplied by the PDF. Because Lean places this property inside mandatory analysis records, it narrows applicability rather than constituting genuine nonvacuous theorem strength.",
+      "primary_evidence": "Section 2 and Appendix C only say that negligible second-order terms are dropped. D065 and D067 assume normalized remainders satisfying D040 before the target theorem is applied."
+    },
+    {
+      "item": "S09 norm-specialization disagreement",
+      "resolution": "The induced-2 condition-number choice is a defensible explicit specialization and is not independently decisive. Finite-dimensional norm-equivalence factors can be absorbed into the qualitative c(n,k), although the PDF does not determine exact constants or smallness thresholds.",
+      "primary_evidence": "Section 2 defines kappaF, kappa2, and kappaF,2 and then says it writes generic kappa when differentiation is unnecessary because the norms are equivalent. D038-D041 consistently select induced-2 condition numbers."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "Lean asserts consequences only for already-inhabited right and flexible execution bundles whose stored analysis records contain the essential Appendix C/D estimates. It neither constructs such bundles from model (3.14) and condition (3.16) nor derives the well-conditioned-basis iteration supplied by Theorem 3.1. It therefore cannot recover the paper's general attainable-iteration results."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "For every pair of values quantified by the complete Lean proposition, D043 already supplies the witness dimensions and D065/D067 already supply the decompositions, component bounds, and O(scale^2) remainders. The two D019 conclusions follow from norm triangle inequalities, and the final envelope equality follows algebraically from D020 and D023. The proposition requires no existence of these packages, so it is a weaker conditional statement implied independently of the paper's additional content."
+    }
+  },
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The PDF does not reveal whether Algorithm 1's residual A*x0-b is intentional or a typographical reversal of the conventional b-A*x0.",
+    "The qualitative symbols lesssim and much-less-than and the phrase negligible second-order terms do not determine a unique exact remainder relation, threshold, or limiting regime.",
+    "Because rhoAR and condition (3.16) are written using k before the theorem introduces its existential iteration, the paper does not completely formalize whether smallness is required at the eventual witness or over all candidate iterations.",
+    "Generic kappa notation permits a 2-norm interpretation up to norm-equivalence and polynomial factors, but the source does not determine exact constants for that specialization."
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "assumed analysis and reduced applicability",
+      "evidence": "Appendices C-D derive the solution-error decompositions and first-order source bounds. Lean constructors D065 and D067 require those decompositions, the final component estimates, and second-order remainder properties as inputs to D046 and D050.",
+      "impact": "The target is a consequence-extraction theorem for already-certified packages and may be vacuous when no package exists; this makes it weaker, not genuinely stronger."
+    },
+    {
+      "severity": "critical",
+      "category": "attainable witness collapse",
+      "evidence": "Theorem 3.1 and Appendix C derive some k<=n with the required basis properties. Lean's witness is forced to equal run.keyDimension, whose positivity and upper bound are already fields of D043.",
+      "impact": "The substantive attainable-iteration conclusion is absent, so Lean cannot imply the paper."
+    },
+    {
+      "severity": "major",
+      "category": "invented asymptotic semantics",
+      "evidence": "The PDF uses qualitative lesssim and much-less-than notation after dropping terms. D019, D040, D076, D089, D106, D133, D153, and D164 introduce a filter, convergence to zero, eventual inequalities, and exact O(scale^2) remainders.",
+      "impact": "The numerical regime and logical relation differ from the source; because these properties are largely assumed in the bundles, they further restrict the theorem's domain."
+    },
+    {
+      "severity": "major",
+      "category": "extra package restrictions",
+      "evidence": "D028 requires a nonzero initial residual, D043 assumes fixed-k data including full rank of zHat and a positive rho denominator, and the target requires simultaneous right and flexible execution arguments.",
+      "impact": "The proposition does not cover all executions addressed separately by Theorems 3.3 and 3.4."
+    },
+    {
+      "severity": "major",
+      "category": "polynomial-factor mismatch",
+      "evidence": "Section 2 guarantees unspecified low-degree polynomials c(n,k). D049 allows arbitrary degrees and requires nonnegative coefficients.",
+      "impact": "The formal polynomial class neither preserves the low-degree guarantee nor follows the source's intentionally unspecified representation."
+    },
+    {
+      "severity": "minor",
+      "category": "residual sign mismatch",
+      "evidence": "Algorithm 1 displays A*x0-b, while D052 defines b-A*xInitial; both use xInitial plus a correction.",
+      "impact": "Lean does not literally match the displayed algorithm, although the paper may contain a sign error."
+    }
+  ],
+  "rationale": "The formulas for the five-entry condition, rhoAR, relative forward error, the right three-source envelope, the flexible two-source envelope, and the omitted reapplication term are recognizable. The complete proposition nevertheless assumes fixed-dimension execution and analysis packages containing the central estimates that the paper derives. Its witnesses merely expose stored fields, and it asserts no package existence for ordinary paper-admissible GMRES executions. Therefore Lean does not imply the paper. Conversely, every inhabited Lean input already contains enough evidence to derive the target, and the remaining identity is algebraic, so the paper implies this weaker conditional proposition. The correct classification is not-faithful-weaker."
+}
