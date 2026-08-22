@@ -80,6 +80,15 @@ noncomputable def p20SingleAccumUnderflowBound {m n q : ℕ}
 def p20MultiInputRoundingCoefficient (p : ℕ) (u : ℝ) : ℝ :=
   ((p : ℝ) + 1) * u ^ p
 
+/-- The input-rounding term in the single-word bound (3.26). -/
+def p20SingleInputRoundingCoefficient (u : ℝ) : ℝ :=
+  2 * u
+
+/-- The input-underflow coefficient in the single-word bound (3.26). -/
+noncomputable def p20SingleInputUnderflowCoefficient
+    (n : ℕ) (theta gmin : ℝ) : ℝ :=
+  4 * (n : ℝ) ^ 2 * theta⁻¹ * gmin
+
 /-- The accumulation-rounding term in the multiword bound (4.32). -/
 def p20MultiAccumRoundingCoefficient (n p : ℕ) (U : ℝ) : ℝ :=
   ((n : ℝ) + (p : ℝ) ^ 2) * U
@@ -610,5 +619,391 @@ structure P20Theorem41Execution (m n q p : ℕ) (ι : Type*)
     (l : Filter ι) where
   run : P20MultiwordRun m n q p ι
   analysis : P20MultiwordForwardAnalysis (l := l) run
+
+/-! ## Static Theorem 4.1 reconstruction -/
+
+/-- A fixed-instance interpretation of the paper's first-order comparison.
+The predicate classifying omitted terms is closed under the operations needed
+to combine the independently derived Section 4 remainders. -/
+structure P20FirstOrderSemantics where
+  secondOrder : ℝ → Prop
+  zero_secondOrder : secondOrder 0
+  add_secondOrder : ∀ {x y}, secondOrder x → secondOrder y →
+    secondOrder (x + y)
+  abs_secondOrder : ∀ {x}, secondOrder x → secondOrder |x|
+
+/-- The fixed, pointwise meaning of `lhs lesssim rhs`: an exact inequality
+after retaining one scalar term classified as second order. -/
+def p20FirstOrderLe (semantics : P20FirstOrderSemantics)
+    (lhs rhs : ℝ) : Prop :=
+  ∃ remainder : ℝ,
+    semantics.secondOrder remainder ∧ lhs ≤ rhs + |remainder|
+
+/-- The integer parameters of one fixed binary format. -/
+structure P20StaticBinaryFormat where
+  precision : ℕ
+  minExponent : ℤ
+  maxExponent : ℤ
+  hasSubnormals : Bool
+  precision_pos : 0 < precision
+  exponent_range_nonempty : minExponent ≤ maxExponent
+
+/-- The finite real values represented by a fixed binary format. Normal
+significands have `precision` bits. When enabled, subnormals use the same
+spacing at `minExponent` and a shorter positive significand. -/
+def p20StaticRepresentable (format : P20StaticBinaryFormat)
+    (x : ℝ) : Prop :=
+  x = 0 ∨
+    ∃ sign : ℝ, (sign = 1 ∨ sign = -1) ∧
+      ∃ significand : ℕ, ∃ exponent : ℤ,
+        x = sign * (significand : ℝ) *
+            (2 : ℝ) ^
+              (exponent - (format.precision - 1 : ℕ)) ∧
+          ((2 ^ (format.precision - 1) ≤ significand ∧
+              significand < 2 ^ format.precision ∧
+              format.minExponent ≤ exponent ∧
+              exponent ≤ format.maxExponent) ∨
+            (format.hasSubnormals = true ∧
+              exponent = format.minExponent ∧
+              0 < significand ∧
+              significand < 2 ^ (format.precision - 1)))
+
+/-- Model 1 at one fixed pair of formats. The inherited error equations are
+supplemented with the source's default round-to-nearest meaning. The
+`NoOverflow` predicates delimit the operations on which rounding is defined;
+the algorithm below certifies that every operation it executes lies there. -/
+structure P20StaticNearestModel1 where
+  inputFormat : P20StaticBinaryFormat
+  accumulationFormat : P20StaticBinaryFormat
+  accumulation_precision :
+    inputFormat.precision ≤ accumulationFormat.precision
+  accumulation_range :
+    accumulationFormat.minExponent ≤ inputFormat.minExponent ∧
+      inputFormat.maxExponent ≤ accumulationFormat.maxExponent
+  inputRound : ℝ → ℝ
+  inputDelta : ℝ → ℝ
+  inputEta : ℝ → ℝ
+  inputNoOverflow : ℝ → Prop
+  input_rounding_equation : ∀ {x}, inputNoOverflow x →
+    inputRound x = x * (1 + inputDelta x) + inputEta x
+  input_delta_bound : ∀ {x}, inputNoOverflow x →
+    |inputDelta x| ≤ p20UnitRoundoff inputFormat.precision
+  input_eta_bound : ∀ {x}, inputNoOverflow x →
+    |inputEta x| ≤
+      p20UnderflowEnvelope inputFormat.precision inputFormat.minExponent
+        inputFormat.hasSubnormals
+  input_error_exclusive : ∀ {x}, inputNoOverflow x →
+    inputEta x * inputDelta x = 0
+  input_round_representable : ∀ {x}, inputNoOverflow x →
+    p20StaticRepresentable inputFormat (inputRound x)
+  input_round_nearest : ∀ {x}, inputNoOverflow x →
+    ∀ {y}, p20StaticRepresentable inputFormat y →
+      |inputRound x - x| ≤ |y - x|
+  accumulationRound : ℝ → ℝ
+  accumulationDelta : ℝ → ℝ
+  accumulationEta : ℝ → ℝ
+  accumulationNoOverflow : ℝ → Prop
+  accumulation_rounding_equation : ∀ {x}, accumulationNoOverflow x →
+    accumulationRound x =
+      x * (1 + accumulationDelta x) + accumulationEta x
+  accumulation_delta_bound : ∀ {x}, accumulationNoOverflow x →
+    |accumulationDelta x| ≤
+      p20UnitRoundoff accumulationFormat.precision
+  accumulation_eta_bound : ∀ {x}, accumulationNoOverflow x →
+    |accumulationEta x| ≤
+      p20UnderflowEnvelope accumulationFormat.precision
+        accumulationFormat.minExponent accumulationFormat.hasSubnormals
+  accumulation_error_exclusive : ∀ {x}, accumulationNoOverflow x →
+    accumulationEta x * accumulationDelta x = 0
+  accumulation_round_representable : ∀ {x}, accumulationNoOverflow x →
+    p20StaticRepresentable accumulationFormat (accumulationRound x)
+  accumulation_round_nearest : ∀ {x}, accumulationNoOverflow x →
+    ∀ {y}, p20StaticRepresentable accumulationFormat y →
+      |accumulationRound x - x| ≤ |y - x|
+
+/-- Input-format unit roundoff in the fixed Model-1 contract. -/
+noncomputable def p20StaticInputUnitRoundoff
+    (model : P20StaticNearestModel1) : ℝ :=
+  p20UnitRoundoff model.inputFormat.precision
+
+/-- Accumulation-format unit roundoff in the fixed Model-1 contract. -/
+noncomputable def p20StaticAccumUnitRoundoff
+    (model : P20StaticNearestModel1) : ℝ :=
+  p20UnitRoundoff model.accumulationFormat.precision
+
+/-- Input-format underflow envelope in the fixed Model-1 contract. -/
+noncomputable def p20StaticInputUnderflowEnvelope
+    (model : P20StaticNearestModel1) : ℝ :=
+  p20UnderflowEnvelope model.inputFormat.precision
+    model.inputFormat.minExponent model.inputFormat.hasSubnormals
+
+/-- Accumulation-format underflow envelope in the fixed Model-1 contract. -/
+noncomputable def p20StaticAccumUnderflowEnvelope
+    (model : P20StaticNearestModel1) : ℝ :=
+  p20UnderflowEnvelope model.accumulationFormat.precision
+    model.accumulationFormat.minExponent
+    model.accumulationFormat.hasSubnormals
+
+/-- The fixed threshold `theta = min(fmax, sqrt(Fmax / n))`. -/
+noncomputable def p20StaticScalingThreshold (n : ℕ)
+    (model : P20StaticNearestModel1) : ℝ :=
+  p20ScalingThreshold n
+    (p20MaxFinite model.inputFormat.precision
+      model.inputFormat.maxExponent)
+    (p20MaxFinite model.accumulationFormat.precision
+      model.accumulationFormat.maxExponent)
+
+/-- A rounded left fold, used only after every exact product has itself been
+rounded to the accumulation format. -/
+def p20RoundedFoldFrom (round : ℝ → ℝ) : ℝ → List ℝ → ℝ
+  | acc, [] => acc
+  | acc, term :: terms =>
+      p20RoundedFoldFrom round (round (acc + term)) terms
+
+/-- Every addition argument visited by `p20RoundedFoldFrom` is in the
+no-overflow domain. -/
+def p20RoundedFoldNoOverflowFrom (allowed : ℝ → Prop)
+    (round : ℝ → ℝ) : ℝ → List ℝ → Prop
+  | _, [] => True
+  | acc, term :: terms =>
+      allowed (acc + term) ∧
+        p20RoundedFoldNoOverflowFrom allowed round
+          (round (acc + term)) terms
+
+/-- An accumulation-format inner product that rounds each multiplication and
+then each addition, as required by equation (2.4). -/
+noncomputable def p20StaticAccumulatedInnerProduct {n : ℕ}
+    (model : P20StaticNearestModel1) (x y : Fin n → ℝ) : ℝ :=
+  p20RoundedFoldFrom model.accumulationRound 0
+    ((List.ofFn fun k : Fin n =>
+      model.accumulationRound (x k * y k)))
+
+/-- No overflow occurs in either the multiplications or the additions of one
+executed accumulation-format inner product. -/
+def p20StaticInnerProductNoOverflow {n : ℕ}
+    (model : P20StaticNearestModel1) (x y : Fin n → ℝ) : Prop :=
+  (∀ k, model.accumulationNoOverflow (x k * y k)) ∧
+    p20RoundedFoldNoOverflowFrom model.accumulationNoOverflow
+      model.accumulationRound 0
+        (List.ofFn fun k : Fin n =>
+          model.accumulationRound (x k * y k))
+
+/-- The triangular computation in (4.31). Each retained matrix-product inner
+product is executed by `p20StaticAccumulatedInnerProduct`, and the retained
+word products are then added in the accumulation format. The powers of `u`
+are exact binary scalings. -/
+noncomputable def p20StaticRetainedWordProduct {m n q p : ℕ}
+    (model : P20StaticNearestModel1) (u : ℝ)
+    (Aword : Fin p → P20Matrix m n)
+    (Bword : Fin p → P20Matrix n q) : P20Matrix m q :=
+  fun row col =>
+    p20RoundedFoldFrom model.accumulationRound 0
+      ((p20RetainedWordPairs p).map (fun pair =>
+        u ^ (pair.1.val + pair.2.val) *
+          p20StaticAccumulatedInnerProduct model (Aword pair.1 row)
+            (fun k => Bword pair.2 k col)))
+
+/-- One fixed execution of equations (4.29)-(4.31). It contains no propagated
+error estimate or final theorem bound. -/
+structure P20StaticMultiwordRun (m n q p : ℕ) where
+  dimension_pos : 0 < m ∧ 0 < n ∧ 0 < q
+  word_count_pos : 0 < p
+  model : P20StaticNearestModel1
+  A : P20Matrix m n
+  B : P20Matrix n q
+  rowScale : Fin m → ℝ
+  columnScale : Fin q → ℝ
+  row_scaling_rule : ∀ i,
+    p20MaximalPowerTwoScale (p20StaticScalingThreshold n model)
+      (p20InfNormVec (A i)) (rowScale i)
+  column_scaling_rule : ∀ j,
+    p20MaximalPowerTwoScale (p20StaticScalingThreshold n model)
+      (p20InfNormVec (fun i => B i j)) (columnScale j)
+  scaled_A_bound : ∀ i j,
+    |p20ScaleRows rowScale A i j| ≤ p20StaticScalingThreshold n model
+  scaled_B_bound : ∀ i j,
+    |p20ScaleColumns B columnScale i j| ≤
+      p20StaticScalingThreshold n model
+  Aword : Fin p → P20Matrix m n
+  Bword : Fin p → P20Matrix n q
+  Aword_equation : ∀ (i : Fin p) (row : Fin m) (col : Fin n),
+    Aword i row col = model.inputRound
+      ((p20ScaleRows rowScale A row col -
+          Finset.sum
+            (Finset.univ.filter (fun k : Fin p => k.val < i.val))
+            (fun k => p20StaticInputUnitRoundoff model ^ k.val *
+              Aword k row col)) /
+        p20StaticInputUnitRoundoff model ^ i.val)
+  Aword_no_overflow : ∀ (i : Fin p) (row : Fin m) (col : Fin n),
+    model.inputNoOverflow
+      ((p20ScaleRows rowScale A row col -
+          Finset.sum
+            (Finset.univ.filter (fun k : Fin p => k.val < i.val))
+            (fun k => p20StaticInputUnitRoundoff model ^ k.val *
+              Aword k row col)) /
+        p20StaticInputUnitRoundoff model ^ i.val)
+  Bword_equation : ∀ (i : Fin p) (row : Fin n) (col : Fin q),
+    Bword i row col = model.inputRound
+      ((p20ScaleColumns B columnScale row col -
+          Finset.sum
+            (Finset.univ.filter (fun k : Fin p => k.val < i.val))
+            (fun k => p20StaticInputUnitRoundoff model ^ k.val *
+              Bword k row col)) /
+        p20StaticInputUnitRoundoff model ^ i.val)
+  Bword_no_overflow : ∀ (i : Fin p) (row : Fin n) (col : Fin q),
+    model.inputNoOverflow
+      ((p20ScaleColumns B columnScale row col -
+          Finset.sum
+            (Finset.univ.filter (fun k : Fin p => k.val < i.val))
+            (fun k => p20StaticInputUnitRoundoff model ^ k.val *
+              Bword k row col)) /
+        p20StaticInputUnitRoundoff model ^ i.val)
+  accumulation_no_overflow : ∀ (i j : Fin p),
+    i.val + j.val < p → ∀ (row : Fin m) (col : Fin q),
+      p20StaticInnerProductNoOverflow model (Aword i row)
+        (fun k => Bword j k col)
+  retained_sum_no_overflow : ∀ (row : Fin m) (col : Fin q),
+    p20RoundedFoldNoOverflowFrom model.accumulationNoOverflow
+      model.accumulationRound 0
+        ((p20RetainedWordPairs p).map (fun pair =>
+          p20StaticInputUnitRoundoff model ^
+              (pair.1.val + pair.2.val) *
+            p20StaticAccumulatedInnerProduct model (Aword pair.1 row)
+              (fun k => Bword pair.2 k col)))
+  computed : P20Matrix m q
+  computed_equation :
+    computed = p20UnscaleProduct rowScale columnScale
+      (p20StaticRetainedWordProduct model
+        (p20StaticInputUnitRoundoff model) Aword Bword)
+
+/-- Reconstruct `A` from all p words and undo the row scaling. -/
+noncomputable def p20StaticAWordApproximation {m n q p : ℕ}
+    (run : P20StaticMultiwordRun m n q p) : P20Matrix m n :=
+  fun row col =>
+    (run.rowScale row)⁻¹ *
+      ∑ i : Fin p,
+        p20StaticInputUnitRoundoff run.model ^ i.val *
+          run.Aword i row col
+
+/-- Reconstruct `B` from all p words and undo the column scaling. -/
+noncomputable def p20StaticBWordApproximation {m n q p : ℕ}
+    (run : P20StaticMultiwordRun m n q p) : P20Matrix n q :=
+  fun row col =>
+    (∑ i : Fin p,
+        p20StaticInputUnitRoundoff run.model ^ i.val *
+          run.Bword i row col) *
+      (run.columnScale col)⁻¹
+
+/-- The retained p-word product with exact real inner products. -/
+noncomputable def p20StaticExactRetainedWordProduct {m n q p : ℕ}
+    (run : P20StaticMultiwordRun m n q p) : P20Matrix m q :=
+  p20UnscaleProduct run.rowScale run.columnScale
+    (fun row col =>
+      ∑ i : Fin p,
+        Finset.sum
+          (Finset.univ.filter (fun j : Fin p => i.val + j.val < p))
+          (fun j =>
+            p20StaticInputUnitRoundoff run.model ^ (i.val + j.val) *
+              (run.Aword i * run.Bword j) row col))
+
+/-- The word products omitted by the triangular condition `i+j<p`. -/
+noncomputable def p20StaticOmittedWordTail {m n q p : ℕ}
+    (run : P20StaticMultiwordRun m n q p) : P20Matrix m q :=
+  p20UnscaleProduct run.rowScale run.columnScale
+    (fun row col =>
+      ∑ i : Fin p,
+        Finset.sum
+          (Finset.univ.filter (fun j : Fin p => p ≤ i.val + j.val))
+          (fun j =>
+            p20StaticInputUnitRoundoff run.model ^ (i.val + j.val) *
+              (run.Aword i * run.Bword j) row col))
+
+/-- The accumulation-format error of the actually executed retained product. -/
+noncomputable def p20StaticAccumulationError {m n q p : ℕ}
+    (run : P20StaticMultiwordRun m n q p) : P20Matrix m q :=
+  run.computed - p20StaticExactRetainedWordProduct run
+
+/-- The fixed normwise forward error in Theorem 4.1. -/
+noncomputable def p20StaticMultiwordForwardError {m n q p : ℕ}
+    (run : P20StaticMultiwordRun m n q p) : ℝ :=
+  p20InfNormRect (run.computed - run.A * run.B)
+
+/-- The decomposition coefficient zeta from equation (4.20). -/
+noncomputable def p20StaticZeta {m n q p : ℕ}
+    (run : P20StaticMultiwordRun m n q p) : ℝ :=
+  max (p20StaticInputUnitRoundoff run.model ^ p)
+    (2 * (n : ℝ) * p20StaticInputUnitRoundoff run.model ^ (p - 1) *
+      (p20StaticScalingThreshold n run.model)⁻¹ *
+        p20StaticInputUnderflowEnvelope run.model)
+
+/-- The omitted-product coefficient in equation (4.26). -/
+def p20StaticOmittedCoefficient (p : ℕ) (u : ℝ) : ℝ :=
+  ((p : ℝ) - 1) * u ^ p
+
+/-- The final accumulation coefficient after applying the source's bound on
+the number `r` of possible underflows in one output coefficient. -/
+noncomputable def p20StaticAccumulationCoefficient
+    (n p : ℕ) (U theta Gmin : ℝ) : ℝ :=
+  p20MultiAccumRoundingCoefficient n p U +
+    p20MultiAccumUnderflowCoefficient n p theta Gmin
+
+/-- The unsimplified coefficient in (4.27), before substituting the bound on
+the possible-underflow count `r`. -/
+noncomputable def p20StaticRawAccumulationCoefficient
+    (n p r : ℕ) (U theta Gmin : ℝ) : ℝ :=
+  p20MultiAccumRoundingCoefficient n p U +
+    4 * (r : ℝ) * (n : ℝ) * (theta⁻¹) ^ 2 * Gmin
+
+/-- The source-local Section 4 estimates used before Theorem 4.1. This stores
+the matrix and retained-product decompositions needed to derive (4.21)-(4.25),
+the two zeta bounds, and the separate pre-theorem estimates (4.26)-(4.27). It
+does not contain (4.28), (4.32), the collected four-term coefficient, or a
+final forward-error bound. -/
+structure P20StaticSection4Derivation
+    (semantics : P20FirstOrderSemantics) {m n q p : ℕ}
+    (run : P20StaticMultiwordRun m n q p) where
+  AError : P20Matrix m n
+  BError : P20Matrix n q
+  A_decomposition :
+    run.A = p20StaticAWordApproximation run + AError
+  B_decomposition :
+    run.B = p20StaticBWordApproximation run + BError
+  A_error_bound :
+    p20InfNormRect AError ≤ p20StaticZeta run * p20InfNormRect run.A
+  B_error_bound :
+    p20InfNormRect BError ≤ p20StaticZeta run * p20InfNormRect run.B
+  retained_partition :
+    p20StaticExactRetainedWordProduct run =
+      p20StaticAWordApproximation run *
+          p20StaticBWordApproximation run -
+        p20StaticOmittedWordTail run
+  omittedRemainder : ℝ
+  omitted_remainder_second_order :
+    semantics.secondOrder omittedRemainder
+  omitted_tail_bound :
+    p20InfNormRect (p20StaticOmittedWordTail run) ≤
+      p20NormwiseEnvelope
+          (p20StaticOmittedCoefficient p
+            (p20StaticInputUnitRoundoff run.model)) run.A run.B +
+        |omittedRemainder|
+  accumulationRemainder : ℝ
+  accumulation_remainder_second_order :
+    semantics.secondOrder accumulationRemainder
+  underflowCount : ℕ
+  underflow_count_bound :
+    (underflowCount : ℝ) ≤
+      (n : ℝ) * (p : ℝ) * ((p : ℝ) + 1) / 2
+  accumulation_error_bound :
+    p20InfNormRect (p20StaticAccumulationError run) ≤
+      p20NormwiseEnvelope
+          (p20StaticRawAccumulationCoefficient n p underflowCount
+            (p20StaticAccumUnitRoundoff run.model)
+            (p20StaticScalingThreshold n run.model)
+            (p20StaticAccumUnderflowEnvelope run.model)) run.A run.B +
+        |accumulationRemainder|
+  quadratic_second_order :
+    semantics.secondOrder
+      (p20StaticZeta run ^ 2 * p20InfNormRect run.A *
+        p20InfNormRect run.B)
 
 end HighamBench

@@ -95,7 +95,7 @@ the `theorem` command.
 | `P19-T3` | `EQN`, `TXT` | none | Equations (3.17) and (3.20) give the two envelopes, and Remark 4 identifies the removed preconditioner-reapplication term. |
 | `P20-T1` | `EQN`, `TXT` | none | Equations (3.1), (3.2), and (3.4a) give the diagonal scaling, threshold, and interval; prose requires power-of-two factors and states the maximum-coefficient consequence. |
 | `P20-T2` | `EQN` | none | The selected complete scaled-input rounding and underflow bound is equation (3.13). |
-| `P20-T3` | `THM` | Theorem 4.1 | The selected result is Theorem 4.1: equations (4.29)-(4.31) define the scaled p-word computation and (4.32) gives its narrow-range normwise forward-error bound; (4.33) supplies the range-free comparison. |
+| `P20-T3` | `THM` | Theorem 4.1 | The selected result is Theorem 4.1: equations (4.29)-(4.31) define the fixed round-to-nearest scaled p-word computation and (4.32) gives its narrow-range normwise forward-error bound; (4.33) and the following discussion supply the range-free and order-`u^(p-1)` comparisons. |
 
 These assignments are ordinary task metadata. They follow the same rules and
 may be reviewed in the same way for every paper entry during construction.

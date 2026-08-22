@@ -1,77 +1,89 @@
 # P20-T3 context
 
-Selected result: Theorem 4.1, especially equations (4.29)--(4.32), on
-physical PDF page 11 (journal page B795). Equation (4.33) on the same page is
-the range-unrestricted comparator.
+Selected result: Theorem 4.1 and equations (4.29)--(4.33), on physical PDF
+pages 11--12 (journal pages B795--B796). The supporting derivation is
+equations (4.18)--(4.28) on physical pages 10--11 (B794--B795).
 
 The theorem concerns real matrices `A : R^(m x n)` and `B : R^(n x q)`, with
 positive dimensions and a positive number `p` of low-precision words. The
-exact reference product is `A * B`; the quantity bounded in (4.32) is the
-matrix infinity norm of the actual computed result minus that exact product.
+exact reference product is `A * B`. Equation (4.32) bounds the induced
+row-sum infinity norm of the actual computed result minus this product.
 
-`P20Model1` records the mixed-precision MMA model from physical pages 2--3
-(B786--B787). Its binary input and accumulation formats determine `u`, `U`,
-`fmax`, `Fmax`, `gmin`, and `Gmin`. The accumulation precision and exponent
-range contain those of the input format. The input- and accumulation-rounding
-maps satisfy (2.3) and (2.4): each error is either a bounded relative error or
-a bounded underflow error, but not both. The maps represent operations for
-which overflow does not occur. The formal model uses the paper's default
-round-to-nearest case. The directed-mode doubling remark after (2.4) is not
-separately parameterized in this task.
+`P20StaticNearestModel1` is the fixed-computation form of Model 1 from
+physical pages 2--3 (B786--B787). Its input and accumulation binary formats
+determine `u`, `U`, `fmax`, `Fmax`, `gmin`, and `Gmin`; the accumulation
+precision and exponent range contain those of the input format. Each rounding
+map returns a nearest representable value on its explicit no-overflow domain
+and satisfies (2.3) or (2.4), including the mutually exclusive relative and
+underflow errors. This task selects the paper's default round-to-nearest case.
+The directed-rounding variant requires the paper's separate doubling rule and
+is not claimed by the target.
 
-The scaling threshold is not arbitrary:
+The scaling threshold is exactly
 
 `theta = min(fmax, sqrt(Fmax / n))`.
 
-The diagonal entries of `Lambda` and `M` are positive powers of two.
-`p20MaximalPowerTwoScale` records both endpoints of (3.4a)--(3.4b), because
-the derivation of Theorem 4.1 uses the lower endpoint even though the printed
-theorem repeats only the upper elementwise bound. A zero row or column uses
-the explicit harmless factor `1`; the paper leaves that convention unstated.
-Every element of `Lambda A` and `B M` is bounded by `theta`.
+The row and column factors satisfy the maximal power-of-two intervals
+(3.4a)--(3.4b), not just the printed upper bound. A zero row or column uses
+factor `1`, the harmless convention left implicit by the paper. Every scaled
+entry is bounded by `theta`.
 
-`P20MultiwordRun` then records the computation itself. `Aword` and `Bword`
-satisfy the rounded residual recurrences (4.29)--(4.30), with indices
-`0,...,p-1` and rounding to the input format. `p20RetainedWordProduct` retains
-exactly the pairs `i+j<p`, weights each accumulation-format inner product by
-`u^(i+j)`, and `p20UnscaleProduct` applies `Lambda^(-1)` and `M^(-1)` as in
-(4.31). Thus `run.computed` is linked to the source algorithm rather than
-being an arbitrary matrix.
+`P20StaticMultiwordRun` records one execution of (4.29)--(4.31). The `p` words
+satisfy the complete input-rounded residual recurrences. The triangular sum
+retains exactly the pairs `i+j<p` and weights them by `u^(i+j)`. Every retained
+inner product rounds each multiplication and then each addition in the
+accumulation format. The retained word products are also added in that format,
+and the run supplies no-overflow evidence for all these operations. The
+power-of-two weights and inverse scaling are exact, as in the source's
+high-precision external-storage setup. Thus `run.computed` is linked to the
+paper's algorithm rather than being an arbitrary matrix.
 
-The paper's derivation (4.18)--(4.28) separates four first-order error sources:
+`P20StaticSection4Derivation` exposes only the source-local results preceding
+Theorem 4.1:
 
-- input rounding or truncation: `(p+1)u^p`;
+- the two decompositions and `zeta` bounds in (4.18)--(4.20);
+- the retained/omitted partition from which (4.21)--(4.25) is derived;
+- the omitted-product estimate (4.26);
+- the raw accumulation estimate (4.27), its underflow count `r`, and
+  `r <= np(p+1)/2`; and
+- the quadratic `zeta^2` term shown in (4.28).
+
+It does not contain equation (4.32), its collected four-term coefficient, or
+a final forward-error certificate. The target must use matrix infinity-norm
+submultiplicativity and the triangle inequality, bound `zeta` by the sum of
+its two branches, substitute the bound on `r`, combine the omitted and
+accumulation estimates, and place the quadratic and local omitted terms into
+the explicit second-order remainder.
+
+`p20FirstOrderLe` gives the paper's informal `lesssim` a fixed, pointwise
+meaning: an exact inequality after adding the absolute value of a term
+classified as second order. It has no arbitrary filter, eventual quantifier,
+or unrelated asymptotic scale.
+
+The derived coefficient in (4.32) has all four source terms:
+
+- input rounding: `(p+1)u^p`;
 - input underflow: `4 n u^(p-1) theta^(-1) gmin`;
-- accumulation rounding: `(n+p^2)U`;
+- accumulation rounding: `(n+p^2)U`; and
 - accumulation underflow: `2 p(p+1)n^2 theta^(-2) Gmin`.
 
-`P20MultiwordErrorData` and `P20MultiwordForwardAnalysis` are the
-proof-carrying form of that derivation. They expose the reconstructed word
-sums, the exact retained product, the omitted tail, and the input and
-accumulation errors. The split error parts must vanish whenever the matching
-Model-1 relative- or underflow-error function vanishes. The four contribution
-matrices are fixed formulas from those objects, and the remainder is defined
-as the exact residual after subtracting them from the actual forward-error
-matrix. Each contribution has the corresponding source bound, and the fixed
-remainder norm must be second order. The structures do not assume (4.32).
+The second target conclusion is itself a forward-error statement: it rewrites
+the (4.32) right-hand side as the range-free (4.33) envelope plus the two
+underflow envelopes. The third makes the discussion on B796 precise: relative
+to the single-word input terms `2u` and `4n^2 theta^(-1)gmin`, the two
+multiword input terms both contain the factor `u^(p-1)` (up to the displayed
+dimension and word-count constants).
 
-Equations (4.26)--(4.33) use an undefined `lesssim`, and (4.28) contains the
-quadratic term omitted from (4.32). `p20FirstOrderLeAt` therefore gives this a
-precise first-order meaning: the displayed inequality holds along a nontrivial
-precision filter with an additive remainder whose norm is `O(scale^2)`. The
-target derives (4.32) by the matrix infinity-norm triangle inequality and the
-four component bounds.
+There is a source typo in that prose: B796 calls the second single-word term
+`4n theta^(-1)gmin`, while equation (3.26) on B791 displays
+`4n^2 theta^(-1)gmin`. The formal comparison follows the displayed equation,
+so it states `n * multiwordInputUnderflow = u^(p-1) *
+singlewordInputUnderflow`. This preserves the paper's qualitative
+order-`u^(p-1)` conclusion without silently choosing the prose's missing
+factor of `n`.
 
-The target also states the literal coefficient comparison with (4.33): the
-narrow-range coefficient is the range-free coefficient plus the two
-underflow coefficients. This secondary identity compares the displayed
-right-hand sides only; it is not asserted to be an exact relation between the
-two `lesssim` error bounds, and the old equality/iff/strictness claims have
-been removed.
-
-All matrices and rounding witnesses are finite real objects. NaNs and
-infinities are outside the model. Underflow is included through `gmin` and
-`Gmin`; overflow is excluded on the operations represented by Model 1 and by
-the source scaling assumptions. A concrete one-by-one, one-word zero-matrix
-execution with identity rounding validates that the formal assumptions are
-jointly satisfiable.
+All arithmetic values are finite reals. NaNs and infinities are outside the
+model. Underflow is included through `gmin` and `Gmin`; overflow is excluded
+for every represented rounding operation. A concrete one-by-one, one-word
+zero-matrix model, run, and Section 4 derivation establish that the hypotheses
+are jointly satisfiable.

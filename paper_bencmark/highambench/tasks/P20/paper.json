@@ -53,7 +53,7 @@
     },
     {
       "candidate": "standalone multiword recursion (4.8)-(4.20)",
-      "reason": "This induction is supporting machinery rather than the selected conclusion. Its decomposition consequences and the subsequent error propagation are represented inside the proof-carrying execution for T3, whose target is Theorem 4.1."
+      "reason": "This induction is supporting machinery rather than the selected conclusion. Its decomposition consequences and the pre-theorem estimates through (4.27) are represented by the fixed Section 4 derivation used by T3, whose target is Theorem 4.1."
     },
     {
       "candidate": "Figures 5.1-5.2 and the large-n divergence discussion",
@@ -79,7 +79,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 4.1: the actual scaled p-word computation (4.29)-(4.31) satisfies the four-term first-order normwise forward-error bound (4.32), with (4.33) identifying the range-free terms.",
+      "decision": "Use Theorem 4.1: the actual fixed round-to-nearest scaled p-word computation (4.29)-(4.31), with multiplication and addition rounded in the accumulation format, satisfies (4.32) from the pre-theorem Section 4 estimates. Also formalize the (4.33) envelope difference and the post-(4.33) order-u^(p-1) comparison.",
       "task_id": "P20-T3",
       "theorem_name": "p20_t3_multiword_forward_error"
     }
