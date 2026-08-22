@@ -1,66 +1,70 @@
 # Faithfulness audit: P20-T3
 
-- Classification: `not-faithful-different`
+- Classification: `not-faithful-weaker`
 - Accepted as paper-faithful: `false`
 - Adjudicated: `true`
-- Target SHA-256: `bed58eaf44970ecf9a18a1418f57786ae9f1f8abd20e7254aaf9ab0c7ad0749b`
+- Target SHA-256: `dcc89a9a1a76d2083786647d8d7cf10e9b1dab20ab322d5411f89cd367b38005`
 - Paper SHA-256: `ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2`
 
 ## Decision
 
-The declaration correctly preserves the real matrix dimensions, positive word count within runs, maximal integer-power-of-two scaling, theta, triangular indices, four displayed coefficients, exact AB target, induced infinity norm, and normwise forward-error notion. Those matches do not overcome the substantive differences in hypotheses, quantifier scope, operators, algorithm, floating-point model, relation strength, higher-order treatment, and nonvacuity. The analysis certificate is a restriction rather than genuine theorem strength, while the abstract model and filter family also generalize in unsupported directions. Consequently neither statement implies the other under their intended semantics, so the correct classification is not-faithful-different.
+The declaration accurately models Model 1, the weighted recurrences, retained pairs, infinity norm, maximal scaling used by the derivation, and all four coefficients of (4.32). Its decisive logical defect is that P20StaticSection4Derivation turns the paper's substantive derivation into an optional antecedent, while P20FirstOrderSemantics gives no numerical meaning to higher-order smallness. The second bound is only a regrouping of (4.32), not (4.33). Concrete execution choices are acceptable specializations but merely narrow applicability. Thus the paper entails the restricted conditional declaration, while the declaration does not entail the paper theorem, yielding not-faithful-weaker rather than stronger or equivalent.
 
 ## Implications
 
-- **Lean implies paper:** `no`. The Lean declaration covers only runs already carrying the four desired source bounds and a second-order certificate, and its computed inner products use exact products with rounded additions. It therefore does not establish Theorem 4.1 for every paper-valid Model 1 execution.
-- **Paper implies lean:** `no`. The paper treats fixed computations under Model 1 and does not supply an arbitrary filter-indexed certified execution, a uniform Big-O remainder, or a result for the declaration's exact-product accumulation algorithm and broader abstract rounding maps.
+- **Lean implies paper:** `no`. Lean does not establish that a modeled run has a Section 4 derivation certificate, permits remainder predicates with no smallness meaning, covers only a concrete restricted execution, and does not state the standalone range-unrestricted bound (4.33). It therefore cannot recover the paper theorem.
+- **Paper implies lean:** `yes`. For the intended maximal-scaling specialization, the paper derives the facts placed in P20StaticSection4Derivation and hence entails the target's conditional regrouped bounds. The remaining two conjuncts are algebraic identities for positive p. The target demands less because it never asserts certificate existence.
 
 ## Findings
 
-- **critical / analysis assumed as hypothesis:** The formal theorem recombines pre-certified estimates rather than deriving the paper's bound from Model 1 and the algorithm, sharply reducing applicability and creating circularity risk.
-- **critical / accumulation algorithm mismatch:** The formal computed matrix is generally not the paper's C-hat, so its forward-error assertion concerns a different execution model.
-- **major / first-order relation and quantifiers:** The pointwise first-order estimate is replaced by a different and potentially much weaker asymptotic proposition.
-- **major / floating-point model scope:** The declaration admits operations outside the paper's rounding model and omits conditions needed to identify its parameters with equation (4.32).
-- **minor / conclusion coverage:** The selected surrounding comparison is not formalized as a forward-error result or qualitative reduction statement.
+- **critical / conclusion-bearing-assumptions:** The declaration proves only a conditional combination lemma and supplies no forward-error theorem from the modeled computation alone.
+- **critical / arbitrary-first-order-semantics:** The bound can be numerically vacuous or its antecedent can be uninhabited, so it does not faithfully formalize the paper's leading-order claim.
+- **major / range-unrestricted-comparison:** The declaration duplicates (4.32) in regrouped form and omits the distinct comparison result.
+- **minor / restricted-execution:** This is an acceptable but narrower specialization and cannot count as stronger theorem content.
+- **note / source-scaling-defect:** The discrepancy originates in the source restatement rather than in Lean's reconstruction of the derivation.
+- **note / source-coefficient-defect:** The main (4.32) Lean coefficient remains correct, but the qualitative single-word comparison cannot be uniquely formalized.
 
 ## Semantic checklist
 
 | Check | Direct | Round-trip |
 |---|---|---|
 | `S01` | `pass` | `pass` |
-| `S02` | `pass` | `fail` |
+| `S02` | `fail` | `fail` |
 | `S03` | `fail` | `fail` |
 | `S04` | `fail` | `fail` |
 | `S05` | `fail` | `fail` |
-| `S06` | `fail` | `unclear` |
+| `S06` | `fail` | `pass` |
 | `S07` | `pass` | `pass` |
-| `S08` | `fail` | `fail` |
-| `S09` | `pass` | `unclear` |
-| `S10` | `pass` | `pass` |
-| `S11` | `fail` | `fail` |
+| `S08` | `pass` | `unclear` |
+| `S09` | `pass` | `pass` |
+| `S10` | `unclear` | `unclear` |
+| `S11` | `pass` | `pass` |
 | `S12` | `fail` | `fail` |
 | `S13` | `pass` | `pass` |
 | `S14` | `fail` | `fail` |
-| `S15` | `fail` | `fail` |
+| `S15` | `fail` | `unclear` |
 | `S16` | `fail` | `fail` |
 
 ## Dependency coverage
 
-- Blind translator covered `196` dependencies (`0` hash-reused meanings); unclear: `D066`.
-- Direct judge covered `196` dependencies (`0` hash-reused interpretations); failing or unclear: `D003, D004, D005, D008, D020, D023, D024, D025, D034, D041, D042, D043, D048, D049, D050, D054, D059, D062, D074, D089, D090, D097, D129, D176`.
+- Blind translator covered `192` dependencies (`0` hash-reused meanings); unclear: `none`.
+- Direct judge covered `192` dependencies (`0` hash-reused interpretations); failing or unclear: `D001, D002, D006, D007, D015, D022, D023, D030, D034, D050, D052, D053, D057, D061, D065, D075`.
 
 ## Remaining uncertainties
 
-- The PDF does not formally specify a hidden constant or complete remainder semantics for lesssim; it states only that second-order terms are dropped. This does not support D008/D034's arbitrary-filter interpretation and does not affect the classification.
+- The PDF gives no formal global semantics for lesssim, so no canonical P20FirstOrderSemantics predicate can be recovered from it.
+- The source does not resolve whether 4n^2 in equation (3.26) or 4n in the B796 comparison prose was intended.
+- The exact summation-order and fusion assumptions of the imported Fasi et al. accumulation estimate are not stated in the permitted PDF.
+- Theorem 4.1's literal upper-bound-only scaling hypothesis conflicts with the maximal-scaling condition used in its preceding construction and proof.
 
 ## Audit artifacts
 
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/agent_outputs/adjudicator.json` (`9ca3de35d120439cc6a634c0ece866ee5086d55554a65bf9bab18be55b6eb83f`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/agent_outputs/blind_translation.json` (`0aac426aa3fa48cc1fd7866564f7d984b768828c188dbc2d8e09ecfa9df2a24c`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/agent_outputs/direct_judge.json` (`2c161af09396c465cd67b08ca42834473d7700d205cad3bf77f5d555bceb2068`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/agent_outputs/roundtrip_judge.json` (`c8a4924f4a2e9d262d01f92b97e1a9caaea4b003da99481aa9376a28707d7858`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/agent_outputs/source_contract.json` (`dca1b4fb3362d81a2ef506e23459d53d4e8ebd6e7e47261c9dd1074e737b4f36`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/decision.json` (`82efa75efdfa825cb4d034c741c815f597584f90b1e53627c3a403e4459c9554`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/agent_outputs/adjudicator.json` (`c8bbfb397a9af5f2c107e66aabd953fc4064d67e0a3f7b2a77dcea806509b3af`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/agent_outputs/blind_translation.json` (`58dbafcca16c78d60b0d38a109e68914eca01571fd8cd37e30c6c3d4783fa127`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/agent_outputs/direct_judge.json` (`c2e28e08aa7777b88621c2d08585b6cef819d5887ae0492bbec4def90ca1e600`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/agent_outputs/roundtrip_judge.json` (`456b2c2b5c8001ba32d8c71d7d9800d0ab3b26caeb80ca683439f99a4b1a9056`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/agent_outputs/source_contract.json` (`8c90d5c3f7fc032fb60431b0562033819d11a36c5886074a267b5a858f697286`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/decision.json` (`9fa6f03215297e7354f16ea4b0da3ccd839c1e30c0931a21ae6eacffbc76c878`)
 - `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260821T051937Z/agent_outputs/adjudicator.json` (`33b91bea9848f9e284403ba5996ef9d573290bdee539d90aff7aea9658eb8962`)
 - `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260821T051937Z/agent_outputs/blind_translation.json` (`fd82eef2c6de222d0c0ac907e2dd4e8c73985046fb74d6327ad740ea03d3da22`)
 - `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260821T051937Z/agent_outputs/direct_judge.json` (`1e4c437b52e42019cf8afb9b3b2b65e419aa40b982e11a1fe87a7063baa9bc44`)
@@ -90,10 +94,23 @@ The declaration correctly preserves the real matrix dimensions, positive word co
 - `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260821T083510Z/inputs/dependency_inventory.json` (`020d56f2d912de9bb4a1e25f6b66ebfbcca7fd0d6bec13523b456fb21b84474b`)
 - `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260821T083510Z/inputs/direct_review_packet.md` (`950c4daa24caf3e938c2e3f137f6fa13a777dcbb9b8b77e2fefddba1ddc77b2c`)
 - `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260821T083510Z/inputs/source_locator.json` (`f4be54770253e03986d14e84ed9df1bab284a47591954177e31a56354067989a`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/blind_dependency_inventory.json` (`4bd0d2f8629478b2d7a45ff7d8c665a010db7e14b9c1da04e62f7c35aa10257b`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/blind_dossier.md` (`7db75d6cb9a0d833c38a2b8b368298fca871d8f5cb9dd6db596cb09e46f71f5e`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/blind_review_packet.md` (`7db75d6cb9a0d833c38a2b8b368298fca871d8f5cb9dd6db596cb09e46f71f5e`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/declaration_dossier.md` (`4d223c37309c24f3cb166980bf96861b37d668bc446cc87dd476fd96ae3e8da2`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/dependency_inventory.json` (`020d56f2d912de9bb4a1e25f6b66ebfbcca7fd0d6bec13523b456fb21b84474b`)
-- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/direct_review_packet.md` (`950c4daa24caf3e938c2e3f137f6fa13a777dcbb9b8b77e2fefddba1ddc77b2c`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/agent_outputs/adjudicator.json` (`9ca3de35d120439cc6a634c0ece866ee5086d55554a65bf9bab18be55b6eb83f`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/agent_outputs/blind_translation.json` (`0aac426aa3fa48cc1fd7866564f7d984b768828c188dbc2d8e09ecfa9df2a24c`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/agent_outputs/direct_judge.json` (`2c161af09396c465cd67b08ca42834473d7700d205cad3bf77f5d555bceb2068`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/agent_outputs/roundtrip_judge.json` (`c8a4924f4a2e9d262d01f92b97e1a9caaea4b003da99481aa9376a28707d7858`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/agent_outputs/source_contract.json` (`dca1b4fb3362d81a2ef506e23459d53d4e8ebd6e7e47261c9dd1074e737b4f36`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/decision.json` (`82efa75efdfa825cb4d034c741c815f597584f90b1e53627c3a403e4459c9554`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/inputs/blind_dependency_inventory.json` (`4bd0d2f8629478b2d7a45ff7d8c665a010db7e14b9c1da04e62f7c35aa10257b`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/inputs/blind_dossier.md` (`7db75d6cb9a0d833c38a2b8b368298fca871d8f5cb9dd6db596cb09e46f71f5e`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/inputs/blind_review_packet.md` (`7db75d6cb9a0d833c38a2b8b368298fca871d8f5cb9dd6db596cb09e46f71f5e`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/inputs/declaration_dossier.md` (`4d223c37309c24f3cb166980bf96861b37d668bc446cc87dd476fd96ae3e8da2`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/inputs/dependency_inventory.json` (`020d56f2d912de9bb4a1e25f6b66ebfbcca7fd0d6bec13523b456fb21b84474b`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/inputs/direct_review_packet.md` (`950c4daa24caf3e938c2e3f137f6fa13a777dcbb9b8b77e2fefddba1ddc77b2c`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/history/20260822T015211Z/inputs/source_locator.json` (`f4be54770253e03986d14e84ed9df1bab284a47591954177e31a56354067989a`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/blind_dependency_inventory.json` (`d1557a116adb84333f9c72576dbbb3b8b0c490df8702bbccd1907b2d6364cf99`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/blind_dossier.md` (`9a3c9998130d30a496b3db418b9c4fce13cf5f56a370d64b581e145ad244cee3`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/blind_review_packet.md` (`9a3c9998130d30a496b3db418b9c4fce13cf5f56a370d64b581e145ad244cee3`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/declaration_dossier.md` (`358b57aa991896d6424ce8c9f8200dbc087585a88c8d32c1e2ce3f2f38437ad1`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/dependency_inventory.json` (`837047a1d5aac20bb6f1537230b6e9a2accd05fc13cdc5beed06f724ac0cc295`)
+- `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/direct_review_packet.md` (`830bb2327108842bcb47ff086f72531a271b6fe54528aa022b74ed4bf33b4820`)
 - `paper_bencmark/highambench/tasks/P20/T3/faithfulness/inputs/source_locator.json` (`f4be54770253e03986d14e84ed9df1bab284a47591954177e31a56354067989a`)

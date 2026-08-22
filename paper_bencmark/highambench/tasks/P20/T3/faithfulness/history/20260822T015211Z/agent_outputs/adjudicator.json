@@ -1,0 +1,81 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P20-T3",
+  "trigger": [
+    "round-trip judge requested adjudication",
+    "blind dependency D066 is unclear",
+    "round-trip S06 is unclear",
+    "round-trip S09 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "Adjudication resolves the target as not-faithful-different and not accepted. The decisive differences are the conclusion-bearing analysis certificate assumed by every execution, the altered accumulation algorithm, the arbitrary-filter asymptotic conclusion, and missing floating-point scope. Neither implication holds.",
+      "primary_evidence": "PDF B786-B787 defines Model 1 and operation-level rounding; B790 separately analyzes underflowing products; B791 and B795 present finite first-order lesssim bounds; B794-B795 derive the source estimates before Theorem 4.1. Declaration D025 requires a D042 analysis certificate, D050 assumes all four displayed source bounds and a second-order remainder, D062 leaves products exact, and D008/D034 replace lesssim by an eventual filter-relative Big-O statement."
+    },
+    {
+      "item": "blind dependency D066 is unclear",
+      "resolution": "Resolved: D066 quantifies an integer exponent. It states that lambda equals 2 raised to some exponent in Int, so negative powers and scales below one are permitted. This matches the paper's unrestricted power-of-two scaling factors.",
+      "primary_evidence": "The complete declaration source defines p20IsPowerOfTwo as `exists exponent : Int, lambda = (2 : Real) ^ exponent`; D161 supplies integer powers on Real. PDF B789, equations (3.4a)-(3.4b), allows maximal power-of-two factors in intervals that can lie below one."
+    },
+    {
+      "item": "round-trip S06 is unclear",
+      "resolution": "Resolved as fail. D066 itself is well-defined, but other key operators are not paper-equivalent: the formal first-order relation introduces an arbitrary filter, eventual scope, and an existential Big-O remainder; the rounding maps are not constrained to nearest representable values; and the computed inner product does not round multiplication.",
+      "primary_evidence": "PDF B787 defines fl as nearest representable input-format rounding and FL(x op y) for op in {+,-,multiplication,division}; B791 says the simplified lesssim bound is obtained by dropping second-order terms. D008/D034 define a different filter-relative relation, D041 permits arbitrary maps satisfying error envelopes, and D062 computes x(k)*y(k) exactly before rounding only the addition."
+    },
+    {
+      "item": "round-trip S09 is unclear",
+      "resolution": "Resolved as pass. The paper's matrix infinity norm is intended as the induced maximum absolute row-sum norm, exactly as D029 defines it. Although no standalone definition is printed, the surrounding derivation determines the intended semantics.",
+      "primary_evidence": "On PDF B791, componentwise equation (3.27) implies equation (3.28) with the same coefficient and no extra inner-dimension factor. That dimension-free passage from |E| to ||E||_infinity and from |A||B| to ||A||_infinity||B||_infinity is the monotonicity and submultiplicativity property of the induced row-sum infinity norm; an entrywise maximum norm would generally introduce a factor n. D029 is precisely maximum over rows of the sum of absolute entries."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean declaration covers only runs already carrying the four desired source bounds and a second-order certificate, and its computed inner products use exact products with rounded additions. It therefore does not establish Theorem 4.1 for every paper-valid Model 1 execution."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper treats fixed computations under Model 1 and does not supply an arbitrary filter-indexed certified execution, a uniform Big-O remainder, or a result for the declaration's exact-product accumulation algorithm and broader abstract rounding maps."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The PDF does not formally specify a hidden constant or complete remainder semantics for lesssim; it states only that second-order terms are dropped. This does not support D008/D034's arbitrary-filter interpretation and does not affect the classification."
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "analysis assumed as hypothesis",
+      "evidence": "D025 constructs an execution only from a run and D042; D050 constructs D042 by assuming the four coefficient bounds and an O(scale^2) residual. PDF B794-B795 instead derives these estimates in equations (4.18)-(4.28) before concluding Theorem 4.1.",
+      "impact": "The formal theorem recombines pre-certified estimates rather than deriving the paper's bound from Model 1 and the algorithm, sharply reducing applicability and creating circularity risk."
+    },
+    {
+      "severity": "critical",
+      "category": "accumulation algorithm mismatch",
+      "evidence": "PDF B787 applies FL to multiplication and addition, and B790 explicitly counts underflowing products FL(x_k*y_k). D062 forms every x(k)*y(k) exactly and rounds only the subsequent accumulator addition.",
+      "impact": "The formal computed matrix is generally not the paper's C-hat, so its forward-error assertion concerns a different execution model."
+    },
+    {
+      "severity": "major",
+      "category": "first-order relation and quantifiers",
+      "evidence": "PDF B791 introduces lesssim by dropping second-order terms from a finite inequality, and B795 applies it to the stated computation. D008/D034 quantify an arbitrary remainder along an arbitrary nonbottom filter and require the inequality only eventually, without requiring the scale to tend to zero.",
+      "impact": "The pointwise first-order estimate is replaced by a different and potentially much weaker asymptotic proposition."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point model scope",
+      "evidence": "PDF B786-B787 requires nearest representable rounding by default, excludes overflow, and prescribes doubled parameters for directed rounding. D041 records only abstract error equations, bounds, and error exclusivity.",
+      "impact": "The declaration admits operations outside the paper's rounding model and omits conditions needed to identify its parameters with equation (4.32)."
+    },
+    {
+      "severity": "minor",
+      "category": "conclusion coverage",
+      "evidence": "PDF B795-B796 gives the range-unrestricted bound (4.33) and the equal order-u^(p-1) reduction comparison. The declaration's second conjunct merely unfolds the narrow coefficient definition.",
+      "impact": "The selected surrounding comparison is not formalized as a forward-error result or qualitative reduction statement."
+    }
+  ],
+  "rationale": "The declaration correctly preserves the real matrix dimensions, positive word count within runs, maximal integer-power-of-two scaling, theta, triangular indices, four displayed coefficients, exact AB target, induced infinity norm, and normwise forward-error notion. Those matches do not overcome the substantive differences in hypotheses, quantifier scope, operators, algorithm, floating-point model, relation strength, higher-order treatment, and nonvacuity. The analysis certificate is a restriction rather than genuine theorem strength, while the abstract model and filter family also generalize in unsupported directions. Consequently neither statement implies the other under their intended semantics, so the correct classification is not-faithful-different."
+}
