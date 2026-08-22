@@ -65,7 +65,7 @@ the `theorem` command.
 | `P09-T3` | `THM` | `Theorem 2` | The selected multidimensional RMS bound is explicitly named Theorem 2(a). |
 | `P10-T1` | `EQN` | none | The selected inherited-right-input amplification term is part of equation (8). |
 | `P10-T2` | `EQN` | none | The selected product-error rule is equation (8); its full actual error is bounded uniformly by the three printed first-order terms plus an explicit quadratic remainder. |
-| `P10-T3` | `EQN`, `TXT` | none | The displayed recurrence and equation (20) are completed by the following prose conclusion that SylR is logarithmically stable. |
+| `P10-T3` | `UNL` | none | The selected exact block inverse is displayed but unnumbered in the converse proof of Theorem 3.3; the following sentence identifies its upper-right block as `A*B`. |
 | `P11-T1` | `EQN` | none | The selected first-column residual estimate is equation (16). |
 | `P11-T2` | `UNL` | none | The selected exact defect identity is displayed but unnumbered in the proof of Theorem 1(7). |
 | `P11-T3` | `EQN` | none | The selected loss-of-orthogonality result is numbered equation (7); equations (4)-(6) are its preceding source estimates. |

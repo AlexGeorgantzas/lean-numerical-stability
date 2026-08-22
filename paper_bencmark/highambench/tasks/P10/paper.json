@@ -40,8 +40,8 @@
       "reason": "Equation (1) is an assumed interface inherited from prior work, while the headline conclusions are asymptotic complexity and stability claims rather than compact exact finite targets."
     },
     {
-      "candidate": "Theorem 3.3 and equations (6)-(7)",
-      "reason": "The theorem is a bit-complexity conversion whose proof depends on asymptotic O notation, condition-number growth, and a precision-cost model; it is not a concise finite numerical bound."
+      "candidate": "Theorem 3.3's asymptotic conclusions and equations (6)-(7)",
+      "reason": "The theorem's main statement is a bit-complexity conversion depending on asymptotic O notation, condition-number growth, and a precision-cost model. T3 selects only the exact finite block-inverse identity in its converse proof."
     },
     {
       "candidate": "the recursive triangular and dense matrix-inversion conclusions after equation (8)",
@@ -60,8 +60,8 @@
       "reason": "Several stability conclusions are delegated to earlier references or given as high-level algorithm reductions and asymptotic recurrences rather than self-contained finite estimates."
     },
     {
-      "candidate": "the generalized Sylvester extension after equation (20)",
-      "reason": "The paper explicitly says the analogous approach is only sketched; the ordinary Sylvester recurrence is fully displayed and supplies the more faithful finite target."
+      "candidate": "the SylR recurrence, equation (20), and the generalized Sylvester extension",
+      "reason": "The generalized extension is explicitly only sketched. The printed ordinary SylR recurrence also omits first-order forcing terms needed by its claimed bound, so the previous T3 formalization could not faithfully derive equation (20) and was replaced by the valid exact block-inverse reduction."
     },
     {
       "candidate": "equation (21) and the recursive eigenvector algorithm",
@@ -83,9 +83,9 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use the ordinary power-of-two SylR execution, derive its displayed first-order recurrence from the four block estimates, and prove a finite equation-(20) bound together with the paper's conventional-error comparison and logarithmic-stability conclusion.",
+      "decision": "Use the exact unnumbered block-inverse identity in the converse proof of Theorem 3.3 and prove both inverse directions together with extraction of A*B from the upper-right block.",
       "task_id": "P10-T3",
-      "theorem_name": "p10_t3_sylr_logarithmic_stability"
+      "theorem_name": "p10_t3_multiplication_via_block_inverse"
     }
   },
   "schema_version": "highambench-paper-0.2",

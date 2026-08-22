@@ -1,16 +1,13 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "faithfulness rebuild of the ordinary SylR execution, first-order recurrence, equation (20), and logarithmic-stability conclusion",
+    "kind": "source reselection to the exact multiplication-to-inversion reduction in the proof of Theorem 3.3",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The exact top problem is A*R-R*B=-C in real arithmetic and has positive Frobenius separation.",
-    "The dimension is the positive power of two n=2^depth, and A and B have the upper-triangular block structure used by SylR.",
-    "The proof-carrying execution records SylR's four recursive solves in the order R21, R11, R22, R12 and the exact right-hand sides (15)-(18).",
-    "Equation (19), the page-86 first-order product and right-hand-side error estimates, and the scalar base-case rounding bound hold for the recorded execution family.",
-    "The multiplication-error factor mu is nonnegative, monotone, at least one at positive dimensions, and polynomially bounded.",
-    "The model is the finite real-valued first-order regime; exceptional values and the higher-order terms suppressed by the source derivation are outside the claim."
+    "The block entries A and B are real n-by-n matrices for the same positive dimension n.",
+    "All matrix operations are exact real arithmetic.",
+    "No floating-point, exceptional-value, conditioning, or asymptotic complexity claim is included."
   ],
   "author_label": null,
   "classification_frozen_before_runs": false,
@@ -20,14 +17,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P10/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p10_t3_sylr_logarithmic_stability {depth : Nat} (run : P10SylRRun depth) : P10SylRLogarithmicallyStable run",
+    "lean_header": "theorem p10_t3_multiplication_via_block_inverse {n : Nat} (hn : 0 < n) (A B : P10Matrix n) : P10MultiplicationViaInverse A B",
     "namespace": "HighamBench",
-    "plain_language": "For a proof-carrying first-order execution of the paper's power-of-two SylR algorithm, derive the four-block error recurrence, the explicit equation-(20) forward bound, its comparison with a conventional solver, and the logarithmic condition-number exponent.",
+    "plain_language": "For any two real square matrices A and B, prove that the paper's displayed three-by-three upper-triangular block matrix has the printed two-sided inverse and that the inverse's upper-right block is A*B.",
     "target_file": "paper_bencmark/highambench/tasks/P10/T3/Target.lean",
-    "theorem_name": "p10_t3_sylr_logarithmic_stability"
+    "theorem_name": "p10_t3_multiplication_via_block_inverse"
   },
-  "informal_proof": "Choose a node attaining the worst first-order error at each level. Sum its four algorithm-linked block estimates to derive the source recurrence with coefficients 4, 2, 3, and mu(n/2). The variational separation certificate gives (norm(A)+norm(B))/sep at least one, while A*R-R*B=-C gives norm(C) at most (norm(A)+norm(B))*norm(R). Unroll the affine recurrence, bound its geometric sum, identify 6^depth with n^(1+log_2(3)), and rewrite the result relative to the conventional forward-error scale.",
-  "informal_statement": "The ordinary SylR algorithm satisfies the first-order recurrence on printed page 86, the equation-(20) bound, and the paper's logarithmic-stability comparison.",
+  "informal_proof": "Multiply the two printed three-by-three block matrices in each order. The diagonal blocks are identities, the first two strict upper-diagonal blocks cancel, and the upper-right block is A*B-A*B=0 in one order and 0-A*B+A*B=0 in the other. Finally unfold the printed inverse and read its (0,2) block as A*B.",
+  "informal_statement": "The unnumbered display in the converse proof of Theorem 3.3 is a valid two-sided block inverse, and exact inversion exposes the product A*B in its upper-right block.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -38,68 +35,48 @@
     "sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269"
   },
   "paper_version": "published journal version; volume 108, 2007, printed pages 59-91",
-  "result_form_tag": "BND",
+  "result_form_tag": "EQ",
   "review_record_not_for_run_prompt": {
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.frobNorm_nonneg"
+      "NumStability.matMul_add_left",
+      "NumStability.matMul_add_right"
     ],
-    "note": "The frozen NumStability object baseline contains Frobenius nonnegativity but no declaration modeling SylR's four recursive calls, variational separation, page-86 block estimates, equation (20), or logarithmic-stability conclusion. The complete mounted scope searched was the 24 modules recorded in metadata/library_olean.json; source-only declarations were not counted as available."
+    "note": "The complete mounted 24-module frozen baseline has ordinary matrix-algebra lemmas but no declaration of the paper's three-by-three block reduction, no proof that the displayed candidate is a two-sided inverse, and no theorem extracting A*B from its upper-right block."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "P10DyadicMatrix",
-    "P10SylvesterSeparation",
-    "P10SylRProblem",
-    "P10SylRLevelCertificate",
-    "P10SylRRun",
-    "p10SylRForwardError",
-    "p10SylRBlockError21",
-    "p10SylRBlockError11",
-    "p10SylRBlockError22",
-    "p10SylRBlockError12",
-    "p10SylRRecurrenceGrowth",
-    "p10SylRRecurrenceForcing",
-    "p10SylREquation20Bound",
-    "P10SylRLogarithmicallyStable"
+    "P10Matrix",
+    "P10ThreeBlockMatrix",
+    "p10MatMul",
+    "p10MultiplicationReductionInput",
+    "p10MultiplicationReductionInverse",
+    "p10ThreeBlockMul",
+    "p10ThreeBlockIdentity",
+    "P10MultiplicationViaInverse"
   ],
   "source_locations": [
     {
-      "anchor": "ordinary Sylvester equation and exact block equations (13)-(18)",
-      "pdf_page": 26,
-      "printed_page": "84",
-      "role": "exact problem and block dependencies",
-      "section": "6.3 Solving the (generalized) Sylvester equation"
-    },
-    {
-      "anchor": "SylR pseudocode, power-of-two assumption, variational separation, and equation (19)",
-      "pdf_page": 27,
-      "printed_page": "85",
-      "role": "algorithm, recursion dimensions, solve order, and subproblem conditioning",
-      "section": "6.3 Solving the (generalized) Sylvester equation"
-    },
-    {
-      "anchor": "four block-error inequalities, affine recurrence, equation (20), and following logarithmic-stability comparison",
-      "pdf_page": 28,
-      "printed_page": "86",
-      "role": "first-order recurrence, asymptotic forward bound, conventional comparison, and stability conclusion",
-      "section": "6.3 Solving the (generalized) Sylvester equation"
+      "anchor": "unnumbered three-by-three block inverse in the converse proof of Theorem 3.3 and the following product-extraction sentence",
+      "pdf_page": 12,
+      "printed_page": "70",
+      "role": "exact inverse identity and reduction from exact inversion to matrix multiplication",
+      "section": "3.2 Bit complexity"
     }
   ],
   "source_tags": [
-    "EQN",
-    "TXT"
+    "UNL"
   ],
   "task_id": "P10-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "No mounted frozen-library declaration models the four-call SylR recursion or proves its page-86 recurrence, equation (20), or logarithmic stability. The proof must combine the four block estimates, establish the separation-ratio and exact-equation norm bounds, unroll the recurrence, and identify the power-of-two asymptotic factor; the closest mounted declaration is only Frobenius nonnegativity.",
+  "tier_rationale": "The task must construct the paper-specific three-by-three block matrices, prove both multiplication orders equal the block identity, and expose the product block. No mounted frozen declaration states this complete reduction. P10-T1 and P10-T2 instead concern the distinct first-order error rule in equation (8), so this target adds a separate complete result.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P10/T3/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p10_t3_sylr_logarithmic_stability"
+    "required_declaration": "HighamBench.p10_t3_multiplication_via_block_inverse"
   }
 }
