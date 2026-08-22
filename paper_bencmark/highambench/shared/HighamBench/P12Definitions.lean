@@ -1363,12 +1363,13 @@ def P12ThreeProductTrace.mergeTrace
   t := tr.t
   e := tr.r
 
-/-- One execution of the paper's `ThreeProduct` procedure.  The propagated
-scales are exactly those in the proof of Lemma 4: the first product uses the
-input scales, and both following products use their sum.  Every arithmetic
-operation is nearest-rounded, and the explicit range fields are precisely
-Section 4's standing absence-of-overflow convention.  No exact merge, final
-representability, or target equality is stored in the execution. -/
+/-- One execution of the paper's `ThreeProduct` procedure.  The first and
+third residuals use the original input-product grid, while the second residual
+uses the local grid of `x1 * th`.  The two normalized `beta^(2p)` bounds are
+the displayed estimates on printed page 397.  Every arithmetic operation is
+nearest-rounded, and the explicit range fields are precisely Section 4's
+standing absence-of-overflow convention.  No exact merge, merge-error bound,
+final representability, or target equality is stored in the execution. -/
 structure P12ThreeProductExecution
     (fmt : P12RadixFormat) (x1 x2 x3 : ℝ)
     (tr : P12ThreeProductTrace) where
@@ -1378,9 +1379,15 @@ structure P12ThreeProductExecution
   first : P12TwoProductExecution fmt x2Rep x3Rep
     x2Rep.exponent x3Rep.exponent tr.th tr.tl
   second : P12TwoProductExecution fmt x1Rep first.highRep
-    x1Rep.exponent (x2Rep.exponent + x3Rep.exponent) tr.s1 tr.a2
+    x1Rep.exponent first.highRep.exponent tr.s1 tr.a2
   third : P12TwoProductExecution fmt x1Rep first.lowRep
     x1Rep.exponent (x2Rep.exponent + x3Rep.exponent) tr.a3 tr.a4
+  second_normalized_residual_bound :
+    |tr.a2| ≤ fmt.mantissaBound ^ 2 / 2 *
+      fmt.scale (x1Rep.exponent + x2Rep.exponent + x3Rep.exponent)
+  third_normalized_high_bound :
+    |tr.a3| ≤ fmt.mantissaBound ^ 2 / 2 *
+      fmt.scale (x1Rep.exponent + x2Rep.exponent + x3Rep.exponent)
   merge : P12NearestFastTwoSumExecution fmt tr.a2 tr.a3 tr.mergeTrace
   merge_add_no_overflow : fmt.noOverflow (tr.a2 + tr.a3)
   merge_first_sub_no_overflow : fmt.noOverflow (tr.s2 - tr.a2)

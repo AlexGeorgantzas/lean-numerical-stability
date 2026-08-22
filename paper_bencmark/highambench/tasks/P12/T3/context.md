@@ -40,10 +40,11 @@ bounded by one half ULP. `P12TwoProductExecution` records that delegated
 semantic contract for each call. `P12TwoProductNoUnderflowError` explicitly
 collects the observable consequences of the paper's "no underflow errors"
 hypothesis: exact decomposition, no underflow-to-zero, and retention of the
-propagated residual scale. The
-concrete `leftGrid` and `rightGrid` parameters are fixed by the three algorithm
-calls and identify the residual scaling used on printed pages 396--397; operand
-and output grid membership are derived, not stored.
+propagated residual scale. The concrete `leftGrid` and `rightGrid` parameters
+are fixed by the three algorithm calls and identify the residual scaling used
+on printed pages 396--397. In particular, the second call uses the
+least-exponent grid of `th`, not the raw `x2*x3` input grid. Operand and output
+grid membership are derived, not stored.
 
 The contract has no universal grid-preservation field and no requirement that
 artificial positive and negative envelope endpoints be representable. The
@@ -51,7 +52,9 @@ nearest high product's propagated grid is instead derived from the operand
 representations, nearest rounding, and the exact finite-range assumption. The
 half-ULP and propagated-scale residual estimates are the inequalities stated or
 derived for the delegated `TwoProduct` calls in equation (17) and the proof of
-Lemma 4.
+Lemma 4. The execution also records the two displayed normalized estimates
+`|a2| <= 0.5*beta^(2p)` and `|a3| <= 0.5*beta^(2p)`, rescaled to the original
+three-input grid. It does not assume the later FastTwoSum error bound.
 
 ## ThreeProduct execution
 

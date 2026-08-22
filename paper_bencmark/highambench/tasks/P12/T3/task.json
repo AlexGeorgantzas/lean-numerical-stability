@@ -8,7 +8,7 @@
     "The format is the equation-(1) finite system with arbitrary integer radix beta >= 2, positive precision p, and an inclusive finite exponent interval.",
     "The three inputs and relevant TwoProduct outputs have least equation-(1) representations, whose scales provide the local ULPs used in Lemma 4; these witnesses are proof data rather than restrictions on the values.",
     "Each delegated TwoProduct call records equation (17): a nearest high product, an exact high-plus-low decomposition under the paper's no-underflow-error hypothesis, a nonzero high for a nonzero exact product, and the half-ULP and propagated-scale residual estimates used in the proof.",
-    "The concrete residual scales for the three TwoProduct calls are fixed by FourSumThreeProduct's input scales; operand and output grids are derived, and there is no universal grid-preservation premise or artificial signed-envelope representability premise.",
+    "The first and third TwoProduct residual bounds use the original input-product grids, while the second uses the local x1*th grid; the displayed page-397 bounds |a2| and |a3| at one half beta^(2p) are recorded on the original three-input grid.",
     "Section 4 FastTwoSum executes one nearest addition followed by two nearest subtractions; exact subtraction and exact merging are conclusions, not premises.",
     "Absence of overflow means each exact operation result lies within the two finite equation-(1) endpoints; there is no nearby-candidate or output-grid certificate.",
     "The final operation is nearest rounding of the merge remainder plus the fourth product error; representability and exactness of that real sum are conclusions.",
