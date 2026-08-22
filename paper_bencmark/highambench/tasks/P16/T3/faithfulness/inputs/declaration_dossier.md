@@ -8,73 +8,41 @@ Judges must interpret every dependency entry and may not infer semantics from na
 ```lean
 theorem p16_t3_mixed_precision_geometric_convergence
     {n : ℕ} (run : P16FixedMixedPrecisionGMRESRun n)
-    (hLambda :
-      0 ≤ p16FixedMixedContraction run ∧
-        p16FixedMixedContraction run < 1) :
-    ∃ backwardRemainder forwardRemainder : ℕ → ℝ,
-      backwardRemainder =
-          (fun i ↦ (run.restart i).theorem41.backwardRemainder) ∧
-      forwardRemainder =
-          (fun i ↦ (run.restart i).theorem41.forwardRemainder) ∧
-      p16UniformSecondOrder run.uHigh run.uLow backwardRemainder ∧
-      p16UniformSecondOrder run.uHigh run.uLow forwardRemainder ∧
-      (∀ i : ℕ,
-        p16BackwardError run.A run.b (run.xHat (i + 1)) ≤
-          p16FixedMixedContraction run *
-              p16BackwardError run.A run.b (run.xHat i) +
-            p16FixedBackwardFloor run + |backwardRemainder i|) ∧
-      (∀ i : ℕ,
+    (hLambda : ∀ i : ℕ,
+      0 ≤ p16FixedMixedContraction run i ∧
+        p16FixedMixedContraction run i < 1) :
+    (∀ i : ℕ,
+      p16BackwardError run.A run.b (run.xHat (i + 1)) ≤
+        p16FixedMixedContraction run i *
+            p16BackwardError run.A run.b (run.xHat i) +
+          p16FixedBackwardFloor run i) ∧
+      ∀ i : ℕ,
         p16ForwardError run.xExact (run.xHat (i + 1)) ≤
-          p16FixedMixedContraction run *
+          p16FixedMixedContraction run i *
               p16ForwardError run.xExact (run.xHat i) +
-            p16FixedForwardFloor run + |forwardRemainder i|) ∧
-      p16FixedGeometricEnvelope
-        (p16FixedMixedContraction run) (p16FixedBackwardFloor run)
-        run.uHigh run.uLow backwardRemainder
-        (fun i ↦ p16BackwardError run.A run.b (run.xHat i)) ∧
-      p16FixedGeometricEnvelope
-        (p16FixedMixedContraction run) (p16FixedForwardFloor run)
-        run.uHigh run.uLow forwardRemainder
-        (fun i ↦ p16ForwardError run.xExact (run.xHat i))
+            p16FixedForwardFloor run i
 ```
 
 ## Elaborated target type
 
 ```lean
 ∀ {n : Nat} (run : HighamBench.P16FixedMixedPrecisionGMRESRun n),
-  And (Real.instLE.le 0 (HighamBench.p16FixedMixedContraction run))
-      (Real.instLT.lt (HighamBench.p16FixedMixedContraction run) 1) →
-    Exists fun backwardRemainder =>
-      Exists fun forwardRemainder =>
-        And (Eq backwardRemainder fun i => (run.restart i).theorem41.backwardRemainder)
-          (And (Eq forwardRemainder fun i => (run.restart i).theorem41.forwardRemainder)
-            (And (HighamBench.p16UniformSecondOrder run.uHigh run.uLow backwardRemainder)
-              (And (HighamBench.p16UniformSecondOrder run.uHigh run.uLow forwardRemainder)
-                (And
-                  (∀ (i : Nat),
-                    Real.instLE.le (HighamBench.p16BackwardError run.A run.b (run.xHat (instHAdd.hAdd i 1)))
-                      (instHAdd.hAdd
-                        (instHAdd.hAdd
-                          (instHMul.hMul (HighamBench.p16FixedMixedContraction run)
-                            (HighamBench.p16BackwardError run.A run.b (run.xHat i)))
-                          (HighamBench.p16FixedBackwardFloor run))
-                        (abs (backwardRemainder i))))
-                  (And
-                    (∀ (i : Nat),
-                      Real.instLE.le (HighamBench.p16ForwardError run.xExact (run.xHat (instHAdd.hAdd i 1)))
-                        (instHAdd.hAdd
-                          (instHAdd.hAdd
-                            (instHMul.hMul (HighamBench.p16FixedMixedContraction run)
-                              (HighamBench.p16ForwardError run.xExact (run.xHat i)))
-                            (HighamBench.p16FixedForwardFloor run))
-                          (abs (forwardRemainder i))))
-                    (And
-                      (HighamBench.p16FixedGeometricEnvelope (HighamBench.p16FixedMixedContraction run)
-                        (HighamBench.p16FixedBackwardFloor run) run.uHigh run.uLow backwardRemainder fun i =>
-                        HighamBench.p16BackwardError run.A run.b (run.xHat i))
-                      (HighamBench.p16FixedGeometricEnvelope (HighamBench.p16FixedMixedContraction run)
-                        (HighamBench.p16FixedForwardFloor run) run.uHigh run.uLow forwardRemainder fun i =>
-                        HighamBench.p16ForwardError run.xExact (run.xHat i))))))))
+  (∀ (i : Nat),
+      And (Real.instLE.le 0 (HighamBench.p16FixedMixedContraction run i))
+        (Real.instLT.lt (HighamBench.p16FixedMixedContraction run i) 1)) →
+    And
+      (∀ (i : Nat),
+        Real.instLE.le (HighamBench.p16BackwardError run.A run.b (run.xHat (instHAdd.hAdd i 1)))
+          (instHAdd.hAdd
+            (instHMul.hMul (HighamBench.p16FixedMixedContraction run i)
+              (HighamBench.p16BackwardError run.A run.b (run.xHat i)))
+            (HighamBench.p16FixedBackwardFloor run i)))
+      (∀ (i : Nat),
+        Real.instLE.le (HighamBench.p16ForwardError run.xExact (run.xHat (instHAdd.hAdd i 1)))
+          (instHAdd.hAdd
+            (instHMul.hMul (HighamBench.p16FixedMixedContraction run i)
+              (HighamBench.p16ForwardError run.xExact (run.xHat i)))
+            (HighamBench.p16FixedForwardFloor run i)))
 ```
 
 ## Fully explicit elaborated target type
@@ -82,151 +50,39 @@ theorem p16_t3_mixed_precision_geometric_convergence
 ```lean
 ∀ {n : Nat} (run : HighamBench.P16FixedMixedPrecisionGMRESRun n)
   (hLambda :
-    And
-      (@LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-        (@HighamBench.p16FixedMixedContraction n run))
-      (@LT.lt.{0} Real Real.instLT (@HighamBench.p16FixedMixedContraction n run)
-        (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)))),
-  @Exists.{1} (Nat → Real) fun (backwardRemainder : Nat → Real) =>
-    @Exists.{1} (Nat → Real) fun (forwardRemainder : Nat → Real) =>
+    ∀ (i : Nat),
       And
-        (@Eq.{1} (Nat → Real) backwardRemainder fun (i : Nat) =>
-          @HighamBench.P16Theorem41RestartResult.backwardRemainder n
-            (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
-            (@HighamBench.P16FixedMixedPrecisionGMRESRun.Ainv n run)
-            (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n run)
-            (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
-            (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i)
-            (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run
-              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
-                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-            (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n run)
-            (@HighamBench.P16FixedLowPrecisionMGSRestart.modularAccuracy n
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.Ainv n run)
+        (@LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+          (@HighamBench.p16FixedMixedContraction n run i))
+        (@LT.lt.{0} Real Real.instLT (@HighamBench.p16FixedMixedContraction n run i)
+          (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)))),
+  And
+    (∀ (i : Nat),
+      @LE.le.{0} Real Real.instLE
+        (@HighamBench.p16BackwardError n (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
+          (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n run)
+          (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run
+            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
+              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))
+        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+            (@HighamBench.p16FixedMixedContraction n run i)
+            (@HighamBench.p16BackwardError n (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
               (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run
-                (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
-                  (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.residualHat n run i)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.correctionHat n run i)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.uLow n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.dimensionFactor n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.restart n run i))
-            (@HighamBench.P16FixedMixedPrecisionGMRESRun.dimensionFactor n run)
-            (@HighamBench.P16FixedLowPrecisionMGSRestart.theorem41 n
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.Ainv n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run
-                (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
-                  (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.residualHat n run i)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.correctionHat n run i)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.uLow n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.dimensionFactor n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.restart n run i)))
-        (And
-          (@Eq.{1} (Nat → Real) forwardRemainder fun (i : Nat) =>
-            @HighamBench.P16Theorem41RestartResult.forwardRemainder n
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.Ainv n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run
-                (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
-                  (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n run)
-              (@HighamBench.P16FixedLowPrecisionMGSRestart.modularAccuracy n
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.Ainv n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run
-                  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
-                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.residualHat n run i)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.correctionHat n run i)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.uLow n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.dimensionFactor n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.restart n run i))
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.dimensionFactor n run)
-              (@HighamBench.P16FixedLowPrecisionMGSRestart.theorem41 n
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.Ainv n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run
-                  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
-                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.residualHat n run i)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.correctionHat n run i)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.uLow n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.dimensionFactor n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.restart n run i)))
-          (And
-            (HighamBench.p16UniformSecondOrder (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n run)
-              (@HighamBench.P16FixedMixedPrecisionGMRESRun.uLow n run) backwardRemainder)
-            (And
-              (HighamBench.p16UniformSecondOrder (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n run)
-                (@HighamBench.P16FixedMixedPrecisionGMRESRun.uLow n run) forwardRemainder)
-              (And
-                (∀ (i : Nat),
-                  @LE.le.{0} Real Real.instLE
-                    (@HighamBench.p16BackwardError n (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
-                      (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n run)
-                      (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run
-                        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
-                          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))
-                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                          (@HighamBench.p16FixedMixedContraction n run)
-                          (@HighamBench.p16BackwardError n (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
-                            (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n run)
-                            (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i)))
-                        (@HighamBench.p16FixedBackwardFloor n run))
-                      (@abs.{0} Real Real.lattice Real.instAddGroup (backwardRemainder i))))
-                (And
-                  (∀ (i : Nat),
-                    @LE.le.{0} Real Real.instLE
-                      (@HighamBench.p16ForwardError n (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
-                        (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run
-                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
-                            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))
-                      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                            (@HighamBench.p16FixedMixedContraction n run)
-                            (@HighamBench.p16ForwardError n (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
-                              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i)))
-                          (@HighamBench.p16FixedForwardFloor n run))
-                        (@abs.{0} Real Real.lattice Real.instAddGroup (forwardRemainder i))))
-                  (And
-                    (HighamBench.p16FixedGeometricEnvelope (@HighamBench.p16FixedMixedContraction n run)
-                      (@HighamBench.p16FixedBackwardFloor n run)
-                      (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n run)
-                      (@HighamBench.P16FixedMixedPrecisionGMRESRun.uLow n run) backwardRemainder fun (i : Nat) =>
-                      @HighamBench.p16BackwardError n (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n run)
-                        (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n run)
-                        (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i))
-                    (HighamBench.p16FixedGeometricEnvelope (@HighamBench.p16FixedMixedContraction n run)
-                      (@HighamBench.p16FixedForwardFloor n run)
-                      (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n run)
-                      (@HighamBench.P16FixedMixedPrecisionGMRESRun.uLow n run) forwardRemainder fun (i : Nat) =>
-                      @HighamBench.p16ForwardError n (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
-                        (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i))))))))
+              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i)))
+          (@HighamBench.p16FixedBackwardFloor n run i)))
+    (∀ (i : Nat),
+      @LE.le.{0} Real Real.instLE
+        (@HighamBench.p16ForwardError n (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
+          (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run
+            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
+              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))
+        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+            (@HighamBench.p16FixedMixedContraction n run i)
+            (@HighamBench.p16ForwardError n (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n run)
+              (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n run i)))
+          (@HighamBench.p16FixedForwardFloor n run i)))
 ```
 
 ## Local import graph
@@ -239,90 +95,7 @@ theorem p16_t3_mixed_precision_geometric_convergence
 
 `local` entries are recursively followed through their types and bodies. `external-frontier` entries are the exact Lean/mathlib declarations where that recursive traversal stops; their types and one-level bodies are still shown.
 
-### D001: `HighamBench.P16FixedLowPrecisionMGSRestart.modularAccuracy`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `e103834780415701ab3161b4ac36be726d3941a4b094ecf67239479bd986257c`
-
-Type:
-
-```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n} →
-      {uHigh uLow dimensionFactor : Real} →
-        HighamBench.P16FixedLowPrecisionMGSRestart A Ainv b xExact xCurrent xNext residualHat correctionHat uHigh uLow
-            dimensionFactor →
-          Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n} →
-      {uHigh uLow dimensionFactor : Real} →
-        (self :
-            @HighamBench.P16FixedLowPrecisionMGSRestart n A Ainv b xExact xCurrent xNext residualHat correctionHat uHigh
-              uLow dimensionFactor) →
-          Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n A Ainv b xExact xCurrent xNext residualHat correctionHat uHigh uLow dimensionFactor self => self.63
-```
-
-### D002: `HighamBench.P16FixedLowPrecisionMGSRestart.theorem41`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `f425f848dd5fa444fcadaa0d533279ee795901c119f6cff18c34559af79e9ed9`
-
-Type:
-
-```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n} →
-      {uHigh uLow dimensionFactor : Real} →
-        (self :
-            HighamBench.P16FixedLowPrecisionMGSRestart A Ainv b xExact xCurrent xNext residualHat correctionHat uHigh
-              uLow dimensionFactor) →
-          HighamBench.P16Theorem41RestartResult A Ainv b xExact xCurrent xNext uHigh self.modularAccuracy
-            dimensionFactor
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n} →
-      {uHigh uLow dimensionFactor : Real} →
-        (self :
-            @HighamBench.P16FixedLowPrecisionMGSRestart n A Ainv b xExact xCurrent xNext residualHat correctionHat uHigh
-              uLow dimensionFactor) →
-          @HighamBench.P16Theorem41RestartResult n A Ainv b xExact xCurrent xNext uHigh
-            (@HighamBench.P16FixedLowPrecisionMGSRestart.modularAccuracy n A Ainv b xExact xCurrent xNext residualHat
-              correctionHat uHigh uLow dimensionFactor self)
-            dimensionFactor
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n A Ainv b xExact xCurrent xNext residualHat correctionHat uHigh uLow dimensionFactor self => self.66
-```
-
-### D003: `HighamBench.P16FixedMixedPrecisionGMRESRun`
+### D001: `HighamBench.P16FixedMixedPrecisionGMRESRun`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -342,7 +115,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D004: `HighamBench.P16FixedMixedPrecisionGMRESRun.A`
+### D002: `HighamBench.P16FixedMixedPrecisionGMRESRun.A`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -368,33 +141,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.2
 ```
 
-### D005: `HighamBench.P16FixedMixedPrecisionGMRESRun.Ainv`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `d07c0f63ae9a843539c1635ea39da348fcc0c4fc74862aa8440c2324b850b7f8`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → HighamBench.P16Matrix n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → HighamBench.P16Matrix n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.3
-```
-
-### D006: `HighamBench.P16FixedMixedPrecisionGMRESRun.b`
+### D003: `HighamBench.P16FixedMixedPrecisionGMRESRun.b`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -420,182 +167,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.4
 ```
 
-### D007: `HighamBench.P16FixedMixedPrecisionGMRESRun.correctionHat`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `bb3cc0c11a9d0b31371bde7eb9f89e63d46dee6ca8de94a7b26ff816dc3ef679`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Nat → HighamBench.P16Vector n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Nat → HighamBench.P16Vector n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.8
-```
-
-### D008: `HighamBench.P16FixedMixedPrecisionGMRESRun.dimensionFactor`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `b37e5a8a25db37e154d18c479506d5981954771334f70ea51c8190631580ffbb`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.13
-```
-
-### D009: `HighamBench.P16FixedMixedPrecisionGMRESRun.residualHat`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `01dc025f8feb9aaf3fff835b4bf492e284251a0ee8037e7f3454275d3a2f172c`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Nat → HighamBench.P16Vector n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Nat → HighamBench.P16Vector n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.7
-```
-
-### D010: `HighamBench.P16FixedMixedPrecisionGMRESRun.restart`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `a0d33a827524a23c55f3f2a9995070d6d5ba77bf5a699559f92ce3cab93f1b0f`
-
-Type:
-
-```lean
-{n : Nat} →
-  (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) →
-    (i : Nat) →
-      HighamBench.P16FixedLowPrecisionMGSRestart self.A self.Ainv self.b self.xExact (self.xHat i)
-        (self.xHat (instHAdd.hAdd i 1)) (self.residualHat i) (self.correctionHat i) self.uHigh self.uLow
-        self.dimensionFactor
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) →
-    (i : Nat) →
-      @HighamBench.P16FixedLowPrecisionMGSRestart n (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n self)
-        (@HighamBench.P16FixedMixedPrecisionGMRESRun.Ainv n self) (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n self)
-        (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n self)
-        (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n self i)
-        (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n self
-          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
-            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-        (@HighamBench.P16FixedMixedPrecisionGMRESRun.residualHat n self i)
-        (@HighamBench.P16FixedMixedPrecisionGMRESRun.correctionHat n self i)
-        (@HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh n self)
-        (@HighamBench.P16FixedMixedPrecisionGMRESRun.uLow n self)
-        (@HighamBench.P16FixedMixedPrecisionGMRESRun.dimensionFactor n self)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.30
-```
-
-### D011: `HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `cd2ac4d493bb1bd1edb37aa4f91b6d7f69ccecfc8b787056575f25ba026d51d4`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.11
-```
-
-### D012: `HighamBench.P16FixedMixedPrecisionGMRESRun.uLow`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `c1aeef9945c0840f4393dbb63df4e40b51a227703ebb844878da8252c84a3753`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.12
-```
-
-### D013: `HighamBench.P16FixedMixedPrecisionGMRESRun.xExact`
+### D004: `HighamBench.P16FixedMixedPrecisionGMRESRun.xExact`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -621,7 +193,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.5
 ```
 
-### D014: `HighamBench.P16FixedMixedPrecisionGMRESRun.xHat`
+### D005: `HighamBench.P16FixedMixedPrecisionGMRESRun.xHat`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -647,83 +219,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.6
 ```
 
-### D015: `HighamBench.P16Theorem41RestartResult.backwardRemainder`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `1f51e0a0721aa8f07a5c04f7edc9eb822d6c2a895480f94440b7315889d1776b`
-
-Type:
-
-```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext : HighamBench.P16Vector n} →
-      {uHigh modularAccuracy dimensionFactor : Real} →
-        HighamBench.P16Theorem41RestartResult A Ainv b xExact xCurrent xNext uHigh modularAccuracy dimensionFactor →
-          Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext : HighamBench.P16Vector n} →
-      {uHigh modularAccuracy dimensionFactor : Real} →
-        (self :
-            @HighamBench.P16Theorem41RestartResult n A Ainv b xExact xCurrent xNext uHigh modularAccuracy
-              dimensionFactor) →
-          Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n A Ainv b xExact xCurrent xNext uHigh modularAccuracy dimensionFactor self => self.5
-```
-
-### D016: `HighamBench.P16Theorem41RestartResult.forwardRemainder`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `68b06ee9e0c5f5af46926043aa462cfa88103797e11405377bef206e84094a15`
-
-Type:
-
-```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext : HighamBench.P16Vector n} →
-      {uHigh modularAccuracy dimensionFactor : Real} →
-        HighamBench.P16Theorem41RestartResult A Ainv b xExact xCurrent xNext uHigh modularAccuracy dimensionFactor →
-          Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext : HighamBench.P16Vector n} →
-      {uHigh modularAccuracy dimensionFactor : Real} →
-        (self :
-            @HighamBench.P16Theorem41RestartResult n A Ainv b xExact xCurrent xNext uHigh modularAccuracy
-              dimensionFactor) →
-          Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n A Ainv b xExact xCurrent xNext uHigh modularAccuracy dimensionFactor self => self.6
-```
-
-### D017: `HighamBench.p16BackwardError`
+### D006: `HighamBench.p16BackwardError`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -749,122 +245,92 @@ Definition body (one-level semantic boundary):
 fun {n} A b xHat => HighamBench.p16NormalizedResidual A b xHat
 ```
 
-### D018: `HighamBench.p16FixedBackwardFloor`
+### D007: `HighamBench.p16FixedBackwardFloor`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `6228e86d59c8e646843929db99fed46aa3348d58a18d032abdefd3b193390b84`
+- Semantic SHA-256: `6b6cba98f3ba81af9a2d606d6677d385e395ac9c15f4b8aa6c0f608c853e56a8`
 
 Type:
 
 ```lean
-{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Real
+{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Nat → Real
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (run : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Real
+{n : Nat} → (run : HighamBench.P16FixedMixedPrecisionGMRESRun n) → (i : Nat) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} run => instHMul.hMul run.dimensionFactor run.uHigh
+fun {n} run i =>
+  instHMul.hMul (HighamBench.p16PolynomialFactorValue run.dimensionFactor n (run.restart i).keyDimension) run.uHigh
 ```
 
-### D019: `HighamBench.p16FixedForwardFloor`
+### D008: `HighamBench.p16FixedForwardFloor`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `10199084b735673b71ceec2f5770424e0bfd5cc5f7893c0ed3c334adef2efc9c`
+- Semantic SHA-256: `33fa7f257832589b13de1acee9b711fd5615e9facf232c1b09ecc32283d80c64`
 
 Type:
 
 ```lean
-{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Real
+{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Nat → Real
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (run : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Real
+{n : Nat} → (run : HighamBench.P16FixedMixedPrecisionGMRESRun n) → (i : Nat) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} run =>
-  instHMul.hMul (instHMul.hMul run.dimensionFactor run.uHigh) (HighamBench.p16ConditionNumberF run.A run.Ainv)
+fun {n} run i =>
+  instHMul.hMul
+    (instHMul.hMul (HighamBench.p16PolynomialFactorValue run.dimensionFactor n (run.restart i).keyDimension) run.uHigh)
+    (HighamBench.p16ConditionNumberF run.A run.Ainv)
 ```
 
-### D020: `HighamBench.p16FixedGeometricEnvelope`
+### D009: `HighamBench.p16FixedMixedContraction`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `7efac87eafd88ebb265309ebfd5736d101287a11a7e70f576051c37c7563d5d0`
+- Semantic SHA-256: `316c3a59e0189267214c1da75abdacad1f1605372ef86af17e95e797fe1c5047`
 
 Type:
 
 ```lean
-Real → Real → Real → Real → (Nat → Real) → (Nat → Real) → Prop
+{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Nat → Real
 ```
 
 Fully explicit type:
 
 ```lean
-(lambda floor uHigh uLow : Real) → (remainder error : Nat → Real) → Prop
+{n : Nat} → (run : HighamBench.P16FixedMixedPrecisionGMRESRun n) → (i : Nat) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun lambda floor uHigh uLow remainder error =>
-  Exists fun C =>
-    And (Real.instLE.le 0 C)
-      (And
-        (∀ (i : Nat), Real.instLE.le (abs (remainder i)) (instHMul.hMul C (instHPow.hPow (instHAdd.hAdd uHigh uLow) 2)))
-        (∀ (m : Nat),
-          Real.instLE.le (error m)
-            (instHAdd.hAdd (instHMul.hMul (instHPow.hPow lambda m) (error 0))
-              (instHDiv.hDiv (instHAdd.hAdd floor (instHMul.hMul C (instHPow.hPow (instHAdd.hAdd uHigh uLow) 2)))
-                (instHSub.hSub 1 lambda)))))
+fun {n} run i =>
+  instHMul.hMul
+    (instHMul.hMul (HighamBench.p16PolynomialFactorValue run.dimensionFactor n (run.restart i).keyDimension) run.uLow)
+    (HighamBench.p16ConditionNumberF run.A run.Ainv)
 ```
 
-### D021: `HighamBench.p16FixedMixedContraction`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `7ef0be0f713d143858ff02b3900099409cab0295ae80f657ea5bd319dd0869a1`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (run : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} run =>
-  instHMul.hMul (instHMul.hMul run.dimensionFactor run.uLow) (HighamBench.p16ConditionNumberF run.A run.Ainv)
-```
-
-### D022: `HighamBench.p16ForwardError`
+### D010: `HighamBench.p16ForwardError`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -890,71 +356,132 @@ Definition body (one-level semantic boundary):
 fun {n} x xHat => instHDiv.hDiv (HighamBench.p16VecNorm (instHSub.hSub xHat x)) (HighamBench.p16VecNorm x)
 ```
 
-### D023: `HighamBench.p16UniformSecondOrder`
+### D011: `HighamBench.P16FixedLowPrecisionMGSRestart.keyDimension`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `af1257f0f7b11de919008a112197798018c6c8d5d51b3cfbcce3cabcc9ce7ea0`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `b6d24b2924a893dca63fabb861a270154f5da47f8ee6df6534d493208656d336`
 
 Type:
 
 ```lean
-Real → Real → (Nat → Real) → Prop
+{n : Nat} →
+  {A Ainv : HighamBench.P16Matrix n} →
+    {b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n} →
+      {uLow : Real} →
+        {dimensionFactor : HighamBench.P16PolynomialFactor} →
+          HighamBench.P16FixedLowPrecisionMGSRestart A Ainv b xExact xCurrent xNext residualHat correctionHat uLow
+              dimensionFactor →
+            Nat
 ```
 
 Fully explicit type:
 
 ```lean
-(uHigh uLow : Real) → (remainder : Nat → Real) → Prop
+{n : Nat} →
+  {A Ainv : HighamBench.P16Matrix n} →
+    {b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n} →
+      {uLow : Real} →
+        {dimensionFactor : HighamBench.P16PolynomialFactor} →
+          (self :
+              @HighamBench.P16FixedLowPrecisionMGSRestart n A Ainv b xExact xCurrent xNext residualHat correctionHat
+                uLow dimensionFactor) →
+            Nat
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun uHigh uLow remainder =>
-  Exists fun C =>
-    And (Real.instLE.le 0 C)
-      (∀ (i : Nat), Real.instLE.le (abs (remainder i)) (instHMul.hMul C (instHPow.hPow (instHAdd.hAdd uHigh uLow) 2)))
+fun n A Ainv b xExact xCurrent xNext residualHat correctionHat uLow dimensionFactor self => self.1
 ```
 
-### D024: `HighamBench.P16FixedLowPrecisionMGSRestart`
+### D012: `HighamBench.P16FixedMixedPrecisionGMRESRun.Ainv`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `inductive`
+- Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `0cc6d5c75242ee1f191c5920edce1a40f66290a41d33c14fef461166e8212657`
+- Semantic SHA-256: `d07c0f63ae9a843539c1635ea39da348fcc0c4fc74862aa8440c2324b850b7f8`
 
 Type:
 
 ```lean
-{n : Nat} →
-  HighamBench.P16Matrix n →
-    HighamBench.P16Matrix n →
-      HighamBench.P16Vector n →
-        HighamBench.P16Vector n →
-          HighamBench.P16Vector n →
-            HighamBench.P16Vector n → HighamBench.P16Vector n → HighamBench.P16Vector n → Real → Real → Real → Type
+{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → HighamBench.P16Matrix n
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  (A Ainv : HighamBench.P16Matrix n) →
-    (b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n) →
-      (uHigh uLow dimensionFactor : Real) → Type
+{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → HighamBench.P16Matrix n
 ```
 
-### D025: `HighamBench.P16FixedMixedPrecisionGMRESRun.mk`
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.3
+```
+
+### D013: `HighamBench.P16FixedMixedPrecisionGMRESRun.correctionHat`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `bb3cc0c11a9d0b31371bde7eb9f89e63d46dee6ca8de94a7b26ff816dc3ef679`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Nat → HighamBench.P16Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Nat → HighamBench.P16Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.8
+```
+
+### D014: `HighamBench.P16FixedMixedPrecisionGMRESRun.dimensionFactor`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `071586e1ccfd1074831c4f7fc30965b71c6d9978d86013ed6233eac3633f6b1f`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → HighamBench.P16PolynomialFactor
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → HighamBench.P16PolynomialFactor
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.13
+```
+
+### D015: `HighamBench.P16FixedMixedPrecisionGMRESRun.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `1f22273a152f34a084fcbccc49baf5548b8f123455818b4483c135685a082bae`
+- Semantic SHA-256: `a4f7700cb5a7a147f8ef1977d4e87ec0a7dc93a37c2a97744cc6bb497481d1e2`
 
 Type:
 
@@ -964,58 +491,58 @@ Type:
     (A Ainv : HighamBench.P16Matrix n) →
       (b xExact : HighamBench.P16Vector n) →
         (xHat residualHat correctionHat residualError updateError : Nat → HighamBench.P16Vector n) →
-          (uHigh uLow dimensionFactor : Real) →
-            Ne b 0 →
-              HighamBench.p16IsNonsingular A →
-                (∀ (z : HighamBench.P16Vector n), Eq (HighamBench.p16MatVec Ainv (HighamBench.p16MatVec A z)) z) →
-                  (∀ (z : HighamBench.P16Vector n), Eq (HighamBench.p16MatVec A (HighamBench.p16MatVec Ainv z)) z) →
-                    Eq (HighamBench.p16MatVec A xExact) b →
-                      Real.instLT.lt 0 uHigh →
-                        Real.instLT.lt 0 uLow →
-                          Real.instLE.le uHigh uLow →
-                            Real.instLE.le 0 dimensionFactor →
-                              HighamBench.GammaValid uHigh n →
-                                HighamBench.GammaValid uLow n →
-                                  Real.instLE.le (HighamBench.gamma uHigh n) (instHMul.hMul dimensionFactor uHigh) →
-                                    (∀ (i : Nat),
-                                        Eq (residualHat i)
-                                          (instHAdd.hAdd (HighamBench.p16Residual A b (xHat i)) (residualError i))) →
-                                      (∀ (i : Nat) (j : Fin n),
-                                          Real.instLE.le (abs (residualError i j))
-                                            (instHMul.hMul (HighamBench.gamma uHigh n)
-                                              (instHAdd.hAdd (abs (b j))
-                                                (HighamBench.p16MatVec (fun row col => abs (A row col))
-                                                  (fun col => abs (xHat i col)) j)))) →
+          (uHigh uLow : Real) →
+            (dimensionFactor : HighamBench.P16PolynomialFactor) →
+              Ne b 0 →
+                HighamBench.p16IsNonsingular A →
+                  (∀ (z : HighamBench.P16Vector n), Eq (HighamBench.p16MatVec Ainv (HighamBench.p16MatVec A z)) z) →
+                    (∀ (z : HighamBench.P16Vector n), Eq (HighamBench.p16MatVec A (HighamBench.p16MatVec Ainv z)) z) →
+                      Eq (HighamBench.p16MatVec A xExact) b →
+                        Real.instLT.lt 0 uHigh →
+                          Real.instLT.lt 0 uLow →
+                            (∀ (i : Nat),
+                                Eq (residualHat i)
+                                  (instHAdd.hAdd (HighamBench.p16Residual A b (xHat i)) (residualError i))) →
+                              (∀ (i : Nat) (j : Fin n),
+                                  Real.instLE.le (abs (residualError i j))
+                                    (instHMul.hMul (HighamBench.gamma uHigh n)
+                                      (instHAdd.hAdd (abs (b j))
+                                        (HighamBench.p16MatVec (fun row col => abs (A row col))
+                                          (fun col => abs (xHat i col)) j)))) →
+                                (∀ (i : Nat),
+                                    Eq (xHat (instHAdd.hAdd i 1))
+                                      (instHAdd.hAdd (instHAdd.hAdd (xHat i) (correctionHat i)) (updateError i))) →
+                                  (∀ (i : Nat) (j : Fin n),
+                                      Real.instLE.le (abs (updateError i j))
+                                        (instHMul.hMul uHigh (abs (xHat (instHAdd.hAdd i 1) j)))) →
+                                    (restart :
+                                        (i : Nat) →
+                                          HighamBench.P16FixedLowPrecisionMGSRestart A Ainv b xExact (xHat i)
+                                            (xHat (instHAdd.hAdd i 1)) (residualHat i) (correctionHat i) uLow
+                                            dimensionFactor) →
+                                      (∀ (i : Nat),
+                                          Real.instLE.le
+                                            (instHDiv.hDiv
+                                              (instHAdd.hAdd (HighamBench.p16VecNorm (residualError i))
+                                                (HighamBench.p16VecNorm (HighamBench.p16MatVec A (updateError i))))
+                                              (instHAdd.hAdd (HighamBench.p16VecNorm b)
+                                                (instHMul.hMul (HighamBench.p16FrobNorm A)
+                                                  (HighamBench.p16VecNorm (xHat (instHAdd.hAdd i 1))))))
+                                            (instHMul.hMul
+                                              (HighamBench.p16PolynomialFactorValue dimensionFactor n
+                                                (restart i).keyDimension)
+                                              uHigh)) →
                                         (∀ (i : Nat),
-                                            Eq (xHat (instHAdd.hAdd i 1))
-                                              (instHAdd.hAdd (instHAdd.hAdd (xHat i) (correctionHat i))
-                                                (updateError i))) →
-                                          (∀ (i : Nat) (j : Fin n),
-                                              Real.instLE.le (abs (updateError i j))
-                                                (instHMul.hMul uHigh (abs (xHat (instHAdd.hAdd i 1) j)))) →
-                                            (restart :
-                                                (i : Nat) →
-                                                  HighamBench.P16FixedLowPrecisionMGSRestart A Ainv b xExact (xHat i)
-                                                    (xHat (instHAdd.hAdd i 1)) (residualHat i) (correctionHat i) uHigh
-                                                    uLow dimensionFactor) →
-                                              (iterateCurrentNextRemainder iterateNextExactRemainder : Nat → Real) →
-                                                (∀ (i : Nat),
-                                                    Real.instLE.le (HighamBench.p16VecNorm (xHat i))
-                                                      (instHAdd.hAdd (HighamBench.p16VecNorm (xHat (instHAdd.hAdd i 1)))
-                                                        (abs (iterateCurrentNextRemainder i)))) →
-                                                  (∀ (i : Nat),
-                                                      Real.instLE.le (HighamBench.p16VecNorm (xHat (instHAdd.hAdd i 1)))
-                                                        (instHAdd.hAdd (HighamBench.p16VecNorm xExact)
-                                                          (abs (iterateNextExactRemainder i)))) →
-                                                    HighamBench.p16UniformSecondOrder uHigh uLow
-                                                        iterateCurrentNextRemainder →
-                                                      HighamBench.p16UniformSecondOrder uHigh uLow
-                                                          iterateNextExactRemainder →
-                                                        (HighamBench.p16UniformSecondOrder uHigh uLow fun i =>
-                                                            (restart i).theorem41.backwardRemainder) →
-                                                          (HighamBench.p16UniformSecondOrder uHigh uLow fun i =>
-                                                              (restart i).theorem41.forwardRemainder) →
-                                                            HighamBench.P16FixedMixedPrecisionGMRESRun n
+                                            Real.instLE.le
+                                              (instHDiv.hDiv (HighamBench.p16VecNorm (updateError i))
+                                                (HighamBench.p16VecNorm xExact))
+                                              (instHMul.hMul
+                                                (instHMul.hMul
+                                                  (HighamBench.p16PolynomialFactorValue dimensionFactor n
+                                                    (restart i).keyDimension)
+                                                  uHigh)
+                                                (HighamBench.p16ConditionNumberF A Ainv))) →
+                                          HighamBench.P16FixedMixedPrecisionGMRESRun n
 ```
 
 Fully explicit type:
@@ -1026,197 +553,263 @@ Fully explicit type:
     (A Ainv : HighamBench.P16Matrix n) →
       (b xExact : HighamBench.P16Vector n) →
         (xHat residualHat correctionHat residualError updateError : Nat → HighamBench.P16Vector n) →
-          (uHigh uLow dimensionFactor : Real) →
-            (b_nonzero :
-                @Ne.{1} (HighamBench.P16Vector n) b
-                  (@OfNat.ofNat.{0} (HighamBench.P16Vector n) (nat_lit 0)
-                    (@Zero.toOfNat0.{0} (HighamBench.P16Vector n)
-                      (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instZero)))) →
-              (nonsingular : @HighamBench.p16IsNonsingular n A) →
-                (left_inverse_action :
-                    ∀ (z : HighamBench.P16Vector n),
-                      @Eq.{1} (HighamBench.P16Vector n) (@HighamBench.p16MatVec n Ainv (@HighamBench.p16MatVec n A z))
-                        z) →
-                  (right_inverse_action :
+          (uHigh uLow : Real) →
+            (dimensionFactor : HighamBench.P16PolynomialFactor) →
+              (b_nonzero :
+                  @Ne.{1} (HighamBench.P16Vector n) b
+                    (@OfNat.ofNat.{0} (HighamBench.P16Vector n) (nat_lit 0)
+                      (@Zero.toOfNat0.{0} (HighamBench.P16Vector n)
+                        (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instZero)))) →
+                (nonsingular : @HighamBench.p16IsNonsingular n A) →
+                  (left_inverse_action :
                       ∀ (z : HighamBench.P16Vector n),
-                        @Eq.{1} (HighamBench.P16Vector n) (@HighamBench.p16MatVec n A (@HighamBench.p16MatVec n Ainv z))
+                        @Eq.{1} (HighamBench.P16Vector n) (@HighamBench.p16MatVec n Ainv (@HighamBench.p16MatVec n A z))
                           z) →
-                    (exact_solution : @Eq.{1} (HighamBench.P16Vector n) (@HighamBench.p16MatVec n A xExact) b) →
-                      (uHigh_pos :
-                          @LT.lt.{0} Real Real.instLT
-                            (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) uHigh) →
-                        (uLow_pos :
+                    (right_inverse_action :
+                        ∀ (z : HighamBench.P16Vector n),
+                          @Eq.{1} (HighamBench.P16Vector n)
+                            (@HighamBench.p16MatVec n A (@HighamBench.p16MatVec n Ainv z)) z) →
+                      (exact_solution : @Eq.{1} (HighamBench.P16Vector n) (@HighamBench.p16MatVec n A xExact) b) →
+                        (uHigh_pos :
                             @LT.lt.{0} Real Real.instLT
-                              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) uLow) →
-                          (uHigh_le_uLow : @LE.le.{0} Real Real.instLE uHigh uLow) →
-                            (dimensionFactor_nonneg :
-                                @LE.le.{0} Real Real.instLE
-                                  (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                                  dimensionFactor) →
-                              (high_gamma_valid : HighamBench.GammaValid uHigh n) →
-                                (low_gamma_valid : HighamBench.GammaValid uLow n) →
-                                  (high_gamma_le :
-                                      @LE.le.{0} Real Real.instLE (HighamBench.gamma uHigh n)
-                                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                          dimensionFactor uHigh)) →
-                                    (residual_equation :
-                                        ∀ (i : Nat),
-                                          @Eq.{1} (HighamBench.P16Vector n) (residualHat i)
-                                            (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n)
-                                              (HighamBench.P16Vector n)
-                                              (@instHAdd.{0} (HighamBench.P16Vector n)
-                                                (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
-                                                  Real.instAdd))
-                                              (@HighamBench.p16Residual n A b (xHat i)) (residualError i))) →
-                                      (residual_error_bound :
-                                          ∀ (i : Nat) (j : Fin n),
+                              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) uHigh) →
+                          (uLow_pos :
+                              @LT.lt.{0} Real Real.instLT
+                                (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) uLow) →
+                            (residual_equation :
+                                ∀ (i : Nat),
+                                  @Eq.{1} (HighamBench.P16Vector n) (residualHat i)
+                                    (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+                                      (HighamBench.P16Vector n)
+                                      (@instHAdd.{0} (HighamBench.P16Vector n)
+                                        (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
+                                          Real.instAdd))
+                                      (@HighamBench.p16Residual n A b (xHat i)) (residualError i))) →
+                              (residual_error_bound :
+                                  ∀ (i : Nat) (j : Fin n),
+                                    @LE.le.{0} Real Real.instLE
+                                      (@abs.{0} Real Real.lattice Real.instAddGroup (residualError i j))
+                                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                        (HighamBench.gamma uHigh n)
+                                        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                          (@abs.{0} Real Real.lattice Real.instAddGroup (b j))
+                                          (@HighamBench.p16MatVec n
+                                            (fun (row col : Fin n) =>
+                                              @abs.{0} Real Real.lattice Real.instAddGroup (A row col))
+                                            (fun (col : Fin n) =>
+                                              @abs.{0} Real Real.lattice Real.instAddGroup (xHat i col))
+                                            j)))) →
+                                (update_equation :
+                                    ∀ (i : Nat),
+                                      @Eq.{1} (HighamBench.P16Vector n)
+                                        (xHat
+                                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
+                                            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+                                        (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+                                          (HighamBench.P16Vector n)
+                                          (@instHAdd.{0} (HighamBench.P16Vector n)
+                                            (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
+                                              Real.instAdd))
+                                          (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+                                            (HighamBench.P16Vector n)
+                                            (@instHAdd.{0} (HighamBench.P16Vector n)
+                                              (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
+                                                Real.instAdd))
+                                            (xHat i) (correctionHat i))
+                                          (updateError i))) →
+                                  (update_error_bound :
+                                      ∀ (i : Nat) (j : Fin n),
+                                        @LE.le.{0} Real Real.instLE
+                                          (@abs.{0} Real Real.lattice Real.instAddGroup (updateError i j))
+                                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) uHigh
+                                            (@abs.{0} Real Real.lattice Real.instAddGroup
+                                              (xHat
+                                                (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
+                                                  (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+                                                j)))) →
+                                    (restart :
+                                        (i : Nat) →
+                                          @HighamBench.P16FixedLowPrecisionMGSRestart n A Ainv b xExact (xHat i)
+                                            (xHat
+                                              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
+                                                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+                                            (residualHat i) (correctionHat i) uLow dimensionFactor) →
+                                      (backward_high_roundoff_bound :
+                                          ∀ (i : Nat),
                                             @LE.le.{0} Real Real.instLE
-                                              (@abs.{0} Real Real.lattice Real.instAddGroup (residualError i j))
-                                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                (HighamBench.gamma uHigh n)
+                                              (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                                                (@instHDiv.{0} Real
+                                                  (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
                                                 (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                                  (@abs.{0} Real Real.lattice Real.instAddGroup (b j))
-                                                  (@HighamBench.p16MatVec n
-                                                    (fun (row col : Fin n) =>
-                                                      @abs.{0} Real Real.lattice Real.instAddGroup (A row col))
-                                                    (fun (col : Fin n) =>
-                                                      @abs.{0} Real Real.lattice Real.instAddGroup (xHat i col))
-                                                    j)))) →
-                                        (update_equation :
-                                            ∀ (i : Nat),
-                                              @Eq.{1} (HighamBench.P16Vector n)
-                                                (xHat
-                                                  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
-                                                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                                                (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n)
-                                                  (HighamBench.P16Vector n) (HighamBench.P16Vector n)
-                                                  (@instHAdd.{0} (HighamBench.P16Vector n)
-                                                    (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                      fun (i : Fin n) => Real.instAdd))
-                                                  (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n)
-                                                    (HighamBench.P16Vector n) (HighamBench.P16Vector n)
-                                                    (@instHAdd.{0} (HighamBench.P16Vector n)
-                                                      (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                        fun (i : Fin n) => Real.instAdd))
-                                                    (xHat i) (correctionHat i))
-                                                  (updateError i))) →
-                                          (update_error_bound :
-                                              ∀ (i : Nat) (j : Fin n),
-                                                @LE.le.{0} Real Real.instLE
-                                                  (@abs.{0} Real Real.lattice Real.instAddGroup (updateError i j))
+                                                  (@HighamBench.p16VecNorm n (residualError i))
+                                                  (@HighamBench.p16VecNorm n
+                                                    (@HighamBench.p16MatVec n A (updateError i))))
+                                                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                                  (@HighamBench.p16VecNorm n b)
                                                   (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                    uHigh
-                                                    (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                    (@HighamBench.p16FrobNorm n A)
+                                                    (@HighamBench.p16VecNorm n
                                                       (xHat
                                                         (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
                                                           i
-                                                          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-                                                        j)))) →
-                                            (restart :
-                                                (i : Nat) →
-                                                  @HighamBench.P16FixedLowPrecisionMGSRestart n A Ainv b xExact (xHat i)
+                                                          (@OfNat.ofNat.{0} Nat (nat_lit 1)
+                                                            (instOfNatNat (nat_lit 1)))))))))
+                                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                (HighamBench.p16PolynomialFactorValue dimensionFactor n
+                                                  (@HighamBench.P16FixedLowPrecisionMGSRestart.keyDimension n A Ainv b
+                                                    xExact (xHat i)
                                                     (xHat
                                                       (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
                                                         (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                                                    (residualHat i) (correctionHat i) uHigh uLow dimensionFactor) →
-                                              (iterateCurrentNextRemainder iterateNextExactRemainder : Nat → Real) →
-                                                (iterate_current_next :
-                                                    ∀ (i : Nat),
-                                                      @LE.le.{0} Real Real.instLE (@HighamBench.p16VecNorm n (xHat i))
-                                                        (@HAdd.hAdd.{0, 0, 0} Real Real Real
-                                                          (@instHAdd.{0} Real Real.instAdd)
-                                                          (@HighamBench.p16VecNorm n
-                                                            (xHat
-                                                              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                (@instHAdd.{0} Nat instAddNat) i
-                                                                (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                  (instOfNatNat (nat_lit 1))))))
-                                                          (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                            (iterateCurrentNextRemainder i)))) →
-                                                  (iterate_next_exact :
-                                                      ∀ (i : Nat),
-                                                        @LE.le.{0} Real Real.instLE
-                                                          (@HighamBench.p16VecNorm n
-                                                            (xHat
-                                                              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                (@instHAdd.{0} Nat instAddNat) i
-                                                                (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                  (instOfNatNat (nat_lit 1))))))
-                                                          (@HAdd.hAdd.{0, 0, 0} Real Real Real
-                                                            (@instHAdd.{0} Real Real.instAdd)
-                                                            (@HighamBench.p16VecNorm n xExact)
-                                                            (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                              (iterateNextExactRemainder i)))) →
-                                                    (iterate_current_next_second_order :
-                                                        HighamBench.p16UniformSecondOrder uHigh uLow
-                                                          iterateCurrentNextRemainder) →
-                                                      (iterate_next_exact_second_order :
-                                                          HighamBench.p16UniformSecondOrder uHigh uLow
-                                                            iterateNextExactRemainder) →
-                                                        (backward_remainder_second_order :
-                                                            HighamBench.p16UniformSecondOrder uHigh uLow
-                                                              fun (i : Nat) =>
-                                                              @HighamBench.P16Theorem41RestartResult.backwardRemainder n
-                                                                A Ainv b xExact (xHat i)
-                                                                (xHat
-                                                                  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                    (@instHAdd.{0} Nat instAddNat) i
-                                                                    (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                      (instOfNatNat (nat_lit 1)))))
-                                                                uHigh
-                                                                (@HighamBench.P16FixedLowPrecisionMGSRestart.modularAccuracy
-                                                                  n A Ainv b xExact (xHat i)
-                                                                  (xHat
-                                                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                      (@instHAdd.{0} Nat instAddNat) i
-                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                        (instOfNatNat (nat_lit 1)))))
-                                                                  (residualHat i) (correctionHat i) uHigh uLow
-                                                                  dimensionFactor (restart i))
-                                                                dimensionFactor
-                                                                (@HighamBench.P16FixedLowPrecisionMGSRestart.theorem41 n
-                                                                  A Ainv b xExact (xHat i)
-                                                                  (xHat
-                                                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                      (@instHAdd.{0} Nat instAddNat) i
-                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                        (instOfNatNat (nat_lit 1)))))
-                                                                  (residualHat i) (correctionHat i) uHigh uLow
-                                                                  dimensionFactor (restart i))) →
-                                                          (forward_remainder_second_order :
-                                                              HighamBench.p16UniformSecondOrder uHigh uLow
-                                                                fun (i : Nat) =>
-                                                                @HighamBench.P16Theorem41RestartResult.forwardRemainder
-                                                                  n A Ainv b xExact (xHat i)
-                                                                  (xHat
-                                                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                      (@instHAdd.{0} Nat instAddNat) i
-                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                        (instOfNatNat (nat_lit 1)))))
-                                                                  uHigh
-                                                                  (@HighamBench.P16FixedLowPrecisionMGSRestart.modularAccuracy
-                                                                    n A Ainv b xExact (xHat i)
-                                                                    (xHat
-                                                                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                        (@instHAdd.{0} Nat instAddNat) i
-                                                                        (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                          (instOfNatNat (nat_lit 1)))))
-                                                                    (residualHat i) (correctionHat i) uHigh uLow
-                                                                    dimensionFactor (restart i))
-                                                                  dimensionFactor
-                                                                  (@HighamBench.P16FixedLowPrecisionMGSRestart.theorem41
-                                                                    n A Ainv b xExact (xHat i)
-                                                                    (xHat
-                                                                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                        (@instHAdd.{0} Nat instAddNat) i
-                                                                        (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                          (instOfNatNat (nat_lit 1)))))
-                                                                    (residualHat i) (correctionHat i) uHigh uLow
-                                                                    dimensionFactor (restart i))) →
-                                                            HighamBench.P16FixedMixedPrecisionGMRESRun n
+                                                    (residualHat i) (correctionHat i) uLow dimensionFactor (restart i)))
+                                                uHigh)) →
+                                        (forward_high_roundoff_bound :
+                                            ∀ (i : Nat),
+                                              @LE.le.{0} Real Real.instLE
+                                                (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                                                  (@instHDiv.{0} Real
+                                                    (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                                                  (@HighamBench.p16VecNorm n (updateError i))
+                                                  (@HighamBench.p16VecNorm n xExact))
+                                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                    (HighamBench.p16PolynomialFactorValue dimensionFactor n
+                                                      (@HighamBench.P16FixedLowPrecisionMGSRestart.keyDimension n A Ainv
+                                                        b xExact (xHat i)
+                                                        (xHat
+                                                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
+                                                            (@instHAdd.{0} Nat instAddNat) i
+                                                            (@OfNat.ofNat.{0} Nat (nat_lit 1)
+                                                              (instOfNatNat (nat_lit 1)))))
+                                                        (residualHat i) (correctionHat i) uLow dimensionFactor
+                                                        (restart i)))
+                                                    uHigh)
+                                                  (@HighamBench.p16ConditionNumberF n A Ainv))) →
+                                          HighamBench.P16FixedMixedPrecisionGMRESRun n
 ```
 
-### D026: `HighamBench.P16Matrix`
+### D016: `HighamBench.P16FixedMixedPrecisionGMRESRun.residualHat`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `01dc025f8feb9aaf3fff835b4bf492e284251a0ee8037e7f3454275d3a2f172c`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Nat → HighamBench.P16Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Nat → HighamBench.P16Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.7
+```
+
+### D017: `HighamBench.P16FixedMixedPrecisionGMRESRun.restart`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `5a4a27017683ac836401a6e45b02b40a61dcd7039e2bb5765c500a6cd9681cf3`
+
+Type:
+
+```lean
+{n : Nat} →
+  (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) →
+    (i : Nat) →
+      HighamBench.P16FixedLowPrecisionMGSRestart self.A self.Ainv self.b self.xExact (self.xHat i)
+        (self.xHat (instHAdd.hAdd i 1)) (self.residualHat i) (self.correctionHat i) self.uLow self.dimensionFactor
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) →
+    (i : Nat) →
+      @HighamBench.P16FixedLowPrecisionMGSRestart n (@HighamBench.P16FixedMixedPrecisionGMRESRun.A n self)
+        (@HighamBench.P16FixedMixedPrecisionGMRESRun.Ainv n self) (@HighamBench.P16FixedMixedPrecisionGMRESRun.b n self)
+        (@HighamBench.P16FixedMixedPrecisionGMRESRun.xExact n self)
+        (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n self i)
+        (@HighamBench.P16FixedMixedPrecisionGMRESRun.xHat n self
+          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) i
+            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+        (@HighamBench.P16FixedMixedPrecisionGMRESRun.residualHat n self i)
+        (@HighamBench.P16FixedMixedPrecisionGMRESRun.correctionHat n self i)
+        (@HighamBench.P16FixedMixedPrecisionGMRESRun.uLow n self)
+        (@HighamBench.P16FixedMixedPrecisionGMRESRun.dimensionFactor n self)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.25
+```
+
+### D018: `HighamBench.P16FixedMixedPrecisionGMRESRun.uHigh`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `cd2ac4d493bb1bd1edb37aa4f91b6d7f69ccecfc8b787056575f25ba026d51d4`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.11
+```
+
+### D019: `HighamBench.P16FixedMixedPrecisionGMRESRun.uLow`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `c1aeef9945c0840f4393dbb63df4e40b51a227703ebb844878da8252c84a3753`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P16FixedMixedPrecisionGMRESRun n → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : HighamBench.P16FixedMixedPrecisionGMRESRun n) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.12
+```
+
+### D020: `HighamBench.P16Matrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -1242,33 +835,7 @@ Definition body (one-level semantic boundary):
 fun n => Matrix (Fin n) (Fin n) Real
 ```
 
-### D027: `HighamBench.P16Theorem41RestartResult`
-
-- Role: `local`
-- Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `2`
-- Semantic SHA-256: `0dce4bdcb51883502f44accbe0a7bf014a6e236ecbb7de2a1b1180d4cc3a135a`
-
-Type:
-
-```lean
-{n : Nat} →
-  HighamBench.P16Matrix n →
-    HighamBench.P16Matrix n →
-      HighamBench.P16Vector n →
-        HighamBench.P16Vector n → HighamBench.P16Vector n → HighamBench.P16Vector n → Real → Real → Real → Type
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  (A Ainv : HighamBench.P16Matrix n) →
-    (b xExact xCurrent xNext : HighamBench.P16Vector n) → (uHigh modularAccuracy dimensionFactor : Real) → Type
-```
-
-### D028: `HighamBench.P16Vector`
+### D021: `HighamBench.P16Vector`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -1294,7 +861,7 @@ Definition body (one-level semantic boundary):
 fun n => Fin n → Real
 ```
 
-### D029: `HighamBench.p16ConditionNumberF`
+### D022: `HighamBench.p16ConditionNumberF`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -1320,7 +887,7 @@ Definition body (one-level semantic boundary):
 fun {n} A Ainv => instHMul.hMul (HighamBench.p16FrobNorm Ainv) (HighamBench.p16FrobNorm A)
 ```
 
-### D030: `HighamBench.p16NormalizedResidual`
+### D023: `HighamBench.p16NormalizedResidual`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -1348,7 +915,36 @@ fun {n} A b xHat =>
     (instHAdd.hAdd (instHMul.hMul (HighamBench.p16FrobNorm A) (HighamBench.p16VecNorm xHat)) (HighamBench.p16VecNorm b))
 ```
 
-### D031: `HighamBench.p16VecNorm`
+### D024: `HighamBench.p16PolynomialFactorValue`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `760fbb54d1bbc51a3cb9ef42d3d96bd053f7f673cb6af6cf627e47cd48d589c8`
+
+Type:
+
+```lean
+HighamBench.P16PolynomialFactor → Nat → Nat → Real
+```
+
+Fully explicit type:
+
+```lean
+(c : HighamBench.P16PolynomialFactor) → (n k : Nat) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun c n k =>
+  Finset.univ.sum fun i =>
+    Finset.univ.sum fun j =>
+      instHMul.hMul (instHMul.hMul (c.coefficient i j) (instHPow.hPow n.cast i.val)) (instHPow.hPow k.cast j.val)
+```
+
+### D025: `HighamBench.p16VecNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -1374,1066 +970,143 @@ Definition body (one-level semantic boundary):
 fun {n} x => (Finset.univ.sum fun i => instHPow.hPow (x i) 2).sqrt
 ```
 
-### D032: `HighamBench.GammaValid`
+### D026: `HighamBench.P16FixedLowPrecisionMGSRestart`
 
 - Role: `local`
-- Owner module: `HighamBench.Core`
-- Declaration kind: `def`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `inductive`
 - Distance from target type: `3`
-- Semantic SHA-256: `651ef903a8d9a3c8f539284f6c70325cebe6e199aad808cb56d9123f31e258c9`
+- Semantic SHA-256: `ef96102c5a351e15c93f9f3b2615d84519d59e8df25f12207ed9f0dd8d033a2b`
 
 Type:
 
 ```lean
-Real → Nat → Prop
+{n : Nat} →
+  HighamBench.P16Matrix n →
+    HighamBench.P16Matrix n →
+      HighamBench.P16Vector n →
+        HighamBench.P16Vector n →
+          HighamBench.P16Vector n →
+            HighamBench.P16Vector n →
+              HighamBench.P16Vector n → HighamBench.P16Vector n → Real → HighamBench.P16PolynomialFactor → Type
 ```
 
 Fully explicit type:
 
 ```lean
-(u : Real) → (n : Nat) → Prop
+{n : Nat} →
+  (A Ainv : HighamBench.P16Matrix n) →
+    (b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n) →
+      (uLow : Real) → (dimensionFactor : HighamBench.P16PolynomialFactor) → Type
+```
+
+### D027: `HighamBench.P16PolynomialFactor`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `0433df59d966012b968702b4ffc0dcd8fdc1b3177eecb14ee31bad2fde29f36b`
+
+Type:
+
+```lean
+Type
+```
+
+Fully explicit type:
+
+```lean
+Type
+```
+
+### D028: `HighamBench.P16PolynomialFactor.coefficient`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `eda434f64be08a0d479423cd695893c35f43716004402939d12da0a364fa58e8`
+
+Type:
+
+```lean
+(self : HighamBench.P16PolynomialFactor) →
+  Fin (instHAdd.hAdd self.degreeN 1) → Fin (instHAdd.hAdd self.degreeK 1) → Real
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P16PolynomialFactor) →
+  Fin
+      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (HighamBench.P16PolynomialFactor.degreeN self)
+        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+    Fin
+        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (HighamBench.P16PolynomialFactor.degreeK self)
+          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+      Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun u n => Real.instLT.lt (instHMul.hMul n.cast u) 1
+fun self => self.3
 ```
 
-### D033: `HighamBench.P16FixedLowPrecisionMGSRestart.mk`
+### D029: `HighamBench.P16PolynomialFactor.degreeK`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `constructor`
+- Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `bee5eb576f7cca24080510e9b176ecf4ed7287c64a5c58c11194e25420f63381`
+- Semantic SHA-256: `df1d28debd8bd57641958e5b2f067565cdd35a656575ec77fff53a44cad5cf95`
 
 Type:
 
 ```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n} →
-      {uHigh uLow dimensionFactor : Real} →
-        (keyDimension : Nat) →
-          instLTNat.lt 0 keyDimension →
-            instLENat.le keyDimension n →
-              (basis : HighamBench.P16RectMatrix n keyDimension) →
-                (basisNext : HighamBench.P16RectMatrix n (instHAdd.hAdd keyDimension 1)) →
-                  (hessenberg : HighamBench.P16RectMatrix (instHAdd.hAdd keyDimension 1) keyDimension) →
-                    (arnoldiProduct arnoldiProductError : HighamBench.P16RectMatrix n keyDimension) →
-                      Eq arnoldiProduct (instHAdd.hAdd (HighamBench.p16SquareRectMul A basis) arnoldiProductError) →
-                        (∀ (row : Fin n) (col : Fin keyDimension), Eq (basis row col) (basisNext row col.castSucc)) →
-                          (mgsWork : Fin keyDimension → Nat → HighamBench.P16Vector n) →
-                            (mgsProjectionError : Fin keyDimension → Fin keyDimension → Real) →
-                              (mgsUpdateError : Fin keyDimension → Fin keyDimension → HighamBench.P16Vector n) →
-                                (mgsNormalizationError : Fin keyDimension → HighamBench.P16Vector n) →
-                                  (∀ (j : Fin keyDimension) (row : Fin n),
-                                      Eq (mgsWork j 0 row) (arnoldiProduct row j)) →
-                                    (∀ (j q : Fin keyDimension),
-                                        instLENat.le q.val j.val →
-                                          Eq (hessenberg q.castSucc j)
-                                            (instHAdd.hAdd
-                                              (Finset.univ.sum fun row =>
-                                                instHMul.hMul (basisNext row q.castSucc) (mgsWork j q.val row))
-                                              (mgsProjectionError j q))) →
-                                      (∀ (j q : Fin keyDimension),
-                                          instLENat.le q.val j.val →
-                                            Real.instLE.le (abs (mgsProjectionError j q))
-                                              (instHMul.hMul (HighamBench.gamma uLow n)
-                                                (Finset.univ.sum fun row =>
-                                                  abs
-                                                    (instHMul.hMul (basisNext row q.castSucc)
-                                                      (mgsWork j q.val row))))) →
-                                        (∀ (j q : Fin keyDimension),
-                                            instLENat.le q.val j.val →
-                                              Eq (mgsWork j (instHAdd.hAdd q.val 1))
-                                                (instHAdd.hAdd
-                                                  (instHSub.hSub (mgsWork j q.val) fun row =>
-                                                    instHMul.hMul (hessenberg q.castSucc j) (basisNext row q.castSucc))
-                                                  (mgsUpdateError j q))) →
-                                          (∀ (j q : Fin keyDimension),
-                                              instLENat.le q.val j.val →
-                                                Real.instLE.le (HighamBench.p16VecNorm (mgsUpdateError j q))
-                                                  (instHMul.hMul uLow
-                                                    (instHAdd.hAdd (HighamBench.p16VecNorm (mgsWork j q.val))
-                                                      (instHMul.hMul (abs (hessenberg q.castSucc j))
-                                                        (HighamBench.p16VecNorm fun row =>
-                                                          basisNext row q.castSucc))))) →
-                                            (∀ (j : Fin keyDimension),
-                                                Eq
-                                                  (fun row =>
-                                                    instHMul.hMul (hessenberg j.succ j) (basisNext row j.succ))
-                                                  (instHAdd.hAdd (mgsWork j (instHAdd.hAdd j.val 1))
-                                                    (mgsNormalizationError j))) →
-                                              (∀ (j : Fin keyDimension),
-                                                  Real.instLE.le (HighamBench.p16VecNorm (mgsNormalizationError j))
-                                                    (instHMul.hMul uLow
-                                                      (HighamBench.p16VecNorm (mgsWork j (instHAdd.hAdd j.val 1))))) →
-                                                (epsilonC epsilonB epsilonLS epsilonX : Real) →
-                                                  (residualLow residualCastError : HighamBench.P16Vector n) →
-                                                    Eq residualLow (instHAdd.hAdd residualHat residualCastError) →
-                                                      Real.instLE.le (HighamBench.p16VecNorm residualCastError)
-                                                          (instHMul.hMul uLow (HighamBench.p16VecNorm residualHat)) →
-                                                        Eq epsilonB uLow →
-                                                          Real.instLE.le
-                                                              (HighamBench.p16RectFrobNorm arnoldiProductError)
-                                                              (instHMul.hMul epsilonC
-                                                                (HighamBench.p16RectFrobNorm
-                                                                  (HighamBench.p16SquareRectMul A basis))) →
-                                                            (leastSquaresRhsError : HighamBench.P16Vector n) →
-                                                              (leastSquaresMatrixError :
-                                                                  HighamBench.P16RectMatrix n keyDimension) →
-                                                                (leastSquaresY : HighamBench.P16Vector keyDimension) →
-                                                                  HighamBench.p16IsLeastSquaresSolution
-                                                                      (instHAdd.hAdd arnoldiProduct
-                                                                        leastSquaresMatrixError)
-                                                                      (instHAdd.hAdd residualLow leastSquaresRhsError)
-                                                                      leastSquaresY →
-                                                                    (∀ (j : Fin (instHAdd.hAdd keyDimension 1)),
-                                                                        Real.instLE.le
-                                                                          (HighamBench.p16VecNorm
-                                                                            (HighamBench.p16AugmentedColumn
-                                                                              leastSquaresRhsError
-                                                                              leastSquaresMatrixError j))
-                                                                          (instHMul.hMul epsilonLS
-                                                                            (HighamBench.p16VecNorm
-                                                                              (HighamBench.p16AugmentedColumn
-                                                                                residualLow arnoldiProduct j)))) →
-                                                                      (correctionFormationError :
-                                                                          HighamBench.P16Vector n) →
-                                                                        Eq correctionHat
-                                                                            (instHAdd.hAdd
-                                                                              (HighamBench.p16RectMatVec basis
-                                                                                leastSquaresY)
-                                                                              correctionFormationError) →
-                                                                          Real.instLE.le
-                                                                              (HighamBench.p16VecNorm
-                                                                                correctionFormationError)
-                                                                              (instHMul.hMul
-                                                                                (instHMul.hMul epsilonX
-                                                                                  (HighamBench.p16RectFrobNorm basis))
-                                                                                (HighamBench.p16VecNorm
-                                                                                  leastSquaresY)) →
-                                                                            And (Real.instLE.le 0 epsilonC)
-                                                                                (And (Real.instLE.le 0 epsilonB)
-                                                                                  (And (Real.instLE.le 0 epsilonLS)
-                                                                                    (Real.instLE.le 0 epsilonX))) →
-                                                                              (productWeight leastSquaresWeight
-                                                                                  correctionWeight : Real) →
-                                                                                And (Real.instLE.le 0 productWeight)
-                                                                                    (And
-                                                                                      (Real.instLE.le 0
-                                                                                        leastSquaresWeight)
-                                                                                      (Real.instLE.le 0
-                                                                                        correctionWeight)) →
-                                                                                  Real.instLE.le epsilonC
-                                                                                      (instHMul.hMul productWeight
-                                                                                        uLow) →
-                                                                                    Real.instLE.le epsilonLS
-                                                                                        (instHMul.hMul
-                                                                                          leastSquaresWeight uLow) →
-                                                                                      Real.instLE.le epsilonX
-                                                                                          (instHMul.hMul
-                                                                                            correctionWeight uLow) →
-                                                                                        (basisLowerGain imageLowerGain :
-                                                                                            Real) →
-                                                                                          Real.instLT.lt 0
-                                                                                              basisLowerGain →
-                                                                                            HighamBench.p16MinGainAtLeast
-                                                                                                basis basisLowerGain →
-                                                                                              HighamBench.p16MinGainAtLeast
-                                                                                                  (HighamBench.p16SquareRectMul
-                                                                                                    A basis)
-                                                                                                  imageLowerGain →
-                                                                                                Real.instLT.lt
-                                                                                                    (instHMul.hMul
-                                                                                                      epsilonX
-                                                                                                      (HighamBench.p16RectFrobNorm
-                                                                                                        basis))
-                                                                                                    basisLowerGain →
-                                                                                                  (instLTNat.lt
-                                                                                                        keyDimension n →
-                                                                                                      ⋯) →
-                                                                                                    ⋯ → ⋯
+HighamBench.P16PolynomialFactor → Nat
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n} →
-      {uHigh uLow dimensionFactor : Real} →
-        (keyDimension : Nat) →
-          (keyDimension_pos :
-              @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) keyDimension) →
-            (keyDimension_le : @LE.le.{0} Nat instLENat keyDimension n) →
-              (basis : HighamBench.P16RectMatrix n keyDimension) →
-                (basisNext :
-                    HighamBench.P16RectMatrix n
-                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) keyDimension
-                        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))) →
-                  (hessenberg :
-                      HighamBench.P16RectMatrix
-                        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) keyDimension
-                          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-                        keyDimension) →
-                    (arnoldiProduct arnoldiProductError : HighamBench.P16RectMatrix n keyDimension) →
-                      (arnoldi_product_equation :
-                          @Eq.{1} (HighamBench.P16RectMatrix n keyDimension) arnoldiProduct
-                            (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16RectMatrix n keyDimension)
-                              (HighamBench.P16RectMatrix n keyDimension) (HighamBench.P16RectMatrix n keyDimension)
-                              (@instHAdd.{0} (HighamBench.P16RectMatrix n keyDimension)
-                                (@Matrix.add.{0, 0, 0} (Fin n) (Fin keyDimension) Real Real.instAdd))
-                              (@HighamBench.p16SquareRectMul n keyDimension A basis) arnoldiProductError)) →
-                        (basis_fully_stored :
-                            ∀ (row : Fin n) (col : Fin keyDimension),
-                              @Eq.{1} Real (basis row col) (basisNext row (@Fin.castSucc keyDimension col))) →
-                          (mgsWork : Fin keyDimension → Nat → HighamBench.P16Vector n) →
-                            (mgsProjectionError : Fin keyDimension → Fin keyDimension → Real) →
-                              (mgsUpdateError : Fin keyDimension → Fin keyDimension → HighamBench.P16Vector n) →
-                                (mgsNormalizationError : Fin keyDimension → HighamBench.P16Vector n) →
-                                  (mgs_work_initial :
-                                      ∀ (j : Fin keyDimension) (row : Fin n),
-                                        @Eq.{1} Real
-                                          (mgsWork j (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) row)
-                                          (arnoldiProduct row j)) →
-                                    (mgs_projection :
-                                        ∀ (j q : Fin keyDimension),
-                                          @LE.le.{0} Nat instLENat (@Fin.val keyDimension q) (@Fin.val keyDimension j) →
-                                            @Eq.{1} Real (hessenberg (@Fin.castSucc keyDimension q) j)
-                                              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                                (@Finset.sum.{0, 0} (Fin n) Real Real.instAddCommMonoid
-                                                  (@Finset.univ.{0} (Fin n) (Fin.fintype n)) fun (row : Fin n) =>
-                                                  @HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                    (basisNext row (@Fin.castSucc keyDimension q))
-                                                    (mgsWork j (@Fin.val keyDimension q) row))
-                                                (mgsProjectionError j q))) →
-                                      (mgs_projection_error_bound :
-                                          ∀ (j q : Fin keyDimension),
-                                            @LE.le.{0} Nat instLENat (@Fin.val keyDimension q)
-                                                (@Fin.val keyDimension j) →
-                                              @LE.le.{0} Real Real.instLE
-                                                (@abs.{0} Real Real.lattice Real.instAddGroup (mgsProjectionError j q))
-                                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                  (HighamBench.gamma uLow n)
-                                                  (@Finset.sum.{0, 0} (Fin n) Real Real.instAddCommMonoid
-                                                    (@Finset.univ.{0} (Fin n) (Fin.fintype n)) fun (row : Fin n) =>
-                                                    @abs.{0} Real Real.lattice Real.instAddGroup
-                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                        (@instHMul.{0} Real Real.instMul)
-                                                        (basisNext row (@Fin.castSucc keyDimension q))
-                                                        (mgsWork j (@Fin.val keyDimension q) row))))) →
-                                        (mgs_update :
-                                            ∀ (j q : Fin keyDimension),
-                                              @LE.le.{0} Nat instLENat (@Fin.val keyDimension q)
-                                                  (@Fin.val keyDimension j) →
-                                                @Eq.{1} (HighamBench.P16Vector n)
-                                                  (mgsWork j
-                                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-                                                      (@Fin.val keyDimension q)
-                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                                                  (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n)
-                                                    (HighamBench.P16Vector n) (HighamBench.P16Vector n)
-                                                    (@instHAdd.{0} (HighamBench.P16Vector n)
-                                                      (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                        fun (i : Fin n) => Real.instAdd))
-                                                    (@HSub.hSub.{0, 0, 0} (HighamBench.P16Vector n)
-                                                      ((row : Fin n) → Real) (HighamBench.P16Vector n)
-                                                      (@instHSub.{0} (HighamBench.P16Vector n)
-                                                        (@Pi.instSub.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                          fun (i : Fin n) => Real.instSub))
-                                                      (mgsWork j (@Fin.val keyDimension q)) fun (row : Fin n) =>
-                                                      @HMul.hMul.{0, 0, 0} Real Real Real
-                                                        (@instHMul.{0} Real Real.instMul)
-                                                        (hessenberg (@Fin.castSucc keyDimension q) j)
-                                                        (basisNext row (@Fin.castSucc keyDimension q)))
-                                                    (mgsUpdateError j q))) →
-                                          (mgs_update_error_bound :
-                                              ∀ (j q : Fin keyDimension),
-                                                @LE.le.{0} Nat instLENat (@Fin.val keyDimension q)
-                                                    (@Fin.val keyDimension j) →
-                                                  @LE.le.{0} Real Real.instLE
-                                                    (@HighamBench.p16VecNorm n (mgsUpdateError j q))
-                                                    (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                      (@instHMul.{0} Real Real.instMul) uLow
-                                                      (@HAdd.hAdd.{0, 0, 0} Real Real Real
-                                                        (@instHAdd.{0} Real Real.instAdd)
-                                                        (@HighamBench.p16VecNorm n
-                                                          (mgsWork j (@Fin.val keyDimension q)))
-                                                        (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                          (@instHMul.{0} Real Real.instMul)
-                                                          (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                            (hessenberg (@Fin.castSucc keyDimension q) j))
-                                                          (@HighamBench.p16VecNorm n fun (row : Fin n) =>
-                                                            basisNext row (@Fin.castSucc keyDimension q)))))) →
-                                            (mgs_normalization :
-                                                ∀ (j : Fin keyDimension),
-                                                  @Eq.{1} ((row : Fin n) → Real)
-                                                    (fun (row : Fin n) =>
-                                                      @HMul.hMul.{0, 0, 0} Real Real Real
-                                                        (@instHMul.{0} Real Real.instMul)
-                                                        (hessenberg (@Fin.succ keyDimension j) j)
-                                                        (basisNext row (@Fin.succ keyDimension j)))
-                                                    (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n)
-                                                      (HighamBench.P16Vector n) (HighamBench.P16Vector n)
-                                                      (@instHAdd.{0} (HighamBench.P16Vector n)
-                                                        (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                          fun (i : Fin n) => Real.instAdd))
-                                                      (mgsWork j
-                                                        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-                                                          (@Fin.val keyDimension j)
-                                                          (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                            (instOfNatNat (nat_lit 1)))))
-                                                      (mgsNormalizationError j))) →
-                                              (mgs_normalization_error_bound :
-                                                  ∀ (j : Fin keyDimension),
-                                                    @LE.le.{0} Real Real.instLE
-                                                      (@HighamBench.p16VecNorm n (mgsNormalizationError j))
-                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                        (@instHMul.{0} Real Real.instMul) uLow
-                                                        (@HighamBench.p16VecNorm n
-                                                          (mgsWork j
-                                                            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                              (@instHAdd.{0} Nat instAddNat) (@Fin.val keyDimension j)
-                                                              (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                (instOfNatNat (nat_lit 1)))))))) →
-                                                (epsilonC epsilonB epsilonLS epsilonX : Real) →
-                                                  (residualLow residualCastError : HighamBench.P16Vector n) →
-                                                    (residual_cast_equation :
-                                                        @Eq.{1} (HighamBench.P16Vector n) residualLow
-                                                          (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n)
-                                                            (HighamBench.P16Vector n) (HighamBench.P16Vector n)
-                                                            (@instHAdd.{0} (HighamBench.P16Vector n)
-                                                              (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
-                                                                fun (i : Fin n) => Real.instAdd))
-                                                            residualHat residualCastError)) →
-                                                      (residual_cast_bound :
-                                                          @LE.le.{0} Real Real.instLE
-                                                            (@HighamBench.p16VecNorm n residualCastError)
-                                                            (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                              (@instHMul.{0} Real Real.instMul) uLow
-                                                              (@HighamBench.p16VecNorm n residualHat))) →
-                                                        (epsilonB_eq : @Eq.{1} Real epsilonB uLow) →
-                                                          (product_error_bound :
-                                                              @LE.le.{0} Real Real.instLE
-                                                                (@HighamBench.p16RectFrobNorm n keyDimension
-                                                                  arnoldiProductError)
-                                                                (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                                  (@instHMul.{0} Real Real.instMul) epsilonC
-                                                                  (@HighamBench.p16RectFrobNorm n keyDimension
-                                                                    (@HighamBench.p16SquareRectMul n keyDimension A
-                                                                      basis)))) →
-                                                            (leastSquaresRhsError : HighamBench.P16Vector n) →
-                                                              (leastSquaresMatrixError :
-                                                                  HighamBench.P16RectMatrix n keyDimension) →
-                                                                (leastSquaresY : HighamBench.P16Vector keyDimension) →
-                                                                  (least_squares_solution :
-                                                                      @HighamBench.p16IsLeastSquaresSolution n
-                                                                        keyDimension
-                                                                        (@HAdd.hAdd.{0, 0, 0}
-                                                                          (HighamBench.P16RectMatrix n keyDimension)
-                                                                          (HighamBench.P16RectMatrix n keyDimension)
-                                                                          (HighamBench.P16RectMatrix n keyDimension)
-                                                                          (@instHAdd.{0}
-                                                                            (HighamBench.P16RectMatrix n keyDimension)
-                                                                            (@Matrix.add.{0, 0, 0} (Fin n)
-                                                                              (Fin keyDimension) Real Real.instAdd))
-                                                                          arnoldiProduct leastSquaresMatrixError)
-                                                                        (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n)
-                                                                          (HighamBench.P16Vector n)
-                                                                          (HighamBench.P16Vector n)
-                                                                          (@instHAdd.{0} (HighamBench.P16Vector n)
-                                                                            (@Pi.instAdd.{0, 0} (Fin n)
-                                                                              (fun (a : Fin n) => Real)
-                                                                              fun (i : Fin n) => Real.instAdd))
-                                                                          residualLow leastSquaresRhsError)
-                                                                        leastSquaresY) →
-                                                                    (least_squares_column_bound :
-                                                                        ∀
-                                                                          (j :
-                                                                            Fin
-                                                                              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                                (@instHAdd.{0} Nat instAddNat)
-                                                                                keyDimension
-                                                                                (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                                  (instOfNatNat (nat_lit 1))))),
-                                                                          @LE.le.{0} Real Real.instLE
-                                                                            (@HighamBench.p16VecNorm n
-                                                                              (@HighamBench.p16AugmentedColumn n
-                                                                                keyDimension leastSquaresRhsError
-                                                                                leastSquaresMatrixError j))
-                                                                            (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                                              (@instHMul.{0} Real Real.instMul)
-                                                                              epsilonLS
-                                                                              (@HighamBench.p16VecNorm n
-                                                                                (@HighamBench.p16AugmentedColumn n
-                                                                                  keyDimension residualLow
-                                                                                  arnoldiProduct j)))) →
-                                                                      (correctionFormationError :
-                                                                          HighamBench.P16Vector n) →
-                                                                        (correction_formation_equation :
-                                                                            @Eq.{1} (HighamBench.P16Vector n)
-                                                                              correctionHat
-                                                                              (@HAdd.hAdd.{0, 0, 0}
-                                                                                (HighamBench.P16Vector n)
-                                                                                (HighamBench.P16Vector n)
-                                                                                (HighamBench.P16Vector n)
-                                                                                (@instHAdd.{0} (HighamBench.P16Vector n)
-                                                                                  (@Pi.instAdd.{0, 0} (Fin n)
-                                                                                    (fun (a : Fin n) => Real)
-                                                                                    fun (i : Fin n) => Real.instAdd))
-                                                                                (@HighamBench.p16RectMatVec n
-                                                                                  keyDimension basis leastSquaresY)
-                                                                                correctionFormationError)) →
-                                                                          (correction_formation_bound :
-                                                                              @LE.le.{0} Real Real.instLE
-                                                                                (@HighamBench.p16VecNorm n
-                                                                                  correctionFormationError)
-                                                                                (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                                                  (@instHMul.{0} Real Real.instMul)
-                                                                                  (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                                                    (@instHMul.{0} Real Real.instMul)
-                                                                                    epsilonX
-                                                                                    (@HighamBench.p16RectFrobNorm n
-                                                                                      keyDimension basis))
-                                                                                  (@HighamBench.p16VecNorm keyDimension
-                                                                                    leastSquaresY))) →
-                                                                            (accuracy_nonneg :
-                                                                                And
-                                                                                  (@LE.le.{0} Real Real.instLE
-                                                                                    (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                                                      (@Zero.toOfNat0.{0} Real
-                                                                                        Real.instZero))
-                                                                                    epsilonC)
-                                                                                  (And
-                                                                                    (@LE.le.{0} Real Real.instLE
-                                                                                      (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                                                        (@Zero.toOfNat0.{0} Real
-                                                                                          Real.instZero))
-                                                                                      epsilonB)
-                                                                                    (And
-                                                                                      (@LE.le.{0} Real Real.instLE
-                                                                                        (@OfNat.ofNat.{0} Real
-                                                                                          (nat_lit 0)
-                                                                                          (@Zero.toOfNat0.{0} Real
-                                                                                            Real.instZero))
-                                                                                        epsilonLS)
-                                                                                      (@LE.le.{0} Real Real.instLE
-                                                                                        (@OfNat.ofNat.{0} Real
-                                                                                          (nat_lit 0)
-                                                                                          (@Zero.toOfNat0.{0} Real
-                                                                                            Real.instZero))
-                                                                                        epsilonX)))) →
-                                                                              (productWeight leastSquaresWeight
-                                                                                  correctionWeight : Real) →
-                                                                                (weights_nonneg :
-                                                                                    And
-                                                                                      (@LE.le.{0} Real Real.instLE
-                                                                                        (@OfNat.ofNat.{0} Real
-                                                                                          (nat_lit 0)
-                                                                                          (@Zero.toOfNat0.{0} Real
-                                                                                            Real.instZero))
-                                                                                        productWeight)
-                                                                                      (And
-                                                                                        (@LE.le.{0} Real Real.instLE
-                                                                                          (@OfNat.ofNat.{0} Real
-                                                                                            (nat_lit 0)
-                                                                                            (@Zero.toOfNat0.{0} Real
-                                                                                              Real.instZero))
-                                                                                          leastSquaresWeight)
-                                                                                        (@LE.le.{0} Real Real.instLE
-                                                                                          (@OfNat.ofNat.{0} Real
-                                                                                            (nat_lit 0)
-                                                                                            (@Zero.toOfNat0.{0} Real
-                                                                                              Real.instZero))
-                                                                                          correctionWeight))) →
-                                                                                  (epsilonC_le :
-                                                                                      @LE.le.{0} Real Real.instLE
-                                                                                        epsilonC
-                                                                                        (@HMul.hMul.{0, 0, 0} Real Real
-                                                                                          Real
-                                                                                          (@instHMul.{0} Real
-                                                                                            Real.instMul)
-                                                                                          productWeight uLow)) →
-                                                                                    (epsilonLS_le :
-                                                                                        @LE.le.{0} Real Real.instLE
-                                                                                          epsilonLS
-                                                                                          (@HMul.hMul.{0, 0, 0} Real
-                                                                                            Real Real
-                                                                                            (@instHMul.{0} Real
-                                                                                              Real.instMul)
-                                                                                            leastSquaresWeight uLow)) →
-                                                                                      (epsilonX_le :
-                                                                                          @LE.le.{0} Real Real.instLE
-                                                                                            epsilonX
-                                                                                            (@HMul.hMul.{0, 0, 0} Real
-                                                                                              Real Real
-                                                                                              (@instHMul.{0} Real
-                                                                                                Real.instMul)
-                                                                                              correctionWeight uLow)) →
-                                                                                        (basisLowerGain imageLowerGain :
-                                                                                            Real) →
-                                                                                          (basisLowerGain_pos :
-                                                                                              @LT.lt.{0} Real
-                                                                                                Real.instLT
-                                                                                                (@OfNat.ofNat.{0} Real
-                                                                                                  (nat_lit 0)
-                                                                                                  (@Zero.toOfNat0.{0}
-                                                                                                    Real Real.instZero))
-                                                                                                basisLowerGain) →
-                                                                                            (basis_gain :
-                                                                                                @HighamBench.p16MinGainAtLeast
-                                                                                                  n keyDimension basis
-                                                                                                  basisLowerGain) →
-                                                                                              (image_gain :
-                                                                                                  @HighamBench.p16MinGainAtLeast
-                                                                                                    n keyDimension
-                                                                                                    (@HighamBench.p16SquareRectMul
-                                                                                                      n keyDimension A
-                                                                                                      basis)
-                                                                                                    imageLowerGain) →
-                                                                                                (basis_not_numerically_rank_deficient :
-                                                                                                    @LT.lt.{0} Real
-                                                                                                      Real.instLT
-                                                                                                      (@HMul.hMul.{0, 0,
-                                                                                                            0}
-                                                                                                        Real Real Real
-                                                                                                        (@instHMul.{0}
-                                                                                                          Real
-                                                                                                          Real.instMul)
-                                                                                                        epsilonX
-                                                                                                        (@HighamBench.p16RectFrobNorm
-                                                                                                          n keyDimension
-                                                                                                          basis))
-                                                                                                      basisLowerGain) →
-                                                                                                  (key_near_dependence :
-                                                                                                      @LT.lt.{0} Nat
-                                                                                                          instLTNat
-                                                                                                          keyDimension
-                                                                                                          n →
-                                                                                                        ∀ (phi : Real),
-                                                                                                          @LT.lt.{0}
-                                                                                                              Real
-                                                                                                              Real.instLT
-                                                                                                              (@OfNat.ofNat.{0}
-                                                                                                                Real
-                                                                                                                (nat_lit
-                                                                                                                  0)
-                                                                                                                (@Zero.toOfNat0.{0}
-                                                                                                                  Real
-                                                                                                                  Real.instZero))
-                                                                                                              phi →
-                                                                                                            @HighamBench.p16NearRankDeficient
-                                                                                                              n
-                                                                                                              (@HAdd.hAdd.{0,
-                                                                                                                    0,
-                                                                                                                    0}
-                                                                                                                Nat Nat
-                                                                                                                Nat
-                                                                                                                (@instHAdd.{0}
-                                                                                                                  Nat
-                                                                                                                  instAddNat)
-                                                                                                                keyDimension
-                                                                                                                (@OfNat.ofNat.{0}
-                                                                                                                  Nat
-                                                                                                                  (nat_lit
-                                                                                                                    1)
-                                                                                                                  (instOfNatNat
-                                                                                                                    (nat_lit
-                                                                                                                      1))))
-                                                                                                              (@HighamBench.p16Augment
-                                                                                                                n
-                                                                                                                keyDimension
-                                                                                                                residualLow
-                                                                                                                phi
-                                                                                                                arnoldiProduct)
-                                                                                                              (@HMul.hMul.{0,
-                                                                                                                    0,
-                                                                                                                    0}
-                                                                                                                Real
-                                                                                                                Real
-                                                                                                                Real
-                                                                                                                (@instHMul.{0}
-                                                                                                                  Real
-                                                                                                                  Real.instMul)
-                                                                                                                (@HMul.hMul.{0,
-                                                                                                                      0,
-                                                                                                                      0}
-                                                                                                                  Real
-                                                                                                                  Real
-                                                                                                                  Real
-                                                                                                                  (@instHMul.{0}
-                                                                                                                    Real
-                                                                                                                    Real.instMul)
-                                                                                                                  (@HAdd.hAdd.{0,
-                                                                                                                        0,
-                                                                                                                        0}
-                                                                                                                    Real
-                                                                                                                    Real
-                                                                                                                    Real
-                                                                                                                    (@instHAdd.{0}
-                                                                                                                      Real
-                                                                                                                      Real.instAdd)
-                                                                                                                    (@HAdd.hAdd.{0,
-                                                                                                                          0,
-                                                                                                                          0}
-                                                                                                                      Real
-                                                                                                                      Real
-                                                                                                                      Real
-                                                                                                                      (@instHAdd.{0}
-                                                                                                                        Real
-                                                                                                                        Real.instAdd)
-                                                                                                                      epsilonC
-                                                                                                                      epsilonB)
-                                                                                                                    epsilonLS)
-                                                                                                                  dimensionFactor)
-                                                                                                                (@HighamBench.p16RectFrobNorm
-                                                                                                                  n
-                                                                                                                  (@HAdd.hAdd.{0,
-                                                                                                                        0,
-                                                                                                                        0}
-                                                                                                                    Nat
-                                                                                                                    Nat
-                                                                                                                    Nat
-                                                                                                                    (@instHAdd.{0}
-                                                                                                                      Nat
-                                                                                                                      instAddNat)
-                                                                                                                    keyDimension
-                                                                                                                    (@OfNat.ofNat.{0}
-                                                                                                                      Nat
-                                                                                                                      (nat_lit
-                                                                                                                        1)
-                                                                                                                      (instOfNatNat
-                                                                                                                        (nat_lit
-                                                                                                                          1))))
-                                                                                                                  (@HighamBench.p16Augment
-                                                                                                                    n
-                                                                                                                    keyDimension
-                                                                                                                    residualLow
-                                                                                                                    phi
-                                                                                                                    arnoldiProduct)))) →
-                                                                                                    (key_image_full_rank :
-                                                                                                        @LT.lt.{0} Real
-                                                                                                          Real.instLT
-                                                                                                          (@HMul.hMul.{0,
-                                                                                                                0, 0}
-                                                                                                            Real Real
-                                                                                                            Real
-                                                                                                            (@instHMul.{0}
-                                                                                                              Real
-                                                                                                              Real.instMul)
-                                                                                                            (@HAdd.hAdd.{0,
-                                                                                                                  0, 0}
-                                                                                                              Real Real
-                                                                                                              Real
-                                                                                                              (@instHAdd.{0}
-                                                                                                                Real
-                                                                                                                Real.instAdd)
-                                                                                                              (@HAdd.hAdd.{0,
-                                                                                                                    0,
-                                                                                                                    0}
-                                                                                                                Real
-                                                                                                                Real
-                                                                                                                Real
-                                                                                                                (@instHAdd.{0}
-                                                                                                                  Real
-                                                                                                                  Real.instAdd)
-                                                                                                                epsilonC
-                                                                                                                epsilonB)
-                                                                                                              epsilonLS)
-                                                                                                            (@HighamBench.p16RectFrobNorm
-                                                                                                              n
-                                                                                                              keyDimension
-                                                                                                              arnoldiProduct))
-                                                                                                          imageLowerGain) →
-                                                                                                      (alpha beta
-                                                                                                          lambda :
-                                                                                                          Real) →
-                                                                                                        (coefficients_nonneg :
-                                                                                                            And
-                                                                                                              (@LE.le.{0}
-                                                                                                                Real
-                                                                                                                Real.instLE
-                                                                                                                (@OfNat.ofNat.{0}
-                                                                                                                  Real
-                                                                                                                  (nat_lit
-                                                                                                                    0)
-                                                                                                                  (@Zero.toOfNat0.{0}
-                                                                                                                    Real
-                                                                                                                    Real.instZero))
-                                                                                                                alpha)
-                                                                                                              (And
-                                                                                                                (@LE.le.{0}
-                                                                                                                  Real
-                                                                                                                  Real.instLE
-                                                                                                                  (@OfNat.ofNat.{0}
-                                                                                                                    Real
-                                                                                                                    (nat_lit
-                                                                                                                      0)
-                                                                                                                    (@Zero.toOfNat0.{0}
-                                                                                                                      Real
-                                                                                                                      Real.instZero))
-                                                                                                                  beta)
-                                                                                                                (@LE.le.{0}
-                                                                                                                  Real
-                                                                                                                  Real.instLE
-                                                                                                                  (@OfNat.ofNat.{0}
-                                                                                                                    Real
-                                                                                                                    (nat_lit
-                                                                                                                      0)
-                                                                                                                    (@Zero.toOfNat0.{0}
-                                                                                                                      Real
-                                                                                                                      Real.instZero))
-                                                                                                                  lambda))) →
-                                                                                                          (alpha_eq :
-                                                                                                              @Eq.{1}
-                                                                                                                Real
-                                                                                                                alpha
-                                                                                                                (@HDiv.hDiv.{0,
-                                                                                                                      0,
-                                                                                                                      0}
-                                                                                                                  Real
-                                                                                                                  Real
-                                                                                                                  Real
-                                                                                                                  (@instHDiv.{0}
-                                                                                                                    Real
-                                                                                                                    (@DivInvMonoid.toDiv.{0}
-                                                                                                                      Real
-                                                                                                                      Real.instDivInvMonoid))
-                                                                                                                  (@HighamBench.p16RectFrobNorm
-                                                                                                                    n
-                                                                                                                    keyDimension
-                                                                                                                    arnoldiProduct)
-                                                                                                                  (@HMul.hMul.{0,
-                                                                                                                        0,
-                                                                                                                        0}
-                                                                                                                    Real
-                                                                                                                    Real
-                                                                                                                    Real
-                                                                                                                    (@instHMul.{0}
-                                                                                                                      Real
-                                                                                                                      Real.instMul)
-                                                                                                                    basisLowerGain
-                                                                                                                    (@HighamBench.p16FrobNorm
-                                                                                                                      n
-                                                                                                                      A)))) →
-                                                                                                            (beta_eq :
-                                                                                                                @Eq.{1}
-                                                                                                                  Real
-                                                                                                                  beta
-                                                                                                                  (@Max.max.{0}
-                                                                                                                    Real
-                                                                                                                    Real.instMax
-                                                                                                                    (@OfNat.ofNat.{0}
-                                                                                                                      Real
-                                                                                                                      (nat_lit
-                                                                                                                        1)
-                                                                                                                      (@One.toOfNat1.{0}
-                                                                                                                        Real
-                                                                                                                        Real.instOne))
-                                                                                                                    alpha)) →
-                                                                                                              (lambda_eq :
-                                                                                                                  @Eq.{1}
-                                                                                                                    Real
-                                                                                                                    lambda
-                                                                                                                    (@HDiv.hDiv.{0,
-                                                                                                                          0,
-                                                                                                                          0}
-                                                                                                                      Real
-                                                                                                                      Real
-                                                                                                                      Real
-                                                                                                                      (@instHDiv.{0}
-                                                                                                                        Real
-                                                                                                                        (@DivInvMonoid.toDiv.{0}
-                                                                                                                          Real
-                                                                                                                          Real.instDivInvMonoid))
-                                                                                                                      (@HighamBench.p16RectFrobNorm
-                                                                                                                        n
-                                                                                                                        keyDimension
-                                                                                                                        basis)
-                                                                                                                      basisLowerGain)) →
-                                                                                                                (modularAccuracy :
-                                                                                                                    Real) →
-                                                                                                                  (modular_accuracy_eq :
-                                                                                                                      @Eq.{1}
-                                                                                                                        Real
-                                                                                                                        modularAccuracy
-                                                                                                                        (@HAdd.hAdd.{0,
-                                                                                                                              0,
-                                                                                                                              0}
-                                                                                                                          Real
-                                                                                                                          Real
-                                                                                                                          Real
-                                                                                                                          (@instHAdd.{0}
-                                                                                                                            Real
-                                                                                                                            Real.instAdd)
-                                                                                                                          (@HAdd.hAdd.{0,
-                                                                                                                                0,
-                                                                                                                                0}
-                                                                                                                            Real
-                                                                                                                            Real
-                                                                                                                            Real
-                                                                                                                            (@instHAdd.{0}
-                                                                                                                              Real
-                                                                                                                              Real.instAdd)
-                                                                                                                            (@HAdd.hAdd.{0,
-                                                                                                                                  0,
-                                                                                                                                  0}
-                                                                                                                              Real
-                                                                                                                              Real
-                                                                                                                              Real
-                                                                                                                              (@instHAdd.{0}
-                                                                                                                                Real
-                                                                                                                                Real.instAdd)
-                                                                                                                              (@HMul.hMul.{0,
-                                                                                                                                    0,
-                                                                                                                                    0}
-                                                                                                                                Real
-                                                                                                                                Real
-                                                                                                                                Real
-                                                                                                                                (@instHMul.{0}
-                                                                                                                                  Real
-                                                                                                                                  Real.instMul)
-                                                                                                                                alpha
-                                                                                                                                epsilonC)
-                                                                                                                              (@HMul.hMul.{0,
-                                                                                                                                    0,
-                                                                                                                                    0}
-                                                                                                                                Real
-                                                                                                                                Real
-                                                                                                                                Real
-                                                                                                                                (@instHMul.{0}
-                                                                                                                                  Real
-                                                                                                                                  Real.instMul)
-                                                                                                                                beta
-                                                                                                                                epsilonB))
-                                                                                                                            (@HMul.hMul.{0,
-                                                                                                                                  0,
-                                                                                                                                  0}
-                                                                                                                              Real
-                                                                                                                              Real
-                                                                                                                              Real
-                                                                                                                              (@instHMul.{0}
-                                                                                                                                Real
-                                                                                                                                Real.instMul)
-                                                                                                                              beta
-                                                                                                                              epsilonLS))
-                                                                                                                          (@HMul.hMul.{0,
-                                                                                                                                0,
-                                                                                                                                0}
-                                                                                                                            Real
-                                                                                                                            Real
-                                                                                                                            Real
-                                                                                                                            (@instHMul.{0}
-                                                                                                                              Real
-                                                                                                                              Real.instMul)
-                                                                                                                            lambda
-                                                                                                                            epsilonX))) →
-                                                                                                                    (dimension_factor_bound :
-                                                                                                                        @LE.le.{0}
-                                                                                                                          Real
-                                                                                                                          Real.instLE
-                                                                                                                          (@HAdd.hAdd.{0,
-                                                                                                                                0,
-                                                                                                                                0}
-                                                                                                                            Real
-                                                                                                                            Real
-                                                                                                                            Real
-                                                                                                                            (@instHAdd.{0}
-                                                                                                                              Real
-                                                                                                                              Real.instAdd)
-                                                                                                                            (@HAdd.hAdd.{0,
-                                                                                                                                  0,
-                                                                                                                                  0}
-                                                                                                                              Real
-                                                                                                                              Real
-                                                                                                                              Real
-                                                                                                                              (@instHAdd.{0}
-                                                                                                                                Real
-                                                                                                                                Real.instAdd)
-                                                                                                                              (@HMul.hMul.{0,
-                                                                                                                                    0,
-                                                                                                                                    0}
-                                                                                                                                Real
-                                                                                                                                Real
-                                                                                                                                Real
-                                                                                                                                (@instHMul.{0}
-                                                                                                                                  Real
-                                                                                                                                  Real.instMul)
-                                                                                                                                alpha
-                                                                                                                                productWeight)
-                                                                                                                              (@HMul.hMul.{0,
-                                                                                                                                    0,
-                                                                                                                                    0}
-                                                                                                                                Real
-                                                                                                                                Real
-                                                                                                                                Real
-                                                                                                                                (@instHMul.{0}
-                                                                                                                                  Real
-                                                                                                                                  Real.instMul)
-                                                                                                                                beta
-                                                                                                                                (@HAdd.hAdd.{0,
-                                                                                                                                      0,
-                                                                                                                                      0}
-                                                                                                                                  Real
-                                                                                                                                  Real
-                                                                                                                                  Real
-                                                                                                                                  (@instHAdd.{0}
-                                                                                                                                    Real
-                                                                                                                                    Real.instAdd)
-                                                                                                                                  (@OfNat.ofNat.{0}
-                                                                                                                                    Real
-                                                                                                                                    (nat_lit
-                                                                                                                                      1)
-                                                                                                                                    (@One.toOfNat1.{0}
-                                                                                                                                      Real
-                                                                                                                                      Real.instOne))
-                                                                                                                                  leastSquaresWeight)))
-                                                                                                                            (@HMul.hMul.{0,
-                                                                                                                                  0,
-                                                                                                                                  0}
-                                                                                                                              Real
-                                                                                                                              Real
-                                                                                                                              Real
-                                                                                                                              (@instHMul.{0}
-                                                                                                                                Real
-                                                                                                                                Real.instMul)
-                                                                                                                              lambda
-                                                                                                                              correctionWeight))
-                                                                                                                          dimensionFactor) →
-                                                                                                                      (theorem41 :
-                                                                                                                          @HighamBench.P16Theorem41RestartResult
-                                                                                                                            n
-                                                                                                                            A
-                                                                                                                            Ainv
-                                                                                                                            b
-                                                                                                                            xExact
-                                                                                                                            xCurrent
-                                                                                                                            xNext
-                                                                                                                            uHigh
-                                                                                                                            modularAccuracy
-                                                                                                                            dimensionFactor) →
-                                                                                                                        @HighamBench.P16FixedLowPrecisionMGSRestart
-                                                                                                                          n
-                                                                                                                          A
-                                                                                                                          Ainv
-                                                                                                                          b
-                                                                                                                          xExact
-                                                                                                                          xCurrent
-                                                                                                                          xNext
-                                                                                                                          residualHat
-                                                                                                                          correctionHat
-                                                                                                                          uHigh
-                                                                                                                          uLow
-                                                                                                                          dimensionFactor
+(self : HighamBench.P16PolynomialFactor) → Nat
 ```
 
-### D034: `HighamBench.P16Theorem41RestartResult.mk`
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.2
+```
+
+### D030: `HighamBench.P16PolynomialFactor.degreeN`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
-- Declaration kind: `constructor`
+- Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `8fe2febf6102807a7c64b7a5b0420c7ec5a6e1a58b6ea582db35027cd51c43d0`
+- Semantic SHA-256: `7535abaa99860d41d600e1a9051ecb7967df3e56b9a83219b1c10ca2f6988dea`
 
 Type:
 
 ```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext : HighamBench.P16Vector n} →
-      {uHigh modularAccuracy dimensionFactor : Real} →
-        (backwardFactor forwardFactor backwardHighCoefficient forwardHighCoefficient backwardRemainder
-            forwardRemainder : Real) →
-          Real.instLE.le 0 backwardFactor →
-            Real.instLE.le 0 forwardFactor →
-              Real.instLE.le 0 backwardHighCoefficient →
-                Real.instLE.le 0 forwardHighCoefficient →
-                  Real.instLE.le backwardFactor
-                      (instHMul.hMul modularAccuracy (HighamBench.p16ConditionNumberF A Ainv)) →
-                    Real.instLE.le forwardFactor
-                        (instHMul.hMul modularAccuracy (HighamBench.p16ConditionNumberF A Ainv)) →
-                      Real.instLE.le backwardHighCoefficient dimensionFactor →
-                        Real.instLE.le forwardHighCoefficient
-                            (instHMul.hMul dimensionFactor (HighamBench.p16ConditionNumberF A Ainv)) →
-                          Real.instLE.le (HighamBench.p16BackwardError A b xNext)
-                              (instHAdd.hAdd
-                                (instHAdd.hAdd
-                                  (instHMul.hMul backwardFactor (HighamBench.p16BackwardError A b xCurrent))
-                                  (instHMul.hMul backwardHighCoefficient uHigh))
-                                (abs backwardRemainder)) →
-                            Real.instLE.le (HighamBench.p16ForwardError xExact xNext)
-                                (instHAdd.hAdd
-                                  (instHAdd.hAdd
-                                    (instHMul.hMul forwardFactor (HighamBench.p16ForwardError xExact xCurrent))
-                                    (instHMul.hMul forwardHighCoefficient uHigh))
-                                  (abs forwardRemainder)) →
-                              HighamBench.P16Theorem41RestartResult A Ainv b xExact xCurrent xNext uHigh modularAccuracy
-                                dimensionFactor
+HighamBench.P16PolynomialFactor → Nat
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  {A Ainv : HighamBench.P16Matrix n} →
-    {b xExact xCurrent xNext : HighamBench.P16Vector n} →
-      {uHigh modularAccuracy dimensionFactor : Real} →
-        (backwardFactor forwardFactor backwardHighCoefficient forwardHighCoefficient backwardRemainder
-            forwardRemainder : Real) →
-          (backwardFactor_nonneg :
-              @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                backwardFactor) →
-            (forwardFactor_nonneg :
-                @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                  forwardFactor) →
-              (backwardHighCoefficient_nonneg :
-                  @LE.le.{0} Real Real.instLE
-                    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                    backwardHighCoefficient) →
-                (forwardHighCoefficient_nonneg :
-                    @LE.le.{0} Real Real.instLE
-                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                      forwardHighCoefficient) →
-                  (backward_factor_le :
-                      @LE.le.{0} Real Real.instLE backwardFactor
-                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) modularAccuracy
-                          (@HighamBench.p16ConditionNumberF n A Ainv))) →
-                    (forward_factor_le :
-                        @LE.le.{0} Real Real.instLE forwardFactor
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) modularAccuracy
-                            (@HighamBench.p16ConditionNumberF n A Ainv))) →
-                      (backward_high_coefficient_le :
-                          @LE.le.{0} Real Real.instLE backwardHighCoefficient dimensionFactor) →
-                        (forward_high_coefficient_le :
-                            @LE.le.{0} Real Real.instLE forwardHighCoefficient
-                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) dimensionFactor
-                                (@HighamBench.p16ConditionNumberF n A Ainv))) →
-                          (backward_step :
-                              @LE.le.{0} Real Real.instLE (@HighamBench.p16BackwardError n A b xNext)
-                                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                      backwardFactor (@HighamBench.p16BackwardError n A b xCurrent))
-                                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                      backwardHighCoefficient uHigh))
-                                  (@abs.{0} Real Real.lattice Real.instAddGroup backwardRemainder))) →
-                            (forward_step :
-                                @LE.le.{0} Real Real.instLE (@HighamBench.p16ForwardError n xExact xNext)
-                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                        forwardFactor (@HighamBench.p16ForwardError n xExact xCurrent))
-                                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                        forwardHighCoefficient uHigh))
-                                    (@abs.{0} Real Real.lattice Real.instAddGroup forwardRemainder))) →
-                              @HighamBench.P16Theorem41RestartResult n A Ainv b xExact xCurrent xNext uHigh
-                                modularAccuracy dimensionFactor
+(self : HighamBench.P16PolynomialFactor) → Nat
 ```
 
-### D035: `HighamBench.gamma`
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.1
+```
+
+### D031: `HighamBench.gamma`
 
 - Role: `local`
 - Owner module: `HighamBench.Core`
@@ -2459,7 +1132,7 @@ Definition body (one-level semantic boundary):
 fun u n => instHDiv.hDiv (instHMul.hMul n.cast u) (instHSub.hSub 1 (instHMul.hMul n.cast u))
 ```
 
-### D036: `HighamBench.p16FrobNorm`
+### D032: `HighamBench.p16FrobNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -2485,7 +1158,7 @@ Definition body (one-level semantic boundary):
 fun {n} A => Matrix.frobeniusNormedRing.norm A
 ```
 
-### D037: `HighamBench.p16IsNonsingular`
+### D033: `HighamBench.p16IsNonsingular`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -2511,7 +1184,7 @@ Definition body (one-level semantic boundary):
 fun {n} A => Function.Bijective (HighamBench.p16MatVec A)
 ```
 
-### D038: `HighamBench.p16MatVec`
+### D034: `HighamBench.p16MatVec`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -2537,7 +1210,7 @@ Definition body (one-level semantic boundary):
 fun {n} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
 ```
 
-### D039: `HighamBench.p16Residual`
+### D035: `HighamBench.p16Residual`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -2563,12 +1236,1305 @@ Definition body (one-level semantic boundary):
 fun {n} A b x => instHSub.hSub b (HighamBench.p16MatVec A x)
 ```
 
-### D040: `HighamBench.P16RectMatrix`
+### D036: `HighamBench.P16FixedLowPrecisionMGSRestart.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `4`
+- Semantic SHA-256: `07bacd38e362571eb077eebfe28d72a7443e868d3cfd169ed07d43617fdf5172`
+
+Type:
+
+```lean
+{n : Nat} →
+  {A Ainv : HighamBench.P16Matrix n} →
+    {b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n} →
+      {uLow : Real} →
+        {dimensionFactor : HighamBench.P16PolynomialFactor} →
+          (keyDimension : Nat) →
+            instLTNat.lt 0 keyDimension →
+              instLENat.le keyDimension n →
+                (basis : HighamBench.P16RectMatrix n keyDimension) →
+                  (basisNext : HighamBench.P16RectMatrix n (instHAdd.hAdd keyDimension 1)) →
+                    (hessenberg : HighamBench.P16RectMatrix (instHAdd.hAdd keyDimension 1) keyDimension) →
+                      (arnoldiProduct arnoldiProductError : HighamBench.P16RectMatrix n keyDimension) →
+                        Eq arnoldiProduct (instHAdd.hAdd (HighamBench.p16SquareRectMul A basis) arnoldiProductError) →
+                          (∀ (row : Fin n) (col : Fin keyDimension), Eq (basis row col) (basisNext row col.castSucc)) →
+                            (mgsWork : Fin keyDimension → Nat → HighamBench.P16Vector n) →
+                              (mgsProjectionError : Fin keyDimension → Fin keyDimension → Real) →
+                                (mgsUpdateError : Fin keyDimension → Fin keyDimension → HighamBench.P16Vector n) →
+                                  (mgsNormalizationError : Fin keyDimension → HighamBench.P16Vector n) →
+                                    (∀ (j : Fin keyDimension) (row : Fin n),
+                                        Eq (mgsWork j 0 row) (arnoldiProduct row j)) →
+                                      (∀ (j q : Fin keyDimension),
+                                          instLENat.le q.val j.val →
+                                            Eq (hessenberg q.castSucc j)
+                                              (instHAdd.hAdd
+                                                (Finset.univ.sum fun row =>
+                                                  instHMul.hMul (basisNext row q.castSucc) (mgsWork j q.val row))
+                                                (mgsProjectionError j q))) →
+                                        (∀ (j q : Fin keyDimension),
+                                            instLENat.le q.val j.val →
+                                              Real.instLE.le (abs (mgsProjectionError j q))
+                                                (instHMul.hMul (HighamBench.gamma uLow n)
+                                                  (Finset.univ.sum fun row =>
+                                                    abs
+                                                      (instHMul.hMul (basisNext row q.castSucc)
+                                                        (mgsWork j q.val row))))) →
+                                          (∀ (j q : Fin keyDimension),
+                                              instLENat.le q.val j.val →
+                                                Eq (mgsWork j (instHAdd.hAdd q.val 1))
+                                                  (instHAdd.hAdd
+                                                    (instHSub.hSub (mgsWork j q.val) fun row =>
+                                                      instHMul.hMul (hessenberg q.castSucc j)
+                                                        (basisNext row q.castSucc))
+                                                    (mgsUpdateError j q))) →
+                                            (∀ (j q : Fin keyDimension),
+                                                instLENat.le q.val j.val →
+                                                  Real.instLE.le (HighamBench.p16VecNorm (mgsUpdateError j q))
+                                                    (instHMul.hMul uLow
+                                                      (instHAdd.hAdd (HighamBench.p16VecNorm (mgsWork j q.val))
+                                                        (instHMul.hMul (abs (hessenberg q.castSucc j))
+                                                          (HighamBench.p16VecNorm fun row =>
+                                                            basisNext row q.castSucc))))) →
+                                              (∀ (j : Fin keyDimension),
+                                                  Eq
+                                                    (fun row =>
+                                                      instHMul.hMul (hessenberg j.succ j) (basisNext row j.succ))
+                                                    (instHAdd.hAdd (mgsWork j (instHAdd.hAdd j.val 1))
+                                                      (mgsNormalizationError j))) →
+                                                (∀ (j : Fin keyDimension),
+                                                    Real.instLE.le (HighamBench.p16VecNorm (mgsNormalizationError j))
+                                                      (instHMul.hMul uLow
+                                                        (HighamBench.p16VecNorm (mgsWork j (instHAdd.hAdd j.val 1))))) →
+                                                  (epsilonC epsilonB epsilonLS epsilonX : Real) →
+                                                    (residualLow residualCastError : HighamBench.P16Vector n) →
+                                                      Eq residualLow (instHAdd.hAdd residualHat residualCastError) →
+                                                        Real.instLE.le (HighamBench.p16VecNorm residualCastError)
+                                                            (instHMul.hMul uLow (HighamBench.p16VecNorm residualHat)) →
+                                                          (residualNorm : Real) →
+                                                            Eq residualNorm (HighamBench.p16VecNorm residualLow) →
+                                                              (∀ (row : Fin n),
+                                                                  Eq (residualLow row)
+                                                                    (instHMul.hMul residualNorm (basisNext row 0))) →
+                                                                Eq epsilonB uLow →
+                                                                  Real.instLE.le
+                                                                      (HighamBench.p16RectFrobNorm arnoldiProductError)
+                                                                      (instHMul.hMul epsilonC
+                                                                        (HighamBench.p16RectFrobNorm
+                                                                          (HighamBench.p16SquareRectMul A basis))) →
+                                                                    (leastSquaresRhsError : HighamBench.P16Vector n) →
+                                                                      (leastSquaresMatrixError :
+                                                                          HighamBench.P16RectMatrix n keyDimension) →
+                                                                        (leastSquaresY :
+                                                                            HighamBench.P16Vector keyDimension) →
+                                                                          HighamBench.p16IsLeastSquaresSolution
+                                                                              (instHAdd.hAdd arnoldiProduct
+                                                                                leastSquaresMatrixError)
+                                                                              (instHAdd.hAdd residualLow
+                                                                                leastSquaresRhsError)
+                                                                              leastSquaresY →
+                                                                            (∀ (j : Fin (instHAdd.hAdd keyDimension 1)),
+                                                                                Real.instLE.le
+                                                                                  (HighamBench.p16VecNorm
+                                                                                    (HighamBench.p16AugmentedColumn
+                                                                                      leastSquaresRhsError
+                                                                                      leastSquaresMatrixError j))
+                                                                                  (instHMul.hMul epsilonLS
+                                                                                    (HighamBench.p16VecNorm
+                                                                                      (HighamBench.p16AugmentedColumn
+                                                                                        residualLow arnoldiProduct
+                                                                                        j)))) →
+                                                                              (correctionFormationError :
+                                                                                  HighamBench.P16Vector n) →
+                                                                                Eq correctionHat
+                                                                                    (instHAdd.hAdd
+                                                                                      (HighamBench.p16RectMatVec basis
+                                                                                        leastSquaresY)
+                                                                                      correctionFormationError) →
+                                                                                  Real.instLE.le
+                                                                                      (HighamBench.p16VecNorm
+                                                                                        correctionFormationError)
+                                                                                      (instHMul.hMul
+                                                                                        (instHMul.hMul epsilonX
+                                                                                          (HighamBench.p16RectFrobNorm
+                                                                                            basis))
+                                                                                        (HighamBench.p16VecNorm
+                                                                                          leastSquaresY)) →
+                                                                                    And (Real.instLE.le 0 epsilonC)
+                                                                                        (And (Real.instLE.le 0 epsilonB)
+                                                                                          (And
+                                                                                            (Real.instLE.le 0 epsilonLS)
+                                                                                            (Real.instLE.le 0
+                                                                                              epsilonX))) →
+                                                                                      (productWeight leastSquaresWeight
+                                                                                          correctionWeight : Real) →
+                                                                                        And
+                                                                                            (Real.instLE.le 0
+                                                                                              productWeight)
+                                                                                            (And
+                                                                                              (Real.instLE.le 0
+                                                                                                leastSquaresWeight)
+                                                                                              (Real.instLE.le 0
+                                                                                                correctionWeight)) →
+                                                                                          Real.instLE.le epsilonC
+                                                                                              (instHMul.hMul
+                                                                                                productWeight uLow) →
+                                                                                            Real.instLE.le epsilonLS
+                                                                                                (instHMul.hMul
+                                                                                                  leastSquaresWeight
+                                                                                                  uLow) →
+                                                                                              Real.instLE.le epsilonX
+                                                                                                  (instHMul.hMul
+                                                                                                    correctionWeight
+                                                                                                    uLow) →
+                                                                                                (basisLowerGain
+                                                                                                    imageLowerGain :
+                                                                                                    Real) →
+                                                                                                  Real.instLT.lt 0
+                                                                                                      basisLowerGain →
+                                                                                                    HighamBench.p16MinGainAtLeast
+                                                                                                        basis
+                                                                                                        basisLowerGain →
+                                                                                                      ⋯
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {A Ainv : HighamBench.P16Matrix n} →
+    {b xExact xCurrent xNext residualHat correctionHat : HighamBench.P16Vector n} →
+      {uLow : Real} →
+        {dimensionFactor : HighamBench.P16PolynomialFactor} →
+          (keyDimension : Nat) →
+            (keyDimension_pos :
+                @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) keyDimension) →
+              (keyDimension_le : @LE.le.{0} Nat instLENat keyDimension n) →
+                (basis : HighamBench.P16RectMatrix n keyDimension) →
+                  (basisNext :
+                      HighamBench.P16RectMatrix n
+                        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) keyDimension
+                          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))) →
+                    (hessenberg :
+                        HighamBench.P16RectMatrix
+                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) keyDimension
+                            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+                          keyDimension) →
+                      (arnoldiProduct arnoldiProductError : HighamBench.P16RectMatrix n keyDimension) →
+                        (arnoldi_product_equation :
+                            @Eq.{1} (HighamBench.P16RectMatrix n keyDimension) arnoldiProduct
+                              (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16RectMatrix n keyDimension)
+                                (HighamBench.P16RectMatrix n keyDimension) (HighamBench.P16RectMatrix n keyDimension)
+                                (@instHAdd.{0} (HighamBench.P16RectMatrix n keyDimension)
+                                  (@Matrix.add.{0, 0, 0} (Fin n) (Fin keyDimension) Real Real.instAdd))
+                                (@HighamBench.p16SquareRectMul n keyDimension A basis) arnoldiProductError)) →
+                          (basis_fully_stored :
+                              ∀ (row : Fin n) (col : Fin keyDimension),
+                                @Eq.{1} Real (basis row col) (basisNext row (@Fin.castSucc keyDimension col))) →
+                            (mgsWork : Fin keyDimension → Nat → HighamBench.P16Vector n) →
+                              (mgsProjectionError : Fin keyDimension → Fin keyDimension → Real) →
+                                (mgsUpdateError : Fin keyDimension → Fin keyDimension → HighamBench.P16Vector n) →
+                                  (mgsNormalizationError : Fin keyDimension → HighamBench.P16Vector n) →
+                                    (mgs_work_initial :
+                                        ∀ (j : Fin keyDimension) (row : Fin n),
+                                          @Eq.{1} Real
+                                            (mgsWork j (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
+                                              row)
+                                            (arnoldiProduct row j)) →
+                                      (mgs_projection :
+                                          ∀ (j q : Fin keyDimension),
+                                            @LE.le.{0} Nat instLENat (@Fin.val keyDimension q)
+                                                (@Fin.val keyDimension j) →
+                                              @Eq.{1} Real (hessenberg (@Fin.castSucc keyDimension q) j)
+                                                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                                  (@Finset.sum.{0, 0} (Fin n) Real Real.instAddCommMonoid
+                                                    (@Finset.univ.{0} (Fin n) (Fin.fintype n)) fun (row : Fin n) =>
+                                                    @HMul.hMul.{0, 0, 0} Real Real Real
+                                                      (@instHMul.{0} Real Real.instMul)
+                                                      (basisNext row (@Fin.castSucc keyDimension q))
+                                                      (mgsWork j (@Fin.val keyDimension q) row))
+                                                  (mgsProjectionError j q))) →
+                                        (mgs_projection_error_bound :
+                                            ∀ (j q : Fin keyDimension),
+                                              @LE.le.{0} Nat instLENat (@Fin.val keyDimension q)
+                                                  (@Fin.val keyDimension j) →
+                                                @LE.le.{0} Real Real.instLE
+                                                  (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                    (mgsProjectionError j q))
+                                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                    (HighamBench.gamma uLow n)
+                                                    (@Finset.sum.{0, 0} (Fin n) Real Real.instAddCommMonoid
+                                                      (@Finset.univ.{0} (Fin n) (Fin.fintype n)) fun (row : Fin n) =>
+                                                      @abs.{0} Real Real.lattice Real.instAddGroup
+                                                        (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                          (@instHMul.{0} Real Real.instMul)
+                                                          (basisNext row (@Fin.castSucc keyDimension q))
+                                                          (mgsWork j (@Fin.val keyDimension q) row))))) →
+                                          (mgs_update :
+                                              ∀ (j q : Fin keyDimension),
+                                                @LE.le.{0} Nat instLENat (@Fin.val keyDimension q)
+                                                    (@Fin.val keyDimension j) →
+                                                  @Eq.{1} (HighamBench.P16Vector n)
+                                                    (mgsWork j
+                                                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                                                        (@Fin.val keyDimension q)
+                                                        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+                                                    (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n)
+                                                      (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+                                                      (@instHAdd.{0} (HighamBench.P16Vector n)
+                                                        (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
+                                                          fun (i : Fin n) => Real.instAdd))
+                                                      (@HSub.hSub.{0, 0, 0} (HighamBench.P16Vector n)
+                                                        ((row : Fin n) → Real) (HighamBench.P16Vector n)
+                                                        (@instHSub.{0} (HighamBench.P16Vector n)
+                                                          (@Pi.instSub.{0, 0} (Fin n) (fun (a : Fin n) => Real)
+                                                            fun (i : Fin n) => Real.instSub))
+                                                        (mgsWork j (@Fin.val keyDimension q)) fun (row : Fin n) =>
+                                                        @HMul.hMul.{0, 0, 0} Real Real Real
+                                                          (@instHMul.{0} Real Real.instMul)
+                                                          (hessenberg (@Fin.castSucc keyDimension q) j)
+                                                          (basisNext row (@Fin.castSucc keyDimension q)))
+                                                      (mgsUpdateError j q))) →
+                                            (mgs_update_error_bound :
+                                                ∀ (j q : Fin keyDimension),
+                                                  @LE.le.{0} Nat instLENat (@Fin.val keyDimension q)
+                                                      (@Fin.val keyDimension j) →
+                                                    @LE.le.{0} Real Real.instLE
+                                                      (@HighamBench.p16VecNorm n (mgsUpdateError j q))
+                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                        (@instHMul.{0} Real Real.instMul) uLow
+                                                        (@HAdd.hAdd.{0, 0, 0} Real Real Real
+                                                          (@instHAdd.{0} Real Real.instAdd)
+                                                          (@HighamBench.p16VecNorm n
+                                                            (mgsWork j (@Fin.val keyDimension q)))
+                                                          (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                            (@instHMul.{0} Real Real.instMul)
+                                                            (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                              (hessenberg (@Fin.castSucc keyDimension q) j))
+                                                            (@HighamBench.p16VecNorm n fun (row : Fin n) =>
+                                                              basisNext row (@Fin.castSucc keyDimension q)))))) →
+                                              (mgs_normalization :
+                                                  ∀ (j : Fin keyDimension),
+                                                    @Eq.{1} ((row : Fin n) → Real)
+                                                      (fun (row : Fin n) =>
+                                                        @HMul.hMul.{0, 0, 0} Real Real Real
+                                                          (@instHMul.{0} Real Real.instMul)
+                                                          (hessenberg (@Fin.succ keyDimension j) j)
+                                                          (basisNext row (@Fin.succ keyDimension j)))
+                                                      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n)
+                                                        (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+                                                        (@instHAdd.{0} (HighamBench.P16Vector n)
+                                                          (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
+                                                            fun (i : Fin n) => Real.instAdd))
+                                                        (mgsWork j
+                                                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
+                                                            (@instHAdd.{0} Nat instAddNat) (@Fin.val keyDimension j)
+                                                            (@OfNat.ofNat.{0} Nat (nat_lit 1)
+                                                              (instOfNatNat (nat_lit 1)))))
+                                                        (mgsNormalizationError j))) →
+                                                (mgs_normalization_error_bound :
+                                                    ∀ (j : Fin keyDimension),
+                                                      @LE.le.{0} Real Real.instLE
+                                                        (@HighamBench.p16VecNorm n (mgsNormalizationError j))
+                                                        (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                          (@instHMul.{0} Real Real.instMul) uLow
+                                                          (@HighamBench.p16VecNorm n
+                                                            (mgsWork j
+                                                              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
+                                                                (@instHAdd.{0} Nat instAddNat) (@Fin.val keyDimension j)
+                                                                (@OfNat.ofNat.{0} Nat (nat_lit 1)
+                                                                  (instOfNatNat (nat_lit 1)))))))) →
+                                                  (epsilonC epsilonB epsilonLS epsilonX : Real) →
+                                                    (residualLow residualCastError : HighamBench.P16Vector n) →
+                                                      (residual_cast_equation :
+                                                          @Eq.{1} (HighamBench.P16Vector n) residualLow
+                                                            (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n)
+                                                              (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+                                                              (@instHAdd.{0} (HighamBench.P16Vector n)
+                                                                (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real)
+                                                                  fun (i : Fin n) => Real.instAdd))
+                                                              residualHat residualCastError)) →
+                                                        (residual_cast_bound :
+                                                            @LE.le.{0} Real Real.instLE
+                                                              (@HighamBench.p16VecNorm n residualCastError)
+                                                              (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                (@instHMul.{0} Real Real.instMul) uLow
+                                                                (@HighamBench.p16VecNorm n residualHat))) →
+                                                          (residualNorm : Real) →
+                                                            (residualNorm_eq :
+                                                                @Eq.{1} Real residualNorm
+                                                                  (@HighamBench.p16VecNorm n residualLow)) →
+                                                              (residual_starts_basis :
+                                                                  ∀ (row : Fin n),
+                                                                    @Eq.{1} Real (residualLow row)
+                                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                        (@instHMul.{0} Real Real.instMul) residualNorm
+                                                                        (basisNext row
+                                                                          (@OfNat.ofNat.{0}
+                                                                            (Fin
+                                                                              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
+                                                                                (@instHAdd.{0} Nat instAddNat)
+                                                                                keyDimension
+                                                                                (@OfNat.ofNat.{0} Nat (nat_lit 1)
+                                                                                  (instOfNatNat (nat_lit 1)))))
+                                                                            (nat_lit 0)
+                                                                            (@Fin.instOfNat
+                                                                              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
+                                                                                (@instHAdd.{0} Nat instAddNat)
+                                                                                keyDimension
+                                                                                (@OfNat.ofNat.{0} Nat (nat_lit 1)
+                                                                                  (instOfNatNat (nat_lit 1))))
+                                                                              (@instNeZeroNatHAdd_1 keyDimension
+                                                                                (@OfNat.ofNat.{0} Nat (nat_lit 1)
+                                                                                  (instOfNatNat (nat_lit 1)))
+                                                                                (@Nat.instNeZeroSucc
+                                                                                  (@OfNat.ofNat.{0} Nat (nat_lit 0)
+                                                                                    (instOfNatNat (nat_lit 0)))))
+                                                                              (nat_lit 0)))))) →
+                                                                (epsilonB_eq : @Eq.{1} Real epsilonB uLow) →
+                                                                  (product_error_bound :
+                                                                      @LE.le.{0} Real Real.instLE
+                                                                        (@HighamBench.p16RectFrobNorm n keyDimension
+                                                                          arnoldiProductError)
+                                                                        (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                          (@instHMul.{0} Real Real.instMul) epsilonC
+                                                                          (@HighamBench.p16RectFrobNorm n keyDimension
+                                                                            (@HighamBench.p16SquareRectMul n
+                                                                              keyDimension A basis)))) →
+                                                                    (leastSquaresRhsError : HighamBench.P16Vector n) →
+                                                                      (leastSquaresMatrixError :
+                                                                          HighamBench.P16RectMatrix n keyDimension) →
+                                                                        (leastSquaresY :
+                                                                            HighamBench.P16Vector keyDimension) →
+                                                                          (least_squares_solution :
+                                                                              @HighamBench.p16IsLeastSquaresSolution n
+                                                                                keyDimension
+                                                                                (@HAdd.hAdd.{0, 0, 0}
+                                                                                  (HighamBench.P16RectMatrix n
+                                                                                    keyDimension)
+                                                                                  (HighamBench.P16RectMatrix n
+                                                                                    keyDimension)
+                                                                                  (HighamBench.P16RectMatrix n
+                                                                                    keyDimension)
+                                                                                  (@instHAdd.{0}
+                                                                                    (HighamBench.P16RectMatrix n
+                                                                                      keyDimension)
+                                                                                    (@Matrix.add.{0, 0, 0} (Fin n)
+                                                                                      (Fin keyDimension) Real
+                                                                                      Real.instAdd))
+                                                                                  arnoldiProduct
+                                                                                  leastSquaresMatrixError)
+                                                                                (@HAdd.hAdd.{0, 0, 0}
+                                                                                  (HighamBench.P16Vector n)
+                                                                                  (HighamBench.P16Vector n)
+                                                                                  (HighamBench.P16Vector n)
+                                                                                  (@instHAdd.{0}
+                                                                                    (HighamBench.P16Vector n)
+                                                                                    (@Pi.instAdd.{0, 0} (Fin n)
+                                                                                      (fun (a : Fin n) => Real)
+                                                                                      fun (i : Fin n) => Real.instAdd))
+                                                                                  residualLow leastSquaresRhsError)
+                                                                                leastSquaresY) →
+                                                                            (least_squares_column_bound :
+                                                                                ∀
+                                                                                  (j :
+                                                                                    Fin
+                                                                                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
+                                                                                        (@instHAdd.{0} Nat instAddNat)
+                                                                                        keyDimension
+                                                                                        (@OfNat.ofNat.{0} Nat
+                                                                                          (nat_lit 1)
+                                                                                          (instOfNatNat (nat_lit 1))))),
+                                                                                  @LE.le.{0} Real Real.instLE
+                                                                                    (@HighamBench.p16VecNorm n
+                                                                                      (@HighamBench.p16AugmentedColumn n
+                                                                                        keyDimension
+                                                                                        leastSquaresRhsError
+                                                                                        leastSquaresMatrixError j))
+                                                                                    (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                                      (@instHMul.{0} Real Real.instMul)
+                                                                                      epsilonLS
+                                                                                      (@HighamBench.p16VecNorm n
+                                                                                        (@HighamBench.p16AugmentedColumn
+                                                                                          n keyDimension residualLow
+                                                                                          arnoldiProduct j)))) →
+                                                                              (correctionFormationError :
+                                                                                  HighamBench.P16Vector n) →
+                                                                                (correction_formation_equation :
+                                                                                    @Eq.{1} (HighamBench.P16Vector n)
+                                                                                      correctionHat
+                                                                                      (@HAdd.hAdd.{0, 0, 0}
+                                                                                        (HighamBench.P16Vector n)
+                                                                                        (HighamBench.P16Vector n)
+                                                                                        (HighamBench.P16Vector n)
+                                                                                        (@instHAdd.{0}
+                                                                                          (HighamBench.P16Vector n)
+                                                                                          (@Pi.instAdd.{0, 0} (Fin n)
+                                                                                            (fun (a : Fin n) => Real)
+                                                                                            fun (i : Fin n) =>
+                                                                                            Real.instAdd))
+                                                                                        (@HighamBench.p16RectMatVec n
+                                                                                          keyDimension basis
+                                                                                          leastSquaresY)
+                                                                                        correctionFormationError)) →
+                                                                                  (correction_formation_bound :
+                                                                                      @LE.le.{0} Real Real.instLE
+                                                                                        (@HighamBench.p16VecNorm n
+                                                                                          correctionFormationError)
+                                                                                        (@HMul.hMul.{0, 0, 0} Real Real
+                                                                                          Real
+                                                                                          (@instHMul.{0} Real
+                                                                                            Real.instMul)
+                                                                                          (@HMul.hMul.{0, 0, 0} Real
+                                                                                            Real Real
+                                                                                            (@instHMul.{0} Real
+                                                                                              Real.instMul)
+                                                                                            epsilonX
+                                                                                            (@HighamBench.p16RectFrobNorm
+                                                                                              n keyDimension basis))
+                                                                                          (@HighamBench.p16VecNorm
+                                                                                            keyDimension
+                                                                                            leastSquaresY))) →
+                                                                                    (accuracy_nonneg :
+                                                                                        And
+                                                                                          (@LE.le.{0} Real Real.instLE
+                                                                                            (@OfNat.ofNat.{0} Real
+                                                                                              (nat_lit 0)
+                                                                                              (@Zero.toOfNat0.{0} Real
+                                                                                                Real.instZero))
+                                                                                            epsilonC)
+                                                                                          (And
+                                                                                            (@LE.le.{0} Real Real.instLE
+                                                                                              (@OfNat.ofNat.{0} Real
+                                                                                                (nat_lit 0)
+                                                                                                (@Zero.toOfNat0.{0} Real
+                                                                                                  Real.instZero))
+                                                                                              epsilonB)
+                                                                                            (And
+                                                                                              (@LE.le.{0} Real
+                                                                                                Real.instLE
+                                                                                                (@OfNat.ofNat.{0} Real
+                                                                                                  (nat_lit 0)
+                                                                                                  (@Zero.toOfNat0.{0}
+                                                                                                    Real Real.instZero))
+                                                                                                epsilonLS)
+                                                                                              (@LE.le.{0} Real
+                                                                                                Real.instLE
+                                                                                                (@OfNat.ofNat.{0} Real
+                                                                                                  (nat_lit 0)
+                                                                                                  (@Zero.toOfNat0.{0}
+                                                                                                    Real Real.instZero))
+                                                                                                epsilonX)))) →
+                                                                                      (productWeight leastSquaresWeight
+                                                                                          correctionWeight : Real) →
+                                                                                        (weights_nonneg :
+                                                                                            And
+                                                                                              (@LE.le.{0} Real
+                                                                                                Real.instLE
+                                                                                                (@OfNat.ofNat.{0} Real
+                                                                                                  (nat_lit 0)
+                                                                                                  (@Zero.toOfNat0.{0}
+                                                                                                    Real Real.instZero))
+                                                                                                productWeight)
+                                                                                              (And
+                                                                                                (@LE.le.{0} Real
+                                                                                                  Real.instLE
+                                                                                                  (@OfNat.ofNat.{0} Real
+                                                                                                    (nat_lit 0)
+                                                                                                    (@Zero.toOfNat0.{0}
+                                                                                                      Real
+                                                                                                      Real.instZero))
+                                                                                                  leastSquaresWeight)
+                                                                                                (@LE.le.{0} Real
+                                                                                                  Real.instLE
+                                                                                                  (@OfNat.ofNat.{0} Real
+                                                                                                    (nat_lit 0)
+                                                                                                    (@Zero.toOfNat0.{0}
+                                                                                                      Real
+                                                                                                      Real.instZero))
+                                                                                                  correctionWeight))) →
+                                                                                          (epsilonC_le :
+                                                                                              @LE.le.{0} Real
+                                                                                                Real.instLE epsilonC
+                                                                                                (@HMul.hMul.{0, 0, 0}
+                                                                                                  Real Real Real
+                                                                                                  (@instHMul.{0} Real
+                                                                                                    Real.instMul)
+                                                                                                  productWeight uLow)) →
+                                                                                            (epsilonLS_le :
+                                                                                                @LE.le.{0} Real
+                                                                                                  Real.instLE epsilonLS
+                                                                                                  (@HMul.hMul.{0, 0, 0}
+                                                                                                    Real Real Real
+                                                                                                    (@instHMul.{0} Real
+                                                                                                      Real.instMul)
+                                                                                                    leastSquaresWeight
+                                                                                                    uLow)) →
+                                                                                              (epsilonX_le :
+                                                                                                  @LE.le.{0} Real
+                                                                                                    Real.instLE epsilonX
+                                                                                                    (@HMul.hMul.{0, 0,
+                                                                                                          0}
+                                                                                                      Real Real Real
+                                                                                                      (@instHMul.{0}
+                                                                                                        Real
+                                                                                                        Real.instMul)
+                                                                                                      correctionWeight
+                                                                                                      uLow)) →
+                                                                                                (basisLowerGain
+                                                                                                    imageLowerGain :
+                                                                                                    Real) →
+                                                                                                  (basisLowerGain_pos :
+                                                                                                      @LT.lt.{0} Real
+                                                                                                        Real.instLT
+                                                                                                        (@OfNat.ofNat.{0}
+                                                                                                          Real
+                                                                                                          (nat_lit 0)
+                                                                                                          (@Zero.toOfNat0.{0}
+                                                                                                            Real
+                                                                                                            Real.instZero))
+                                                                                                        basisLowerGain) →
+                                                                                                    (basis_gain :
+                                                                                                        @HighamBench.p16MinGainAtLeast
+                                                                                                          n keyDimension
+                                                                                                          basis
+                                                                                                          basisLowerGain) →
+                                                                                                      (image_gain :
+                                                                                                          @HighamBench.p16MinGainAtLeast
+                                                                                                            n
+                                                                                                            keyDimension
+                                                                                                            (@HighamBench.p16SquareRectMul
+                                                                                                              n
+                                                                                                              keyDimension
+                                                                                                              A basis)
+                                                                                                            imageLowerGain) →
+                                                                                                        (basis_not_numerically_rank_deficient :
+                                                                                                            @LT.lt.{0}
+                                                                                                              Real
+                                                                                                              Real.instLT
+                                                                                                              (@HMul.hMul.{0,
+                                                                                                                    0,
+                                                                                                                    0}
+                                                                                                                Real
+                                                                                                                Real
+                                                                                                                Real
+                                                                                                                (@instHMul.{0}
+                                                                                                                  Real
+                                                                                                                  Real.instMul)
+                                                                                                                epsilonX
+                                                                                                                (@HighamBench.p16RectFrobNorm
+                                                                                                                  n
+                                                                                                                  keyDimension
+                                                                                                                  basis))
+                                                                                                              basisLowerGain) →
+                                                                                                          (key_near_dependence :
+                                                                                                              @LT.lt.{0}
+                                                                                                                  Nat
+                                                                                                                  instLTNat
+                                                                                                                  keyDimension
+                                                                                                                  n →
+                                                                                                                ∀
+                                                                                                                  (phi :
+                                                                                                                    Real),
+                                                                                                                  @LT.lt.{0}
+                                                                                                                      Real
+                                                                                                                      Real.instLT
+                                                                                                                      (@OfNat.ofNat.{0}
+                                                                                                                        Real
+                                                                                                                        (nat_lit
+                                                                                                                          0)
+                                                                                                                        (@Zero.toOfNat0.{0}
+                                                                                                                          Real
+                                                                                                                          Real.instZero))
+                                                                                                                      phi →
+                                                                                                                    @HighamBench.p16NearRankDeficient
+                                                                                                                      n
+                                                                                                                      (@HAdd.hAdd.{0,
+                                                                                                                            0,
+                                                                                                                            0}
+                                                                                                                        Nat
+                                                                                                                        Nat
+                                                                                                                        Nat
+                                                                                                                        (@instHAdd.{0}
+                                                                                                                          Nat
+                                                                                                                          instAddNat)
+                                                                                                                        keyDimension
+                                                                                                                        (@OfNat.ofNat.{0}
+                                                                                                                          Nat
+                                                                                                                          (nat_lit
+                                                                                                                            1)
+                                                                                                                          (instOfNatNat
+                                                                                                                            (nat_lit
+                                                                                                                              1))))
+                                                                                                                      (@HighamBench.p16Augment
+                                                                                                                        n
+                                                                                                                        keyDimension
+                                                                                                                        residualLow
+                                                                                                                        phi
+                                                                                                                        arnoldiProduct)
+                                                                                                                      (@HMul.hMul.{0,
+                                                                                                                            0,
+                                                                                                                            0}
+                                                                                                                        Real
+                                                                                                                        Real
+                                                                                                                        Real
+                                                                                                                        (@instHMul.{0}
+                                                                                                                          Real
+                                                                                                                          Real.instMul)
+                                                                                                                        (@HMul.hMul.{0,
+                                                                                                                              0,
+                                                                                                                              0}
+                                                                                                                          Real
+                                                                                                                          Real
+                                                                                                                          Real
+                                                                                                                          (@instHMul.{0}
+                                                                                                                            Real
+                                                                                                                            Real.instMul)
+                                                                                                                          (@HAdd.hAdd.{0,
+                                                                                                                                0,
+                                                                                                                                0}
+                                                                                                                            Real
+                                                                                                                            Real
+                                                                                                                            Real
+                                                                                                                            (@instHAdd.{0}
+                                                                                                                              Real
+                                                                                                                              Real.instAdd)
+                                                                                                                            (@HAdd.hAdd.{0,
+                                                                                                                                  0,
+                                                                                                                                  0}
+                                                                                                                              Real
+                                                                                                                              Real
+                                                                                                                              Real
+                                                                                                                              (@instHAdd.{0}
+                                                                                                                                Real
+                                                                                                                                Real.instAdd)
+                                                                                                                              epsilonC
+                                                                                                                              epsilonB)
+                                                                                                                            epsilonLS)
+                                                                                                                          (HighamBench.p16PolynomialFactorValue
+                                                                                                                            dimensionFactor
+                                                                                                                            n
+                                                                                                                            keyDimension))
+                                                                                                                        (@HighamBench.p16RectFrobNorm
+                                                                                                                          n
+                                                                                                                          (@HAdd.hAdd.{0,
+                                                                                                                                0,
+                                                                                                                                0}
+                                                                                                                            Nat
+                                                                                                                            Nat
+                                                                                                                            Nat
+                                                                                                                            (@instHAdd.{0}
+                                                                                                                              Nat
+                                                                                                                              instAddNat)
+                                                                                                                            keyDimension
+                                                                                                                            (@OfNat.ofNat.{0}
+                                                                                                                              Nat
+                                                                                                                              (nat_lit
+                                                                                                                                1)
+                                                                                                                              (instOfNatNat
+                                                                                                                                (nat_lit
+                                                                                                                                  1))))
+                                                                                                                          (@HighamBench.p16Augment
+                                                                                                                            n
+                                                                                                                            keyDimension
+                                                                                                                            residualLow
+                                                                                                                            phi
+                                                                                                                            arnoldiProduct)))) →
+                                                                                                            (key_image_full_rank :
+                                                                                                                @LT.lt.{0}
+                                                                                                                  Real
+                                                                                                                  Real.instLT
+                                                                                                                  (@HMul.hMul.{0,
+                                                                                                                        0,
+                                                                                                                        0}
+                                                                                                                    Real
+                                                                                                                    Real
+                                                                                                                    Real
+                                                                                                                    (@instHMul.{0}
+                                                                                                                      Real
+                                                                                                                      Real.instMul)
+                                                                                                                    (@HAdd.hAdd.{0,
+                                                                                                                          0,
+                                                                                                                          0}
+                                                                                                                      Real
+                                                                                                                      Real
+                                                                                                                      Real
+                                                                                                                      (@instHAdd.{0}
+                                                                                                                        Real
+                                                                                                                        Real.instAdd)
+                                                                                                                      (@HAdd.hAdd.{0,
+                                                                                                                            0,
+                                                                                                                            0}
+                                                                                                                        Real
+                                                                                                                        Real
+                                                                                                                        Real
+                                                                                                                        (@instHAdd.{0}
+                                                                                                                          Real
+                                                                                                                          Real.instAdd)
+                                                                                                                        epsilonC
+                                                                                                                        epsilonB)
+                                                                                                                      epsilonLS)
+                                                                                                                    (@HighamBench.p16RectFrobNorm
+                                                                                                                      n
+                                                                                                                      keyDimension
+                                                                                                                      arnoldiProduct))
+                                                                                                                  imageLowerGain) →
+                                                                                                              (alpha
+                                                                                                                  beta
+                                                                                                                  lambda :
+                                                                                                                  Real) →
+                                                                                                                (coefficients_nonneg :
+                                                                                                                    And
+                                                                                                                      (@LE.le.{0}
+                                                                                                                        Real
+                                                                                                                        Real.instLE
+                                                                                                                        (@OfNat.ofNat.{0}
+                                                                                                                          Real
+                                                                                                                          (nat_lit
+                                                                                                                            0)
+                                                                                                                          (@Zero.toOfNat0.{0}
+                                                                                                                            Real
+                                                                                                                            Real.instZero))
+                                                                                                                        alpha)
+                                                                                                                      (And
+                                                                                                                        (@LE.le.{0}
+                                                                                                                          Real
+                                                                                                                          Real.instLE
+                                                                                                                          (@OfNat.ofNat.{0}
+                                                                                                                            Real
+                                                                                                                            (nat_lit
+                                                                                                                              0)
+                                                                                                                            (@Zero.toOfNat0.{0}
+                                                                                                                              Real
+                                                                                                                              Real.instZero))
+                                                                                                                          beta)
+                                                                                                                        (@LE.le.{0}
+                                                                                                                          Real
+                                                                                                                          Real.instLE
+                                                                                                                          (@OfNat.ofNat.{0}
+                                                                                                                            Real
+                                                                                                                            (nat_lit
+                                                                                                                              0)
+                                                                                                                            (@Zero.toOfNat0.{0}
+                                                                                                                              Real
+                                                                                                                              Real.instZero))
+                                                                                                                          lambda))) →
+                                                                                                                  (alpha_eq :
+                                                                                                                      @Eq.{1}
+                                                                                                                        Real
+                                                                                                                        alpha
+                                                                                                                        (@HDiv.hDiv.{0,
+                                                                                                                              0,
+                                                                                                                              0}
+                                                                                                                          Real
+                                                                                                                          Real
+                                                                                                                          Real
+                                                                                                                          (@instHDiv.{0}
+                                                                                                                            Real
+                                                                                                                            (@DivInvMonoid.toDiv.{0}
+                                                                                                                              Real
+                                                                                                                              Real.instDivInvMonoid))
+                                                                                                                          (@HighamBench.p16RectFrobNorm
+                                                                                                                            n
+                                                                                                                            keyDimension
+                                                                                                                            arnoldiProduct)
+                                                                                                                          (@HMul.hMul.{0,
+                                                                                                                                0,
+                                                                                                                                0}
+                                                                                                                            Real
+                                                                                                                            Real
+                                                                                                                            Real
+                                                                                                                            (@instHMul.{0}
+                                                                                                                              Real
+                                                                                                                              Real.instMul)
+                                                                                                                            basisLowerGain
+                                                                                                                            (@HighamBench.p16FrobNorm
+                                                                                                                              n
+                                                                                                                              A)))) →
+                                                                                                                    (beta_eq :
+                                                                                                                        @Eq.{1}
+                                                                                                                          Real
+                                                                                                                          beta
+                                                                                                                          (@Max.max.{0}
+                                                                                                                            Real
+                                                                                                                            Real.instMax
+                                                                                                                            (@OfNat.ofNat.{0}
+                                                                                                                              Real
+                                                                                                                              (nat_lit
+                                                                                                                                1)
+                                                                                                                              (@One.toOfNat1.{0}
+                                                                                                                                Real
+                                                                                                                                Real.instOne))
+                                                                                                                            alpha)) →
+                                                                                                                      (lambda_eq :
+                                                                                                                          @Eq.{1}
+                                                                                                                            Real
+                                                                                                                            lambda
+                                                                                                                            (@HDiv.hDiv.{0,
+                                                                                                                                  0,
+                                                                                                                                  0}
+                                                                                                                              Real
+                                                                                                                              Real
+                                                                                                                              Real
+                                                                                                                              (@instHDiv.{0}
+                                                                                                                                Real
+                                                                                                                                (@DivInvMonoid.toDiv.{0}
+                                                                                                                                  Real
+                                                                                                                                  Real.instDivInvMonoid))
+                                                                                                                              (@HighamBench.p16RectFrobNorm
+                                                                                                                                n
+                                                                                                                                keyDimension
+                                                                                                                                basis)
+                                                                                                                              basisLowerGain)) →
+                                                                                                                        (modularAccuracy :
+                                                                                                                            Real) →
+                                                                                                                          (modular_accuracy_eq :
+                                                                                                                              @Eq.{1}
+                                                                                                                                Real
+                                                                                                                                modularAccuracy
+                                                                                                                                (@HAdd.hAdd.{0,
+                                                                                                                                      0,
+                                                                                                                                      0}
+                                                                                                                                  Real
+                                                                                                                                  Real
+                                                                                                                                  Real
+                                                                                                                                  (@instHAdd.{0}
+                                                                                                                                    Real
+                                                                                                                                    Real.instAdd)
+                                                                                                                                  (@HAdd.hAdd.{0,
+                                                                                                                                        0,
+                                                                                                                                        0}
+                                                                                                                                    Real
+                                                                                                                                    Real
+                                                                                                                                    Real
+                                                                                                                                    (@instHAdd.{0}
+                                                                                                                                      Real
+                                                                                                                                      Real.instAdd)
+                                                                                                                                    (@HAdd.hAdd.{0,
+                                                                                                                                          0,
+                                                                                                                                          0}
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      (@instHAdd.{0}
+                                                                                                                                        Real
+                                                                                                                                        Real.instAdd)
+                                                                                                                                      (@HMul.hMul.{0,
+                                                                                                                                            0,
+                                                                                                                                            0}
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        (@instHMul.{0}
+                                                                                                                                          Real
+                                                                                                                                          Real.instMul)
+                                                                                                                                        alpha
+                                                                                                                                        epsilonC)
+                                                                                                                                      (@HMul.hMul.{0,
+                                                                                                                                            0,
+                                                                                                                                            0}
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        (@instHMul.{0}
+                                                                                                                                          Real
+                                                                                                                                          Real.instMul)
+                                                                                                                                        beta
+                                                                                                                                        epsilonB))
+                                                                                                                                    (@HMul.hMul.{0,
+                                                                                                                                          0,
+                                                                                                                                          0}
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      (@instHMul.{0}
+                                                                                                                                        Real
+                                                                                                                                        Real.instMul)
+                                                                                                                                      beta
+                                                                                                                                      epsilonLS))
+                                                                                                                                  (@HMul.hMul.{0,
+                                                                                                                                        0,
+                                                                                                                                        0}
+                                                                                                                                    Real
+                                                                                                                                    Real
+                                                                                                                                    Real
+                                                                                                                                    (@instHMul.{0}
+                                                                                                                                      Real
+                                                                                                                                      Real.instMul)
+                                                                                                                                    lambda
+                                                                                                                                    epsilonX))) →
+                                                                                                                            (dimension_factor_bound :
+                                                                                                                                @LE.le.{0}
+                                                                                                                                  Real
+                                                                                                                                  Real.instLE
+                                                                                                                                  (@HAdd.hAdd.{0,
+                                                                                                                                        0,
+                                                                                                                                        0}
+                                                                                                                                    Real
+                                                                                                                                    Real
+                                                                                                                                    Real
+                                                                                                                                    (@instHAdd.{0}
+                                                                                                                                      Real
+                                                                                                                                      Real.instAdd)
+                                                                                                                                    (@HAdd.hAdd.{0,
+                                                                                                                                          0,
+                                                                                                                                          0}
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      (@instHAdd.{0}
+                                                                                                                                        Real
+                                                                                                                                        Real.instAdd)
+                                                                                                                                      (@HMul.hMul.{0,
+                                                                                                                                            0,
+                                                                                                                                            0}
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        (@instHMul.{0}
+                                                                                                                                          Real
+                                                                                                                                          Real.instMul)
+                                                                                                                                        alpha
+                                                                                                                                        productWeight)
+                                                                                                                                      (@HMul.hMul.{0,
+                                                                                                                                            0,
+                                                                                                                                            0}
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        (@instHMul.{0}
+                                                                                                                                          Real
+                                                                                                                                          Real.instMul)
+                                                                                                                                        beta
+                                                                                                                                        (@HAdd.hAdd.{0,
+                                                                                                                                              0,
+                                                                                                                                              0}
+                                                                                                                                          Real
+                                                                                                                                          Real
+                                                                                                                                          Real
+                                                                                                                                          (@instHAdd.{0}
+                                                                                                                                            Real
+                                                                                                                                            Real.instAdd)
+                                                                                                                                          (@OfNat.ofNat.{0}
+                                                                                                                                            Real
+                                                                                                                                            (nat_lit
+                                                                                                                                              1)
+                                                                                                                                            (@One.toOfNat1.{0}
+                                                                                                                                              Real
+                                                                                                                                              Real.instOne))
+                                                                                                                                          leastSquaresWeight)))
+                                                                                                                                    (@HMul.hMul.{0,
+                                                                                                                                          0,
+                                                                                                                                          0}
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      (@instHMul.{0}
+                                                                                                                                        Real
+                                                                                                                                        Real.instMul)
+                                                                                                                                      lambda
+                                                                                                                                      correctionWeight))
+                                                                                                                                  (HighamBench.p16PolynomialFactorValue
+                                                                                                                                    dimensionFactor
+                                                                                                                                    n
+                                                                                                                                    keyDimension)) →
+                                                                                                                              (backward_correction_bound :
+                                                                                                                                  @LE.le.{0}
+                                                                                                                                    Real
+                                                                                                                                    Real.instLE
+                                                                                                                                    (@HDiv.hDiv.{0,
+                                                                                                                                          0,
+                                                                                                                                          0}
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      (@instHDiv.{0}
+                                                                                                                                        Real
+                                                                                                                                        (@DivInvMonoid.toDiv.{0}
+                                                                                                                                          Real
+                                                                                                                                          Real.instDivInvMonoid))
+                                                                                                                                      (@HighamBench.p16VecNorm
+                                                                                                                                        n
+                                                                                                                                        (@HSub.hSub.{0,
+                                                                                                                                              0,
+                                                                                                                                              0}
+                                                                                                                                          (HighamBench.P16Vector
+                                                                                                                                            n)
+                                                                                                                                          (HighamBench.P16Vector
+                                                                                                                                            n)
+                                                                                                                                          (HighamBench.P16Vector
+                                                                                                                                            n)
+                                                                                                                                          (@instHSub.{0}
+                                                                                                                                            (HighamBench.P16Vector
+                                                                                                                                              n)
+                                                                                                                                            (@Pi.instSub.{0,
+                                                                                                                                                  0}
+                                                                                                                                              (Fin
+                                                                                                                                                n)
+                                                                                                                                              (fun
+                                                                                                                                                  (a :
+                                                                                                                                                    Fin
+                                                                                                                                                      n) =>
+                                                                                                                                                Real)
+                                                                                                                                              fun
+                                                                                                                                                (i :
+                                                                                                                                                  Fin
+                                                                                                                                                    n) =>
+                                                                                                                                              Real.instSub))
+                                                                                                                                          residualHat
+                                                                                                                                          (@HighamBench.p16MatVec
+                                                                                                                                            n
+                                                                                                                                            A
+                                                                                                                                            correctionHat)))
+                                                                                                                                      (@HAdd.hAdd.{0,
+                                                                                                                                            0,
+                                                                                                                                            0}
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        (@instHAdd.{0}
+                                                                                                                                          Real
+                                                                                                                                          Real.instAdd)
+                                                                                                                                        (@HighamBench.p16VecNorm
+                                                                                                                                          n
+                                                                                                                                          b)
+                                                                                                                                        (@HMul.hMul.{0,
+                                                                                                                                              0,
+                                                                                                                                              0}
+                                                                                                                                          Real
+                                                                                                                                          Real
+                                                                                                                                          Real
+                                                                                                                                          (@instHMul.{0}
+                                                                                                                                            Real
+                                                                                                                                            Real.instMul)
+                                                                                                                                          (@HighamBench.p16FrobNorm
+                                                                                                                                            n
+                                                                                                                                            A)
+                                                                                                                                          (@HighamBench.p16VecNorm
+                                                                                                                                            n
+                                                                                                                                            xNext))))
+                                                                                                                                    (@HMul.hMul.{0,
+                                                                                                                                          0,
+                                                                                                                                          0}
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      Real
+                                                                                                                                      (@instHMul.{0}
+                                                                                                                                        Real
+                                                                                                                                        Real.instMul)
+                                                                                                                                      (@HMul.hMul.{0,
+                                                                                                                                            0,
+                                                                                                                                            0}
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        (@instHMul.{0}
+                                                                                                                                          Real
+                                                                                                                                          Real.instMul)
+                                                                                                                                        (@HMul.hMul.{0,
+                                                                                                                                              0,
+                                                                                                                                              0}
+                                                                                                                                          Real
+                                                                                                                                          Real
+                                                                                                                                          Real
+                                                                                                                                          (@instHMul.{0}
+                                                                                                                                            Real
+                                                                                                                                            Real.instMul)
+                                                                                                                                          (HighamBench.p16PolynomialFactorValue
+                                                                                                                                            dimensionFactor
+                                                                                                                                            n
+                                                                                                                                            keyDimension)
+                                                                                                                                          uLow)
+                                                                                                                                        (@HighamBench.p16ConditionNumberF
+                                                                                                                                          n
+                                                                                                                                          A
+                                                                                                                                          Ainv))
+                                                                                                                                      (@HighamBench.p16BackwardError
+                                                                                                                                        n
+                                                                                                                                        A
+                                                                                                                                        b
+                                                                                                                                        xCurrent))) →
+                                                                                                                                (forward_correction_bound :
+                                                                                                                                    @LE.le.{0}
+                                                                                                                                      Real
+                                                                                                                                      Real.instLE
+                                                                                                                                      (@HDiv.hDiv.{0,
+                                                                                                                                            0,
+                                                                                                                                            0}
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        (@instHDiv.{0}
+                                                                                                                                          Real
+                                                                                                                                          (@DivInvMonoid.toDiv.{0}
+                                                                                                                                            Real
+                                                                                                                                            Real.instDivInvMonoid))
+                                                                                                                                        (@HighamBench.p16VecNorm
+                                                                                                                                          n
+                                                                                                                                          (@HSub.hSub.{0,
+                                                                                                                                                0,
+                                                                                                                                                0}
+                                                                                                                                            (HighamBench.P16Vector
+                                                                                                                                              n)
+                                                                                                                                            (HighamBench.P16Vector
+                                                                                                                                              n)
+                                                                                                                                            (HighamBench.P16Vector
+                                                                                                                                              n)
+                                                                                                                                            (@instHSub.{0}
+                                                                                                                                              (HighamBench.P16Vector
+                                                                                                                                                n)
+                                                                                                                                              (@Pi.instSub.{0,
+                                                                                                                                                    0}
+                                                                                                                                                (Fin
+                                                                                                                                                  n)
+                                                                                                                                                (fun
+                                                                                                                                                    (a :
+                                                                                                                                                      Fin
+                                                                                                                                                        n) =>
+                                                                                                                                                  Real)
+                                                                                                                                                fun
+                                                                                                                                                  (i :
+                                                                                                                                                    Fin
+                                                                                                                                                      n) =>
+                                                                                                                                                Real.instSub))
+                                                                                                                                            (@HAdd.hAdd.{0,
+                                                                                                                                                  0,
+                                                                                                                                                  0}
+                                                                                                                                              (HighamBench.P16Vector
+                                                                                                                                                n)
+                                                                                                                                              (HighamBench.P16Vector
+                                                                                                                                                n)
+                                                                                                                                              (HighamBench.P16Vector
+                                                                                                                                                n)
+                                                                                                                                              (@instHAdd.{0}
+                                                                                                                                                (HighamBench.P16Vector
+                                                                                                                                                  n)
+                                                                                                                                                (@Pi.instAdd.{0,
+                                                                                                                                                      0}
+                                                                                                                                                  (Fin
+                                                                                                                                                    n)
+                                                                                                                                                  (fun
+                                                                                                                                                      (a :
+                                                                                                                                                        Fin
+                                                                                                                                                          n) =>
+                                                                                                                                                    Real)
+                                                                                                                                                  fun
+                                                                                                                                                    (i :
+                                                                                                                                                      Fin
+                                                                                                                                                        n) =>
+                                                                                                                                                  Real.instAdd))
+                                                                                                                                              xCurrent
+                                                                                                                                              correctionHat)
+                                                                                                                                            xExact))
+                                                                                                                                        (@HighamBench.p16VecNorm
+                                                                                                                                          n
+                                                                                                                                          xExact))
+                                                                                                                                      (@HMul.hMul.{0,
+                                                                                                                                            0,
+                                                                                                                                            0}
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        Real
+                                                                                                                                        (@instHMul.{0}
+                                                                                                                                          Real
+                                                                                                                                          Real.instMul)
+                                                                                                                                        (@HMul.hMul.{0,
+                                                                                                                                              0,
+                                                                                                                                              0}
+                                                                                                                                          Real
+                                                                                                                                          Real
+                                                                                                                                          Real
+                                                                                                                                          (@instHMul.{0}
+                                                                                                                                            Real
+                                                                                                                                            Real.instMul)
+                                                                                                                                          (@HMul.hMul.{0,
+                                                                                                                                                0,
+                                                                                                                                                0}
+                                                                                                                                            Real
+                                                                                                                                            Real
+                                                                                                                                            Real
+                                                                                                                                            (@instHMul.{0}
+                                                                                                                                              Real
+                                                                                                                                              Real.instMul)
+                                                                                                                                            (HighamBench.p16PolynomialFactorValue
+                                                                                                                                              dimensionFactor
+                                                                                                                                              n
+                                                                                                                                              keyDimension)
+                                                                                                                                            uLow)
+                                                                                                                                          (@HighamBench.p16ConditionNumberF
+                                                                                                                                            n
+                                                                                                                                            A
+                                                                                                                                            Ainv))
+                                                                                                                                        (@HighamBench.p16ForwardError
+                                                                                                                                          n
+                                                                                                                                          xExact
+                                                                                                                                          xCurrent))) →
+                                                                                                                                  @HighamBench.P16FixedLowPrecisionMGSRestart
+                                                                                                                                    n
+                                                                                                                                    A
+                                                                                                                                    Ainv
+                                                                                                                                    b
+                                                                                                                                    xExact
+                                                                                                                                    xCurrent
+                                                                                                                                    xNext
+                                                                                                                                    residualHat
+                                                                                                                                    correctionHat
+                                                                                                                                    uLow
+                                                                                                                                    dimensionFactor
+```
+
+### D037: `HighamBench.P16PolynomialFactor.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `4`
+- Semantic SHA-256: `a8c6eea74c2a2a0885d42f9c23e54ef3821e761dedc0f21c6e669d08797687ae`
+
+Type:
+
+```lean
+(degreeN degreeK : Nat) →
+  (coefficient : Fin (instHAdd.hAdd degreeN 1) → Fin (instHAdd.hAdd degreeK 1) → Real) →
+    (∀ (i : Fin (instHAdd.hAdd degreeN 1)) (j : Fin (instHAdd.hAdd degreeK 1)), Real.instLE.le 0 (coefficient i j)) →
+      HighamBench.P16PolynomialFactor
+```
+
+Fully explicit type:
+
+```lean
+(degreeN degreeK : Nat) →
+  (coefficient :
+      Fin
+          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) degreeN
+            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+        Fin
+            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) degreeK
+              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+          Real) →
+    (coefficient_nonneg :
+        ∀
+          (i :
+            Fin
+              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) degreeN
+                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+          (j :
+            Fin
+              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) degreeK
+                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))),
+          @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+            (coefficient i j)) →
+      HighamBench.P16PolynomialFactor
+```
+
+### D038: `HighamBench.P16RectMatrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `abbrev`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `ed6ed4c3dc41190752faa97194bb8058e9dd7deadfbd18631c282a8f04103d81`
 
 Type:
@@ -2589,12 +2555,12 @@ Definition body (one-level semantic boundary):
 fun m k => Matrix (Fin m) (Fin k) Real
 ```
 
-### D041: `HighamBench.p16Augment`
+### D039: `HighamBench.p16Augment`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `b8a20ccd1a0141e32676a45d1777c354b7c37d97677afb2234a664e7158d3cea`
 
 Type:
@@ -2622,12 +2588,12 @@ Definition body (one-level semantic boundary):
 fun {n k} b phi C i i_1 => Fin.cases (instHMul.hMul (b i) phi) (fun j => C i j) i_1
 ```
 
-### D042: `HighamBench.p16AugmentedColumn`
+### D040: `HighamBench.p16AugmentedColumn`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `edff7146376ef770366aba2e1853be47a9dd93c72ecd327c90997fcd05811128`
 
 Type:
@@ -2656,12 +2622,12 @@ Definition body (one-level semantic boundary):
 fun {n k} rhs C j => Fin.cases rhs (fun q row => C row q) j
 ```
 
-### D043: `HighamBench.p16IsLeastSquaresSolution`
+### D041: `HighamBench.p16IsLeastSquaresSolution`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `bdfc265c3df9de57c6f0acfa56fa518d59187a9636cb68597f1faf194c63a797`
 
 Type:
@@ -2685,12 +2651,12 @@ fun {m k} A b y =>
       (HighamBench.p16VecNorm (instHSub.hSub b (HighamBench.p16RectMatVec A z)))
 ```
 
-### D044: `HighamBench.p16MinGainAtLeast`
+### D042: `HighamBench.p16MinGainAtLeast`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `aea1bd8a88cb85c24aad7b9fbf82abc6098fc02caa123478bbd558b3d3759768`
 
 Type:
@@ -2714,12 +2680,12 @@ fun {m k} A sigma =>
       (HighamBench.p16VecNorm (HighamBench.p16RectMatVec A x))
 ```
 
-### D045: `HighamBench.p16NearRankDeficient`
+### D043: `HighamBench.p16NearRankDeficient`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `552e2d22c81360084216ba06ab4ea330e4c6339472649bada4698b2510af7ab9`
 
 Type:
@@ -2743,12 +2709,12 @@ fun {m k} A delta =>
       (Real.instLE.le (HighamBench.p16VecNorm (HighamBench.p16RectMatVec A x)) delta)
 ```
 
-### D046: `HighamBench.p16RectFrobNorm`
+### D044: `HighamBench.p16RectFrobNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `a2ed232b7b5960b8a6f9c5907344e0b80314d5f88f6285f45b4409ed2a6d7203`
 
 Type:
@@ -2769,12 +2735,12 @@ Definition body (one-level semantic boundary):
 fun {m k} A => Matrix.frobeniusNormedAddCommGroup.norm A
 ```
 
-### D047: `HighamBench.p16RectMatVec`
+### D045: `HighamBench.p16RectMatVec`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `6f698af222e83d101b281cbccf24e989a885c3a996fa1b73f33092817b45db0c`
 
 Type:
@@ -2795,12 +2761,12 @@ Definition body (one-level semantic boundary):
 fun {m k} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
 ```
 
-### D048: `HighamBench.p16SquareRectMul`
+### D046: `HighamBench.p16SquareRectMul`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
 - Declaration kind: `def`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `0053caf146fae0af9f54e65099d1a3e27476c2f20502180d10ba739f1bc05026`
 
 Type:
@@ -2821,7 +2787,7 @@ Definition body (one-level semantic boundary):
 fun {n k} A B i j => Finset.univ.sum fun q => instHMul.hMul (A i q) (B q j)
 ```
 
-### D049: `And`
+### D047: `And`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2841,47 +2807,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D050: `Eq`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7`
-
-Type:
-
-```lean
-{α : Sort u_1} → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u_1} → α → α → Prop
-```
-
-### D051: `Exists`
-
-- Role: `external-frontier`
-- Owner module: `Init.Core`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `a24a6eb72dcf5b3765659a28bb9d3814ed7ebd3e3fa1fd11e8f3c7acc80e0dde`
-
-Type:
-
-```lean
-{α : Sort u} → (α → Prop) → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u} → (p : α → Prop) → Prop
-```
-
-### D052: `HAdd.hAdd`
+### D048: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2907,7 +2833,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D053: `HMul.hMul`
+### D049: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2933,7 +2859,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D054: `LE.le`
+### D050: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2959,7 +2885,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D055: `LT.lt`
+### D051: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2985,7 +2911,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LT α] => self.1
 ```
 
-### D056: `Nat`
+### D052: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3005,7 +2931,7 @@ Fully explicit type:
 Type
 ```
 
-### D057: `OfNat.ofNat`
+### D053: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3031,7 +2957,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D058: `One.toOfNat1`
+### D054: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -3057,7 +2983,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D059: `Real`
+### D055: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3077,7 +3003,7 @@ Fully explicit type:
 Type
 ```
 
-### D060: `Real.instAdd`
+### D056: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3103,33 +3029,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D061: `Real.instAddGroup`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0`
-
-Type:
-
-```lean
-AddGroup Real
-```
-
-Fully explicit type:
-
-```lean
-AddGroup.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D062: `Real.instLE`
+### D057: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3155,7 +3055,7 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D063: `Real.instLT`
+### D058: `Real.instLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3181,7 +3081,7 @@ Definition body (one-level semantic boundary):
 { lt := Real.lt✝ }
 ```
 
-### D064: `Real.instMul`
+### D059: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3207,7 +3107,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D065: `Real.instOne`
+### D060: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3233,7 +3133,7 @@ Definition body (one-level semantic boundary):
 { one := Real.one✝ }
 ```
 
-### D066: `Real.instZero`
+### D061: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3259,33 +3159,7 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D067: `Real.lattice`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510`
-
-Type:
-
-```lean
-Lattice Real
-```
-
-Fully explicit type:
-
-```lean
-Lattice.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D068: `Zero.toOfNat0`
+### D062: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -3311,34 +3185,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D069: `abs`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b`
-
-Type:
-
-```lean
-{α : Type u_1} → [Lattice α] → [AddGroup α] → α → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Lattice.{u_1} α] → [AddGroup.{u_1} α] → (a : α) → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [Lattice α] [AddGroup α] a =>
-  SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
-```
-
-### D070: `instAddNat`
+### D063: `instAddNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3364,7 +3211,7 @@ Definition body (one-level semantic boundary):
 { add := Nat.add }
 ```
 
-### D071: `instHAdd`
+### D064: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3390,7 +3237,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D072: `instHMul`
+### D065: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3416,7 +3263,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D073: `instOfNatNat`
+### D066: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3442,7 +3289,7 @@ Definition body (one-level semantic boundary):
 fun n => { ofNat := n }
 ```
 
-### D074: `DivInvMonoid.toDiv`
+### D067: `DivInvMonoid.toDiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -3468,7 +3315,7 @@ Definition body (one-level semantic boundary):
 fun G [self : DivInvMonoid G] => self.3
 ```
 
-### D075: `Fin`
+### D068: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3488,7 +3335,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D076: `HDiv.hDiv`
+### D069: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3514,33 +3361,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D077: `HPow.hPow`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8`
-
-Type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HPow α β γ] → α → β → γ
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HPow.{u, v, w} α β γ] → α → β → γ
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α β {γ} [self : HPow α β γ] => self.1
-```
-
-### D078: `HSub.hSub`
+### D070: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3566,33 +3387,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D079: `Monoid.toNatPow`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Group.Defs`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a`
-
-Type:
-
-```lean
-{M : Type u_2} → [Monoid M] → Pow M Nat
-```
-
-Fully explicit type:
-
-```lean
-{M : Type u_2} → [Monoid.{u_2} M] → Pow.{u_2, 0} M Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
-```
-
-### D080: `Pi.instSub`
+### D071: `Pi.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
@@ -3618,7 +3413,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {G} [(i : ι) → Sub (G i)] => { sub := fun f g i => instHSub.hSub (f i) (g i) }
 ```
 
-### D081: `Real.instDivInvMonoid`
+### D072: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3646,33 +3441,7 @@ Definition body (one-level semantic boundary):
   zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D082: `Real.instMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
-
-Type:
-
-```lean
-Monoid Real
-```
-
-Fully explicit type:
-
-```lean
-Monoid.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D083: `Real.instSub`
+### D073: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3698,7 +3467,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D084: `instHDiv`
+### D074: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3724,33 +3493,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
-### D085: `instHPow`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4`
-
-Type:
-
-```lean
-{α : Type u_1} → {β : Type u_2} → [Pow α β] → HPow α β α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → {β : Type u_2} → [Pow.{u_1, u_2} α β] → HPow.{u_1, u_2, u_1} α β α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
-```
-
-### D086: `instHSub`
+### D075: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3776,7 +3519,27 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D087: `Fin.fintype`
+### D076: `Eq`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7`
+
+Type:
+
+```lean
+{α : Sort u_1} → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u_1} → α → α → Prop
+```
+
+### D077: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -3802,7 +3565,33 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D088: `Finset.sum`
+### D078: `Fin.val`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Nat
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : Fin n) → Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.1
+```
+
+### D079: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -3828,7 +3617,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D089: `Finset.univ`
+### D080: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -3854,7 +3643,33 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D090: `Matrix`
+### D081: `HPow.hPow`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HPow α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HPow.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HPow α β γ] => self.1
+```
+
+### D082: `Matrix`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -3880,7 +3695,59 @@ Definition body (one-level semantic boundary):
 fun m n α => m → n → α
 ```
 
-### D091: `Ne`
+### D083: `Monoid.toNatPow`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a`
+
+Type:
+
+```lean
+{M : Type u_2} → [Monoid M] → Pow M Nat
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u_2} → [Monoid.{u_2} M] → Pow.{u_2, 0} M Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
+```
+
+### D084: `Nat.cast`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Cast`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `6e24327ea908b1837083bb15aef27d593e950a2ff8ade81d8aa94bfe33b64450`
+
+Type:
+
+```lean
+{R : Type u} → [NatCast R] → Nat → R
+```
+
+Fully explicit type:
+
+```lean
+{R : Type u} → [NatCast.{u} R] → Nat → R
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {R} [inst : NatCast R] => inst.natCast
+```
+
+### D085: `Ne`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -3906,7 +3773,7 @@ Definition body (one-level semantic boundary):
 fun {α} a b => Not (Eq a b)
 ```
 
-### D092: `Pi.instAdd`
+### D086: `Pi.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
@@ -3932,7 +3799,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [(i : ι) → Add (M i)] => { add := fun f g i => instHAdd.hAdd (f i) (g i) }
 ```
 
-### D093: `Pi.instZero`
+### D087: `Pi.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
@@ -3958,7 +3825,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [(i : ι) → Zero (M i)] => { zero := fun x => 0 }
 ```
 
-### D094: `Real.instAddCommMonoid`
+### D088: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3984,7 +3851,111 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D095: `Real.sqrt`
+### D089: `Real.instAddGroup`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0`
+
+Type:
+
+```lean
+AddGroup Real
+```
+
+Fully explicit type:
+
+```lean
+AddGroup.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D090: `Real.instMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
+
+Type:
+
+```lean
+Monoid Real
+```
+
+Fully explicit type:
+
+```lean
+Monoid.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D091: `Real.instNatCast`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
+
+Type:
+
+```lean
+NatCast Real
+```
+
+Fully explicit type:
+
+```lean
+NatCast.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ natCast := fun n => { cauchy := n.cast } }
+```
+
+### D092: `Real.lattice`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510`
+
+Type:
+
+```lean
+Lattice Real
+```
+
+Fully explicit type:
+
+```lean
+Lattice.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D093: `Real.sqrt`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Sqrt`
@@ -4008,6 +3979,59 @@ Definition body (one-level semantic boundary):
 
 ```lean
 fun x => ((instFunLikeOrderIso NNReal NNReal).coe NNReal.sqrt x.toNNReal).toReal
+```
+
+### D094: `abs`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b`
+
+Type:
+
+```lean
+{α : Type u_1} → [Lattice α] → [AddGroup α] → α → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Lattice.{u_1} α] → [AddGroup.{u_1} α] → (a : α) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [Lattice α] [AddGroup α] a =>
+  SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
+```
+
+### D095: `instHPow`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4`
+
+Type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [Pow α β] → HPow α β α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [Pow.{u_1, u_2} α β] → HPow.{u_1, u_2, u_1} α β α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
 ### D096: `instLTNat`
@@ -4036,93 +4060,7 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D097: `Fin.castSucc`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Fin.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `1a33a8aafc4da9c57254d511b91e1e2a293b6b2e6a304786fbdb535a2fe20bc6`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  Fin n →
-    Fin
-      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} => Fin.castAdd 1
-```
-
-### D098: `Fin.succ`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Fin.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `72d7aaf169e5a264dac79e6aeec8a81c4436ffab27e5dbad2956eaeb4a147cad`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  Fin n →
-    Fin
-      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} x => Fin.succ.match_1 (fun x => Fin (instHAdd.hAdd n 1)) x fun i h => ⟨instHAdd.hAdd i 1, ⋯⟩
-```
-
-### D099: `Fin.val`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `4`
-- Semantic SHA-256: `74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Nat
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : Fin n) → Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.1
-```
-
-### D100: `Function.Bijective`
+### D097: `Function.Bijective`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Logic.Function.Defs`
@@ -4148,33 +4086,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} f => And (Function.Injective f) (Function.Surjective f)
 ```
 
-### D101: `Matrix.add`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `c5598ac688001263050581cba0ba1df7931dce7913c28fb123463641833aae55`
-
-Type:
-
-```lean
-{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Add α] → Add (Matrix m n α)
-```
-
-Fully explicit type:
-
-```lean
-{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Add.{v} α] → Add.{max (max v u_3) u_2} (Matrix.{u_2, u_3, v} m n α)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m} {n} {α} [Add α] => Pi.instAdd
-```
-
-### D102: `Matrix.frobeniusNormedRing`
+### D098: `Matrix.frobeniusNormedRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Matrix.Normed`
@@ -4212,59 +4124,7 @@ fun {m} {α} [Fintype m] [RCLike α] [DecidableEq m] =>
     toPseudoMetricSpace := __src.toPseudoMetricSpace, eq_of_dist_eq_zero := ⋯, dist_eq := ⋯, norm_mul_le := ⋯ }
 ```
 
-### D103: `Max.max`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `4`
-- Semantic SHA-256: `6fa198061d1b8595a7b8b0ed74bd9e48f2c7a18aa01bf39d9c30be49c1d4741c`
-
-Type:
-
-```lean
-{α : Type u} → [self : Max α] → α → α → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : Max.{u} α] → α → α → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : Max α] => self.1
-```
-
-### D104: `Nat.cast`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Cast`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `6e24327ea908b1837083bb15aef27d593e950a2ff8ade81d8aa94bfe33b64450`
-
-Type:
-
-```lean
-{R : Type u} → [NatCast R] → Nat → R
-```
-
-Fully explicit type:
-
-```lean
-{R : Type u} → [NatCast.{u} R] → Nat → R
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {R} [inst : NatCast R] => inst.natCast
-```
-
-### D105: `Norm.norm`
+### D099: `Norm.norm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
@@ -4290,7 +4150,7 @@ Definition body (one-level semantic boundary):
 fun E [self : Norm E] => self.1
 ```
 
-### D106: `NormedRing.toNorm`
+### D100: `NormedRing.toNorm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
@@ -4316,59 +4176,7 @@ Definition body (one-level semantic boundary):
 fun α [self : NormedRing α] => self.1
 ```
 
-### D107: `Real.instMax`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `313f6558836157f8e8b4ea7be18fb6953bf9aefc4dcb68940ef5c4889e18a763`
-
-Type:
-
-```lean
-Max Real
-```
-
-Fully explicit type:
-
-```lean
-Max.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ max := Real.sup✝ }
-```
-
-### D108: `Real.instNatCast`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
-
-Type:
-
-```lean
-NatCast Real
-```
-
-Fully explicit type:
-
-```lean
-NatCast.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ natCast := fun n => { cauchy := n.cast } }
-```
-
-### D109: `Real.instRCLike`
+### D101: `Real.instRCLike`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.RCLike.Basic`
@@ -4399,7 +4207,7 @@ Definition body (one-level semantic boundary):
   toPartialOrder := Real.partialOrder, le_iff_re_im := @Real.instRCLike._proof_13, toDecidableEq := Real.decidableEq }
 ```
 
-### D110: `instDecidableEqFin`
+### D102: `instDecidableEqFin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4427,12 +4235,199 @@ fun n i j =>
     fun h => Decidable.isFalse ⋯
 ```
 
-### D111: `instLENat`
+### D103: `Fin.castSucc`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `1a33a8aafc4da9c57254d511b91e1e2a293b6b2e6a304786fbdb535a2fe20bc6`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  Fin n →
+    Fin
+      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} => Fin.castAdd 1
+```
+
+### D104: `Fin.instOfNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `8f9c302902ae8c66b3f71728ffe02994a026b562f27b9df8d4f84793e455e26b`
+
+Type:
+
+```lean
+{n : Nat} → [NeZero n] → {i : Nat} → OfNat (Fin n) i
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → [@NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0))) n] → {i : Nat} → OfNat.{0} (Fin n) i
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} [NeZero n] {i} => { ofNat := Fin.ofNat n i }
+```
+
+### D105: `Fin.succ`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `72d7aaf169e5a264dac79e6aeec8a81c4436ffab27e5dbad2956eaeb4a147cad`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  Fin n →
+    Fin
+      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} x => Fin.succ.match_1 (fun x => Fin (instHAdd.hAdd n 1)) x fun i h => ⟨instHAdd.hAdd i 1, ⋯⟩
+```
+
+### D106: `Matrix.add`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `c5598ac688001263050581cba0ba1df7931dce7913c28fb123463641833aae55`
+
+Type:
+
+```lean
+{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Add α] → Add (Matrix m n α)
+```
+
+Fully explicit type:
+
+```lean
+{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Add.{v} α] → Add.{max (max v u_3) u_2} (Matrix.{u_2, u_3, v} m n α)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m} {n} {α} [Add α] => Pi.instAdd
+```
+
+### D107: `Max.max`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `6fa198061d1b8595a7b8b0ed74bd9e48f2c7a18aa01bf39d9c30be49c1d4741c`
+
+Type:
+
+```lean
+{α : Type u} → [self : Max α] → α → α → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : Max.{u} α] → α → α → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : Max α] => self.1
+```
+
+### D108: `Nat.instNeZeroSucc`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Nat.Basic`
+- Declaration kind: `theorem`
+- Distance from target type: `5`
+- Semantic SHA-256: `a0735a528184c05594c4c79312c1225bb4dcffcdf0df7eb1a50c5733047c85ad`
+
+Type:
+
+```lean
+∀ {n : Nat}, NeZero (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+∀ {n : Nat},
+  @NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0)))
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D109: `Real.instMax`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `313f6558836157f8e8b4ea7be18fb6953bf9aefc4dcb68940ef5c4889e18a763`
+
+Type:
+
+```lean
+Max Real
+```
+
+Fully explicit type:
+
+```lean
+Max.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ max := Real.sup✝ }
+```
+
+### D110: `instLENat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `def`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `002e628e28a06e89ab80e69408fa3be9fc3e200fafd33e0f71d9111a8944875e`
 
 Type:
@@ -4453,12 +4448,54 @@ Definition body (one-level semantic boundary):
 { le := Nat.le }
 ```
 
-### D112: `Fin.cases`
+### D111: `instNeZeroNatHAdd_1`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.NeZero`
+- Declaration kind: `theorem`
+- Distance from target type: `5`
+- Semantic SHA-256: `4cf1e3f35432e064f333472fa6363b628df31521c110222df9633f8b8ba8cd25`
+
+Type:
+
+```lean
+∀ {n m : Nat} [h : NeZero m], NeZero (instHAdd.hAdd n m)
+```
+
+Fully explicit type:
+
+```lean
+∀ {n m : Nat} [h : @NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0))) m],
+  @NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0)))
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n m)
+```
+
+### D112: `Exists`
+
+- Role: `external-frontier`
+- Owner module: `Init.Core`
+- Declaration kind: `inductive`
+- Distance from target type: `6`
+- Semantic SHA-256: `a24a6eb72dcf5b3765659a28bb9d3814ed7ebd3e3fa1fd11e8f3c7acc80e0dde`
+
+Type:
+
+```lean
+{α : Sort u} → (α → Prop) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (p : α → Prop) → Prop
+```
+
+### D113: `Fin.cases`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Lemmas`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `38edd2256cd8f4f33f2c43ce7c36a1e1c7aded652580ec57a0adaf0ec346b64d`
 
 Type:
@@ -4505,12 +4542,12 @@ Definition body (one-level semantic boundary):
 fun {n} {motive} zero succ i => Fin.induction zero (fun i x => succ i) i
 ```
 
-### D113: `Matrix.frobeniusNormedAddCommGroup`
+### D114: `Matrix.frobeniusNormedAddCommGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Matrix.Normed`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `3f944d9003e72c887b38048a3f469c42c010d0e141780ed19b0137eb25d742ba`
 
 Type:
@@ -4538,12 +4575,12 @@ Definition body (one-level semantic boundary):
 fun {m} {n} {α} [Fintype m] [Fintype n] [NormedAddCommGroup α] => PiLp.normedAddCommGroupToPi 2 fun a => n → α
 ```
 
-### D114: `NormedAddCommGroup.toNorm`
+### D115: `NormedAddCommGroup.toNorm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
 - Declaration kind: `abbrev`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `702f98e978ba8cf9fe1b4ce130f011682d6d486d71ba0f7d12f36ec9925cd59b`
 
 Type:
@@ -4564,12 +4601,12 @@ Definition body (one-level semantic boundary):
 fun E [self : NormedAddCommGroup E] => self.1
 ```
 
-### D115: `Real.normedAddCommGroup`
+### D116: `Real.normedAddCommGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Real`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `9ff0d896c635e2a38531d689d24ee70cfffa41565354ce15f6ff59b51650bd93`
 
 Type:
@@ -4651,7 +4688,7 @@ end HighamBench
 ### `HighamBench.P16Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean`
-SHA-256: `5f4968d5cc9c801253d2145e27911393278a4aad8fd6b3941f6930931e1ea8b0`
+SHA-256: `bb76fe0f8277c626736671271e6624392c15033411d78ab850b1461c56cd36a6`
 
 ```lean
 import HighamBench.Core
@@ -4729,8 +4766,8 @@ def p16FirstOrderLeAt {ι : Type*} (l : Filter ι) (scale lhs rhs : ι → ℝ) 
 
 /-- One computed generic iterative-refinement step in the backward-error
 clause of Lemma 4.2. It records exactly the normwise operation models (4.1),
-(4.2), and (4.14), together with the first-order iterate comparison used in
-the proof of (4.15). -/
+(4.2), and (4.14). The additional iterate comparison needed by the published
+proof is deliberately kept outside this structure. -/
 structure P16Lemma42BackwardStep {n : ℕ} {ι : Type*}
     (l : Filter ι) (scale : ι → ℝ)
     (A : P16Matrix n) (b : P16Vector n) (_iteration : ℕ) where
@@ -4765,10 +4802,6 @@ structure P16Lemma42BackwardStep {n : ℕ} {ι : Type*}
   omega_nonneg : ∀ t, 0 ≤ omega t
   epsilonR_tendsto_zero : Filter.Tendsto epsilonR l (nhds 0)
   epsilonU_tendsto_zero : Filter.Tendsto epsilonU l (nhds 0)
-  iterate_norm_comparison :
-    p16FirstOrderLeAt l scale
-      (fun t ↦ p16VecNorm (xHat t))
-      (fun t ↦ p16VecNorm (xHatNext t))
 
 /-- Frobenius condition number `kappa_F(A)` represented with the certified
 inverse that occurs in the T3 execution model. -/
@@ -5072,66 +5105,16 @@ def p16AugmentedColumn {n k : ℕ} (rhs : P16Vector n)
     (C : P16RectMatrix n k) (j : Fin (k + 1)) : P16Vector n :=
   Fin.cases rhs (fun q row ↦ C row q) j
 
-/-- A fixed-run interpretation of a uniformly negligible second-order term.
-The coefficient is selected once for the whole restart sequence, not after a
-particular restart. -/
-def p16UniformSecondOrder (uHigh uLow : ℝ)
-    (remainder : ℕ → ℝ) : Prop :=
-  ∃ C : ℝ, 0 ≤ C ∧
-    ∀ i : ℕ, |remainder i| ≤ C * (uHigh + uLow) ^ 2
-
-/-- Exact geometric consequence of a fixed affine contraction with a uniform
-quadratic remainder budget. -/
-def p16FixedGeometricEnvelope (lambda floor uHigh uLow : ℝ)
-    (remainder error : ℕ → ℝ) : Prop :=
-  ∃ C : ℝ, 0 ≤ C ∧
-    (∀ i : ℕ, |remainder i| ≤ C * (uHigh + uLow) ^ 2) ∧
-      ∀ m : ℕ,
-        error m ≤ lambda ^ m * error 0 +
-          (floor + C * (uHigh + uLow) ^ 2) / (1 - lambda)
-
-/-- The local Theorem 4.1 interface used by Theorem 6.3. Its factors and high
-precision coefficients remain restart-specific; P16-T3 must derive their
-common `c(n,k) u_low kappa_F(A)` envelope and the displayed floors. -/
-structure P16Theorem41RestartResult {n : ℕ}
-    (A Ainv : P16Matrix n) (b xExact xCurrent xNext : P16Vector n)
-    (uHigh modularAccuracy dimensionFactor : ℝ) where
-  backwardFactor : ℝ
-  forwardFactor : ℝ
-  backwardHighCoefficient : ℝ
-  forwardHighCoefficient : ℝ
-  backwardRemainder : ℝ
-  forwardRemainder : ℝ
-  backwardFactor_nonneg : 0 ≤ backwardFactor
-  forwardFactor_nonneg : 0 ≤ forwardFactor
-  backwardHighCoefficient_nonneg : 0 ≤ backwardHighCoefficient
-  forwardHighCoefficient_nonneg : 0 ≤ forwardHighCoefficient
-  backward_factor_le :
-    backwardFactor ≤ modularAccuracy * p16ConditionNumberF A Ainv
-  forward_factor_le :
-    forwardFactor ≤ modularAccuracy * p16ConditionNumberF A Ainv
-  backward_high_coefficient_le :
-    backwardHighCoefficient ≤ dimensionFactor
-  forward_high_coefficient_le :
-    forwardHighCoefficient ≤ dimensionFactor * p16ConditionNumberF A Ainv
-  backward_step :
-    p16BackwardError A b xNext ≤
-      backwardFactor * p16BackwardError A b xCurrent +
-        backwardHighCoefficient * uHigh + |backwardRemainder|
-  forward_step :
-    p16ForwardError xExact xNext ≤
-      forwardFactor * p16ForwardError xExact xCurrent +
-        forwardHighCoefficient * uHigh + |forwardRemainder|
-
 /-- One fixed-precision, fully stored MGS-GMRES correction solve at an outer
 restart. The raw fields encode the low-precision residual cast, MGS Arnoldi
 projection/update order, augmented-column least-squares model (3.3), rounded
-correction formation, and key-dimension conditions. The final field is only
-the prior Theorem 4.1 result for these same computed quantities. -/
+correction formation, and key-dimension conditions. The final two fields are
+the correction-level estimates inherited from the earlier MGS-GMRES analysis;
+they stop before the high-precision composition in Theorem 6.3. -/
 structure P16FixedLowPrecisionMGSRestart {n : ℕ}
     (A Ainv : P16Matrix n) (b xExact xCurrent xNext residualHat
       correctionHat : P16Vector n)
-    (uHigh uLow dimensionFactor : ℝ) where
+    (uLow : ℝ) (dimensionFactor : P16PolynomialFactor) where
   keyDimension : ℕ
   keyDimension_pos : 0 < keyDimension
   keyDimension_le : keyDimension ≤ n
@@ -5184,6 +5167,10 @@ structure P16FixedLowPrecisionMGSRestart {n : ℕ}
   residual_cast_equation : residualLow = residualHat + residualCastError
   residual_cast_bound :
     p16VecNorm residualCastError ≤ uLow * p16VecNorm residualHat
+  residualNorm : ℝ
+  residualNorm_eq : residualNorm = p16VecNorm residualLow
+  residual_starts_basis : ∀ row,
+    residualLow row = residualNorm * basisNext row 0
   epsilonB_eq : epsilonB = uLow
   product_error_bound :
     p16RectFrobNorm arnoldiProductError ≤
@@ -5228,7 +5215,7 @@ structure P16FixedLowPrecisionMGSRestart {n : ℕ}
     p16NearRankDeficient
       (p16Augment residualLow phi arnoldiProduct)
       ((epsilonC + epsilonB + epsilonLS) *
-        dimensionFactor *
+        p16PolynomialFactorValue dimensionFactor n keyDimension *
           p16RectFrobNorm (p16Augment residualLow phi arnoldiProduct))
   key_image_full_rank :
     (epsilonC + epsilonB + epsilonLS) *
@@ -5249,10 +5236,20 @@ structure P16FixedLowPrecisionMGSRestart {n : ℕ}
         lambda * epsilonX
   dimension_factor_bound :
     alpha * productWeight + beta * (1 + leastSquaresWeight) +
-        lambda * correctionWeight ≤ dimensionFactor
-  theorem41 :
-    P16Theorem41RestartResult A Ainv b xExact xCurrent xNext
-      uHigh modularAccuracy dimensionFactor
+        lambda * correctionWeight ≤
+      p16PolynomialFactorValue dimensionFactor n keyDimension
+  backward_correction_bound :
+    p16VecNorm (residualHat - p16MatVec A correctionHat) /
+        (p16VecNorm b + p16FrobNorm A * p16VecNorm xNext) ≤
+      (p16PolynomialFactorValue dimensionFactor n keyDimension * uLow *
+          p16ConditionNumberF A Ainv) *
+        p16BackwardError A b xCurrent
+  forward_correction_bound :
+    p16VecNorm (xCurrent + correctionHat - xExact) /
+        p16VecNorm xExact ≤
+      (p16PolynomialFactorValue dimensionFactor n keyDimension * uLow *
+          p16ConditionNumberF A Ainv) *
+        p16ForwardError xExact xCurrent
 
 /-- One fixed-precision execution of unpreconditioned restarted MGS-GMRES in
 Theorem 6.3. The same positive unit roundoffs and system are used at every
@@ -5270,7 +5267,7 @@ structure P16FixedMixedPrecisionGMRESRun (n : ℕ) where
   updateError : ℕ → P16Vector n
   uHigh : ℝ
   uLow : ℝ
-  dimensionFactor : ℝ
+  dimensionFactor : P16PolynomialFactor
   b_nonzero : b ≠ 0
   nonsingular : p16IsNonsingular A
   left_inverse_action : ∀ z : P16Vector n,
@@ -5280,11 +5277,6 @@ structure P16FixedMixedPrecisionGMRESRun (n : ℕ) where
   exact_solution : p16MatVec A xExact = b
   uHigh_pos : 0 < uHigh
   uLow_pos : 0 < uLow
-  uHigh_le_uLow : uHigh ≤ uLow
-  dimensionFactor_nonneg : 0 ≤ dimensionFactor
-  high_gamma_valid : GammaValid uHigh n
-  low_gamma_valid : GammaValid uLow n
-  high_gamma_le : gamma uHigh n ≤ dimensionFactor * uHigh
   residual_equation : ∀ i,
     residualHat i = p16Residual A b (xHat i) + residualError i
   residual_error_bound : ∀ i j,
@@ -5300,40 +5292,39 @@ structure P16FixedMixedPrecisionGMRESRun (n : ℕ) where
   restart : ∀ i,
     P16FixedLowPrecisionMGSRestart A Ainv b xExact
       (xHat i) (xHat (i + 1)) (residualHat i) (correctionHat i)
-      uHigh uLow dimensionFactor
-  iterateCurrentNextRemainder : ℕ → ℝ
-  iterateNextExactRemainder : ℕ → ℝ
-  iterate_current_next : ∀ i,
-    p16VecNorm (xHat i) ≤
-      p16VecNorm (xHat (i + 1)) + |iterateCurrentNextRemainder i|
-  iterate_next_exact : ∀ i,
-    p16VecNorm (xHat (i + 1)) ≤
-      p16VecNorm xExact + |iterateNextExactRemainder i|
-  iterate_current_next_second_order :
-    p16UniformSecondOrder uHigh uLow iterateCurrentNextRemainder
-  iterate_next_exact_second_order :
-    p16UniformSecondOrder uHigh uLow iterateNextExactRemainder
-  backward_remainder_second_order :
-    p16UniformSecondOrder uHigh uLow
-      (fun i ↦ (restart i).theorem41.backwardRemainder)
-  forward_remainder_second_order :
-    p16UniformSecondOrder uHigh uLow
-      (fun i ↦ (restart i).theorem41.forwardRemainder)
+      uLow dimensionFactor
+  backward_high_roundoff_bound : ∀ i,
+    (p16VecNorm (residualError i) +
+          p16VecNorm (p16MatVec A (updateError i))) /
+        (p16VecNorm b + p16FrobNorm A * p16VecNorm (xHat (i + 1))) ≤
+      p16PolynomialFactorValue dimensionFactor n
+          (restart i).keyDimension * uHigh
+  forward_high_roundoff_bound : ∀ i,
+    p16VecNorm (updateError i) / p16VecNorm xExact ≤
+      p16PolynomialFactorValue dimensionFactor n
+          (restart i).keyDimension * uHigh *
+        p16ConditionNumberF A Ainv
 
-/-- The fixed contraction scale in equation (6.17). -/
+/-- The restart-local contraction scale in equation (6.17), with the paper's
+generic dimension factor evaluated at the actual key dimension `k_i`. -/
 noncomputable def p16FixedMixedContraction {n : ℕ}
-    (run : P16FixedMixedPrecisionGMRESRun n) : ℝ :=
-  run.dimensionFactor * run.uLow * p16ConditionNumberF run.A run.Ainv
+    (run : P16FixedMixedPrecisionGMRESRun n) (i : ℕ) : ℝ :=
+  p16PolynomialFactorValue run.dimensionFactor n
+      (run.restart i).keyDimension * run.uLow *
+    p16ConditionNumberF run.A run.Ainv
 
-/-- The fixed high-precision backward-error floor in equation (6.18). -/
+/-- The restart-local high-precision backward-error floor in equation (6.18). -/
 noncomputable def p16FixedBackwardFloor {n : ℕ}
-    (run : P16FixedMixedPrecisionGMRESRun n) : ℝ :=
-  run.dimensionFactor * run.uHigh
+    (run : P16FixedMixedPrecisionGMRESRun n) (i : ℕ) : ℝ :=
+  p16PolynomialFactorValue run.dimensionFactor n
+      (run.restart i).keyDimension * run.uHigh
 
-/-- The fixed high-precision forward-error floor in equation (6.18). -/
+/-- The restart-local high-precision forward-error floor in equation (6.18). -/
 noncomputable def p16FixedForwardFloor {n : ℕ}
-    (run : P16FixedMixedPrecisionGMRESRun n) : ℝ :=
-  run.dimensionFactor * run.uHigh * p16ConditionNumberF run.A run.Ainv
+    (run : P16FixedMixedPrecisionGMRESRun n) (i : ℕ) : ℝ :=
+  p16PolynomialFactorValue run.dimensionFactor n
+      (run.restart i).keyDimension * run.uHigh *
+    p16ConditionNumberF run.A run.Ainv
 
 end HighamBench
 ```

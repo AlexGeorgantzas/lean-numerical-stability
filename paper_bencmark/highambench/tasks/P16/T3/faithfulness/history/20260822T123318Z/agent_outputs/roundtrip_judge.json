@@ -1,0 +1,179 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P16-T3",
+  "paper_sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a",
+  "blind_translation_sha256": "0302a2133f6ba47e05d1cddf06747a3fc64395b8649528a0370b1e737955d055",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF is the published IMA Journal of Numerical Analysis version with SHA-256 8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a. The relevant result is Theorem 6.3 and equations (6.17)-(6.21) on PDF pages 40-41, printed pages 1978-1979.",
+      "translation_evidence": "The translation concerns mixed-precision restarted GMRES and uses the same Frobenius condition factor, low-precision contraction scale, and high-precision backward and forward floors.",
+      "reasoning": "The selected source and surrounding theorem are correct."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper has a positive dimension n, a nonsingular n by n matrix A, nonzero b, outer indices i>=0, and for every outer iteration an existential key k_i<=n. The theorem nevertheless writes the generic factor c(n,k).",
+      "translation_evidence": "The translation has the finite real system and natural outer indices, but replaces c(n,k) by one fixed real run parameter d and exposes no per-iteration existential k_i in the target.",
+      "reasoning": "The fixed d is not related to a low-degree polynomial evaluated at each possibly varying k_i or to a justified uniform bound over those indices."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "For every outer i, the proof invokes Theorem 5.2 to obtain a key iteration k_i and then derives the applicable contraction coefficients.",
+      "translation_evidence": "A run is quantified only after it already contains a restart certificate R_i for every i and a LocalDef027 theorem-record within each certificate. The existential B and F sequences merely select fields from those supplied records.",
+      "reasoning": "The paper's per-restart existence and derivation have been moved into the domain of quantification as pre-existing certified data."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes the standard floating-point model, Lambda=c(n,k)uLow kappa_F(A) much less than one, inherited residual and update conditions, correction conditions, iterate-size comparison, and the backward-specific rank condition. It does not explicitly impose uHigh<=uLow or exact inequalities n*uHigh<1 and n*uLow<1 in Theorem 6.3.",
+      "translation_evidence": "The run requires uHigh<=uLow, both exact precision-size inequalities, gamma_n(uHigh)<=d*uHigh, infinite restart certificates, uniform quadratic remainder bounds, and records already satisfying local error recurrences.",
+      "reasoning": "Several additional exact restrictions narrow the domain, while the truncated one-step dependency prevents confirmation that every inherited key-dimension and numerical-rank hypothesis is represented correctly."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Theorem 6.3 gives per-outer-step contraction with max(Lambda_1^(i),Lambda_2^(i))<=Lambda and two attainable levels: backward error lesssim c(n,k)uHigh and forward error lesssim c(n,k)uHigh*kappa_F(A).",
+      "translation_evidence": "The translation gives affine recurrences and global envelopes whose limiting terms are divided by 1-lambda and augmented by exact quadratic remainders. It does not state the source comparison involving the two actual contraction coefficients.",
+      "reasoning": "Both error quantities occur, but the paper's two attainable-level conclusions are replaced by a different exact recurrence-and-envelope claim."
+    },
+    {
+      "id": "S06",
+      "status": "unclear",
+      "paper_evidence": "The paper defines gamma, c(n,k), the two error measures, the Frobenius condition number, the key dimension, and all modular operation conditions in the cited sections.",
+      "translation_evidence": "The scalar definitions, norms, matrix actions, errors, lambda, and envelopes are unfolded, but D024 and the constructor D033 are explicitly truncated and marked unclear.",
+      "reasoning": "The visible operators are interpretable, but the complete mathematical meaning of the target-relevant restart certificate cannot be checked from the supplied dependency ledger."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes exact A, b, and x from computed iterates, residuals, corrections, residual rounding errors, update rounding errors, and the low-precision residual cast.",
+      "translation_evidence": "The translation separately represents xExact, xHat_i, residualHat_i, correctionHat_i, residualError_i, and updateError_i, and evaluates both reported errors using exact A, b, and xExact.",
+      "reasoning": "No visible exact/computed conflation occurs."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The paper derives the result for restarted, unpreconditioned, fully stored MGS-GMRES: each high-precision residual is cast to low precision, a low-precision correction is computed to a key dimension, and the outer update is performed in high precision.",
+      "translation_evidence": "The run contains restart certificates with Arnoldi and MGS data, but each certificate also stores a LocalDef027 theorem-record whose constructor already includes the affine backward and forward inequalities used by the target.",
+      "reasoning": "The target is linked only to pre-certified executions and assumes the local contraction result it should obtain from the algorithm. The truncated certificate also prevents full verification of the low cast, full storage, key test, and rank conditions."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Vector errors and residuals use the Euclidean 2-norm; matrix magnitudes and kappa_F use the Frobenius norm; equations (6.19)-(6.20) are componentwise.",
+      "translation_evidence": "The translation defines Euclidean vector norms, Frobenius matrix norms, componentwise residual and update bounds, eta with ||A||_F, and kappa_F=||Ainv||_F||A||_F.",
+      "reasoning": "The visible norm kinds, unsquared forms, and componentwise-versus-normwise distinctions match."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "Each outer i has a potentially different key k_i<=n; loss of orthogonality uses k_i+1 and 4/3; c(n,k) is an unspecified low-degree polynomial; and Lambda uses that dimension-dependent factor.",
+      "translation_evidence": "The target uses a single fixed real d in lambda and both floors. It gives no visible relation between d and k_i, n, a low-degree polynomial, the k_i+1 offset, or the 4/3 certificate.",
+      "reasoning": "The paper's indexing and dimension-dependent constants are not preserved by the displayed target."
+    },
+    {
+      "id": "S11",
+      "status": "unclear",
+      "paper_evidence": "The paper uses its standard floating-point model, high-precision componentwise residual and update bounds, a low-precision residual cast, and low-precision MGS-Arnoldi and least-squares bounds. It gives no separate treatment of exceptional values.",
+      "translation_evidence": "The high-precision componentwise models and gamma formula are explicit, while the low-precision correction details lie partly in the truncated D024/D033 dependency. The run additionally imposes exact precision ordering and denominator conditions.",
+      "reasoning": "The visible high-precision model is compatible, but the complete low-precision model and its exceptional-value assumptions cannot be verified."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The source uses qualitative Lambda much less than one and first-order lesssim relations, while the proof establishes the upper-coefficient relation max(Lambda_1^(i),Lambda_2^(i))<=Lambda.",
+      "translation_evidence": "The target assumes only the exact condition 0<=lambda<1 and states exact inequalities after adding absolute scalar remainders.",
+      "reasoning": "Mere strict contraction permits lambda arbitrarily close to one and is not equivalent to the paper's scale separation; the exact remainder inequalities also have different logical strength from the source's first-order relations."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The backward quantity is the normwise backward error ||b-A*xHat||_2/(||A||_F||xHat||_2+||b||_2), and the forward quantity is ||xHat-x||_2/||x||_2.",
+      "translation_evidence": "The definitions eta and e reproduce exactly those two quotients using A, b, xHat_i, and xExact.",
+      "reasoning": "The normalized residual is the paper's equivalent normwise backward error, and both backward and forward notions are retained."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "The paper defines lesssim as dropping unspecified negligible second-order terms and supplies neither explicit remainder sequences nor a uniform big-O statement over precision parameters.",
+      "translation_evidence": "The translation introduces exact scalar remainders bounded by fixed-run existential constants times (uHigh+uLow)^2, uses four independent constants, and assumes relevant uniform bounds in the run.",
+      "reasoning": "A fixed-run existential bound is not a uniform asymptotic interpretation of the paper's discarded terms, and the remainders are assumed rather than derived."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The source result concerns real finite-dimensional restarted, unpreconditioned, fully stored MGS-GMRES and allows each restart to run until its own key k_i.",
+      "translation_evidence": "The real finite-dimensional specialization matches, but the proposition ranges only over infinite pre-certified runs with one fixed d and additional exact precision and remainder restrictions.",
+      "reasoning": "The restriction to pre-certified infinite runs and the unexplained fixed dimension factor are substantive changes, not a harmless specialization."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper asserts that executions of the stated mixed-precision algorithm obtain the contraction and attainable errors after the MGS key-dimension argument and application of Theorem 4.1.",
+      "translation_evidence": "The proposition does not assert existence of a bundled run for an eligible system. Every quantified run already carries per-restart theorem-records containing the local recurrences and already bundles uniform bounds for their remainders.",
+      "reasoning": "The conclusion is true for an unintended structural reason: the decisive local result is present in the hypotheses, and systems without such a bundled run are outside the quantified domain."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation proves statements only for runs already containing the local theorem certificates, uses a fixed unlinked d, and replaces qualitative smallness by lambda<1. It therefore does not establish the paper's claim for all executions satisfying the paper's algorithmic and numerical assumptions."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper does not supply the translation's exact uniform quadratic remainder sequences, exact all-m geometric envelopes, fixed run-level d, infinite packaged run, or pre-existing theorem-records. Its informal first-order attainable bounds do not imply those exact formal requirements."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "assumed-conclusion",
+      "paper_evidence": "Theorem 6.3 derives the correction conditions, invokes the MGS key-dimension result, and then applies Theorem 4.1 to conclude the contraction and floors.",
+      "translation_evidence": "Each supplied R_i contains a LocalDef027 record, and D034 says that this record already stores the affine backward and forward inequalities and scalar remainders used in the target.",
+      "impact": "The formal proposition restates a result already embedded in its run data instead of proving that the stated algorithm produces it."
+    },
+    {
+      "severity": "major",
+      "category": "key-dimension-and-factor",
+      "paper_evidence": "For every outer i the proof supplies a possibly varying key k_i<=n, while c(n,k) denotes a low-degree polynomial dimension factor.",
+      "translation_evidence": "One unconstrained fixed real d is used for every restart, in lambda, and in both floors, with no stated relationship to k_i or a polynomial in n and k_i.",
+      "impact": "The binder structure and parameter dependence of the contraction and attainable levels are changed."
+    },
+    {
+      "severity": "major",
+      "category": "contraction-and-floor-strength",
+      "paper_evidence": "The paper assumes Lambda much less than one and gives first-order attainable levels proportional to uHigh and uHigh*kappa_F(A).",
+      "translation_evidence": "The target assumes only lambda<1 and gives stationary envelope terms divided by 1-lambda.",
+      "impact": "For lambda close to one the translated bound can exceed the paper's dimension-polynomial floor by an uncontrolled factor."
+    },
+    {
+      "severity": "major",
+      "category": "higher-order-terms",
+      "paper_evidence": "Lesssim discards unspecified negligible second-order terms without an explicit remainder or uniform asymptotic quantifier.",
+      "translation_evidence": "Exact remainder sequences are required to have fixed-run bounds C*(uHigh+uLow)^2, with independent existential constants, and these bounds are already bundled into the run.",
+      "impact": "The translation substitutes a different and potentially non-asymptotic exact remainder semantics for the paper's first-order convention."
+    },
+    {
+      "severity": "major",
+      "category": "restricted-certified-domain",
+      "paper_evidence": "The source result is presented for the specified mixed-precision GMRES process under its numerical assumptions.",
+      "translation_evidence": "Only already constructed infinite runs satisfying extra exact precision conditions and carrying a certificate at every natural index are quantified.",
+      "impact": "Eligible paper executions are not covered unless the target's stronger certified structure is independently supplied."
+    },
+    {
+      "severity": "major",
+      "category": "incomplete-dependency-ledger",
+      "paper_evidence": "Faithfulness requires the fully stored unpreconditioned MGS-Arnoldi solve, low residual cast, key conditions including every phi>0, k_i+1 and 4/3 indexing, and the backward-specific rank hypothesis.",
+      "translation_evidence": "D024 and D033 are explicitly truncated, so the full assumptions and the production of the theorem-record fields cannot be reconstructed.",
+      "impact": "Independent verification of the low-precision algorithm and inherited numerical-rank assumptions requires adjudication."
+    }
+  ],
+  "rationale": "The source selection, exact/computed distinctions, norm semantics, and two error notions are preserved. The proposition is nevertheless not a faithful translation of Theorem 6.3: it quantifies only over runs already carrying the decisive per-restart theorem records, replaces varying key dimensions and c(n,k) by an unexplained fixed d, weakens qualitative contraction smallness to lambda<1, and imposes an exact fixed-run quadratic remainder interpretation absent from the paper. These explicit differences make both implication directions fail. Adjudication remains necessary because the target-relevant one-step dependency is truncated and cannot be checked completely."
+}

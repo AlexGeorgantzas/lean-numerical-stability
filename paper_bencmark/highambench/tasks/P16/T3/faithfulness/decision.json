@@ -2,72 +2,84 @@
   "accepted": false,
   "adjudicated": true,
   "adjudication_reasons": [
+    "judge classifications differ",
     "round-trip judge requested adjudication",
-    "blind dependency D024 is unclear",
-    "blind dependency D033 is unclear",
+    "round-trip judge classification is undetermined",
+    "blind dependency D001 is unclear",
+    "blind dependency D026 is unclear",
+    "blind dependency D036 is unclear",
+    "round-trip S03 is unclear",
+    "round-trip S05 is unclear",
     "round-trip S06 is unclear",
-    "round-trip S11 is unclear"
+    "round-trip S08 is unclear",
+    "round-trip S11 is unclear",
+    "round-trip S16 is unclear"
   ],
   "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-21T23:57:35.379373+00:00",
+  "completed_at_utc": "2026-08-22T13:03:17.658309+00:00",
   "findings": [
     {
-      "category": "conclusion-bearing applicability restriction",
-      "evidence": "D033 requires a theorem41 field, and D034 constructs that field only after receiving the backward and forward one-step inequalities, their factors, high-precision coefficients, and exact remainders. The PDF derives these consequences by applying Theorem 4.1 after verifying the mixed-precision models and MGS key dimension.",
-      "impact": "The target proves its central recurrence only for runs that already assume that recurrence in restart-specific form. This reduced applicability cannot be counted as a genuine stronger theorem.",
+      "category": "conclusion-assumed-as-input",
+      "evidence": "PDF pp. 40-41 derives correction factors and attainable floors after applying Theorems 5.2 and 4.1. D036 assumes both exact correction contraction bounds, and D015 assumes both exact high-roundoff bounds.",
+      "impact": "The target verifies a composition lemma over certificates already containing the selected result's central mathematical work.",
       "severity": "critical"
     },
     {
-      "category": "incomplete MGS-GMRES linkage",
-      "evidence": "D033 connects residualLow to the cast residual but contains no equation linking residualLow to the first basis vector. The source Arnoldi relation begins from [b, A V_k], and Section 6.3 applies MGS-GMRES to the cast correction right-hand side.",
-      "impact": "Admissible Lean restarts may be certified modular basis solves rather than executions of the selected restarted MGS-GMRES algorithm.",
+      "category": "conclusion-form",
+      "evidence": "The PDF states contraction by actual factors bounded above by Lambda until the two bounds in (6.18) are attained. The target states only restart-local additive recurrences.",
+      "impact": "The attainable-floor theorem and its common factor bound are not formalized as conclusions.",
       "severity": "major"
     },
     {
-      "category": "dimension-factor semantics",
-      "evidence": "Every restart shares dimensionFactor and must satisfy a local bound by it, but the declarations impose no low-degree polynomial dependence on n and k_i and no independence from basis conditioning or other run data. The paper reserves c(n,k) for dimension-only low-degree polynomials.",
-      "impact": "The contraction and floors may contain arbitrary problem-dependent factors absent from the source claim.",
+      "category": "relation-and-remainder-mismatch",
+      "evidence": "The PDF uses Lambda much less than one and lesssim after dropping second-order terms. The target uses exact lambda_i < 1 and exact <= with no remainder.",
+      "impact": "The formal hypothesis is weaker in smallness while the formal inequalities are stronger in exactness, preventing either implication.",
       "severity": "major"
     },
     {
-      "category": "unsupported higher-order exactification",
-      "evidence": "p16UniformSecondOrder chooses its constant after fixed uHigh and uLow, whereas the PDF merely discards unspecified negligible second-order terms.",
-      "impact": "The predicate does not express the cross-precision quadratic asymptotics suggested by the source and is additionally assumed for the stored theorem remainders.",
+      "category": "key-dimension-model",
+      "evidence": "PDF conditions (3.7)-(3.8) use the exact transformed right-hand side and exact transformed matrix-basis product. D036's key_near_dependence uses residualLow and arnoldiProduct, both already perturbed computed quantities.",
+      "impact": "The declaration's key certificate is attached to different mathematical objects from the source conditions.",
       "severity": "major"
     },
     {
-      "category": "attainable-level mismatch",
-      "evidence": "The Lean envelopes contain division by 1-lambda under only 0 <= lambda < 1. Equation (6.18) gives the two printed levels under Lambda much less than one without such a displayed denominator.",
-      "impact": "For lambda near one, the formal stationary bounds can be arbitrarily larger than both source attainable levels.",
+      "category": "constant-model",
+      "evidence": "The PDF treats c(n,k) as an unspecified, occurrence-dependent low-degree polynomial. The declaration stores one nonnegative-coefficient polynomial of unrestricted degree and reuses its exact value everywhere.",
+      "impact": "The source's generic-bound convention is replaced by materially different quantified data.",
       "severity": "major"
     },
     {
-      "category": "extra execution restrictions",
-      "evidence": "D025 requires uHigh <= uLow, exact GammaValid conditions, an infinite restart certificate sequence, and uniform fixed-run remainder bounds. These are not all printed hypotheses of Theorem 6.3.",
-      "impact": "The formal domain is narrower than the selected paper theorem independently of the conclusion-bearing theorem41 field.",
+      "category": "floating-point-domain",
+      "evidence": "The PDF invokes the standard model for gamma_n. The run and restart constructors omit n*uHigh < 1 and n*uLow < 1 while gamma uses total real division.",
+      "impact": "Some formally admissible parameter interpretations do not have the intended standard floating-point meaning.",
       "severity": "minor"
+    },
+    {
+      "category": "preserved-semantics",
+      "evidence": "The declaration correctly uses real finite-dimensional matrices and vectors, Euclidean vector norms, Frobenius matrix norms, the paper's two normalized errors, fully stored unpreconditioned MGS restarts, and the high/low operation split.",
+      "impact": "These matches identify the intended theorem but do not overcome the mismatches in proof obligations and theorem content.",
+      "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean proposition covers only runs already carrying exact local convergence certificates and uniform remainder bounds, and D033 admits basis processes not linked to the cast residual as the starting MGS-Arnoldi vector. Its unrestricted data-dependent dimensionFactor and lambda<1 envelope also do not yield Theorem 6.3 for every source execution with a dimension-polynomial c(n,k_i) and the printed attainable levels.",
+      "reasoning": "The Lean result applies only to proof-carrying runs that already contain exact correction contractions and exact high-roundoff bounds. It neither derives those facts from the paper's mixed-precision hypotheses nor states the paper's attainable floors. Its lambda_i < 1 condition also does not supply the paper's much-less-than-one regime. The PDF proof fixes the factor direction as actual factors no larger than Lambda, but the Lean recurrence plus an additive term is not that complete source conclusion.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper's qualitative first-order theorem does not provide exact uniformly quadratic remainder sequences at fixed precisions, pre-existing P16Theorem41RestartResult records, one fixed run-level dimensionFactor, or the exact all-index geometric envelopes required by Lean.",
+      "reasoning": "The paper provides first-order lesssim bounds with suppressed second-order terms, qualitative smallness, and generic low-degree constants. It does not entail exact per-step inequalities for one fixed polynomial, the altered computed-quantity key certificates, or the exact downstream bounds required by D015 and D036.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
     "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-different"
+    "roundtrip": "undetermined"
   },
-  "rationale": "The declaration correctly represents the finite real system, exact backward and forward error quotients, Frobenius condition number, high-precision residual/update models, low residual cast, both floor formulas, and the proof-supported upper direction for the contraction coefficient. The complete dossiers also resolve D024, D033, S06, and S11 without residual dependency opacity. Nevertheless, the theorem is propositionally different from Theorem 6.3: it assumes restart-local convergence records, omits the residual initialization that identifies the basis as the selected MGS-GMRES execution, permits a non-polynomial run-dependent dimension factor, replaces qualitative discarded terms with fixed-precision exact remainders, and concludes stationary envelopes that do not preserve the printed attainable levels under its weaker lambda<1 premise. Consequently neither statement implies the other.",
+  "rationale": "The authoritative PDF hash matches the supplied source. The complete declaration resolves the round-trip uncertainty: D001 and D026 are proof-carrying structures, and D036's previously hidden tail assumes the exact correction-level contraction estimates. D015 separately assumes the exact high-precision contributions. Consequently, the target's recurrences follow by composing assumptions that contain the substance derived on PDF pp. 40-41. The PDF proof also settles the implication direction for contraction factors: the actual forward and backward multipliers are bounded above by Lambda. The target does not reverse that direction, but it replaces the source conclusion with an additive recurrence and replaces qualitative first-order relations by exact inequalities. Its exactness is not a genuine stronger theorem over the paper's executions because applicability has been narrowed to runs already carrying the desired certificates. The structures are consistent enough to avoid literal vacuity, so the defect is truth for an unintended and substantially restricted reason. Together with the computed-object key conditions and fixed unrestricted polynomial, these facts make the statement different rather than merely weaker.",
   "remaining_uncertainties": [
-    "The paper leaves k unbound in c(n,k) in Theorem 6.3 while supplying potentially varying k_i in the proof, so it does not determine a unique exact uniform polynomial envelope.",
-    "The source's lesssim and much-less-than notation does not determine explicit remainder functions, constants, or a numerical contraction threshold.",
-    "The low-cast display on printed page 1979 omits the norm subscript on its right-hand side; interpreting it as the 2-norm, as Lean does, is strongly supported by condition (3.2) but is not typographically explicit.",
-    "The paper calls the precisions high and low but does not print uHigh <= uLow as a separate hypothesis."
+    "The PDF does not specify coefficients for c(n,k), permits the notation to vary by occurrence, and does not resolve how the displayed generic k should be chosen uniformly from the restart-dependent k_i.",
+    "The qualitative relations much less than, much greater than, and lesssim have no numerical thresholds or quantified second-order remainders in the PDF.",
+    "Theorem 6.3 does not explicitly clarify whether every additional hypothesis of Theorem 4.1, particularly iterate-norm comparability and the extra backward-rank condition, is automatic from (6.17) or remains inherited."
   ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
