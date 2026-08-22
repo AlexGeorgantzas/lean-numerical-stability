@@ -1,0 +1,211 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P15-T3",
+  "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
+  "source_evidence": [
+    {
+      "pdf_page": 3,
+      "printed_page": "953",
+      "anchor": "Section 2.1, equations (2.2)-(2.4)",
+      "observation": "A BLR representation A_tilde of a dense matrix A has p by p blocks of size b by b, hence n = pb. Off-diagonal blocks use A_tilde_ij = X_ij Y_ij^T for i > j and A_tilde_ij = Y_ij X_ij^T for i < j, with X_ij having orthonormal columns. The rank is the minimum rank meeting ||A_ij-A_tilde_ij|| <= epsilon beta_ij, where beta_ij is ||A_ij|| for a local threshold or ||A|| for a global threshold. The unsubscripted norm is the Frobenius norm, and the analysis is normwise rather than componentwise."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "954",
+      "anchor": "equation (2.5) and gamma definition",
+      "observation": "The standard arithmetic model is fl(x op y) = (x op y)(1+delta), |delta| <= u, for op in {+,-,*,/}. The paper defines gamma_k = ku/(1-ku) when ku < 1 and permits noninteger gamma indices."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "955",
+      "anchor": "Assumption 2.1",
+      "observation": "A truncated-SVD compression produces A_tilde_ij = A_ij + Delta A_ij with ||Delta A_ij|| <= epsilon beta_ij. Rounding errors in this compression are ignored, and the paper assumes throughout that u is safely smaller than epsilon."
+    },
+    {
+      "pdf_page": 12,
+      "printed_page": "962",
+      "anchor": "Section 4 opening definition of r",
+      "observation": "The symbol r denotes the largest off-diagonal block rank of the computed BLR LU factors, not the input BLR rank. It is not tunable and depends on the matrix and threshold."
+    },
+    {
+      "pdf_page": 13,
+      "printed_page": "963",
+      "anchor": "Algorithm 1 and Theorem 4.1",
+      "observation": "Algorithm 1 is the UFC order: update, factor, then compress. Its factorization theorem assumes A is nonsingular, partitioned into p squared blocks of order b, and that the algorithm runs to completion."
+    },
+    {
+      "pdf_page": 17,
+      "printed_page": "967",
+      "anchor": "equations (4.13)-(4.15)",
+      "observation": "For UFC, scaled local thresholds divide beta_ik by the relevant diagonal factor norm and give coefficient 1 without recompression; scaled global thresholds similarly give coefficient p. Corollary 4.1 retains the factor-growth term gamma_c ||L_tilde|| ||U_tilde||."
+    },
+    {
+      "pdf_page": 19,
+      "printed_page": "969",
+      "anchor": "Table 1 and Theorem 4.2",
+      "observation": "Table 1 gives xi_p = 1, p, p, and p^2/sqrt(6) for, respectively, local without recompressions, global without recompressions, local with recompressions, and global with recompressions. Theorem 4.2 gives the UFC factorization bound subject to nonsingularity and running to completion."
+    },
+    {
+      "pdf_page": 21,
+      "printed_page": "971",
+      "anchor": "Algorithm 2 and Theorem 4.3",
+      "observation": "Algorithm 2 is the UCF order: update, compress, then factor. Theorem 4.3 assumes a nonsingular block matrix and that Algorithm 2 runs to completion, and gives the same form of normwise factorization bound with xi_p from Table 1."
+    },
+    {
+      "pdf_page": 22,
+      "printed_page": "972",
+      "anchor": "proof and discussion following Theorem 4.3",
+      "observation": "For UCF the compression error does not acquire a diagonal-factor norm, so the unscaled local or global choices give xi_p = 1 or p without recompression. The paper says there is no need for the UFC scaling in UCF."
+    },
+    {
+      "pdf_page": 23,
+      "printed_page": "973",
+      "anchor": "Theorem 4.4, equation (4.21)",
+      "observation": "A BLR triangular solve is performed blockwise. Each off-diagonal product is computed before summation and a diagonal triangular solve. The aggregate perturbations satisfy (T_tilde+Delta T_tilde)x_hat = v+Delta v, ||Delta T_tilde|| <= gamma_c_tri ||T_tilde||, and ||Delta v|| <= gamma_p ||v||, where c_tri = b+r^(3/2)+p."
+    },
+    {
+      "pdf_page": 24,
+      "printed_page": "974",
+      "anchor": "Theorem 4.4 proof, equation (4.22), and Theorem 4.5 equations (4.23)-(4.25)",
+      "observation": "The blockwise product error has d = b+r^(3/2), summation errors use gamma_p, and diagonal solves use gamma_b. Theorem 4.5 states (A+Delta A)x_hat = v+Delta v with ||Delta A|| <= (xi_p epsilon+gamma_p)||A|| + gamma_(3c)||L_tilde||||U_tilde|| + O(u epsilon), and ||Delta v|| <= gamma_p(||v||+||L_tilde||||U_tilde||||x_hat||)+O(u^2), where c = b+2r^(3/2)+p."
+    },
+    {
+      "pdf_page": 25,
+      "printed_page": "975",
+      "anchor": "proof of Theorem 4.5",
+      "observation": "Before big-O simplification, the final matrix perturbation is the factorization perturbation plus Delta L_tilde U_tilde, L_tilde Delta U_tilde, and Delta L_tilde Delta U_tilde. The final right-hand-side perturbation is the forward-solve perturbation plus L_tilde Delta y_hat and Delta L_tilde Delta y_hat."
+    }
+  ],
+  "statement": {
+    "binders": [
+      "Positive integer block parameters p and b, with n = pb and block indices i,j,k ranging from 1 through p. (PDF p. 3, printed p. 953, equations (2.2)-(2.4))",
+      "A real n by n matrix A, its BLR notation A_tilde, and an arbitrary right-hand side v in R^n. (PDF p. 24, printed p. 974, Theorem 4.5; PDF p. 3, printed p. 953, equation (2.2))",
+      "A positive LR threshold epsilon, compression scales beta_ij, and unit roundoff u. (PDF p. 3, printed p. 953, equation (2.4); PDF p. 4, printed p. 954, equation (2.5); PDF p. 5, printed p. 955, Assumption 2.1)",
+      "The computed BLR factors L_tilde and U_tilde, computed intermediate y_hat, computed solution x_hat, and existential matrix and right-hand-side perturbations. (PDF pp. 24-25, printed pp. 974-975, Theorem 4.5 and proof)",
+      "The rank parameter r, defined as the maximum off-diagonal rank in the computed LU factors. (PDF p. 12, printed p. 962, opening of Section 4)"
+    ],
+    "hypotheses": [
+      "Theorem 4.5 explicitly describes A_tilde as an n by n, equivalently pb by pb, BLR matrix and takes v in R^n. (PDF p. 24, printed p. 974, Theorem 4.5)",
+      "The system is computed through L_tilde y = v followed by U_tilde x = y, where the factors come from either Algorithm 1 or Algorithm 2. (PDF p. 24, printed p. 974, Theorem 4.5)",
+      "Inherited from Theorems 4.2 and 4.3: A is nonsingular, is partitioned into p squared blocks of order b, and the selected factorization algorithm runs to completion. (PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3)",
+      "Every compression used by the analysis satisfies A_tilde_ij = A_ij + Delta A_ij and ||Delta A_ij|| <= epsilon beta_ij under Assumption 2.1. (PDF p. 5, printed p. 955, Assumption 2.1)",
+      "The arithmetic obeys the standard relative-error model, and every used gamma_q requires qu < 1. In particular, the displayed final bounds require gamma_p and gamma_(3c) to be defined. (PDF p. 4, printed p. 954, equation (2.5) and gamma definition; PDF p. 24, printed p. 974, equations (4.24)-(4.25))",
+      "The paper assumes u is safely smaller than epsilon so that rounding error in truncated-SVD compression may be ignored. (PDF p. 5, printed p. 955, Assumption 2.1)",
+      "The forward and backward substitutions use the BLR blockwise triangular-solve procedure analyzed in Theorem 4.4. (PDF p. 23, printed p. 973, Theorem 4.4; PDF p. 25, printed p. 975, proof of Theorem 4.5)"
+    ],
+    "conclusions": [
+      "There exist perturbations Delta A_final and Delta v_final such that (A+Delta A_final)x_hat = v+Delta v_final. This is equation (4.23), whose perturbations are denoted without the suffix 'final' in the theorem. (PDF p. 24, printed p. 974, equation (4.23))",
+      "The matrix perturbation satisfies ||Delta A_final|| <= (xi_p epsilon+gamma_p)||A|| + gamma_(3c)||L_tilde||||U_tilde|| + O(u epsilon). (PDF p. 24, printed p. 974, equation (4.24))",
+      "The right-hand-side perturbation satisfies ||Delta v_final|| <= gamma_p(||v||+||L_tilde||||U_tilde||||x_hat||)+O(u^2). (PDF p. 24, printed p. 974, equation (4.25))",
+      "Using the proof's sign convention A+Delta A_fac = L_tilde U_tilde, the exact composed matrix perturbation before simplification is Delta A_final = Delta A_fac + Delta L_tilde U_tilde + L_tilde Delta U_tilde + Delta L_tilde Delta U_tilde. (PDF p. 25, printed p. 975, proof of Theorem 4.5)",
+      "The exact composed right-hand-side perturbation before simplification is Delta v_final = Delta v_fwd + L_tilde Delta y_hat + Delta L_tilde Delta y_hat. (PDF p. 25, printed p. 975, proof of Theorem 4.5)"
+    ],
+    "definitions_and_conventions": [
+      "A_tilde denotes a BLR representation of a dense matrix A: diagonal blocks are retained and off-diagonal blocks are low-rank approximations. (PDF p. 3, printed p. 953, equations (2.2)-(2.3))",
+      "For i > j, A_tilde_ij = X_ij Y_ij^T; for i < j, A_tilde_ij = Y_ij X_ij^T. Both factors are b by k_ij and X_ij has orthonormal columns. (PDF p. 3, printed p. 953, equation (2.3))",
+      "The rank k_ij is the minimum ell_ij such that ||A_ij-A_tilde_ij|| <= epsilon beta_ij and rank(A_tilde_ij) = ell_ij. (PDF p. 3, printed p. 953, equation (2.4))",
+      "The basic local scale is beta_ij = ||A_ij|| and the basic global scale is beta_ij = ||A||. UFC uses corresponding scaled choices involving the relevant diagonal factor norm to obtain Table 1's finite coefficients; UCF does not need this scaling. (PDF p. 3, printed p. 953, equation (2.4); PDF p. 17, printed p. 967, equations (4.13)-(4.15); PDF p. 22, printed p. 972, discussion after Theorem 4.3)",
+      "A hat marks a computed quantity; L_tilde and U_tilde are computed BLR factors, while Delta symbols denote backward perturbations introduced in the analysis. (PDF pp. 24-25, printed pp. 974-975, Theorem 4.5 and proof)",
+      "The parameter r is the maximum off-diagonal rank of the computed factors, generally distinct from and possibly larger than the input BLR rank. (PDF p. 12, printed p. 962, opening of Section 4)"
+    ],
+    "implicit_context": [
+      "Although Theorem 4.5 does not restate nonsingularity or completion, its invocation of Theorems 4.2 and 4.3 inherits those conditions. (PDF p. 24, printed p. 974, proof of Theorem 4.5; PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3)",
+      "All unsubscripted norms in the error analysis are Frobenius norms. (PDF pp. 3-4, printed pp. 953-954, Frobenius norm convention)",
+      "The lower-triangular block recurrence displayed in Theorem 4.4 is used for the L_tilde solve, and the proof of Theorem 4.5 invokes the analogous result for the U_tilde solve with the word 'Similarly.' (PDF p. 23, printed p. 973, Theorem 4.4; PDF p. 25, printed p. 975, proof of Theorem 4.5)",
+      "Theorem 4.5 uses the larger factorization constant c = b+2r^(3/2)+p when quoting both triangular-solve perturbations, although Theorem 4.4 itself gives c_tri = b+r^(3/2)+p. (PDF p. 23, printed p. 973, equation (4.21); PDF pp. 24-25, printed pp. 974-975, Theorem 4.5 and proof)",
+      "No particular pivoting strategy is a formal hypothesis of Theorem 4.5; possible factor growth remains visible through ||L_tilde||||U_tilde||. (PDF p. 19, printed p. 969, discussion before Section 4.1.3; PDF p. 24, printed p. 974, equation (4.24))"
+    ],
+    "algorithm_linkage": "Only BLR factors produced by Algorithm 1 (UFC: update, factor, compress) or Algorithm 2 (UCF: update, compress, factor) are admitted. The factorization must run to completion. The factors are then used in the ordered solves L_tilde y = v and U_tilde x = y, each implemented by the blockwise BLR triangular procedure of Theorem 4.4. Optional intermediate recompressions alter xi_p according to Table 1. (PDF p. 13, printed p. 963, Algorithm 1; PDF p. 19, printed p. 969, Table 1 and Theorem 4.2; PDF p. 21, printed p. 971, Algorithm 2 and Theorem 4.3; PDF pp. 23-24, printed pp. 973-974, Theorems 4.4-4.5)",
+    "numerical_model": [
+      "Each scalar operation satisfies fl(x op y) = (x op y)(1+delta), |delta| <= u, for op in {+,-,*,/}. (PDF p. 4, printed p. 954, equation (2.5))",
+      "gamma_q means qu/(1-qu), defined only for qu < 1; the paper permits noninteger q, which is needed because r^(3/2) enters the indices. (PDF p. 4, printed p. 954, gamma definition; PDF p. 24, printed p. 974, definition of c)",
+      "Truncated-SVD compression rounding errors are ignored; only the normwise truncation perturbation bounded by epsilon beta_ij is retained. (PDF p. 5, printed p. 955, Assumption 2.1)",
+      "For a triangular block row, each off-diagonal product is first computed with product-error index d = b+r^(3/2), the products are accumulated with gamma_p summation errors, and the diagonal block solve contributes gamma_b. (PDF pp. 23-24, printed pp. 973-974, proof of Theorem 4.4 and equation (4.22))",
+      "After aggregation, a BLR triangular solve has ||Delta T_tilde|| <= gamma_(b+r^(3/2)+p)||T_tilde|| and ||Delta v|| <= gamma_p||v||. (PDF p. 23, printed p. 973, equation (4.21))",
+      "The factorization error and two triangular-solve factor perturbations are combined into gamma_(3c), with c = b+2r^(3/2)+p. (PDF pp. 24-25, printed pp. 974-975, equations (4.24) and proof of Theorem 4.5)"
+    ],
+    "error_notions": [
+      "Equation (4.23) is a mixed normwise backward-error statement: both the coefficient matrix and the right-hand side are perturbed. (PDF p. 24, printed p. 974, equation (4.23))",
+      "The theorem does not state a forward-error bound for ||x_hat-x|| or a componentwise backward-error bound. (PDF p. 3, printed p. 953, normwise-analysis discussion; PDF p. 24, printed p. 974, equations (4.23)-(4.25))",
+      "The matrix perturbation separates LR compression error, ordinary rounding error proportional to ||A||, and factor-growth-sensitive rounding error proportional to ||L_tilde||||U_tilde||. (PDF p. 24, printed p. 974, equation (4.24))",
+      "The right-hand-side perturbation contains both ||v|| and the solution-dependent scale ||L_tilde||||U_tilde||||x_hat||. (PDF p. 24, printed p. 974, equation (4.25))"
+    ],
+    "norms": [
+      "Every unsubscripted norm is the Frobenius norm, with ||A|| = (sum_ij |a_ij|^2)^(1/2). (PDF p. 3, printed p. 953, Frobenius norm convention)",
+      "The paper uses Frobenius-norm submultiplicativity, invariance under left multiplication by a matrix with orthonormal columns, and the block identity ||A|| = (sum_ij ||A_ij||^2)^(1/2). (PDF pp. 3-4, printed pp. 953-954, Frobenius norm discussion)",
+      "The compression and final backward-error guarantees are normwise; the corresponding componentwise inequality is explicitly said not to follow. (PDF p. 3, printed p. 953, paragraph preceding the Frobenius convention)"
+    ],
+    "constants_and_indexing": [
+      "There are p by p blocks, every block has order b, and n = pb. (PDF p. 3, printed p. 953, equations (2.2)-(2.3))",
+      "For triangular products d = b+r^(3/2), and the aggregate triangular-solve constant is c_tri = b+r^(3/2)+p. (PDF pp. 23-24, printed pp. 973-974, Theorem 4.4 and proof)",
+      "Theorem 4.5 defines c = b+2r^(3/2)+p and uses gamma_(3c) in the matrix bound. (PDF p. 24, printed p. 974, equations (4.24)-(4.25))",
+      "Table 1 gives xi_p = 1 for local/no recompression, p for global/no recompression, p for local/with recompression, and p^2/sqrt(6) for global/with recompression. (PDF p. 19, printed p. 969, Table 1)",
+      "The displayed lower-triangular recurrence computes x_i for indices ((i-1)b+1):ib using j = 1,...,i-1; the upper solve is invoked analogously. (PDF p. 23, printed p. 973, Theorem 4.4; PDF p. 25, printed p. 975, proof of Theorem 4.5)",
+      "All gamma indices used must satisfy their index times u being less than 1; in particular pu < 1 and 3cu < 1 are required for the final displayed gammas. (PDF p. 4, printed p. 954, gamma definition; PDF p. 24, printed p. 974, equations (4.24)-(4.25))"
+    ],
+    "higher_order_terms": [
+      "The matrix bound retains an unspecified O(u epsilon) term. (PDF p. 24, printed p. 974, equation (4.24))",
+      "The right-hand-side bound retains an unspecified O(u^2) term. (PDF p. 24, printed p. 974, equation (4.25))",
+      "Before simplification, the second-order matrix term is Delta L_tilde Delta U_tilde, while the right-hand-side composition contains Delta L_tilde Delta y_hat. (PDF p. 25, printed p. 975, proof of Theorem 4.5)",
+      "The paper does not state explicit constants, dimensions, or norm scales hidden by either big-O term in Theorem 4.5. (PDF pp. 24-25, printed pp. 974-975, equations (4.24)-(4.25) and proof)"
+    ],
+    "exceptional_values": [
+      "Nonsingularity of A does not by itself replace the explicit inherited condition that the chosen block LU algorithm runs to completion. (PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3)",
+      "The gamma expressions are unavailable when their denominators are nonpositive; the paper defines gamma_q only for qu < 1. (PDF p. 4, printed p. 954, gamma definition)",
+      "The arithmetic model does not separately discuss overflow, underflow, subnormal behavior, NaNs, or infinities. (PDF p. 4, printed p. 954, equation (2.5))",
+      "The phrase 'u is safely smaller than epsilon' is assumed but is not assigned a numerical margin. (PDF p. 5, printed p. 955, paragraph following Assumption 2.1)",
+      "Zero-rank off-diagonal approximations are permitted, particularly under a global threshold for sufficiently small blocks; no positive-rank condition is imposed. (PDF p. 3, printed p. 953, discussion following equation (2.4))"
+    ]
+  },
+  "undebatable_constraints": [
+    "The formal conclusion must include simultaneous perturbations of A and v, not only a matrix perturbation. (PDF p. 24, printed p. 974, equation (4.23))",
+    "The matrix bound must preserve the parentheses (xi_p epsilon+gamma_p)||A|| and the separate gamma_(3c)||L_tilde||||U_tilde|| term. (PDF p. 24, printed p. 974, equation (4.24))",
+    "The right-hand-side bound must preserve gamma_p multiplying the entire sum ||v||+||L_tilde||||U_tilde||||x_hat||. (PDF p. 24, printed p. 974, equation (4.25))",
+    "The constant in Theorem 4.5 is c = b+2r^(3/2)+p, while the triangular-solve theorem's smaller constant is b+r^(3/2)+p. (PDF p. 23, printed p. 973, equation (4.21); PDF p. 24, printed p. 974, Theorem 4.5)",
+    "The parameter r is the maximum off-diagonal rank of the computed LU factors and must not be replaced by the input BLR rank. (PDF p. 12, printed p. 962, opening of Section 4)",
+    "The coefficient xi_p must retain all four Table 1 cases, including p^2/sqrt(6) for global threshold with recompressions. (PDF p. 19, printed p. 969, Table 1)",
+    "All norms in these claims are Frobenius norms and the guarantee is normwise, not componentwise. (PDF pp. 3-4, printed pp. 953-954, Frobenius norm convention)",
+    "The permitted factorization executions are Algorithm 1 UFC and Algorithm 2 UCF, subject to their inherited runs-to-completion condition. (PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3; PDF p. 24, printed p. 974, Theorem 4.5)",
+    "The O(u epsilon) and O(u^2) terms are part of the stated result and cannot be silently deleted. (PDF p. 24, printed p. 974, equations (4.24)-(4.25))",
+    "No bounded-growth or pivoting hypothesis may be inserted into the theorem; factor growth is represented explicitly by ||L_tilde||||U_tilde||. (PDF p. 19, printed p. 969, stability discussion; PDF p. 24, printed p. 974, equation (4.24))"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The opening binder of Theorem 4.5 names A_tilde, but the system, perturbation equation, and bounds immediately use A without a tilde.",
+      "evidence": "Section 2 explicitly distinguishes dense A from its BLR representation A_tilde, while Theorem 4.5 begins with A_tilde but then writes Ax = v and (A+Delta A)x_hat = v+Delta v. (PDF p. 3, printed p. 953, equations (2.2)-(2.4); PDF p. 24, printed p. 974, Theorem 4.5 and equation (4.23))",
+      "impact": "A formal contract must either retain both objects and state their representation relationship or record this as a source-level notational inconsistency; it must not silently identify them without explanation."
+    },
+    {
+      "issue": "Theorem 4.5 does not itself restate nonsingularity or that Algorithms 1 or 2 run to completion.",
+      "evidence": "Those hypotheses appear in Theorems 4.2 and 4.3, which the proof of Theorem 4.5 invokes for the computed factors. (PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3; PDF p. 24, printed p. 974, proof of Theorem 4.5)",
+      "impact": "They are inherited conditions, not explicit binders in the displayed statement of Theorem 4.5."
+    },
+    {
+      "issue": "The phrase 'u is safely smaller than epsilon' has no quantitative definition.",
+      "evidence": "The sentence following Assumption 2.1 states this standing assumption but supplies no constant or inequality beyond the wording. (PDF p. 5, printed p. 955, Assumption 2.1)",
+      "impact": "It cannot be translated faithfully into a specific inequality such as u <= C epsilon without adding information absent from the paper."
+    },
+    {
+      "issue": "The two big-O terms have unspecified hidden constants and scales.",
+      "evidence": "Equations (4.24) and (4.25) write O(u epsilon) and O(u^2) without defining their coefficients or norm-dependent factors. (PDF pp. 24-25, printed pp. 974-975, Theorem 4.5 and proof)",
+      "impact": "A finite explicit inequality cannot replace these terms unless additional bounds are proved independently."
+    },
+    {
+      "issue": "The pseudocode and theorem do not formalize a pivoting or permutation convention.",
+      "evidence": "Algorithms 1 and 2 display block LU factorizations without permutation matrices; the surrounding text discusses pivoting, notes difficulties for UCF, and leaves related strategies outside scope. (PDF p. 13, printed p. 963, Algorithm 1; PDF pp. 20-21, printed pp. 970-971, UCF pivoting discussion and Algorithm 2)",
+      "impact": "The contract must not introduce a permutation matrix or assume partial pivoting; numerical growth remains represented by the factor-norm term and completion hypothesis."
+    },
+    {
+      "issue": "Theorem 4.4 calls T_tilde triangular but writes only the forward-substitution recurrence with j < i.",
+      "evidence": "The displayed recurrence on printed page 973 is lower-triangular, while the proof of Theorem 4.5 applies the result to U_tilde by saying 'Similarly.' (PDF p. 23, printed p. 973, Theorem 4.4; PDF p. 25, printed p. 975, proof of Theorem 4.5)",
+      "impact": "The U_tilde solve is supported by an intended analogous upper-triangular argument, not literally by the displayed index order."
+    },
+    {
+      "issue": "The factorization perturbation changes sign convention between Theorems 4.2-4.3 and the proof of Theorem 4.5.",
+      "evidence": "Theorems 4.2 and 4.3 display A = L_tilde U_tilde + Delta A, whereas the proof of Theorem 4.5 writes A+Delta A = L_tilde U_tilde. (PDF p. 19, printed p. 969, equation (4.16); PDF p. 21, printed p. 971, equation (4.17); PDF p. 24, printed p. 974, proof of Theorem 4.5)",
+      "impact": "Because the perturbation is existential and only norm bounded, this is harmless sign renaming, but the symbols should not be treated as literally identical in an exact perturbation composition."
+    }
+  ],
+  "contract_plain_english": "For a real nonsingular n by n matrix with n = pb, represented and processed in p by p BLR blocks of size b, run either the UFC or UCF BLR LU algorithm to completion and solve with its computed factors by blockwise forward and backward substitution. Under the standard floating-point model, the truncated-SVD compression model, valid gamma denominators, and the standing unquantified assumption that u is safely smaller than epsilon, the computed x_hat is the exact solution of a system in which both A and v are perturbed. The matrix perturbation is bounded by (xi_p epsilon+gamma_p)||A|| + gamma_(3c)||L_tilde||||U_tilde|| + O(u epsilon), and the right-hand-side perturbation by gamma_p(||v||+||L_tilde||||U_tilde||||x_hat||)+O(u^2), with Frobenius norms, c = b+2r^(3/2)+p, and r the maximum off-diagonal rank of the computed factors. The coefficient xi_p is 1, p, p, or p^2/sqrt(6) according to the local/global and no-recompression/recompression cases in Table 1. The source has a genuine A versus A_tilde notation inconsistency at the start of Theorem 4.5, and it leaves the big-O constants, the quantitative meaning of 'safely smaller,' and pivoting conventions unspecified. (PDF pp. 3-5, 12-13, 19, 21, and 23-25; printed pp. 953-955, 962-963, 969, 971, and 973-975)"
+}

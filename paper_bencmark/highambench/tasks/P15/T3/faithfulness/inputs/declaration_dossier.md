@@ -14,27 +14,34 @@ theorem p15_t3_blr_lu_solve_backward_error {b p r : ℕ}
     let xi := p15BLRXi p run.threshold run.recompression
     let solveScale :=
       p15FrobNorm run.L * p15FrobNorm run.U * p15VecNorm run.xHat
-    ∃ matrixError : P15Matrix (p * b),
-      ∃ rhsError : P15Vector (p * b),
-        ∃ rhsRemainder : ℝ → ℝ → ℝ,
-          matrixError =
-            p15ComposedMatrixError run.factorError run.lowerError
-              run.upperError run.L run.U ∧
-          rhsError =
-            p15ComposedRhsError run.lowerRhsError run.upperRhsError
-              run.L run.lowerError ∧
-          p15IsBigOMixedAtZero run.factorRemainder ∧
-          p15IsBigOSquareRelativeAtZero rhsRemainder
-            (fun _ _ => solveScale) ∧
-          p15MatVec (run.A + matrixError) run.xHat =
-            run.v + rhsError ∧
-          p15FrobNorm matrixError ≤
-            (xi * run.epsilon + gammaP) * p15FrobNorm run.A +
-              gamma3C * p15FrobNorm run.L * p15FrobNorm run.U +
-              run.factorRemainder run.unitRoundoff run.epsilon ∧
-          p15VecNorm rhsError ≤
-            gammaP * (p15VecNorm run.v + solveScale) +
-              rhsRemainder run.unitRoundoff run.epsilon
+    ∃ factor : P15FactorizationBackwardError r run.threshold
+        run.recompression run.unitRoundoff run.epsilon run.A run.L run.U,
+      ∃ lower : P15TriangularSolveBackwardError r .lower
+          run.unitRoundoff run.L run.v run.yHat,
+        ∃ upper : P15TriangularSolveBackwardError r .upper
+            run.unitRoundoff run.U run.yHat run.xHat,
+          ∃ matrixError : P15Matrix (p * b),
+            ∃ rhsError : P15Vector (p * b),
+              ∃ rhsRemainder : ℝ → ℝ → ℝ,
+                matrixError =
+                    p15ComposedMatrixError factor.error lower.matrixError
+                      upper.matrixError run.L run.U ∧
+                  rhsError =
+                    p15ComposedRhsError lower.rhsError upper.rhsError
+                      run.L lower.matrixError ∧
+                  p15IsBigOMixedAtRun factor.remainder
+                    run.unitRoundoff run.epsilon ∧
+                  p15IsBigOSquareRelativeAtRun rhsRemainder
+                    (fun _ _ => solveScale) run.unitRoundoff run.epsilon ∧
+                  p15MatVec (run.A + matrixError) run.xHat =
+                    run.v + rhsError ∧
+                  p15FrobNorm matrixError ≤
+                    (xi * run.epsilon + gammaP) * p15FrobNorm run.A +
+                      gamma3C * p15FrobNorm run.L * p15FrobNorm run.U +
+                      factor.remainder run.unitRoundoff run.epsilon ∧
+                  p15VecNorm rhsError ≤
+                    gammaP * (p15VecNorm run.v + solveScale) +
+                      rhsRemainder run.unitRoundoff run.epsilon
 ```
 
 ## Elaborated target type
@@ -48,29 +55,37 @@ theorem p15_t3_blr_lu_solve_backward_error {b p r : ℕ}
   have solveScale :=
     instHMul.hMul (instHMul.hMul (HighamBench.p15FrobNorm run.L) (HighamBench.p15FrobNorm run.U))
       (HighamBench.p15VecNorm run.xHat);
-  Exists fun matrixError =>
-    Exists fun rhsError =>
-      Exists fun rhsRemainder =>
-        And
-          (Eq matrixError
-            (HighamBench.p15ComposedMatrixError run.factorError run.lowerError run.upperError run.L run.U))
-          (And (Eq rhsError (HighamBench.p15ComposedRhsError run.lowerRhsError run.upperRhsError run.L run.lowerError))
-            (And (HighamBench.p15IsBigOMixedAtZero run.factorRemainder)
-              (And (HighamBench.p15IsBigOSquareRelativeAtZero rhsRemainder fun x x_1 => solveScale)
+  Exists fun factor =>
+    Exists fun lower =>
+      Exists fun upper =>
+        Exists fun matrixError =>
+          Exists fun rhsError =>
+            Exists fun rhsRemainder =>
+              And
+                (Eq matrixError
+                  (HighamBench.p15ComposedMatrixError factor.error lower.matrixError upper.matrixError run.L run.U))
                 (And
-                  (Eq (HighamBench.p15MatVec (instHAdd.hAdd run.A matrixError) run.xHat) (instHAdd.hAdd run.v rhsError))
-                  (And
-                    (Real.instLE.le (HighamBench.p15FrobNorm matrixError)
-                      (instHAdd.hAdd
-                        (instHAdd.hAdd
-                          (instHMul.hMul (instHAdd.hAdd (instHMul.hMul xi run.epsilon) gammaP)
-                            (HighamBench.p15FrobNorm run.A))
-                          (instHMul.hMul (instHMul.hMul gamma3C (HighamBench.p15FrobNorm run.L))
-                            (HighamBench.p15FrobNorm run.U)))
-                        (run.factorRemainder run.unitRoundoff run.epsilon)))
-                    (Real.instLE.le (HighamBench.p15VecNorm rhsError)
-                      (instHAdd.hAdd (instHMul.hMul gammaP (instHAdd.hAdd (HighamBench.p15VecNorm run.v) solveScale))
-                        (rhsRemainder run.unitRoundoff run.epsilon))))))))
+                  (Eq rhsError (HighamBench.p15ComposedRhsError lower.rhsError upper.rhsError run.L lower.matrixError))
+                  (And (HighamBench.p15IsBigOMixedAtRun factor.remainder run.unitRoundoff run.epsilon)
+                    (And
+                      (HighamBench.p15IsBigOSquareRelativeAtRun rhsRemainder (fun x x_1 => solveScale) run.unitRoundoff
+                        run.epsilon)
+                      (And
+                        (Eq (HighamBench.p15MatVec (instHAdd.hAdd run.A matrixError) run.xHat)
+                          (instHAdd.hAdd run.v rhsError))
+                        (And
+                          (Real.instLE.le (HighamBench.p15FrobNorm matrixError)
+                            (instHAdd.hAdd
+                              (instHAdd.hAdd
+                                (instHMul.hMul (instHAdd.hAdd (instHMul.hMul xi run.epsilon) gammaP)
+                                  (HighamBench.p15FrobNorm run.A))
+                                (instHMul.hMul (instHMul.hMul gamma3C (HighamBench.p15FrobNorm run.L))
+                                  (HighamBench.p15FrobNorm run.U)))
+                              (factor.remainder run.unitRoundoff run.epsilon)))
+                          (Real.instLE.le (HighamBench.p15VecNorm rhsError)
+                            (instHAdd.hAdd
+                              (instHMul.hMul gammaP (instHAdd.hAdd (HighamBench.p15VecNorm run.v) solveScale))
+                              (rhsRemainder run.unitRoundoff run.epsilon))))))))
 ```
 
 ## Fully explicit elaborated target type
@@ -102,93 +117,200 @@ theorem p15_t3_blr_lu_solve_backward_error {b p r : ℕ}
           (@HighamBench.P15BLRLinearSolveExecution.U b p r run)))
       (@HighamBench.p15VecNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
         (@HighamBench.P15BLRLinearSolveExecution.xHat b p r run));
-  @Exists.{1} (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-    fun (matrixError : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) =>
-    @Exists.{1} (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-      fun (rhsError : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) =>
-      @Exists.{1} (Real → Real → Real) fun (rhsRemainder : Real → Real → Real) =>
-        And
-          (@Eq.{1} (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-            matrixError
-            (@HighamBench.p15ComposedMatrixError (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-              (@HighamBench.P15BLRLinearSolveExecution.factorError b p r run)
-              (@HighamBench.P15BLRLinearSolveExecution.lowerError b p r run)
-              (@HighamBench.P15BLRLinearSolveExecution.upperError b p r run)
-              (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
-              (@HighamBench.P15BLRLinearSolveExecution.U b p r run)))
-          (And
-            (@Eq.{1} (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-              rhsError
-              (@HighamBench.p15ComposedRhsError (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                (@HighamBench.P15BLRLinearSolveExecution.lowerRhsError b p r run)
-                (@HighamBench.P15BLRLinearSolveExecution.upperRhsError b p r run)
-                (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
-                (@HighamBench.P15BLRLinearSolveExecution.lowerError b p r run)))
-            (And (HighamBench.p15IsBigOMixedAtZero (@HighamBench.P15BLRLinearSolveExecution.factorRemainder b p r run))
-              (And (HighamBench.p15IsBigOSquareRelativeAtZero rhsRemainder fun (x x_1 : Real) => solveScale)
+  @Exists.{1}
+    (@HighamBench.P15FactorizationBackwardError b p r (@HighamBench.P15BLRLinearSolveExecution.threshold b p r run)
+      (@HighamBench.P15BLRLinearSolveExecution.recompression b p r run)
+      (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+      (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run) (@HighamBench.P15BLRLinearSolveExecution.A b p r run)
+      (@HighamBench.P15BLRLinearSolveExecution.L b p r run) (@HighamBench.P15BLRLinearSolveExecution.U b p r run))
+    fun
+      (factor :
+        @HighamBench.P15FactorizationBackwardError b p r (@HighamBench.P15BLRLinearSolveExecution.threshold b p r run)
+          (@HighamBench.P15BLRLinearSolveExecution.recompression b p r run)
+          (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+          (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run)
+          (@HighamBench.P15BLRLinearSolveExecution.A b p r run) (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
+          (@HighamBench.P15BLRLinearSolveExecution.U b p r run)) =>
+    @Exists.{1}
+      (@HighamBench.P15TriangularSolveBackwardError p b r HighamBench.P15TriangularSolveDirection.lower
+        (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+        (@HighamBench.P15BLRLinearSolveExecution.L b p r run) (@HighamBench.P15BLRLinearSolveExecution.v b p r run)
+        (@HighamBench.P15BLRLinearSolveExecution.yHat b p r run))
+      fun
+        (lower :
+          @HighamBench.P15TriangularSolveBackwardError p b r HighamBench.P15TriangularSolveDirection.lower
+            (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+            (@HighamBench.P15BLRLinearSolveExecution.L b p r run) (@HighamBench.P15BLRLinearSolveExecution.v b p r run)
+            (@HighamBench.P15BLRLinearSolveExecution.yHat b p r run)) =>
+      @Exists.{1}
+        (@HighamBench.P15TriangularSolveBackwardError p b r HighamBench.P15TriangularSolveDirection.upper
+          (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+          (@HighamBench.P15BLRLinearSolveExecution.U b p r run) (@HighamBench.P15BLRLinearSolveExecution.yHat b p r run)
+          (@HighamBench.P15BLRLinearSolveExecution.xHat b p r run))
+        fun
+          (upper :
+            @HighamBench.P15TriangularSolveBackwardError p b r HighamBench.P15TriangularSolveDirection.upper
+              (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+              (@HighamBench.P15BLRLinearSolveExecution.U b p r run)
+              (@HighamBench.P15BLRLinearSolveExecution.yHat b p r run)
+              (@HighamBench.P15BLRLinearSolveExecution.xHat b p r run)) =>
+        @Exists.{1} (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+          fun
+            (matrixError :
+              HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) =>
+          @Exists.{1} (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+            fun
+              (rhsError :
+                HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) =>
+            @Exists.{1} (Real → Real → Real) fun (rhsRemainder : Real → Real → Real) =>
+              And
+                (@Eq.{1} (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                  matrixError
+                  (@HighamBench.p15ComposedMatrixError
+                    (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                    (@HighamBench.P15FactorizationBackwardError.error b p r
+                      (@HighamBench.P15BLRLinearSolveExecution.threshold b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.recompression b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.A b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.U b p r run) factor)
+                    (@HighamBench.P15TriangularSolveBackwardError.matrixError p b r
+                      HighamBench.P15TriangularSolveDirection.lower
+                      (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.v b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.yHat b p r run) lower)
+                    (@HighamBench.P15TriangularSolveBackwardError.matrixError p b r
+                      HighamBench.P15TriangularSolveDirection.upper
+                      (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.U b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.yHat b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.xHat b p r run) upper)
+                    (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
+                    (@HighamBench.P15BLRLinearSolveExecution.U b p r run)))
                 (And
                   (@Eq.{1} (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                    (@HighamBench.p15MatVec (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                      (@HAdd.hAdd.{0, 0, 0}
-                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                        (@instHAdd.{0}
-                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                          (@Matrix.add.{0, 0, 0}
-                            (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                            (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
-                            Real.instAdd))
-                        (@HighamBench.P15BLRLinearSolveExecution.A b p r run) matrixError)
-                      (@HighamBench.P15BLRLinearSolveExecution.xHat b p r run))
-                    (@HAdd.hAdd.{0, 0, 0}
-                      (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                      (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                      (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                      (@instHAdd.{0}
-                        (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                        (@Pi.instAdd.{0, 0} (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                          (fun (a : Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) => Real)
-                          fun (i : Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) =>
-                          Real.instAdd))
-                      (@HighamBench.P15BLRLinearSolveExecution.v b p r run) rhsError))
+                    rhsError
+                    (@HighamBench.p15ComposedRhsError
+                      (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                      (@HighamBench.P15TriangularSolveBackwardError.rhsError p b r
+                        HighamBench.P15TriangularSolveDirection.lower
+                        (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.v b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.yHat b p r run) lower)
+                      (@HighamBench.P15TriangularSolveBackwardError.rhsError p b r
+                        HighamBench.P15TriangularSolveDirection.upper
+                        (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.U b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.yHat b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.xHat b p r run) upper)
+                      (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
+                      (@HighamBench.P15TriangularSolveBackwardError.matrixError p b r
+                        HighamBench.P15TriangularSolveDirection.lower
+                        (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.v b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.yHat b p r run) lower)))
                   (And
-                    (@LE.le.{0} Real Real.instLE
-                      (@HighamBench.p15FrobNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                        matrixError)
-                      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                    (HighamBench.p15IsBigOMixedAtRun
+                      (@HighamBench.P15FactorizationBackwardError.remainder b p r
+                        (@HighamBench.P15BLRLinearSolveExecution.threshold b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.recompression b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.A b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.U b p r run) factor)
+                      (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                      (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run))
+                    (And
+                      (HighamBench.p15IsBigOSquareRelativeAtRun rhsRemainder (fun (x x_1 : Real) => solveScale)
+                        (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                        (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run))
+                      (And
+                        (@Eq.{1}
+                          (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (@HighamBench.p15MatVec (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                            (@HAdd.hAdd.{0, 0, 0}
+                              (HighamBench.P15Matrix
+                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                              (HighamBench.P15Matrix
+                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                              (HighamBench.P15Matrix
+                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                              (@instHAdd.{0}
+                                (HighamBench.P15Matrix
+                                  (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                                (@Matrix.add.{0, 0, 0}
+                                  (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                                  (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
+                                  Real.instAdd))
+                              (@HighamBench.P15BLRLinearSolveExecution.A b p r run) matrixError)
+                            (@HighamBench.P15BLRLinearSolveExecution.xHat b p r run))
+                          (@HAdd.hAdd.{0, 0, 0}
+                            (HighamBench.P15Vector
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (HighamBench.P15Vector
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (HighamBench.P15Vector
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (@instHAdd.{0}
+                              (HighamBench.P15Vector
+                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                              (@Pi.instAdd.{0, 0}
+                                (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                                (fun (a : Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) =>
+                                  Real)
+                                fun (i : Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) =>
+                                Real.instAdd))
+                            (@HighamBench.P15BLRLinearSolveExecution.v b p r run) rhsError))
+                        (And
+                          (@LE.le.{0} Real Real.instLE
+                            (@HighamBench.p15FrobNorm
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) matrixError)
                             (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) xi
-                                (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run))
-                              gammaP)
-                            (@HighamBench.p15FrobNorm
-                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                              (@HighamBench.P15BLRLinearSolveExecution.A b p r run)))
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gamma3C
-                              (@HighamBench.p15FrobNorm
-                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                                (@HighamBench.P15BLRLinearSolveExecution.L b p r run)))
-                            (@HighamBench.p15FrobNorm
-                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                              (@HighamBench.P15BLRLinearSolveExecution.U b p r run))))
-                        (@HighamBench.P15BLRLinearSolveExecution.factorRemainder b p r run
-                          (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
-                          (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run))))
-                    (@LE.le.{0} Real Real.instLE
-                      (@HighamBench.p15VecNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                        rhsError)
-                      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gammaP
-                          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) xi
+                                      (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run))
+                                    gammaP)
+                                  (@HighamBench.p15FrobNorm
+                                    (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                                    (@HighamBench.P15BLRLinearSolveExecution.A b p r run)))
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gamma3C
+                                    (@HighamBench.p15FrobNorm
+                                      (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                                      (@HighamBench.P15BLRLinearSolveExecution.L b p r run)))
+                                  (@HighamBench.p15FrobNorm
+                                    (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                                    (@HighamBench.P15BLRLinearSolveExecution.U b p r run))))
+                              (@HighamBench.P15FactorizationBackwardError.remainder b p r
+                                (@HighamBench.P15BLRLinearSolveExecution.threshold b p r run)
+                                (@HighamBench.P15BLRLinearSolveExecution.recompression b p r run)
+                                (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                                (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run)
+                                (@HighamBench.P15BLRLinearSolveExecution.A b p r run)
+                                (@HighamBench.P15BLRLinearSolveExecution.L b p r run)
+                                (@HighamBench.P15BLRLinearSolveExecution.U b p r run) factor
+                                (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                                (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run))))
+                          (@LE.le.{0} Real Real.instLE
                             (@HighamBench.p15VecNorm
-                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                              (@HighamBench.P15BLRLinearSolveExecution.v b p r run))
-                            solveScale))
-                        (rhsRemainder (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
-                          (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run)))))))))
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) rhsError)
+                            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gammaP
+                                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                  (@HighamBench.p15VecNorm
+                                    (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                                    (@HighamBench.P15BLRLinearSolveExecution.v b p r run))
+                                  solveScale))
+                              (rhsRemainder (@HighamBench.P15BLRLinearSolveExecution.unitRoundoff b p r run)
+                                (@HighamBench.P15BLRLinearSolveExecution.epsilon b p r run)))))))))
 ```
 
 ## Local import graph
@@ -331,117 +453,7 @@ Definition body (one-level semantic boundary):
 fun b p r self => self.15
 ```
 
-### D006: `HighamBench.P15BLRLinearSolveExecution.factorError`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `5bb5a6057f3dcae8dd442e815d3dc648ab94e9adf79bc71c8fa8783ebac3f5f3`
-
-Type:
-
-```lean
-{b p r : Nat} → HighamBench.P15BLRLinearSolveExecution b p r → HighamBench.P15Matrix (instHMul.hMul p b)
-```
-
-Fully explicit type:
-
-```lean
-{b p r : Nat} →
-  (self : HighamBench.P15BLRLinearSolveExecution b p r) →
-    HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun b p r self => self.21
-```
-
-### D007: `HighamBench.P15BLRLinearSolveExecution.factorRemainder`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `779bcc0d9f22ca5e00ef28c2bc07d007577de2cd286668e5195b06b5fcb79aef`
-
-Type:
-
-```lean
-{b p r : Nat} → HighamBench.P15BLRLinearSolveExecution b p r → Real → Real → Real
-```
-
-Fully explicit type:
-
-```lean
-{b p r : Nat} → (self : HighamBench.P15BLRLinearSolveExecution b p r) → Real → Real → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun b p r self => self.22
-```
-
-### D008: `HighamBench.P15BLRLinearSolveExecution.lowerError`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `bc53000dbd1a561389841865a2aafc0ec24e05b4f7d124c9a1cace53c8377bf9`
-
-Type:
-
-```lean
-{b p r : Nat} → HighamBench.P15BLRLinearSolveExecution b p r → HighamBench.P15Matrix (instHMul.hMul p b)
-```
-
-Fully explicit type:
-
-```lean
-{b p r : Nat} →
-  (self : HighamBench.P15BLRLinearSolveExecution b p r) →
-    HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun b p r self => self.26
-```
-
-### D009: `HighamBench.P15BLRLinearSolveExecution.lowerRhsError`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `807a747072413476d6b063a853946b25d71b5f1e0f743bb7b63df18b7359736c`
-
-Type:
-
-```lean
-{b p r : Nat} → HighamBench.P15BLRLinearSolveExecution b p r → HighamBench.P15Vector (instHMul.hMul p b)
-```
-
-Fully explicit type:
-
-```lean
-{b p r : Nat} →
-  (self : HighamBench.P15BLRLinearSolveExecution b p r) →
-    HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun b p r self => self.28
-```
-
-### D010: `HighamBench.P15BLRLinearSolveExecution.recompression`
+### D006: `HighamBench.P15BLRLinearSolveExecution.recompression`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -467,7 +479,7 @@ Definition body (one-level semantic boundary):
 fun b p r self => self.6
 ```
 
-### D011: `HighamBench.P15BLRLinearSolveExecution.threshold`
+### D007: `HighamBench.P15BLRLinearSolveExecution.threshold`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -493,7 +505,7 @@ Definition body (one-level semantic boundary):
 fun b p r self => self.5
 ```
 
-### D012: `HighamBench.P15BLRLinearSolveExecution.unitRoundoff`
+### D008: `HighamBench.P15BLRLinearSolveExecution.unitRoundoff`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -519,63 +531,7 @@ Definition body (one-level semantic boundary):
 fun b p r self => self.14
 ```
 
-### D013: `HighamBench.P15BLRLinearSolveExecution.upperError`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `a1be125505c8a2a063d8f19d0adf6561276dbc5669e70aaebf46ba202fecf8da`
-
-Type:
-
-```lean
-{b p r : Nat} → HighamBench.P15BLRLinearSolveExecution b p r → HighamBench.P15Matrix (instHMul.hMul p b)
-```
-
-Fully explicit type:
-
-```lean
-{b p r : Nat} →
-  (self : HighamBench.P15BLRLinearSolveExecution b p r) →
-    HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun b p r self => self.27
-```
-
-### D014: `HighamBench.P15BLRLinearSolveExecution.upperRhsError`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `2ef4b51d0dfd3a4c59184e724dea824a9f3bb01761bd321e9908640f29bb77a0`
-
-Type:
-
-```lean
-{b p r : Nat} → HighamBench.P15BLRLinearSolveExecution b p r → HighamBench.P15Vector (instHMul.hMul p b)
-```
-
-Fully explicit type:
-
-```lean
-{b p r : Nat} →
-  (self : HighamBench.P15BLRLinearSolveExecution b p r) →
-    HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun b p r self => self.29
-```
-
-### D015: `HighamBench.P15BLRLinearSolveExecution.v`
+### D009: `HighamBench.P15BLRLinearSolveExecution.v`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -603,7 +559,7 @@ Definition body (one-level semantic boundary):
 fun b p r self => self.11
 ```
 
-### D016: `HighamBench.P15BLRLinearSolveExecution.xHat`
+### D010: `HighamBench.P15BLRLinearSolveExecution.xHat`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -631,7 +587,142 @@ Definition body (one-level semantic boundary):
 fun b p r self => self.13
 ```
 
-### D017: `HighamBench.P15Matrix`
+### D011: `HighamBench.P15BLRLinearSolveExecution.yHat`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `1201727d6be0b699f134b9d5011bc0933c4f28e7be805627fbba65adeafd400a`
+
+Type:
+
+```lean
+{b p r : Nat} → HighamBench.P15BLRLinearSolveExecution b p r → HighamBench.P15Vector (instHMul.hMul p b)
+```
+
+Fully explicit type:
+
+```lean
+{b p r : Nat} →
+  (self : HighamBench.P15BLRLinearSolveExecution b p r) →
+    HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b p r self => self.12
+```
+
+### D012: `HighamBench.P15FactorizationBackwardError`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `29540236a99a51e28a07c05d1e8c644bc289246e3d6594216df46cdb4a063d8f`
+
+Type:
+
+```lean
+{b p : Nat} →
+  Nat →
+    HighamBench.P15BLRThreshold →
+      HighamBench.P15BLRRecompression →
+        Real →
+          Real →
+            HighamBench.P15Matrix (instHMul.hMul p b) →
+              HighamBench.P15Matrix (instHMul.hMul p b) → HighamBench.P15Matrix (instHMul.hMul p b) → Type
+```
+
+Fully explicit type:
+
+```lean
+{b p : Nat} →
+  (r : Nat) →
+    (threshold : HighamBench.P15BLRThreshold) →
+      (recompression : HighamBench.P15BLRRecompression) →
+        (u epsilon : Real) →
+          (A L U : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Type
+```
+
+### D013: `HighamBench.P15FactorizationBackwardError.error`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `51713d1e185fd5bd6d37326cd7a2cc35e49fb49a72f397beb8510df20624eb9f`
+
+Type:
+
+```lean
+{b p r : Nat} →
+  {threshold : HighamBench.P15BLRThreshold} →
+    {recompression : HighamBench.P15BLRRecompression} →
+      {u epsilon : Real} →
+        {A L U : HighamBench.P15Matrix (instHMul.hMul p b)} →
+          HighamBench.P15FactorizationBackwardError r threshold recompression u epsilon A L U →
+            HighamBench.P15Matrix (instHMul.hMul p b)
+```
+
+Fully explicit type:
+
+```lean
+{b p r : Nat} →
+  {threshold : HighamBench.P15BLRThreshold} →
+    {recompression : HighamBench.P15BLRRecompression} →
+      {u epsilon : Real} →
+        {A L U : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+          (self : @HighamBench.P15FactorizationBackwardError b p r threshold recompression u epsilon A L U) →
+            HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b p r threshold recompression u epsilon A L U self => self.1
+```
+
+### D014: `HighamBench.P15FactorizationBackwardError.remainder`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `45bbfad18b6a707e22d4f92995eeb68ffbfd28402392b9bdaec6b9f4eb2faead`
+
+Type:
+
+```lean
+{b p r : Nat} →
+  {threshold : HighamBench.P15BLRThreshold} →
+    {recompression : HighamBench.P15BLRRecompression} →
+      {u epsilon : Real} →
+        {A L U : HighamBench.P15Matrix (instHMul.hMul p b)} →
+          HighamBench.P15FactorizationBackwardError r threshold recompression u epsilon A L U → Real → Real → Real
+```
+
+Fully explicit type:
+
+```lean
+{b p r : Nat} →
+  {threshold : HighamBench.P15BLRThreshold} →
+    {recompression : HighamBench.P15BLRRecompression} →
+      {u epsilon : Real} →
+        {A L U : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+          (self : @HighamBench.P15FactorizationBackwardError b p r threshold recompression u epsilon A L U) →
+            Real → Real → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b p r threshold recompression u epsilon A L U self => self.2
+```
+
+### D015: `HighamBench.P15Matrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -657,7 +748,151 @@ Definition body (one-level semantic boundary):
 fun n => Matrix (Fin n) (Fin n) Real
 ```
 
-### D018: `HighamBench.P15Vector`
+### D016: `HighamBench.P15TriangularSolveBackwardError`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `f8de43b84e486344112ceab5018166dbcef9539ab431ee0e2a96439bf38d4d38`
+
+Type:
+
+```lean
+{p b : Nat} →
+  Nat →
+    HighamBench.P15TriangularSolveDirection →
+      Real →
+        HighamBench.P15Matrix (instHMul.hMul p b) →
+          HighamBench.P15Vector (instHMul.hMul p b) → HighamBench.P15Vector (instHMul.hMul p b) → Type
+```
+
+Fully explicit type:
+
+```lean
+{p b : Nat} →
+  (r : Nat) →
+    (direction : HighamBench.P15TriangularSolveDirection) →
+      (u : Real) →
+        (T : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+          (rhs x : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Type
+```
+
+### D017: `HighamBench.P15TriangularSolveBackwardError.matrixError`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `5ad9d8c57258a4f49109ef282c32eb1aa7cc58dcb25c2737ca87d5d6f80645f4`
+
+Type:
+
+```lean
+{p b r : Nat} →
+  {direction : HighamBench.P15TriangularSolveDirection} →
+    {u : Real} →
+      {T : HighamBench.P15Matrix (instHMul.hMul p b)} →
+        {rhs x : HighamBench.P15Vector (instHMul.hMul p b)} →
+          HighamBench.P15TriangularSolveBackwardError r direction u T rhs x → HighamBench.P15Matrix (instHMul.hMul p b)
+```
+
+Fully explicit type:
+
+```lean
+{p b r : Nat} →
+  {direction : HighamBench.P15TriangularSolveDirection} →
+    {u : Real} →
+      {T : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+        {rhs x : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+          (self : @HighamBench.P15TriangularSolveBackwardError p b r direction u T rhs x) →
+            HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun p b r direction u T rhs x self => self.1
+```
+
+### D018: `HighamBench.P15TriangularSolveBackwardError.rhsError`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `9b74ae70391cb70072e3a0078f9ba238fa3e2d45e2165b325bb862769c631c4e`
+
+Type:
+
+```lean
+{p b r : Nat} →
+  {direction : HighamBench.P15TriangularSolveDirection} →
+    {u : Real} →
+      {T : HighamBench.P15Matrix (instHMul.hMul p b)} →
+        {rhs x : HighamBench.P15Vector (instHMul.hMul p b)} →
+          HighamBench.P15TriangularSolveBackwardError r direction u T rhs x → HighamBench.P15Vector (instHMul.hMul p b)
+```
+
+Fully explicit type:
+
+```lean
+{p b r : Nat} →
+  {direction : HighamBench.P15TriangularSolveDirection} →
+    {u : Real} →
+      {T : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+        {rhs x : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+          (self : @HighamBench.P15TriangularSolveBackwardError p b r direction u T rhs x) →
+            HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun p b r direction u T rhs x self => self.2
+```
+
+### D019: `HighamBench.P15TriangularSolveDirection.lower`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `1`
+- Semantic SHA-256: `ed7c8315fcb03c4458bf042d8e255dbdd43a81b2256e12ed8cedcaa4b4901e2b`
+
+Type:
+
+```lean
+HighamBench.P15TriangularSolveDirection
+```
+
+Fully explicit type:
+
+```lean
+HighamBench.P15TriangularSolveDirection
+```
+
+### D020: `HighamBench.P15TriangularSolveDirection.upper`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `1`
+- Semantic SHA-256: `e6d13e0fa0da3a432d462199fc5932439303d796406010f67483ae2716235cb0`
+
+Type:
+
+```lean
+HighamBench.P15TriangularSolveDirection
+```
+
+Fully explicit type:
+
+```lean
+HighamBench.P15TriangularSolveDirection
+```
+
+### D021: `HighamBench.P15Vector`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -683,7 +918,7 @@ Definition body (one-level semantic boundary):
 fun n => Fin n → Real
 ```
 
-### D019: `HighamBench.p15BLRSolveCost`
+### D022: `HighamBench.p15BLRSolveCost`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -709,7 +944,7 @@ Definition body (one-level semantic boundary):
 fun b p r => instHAdd.hAdd (instHAdd.hAdd b.cast (instHMul.hMul (instHMul.hMul 2 r.cast) r.cast.sqrt)) p.cast
 ```
 
-### D020: `HighamBench.p15BLRXi`
+### D023: `HighamBench.p15BLRXi`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -737,7 +972,7 @@ fun p threshold recompression =>
     (fun _ => p.cast) (fun _ => p.cast) fun _ => instHDiv.hDiv (instHPow.hPow p.cast 2) (Real.sqrt 6)
 ```
 
-### D021: `HighamBench.p15ComposedMatrixError`
+### D024: `HighamBench.p15ComposedMatrixError`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -770,7 +1005,7 @@ fun {n} factorError lowerError upperError L U =>
     (HighamBench.p15MatMul lowerError upperError)
 ```
 
-### D022: `HighamBench.p15ComposedRhsError`
+### D025: `HighamBench.p15ComposedRhsError`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -800,7 +1035,7 @@ fun {n} rhsLower rhsUpper L lowerError =>
   instHAdd.hAdd (instHAdd.hAdd rhsLower (HighamBench.p15MatVec L rhsUpper)) (HighamBench.p15MatVec lowerError rhsUpper)
 ```
 
-### D023: `HighamBench.p15FrobNorm`
+### D026: `HighamBench.p15FrobNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -826,7 +1061,7 @@ Definition body (one-level semantic boundary):
 fun {n} A => HighamBench.p15RectFrobNorm A
 ```
 
-### D024: `HighamBench.p15GammaReal`
+### D027: `HighamBench.p15GammaReal`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -852,83 +1087,92 @@ Definition body (one-level semantic boundary):
 fun k u => instHDiv.hDiv (instHMul.hMul k u) (instHSub.hSub 1 (instHMul.hMul k u))
 ```
 
-### D025: `HighamBench.p15IsBigOMixedAtZero`
+### D028: `HighamBench.p15IsBigOMixedAtRun`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `94d1db16fdbc23e161b75cfb8bf2cd9e73cf3680a0bc8abf9e03e9af4a05db77`
+- Semantic SHA-256: `1a22b98c021c672a2ed9caa18686e56b5b7aca6336752e03b6722087f4e8de70`
 
 Type:
 
 ```lean
-(Real → Real → Real) → Prop
+(Real → Real → Real) → Real → Real → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-(remainder : Real → Real → Real) → Prop
+(remainder : Real → Real → Real) → (unitRoundoff epsilon : Real) → Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun remainder =>
+fun remainder unitRoundoff epsilon =>
   Exists fun C =>
-    Exists fun delta =>
-      And (Real.instLE.le 0 C)
-        (And (Real.instLT.lt 0 delta)
-          (∀ (u epsilon : Real),
-            Real.instLT.lt 0 u →
-              Real.instLT.lt 0 epsilon →
-                Real.instLT.lt u epsilon →
-                  Real.instLE.le u delta →
-                    Real.instLE.le epsilon delta →
-                      Real.instLE.le (abs (remainder u epsilon)) (instHMul.hMul C (instHMul.hMul u epsilon))))
+    Exists fun deltaU =>
+      Exists fun deltaEpsilon =>
+        And (Real.instLE.le 0 C)
+          (And (Real.instLT.lt 0 deltaU)
+            (And (Real.instLT.lt 0 deltaEpsilon)
+              (And (Real.instLE.le unitRoundoff deltaU)
+                (And (Real.instLE.le epsilon deltaEpsilon)
+                  (∀ (u epsilon' : Real),
+                    Real.instLT.lt 0 u →
+                      Real.instLT.lt 0 epsilon' →
+                        Real.instLT.lt u epsilon' →
+                          Real.instLE.le u deltaU →
+                            Real.instLE.le epsilon' deltaEpsilon →
+                              Real.instLE.le (abs (remainder u epsilon'))
+                                (instHMul.hMul C (instHMul.hMul u epsilon')))))))
 ```
 
-### D026: `HighamBench.p15IsBigOSquareRelativeAtZero`
+### D029: `HighamBench.p15IsBigOSquareRelativeAtRun`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `4acca8fab08b6cee29aa63aadee09af3b0d679224a9c92cffe5b8d3bd5add815`
+- Semantic SHA-256: `842e7aff8a90410115cc9487af3e4e031ee31df2cc0899fa080713dcccd52c2d`
 
 Type:
 
 ```lean
-(Real → Real → Real) → (Real → Real → Real) → Prop
+(Real → Real → Real) → (Real → Real → Real) → Real → Real → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-(remainder scale : Real → Real → Real) → Prop
+(remainder scale : Real → Real → Real) → (unitRoundoff epsilon : Real) → Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun remainder scale =>
+fun remainder scale unitRoundoff epsilon =>
   Exists fun C =>
-    Exists fun delta =>
-      And (Real.instLE.le 0 C)
-        (And (Real.instLT.lt 0 delta)
-          (∀ (u epsilon : Real),
-            Real.instLT.lt 0 u →
-              Real.instLT.lt 0 epsilon →
-                Real.instLT.lt u epsilon →
-                  Real.instLE.le u delta →
-                    Real.instLE.le epsilon delta →
-                      Real.instLE.le 0 (scale u epsilon) →
-                        Real.instLE.le (abs (remainder u epsilon))
-                          (instHMul.hMul (instHMul.hMul C (instHPow.hPow u 2)) (scale u epsilon))))
+    Exists fun deltaU =>
+      Exists fun deltaEpsilon =>
+        And (Real.instLE.le 0 C)
+          (And (Real.instLT.lt 0 deltaU)
+            (And (Real.instLT.lt 0 deltaEpsilon)
+              (And (Real.instLE.le unitRoundoff deltaU)
+                (And (Real.instLE.le epsilon deltaEpsilon)
+                  (∀ (u epsilon' : Real),
+                    Real.instLT.lt 0 u →
+                      Real.instLT.lt 0 epsilon' →
+                        Real.instLT.lt u epsilon' →
+                          Real.instLE.le u deltaU →
+                            Real.instLE.le epsilon' deltaEpsilon →
+                              Real.instLE.le 0 (scale u epsilon') →
+                                Real.instLE.le (abs (remainder u epsilon'))
+                                  (instHMul.hMul (instHMul.hMul C (instHPow.hPow u 2)) (scale u epsilon')))))))
 ```
 
-### D027: `HighamBench.p15MatVec`
+### D030: `HighamBench.p15MatVec`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -954,7 +1198,7 @@ Definition body (one-level semantic boundary):
 fun {n} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
 ```
 
-### D028: `HighamBench.p15VecNorm`
+### D031: `HighamBench.p15VecNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -980,13 +1224,13 @@ Definition body (one-level semantic boundary):
 fun {n} x => (Finset.univ.sum fun i => instHPow.hPow (x i) 2).sqrt
 ```
 
-### D029: `HighamBench.P15BLRLinearSolveExecution.mk`
+### D032: `HighamBench.P15BLRLinearSolveExecution.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `cd9ee91f66f822e80555e7dcca6cc3a7764c6ebee10e0d3a7903a5928227aa73`
+- Semantic SHA-256: `5650b5a15c65644b15efefe773faa7a2831669a48c7ce64104c9ccf33839902a`
 
 Type:
 
@@ -1006,59 +1250,12 @@ Type:
                         HighamBench.p15BLRRepresents threshold epsilon A Atilde →
                           HighamBench.p15IsFactorBLRRank r L U →
                             HighamBench.P15CompletedBLRFactorization r algorithm threshold recompression unitRoundoff
-                                epsilon Atilde L U →
-                              (factorError : HighamBench.P15Matrix (instHMul.hMul p b)) →
-                                (factorRemainder : Real → Real → Real) →
-                                  Eq (instHAdd.hAdd A factorError) (HighamBench.p15MatMul L U) →
-                                    Real.instLE.le (HighamBench.p15FrobNorm factorError)
-                                        (instHAdd.hAdd
-                                          (instHAdd.hAdd
-                                            (instHMul.hMul
-                                              (instHAdd.hAdd
-                                                (instHMul.hMul (HighamBench.p15BLRXi p threshold recompression) epsilon)
-                                                (HighamBench.p15GammaReal p.cast unitRoundoff))
-                                              (HighamBench.p15FrobNorm A))
-                                            (instHMul.hMul
-                                              (instHMul.hMul
-                                                (HighamBench.p15GammaReal (HighamBench.p15BLRSolveCost b p r)
-                                                  unitRoundoff)
-                                                (HighamBench.p15FrobNorm L))
-                                              (HighamBench.p15FrobNorm U)))
-                                          (factorRemainder unitRoundoff epsilon)) →
-                                      HighamBench.p15IsBigOMixedAtZero factorRemainder →
-                                        (lowerError upperError : HighamBench.P15Matrix (instHMul.hMul p b)) →
-                                          (lowerRhsError upperRhsError : HighamBench.P15Vector (instHMul.hMul p b)) →
-                                            Nonempty
-                                                (HighamBench.P15CompletedTriangularSolve r
-                                                  HighamBench.P15TriangularSolveDirection.lower unitRoundoff L v yHat) →
-                                              Nonempty
-                                                  (HighamBench.P15CompletedTriangularSolve r
-                                                    HighamBench.P15TriangularSolveDirection.upper unitRoundoff U yHat
-                                                    xHat) →
-                                                Eq (HighamBench.p15MatVec (instHAdd.hAdd L lowerError) yHat)
-                                                    (instHAdd.hAdd v lowerRhsError) →
-                                                  Eq (HighamBench.p15MatVec (instHAdd.hAdd U upperError) xHat)
-                                                      (instHAdd.hAdd yHat upperRhsError) →
-                                                    Real.instLE.le (HighamBench.p15FrobNorm lowerError)
-                                                        (instHMul.hMul
-                                                          (HighamBench.p15GammaReal
-                                                            (HighamBench.p15BLRTriangularSolveCost b p r) unitRoundoff)
-                                                          (HighamBench.p15FrobNorm L)) →
-                                                      Real.instLE.le (HighamBench.p15FrobNorm upperError)
-                                                          (instHMul.hMul
-                                                            (HighamBench.p15GammaReal
-                                                              (HighamBench.p15BLRTriangularSolveCost b p r)
-                                                              unitRoundoff)
-                                                            (HighamBench.p15FrobNorm U)) →
-                                                        Real.instLE.le (HighamBench.p15VecNorm lowerRhsError)
-                                                            (instHMul.hMul
-                                                              (HighamBench.p15GammaReal p.cast unitRoundoff)
-                                                              (HighamBench.p15VecNorm v)) →
-                                                          Real.instLE.le (HighamBench.p15VecNorm upperRhsError)
-                                                              (instHMul.hMul
-                                                                (HighamBench.p15GammaReal p.cast unitRoundoff)
-                                                                (HighamBench.p15VecNorm yHat)) →
-                                                            HighamBench.P15BLRLinearSolveExecution b p r
+                                epsilon A Atilde L U →
+                              HighamBench.P15CompletedTriangularSolve r HighamBench.P15TriangularSolveDirection.lower
+                                  unitRoundoff L v yHat →
+                                HighamBench.P15CompletedTriangularSolve r HighamBench.P15TriangularSolveDirection.upper
+                                    unitRoundoff U yHat xHat →
+                                  HighamBench.P15BLRLinearSolveExecution b p r
 ```
 
 Fully explicit type:
@@ -1085,268 +1282,17 @@ Fully explicit type:
                           (factor_rank : @HighamBench.p15IsFactorBLRRank p b r L U) →
                             (factorization_completed :
                                 @HighamBench.P15CompletedBLRFactorization b p r algorithm threshold recompression
-                                  unitRoundoff epsilon Atilde L U) →
-                              (factorError :
-                                  HighamBench.P15Matrix
-                                    (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
-                                (factorRemainder : Real → Real → Real) →
-                                  (factorization_eq :
-                                      @Eq.{1}
-                                        (HighamBench.P15Matrix
-                                          (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                                        (@HAdd.hAdd.{0, 0, 0}
-                                          (HighamBench.P15Matrix
-                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                                          (HighamBench.P15Matrix
-                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                                          (HighamBench.P15Matrix
-                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                                          (@instHAdd.{0}
-                                            (HighamBench.P15Matrix
-                                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                                            (@Matrix.add.{0, 0, 0}
-                                              (Fin
-                                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                                              (Fin
-                                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
-                                              Real Real.instAdd))
-                                          A factorError)
-                                        (@HighamBench.p15MatMul
-                                          (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) L U)) →
-                                    (factorError_le :
-                                        @LE.le.{0} Real Real.instLE
-                                          (@HighamBench.p15FrobNorm
-                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                                            factorError)
-                                          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                    (HighamBench.p15BLRXi p threshold recompression) epsilon)
-                                                  (HighamBench.p15GammaReal (@Nat.cast.{0} Real Real.instNatCast p)
-                                                    unitRoundoff))
-                                                (@HighamBench.p15FrobNorm
-                                                  (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                                                  A))
-                                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                  (HighamBench.p15GammaReal (HighamBench.p15BLRSolveCost b p r)
-                                                    unitRoundoff)
-                                                  (@HighamBench.p15FrobNorm
-                                                    (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p
-                                                      b)
-                                                    L))
-                                                (@HighamBench.p15FrobNorm
-                                                  (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-                                                  U)))
-                                            (factorRemainder unitRoundoff epsilon))) →
-                                      (factorRemainder_bigO : HighamBench.p15IsBigOMixedAtZero factorRemainder) →
-                                        (lowerError upperError :
-                                            HighamBench.P15Matrix
-                                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
-                                          (lowerRhsError upperRhsError :
-                                              HighamBench.P15Vector
-                                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
-                                            (lower_completed :
-                                                Nonempty.{1}
-                                                  (@HighamBench.P15CompletedTriangularSolve p b r
-                                                    HighamBench.P15TriangularSolveDirection.lower unitRoundoff L v
-                                                    yHat)) →
-                                              (upper_completed :
-                                                  Nonempty.{1}
-                                                    (@HighamBench.P15CompletedTriangularSolve p b r
-                                                      HighamBench.P15TriangularSolveDirection.upper unitRoundoff U yHat
-                                                      xHat)) →
-                                                (lowerSolve_eq :
-                                                    @Eq.{1}
-                                                      (HighamBench.P15Vector
-                                                        (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat)
-                                                          p b))
-                                                      (@HighamBench.p15MatVec
-                                                        (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat)
-                                                          p b)
-                                                        (@HAdd.hAdd.{0, 0, 0}
-                                                          (HighamBench.P15Matrix
-                                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                              (@instHMul.{0} Nat instMulNat) p b))
-                                                          (HighamBench.P15Matrix
-                                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                              (@instHMul.{0} Nat instMulNat) p b))
-                                                          (HighamBench.P15Matrix
-                                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                              (@instHMul.{0} Nat instMulNat) p b))
-                                                          (@instHAdd.{0}
-                                                            (HighamBench.P15Matrix
-                                                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                (@instHMul.{0} Nat instMulNat) p b))
-                                                            (@Matrix.add.{0, 0, 0}
-                                                              (Fin
-                                                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                  (@instHMul.{0} Nat instMulNat) p b))
-                                                              (Fin
-                                                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                  (@instHMul.{0} Nat instMulNat) p b))
-                                                              Real Real.instAdd))
-                                                          L lowerError)
-                                                        yHat)
-                                                      (@HAdd.hAdd.{0, 0, 0}
-                                                        (HighamBench.P15Vector
-                                                          (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                            (@instHMul.{0} Nat instMulNat) p b))
-                                                        (HighamBench.P15Vector
-                                                          (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                            (@instHMul.{0} Nat instMulNat) p b))
-                                                        (HighamBench.P15Vector
-                                                          (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                            (@instHMul.{0} Nat instMulNat) p b))
-                                                        (@instHAdd.{0}
-                                                          (HighamBench.P15Vector
-                                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                              (@instHMul.{0} Nat instMulNat) p b))
-                                                          (@Pi.instAdd.{0, 0}
-                                                            (Fin
-                                                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                (@instHMul.{0} Nat instMulNat) p b))
-                                                            (fun
-                                                                (a :
-                                                                  Fin
-                                                                    (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                      (@instHMul.{0} Nat instMulNat) p b)) =>
-                                                              Real)
-                                                            fun
-                                                              (i :
-                                                                Fin
-                                                                  (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                    (@instHMul.{0} Nat instMulNat) p b)) =>
-                                                            Real.instAdd))
-                                                        v lowerRhsError)) →
-                                                  (upperSolve_eq :
-                                                      @Eq.{1}
-                                                        (HighamBench.P15Vector
-                                                          (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                            (@instHMul.{0} Nat instMulNat) p b))
-                                                        (@HighamBench.p15MatVec
-                                                          (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                            (@instHMul.{0} Nat instMulNat) p b)
-                                                          (@HAdd.hAdd.{0, 0, 0}
-                                                            (HighamBench.P15Matrix
-                                                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                (@instHMul.{0} Nat instMulNat) p b))
-                                                            (HighamBench.P15Matrix
-                                                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                (@instHMul.{0} Nat instMulNat) p b))
-                                                            (HighamBench.P15Matrix
-                                                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                (@instHMul.{0} Nat instMulNat) p b))
-                                                            (@instHAdd.{0}
-                                                              (HighamBench.P15Matrix
-                                                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                  (@instHMul.{0} Nat instMulNat) p b))
-                                                              (@Matrix.add.{0, 0, 0}
-                                                                (Fin
-                                                                  (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                    (@instHMul.{0} Nat instMulNat) p b))
-                                                                (Fin
-                                                                  (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                    (@instHMul.{0} Nat instMulNat) p b))
-                                                                Real Real.instAdd))
-                                                            U upperError)
-                                                          xHat)
-                                                        (@HAdd.hAdd.{0, 0, 0}
-                                                          (HighamBench.P15Vector
-                                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                              (@instHMul.{0} Nat instMulNat) p b))
-                                                          (HighamBench.P15Vector
-                                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                              (@instHMul.{0} Nat instMulNat) p b))
-                                                          (HighamBench.P15Vector
-                                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                              (@instHMul.{0} Nat instMulNat) p b))
-                                                          (@instHAdd.{0}
-                                                            (HighamBench.P15Vector
-                                                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                (@instHMul.{0} Nat instMulNat) p b))
-                                                            (@Pi.instAdd.{0, 0}
-                                                              (Fin
-                                                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                  (@instHMul.{0} Nat instMulNat) p b))
-                                                              (fun
-                                                                  (a :
-                                                                    Fin
-                                                                      (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                        (@instHMul.{0} Nat instMulNat) p b)) =>
-                                                                Real)
-                                                              fun
-                                                                (i :
-                                                                  Fin
-                                                                    (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                      (@instHMul.{0} Nat instMulNat) p b)) =>
-                                                              Real.instAdd))
-                                                          yHat upperRhsError)) →
-                                                    (lowerError_le :
-                                                        @LE.le.{0} Real Real.instLE
-                                                          (@HighamBench.p15FrobNorm
-                                                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                              (@instHMul.{0} Nat instMulNat) p b)
-                                                            lowerError)
-                                                          (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                            (@instHMul.{0} Real Real.instMul)
-                                                            (HighamBench.p15GammaReal
-                                                              (HighamBench.p15BLRTriangularSolveCost b p r)
-                                                              unitRoundoff)
-                                                            (@HighamBench.p15FrobNorm
-                                                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                (@instHMul.{0} Nat instMulNat) p b)
-                                                              L))) →
-                                                      (upperError_le :
-                                                          @LE.le.{0} Real Real.instLE
-                                                            (@HighamBench.p15FrobNorm
-                                                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                (@instHMul.{0} Nat instMulNat) p b)
-                                                              upperError)
-                                                            (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                              (@instHMul.{0} Real Real.instMul)
-                                                              (HighamBench.p15GammaReal
-                                                                (HighamBench.p15BLRTriangularSolveCost b p r)
-                                                                unitRoundoff)
-                                                              (@HighamBench.p15FrobNorm
-                                                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                  (@instHMul.{0} Nat instMulNat) p b)
-                                                                U))) →
-                                                        (lowerRhsError_le :
-                                                            @LE.le.{0} Real Real.instLE
-                                                              (@HighamBench.p15VecNorm
-                                                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                  (@instHMul.{0} Nat instMulNat) p b)
-                                                                lowerRhsError)
-                                                              (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                                (@instHMul.{0} Real Real.instMul)
-                                                                (HighamBench.p15GammaReal
-                                                                  (@Nat.cast.{0} Real Real.instNatCast p) unitRoundoff)
-                                                                (@HighamBench.p15VecNorm
-                                                                  (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                    (@instHMul.{0} Nat instMulNat) p b)
-                                                                  v))) →
-                                                          (upperRhsError_le :
-                                                              @LE.le.{0} Real Real.instLE
-                                                                (@HighamBench.p15VecNorm
-                                                                  (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                    (@instHMul.{0} Nat instMulNat) p b)
-                                                                  upperRhsError)
-                                                                (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                                  (@instHMul.{0} Real Real.instMul)
-                                                                  (HighamBench.p15GammaReal
-                                                                    (@Nat.cast.{0} Real Real.instNatCast p)
-                                                                    unitRoundoff)
-                                                                  (@HighamBench.p15VecNorm
-                                                                    (@HMul.hMul.{0, 0, 0} Nat Nat Nat
-                                                                      (@instHMul.{0} Nat instMulNat) p b)
-                                                                    yHat))) →
-                                                            HighamBench.P15BLRLinearSolveExecution b p r
+                                  unitRoundoff epsilon A Atilde L U) →
+                              (lower_completed :
+                                  @HighamBench.P15CompletedTriangularSolve p b r
+                                    HighamBench.P15TriangularSolveDirection.lower unitRoundoff L v yHat) →
+                                (upper_completed :
+                                    @HighamBench.P15CompletedTriangularSolve p b r
+                                      HighamBench.P15TriangularSolveDirection.upper unitRoundoff U yHat xHat) →
+                                  HighamBench.P15BLRLinearSolveExecution b p r
 ```
 
-### D030: `HighamBench.P15BLRRecompression`
+### D033: `HighamBench.P15BLRRecompression`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1366,7 +1312,7 @@ Fully explicit type:
 Type
 ```
 
-### D031: `HighamBench.P15BLRThreshold`
+### D034: `HighamBench.P15BLRThreshold`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1386,7 +1332,195 @@ Fully explicit type:
 Type
 ```
 
-### D032: `HighamBench.p15BLRSolveCost._proof_1`
+### D035: `HighamBench.P15FactorizationBackwardError.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `c2e9cd3c2168280bfb57e9581608f5a3d4ae5e906874182754d43805c4ff70d7`
+
+Type:
+
+```lean
+{b p r : Nat} →
+  {threshold : HighamBench.P15BLRThreshold} →
+    {recompression : HighamBench.P15BLRRecompression} →
+      {u epsilon : Real} →
+        {A L U : HighamBench.P15Matrix (instHMul.hMul p b)} →
+          (error : HighamBench.P15Matrix (instHMul.hMul p b)) →
+            (remainder : Real → Real → Real) →
+              HighamBench.p15IsBigOMixedAtRun remainder u epsilon →
+                Eq (instHAdd.hAdd A error) (HighamBench.p15MatMul L U) →
+                  Real.instLE.le (HighamBench.p15FrobNorm error)
+                      (instHAdd.hAdd
+                        (instHAdd.hAdd
+                          (instHMul.hMul
+                            (instHAdd.hAdd (instHMul.hMul (HighamBench.p15BLRXi p threshold recompression) epsilon)
+                              (HighamBench.p15GammaReal p.cast u))
+                            (HighamBench.p15FrobNorm A))
+                          (instHMul.hMul
+                            (instHMul.hMul (HighamBench.p15GammaReal (HighamBench.p15BLRSolveCost b p r) u)
+                              (HighamBench.p15FrobNorm L))
+                            (HighamBench.p15FrobNorm U)))
+                        (remainder u epsilon)) →
+                    HighamBench.P15FactorizationBackwardError r threshold recompression u epsilon A L U
+```
+
+Fully explicit type:
+
+```lean
+{b p r : Nat} →
+  {threshold : HighamBench.P15BLRThreshold} →
+    {recompression : HighamBench.P15BLRRecompression} →
+      {u epsilon : Real} →
+        {A L U : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+          (error : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+            (remainder : Real → Real → Real) →
+              (remainder_control : HighamBench.p15IsBigOMixedAtRun remainder u epsilon) →
+                (factorization_eq :
+                    @Eq.{1}
+                      (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                      (@HAdd.hAdd.{0, 0, 0}
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (@instHAdd.{0}
+                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (@Matrix.add.{0, 0, 0}
+                            (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
+                            Real.instAdd))
+                        A error)
+                      (@HighamBench.p15MatMul (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) L
+                        U)) →
+                  (error_le :
+                      @LE.le.{0} Real Real.instLE
+                        (@HighamBench.p15FrobNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                          error)
+                        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                  (HighamBench.p15BLRXi p threshold recompression) epsilon)
+                                (HighamBench.p15GammaReal (@Nat.cast.{0} Real Real.instNatCast p) u))
+                              (@HighamBench.p15FrobNorm
+                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) A))
+                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                (HighamBench.p15GammaReal (HighamBench.p15BLRSolveCost b p r) u)
+                                (@HighamBench.p15FrobNorm
+                                  (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) L))
+                              (@HighamBench.p15FrobNorm
+                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) U)))
+                          (remainder u epsilon))) →
+                    @HighamBench.P15FactorizationBackwardError b p r threshold recompression u epsilon A L U
+```
+
+### D036: `HighamBench.P15TriangularSolveBackwardError.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `b2c0b8abb2f0558228f23b7697515a79b0b2ddd4dbe9de507c55850ac839a437`
+
+Type:
+
+```lean
+{p b r : Nat} →
+  {direction : HighamBench.P15TriangularSolveDirection} →
+    {u : Real} →
+      {T : HighamBench.P15Matrix (instHMul.hMul p b)} →
+        {rhs x : HighamBench.P15Vector (instHMul.hMul p b)} →
+          (matrixError : HighamBench.P15Matrix (instHMul.hMul p b)) →
+            (rhsError : HighamBench.P15Vector (instHMul.hMul p b)) →
+              Eq (HighamBench.p15MatVec (instHAdd.hAdd T matrixError) x) (instHAdd.hAdd rhs rhsError) →
+                Real.instLE.le (HighamBench.p15FrobNorm matrixError)
+                    (instHMul.hMul (HighamBench.p15GammaReal (HighamBench.p15BLRTriangularSolveCost b p r) u)
+                      (HighamBench.p15FrobNorm T)) →
+                  Real.instLE.le (HighamBench.p15VecNorm rhsError)
+                      (instHMul.hMul (HighamBench.p15GammaReal p.cast u) (HighamBench.p15VecNorm rhs)) →
+                    HighamBench.P15TriangularSolveBackwardError r direction u T rhs x
+```
+
+Fully explicit type:
+
+```lean
+{p b r : Nat} →
+  {direction : HighamBench.P15TriangularSolveDirection} →
+    {u : Real} →
+      {T : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+        {rhs x : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+          (matrixError : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+            (rhsError : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+              (solve_eq :
+                  @Eq.{1} (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                    (@HighamBench.p15MatVec (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                      (@HAdd.hAdd.{0, 0, 0}
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (@instHAdd.{0}
+                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (@Matrix.add.{0, 0, 0}
+                            (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
+                            Real.instAdd))
+                        T matrixError)
+                      x)
+                    (@HAdd.hAdd.{0, 0, 0}
+                      (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                      (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                      (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                      (@instHAdd.{0}
+                        (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (@Pi.instAdd.{0, 0} (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (fun (a : Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) => Real)
+                          fun (i : Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) =>
+                          Real.instAdd))
+                      rhs rhsError)) →
+                (matrix_error_le :
+                    @LE.le.{0} Real Real.instLE
+                      (@HighamBench.p15FrobNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                        matrixError)
+                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                        (HighamBench.p15GammaReal (HighamBench.p15BLRTriangularSolveCost b p r) u)
+                        (@HighamBench.p15FrobNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                          T))) →
+                  (rhs_error_le :
+                      @LE.le.{0} Real Real.instLE
+                        (@HighamBench.p15VecNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                          rhsError)
+                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                          (HighamBench.p15GammaReal (@Nat.cast.{0} Real Real.instNatCast p) u)
+                          (@HighamBench.p15VecNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                            rhs))) →
+                    @HighamBench.P15TriangularSolveBackwardError p b r direction u T rhs x
+```
+
+### D037: `HighamBench.P15TriangularSolveDirection`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `2`
+- Semantic SHA-256: `2739599cb5c208da8ba46dbb051853914b460ecd048eb3ce127ee1b183a6a5f3`
+
+Type:
+
+```lean
+Type
+```
+
+Fully explicit type:
+
+```lean
+Type
+```
+
+### D038: `HighamBench.p15BLRSolveCost._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1409,7 +1543,7 @@ Nat.AtLeastTwo
     (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D033: `HighamBench.p15BLRXi._proof_1`
+### D039: `HighamBench.p15BLRXi._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1432,7 +1566,7 @@ Nat.AtLeastTwo
     (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D034: `HighamBench.p15BLRXi.match_1`
+### D040: `HighamBench.p15BLRXi.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1475,7 +1609,7 @@ fun motive recompression threshold h_1 h_2 h_3 h_4 =>
     (HighamBench.P15BLRThreshold.casesOn threshold (h_3 Unit.unit) (h_4 Unit.unit))
 ```
 
-### D035: `HighamBench.p15MatMul`
+### D041: `HighamBench.p15MatMul`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1501,7 +1635,7 @@ Definition body (one-level semantic boundary):
 fun {n} A B i j => Finset.univ.sum fun k => instHMul.hMul (A i k) (B k j)
 ```
 
-### D036: `HighamBench.p15RectFrobNorm`
+### D042: `HighamBench.p15RectFrobNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1527,7 +1661,7 @@ Definition body (one-level semantic boundary):
 fun {m n} A => (Finset.univ.sum fun i => Finset.univ.sum fun j => instHPow.hPow (A i j) 2).sqrt
 ```
 
-### D037: `HighamBench.P15BLRFactorizationAlgorithm`
+### D043: `HighamBench.P15BLRFactorizationAlgorithm`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1547,7 +1681,7 @@ Fully explicit type:
 Type
 ```
 
-### D038: `HighamBench.P15BLRRecompression.casesOn`
+### D044: `HighamBench.P15BLRRecompression.casesOn`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1578,7 +1712,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t without «with» => HighamBench.P15BLRRecompression.rec without «with» t
 ```
 
-### D039: `HighamBench.P15BLRRecompression.with`
+### D045: `HighamBench.P15BLRRecompression.with`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1598,7 +1732,7 @@ Fully explicit type:
 HighamBench.P15BLRRecompression
 ```
 
-### D040: `HighamBench.P15BLRRecompression.without`
+### D046: `HighamBench.P15BLRRecompression.without`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1618,7 +1752,7 @@ Fully explicit type:
 HighamBench.P15BLRRecompression
 ```
 
-### D041: `HighamBench.P15BLRThreshold.casesOn`
+### D047: `HighamBench.P15BLRThreshold.casesOn`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1649,7 +1783,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t «local» global => HighamBench.P15BLRThreshold.rec «local» global t
 ```
 
-### D042: `HighamBench.P15BLRThreshold.global`
+### D048: `HighamBench.P15BLRThreshold.global`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1669,7 +1803,7 @@ Fully explicit type:
 HighamBench.P15BLRThreshold
 ```
 
-### D043: `HighamBench.P15BLRThreshold.local`
+### D049: `HighamBench.P15BLRThreshold.local`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1689,13 +1823,13 @@ Fully explicit type:
 HighamBench.P15BLRThreshold
 ```
 
-### D044: `HighamBench.P15CompletedBLRFactorization`
+### D050: `HighamBench.P15CompletedBLRFactorization`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
 - Distance from target type: `3`
-- Semantic SHA-256: `79ca4edb3a2cddd1dc183ac8302cb42b4f1566cadd37f80fdd2236f76b78fa78`
+- Semantic SHA-256: `606ea1115f3422f605f09ea64c5e3735c303ea85d1897cc1b7ea54fc3692857c`
 
 Type:
 
@@ -1708,7 +1842,8 @@ Type:
           Real →
             Real →
               HighamBench.P15Matrix (instHMul.hMul p b) →
-                HighamBench.P15Matrix (instHMul.hMul p b) → HighamBench.P15Matrix (instHMul.hMul p b) → Prop
+                HighamBench.P15Matrix (instHMul.hMul p b) →
+                  HighamBench.P15Matrix (instHMul.hMul p b) → HighamBench.P15Matrix (instHMul.hMul p b) → Prop
 ```
 
 Fully explicit type:
@@ -1720,25 +1855,26 @@ Fully explicit type:
       (threshold : HighamBench.P15BLRThreshold) →
         (recompression : HighamBench.P15BLRRecompression) →
           (u epsilon : Real) →
-            (A L U : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Prop
+            (A Atilde L U :
+                HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+              Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {b p} r algorithm threshold recompression u epsilon A L U =>
-  HighamBench.instReprP15BLRFactorizationAlgorithm.repr.match_1 (fun algorithm => Prop) algorithm
-    (fun _ => Nonempty (HighamBench.P15CompletedUFCFactorization r threshold recompression u epsilon A L U)) fun _ =>
-    Nonempty (HighamBench.P15CompletedUCFFactorization r threshold recompression u epsilon A L U)
+fun {b p} r algorithm threshold recompression u epsilon A Atilde L U =>
+  And (HighamBench.P15CompletedBLRFactorizationTrace r algorithm threshold recompression u epsilon Atilde L U)
+    (Nonempty (HighamBench.P15FactorizationLocalAnalysis r threshold recompression u epsilon A L U))
 ```
 
-### D045: `HighamBench.P15CompletedTriangularSolve`
+### D051: `HighamBench.P15CompletedTriangularSolve`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `inductive`
+- Declaration kind: `def`
 - Distance from target type: `3`
-- Semantic SHA-256: `c38a1d2cebf2f0beab40745ae55677fa2621e5c50a870375d8d7a55e0a316718`
+- Semantic SHA-256: `61eb85d68dcb236655902d60decabc797871210a51a1ef2358bad8c1cbfd8656`
 
 Type:
 
@@ -1748,7 +1884,7 @@ Type:
     HighamBench.P15TriangularSolveDirection →
       Real →
         HighamBench.P15Matrix (instHMul.hMul p b) →
-          HighamBench.P15Vector (instHMul.hMul p b) → HighamBench.P15Vector (instHMul.hMul p b) → Type
+          HighamBench.P15Vector (instHMul.hMul p b) → HighamBench.P15Vector (instHMul.hMul p b) → Prop
 ```
 
 Fully explicit type:
@@ -1759,10 +1895,18 @@ Fully explicit type:
     (direction : HighamBench.P15TriangularSolveDirection) →
       (u : Real) →
         (T : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
-          (rhs x : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Type
+          (rhs x : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Prop
 ```
 
-### D046: `HighamBench.P15RectMatrix`
+Definition body (one-level semantic boundary):
+
+```lean
+fun {p b} r direction u T rhs x =>
+  And (Nonempty (HighamBench.P15CompletedTriangularSolveTrace r direction u T rhs x))
+    (Nonempty (HighamBench.P15TriangularSolveLocalAnalysis r direction u T rhs x))
+```
+
+### D052: `HighamBench.P15RectMatrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1788,47 +1932,7 @@ Definition body (one-level semantic boundary):
 fun m n => Matrix (Fin m) (Fin n) Real
 ```
 
-### D047: `HighamBench.P15TriangularSolveDirection.lower`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `3`
-- Semantic SHA-256: `ed7c8315fcb03c4458bf042d8e255dbdd43a81b2256e12ed8cedcaa4b4901e2b`
-
-Type:
-
-```lean
-HighamBench.P15TriangularSolveDirection
-```
-
-Fully explicit type:
-
-```lean
-HighamBench.P15TriangularSolveDirection
-```
-
-### D048: `HighamBench.P15TriangularSolveDirection.upper`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `3`
-- Semantic SHA-256: `e6d13e0fa0da3a432d462199fc5932439303d796406010f67483ae2716235cb0`
-
-Type:
-
-```lean
-HighamBench.P15TriangularSolveDirection
-```
-
-Fully explicit type:
-
-```lean
-HighamBench.P15TriangularSolveDirection
-```
-
-### D049: `HighamBench.p15AdmissiblePrecision`
+### D053: `HighamBench.p15AdmissiblePrecision`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1857,7 +1961,7 @@ fun c u epsilon =>
       (And (Real.instLT.lt u epsilon) (Real.instLT.lt (instHMul.hMul (instHMul.hMul 3 c) u) 1)))
 ```
 
-### D050: `HighamBench.p15BLRRepresents`
+### D054: `HighamBench.p15BLRRepresents`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1895,7 +1999,7 @@ fun {p b} threshold epsilon A Atilde =>
               HighamBench.p15BLRBlockApproximation threshold epsilon A i j ell candidate → instLENat.le k ell))
 ```
 
-### D051: `HighamBench.p15BLRTriangularSolveCost`
+### D055: `HighamBench.p15BLRTriangularSolveCost`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1921,7 +2025,7 @@ Definition body (one-level semantic boundary):
 fun b p r => instHAdd.hAdd (instHAdd.hAdd b.cast (instHMul.hMul r.cast r.cast.sqrt)) p.cast
 ```
 
-### D052: `HighamBench.p15IsFactorBLRRank`
+### D056: `HighamBench.p15IsFactorBLRRank`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1951,7 +2055,7 @@ fun {p b} r L U =>
       (∀ (s : Nat), HighamBench.p15IsBLRMatrix s L → HighamBench.p15IsBLRMatrix s U → instLENat.le r s))
 ```
 
-### D053: `HighamBench.p15IsNonsingular`
+### D057: `HighamBench.p15IsNonsingular`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -1980,7 +2084,7 @@ fun {n} A =>
       (Eq (HighamBench.p15MatMul A Ainv) (HighamBench.p15Identity n))
 ```
 
-### D054: `HighamBench.P15BLRFactorizationAlgorithm.ucf`
+### D058: `HighamBench.P15BLRFactorizationAlgorithm.ucf`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -2000,7 +2104,7 @@ Fully explicit type:
 HighamBench.P15BLRFactorizationAlgorithm
 ```
 
-### D055: `HighamBench.P15BLRFactorizationAlgorithm.ufc`
+### D059: `HighamBench.P15BLRFactorizationAlgorithm.ufc`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -2020,7 +2124,7 @@ Fully explicit type:
 HighamBench.P15BLRFactorizationAlgorithm
 ```
 
-### D056: `HighamBench.P15BLRRecompression.rec`
+### D060: `HighamBench.P15BLRRecompression.rec`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -2044,7 +2148,7 @@ Fully explicit type:
     («with» : motive HighamBench.P15BLRRecompression.with) → (t : HighamBench.P15BLRRecompression) → motive t
 ```
 
-### D057: `HighamBench.P15BLRThreshold.rec`
+### D061: `HighamBench.P15BLRThreshold.rec`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -2068,13 +2172,296 @@ Fully explicit type:
     (global : motive HighamBench.P15BLRThreshold.global) → (t : HighamBench.P15BLRThreshold) → motive t
 ```
 
-### D058: `HighamBench.P15CompletedTriangularSolve.mk`
+### D062: `HighamBench.P15CompletedBLRFactorizationTrace`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `29fc7283a5ce373d718ebc4a9f0655d0988b76ed59f5d7ee4462c13d65907f70`
+
+Type:
+
+```lean
+{b p : Nat} →
+  Nat →
+    HighamBench.P15BLRFactorizationAlgorithm →
+      HighamBench.P15BLRThreshold →
+        HighamBench.P15BLRRecompression →
+          Real →
+            Real →
+              HighamBench.P15Matrix (instHMul.hMul p b) →
+                HighamBench.P15Matrix (instHMul.hMul p b) → HighamBench.P15Matrix (instHMul.hMul p b) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{b p : Nat} →
+  (r : Nat) →
+    (algorithm : HighamBench.P15BLRFactorizationAlgorithm) →
+      (threshold : HighamBench.P15BLRThreshold) →
+        (recompression : HighamBench.P15BLRRecompression) →
+          (u epsilon : Real) →
+            (A L U : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {b p} r algorithm threshold recompression u epsilon A L U =>
+  HighamBench.instReprP15BLRFactorizationAlgorithm.repr.match_1 (fun algorithm => Prop) algorithm
+    (fun _ => Nonempty (HighamBench.P15CompletedUFCFactorization r threshold recompression u epsilon A L U)) fun _ =>
+    Nonempty (HighamBench.P15CompletedUCFFactorization r threshold recompression u epsilon A L U)
+```
+
+### D063: `HighamBench.P15CompletedTriangularSolveTrace`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `4`
+- Semantic SHA-256: `b99d035982d428affb584c3593d4958a7bbc261bcd91ac64bb267c4f3deb3497`
+
+Type:
+
+```lean
+{p b : Nat} →
+  Nat →
+    HighamBench.P15TriangularSolveDirection →
+      Real →
+        HighamBench.P15Matrix (instHMul.hMul p b) →
+          HighamBench.P15Vector (instHMul.hMul p b) → HighamBench.P15Vector (instHMul.hMul p b) → Type
+```
+
+Fully explicit type:
+
+```lean
+{p b : Nat} →
+  (r : Nat) →
+    (direction : HighamBench.P15TriangularSolveDirection) →
+      (u : Real) →
+        (T : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+          (rhs x : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Type
+```
+
+### D064: `HighamBench.P15FactorizationLocalAnalysis`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `4`
+- Semantic SHA-256: `9bee3ca2a98837ed84fed1492bf5675867247ef6d05c78bb200a788893de5a0b`
+
+Type:
+
+```lean
+{b p : Nat} →
+  Nat →
+    HighamBench.P15BLRThreshold →
+      HighamBench.P15BLRRecompression →
+        Real →
+          Real →
+            HighamBench.P15Matrix (instHMul.hMul p b) →
+              HighamBench.P15Matrix (instHMul.hMul p b) → HighamBench.P15Matrix (instHMul.hMul p b) → Type
+```
+
+Fully explicit type:
+
+```lean
+{b p : Nat} →
+  (r : Nat) →
+    (threshold : HighamBench.P15BLRThreshold) →
+      (recompression : HighamBench.P15BLRRecompression) →
+        (u epsilon : Real) →
+          (A L U : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Type
+```
+
+### D065: `HighamBench.P15TriangularSolveLocalAnalysis`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `4`
+- Semantic SHA-256: `24d6dfa2706874589e40509d67962bb8be2db5e79716bcfa9f580d5204079879`
+
+Type:
+
+```lean
+{p b : Nat} →
+  Nat →
+    HighamBench.P15TriangularSolveDirection →
+      Real →
+        HighamBench.P15Matrix (instHMul.hMul p b) →
+          HighamBench.P15Vector (instHMul.hMul p b) → HighamBench.P15Vector (instHMul.hMul p b) → Type
+```
+
+Fully explicit type:
+
+```lean
+{p b : Nat} →
+  (r : Nat) →
+    (direction : HighamBench.P15TriangularSolveDirection) →
+      (u : Real) →
+        (T : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+          (rhs x : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Type
+```
+
+### D066: `HighamBench.p15AdmissiblePrecision._proof_1`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `theorem`
+- Distance from target type: `4`
+- Semantic SHA-256: `213bd1e73174b7595c41e7b42aa9993d17dae1408a69ea3f0097deeae64f2916`
+
+Type:
+
+```lean
+(instHAdd.hAdd 2 1).AtLeastTwo
+```
+
+Fully explicit type:
+
+```lean
+Nat.AtLeastTwo
+  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))
+    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D067: `HighamBench.p15BLRBlockApproximation`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `2ae3164d58c89c16825b3800d5cbffb555544425da7350adab053e7f6a8e4e19`
+
+Type:
+
+```lean
+{p b : Nat} →
+  HighamBench.P15BLRThreshold →
+    Real → HighamBench.P15Matrix (instHMul.hMul p b) → Fin p → Fin p → Nat → HighamBench.P15Matrix b → Prop
+```
+
+Fully explicit type:
+
+```lean
+{p b : Nat} →
+  (threshold : HighamBench.P15BLRThreshold) →
+    (epsilon : Real) →
+      (A : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+        (i j : Fin p) → (k : Nat) → (candidate : HighamBench.P15Matrix b) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {p b} threshold epsilon A i j k candidate =>
+  Exists fun X =>
+    Exists fun Y =>
+      And (HighamBench.p15OrthonormalColumns X)
+        (And (Eq candidate (HighamBench.p15OrientedLowRankBlock i j X Y))
+          (Real.instLE.le (HighamBench.p15FrobNorm (instHSub.hSub candidate (HighamBench.p15MatrixBlock A i j)))
+            (instHMul.hMul epsilon
+              (HighamBench.instReprP15BLRThreshold.repr.match_1 (fun threshold => Real) threshold
+                (fun _ => HighamBench.p15FrobNorm (HighamBench.p15MatrixBlock A i j)) fun _ =>
+                HighamBench.p15FrobNorm A))))
+```
+
+### D068: `HighamBench.p15Identity`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `b666a790818338446ad29c7622b631b68fff0b34eabf08253467b02fd032fa63`
+
+Type:
+
+```lean
+(n : Nat) → HighamBench.P15Matrix n
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → HighamBench.P15Matrix n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n i j => ite (Eq i j) 1 0
+```
+
+### D069: `HighamBench.p15IsBLRMatrix`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `23b2fd5405f6ba223eaef2d1cd61e62edd91a663b0bd801522dff0a705cea7db`
+
+Type:
+
+```lean
+{p b : Nat} → Nat → HighamBench.P15Matrix (instHMul.hMul p b) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{p b : Nat} →
+  (r : Nat) → (A : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {p b} r A =>
+  Exists fun X =>
+    Exists fun Y =>
+      ∀ (i j : Fin p), Ne i j → Eq (HighamBench.p15MatrixBlock A i j) (HighamBench.p15LowRankMatrix (X i j) (Y i j))
+```
+
+### D070: `HighamBench.p15MatrixBlock`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `b6f6652f790cad96f7c671f939858824c8903bdc549b35ca6417e1dee14a7aaa`
+
+Type:
+
+```lean
+{p b : Nat} → HighamBench.P15Matrix (instHMul.hMul p b) → Fin p → Fin p → HighamBench.P15Matrix b
+```
+
+Fully explicit type:
+
+```lean
+{p b : Nat} →
+  (A : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+    (i j : Fin p) → HighamBench.P15Matrix b
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {p b} A i j row col => A (HighamBench.p15BlockIndex i row) (HighamBench.p15BlockIndex j col)
+```
+
+### D071: `HighamBench.P15CompletedTriangularSolveTrace.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `constructor`
-- Distance from target type: `4`
-- Semantic SHA-256: `bff97541f040ad35a64f6ce14aa85d177fcabaa558f9758b37e4ab1292604a70`
+- Distance from target type: `5`
+- Semantic SHA-256: `b5dc6dfaf8dc0887875cbd41f6c0464d1f6a3551c18b837743ce172df4342e42`
 
 Type:
 
@@ -2125,7 +2512,7 @@ Type:
                                             HighamBench.p15VecHadamard (productValue i j)
                                               (instHAdd.hAdd (HighamBench.p15OnesVector b)
                                                 (productRelativeError i j))))) →
-                                    HighamBench.P15CompletedTriangularSolve r direction u T rhs x
+                                    HighamBench.P15CompletedTriangularSolveTrace r direction u T rhs x
 ```
 
 Fully explicit type:
@@ -2216,15 +2603,15 @@ Fully explicit type:
                                                     (@Pi.instAdd.{0, 0} (Fin b) (fun (a : Fin b) => Real)
                                                       fun (i : Fin b) => Real.instAdd))
                                                   (HighamBench.p15OnesVector b) (productRelativeError i j))))) →
-                                    @HighamBench.P15CompletedTriangularSolve p b r direction u T rhs x
+                                    @HighamBench.P15CompletedTriangularSolveTrace p b r direction u T rhs x
 ```
 
-### D059: `HighamBench.P15CompletedUCFFactorization`
+### D072: `HighamBench.P15CompletedUCFFactorization`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `inductive`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `5b7298c0394e3cd6f32f441cc34400e000f95ed1f77f2fc5f891d06dd839dbfa`
 
 Type:
@@ -2251,12 +2638,12 @@ Fully explicit type:
           (A L U : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Type
 ```
 
-### D060: `HighamBench.P15CompletedUFCFactorization`
+### D073: `HighamBench.P15CompletedUFCFactorization`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `inductive`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `5aac7c45973a6b3b3d7d96251486d4c0f15d78aaea9cad06ee8ff209a59a03bd`
 
 Type:
@@ -2283,32 +2670,291 @@ Fully explicit type:
           (A L U : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Type
 ```
 
-### D061: `HighamBench.P15TriangularSolveDirection`
+### D074: `HighamBench.P15FactorizationLocalAnalysis.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `4`
-- Semantic SHA-256: `2739599cb5c208da8ba46dbb051853914b460ecd048eb3ce127ee1b183a6a5f3`
+- Declaration kind: `constructor`
+- Distance from target type: `5`
+- Semantic SHA-256: `d184def78c6f9a11af22f6fe369e49625c0af080c72af1f12045c262b4ef9f99`
 
 Type:
 
 ```lean
-Type
+{b p r : Nat} →
+  {threshold : HighamBench.P15BLRThreshold} →
+    {recompression : HighamBench.P15BLRRecompression} →
+      {u epsilon : Real} →
+        {A L U : HighamBench.P15Matrix (instHMul.hMul p b)} →
+          (compressionError inputRoundoffError factorRoundoffError mixedError :
+              HighamBench.P15Matrix (instHMul.hMul p b)) →
+            (mixedRemainder : Real → Real → Real) →
+              Eq
+                  (instHAdd.hAdd A
+                    (instHAdd.hAdd
+                      (instHAdd.hAdd (instHAdd.hAdd compressionError inputRoundoffError) factorRoundoffError)
+                      mixedError))
+                  (HighamBench.p15MatMul L U) →
+                Real.instLE.le (HighamBench.p15FrobNorm compressionError)
+                    (instHMul.hMul (instHMul.hMul (HighamBench.p15BLRXi p threshold recompression) epsilon)
+                      (HighamBench.p15FrobNorm A)) →
+                  Real.instLE.le (HighamBench.p15FrobNorm inputRoundoffError)
+                      (instHMul.hMul (HighamBench.p15GammaReal p.cast u) (HighamBench.p15FrobNorm A)) →
+                    Real.instLE.le (HighamBench.p15FrobNorm factorRoundoffError)
+                        (instHMul.hMul
+                          (instHMul.hMul (HighamBench.p15GammaReal (HighamBench.p15BLRSolveCost b p r) u)
+                            (HighamBench.p15FrobNorm L))
+                          (HighamBench.p15FrobNorm U)) →
+                      Real.instLE.le (HighamBench.p15FrobNorm mixedError) (mixedRemainder u epsilon) →
+                        HighamBench.p15IsBigOMixedAtRun mixedRemainder u epsilon →
+                          HighamBench.P15FactorizationLocalAnalysis r threshold recompression u epsilon A L U
 ```
 
 Fully explicit type:
 
 ```lean
-Type
+{b p r : Nat} →
+  {threshold : HighamBench.P15BLRThreshold} →
+    {recompression : HighamBench.P15BLRRecompression} →
+      {u epsilon : Real} →
+        {A L U : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+          (compressionError inputRoundoffError factorRoundoffError mixedError :
+              HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+            (mixedRemainder : Real → Real → Real) →
+              (decomposition_eq :
+                  @Eq.{1} (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                    (@HAdd.hAdd.{0, 0, 0}
+                      (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                      (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                      (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                      (@instHAdd.{0}
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (@Matrix.add.{0, 0, 0}
+                          (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
+                          Real.instAdd))
+                      A
+                      (@HAdd.hAdd.{0, 0, 0}
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (@instHAdd.{0}
+                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (@Matrix.add.{0, 0, 0}
+                            (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
+                            Real.instAdd))
+                        (@HAdd.hAdd.{0, 0, 0}
+                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (@instHAdd.{0}
+                            (HighamBench.P15Matrix
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (@Matrix.add.{0, 0, 0}
+                              (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                              (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
+                              Real.instAdd))
+                          (@HAdd.hAdd.{0, 0, 0}
+                            (HighamBench.P15Matrix
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (HighamBench.P15Matrix
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (HighamBench.P15Matrix
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (@instHAdd.{0}
+                              (HighamBench.P15Matrix
+                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                              (@Matrix.add.{0, 0, 0}
+                                (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                                (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
+                                Real.instAdd))
+                            compressionError inputRoundoffError)
+                          factorRoundoffError)
+                        mixedError))
+                    (@HighamBench.p15MatMul (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) L
+                      U)) →
+                (compression_error_le :
+                    @LE.le.{0} Real Real.instLE
+                      (@HighamBench.p15FrobNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                        compressionError)
+                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                          (HighamBench.p15BLRXi p threshold recompression) epsilon)
+                        (@HighamBench.p15FrobNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                          A))) →
+                  (input_roundoff_error_le :
+                      @LE.le.{0} Real Real.instLE
+                        (@HighamBench.p15FrobNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                          inputRoundoffError)
+                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                          (HighamBench.p15GammaReal (@Nat.cast.{0} Real Real.instNatCast p) u)
+                          (@HighamBench.p15FrobNorm
+                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) A))) →
+                    (factor_roundoff_error_le :
+                        @LE.le.{0} Real Real.instLE
+                          (@HighamBench.p15FrobNorm
+                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) factorRoundoffError)
+                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                              (HighamBench.p15GammaReal (HighamBench.p15BLRSolveCost b p r) u)
+                              (@HighamBench.p15FrobNorm
+                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) L))
+                            (@HighamBench.p15FrobNorm
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) U))) →
+                      (mixed_error_le :
+                          @LE.le.{0} Real Real.instLE
+                            (@HighamBench.p15FrobNorm
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) mixedError)
+                            (mixedRemainder u epsilon)) →
+                        (mixed_remainder_control : HighamBench.p15IsBigOMixedAtRun mixedRemainder u epsilon) →
+                          @HighamBench.P15FactorizationLocalAnalysis b p r threshold recompression u epsilon A L U
 ```
 
-### D062: `HighamBench.instReprP15BLRFactorizationAlgorithm.repr.match_1`
+### D075: `HighamBench.P15TriangularSolveLocalAnalysis.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `5`
+- Semantic SHA-256: `17c3cf4306c38df41aa5d961bc66738ef25b6e913c71a4255188bc7fc43815b7`
+
+Type:
+
+```lean
+{p b r : Nat} →
+  {direction : HighamBench.P15TriangularSolveDirection} →
+    {u : Real} →
+      {T : HighamBench.P15Matrix (instHMul.hMul p b)} →
+        {rhs x : HighamBench.P15Vector (instHMul.hMul p b)} →
+          (kernelError summationError interactionError : HighamBench.P15Matrix (instHMul.hMul p b)) →
+            (rhsError : HighamBench.P15Vector (instHMul.hMul p b)) →
+              Eq
+                  (HighamBench.p15MatVec
+                    (instHAdd.hAdd T (instHAdd.hAdd (instHAdd.hAdd kernelError summationError) interactionError)) x)
+                  (instHAdd.hAdd rhs rhsError) →
+                Real.instLE.le (HighamBench.p15FrobNorm kernelError)
+                    (instHMul.hMul (HighamBench.p15GammaReal (HighamBench.p15LowRankKernelCost b r) u)
+                      (HighamBench.p15FrobNorm T)) →
+                  Real.instLE.le (HighamBench.p15FrobNorm summationError)
+                      (instHMul.hMul (HighamBench.p15GammaReal p.cast u) (HighamBench.p15FrobNorm T)) →
+                    Real.instLE.le (HighamBench.p15FrobNorm interactionError)
+                        (instHMul.hMul
+                          (instHMul.hMul (HighamBench.p15GammaReal (HighamBench.p15LowRankKernelCost b r) u)
+                            (HighamBench.p15GammaReal p.cast u))
+                          (HighamBench.p15FrobNorm T)) →
+                      Real.instLE.le (HighamBench.p15VecNorm rhsError)
+                          (instHMul.hMul (HighamBench.p15GammaReal p.cast u) (HighamBench.p15VecNorm rhs)) →
+                        HighamBench.P15TriangularSolveLocalAnalysis r direction u T rhs x
+```
+
+Fully explicit type:
+
+```lean
+{p b r : Nat} →
+  {direction : HighamBench.P15TriangularSolveDirection} →
+    {u : Real} →
+      {T : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+        {rhs x : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)} →
+          (kernelError summationError interactionError :
+              HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+            (rhsError : HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
+              (gathered_eq :
+                  @Eq.{1} (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                    (@HighamBench.p15MatVec (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                      (@HAdd.hAdd.{0, 0, 0}
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (@instHAdd.{0}
+                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (@Matrix.add.{0, 0, 0}
+                            (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
+                            Real.instAdd))
+                        T
+                        (@HAdd.hAdd.{0, 0, 0}
+                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (@instHAdd.{0}
+                            (HighamBench.P15Matrix
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (@Matrix.add.{0, 0, 0}
+                              (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                              (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
+                              Real.instAdd))
+                          (@HAdd.hAdd.{0, 0, 0}
+                            (HighamBench.P15Matrix
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (HighamBench.P15Matrix
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (HighamBench.P15Matrix
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                            (@instHAdd.{0}
+                              (HighamBench.P15Matrix
+                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                              (@Matrix.add.{0, 0, 0}
+                                (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                                (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) Real
+                                Real.instAdd))
+                            kernelError summationError)
+                          interactionError))
+                      x)
+                    (@HAdd.hAdd.{0, 0, 0}
+                      (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                      (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                      (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                      (@instHAdd.{0}
+                        (HighamBench.P15Vector (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                        (@Pi.instAdd.{0, 0} (Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b))
+                          (fun (a : Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) => Real)
+                          fun (i : Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) =>
+                          Real.instAdd))
+                      rhs rhsError)) →
+                (kernel_error_le :
+                    @LE.le.{0} Real Real.instLE
+                      (@HighamBench.p15FrobNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                        kernelError)
+                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                        (HighamBench.p15GammaReal (HighamBench.p15LowRankKernelCost b r) u)
+                        (@HighamBench.p15FrobNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                          T))) →
+                  (summation_error_le :
+                      @LE.le.{0} Real Real.instLE
+                        (@HighamBench.p15FrobNorm (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+                          summationError)
+                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                          (HighamBench.p15GammaReal (@Nat.cast.{0} Real Real.instNatCast p) u)
+                          (@HighamBench.p15FrobNorm
+                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) T))) →
+                    (interaction_error_le :
+                        @LE.le.{0} Real Real.instLE
+                          (@HighamBench.p15FrobNorm
+                            (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) interactionError)
+                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                              (HighamBench.p15GammaReal (HighamBench.p15LowRankKernelCost b r) u)
+                              (HighamBench.p15GammaReal (@Nat.cast.{0} Real Real.instNatCast p) u))
+                            (@HighamBench.p15FrobNorm
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) T))) →
+                      (rhs_error_le :
+                          @LE.le.{0} Real Real.instLE
+                            (@HighamBench.p15VecNorm
+                              (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) rhsError)
+                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                              (HighamBench.p15GammaReal (@Nat.cast.{0} Real Real.instNatCast p) u)
+                              (@HighamBench.p15VecNorm
+                                (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b) rhs))) →
+                        @HighamBench.P15TriangularSolveLocalAnalysis p b r direction u T rhs x
+```
+
+### D076: `HighamBench.instReprP15BLRFactorizationAlgorithm.repr.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `abbrev`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `f170b62e1780181c35a46a156b1718c31e11fc5ad1de610936d81dc52775a2ff`
 
 Type:
@@ -2335,160 +2981,147 @@ Definition body (one-level semantic boundary):
 fun motive x h_1 h_2 => HighamBench.P15BLRFactorizationAlgorithm.casesOn x (h_1 Unit.unit) (h_2 Unit.unit)
 ```
 
-### D063: `HighamBench.p15AdmissiblePrecision._proof_1`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `theorem`
-- Distance from target type: `4`
-- Semantic SHA-256: `213bd1e73174b7595c41e7b42aa9993d17dae1408a69ea3f0097deeae64f2916`
-
-Type:
-
-```lean
-(instHAdd.hAdd 2 1).AtLeastTwo
-```
-
-Fully explicit type:
-
-```lean
-Nat.AtLeastTwo
-  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))
-    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D064: `HighamBench.p15BLRBlockApproximation`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `2ae3164d58c89c16825b3800d5cbffb555544425da7350adab053e7f6a8e4e19`
-
-Type:
-
-```lean
-{p b : Nat} →
-  HighamBench.P15BLRThreshold →
-    Real → HighamBench.P15Matrix (instHMul.hMul p b) → Fin p → Fin p → Nat → HighamBench.P15Matrix b → Prop
-```
-
-Fully explicit type:
-
-```lean
-{p b : Nat} →
-  (threshold : HighamBench.P15BLRThreshold) →
-    (epsilon : Real) →
-      (A : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
-        (i j : Fin p) → (k : Nat) → (candidate : HighamBench.P15Matrix b) → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {p b} threshold epsilon A i j k candidate =>
-  Exists fun X =>
-    Exists fun Y =>
-      And (HighamBench.p15OrthonormalColumns X)
-        (And (Eq candidate (HighamBench.p15OrientedLowRankBlock i j X Y))
-          (Real.instLE.le (HighamBench.p15FrobNorm (instHSub.hSub candidate (HighamBench.p15MatrixBlock A i j)))
-            (instHMul.hMul epsilon
-              (HighamBench.instReprP15BLRThreshold.repr.match_1 (fun threshold => Real) threshold
-                (fun _ => HighamBench.p15FrobNorm (HighamBench.p15MatrixBlock A i j)) fun _ =>
-                HighamBench.p15FrobNorm A))))
-```
-
-### D065: `HighamBench.p15Identity`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `b666a790818338446ad29c7622b631b68fff0b34eabf08253467b02fd032fa63`
-
-Type:
-
-```lean
-(n : Nat) → HighamBench.P15Matrix n
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) → HighamBench.P15Matrix n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n i j => ite (Eq i j) 1 0
-```
-
-### D066: `HighamBench.p15IsBLRMatrix`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `23b2fd5405f6ba223eaef2d1cd61e62edd91a663b0bd801522dff0a705cea7db`
-
-Type:
-
-```lean
-{p b : Nat} → Nat → HighamBench.P15Matrix (instHMul.hMul p b) → Prop
-```
-
-Fully explicit type:
-
-```lean
-{p b : Nat} →
-  (r : Nat) → (A : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {p b} r A =>
-  Exists fun X =>
-    Exists fun Y =>
-      ∀ (i j : Fin p), Ne i j → Eq (HighamBench.p15MatrixBlock A i j) (HighamBench.p15LowRankMatrix (X i j) (Y i j))
-```
-
-### D067: `HighamBench.p15MatrixBlock`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `b6f6652f790cad96f7c671f939858824c8903bdc549b35ca6417e1dee14a7aaa`
-
-Type:
-
-```lean
-{p b : Nat} → HighamBench.P15Matrix (instHMul.hMul p b) → Fin p → Fin p → HighamBench.P15Matrix b
-```
-
-Fully explicit type:
-
-```lean
-{p b : Nat} →
-  (A : HighamBench.P15Matrix (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)) →
-    (i j : Fin p) → HighamBench.P15Matrix b
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {p b} A i j row col => A (HighamBench.p15BlockIndex i row) (HighamBench.p15BlockIndex j col)
-```
-
-### D068: `HighamBench.P15BLRFactorizationAlgorithm.casesOn`
+### D077: `HighamBench.instReprP15BLRThreshold.repr.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `5`
+- Semantic SHA-256: `a3fc79126a46d76de79c7b2dd592c4fa306fa0a77acfcfb7079a8a221fed499e`
+
+Type:
+
+```lean
+(motive : HighamBench.P15BLRThreshold → Sort u_1) →
+  (x : HighamBench.P15BLRThreshold) →
+    (Unit → motive HighamBench.P15BLRThreshold.local) → (Unit → motive HighamBench.P15BLRThreshold.global) → motive x
+```
+
+Fully explicit type:
+
+```lean
+(motive : HighamBench.P15BLRThreshold → Sort u_1) →
+  (x : HighamBench.P15BLRThreshold) →
+    (h_1 : (a : Unit) → motive HighamBench.P15BLRThreshold.local) →
+      (h_2 : (a : Unit) → motive HighamBench.P15BLRThreshold.global) → motive x
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun motive x h_1 h_2 => HighamBench.P15BLRThreshold.casesOn x (h_1 Unit.unit) (h_2 Unit.unit)
+```
+
+### D078: `HighamBench.p15BlockIndex`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `9e33142dfaa09274a463e2d14509613ff1e15a8f300a5da95769f5c50eb19602`
+
+Type:
+
+```lean
+{p b : Nat} → Fin p → Fin b → Fin (instHMul.hMul p b)
+```
+
+Fully explicit type:
+
+```lean
+{p b : Nat} → (i : Fin p) → (row : Fin b) → Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {p b} i row => ⟨instHAdd.hAdd (instHMul.hMul i.val b) row.val, ⋯⟩
+```
+
+### D079: `HighamBench.p15LowRankMatrix`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `1842193034dc631c3f6c3edebfa469daf6e8b41c15a0037f9331a904ad932e6f`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15RectMatrix b r → HighamBench.P15RectMatrix b r → HighamBench.P15Matrix b
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (X Y : HighamBench.P15RectMatrix b r) → HighamBench.P15Matrix b
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {b r} X Y => HighamBench.p15RectMatMul X (HighamBench.p15RectTranspose Y)
+```
+
+### D080: `HighamBench.p15OrientedLowRankBlock`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `ff9394e1a4396a66ba3b3a76d24697c53bbc8fd227a368f05d7863cba41863d5`
+
+Type:
+
+```lean
+{p b k : Nat} → Fin p → Fin p → HighamBench.P15RectMatrix b k → HighamBench.P15RectMatrix b k → HighamBench.P15Matrix b
+```
+
+Fully explicit type:
+
+```lean
+{p b k : Nat} → (i j : Fin p) → (X Y : HighamBench.P15RectMatrix b k) → HighamBench.P15Matrix b
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {p b k} i j X Y => ite (instLTFin.lt j i) (HighamBench.p15LowRankMatrix X Y) (HighamBench.p15LowRankMatrix Y X)
+```
+
+### D081: `HighamBench.p15OrthonormalColumns`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `deb9d644f031d8e71a57f0238d55fc37a145cb41cbb82b90abe8a87780c03815`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15RectMatrix b r → Prop
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (X : HighamBench.P15RectMatrix b r) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {b r} X => ∀ (j k : Fin r), Eq (Finset.univ.sum fun i => instHMul.hMul (X i j) (X i k)) (ite (Eq j k) 1 0)
+```
+
+### D082: `HighamBench.P15BLRFactorizationAlgorithm.casesOn`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `6`
 - Semantic SHA-256: `30b5d6ce1343e00bc8154d85f4f1a4dcdd43c9c3d0e5e49eb85ea6cdf99eed21`
 
 Type:
@@ -2514,12 +3147,12 @@ Definition body (one-level semantic boundary):
 fun {motive} t ufc ucf => HighamBench.P15BLRFactorizationAlgorithm.rec ufc ucf t
 ```
 
-### D069: `HighamBench.P15CompletedUCFFactorization.mk`
+### D083: `HighamBench.P15CompletedUCFFactorization.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `constructor`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `6b5dfdcd453d3974f9d52bc7f02fe7870a0ebceb2af139612205c84e897482a7`
 
 Type:
@@ -2624,12 +3257,12 @@ Fully explicit type:
                                       L U
 ```
 
-### D070: `HighamBench.P15CompletedUFCFactorization.mk`
+### D084: `HighamBench.P15CompletedUFCFactorization.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `constructor`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `b17af843d0388ba5782f551a1bd7dde642747b94755d8f88b3a5861368e2604d`
 
 Type:
@@ -2757,43 +3390,12 @@ Fully explicit type:
                                           epsilon A L U
 ```
 
-### D071: `HighamBench.instReprP15BLRThreshold.repr.match_1`
+### D085: `HighamBench.instReprP15TriangularSolveDirection.repr.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `abbrev`
-- Distance from target type: `5`
-- Semantic SHA-256: `a3fc79126a46d76de79c7b2dd592c4fa306fa0a77acfcfb7079a8a221fed499e`
-
-Type:
-
-```lean
-(motive : HighamBench.P15BLRThreshold → Sort u_1) →
-  (x : HighamBench.P15BLRThreshold) →
-    (Unit → motive HighamBench.P15BLRThreshold.local) → (Unit → motive HighamBench.P15BLRThreshold.global) → motive x
-```
-
-Fully explicit type:
-
-```lean
-(motive : HighamBench.P15BLRThreshold → Sort u_1) →
-  (x : HighamBench.P15BLRThreshold) →
-    (h_1 : (a : Unit) → motive HighamBench.P15BLRThreshold.local) →
-      (h_2 : (a : Unit) → motive HighamBench.P15BLRThreshold.global) → motive x
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun motive x h_1 h_2 => HighamBench.P15BLRThreshold.casesOn x (h_1 Unit.unit) (h_2 Unit.unit)
-```
-
-### D072: `HighamBench.instReprP15TriangularSolveDirection.repr.match_1`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `7c7d96d802478fd0bf6d0acaa82fe608e40f41316be07d45c944532713344ed5`
 
 Type:
@@ -2820,38 +3422,37 @@ Definition body (one-level semantic boundary):
 fun motive x h_1 h_2 => HighamBench.P15TriangularSolveDirection.casesOn x (h_1 Unit.unit) (h_2 Unit.unit)
 ```
 
-### D073: `HighamBench.p15BlockIndex`
+### D086: `HighamBench.p15BlockIndex._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `9e33142dfaa09274a463e2d14509613ff1e15a8f300a5da95769f5c50eb19602`
+- Declaration kind: `theorem`
+- Distance from target type: `6`
+- Semantic SHA-256: `50fbbd3fed5168541821a0be60abb75d0dedeeb6b80a1cefb693b952f00050fa`
 
 Type:
 
 ```lean
-{p b : Nat} → Fin p → Fin b → Fin (instHMul.hMul p b)
+∀ {p b : Nat} (i : Fin p) (row : Fin b),
+  Nat.instPreorder.lt (instHAdd.hAdd (instHMul.hMul i.val b) row.val) (instHMul.hMul p b)
 ```
 
 Fully explicit type:
 
 ```lean
-{p b : Nat} → (i : Fin p) → (row : Fin b) → Fin (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
+∀ {p b : Nat} (i : Fin p) (row : Fin b),
+  @LT.lt.{0} Nat (@Preorder.toLT.{0} Nat Nat.instPreorder)
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+      (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) (@Fin.val p i) b) (@Fin.val b row))
+    (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
 ```
 
-Definition body (one-level semantic boundary):
-
-```lean
-fun {p b} i row => ⟨instHAdd.hAdd (instHMul.hMul i.val b) row.val, ⋯⟩
-```
-
-### D074: `HighamBench.p15IsBlockLowerTriangular`
+### D087: `HighamBench.p15IsBlockLowerTriangular`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `99f5c8c5e48af6d2cd2fe5d29d204dd444168ee995c9045c1f7a0a9f365b9771`
 
 Type:
@@ -2872,12 +3473,12 @@ Definition body (one-level semantic boundary):
 fun {p b} L => ∀ (i j : Fin p), instLTFin.lt i j → Eq (HighamBench.p15MatrixBlock L i j) 0
 ```
 
-### D075: `HighamBench.p15IsBlockUpperTriangular`
+### D088: `HighamBench.p15IsBlockUpperTriangular`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `23004871ada397d4f70a364b015f381aa517c6fff957fcb31e835bd648dc4259`
 
 Type:
@@ -2898,12 +3499,12 @@ Definition body (one-level semantic boundary):
 fun {p b} U => ∀ (i j : Fin p), instLTFin.lt j i → Eq (HighamBench.p15MatrixBlock U i j) 0
 ```
 
-### D076: `HighamBench.p15LowRankKernelCost`
+### D089: `HighamBench.p15LowRankKernelCost`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `c2fe5f62aae01995df6fd00f4964b121fe67637620e558fead3ee0984d93d978`
 
 Type:
@@ -2924,38 +3525,12 @@ Definition body (one-level semantic boundary):
 fun b r => instHAdd.hAdd b.cast (instHMul.hMul r.cast r.cast.sqrt)
 ```
 
-### D077: `HighamBench.p15LowRankMatrix`
+### D090: `HighamBench.p15OnesVector`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `1842193034dc631c3f6c3edebfa469daf6e8b41c15a0037f9331a904ad932e6f`
-
-Type:
-
-```lean
-{b r : Nat} → HighamBench.P15RectMatrix b r → HighamBench.P15RectMatrix b r → HighamBench.P15Matrix b
-```
-
-Fully explicit type:
-
-```lean
-{b r : Nat} → (X Y : HighamBench.P15RectMatrix b r) → HighamBench.P15Matrix b
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {b r} X Y => HighamBench.p15RectMatMul X (HighamBench.p15RectTranspose Y)
-```
-
-### D078: `HighamBench.p15OnesVector`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `a2203fd1a41fe8de353c91f3b392b65b3cfa4e77158ccb30e3d89a34e69d7f2d`
 
 Type:
@@ -2976,64 +3551,65 @@ Definition body (one-level semantic boundary):
 fun n x => 1
 ```
 
-### D079: `HighamBench.p15OrientedLowRankBlock`
+### D091: `HighamBench.p15RectMatMul`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `ff9394e1a4396a66ba3b3a76d24697c53bbc8fd227a368f05d7863cba41863d5`
+- Distance from target type: `6`
+- Semantic SHA-256: `f6707f2e526a146358f007d2349847963679a3556d53c05f30fd242f90c18238`
 
 Type:
 
 ```lean
-{p b k : Nat} → Fin p → Fin p → HighamBench.P15RectMatrix b k → HighamBench.P15RectMatrix b k → HighamBench.P15Matrix b
+{m n p : Nat} → HighamBench.P15RectMatrix m n → HighamBench.P15RectMatrix n p → HighamBench.P15RectMatrix m p
 ```
 
 Fully explicit type:
 
 ```lean
-{p b k : Nat} → (i j : Fin p) → (X Y : HighamBench.P15RectMatrix b k) → HighamBench.P15Matrix b
+{m n p : Nat} →
+  (A : HighamBench.P15RectMatrix m n) → (B : HighamBench.P15RectMatrix n p) → HighamBench.P15RectMatrix m p
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {p b k} i j X Y => ite (instLTFin.lt j i) (HighamBench.p15LowRankMatrix X Y) (HighamBench.p15LowRankMatrix Y X)
+fun {m n p} A B i j => Finset.univ.sum fun k => instHMul.hMul (A i k) (B k j)
 ```
 
-### D080: `HighamBench.p15OrthonormalColumns`
+### D092: `HighamBench.p15RectTranspose`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `deb9d644f031d8e71a57f0238d55fc37a145cb41cbb82b90abe8a87780c03815`
+- Distance from target type: `6`
+- Semantic SHA-256: `5d09057ba3a21630e320ba9e9e5153de687ba08c185951b20149ba794d3de258`
 
 Type:
 
 ```lean
-{b r : Nat} → HighamBench.P15RectMatrix b r → Prop
+{m n : Nat} → HighamBench.P15RectMatrix m n → HighamBench.P15RectMatrix n m
 ```
 
 Fully explicit type:
 
 ```lean
-{b r : Nat} → (X : HighamBench.P15RectMatrix b r) → Prop
+{m n : Nat} → (A : HighamBench.P15RectMatrix m n) → HighamBench.P15RectMatrix n m
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {b r} X => ∀ (j k : Fin r), Eq (Finset.univ.sum fun i => instHMul.hMul (X i j) (X i k)) (ite (Eq j k) 1 0)
+fun {m n} A j i => A i j
 ```
 
-### D081: `HighamBench.p15TriangularPrecedes`
+### D093: `HighamBench.p15TriangularPrecedes`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `180e72ab7e2b83815485864c04f73550b3146d55b0ba0dc5aa53e5d5207e1fed`
 
 Type:
@@ -3056,12 +3632,12 @@ fun direction {p} i j =>
     (fun _ => instLTFin.lt j i) fun _ => instLTFin.lt i j
 ```
 
-### D082: `HighamBench.p15TriangularPredecessors`
+### D094: `HighamBench.p15TriangularPredecessors`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `ff629d092bf564cb4f6878df7bea0122acebac8902cfe13e7d5a277656188c82`
 
 Type:
@@ -3082,12 +3658,12 @@ Definition body (one-level semantic boundary):
 fun direction {p} i => Finset.filter (HighamBench.p15TriangularPrecedes direction i) Finset.univ
 ```
 
-### D083: `HighamBench.p15VecHadamard`
+### D095: `HighamBench.p15VecHadamard`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `250df853e8b2977888389f94c979b348c242386ad7e0d0083df6609f3c9f25a6`
 
 Type:
@@ -3108,12 +3684,12 @@ Definition body (one-level semantic boundary):
 fun {n} x y i => instHMul.hMul (x i) (y i)
 ```
 
-### D084: `HighamBench.p15VectorBlock`
+### D096: `HighamBench.p15VectorBlock`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `5`
+- Distance from target type: `6`
 - Semantic SHA-256: `2212ed50a2f881fa449f39357d3d2124523f7d4309cb3ab0be3d4562f59f558c`
 
 Type:
@@ -3136,12 +3712,12 @@ Definition body (one-level semantic boundary):
 fun {p b} x i row => x (HighamBench.p15BlockIndex i row)
 ```
 
-### D085: `HighamBench.P15BLRFactorizationAlgorithm.rec`
+### D097: `HighamBench.P15BLRFactorizationAlgorithm.rec`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `recursor`
-- Distance from target type: `6`
+- Distance from target type: `7`
 - Semantic SHA-256: `94a9924a5133c1ce47df1dd7e810851a7a8a8d7066f2219e3c3912e374eb2511`
 
 Type:
@@ -3161,12 +3737,12 @@ Fully explicit type:
       (t : HighamBench.P15BLRFactorizationAlgorithm) → motive t
 ```
 
-### D086: `HighamBench.P15BlockCompression`
+### D098: `HighamBench.P15BlockCompression`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `inductive`
-- Distance from target type: `6`
+- Distance from target type: `7`
 - Semantic SHA-256: `b39765279d0e57ef423fc04ef4d68b38c574ecdd4718bb8c3ab7b3b12847a03e`
 
 Type:
@@ -3181,12 +3757,12 @@ Fully explicit type:
 {b : Nat} → (epsilon beta : Real) → (exact compressed : HighamBench.P15Matrix b) → Type
 ```
 
-### D087: `HighamBench.P15TriangularSolveDirection.casesOn`
+### D099: `HighamBench.P15TriangularSolveDirection.casesOn`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `abbrev`
-- Distance from target type: `6`
+- Distance from target type: `7`
 - Semantic SHA-256: `2d73782930849562771ac303e47a3463fda2be38408f4f13e7e4caa7c754e04a`
 
 Type:
@@ -3213,12 +3789,12 @@ Definition body (one-level semantic boundary):
 fun {motive} t lower upper => HighamBench.P15TriangularSolveDirection.rec lower upper t
 ```
 
-### D088: `HighamBench.p15BLRCompressionBase`
+### D100: `HighamBench.p15BLRCompressionBase`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `6`
+- Distance from target type: `7`
 - Semantic SHA-256: `c05e8a18a9508d719f410fe9a4a323436748ea1d9b36c9a8a2461043fc4e82d8`
 
 Type:
@@ -3244,37 +3820,12 @@ fun {p b} threshold A i k =>
     (fun _ => HighamBench.p15FrobNorm (HighamBench.p15MatrixBlock A i k)) fun _ => HighamBench.p15FrobNorm A
 ```
 
-### D089: `HighamBench.p15BlockIndex._proof_1`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `theorem`
-- Distance from target type: `6`
-- Semantic SHA-256: `50fbbd3fed5168541821a0be60abb75d0dedeeb6b80a1cefb693b952f00050fa`
-
-Type:
-
-```lean
-∀ {p b : Nat} (i : Fin p) (row : Fin b),
-  Nat.instPreorder.lt (instHAdd.hAdd (instHMul.hMul i.val b) row.val) (instHMul.hMul p b)
-```
-
-Fully explicit type:
-
-```lean
-∀ {p b : Nat} (i : Fin p) (row : Fin b),
-  @LT.lt.{0} Nat (@Preorder.toLT.{0} Nat Nat.instPreorder)
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-      (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) (@Fin.val p i) b) (@Fin.val b row))
-    (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b)
-```
-
-### D090: `HighamBench.p15ComputedBLRUpdate`
+### D101: `HighamBench.p15ComputedBLRUpdate`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `6`
+- Distance from target type: `7`
 - Semantic SHA-256: `41cbac7cf652f6be4ebc733ab7b5211fe050f0bd81c8614698bd5f2e4aa6fcaa`
 
 Type:
@@ -3342,12 +3893,12 @@ fun {p b} r u A L U recompressionError k row col rounded =>
                           (instHAdd.hAdd (HighamBench.p15OnesMatrix b) (productRelativeError j))))))))
 ```
 
-### D091: `HighamBench.p15ComputedDenseLU`
+### D102: `HighamBench.p15ComputedDenseLU`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `6`
+- Distance from target type: `7`
 - Semantic SHA-256: `9489312d3d4916286e8e6f13421df89d3e022f8c7cfbc0882a39ab7f2e750b09`
 
 Type:
@@ -3373,12 +3924,12 @@ fun {b} u input L U =>
           (HighamBench.p15FrobNorm U)))
 ```
 
-### D092: `HighamBench.p15ComputedLeftTriangularSolve`
+### D103: `HighamBench.p15ComputedLeftTriangularSolve`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `6`
+- Distance from target type: `7`
 - Semantic SHA-256: `88ccbda15dcc294ce674c2734d11cc472df25c806160d70e475ec3cc225b68a7`
 
 Type:
@@ -3404,12 +3955,12 @@ fun {b} u rhs T X =>
           (HighamBench.p15FrobNorm X)))
 ```
 
-### D093: `HighamBench.p15ComputedRightTriangularSolve`
+### D104: `HighamBench.p15ComputedRightTriangularSolve`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `6`
+- Distance from target type: `7`
 - Semantic SHA-256: `e9f91e2c8bc64fe6ff15ea34032bafe34e2cdf81a248997169fd66c0cf56a2a0`
 
 Type:
@@ -3435,12 +3986,12 @@ fun {b} u rhs X T =>
           (HighamBench.p15FrobNorm X)))
 ```
 
-### D094: `HighamBench.p15RecompressionModel`
+### D105: `HighamBench.p15RecompressionModel`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `6`
+- Distance from target type: `7`
 - Semantic SHA-256: `49760032c70e8094ed8f959a410b29722b18fb40433c9d8066afab8bdb11ac13`
 
 Type:
@@ -3476,65 +4027,12 @@ fun {p b} choice threshold epsilon A error =>
             (instHMul.hMul epsilon (HighamBench.p15BLRCompressionBase threshold A row col))
 ```
 
-### D095: `HighamBench.p15RectMatMul`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `def`
-- Distance from target type: `6`
-- Semantic SHA-256: `f6707f2e526a146358f007d2349847963679a3556d53c05f30fd242f90c18238`
-
-Type:
-
-```lean
-{m n p : Nat} → HighamBench.P15RectMatrix m n → HighamBench.P15RectMatrix n p → HighamBench.P15RectMatrix m p
-```
-
-Fully explicit type:
-
-```lean
-{m n p : Nat} →
-  (A : HighamBench.P15RectMatrix m n) → (B : HighamBench.P15RectMatrix n p) → HighamBench.P15RectMatrix m p
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m n p} A B i j => Finset.univ.sum fun k => instHMul.hMul (A i k) (B k j)
-```
-
-### D096: `HighamBench.p15RectTranspose`
-
-- Role: `local`
-- Owner module: `HighamBench.P15Definitions`
-- Declaration kind: `def`
-- Distance from target type: `6`
-- Semantic SHA-256: `5d09057ba3a21630e320ba9e9e5153de687ba08c185951b20149ba794d3de258`
-
-Type:
-
-```lean
-{m n : Nat} → HighamBench.P15RectMatrix m n → HighamBench.P15RectMatrix n m
-```
-
-Fully explicit type:
-
-```lean
-{m n : Nat} → (A : HighamBench.P15RectMatrix m n) → HighamBench.P15RectMatrix n m
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m n} A j i => A i j
-```
-
-### D097: `HighamBench.P15BlockCompression.mk`
+### D106: `HighamBench.P15BlockCompression.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `constructor`
-- Distance from target type: `7`
+- Distance from target type: `8`
 - Semantic SHA-256: `a2a4a99e8005463015186023badadb98756eadd332be0e3c7040c61243909ff9`
 
 Type:
@@ -3578,12 +4076,12 @@ Fully explicit type:
                   @HighamBench.P15BlockCompression b epsilon beta exact compressed
 ```
 
-### D098: `HighamBench.P15TriangularSolveDirection.rec`
+### D107: `HighamBench.P15TriangularSolveDirection.rec`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `recursor`
-- Distance from target type: `7`
+- Distance from target type: `8`
 - Semantic SHA-256: `516c254977beabe762211da28071bc73eaf1954ee249231f915228fe589bf21c`
 
 Type:
@@ -3603,12 +4101,12 @@ Fully explicit type:
       (t : HighamBench.P15TriangularSolveDirection) → motive t
 ```
 
-### D099: `HighamBench.instReprP15BLRRecompression.repr.match_1`
+### D108: `HighamBench.instReprP15BLRRecompression.repr.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `abbrev`
-- Distance from target type: `7`
+- Distance from target type: `8`
 - Semantic SHA-256: `027a317f61f4983bed8f78d418a5a7d35c981ffb5d7c065bbec4e81a11d90c64`
 
 Type:
@@ -3635,12 +4133,12 @@ Definition body (one-level semantic boundary):
 fun motive x h_1 h_2 => HighamBench.P15BLRRecompression.casesOn x (h_1 Unit.unit) (h_2 Unit.unit)
 ```
 
-### D100: `HighamBench.p15EarlierBlocks`
+### D109: `HighamBench.p15EarlierBlocks`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `7`
+- Distance from target type: `8`
 - Semantic SHA-256: `5e57755c58a51d81b8ab942a17d06c83af5b98a5f1b248418b1ddfb1a001d914`
 
 Type:
@@ -3661,12 +4159,12 @@ Definition body (one-level semantic boundary):
 fun {p} k => Finset.filter (fun j => instLTFin.lt j k) Finset.univ
 ```
 
-### D101: `HighamBench.p15MatrixHadamard`
+### D110: `HighamBench.p15MatrixHadamard`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `7`
+- Distance from target type: `8`
 - Semantic SHA-256: `8452f0ebcbbeaec37575a22c258d1f411709419662e73d4f68cb0b26721fd425`
 
 Type:
@@ -3687,12 +4185,12 @@ Definition body (one-level semantic boundary):
 fun {n} A B i j => instHMul.hMul (A i j) (B i j)
 ```
 
-### D102: `HighamBench.p15OnesMatrix`
+### D111: `HighamBench.p15OnesMatrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `7`
+- Distance from target type: `8`
 - Semantic SHA-256: `a4de0098b36b1e3e1c1be5de8ec1382c5f509ef5b6ed18c3dd9a3177da897caa`
 
 Type:
@@ -3713,12 +4211,12 @@ Definition body (one-level semantic boundary):
 fun n x x_1 => 1
 ```
 
-### D103: `HighamBench.p15LowRankApproximation`
+### D112: `HighamBench.p15LowRankApproximation`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
-- Distance from target type: `8`
+- Distance from target type: `9`
 - Semantic SHA-256: `be719c16f25cabc1d9e8f295d0e5cbde11d6d20b71aa9ebf9fffebd0b84ac62b`
 
 Type:
@@ -3745,7 +4243,7 @@ fun {b} epsilon beta exact k candidate =>
           (Real.instLE.le (HighamBench.p15FrobNorm (instHSub.hSub candidate exact)) (instHMul.hMul epsilon beta)))
 ```
 
-### D104: `And`
+### D113: `And`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3765,7 +4263,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D105: `Eq`
+### D114: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3785,7 +4283,7 @@ Fully explicit type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D106: `Exists`
+### D115: `Exists`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -3805,7 +4303,7 @@ Fully explicit type:
 {α : Sort u} → (p : α → Prop) → Prop
 ```
 
-### D107: `Fin`
+### D116: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3825,7 +4323,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D108: `HAdd.hAdd`
+### D117: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3851,7 +4349,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D109: `HMul.hMul`
+### D118: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3877,7 +4375,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D110: `LE.le`
+### D119: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3903,7 +4401,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D111: `Matrix.add`
+### D120: `Matrix.add`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -3929,7 +4427,7 @@ Definition body (one-level semantic boundary):
 fun {m} {n} {α} [Add α] => Pi.instAdd
 ```
 
-### D112: `Nat`
+### D121: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3949,7 +4447,7 @@ Fully explicit type:
 Type
 ```
 
-### D113: `Nat.cast`
+### D122: `Nat.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Cast`
@@ -3975,7 +4473,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D114: `Nat.instAtLeastTwoHAddOfNat`
+### D123: `Nat.instAtLeastTwoHAddOfNat`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Init`
@@ -3998,7 +4496,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D115: `Nat.instNeZeroSucc`
+### D124: `Nat.instNeZeroSucc`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Nat.Basic`
@@ -4021,7 +4519,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D116: `OfNat.ofNat`
+### D125: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4047,7 +4545,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D117: `Pi.instAdd`
+### D126: `Pi.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
@@ -4073,7 +4571,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [(i : ι) → Add (M i)] => { add := fun f g i => instHAdd.hAdd (f i) (g i) }
 ```
 
-### D118: `Real`
+### D127: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4093,7 +4591,7 @@ Fully explicit type:
 Type
 ```
 
-### D119: `Real.instAdd`
+### D128: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4119,7 +4617,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D120: `Real.instLE`
+### D129: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4145,7 +4643,7 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D121: `Real.instMul`
+### D130: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4171,7 +4669,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D122: `Real.instNatCast`
+### D131: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4197,7 +4695,7 @@ Definition body (one-level semantic boundary):
 { natCast := fun n => { cauchy := n.cast } }
 ```
 
-### D123: `instHAdd`
+### D132: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4223,7 +4721,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D124: `instHMul`
+### D133: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4249,7 +4747,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D125: `instMulNat`
+### D134: `instMulNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4275,7 +4773,7 @@ Definition body (one-level semantic boundary):
 { mul := Nat.mul }
 ```
 
-### D126: `instOfNatAtLeastTwo`
+### D135: `instOfNatAtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -4301,7 +4799,7 @@ Definition body (one-level semantic boundary):
 fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
 ```
 
-### D127: `instOfNatNat`
+### D136: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4327,7 +4825,7 @@ Definition body (one-level semantic boundary):
 fun n => { ofNat := n }
 ```
 
-### D128: `DivInvMonoid.toDiv`
+### D137: `DivInvMonoid.toDiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -4353,7 +4851,7 @@ Definition body (one-level semantic boundary):
 fun G [self : DivInvMonoid G] => self.3
 ```
 
-### D129: `Fin.fintype`
+### D138: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -4379,7 +4877,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D130: `Finset.sum`
+### D139: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -4405,7 +4903,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D131: `Finset.univ`
+### D140: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -4431,7 +4929,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D132: `HDiv.hDiv`
+### D141: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4457,7 +4955,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D133: `HPow.hPow`
+### D142: `HPow.hPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4483,7 +4981,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HPow α β γ] => self.1
 ```
 
-### D134: `HSub.hSub`
+### D143: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4509,7 +5007,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D135: `LT.lt`
+### D144: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4535,7 +5033,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LT α] => self.1
 ```
 
-### D136: `Matrix`
+### D145: `Matrix`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -4561,7 +5059,7 @@ Definition body (one-level semantic boundary):
 fun m n α => m → n → α
 ```
 
-### D137: `Monoid.toNatPow`
+### D146: `Monoid.toNatPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -4587,7 +5085,7 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
 ```
 
-### D138: `One.toOfNat1`
+### D147: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -4613,7 +5111,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D139: `Real.instAddCommMonoid`
+### D148: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4639,7 +5137,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D140: `Real.instAddGroup`
+### D149: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4665,7 +5163,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D141: `Real.instDivInvMonoid`
+### D150: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4693,7 +5191,7 @@ Definition body (one-level semantic boundary):
   zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D142: `Real.instLT`
+### D151: `Real.instLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4719,7 +5217,7 @@ Definition body (one-level semantic boundary):
 { lt := Real.lt✝ }
 ```
 
-### D143: `Real.instMonoid`
+### D152: `Real.instMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4745,7 +5243,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D144: `Real.instOne`
+### D153: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4771,7 +5269,7 @@ Definition body (one-level semantic boundary):
 { one := Real.one✝ }
 ```
 
-### D145: `Real.instSub`
+### D154: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4797,7 +5295,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D146: `Real.instZero`
+### D155: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4823,7 +5321,7 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D147: `Real.lattice`
+### D156: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4849,7 +5347,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D148: `Real.sqrt`
+### D157: `Real.sqrt`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Sqrt`
@@ -4875,7 +5373,7 @@ Definition body (one-level semantic boundary):
 fun x => ((instFunLikeOrderIso NNReal NNReal).coe NNReal.sqrt x.toNNReal).toReal
 ```
 
-### D149: `Unit`
+### D158: `Unit`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4901,7 +5399,7 @@ Definition body (one-level semantic boundary):
 PUnit
 ```
 
-### D150: `Zero.toOfNat0`
+### D159: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -4927,7 +5425,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D151: `abs`
+### D160: `abs`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
@@ -4954,7 +5452,7 @@ fun {α} [Lattice α] [AddGroup α] a =>
   SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
 ```
 
-### D152: `instHDiv`
+### D161: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4980,7 +5478,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
-### D153: `instHPow`
+### D162: `instHPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5006,7 +5504,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
-### D154: `instHSub`
+### D163: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5032,7 +5530,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D155: `Nat.AtLeastTwo`
+### D164: `Nat.AtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Init`
@@ -5052,27 +5550,7 @@ Fully explicit type:
 (n : Nat) → Prop
 ```
 
-### D156: `Nonempty`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `inductive`
-- Distance from target type: `3`
-- Semantic SHA-256: `37c79de378d44cb9dc334502b161bb140da0544579086aded2cf83ff99c462c7`
-
-Type:
-
-```lean
-Sort u → Prop
-```
-
-Fully explicit type:
-
-```lean
-(α : Sort u) → Prop
-```
-
-### D157: `Unit.unit`
+### D165: `Unit.unit`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5098,7 +5576,7 @@ Definition body (one-level semantic boundary):
 PUnit.unit
 ```
 
-### D158: `instAddNat`
+### D166: `instAddNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5124,7 +5602,7 @@ Definition body (one-level semantic boundary):
 { add := Nat.add }
 ```
 
-### D159: `instLENat`
+### D167: `instLENat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5150,7 +5628,7 @@ Definition body (one-level semantic boundary):
 { le := Nat.le }
 ```
 
-### D160: `instLTNat`
+### D168: `instLTNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5176,7 +5654,7 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D161: `Ne`
+### D169: `Ne`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -5202,7 +5680,27 @@ Definition body (one-level semantic boundary):
 fun {α} a b => Not (Eq a b)
 ```
 
-### D162: `Matrix.sub`
+### D170: `Nonempty`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `4`
+- Semantic SHA-256: `37c79de378d44cb9dc334502b161bb140da0544579086aded2cf83ff99c462c7`
+
+Type:
+
+```lean
+Sort u → Prop
+```
+
+Fully explicit type:
+
+```lean
+(α : Sort u) → Prop
+```
+
+### D171: `Matrix.sub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -5228,62 +5726,7 @@ Definition body (one-level semantic boundary):
 fun {m} {n} {α} [Sub α] => Pi.instSub
 ```
 
-### D163: `Pi.addCommMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Group.Pi.Basic`
-- Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `9b57724ac626ed82a5e3b9060068391fe112af839994c2304c9990493e8e9fbc`
-
-Type:
-
-```lean
-{I : Type u} → {f : I → Type v₁} → [(i : I) → AddCommMonoid (f i)] → AddCommMonoid ((i : I) → f i)
-```
-
-Fully explicit type:
-
-```lean
-{I : Type u} → {f : I → Type v₁} → [(i : I) → AddCommMonoid.{v₁} (f i)] → AddCommMonoid.{max u v₁} ((i : I) → f i)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {I} {f} [(i : I) → AddCommMonoid (f i)] =>
-  let __src := Pi.addMonoid;
-  have __src_1 := Pi.addCommSemigroup;
-  { toAddMonoid := __src, add_comm := ⋯ }
-```
-
-### D164: `Pi.instSub`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
-- Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `5deaec32b4deac749a5db5453affea1938386e569380df7daeec26aee3cfd7c2`
-
-Type:
-
-```lean
-{ι : Type u_1} → {G : ι → Type u_4} → [(i : ι) → Sub (G i)] → Sub ((i : ι) → G i)
-```
-
-Fully explicit type:
-
-```lean
-{ι : Type u_1} → {G : ι → Type u_4} → [(i : ι) → Sub.{u_4} (G i)] → Sub.{max u_1 u_4} ((i : ι) → G i)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {ι} {G} [(i : ι) → Sub (G i)] => { sub := fun f g i => instHSub.hSub (f i) (g i) }
-```
-
-### D165: `instDecidableEqFin`
+### D172: `instDecidableEqFin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5311,7 +5754,7 @@ fun n i j =>
     fun h => Decidable.isFalse ⋯
 ```
 
-### D166: `ite`
+### D173: `ite`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5337,33 +5780,7 @@ Definition body (one-level semantic boundary):
 fun {α} c [h : Decidable c] t e => Decidable.casesOn h (fun x => e) fun x => t
 ```
 
-### D167: `Classical.propDecidable`
-
-- Role: `external-frontier`
-- Owner module: `Init.Classical`
-- Declaration kind: `def`
-- Distance from target type: `6`
-- Semantic SHA-256: `823c02cb7dcdb8ce30edfb12a2496dda0849f0773c65f9e91e289fab27c36c46`
-
-Type:
-
-```lean
-(a : Prop) → Decidable a
-```
-
-Fully explicit type:
-
-```lean
-(a : Prop) → Decidable a
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun a => Classical.choice ⋯
-```
-
-### D168: `Fin.decLt`
+### D174: `Fin.decLt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5389,7 +5806,7 @@ Definition body (one-level semantic boundary):
 fun {n} a b => a.val.decLt b.val
 ```
 
-### D169: `Fin.mk`
+### D175: `Fin.mk`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5409,7 +5826,7 @@ Fully explicit type:
 {n : Nat} → (val : Nat) → (isLt : @LT.lt.{0} Nat instLTNat val n) → Fin n
 ```
 
-### D170: `Fin.val`
+### D176: `Fin.val`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5435,105 +5852,62 @@ Definition body (one-level semantic boundary):
 fun n self => self.1
 ```
 
-### D171: `Finset`
+### D177: `Pi.addCommMonoid`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Data.Finset.Defs`
-- Declaration kind: `inductive`
-- Distance from target type: `6`
-- Semantic SHA-256: `56a880af39b5f8e2e55560abe97637994d5830a3a7ed0adaa46c44b8c3eaf831`
-
-Type:
-
-```lean
-Type u_4 → Type u_4
-```
-
-Fully explicit type:
-
-```lean
-(α : Type u_4) → Type u_4
-```
-
-### D172: `Finset.filter`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Finset.Filter`
+- Owner module: `Mathlib.Algebra.Group.Pi.Basic`
 - Declaration kind: `def`
 - Distance from target type: `6`
-- Semantic SHA-256: `cc2bad5c5cc6aa2b196abe33b9083d127ab69155f1189766c3500bb83412c7df`
+- Semantic SHA-256: `9b57724ac626ed82a5e3b9060068391fe112af839994c2304c9990493e8e9fbc`
 
 Type:
 
 ```lean
-{α : Type u_1} → (p : α → Prop) → [DecidablePred p] → Finset α → Finset α
+{I : Type u} → {f : I → Type v₁} → [(i : I) → AddCommMonoid (f i)] → AddCommMonoid ((i : I) → f i)
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u_1} → (p : α → Prop) → [@DecidablePred.{u_1 + 1} α p] → (s : Finset.{u_1} α) → Finset.{u_1} α
+{I : Type u} → {f : I → Type v₁} → [(i : I) → AddCommMonoid.{v₁} (f i)] → AddCommMonoid.{max u v₁} ((i : I) → f i)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {α} p [DecidablePred p] s => { val := Multiset.filter p s.val, nodup := ⋯ }
+fun {I} {f} [(i : I) → AddCommMonoid (f i)] =>
+  let __src := Pi.addMonoid;
+  have __src_1 := Pi.addCommSemigroup;
+  { toAddMonoid := __src, add_comm := ⋯ }
 ```
 
-### D173: `Matrix.zero`
+### D178: `Pi.instSub`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
+- Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
 - Declaration kind: `def`
 - Distance from target type: `6`
-- Semantic SHA-256: `45e19d9662cc9574dcc02fdb90fcedc0c56420c6369edc144bdd857c8d5e99d4`
+- Semantic SHA-256: `5deaec32b4deac749a5db5453affea1938386e569380df7daeec26aee3cfd7c2`
 
 Type:
 
 ```lean
-{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Zero α] → Zero (Matrix m n α)
+{ι : Type u_1} → {G : ι → Type u_4} → [(i : ι) → Sub (G i)] → Sub ((i : ι) → G i)
 ```
 
 Fully explicit type:
 
 ```lean
-{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Zero.{v} α] → Zero.{max (max v u_3) u_2} (Matrix.{u_2, u_3, v} m n α)
+{ι : Type u_1} → {G : ι → Type u_4} → [(i : ι) → Sub.{u_4} (G i)] → Sub.{max u_1 u_4} ((i : ι) → G i)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {m} {n} {α} [Zero α] => Pi.instZero
+fun {ι} {G} [(i : ι) → Sub (G i)] => { sub := fun f g i => instHSub.hSub (f i) (g i) }
 ```
 
-### D174: `instLEFin`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `6`
-- Semantic SHA-256: `ebac56428fb1bdf0060f322d2454b52c141188f43ac10a1e1c3b3437e05db596`
-
-Type:
-
-```lean
-{n : Nat} → LE (Fin n)
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → LE.{0} (Fin n)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} => { le := fun a b => instLENat.le a.val b.val }
-```
-
-### D175: `instLTFin`
+### D179: `instLTFin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5559,87 +5933,105 @@ Definition body (one-level semantic boundary):
 fun {n} => { lt := fun a b => instLTNat.lt a.val b.val }
 ```
 
-### D176: `Finset.instSetLike`
+### D180: `Classical.propDecidable`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Data.Finset.Defs`
+- Owner module: `Init.Classical`
 - Declaration kind: `def`
 - Distance from target type: `7`
-- Semantic SHA-256: `f43bd57c8a5e05334ba371d3e354fb5f1cd42a3177ae342e6448d872bd6428b6`
+- Semantic SHA-256: `823c02cb7dcdb8ce30edfb12a2496dda0849f0773c65f9e91e289fab27c36c46`
 
 Type:
 
 ```lean
-{α : Type u_1} → SetLike (Finset α) α
+(a : Prop) → Decidable a
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u_1} → SetLike.{u_1, u_1} (Finset.{u_1} α) α
+(a : Prop) → Decidable a
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {α} => { coe := fun s => setOf fun a => Multiset.instMembership.mem s.val a, coe_injective' := ⋯ }
+fun a => Classical.choice ⋯
 ```
 
-### D177: `Matrix.addCommMonoid`
+### D181: `Finset`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Finset.Defs`
+- Declaration kind: `inductive`
+- Distance from target type: `7`
+- Semantic SHA-256: `56a880af39b5f8e2e55560abe97637994d5830a3a7ed0adaa46c44b8c3eaf831`
+
+Type:
+
+```lean
+Type u_4 → Type u_4
+```
+
+Fully explicit type:
+
+```lean
+(α : Type u_4) → Type u_4
+```
+
+### D182: `Finset.filter`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Finset.Filter`
+- Declaration kind: `def`
+- Distance from target type: `7`
+- Semantic SHA-256: `cc2bad5c5cc6aa2b196abe33b9083d127ab69155f1189766c3500bb83412c7df`
+
+Type:
+
+```lean
+{α : Type u_1} → (p : α → Prop) → [DecidablePred p] → Finset α → Finset α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → (p : α → Prop) → [@DecidablePred.{u_1 + 1} α p] → (s : Finset.{u_1} α) → Finset.{u_1} α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} p [DecidablePred p] s => { val := Multiset.filter p s.val, nodup := ⋯ }
+```
+
+### D183: `Matrix.zero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
 - Declaration kind: `def`
 - Distance from target type: `7`
-- Semantic SHA-256: `6b893d81bc298230772e16cd0c8ddf7d2638ac0d6127094b06a1290d88f8c3ae`
+- Semantic SHA-256: `45e19d9662cc9574dcc02fdb90fcedc0c56420c6369edc144bdd857c8d5e99d4`
 
 Type:
 
 ```lean
-{m : Type u_2} → {n : Type u_3} → {α : Type v} → [AddCommMonoid α] → AddCommMonoid (Matrix m n α)
+{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Zero α] → Zero (Matrix m n α)
 ```
 
 Fully explicit type:
 
 ```lean
-{m : Type u_2} →
-  {n : Type u_3} →
-    {α : Type v} → [AddCommMonoid.{v} α] → AddCommMonoid.{max (max v u_3) u_2} (Matrix.{u_2, u_3, v} m n α)
+{m : Type u_2} → {n : Type u_3} → {α : Type v} → [Zero.{v} α] → Zero.{max (max v u_3) u_2} (Matrix.{u_2, u_3, v} m n α)
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {m} {n} {α} [AddCommMonoid α] => Pi.addCommMonoid
+fun {m} {n} {α} [Zero α] => Pi.instZero
 ```
 
-### D178: `Membership.mem`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `7`
-- Semantic SHA-256: `941ea3346e809f919727c21bfcdeea342714a6b83f1cf871d648aa2cb14d6e9e`
-
-Type:
-
-```lean
-{α : outParam (Type u)} → {γ : Type v} → [self : Membership α γ] → γ → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : outParam.{u + 2} (Type u)} → {γ : Type v} → [self : Membership.{u, v} α γ] → γ → α → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} γ [self : Membership α γ] => self.1
-```
-
-### D179: `Nat.instPreorder`
+### D184: `Nat.instPreorder`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Basic`
@@ -5665,7 +6057,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D180: `Preorder.toLT`
+### D185: `Preorder.toLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Order.Defs.PartialOrder`
@@ -5691,12 +6083,118 @@ Definition body (one-level semantic boundary):
 fun α [self : Preorder α] => self.2
 ```
 
-### D181: `SetLike.instMembership`
+### D186: `instLEFin`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `7`
+- Semantic SHA-256: `ebac56428fb1bdf0060f322d2454b52c141188f43ac10a1e1c3b3437e05db596`
+
+Type:
+
+```lean
+{n : Nat} → LE (Fin n)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → LE.{0} (Fin n)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} => { le := fun a b => instLENat.le a.val b.val }
+```
+
+### D187: `Finset.instSetLike`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Finset.Defs`
+- Declaration kind: `def`
+- Distance from target type: `8`
+- Semantic SHA-256: `f43bd57c8a5e05334ba371d3e354fb5f1cd42a3177ae342e6448d872bd6428b6`
+
+Type:
+
+```lean
+{α : Type u_1} → SetLike (Finset α) α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → SetLike.{u_1, u_1} (Finset.{u_1} α) α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} => { coe := fun s => setOf fun a => Multiset.instMembership.mem s.val a, coe_injective' := ⋯ }
+```
+
+### D188: `Matrix.addCommMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
+- Declaration kind: `def`
+- Distance from target type: `8`
+- Semantic SHA-256: `6b893d81bc298230772e16cd0c8ddf7d2638ac0d6127094b06a1290d88f8c3ae`
+
+Type:
+
+```lean
+{m : Type u_2} → {n : Type u_3} → {α : Type v} → [AddCommMonoid α] → AddCommMonoid (Matrix m n α)
+```
+
+Fully explicit type:
+
+```lean
+{m : Type u_2} →
+  {n : Type u_3} →
+    {α : Type v} → [AddCommMonoid.{v} α] → AddCommMonoid.{max (max v u_3) u_2} (Matrix.{u_2, u_3, v} m n α)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m} {n} {α} [AddCommMonoid α] => Pi.addCommMonoid
+```
+
+### D189: `Membership.mem`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `8`
+- Semantic SHA-256: `941ea3346e809f919727c21bfcdeea342714a6b83f1cf871d648aa2cb14d6e9e`
+
+Type:
+
+```lean
+{α : outParam (Type u)} → {γ : Type v} → [self : Membership α γ] → γ → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : outParam.{u + 2} (Type u)} → {γ : Type v} → [self : Membership.{u, v} α γ] → γ → α → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} γ [self : Membership α γ] => self.1
+```
+
+### D190: `SetLike.instMembership`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.SetLike.Basic`
 - Declaration kind: `def`
-- Distance from target type: `7`
+- Distance from target type: `8`
 - Semantic SHA-256: `47a75450bbb51c4e8fdd9e8881cc3fa741dfb5f1f186d952055686e285c081e4`
 
 Type:
@@ -5778,7 +6276,7 @@ end HighamBench
 ### `HighamBench.P15Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean`
-SHA-256: `59aaee9891402c8bea4fa9225644480c4b59c15db567d73f7100d4f00d3b5d53`
+SHA-256: `7b4ebd231e83ae2fe5a8b4669aeb91bc861178d7434c068bc288485a7406431b`
 
 ```lean
 import HighamBench.Core
@@ -5997,24 +6495,32 @@ def p15StandardRound (u exact rounded : ℝ) : Prop :=
 def p15AdmissiblePrecision (c u epsilon : ℝ) : Prop :=
   0 < u ∧ 0 < epsilon ∧ u < epsilon ∧ 3 * c * u < 1
 
-/-- A two-parameter scalar remainder is uniformly `O(u*epsilon)` as positive
-`u` and `epsilon` tend to zero with `u < epsilon`. -/
-def p15IsBigOMixedAtZero (remainder : ℝ → ℝ → ℝ) : Prop :=
-  ∃ C delta : ℝ, 0 ≤ C ∧ 0 < delta ∧
-    ∀ u epsilon : ℝ,
-      0 < u → 0 < epsilon → u < epsilon →
-      u ≤ delta → epsilon ≤ delta →
-      |remainder u epsilon| ≤ C * (u * epsilon)
+/-- A two-parameter remainder is uniformly `O(u*epsilon)` on a positive
+neighborhood that contains the precision pair of the completed execution.
+Separate radii avoid imposing an artificial upper bound on `epsilon`. -/
+def p15IsBigOMixedAtRun (remainder : ℝ → ℝ → ℝ)
+    (unitRoundoff epsilon : ℝ) : Prop :=
+  ∃ C deltaU deltaEpsilon : ℝ,
+    0 ≤ C ∧ 0 < deltaU ∧ 0 < deltaEpsilon ∧
+      unitRoundoff ≤ deltaU ∧ epsilon ≤ deltaEpsilon ∧
+      ∀ u epsilon' : ℝ,
+        0 < u → 0 < epsilon' → u < epsilon' →
+        u ≤ deltaU → epsilon' ≤ deltaEpsilon →
+        |remainder u epsilon'| ≤ C * (u * epsilon')
 
-/-- A scalar remainder is uniformly `O(u^2)` relative to the displayed
-problem scale. This records the dimensionful convention used in (4.25). -/
-def p15IsBigOSquareRelativeAtZero
-    (remainder scale : ℝ → ℝ → ℝ) : Prop :=
-  ∃ C delta : ℝ, 0 ≤ C ∧ 0 < delta ∧
-    ∀ u epsilon : ℝ,
-      0 < u → 0 < epsilon → u < epsilon →
-      u ≤ delta → epsilon ≤ delta → 0 ≤ scale u epsilon →
-      |remainder u epsilon| ≤ C * u ^ 2 * scale u epsilon
+/-- An `O(u^2)` remainder relative to a displayed problem scale, certified on
+a positive neighborhood containing the completed execution's precision. -/
+def p15IsBigOSquareRelativeAtRun
+    (remainder scale : ℝ → ℝ → ℝ)
+    (unitRoundoff epsilon : ℝ) : Prop :=
+  ∃ C deltaU deltaEpsilon : ℝ,
+    0 ≤ C ∧ 0 < deltaU ∧ 0 < deltaEpsilon ∧
+      unitRoundoff ≤ deltaU ∧ epsilon ≤ deltaEpsilon ∧
+      ∀ u epsilon' : ℝ,
+        0 < u → 0 < epsilon' → u < epsilon' →
+        u ≤ deltaU → epsilon' ≤ deltaEpsilon →
+        0 ≤ scale u epsilon' →
+        |remainder u epsilon'| ≤ C * u ^ 2 * scale u epsilon'
 
 /-- The orientation convention in equation (2.3): lower blocks are `X*Y^T`
 and upper blocks are `Y*X^T`. -/
@@ -6272,8 +6778,9 @@ structure P15CompletedUCFFactorization {p b : ℕ} (r : ℕ)
     p15ComputedLeftTriangularSolve u (compressedRow k i)
       (p15MatrixBlock L k k) (p15MatrixBlock U k i)
 
-/-- Completion of exactly one of the two algorithms named in Theorem 4.5. -/
-def P15CompletedBLRFactorization {b p : ℕ}
+/-- The raw completion trace of exactly one of the two factorization algorithms
+named in Theorem 4.5. -/
+def P15CompletedBLRFactorizationTrace {b p : ℕ}
     (r : ℕ)
     (algorithm : P15BLRFactorizationAlgorithm)
     (threshold : P15BLRThreshold) (recompression : P15BLRRecompression)
@@ -6283,6 +6790,140 @@ def P15CompletedBLRFactorization {b p : ℕ}
       (P15CompletedUFCFactorization r threshold recompression u epsilon A L U)
   | .ucf => Nonempty
       (P15CompletedUCFFactorization r threshold recompression u epsilon A L U)
+
+/-- The four source-level error contributions accumulated in the proofs of
+Theorems 4.1--4.3. Their sum, rather than the final factorization perturbation,
+is recorded: compression, rounded input, factor arithmetic, and the mixed
+`u*epsilon` contribution remain distinct. -/
+structure P15FactorizationLocalAnalysis {b p : ℕ} (r : ℕ)
+    (threshold : P15BLRThreshold) (recompression : P15BLRRecompression)
+    (u epsilon : ℝ) (A L U : P15Matrix (p * b)) where
+  compressionError : P15Matrix (p * b)
+  inputRoundoffError : P15Matrix (p * b)
+  factorRoundoffError : P15Matrix (p * b)
+  mixedError : P15Matrix (p * b)
+  mixedRemainder : ℝ → ℝ → ℝ
+  decomposition_eq :
+    A + (compressionError + inputRoundoffError + factorRoundoffError +
+      mixedError) = p15MatMul L U
+  compression_error_le :
+    p15FrobNorm compressionError ≤
+      p15BLRXi p threshold recompression * epsilon * p15FrobNorm A
+  input_roundoff_error_le :
+    p15FrobNorm inputRoundoffError ≤
+      p15GammaReal (p : ℝ) u * p15FrobNorm A
+  factor_roundoff_error_le :
+    p15FrobNorm factorRoundoffError ≤
+      p15GammaReal (p15BLRSolveCost b p r) u *
+        p15FrobNorm L * p15FrobNorm U
+  mixed_error_le : p15FrobNorm mixedError ≤ mixedRemainder u epsilon
+  mixed_remainder_control :
+    p15IsBigOMixedAtRun mixedRemainder u epsilon
+
+/-- A completed factorization consists of an algorithm trace on the represented
+BLR input and the separate error contributions derived in Theorems 4.1--4.3
+relative to the dense matrix represented by that input. -/
+def P15CompletedBLRFactorization {b p : ℕ}
+    (r : ℕ)
+    (algorithm : P15BLRFactorizationAlgorithm)
+    (threshold : P15BLRThreshold) (recompression : P15BLRRecompression)
+    (u epsilon : ℝ) (A Atilde L U : P15Matrix (p * b)) : Prop :=
+  P15CompletedBLRFactorizationTrace r algorithm threshold recompression
+      u epsilon Atilde L U ∧
+    Nonempty
+      (P15FactorizationLocalAnalysis r threshold recompression
+        u epsilon A L U)
+
+/-- The factorization perturbation established by Theorem 4.2 or 4.3 from a
+completed factorization and its source-level error decomposition. -/
+structure P15FactorizationBackwardError {b p : ℕ} (r : ℕ)
+    (threshold : P15BLRThreshold) (recompression : P15BLRRecompression)
+    (u epsilon : ℝ) (A L U : P15Matrix (p * b)) where
+  error : P15Matrix (p * b)
+  remainder : ℝ → ℝ → ℝ
+  remainder_control : p15IsBigOMixedAtRun remainder u epsilon
+  factorization_eq : A + error = p15MatMul L U
+  error_le :
+    p15FrobNorm error ≤
+      (p15BLRXi p threshold recompression * epsilon +
+          p15GammaReal (p : ℝ) u) * p15FrobNorm A +
+        p15GammaReal (p15BLRSolveCost b p r) u *
+          p15FrobNorm L * p15FrobNorm U + remainder u epsilon
+
+private theorem p15FrobNorm_eq_norm_internal {n : ℕ}
+    (A : P15Matrix n) : p15FrobNorm A = ‖A‖ := by
+  rw [p15FrobNorm, p15RectFrobNorm, Matrix.frobenius_norm_def]
+  simp [Real.sqrt_eq_rpow, Real.norm_eq_abs, sq_abs]
+
+private theorem p15FrobNorm_add_le_internal {n : ℕ}
+    (A B : P15Matrix n) :
+    p15FrobNorm (A + B) ≤ p15FrobNorm A + p15FrobNorm B := by
+  simpa only [p15FrobNorm_eq_norm_internal] using norm_add_le A B
+
+private theorem p15FrobNorm_add_four_le_internal {n : ℕ}
+    (A B C D : P15Matrix n) :
+    p15FrobNorm (A + B + C + D) ≤
+      p15FrobNorm A + p15FrobNorm B + p15FrobNorm C + p15FrobNorm D := by
+  calc
+    p15FrobNorm (A + B + C + D) ≤
+        p15FrobNorm (A + B + C) + p15FrobNorm D :=
+      p15FrobNorm_add_le_internal _ _
+    _ ≤ (p15FrobNorm (A + B) + p15FrobNorm C) + p15FrobNorm D := by
+      gcongr
+      exact p15FrobNorm_add_le_internal _ _
+    _ ≤ ((p15FrobNorm A + p15FrobNorm B) + p15FrobNorm C) +
+        p15FrobNorm D := by
+      gcongr
+      exact p15FrobNorm_add_le_internal _ _
+
+/-- Theorems 4.2 and 4.3 as an actual consequence of a completed algorithm's
+four-way error decomposition, rather than as fields of the final solve. -/
+theorem p15CompletedBLRFactorization_backwardError {b p : ℕ} {r : ℕ}
+    {algorithm : P15BLRFactorizationAlgorithm}
+    {threshold : P15BLRThreshold} {recompression : P15BLRRecompression}
+    {u epsilon : ℝ} {A Atilde L U : P15Matrix (p * b)}
+    (completed : P15CompletedBLRFactorization r algorithm threshold
+      recompression u epsilon A Atilde L U) :
+    Nonempty
+      (P15FactorizationBackwardError r threshold recompression
+        u epsilon A L U) := by
+  rcases completed.2 with ⟨analysis⟩
+  let error : P15Matrix (p * b) :=
+    analysis.compressionError + analysis.inputRoundoffError +
+      analysis.factorRoundoffError + analysis.mixedError
+  refine ⟨{
+    error := error
+    remainder := analysis.mixedRemainder
+    remainder_control := analysis.mixed_remainder_control
+    factorization_eq := by simpa [error] using analysis.decomposition_eq
+    error_le := ?_
+  }⟩
+  have htriangle := p15FrobNorm_add_four_le_internal
+    analysis.compressionError analysis.inputRoundoffError
+    analysis.factorRoundoffError analysis.mixedError
+  calc
+    p15FrobNorm error ≤
+        p15FrobNorm analysis.compressionError +
+          p15FrobNorm analysis.inputRoundoffError +
+          p15FrobNorm analysis.factorRoundoffError +
+          p15FrobNorm analysis.mixedError := by
+            simpa [error] using htriangle
+    _ ≤ p15BLRXi p threshold recompression * epsilon * p15FrobNorm A +
+          p15GammaReal (p : ℝ) u * p15FrobNorm A +
+          (p15GammaReal (p15BLRSolveCost b p r) u *
+            p15FrobNorm L * p15FrobNorm U) +
+          analysis.mixedRemainder u epsilon := by
+            exact add_le_add
+              (add_le_add
+                (add_le_add analysis.compression_error_le
+                  analysis.input_roundoff_error_le)
+                analysis.factor_roundoff_error_le)
+              analysis.mixed_error_le
+    _ = (p15BLRXi p threshold recompression * epsilon +
+            p15GammaReal (p : ℝ) u) * p15FrobNorm A +
+          p15GammaReal (p15BLRSolveCost b p r) u *
+            p15FrobNorm L * p15FrobNorm U +
+          analysis.mixedRemainder u epsilon := by ring
 
 /-- Forward or backward block-substitution order. -/
 inductive P15TriangularSolveDirection where
@@ -6334,11 +6975,11 @@ def p15VecHadamard {n : ℕ} (x y : P15Vector n) : P15Vector n :=
 /-- The all-ones vector denoted by `e` in the proof of Theorem 4.4. -/
 def p15OnesVector (n : ℕ) : P15Vector n := fun _ => 1
 
-/-- A completed block triangular solve in the source order. The trace records
+/-- A completed block triangular solve trace in the source order. It records
 the separate low-rank product, summation, and diagonal-solve perturbations in
 equation (4.22); it does not collapse a cancellation-prone residual into one
-relative perturbation. The aggregate perturbations in (4.21) are not fields. -/
-structure P15CompletedTriangularSolve {p b : ℕ} (r : ℕ)
+relative perturbation. -/
+structure P15CompletedTriangularSolveTrace {p b : ℕ} (r : ℕ)
     (direction : P15TriangularSolveDirection) (u : ℝ)
     (T : P15Matrix (p * b)) (rhs x : P15Vector (p * b)) where
   triangular :
@@ -6376,11 +7017,161 @@ structure P15CompletedTriangularSolve {p b : ℕ} (r : ℕ)
           p15VecHadamard (productValue i j)
             (p15OnesVector b + productRelativeError i j)
 
-/-- One completed computation from Theorem 4.5. The trace links a single
-admissible `(u, epsilon)` execution to Algorithm 1 or 2 and to the two ordered
-block triangular solves. The component perturbations are the source-level
-interfaces supplied by Theorems 4.2--4.4; the aggregate system perturbations
-are deliberately absent and are constructed by P15-T3. -/
+/-- The three distinct matrix-error contributions obtained by gathering
+equation (4.22): low-rank/diagonal kernels, block summation, and their mixed
+interaction. Their separate bounds are the inputs to the final gamma
+composition in Theorem 4.4. -/
+structure P15TriangularSolveLocalAnalysis {p b : ℕ} (r : ℕ)
+    (direction : P15TriangularSolveDirection) (u : ℝ)
+    (T : P15Matrix (p * b)) (rhs x : P15Vector (p * b)) where
+  kernelError : P15Matrix (p * b)
+  summationError : P15Matrix (p * b)
+  interactionError : P15Matrix (p * b)
+  rhsError : P15Vector (p * b)
+  gathered_eq :
+    p15MatVec (T + (kernelError + summationError + interactionError)) x =
+      rhs + rhsError
+  kernel_error_le :
+    p15FrobNorm kernelError ≤
+      p15GammaReal (p15LowRankKernelCost b r) u * p15FrobNorm T
+  summation_error_le :
+    p15FrobNorm summationError ≤
+      p15GammaReal (p : ℝ) u * p15FrobNorm T
+  interaction_error_le :
+    p15FrobNorm interactionError ≤
+      p15GammaReal (p15LowRankKernelCost b r) u *
+        p15GammaReal (p : ℝ) u * p15FrobNorm T
+  rhs_error_le :
+    p15VecNorm rhsError ≤ p15GammaReal (p : ℝ) u * p15VecNorm rhs
+
+/-- A completed triangular solve includes both its operation-level trace and
+the three-way gathered form of equation (4.22). The aggregate equation-(4.21)
+perturbation and its `gamma_c` bound are derived below. -/
+def P15CompletedTriangularSolve {p b : ℕ} (r : ℕ)
+    (direction : P15TriangularSolveDirection) (u : ℝ)
+    (T : P15Matrix (p * b)) (rhs x : P15Vector (p * b)) : Prop :=
+  Nonempty (P15CompletedTriangularSolveTrace r direction u T rhs x) ∧
+    Nonempty (P15TriangularSolveLocalAnalysis r direction u T rhs x)
+
+/-- The aggregate perturbations and bounds of Theorem 4.4. -/
+structure P15TriangularSolveBackwardError {p b : ℕ} (r : ℕ)
+    (direction : P15TriangularSolveDirection) (u : ℝ)
+    (T : P15Matrix (p * b)) (rhs x : P15Vector (p * b)) where
+  matrixError : P15Matrix (p * b)
+  rhsError : P15Vector (p * b)
+  solve_eq : p15MatVec (T + matrixError) x = rhs + rhsError
+  matrix_error_le :
+    p15FrobNorm matrixError ≤
+      p15GammaReal (p15BLRTriangularSolveCost b p r) u * p15FrobNorm T
+  rhs_error_le :
+    p15VecNorm rhsError ≤ p15GammaReal (p : ℝ) u * p15VecNorm rhs
+
+private theorem p15FrobNorm_add_three_le_internal {n : ℕ}
+    (A B C : P15Matrix n) :
+    p15FrobNorm (A + B + C) ≤
+      p15FrobNorm A + p15FrobNorm B + p15FrobNorm C := by
+  calc
+    p15FrobNorm (A + B + C) ≤ p15FrobNorm (A + B) + p15FrobNorm C :=
+      p15FrobNorm_add_le_internal _ _
+    _ ≤ (p15FrobNorm A + p15FrobNorm B) + p15FrobNorm C := by
+      gcongr
+      exact p15FrobNorm_add_le_internal _ _
+
+private theorem p15Gamma_add_le_internal {a d u : ℝ}
+    (ha : 0 ≤ a) (hd : 0 ≤ d) (hu : 0 ≤ u)
+    (hsum : (a + d) * u < 1) :
+    p15GammaReal a u + p15GammaReal d u +
+        p15GammaReal a u * p15GammaReal d u ≤
+      p15GammaReal (a + d) u := by
+  have hau : a * u < 1 := by
+    nlinarith [mul_nonneg hd hu]
+  have hdu : d * u < 1 := by
+    nlinarith [mul_nonneg ha hu]
+  have hau_pos : 0 < 1 - a * u := sub_pos.mpr hau
+  have hdu_pos : 0 < 1 - d * u := sub_pos.mpr hdu
+  have hsum_pos : 0 < 1 - (a + d) * u := sub_pos.mpr hsum
+  rw [← sub_nonneg]
+  have hidentity :
+      p15GammaReal (a + d) u -
+          (p15GammaReal a u + p15GammaReal d u +
+            p15GammaReal a u * p15GammaReal d u) =
+        (a * u) * (d * u) /
+          ((1 - (a + d) * u) * (1 - a * u) * (1 - d * u)) := by
+    unfold p15GammaReal
+    field_simp [ne_of_gt hau_pos, ne_of_gt hdu_pos, ne_of_gt hsum_pos]
+    ring
+  rw [hidentity]
+  exact div_nonneg
+    (mul_nonneg (mul_nonneg ha hu) (mul_nonneg hd hu))
+    (mul_nonneg (mul_pos hsum_pos hau_pos).le hdu_pos.le)
+
+/-- Theorem 4.4 derived from the gathered equation-(4.22) contributions. -/
+theorem p15CompletedTriangularSolve_backwardError {p b : ℕ} {r : ℕ}
+    {direction : P15TriangularSolveDirection} {u : ℝ}
+    {T : P15Matrix (p * b)} {rhs x : P15Vector (p * b)}
+    (completed : P15CompletedTriangularSolve r direction u T rhs x)
+    (hu : 0 ≤ u)
+    (hvalid : p15BLRTriangularSolveCost b p r * u < 1) :
+    Nonempty (P15TriangularSolveBackwardError r direction u T rhs x) := by
+  rcases completed.2 with ⟨analysis⟩
+  let matrixError : P15Matrix (p * b) :=
+    analysis.kernelError + analysis.summationError + analysis.interactionError
+  have hd_nonneg : 0 ≤ p15LowRankKernelCost b r := by
+    unfold p15LowRankKernelCost
+    positivity
+  have hp_nonneg : 0 ≤ (p : ℝ) := by positivity
+  have hcost :
+      p15LowRankKernelCost b r + (p : ℝ) =
+        p15BLRTriangularSolveCost b p r := by
+    unfold p15LowRankKernelCost p15BLRTriangularSolveCost
+    ring
+  have hgamma :
+      p15GammaReal (p15LowRankKernelCost b r) u +
+          p15GammaReal (p : ℝ) u +
+          p15GammaReal (p15LowRankKernelCost b r) u *
+            p15GammaReal (p : ℝ) u ≤
+        p15GammaReal (p15BLRTriangularSolveCost b p r) u := by
+    rw [← hcost]
+    exact p15Gamma_add_le_internal hd_nonneg hp_nonneg hu
+      (by simpa [hcost] using hvalid)
+  refine ⟨{
+    matrixError := matrixError
+    rhsError := analysis.rhsError
+    solve_eq := by simpa [matrixError] using analysis.gathered_eq
+    matrix_error_le := ?_
+    rhs_error_le := analysis.rhs_error_le
+  }⟩
+  have hT_nonneg : 0 ≤ p15FrobNorm T := Real.sqrt_nonneg _
+  calc
+    p15FrobNorm matrixError ≤
+        p15FrobNorm analysis.kernelError +
+          p15FrobNorm analysis.summationError +
+          p15FrobNorm analysis.interactionError := by
+            simpa [matrixError] using p15FrobNorm_add_three_le_internal
+              analysis.kernelError analysis.summationError
+              analysis.interactionError
+    _ ≤ (p15GammaReal (p15LowRankKernelCost b r) u +
+            p15GammaReal (p : ℝ) u +
+            p15GammaReal (p15LowRankKernelCost b r) u *
+              p15GammaReal (p : ℝ) u) * p15FrobNorm T := by
+          calc
+            _ ≤ p15GammaReal (p15LowRankKernelCost b r) u *
+                  p15FrobNorm T +
+                p15GammaReal (p : ℝ) u * p15FrobNorm T +
+                (p15GammaReal (p15LowRankKernelCost b r) u *
+                  p15GammaReal (p : ℝ) u) * p15FrobNorm T := by
+                    exact add_le_add
+                      (add_le_add analysis.kernel_error_le
+                        analysis.summation_error_le)
+                      analysis.interaction_error_le
+            _ = _ := by ring
+    _ ≤ p15GammaReal (p15BLRTriangularSolveCost b p r) u *
+        p15FrobNorm T := mul_le_mul_of_nonneg_right hgamma hT_nonneg
+
+/-- One completed computation from Theorem 4.5. It contains only the
+factorization and solve traces plus their source-level decompositions. The
+aggregate Theorems 4.2--4.4 interfaces and the final system perturbations are
+derived declarations, not fields of this record. -/
 structure P15BLRLinearSolveExecution (b p r : ℕ) where
   block_size_pos : 0 < b
   block_count_pos : 0 < p
@@ -6404,44 +7195,11 @@ structure P15BLRLinearSolveExecution (b p r : ℕ) where
   factor_rank : p15IsFactorBLRRank r L U
   factorization_completed :
     P15CompletedBLRFactorization r algorithm threshold recompression
-      unitRoundoff epsilon Atilde L U
-  factorError : P15Matrix (p * b)
-  factorRemainder : ℝ → ℝ → ℝ
-  factorization_eq : A + factorError = p15MatMul L U
-  factorError_le :
-    p15FrobNorm factorError ≤
-      (p15BLRXi p threshold recompression * epsilon +
-          p15GammaReal (p : ℝ) unitRoundoff) * p15FrobNorm A +
-        p15GammaReal (p15BLRSolveCost b p r) unitRoundoff *
-          p15FrobNorm L * p15FrobNorm U +
-        factorRemainder unitRoundoff epsilon
-  factorRemainder_bigO : p15IsBigOMixedAtZero factorRemainder
-  lowerError : P15Matrix (p * b)
-  upperError : P15Matrix (p * b)
-  lowerRhsError : P15Vector (p * b)
-  upperRhsError : P15Vector (p * b)
-  lower_completed : Nonempty
-    (P15CompletedTriangularSolve r .lower unitRoundoff L v yHat)
-  upper_completed : Nonempty
-    (P15CompletedTriangularSolve r .upper unitRoundoff U yHat xHat)
-  lowerSolve_eq :
-    p15MatVec (L + lowerError) yHat = v + lowerRhsError
-  upperSolve_eq :
-    p15MatVec (U + upperError) xHat = yHat + upperRhsError
-  lowerError_le :
-    p15FrobNorm lowerError ≤
-      p15GammaReal (p15BLRTriangularSolveCost b p r) unitRoundoff *
-        p15FrobNorm L
-  upperError_le :
-    p15FrobNorm upperError ≤
-      p15GammaReal (p15BLRTriangularSolveCost b p r) unitRoundoff *
-        p15FrobNorm U
-  lowerRhsError_le :
-    p15VecNorm lowerRhsError ≤
-      p15GammaReal (p : ℝ) unitRoundoff * p15VecNorm v
-  upperRhsError_le :
-    p15VecNorm upperRhsError ≤
-      p15GammaReal (p : ℝ) unitRoundoff * p15VecNorm yHat
+      unitRoundoff epsilon A Atilde L U
+  lower_completed :
+    P15CompletedTriangularSolve r .lower unitRoundoff L v yHat
+  upper_completed :
+    P15CompletedTriangularSolve r .upper unitRoundoff U yHat xHat
 
 /-- Exact matrix perturbation obtained by composing a perturbed factorization
 with perturbed forward and backward substitutions. -/

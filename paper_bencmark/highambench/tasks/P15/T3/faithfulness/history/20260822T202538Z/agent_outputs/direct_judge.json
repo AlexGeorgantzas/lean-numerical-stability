@@ -1,0 +1,1601 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P15-T3",
+  "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
+  "dossier_sha256": "ddff3fced1485fafe25cf772661767f23485eb2a7878e229aa400e97e912bea9",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.P15BLRLinearSolveExecution",
+      "interpretation": "A bundled factorization-and-solve execution indexed by block size b, block count p, and computed-factor rank r; its constructor D029 supplies all data and contracts.",
+      "effect_on_target": "It is the sole theorem premise and therefore controls the domain, algorithm linkage, perturbation data, and all inherited bounds.",
+      "paper_match": "Most fields unpack Theorems 4.2-4.5, but the bundled factor remainder is not constrained at the run's actual u and epsilon, unlike the displayed bound in equation (4.24), printed p. 974.",
+      "status": "fail"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.P15BLRLinearSolveExecution.A",
+      "interpretation": "Projection of the real (p*b)-square coefficient matrix A.",
+      "effect_on_target": "A is perturbed in the final matrix equation and scales the first matrix-error term.",
+      "paper_match": "Matches A in equations (4.23)-(4.24), printed p. 974, while retaining the paper's A versus A-tilde distinction.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.P15BLRLinearSolveExecution.L",
+      "interpretation": "Projection of the computed lower BLR factor L.",
+      "effect_on_target": "Appears in the exact perturbation compositions and both norm bounds.",
+      "paper_match": "Matches computed L-tilde in Theorem 4.5 and its proof, printed pp. 974-975.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.P15BLRLinearSolveExecution.U",
+      "interpretation": "Projection of the computed upper BLR factor U.",
+      "effect_on_target": "Appears in the exact matrix perturbation and both scale terms.",
+      "paper_match": "Matches computed U-tilde in Theorem 4.5 and its proof, printed pp. 974-975.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HighamBench.P15BLRLinearSolveExecution.epsilon",
+      "interpretation": "Projection of the positive low-rank compression threshold.",
+      "effect_on_target": "Multiplies xi in the leading low-rank matrix-error term and is an argument of both remainder functions.",
+      "paper_match": "Matches epsilon in equations (2.4), (4.24), printed pp. 953 and 974.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HighamBench.P15BLRLinearSolveExecution.factorError",
+      "interpretation": "Projection of the factorization perturbation satisfying A plus factorError equals L times U.",
+      "effect_on_target": "It is the first summand of the exact composed matrix perturbation.",
+      "paper_match": "Matches the sign convention used in the proof of Theorem 4.5, printed p. 975.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "HighamBench.P15BLRLinearSolveExecution.factorRemainder",
+      "interpretation": "Projection of a two-variable real function intended to denote the O(u*epsilon) factorization remainder.",
+      "effect_on_target": "Its value at the run's u and epsilon is added directly to the final matrix-error bound.",
+      "paper_match": "It is an appropriate carrier for equation (4.24)'s O(u*epsilon), but its actual constraint is supplied by the defective D025/D029 combination.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "HighamBench.P15BLRLinearSolveExecution.lowerError",
+      "interpretation": "Projection of the lower-triangular-solve matrix perturbation Delta L.",
+      "effect_on_target": "Contributes lowerError*U and lowerError*upperError to matrixError and lowerError*upperRhsError to rhsError.",
+      "paper_match": "Matches Delta L-tilde in the exact products on printed p. 975.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "HighamBench.P15BLRLinearSolveExecution.lowerRhsError",
+      "interpretation": "Projection of the right-hand-side perturbation from the forward solve.",
+      "effect_on_target": "It is the first summand of the composed right-hand-side error.",
+      "paper_match": "Matches the forward-solve Delta v in the proof on printed p. 975.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "HighamBench.P15BLRLinearSolveExecution.recompression",
+      "interpretation": "Projection selecting whether intermediate recompressions are used.",
+      "effect_on_target": "Selects the appropriate xi coefficient and factorization execution case.",
+      "paper_match": "Matches Table 1 and Section 4.1.3, printed p. 969.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "HighamBench.P15BLRLinearSolveExecution.threshold",
+      "interpretation": "Projection selecting a local or global low-rank threshold.",
+      "effect_on_target": "Selects compression scales and the corresponding xi coefficient.",
+      "paper_match": "Matches equations (2.4), (4.13)-(4.14), and Table 1, printed pp. 953, 967, and 969.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "HighamBench.P15BLRLinearSolveExecution.unitRoundoff",
+      "interpretation": "Projection of the positive real unit roundoff u.",
+      "effect_on_target": "It is the second argument of gamma functions and the evaluated remainder functions.",
+      "paper_match": "Matches the arithmetic model and gamma definition on printed p. 954.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "HighamBench.P15BLRLinearSolveExecution.upperError",
+      "interpretation": "Projection of the upper-triangular-solve matrix perturbation Delta U.",
+      "effect_on_target": "Contributes L*upperError and lowerError*upperError to matrixError.",
+      "paper_match": "Matches Delta U-tilde in the exact matrix product on printed p. 975.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "HighamBench.P15BLRLinearSolveExecution.upperRhsError",
+      "interpretation": "Projection of the right-hand-side perturbation from the backward solve.",
+      "effect_on_target": "Contributes L*upperRhsError and lowerError*upperRhsError to rhsError.",
+      "paper_match": "Matches Delta y-hat in the proof on printed p. 975.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "HighamBench.P15BLRLinearSolveExecution.v",
+      "interpretation": "Projection of the real right-hand-side vector v.",
+      "effect_on_target": "Appears in the perturbed equation and the leading right-hand-side bound.",
+      "paper_match": "Matches v in equations (4.23) and (4.25), printed p. 974.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "HighamBench.P15BLRLinearSolveExecution.xHat",
+      "interpretation": "Projection of the computed solution vector x-hat.",
+      "effect_on_target": "Appears in the exact perturbed system and the solution-dependent solve scale.",
+      "paper_match": "Matches computed x-hat in Theorem 4.5, printed p. 974.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "HighamBench.P15Matrix",
+      "interpretation": "A square real matrix indexed by Fin n in both dimensions.",
+      "effect_on_target": "Fixes all coefficient and perturbation matrices to finite n-by-n real matrices with n=p*b.",
+      "paper_match": "Matches the real finite-dimensional matrices in Theorem 4.5, printed p. 974.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "HighamBench.P15Vector",
+      "interpretation": "A real vector represented as a function Fin n to Real.",
+      "effect_on_target": "Fixes v, yHat, xHat, and right-hand-side perturbations to R^n.",
+      "paper_match": "Matches vectors in R^n in Theorems 4.4-4.5, printed pp. 973-974.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "HighamBench.p15BLRSolveCost",
+      "interpretation": "The real constant b + 2*r*sqrt(r) + p.",
+      "effect_on_target": "Defines c and hence gamma_(3c).",
+      "paper_match": "For natural r this is b+2*r^(3/2)+p, exactly c in Theorem 4.5, printed p. 974.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "HighamBench.p15BLRXi",
+      "interpretation": "Four-way coefficient: 1, p, p, or p^2/sqrt(6) for local/global crossed with without/with recompression.",
+      "effect_on_target": "Supplies xi in the leading compression-error bound.",
+      "paper_match": "Exactly matches Table 1, printed p. 969.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "HighamBench.p15ComposedMatrixError",
+      "interpretation": "factorError + lowerError*U + L*upperError + lowerError*upperError.",
+      "effect_on_target": "Forces matrixError to be the exact perturbation obtained by multiplying the perturbed factors.",
+      "paper_match": "Matches the exact composition in the proof of Theorem 4.5, printed p. 975.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "HighamBench.p15ComposedRhsError",
+      "interpretation": "rhsLower + L*rhsUpper + lowerError*rhsUpper.",
+      "effect_on_target": "Forces rhsError to be the exact perturbation produced by composing the two solves.",
+      "paper_match": "Matches Delta v + L-tilde Delta y-hat + Delta L-tilde Delta y-hat on printed p. 975.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "HighamBench.p15FrobNorm",
+      "interpretation": "The matrix Frobenius norm, delegated to the explicit rectangular Frobenius norm.",
+      "effect_on_target": "Gives the norm semantics for all matrix terms.",
+      "paper_match": "Matches the unsubscripted Frobenius norm convention on printed pp. 953-954.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "HighamBench.p15GammaReal",
+      "interpretation": "gamma(k,u)=k*u/(1-k*u) over the reals.",
+      "effect_on_target": "Defines gamma_p, gamma_c, solve gammas, and gamma_(3c).",
+      "paper_match": "Exactly matches the gamma definition on printed p. 954; denominator validity is supplied by D049.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "HighamBench.p15IsBigOMixedAtZero",
+      "interpretation": "There exist C>=0 and delta>0 such that |R(u,epsilon)|<=C*u*epsilon only when positive u<epsilon and both variables are at most delta.",
+      "effect_on_target": "It labels factorRemainder O(u*epsilon), but does not require the run's actual u and epsilon to lie within the witnessed delta-neighborhood.",
+      "paper_match": "Equation (4.24), printed p. 974, uses O(u*epsilon) as a lower-order contribution to the displayed bound. D025 permits an arbitrary spike at the evaluated run point by choosing delta below run.unitRoundoff.",
+      "status": "fail"
+    },
+    {
+      "id": "D026",
+      "name": "HighamBench.p15IsBigOSquareRelativeAtZero",
+      "interpretation": "There exist C>=0 and delta>0 bounding |R(u,epsilon)| by C*u^2*scale(u,epsilon) only inside a positive local neighborhood.",
+      "effect_on_target": "Because rhsRemainder is chosen after the fixed run, it can be zero near zero and arbitrarily large at the actual run point, making the final rhs inequality vacuous.",
+      "paper_match": "Equation (4.25), printed p. 974, includes a controlled O(u^2) term in the current error bound; D026 does not constrain that evaluated term.",
+      "status": "fail"
+    },
+    {
+      "id": "D027",
+      "name": "HighamBench.p15MatVec",
+      "interpretation": "Standard finite matrix-vector multiplication by summing A(i,j)*x(j) over all j.",
+      "effect_on_target": "Defines the exact perturbed system and all solve residual equations.",
+      "paper_match": "Matches ordinary matrix-vector multiplication in equations (4.21) and (4.23), printed pp. 973-974.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "HighamBench.p15VecNorm",
+      "interpretation": "The Euclidean norm sqrt(sum_i x_i^2).",
+      "effect_on_target": "Defines all vector norms and solveScale.",
+      "paper_match": "For vectors this is the paper's unsubscripted Frobenius/Euclidean norm, printed pp. 953-954.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "HighamBench.P15BLRLinearSolveExecution.mk",
+      "interpretation": "Constructor bundling positive dimensions, algorithm and threshold choices, A/Atilde/L/U and vectors, precision, nonsingularity, BLR representation, exact factor rank, completed factorization and solves, perturbation equations, and aggregate bounds.",
+      "effect_on_target": "It faithfully supplies most inherited hypotheses, but accepts factorError_le using factorRemainder at the actual run point while factorRemainder_bigO may only hold in a disjoint smaller neighborhood.",
+      "paper_match": "The structural fields match Sections 2 and 4 and Theorems 4.2-4.5, printed pp. 953-955 and 969-975. The missing current-point link weakens the factorization bound invoked on printed p. 974.",
+      "status": "fail"
+    },
+    {
+      "id": "D030",
+      "name": "HighamBench.P15BLRRecompression",
+      "interpretation": "A two-case type distinguishing factorization without or with intermediate recompressions.",
+      "effect_on_target": "Indexes execution traces and the xi coefficient.",
+      "paper_match": "Matches the two recompression cases in Table 1, printed p. 969.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "HighamBench.P15BLRThreshold",
+      "interpretation": "A two-case type distinguishing local and global compression thresholds.",
+      "effect_on_target": "Indexes BLR representation scales, algorithm compression scales, and xi.",
+      "paper_match": "Matches equation (2.4) and Table 1, printed pp. 953 and 969.",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "HighamBench.p15BLRSolveCost._proof_1",
+      "interpretation": "Elaboration proof that the numeral 2 is at least two.",
+      "effect_on_target": "Only permits the real numeral 2 in the cost formula.",
+      "paper_match": "No independent paper semantics; it elaborates the coefficient 2 in c.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D033",
+      "name": "HighamBench.p15BLRXi._proof_1",
+      "interpretation": "Elaboration proof that the numeral 6 is at least two.",
+      "effect_on_target": "Only permits the real numeral 6 under sqrt in p^2/sqrt(6).",
+      "paper_match": "No independent paper semantics; it elaborates Table 1's sqrt(6).",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D034",
+      "name": "HighamBench.p15BLRXi.match_1",
+      "interpretation": "Nested case analysis on recompression and threshold choices in the order without/local, without/global, with/local, with/global.",
+      "effect_on_target": "Ensures the four numeric branches are associated with the intended cases.",
+      "paper_match": "The branch order and values match Table 1, printed p. 969.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "HighamBench.p15MatMul",
+      "interpretation": "Standard finite square matrix multiplication.",
+      "effect_on_target": "Defines factorization equations and exact perturbation products.",
+      "paper_match": "Matches matrix products throughout Theorems 4.2-4.5, printed pp. 969-975.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "HighamBench.p15RectFrobNorm",
+      "interpretation": "sqrt of the sum of squares of every entry of a finite rectangular real matrix.",
+      "effect_on_target": "Provides the exact body of p15FrobNorm.",
+      "paper_match": "Exactly matches the Frobenius norm convention on printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.P15BLRFactorizationAlgorithm",
+      "interpretation": "A two-case type for UFC and UCF.",
+      "effect_on_target": "Restricts factorization executions to the two algorithms admitted by Theorem 4.5.",
+      "paper_match": "Matches Algorithms 1 and 2, printed pp. 963 and 971.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "HighamBench.P15BLRRecompression.casesOn",
+      "interpretation": "Case eliminator for the without/with recompression alternatives.",
+      "effect_on_target": "Implements recompression-dependent definitions without adding cases.",
+      "paper_match": "Preserves exactly the two Table 1 alternatives.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.P15BLRRecompression.with",
+      "interpretation": "Constructor denoting use of intermediate recompressions.",
+      "effect_on_target": "Selects the recompression trace and the with-recompression xi values.",
+      "paper_match": "Matches Section 4.1.3 and Table 1, printed p. 969.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.P15BLRRecompression.without",
+      "interpretation": "Constructor denoting absence of intermediate recompressions.",
+      "effect_on_target": "Selects zero recompression errors and the without-recompression xi values.",
+      "paper_match": "Matches Table 1, printed p. 969.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.P15BLRThreshold.casesOn",
+      "interpretation": "Case eliminator for local/global threshold alternatives.",
+      "effect_on_target": "Implements threshold-dependent scales and coefficients.",
+      "paper_match": "Preserves the two choices in equation (2.4), printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.P15BLRThreshold.global",
+      "interpretation": "Constructor selecting the global scale based on the full matrix norm.",
+      "effect_on_target": "Selects beta_ij=||A|| and global xi coefficients.",
+      "paper_match": "Matches the global threshold in equation (2.4), printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.P15BLRThreshold.local",
+      "interpretation": "Constructor selecting the local scale based on a block norm.",
+      "effect_on_target": "Selects beta_ij=||A_ij|| and local xi coefficients.",
+      "paper_match": "Matches the local threshold in equation (2.4), printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "HighamBench.P15CompletedBLRFactorization",
+      "interpretation": "Dispatches algorithm=ufc to a nonempty completed UFC trace and algorithm=ucf to a nonempty completed UCF trace.",
+      "effect_on_target": "Links L and U to one of exactly the two permitted factorization executions.",
+      "paper_match": "Matches Theorem 4.5's 'either Algorithm 1 or 2' requirement, printed p. 974.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "HighamBench.P15CompletedTriangularSolve",
+      "interpretation": "A proof-relevant trace of a lower or upper blockwise triangular solve with product, summation, and diagonal-solve perturbations.",
+      "effect_on_target": "Links yHat and xHat to the procedure analyzed in Theorem 4.4.",
+      "paper_match": "Matches Theorem 4.4 and equation (4.22), printed pp. 973-974.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "HighamBench.P15RectMatrix",
+      "interpretation": "A real m-by-n matrix represented as Fin m to Fin n to Real.",
+      "effect_on_target": "Types low-rank factors X and Y and their products.",
+      "paper_match": "Matches the rectangular b-by-k low-rank factors in equation (2.3), printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "HighamBench.P15TriangularSolveDirection.lower",
+      "interpretation": "Constructor denoting forward substitution through a block lower-triangular matrix.",
+      "effect_on_target": "Selects predecessors j<i and the L solve.",
+      "paper_match": "Matches the displayed recurrence in Theorem 4.4, printed p. 973.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "HighamBench.P15TriangularSolveDirection.upper",
+      "interpretation": "Constructor denoting backward substitution through a block upper-triangular matrix.",
+      "effect_on_target": "Selects predecessors j>i and the U solve.",
+      "paper_match": "Matches the analogous U solve invoked in the proof of Theorem 4.5, printed p. 975.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "HighamBench.p15AdmissiblePrecision",
+      "interpretation": "Requires 0<u, 0<epsilon, u<epsilon, and (3*c)*u<1.",
+      "effect_on_target": "Ensures positivity, the stated u<epsilon regime, and validity of gamma_(3c) and all smaller gamma indices.",
+      "paper_match": "Matches epsilon>u from the paper's setup, the 'safely smaller' assumption on printed p. 955 at its explicit minimal level, and gamma validity from printed p. 954.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "HighamBench.p15BLRRepresents",
+      "interpretation": "Diagonal blocks of Atilde equal A; each off-diagonal block has an oriented, orthonormal-factor low-rank approximation of minimum admissible rank.",
+      "effect_on_target": "Relates the dense A and BLR Atilde while preserving local/global threshold semantics.",
+      "paper_match": "Matches equations (2.2)-(2.4), printed p. 953, and explicitly addresses Theorem 4.5's A/Atilde notation inconsistency.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "HighamBench.p15BLRTriangularSolveCost",
+      "interpretation": "The real constant b+r*sqrt(r)+p.",
+      "effect_on_target": "Indexes the aggregate matrix perturbation gamma for each triangular solve.",
+      "paper_match": "Equals b+r^(3/2)+p in equation (4.21), printed p. 973.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "HighamBench.p15IsFactorBLRRank",
+      "interpretation": "Both factors admit off-diagonal rank at most r, and no smaller common rank represents both.",
+      "effect_on_target": "Makes r the maximum off-diagonal algebraic rank across computed L and U.",
+      "paper_match": "Matches the definition of r at the opening of Section 4, printed p. 962.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "HighamBench.p15IsNonsingular",
+      "interpretation": "There exists a two-sided inverse under the explicit finite matrix multiplication.",
+      "effect_on_target": "Supplies nonsingularity of A and diagonal blocks where required.",
+      "paper_match": "Matches the nonsingularity hypotheses in Theorems 4.2 and 4.3, printed pp. 969 and 971.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "HighamBench.P15BLRFactorizationAlgorithm.ucf",
+      "interpretation": "Constructor selecting update-compress-factor.",
+      "effect_on_target": "Selects the Algorithm 2 completion trace.",
+      "paper_match": "Matches Algorithm 2, printed p. 971.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "HighamBench.P15BLRFactorizationAlgorithm.ufc",
+      "interpretation": "Constructor selecting update-factor-compress.",
+      "effect_on_target": "Selects the Algorithm 1 completion trace.",
+      "paper_match": "Matches Algorithm 1, printed p. 963.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "HighamBench.P15BLRRecompression.rec",
+      "interpretation": "Primitive recursor for the two recompression constructors.",
+      "effect_on_target": "Supports total two-case definitions.",
+      "paper_match": "Adds no semantic case beyond with/without recompression.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "HighamBench.P15BLRThreshold.rec",
+      "interpretation": "Primitive recursor for local/global threshold constructors.",
+      "effect_on_target": "Supports total threshold-dependent definitions.",
+      "paper_match": "Adds no semantic case beyond equation (2.4)'s alternatives.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "HighamBench.P15CompletedTriangularSolve.mk",
+      "interpretation": "Builds a solve trace from block triangularity, nonsingular diagonal blocks, perturbed low-rank products, gamma_p componentwise summation factors, gamma_b diagonal-solve errors, and block recurrence equations.",
+      "effect_on_target": "Makes the completed-solve hypotheses reflect the ordered blockwise procedure and its local error contracts.",
+      "paper_match": "Matches Theorem 4.4, its proof, and equation (4.22), printed pp. 973-974.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "HighamBench.P15CompletedUCFFactorization",
+      "interpretation": "Type of completed UCF execution traces indexed by all algorithm parameters and outputs.",
+      "effect_on_target": "Carries evidence that U and L came from the update-compress-factor order.",
+      "paper_match": "Matches Algorithm 2 and Theorem 4.3, printed p. 971.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "HighamBench.P15CompletedUFCFactorization",
+      "interpretation": "Type of completed UFC execution traces indexed by all algorithm parameters and outputs.",
+      "effect_on_target": "Carries evidence that U and L came from the update-factor-compress order.",
+      "paper_match": "Matches Algorithm 1 and Theorem 4.2, printed pp. 963 and 969.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "HighamBench.P15TriangularSolveDirection",
+      "interpretation": "A two-case type for lower and upper block triangular solves.",
+      "effect_on_target": "Indexes triangular shape and predecessor order.",
+      "paper_match": "Matches the forward L and analogous backward U solves in Theorem 4.5, printed pp. 974-975.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "HighamBench.instReprP15BLRFactorizationAlgorithm.repr.match_1",
+      "interpretation": "Generated two-way matcher mapping ufc and ucf to their respective branches.",
+      "effect_on_target": "Implements the algorithm dispatch in D044.",
+      "paper_match": "Preserves exactly Algorithms 1 and 2.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "HighamBench.p15AdmissiblePrecision._proof_1",
+      "interpretation": "Elaboration proof for the numeral 3.",
+      "effect_on_target": "Only permits 3*c in the precision condition.",
+      "paper_match": "No independent content; it elaborates gamma_(3c) from equation (4.24).",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D064",
+      "name": "HighamBench.p15BLRBlockApproximation",
+      "interpretation": "An oriented low-rank block X*Y^T below the diagonal or Y*X^T above it, with orthonormal X columns and Frobenius error bounded by epsilon times the selected scale.",
+      "effect_on_target": "Defines each admissible off-diagonal block used by D050.",
+      "paper_match": "Matches equations (2.3)-(2.4), printed p. 953; reversing the subtraction does not change the Frobenius norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "HighamBench.p15Identity",
+      "interpretation": "The finite real identity matrix with one on equal indices and zero otherwise.",
+      "effect_on_target": "Defines two-sided invertibility.",
+      "paper_match": "Matches ordinary matrix identity semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "HighamBench.p15IsBLRMatrix",
+      "interpretation": "Every off-diagonal block admits an exact factorization through an inner dimension r.",
+      "effect_on_target": "Expresses off-diagonal rank at most r for computed factors.",
+      "paper_match": "Matches the BLR-rank notion at the opening of Section 4, printed p. 962; orientation is immaterial to algebraic rank.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "HighamBench.p15MatrixBlock",
+      "interpretation": "Extracts block (i,j) using global row i*b+row and column j*b+col.",
+      "effect_on_target": "Implements the p-by-p partition into b-by-b blocks.",
+      "paper_match": "Matches n=p*b and the block layout in equations (2.2)-(2.3), printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "HighamBench.P15BLRFactorizationAlgorithm.casesOn",
+      "interpretation": "Case eliminator for UFC/UCF.",
+      "effect_on_target": "Implements algorithm-dependent propositions without extra alternatives.",
+      "paper_match": "Preserves the two algorithms admitted by Theorem 4.5.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "HighamBench.P15CompletedUCFFactorization.mk",
+      "interpretation": "Builds a UCF trace from updates, unscaled block compressions, diagonal LU factorizations, and right/left triangular solves, with triangular output factors.",
+      "effect_on_target": "Enforces update, then compress, then factor for each block step.",
+      "paper_match": "Matches Algorithm 2 and the discussion following Theorem 4.3, printed pp. 971-972.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "HighamBench.P15CompletedUFCFactorization.mk",
+      "interpretation": "Builds a UFC trace from updates, diagonal factorization, right/left solves, then scaled lower and upper compressions.",
+      "effect_on_target": "Enforces update, then factor, then compress, including positive diagonal scaling norms.",
+      "paper_match": "Matches Algorithm 1 and scaled thresholds (4.13)-(4.14), printed pp. 963 and 967.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "HighamBench.instReprP15BLRThreshold.repr.match_1",
+      "interpretation": "Generated matcher for local/global threshold choices.",
+      "effect_on_target": "Selects block-norm or whole-matrix-norm scales.",
+      "paper_match": "Matches equation (2.4), printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "HighamBench.instReprP15TriangularSolveDirection.repr.match_1",
+      "interpretation": "Generated matcher for lower/upper solve directions.",
+      "effect_on_target": "Selects triangular shape and predecessor relation.",
+      "paper_match": "Matches forward and backward substitution in Theorem 4.5.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "HighamBench.p15BlockIndex",
+      "interpretation": "Maps zero-based block and within-block indices to i*b+row in Fin(p*b).",
+      "effect_on_target": "Connects block traces to global matrices and vectors.",
+      "paper_match": "Equivalent to the paper's one-based ranges ((i-1)b+1):ib, printed p. 973.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "HighamBench.p15IsBlockLowerTriangular",
+      "interpretation": "All blocks strictly above the diagonal are zero.",
+      "effect_on_target": "Expresses lower block triangularity of L.",
+      "paper_match": "Matches the lower factor and forward solve in Theorem 4.5.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "HighamBench.p15IsBlockUpperTriangular",
+      "interpretation": "All blocks strictly below the diagonal are zero.",
+      "effect_on_target": "Expresses upper block triangularity of U.",
+      "paper_match": "Matches the upper factor and backward solve in Theorem 4.5.",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "HighamBench.p15LowRankKernelCost",
+      "interpretation": "The real index b+r*sqrt(r).",
+      "effect_on_target": "Indexes each off-diagonal low-rank matrix-vector product error.",
+      "paper_match": "Equals d=b+r^(3/2) in the proof of Theorem 4.4, printed pp. 973-974.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "HighamBench.p15LowRankMatrix",
+      "interpretation": "Forms X*Y^T from two b-by-r real factors.",
+      "effect_on_target": "Defines exact low-rank blocks and rank witnesses.",
+      "paper_match": "Matches the basic XY^T representation described on printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "HighamBench.p15OnesVector",
+      "interpretation": "The vector whose every entry is one.",
+      "effect_on_target": "Expresses componentwise relative perturbations as v hadamard (1+delta).",
+      "paper_match": "Matches e=[1,...,1]^T in the proof of Theorem 4.4, printed p. 974.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "HighamBench.p15OrientedLowRankBlock",
+      "interpretation": "Uses X*Y^T when i>j and Y*X^T when i<j.",
+      "effect_on_target": "Implements the paper's asymmetric lower/upper storage orientation.",
+      "paper_match": "Exactly matches equation (2.3), printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "HighamBench.p15OrthonormalColumns",
+      "interpretation": "Every pair of columns has inner product one when equal and zero otherwise.",
+      "effect_on_target": "Enforces X^T*X=I in low-rank approximations.",
+      "paper_match": "Matches the orthonormal-column convention following equation (2.3), printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "HighamBench.p15TriangularPrecedes",
+      "interpretation": "For lower solves it means j<i; for upper solves it means i<j.",
+      "effect_on_target": "Determines already-computed blocks used in each substitution row.",
+      "paper_match": "Matches forward substitution and its analogous reverse-order upper solve, printed pp. 973-975.",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "HighamBench.p15TriangularPredecessors",
+      "interpretation": "The finite set of indices satisfying the direction-dependent predecessor relation.",
+      "effect_on_target": "Defines the block-product sum in each triangular solve step.",
+      "paper_match": "Matches the summation indices in Theorem 4.4 and the analogous upper solve.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "HighamBench.p15VecHadamard",
+      "interpretation": "Entrywise multiplication of two real vectors.",
+      "effect_on_target": "Represents componentwise relative perturbations in summation inputs and products.",
+      "paper_match": "Matches the circle-product expressions in equation (4.22)'s derivation, printed p. 974.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "HighamBench.p15VectorBlock",
+      "interpretation": "Extracts the ith length-b block from a length-p*b vector.",
+      "effect_on_target": "Connects block recurrence variables to global vectors.",
+      "paper_match": "Matches x_i=x((i-1)b+1:ib), printed p. 973.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "HighamBench.P15BLRFactorizationAlgorithm.rec",
+      "interpretation": "Primitive recursor for UFC/UCF.",
+      "effect_on_target": "Supports complete algorithm case analysis.",
+      "paper_match": "Introduces no algorithm beyond Algorithms 1 and 2.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "HighamBench.P15BlockCompression",
+      "interpretation": "A proof-relevant truncated low-rank compression with threshold epsilon and scale beta.",
+      "effect_on_target": "Records rank minimality and norm-bounded compression error in factorization traces.",
+      "paper_match": "Matches Assumption 2.1 and equation (2.4), printed pp. 953 and 955.",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "HighamBench.P15TriangularSolveDirection.casesOn",
+      "interpretation": "Case eliminator for lower/upper directions.",
+      "effect_on_target": "Implements direction-sensitive trace definitions.",
+      "paper_match": "Adds no direction beyond the two solves in Theorem 4.5.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "HighamBench.p15BLRCompressionBase",
+      "interpretation": "Returns ||A_ik|| for a local threshold and ||A|| for a global threshold.",
+      "effect_on_target": "Defines unscaled compression and recompression beta values.",
+      "paper_match": "Matches equation (2.4), printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "HighamBench.p15BlockIndex._proof_1",
+      "interpretation": "Proof that i*b+row is below p*b.",
+      "effect_on_target": "Makes the block-index map total and dimensionally valid.",
+      "paper_match": "No independent semantic content beyond n=p*b.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D090",
+      "name": "HighamBench.p15ComputedBLRUpdate",
+      "interpretation": "An abstract rounded block update with earlier products, recompression errors, product perturbations, and gamma_p componentwise input/summation errors.",
+      "effect_on_target": "Defines the update phase used by both factorization execution traces.",
+      "paper_match": "Matches the left-looking updates in Algorithms 1-2 and the error decomposition in the proof of Theorem 4.1, printed pp. 963-966.",
+      "status": "pass"
+    },
+    {
+      "id": "D091",
+      "name": "HighamBench.p15ComputedDenseLU",
+      "interpretation": "A dense block LU relation L*U=input+error with Frobenius error at most gamma_b*||L||*||U||.",
+      "effect_on_target": "Models every diagonal block factorization.",
+      "paper_match": "Matches Lemma 2.3, equation (2.10), printed p. 954.",
+      "status": "pass"
+    },
+    {
+      "id": "D092",
+      "name": "HighamBench.p15ComputedLeftTriangularSolve",
+      "interpretation": "A multiple-right-hand-side solve T*X=rhs+residual bounded by gamma_b*||T||*||X||.",
+      "effect_on_target": "Models upper-row block solves in the factorization.",
+      "paper_match": "Matches equation (2.9), printed p. 954.",
+      "status": "pass"
+    },
+    {
+      "id": "D093",
+      "name": "HighamBench.p15ComputedRightTriangularSolve",
+      "interpretation": "A right solve X*T=rhs+residual with the corresponding gamma_b Frobenius bound.",
+      "effect_on_target": "Models lower-column block solves in the factorization.",
+      "paper_match": "Matches the transposed/right-sided analogue used by Algorithms 1-2.",
+      "status": "pass"
+    },
+    {
+      "id": "D094",
+      "name": "HighamBench.p15RecompressionModel",
+      "interpretation": "Without recompression all indexed errors are zero; with recompression each eligible prior product error is bounded by epsilon times its local/global base.",
+      "effect_on_target": "Controls intermediate recompression errors and selects Table 1's larger coefficients.",
+      "paper_match": "Matches Section 4.1.3 and Table 1, printed p. 969.",
+      "status": "pass"
+    },
+    {
+      "id": "D095",
+      "name": "HighamBench.p15RectMatMul",
+      "interpretation": "Standard finite rectangular matrix multiplication.",
+      "effect_on_target": "Forms low-rank products.",
+      "paper_match": "Matches ordinary multiplication in equation (2.3).",
+      "status": "pass"
+    },
+    {
+      "id": "D096",
+      "name": "HighamBench.p15RectTranspose",
+      "interpretation": "Swaps the row and column arguments of a rectangular matrix.",
+      "effect_on_target": "Forms Y^T in low-rank products.",
+      "paper_match": "Matches the transposes in equation (2.3), printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D097",
+      "name": "HighamBench.P15BlockCompression.mk",
+      "interpretation": "Constructs compression evidence from a minimum-rank approximation, an exact additive error identity, and a Frobenius bound epsilon*beta.",
+      "effect_on_target": "Ensures each factorization compression has the paper's truncation-error form.",
+      "paper_match": "Matches equation (2.4) and Assumption 2.1, printed pp. 953 and 955.",
+      "status": "pass"
+    },
+    {
+      "id": "D098",
+      "name": "HighamBench.P15TriangularSolveDirection.rec",
+      "interpretation": "Primitive recursor for lower/upper solve directions.",
+      "effect_on_target": "Supports total direction-dependent definitions.",
+      "paper_match": "Adds no paper-level alternative.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "HighamBench.instReprP15BLRRecompression.repr.match_1",
+      "interpretation": "Generated matcher for without/with recompression.",
+      "effect_on_target": "Selects zero-error or bounded-error recompression models.",
+      "paper_match": "Matches Table 1's recompression split.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "HighamBench.p15EarlierBlocks",
+      "interpretation": "The finite set of block indices j with j<k.",
+      "effect_on_target": "Defines the left-looking update sum.",
+      "paper_match": "Matches sums from j=1 to k-1 in Algorithms 1 and 2, printed pp. 963 and 971.",
+      "status": "pass"
+    },
+    {
+      "id": "D101",
+      "name": "HighamBench.p15MatrixHadamard",
+      "interpretation": "Entrywise multiplication of real matrices.",
+      "effect_on_target": "Represents componentwise relative perturbations in rounded block updates.",
+      "paper_match": "Matches the circle-product rounding model used in the factorization analysis.",
+      "status": "pass"
+    },
+    {
+      "id": "D102",
+      "name": "HighamBench.p15OnesMatrix",
+      "interpretation": "The matrix whose every entry is one.",
+      "effect_on_target": "Forms 1+delta entrywise factors in rounded block updates.",
+      "paper_match": "Matches the standard relative-error representation derived from equation (2.5).",
+      "status": "pass"
+    },
+    {
+      "id": "D103",
+      "name": "HighamBench.p15LowRankApproximation",
+      "interpretation": "Existence of orthonormal-column X and a factor Y with candidate=X*Y^T and Frobenius error at most epsilon*beta.",
+      "effect_on_target": "Defines rank-k compression admissibility.",
+      "paper_match": "Matches truncated-SVD representation and error in equations (2.1)-(2.4) and Assumption 2.1, printed pp. 952-955.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "Requires all equalities, big-O predicates, the perturbed equation, and both bounds simultaneously.",
+      "paper_match": "Matches the simultaneous conclusions of Theorem 4.5 and its proof.",
+      "status": "pass"
+    },
+    {
+      "id": "D105",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "Expresses exact perturbation compositions and exact matrix/vector equations.",
+      "paper_match": "Matches equalities (4.23) and the exact compositions on printed p. 975.",
+      "status": "pass"
+    },
+    {
+      "id": "D106",
+      "name": "Exists",
+      "interpretation": "Existential quantification.",
+      "effect_on_target": "Quantifies matrixError, rhsError, and rhsRemainder after the execution is fixed.",
+      "paper_match": "Perturbations are existential in Theorem 4.5; the placement of rhsRemainder after the fixed run contributes to the D026 scope defect.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "Fin",
+      "interpretation": "Natural indices strictly below a supplied finite bound.",
+      "effect_on_target": "Provides finite matrix, vector, block, row, and column index sets.",
+      "paper_match": "Matches finite dimensions n, p, b and their index ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-resolved addition.",
+      "effect_on_target": "Implements real, matrix, and vector addition.",
+      "paper_match": "Uses ordinary addition as in the paper's perturbation formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D109",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-resolved multiplication.",
+      "effect_on_target": "Implements natural dimensions and real scalar products.",
+      "paper_match": "Uses ordinary multiplication in constants and norm bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D110",
+      "name": "LE.le",
+      "interpretation": "Typeclass-resolved non-strict order.",
+      "effect_on_target": "Expresses every norm and remainder upper bound.",
+      "paper_match": "Matches the <= directions in equations (2.4), (4.21), and (4.24)-(4.25).",
+      "status": "pass"
+    },
+    {
+      "id": "D111",
+      "name": "Matrix.add",
+      "interpretation": "Pointwise matrix addition.",
+      "effect_on_target": "Defines A+matrixError and additions in composed perturbations.",
+      "paper_match": "Matches ordinary additive matrix perturbations.",
+      "status": "pass"
+    },
+    {
+      "id": "D112",
+      "name": "Nat",
+      "interpretation": "Natural numbers including zero.",
+      "effect_on_target": "Types b, p, r, ranks, and finite dimensions; positivity of b and p is carried by D029.",
+      "paper_match": "Matches positive integer block parameters and nonnegative ranks.",
+      "status": "pass"
+    },
+    {
+      "id": "D113",
+      "name": "Nat.cast",
+      "interpretation": "Canonical embedding of natural numbers into the reals.",
+      "effect_on_target": "Interprets p, b, and r in gamma indices and real cost formulas.",
+      "paper_match": "Matches the paper's use of integer dimensions as real scalar coefficients.",
+      "status": "pass"
+    },
+    {
+      "id": "D114",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "interpretation": "Typeclass proof infrastructure for natural numerals at least two.",
+      "effect_on_target": "Supports elaboration of real numerals.",
+      "paper_match": "No independent mathematical effect.",
+      "status": "pass"
+    },
+    {
+      "id": "D115",
+      "name": "Nat.instNeZeroSucc",
+      "interpretation": "Proof that every successor natural is nonzero.",
+      "effect_on_target": "Supports numeral elaboration.",
+      "paper_match": "No independent mathematical effect.",
+      "status": "pass"
+    },
+    {
+      "id": "D116",
+      "name": "OfNat.ofNat",
+      "interpretation": "Typeclass-resolved numeral interpretation.",
+      "effect_on_target": "Interprets 0, 1, 2, 3, and 6 in the required types.",
+      "paper_match": "Preserves the paper's numeric constants.",
+      "status": "pass"
+    },
+    {
+      "id": "D117",
+      "name": "Pi.instAdd",
+      "interpretation": "Pointwise addition for functions.",
+      "effect_on_target": "Defines vector addition.",
+      "paper_match": "Matches componentwise vector addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D118",
+      "name": "Real",
+      "interpretation": "The mathematical real numbers.",
+      "effect_on_target": "Types all entries, norms, thresholds, roundoff values, and constants.",
+      "paper_match": "Matches the paper's R-valued matrices and vectors.",
+      "status": "pass"
+    },
+    {
+      "id": "D119",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary real addition.",
+      "effect_on_target": "Implements scalar sums in bounds and definitions.",
+      "paper_match": "Matches ordinary real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D120",
+      "name": "Real.instLE",
+      "interpretation": "Ordinary real non-strict order.",
+      "effect_on_target": "Interprets all scalar <= relations.",
+      "paper_match": "Matches the paper's inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D121",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "Interprets gamma products and norm-scale products.",
+      "paper_match": "Matches ordinary real multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D122",
+      "name": "Real.instNatCast",
+      "interpretation": "The standard natural-number cast into Real.",
+      "effect_on_target": "Gives exact real values for natural dimensions and ranks.",
+      "paper_match": "Matches the intended numeric values.",
+      "status": "pass"
+    },
+    {
+      "id": "D123",
+      "name": "instHAdd",
+      "interpretation": "Adapter from homogeneous Add to HAdd.",
+      "effect_on_target": "Resolves overloaded homogeneous additions.",
+      "paper_match": "No semantic change to addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D124",
+      "name": "instHMul",
+      "interpretation": "Adapter from homogeneous Mul to HMul.",
+      "effect_on_target": "Resolves overloaded homogeneous multiplications.",
+      "paper_match": "No semantic change to multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D125",
+      "name": "instMulNat",
+      "interpretation": "Ordinary natural-number multiplication.",
+      "effect_on_target": "Defines n=p*b and block-index arithmetic.",
+      "paper_match": "Matches n=pb on printed p. 953.",
+      "status": "pass"
+    },
+    {
+      "id": "D126",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Builds real numeral instances from natural casts.",
+      "effect_on_target": "Elaborates constants 2, 3, and 6 as reals.",
+      "paper_match": "Preserves their ordinary numeric meanings.",
+      "status": "pass"
+    },
+    {
+      "id": "D127",
+      "name": "instOfNatNat",
+      "interpretation": "Interprets a natural numeral as itself.",
+      "effect_on_target": "Supports natural literals in dimensions and indices.",
+      "paper_match": "No semantic discrepancy.",
+      "status": "pass"
+    },
+    {
+      "id": "D128",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "The division operation induced by real multiplicative inverse.",
+      "effect_on_target": "Defines gamma quotients and scaled UFC thresholds.",
+      "paper_match": "Matches ordinary real division in gamma and equations (4.13)-(4.14).",
+      "status": "pass"
+    },
+    {
+      "id": "D129",
+      "name": "Fin.fintype",
+      "interpretation": "Finite enumeration of Fin n.",
+      "effect_on_target": "Makes all matrix, vector, and norm sums finite.",
+      "paper_match": "Matches finite-dimensional summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D130",
+      "name": "Finset.sum",
+      "interpretation": "Finite commutative sum.",
+      "effect_on_target": "Defines matrix products, vector products, norms, and algorithm sums.",
+      "paper_match": "Matches the finite sums in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D131",
+      "name": "Finset.univ",
+      "interpretation": "The finite set containing every index of a finite type.",
+      "effect_on_target": "Supplies complete summation domains.",
+      "paper_match": "Matches summation over all matrix/vector indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D132",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-resolved division.",
+      "effect_on_target": "Implements real quotients in gamma, xi, and UFC scaling.",
+      "paper_match": "Matches the corresponding paper divisions.",
+      "status": "pass"
+    },
+    {
+      "id": "D133",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-resolved exponentiation.",
+      "effect_on_target": "Computes squares in norms, u^2, and p^2.",
+      "paper_match": "Matches squared terms in Table 1, norms, and equation (4.25).",
+      "status": "pass"
+    },
+    {
+      "id": "D134",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-resolved subtraction.",
+      "effect_on_target": "Defines approximation errors, update recurrences, and the gamma denominator.",
+      "paper_match": "Matches ordinary subtraction in the cited equations.",
+      "status": "pass"
+    },
+    {
+      "id": "D135",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-resolved strict order.",
+      "effect_on_target": "Expresses positivity, u<epsilon, gamma validity, and index ordering.",
+      "paper_match": "Matches strict hypotheses and algorithm index conditions.",
+      "status": "pass"
+    },
+    {
+      "id": "D136",
+      "name": "Matrix",
+      "interpretation": "A matrix is a curried function from row and column indices to entries.",
+      "effect_on_target": "Underlies all explicit finite matrix types.",
+      "paper_match": "Extensionally represents ordinary finite matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D137",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number powers in a monoid.",
+      "effect_on_target": "Interprets real squares.",
+      "paper_match": "Matches ordinary squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D138",
+      "name": "One.toOfNat1",
+      "interpretation": "Interprets numeral one from the multiplicative identity.",
+      "effect_on_target": "Defines ones in identity objects, relative-error factors, and gamma denominators.",
+      "paper_match": "Matches ordinary one.",
+      "status": "pass"
+    },
+    {
+      "id": "D139",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "Commutative additive-monoid structure of the reals.",
+      "effect_on_target": "Supports order-independent finite real sums.",
+      "paper_match": "Matches ordinary real summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D140",
+      "name": "Real.instAddGroup",
+      "interpretation": "Additive-group structure of the reals.",
+      "effect_on_target": "Supports negation, subtraction, and absolute value.",
+      "paper_match": "Matches ordinary real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D141",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "Real multiplicative structure with inverse and division.",
+      "effect_on_target": "Supplies division for gamma and scaled thresholds.",
+      "paper_match": "Matches ordinary real division where denominators are controlled by hypotheses.",
+      "status": "pass"
+    },
+    {
+      "id": "D142",
+      "name": "Real.instLT",
+      "interpretation": "Ordinary strict order on the reals.",
+      "effect_on_target": "Interprets positivity and gamma-domain assumptions.",
+      "paper_match": "Matches the paper's strict inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D143",
+      "name": "Real.instMonoid",
+      "interpretation": "Multiplicative monoid structure of Real.",
+      "effect_on_target": "Supports natural powers and products.",
+      "paper_match": "Matches ordinary real multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D144",
+      "name": "Real.instOne",
+      "interpretation": "The real multiplicative identity.",
+      "effect_on_target": "Defines numeral one.",
+      "paper_match": "Matches ordinary one.",
+      "status": "pass"
+    },
+    {
+      "id": "D145",
+      "name": "Real.instSub",
+      "interpretation": "Real subtraction as addition of a negation.",
+      "effect_on_target": "Defines differences in errors and gamma denominators.",
+      "paper_match": "Matches ordinary real subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D146",
+      "name": "Real.instZero",
+      "interpretation": "The real additive identity.",
+      "effect_on_target": "Defines positivity tests and zero matrices/vectors.",
+      "paper_match": "Matches ordinary zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D147",
+      "name": "Real.lattice",
+      "interpretation": "Lattice order structure on Real.",
+      "effect_on_target": "Supports the absolute-value definition in the big-O predicates.",
+      "paper_match": "Matches ordinary real absolute value semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D148",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square root.",
+      "effect_on_target": "Defines Frobenius/vector norms, r^(3/2), and sqrt(6).",
+      "paper_match": "Matches all square-root expressions in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D149",
+      "name": "Unit",
+      "interpretation": "A one-element type used by generated case matchers.",
+      "effect_on_target": "Carries no mathematical data.",
+      "paper_match": "No paper-level semantic effect.",
+      "status": "pass"
+    },
+    {
+      "id": "D150",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Interprets numeral zero from a Zero instance.",
+      "effect_on_target": "Defines zero errors, matrices, vectors, and lower bounds.",
+      "paper_match": "Matches ordinary zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D151",
+      "name": "abs",
+      "interpretation": "Ordinary absolute value on an ordered additive group.",
+      "effect_on_target": "Bounds the magnitude of scalar remainders and componentwise relative errors.",
+      "paper_match": "Matches |delta| and magnitude-based big-O semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D152",
+      "name": "instHDiv",
+      "interpretation": "Adapter from homogeneous Div to HDiv.",
+      "effect_on_target": "Resolves overloaded real division.",
+      "paper_match": "No semantic change to division.",
+      "status": "pass"
+    },
+    {
+      "id": "D153",
+      "name": "instHPow",
+      "interpretation": "Adapter from Pow to HPow.",
+      "effect_on_target": "Resolves overloaded squaring.",
+      "paper_match": "No semantic change to exponentiation.",
+      "status": "pass"
+    },
+    {
+      "id": "D154",
+      "name": "instHSub",
+      "interpretation": "Adapter from homogeneous Sub to HSub.",
+      "effect_on_target": "Resolves overloaded subtraction.",
+      "paper_match": "No semantic change to subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D155",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "A proposition/typeclass used to elaborate natural numerals at least two in another type.",
+      "effect_on_target": "Only supports numeric literals.",
+      "paper_match": "No independent paper semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D156",
+      "name": "Nonempty",
+      "interpretation": "Proposition asserting that an execution-trace type has at least one inhabitant while hiding the witness.",
+      "effect_on_target": "Requires completed factorization and triangular-solve traces to exist.",
+      "paper_match": "Matches the paper's runs-to-completion conditions.",
+      "status": "pass"
+    },
+    {
+      "id": "D157",
+      "name": "Unit.unit",
+      "interpretation": "The sole Unit value.",
+      "effect_on_target": "Feeds generated case branches without data.",
+      "paper_match": "No paper-level effect.",
+      "status": "pass"
+    },
+    {
+      "id": "D158",
+      "name": "instAddNat",
+      "interpretation": "Ordinary natural-number addition.",
+      "effect_on_target": "Defines block indexing and numeral elaboration.",
+      "paper_match": "Matches integer index arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D159",
+      "name": "instLENat",
+      "interpretation": "Ordinary <= on natural numbers.",
+      "effect_on_target": "Expresses r<=b and minimum-rank conditions.",
+      "paper_match": "Matches rank and dimension ordering.",
+      "status": "pass"
+    },
+    {
+      "id": "D160",
+      "name": "instLTNat",
+      "interpretation": "Ordinary < on natural numbers.",
+      "effect_on_target": "Expresses positive dimensions and Fin bounds.",
+      "paper_match": "Matches positive b and p and finite index bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D161",
+      "name": "Ne",
+      "interpretation": "Inequality defined as negated equality.",
+      "effect_on_target": "Restricts BLR approximation/rank conditions to off-diagonal blocks.",
+      "paper_match": "Matches i not equal to j in equations (2.2)-(2.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D162",
+      "name": "Matrix.sub",
+      "interpretation": "Pointwise matrix subtraction.",
+      "effect_on_target": "Defines block approximation errors.",
+      "paper_match": "Matches A_ij minus Atilde_ij up to norm-invariant sign.",
+      "status": "pass"
+    },
+    {
+      "id": "D163",
+      "name": "Pi.addCommMonoid",
+      "interpretation": "Pointwise additive commutative-monoid structure on function spaces.",
+      "effect_on_target": "Supports finite sums of vectors.",
+      "paper_match": "Matches componentwise vector summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D164",
+      "name": "Pi.instSub",
+      "interpretation": "Pointwise subtraction on function spaces.",
+      "effect_on_target": "Defines vector subtraction in block recurrences.",
+      "paper_match": "Matches componentwise vector subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D165",
+      "name": "instDecidableEqFin",
+      "interpretation": "Decidable equality on finite indices.",
+      "effect_on_target": "Allows identity matrices, filters, and orientation branches to compute.",
+      "paper_match": "Logical infrastructure only; it does not alter index semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D166",
+      "name": "ite",
+      "interpretation": "If-then-else selected by a decidable proposition.",
+      "effect_on_target": "Defines identity entries and lower/upper orientation.",
+      "paper_match": "Implements the paper's stated cases exactly.",
+      "status": "pass"
+    },
+    {
+      "id": "D167",
+      "name": "Classical.propDecidable",
+      "interpretation": "Classical decidability for propositions.",
+      "effect_on_target": "Permits case-defined mathematical functions without adding assumptions.",
+      "paper_match": "No numerical or semantic alteration.",
+      "status": "pass"
+    },
+    {
+      "id": "D168",
+      "name": "Fin.decLt",
+      "interpretation": "Decidable strict comparison of finite indices via their natural values.",
+      "effect_on_target": "Computes predecessor sets and low-rank orientation.",
+      "paper_match": "Matches ordinary block-index ordering.",
+      "status": "pass"
+    },
+    {
+      "id": "D169",
+      "name": "Fin.mk",
+      "interpretation": "Constructs a finite index from a natural value and a bound proof.",
+      "effect_on_target": "Builds global indices for block entries.",
+      "paper_match": "Preserves the intended finite indexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D170",
+      "name": "Fin.val",
+      "interpretation": "Extracts the natural value of a finite index.",
+      "effect_on_target": "Defines block-index arithmetic and finite ordering.",
+      "paper_match": "Matches integer index values.",
+      "status": "pass"
+    },
+    {
+      "id": "D171",
+      "name": "Finset",
+      "interpretation": "A finite set without duplicate elements.",
+      "effect_on_target": "Represents predecessor and complete index sets.",
+      "paper_match": "Matches finite summation domains.",
+      "status": "pass"
+    },
+    {
+      "id": "D172",
+      "name": "Finset.filter",
+      "interpretation": "Selects elements of a finite set satisfying a predicate.",
+      "effect_on_target": "Constructs earlier-block and triangular-predecessor sets.",
+      "paper_match": "Matches restrictions j<k, j<i, or j>i.",
+      "status": "pass"
+    },
+    {
+      "id": "D173",
+      "name": "Matrix.zero",
+      "interpretation": "The pointwise zero matrix.",
+      "effect_on_target": "Expresses triangular zero blocks and absent recompression errors.",
+      "paper_match": "Matches exact zero blocks/errors.",
+      "status": "pass"
+    },
+    {
+      "id": "D174",
+      "name": "instLEFin",
+      "interpretation": "Non-strict order on Fin n induced by natural values.",
+      "effect_on_target": "Indexes update rows and columns with k<=i.",
+      "paper_match": "Matches Algorithm 1-2 loop ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D175",
+      "name": "instLTFin",
+      "interpretation": "Strict order on Fin n induced by natural values.",
+      "effect_on_target": "Indexes off-diagonal loops, triangular shape, and predecessors.",
+      "paper_match": "Matches the paper's strict index inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D176",
+      "name": "Finset.instSetLike",
+      "interpretation": "Coerces a finite set to its membership predicate.",
+      "effect_on_target": "Supports membership tests in earlier-block sets.",
+      "paper_match": "Infrastructure only; membership has its ordinary finite-set meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D177",
+      "name": "Matrix.addCommMonoid",
+      "interpretation": "Pointwise additive commutative-monoid structure on matrices.",
+      "effect_on_target": "Supports finite sums of matrix-valued products and errors.",
+      "paper_match": "Matches entrywise matrix addition and finite matrix sums.",
+      "status": "pass"
+    },
+    {
+      "id": "D178",
+      "name": "Membership.mem",
+      "interpretation": "Typeclass-resolved membership relation.",
+      "effect_on_target": "Tests whether an index belongs to an earlier-block set.",
+      "paper_match": "Matches ordinary finite-set membership.",
+      "status": "pass"
+    },
+    {
+      "id": "D179",
+      "name": "Nat.instPreorder",
+      "interpretation": "The standard preorder on natural numbers.",
+      "effect_on_target": "Supports the proof that block indices are in range.",
+      "paper_match": "No semantic discrepancy.",
+      "status": "pass"
+    },
+    {
+      "id": "D180",
+      "name": "Preorder.toLT",
+      "interpretation": "Extracts strict order from a preorder.",
+      "effect_on_target": "Interprets the natural strict inequality in a generated proof.",
+      "paper_match": "No independent paper-level effect.",
+      "status": "pass"
+    },
+    {
+      "id": "D181",
+      "name": "SetLike.instMembership",
+      "interpretation": "Derives membership from a SetLike coercion.",
+      "effect_on_target": "Connects Finset coercion to update-index membership tests.",
+      "paper_match": "Infrastructure only; it preserves ordinary membership semantics.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The PDF is the published IMA Journal of Numerical Analysis 42(2), 2022 version, pp. 951-980. The selected result is Theorem 4.5 and equations (4.23)-(4.25), printed p. 974, with its proof on printed p. 975.",
+      "lean_evidence": "The target is P15-T3 and states the mixed backward-error conclusion with exact compositions, the two displayed bounds, c, gamma values, and xi.",
+      "reasoning": "The paper version and result selection are correct."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "Equations (2.2)-(2.4), printed p. 953, give p-by-p blocks of order b and n=p*b; Theorem 4.5, printed p. 974, uses real n-by-n matrices and vectors in R^n.",
+      "lean_evidence": "D017-D018 use real matrices and vectors indexed by Fin(p*b); D029 requires 0<b, 0<p, and r<=b.",
+      "reasoning": "Binder types, dimensions, and index sets agree with the paper."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "Equations (4.24)-(4.25), printed p. 974, place O(u*epsilon) and O(u^2) inside the bounds for the current computed result; the derivation treats them as controlled lower-order terms.",
+      "lean_evidence": "The run, including fixed u and epsilon, is quantified before factorRemainder's big-O witnesses, and rhsRemainder is existentially selected after the fixed run. D025-D026 quantify delta without requiring run.unitRoundoff<=delta or run.epsilon<=delta.",
+      "reasoning": "A remainder may be zero in a neighborhood of zero but arbitrarily large at the run's actual positive parameter pair. The witness dependence and scope therefore do not preserve the paper's quantitative conclusion."
+    },
+    {
+      "id": "S04",
+      "status": "pass",
+      "paper_evidence": "Theorems 4.2 and 4.3, printed pp. 969 and 971, require nonsingularity and completion; printed pp. 954-955 require valid gamma indices, positive epsilon, and u safely below epsilon.",
+      "lean_evidence": "D029 carries nonsingularity, completed factorization and solves, positive b and p, and D049 requires 0<u<epsilon and 3*c*u<1.",
+      "reasoning": "The explicit and inherited structural hypotheses are present, and no pivoting or bounded-growth hypothesis is added."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.5 simultaneously concludes equation (4.23) and meaningful bounds (4.24)-(4.25), printed p. 974.",
+      "lean_evidence": "The target syntactically includes the equation and both inequalities, but D025-D026 do not control the remainder values used in those inequalities at the current run point.",
+      "reasoning": "The central quantitative force of both higher-order terms is absent, so the conclusion is not semantically complete."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The O(u*epsilon) and O(u^2) operators denote lower-order contributions to the displayed error estimates on printed p. 974.",
+      "lean_evidence": "D025 and D026 unfold to local bounds with an existential delta disconnected from the evaluation point.",
+      "reasoning": "The nontrivial big-O definitions have been exposed, and their actual meaning does not implement the paper's evaluated bounds."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "Theorem 4.5 and its proof, printed pp. 974-975, distinguish A/Atilde, computed L-tilde, U-tilde, y-hat, x-hat, and Delta perturbations.",
+      "lean_evidence": "D002-D016 use separate fields for A, Atilde through D029, computed factors and vectors, and each perturbation.",
+      "reasoning": "Exact, represented, computed, and perturbed objects are not conflated. The formal relation between A and Atilde is a defensible resolution of the paper's notation inconsistency."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Algorithms 1 and 2 are on printed pp. 963 and 971; Theorem 4.5, printed p. 974, admits only their factors followed by the two triangular solves analyzed in Theorem 4.4.",
+      "lean_evidence": "D044 dispatches only to D059-D060; D069-D070 encode the UCF/UFC operation orders; D045 and D058 encode lower and upper blockwise solves.",
+      "reasoning": "The proposition remains linked to the permitted algorithms and completion model."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Printed pp. 953-954 define every unsubscripted norm as Frobenius and state that the analysis is normwise; vector Frobenius norm is Euclidean.",
+      "lean_evidence": "D023/D036 are explicit Frobenius norms and D028 is sqrt(sum of squares).",
+      "reasoning": "Norm kind, unsquared form, and normwise semantics match."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Table 1, printed p. 969, gives all four xi values; equations (4.21) and (4.24), printed pp. 973-974, give b+r^(3/2)+p and c=b+2r^(3/2)+p with gamma_(3c).",
+      "lean_evidence": "D019-D020, D051, and D076 implement these constants and cases exactly; D073 translates the one-based block range to zero-based Fin indices.",
+      "reasoning": "Coefficients, constants, and index offsets match."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "Equation (2.5) and the gamma definition, printed p. 954, provide the standard relative-error model; the paper does not separately model overflow, underflow, subnormals, NaNs, or infinities.",
+      "lean_evidence": "D049 enforces gamma-domain validity, while D058 and D090-D093 encode the aggregate relative-error contracts used by the cited analysis.",
+      "reasoning": "The formal execution contracts are consistent with the paper's idealized floating-point model and do not introduce exceptional-value behavior."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "Equations (4.24)-(4.25), printed p. 974, are substantive non-strict upper bounds with lower-order remainders.",
+      "lean_evidence": "For fixed u0>0 and epsilon0>u0, a remainder can be set to any value at (u0,epsilon0), zero elsewhere near zero, and certified by D025 or D026 using delta<u0.",
+      "reasoning": "Although the displayed <= directions are correct, the formal inequalities are logically much weaker than the paper's bounds."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Equation (4.23), printed p. 974, is a mixed normwise backward-error statement perturbing both A and v.",
+      "lean_evidence": "The target constructs both matrixError and rhsError and states p15MatVec(A+matrixError,xHat)=v+rhsError.",
+      "reasoning": "No forward, residual-only, or componentwise error notion is substituted."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Equations (4.24)-(4.25), printed p. 974, retain O(u*epsilon) and O(u^2); printed p. 975 identifies the exact second-order products before simplification.",
+      "lean_evidence": "The exact products D021-D022 are correct, but D025-D026 impose asymptotic control only on an unrelated sufficiently small neighborhood and not at the values inserted into the final inequalities.",
+      "reasoning": "The higher-order terms are present syntactically but not handled faithfully at the theorem's evaluated parameters."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The paper result is already finite-dimensional, scalar-real, and uses uniform b-by-b blocks with n=p*b.",
+      "lean_evidence": "The formal statement uses exactly finite real matrices/vectors and positive uniform block parameters.",
+      "reasoning": "There is no unsupported scalar, real, or dimensional specialization."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.5's purpose is a nontrivial quantitative backward-stability guarantee, not merely existence of perturbations with unrestricted magnitudes.",
+      "lean_evidence": "The execution hypotheses are satisfiable, for example with b=p=1, r=0, identity A=Atilde=L=U, zero vectors/errors, and sufficiently small positive u<epsilon. Nevertheless, for any fixed admissible run the existential rhsRemainder can make its inequality true by an isolated spike outside its certified neighborhood; factorRemainder can be admitted similarly in D029.",
+      "reasoning": "The domain is nonempty, but the central numerical bounds can hold for the unintended trivial reason that their evaluated remainders are unconstrained."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean proposition does not enforce O(u*epsilon) or O(u^2) control at the run's actual u and epsilon. Its remainder functions may have arbitrary isolated values there, so its matrix and right-hand-side inequalities do not imply equations (4.24)-(4.25) as quantitative paper bounds."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "The paper's genuine perturbations, exact compositions from printed p. 975, and genuinely controlled higher-order families satisfy the weaker Lean predicates and inequalities when the paper execution is represented by the dossier's UFC/UCF and triangular-solve contracts."
+    }
+  },
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "higher-order-term quantifier scope",
+      "paper_evidence": "Equations (4.24)-(4.25), printed p. 974, include O(u*epsilon) and O(u^2) as controlled terms in the bounds for the computed result; the proof on printed p. 975 derives them from explicit perturbation products.",
+      "lean_evidence": "D025-D026 only constrain a remainder inside some existential delta-neighborhood. Neither predicate nor D029 requires the run's actual unitRoundoff and epsilon to be inside that neighborhood. The target additionally chooses rhsRemainder after the run is fixed.",
+      "impact": "For any fixed admissible positive pair (u0,epsilon0), choose delta<u0 and a function that is zero throughout the certified neighborhood but arbitrarily large at (u0,epsilon0). It satisfies the big-O predicate and can force the evaluated inequality. The same defect weakens the imported factorization bound. Consequently the formal proposition does not state the paper's numerical stability bounds."
+    },
+    {
+      "severity": "note",
+      "category": "A versus Atilde notation",
+      "paper_evidence": "Theorem 4.5 begins with A-tilde and solves A-tilde*x=v, but equations (4.23)-(4.24) and the proof use A; printed pp. 974-975. Section 2 distinguishes dense A from its BLR representation A-tilde, printed p. 953.",
+      "lean_evidence": "D029 retains separate A and Atilde, relates them through D050, runs the factorization trace on Atilde, and states the final perturbation around A.",
+      "impact": "This is a reasonable explicit resolution of the paper's source-level notation inconsistency and is not the cause of rejection."
+    }
+  ],
+  "rationale": "The finite real dimensions, BLR representation, computed-factor rank, UFC/UCF linkage, triangular-solve model, Frobenius norms, constants, xi cases, exact perturbation compositions, and mixed backward-error equation closely track the PDF. The decisive defect is logical: the two big-O predicates certify behavior only within an existential neighborhood of zero, while the inequalities evaluate the remainder at a fixed run point that need not be in that neighborhood. The existential right-hand-side remainder can therefore be given an arbitrary isolated spike at the evaluated point, and the bundled factor remainder has the same weakness. This removes the quantitative content of equations (4.24)-(4.25), so the Lean proposition is a non-faithful weakening rather than an equivalent formalization."
+}

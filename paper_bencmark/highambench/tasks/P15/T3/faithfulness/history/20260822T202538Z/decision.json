@@ -1,0 +1,60 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "round-trip S07 is unclear"
+  ],
+  "classification": "not-faithful-weaker",
+  "completed_at_utc": "2026-08-22T16:10:45.302149+00:00",
+  "findings": [
+    {
+      "category": "higher-order remainder current-point disconnect",
+      "evidence": "Equations (4.24)-(4.25), printed p. 974, use O(u*epsilon) and O(u^2) inside the current backward-error estimates. D025-D026 constrain a remainder only below some existential delta, but neither the run nor the target requires the current u and epsilon to be below that delta.",
+      "impact": "A remainder may vanish on its certified neighborhood yet have an arbitrary isolated value at the evaluated run point. The displayed formal inequalities therefore lack the paper's quantitative force.",
+      "severity": "critical"
+    },
+    {
+      "category": "reduced applicability through pre-certified perturbations",
+      "evidence": "Theorems 4.2-4.4 derive the factorization and triangular-solve perturbations from completed algorithms. D029 instead requires their equations and aggregate bounds as fields before the target theorem applies.",
+      "impact": "The declaration proves only a composition result for executions already carrying the main intermediate error conclusions. This is reduced applicability, not genuine nonvacuous strengthening.",
+      "severity": "major"
+    },
+    {
+      "category": "right-hand-side big-O scale",
+      "evidence": "Printed p. 975 gives the exact right-hand-side composition and the upper-solve equation. Combining these with the gamma bounds shows that the excess coefficient after gamma_p*solveScale is O(u^2), with solveScale = ||L||*||U||*||xHat|| as used by D026.",
+      "impact": "The explicit solveScale does not block paper-to-Lean; it resolves the round-trip judge's concern about that implication.",
+      "severity": "note"
+    },
+    {
+      "category": "A versus Atilde notation",
+      "evidence": "Printed p. 953 distinguishes A and Atilde, whereas Theorem 4.5 on printed p. 974 binds Atilde and then uses A throughout equations (4.23)-(4.25). D029 preserves both objects and relates them.",
+      "impact": "S07 is not a failure. The exact intended algorithm-input symbol remains uncertain in the source, and the declaration's chosen linkage is an additional restriction rather than a computed/exact conflation.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "D025-D026 do not require the current run parameters to lie in their certified neighborhoods. In particular, the existential rhsRemainder can be zero near the origin and arbitrarily positive at the current point, making the final right-hand-side inequality true without the paper's O(u^2) control. The factor remainder admitted by D029 has the analogous defect, and D029 additionally presupposes intermediate conclusions that the paper derives.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "For a source-compliant execution represented by the declaration, the proof on printed p. 975 supplies exactly the D021-D022 perturbation compositions and the perturbed system. Its gamma bounds yield the principal terms and an O(u^2) remainder proportional to solveScale. Source-controlled remainders satisfy the weaker D025-D026 predicates, while the declaration's additional pre-certified fields only restrict applicability.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-weaker",
+    "roundtrip": "undetermined"
+  },
+  "rationale": "The declaration correctly preserves the finite real dimensions, Frobenius and Euclidean norms, BLR rank, UFC/UCF linkage, four xi cases, constants, mixed backward-error equation, and exact perturbation products from printed p. 975. The decisive mismatch is logical: its big-O predicates describe only an arbitrary neighborhood that need not contain the point where the remainder is used. Together with D029's assumption of already-derived perturbation contracts, this makes the formal result strictly less informative and less applicable than Theorem 4.5. The paper's proof and gamma algebra satisfy the declaration's weaker obligations, but the declaration cannot recover the paper's substantive current-parameter bounds.",
+  "remaining_uncertainties": [
+    "The PDF does not determine whether the opening Atilde or the subsequent A occurrences in Theorem 4.5 are the typographical error. This source-level ambiguity does not affect the weaker classification.",
+    "The paper gives no quantitative meaning for 'u is safely smaller than epsilon'; therefore D049's precise u<epsilon condition cannot be proved equivalent to that phrase."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P15-T3"
+}

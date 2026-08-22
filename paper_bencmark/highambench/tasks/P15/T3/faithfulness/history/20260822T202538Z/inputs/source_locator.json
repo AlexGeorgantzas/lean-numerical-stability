@@ -43,21 +43,21 @@
       "anchor": "Table 1 values of xi_p and Theorem 4.2 (UFC with optional recompression)",
       "pdf_page": 19,
       "printed_page": "969",
-      "role": "finite UFC predecessor decomposition and the four threshold coefficients derived before Theorem 4.5",
+      "role": "finite UFC factorization bound and the four threshold coefficients referenced by Theorem 4.5",
       "section": "4.1.3 Impact of intermediate recompressions"
     },
     {
       "anchor": "Algorithm 2 and Theorem 4.3 (UCF), including the runs-to-completion hypothesis",
       "pdf_page": 21,
       "printed_page": "971",
-      "role": "second permitted factorization trace and its derived Theorem-4.3 predecessor guarantee",
+      "role": "second permitted BLR factorization execution and its normwise factorization guarantee",
       "section": "4.2 UCF factorization"
     },
     {
       "anchor": "Theorem 4.4, equations (4.21)-(4.22)",
       "pdf_page": 23,
       "printed_page": "973",
-      "role": "equation-(4.22) operation traces and the two derived equation-(4.21) predecessor guarantees",
+      "role": "ordered BLR triangular-solve product, summation, and diagonal-solve perturbations; c_tri = b + r^(3/2) + p; and the aggregate equation-(4.21) bounds",
       "section": "4.3 BLR triangular systems"
     },
     {
@@ -71,7 +71,7 @@
       "anchor": "proof of Theorem 4.5, exact products of factor and solve perturbations",
       "pdf_page": 25,
       "printed_page": "975",
-      "role": "exact perturbation composition, gamma simplification, and higher-order terms",
+      "role": "exact perturbation composition before big-O simplification",
       "section": "4.3 BLR linear systems"
     }
   ],
