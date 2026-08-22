@@ -79,17 +79,36 @@ The target also proves `A + DeltaA = (YHat + DeltaYHat)(RHat + DeltaRHat)` and
 the factorized computed-solution relation. Thus `DeltaA` is not an unrelated
 matrix carrying a generic norm budget.
 
-## Tall-system wording
+## Corrected source conditions
 
 The theorem statement prints `(A + DeltaA)xHat = b + deltaB`, while its proof
 writes `xHat = (A + DeltaA)^dagger(b + deltaB)`. For a tall inconsistent
-least-squares problem those formulas are not equivalent, and the printed
-hypotheses do not say that `b + deltaB` lies in the perturbed column space.
+least-squares problem those formulas are not equivalent. Moreover, the proof's
+identity
 
-The formal target therefore states the consequence that is valid for the
-paper's LSQR pseudoinverse witness without adding a consistency assumption:
-`xHat` satisfies the least-squares normal equation for
-`(A + DeltaA, b + deltaB)`. It also retains the exact factorized solution
-chain through `(RHat + DeltaRHat)^{-1}` and
-`(YHat + DeltaYHat)^dagger`. No numerical bound on `deltaB` is added, because
-Theorem 3.5 does not provide one.
+```text
+((YHat + DeltaYHat)(RHat + DeltaRHat))^dagger
+  = (RHat + DeltaRHat)^(-1) (YHat + DeltaYHat)^dagger
+```
+
+requires the perturbed LSQR matrix to have full column rank. Equation (3.9)
+places no bound on `DeltaYHat`, so the original full-rank facts do not imply
+that condition.
+
+This project-corrected target therefore adds exactly two hypotheses:
+
+1. `YHat + DeltaYHat` has full column rank; and
+2. `b + deltaB` lies in the range of `A + DeltaA`.
+
+The first makes the displayed product an actual Moore--Penrose pseudoinverse
+of `A + DeltaA`; the second turns its projected least-squares solution into
+the exact perturbed-system equation printed by Theorem 3.5. The target retains
+both claims, the algorithm linkage, all four terms of `DeltaA`, and the exact
+immediate norm estimate. No numerical bound on `deltaB` is added because the
+source provides none.
+
+These are sufficient conditions supplied by the project, not hypotheses
+printed in Theorem 3.5 and not an author-issued correction. Consequently this
+task is excluded from ordinary paper-faithfulness acceptance. The source defect
+and benchmark decision are recorded in
+`paper_bencmark/faithfulness_audit/source_validity/P07-T2.md`.

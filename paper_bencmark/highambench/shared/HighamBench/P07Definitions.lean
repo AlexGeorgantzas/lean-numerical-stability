@@ -337,6 +337,18 @@ def p07Theorem35PerturbedR {m s n : ℕ}
     Fin n → Fin n → ℝ :=
   p07RectAdd pre.RHat run.backSubstitution.DeltaRHat
 
+/-- The product pseudoinverse asserted in the proof of P07 Theorem 3.5. Under
+full column rank of the perturbed LSQR matrix, this is the Moore--Penrose
+pseudoinverse of the perturbed matrix `A + DeltaA`. -/
+noncomputable def p07Theorem35PerturbedPseudoinverse {m s n : ℕ}
+    {pre : P07Lemma31ComputedPreconditioner m s n}
+    {model : P07ScalarArithmeticModel}
+    {forwardRun : P07Lemma32ForwardRun pre model} {u : ℝ}
+    (run : P07SAABlendenpikRun pre model forwardRun u) :
+    Fin n → Fin m → ℝ :=
+  p07RectMatMul run.backSubstitution.perturbedRInv
+    run.lsqr.perturbedPseudoinverse
+
 /-- The perturbed right-hand side `b + deltaB` retained by Theorem 3.5. -/
 def p07Theorem35PerturbedB {m s n : ℕ}
     {pre : P07Lemma31ComputedPreconditioner m s n}

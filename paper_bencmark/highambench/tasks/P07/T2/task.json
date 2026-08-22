@@ -1,7 +1,8 @@
 {
   "annotation": {
-    "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, Algorithm 1.3 linkage, exact four-term backward error, and source-ambiguity resolution",
+    "added_mathematical_proof_not_in_paper": true,
+    "audit_treatment": "excluded-source-defect",
+    "kind": "project-corrected Theorem 3.5 result with explicit perturbed-rank and range conditions",
     "performed_by": "Codex"
   },
   "assumptions": [
@@ -10,6 +11,8 @@
     "The rowwise formation errors satisfy the paper's componentwise gamma_n bound and its stated spectral consequence ||YHat*RHat-A||_2 <= n*gamma_n*||RHat||_2*||YHat||_2.",
     "Unpreconditioned LSQR on the explicitly formed YHat has the equation (3.9) witness zHat=(YHat+DeltaYHat)^dagger(b+deltaB), with an actual Moore-Penrose pseudoinverse.",
     "The final back substitution satisfies (RHat+DeltaRHat)xHat=zHat, the perturbed triangular factor has a two-sided inverse, and ||DeltaRHat||_2 <= sqrt(n)*gamma_n*||RHat||_2.",
+    "Project correction: YHat+DeltaYHat has full column rank, which validates the product pseudoinverse identity used in the proof.",
+    "Project correction: b+deltaB lies in the range of A+DeltaA, which validates the exact perturbed-system equation printed in Theorem 3.5.",
     "The source states no separate overflow, underflow, NaN, infinity, or subnormal clauses for this result and provides no numerical bound on deltaB."
   ],
   "author_label": null,
@@ -20,14 +23,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P07/T2/context.md",
   "formal_statement": {
-    "lean_header": "theorem p07_t2_backward_error_product_budget {m s n : Nat} {u : Real} (pre : P07Lemma31ComputedPreconditioner m s n) (model : P07ScalarArithmeticModel) (forwardRun : P07Lemma32ForwardRun pre model) (run : P07SAABlendenpikRun pre model forwardRun u) : And (p07Theorem35PerturbedA run = p07RectMatMul (p07Theorem35PerturbedY run) (p07Theorem35PerturbedR run)) (And (run.backSubstitution.xHat = p07MatVec run.backSubstitution.perturbedRInv (p07MatVec run.lsqr.perturbedPseudoinverse (p07Theorem35PerturbedB run))) (And (p07LeastSquaresNormalEquation (p07Theorem35PerturbedA run) (p07Theorem35PerturbedB run) run.backSubstitution.xHat) (p07RectOpNorm2Le (p07Theorem35DeltaA run) (run.rSpectrum.upper * (((n : Real) + Real.sqrt n) * gamma u n * run.ySpectrum.upper + (1 + Real.sqrt n * gamma u n) * run.lsqrDeltaSpectrum.upper)))))",
+    "lean_header": "theorem p07_t2_backward_error_product_budget {m s n : Nat} {u : Real} (pre : P07Lemma31ComputedPreconditioner m s n) (model : P07ScalarArithmeticModel) (forwardRun : P07Lemma32ForwardRun pre model) (run : P07SAABlendenpikRun pre model forwardRun u) (hPerturbedYFullRank : Function.Injective (p07MatVec (p07Theorem35PerturbedY run))) (hPerturbedBInRange : Exists fun x => p07MatVec (p07Theorem35PerturbedA run) x = p07Theorem35PerturbedB run) : And (p07Theorem35PerturbedA run = p07RectMatMul (p07Theorem35PerturbedY run) (p07Theorem35PerturbedR run)) (And (P07MoorePenrosePseudoinverse (p07Theorem35PerturbedA run) (p07Theorem35PerturbedPseudoinverse run)) (And (run.backSubstitution.xHat = p07MatVec (p07Theorem35PerturbedPseudoinverse run) (p07Theorem35PerturbedB run)) (And (p07MatVec (p07Theorem35PerturbedA run) run.backSubstitution.xHat = p07Theorem35PerturbedB run) (p07RectOpNorm2Le (p07Theorem35DeltaA run) (run.rSpectrum.upper * (((n : Real) + Real.sqrt n) * gamma u n * run.ySpectrum.upper + (1 + Real.sqrt n * gamma u n) * run.lsqrDeltaSpectrum.upper))))))",
     "namespace": "HighamBench",
-    "plain_language": "For the linked SAA Blendenpik execution, the exact four-term DeltaA factors the perturbed matrix, the computed xHat solves the corresponding perturbed least-squares problem, and DeltaA satisfies the paper's fixed page-920 spectral bound.",
+    "plain_language": "For the linked SAA Blendenpik execution, assume the perturbed LSQR matrix has full column rank and the perturbed right-hand side is consistent. Then the proof's product is the Moore-Penrose pseudoinverse of A+DeltaA, xHat solves the exact perturbed system printed in Theorem 3.5, and the exact four-term DeltaA satisfies the immediate page-920 spectral bound.",
     "target_file": "paper_bencmark/highambench/tasks/P07/T2/Target.lean",
     "theorem_name": "p07_t2_backward_error_product_budget"
   },
-  "informal_proof": "Expand (YHat+DeltaYHat)(RHat+DeltaRHat) to obtain A+DeltaA. Use the final triangular inverse and equation (3.9) for the factorized xHat relation. The symmetric Moore-Penrose range projection makes the residual orthogonal to the columns of YHat+DeltaYHat; the product factorization transfers this to the normal equation for A+DeltaA. Finally combine the fixed formation-error bound, equation (2.6), spectral submultiplicativity, and triangle inequalities, then collect the n, sqrt(n), and mixed-product coefficients exactly.",
-  "informal_statement": "The algorithm-linked exact DeltaA construction and immediate spectral-norm estimate in the proof of Theorem 3.5, with the perturbed right-hand side and least-squares relation retained.",
+  "informal_proof": "Expand (YHat+DeltaYHat)(RHat+DeltaRHat) to obtain A+DeltaA. Full column rank gives (YHat+DeltaYHat)^dagger(YHat+DeltaYHat)=I; combine this with the two-sided inverse of RHat+DeltaRHat and the Penrose equations to prove that the product inverse used on page 920 is the Moore-Penrose pseudoinverse of A+DeltaA. Equation (3.9) and the final back substitution then give the computed xHat relation. Since b+deltaB is in the perturbed matrix range, the Penrose reproduction equation yields the exact printed perturbed-system equality. Finally combine the fixed formation-error bound, equation (2.6), spectral submultiplicativity, and triangle inequalities, then collect the n, sqrt(n), and mixed-product coefficients exactly.",
+  "informal_statement": "A project-corrected version of Theorem 3.5's algorithm-linked backward-error construction: under explicit perturbed-rank and consistency conditions, the proof's pseudoinverse identity and the theorem's exact perturbed-system equation hold together with the exact four-term DeltaA estimate.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -46,7 +49,7 @@
       "NumStability.rectOpNorm2Le_rectMatMul",
       "NumStability.vecNorm2_add_le"
     ],
-    "note": "The mounted MatrixAlgebra module supplies product composition and the Euclidean triangle inequality. No mounted declaration packages Algorithm 1.3, the LSQR and back-substitution chain, the Moore-Penrose normal-equation argument, the four exact DeltaA terms, or the fixed gamma coefficient collection."
+    "note": "The mounted MatrixAlgebra module supplies product composition and the Euclidean triangle inequality. No mounted declaration packages Algorithm 1.3, the LSQR and back-substitution chain, the full-rank product-pseudoinverse argument, the exact range-to-solution step, the four exact DeltaA terms, or the fixed gamma coefficient collection."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
@@ -67,6 +70,7 @@
     "p07Theorem35PerturbedA",
     "p07Theorem35PerturbedY",
     "p07Theorem35PerturbedR",
+    "p07Theorem35PerturbedPseudoinverse",
     "p07Theorem35PerturbedB"
   ],
   "source_locations": [
@@ -95,7 +99,7 @@
       "anchor": "equation (3.9), exact DeltaA definition, rowwise formation error, and immediate compositional estimate",
       "pdf_page": 16,
       "printed_page": "920",
-      "role": "LSQR backward witness, perturbed-data linkage, exact four-term backward error, and fixed n/sqrt(n)/gamma_n spectral bound",
+      "role": "LSQR backward witness, the source-defective product-pseudoinverse and exact-solution claims repaired by explicit rank/range hypotheses, exact four-term backward error, and fixed n/sqrt(n)/gamma_n spectral bound",
       "section": "3.4. The backward error of SAA Blendenpik"
     }
   ],
@@ -105,7 +109,7 @@
   "task_id": "P07-T2",
   "tier": "T2",
   "tier_label": "combine",
-  "tier_rationale": "The L proof combines NumStability.rectOpNorm2Le_rectMatMul and NumStability.vecNorm2_add_le from the mounted MatrixAlgebra module. It additionally proves the P07-specific factorization, factorized computed-solution chain, Moore-Penrose normal equation, four-term assembly, and exact gamma coefficient collection; no single frozen declaration states the selected result.",
+  "tier_rationale": "The L proof combines NumStability.rectOpNorm2Le_rectMatMul and NumStability.vecNorm2_add_le from the mounted MatrixAlgebra module. It additionally proves the P07-specific factorization, full-rank product-pseudoinverse identity, range-to-exact-solution step, four-term assembly, and exact gamma coefficient collection; no single frozen declaration states the corrected result.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P07/T2/Target.lean",
     "mode": "shared automatic validator",

@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete local paper, surveyed every labeled mathematical result and the source-facing error formulas, excluded delegated probability and experimental claims, searched the frozen mathlib and NumStability baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
+    "method": "Codex read the complete local paper, surveyed every labeled mathematical result and the source-facing error formulas, excluded delegated probability and experimental claims, searched the frozen mathlib and NumStability baselines, visually checked every selected source page, and compiled private N/L proofs. P07-T2 is retained only as a documented project-corrected source exception.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P07 source selection and benchmark annotation to Codex."
@@ -82,7 +82,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use the algorithm-linked exact four-term backward-error construction and immediate fixed-coefficient spectral estimate in the proof of Theorem 3.5.",
+      "decision": "Use a project-corrected version of the algorithm-linked Theorem 3.5 construction: add the missing perturbed full-rank and right-hand-side range conditions, then retain the proof's product pseudoinverse, the printed exact perturbed-system equation, and the immediate fixed-coefficient spectral estimate. Exclude this task from ordinary faithfulness acceptance.",
       "task_id": "P07-T2",
       "theorem_name": "p07_t2_backward_error_product_budget"
     },
