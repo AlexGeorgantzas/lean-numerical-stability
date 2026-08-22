@@ -1,70 +1,62 @@
 {
-  "accepted": false,
-  "adjudicated": true,
-  "adjudication_reasons": [
-    "judge classifications differ",
-    "round-trip judge requested adjudication",
-    "round-trip judge classification is undetermined",
-    "round-trip S03 is unclear",
-    "round-trip S04 is unclear",
-    "round-trip S08 is unclear",
-    "round-trip S10 is unclear",
-    "round-trip S11 is unclear",
-    "round-trip S12 is unclear"
-  ],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-21T18:05:35.653751+00:00",
+  "accepted": true,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-22T10:14:23.415898+00:00",
   "findings": [
     {
-      "category": "auxiliary-index-zero",
-      "evidence": "The source loop starts at m=1 and defines x_0=0, r_0=-b, d_0=-x_1 only afterward. D019 requires d_0 to be a fresh solve output for A*d_0=-b and requires x_1=flSub(0,d_0).",
-      "impact": "These equalities are not forced by the paper's relative-error model and exclude otherwise admissible paper executions, making the Lean theorem weaker in applicability.",
-      "severity": "major"
-    },
-    {
-      "category": "algorithm-execution-specialization",
-      "evidence": "D077 and D081-D085 fix pivot-state updates, operation nesting, sequential reductions, and back substitution, while printed page 823 leaves minor computational details unspecified and exposes the C1 solve certificate as the analytic interface.",
-      "impact": "The target covers one concrete implementation realization rather than the full source-level solve interface.",
-      "severity": "major"
-    },
-    {
-      "category": "dimension-only-uniformity",
-      "evidence": "The source requires bounds independent of A and b and dependent only on n. D002 and D020 check only the current constants certificate against a supplied package that may be chosen separately for each run.",
-      "impact": "The target does not encode the paper's uniform n-only bound claim, weakening an essential interpretation of the anonymous constants.",
-      "severity": "major"
-    },
-    {
-      "category": "certificate-witnesses",
-      "evidence": "The formulas, resolvent identities, fixed-point equations, residual-error bounds, and correction-error bounds in D020-D021 correspond to equations and Notes on printed pages 823, 826, and 827.",
-      "impact": "These analytic certificate fields are primarily explicit witnesses to paper-derived facts and are not themselves the decisive applicability defect.",
+      "category": "conservative-algorithm-generalization",
+      "impact": "The formal theorem covers every paper execution and additionally covers arbitrary certificate-bearing executions. This makes it faithfully stronger rather than propositionally equivalent.",
+      "lean_evidence": "D019, D021, and D059 retain the resulting equations and error certificates but contain no pivot-selection or floating-operation provenance.",
+      "paper_evidence": "Section 4 explicitly requires Gaussian elimination with column pivoting for x1 and every d_m and specifies how residuals and updates are computed.",
       "severity": "note"
     },
     {
-      "category": "exact-bound-payload",
-      "evidence": "D008-D010 and D023-D025 reproduce q_(m+1), exponent m, all four ordered terms, the two residual precisions, the nonstandard kappa, c8 smallness, and the absence of O terms.",
-      "impact": "The conclusion's numerical content is faithful; the rejection is caused by the theorem's restricted antecedent domain and lost uniformity claim.",
+      "category": "dimension-bound-packaging",
+      "impact": "The core Lemma 4.3 inequality and exact constants are unaffected, but uniform n-only boundedness is packaged as contextual evidence rather than established as a conclusion of this theorem.",
+      "lean_evidence": "D002, D013, and D020 require a supplied dimension-indexed envelope and exact per-instance bounds; the target does not separately prove existence of one global envelope across all runs.",
+      "paper_evidence": "The Notes assert that the anonymous scalar and matrix quantities are uniformly bounded above by functions of n only.",
       "severity": "note"
+    },
+    {
+      "category": "algorithm-contract generalization",
+      "impact": "The source algorithm remains a valid specialization, but the translated theorem also covers other solvers satisfying the same certificate; this makes the translation strictly stronger.",
+      "paper_evidence": "Printed pages 823-824 name Gaussian elimination with column pivoting for x_1 and every d_m solve.",
+      "severity": "note",
+      "translation_evidence": "The run requires modeled solves satisfying the C1 backward-error property but has no nominal predicate asserting that those solves were executed by column pivoting."
+    },
+    {
+      "category": "floating-point abstraction",
+      "impact": "The numerical inequalities needed by the paper are preserved, but additional abstract real executions are admitted, reinforcing failure of the reverse implication.",
+      "paper_evidence": "Printed pages 818 and 824 describe a floating-point subset of the reals, well-defined operations, residual accumulation order, and conversion between double and single precision.",
+      "severity": "note",
+      "translation_evidence": "All run values are arbitrary reals constrained by aggregate solve, update, and precision-dependent residual error envelopes; representability and operation-level provenance are not encoded."
+    },
+    {
+      "category": "constant-bound packaging",
+      "impact": "The proposition does not itself construct these packages, but a paper instance supplies them from the displayed definitions and notes. No target coefficient or parameter dependence is lost.",
+      "paper_evidence": "Printed pages 822-827 define the anonymous constants and state that they are bounded above by functions of n only.",
+      "severity": "note",
+      "translation_evidence": "Dimension-bound functions and a compatible constants package are theorem inputs, with exact formulas, nonnegativity, inverse witnesses, and per-dimension upper bounds required as fields."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean theorem establishes the bound only after a run satisfying the exact traces, a fresh correction solve at m=0, and the m=0 flSub update is supplied. The paper admits executions for which x_0, r_0, and d_0 are only auxiliary definitions and its relative-error assumptions do not imply those extra execution equalities. The Lean proposition therefore cannot recover the paper theorem over its full domain.",
-      "verdict": "no"
+      "reasoning": "Restrict the formal run to the paper's actual column-pivoted computation. Equations (3.1) and (4.1), the residual-precision analysis, the update model, and the displayed constant definitions instantiate the records, after which the Lean conclusion is exactly Lemma 4.3 component by component.",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "Every Lean instance satisfying its antecedents is a specialization of the paper's positive-dimensional column-pivoted iterative-refinement setting. Its constants and local error certificates match the paper's displayed formulas, and Lemma 4.3 supplies exactly the Lean componentwise conclusion. The extra antecedents only restrict the instances under consideration.",
-      "verdict": "yes"
+      "reasoning": "The paper states Lemma 4.3 for the specified column-pivoted floating-point algorithm. The Lean proposition quantifies over every real-valued run satisfying the extensional solve, residual, correction, and update certificates; those records do not require an actual pivot-selection or floating-operation trace. The paper's stated proposition therefore does not by itself quantify over the whole broader Lean domain.",
+      "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "faithful-equivalent",
-    "roundtrip": "undetermined"
+    "direct": "faithful-stronger",
+    "roundtrip": "faithful-stronger"
   },
-  "rationale": "Primary evidence resolves the disagreement without majority vote. The Lean conclusion reproduces Lemma 4.3 exactly, and the constants/resolvent and roundoff-analysis fields largely expose facts derived in the paper. However, the paper computes corrections and updates only for m>=1 and introduces x_0, r_0, and d_0 solely as auxiliary definitions. D019 extends both a concrete correction solve and a floating subtraction update to m=0. The relative-error axioms permit flSub(0,-x_1)=x_1*(1+delta) with nonzero delta and permit different rounding for a solve with right-hand side -b, so neither extra field follows for every paper arithmetic model. The exact solve and reduction traces further specialize details the paper leaves open, while the per-certificate bounds package does not establish uniform dependence on n alone. These are nonvacuous additional antecedents, not stronger conclusions. Consequently the paper theorem implies the restricted Lean proposition, but the Lean proposition does not imply the full paper theorem.",
-  "remaining_uncertainties": [
-    "The PDF does not identify which precise minor computational details were intended for the Section 3 solve, so the complete intended family of low-level traces cannot be reconstructed. This does not affect the classification because the unsupported m=0 solve and flSub requirements are independently decisive.",
-    "The PDF does not specify whether its matrix-valued n-only upper bounds are entrywise or normwise. Under either reading, the per-certificate dimensionBounds binder does not express one bound uniform over problem data."
-  ],
+  "rationale": "Direct inspection of printed pages 818-827 confirms that the Lean residual, nonstandard kappa, smallness condition, precision split, constants, indexing, componentwise relation, and all four finite terms match Lemma 4.3. Every paper computation is covered and the target is nonvacuous. Because the formal run is characterized by extensional numerical certificates rather than literal column-pivoting and floating-operation traces, its quantified domain is broader than the paper's stated algorithmic domain; the appropriate classification is faithful-stronger.",
+  "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P08-T3"

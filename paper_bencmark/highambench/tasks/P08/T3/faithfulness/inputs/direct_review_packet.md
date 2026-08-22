@@ -494,7 +494,7 @@ Fully explicit type:
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `85f2f086955453d6a2d870b44117beca5f3a6d0996f8607a8118d458a36419fe`
+- Semantic SHA-256: `d7cdfae3226ea26062f3da03b4f8a09cc08e415f9cfcab71b8e6d164e93f07b6`
 
 Type:
 
@@ -511,7 +511,7 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.12
+fun n self => self.6
 ```
 
 ### D015: `HighamBench.P08IterativeRefinementRun.Ainv`
@@ -520,7 +520,7 @@ fun n self => self.12
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `b13393dd2007ec7b119a102881fb8d9ce6e29491cad66c4a82b842082e01280d`
+- Semantic SHA-256: `fbf658b7d4cc30fd907c3d1b54f65373c09d2022e41ba7e215476d43daf6c6de`
 
 Type:
 
@@ -537,7 +537,7 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.13
+fun n self => self.7
 ```
 
 ### D016: `HighamBench.P08IterativeRefinementRun.b`
@@ -546,7 +546,7 @@ fun n self => self.13
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `90deb8b3cf8e5a340ce1bde5cb32f2d0f43225d06d77b01f9d60ccaa450814ba`
+- Semantic SHA-256: `910e89d666adca66e589b98cb1b747e0a33a3e2fab50bc88cf50fdd1eea6fae6`
 
 Type:
 
@@ -563,7 +563,7 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.16
+fun n self => self.10
 ```
 
 ### D017: `HighamBench.P08IterativeRefinementRun.correction`
@@ -572,7 +572,7 @@ fun n self => self.16
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `95a14dfc4c0311ba3f7c922d3d473a2e213593713bf86d6ec9d9bcfb6571368c`
+- Semantic SHA-256: `619684715a0a5fdce031c4a8c55f8ba7de76d0491827935369921dbed9a221be`
 
 Type:
 
@@ -589,7 +589,7 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.24
+fun n self => self.18
 ```
 
 ### D018: `HighamBench.P08IterativeRefinementRun.iterate`
@@ -598,7 +598,7 @@ fun n self => self.24
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `836574bf044469fb2e1989ada8641ce5e2ba72a65a90b5546b99d2138b17f1ff`
+- Semantic SHA-256: `3e59b00c78203e511203f3ad3405ec217a1ed95a250eff9fabcf7dcbf5932db0`
 
 Type:
 
@@ -615,7 +615,7 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.22
+fun n self => self.16
 ```
 
 ### D019: `HighamBench.P08IterativeRefinementRun.mk`
@@ -624,56 +624,46 @@ fun n self => self.22
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `ab1d4981689407c76646be74fcb3dad9570376f69a96a275e6e8a4b1a5810373`
+- Semantic SHA-256: `e7b19ac32cfc452db53a1f4beb6a49aefbcf0dbd3a5e2b7fcf3f357afc041fc5`
 
 Type:
 
 ```lean
 {n : Nat} →
   instLTNat.lt 0 n →
-    (precision : HighamBench.P08ResidualPrecision) →
+    HighamBench.P08ResidualPrecision →
       (u : Real) →
         Real.instLT.lt 0 u →
           Real.instLE.le (instHMul.hMul n.cast u) (1 / 100) →
-            (workingModel : HighamBench.P08ScalarArithmeticModel) →
-              Eq workingModel.unitRoundoff u →
-                (residualModel : HighamBench.P08ScalarArithmeticModel) →
-                  Eq residualModel.unitRoundoff (HighamBench.p08ResidualUnitRoundoff precision u) →
-                    (convert : Real → Real) →
-                      (∀ (x : Real),
-                          Exists fun delta =>
-                            And (Real.instLE.le (abs delta) u)
-                              (Eq (convert x) (instHMul.hMul x (instHAdd.hAdd 1 delta)))) →
-                        (A Ainv : Fin n → Fin n → Real) →
-                          Eq (HighamBench.p08MatMul Ainv A) (HighamBench.p08IdMatrix n) →
-                            Eq (HighamBench.p08MatMul A Ainv) (HighamBench.p08IdMatrix n) →
-                              (b exactSolution : Fin n → Real) →
-                                Eq (HighamBench.p08MatVec A exactSolution) b →
-                                  (C1 : Fin n → Fin n → Real) →
-                                    HighamBench.p08MatNonnegative C1 →
-                                      (initialSolve :
-                                          HighamBench.P08ColumnPivotedSolveCertificate workingModel A b C1 u) →
-                                        (iterate computedResidual correction : Nat → Fin n → Real) →
-                                          (Eq (iterate 0) fun x => 0) →
-                                            Eq (iterate 1) initialSolve.output →
-                                              (Eq (computedResidual 0) fun i => Real.instNeg.neg (b i)) →
-                                                (Eq (correction 0) fun i => Real.instNeg.neg (iterate 1 i)) →
-                                                  (residualTrace :
-                                                      (m : Nat) →
-                                                        HighamBench.P08SubtractionLastResidualTrace precision
-                                                          residualModel convert A b (iterate (instHAdd.hAdd m 1))) →
-                                                    (∀ (m : Nat),
-                                                        Eq (computedResidual (instHAdd.hAdd m 1))
-                                                          (residualTrace m).output) →
-                                                      (correctionSolve :
-                                                          (m : Nat) →
-                                                            HighamBench.P08ColumnPivotedSolveCertificate workingModel A
-                                                              (computedResidual m) C1 u) →
-                                                        (∀ (m : Nat), Eq (correction m) (correctionSolve m).output) →
-                                                          (∀ (m : Nat) (i : Fin n),
-                                                              Eq (iterate (instHAdd.hAdd m 1) i)
-                                                                (workingModel.flSub (iterate m i) (correction m i))) →
-                                                            HighamBench.P08IterativeRefinementRun n
+            (A Ainv : Fin n → Fin n → Real) →
+              Eq (HighamBench.p08MatMul Ainv A) (HighamBench.p08IdMatrix n) →
+                Eq (HighamBench.p08MatMul A Ainv) (HighamBench.p08IdMatrix n) →
+                  (b exactSolution : Fin n → Real) →
+                    Eq (HighamBench.p08MatVec A exactSolution) b →
+                      (C1 : Fin n → Fin n → Real) →
+                        HighamBench.p08MatNonnegative C1 →
+                          (initialSolve : HighamBench.P08ColumnPivotedSolveCertificate A b C1 u) →
+                            (iterate computedResidual correction : Nat → Fin n → Real) →
+                              (Eq (iterate 0) fun x => 0) →
+                                Eq (iterate 1) initialSolve.output →
+                                  (Eq (computedResidual 0) fun i => Real.instNeg.neg (b i)) →
+                                    (Eq (correction 0) fun i => Real.instNeg.neg (iterate 1 i)) →
+                                      (correctionSolve :
+                                          (m : Nat) →
+                                            HighamBench.P08ColumnPivotedSolveCertificate A
+                                              (computedResidual (instHAdd.hAdd m 1)) C1 u) →
+                                        (∀ (m : Nat), Eq (correction (instHAdd.hAdd m 1)) (correctionSolve m).output) →
+                                          (updateError : Nat → Fin n → Real) →
+                                            (∀ (m : Nat),
+                                                Eq (iterate (instHAdd.hAdd m 1))
+                                                  (HighamBench.p08VecAdd
+                                                    (HighamBench.p08VecSub (iterate m) (correction m))
+                                                    (updateError (instHAdd.hAdd m 1)))) →
+                                              (∀ (m : Nat) (i : Fin n),
+                                                  Real.instLE.le (abs (updateError (instHAdd.hAdd m 1) i))
+                                                    (instHMul.hMul u
+                                                      (abs (instHSub.hSub (iterate m i) (correction m i))))) →
+                                                HighamBench.P08IterativeRefinementRun n
 ```
 
 Fully explicit type:
@@ -696,109 +686,85 @@ Fully explicit type:
                     (@instOfNatAtLeastTwo.{0} Real (nat_lit 100) Real.instNatCast
                       (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 99) (instOfNatNat (nat_lit 99)))
                         (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 98) (instOfNatNat (nat_lit 98))))))))) →
-            (workingModel : HighamBench.P08ScalarArithmeticModel) →
-              (working_roundoff : @Eq.{1} Real (HighamBench.P08ScalarArithmeticModel.unitRoundoff workingModel) u) →
-                (residualModel : HighamBench.P08ScalarArithmeticModel) →
-                  (residual_roundoff :
-                      @Eq.{1} Real (HighamBench.P08ScalarArithmeticModel.unitRoundoff residualModel)
-                        (HighamBench.p08ResidualUnitRoundoff precision u)) →
-                    (convert : Real → Real) →
-                      (conversion_model :
-                          ∀ (x : Real),
-                            @Exists.{1} Real fun (delta : Real) =>
-                              And (@LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup delta) u)
-                                (@Eq.{1} Real (convert x)
-                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) x
-                                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                      (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
-                                      delta)))) →
-                        (A Ainv : Fin n → Fin n → Real) →
-                          (inverse_left :
-                              @Eq.{1} (Fin n → Fin n → Real) (@HighamBench.p08MatMul n Ainv A)
-                                (HighamBench.p08IdMatrix n)) →
-                            (inverse_right :
-                                @Eq.{1} (Fin n → Fin n → Real) (@HighamBench.p08MatMul n A Ainv)
-                                  (HighamBench.p08IdMatrix n)) →
-                              (b exactSolution : Fin n → Real) →
-                                (exact_system : @Eq.{1} (Fin n → Real) (@HighamBench.p08MatVec n A exactSolution) b) →
-                                  (C1 : Fin n → Fin n → Real) →
-                                    (C1_nonnegative : @HighamBench.p08MatNonnegative n C1) →
-                                      (initialSolve :
-                                          @HighamBench.P08ColumnPivotedSolveCertificate n workingModel A b C1 u) →
-                                        (iterate computedResidual correction : Nat → Fin n → Real) →
-                                          (iterate_zero :
+            (A Ainv : Fin n → Fin n → Real) →
+              (inverse_left :
+                  @Eq.{1} (Fin n → Fin n → Real) (@HighamBench.p08MatMul n Ainv A) (HighamBench.p08IdMatrix n)) →
+                (inverse_right :
+                    @Eq.{1} (Fin n → Fin n → Real) (@HighamBench.p08MatMul n A Ainv) (HighamBench.p08IdMatrix n)) →
+                  (b exactSolution : Fin n → Real) →
+                    (exact_system : @Eq.{1} (Fin n → Real) (@HighamBench.p08MatVec n A exactSolution) b) →
+                      (C1 : Fin n → Fin n → Real) →
+                        (C1_nonnegative : @HighamBench.p08MatNonnegative n C1) →
+                          (initialSolve : @HighamBench.P08ColumnPivotedSolveCertificate n A b C1 u) →
+                            (iterate computedResidual correction : Nat → Fin n → Real) →
+                              (iterate_zero :
+                                  @Eq.{1} (Fin n → Real)
+                                    (iterate (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))
+                                    fun (x : Fin n) =>
+                                    @OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) →
+                                (iterate_one :
+                                    @Eq.{1} (Fin n → Real)
+                                      (iterate (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+                                      (@HighamBench.P08ColumnPivotedSolveCertificate.output n A b C1 u initialSolve)) →
+                                  (residual_zero :
+                                      @Eq.{1} (Fin n → Real)
+                                        (computedResidual (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))
+                                        fun (i : Fin n) => @Neg.neg.{0} Real Real.instNeg (b i)) →
+                                    (correction_zero :
+                                        @Eq.{1} (Fin n → Real)
+                                          (correction (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))
+                                          fun (i : Fin n) =>
+                                          @Neg.neg.{0} Real Real.instNeg
+                                            (iterate (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))) i)) →
+                                      (correctionSolve :
+                                          (m : Nat) →
+                                            @HighamBench.P08ColumnPivotedSolveCertificate n A
+                                              (computedResidual
+                                                (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+                                                  (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+                                              C1 u) →
+                                        (correction_output :
+                                            ∀ (m : Nat),
                                               @Eq.{1} (Fin n → Real)
-                                                (iterate (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))
-                                                fun (x : Fin n) =>
-                                                @OfNat.ofNat.{0} Real (nat_lit 0)
-                                                  (@Zero.toOfNat0.{0} Real Real.instZero)) →
-                                            (iterate_one :
-                                                @Eq.{1} (Fin n → Real)
-                                                  (iterate
-                                                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-                                                  (@HighamBench.P08ColumnPivotedSolveCertificate.output n workingModel A
-                                                    b C1 u initialSolve)) →
-                                              (residual_zero :
+                                                (correction
+                                                  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+                                                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+                                                (@HighamBench.P08ColumnPivotedSolveCertificate.output n A
+                                                  (computedResidual
+                                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+                                                  C1 u (correctionSolve m))) →
+                                          (updateError : Nat → Fin n → Real) →
+                                            (update_equation :
+                                                ∀ (m : Nat),
                                                   @Eq.{1} (Fin n → Real)
-                                                    (computedResidual
-                                                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))
-                                                    fun (i : Fin n) => @Neg.neg.{0} Real Real.instNeg (b i)) →
-                                                (correction_zero :
-                                                    @Eq.{1} (Fin n → Real)
-                                                      (correction
-                                                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))
-                                                      fun (i : Fin n) =>
-                                                      @Neg.neg.{0} Real Real.instNeg
-                                                        (iterate
-                                                          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
-                                                          i)) →
-                                                  (residualTrace :
-                                                      (m : Nat) →
-                                                        @HighamBench.P08SubtractionLastResidualTrace n precision
-                                                          residualModel convert A b
-                                                          (iterate
-                                                            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                              (@instHAdd.{0} Nat instAddNat) m
-                                                              (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                (instOfNatNat (nat_lit 1)))))) →
-                                                    (residual_trace_output :
-                                                        ∀ (m : Nat),
-                                                          @Eq.{1} (Fin n → Real)
-                                                            (computedResidual
-                                                              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                (@instHAdd.{0} Nat instAddNat) m
-                                                                (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                  (instOfNatNat (nat_lit 1)))))
-                                                            (@HighamBench.P08SubtractionLastResidualTrace.output n
-                                                              precision residualModel convert A b
-                                                              (iterate
-                                                                (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                  (@instHAdd.{0} Nat instAddNat) m
-                                                                  (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                    (instOfNatNat (nat_lit 1)))))
-                                                              (residualTrace m))) →
-                                                      (correctionSolve :
-                                                          (m : Nat) →
-                                                            @HighamBench.P08ColumnPivotedSolveCertificate n workingModel
-                                                              A (computedResidual m) C1 u) →
-                                                        (correction_output :
-                                                            ∀ (m : Nat),
-                                                              @Eq.{1} (Fin n → Real) (correction m)
-                                                                (@HighamBench.P08ColumnPivotedSolveCertificate.output n
-                                                                  workingModel A (computedResidual m) C1 u
-                                                                  (correctionSolve m))) →
-                                                          (update_computation :
-                                                              ∀ (m : Nat) (i : Fin n),
-                                                                @Eq.{1} Real
-                                                                  (iterate
-                                                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
-                                                                      (@instHAdd.{0} Nat instAddNat) m
-                                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1)
-                                                                        (instOfNatNat (nat_lit 1))))
-                                                                    i)
-                                                                  (HighamBench.P08ScalarArithmeticModel.flSub
-                                                                    workingModel (iterate m i) (correction m i))) →
-                                                            HighamBench.P08IterativeRefinementRun n
+                                                    (iterate
+                                                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+                                                        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+                                                    (@HighamBench.p08VecAdd n
+                                                      (@HighamBench.p08VecSub n (iterate m) (correction m))
+                                                      (updateError
+                                                        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                                                          m
+                                                          (@OfNat.ofNat.{0} Nat (nat_lit 1)
+                                                            (instOfNatNat (nat_lit 1))))))) →
+                                              (update_error_bound :
+                                                  ∀ (m : Nat) (i : Fin n),
+                                                    @LE.le.{0} Real Real.instLE
+                                                      (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                        (updateError
+                                                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat
+                                                            (@instHAdd.{0} Nat instAddNat) m
+                                                            (@OfNat.ofNat.{0} Nat (nat_lit 1)
+                                                              (instOfNatNat (nat_lit 1))))
+                                                          i))
+                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                        (@instHMul.{0} Real Real.instMul) u
+                                                        (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                          (@HSub.hSub.{0, 0, 0} Real Real Real
+                                                            (@instHSub.{0} Real Real.instSub) (iterate m i)
+                                                            (correction m i))))) →
+                                                HighamBench.P08IterativeRefinementRun n
 ```
 
 ### D020: `HighamBench.P08Lemma43Constants.mk`
@@ -1273,7 +1239,7 @@ Fully explicit type:
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `820b5da34de9963773519b1a761c8c11371c85943cd5809a2713d99d0df5290b`
+- Semantic SHA-256: `73683a4284a37367b266f180956ce9f42c778286096583e945d99010a104289f`
 
 Type:
 
@@ -1306,22 +1272,27 @@ Type:
                         (abs
                           (HighamBench.p08MatVec run.A (HighamBench.p08VecSub (run.iterate m) run.exactSolution)
                             i))))) →
-                (Real.instLE.le
-                      (instHMul.hMul (instHMul.hMul constants.c1 run.u) (HighamBench.p08KappaInverse run norm))
-                      (1 / 2) →
-                    ∀ (m : Nat) (i : Fin n),
-                      Real.instLE.le (abs ((run.correctionSolve m).backwardError i))
-                        (instHAdd.hAdd
-                          (instHMul.hMul run.u
-                            (HighamBench.p08MatVec (HighamBench.p08MatMul constants.C2 (HighamBench.p08AbsMatrix run.A))
-                              (HighamBench.p08AbsVec (HighamBench.p08VecSub (run.iterate m) run.exactSolution)) i))
-                          (instHMul.hMul run.u
-                            (HighamBench.p08MatVec
-                              (HighamBench.p08MatMul
-                                (HighamBench.p08MatMul constants.C2 (HighamBench.p08AbsMatrix run.A))
-                                (HighamBench.p08AbsMatrix run.Ainv))
-                              (HighamBench.p08AbsVec (residualError m)) i)))) →
-                  HighamBench.P08Lemma43RoundoffAnalysis run norm dimensionBounds constants
+                (correctionError : Nat → Fin n → Real) →
+                  (∀ (m : Nat),
+                      Eq (HighamBench.p08MatVec run.A (run.correction m))
+                        (HighamBench.p08VecAdd (run.computedResidual m) (correctionError m))) →
+                    (Real.instLE.le
+                          (instHMul.hMul (instHMul.hMul constants.c1 run.u) (HighamBench.p08KappaInverse run norm))
+                          (1 / 2) →
+                        ∀ (m : Nat) (i : Fin n),
+                          Real.instLE.le (abs (correctionError m i))
+                            (instHAdd.hAdd
+                              (instHMul.hMul run.u
+                                (HighamBench.p08MatVec
+                                  (HighamBench.p08MatMul constants.C2 (HighamBench.p08AbsMatrix run.A))
+                                  (HighamBench.p08AbsVec (HighamBench.p08VecSub (run.iterate m) run.exactSolution)) i))
+                              (instHMul.hMul run.u
+                                (HighamBench.p08MatVec
+                                  (HighamBench.p08MatMul
+                                    (HighamBench.p08MatMul constants.C2 (HighamBench.p08AbsMatrix run.A))
+                                    (HighamBench.p08AbsMatrix run.Ainv))
+                                  (HighamBench.p08AbsVec (residualError m)) i)))) →
+                      HighamBench.P08Lemma43RoundoffAnalysis run norm dimensionBounds constants
 ```
 
 Fully explicit type:
@@ -1383,53 +1354,54 @@ Fully explicit type:
                               (@HighamBench.p08VecSub n (@HighamBench.P08IterativeRefinementRun.iterate n run m)
                                 (@HighamBench.P08IterativeRefinementRun.exactSolution n run))
                               i))))) →
-                (correction_error_bound :
-                    @LE.le.{0} Real Real.instLE
-                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                            (@HighamBench.P08Lemma43Constants.c1 n run norm dimensionBounds constants)
-                            (@HighamBench.P08IterativeRefinementRun.u n run))
-                          (@HighamBench.p08KappaInverse n run norm))
-                        (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                          (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                          (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
-                          (@OfNat.ofNat.{0} Real (nat_lit 2)
-                            (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
-                              (@Nat.instAtLeastTwoHAddOfNat
-                                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
-                                (@Nat.instNeZeroSucc
-                                  (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))) →
-                      ∀ (m : Nat) (i : Fin n),
+                (correctionError : Nat → Fin n → Real) →
+                  (correction_equation :
+                      ∀ (m : Nat),
+                        @Eq.{1} (Fin n → Real)
+                          (@HighamBench.p08MatVec n (@HighamBench.P08IterativeRefinementRun.A n run)
+                            (@HighamBench.P08IterativeRefinementRun.correction n run m))
+                          (@HighamBench.p08VecAdd n (@HighamBench.P08IterativeRefinementRun.computedResidual n run m)
+                            (correctionError m))) →
+                    (correction_error_bound :
                         @LE.le.{0} Real Real.instLE
-                          (@abs.{0} Real Real.lattice Real.instAddGroup
-                            (@HighamBench.P08ColumnPivotedSolveCertificate.backwardError n
-                              (@HighamBench.P08IterativeRefinementRun.workingModel n run)
-                              (@HighamBench.P08IterativeRefinementRun.A n run)
-                              (@HighamBench.P08IterativeRefinementRun.computedResidual n run m)
-                              (@HighamBench.P08IterativeRefinementRun.C1 n run)
-                              (@HighamBench.P08IterativeRefinementRun.u n run)
-                              (@HighamBench.P08IterativeRefinementRun.correctionSolve n run m) i))
-                          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
                             (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                              (@HighamBench.P08IterativeRefinementRun.u n run)
-                              (@HighamBench.p08MatVec n
-                                (@HighamBench.p08MatMul n
-                                  (@HighamBench.P08Lemma43Constants.C2 n run norm dimensionBounds constants)
-                                  (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run)))
-                                (@HighamBench.p08AbsVec n
-                                  (@HighamBench.p08VecSub n (@HighamBench.P08IterativeRefinementRun.iterate n run m)
-                                    (@HighamBench.P08IterativeRefinementRun.exactSolution n run)))
-                                i))
-                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                              (@HighamBench.P08IterativeRefinementRun.u n run)
-                              (@HighamBench.p08MatVec n
-                                (@HighamBench.p08MatMul n
-                                  (@HighamBench.p08MatMul n
-                                    (@HighamBench.P08Lemma43Constants.C2 n run norm dimensionBounds constants)
-                                    (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run)))
-                                  (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.Ainv n run)))
-                                (@HighamBench.p08AbsVec n (residualError m)) i)))) →
-                  @HighamBench.P08Lemma43RoundoffAnalysis n run norm dimensionBounds constants
+                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                (@HighamBench.P08Lemma43Constants.c1 n run norm dimensionBounds constants)
+                                (@HighamBench.P08IterativeRefinementRun.u n run))
+                              (@HighamBench.p08KappaInverse n run norm))
+                            (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                              (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                              (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
+                              (@OfNat.ofNat.{0} Real (nat_lit 2)
+                                (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
+                                  (@Nat.instAtLeastTwoHAddOfNat
+                                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
+                                    (@Nat.instNeZeroSucc
+                                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))) →
+                          ∀ (m : Nat) (i : Fin n),
+                            @LE.le.{0} Real Real.instLE
+                              (@abs.{0} Real Real.lattice Real.instAddGroup (correctionError m i))
+                              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                  (@HighamBench.P08IterativeRefinementRun.u n run)
+                                  (@HighamBench.p08MatVec n
+                                    (@HighamBench.p08MatMul n
+                                      (@HighamBench.P08Lemma43Constants.C2 n run norm dimensionBounds constants)
+                                      (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run)))
+                                    (@HighamBench.p08AbsVec n
+                                      (@HighamBench.p08VecSub n (@HighamBench.P08IterativeRefinementRun.iterate n run m)
+                                        (@HighamBench.P08IterativeRefinementRun.exactSolution n run)))
+                                    i))
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                  (@HighamBench.P08IterativeRefinementRun.u n run)
+                                  (@HighamBench.p08MatVec n
+                                    (@HighamBench.p08MatMul n
+                                      (@HighamBench.p08MatMul n
+                                        (@HighamBench.P08Lemma43Constants.C2 n run norm dimensionBounds constants)
+                                        (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run)))
+                                      (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.Ainv n run)))
+                                    (@HighamBench.p08AbsVec n (residualError m)) i)))) →
+                      @HighamBench.P08Lemma43RoundoffAnalysis n run norm dimensionBounds constants
 ```
 
 ### D022: `HighamBench.p08AbsMatrix`
@@ -1718,96 +1690,54 @@ fun {n} x y i => instHSub.hSub (x i) (y i)
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `inductive`
 - Distance from target type: `3`
-- Semantic SHA-256: `4a742ed2a083d341d7389896497910c6584f007dcf88c3b7bfa64bc38080b51b`
+- Semantic SHA-256: `b694445b6edb36738cb9972cfec4a23fb96652d48e65d25a3e8d15c761a1e258`
 
 Type:
 
 ```lean
-{n : Nat} →
-  HighamBench.P08ScalarArithmeticModel → (Fin n → Fin n → Real) → (Fin n → Real) → (Fin n → Fin n → Real) → Real → Type
+{n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → (Fin n → Fin n → Real) → Real → Type
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  (model : HighamBench.P08ScalarArithmeticModel) →
-    (A : Fin n → Fin n → Real) → (rhs : Fin n → Real) → (C1 : Fin n → Fin n → Real) → (u : Real) → Type
+{n : Nat} → (A : Fin n → Fin n → Real) → (rhs : Fin n → Real) → (C1 : Fin n → Fin n → Real) → (u : Real) → Type
 ```
 
-### D032: `HighamBench.P08ColumnPivotedSolveCertificate.backwardError`
+### D032: `HighamBench.P08ColumnPivotedSolveCertificate.output`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `7f2bf591bcaf3e103d5204bbda24f4ed2597fea06069bee014ae32c14d9ba5a6`
+- Semantic SHA-256: `26474c9523e744eabd7c64a71be338ecf1547a53130c1a6c3f05a19f89763bce`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} → HighamBench.P08ColumnPivotedSolveCertificate model A rhs C1 u → Fin n → Real
+  {A : Fin n → Fin n → Real} →
+    {rhs : Fin n → Real} →
+      {C1 : Fin n → Fin n → Real} → {u : Real} → HighamBench.P08ColumnPivotedSolveCertificate A rhs C1 u → Fin n → Real
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} → (self : @HighamBench.P08ColumnPivotedSolveCertificate n model A rhs C1 u) → Fin n → Real
+  {A : Fin n → Fin n → Real} →
+    {rhs : Fin n → Real} →
+      {C1 : Fin n → Fin n → Real} →
+        {u : Real} → (self : @HighamBench.P08ColumnPivotedSolveCertificate n A rhs C1 u) → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n model A rhs C1 u self => self.3
+fun n A rhs C1 u self => self.1
 ```
 
-### D033: `HighamBench.P08ColumnPivotedSolveCertificate.output`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `54cbe1342c9bdf08751602d675ad8f7beb46818f6a52638defa77739b6b0ac3c`
-
-Type:
-
-```lean
-{n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} → HighamBench.P08ColumnPivotedSolveCertificate model A rhs C1 u → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} → (self : @HighamBench.P08ColumnPivotedSolveCertificate n model A rhs C1 u) → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n model A rhs C1 u self => self.1
-```
-
-### D034: `HighamBench.P08DimensionOnlyConstantBounds.matrixEntry`
+### D033: `HighamBench.P08DimensionOnlyConstantBounds.matrixEntry`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1833,7 +1763,7 @@ Definition body (one-level semantic boundary):
 fun self => self.2
 ```
 
-### D035: `HighamBench.P08DimensionOnlyConstantBounds.scalar`
+### D034: `HighamBench.P08DimensionOnlyConstantBounds.scalar`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1859,13 +1789,13 @@ Definition body (one-level semantic boundary):
 fun self => self.1
 ```
 
-### D036: `HighamBench.P08IterativeRefinementRun.C1`
+### D035: `HighamBench.P08IterativeRefinementRun.C1`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `11db68dc524b6f4453b97274ae61cebe6f397e015f167ebc73d342d233c94d77`
+- Semantic SHA-256: `768997f4ed7501b5e1d8b1583cb98d0fc1e01408d7e0649458fbf868ce594534`
 
 Type:
 
@@ -1882,16 +1812,16 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.19
+fun n self => self.13
 ```
 
-### D037: `HighamBench.P08IterativeRefinementRun.computedResidual`
+### D036: `HighamBench.P08IterativeRefinementRun.computedResidual`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `58270e7b7c127cccb8493ee87248f50d8b8227e2332d1c36b3359b50eacfbfa0`
+- Semantic SHA-256: `c05758c4ef94973c8c25605a9956d10811edc355ed0d4b4d7749f098ab14fa17`
 
 Type:
 
@@ -1908,51 +1838,16 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.23
+fun n self => self.17
 ```
 
-### D038: `HighamBench.P08IterativeRefinementRun.correctionSolve`
+### D037: `HighamBench.P08IterativeRefinementRun.exactSolution`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `49c7a58fecc0b38fa47e1a7aee4d392460fab5da334be050109887a543bdff61`
-
-Type:
-
-```lean
-{n : Nat} →
-  (self : HighamBench.P08IterativeRefinementRun n) →
-    (m : Nat) →
-      HighamBench.P08ColumnPivotedSolveCertificate self.workingModel self.A (self.computedResidual m) self.C1 self.u
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  (self : HighamBench.P08IterativeRefinementRun n) →
-    (m : Nat) →
-      @HighamBench.P08ColumnPivotedSolveCertificate n (@HighamBench.P08IterativeRefinementRun.workingModel n self)
-        (@HighamBench.P08IterativeRefinementRun.A n self)
-        (@HighamBench.P08IterativeRefinementRun.computedResidual n self m)
-        (@HighamBench.P08IterativeRefinementRun.C1 n self) (@HighamBench.P08IterativeRefinementRun.u n self)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.31
-```
-
-### D039: `HighamBench.P08IterativeRefinementRun.exactSolution`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `14d7b8a66771d4d9ee275d3281507a2d8dcedc0f9509dd1004df9cff35fa15e9`
+- Semantic SHA-256: `81375c3265f25d00cfa101f64f9f9d50cdc1354772ba920dcc0a5c26a647df4b`
 
 Type:
 
@@ -1969,10 +1864,10 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n self => self.17
+fun n self => self.11
 ```
 
-### D040: `HighamBench.P08IterativeRefinementRun.precision`
+### D038: `HighamBench.P08IterativeRefinementRun.precision`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1998,33 +1893,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.2
 ```
 
-### D041: `HighamBench.P08IterativeRefinementRun.workingModel`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `197f8cf0352d97d80831ac9a763d9dda5f4184951698067c96f49e3b7ab078ff`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P08IterativeRefinementRun n → HighamBench.P08ScalarArithmeticModel
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P08IterativeRefinementRun n) → HighamBench.P08ScalarArithmeticModel
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.6
-```
-
-### D042: `HighamBench.P08Lemma43Constants.C10`
+### D039: `HighamBench.P08Lemma43Constants.C10`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2058,7 +1927,7 @@ Definition body (one-level semantic boundary):
 fun n run norm dimensionBounds self => self.6
 ```
 
-### D043: `HighamBench.P08Lemma43Constants.C11`
+### D040: `HighamBench.P08Lemma43Constants.C11`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2092,7 +1961,7 @@ Definition body (one-level semantic boundary):
 fun n run norm dimensionBounds self => self.7
 ```
 
-### D044: `HighamBench.P08Lemma43Constants.C12`
+### D041: `HighamBench.P08Lemma43Constants.C12`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2126,7 +1995,7 @@ Definition body (one-level semantic boundary):
 fun n run norm dimensionBounds self => self.8
 ```
 
-### D045: `HighamBench.P08Lemma43Constants.C2`
+### D042: `HighamBench.P08Lemma43Constants.C2`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2160,7 +2029,7 @@ Definition body (one-level semantic boundary):
 fun n run norm dimensionBounds self => self.1
 ```
 
-### D046: `HighamBench.P08Lemma43Constants.C8`
+### D043: `HighamBench.P08Lemma43Constants.C8`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2194,7 +2063,7 @@ Definition body (one-level semantic boundary):
 fun n run norm dimensionBounds self => self.4
 ```
 
-### D047: `HighamBench.P08Lemma43Constants.c1`
+### D044: `HighamBench.P08Lemma43Constants.c1`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2228,7 +2097,7 @@ Definition body (one-level semantic boundary):
 fun n run norm dimensionBounds self => self.9
 ```
 
-### D048: `HighamBench.P08Lemma43Constants.c5`
+### D045: `HighamBench.P08Lemma43Constants.c5`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2262,7 +2131,7 @@ Definition body (one-level semantic boundary):
 fun n run norm dimensionBounds self => self.10
 ```
 
-### D049: `HighamBench.P08ResidualPrecision`
+### D046: `HighamBench.P08ResidualPrecision`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2282,143 +2151,7 @@ Fully explicit type:
 Type
 ```
 
-### D050: `HighamBench.P08ScalarArithmeticModel`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `3`
-- Semantic SHA-256: `e7bbc2335c38e8a786a9d00d6341c669a3a2294cbf8f0288fb3e9880eab5f68d`
-
-Type:
-
-```lean
-Type
-```
-
-Fully explicit type:
-
-```lean
-Type
-```
-
-### D051: `HighamBench.P08ScalarArithmeticModel.flSub`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `8adc77897914530b6395788942bbc1bf0bcf3f0c982d3510fbafa07bd301f628`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → Real → Real → Real
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P08ScalarArithmeticModel) → Real → Real → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.4
-```
-
-### D052: `HighamBench.P08ScalarArithmeticModel.unitRoundoff`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `79af0e36b62b3ea8268fe82fc682fe415d0aa3c886259b931dbd042931597b88`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → Real
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P08ScalarArithmeticModel) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.1
-```
-
-### D053: `HighamBench.P08SubtractionLastResidualTrace`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `3`
-- Semantic SHA-256: `853ac33b96eada40f12ea75106ed15e56a6c8b83e44c7a5e212fcb29695b75a6`
-
-Type:
-
-```lean
-{n : Nat} →
-  HighamBench.P08ResidualPrecision →
-    HighamBench.P08ScalarArithmeticModel →
-      (Real → Real) → (Fin n → Fin n → Real) → (Fin n → Real) → (Fin n → Real) → Type
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  (precision : HighamBench.P08ResidualPrecision) →
-    (residualModel : HighamBench.P08ScalarArithmeticModel) →
-      (convert : Real → Real) → (A : Fin n → Fin n → Real) → (b x : Fin n → Real) → Type
-```
-
-### D054: `HighamBench.P08SubtractionLastResidualTrace.output`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `42f5c5faaadde417e3048fe02066ab5f3088fa6f1e36636a3fc3a06cc41a686b`
-
-Type:
-
-```lean
-{n : Nat} →
-  {precision : HighamBench.P08ResidualPrecision} →
-    {residualModel : HighamBench.P08ScalarArithmeticModel} →
-      {convert : Real → Real} →
-        {A : Fin n → Fin n → Real} →
-          {b x : Fin n → Real} →
-            HighamBench.P08SubtractionLastResidualTrace precision residualModel convert A b x → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {precision : HighamBench.P08ResidualPrecision} →
-    {residualModel : HighamBench.P08ScalarArithmeticModel} →
-      {convert : Real → Real} →
-        {A : Fin n → Fin n → Real} →
-          {b x : Fin n → Real} →
-            (self : @HighamBench.P08SubtractionLastResidualTrace n precision residualModel convert A b x) → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n precision residualModel convert A b x self => self.3
-```
-
-### D055: `HighamBench.p08AbsVec`
+### D047: `HighamBench.p08AbsVec`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2444,7 +2177,7 @@ Definition body (one-level semantic boundary):
 fun {n} x i => abs (x i)
 ```
 
-### D056: `HighamBench.p08BasisVector`
+### D048: `HighamBench.p08BasisVector`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2470,7 +2203,7 @@ Definition body (one-level semantic boundary):
 fun {n} j i => ite (Eq i j) 1 0
 ```
 
-### D057: `HighamBench.p08IdMatrix`
+### D049: `HighamBench.p08IdMatrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2496,7 +2229,7 @@ Definition body (one-level semantic boundary):
 fun n i j => ite (Eq i j) 1 0
 ```
 
-### D058: `HighamBench.p08Lemma43c3`
+### D050: `HighamBench.p08Lemma43c3`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2536,7 +2269,7 @@ fun {n} run =>
       n.cast
 ```
 
-### D059: `HighamBench.p08Lemma43c4`
+### D051: `HighamBench.p08Lemma43c4`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2563,7 +2296,7 @@ fun {n} run =>
   HighamBench.p08ResidualUnitRoundoff.match_1 (fun x => Real) run.precision (fun _ => 0) fun _ => instHAdd.hAdd 1 run.u
 ```
 
-### D060: `HighamBench.p08MatAdd`
+### D052: `HighamBench.p08MatAdd`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2589,7 +2322,7 @@ Definition body (one-level semantic boundary):
 fun {n} A B i j => instHAdd.hAdd (A i j) (B i j)
 ```
 
-### D061: `HighamBench.p08MatNonnegative`
+### D053: `HighamBench.p08MatNonnegative`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2615,7 +2348,7 @@ Definition body (one-level semantic boundary):
 fun {n} A => ∀ (i j : Fin n), Real.instLE.le 0 (A i j)
 ```
 
-### D062: `HighamBench.p08MatPow.match_1`
+### D054: `HighamBench.p08MatPow.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2644,7 +2377,7 @@ Definition body (one-level semantic boundary):
 fun motive x h_1 h_2 => Nat.casesOn x (h_1 Unit.unit) fun n => h_2 n
 ```
 
-### D063: `HighamBench.p08MatScale`
+### D055: `HighamBench.p08MatScale`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2670,7 +2403,7 @@ Definition body (one-level semantic boundary):
 fun {n} a A i j => instHMul.hMul a (A i j)
 ```
 
-### D064: `HighamBench.p08MatSub`
+### D056: `HighamBench.p08MatSub`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2696,7 +2429,7 @@ Definition body (one-level semantic boundary):
 fun {n} A B i j => instHSub.hSub (A i j) (B i j)
 ```
 
-### D065: `HighamBench.p08ResidualUnitRoundoff`
+### D057: `HighamBench.p08ResidualUnitRoundoff`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2723,7 +2456,7 @@ fun precision u =>
   HighamBench.p08ResidualUnitRoundoff.match_1 (fun precision => Real) precision (fun _ => u) fun _ => instHPow.hPow u 2
 ```
 
-### D066: `HighamBench.p08VecScale`
+### D058: `HighamBench.p08VecScale`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2749,57 +2482,51 @@ Definition body (one-level semantic boundary):
 fun {n} a x i => instHMul.hMul a (x i)
 ```
 
-### D067: `HighamBench.P08ColumnPivotedSolveCertificate.mk`
+### D059: `HighamBench.P08ColumnPivotedSolveCertificate.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `4`
-- Semantic SHA-256: `d44df443c4835549078a664241bff572d99a62f4d3e457329d0c4d8a5d2b0696`
+- Semantic SHA-256: `32cb8ef3635ca87399bad3910b77b3802f3d739e78e4457e871a6069935efa42`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} →
-            (output : Fin n → Real) →
-              HighamBench.P08ColumnPivotedGaussianEliminationTrace model A rhs output →
-                (backwardError : Fin n → Real) →
-                  Eq (HighamBench.p08MatVec A output) (HighamBench.p08VecAdd rhs backwardError) →
-                    (∀ (i : Fin n),
-                        Real.instLE.le (abs (backwardError i))
-                          (instHMul.hMul u (HighamBench.p08MatVec C1 (HighamBench.p08AbsAction A output) i))) →
-                      HighamBench.P08ColumnPivotedSolveCertificate model A rhs C1 u
+  {A : Fin n → Fin n → Real} →
+    {rhs : Fin n → Real} →
+      {C1 : Fin n → Fin n → Real} →
+        {u : Real} →
+          (output backwardError : Fin n → Real) →
+            Eq (HighamBench.p08MatVec A output) (HighamBench.p08VecAdd rhs backwardError) →
+              (∀ (i : Fin n),
+                  Real.instLE.le (abs (backwardError i))
+                    (instHMul.hMul u (HighamBench.p08MatVec C1 (HighamBench.p08AbsAction A output) i))) →
+                HighamBench.P08ColumnPivotedSolveCertificate A rhs C1 u
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} →
-            (output : Fin n → Real) →
-              (execution : @HighamBench.P08ColumnPivotedGaussianEliminationTrace model n A rhs output) →
-                (backwardError : Fin n → Real) →
-                  (equation :
-                      @Eq.{1} (Fin n → Real) (@HighamBench.p08MatVec n A output)
-                        (@HighamBench.p08VecAdd n rhs backwardError)) →
-                    (backward_error_bound :
-                        ∀ (i : Fin n),
-                          @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (backwardError i))
-                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) u
-                              (@HighamBench.p08MatVec n C1 (@HighamBench.p08AbsAction n A output) i))) →
-                      @HighamBench.P08ColumnPivotedSolveCertificate n model A rhs C1 u
+  {A : Fin n → Fin n → Real} →
+    {rhs : Fin n → Real} →
+      {C1 : Fin n → Fin n → Real} →
+        {u : Real} →
+          (output backwardError : Fin n → Real) →
+            (equation :
+                @Eq.{1} (Fin n → Real) (@HighamBench.p08MatVec n A output)
+                  (@HighamBench.p08VecAdd n rhs backwardError)) →
+              (backward_error_bound :
+                  ∀ (i : Fin n),
+                    @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (backwardError i))
+                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) u
+                        (@HighamBench.p08MatVec n C1 (@HighamBench.p08AbsAction n A output) i))) →
+                @HighamBench.P08ColumnPivotedSolveCertificate n A rhs C1 u
 ```
 
-### D068: `HighamBench.P08ResidualPrecision.double`
+### D060: `HighamBench.P08ResidualPrecision.double`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2819,7 +2546,7 @@ Fully explicit type:
 HighamBench.P08ResidualPrecision
 ```
 
-### D069: `HighamBench.P08ResidualPrecision.single`
+### D061: `HighamBench.P08ResidualPrecision.single`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2839,142 +2566,7 @@ Fully explicit type:
 HighamBench.P08ResidualPrecision
 ```
 
-### D070: `HighamBench.P08ScalarArithmeticModel.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `4`
-- Semantic SHA-256: `24f2ea7999198982ad4a308c8470d6081fb22bd0a25b8593d507e73993ab37f9`
-
-Type:
-
-```lean
-(unitRoundoff : Real) →
-  Real.instLE.le 0 unitRoundoff →
-    (flAdd flSub flMul flDiv : Real → Real → Real) →
-      (∀ (x y : Real),
-          Exists fun delta =>
-            And (Real.instLE.le (abs delta) unitRoundoff)
-              (Eq (flAdd x y) (instHMul.hMul (instHAdd.hAdd x y) (instHAdd.hAdd 1 delta)))) →
-        (∀ (x y : Real),
-            Exists fun delta =>
-              And (Real.instLE.le (abs delta) unitRoundoff)
-                (Eq (flSub x y) (instHMul.hMul (instHSub.hSub x y) (instHAdd.hAdd 1 delta)))) →
-          (∀ (x y : Real),
-              Exists fun delta =>
-                And (Real.instLE.le (abs delta) unitRoundoff)
-                  (Eq (flMul x y) (instHMul.hMul (instHMul.hMul x y) (instHAdd.hAdd 1 delta)))) →
-            (∀ (x y : Real),
-                Ne y 0 →
-                  Exists fun delta =>
-                    And (Real.instLE.le (abs delta) unitRoundoff)
-                      (Eq (flDiv x y) (instHMul.hMul (instHDiv.hDiv x y) (instHAdd.hAdd 1 delta)))) →
-              HighamBench.P08ScalarArithmeticModel
-```
-
-Fully explicit type:
-
-```lean
-(unitRoundoff : Real) →
-  (unitRoundoff_nonneg :
-      @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-        unitRoundoff) →
-    (flAdd flSub flMul flDiv : Real → Real → Real) →
-      (add_model :
-          ∀ (x y : Real),
-            @Exists.{1} Real fun (delta : Real) =>
-              And (@LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup delta) unitRoundoff)
-                (@Eq.{1} Real (flAdd x y)
-                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) x y)
-                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                      (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) delta)))) →
-        (sub_model :
-            ∀ (x y : Real),
-              @Exists.{1} Real fun (delta : Real) =>
-                And (@LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup delta) unitRoundoff)
-                  (@Eq.{1} Real (flSub x y)
-                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                      (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub) x y)
-                      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                        (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) delta)))) →
-          (mul_model :
-              ∀ (x y : Real),
-                @Exists.{1} Real fun (delta : Real) =>
-                  And (@LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup delta) unitRoundoff)
-                    (@Eq.{1} Real (flMul x y)
-                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) x y)
-                        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                          (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) delta)))) →
-            (div_model :
-                ∀ (x y : Real),
-                  @Ne.{1} Real y (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) →
-                    @Exists.{1} Real fun (delta : Real) =>
-                      And
-                        (@LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup delta) unitRoundoff)
-                        (@Eq.{1} Real (flDiv x y)
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                            (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                              (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid)) x y)
-                            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                              (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) delta)))) →
-              HighamBench.P08ScalarArithmeticModel
-```
-
-### D071: `HighamBench.P08SubtractionLastResidualTrace.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `4`
-- Semantic SHA-256: `9f043e9784e45839aa3b5f755595e064c62125610855a11b0c177fe25902f99f`
-
-Type:
-
-```lean
-{n : Nat} →
-  {precision : HighamBench.P08ResidualPrecision} →
-    {residualModel : HighamBench.P08ScalarArithmeticModel} →
-      {convert : Real → Real} →
-        {A : Fin n → Fin n → Real} →
-          {b x : Fin n → Real} →
-            (roundedAx beforeConversion output : Fin n → Real) →
-              (∀ (i : Fin n), Eq (roundedAx i) (HighamBench.p08RoundedDot residualModel A x i)) →
-                (∀ (i : Fin n), Eq (beforeConversion i) (residualModel.flSub (roundedAx i) (b i))) →
-                  Eq output
-                      (HighamBench.p08ResidualUnitRoundoff.match_1 (fun precision => Fin n → Real) precision
-                        (fun _ => beforeConversion) fun _ i => convert (beforeConversion i)) →
-                    HighamBench.P08SubtractionLastResidualTrace precision residualModel convert A b x
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {precision : HighamBench.P08ResidualPrecision} →
-    {residualModel : HighamBench.P08ScalarArithmeticModel} →
-      {convert : Real → Real} →
-        {A : Fin n → Fin n → Real} →
-          {b x : Fin n → Real} →
-            (roundedAx beforeConversion output : Fin n → Real) →
-              (roundedAx_relation :
-                  ∀ (i : Fin n), @Eq.{1} Real (roundedAx i) (@HighamBench.p08RoundedDot residualModel n A x i)) →
-                (subtraction_last :
-                    ∀ (i : Fin n),
-                      @Eq.{1} Real (beforeConversion i)
-                        (HighamBench.P08ScalarArithmeticModel.flSub residualModel (roundedAx i) (b i))) →
-                  (output_relation :
-                      @Eq.{1} (Fin n → Real) output
-                        (HighamBench.p08ResidualUnitRoundoff.match_1.{1}
-                          (fun (precision : HighamBench.P08ResidualPrecision) => Fin n → Real) precision
-                          (fun (_ : Unit) => beforeConversion) fun (_ : Unit) (i : Fin n) =>
-                          convert (beforeConversion i))) →
-                    @HighamBench.P08SubtractionLastResidualTrace n precision residualModel convert A b x
-```
-
-### D072: `HighamBench.p08ResidualUnitRoundoff.match_1`
+### D062: `HighamBench.p08ResidualUnitRoundoff.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -3006,28 +2598,7 @@ Definition body (one-level semantic boundary):
 fun motive precision h_1 h_2 => HighamBench.P08ResidualPrecision.casesOn precision (h_1 Unit.unit) (h_2 Unit.unit)
 ```
 
-### D073: `HighamBench.P08ColumnPivotedGaussianEliminationTrace`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `5`
-- Semantic SHA-256: `04ef73fc38e76e7aa817d01e5e91d746fd8a6d6d1369d6142456a8c1e7a9638e`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → {n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → (Fin n → Real) → Type
-```
-
-Fully explicit type:
-
-```lean
-(model : HighamBench.P08ScalarArithmeticModel) →
-  {n : Nat} → (A : Fin n → Fin n → Real) → (rhs output : Fin n → Real) → Type
-```
-
-### D074: `HighamBench.P08ResidualPrecision.casesOn`
+### D063: `HighamBench.P08ResidualPrecision.casesOn`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -3058,7 +2629,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t single double => HighamBench.P08ResidualPrecision.rec single double t
 ```
 
-### D075: `HighamBench.p08AbsAction`
+### D064: `HighamBench.p08AbsAction`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -3084,140 +2655,7 @@ Definition body (one-level semantic boundary):
 fun {n} A x i => Finset.univ.sum fun j => instHMul.hMul (abs (A i j)) (abs (x j))
 ```
 
-### D076: `HighamBench.p08RoundedDot`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `5ed6a73db466e72c573339b7f8660f2cd8603f77c90d1ed10f24aa41f15e75b9`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → {n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-(model : HighamBench.P08ScalarArithmeticModel) →
-  {n : Nat} → (A : Fin n → Fin n → Real) → (x : Fin n → Real) → (i : Fin n) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun model {n} A x i => HighamBench.recursiveSum model.flAdd n fun j => model.flMul (A i j) (x j)
-```
-
-### D077: `HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `6`
-- Semantic SHA-256: `5c979a9ca09c426bc2ed032a04c306277455a9accc6d7f0f552352ce087aeefa`
-
-Type:
-
-```lean
-{model : HighamBench.P08ScalarArithmeticModel} →
-  {n : Nat} →
-    {A : Fin n → Fin n → Real} →
-      {rhs output : Fin n → Real} →
-        (matrixState : Nat → Fin n → Fin n → Real) →
-          (rhsState : Nat → Fin n → Real) →
-            (pivotRow : Fin n → Fin n) →
-              Eq (matrixState 0) A →
-                Eq (rhsState 0) rhs →
-                  (∀ (k : Fin n), instLENat.le k.val (pivotRow k).val) →
-                    (∀ (k i : Fin n),
-                        instLENat.le k.val i.val →
-                          Real.instLE.le (abs (matrixState k.val i k)) (abs (matrixState k.val (pivotRow k) k))) →
-                      (∀ (k : Fin n), Ne (matrixState k.val (pivotRow k) k) 0) →
-                        (∀ (k : Fin n),
-                            Eq (matrixState (instHAdd.hAdd k.val 1))
-                              (HighamBench.p08ColumnPivotedMatrixStep model (matrixState k.val) k (pivotRow k))) →
-                          (∀ (k : Fin n),
-                              Eq (rhsState (instHAdd.hAdd k.val 1))
-                                (HighamBench.p08ColumnPivotedRhsStep model (matrixState k.val) (rhsState k.val) k
-                                  (pivotRow k))) →
-                            (∀ (i j : Fin n), instLTNat.lt j.val i.val → Eq (matrixState n i j) 0) →
-                              (∀ (i : Fin n), Ne (matrixState n i i) 0) →
-                                (∀ (i : Fin n),
-                                    Eq (output i)
-                                      (model.flDiv
-                                        (model.flSub (rhsState n i)
-                                          (HighamBench.p08RoundedUpperTailDot model (matrixState n) output i))
-                                        (matrixState n i i))) →
-                                  HighamBench.P08ColumnPivotedGaussianEliminationTrace model A rhs output
-```
-
-Fully explicit type:
-
-```lean
-{model : HighamBench.P08ScalarArithmeticModel} →
-  {n : Nat} →
-    {A : Fin n → Fin n → Real} →
-      {rhs output : Fin n → Real} →
-        (matrixState : Nat → Fin n → Fin n → Real) →
-          (rhsState : Nat → Fin n → Real) →
-            (pivotRow : Fin n → Fin n) →
-              (initial_matrix :
-                  @Eq.{1} (Fin n → Fin n → Real)
-                    (matrixState (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))) A) →
-                (initial_rhs :
-                    @Eq.{1} (Fin n → Real) (rhsState (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))
-                      rhs) →
-                  (pivot_active : ∀ (k : Fin n), @LE.le.{0} Nat instLENat (@Fin.val n k) (@Fin.val n (pivotRow k))) →
-                    (pivot_largest :
-                        ∀ (k i : Fin n),
-                          @LE.le.{0} Nat instLENat (@Fin.val n k) (@Fin.val n i) →
-                            @LE.le.{0} Real Real.instLE
-                              (@abs.{0} Real Real.lattice Real.instAddGroup (matrixState (@Fin.val n k) i k))
-                              (@abs.{0} Real Real.lattice Real.instAddGroup
-                                (matrixState (@Fin.val n k) (pivotRow k) k))) →
-                      (pivot_nonzero :
-                          ∀ (k : Fin n),
-                            @Ne.{1} Real (matrixState (@Fin.val n k) (pivotRow k) k)
-                              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
-                        (matrix_step :
-                            ∀ (k : Fin n),
-                              @Eq.{1} (Fin n → Fin n → Real)
-                                (matrixState
-                                  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n k)
-                                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                                (@HighamBench.p08ColumnPivotedMatrixStep model n (matrixState (@Fin.val n k)) k
-                                  (pivotRow k))) →
-                          (rhs_step :
-                              ∀ (k : Fin n),
-                                @Eq.{1} (Fin n → Real)
-                                  (rhsState
-                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n k)
-                                      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                                  (@HighamBench.p08ColumnPivotedRhsStep model n (matrixState (@Fin.val n k))
-                                    (rhsState (@Fin.val n k)) k (pivotRow k))) →
-                            (final_upper_triangular :
-                                ∀ (i j : Fin n),
-                                  @LT.lt.{0} Nat instLTNat (@Fin.val n j) (@Fin.val n i) →
-                                    @Eq.{1} Real (matrixState n i j)
-                                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
-                              (final_diagonal_nonzero :
-                                  ∀ (i : Fin n),
-                                    @Ne.{1} Real (matrixState n i i)
-                                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
-                                (back_substitution :
-                                    ∀ (i : Fin n),
-                                      @Eq.{1} Real (output i)
-                                        (HighamBench.P08ScalarArithmeticModel.flDiv model
-                                          (HighamBench.P08ScalarArithmeticModel.flSub model (rhsState n i)
-                                            (@HighamBench.p08RoundedUpperTailDot model n (matrixState n) output i))
-                                          (matrixState n i i))) →
-                                  @HighamBench.P08ColumnPivotedGaussianEliminationTrace model n A rhs output
-```
-
-### D078: `HighamBench.P08ResidualPrecision.rec`
+### D065: `HighamBench.P08ResidualPrecision.rec`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -3241,401 +2679,7 @@ Fully explicit type:
     (double : motive HighamBench.P08ResidualPrecision.double) → (t : HighamBench.P08ResidualPrecision) → motive t
 ```
 
-### D079: `HighamBench.P08ScalarArithmeticModel.flAdd`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `6`
-- Semantic SHA-256: `f37bcf5a6659cff51cd1b022d2627bd079c93426b02455c6a219dc49fae413af`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → Real → Real → Real
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P08ScalarArithmeticModel) → Real → Real → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.3
-```
-
-### D080: `HighamBench.P08ScalarArithmeticModel.flMul`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `6`
-- Semantic SHA-256: `251455074a55a647642d6f6bfec0f277e2acf648d8ca2ce8cb324f29bc1e750f`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → Real → Real → Real
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P08ScalarArithmeticModel) → Real → Real → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.5
-```
-
-### D081: `HighamBench.recursiveSum`
-
-- Role: `local`
-- Owner module: `HighamBench.Core`
-- Declaration kind: `def`
-- Distance from target type: `6`
-- Semantic SHA-256: `3a24e7a5c707c014d59b9d90d536db1f1c79ef135d2ba34adb6af8a4258efe41`
-
-Type:
-
-```lean
-(Real → Real → Real) → (n : Nat) → (Fin n → Real) → Real
-```
-
-Fully explicit type:
-
-```lean
-(flAdd : Real → Real → Real) → (n : Nat) → (Fin n → Real) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun flAdd x x_1 =>
-  Nat.brecOn (motive := fun x => (Fin x → Real) → Real) x
-    (fun x f x_2 =>
-      HighamBench.recursiveSum.match_1 (fun x x_3 => Nat.below (motive := fun x => (Fin x → Real) → Real) x → Real) x
-        x_2 (fun x x_3 => 0)
-        (fun n v x => if h : Eq n 0 then v ⟨0, ⋯⟩ else flAdd (x.1 fun i => v i.castSucc) (v (Fin.last n))) f)
-    x_1
-```
-
-### D082: `HighamBench.P08ScalarArithmeticModel.flDiv`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `7`
-- Semantic SHA-256: `e89ab6cb2f2f523f7cb018bdfc5e5e280ac7b52c225d3490a0126ff08d339b2a`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → Real → Real → Real
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P08ScalarArithmeticModel) → Real → Real → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.6
-```
-
-### D083: `HighamBench.p08ColumnPivotedMatrixStep`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `309cb8a5d5954c0c8eb38407c8d1f1223ca7491444f306ba2ccdce14b967ff64`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → {n : Nat} → (Fin n → Fin n → Real) → Fin n → Fin n → Fin n → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-(model : HighamBench.P08ScalarArithmeticModel) →
-  {n : Nat} → (A : Fin n → Fin n → Real) → (k pivot : Fin n) → Fin n → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun model {n} A k pivot =>
-  have swapped := HighamBench.p08SwapRowsMatrix A k pivot;
-  fun i j =>
-  ite (instLENat.le i.val k.val) (swapped i j)
-    (ite (instLTNat.lt j.val k.val) (swapped i j)
-      (ite (Eq j k) 0
-        (model.flSub (swapped i j) (model.flMul (model.flDiv (swapped i k) (swapped k k)) (swapped k j)))))
-```
-
-### D084: `HighamBench.p08ColumnPivotedRhsStep`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `73efa32de8540c40dd4faddb7e508fdd616fbd985fe9b2e9847cfc54d8baea37`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel →
-  {n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → Fin n → Fin n → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-(model : HighamBench.P08ScalarArithmeticModel) →
-  {n : Nat} → (A : Fin n → Fin n → Real) → (b : Fin n → Real) → (k pivot : Fin n) → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun model {n} A b k pivot =>
-  have swappedA := HighamBench.p08SwapRowsMatrix A k pivot;
-  have swappedB := HighamBench.p08SwapRowsVector b k pivot;
-  fun i =>
-  ite (instLENat.le i.val k.val) (swappedB i)
-    (model.flSub (swappedB i) (model.flMul (model.flDiv (swappedA i k) (swappedA k k)) (swappedB k)))
-```
-
-### D085: `HighamBench.p08RoundedUpperTailDot`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `096124e2679f3fa41ab051e331b5aa95013b219c956664030878e8932f480f34`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → {n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-(model : HighamBench.P08ScalarArithmeticModel) →
-  {n : Nat} → (U : Fin n → Fin n → Real) → (x : Fin n → Real) → (i : Fin n) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun model {n} U x i =>
-  HighamBench.recursiveSum model.flAdd (instHSub.hSub n (instHAdd.hAdd i.val 1)) fun j =>
-    model.flMul (U i (HighamBench.p08UpperTailIndex i j)) (x (HighamBench.p08UpperTailIndex i j))
-```
-
-### D086: `HighamBench.recursiveSum._proof_1`
-
-- Role: `local`
-- Owner module: `HighamBench.Core`
-- Declaration kind: `theorem`
-- Distance from target type: `7`
-- Semantic SHA-256: `7f01e5fdb761df0e050b0929b93312fc9084bc345726c816952ed0fd4844be27`
-
-Type:
-
-```lean
-∀ (n : Nat), Eq n 0 → instLTNat.lt 0 (instHAdd.hAdd n 1)
-```
-
-Fully explicit type:
-
-```lean
-∀ (n : Nat) (h : @Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))),
-  @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D087: `HighamBench.recursiveSum.match_1`
-
-- Role: `local`
-- Owner module: `HighamBench.Core`
-- Declaration kind: `abbrev`
-- Distance from target type: `7`
-- Semantic SHA-256: `56d4f4744c0103a83d3305dc49473baf5a72c1037bbec52ff87f6f4a5419f79e`
-
-Type:
-
-```lean
-(motive : (x : Nat) → (Fin x → Real) → Sort u_1) →
-  (x : Nat) →
-    (x_1 : Fin x → Real) →
-      ((x : Fin 0 → Real) → motive 0 x) →
-        ((n : Nat) → (v : Fin (instHAdd.hAdd n 1) → Real) → motive n.succ v) → motive x x_1
-```
-
-Fully explicit type:
-
-```lean
-(motive : (x : Nat) → (Fin x → Real) → Sort u_1) →
-  (x : Nat) →
-    (x_1 : Fin x → Real) →
-      (h_1 :
-          (x : Fin (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) → Real) →
-            motive (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) x) →
-        (h_2 :
-            (n : Nat) →
-              (v :
-                  Fin
-                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-                        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
-                    Real) →
-                motive (Nat.succ n) v) →
-          motive x x_1
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun motive x x_1 h_1 h_2 =>
-  Nat.casesOn (motive := fun x => (x_2 : Fin x → Real) → motive x x_2) x (fun x => h_1 x) (fun n x => h_2 n x) x_1
-```
-
-### D088: `HighamBench.p08SwapRowsMatrix`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `f22db28acb57c47540470b2443d37f59d2b41281d6e9f25ac2af5f6f7b8dc238`
-
-Type:
-
-```lean
-{n : Nat} → (Fin n → Fin n → Real) → Fin n → Fin n → Fin n → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (A : Fin n → Fin n → Real) → (r s : Fin n) → Fin n → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} A r s i j => ite (Eq i r) (A s j) (ite (Eq i s) (A r j) (A i j))
-```
-
-### D089: `HighamBench.p08SwapRowsVector`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `697d1103f6d5a8aef9aa5bcf7afe54af67419b72a4479ae1f1c04969c16a2aa4`
-
-Type:
-
-```lean
-{n : Nat} → (Fin n → Real) → Fin n → Fin n → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (b : Fin n → Real) → (r s : Fin n) → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} b r s i => ite (Eq i r) (b s) (ite (Eq i s) (b r) (b i))
-```
-
-### D090: `HighamBench.p08UpperTailIndex`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `ba1de8e9f5ed31084b6b5adda945b1c8c9dca6e1153a406a978b4b09f15a55c7`
-
-Type:
-
-```lean
-{n : Nat} → (i : Fin n) → Fin (instHSub.hSub n (instHAdd.hAdd i.val 1)) → Fin n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  (i : Fin n) →
-    (j :
-        Fin
-          (@HSub.hSub.{0, 0, 0} Nat Nat Nat (@instHSub.{0} Nat instSubNat) n
-            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n i)
-              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))) →
-      Fin n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} i j => ⟨instHAdd.hAdd (instHAdd.hAdd i.val 1) j.val, ⋯⟩
-```
-
-### D091: `HighamBench.p08UpperTailIndex._proof_2`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `theorem`
-- Distance from target type: `9`
-- Semantic SHA-256: `ee246c405abf2f153e4341862aad32b4ad86ebd9874969b6c70b1d7948e3dcf2`
-
-Type:
-
-```lean
-∀ {n : Nat} (i : Fin n) (j : Fin (instHSub.hSub n (instHAdd.hAdd i.val 1))),
-  instLTNat.lt (instHAdd.hAdd (instHAdd.hAdd i.val 1) j.val) n
-```
-
-Fully explicit type:
-
-```lean
-∀ {n : Nat} (i : Fin n)
-  (j :
-    Fin
-      (@HSub.hSub.{0, 0, 0} Nat Nat Nat (@instHSub.{0} Nat instSubNat) n
-        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n i)
-          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))),
-  @LT.lt.{0} Nat instLTNat
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n i)
-        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-      (@Fin.val
-        (@HSub.hSub.{0, 0, 0} Nat Nat Nat (@instHSub.{0} Nat instSubNat) n
-          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n i)
-            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-        j))
-    n
-```
-
-### D092: `DivInvMonoid.toDiv`
+### D066: `DivInvMonoid.toDiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -3661,7 +2705,7 @@ Definition body (one-level semantic boundary):
 fun G [self : DivInvMonoid G] => self.3
 ```
 
-### D093: `Fin`
+### D067: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3681,7 +2725,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D094: `HDiv.hDiv`
+### D068: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3707,7 +2751,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D095: `HMul.hMul`
+### D069: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3733,7 +2777,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D096: `LE.le`
+### D070: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3759,7 +2803,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D097: `Nat`
+### D071: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3779,7 +2823,7 @@ Fully explicit type:
 Type
 ```
 
-### D098: `Nat.instAtLeastTwoHAddOfNat`
+### D072: `Nat.instAtLeastTwoHAddOfNat`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Init`
@@ -3802,7 +2846,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D099: `Nat.instNeZeroSucc`
+### D073: `Nat.instNeZeroSucc`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Nat.Basic`
@@ -3825,7 +2869,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D100: `OfNat.ofNat`
+### D074: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3851,7 +2895,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D101: `One.toOfNat1`
+### D075: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -3877,7 +2921,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D102: `Real`
+### D076: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3897,7 +2941,7 @@ Fully explicit type:
 Type
 ```
 
-### D103: `Real.instAddGroup`
+### D077: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3923,7 +2967,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D104: `Real.instDivInvMonoid`
+### D078: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3951,7 +2995,7 @@ Definition body (one-level semantic boundary):
   zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D105: `Real.instLE`
+### D079: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3977,7 +3021,7 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D106: `Real.instMul`
+### D080: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4003,7 +3047,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D107: `Real.instNatCast`
+### D081: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4029,7 +3073,7 @@ Definition body (one-level semantic boundary):
 { natCast := fun n => { cauchy := n.cast } }
 ```
 
-### D108: `Real.instOne`
+### D082: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4055,7 +3099,7 @@ Definition body (one-level semantic boundary):
 { one := Real.one✝ }
 ```
 
-### D109: `Real.lattice`
+### D083: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4081,7 +3125,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D110: `abs`
+### D084: `abs`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
@@ -4108,7 +3152,7 @@ fun {α} [Lattice α] [AddGroup α] a =>
   SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
 ```
 
-### D111: `instHDiv`
+### D085: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4134,7 +3178,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
-### D112: `instHMul`
+### D086: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4160,7 +3204,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D113: `instOfNatAtLeastTwo`
+### D087: `instOfNatAtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -4186,7 +3230,7 @@ Definition body (one-level semantic boundary):
 fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
 ```
 
-### D114: `instOfNatNat`
+### D088: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4212,27 +3256,7 @@ Definition body (one-level semantic boundary):
 fun n => { ofNat := n }
 ```
 
-### D115: `And`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `inductive`
-- Distance from target type: `3`
-- Semantic SHA-256: `37ecdc009aa953e3d4924ef10e6a1fb591f6af993cd344fd5a6b5321466517c9`
-
-Type:
-
-```lean
-Prop → Prop → Prop
-```
-
-Fully explicit type:
-
-```lean
-(a b : Prop) → Prop
-```
-
-### D116: `Eq`
+### D089: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4252,27 +3276,7 @@ Fully explicit type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D117: `Exists`
-
-- Role: `external-frontier`
-- Owner module: `Init.Core`
-- Declaration kind: `inductive`
-- Distance from target type: `3`
-- Semantic SHA-256: `a24a6eb72dcf5b3765659a28bb9d3814ed7ebd3e3fa1fd11e8f3c7acc80e0dde`
-
-Type:
-
-```lean
-{α : Sort u} → (α → Prop) → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u} → (p : α → Prop) → Prop
-```
-
-### D118: `Fin.fintype`
+### D090: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -4298,7 +3302,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D119: `Finset.sum`
+### D091: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -4324,7 +3328,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D120: `Finset.univ`
+### D092: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -4350,7 +3354,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D121: `HAdd.hAdd`
+### D093: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4376,7 +3380,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D122: `HPow.hPow`
+### D094: `HPow.hPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4402,7 +3406,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HPow α β γ] => self.1
 ```
 
-### D123: `HSub.hSub`
+### D095: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4428,7 +3432,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D124: `Iff`
+### D096: `Iff`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -4448,7 +3452,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D125: `LT.lt`
+### D097: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4474,7 +3478,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LT α] => self.1
 ```
 
-### D126: `Monoid.toNatPow`
+### D098: `Monoid.toNatPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -4500,7 +3504,7 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
 ```
 
-### D127: `Nat.below`
+### D099: `Nat.below`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4526,7 +3530,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t => Nat.rec PUnit (fun n n_ih => PProd (motive n) n_ih) t
 ```
 
-### D128: `Nat.brecOn`
+### D100: `Nat.brecOn`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4552,7 +3556,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t F_1 => (Nat.brecOn.go t F_1).1
 ```
 
-### D129: `Nat.cast`
+### D101: `Nat.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Cast`
@@ -4578,7 +3582,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D130: `Nat.succ`
+### D102: `Nat.succ`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4598,7 +3602,7 @@ Fully explicit type:
 (n : Nat) → Nat
 ```
 
-### D131: `Neg.neg`
+### D103: `Neg.neg`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4624,7 +3628,7 @@ Definition body (one-level semantic boundary):
 fun α [self : Neg α] => self.1
 ```
 
-### D132: `Pi.instZero`
+### D104: `Pi.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
@@ -4650,7 +3654,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [(i : ι) → Zero (M i)] => { zero := fun x => 0 }
 ```
 
-### D133: `Real.instAdd`
+### D105: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4676,7 +3680,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D134: `Real.instAddCommMonoid`
+### D106: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4702,7 +3706,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D135: `Real.instLT`
+### D107: `Real.instLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4728,7 +3732,7 @@ Definition body (one-level semantic boundary):
 { lt := Real.lt✝ }
 ```
 
-### D136: `Real.instMonoid`
+### D108: `Real.instMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4754,7 +3758,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D137: `Real.instNeg`
+### D109: `Real.instNeg`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4780,7 +3784,7 @@ Definition body (one-level semantic boundary):
 { neg := Real.neg✝ }
 ```
 
-### D138: `Real.instSub`
+### D110: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4806,7 +3810,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D139: `Real.instZero`
+### D111: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4832,7 +3836,7 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D140: `Unit`
+### D112: `Unit`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4858,7 +3862,7 @@ Definition body (one-level semantic boundary):
 PUnit
 ```
 
-### D141: `Zero.toOfNat0`
+### D113: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -4884,7 +3888,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D142: `instAddNat`
+### D114: `instAddNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4910,7 +3914,7 @@ Definition body (one-level semantic boundary):
 { add := Nat.add }
 ```
 
-### D143: `instHAdd`
+### D115: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4936,7 +3940,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D144: `instHPow`
+### D116: `instHPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4962,7 +3966,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
-### D145: `instHSub`
+### D117: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4988,7 +3992,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D146: `instLTNat`
+### D118: `instLTNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5014,7 +4018,7 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D147: `Nat.casesOn`
+### D119: `Nat.casesOn`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5041,7 +4045,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t zero succ => Nat.rec zero (fun n n_ih => succ n) t
 ```
 
-### D148: `Unit.unit`
+### D120: `Unit.unit`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5067,7 +4071,7 @@ Definition body (one-level semantic boundary):
 PUnit.unit
 ```
 
-### D149: `instDecidableEqFin`
+### D121: `instDecidableEqFin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5095,7 +4099,7 @@ fun n i j =>
     fun h => Decidable.isFalse ⋯
 ```
 
-### D150: `ite`
+### D122: `ite`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5119,337 +4123,4 @@ Definition body (one-level semantic boundary):
 
 ```lean
 fun {α} c [h : Decidable c] t e => Decidable.casesOn h (fun x => e) fun x => t
-```
-
-### D151: `Ne`
-
-- Role: `external-frontier`
-- Owner module: `Init.Core`
-- Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `635adc1f9e4a981a5c01b21338fdf89e637bd4ef0aa6911bda4dc03acfe9fba6`
-
-Type:
-
-```lean
-{α : Sort u} → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u} → (a b : α) → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} a b => Not (Eq a b)
-```
-
-### D152: `Fin.castSucc`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Fin.Basic`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `1a33a8aafc4da9c57254d511b91e1e2a293b6b2e6a304786fbdb535a2fe20bc6`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  Fin n →
-    Fin
-      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} => Fin.castAdd 1
-```
-
-### D153: `Fin.last`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Fin.Basic`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `b7cf2c761ad02a28a34dfdeee30ac4ec7bd4c3ff77700313e3ed2f37d473f5f2`
-
-Type:
-
-```lean
-(n : Nat) → Fin (instHAdd.hAdd n 1)
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) →
-  Fin
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n => ⟨n, ⋯⟩
-```
-
-### D154: `Fin.mk`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `constructor`
-- Distance from target type: `7`
-- Semantic SHA-256: `2fb605c17aa879bf453f735ede02a7306496f461d34549bf61cb6c85662ce182`
-
-Type:
-
-```lean
-{n : Nat} → (val : Nat) → instLTNat.lt val n → Fin n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (val : Nat) → (isLt : @LT.lt.{0} Nat instLTNat val n) → Fin n
-```
-
-### D155: `Fin.val`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `7`
-- Semantic SHA-256: `74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Nat
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : Fin n) → Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.1
-```
-
-### D156: `Not`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `0bfdacbe07f6cbb8995b354e36299fd742f29398c188d7cc23dedcdc47f57a9a`
-
-Type:
-
-```lean
-Prop → Prop
-```
-
-Fully explicit type:
-
-```lean
-(a : Prop) → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun a => a → False
-```
-
-### D157: `dite`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `a2551097d29bac847f3c59e8213b5882afd4a95e9247c2382e8bce33011974b5`
-
-Type:
-
-```lean
-{α : Sort u} → (c : Prop) → [h : Decidable c] → (c → α) → (Not c → α) → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u} → (c : Prop) → [h : Decidable c] → (t : c → α) → (e : Not c → α) → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} c [h : Decidable c] t e => Decidable.casesOn h e t
-```
-
-### D158: `instDecidableEqNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `658bdfe7785c44f21a851cae8ec44aec53d69bb69af955a9d42028df3fe37d22`
-
-Type:
-
-```lean
-DecidableEq Nat
-```
-
-Fully explicit type:
-
-```lean
-DecidableEq.{1} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-Nat.decEq
-```
-
-### D159: `instLENat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `002e628e28a06e89ab80e69408fa3be9fc3e200fafd33e0f71d9111a8944875e`
-
-Type:
-
-```lean
-LE Nat
-```
-
-Fully explicit type:
-
-```lean
-LE.{0} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ le := Nat.le }
-```
-
-### D160: `Nat.decLe`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `931f48339aefbc000a30f94b69a993dd27e00f38323c7b45743dc5d6ffe51c35`
-
-Type:
-
-```lean
-(n m : Nat) → Decidable (instLENat.le n m)
-```
-
-Fully explicit type:
-
-```lean
-(n m : Nat) → Decidable (@LE.le.{0} Nat instLENat n m)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n m => if h : Eq (n.ble m) Bool.true then Decidable.isTrue ⋯ else Decidable.isFalse ⋯
-```
-
-### D161: `Nat.decLt`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `652ffb54717682f55eafca6c2b47fca31dfea599c9898709ba2f56fbc9113d99`
-
-Type:
-
-```lean
-(n m : Nat) → Decidable (instLTNat.lt n m)
-```
-
-Fully explicit type:
-
-```lean
-(n m : Nat) → Decidable (@LT.lt.{0} Nat instLTNat n m)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n m => n.succ.decLe m
-```
-
-### D162: `Nat.zero`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `constructor`
-- Distance from target type: `8`
-- Semantic SHA-256: `514797223f88553aabb4307fa99de406677fb8a482f74b8d4694356cbd803a51`
-
-Type:
-
-```lean
-Nat
-```
-
-Fully explicit type:
-
-```lean
-Nat
-```
-
-### D163: `instSubNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `5b0e20a4d2b3e0a67bd35de1b5c84cc60d6dc867658112d84cad483055804868`
-
-Type:
-
-```lean
-Sub Nat
-```
-
-Fully explicit type:
-
-```lean
-Sub.{0} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ sub := Nat.sub }
 ```
