@@ -1,8 +1,8 @@
 {
   "aggregates": {
     "settled": {
-      "accepted": 44,
-      "adjudicated": 35,
+      "accepted": 45,
+      "adjudicated": 36,
       "by_tier": {
         "T1": {
           "accepted": 17,
@@ -26,19 +26,19 @@
           "total": 18
         },
         "T3": {
-          "accepted": 12,
-          "adjudicated": 13,
+          "accepted": 13,
+          "adjudicated": 14,
           "classifications": {
-            "faithful-equivalent": 4,
+            "faithful-equivalent": 5,
             "faithful-stronger": 8,
             "not-faithful-different": 4,
             "not-faithful-weaker": 3
           },
-          "total": 19
+          "total": 20
         }
       },
       "classifications": {
-        "faithful-equivalent": 17,
+        "faithful-equivalent": 18,
         "faithful-stronger": 27,
         "not-faithful-different": 5,
         "not-faithful-weaker": 7
@@ -47,17 +47,17 @@
         "no/no": 5,
         "no/yes": 7,
         "yes/no": 27,
-        "yes/yes": 17
+        "yes/yes": 18
       },
       "not_accepted": 12,
-      "total": 56
+      "total": 57
     },
     "third_pass_only": {
-      "accepted": 10,
+      "accepted": 11,
       "not_accepted": 12,
-      "total": 22,
+      "total": 23,
       "transitions": {
-        "not-faithful-different -> faithful-equivalent": 2,
+        "not-faithful-different -> faithful-equivalent": 3,
         "not-faithful-different -> faithful-stronger": 3,
         "not-faithful-different -> not-faithful-different": 3,
         "not-faithful-different -> not-faithful-weaker": 4,
@@ -72,7 +72,7 @@
   "audit_id": "audit_003",
   "audit_window": {
     "earliest_third_pass_completed_at_utc": "2026-08-21T14:07:22.513628+00:00",
-    "latest_third_pass_completed_at_utc": "2026-08-22T02:24:56.006204+00:00"
+    "latest_third_pass_completed_at_utc": "2026-08-22T08:05:44.672438+00:00"
   },
   "baseline_audit": {
     "audit_id": "audit_002",
@@ -80,33 +80,32 @@
     "latest_evidence_commit": "50ef267005b75d218510bbc148093a2bea89cbc6"
   },
   "recorded_at_utc": "2026-08-22T03:31:47Z",
+  "finalized_at_utc": "2026-08-22T08:07:16Z",
   "repository_reference": {
     "branch": "benchmark_faithfulness_audit",
     "evidence_is_pinned_per_task": true,
-    "latest_audit_commit": "e826151e14e46ad11fa158c4f141dcb03f181d1e"
+    "latest_audit_commit": "cbfd683407c8fbbfc990511c00e7d1c2e542f91d"
   },
   "schema_version": "highambench-audit-history-3",
   "scope": {
     "carried_forward_accepted_task_count": 34,
     "corpus_task_count": 60,
-    "eligible_task_count": 59,
-    "excluded_task_count": 1,
+    "eligible_task_count": 57,
+    "excluded_task_count": 3,
     "excluded_tasks": [
+      "P07-T2",
+      "P16-T2",
       "P17-T1"
     ],
     "paper_count": 20,
-    "pending_task_count": 3,
-    "pending_tasks": [
-      "P07-T2",
-      "P10-T3",
-      "P16-T2"
-    ],
-    "settled_task_count": 56,
-    "third_pass_accepted_task_count": 10,
+    "pending_task_count": 0,
+    "pending_tasks": [],
+    "settled_task_count": 57,
+    "third_pass_accepted_task_count": 11,
     "third_pass_not_accepted_task_count": 12,
-    "third_pass_validated_task_count": 22
+    "third_pass_validated_task_count": 23
   },
-  "status": "completed-with-pending-source-decisions",
+  "status": "completed",
   "tasks": [
     {
       "counted_in_settled_aggregate": true,
@@ -1723,7 +1722,16 @@
     },
     {
       "counted_in_settled_aggregate": false,
-      "disposition": "pending-source-clarification",
+      "disposition": "excluded-corrected-source",
+      "correction": {
+        "evidence_commit": "dab1843146b678fe1dba919be4480683797ccd5c",
+        "target": {
+          "declaration": "HighamBench.p07_t2_backward_error_product_budget",
+          "path": "paper_bencmark/highambench/tasks/P07/T2/Target.lean",
+          "sha256": "311a25e878b2f886e9611877f6b8f235b33e985d4c0bebd530cbf48fbb3dde30"
+        }
+      },
+      "historical_audit_observation_commit": "cef9fdfaa43e762f5ff2b09947b0395b00d4c940",
       "previous": {
         "accepted": false,
         "adjudicated": true,
@@ -1758,12 +1766,10 @@
           "sha256": "6c74a35b9ccd229e305dde38e11b1e247bee8bef50a42a127e0a5bd8f977371a"
         }
       },
-      "reason": "The selected theorem contains incompatible perturbed-solution claims and omits range and rank conditions needed by its proof. A faithful repair requires an owner-approved correction or source reselection.",
-      "source_block_record": {
-        "evidence_commit": "5b7cc2cc975be82ba34add34bfd763ac79ac27b6",
-        "path": "paper_bencmark/task_builder/REBUILD_PASS_003.md",
-        "section": "P07-T2",
-        "sha256": "5fe8d105b5ca0e71c57bd42b74e280b662ba9a47d015d4fcd801121e253aada7"
+      "reason": "The paper equates a perturbed least-squares solution with an exact perturbed-system solution, but the pseudoinverse formula in its proof does not imply that equation for a tall system without a range condition; the proof also needs full column rank. The rebuilt target makes both missing hypotheses explicit, so it is a project-corrected theorem rather than an ordinary paper-faithful translation and is excluded from the audit denominator.",
+      "source_validity_record": {
+        "path": "paper_bencmark/faithfulness_audit/source_validity/P07-T2.md",
+        "sha256": "6fee426f2f8e46191d91683d940875dc88ae40afead8f0af45b2595d929c3dd2"
       },
       "task_id": "P07-T2",
       "tier": "T2"
@@ -2527,22 +2533,23 @@
       }
     },
     {
-      "counted_in_settled_aggregate": false,
-      "disposition": "pending-source-clarification",
+      "counted_in_settled_aggregate": true,
+      "disposition": "third-pass-validated",
+      "evidence_commit": "cbfd683407c8fbbfc990511c00e7d1c2e542f91d",
       "previous": {
         "accepted": false,
         "adjudicated": true,
         "artifacts": {
           "decision": {
-            "path": "paper_bencmark/highambench/tasks/P10/T3/faithfulness/decision.json",
+            "path": "paper_bencmark/highambench/tasks/P10/T3/faithfulness/history/20260822T073938Z/decision.json",
             "sha256": "d300862badca4e4ee728c1602ce7a02e88ff2bd8a387e1e4f498d7a4dee991a9"
           },
           "manifest": {
-            "path": "paper_bencmark/highambench/tasks/P10/T3/faithfulness/manifest.json",
+            "path": "paper_bencmark/highambench/tasks/P10/T3/faithfulness/history/20260822T073938Z/manifest.json",
             "sha256": "04840c3d68da023f16a435edb7c1351c86be6b36108a381f28e61d573324c758"
           },
           "report": {
-            "path": "paper_bencmark/highambench/tasks/P10/T3/faithfulness/report.md",
+            "path": "paper_bencmark/highambench/tasks/P10/T3/faithfulness/history/20260822T073938Z/report.md",
             "sha256": "98d491b6e293c4f88f1d34ab83edc3c674e0611d0c5f201d4370f7a3e7789ad8"
           }
         },
@@ -2563,15 +2570,47 @@
           "sha256": "3768d2f5a743618038ff91cf8dbe7e3882be20611078b6235b6a4abc7a6137f3"
         }
       },
-      "reason": "The printed recurrence omits first-order product and propagated-forcing terms. A sound corrected recurrence cannot retain the selected equation-(20) bound without owner-approved source correction or reselection.",
-      "source_block_record": {
-        "evidence_commit": "32c2952c3ff84c3861234640b78560aa9d8591f9",
-        "path": "paper_bencmark/task_builder/REBUILD_PASS_003.md",
-        "section": "P10-T3",
-        "sha256": "5fe8d105b5ca0e71c57bd42b74e280b662ba9a47d015d4fcd801121e253aada7"
+      "result": {
+        "accepted": true,
+        "adjudicated": true,
+        "artifacts": {
+          "decision": {
+            "path": "paper_bencmark/highambench/tasks/P10/T3/faithfulness/decision.json",
+            "sha256": "b1bc40462361e66ba0f5160c4486d17d5e674ce86c4270ba2c41c8dc4f74d552"
+          },
+          "manifest": {
+            "path": "paper_bencmark/highambench/tasks/P10/T3/faithfulness/manifest.json",
+            "sha256": "76d082bb8eebc2a30061220e87685ff92ad88263a2e20b0d118e9c309ddd7b0c"
+          },
+          "report": {
+            "path": "paper_bencmark/highambench/tasks/P10/T3/faithfulness/report.md",
+            "sha256": "d243d4905fa1835bd0a7ed5c0768fdc2a568fefad8b8417ebd01e4e871de89f1"
+          }
+        },
+        "classification": "faithful-equivalent",
+        "completed_at_utc": "2026-08-22T08:05:44.672438+00:00",
+        "implications": {
+          "lean_implies_paper": "yes",
+          "paper_implies_lean": "yes"
+        },
+        "paper": {
+          "path": "paper_bencmark/reference_papers/P10_Fast linear algebra is stable.pdf",
+          "sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269"
+        },
+        "protocol_version": "highambench-faithfulness-0.2",
+        "target": {
+          "declaration": "HighamBench.p10_t3_multiplication_via_block_inverse",
+          "path": "paper_bencmark/highambench/tasks/P10/T3/Target.lean",
+          "sha256": "00375cfea3c0ff4c537b0924b76c44b015eabd79eb3f4b338aa54abd6f34aaef"
+        }
       },
       "task_id": "P10-T3",
-      "tier": "T3"
+      "tier": "T3",
+      "validation": {
+        "phase": "complete",
+        "status": "validated",
+        "validated_at_evidence_commit": true
+      }
     },
     {
       "counted_in_settled_aggregate": true,
@@ -3954,8 +3993,16 @@
     },
     {
       "counted_in_settled_aggregate": false,
-      "disposition": "pending-source-clarification",
-      "latest_audit_observation": {
+      "disposition": "excluded-corrected-source",
+      "correction": {
+        "evidence_commit": "10590dee8c77db6a703ef47584b465c0a8e42a6b",
+        "target": {
+          "declaration": "HighamBench.p16_t2_corrected_restarted_residual_recurrence",
+          "path": "paper_bencmark/highambench/tasks/P16/T2/Target.lean",
+          "sha256": "7edca8e0ba3ce4dadcc55dd3950afc22ba1389070814a3e25d4e14e8ee189665"
+        }
+      },
+      "historical_audit_observation": {
         "accepted": false,
         "adjudicated": true,
         "artifacts": {
@@ -3989,8 +4036,8 @@
           "sha256": "1c582176b5d6f0ea639794f09f49d14c1343fed97e7e030bd8cc1c506739809a"
         }
       },
-      "latest_audit_observation_commit": "ed9cd66176906992d28db7ca29150d70e3af4c93",
-      "latest_audit_observation_validation": {
+      "historical_audit_observation_commit": "ed9cd66176906992d28db7ca29150d70e3af4c93",
+      "historical_audit_observation_validation": {
         "counted_as_resolution": false,
         "phase": "complete",
         "status": "validated",
@@ -4030,12 +4077,10 @@
           "sha256": "1c582176b5d6f0ea639794f09f49d14c1343fed97e7e030bd8cc1c506739809a"
         }
       },
-      "reason": "The printed recurrence requires an unstated iterate-norm comparison and is false without it. The validated rerun confirms the existing target remains weaker, but resolving the benchmark task requires an owner-approved correction or source reselection.",
-      "source_block_record": {
-        "evidence_commit": "9a0bcb23bfaa99866711e6d0b09770d2e898e589",
-        "path": "paper_bencmark/task_builder/REBUILD_PASS_003.md",
-        "section": "P16-T2",
-        "sha256": "5fe8d105b5ca0e71c57bd42b74e280b662ba9a47d015d4fcd801121e253aada7"
+      "reason": "The published proof uses the unstated first-order comparison ||xHat_i||_2 lesssim ||xHat_(i+1)||_2, and the printed recurrence is false without it. The rebuilt target adds that comparison explicitly, so it is a project-corrected theorem rather than an ordinary paper-faithful translation and is excluded from the audit denominator.",
+      "source_validity_record": {
+        "path": "paper_bencmark/faithfulness_audit/source_validity/P16-T2.md",
+        "sha256": "bfbf434b587af7899ea0a7927ebb91e42e7f7a1faa0365be640b09932c7c7538"
       },
       "task_id": "P16-T2",
       "tier": "T2"

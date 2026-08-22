@@ -1,8 +1,10 @@
 {
   "schema_version": "highambench-audit-history-3",
   "audit_id": "audit_003",
-  "status": "completed-with-pending-source-decisions",
+  "status": "completed",
   "recorded_at_utc": "2026-08-22T03:31:47Z",
+  "finalized_at_utc": "2026-08-22T08:07:16Z",
+  "preliminary_history_entry_commit": "0a7c74b4ff6574c25849bbcde019d54c271540d3",
   "baseline_audit": {
     "audit_id": "audit_002",
     "history_entry_commit": "ceaed089455cb1a57f69b3c6f93dda9d4f15d947",
@@ -10,53 +12,54 @@
   },
   "audit_window": {
     "earliest_third_pass_completed_at_utc": "2026-08-21T14:07:22.513628+00:00",
-    "latest_third_pass_completed_at_utc": "2026-08-22T02:24:56.006204+00:00"
+    "latest_third_pass_completed_at_utc": "2026-08-22T08:05:44.672438+00:00"
   },
   "repository_reference": {
     "branch": "benchmark_faithfulness_audit",
     "evidence_is_pinned_per_task": true,
-    "latest_audit_commit": "e826151e14e46ad11fa158c4f141dcb03f181d1e"
+    "latest_audit_commit": "cbfd683407c8fbbfc990511c00e7d1c2e542f91d"
   },
   "scope": {
     "carried_forward_accepted_task_count": 34,
     "corpus_task_count": 60,
-    "eligible_task_count": 59,
-    "excluded_task_count": 1,
+    "eligible_task_count": 57,
+    "excluded_task_count": 3,
     "excluded_tasks": [
+      "P07-T2",
+      "P16-T2",
       "P17-T1"
     ],
     "paper_count": 20,
-    "pending_task_count": 3,
-    "pending_tasks": [
-      "P07-T2",
-      "P10-T3",
-      "P16-T2"
-    ],
-    "settled_task_count": 56,
-    "third_pass_accepted_task_count": 10,
+    "pending_task_count": 0,
+    "pending_tasks": [],
+    "settled_task_count": 57,
+    "third_pass_accepted_task_count": 11,
     "third_pass_not_accepted_task_count": 12,
-    "third_pass_validated_task_count": 22
+    "third_pass_validated_task_count": 23
   },
   "validation": {
     "all_settled_task_evidence_valid": true,
     "carry_forward_regenerated_semantic_inventory_count": 15,
     "carry_forward_unchanged_controlled_semantics_count": 19,
     "notes": [
-      "All 22 settled third-pass audit bundles passed complete-phase validation at their exact evidence commits.",
-      "All 34 Audit 2 accepted results were carried forward only after confirming unchanged task targets, contexts, metadata, papers, and relevant declaration semantics.",
+      "All 23 third-pass audit bundles passed complete-phase validation at their exact evidence commits.",
+      "All 34 Audit 2 accepted results were carried forward only after confirming unchanged task targets and target-relevant declaration semantics.",
       "Fifteen carried-forward tasks in papers whose definition modules changed were checked by regenerated semantic dependency inventories; all had zero changed, missing, or added dependencies.",
-      "P16-T2 has a validated ordinary audit observation, but it is not counted as settled because the selected printed source remains false without an unstated hypothesis.",
-      "P07-T2 and P10-T3 have no third-pass rerun because their selected printed source claims require owner-approved correction or reselection.",
+      "After the final P07, P10, and P16 changes, six accepted sibling tasks were rechecked; all retained identical target-relevant semantic dependency inventories.",
+      "P07-T3's task metadata changed only in nonsemantic execution limits; its target, context, paper, and dependency semantics are unchanged.",
+      "P07-T2 and P16-T2 are excluded corrected-source tasks because their rebuilt targets explicitly add hypotheses required to repair defective printed claims.",
+      "P10-T3 was reselected, audited, adjudicated faithful-equivalent, and validated at commit cbfd683407c8fbbfc990511c00e7d1c2e542f91d.",
       "P17-T1 remains excluded under the existing source-validity exception."
     ],
-    "pending_validated_observation_count": 1,
+    "post_snapshot_sibling_semantic_recheck_count": 6,
+    "pending_validated_observation_count": 0,
     "validated_carry_forward_count": 34,
-    "validated_third_pass_count": 22
+    "validated_third_pass_count": 23
   },
   "aggregates": {
     "settled": {
-      "accepted": 44,
-      "adjudicated": 35,
+      "accepted": 45,
+      "adjudicated": 36,
       "by_tier": {
         "T1": {
           "accepted": 17,
@@ -80,19 +83,19 @@
           "total": 18
         },
         "T3": {
-          "accepted": 12,
-          "adjudicated": 13,
+          "accepted": 13,
+          "adjudicated": 14,
           "classifications": {
-            "faithful-equivalent": 4,
+            "faithful-equivalent": 5,
             "faithful-stronger": 8,
             "not-faithful-different": 4,
             "not-faithful-weaker": 3
           },
-          "total": 19
+          "total": 20
         }
       },
       "classifications": {
-        "faithful-equivalent": 17,
+        "faithful-equivalent": 18,
         "faithful-stronger": 27,
         "not-faithful-different": 5,
         "not-faithful-weaker": 7
@@ -101,17 +104,17 @@
         "no/no": 5,
         "no/yes": 7,
         "yes/no": 27,
-        "yes/yes": 17
+        "yes/yes": 18
       },
       "not_accepted": 12,
-      "total": 56
+      "total": 57
     },
     "third_pass_only": {
-      "accepted": 10,
+      "accepted": 11,
       "not_accepted": 12,
-      "total": 22,
+      "total": 23,
       "transitions": {
-        "not-faithful-different -> faithful-equivalent": 2,
+        "not-faithful-different -> faithful-equivalent": 3,
         "not-faithful-different -> faithful-stronger": 3,
         "not-faithful-different -> not-faithful-different": 3,
         "not-faithful-different -> not-faithful-weaker": 4,
@@ -127,12 +130,12 @@
     {
       "path": "paper_bencmark/faithfulness_audit/history/audit_003/results.json",
       "role": "machine-readable task index and Audit 2 comparison",
-      "sha256": "77dfd08c7a2af1ccd6b438b0223960ea0ef12ff31a53ef4fea890cf186e1f9ac"
+      "sha256": "68867273fbb7ace037910b58eab24f3b5ecdf63fd0905d15dc608609a7d3f491"
     },
     {
       "path": "paper_bencmark/faithfulness_audit/history/audit_003/summary.md",
       "role": "human-readable third-pass progress summary",
-      "sha256": "4644a6b00200441bb1cd86d267ce57f1f30c55c8e1f6c3c7966c38467c3d1011"
+      "sha256": "a62d9d8c261e4fa76cfdcb0c0460d761e0704408e781cdf61d208dcd1c789aae"
     }
   ],
   "detailed_evidence": {
