@@ -418,7 +418,7 @@ fun {n b q} run => run.state q
 - Owner module: `HighamBench.P04Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `3b0f788a1fec1c8d6ffceb463964924032a94d153265c70875115898bc43ef77`
+- Semantic SHA-256: `e3f67e94ce22efc482e70a3491aed593988ab5bce6f78337344a03693388344b`
 
 Type:
 
@@ -437,7 +437,7 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun m n t b1 b b2 p q r self => self.34
+fun m n t b1 b b2 p q r self => self.35
 ```
 
 ### D015: `HighamBench.P04MixedInputMatMulRun.mk`
@@ -446,7 +446,7 @@ fun m n t b1 b b2 p q r self => self.34
 - Owner module: `HighamBench.P04Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `24f42f13571df476892d541d67412bd5d9334bb50c4ea650790815991546e401`
+- Semantic SHA-256: `96d1ee30b890784a4f00c3d775cb6cda1dca422fb331907aedb60a7a6b5f39d5`
 
 Type:
 
@@ -476,46 +476,49 @@ Type:
                                             Real.instLE.le 0 uOut →
                                               Real.instLE.le uHigh uLow →
                                                 Or (Eq uFma uLow) (Eq uFma uHigh) →
-                                                  Real.instLE.le uBar uFma →
-                                                    HighamBench.GammaValid
-                                                        (HighamBench.p04EffectiveFmaRoundoff uBar uFma uOut) q →
-                                                      HighamBench.GammaValid uBar n →
-                                                        (∀ (i : Fin m) (k : Fin n),
-                                                            Real.instLE.le (abs (inputErrorA i k)) uLow) →
-                                                          (∀ (k : Fin n) (j : Fin t),
-                                                              Real.instLE.le (abs (inputErrorB k j)) uLow) →
-                                                            (entryRun :
-                                                                Fin m → Fin t → HighamBench.P04BlockFmaDotRun n b q) →
-                                                              (∀ (i : Fin m) (j : Fin t), Eq (entryRun i j).uBar uBar) →
+                                                  Or (Eq uOut uLow) (Eq uOut uHigh) →
+                                                    Real.instLE.le uBar uFma →
+                                                      HighamBench.GammaValid
+                                                          (HighamBench.p04EffectiveFmaRoundoff uBar uFma uOut) q →
+                                                        HighamBench.GammaValid uBar n →
+                                                          (∀ (i : Fin m) (k : Fin n),
+                                                              Real.instLE.le (abs (inputErrorA i k)) uLow) →
+                                                            (∀ (k : Fin n) (j : Fin t),
+                                                                Real.instLE.le (abs (inputErrorB k j)) uLow) →
+                                                              (entryRun :
+                                                                  Fin m → Fin t → HighamBench.P04BlockFmaDotRun n b q) →
                                                                 (∀ (i : Fin m) (j : Fin t),
-                                                                    Eq (entryRun i j).uFma uFma) →
+                                                                    Eq (entryRun i j).uBar uBar) →
                                                                   (∀ (i : Fin m) (j : Fin t),
-                                                                      Eq (entryRun i j).uOut uOut) →
-                                                                    (∀ (i : Fin m) (j : Fin t) (k : Fin q) (l : Fin b),
-                                                                        Eq ((entryRun i j).x k l)
-                                                                          (instHMul.hMul
-                                                                            (A i
-                                                                              (HighamBench.p04BlockIndex inner_partition
-                                                                                k l))
-                                                                            (instHAdd.hAdd 1
-                                                                              (inputErrorA i
-                                                                                (HighamBench.p04BlockIndex
-                                                                                  inner_partition k l))))) →
+                                                                      Eq (entryRun i j).uFma uFma) →
+                                                                    (∀ (i : Fin m) (j : Fin t),
+                                                                        Eq (entryRun i j).uOut uOut) →
                                                                       (∀ (i : Fin m) (j : Fin t) (k : Fin q)
                                                                           (l : Fin b),
-                                                                          Eq ((entryRun i j).y k l)
+                                                                          Eq ((entryRun i j).x k l)
                                                                             (instHMul.hMul
-                                                                              (B
+                                                                              (A i
                                                                                 (HighamBench.p04BlockIndex
-                                                                                  inner_partition k l)
-                                                                                j)
+                                                                                  inner_partition k l))
                                                                               (instHAdd.hAdd 1
-                                                                                (inputErrorB
+                                                                                (inputErrorA i
+                                                                                  (HighamBench.p04BlockIndex
+                                                                                    inner_partition k l))))) →
+                                                                        (∀ (i : Fin m) (j : Fin t) (k : Fin q)
+                                                                            (l : Fin b),
+                                                                            Eq ((entryRun i j).y k l)
+                                                                              (instHMul.hMul
+                                                                                (B
                                                                                   (HighamBench.p04BlockIndex
                                                                                     inner_partition k l)
-                                                                                  j)))) →
-                                                                        HighamBench.P04MixedInputMatMulRun m n t b1 b b2
-                                                                          p q r
+                                                                                  j)
+                                                                                (instHAdd.hAdd 1
+                                                                                  (inputErrorB
+                                                                                    (HighamBench.p04BlockIndex
+                                                                                      inner_partition k l)
+                                                                                    j)))) →
+                                                                          HighamBench.P04MixedInputMatMulRun m n t b1 b
+                                                                            b2 p q r
 ```
 
 Fully explicit type:
@@ -574,84 +577,87 @@ Fully explicit type:
                                                   uOut) →
                                               (uHigh_le_uLow : @LE.le.{0} Real Real.instLE uHigh uLow) →
                                                 (uFma_allowed : Or (@Eq.{1} Real uFma uLow) (@Eq.{1} Real uFma uHigh)) →
-                                                  (uBar_le_uFma : @LE.le.{0} Real Real.instLE uBar uFma) →
-                                                    (effective_gamma_valid :
-                                                        HighamBench.GammaValid
-                                                          (HighamBench.p04EffectiveFmaRoundoff uBar uFma uOut) q) →
-                                                      (internal_gamma_valid : HighamBench.GammaValid uBar n) →
-                                                        (input_error_A_bound :
-                                                            ∀ (i : Fin m) (k : Fin n),
-                                                              @LE.le.{0} Real Real.instLE
-                                                                (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                                  (inputErrorA i k))
-                                                                uLow) →
-                                                          (input_error_B_bound :
-                                                              ∀ (k : Fin n) (j : Fin t),
+                                                  (uOut_allowed :
+                                                      Or (@Eq.{1} Real uOut uLow) (@Eq.{1} Real uOut uHigh)) →
+                                                    (uBar_le_uFma : @LE.le.{0} Real Real.instLE uBar uFma) →
+                                                      (effective_gamma_valid :
+                                                          HighamBench.GammaValid
+                                                            (HighamBench.p04EffectiveFmaRoundoff uBar uFma uOut) q) →
+                                                        (internal_gamma_valid : HighamBench.GammaValid uBar n) →
+                                                          (input_error_A_bound :
+                                                              ∀ (i : Fin m) (k : Fin n),
                                                                 @LE.le.{0} Real Real.instLE
                                                                   (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                                    (inputErrorB k j))
+                                                                    (inputErrorA i k))
                                                                   uLow) →
-                                                            (entryRun :
-                                                                Fin m → Fin t → HighamBench.P04BlockFmaDotRun n b q) →
-                                                              (entry_run_uBar :
-                                                                  ∀ (i : Fin m) (j : Fin t),
-                                                                    @Eq.{1} Real
-                                                                      (@HighamBench.P04BlockFmaDotRun.uBar n b q
-                                                                        (entryRun i j))
-                                                                      uBar) →
-                                                                (entry_run_uFma :
+                                                            (input_error_B_bound :
+                                                                ∀ (k : Fin n) (j : Fin t),
+                                                                  @LE.le.{0} Real Real.instLE
+                                                                    (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                                      (inputErrorB k j))
+                                                                    uLow) →
+                                                              (entryRun :
+                                                                  Fin m → Fin t → HighamBench.P04BlockFmaDotRun n b q) →
+                                                                (entry_run_uBar :
                                                                     ∀ (i : Fin m) (j : Fin t),
                                                                       @Eq.{1} Real
-                                                                        (@HighamBench.P04BlockFmaDotRun.uFma n b q
+                                                                        (@HighamBench.P04BlockFmaDotRun.uBar n b q
                                                                           (entryRun i j))
-                                                                        uFma) →
-                                                                  (entry_run_uOut :
+                                                                        uBar) →
+                                                                  (entry_run_uFma :
                                                                       ∀ (i : Fin m) (j : Fin t),
                                                                         @Eq.{1} Real
-                                                                          (@HighamBench.P04BlockFmaDotRun.uOut n b q
+                                                                          (@HighamBench.P04BlockFmaDotRun.uFma n b q
                                                                             (entryRun i j))
-                                                                          uOut) →
-                                                                    (entry_run_x :
-                                                                        ∀ (i : Fin m) (j : Fin t) (k : Fin q)
-                                                                          (l : Fin b),
+                                                                          uFma) →
+                                                                    (entry_run_uOut :
+                                                                        ∀ (i : Fin m) (j : Fin t),
                                                                           @Eq.{1} Real
-                                                                            (@HighamBench.P04BlockFmaDotRun.x n b q
-                                                                              (entryRun i j) k l)
-                                                                            (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                                              (@instHMul.{0} Real Real.instMul)
-                                                                              (A i
-                                                                                (@HighamBench.p04BlockIndex n q b
-                                                                                  inner_partition k l))
-                                                                              (@HAdd.hAdd.{0, 0, 0} Real Real Real
-                                                                                (@instHAdd.{0} Real Real.instAdd)
-                                                                                (@OfNat.ofNat.{0} Real (nat_lit 1)
-                                                                                  (@One.toOfNat1.{0} Real Real.instOne))
-                                                                                (inputErrorA i
-                                                                                  (@HighamBench.p04BlockIndex n q b
-                                                                                    inner_partition k l))))) →
-                                                                      (entry_run_y :
+                                                                            (@HighamBench.P04BlockFmaDotRun.uOut n b q
+                                                                              (entryRun i j))
+                                                                            uOut) →
+                                                                      (entry_run_x :
                                                                           ∀ (i : Fin m) (j : Fin t) (k : Fin q)
                                                                             (l : Fin b),
                                                                             @Eq.{1} Real
-                                                                              (@HighamBench.P04BlockFmaDotRun.y n b q
+                                                                              (@HighamBench.P04BlockFmaDotRun.x n b q
                                                                                 (entryRun i j) k l)
                                                                               (@HMul.hMul.{0, 0, 0} Real Real Real
                                                                                 (@instHMul.{0} Real Real.instMul)
-                                                                                (B
+                                                                                (A i
                                                                                   (@HighamBench.p04BlockIndex n q b
-                                                                                    inner_partition k l)
-                                                                                  j)
+                                                                                    inner_partition k l))
                                                                                 (@HAdd.hAdd.{0, 0, 0} Real Real Real
                                                                                   (@instHAdd.{0} Real Real.instAdd)
                                                                                   (@OfNat.ofNat.{0} Real (nat_lit 1)
                                                                                     (@One.toOfNat1.{0} Real
                                                                                       Real.instOne))
-                                                                                  (inputErrorB
+                                                                                  (inputErrorA i
+                                                                                    (@HighamBench.p04BlockIndex n q b
+                                                                                      inner_partition k l))))) →
+                                                                        (entry_run_y :
+                                                                            ∀ (i : Fin m) (j : Fin t) (k : Fin q)
+                                                                              (l : Fin b),
+                                                                              @Eq.{1} Real
+                                                                                (@HighamBench.P04BlockFmaDotRun.y n b q
+                                                                                  (entryRun i j) k l)
+                                                                                (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                                  (@instHMul.{0} Real Real.instMul)
+                                                                                  (B
                                                                                     (@HighamBench.p04BlockIndex n q b
                                                                                       inner_partition k l)
-                                                                                    j)))) →
-                                                                        HighamBench.P04MixedInputMatMulRun m n t b1 b b2
-                                                                          p q r
+                                                                                    j)
+                                                                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real
+                                                                                    (@instHAdd.{0} Real Real.instAdd)
+                                                                                    (@OfNat.ofNat.{0} Real (nat_lit 1)
+                                                                                      (@One.toOfNat1.{0} Real
+                                                                                        Real.instOne))
+                                                                                    (inputErrorB
+                                                                                      (@HighamBench.p04BlockIndex n q b
+                                                                                        inner_partition k l)
+                                                                                      j)))) →
+                                                                          HighamBench.P04MixedInputMatMulRun m n t b1 b
+                                                                            b2 p q r
 ```
 
 ### D016: `HighamBench.gamma`
@@ -3172,412 +3178,4 @@ Definition body (one-level semantic boundary):
 
 ```lean
 fun {α} c [h : Decidable c] t e => Decidable.casesOn h e t
-```
-
-## Complete local imported sources
-
-### `HighamBench.Core`
-
-Path: `paper_bencmark/highambench/shared/HighamBench/Core.lean`
-SHA-256: `8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a`
-
-```lean
-import Mathlib.Algebra.BigOperators.Fin
-import Mathlib.Data.Real.Basic
-import Mathlib.Tactic
-
-/-!
-# HighamBench common core
-
-This file is deliberately independent of the evaluated library. It contains
-only the floating-point model and notation used by more than one benchmark
-paper.
--/
-
-namespace HighamBench
-
-open scoped BigOperators
-
-/-- The part of the usual floating-point model needed for ordinary summation. -/
-structure StandardAddModel where
-  u : ℝ
-  u_nonneg : 0 ≤ u
-  fl_add : ℝ → ℝ → ℝ
-  fl_add_zero : ∀ x : ℝ, fl_add 0 x = x
-  model_add :
-    ∀ x y : ℝ, ∃ δ : ℝ,
-      |δ| ≤ u ∧
-      fl_add x y = (x + y) * (1 + δ)
-
-/-- Higham's accumulated-error number `γₙ = n*u/(1-n*u)`. -/
-noncomputable def gamma (u : ℝ) (n : ℕ) : ℝ :=
-  ((n : ℝ) * u) / (1 - (n : ℝ) * u)
-
-/-- The denominator in `gamma u n` is positive. -/
-def GammaValid (u : ℝ) (n : ℕ) : Prop :=
-  (n : ℝ) * u < 1
-
-/-- Left-to-right recursive summation, with a one-element sum kept exact. -/
-noncomputable def recursiveSum (flAdd : ℝ → ℝ → ℝ) :
-    (n : ℕ) → (Fin n → ℝ) → ℝ
-  | 0, _ => 0
-  | n + 1, v =>
-      if h : n = 0 then
-        v ⟨0, by omega⟩
-      else
-        flAdd
-          (recursiveSum flAdd n (fun i => v i.castSucc))
-          (v (Fin.last n))
-
-end HighamBench
-```
-
-### `HighamBench.P04Definitions`
-
-Path: `paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean`
-SHA-256: `cbf88a9826eef35e7f1972ddc402fe31a95e7add5b1e305c8e6e32da2e9ef61a`
-
-```lean
-import HighamBench.Core
-
-namespace HighamBench
-
-open scoped BigOperators
-
-/-- The mixed-precision block-FMA coefficient occurring in P04 equations
-(3.4)--(3.6). -/
-noncomputable def p04BlockFmaCoeff
-    (uFma u : ℝ) (q n : ℕ) : ℝ :=
-  gamma uFma q + gamma u n + gamma uFma q * gamma u n
-
-/-- The prioritized effective output-rounding parameter in P04 equation (3.3).
-The first branch takes priority when the final output precision is coarser than
-the block-FMA output precision. -/
-noncomputable def p04EffectiveFmaRoundoff
-    (uBar uFma uOut : ℝ) : ℝ :=
-  if uFma < uOut then uOut
-  else if uFma ≤ uBar then 0
-  else uFma
-
-/-- Exact finite dot product used in the scalar-entry analysis of Algorithm
-3.1. -/
-noncomputable def p04Dot {n : ℕ} (x y : Fin n → ℝ) : ℝ :=
-  ∑ i : Fin n, x i * y i
-
-/-- The componentwise data scale `|x|ᵀ|y|` in P04 equation (3.4). This is a
-dot product of entrywise absolute values, not a norm. -/
-noncomputable def p04AbsDot {n : ℕ} (x y : Fin n → ℝ) : ℝ :=
-  ∑ i : Fin n, |x i| * |y i|
-
-/-- Evaluation-order cases discussed after P04 equation (3.4). The `other`
-constructor represents any further parenthesization covered by the paper's
-unsharpened all-orders bound. -/
-inductive P04BlockEvaluationOrder where
-  | leftToRight
-  | rightToLeft
-  | other (code : ℕ)
-  deriving DecidableEq
-
-/-- Exact dot product in the block indexing of recurrence (3.1). -/
-noncomputable def p04BlockedDot {q b : ℕ}
-    (x y : Fin q → Fin b → ℝ) : ℝ :=
-  ∑ k : Fin q, ∑ j : Fin b, x k j * y k j
-
-/-- The componentwise scale `|x|ᵀ|y|` in block indexing. -/
-noncomputable def p04BlockedAbsDot {q b : ℕ}
-    (x y : Fin q → Fin b → ℝ) : ℝ :=
-  ∑ k : Fin q, ∑ j : Fin b, |x k j| * |y k j|
-
-/-- The row-major equivalence underlying a block partition `n = q*b`. -/
-def p04BlockIndexEquiv {n q b : ℕ} (h : n = q * b) :
-    Fin q × Fin b ≃ Fin n :=
-  finProdFinEquiv.trans (finCongr h.symm)
-
-/-- Flatten one block/local pair through `p04BlockIndexEquiv`. -/
-def p04BlockIndex {n q b : ℕ} (h : n = q * b)
-    (k : Fin q) (j : Fin b) : Fin n :=
-  p04BlockIndexEquiv h (k, j)
-
-/-- Extend a block-indexed error by zero outside its valid natural range. -/
-noncomputable def p04ErrorAt {q : ℕ} (error : Fin q → ℝ) (k : ℕ) : ℝ :=
-  if h : k < q then error ⟨k, h⟩ else 0
-
-/-- Product of the modeled output-rounding factors from block `k` onward. -/
-noncomputable def p04InclusiveErrorProduct {q : ℕ}
-    (error : Fin q → ℝ) (k : Fin q) : ℝ :=
-  ∏ l ∈ Finset.Ico k.val q, (1 + p04ErrorAt error l)
-
-/-- Product of the modeled carry factors strictly after block `k`. -/
-noncomputable def p04StrictErrorProduct {q : ℕ}
-    (error : Fin q → ℝ) (k : Fin q) : ℝ :=
-  ∏ l ∈ Finset.Ico (k.val + 1) q, (1 + p04ErrorAt error l)
-
-/-- A finite-real execution of the scalar recurrence (3.1) underlying P04
-Algorithm 3.1.
-
-Each `state_step` is the local standard-model representation (3.2): the old
-state and the `b` products carry internal-precision `theta` factors, followed
-by the single output-rounding factor `delta`. For the first block, `s₀ = 0`
-removes one operation and all term paths fit in `gamma uBar b`; later term
-paths fit in `gamma uBar (b+1)`. A generic carry path fits in `gamma uBar b`,
-while right-to-left evaluation gives the one-operation carry path responsible
-for the `q+b-1` refinement.
-
-The structure contains no compact `alpha`/`beta` witnesses and no final error
-bound. Those are consequences of the trace. As in the paper's analysis, the
-real-valued local model excludes underflow, overflow, and exceptional IEEE
-values and represents the deliberate single-rounding simplification. -/
-structure P04BlockFmaDotRun (n b q : ℕ) where
-  dimension_pos : 0 < n
-  block_size_pos : 0 < b
-  block_count_pos : 0 < q
-  dimension_eq : n = q * b
-  x : Fin q → Fin b → ℝ
-  y : Fin q → Fin b → ℝ
-  uBar : ℝ
-  uFma : ℝ
-  uOut : ℝ
-  uBar_nonneg : 0 ≤ uBar
-  uFma_nonneg : 0 ≤ uFma
-  uOut_nonneg : 0 ≤ uOut
-  uBar_le_uFma : uBar ≤ uFma
-  effective_gamma_valid :
-    GammaValid (p04EffectiveFmaRoundoff uBar uFma uOut) q
-  internal_gamma_valid : GammaValid uBar n
-  order : P04BlockEvaluationOrder
-  state : ℕ → ℝ
-  carryTheta : Fin q → ℝ
-  termTheta : Fin q → Fin b → ℝ
-  delta : Fin q → ℝ
-  state_zero : state 0 = 0
-  state_step : ∀ k : Fin q,
-    state (k.val + 1) =
-      (state k.val * (1 + carryTheta k) +
-        ∑ j : Fin b, x k j * y k j * (1 + termTheta k j)) *
-          (1 + delta k)
-  delta_bound : ∀ k,
-    |delta k| ≤ p04EffectiveFmaRoundoff uBar uFma uOut
-  carry_theta_bound : ∀ k, |carryTheta k| ≤ gamma uBar b
-  term_theta_bound : ∀ k j,
-    |termTheta k j| ≤ gamma uBar (if k.val = 0 then b else b + 1)
-  right_to_left_carry_bound :
-    order = P04BlockEvaluationOrder.rightToLeft →
-      ∀ k, |carryTheta k| ≤ gamma uBar 1
-  innerPathError : Fin q → Fin b → Fin n → ℝ
-  inner_path_error_bound : ∀ k j r, |innerPathError k j r| ≤ uBar
-  inner_path_factor : ∀ k j,
-    (∏ r : Fin n, (1 + innerPathError k j r)) =
-      (1 + termTheta k j) * p04StrictErrorProduct carryTheta k
-  rightToLeftPathError : Fin q → Fin b → Fin (q + b - 1) → ℝ
-  right_to_left_path_error_bound :
-    order = P04BlockEvaluationOrder.rightToLeft →
-      ∀ k j r, |rightToLeftPathError k j r| ≤ uBar
-  right_to_left_path_factor :
-    order = P04BlockEvaluationOrder.rightToLeft →
-      ∀ k j,
-        (∏ r : Fin (q + b - 1),
-          (1 + rightToLeftPathError k j r)) =
-            (1 + termTheta k j) *
-              p04StrictErrorProduct carryTheta k
-
-/-- The final state of the modeled Algorithm 3.1 scalar recurrence. -/
-noncomputable def P04BlockFmaDotRun.computed
-    {n b q : ℕ} (run : P04BlockFmaDotRun n b q) : ℝ :=
-  run.state q
-
-/-- Rectangular matrix multiplication in the notation of P04 Theorem 3.2. -/
-noncomputable def p04RectMatMul {m n t : ℕ}
-    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin t → ℝ) :
-    Fin m → Fin t → ℝ :=
-  fun i j ↦ ∑ k : Fin n, A i k * B k j
-
-/-- The ordinary matrix product `|A||B|` in P04 equation (3.6), with absolute
-values taken componentwise. This is not a matrix norm. -/
-noncomputable def p04AbsRectMatMul {m n t : ℕ}
-    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin t → ℝ) :
-    Fin m → Fin t → ℝ :=
-  fun i j ↦ ∑ k : Fin n, |A i k| * |B k j|
-
-/-- A finite-real execution of P04 Algorithm 3.1 for inputs not necessarily
-stored in the low precision.
-
-`inputErrorA` and `inputErrorB` give line 1's standard relative-error model.
-Every output entry is then the final state of a `P04BlockFmaDotRun`, whose
-operands are explicitly linked to the converted row and column. Thus the
-structure contains neither the compact `alpha`/`beta` factors nor equation
-(3.6); both must be derived from the conversion errors and local block-FMA
-traces.
-
-The block-FMA output precision is one of the low/high formats on printed pages
-C126--C127. Algorithm 3.1's final working/output precision is independent of
-those two formats. All modeled values are finite reals, so the structure has
-the paper's stated no-underflow/no-overflow scope and its deliberate
-single-rounding simplification. -/
-structure P04MixedInputMatMulRun
-    (m n t b1 b b2 p q r : ℕ) where
-  row_dimension_pos : 0 < m
-  inner_dimension_pos : 0 < n
-  column_dimension_pos : 0 < t
-  row_block_size_pos : 0 < b1
-  inner_block_size_pos : 0 < b
-  column_block_size_pos : 0 < b2
-  row_block_count_pos : 0 < p
-  inner_block_count_pos : 0 < q
-  column_block_count_pos : 0 < r
-  row_partition : m = p * b1
-  inner_partition : n = q * b
-  column_partition : t = r * b2
-  A : Fin m → Fin n → ℝ
-  B : Fin n → Fin t → ℝ
-  inputErrorA : Fin m → Fin n → ℝ
-  inputErrorB : Fin n → Fin t → ℝ
-  uLow : ℝ
-  uHigh : ℝ
-  uBar : ℝ
-  uFma : ℝ
-  uOut : ℝ
-  uLow_nonneg : 0 ≤ uLow
-  uHigh_nonneg : 0 ≤ uHigh
-  uBar_nonneg : 0 ≤ uBar
-  uFma_nonneg : 0 ≤ uFma
-  uOut_nonneg : 0 ≤ uOut
-  uHigh_le_uLow : uHigh ≤ uLow
-  uFma_allowed : uFma = uLow ∨ uFma = uHigh
-  uBar_le_uFma : uBar ≤ uFma
-  effective_gamma_valid :
-    GammaValid (p04EffectiveFmaRoundoff uBar uFma uOut) q
-  internal_gamma_valid : GammaValid uBar n
-  input_error_A_bound : ∀ i k, |inputErrorA i k| ≤ uLow
-  input_error_B_bound : ∀ k j, |inputErrorB k j| ≤ uLow
-  entryRun : Fin m → Fin t → P04BlockFmaDotRun n b q
-  entry_run_uBar : ∀ i j, (entryRun i j).uBar = uBar
-  entry_run_uFma : ∀ i j, (entryRun i j).uFma = uFma
-  entry_run_uOut : ∀ i j, (entryRun i j).uOut = uOut
-  entry_run_x : ∀ i j k l,
-    (entryRun i j).x k l =
-      A i (p04BlockIndex inner_partition k l) *
-        (1 + inputErrorA i (p04BlockIndex inner_partition k l))
-  entry_run_y : ∀ i j k l,
-    (entryRun i j).y k l =
-      B (p04BlockIndex inner_partition k l) j *
-        (1 + inputErrorB (p04BlockIndex inner_partition k l) j)
-
-/-- The componentwise low-precision conversion performed on line 1 of P04
-Algorithm 3.1. -/
-noncomputable def P04MixedInputMatMulRun.convertedA
-    {m n t b1 b b2 p q r : ℕ}
-    (run : P04MixedInputMatMulRun m n t b1 b b2 p q r) :
-    Fin m → Fin n → ℝ :=
-  fun i k => run.A i k * (1 + run.inputErrorA i k)
-
-/-- The analogous line-1 conversion of the right input. -/
-noncomputable def P04MixedInputMatMulRun.convertedB
-    {m n t b1 b b2 p q r : ℕ}
-    (run : P04MixedInputMatMulRun m n t b1 b b2 p q r) :
-    Fin n → Fin t → ℝ :=
-  fun k j => run.B k j * (1 + run.inputErrorB k j)
-
-/-- The matrix returned by Algorithm 3.1, entrywise defined by the linked
-block-FMA traces. -/
-noncomputable def P04MixedInputMatMulRun.computed
-    {m n t b1 b b2 p q r : ℕ}
-    (run : P04MixedInputMatMulRun m n t b1 b b2 p q r) :
-    Fin m → Fin t → ℝ :=
-  fun i j => (run.entryRun i j).computed
-
-/-- The factorization-stage coefficient in P04 equations (4.4) and (4.7). -/
-noncomputable def p04FactorizationCoeff
-    (uLow uBar uFma uWork : ℝ) (q n b : ℕ) : ℝ :=
-  2 * uLow + uLow ^ 2 +
-    max
-      (p04BlockFmaCoeff
-        (p04EffectiveFmaRoundoff uBar uFma uWork)
-        uBar (q - 1) (n - b + 1))
-      (gamma uWork b) * (1 + uLow) ^ 2
-
-/-- Square matrix multiplication in the paper's finite-index notation. -/
-noncomputable def p04MatMul {n : ℕ}
-    (A B : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  fun i j => ∑ k : Fin n, A i k * B k j
-
-/-- Matrix-vector multiplication in the paper's finite-index notation. -/
-noncomputable def p04MatVec {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
-  fun i => ∑ j : Fin n, A i j * x j
-
-/-- The componentwise absolute product `|L||U|` in P04 equations (4.4) and
-(4.7). -/
-noncomputable def p04AbsMatMul {n : ℕ}
-    (L U : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  fun i j => ∑ k : Fin n, |L i k| * |U k j|
-
-/-- The mandatory componentwise scale `|A| + |Lhat||Uhat|` in P04 equations
-(4.4) and (4.7). -/
-noncomputable def p04LUSolveScale {n : ℕ}
-    (A LHat UHat : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  fun i j => |A i j| + p04AbsMatMul LHat UHat i j
-
-/-- Entrywise lower-triangularity for the computed factor in Algorithm 4.1. -/
-def p04IsLowerTriangular {n : ℕ} (L : Fin n → Fin n → ℝ) : Prop :=
-  ∀ i j, i.val < j.val → L i j = 0
-
-/-- Entrywise upper-triangularity for the computed factor in Algorithm 4.1. -/
-def p04IsUpperTriangular {n : ℕ} (U : Fin n → Fin n → ℝ) : Prop :=
-  ∀ i j, j.val < i.val → U i j = 0
-
-/-- A complete finite-real execution certificate for P04 Algorithm 4.1 followed
-by forward and backward substitution, as used in Theorem 4.4. The factorization
-fields record Theorem 4.3's consequence for the computed factors; the solve
-fields record the standard triangular-substitution backward errors invoked in
-the proof of Theorem 4.4. The final perturbation from equation (4.7) is not a
-field and must be constructed by the target theorem.
-
-The certificate represents successful execution in the paper's standard model.
-Underflow, overflow, exceptional IEEE values, and the double-rounding effect
-omitted by the paper are outside this finite-real model. -/
-structure P04BlockLUSolveRun (n b q : ℕ) where
-  dimension_pos : 0 < n
-  block_size_pos : 0 < b
-  block_count_pos : 0 < q
-  dimension_eq : n = q * b
-  A : Fin n → Fin n → ℝ
-  LHat : Fin n → Fin n → ℝ
-  UHat : Fin n → Fin n → ℝ
-  lower_triangular : p04IsLowerTriangular LHat
-  upper_triangular : p04IsUpperTriangular UHat
-  lower_unit_diagonal : ∀ i, LHat i i = 1
-  upper_diagonal_nonzero : ∀ i, UHat i i ≠ 0
-  uLow : ℝ
-  uBar : ℝ
-  uFma : ℝ
-  uWork : ℝ
-  uLow_nonneg : 0 ≤ uLow
-  uBar_nonneg : 0 ≤ uBar
-  uFma_nonneg : 0 ≤ uFma
-  uWork_nonneg : 0 ≤ uWork
-  uBar_le_uFma : uBar ≤ uFma
-  effective_factor_gamma_valid :
-    GammaValid (p04EffectiveFmaRoundoff uBar uFma uWork) (q - 1)
-  internal_factor_gamma_valid : GammaValid uBar (n - b + 1)
-  working_block_gamma_valid : GammaValid uWork b
-  working_solve_gamma_valid : GammaValid uWork n
-  factorError : Fin n → Fin n → ℝ
-  algorithm4_1_factorization : p04MatMul LHat UHat = A + factorError
-  factor_error_bound : ∀ i j,
-    |factorError i j| ≤
-      p04FactorizationCoeff uLow uBar uFma uWork q n b *
-        p04LUSolveScale A LHat UHat i j
-  xHat : Fin n → ℝ
-  yHat : Fin n → ℝ
-  rhs : Fin n → ℝ
-  deltaL : Fin n → Fin n → ℝ
-  deltaU : Fin n → Fin n → ℝ
-  forward_substitution : p04MatVec (LHat + deltaL) yHat = rhs
-  backward_substitution : p04MatVec (UHat + deltaU) xHat = yHat
-  deltaL_bound : ∀ i j,
-    |deltaL i j| ≤ gamma uWork n * |LHat i j|
-  deltaU_bound : ∀ i j,
-    |deltaU i j| ≤ gamma uWork n * |UHat i j|
-
-end HighamBench
 ```

@@ -1,41 +1,43 @@
 {
-  "accepted": false,
-  "adjudicated": false,
-  "adjudication_reasons": [],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-21T14:29:08.031756+00:00",
+  "accepted": true,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ"
+  ],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-22T09:49:01.300769+00:00",
   "findings": [
     {
-      "category": "output-precision-domain",
-      "impact": "The formal theorem omits valid Theorem 3.2 cases with a distinct output or working precision. This additional hypothesis makes the Lean claim weaker, despite the otherwise exact coefficient and execution model.",
-      "lean_evidence": "P04MixedInputMatMulRun.mk requires uOut_allowed: uOut=uLow or uOut=uHigh.",
-      "paper_evidence": "C127 restricts u_FMA to u_low or u_high, while C128 introduces output precision u separately; C134 explicitly describes working precision u and block-FMA precisions u_low and u_high as three precisions.",
-      "severity": "major"
+      "category": "S10/S12 execution-domain strengthening",
+      "evidence": "D026 permits independently chosen first-block term factors up to gamma_b and requires only an n-factor path representation, whereas PDF p. 6 equation (3.2) retains smaller position-dependent theta indices for later terms.",
+      "impact": "The exact paper result remains a corollary, but the Lean theorem also covers nonrealizable aggregate traces, making it genuinely stronger rather than equivalent.",
+      "severity": "minor"
     },
     {
-      "category": "output-precision specialization",
-      "impact": "Valid paper instances using a third working/output precision are excluded, so the translated theorem does not imply the full paper result.",
-      "paper_evidence": "Algorithm 3.1 introduces output precision u independently, while the block-FMA output precision uFMA alone is restricted to ulow or uhigh.",
-      "severity": "major",
-      "translation_evidence": "The outer run requires uOut=uLow or uOut=uHigh."
+      "category": "S04/S11 exceptional-value scope",
+      "evidence": "The paper explicitly excludes underflow and overflow; the Lean model uses Real and contains no exceptional-value or floating-point-format semantics.",
+      "impact": "The strengthening concerns finite abstract traces. It must not be interpreted as a verified extension of Theorem 3.2 to NaNs, infinities, underflow, overflow, or concrete IEEE behavior.",
+      "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean theorem covers only runs with uOut equal to uLow or uHigh. It therefore cannot establish the paper's Theorem 3.2 for Algorithm 3.1 executions using a distinct output or working precision u.",
-      "verdict": "no"
+      "reasoning": "A source execution satisfying the no-underflow/no-overflow standard model supplies the Lean recurrence factors from its elementary rounding errors. Its position-dependent theta bounds imply the Lean aggregate bounds, and its operation paths supply the n-factor witnesses, padded by zero errors where necessary. Input conversions similarly supply inputErrorA and inputErrorB. Applying the Lean theorem then yields exactly equation (3.6).",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "Every represented Lean run, under the declared Algorithm 3.1 interpretation, is a special case of the paper model, and the unfolded Lean conclusion is exactly equation (3.6).",
-      "verdict": "yes"
+      "reasoning": "The paper proves the bound only for C_hat computed by Algorithm 3.1. It does not establish the conclusion for every independently witnessed real recurrence satisfying the coarser gamma_n path envelope. The q=1, b=n=3 construction gives a nonzero Lean run allowed by D026 but excluded by equation (3.2)'s positional theta constraints.",
+      "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-weaker",
-    "roundtrip": "not-faithful-weaker"
+    "direct": "faithful-equivalent",
+    "roundtrip": "faithful-stronger"
   },
-  "rationale": "The Lean target accurately reproduces the complete componentwise forward-error inequality, exact-versus-computed distinction, gamma definitions, block indexing, conversion model, and higher-order terms of Theorem 3.2. Its run constructor nevertheless adds the unsupported hypothesis that Algorithm 3.1's output precision must equal u_low or u_high. Because the paper treats output precision u separately and permits a third working precision, the Lean theorem is a nonvacuous but materially narrower specialization and is therefore not-faithful-weaker.",
-  "remaining_uncertainties": [],
+  "rationale": "Primary evidence resolves the disagreement in favor of faithful-stronger, with a qualification to the round-trip judge's exceptional-value rationale. The final coefficient and all theorem-level dimensions, precision roles, higher-order terms, and componentwise semantics match exactly. Nevertheless, equality of the final gamma_n envelope is not equality of execution domains. The Lean constructors promote conservative aggregate bounds from the paper's proof into admissibility conditions for arbitrary real traces and omit the operation-level correlations and positional theta restrictions of Algorithm 3.1. The explicit q=1, b=n=3 positive-data construction satisfies those Lean conditions, has nonzero error, and cannot satisfy the source's position-indexed recurrence. Hence the extension is genuine and nonvacuous, Lean implies the paper theorem, and the converse implication fails.",
+  "remaining_uncertainties": [
+    "The paper describes validity for all evaluation orders without formally defining the complete implementation-level set of such orders. This does not affect the classification because the explicit left-to-right theta indexing already supplies a strict counterexample to execution-domain equivalence."
+  ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P04-T2"

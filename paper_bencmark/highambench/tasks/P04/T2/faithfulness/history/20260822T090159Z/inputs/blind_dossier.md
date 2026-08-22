@@ -321,7 +321,7 @@ fun {n b q} run => run.state q
 - Owner module: `LocalImport002`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `3b0f788a1fec1c8d6ffceb463964924032a94d153265c70875115898bc43ef77`
+- Semantic SHA-256: `e3f67e94ce22efc482e70a3491aed593988ab5bce6f78337344a03693388344b`
 
 Type:
 
@@ -333,7 +333,7 @@ Type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun m n t b1 b b2 p q r self => self.34
+fun m n t b1 b b2 p q r self => self.35
 ```
 
 ### D015: `LocalDef015`
@@ -342,7 +342,7 @@ fun m n t b1 b b2 p q r self => self.34
 - Owner module: `LocalImport002`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `24f42f13571df476892d541d67412bd5d9334bb50c4ea650790815991546e401`
+- Semantic SHA-256: `96d1ee30b890784a4f00c3d775cb6cda1dca422fb331907aedb60a7a6b5f39d5`
 
 Type:
 
@@ -372,46 +372,49 @@ Type:
                                             Real.instLE.le 0 uOut →
                                               Real.instLE.le uHigh uLow →
                                                 Or (Eq uFma uLow) (Eq uFma uHigh) →
-                                                  Real.instLE.le uBar uFma →
-                                                    LocalDef017
-                                                        (LocalDef011 uBar uFma uOut) q →
-                                                      LocalDef017 uBar n →
-                                                        (∀ (i : Fin m) (k : Fin n),
-                                                            Real.instLE.le (abs (inputErrorA i k)) uLow) →
-                                                          (∀ (k : Fin n) (j : Fin t),
-                                                              Real.instLE.le (abs (inputErrorB k j)) uLow) →
-                                                            (entryRun :
-                                                                Fin m → Fin t → LocalDef018 n b q) →
-                                                              (∀ (i : Fin m) (j : Fin t), Eq (entryRun i j).uBar uBar) →
+                                                  Or (Eq uOut uLow) (Eq uOut uHigh) →
+                                                    Real.instLE.le uBar uFma →
+                                                      LocalDef017
+                                                          (LocalDef011 uBar uFma uOut) q →
+                                                        LocalDef017 uBar n →
+                                                          (∀ (i : Fin m) (k : Fin n),
+                                                              Real.instLE.le (abs (inputErrorA i k)) uLow) →
+                                                            (∀ (k : Fin n) (j : Fin t),
+                                                                Real.instLE.le (abs (inputErrorB k j)) uLow) →
+                                                              (entryRun :
+                                                                  Fin m → Fin t → LocalDef018 n b q) →
                                                                 (∀ (i : Fin m) (j : Fin t),
-                                                                    Eq (entryRun i j).uFma uFma) →
+                                                                    Eq (entryRun i j).uBar uBar) →
                                                                   (∀ (i : Fin m) (j : Fin t),
-                                                                      Eq (entryRun i j).uOut uOut) →
-                                                                    (∀ (i : Fin m) (j : Fin t) (k : Fin q) (l : Fin b),
-                                                                        Eq ((entryRun i j).x k l)
-                                                                          (instHMul.hMul
-                                                                            (A i
-                                                                              (LocalDef025 inner_partition
-                                                                                k l))
-                                                                            (instHAdd.hAdd 1
-                                                                              (inputErrorA i
-                                                                                (LocalDef025
-                                                                                  inner_partition k l))))) →
+                                                                      Eq (entryRun i j).uFma uFma) →
+                                                                    (∀ (i : Fin m) (j : Fin t),
+                                                                        Eq (entryRun i j).uOut uOut) →
                                                                       (∀ (i : Fin m) (j : Fin t) (k : Fin q)
                                                                           (l : Fin b),
-                                                                          Eq ((entryRun i j).y k l)
+                                                                          Eq ((entryRun i j).x k l)
                                                                             (instHMul.hMul
-                                                                              (B
+                                                                              (A i
                                                                                 (LocalDef025
-                                                                                  inner_partition k l)
-                                                                                j)
+                                                                                  inner_partition k l))
                                                                               (instHAdd.hAdd 1
-                                                                                (inputErrorB
+                                                                                (inputErrorA i
+                                                                                  (LocalDef025
+                                                                                    inner_partition k l))))) →
+                                                                        (∀ (i : Fin m) (j : Fin t) (k : Fin q)
+                                                                            (l : Fin b),
+                                                                            Eq ((entryRun i j).y k l)
+                                                                              (instHMul.hMul
+                                                                                (B
                                                                                   (LocalDef025
                                                                                     inner_partition k l)
-                                                                                  j)))) →
-                                                                        LocalDef001 m n t b1 b b2
-                                                                          p q r
+                                                                                  j)
+                                                                                (instHAdd.hAdd 1
+                                                                                  (inputErrorB
+                                                                                    (LocalDef025
+                                                                                      inner_partition k l)
+                                                                                    j)))) →
+                                                                          LocalDef001 m n t b1 b
+                                                                            b2 p q r
 ```
 
 ### D016: `LocalDef016`

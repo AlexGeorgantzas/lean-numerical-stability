@@ -1,0 +1,70 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P04-T2",
+  "trigger": [
+    "judge classifications differ"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "The correct classification is faithful-stronger. The Lean theorem preserves the paper's conclusion and covers every source execution representable by the standard error model, but it also quantifies over nonrealizable aggregate-error runs. This extension is nonvacuous.",
+      "primary_evidence": "Theorem 3.2 on PDF p. 7 (printed C130) binds C_hat to the product computed by Algorithm 3.1. In contrast, P04MixedInputMatMulRun.mk (D015) and P04BlockFmaDotRun.mk (D026) accept arbitrary real states and aggregate witnesses satisfying bounds and factor equations, without requiring that they arise from Algorithm 3.1's operation sequence."
+    },
+    {
+      "item": "S04 hypotheses",
+      "resolution": "The dimension, divisibility, precision-ordering, and gamma-validity hypotheses match. The no-underflow/no-overflow condition is replaced by an abstract finite-real trace premise rather than stated explicitly. Real-valuedness excludes NaNs and infinities but does not establish floating-point realizability or prevent runs for inputs whose concrete execution would underflow or overflow.",
+      "primary_evidence": "The paragraph following Algorithm 3.1 on PDF p. 5 (printed C128) explicitly assumes no underflow or overflow. D001/D015 and D018/D026 contain only real-valued data, relative-error bounds, and recurrence witnesses; they contain no floating-point-format, representability, underflow, or overflow predicate."
+    },
+    {
+      "item": "S10 constants-and-indexing",
+      "resolution": "The final coefficient, q and n indices, effective-roundoff priority, and first-block b versus later-block b+1 aggregate bounds are correct. However, the Lean local model loses the source's position-dependent theta indices: every first-block term may attain the gamma_b envelope. The n-factor path witnesses recover the global gamma_n bound but do not restore the omitted operation-level position constraints.",
+      "primary_evidence": "Equation (3.2) on PDF p. 6 (printed C129) gives position-dependent theta factors, ending with theta_2 for the final term, while D026's term_theta_bound permits gamma_b for every term when k=0. D026's inner_path_factor only requires the resulting term-and-carry factor to equal a product of n independently bounded errors."
+    },
+    {
+      "item": "S11 floating-point-model",
+      "resolution": "The effective precision and deliberate single-rounding simplification match the paper, but the execution domains are not equivalent. The Lean declaration is an aggregate real error model with no fl operator, rounding function, format, or operational sharing of elementary errors. It therefore strengthens the theorem over finite abstract traces; it does not establish behavior for IEEE exceptional values.",
+      "primary_evidence": "Equations (2.3)-(2.4) on PDF p. 4 (printed C127) and Algorithm 3.1 on p. 5 specify operation-level rounding and exclude underflow and overflow. D011 reproduces the priority-defined effective roundoff, while D018/D026 encode only state, theta, delta, and path witnesses over Real."
+    },
+    {
+      "item": "S12 relation-strength",
+      "resolution": "The componentwise inequality, direction, non-strictness, and error notion are unchanged. Logical strength is nevertheless strict because the universal Lean run quantifier includes nonzero, non-source traces rather than merely repackaging source executions or narrowing applicability.",
+      "primary_evidence": "For q=1 and b=n=3 with uBar=0.01, take three positive unit products, carryTheta=0, delta=0.02, and every first-block termTheta=(1.01)^3-1=0.030301. Give each term three innerPathError values equal to 0.01. Then the D026 bounds and path equations hold because 0.030301<gamma_3(0.01), but the source's left-to-right equation (3.2) requires the final term to satisfy the smaller gamma_2(0.01) bound. With all three products positive, the aggregate state also exceeds the maximum allowed by the source's position-indexed theta envelopes, so this is not merely a different witness for the same source trace."
+    },
+    {
+      "item": "dependency and reuse evidence",
+      "resolution": "No dependency supplies a hidden operational realizability condition. The supplied hashes establish declaration identity only; no separate dependency-reuse decision record is present in the whitelisted evidence.",
+      "primary_evidence": "D001-D034 define the matrix run, scalar run, gamma functions, effective precision, indexing, and error products. D035-D105 are standard external arithmetic, order, finite-index, product, and sum dependencies. The manifest and both dependency inventories contain semantic hashes but no reuse judgment or task-specific paper-match assertion."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "A source execution satisfying the no-underflow/no-overflow standard model supplies the Lean recurrence factors from its elementary rounding errors. Its position-dependent theta bounds imply the Lean aggregate bounds, and its operation paths supply the n-factor witnesses, padded by zero errors where necessary. Input conversions similarly supply inputErrorA and inputErrorB. Applying the Lean theorem then yields exactly equation (3.6)."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper proves the bound only for C_hat computed by Algorithm 3.1. It does not establish the conclusion for every independently witnessed real recurrence satisfying the coarser gamma_n path envelope. The q=1, b=n=3 construction gives a nonzero Lean run allowed by D026 but excluded by equation (3.2)'s positional theta constraints."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "remaining_uncertainties": [
+    "The paper describes validity for all evaluation orders without formally defining the complete implementation-level set of such orders. This does not affect the classification because the explicit left-to-right theta indexing already supplies a strict counterexample to execution-domain equivalence."
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "S10/S12 execution-domain strengthening",
+      "evidence": "D026 permits independently chosen first-block term factors up to gamma_b and requires only an n-factor path representation, whereas PDF p. 6 equation (3.2) retains smaller position-dependent theta indices for later terms.",
+      "impact": "The exact paper result remains a corollary, but the Lean theorem also covers nonrealizable aggregate traces, making it genuinely stronger rather than equivalent."
+    },
+    {
+      "severity": "note",
+      "category": "S04/S11 exceptional-value scope",
+      "evidence": "The paper explicitly excludes underflow and overflow; the Lean model uses Real and contains no exceptional-value or floating-point-format semantics.",
+      "impact": "The strengthening concerns finite abstract traces. It must not be interpreted as a verified extension of Theorem 3.2 to NaNs, infinities, underflow, overflow, or concrete IEEE behavior."
+    }
+  ],
+  "rationale": "Primary evidence resolves the disagreement in favor of faithful-stronger, with a qualification to the round-trip judge's exceptional-value rationale. The final coefficient and all theorem-level dimensions, precision roles, higher-order terms, and componentwise semantics match exactly. Nevertheless, equality of the final gamma_n envelope is not equality of execution domains. The Lean constructors promote conservative aggregate bounds from the paper's proof into admissibility conditions for arbitrary real traces and omit the operation-level correlations and positional theta restrictions of Algorithm 3.1. The explicit q=1, b=n=3 positive-data construction satisfies those Lean conditions, has nonzero error, and cannot satisfy the source's position-indexed recurrence. Hence the extension is genuine and nonvacuous, Lean implies the paper theorem, and the converse implication fails."
+}

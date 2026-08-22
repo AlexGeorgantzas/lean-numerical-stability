@@ -1,0 +1,789 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "a37473ecf2fdbcefce480cc5aa959ea3fd424b4e365aff74c718485c394e729a",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "An indexed outer run package for dimensions m,n,t,b1,b,b2,p,q,r. Its constructor D015 packages matrices, perturbation parameters, dimension and positivity proofs, and one inner entry run for each output index.",
+      "effect_on_target": "The universally quantified run supplies every datum and implicit hypothesis used by the bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "Projection of the run's real matrix A, indexed by Fin m × Fin n.",
+      "effect_on_target": "Supplies A in the exact matrix-product entry and the absolute-product sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "Projection of the run's real matrix B, indexed by Fin n × Fin t.",
+      "effect_on_target": "Supplies B in the exact matrix-product entry and the absolute-product sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "For output indices i,j, this is the computed value stored by the corresponding inner entry run.",
+      "effect_on_target": "It is the approximate quantity compared with the exact matrix-product entry.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "Projection of the outer real parameter uBar.",
+      "effect_on_target": "It enters γ_n(uBar), the inner error bounds, and the stability condition n·uBar<1.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "Projection of the outer real parameter uFma.",
+      "effect_on_target": "Together with uBar and uOut, it determines the piecewise effective parameter used in γ_q.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "Projection of the outer real parameter uLow.",
+      "effect_on_target": "It bounds both input perturbations and appears explicitly as 2uLow+uLow² and (1+uLow)².",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "Projection of the outer real parameter uOut.",
+      "effect_on_target": "It contributes to the piecewise effective parameter used in γ_q.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "The componentwise absolute-product sum Σ_{k∈Fin n}|A(i,k)|·|B(k,j)|.",
+      "effect_on_target": "This nonnegative sum scales the entire error coefficient on the right-hand side.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "For real parameters v,u and naturals q,n, it is γ_q(v)+γ_n(u)+γ_q(v)γ_n(u), where γ_s(w)=s·w/(1-s·w).",
+      "effect_on_target": "With v equal to the effective piecewise parameter and u=uBar, it forms the second error contribution.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "The piecewise value e: e=uOut if uFma<uOut; otherwise e=0 if uFma≤uBar; otherwise e=uFma.",
+      "effect_on_target": "The bound uses γ_q(e), and every inner run bounds its δ errors by e and assumes q·e<1.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "The exact matrix-product entry Σ_{k∈Fin n}A(i,k)B(k,j).",
+      "effect_on_target": "This is subtracted from the computed entry inside the absolute error.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "The computed value of an inner run, defined as its state at natural index q.",
+      "effect_on_target": "It identifies each outer computed entry with the terminal state s_q of the modeled recurrence.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LocalDef014",
+      "meaning": "Projection assigning an inner run of dimensions n,b,q to every output pair (i,j).",
+      "effect_on_target": "It provides the recurrence whose terminal state is the computed entry at i,j.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "LocalDef015",
+      "meaning": "Constructor for an outer run. It requires all nine dimensions to be positive; m=p·b1, n=q·b, and t=r·b2; matrices A and B; multiplicative input-error arrays bounded in absolute value by uLow; nonnegative uLow,uHigh,uBar,uFma,uOut with uHigh≤uLow, uFma and uOut each equal to uLow or uHigh, and uBar≤uFma; stability conditions q·e<1 and n·uBar<1; and compatible entry runs whose x,y data are the perturbed A,B entries.",
+      "effect_on_target": "These constructor requirements are the complete outer hypotheses under which the stated pointwise bound applies.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LocalDef016",
+      "meaning": "The rational function γ_n(u)=n·u/(1-n·u), using the natural number n cast to a real.",
+      "effect_on_target": "It defines γ_q(e), γ_n(uBar), and all γ-style bounds in the inner runs.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "LocalDef017",
+      "meaning": "The stability predicate n·u<1.",
+      "effect_on_target": "It ensures q·e<1 and n·uBar<1 for every admissible run.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "LocalDef018",
+      "meaning": "An indexed inner entry-run package for dimensions n,b,q. Constructor D026 stores perturbed block data, a state recurrence, error arrays, bounds, and path-product identities.",
+      "effect_on_target": "Each computed matrix entry must be the final state of such a constrained inner run.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "LocalDef019",
+      "meaning": "Projection of an inner run's state function Nat→Real.",
+      "effect_on_target": "The computed entry is state(q), and the constructor constrains state(0) and every transition through q.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "LocalDef020",
+      "meaning": "Projection of an inner run's uBar parameter.",
+      "effect_on_target": "Outer compatibility requires it to equal the outer uBar.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "LocalDef021",
+      "meaning": "Projection of an inner run's uFma parameter.",
+      "effect_on_target": "Outer compatibility requires it to equal the outer uFma.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "LocalDef022",
+      "meaning": "Projection of an inner run's uOut parameter.",
+      "effect_on_target": "Outer compatibility requires it to equal the outer uOut.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "LocalDef023",
+      "meaning": "Projection of the inner q-by-b array x.",
+      "effect_on_target": "For entry (i,j), x(k,l) is required to be A(i,φ(k,l)) multiplied by one plus its input-error parameter.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "LocalDef024",
+      "meaning": "Projection of the inner q-by-b array y.",
+      "effect_on_target": "For entry (i,j), y(k,l) is required to be B(φ(k,l),j) multiplied by one plus its input-error parameter.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "LocalDef025",
+      "meaning": "Given n=q·b, maps (k,l)∈Fin q×Fin b to the corresponding element of Fin n through the product-index equivalence; numerically φ(k,l)=l+b·k.",
+      "effect_on_target": "It partitions the shared matrix index into q blocks of length b when defining inner x and y.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "LocalDef026",
+      "meaning": "Constructor for an inner run. It requires positive n,b,q with n=q·b; nonnegative uBar,uFma,uOut with uBar≤uFma; q·e<1 and n·uBar<1; state(0)=0; the recurrence s_{k+1}=[s_k(1+c_k)+Σ_l x_{kl}y_{kl}(1+τ_{kl})](1+δ_k); bounds on δ,c,τ; an always-present n-factor path-error product identity; and, for the distinguished order D029, additional sharper carry and right-to-left path conditions.",
+      "effect_on_target": "It restricts the computed terminal state to values generated by the exact recurrence and error model described in the hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "LocalDef027",
+      "meaning": "An equivalence Fin q×Fin b ≃ Fin n obtained from product flattening followed by the equality n=q·b.",
+      "effect_on_target": "It implements the block-to-linear index map used by D025.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "LocalDef028",
+      "meaning": "An inductive order-tag type with two nullary constructors and one Nat-parameterized constructor family.",
+      "effect_on_target": "An inner run stores such a tag; only equality with D029 activates additional hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "LocalDef029",
+      "meaning": "A distinguished nullary constructor of the order-tag type.",
+      "effect_on_target": "When an inner run's order equals this constructor, it must satisfy the sharper carry bound and right-to-left path-error identities.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "LocalDef030",
+      "meaning": "Symmetry of the dimension equality: from n=q·b it derives q·b=n.",
+      "effect_on_target": "It supplies the orientation needed to cast the flattened Fin(q·b) index to Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "LocalDef031",
+      "meaning": "For an error array c and k∈Fin q, the suffix product P_k=∏_{l=k+1}^{q-1}(1+c_l).",
+      "effect_on_target": "It is the carry-factor product appearing in the path-product identities of each inner run.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "LocalDef032",
+      "meaning": "A second nullary constructor of the order-tag type.",
+      "effect_on_target": "It is an admissible order value but does not trigger the conditions guarded by order=D029.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "LocalDef033",
+      "meaning": "A Nat-parameterized constructor family of the order-tag type.",
+      "effect_on_target": "These are admissible order values but do not trigger the conditions guarded by order=D029.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "LocalDef034",
+      "meaning": "Extends a Fin q-indexed real array to natural indices by returning its value when k<q and 0 otherwise.",
+      "effect_on_target": "It lets D031 express a natural-indexed interval product; all indices in that interval are in range.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Fin",
+      "meaning": "Fin n is the type of natural indices strictly less than n.",
+      "effect_on_target": "It gives the exact finite ranges for matrix rows, columns, blocks, and error arrays.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "HAdd.hAdd",
+      "meaning": "Typeclass-dispatched addition.",
+      "effect_on_target": "It denotes ordinary real addition in the bound and recurrence and natural addition in index expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "HMul.hMul",
+      "meaning": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "It denotes ordinary real multiplication and natural multiplication throughout the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "HPow.hPow",
+      "meaning": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "It forms the real squares uLow² and (1+uLow)².",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "HSub.hSub",
+      "meaning": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "It forms computed minus exact and denominators 1-n·u, and natural truncated subtraction in a transitive index type.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "LE.le",
+      "meaning": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "It is ordinary ≤ on reals in the conclusion and all nonnegativity and error-bound hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Monoid.toNatPow",
+      "meaning": "Natural-number powers generated by a monoid's multiplication and identity.",
+      "effect_on_target": "It gives the standard real square operation in the coefficient.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "Nat",
+      "meaning": "The natural numbers.",
+      "effect_on_target": "All dimensions, block counts, block sizes, state indices, and exponents are natural numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "A proof that n+1 is at least two when n is nonzero.",
+      "effect_on_target": "Used only to elaborate the real numeral 2; it adds no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "A proof that every natural successor n+1 is nonzero.",
+      "effect_on_target": "Used to justify that the numeral 2 is at least two; it adds no target condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "OfNat.ofNat",
+      "meaning": "Interprets a natural numeral in a type with an OfNat instance.",
+      "effect_on_target": "Provides the constants 0, 1, and 2 in the relevant natural or real types.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "One.toOfNat1",
+      "meaning": "Turns a multiplicative identity into the numeral-one interpretation.",
+      "effect_on_target": "Makes every displayed real 1 the ordinary real multiplicative identity.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "Real",
+      "meaning": "The real numbers.",
+      "effect_on_target": "Matrices, computed values, perturbations, parameters, sums, products, and inequalities are all over exact reals.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary addition on real numbers.",
+      "effect_on_target": "Interprets all real additions in the coefficient and inner recurrence.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure of the reals.",
+      "effect_on_target": "Supports real negation, subtraction, and absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "Real.instLE",
+      "meaning": "The usual non-strict order on the reals.",
+      "effect_on_target": "Interprets the conclusion and all real ≤ hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure of the reals.",
+      "effect_on_target": "Supports natural powers such as the two squares in the bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Real.instMul",
+      "meaning": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "Interprets products in matrix entries, coefficients, perturbations, recurrences, and path identities.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the reals.",
+      "effect_on_target": "Interprets n and q as real factors in γ_n and the stability predicates.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Real.instOne",
+      "meaning": "The real multiplicative identity 1.",
+      "effect_on_target": "Supplies every factor of the form 1+error and every denominator beginning with 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction, implemented as addition of the negative.",
+      "effect_on_target": "Forms the approximation error and the denominators of γ.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "Real.lattice",
+      "meaning": "The lattice structure induced by the usual order on the reals.",
+      "effect_on_target": "Supports the absolute-value operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "abs",
+      "meaning": "Absolute value, defined abstractly as max(a,-a) and hence standard real absolute value here.",
+      "effect_on_target": "Measures the final scalar error, input-error parameters, local errors, and absolute matrix products.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "instHAdd",
+      "meaning": "Converts homogeneous addition into heterogeneous-addition notation.",
+      "effect_on_target": "Ensures HAdd on two reals or two naturals is their ordinary addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "instHMul",
+      "meaning": "Converts homogeneous multiplication into heterogeneous-multiplication notation.",
+      "effect_on_target": "Ensures HMul on two reals or two naturals is ordinary multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "instHPow",
+      "meaning": "Converts a power operation into heterogeneous-power notation.",
+      "effect_on_target": "Ensures real bases with natural exponent 2 use ordinary natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "instHSub",
+      "meaning": "Converts homogeneous subtraction into heterogeneous-subtraction notation.",
+      "effect_on_target": "Ensures real subtraction is ordinary subtraction and natural subtraction is truncated subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "Interprets any numeral at least two through natural-number casting.",
+      "effect_on_target": "Interprets the coefficient's numeral 2 as the real number 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "instOfNatNat",
+      "meaning": "Interprets each natural numeral as itself.",
+      "effect_on_target": "Supplies natural constants used in dimensions, exponents, and index arithmetic.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "Fin.fintype",
+      "meaning": "The finite enumeration of all elements of Fin n.",
+      "effect_on_target": "Allows sums and products to range over every valid finite index exactly once.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "Defines exact matrix products, absolute-product sums, and inner block sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "Makes each Fin-indexed sum or product range over the full corresponding index set.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "LT.lt",
+      "meaning": "Typeclass-dispatched strict order.",
+      "effect_on_target": "It expresses positivity of dimensions, real comparisons in e, and stability inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Real.decidableLE",
+      "meaning": "Decidability of real non-strict comparison.",
+      "effect_on_target": "Allows the branch test uFma≤uBar in the piecewise definition of e.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Real.decidableLT",
+      "meaning": "Decidability of real strict comparison.",
+      "effect_on_target": "Allows the branch test uFma<uOut in the piecewise definition of e.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative-monoid structure of the reals.",
+      "effect_on_target": "Supports all finite real sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "Real.instLT",
+      "meaning": "The usual strict order on the reals.",
+      "effect_on_target": "Interprets uFma<uOut and the conditions q·e<1 and n·uBar<1.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Real.instZero",
+      "meaning": "The real additive identity 0.",
+      "effect_on_target": "Supplies zero in nonnegativity conditions, the e branch, state(0)=0, and out-of-range extension.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "Zero.toOfNat0",
+      "meaning": "Turns an additive zero into the numeral-zero interpretation.",
+      "effect_on_target": "Makes displayed real zeros the ordinary real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "ite",
+      "meaning": "Ordinary if-then-else on a decidable proposition.",
+      "effect_on_target": "Defines the piecewise effective parameter and the k=0 versus k>0 term-error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "Extracts division from a division-and-inverse monoid.",
+      "effect_on_target": "Provides ordinary real division in γ_n(u).",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "Expresses dimension factorizations, allowed parameter choices, projection compatibility, recurrence identities, and path-product identities.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "HDiv.hDiv",
+      "meaning": "Typeclass-dispatched division.",
+      "effect_on_target": "Forms the quotient n·u/(1-n·u) defining γ_n(u).",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "Nat.cast",
+      "meaning": "Casts a natural number into a type with a natural-cast structure.",
+      "effect_on_target": "Turns dimensions into real coefficients in γ and stability conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "Or",
+      "meaning": "Logical disjunction.",
+      "effect_on_target": "Requires uFma and uOut each to equal either uLow or uHigh.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The standard division-and-inverse monoid structure on the reals.",
+      "effect_on_target": "Interprets division in γ as real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "instHDiv",
+      "meaning": "Converts homogeneous division into heterogeneous-division notation.",
+      "effect_on_target": "Ensures the numerator and denominator in γ are divided as real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "instLTNat",
+      "meaning": "The usual strict order on natural numbers.",
+      "effect_on_target": "Interprets positivity, index bounds, and range tests.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "instMulNat",
+      "meaning": "Ordinary natural-number multiplication.",
+      "effect_on_target": "Interprets m=p·b1, n=q·b, t=r·b2 and the flattened index b·k.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "DFunLike.coe",
+      "meaning": "Coercion of a function-like object to its underlying function.",
+      "effect_on_target": "Used representationally to apply the finite-index equivalence in D025.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Equiv",
+      "meaning": "A bijective equivalence between two types.",
+      "effect_on_target": "Represents the bijection between block-index pairs and linear indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "Equiv.instEquivLike",
+      "meaning": "The standard EquivLike instance for equivalences.",
+      "effect_on_target": "Allows an equivalence to be applied as a function in the index map.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "EquivLike.toFunLike",
+      "meaning": "Views an equivalence-like object as a function-like object.",
+      "effect_on_target": "Provides the function application used by D025 and equivalence composition.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "Prod",
+      "meaning": "The Cartesian product type.",
+      "effect_on_target": "Combines a block index k∈Fin q and within-block index l∈Fin b.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "Prod.mk",
+      "meaning": "Constructor of an ordered pair.",
+      "effect_on_target": "Builds the pair (k,l) supplied to the block-index equivalence.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "Equiv.trans",
+      "meaning": "Composition of two equivalences.",
+      "effect_on_target": "Composes product flattening with the dimension-equality cast to obtain Fin q×Fin b ≃ Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "Fin.val",
+      "meaning": "The underlying natural value of a bounded Fin index.",
+      "effect_on_target": "Used in recurrence indices, flattened indices, branch tests, and suffix-product limits.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "Finset.prod",
+      "meaning": "Finite multiplication in a commutative monoid.",
+      "effect_on_target": "Defines suffix carry products and the products of one-plus-path-error factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "Real.instCommMonoid",
+      "meaning": "The multiplicative commutative-monoid structure of the reals.",
+      "effect_on_target": "Supports the finite real products in path identities.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "finCongr",
+      "meaning": "An equivalence Fin n ≃ Fin m induced by an equality n=m.",
+      "effect_on_target": "Casts the flattened Fin(q·b) index to Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "finProdFinEquiv",
+      "meaning": "The standard equivalence Fin q×Fin b ≃ Fin(q·b), mapping (k,l) to l+b·k.",
+      "effect_on_target": "Determines the exact linear ordering used to reconstruct the shared matrix index.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "instAddNat",
+      "meaning": "Ordinary natural-number addition.",
+      "effect_on_target": "Interprets successor indices k+1, flattened indices, and path-array sizes.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "instDecidableEqNat",
+      "meaning": "Decidable equality of natural numbers.",
+      "effect_on_target": "Allows the test whether an inner block index has value zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "instSubNat",
+      "meaning": "Natural-number subtraction truncated at zero.",
+      "effect_on_target": "Forms the special path-array size q+b-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Finset.Ico",
+      "meaning": "The finite half-open interval of natural numbers [a,b).",
+      "effect_on_target": "Makes D031 range exactly over l=k+1,…,q-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "Nat.instLocallyFiniteOrder",
+      "meaning": "The locally finite order structure that enumerates finite natural intervals.",
+      "effect_on_target": "Provides the concrete finite interval used in the suffix carry product.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "Nat.instPreorder",
+      "meaning": "The usual preorder on natural numbers.",
+      "effect_on_target": "Determines membership in the half-open natural interval.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "Fin.mk",
+      "meaning": "Constructs a Fin n index from a natural value together with a proof that it is less than n.",
+      "effect_on_target": "Converts an in-range natural suffix-product index back into Fin q.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "Nat.decLt",
+      "meaning": "Decidability of natural-number strict comparison.",
+      "effect_on_target": "Allows D034 to test whether a natural index is below q.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "Not",
+      "meaning": "Logical negation, defined as implication to false.",
+      "effect_on_target": "Supplies the out-of-range branch proof in the dependent conditional defining D034.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "dite",
+      "meaning": "Dependent if-then-else on a decidable proposition.",
+      "effect_on_target": "Defines the in-range conversion or out-of-range zero used by D034.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "m,n,t,b1,b,b2,p,q,r are arbitrary natural numbers.",
+      "run is an outer run package indexed by those nine natural numbers.",
+      "i is an arbitrary element of Fin m and j is an arbitrary element of Fin t."
+    ],
+    "hypotheses": [
+      "Existence of run entails m,n,t,b1,b,b2,p,q,r>0 and the exact dimension factorizations m=p·b1, n=q·b, and t=r·b2.",
+      "The run contains arbitrary real matrices A:Fin m×Fin n→Real and B:Fin n×Fin t→Real.",
+      "It contains input-error arrays eA and eB satisfying |eA(i,k)|≤uLow and |eB(k,j)|≤uLow for every valid index.",
+      "The real parameters uLow,uHigh,uBar,uFma,uOut are nonnegative; uHigh≤uLow; uFma∈{uLow,uHigh}; uOut∈{uLow,uHigh}; and uBar≤uFma.",
+      "Define e=uOut when uFma<uOut; if that test is false and uFma≤uBar, define e=0; otherwise define e=uFma. The stability assumptions are q·e<1 and n·uBar<1.",
+      "For each output pair (i,j), the run contains an inner entry run with the same uBar,uFma,uOut. Writing φ(k,l)=l+b·k under n=q·b, its block data satisfy x(k,l)=A(i,φ(k,l))(1+eA(i,φ(k,l))) and y(k,l)=B(φ(k,l),j)(1+eB(φ(k,l),j)).",
+      "For each inner run there are an order tag, a state s:Nat→Real, carry errors c_k, term errors τ_{k,l}, and errors δ_k such that s_0=0 and, for every k=0,…,q-1, s_{k+1}=[s_k(1+c_k)+Σ_{l=0}^{b-1}x(k,l)y(k,l)(1+τ_{k,l})](1+δ_k).",
+      "The local bounds are |δ_k|≤e, |c_k|≤γ_b(uBar), and |τ_{k,l}|≤γ_b(uBar) when k=0 and ≤γ_{b+1}(uBar) when k>0.",
+      "For every k,l there are n inner-path errors ε_{k,l,r} with |ε_{k,l,r}|≤uBar and ∏_{r=0}^{n-1}(1+ε_{k,l,r})=(1+τ_{k,l})∏_{h=k+1}^{q-1}(1+c_h).",
+      "If the inner order tag equals the distinguished constructor D029, then additionally |c_k|≤γ_1(uBar), and there are q+b-1 right-to-left path errors η_{k,l,r}, each bounded by uBar, whose one-plus product equals (1+τ_{k,l})∏_{h=k+1}^{q-1}(1+c_h)."
+    ],
+    "conclusions": [
+      "For every valid i,j, |computed(i,j)−Σ_{k=0}^{n-1}A(i,k)B(k,j)| ≤ [2uLow+uLow²+(γ_q(e)+γ_n(uBar)+γ_q(e)γ_n(uBar))(1+uLow)²]·Σ_{k=0}^{n-1}|A(i,k)|·|B(k,j)|."
+    ],
+    "mathematical_definitions": [
+      "Fin d denotes the indices 0,…,d−1.",
+      "γ_s(u)=s·u/(1−s·u), with s interpreted as a real.",
+      "e=uOut if uFma<uOut; e=0 if uFma≥uOut and uFma≤uBar; and e=uFma if uFma≥uOut and uFma>uBar.",
+      "The exact product entry is C(i,j)=Σ_{k=0}^{n-1}A(i,k)B(k,j).",
+      "The absolute-product scale is S(i,j)=Σ_{k=0}^{n-1}|A(i,k)|·|B(k,j)|.",
+      "The computed entry is the corresponding inner terminal state s_q.",
+      "The complete scalar coefficient is 2uLow+uLow²+[γ_q(e)+γ_n(uBar)+γ_q(e)γ_n(uBar)](1+uLow)²."
+    ],
+    "proposition_plain_english": "For every outer run satisfying the encoded positive-dimension, block-factorization, parameter, multiplicative-input-perturbation, stability, recurrence, local-error, and path-product conditions, every computed output entry differs from the corresponding exact real matrix-product entry by at most the stated scalar coefficient times the componentwise absolute-product sum for that entry."
+  },
+  "restrictions_and_vacuity_risks": [
+    "Although the dimensions are universally quantified over all naturals, an outer run can be constructed only when every listed dimension and block parameter is positive and the three factorization equalities hold. For other choices the theorem is vacuous because no run exists.",
+    "The theorem quantifies over already constructed run packages; it does not assert that a run or any of its recurrence and path-error witnesses exists for arbitrary matrices and parameters. Inconsistency of those packaged hypotheses would make the statement vacuous.",
+    "The conclusion is a pointwise scalar entry bound. It does not state a matrix-norm, vector-norm, componentwise relative-error, or backward-stability result.",
+    "A and B are otherwise unrestricted real matrices. The input perturbations are encoded multiplicatively as A(1+eA) and B(1+eB), with absolute bounds on eA and eB.",
+    "All arithmetic in the proposition and its error model is exact real arithmetic. No finite representability, rounding mode, overflow, underflow, exceptional values, or concrete implementation behavior is encoded beyond the supplied recurrence and error identities.",
+    "The conditions q·e<1 and n·uBar<1 make the two γ denominators occurring in the final bound positive. The positivity and n=q·b conditions also control the γ denominators used by the active inner bounds.",
+    "The inequality uHigh≤uLow is formal despite the parameter names; no interpretation of either parameter as a particular precision is encoded.",
+    "The parameters b1,b2,p,r affect admissibility through m=p·b1 and t=r·b2 but do not otherwise occur in the final coefficient or inner recurrence.",
+    "Only the distinguished order value D029 receives the extra sharper carry and right-to-left path requirements; the formal proposition supplies no comparable extra conditions for other order tags.",
+    "There are no existential witnesses in the conclusion: state functions and all error/path arrays are fields already carried by run."
+  ],
+  "ambiguities": [
+    "The dossier does not provide human-level semantic names for the constructors of LocalDef028. Formally, D029 is exactly the constructor whose equality activates the additional conditions, but its intended algorithmic order cannot be identified from the supplied types alone."
+  ]
+}

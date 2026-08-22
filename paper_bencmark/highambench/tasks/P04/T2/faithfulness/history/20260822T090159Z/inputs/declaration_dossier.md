@@ -418,7 +418,7 @@ fun {n b q} run => run.state q
 - Owner module: `HighamBench.P04Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `2`
-- Semantic SHA-256: `3b0f788a1fec1c8d6ffceb463964924032a94d153265c70875115898bc43ef77`
+- Semantic SHA-256: `e3f67e94ce22efc482e70a3491aed593988ab5bce6f78337344a03693388344b`
 
 Type:
 
@@ -437,7 +437,7 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun m n t b1 b b2 p q r self => self.34
+fun m n t b1 b b2 p q r self => self.35
 ```
 
 ### D015: `HighamBench.P04MixedInputMatMulRun.mk`
@@ -446,7 +446,7 @@ fun m n t b1 b b2 p q r self => self.34
 - Owner module: `HighamBench.P04Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `24f42f13571df476892d541d67412bd5d9334bb50c4ea650790815991546e401`
+- Semantic SHA-256: `96d1ee30b890784a4f00c3d775cb6cda1dca422fb331907aedb60a7a6b5f39d5`
 
 Type:
 
@@ -476,46 +476,49 @@ Type:
                                             Real.instLE.le 0 uOut →
                                               Real.instLE.le uHigh uLow →
                                                 Or (Eq uFma uLow) (Eq uFma uHigh) →
-                                                  Real.instLE.le uBar uFma →
-                                                    HighamBench.GammaValid
-                                                        (HighamBench.p04EffectiveFmaRoundoff uBar uFma uOut) q →
-                                                      HighamBench.GammaValid uBar n →
-                                                        (∀ (i : Fin m) (k : Fin n),
-                                                            Real.instLE.le (abs (inputErrorA i k)) uLow) →
-                                                          (∀ (k : Fin n) (j : Fin t),
-                                                              Real.instLE.le (abs (inputErrorB k j)) uLow) →
-                                                            (entryRun :
-                                                                Fin m → Fin t → HighamBench.P04BlockFmaDotRun n b q) →
-                                                              (∀ (i : Fin m) (j : Fin t), Eq (entryRun i j).uBar uBar) →
+                                                  Or (Eq uOut uLow) (Eq uOut uHigh) →
+                                                    Real.instLE.le uBar uFma →
+                                                      HighamBench.GammaValid
+                                                          (HighamBench.p04EffectiveFmaRoundoff uBar uFma uOut) q →
+                                                        HighamBench.GammaValid uBar n →
+                                                          (∀ (i : Fin m) (k : Fin n),
+                                                              Real.instLE.le (abs (inputErrorA i k)) uLow) →
+                                                            (∀ (k : Fin n) (j : Fin t),
+                                                                Real.instLE.le (abs (inputErrorB k j)) uLow) →
+                                                              (entryRun :
+                                                                  Fin m → Fin t → HighamBench.P04BlockFmaDotRun n b q) →
                                                                 (∀ (i : Fin m) (j : Fin t),
-                                                                    Eq (entryRun i j).uFma uFma) →
+                                                                    Eq (entryRun i j).uBar uBar) →
                                                                   (∀ (i : Fin m) (j : Fin t),
-                                                                      Eq (entryRun i j).uOut uOut) →
-                                                                    (∀ (i : Fin m) (j : Fin t) (k : Fin q) (l : Fin b),
-                                                                        Eq ((entryRun i j).x k l)
-                                                                          (instHMul.hMul
-                                                                            (A i
-                                                                              (HighamBench.p04BlockIndex inner_partition
-                                                                                k l))
-                                                                            (instHAdd.hAdd 1
-                                                                              (inputErrorA i
-                                                                                (HighamBench.p04BlockIndex
-                                                                                  inner_partition k l))))) →
+                                                                      Eq (entryRun i j).uFma uFma) →
+                                                                    (∀ (i : Fin m) (j : Fin t),
+                                                                        Eq (entryRun i j).uOut uOut) →
                                                                       (∀ (i : Fin m) (j : Fin t) (k : Fin q)
                                                                           (l : Fin b),
-                                                                          Eq ((entryRun i j).y k l)
+                                                                          Eq ((entryRun i j).x k l)
                                                                             (instHMul.hMul
-                                                                              (B
+                                                                              (A i
                                                                                 (HighamBench.p04BlockIndex
-                                                                                  inner_partition k l)
-                                                                                j)
+                                                                                  inner_partition k l))
                                                                               (instHAdd.hAdd 1
-                                                                                (inputErrorB
+                                                                                (inputErrorA i
+                                                                                  (HighamBench.p04BlockIndex
+                                                                                    inner_partition k l))))) →
+                                                                        (∀ (i : Fin m) (j : Fin t) (k : Fin q)
+                                                                            (l : Fin b),
+                                                                            Eq ((entryRun i j).y k l)
+                                                                              (instHMul.hMul
+                                                                                (B
                                                                                   (HighamBench.p04BlockIndex
                                                                                     inner_partition k l)
-                                                                                  j)))) →
-                                                                        HighamBench.P04MixedInputMatMulRun m n t b1 b b2
-                                                                          p q r
+                                                                                  j)
+                                                                                (instHAdd.hAdd 1
+                                                                                  (inputErrorB
+                                                                                    (HighamBench.p04BlockIndex
+                                                                                      inner_partition k l)
+                                                                                    j)))) →
+                                                                          HighamBench.P04MixedInputMatMulRun m n t b1 b
+                                                                            b2 p q r
 ```
 
 Fully explicit type:
@@ -574,84 +577,87 @@ Fully explicit type:
                                                   uOut) →
                                               (uHigh_le_uLow : @LE.le.{0} Real Real.instLE uHigh uLow) →
                                                 (uFma_allowed : Or (@Eq.{1} Real uFma uLow) (@Eq.{1} Real uFma uHigh)) →
-                                                  (uBar_le_uFma : @LE.le.{0} Real Real.instLE uBar uFma) →
-                                                    (effective_gamma_valid :
-                                                        HighamBench.GammaValid
-                                                          (HighamBench.p04EffectiveFmaRoundoff uBar uFma uOut) q) →
-                                                      (internal_gamma_valid : HighamBench.GammaValid uBar n) →
-                                                        (input_error_A_bound :
-                                                            ∀ (i : Fin m) (k : Fin n),
-                                                              @LE.le.{0} Real Real.instLE
-                                                                (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                                  (inputErrorA i k))
-                                                                uLow) →
-                                                          (input_error_B_bound :
-                                                              ∀ (k : Fin n) (j : Fin t),
+                                                  (uOut_allowed :
+                                                      Or (@Eq.{1} Real uOut uLow) (@Eq.{1} Real uOut uHigh)) →
+                                                    (uBar_le_uFma : @LE.le.{0} Real Real.instLE uBar uFma) →
+                                                      (effective_gamma_valid :
+                                                          HighamBench.GammaValid
+                                                            (HighamBench.p04EffectiveFmaRoundoff uBar uFma uOut) q) →
+                                                        (internal_gamma_valid : HighamBench.GammaValid uBar n) →
+                                                          (input_error_A_bound :
+                                                              ∀ (i : Fin m) (k : Fin n),
                                                                 @LE.le.{0} Real Real.instLE
                                                                   (@abs.{0} Real Real.lattice Real.instAddGroup
-                                                                    (inputErrorB k j))
+                                                                    (inputErrorA i k))
                                                                   uLow) →
-                                                            (entryRun :
-                                                                Fin m → Fin t → HighamBench.P04BlockFmaDotRun n b q) →
-                                                              (entry_run_uBar :
-                                                                  ∀ (i : Fin m) (j : Fin t),
-                                                                    @Eq.{1} Real
-                                                                      (@HighamBench.P04BlockFmaDotRun.uBar n b q
-                                                                        (entryRun i j))
-                                                                      uBar) →
-                                                                (entry_run_uFma :
+                                                            (input_error_B_bound :
+                                                                ∀ (k : Fin n) (j : Fin t),
+                                                                  @LE.le.{0} Real Real.instLE
+                                                                    (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                                      (inputErrorB k j))
+                                                                    uLow) →
+                                                              (entryRun :
+                                                                  Fin m → Fin t → HighamBench.P04BlockFmaDotRun n b q) →
+                                                                (entry_run_uBar :
                                                                     ∀ (i : Fin m) (j : Fin t),
                                                                       @Eq.{1} Real
-                                                                        (@HighamBench.P04BlockFmaDotRun.uFma n b q
+                                                                        (@HighamBench.P04BlockFmaDotRun.uBar n b q
                                                                           (entryRun i j))
-                                                                        uFma) →
-                                                                  (entry_run_uOut :
+                                                                        uBar) →
+                                                                  (entry_run_uFma :
                                                                       ∀ (i : Fin m) (j : Fin t),
                                                                         @Eq.{1} Real
-                                                                          (@HighamBench.P04BlockFmaDotRun.uOut n b q
+                                                                          (@HighamBench.P04BlockFmaDotRun.uFma n b q
                                                                             (entryRun i j))
-                                                                          uOut) →
-                                                                    (entry_run_x :
-                                                                        ∀ (i : Fin m) (j : Fin t) (k : Fin q)
-                                                                          (l : Fin b),
+                                                                          uFma) →
+                                                                    (entry_run_uOut :
+                                                                        ∀ (i : Fin m) (j : Fin t),
                                                                           @Eq.{1} Real
-                                                                            (@HighamBench.P04BlockFmaDotRun.x n b q
-                                                                              (entryRun i j) k l)
-                                                                            (@HMul.hMul.{0, 0, 0} Real Real Real
-                                                                              (@instHMul.{0} Real Real.instMul)
-                                                                              (A i
-                                                                                (@HighamBench.p04BlockIndex n q b
-                                                                                  inner_partition k l))
-                                                                              (@HAdd.hAdd.{0, 0, 0} Real Real Real
-                                                                                (@instHAdd.{0} Real Real.instAdd)
-                                                                                (@OfNat.ofNat.{0} Real (nat_lit 1)
-                                                                                  (@One.toOfNat1.{0} Real Real.instOne))
-                                                                                (inputErrorA i
-                                                                                  (@HighamBench.p04BlockIndex n q b
-                                                                                    inner_partition k l))))) →
-                                                                      (entry_run_y :
+                                                                            (@HighamBench.P04BlockFmaDotRun.uOut n b q
+                                                                              (entryRun i j))
+                                                                            uOut) →
+                                                                      (entry_run_x :
                                                                           ∀ (i : Fin m) (j : Fin t) (k : Fin q)
                                                                             (l : Fin b),
                                                                             @Eq.{1} Real
-                                                                              (@HighamBench.P04BlockFmaDotRun.y n b q
+                                                                              (@HighamBench.P04BlockFmaDotRun.x n b q
                                                                                 (entryRun i j) k l)
                                                                               (@HMul.hMul.{0, 0, 0} Real Real Real
                                                                                 (@instHMul.{0} Real Real.instMul)
-                                                                                (B
+                                                                                (A i
                                                                                   (@HighamBench.p04BlockIndex n q b
-                                                                                    inner_partition k l)
-                                                                                  j)
+                                                                                    inner_partition k l))
                                                                                 (@HAdd.hAdd.{0, 0, 0} Real Real Real
                                                                                   (@instHAdd.{0} Real Real.instAdd)
                                                                                   (@OfNat.ofNat.{0} Real (nat_lit 1)
                                                                                     (@One.toOfNat1.{0} Real
                                                                                       Real.instOne))
-                                                                                  (inputErrorB
+                                                                                  (inputErrorA i
+                                                                                    (@HighamBench.p04BlockIndex n q b
+                                                                                      inner_partition k l))))) →
+                                                                        (entry_run_y :
+                                                                            ∀ (i : Fin m) (j : Fin t) (k : Fin q)
+                                                                              (l : Fin b),
+                                                                              @Eq.{1} Real
+                                                                                (@HighamBench.P04BlockFmaDotRun.y n b q
+                                                                                  (entryRun i j) k l)
+                                                                                (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                                  (@instHMul.{0} Real Real.instMul)
+                                                                                  (B
                                                                                     (@HighamBench.p04BlockIndex n q b
                                                                                       inner_partition k l)
-                                                                                    j)))) →
-                                                                        HighamBench.P04MixedInputMatMulRun m n t b1 b b2
-                                                                          p q r
+                                                                                    j)
+                                                                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real
+                                                                                    (@instHAdd.{0} Real Real.instAdd)
+                                                                                    (@OfNat.ofNat.{0} Real (nat_lit 1)
+                                                                                      (@One.toOfNat1.{0} Real
+                                                                                        Real.instOne))
+                                                                                    (inputErrorB
+                                                                                      (@HighamBench.p04BlockIndex n q b
+                                                                                        inner_partition k l)
+                                                                                      j)))) →
+                                                                          HighamBench.P04MixedInputMatMulRun m n t b1 b
+                                                                            b2 p q r
 ```
 
 ### D016: `HighamBench.gamma`
@@ -3235,7 +3241,7 @@ end HighamBench
 ### `HighamBench.P04Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean`
-SHA-256: `cbf88a9826eef35e7f1972ddc402fe31a95e7add5b1e305c8e6e32da2e9ef61a`
+SHA-256: `dc2d7c3bffd501d66aeeb3763f870034f38fb9f081a0690289021fd77e61ca45`
 
 ```lean
 import HighamBench.Core
@@ -3408,10 +3414,9 @@ structure contains neither the compact `alpha`/`beta` factors nor equation
 (3.6); both must be derived from the conversion errors and local block-FMA
 traces.
 
-The block-FMA output precision is one of the low/high formats on printed pages
-C126--C127. Algorithm 3.1's final working/output precision is independent of
-those two formats. All modeled values are finite reals, so the structure has
-the paper's stated no-underflow/no-overflow scope and its deliberate
+The low/high format constraints express the block-FMA framework on printed
+pages C126--C127. All modeled values are finite reals, so the structure has the
+paper's stated no-underflow/no-overflow scope and its deliberate
 single-rounding simplification. -/
 structure P04MixedInputMatMulRun
     (m n t b1 b b2 p q r : ℕ) where
@@ -3443,6 +3448,7 @@ structure P04MixedInputMatMulRun
   uOut_nonneg : 0 ≤ uOut
   uHigh_le_uLow : uHigh ≤ uLow
   uFma_allowed : uFma = uLow ∨ uFma = uHigh
+  uOut_allowed : uOut = uLow ∨ uOut = uHigh
   uBar_le_uFma : uBar ≤ uFma
   effective_gamma_valid :
     GammaValid (p04EffectiveFmaRoundoff uBar uFma uOut) q

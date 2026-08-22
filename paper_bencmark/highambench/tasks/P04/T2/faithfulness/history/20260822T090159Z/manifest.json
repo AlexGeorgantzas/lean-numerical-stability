@@ -121,11 +121,11 @@
     "module_count": 5158,
     "sorted_module_names_sha256": "cc468d32a9fca1557cfad66be092645a14436307881ede939d1f968a7a3d5897"
   },
-  "completed_at_utc": "2026-08-22T09:49:01.300769+00:00",
+  "completed_at_utc": "2026-08-21T14:29:08.031756+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P04/T2/context.md",
     "semantic_evidence": false,
-    "sha256": "f903956c1814c8dcfc12199ac503a861c660a675f5809b4b476bf7046be1a245"
+    "sha256": "b775ccd883d96a73df8c6005b62371cd7c4406249fb4b3ab50e62b45c64196d8"
   },
   "dependencies": [
     {
@@ -266,7 +266,7 @@
       "name": "HighamBench.P04MixedInputMatMulRun.entryRun",
       "owner_module": "HighamBench.P04Definitions",
       "role": "local",
-      "semantic_sha256": "3b0f788a1fec1c8d6ffceb463964924032a94d153265c70875115898bc43ef77"
+      "semantic_sha256": "e3f67e94ce22efc482e70a3491aed593988ab5bce6f78337344a03693388344b"
     },
     {
       "blind_name": "LocalDef015",
@@ -276,7 +276,7 @@
       "name": "HighamBench.P04MixedInputMatMulRun.mk",
       "owner_module": "HighamBench.P04Definitions",
       "role": "local",
-      "semantic_sha256": "24f42f13571df476892d541d67412bd5d9334bb50c4ea650790815991546e401"
+      "semantic_sha256": "96d1ee30b890784a4f00c3d775cb6cda1dca422fb331907aedb60a7a6b5f39d5"
     },
     {
       "blind_name": "LocalDef016",
@@ -3089,27 +3089,27 @@
   "inputs": {
     "blind_dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/inputs/blind_dependency_inventory.json",
-      "sha256": "e588dbb83b5c66bfb556e07e67929233985c6f266a9fee2ec2238945ae2ac434"
+      "sha256": "ac15414f91e5844d2557ed0befb695782629182dd968cf4e50b4904c33fb9d75"
     },
     "blind_dossier": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/inputs/blind_dossier.md",
-      "sha256": "188c5208249e058a9eeac8c46dc6d84f6152b1ef7f3843cc816f35cc5038a94c"
+      "sha256": "a37473ecf2fdbcefce480cc5aa959ea3fd424b4e365aff74c718485c394e729a"
     },
     "blind_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/inputs/blind_review_packet.md",
-      "sha256": "188c5208249e058a9eeac8c46dc6d84f6152b1ef7f3843cc816f35cc5038a94c"
+      "sha256": "a37473ecf2fdbcefce480cc5aa959ea3fd424b4e365aff74c718485c394e729a"
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "04cffba405f88a17766971c0a5bc5aaaa190b729dae5803053ae316e42d281b1"
+      "sha256": "4dbe401e4f26d298bad5ae5561fbff2126f91f8269bd53f428a1d18dacc5eef2"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/inputs/dependency_inventory.json",
-      "sha256": "97760f26abf7b433c29ff06fc0aa6e67927c28d1d7e0bd3bd6f570c9c4ceea1b"
+      "sha256": "02892736c3478bc2966dd3c31637046adb60e876792b4da5c2d559e386ed0170"
     },
     "direct_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/inputs/direct_review_packet.md",
-      "sha256": "455324a8189643c0cef8b720906af4ec17c03a0054bca4d23ab6859365af8070"
+      "sha256": "2fd7f08390c54327d9f79b20a3131932b3ce09cfde3b37c301be54c2da320ce1"
     },
     "source_locator": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/inputs/source_locator.json",
@@ -3144,37 +3144,33 @@
       ],
       "module": "HighamBench.P04Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean",
-      "sha256": "cbf88a9826eef35e7f1972ddc402fe31a95e7add5b1e305c8e6e32da2e9ef61a"
+      "sha256": "dc2d7c3bffd501d66aeeb3763f870034f38fb9f081a0690289021fd77e61ca45"
     }
   ],
   "outputs": {
-    "adjudicator": {
-      "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/agent_outputs/adjudicator.json",
-      "sha256": "14ece18f9532ac8eb7eedef0603db0bc2c6e172f30dd6cf08595bdd079031182"
-    },
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "8dac33c2d57194ce9afbcc5a1170d2bef51ed81dc60ec35fc6eb51626e7fafe4"
+      "sha256": "683ec9ad4674924464828bc08e1e76cc657fe7d6df3a10cbd14d085f729f7390"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/decision.json",
-      "sha256": "0addb04091c6bfdf3a50225582207a6a5f429e378d6375d56fcc64831a811554"
+      "sha256": "0aa0ecefd34adb9b1ca878511d9f67b1b466fddf636042ed63d5d32bebbde72b"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "5e2e9f1960c8e7a8621b86b589374d9008389a7e3e806cabb73521c7288675b6"
+      "sha256": "142c4dc00b09d81402c3b28c9dcbf5e4fba4262db6cf2333295ef45ad90378f5"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/report.md",
-      "sha256": "586bd643c579004aac521aed76a07551dd6e32065143d491a60996801e9aa15a"
+      "sha256": "29755c552cb77064af728ee330bc6bdcd6197752f38df1570b33eb408b145e2c"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "6541563064d5a1c0770a89ffe98afcc0a0353b15aa465b7fec51fb8051e23e74"
+      "sha256": "6b3feecdee8420d1f787f4af319103d85adec14769269996f9cecfc5c27fb1e0"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P04/T2/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "72afc8bc774b6e24478e7611931b79d72cd8678c161ea20c996ab89e10e1f433"
+      "sha256": "f5fc03471e96e2ee5d5bbed2747eb72cbd82cf771f21f7dcf99117510b28dd88"
     }
   },
   "paper": {
@@ -3218,7 +3214,7 @@
       }
     ]
   },
-  "prepared_at_utc": "2026-08-22T09:01:59.933028+00:00",
+  "prepared_at_utc": "2026-08-21T14:09:51.662461+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
@@ -3312,6 +3308,6 @@
   "task_metadata": {
     "path": "paper_bencmark/highambench/tasks/P04/T2/task.json",
     "semantic_evidence": false,
-    "sha256": "33904e0d79e59264a5a7385d16361861490dcc817ecbf9056edfad3e12386715"
+    "sha256": "09f7b3f98c9ff5ed85918d387c9b74e7e748023c0bbd5cdce514bcdb98e4007b"
   }
 }

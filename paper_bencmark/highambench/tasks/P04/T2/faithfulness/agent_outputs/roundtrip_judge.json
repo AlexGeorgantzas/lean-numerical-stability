@@ -3,142 +3,156 @@
   "role": "roundtrip-judge",
   "task_id": "P04-T2",
   "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
-  "blind_translation_sha256": "683ec9ad4674924464828bc08e1e76cc657fe7d6df3a10cbd14d085f729f7390",
+  "blind_translation_sha256": "8dac33c2d57194ce9afbcc5a1170d2bef51ed81dc60ec35fc6eb51626e7fafe4",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The PDF is the published 2020 SIAM Journal on Scientific Computing version, volume 42, issue 3, pages C124-C141. Algorithm 3.1, equations (3.1)-(3.5), and Theorem 3.2 with equation (3.6) occur on printed pages C128-C130.",
-      "translation_evidence": "The translation targets P04-T2 and reproduces Theorem 3.2's mixed-input matrix-product bound together with the inherited Algorithm 3.1 model.",
-      "reasoning": "The paper version, selected theorem, and surrounding derivation are correctly identified."
+      "paper_evidence": "The verified PDF is the 2020 SIAM Journal on Scientific Computing article, volume 42, issue 3, pages C124-C141. The relevant result is Theorem 3.2 and equation (3.6), supported by Algorithm 3.1 and equations (2.3)-(3.4).",
+      "translation_evidence": "The translation targets the generic q-block matrix-product bound with input conversion, rather than Theorem 3.1 or a TC16/TC32 specialization.",
+      "reasoning": "The paper version, result, and surrounding passages are correctly selected."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "The paper uses A in R^(m x n), B in R^(n x t), block sizes b1 x b and b x b2, and integer block counts p=m/b1, q=n/b, and r=t/b2.",
-      "translation_evidence": "The translation binds natural dimensions m,n,t,b1,b,b2,p,q,r, enforces m=p*b1, n=q*b, and t=r*b2, represents matrices by Fin-indexed real functions, and quantifies i in Fin m and j in Fin t.",
-      "reasoning": "The finite types and block-index factorization faithfully scalarize the paper's rectangular matrix dimensions."
+      "paper_evidence": "The paper uses A in Real^(m x n), B in Real^(n x t), blocks b1 x b and b x b2, and p=m/b1, q=n/b, r=t/b2.",
+      "translation_evidence": "The run is indexed by m,n,t,b1,b,b2,p,q,r, packages A : Fin m -> Fin n -> Real and B : Fin n -> Fin t -> Real, and enforces m=p b1, n=q b, t=r b2.",
+      "reasoning": "Matrix dimensions, block dimensions, and output index sets agree; the scalar Fin-index formulation is the entrywise form of the paper's matrix statement."
     },
     {
       "id": "S03",
       "status": "pass",
-      "paper_evidence": "Theorem 3.2 is conditional on A and B being evaluated by Algorithm 3.1 and then asserts the bound for the resulting computed matrix.",
-      "translation_evidence": "A universally quantified run packages matrices, parameters, perturbations, and an inner execution for every output pair; the theorem then quantifies each i,j and bounds its terminal state.",
-      "reasoning": "The execution witnesses depend on the run data and output indices in the required scope. Packaging them as run fields does not reverse witness dependence."
+      "paper_evidence": "Theorem 3.2 applies to arbitrary compatible A and B and gives a componentwise assertion for the whole computed matrix.",
+      "translation_evidence": "Dimensions and a complete run are universally quantified before i in Fin m and j in Fin t; the run packages an entry computation for every i,j.",
+      "reasoning": "The entry computations may depend on their output indices, while the final assertion is universal over all entries, matching the matrix-level quantifier scope."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The block-FMA output precision uFMA is restricted to ulow or uhigh, but Algorithm 3.1 introduces its output precision u separately and rounds to u when it differs from uFMA. The paper does not restrict this independent output precision to those two values.",
-      "translation_evidence": "The run constructor requires both uFma and uOut to belong to {uLow,uHigh}.",
-      "reasoning": "The uOut membership condition is an additional hypothesis that specializes the theorem beyond the paper's Algorithm 3.1 contract."
+      "paper_evidence": "The source assumes the standard floating-point relative-error model, applicable unit roundoffs, gamma validity, Algorithm 3.1, and absence of underflow and overflow.",
+      "translation_evidence": "The run directly assumes aggregate perturbation, recurrence, theta, delta, and path-product bounds. It does not encode floating-point operations or the no-underflow/no-overflow hypothesis and admits arbitrary nonnegative real error parameters satisfying its displayed constraints.",
+      "reasoning": "The dimensional and precision-order hypotheses match, but the concrete numerical hypotheses are replaced by a broader abstract error model rather than reproduced exactly."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Equation (3.6) bounds |C-C_hat| by the complete coefficient 2ulow+ulow^2+(gamma_q(e)+gamma_n(ubar)+gamma_q(e)gamma_n(ubar))(1+ulow)^2 times |A||B|.",
-      "translation_evidence": "The pointwise conclusion contains the same conversion term, gamma terms, product term, square factor, and absolute-product sum.",
-      "reasoning": "No conjunct, coefficient term, or case of the displayed conclusion is omitted."
+      "paper_evidence": "Equation (3.6) bounds every entry of |C-C_hat| by [2 uLow + uLow^2 + (gamma_q(phi)+gamma_n(uBar)+gamma_q(phi)gamma_n(uBar))(1+uLow)^2]|A||B|.",
+      "translation_evidence": "The conclusion gives exactly the corresponding scalar inequality for every i,j, with |A||B| expanded as the sum of |A_ik||B_kj|.",
+      "reasoning": "The complete displayed conclusion and all coefficient terms are present."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The paper defines componentwise matrix absolute value, gamma_k(u)=ku/(1-ku), the piecewise effective unit roundoff, exact matrix multiplication, and the Algorithm 3.1 recurrence.",
-      "translation_evidence": "The dependency ledger interprets all D001-D105 dependencies, including Fin-indexed sums, real absolute value, gamma, the piecewise parameter e, terminal state, block flattening, and path products.",
-      "reasoning": "All operators affecting the proposition receive mathematically appropriate interpretations."
+      "paper_evidence": "The source defines componentwise matrix absolute value, gamma_k(v)=kv/(1-kv), the priority-defined effective precision, and ordinary matrix multiplication.",
+      "translation_evidence": "The ledger expands gamma, phi, the blocked index map lambda, exact and magnitude sums, computed state, scalar absolute value, and all relevant finite sums and products.",
+      "reasoning": "No nontrivial target operator remains uninterpreted; the opaque order type's exact structural effect is also recorded."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper distinguishes exact C=AB, converted inputs A_tilde and B_tilde, and computed output C_hat.",
-      "translation_evidence": "The exact entry is the unperturbed sum over A and B, the converted block entries use multiplicative input errors, and the computed entry is the terminal state s_q.",
-      "reasoning": "Exact operands, perturbed inputs, and computed output remain distinct."
+      "paper_evidence": "The paper compares the computed result after input conversion and block-FMA evaluation with the exact original-input product AB.",
+      "translation_evidence": "The recurrence consumes A(1+eA) and B(1+eB), while the conclusion subtracts the unperturbed exact sum of A_ik B_kj from state(q).",
+      "reasoning": "Original inputs, converted inputs, computed state, and exact product are kept distinct."
     },
     {
       "id": "S08",
       "status": "pass",
-      "paper_evidence": "Algorithm 3.1 converts inputs, partitions n=q*b, initializes each output block to zero, chains q block FMAs, and applies the output rounding model.",
-      "translation_evidence": "The run uses the same block flattening, multiplicative conversions, zero initial state, q-step recurrence, local FMA errors, carry factors, and terminal state. Generic n-factor path conditions support the paper's all-orders bound.",
-      "reasoning": "The scalarized run preserves the execution structure needed for equation (3.6). The unnamed distinguished order only adds a sharper optional condition and does not affect the generic conclusion."
+      "paper_evidence": "Algorithm 3.1 converts the inputs, performs q=n/b chained block FMAs from zero for each output block, and applies the output conversion.",
+      "translation_evidence": "Each entry run starts at state(0)=0, consumes q blocks of b converted products through lambda(k,l)=l+bk, applies internal theta factors and one effective delta per modeled step, and defines the result as state(q).",
+      "reasoning": "The translation captures the scalar execution model used in the paper's analysis. Its abstract witnesses broaden realizability but retain the algorithmic recurrence needed for the source result."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Theorem 3.2 is a componentwise absolute-value inequality, and |A||B| is ordinary matrix multiplication of componentwise absolute matrices.",
-      "translation_evidence": "For each i,j the right side uses sum_k |A(i,k)|*|B(k,j)|, with no matrix or vector norm.",
-      "reasoning": "The pointwise scalar statement is exactly the entrywise meaning of the paper's componentwise matrix bound."
+      "paper_evidence": "Theorem 3.2 is componentwise; vertical bars are entrywise absolute values and no norm occurs.",
+      "translation_evidence": "The conclusion uses scalar absolute value and the entrywise magnitude sum, and explicitly states that no matrix norm is involved.",
+      "reasoning": "Componentwise and normwise meanings are not conflated."
     },
     {
       "id": "S10",
-      "status": "pass",
-      "paper_evidence": "The paper uses q=n/b, gamma_q at the effective FMA unit, gamma_n at ubar, conversion coefficient 2ulow+ulow^2, and the full (1+ulow)^2 factor.",
-      "translation_evidence": "The same q and n indices, gamma arguments, coefficients, squares, shared-index sum, first-block distinction, and q+b-1 right-to-left path length are encoded.",
-      "reasoning": "Constants, offsets, and index ranges match the source analysis."
+      "status": "fail",
+      "paper_evidence": "Equation (3.2) has position-dependent theta indices descending through each block, with the first-block b-for-b+1 adjustment; equation (3.6) uses gamma_q(phi), gamma_n(uBar), 2 uLow+uLow^2, and (1+uLow)^2.",
+      "translation_evidence": "The final coefficient and lambda(k,l)=l+bk are exact, and the first block is distinguished, but local term errors are conservatively bounded uniformly by gamma_b in block zero and gamma_(b+1) in later blocks rather than retaining every position-dependent theta index.",
+      "reasoning": "The displayed theorem constants and linear indexing match, but the operation-level constants are widened. This admits additional abstract error patterns and contributes to the translation's greater logical strength."
     },
     {
       "id": "S11",
-      "status": "pass",
-      "paper_evidence": "The paper assumes the standard relative-error model, ubar<=uFMA, valid gamma denominators, no underflow or overflow, and the stated single-rounding approximation for a possible double rounding.",
-      "translation_evidence": "The run uses real-valued bounded multiplicative errors, uBar<=uFma, q*e<1, n*uBar<1, the exact piecewise e definition, and the same single-rounding recurrence.",
-      "reasoning": "The algebraic run is a faithful no-exception abstraction of the paper's rounding model; exceptional executions are outside the represented bounded-error runs."
+      "status": "fail",
+      "paper_evidence": "The paper uses fl(a op b)=(a op b)(1+delta), distinguishes uLow, uHigh, uBar, uFMA, and output u, excludes underflow and overflow, and explicitly simplifies one double-rounding case.",
+      "translation_evidence": "Precision roles and the priority-defined phi agree, and the recurrence likewise contains only the simplified single delta. However, it is purely real-valued, does not encode fl operations, and states no underflow, overflow, subnormal, or exceptional-value conditions.",
+      "reasoning": "The aggregate bounds contain every source execution covered by the relative-error model, but the floating-point and exceptional-value model itself is not represented exactly."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The paper states a non-strict upper bound for every Algorithm 3.1 output precision u covered by its independent working/output-precision parameter.",
-      "translation_evidence": "The inequality direction and strict stability conditions are correct, but the theorem is conditional on uOut belonging to {uLow,uHigh}.",
-      "reasoning": "The displayed inequality has the right strength, but the added output-precision hypothesis makes the overall translated proposition logically weaker than the paper result."
+      "paper_evidence": "The source gives a non-strict componentwise upper bound under its concrete Algorithm 3.1 floating-point hypotheses and strict gamma-validity conditions.",
+      "translation_evidence": "The inequality direction and strict stability conditions agree, but the theorem quantifies over abstract runs and conservative error envelopes not restricted to realizable floating-point executions.",
+      "reasoning": "The relation itself is correct, but the proposition is logically stronger because it covers a broader modeled-error domain."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Equation (3.6) is a componentwise absolute forward-error bound comparing the computed product with the exact product.",
-      "translation_evidence": "The conclusion bounds the absolute computed-minus-exact entry error by an absolute-product scale.",
-      "reasoning": "Neither statement changes the result into a backward, residual, relative, or normwise error claim."
+      "paper_evidence": "Equation (3.6) is a componentwise absolute forward-error bound against the exact original-input product.",
+      "translation_evidence": "The conclusion bounds the absolute difference between state(q) and the exact unperturbed matrix-product entry.",
+      "reasoning": "No backward, residual, relative, or normwise error notion is substituted."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Equation (3.6) retains ulow^2, gamma_q(e)gamma_n(ubar), and (1+ulow)^2, with no big-O remainder in the theorem.",
-      "translation_evidence": "All these higher-order terms are retained exactly and no first-order truncation or remainder is introduced.",
-      "reasoning": "The translation preserves the theorem's non-asymptotic coefficient."
+      "paper_evidence": "The theorem retains uLow^2, gamma_q(phi)gamma_n(uBar), and the full (1+uLow)^2 factor, with no big-O remainder. Its derivation deliberately omits one double-rounding stage.",
+      "translation_evidence": "The same higher-order terms are retained exactly, no remainder is added, and the recurrence contains the same simplified single effective delta.",
+      "reasoning": "The higher-order treatment and the paper's double-rounding simplification are faithfully reproduced."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "Algorithm 3.1 treats output precision u as an independent precision; only uFMA is specified to be ulow or uhigh.",
-      "translation_evidence": "The translated run permits uOut only when it equals uLow or uHigh.",
-      "reasoning": "This is a genuine two-choice specialization of the paper's independent output-precision parameter, not merely a finite-dimensional encoding."
+      "status": "pass",
+      "paper_evidence": "Theorem 3.2 concerns generic finite rectangular real matrices and generic rectangular block sizes, not only square matrices or b=4 tensor-core cases.",
+      "translation_evidence": "The run supports arbitrary positive m,n,t,b1,b,b2 with the required factorizations and real-valued rectangular matrices.",
+      "reasoning": "There is no TC16/TC32, square-matrix, scalar, or fixed-dimension specialization."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "Compatible positive block dimensions and ordinary finite matrices give meaningful Algorithm 3.1 instances and a nontrivial forward-error conclusion.",
-      "translation_evidence": "For compatible positive dimensions, zero local and path errors with exact partial sums satisfy the run constraints; sufficiently small nonzero parameters also satisfy the stability inequalities.",
-      "reasoning": "The packaged hypotheses are satisfiable and the bound is not vacuous, although it covers only the restricted output-precision cases."
+      "paper_evidence": "Algorithm 3.1 and its error model have ordinary admissible instances whenever the dimensions factor and the stability conditions hold.",
+      "translation_evidence": "Runs are satisfiable, for example by choosing valid factored dimensions, stable parameters, zero perturbation and rounding witnesses, exact recurrence states, and unit path products.",
+      "reasoning": "Although impossible indexed parameter combinations yield no run, the substantive hypotheses are satisfiable and the result is not globally vacuous."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translation proves only cases with uOut equal to uLow or uHigh. It cannot recover Theorem 3.2 for an independent Algorithm 3.1 output precision u distinct from both."
+      "verdict": "yes",
+      "reasoning": "For every source execution covered by Algorithm 3.1, the no-underflow/no-overflow relative-error model and equations (3.1)-(3.4) provide input perturbations, theta and delta factors, and path products satisfying the run constraints. Instantiating the translation with those witnesses gives equation (3.6) entrywise."
     },
     "paper_implies_translation": {
-      "verdict": "yes",
-      "reasoning": "After restricting the paper theorem to u in {ulow,uhigh} and scalarizing its componentwise conclusion, the translated recurrence and path hypotheses describe a more explicit subset of the paper's error-model executions and yield the identical bound."
+      "verdict": "no",
+      "reasoning": "The paper asserts the bound for computations generated by Algorithm 3.1 under its floating-point model. It does not assert the bound for every abstract recurrence run, arbitrary nonnegative parameter choice, or conservative and potentially operation-inconsistent local error combination admitted by the translation."
     }
   },
-  "classification": "not-faithful-weaker",
-  "accepted": false,
+  "classification": "faithful-stronger",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "major",
-      "category": "output-precision specialization",
-      "paper_evidence": "Algorithm 3.1 introduces output precision u independently, while the block-FMA output precision uFMA alone is restricted to ulow or uhigh.",
-      "translation_evidence": "The outer run requires uOut=uLow or uOut=uHigh.",
-      "impact": "Valid paper instances using a third working/output precision are excluded, so the translated theorem does not imply the full paper result."
+      "severity": "minor",
+      "category": "floating-point-model-strengthening",
+      "paper_evidence": "The paper links C_hat to Algorithm 3.1 under the standard relative-error model and explicitly excludes underflow and overflow.",
+      "translation_evidence": "The translation assumes real-valued aggregate recurrence and bounded-error witnesses directly and contains no exceptional-value or concrete floating-point execution predicate.",
+      "impact": "This prevents equivalence but strengthens rather than weakens the result: source executions instantiate the run model, while the translation also covers additional abstract runs."
+    },
+    {
+      "severity": "minor",
+      "category": "local-error-envelope",
+      "paper_evidence": "Equation (3.2) assigns position-dependent theta indices within each block, including the first-block adjustment.",
+      "translation_evidence": "The run uses uniform gamma_b or gamma_(b+1) bounds for termTheta and supplements them with path-product witnesses.",
+      "impact": "The final source coefficient remains exact, but the formal admissible-error domain is conservatively broader than the operation-level paper model."
+    },
+    {
+      "severity": "note",
+      "category": "exceptional-value-scope",
+      "paper_evidence": "The analysis excludes underflow and overflow and provides no further exceptional-value treatment.",
+      "translation_evidence": "The proposition is over Real and mentions no underflow, overflow, NaNs, infinities, subnormals, or signed zeros.",
+      "impact": "The formal result must be read as an abstract bounded-error theorem, not as a direct guarantee for executions containing exceptional floating-point behavior."
     }
   ],
-  "rationale": "The translation accurately reproduces the dimensions, scalarized Algorithm 3.1 error model, componentwise forward-error conclusion, constants, indexing, and higher-order terms. Its additional restriction uOut in {uLow,uHigh}, however, removes paper instances in which Algorithm 3.1 uses an independent output precision. The result is a correct restricted specialization rather than a faithful statement of the complete theorem."
+  "rationale": "The translation preserves the source matrices, rectangular block structure, q=n/b chain, input-conversion perturbations, effective-precision priority rule, gamma indices, componentwise forward-error notion, exact coefficient, and all retained higher-order terms. Its run structure is an abstract conservative model of the scalar recurrence rather than an exact encoding of floating-point execution: exceptional-value assumptions are absent and some local operation bounds are widened. Every paper computation under the stated model can instantiate this run structure, so the translation implies the paper result. The converse fails because the paper does not quantify over all additional abstract runs. The appropriate classification is faithful-stronger."
 }
