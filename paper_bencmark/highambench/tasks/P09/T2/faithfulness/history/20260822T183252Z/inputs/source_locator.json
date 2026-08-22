@@ -22,21 +22,14 @@
       "anchor": "equations (3.1)-(3.2), absolute trigonometric model, Theorem 1, and K(N,gamma)",
       "pdf_page": 3,
       "printed_page": "759",
-      "role": "floating-point model, Theorem 1 statement, and forward-error constant",
+      "role": "floating-point model and inherited forward-error constant",
       "section": "3. Roundoff Errors in the Fast Fourier Transform"
     },
     {
       "anchor": "assumption fl(x)=x before equation (3.6)",
       "pdf_page": 5,
       "printed_page": "761",
-      "role": "exact input representation for the stage-local derivation",
-      "section": "3. Roundoff Errors in the Fast Fourier Transform"
-    },
-    {
-      "anchor": "equations (3.6)-(3.8) and their propagation through the remaining FFT factors",
-      "pdf_page": 6,
-      "printed_page": "762",
-      "role": "stage-local block-Fourier and twiddle error budgets used to derive Theorem 1(a)",
+      "role": "exact input representation for the inherited analysis",
       "section": "3. Roundoff Errors in the Fast Fourier Transform"
     },
     {

@@ -1,0 +1,162 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P09-T2",
+  "trigger": [
+    "judge classifications differ",
+    "direct judge requested adjudication",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "blind dependency D026 is unclear",
+    "blind dependency D040 is unclear",
+    "blind dependency D041 is unclear",
+    "direct D001 is unclear",
+    "direct D004 is unclear",
+    "direct D006 is unclear",
+    "direct D013 is unclear",
+    "direct D051 is unclear",
+    "direct S14 is unclear",
+    "direct S15 is unclear",
+    "round-trip S03 is unclear",
+    "round-trip S06 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "Resolved as not-faithful-weaker. The sign and asymptotic-family questions are decidable, but the Lean proposition assumes a forward certificate whose existence it never establishes. The paper proves that forward estimate before deriving the selected backward corollary.",
+      "primary_evidence": "Printed pages 759-763 state and prove Theorem 1(a); printed page 768 then uses the bounds in reverse. The target binds `forward : P09TheoremOneRmsAsymptotic family`, and the complete declaration dossier contains only a structure constructor requiring the forward bound, not a dependency proving such a structure exists."
+    },
+    {
+      "item": "direct judge requested adjudication",
+      "resolution": "The direct judge's improper-conditionalization concern is confirmed. Its separate claims that omission of the least-significant-digit heuristic and omission of machine metadata are faithfulness failures are rejected: the locator selects only the backward identity and two bounds, and the local Wilkinson laws are the analytical interface used by the proof.",
+      "primary_evidence": "The source locator names the page-768 assertion `e = T delta` and its two norm certificates. Printed pages 758-759 derive the machine-specific values of epsilon but conduct the analysis through the displayed addition, multiplication, sine, and cosine error laws."
+    },
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "The round-trip uncertainties are resolved. The imported Fourier character has the positive sign, and standard big-O semantics supports an epsilon-indexed family with one local coefficient and radius. The supplied forward certificate nevertheless remains an added, nonredundant antecedent.",
+      "primary_evidence": "The complete imported source proves `p09StdAddChar_positive_exp`, identifying `ZMod.stdAddChar` with `exp(2*pi*i*j/n)`. Printed pages 759, 760, and 768 use `O(epsilon^2)`, while `P09TheoremOneRmsAsymptotic` merely stores a coefficient, radius, and assumed error bound."
+    },
+    {
+      "item": "round-trip judge classification is undetermined",
+      "resolution": "The classification is determined as not-faithful-weaker. Paper-implies-Lean is yes under the standard asymptotic interpretation; Lean-implies-paper is no because the target proves only forward-certificate-to-backward-bound conversion.",
+      "primary_evidence": "The paper supplies Theorem 1(a) for the analyzed FFT, whereas the target declaration quantifies over a supplied `forward` proof object and has no conclusion or dependency establishing its existence."
+    },
+    {
+      "item": "blind dependency D026 is unclear",
+      "resolution": "D026 is `P09FftVariant`, an inductive type with exactly the Cooley-Tukey and Sande-Tukey constructors. Its value is only an unused plan tag, so it neither restricts nor changes the proposition.",
+      "primary_evidence": "The complete imported source declares `inductive P09FftVariant | cooleyTukey | sandeTukey`. `P09MixedRadixFftPlan` stores `variant`, but the stage actions, rounded execution, constant, error, and target never inspect that field."
+    },
+    {
+      "item": "blind dependency D040 is unclear",
+      "resolution": "D040 is the constructor `P09FftVariant.cooleyTukey`. Because the variant field is unused, this constructor has no operational or logical effect.",
+      "primary_evidence": "The complete declaration evidence gives D040's exact name and type. The actual permutations, reindexing, twiddle exponents, and exact factorization are stored separately in the plan and stages."
+    },
+    {
+      "item": "blind dependency D041 is unclear",
+      "resolution": "D041 is the constructor `P09FftVariant.sandeTukey`. Because the variant field is unused, this constructor has no operational or logical effect.",
+      "primary_evidence": "The complete declaration evidence gives D041's exact name and type. Printed page 758 distinguishes the algorithms through their different diagonal factors, which Lean represents through actual stage data rather than through this tag."
+    },
+    {
+      "item": "direct D001 is unclear",
+      "resolution": "The epsilon-indexed execution family is a legitimate formal object for interpreting `O(epsilon^2)`. Choosing one perturbation function is harmless Skolemization of pointwise perturbations, since the Fourier preimage is unique. This does not make the separate supplied forward certificate legitimate.",
+      "primary_evidence": "Printed pages 759-760 use epsilon symbolically and collect higher-order terms as `O(epsilon^2)`. `P09AsymptoticFftFamily` fixes the plan, gamma, input, models, and runs before epsilon. The paper's unnormalized Fourier matrix is scaled unitary, and the plan records surjectivity and RMS scaling."
+    },
+    {
+      "item": "direct D004 is unclear",
+      "resolution": "Using arbitrary positive real epsilon is a valid right-sided asymptotic generalization. The paper's beta, precision, rounding/chopping, and accumulator formulas construct particular epsilon values; the proof itself uses the local error laws. Bounds remain local through the radius.",
+      "primary_evidence": "Printed pages 758-759 define positive machine epsilon values and then use only epsilon in equations (3.1)-(3.2) and the trigonometric model. D004 is `{epsilon : Real // 0 < epsilon}`, and the quantitative conclusions require `epsilon <= radius`."
+    },
+    {
+      "item": "direct D006 is unclear",
+      "resolution": "A positive radius is the standard explicit witness for a local `O(epsilon^2)` statement. Using a nonstrict endpoint is harmless because an open-neighborhood witness can be shrunk. The source does not print a radius, but that omission does not invalidate this formalization.",
+      "primary_evidence": "The paper writes `O(epsilon^2)` on printed pages 759, 760, and 768. D006 projects the positive radius stored by `P09TheoremOneRmsAsymptotic`, and the target uses it only to delimit the two asymptotic inequalities."
+    },
+    {
+      "item": "direct D013 is unclear",
+      "resolution": "D013 faithfully packages a fixed nonnegative gamma, common input, epsilon-indexed local models, linked operational runs, and common exact input. It is suitable asymptotic bookkeeping, but it supplies no proof of the forward estimate.",
+      "primary_evidence": "The constructor requires fixed input, model epsilon and gamma identities, runs for every positive epsilon, and equal run inputs. Each run has exact input loading and stage states generated by the rounded stage operation. Printed pages 759 and 761 require gamma nonnegative and `fl(x)=x`."
+    },
+    {
+      "item": "direct D051 is unclear",
+      "resolution": "D051 is the coordinatewise exponent map defining each diagonal twiddle entry. It is used by both exact and rounded stages, and the plan's exact-factorization field links the resulting stages to the paper's Fourier transform. No linkage to the unused variant tag is needed.",
+      "primary_evidence": "`P09MixedRadixStage.twiddleExponent : ZMod n -> ZMod n` feeds `ZMod.stdAddChar` in the exact stage and `p09RoundedRoot` in the rounded stage when `useTwiddle` is true. `twiddle_pattern` selects exactly the nonfinal stages, and `exact_factorization` certifies the full product."
+    },
+    {
+      "item": "direct S14 is unclear",
+      "resolution": "Resolved as a failure at proposition level. Explicit coefficient and radius witnesses, and the target's `c/sqrt(n)` and `c` remainder propagation, correctly formalize big-O algebra. However, the coefficient is selected after the entire input/model/run family and the certificate is assumed. The paper's finite bounded-theta derivation supports a coefficient uniform over theta realizations and run paths for fixed structural data.",
+      "primary_evidence": "Printed page 760 expands finitely many factors with every theta bounded by one, so higher-order products admit path-uniform bounds independent of the queried epsilon. `P09TheoremOneRmsAsymptotic.mk` accepts an arbitrary family-dependent coefficient and requires the caller to provide the complete forward inequality."
+    },
+    {
+      "item": "direct S15 is unclear",
+      "resolution": "Resolved as passing for generality and dimensional scope. Lean retains positive finite dimension, complex data, the unnormalized one-dimensional transform, and mixed-radix stages. Abstract plans and local real-operation models validly generalize the paper's machine instances once their stated laws and exact factorization hold.",
+      "primary_evidence": "Printed pages 757-759 use complex N-vectors and a mixed-radix FFT. Lean uses `ZMod n -> Complex`, requires nonzero n, records the radix product and exact factorization, and implements the paper's local addition, multiplication, and trigonometric models."
+    },
+    {
+      "item": "round-trip S03 is unclear",
+      "resolution": "The perturbation-function quantifier is harmless: pointwise existence for every epsilon implies a single epsilon-indexed choice, and here the inverse perturbation is unique. An isolated fixed-epsilon computation is not itself enough to define big-O, so the family is justified by the asymptotic reading. The changed applicability comes from requiring the unproved forward certificate.",
+      "primary_evidence": "Printed page 768 gives `e = T delta`; equations (2.1) and the Fourier norm identity make T invertible. The target first fixes an asymptotic family, then existentially chooses `delta : P09PositiveEpsilon -> ZMod n -> Complex`."
+    },
+    {
+      "item": "round-trip S06 is unclear",
+      "resolution": "Resolved as passing. The exact Fourier character has the paper's positive exponential sign, the transform is unnormalized, and the RMS and maximum norms agree. The unused variant tag cannot affect these facts.",
+      "primary_evidence": "Printed pages 757-758 define `exp(+i2*pi*j*k/N)`. The imported theorem `p09StdAddChar_positive_exp` proves the same sign for `ZMod.stdAddChar`; `p09ComplexRms` divides the Euclidean norm by `sqrt(n)`, and `p09ComplexMax` is the finite sup norm."
+    },
+    {
+      "item": "source-selected conclusion scope",
+      "resolution": "The selected result contains the exact backward representation and its two norm bounds, not the later least-significant-digit heuristic. The heuristic is a later conditional sentence in the same paragraph but lies outside the locator's stated assertion-and-two-bounds selection.",
+      "primary_evidence": "The source locator's final anchor is specifically `prose assertion e = T delta and the two following unnumbered bounds`, with role `fictional input perturbation and its norm certificates`. Printed page 768 places the least-significant-digit test after those displays."
+    },
+    {
+      "item": "machine-model abstraction and exceptional values",
+      "resolution": "Omitting beta, precision, rounding/chopping mode, and accumulator fields does not invalidate the selected corollary. Those fields determine machine instances of epsilon; the analytical interface is the local Wilkinson and trigonometric laws. Both the paper and Lean leave overflow, underflow, NaN, infinity, and other exceptional-value behavior outside that interface.",
+      "primary_evidence": "Printed pages 758-759 first list machine formulas and then state the local error equations used in the proof. `P09WilkinsonModel` imposes those equations over real operations, fixes nonnegative gamma, and has no exceptional-value semantics."
+    },
+    {
+      "item": "operational, algebraic, and nonvacuity checks",
+      "resolution": "The remaining core translation is correct: runs are generated by actual rounded stages; input is exact; computed-minus-exact output error is distinct from both actual input error and fictional delta; K and all alpha branches match; all sqrt(n) factors, exact equalities, nonstrict bounds, and norm meanings match. Positive n prevents degenerate scaling, and zero input yields a valid zero-error case rather than vacuity.",
+      "primary_evidence": "The complete declarations define linked stage recurrence, exact input loading, computed output minus the positive DFT, the exact K formula with alpha(2)=sqrt(2), alpha(4)=5, and the general branch, Fourier surjectivity and RMS scaling, and the two target bounds. Printed pages 759, 761, 763, 765, and 768 supply the corresponding source facts."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "Lean proves the backward conclusions only after an entire execution family and a `P09TheoremOneRmsAsymptotic` proof are supplied. No target dependency establishes that certificate for every source-admissible FFT family. This added antecedent reduces applicability; family-dependent remainder witnesses also do not recover the paper's bounded-theta worst-case uniformity."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "Under standard local big-O semantics, the paper's proved Theorem 1(a) supplies a coefficient and radius for corresponding asymptotic executions. Positive-sign Fourier invertibility and RMS scaling produce the epsilon-indexed fictional perturbation, and the finite-dimensional max-versus-RMS inequality yields the second bound. The paper's result therefore instantiates the target's weaker supplied certificate."
+    }
+  },
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The PDF never states the complete dependency set or quantifier order for the hidden `O(epsilon^2)` coefficient and radius. Its finite bounded-theta proof supports independence from epsilon and uniformity over theta realizations for fixed structural data, but intended uniformity across all inputs, algorithm variants, or implementations is not explicitly specified."
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "improper conditionalization",
+      "evidence": "The paper proves Theorem 1(a) before the selected page-768 corollary. Lean instead binds a `P09TheoremOneRmsAsymptotic` record, and no target dependency proves that record exists from the operational family.",
+      "impact": "The target establishes only an algebraic conversion of an assumed forward estimate and excludes source-admissible executions for which no separate certificate is supplied."
+    },
+    {
+      "severity": "major",
+      "category": "remainder uniformity",
+      "evidence": "The paper's finite expansion has bounded theta values and supports a worst-case higher-order bound for fixed algorithmic data. Lean permits the coefficient to be selected after the full input/model/run family.",
+      "impact": "Even apart from certificate existence, the target does not preserve the natural path-uniform strength of the source derivation."
+    },
+    {
+      "severity": "note",
+      "category": "source selection",
+      "evidence": "The locator selects `e = T delta` and the two following norm bounds; the least-significant-digit sentence follows afterward in the same paragraph.",
+      "impact": "The target does not omit a selected conclusion by leaving out that informal heuristic."
+    },
+    {
+      "severity": "note",
+      "category": "core fidelity",
+      "evidence": "The complete declaration evidence resolves the positive character sign and shows exact factorization, linked rounded stages, exact input, correct K and alpha cases, scaled RMS, and the correct maximum-norm conversion.",
+      "impact": "There is no independent sign, normalization, norm, factor, inequality-direction, error-notion, or global-vacuity defect."
+    }
+  ],
+  "rationale": "Standard mathematical `O(epsilon^2)` semantics justifies a fixed epsilon-indexed family, a coefficient and radius chosen before epsilon, and an epsilon-indexed perturbation obtained by choice or Fourier inversion. The local declaration also conclusively supplies the positive Fourier sign. The source-selected result is only the backward identity and two bounds, and the operational, numerical-interface, norm, constant, and error-notion details otherwise match. The decisive proposition-level defect is that Lean assumes `P09TheoremOneRmsAsymptotic` rather than proving its existence from the modeled FFT, while the paper proves Theorem 1(a) and then derives the corollary. Thus paper implies Lean, Lean does not imply paper, the classification is not-faithful-weaker, and accepted is false."
+}

@@ -121,11 +121,11 @@
     "module_count": 5181,
     "sorted_module_names_sha256": "992bf922e512cbab181fbd253c3db2ae4c0121e477fc7da3da0bfa0dc07dd7b4"
   },
-  "completed_at_utc": "2026-08-22T19:02:14.687296+00:00",
+  "completed_at_utc": "2026-08-21T18:49:40.072399+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P09/T2/context.md",
     "semantic_evidence": false,
-    "sha256": "67220add3436f5f2c49e1ffb691905eebe5ea6ce31104108648c6f7ff538b4ac"
+    "sha256": "d9c50813e155a7c9dadf2cbc729be5083b7a4b5f294a168b4b99109631469e57"
   },
   "dependencies": [
     {
@@ -173,15 +173,35 @@
       "distance": 1,
       "id": "D005",
       "kind": "inductive",
-      "name": "HighamBench.P09TheoremOneStageEnvelope",
+      "name": "HighamBench.P09TheoremOneRmsAsymptotic",
       "owner_module": "HighamBench.P09Definitions",
       "role": "local",
-      "semantic_sha256": "f365c90c746eeb27f3b3adedfe523030e8941322f72f33527f0bb6f68cc2e2e3"
+      "semantic_sha256": "a7353e39e5125772dc845ed25ca7bb6e9a3b28e73762a2342a052a397aeda938"
     },
     {
       "blind_name": "LocalDef006",
       "distance": 1,
       "id": "D006",
+      "kind": "abbrev",
+      "name": "HighamBench.P09TheoremOneRmsAsymptotic.radius",
+      "owner_module": "HighamBench.P09Definitions",
+      "role": "local",
+      "semantic_sha256": "2efbc7477360cecd48e9aa1f1e1b485888a92d048c08a01878f0d182933cf48f"
+    },
+    {
+      "blind_name": "LocalDef007",
+      "distance": 1,
+      "id": "D007",
+      "kind": "abbrev",
+      "name": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff",
+      "owner_module": "HighamBench.P09Definitions",
+      "role": "local",
+      "semantic_sha256": "eaf5677ffc67054a6bfdff3490b04a6547a1defc0e83b41e6da32b56fd148691"
+    },
+    {
+      "blind_name": "LocalDef008",
+      "distance": 1,
+      "id": "D008",
       "kind": "def",
       "name": "HighamBench.p09ComplexMax",
       "owner_module": "HighamBench.P09Definitions",
@@ -189,9 +209,9 @@
       "semantic_sha256": "107f5c089516c25287f1182f9dd63404ff34c09fad3f86e45bbc13946c2b423a"
     },
     {
-      "blind_name": "LocalDef007",
+      "blind_name": "LocalDef009",
       "distance": 1,
-      "id": "D007",
+      "id": "D009",
       "kind": "def",
       "name": "HighamBench.p09ComplexRms",
       "owner_module": "HighamBench.P09Definitions",
@@ -199,9 +219,9 @@
       "semantic_sha256": "e2fc051f61fd90017931a86caf3ee831d484f55642763e9fba8c246d20220965"
     },
     {
-      "blind_name": "LocalDef008",
+      "blind_name": "LocalDef010",
       "distance": 1,
-      "id": "D008",
+      "id": "D010",
       "kind": "def",
       "name": "HighamBench.p09FamilyFftRoundoffError",
       "owner_module": "HighamBench.P09Definitions",
@@ -209,9 +229,9 @@
       "semantic_sha256": "e7fd30b28907e7782859b6ab12e85ee50e87262018fe483c10d6d1cf03ff4e4c"
     },
     {
-      "blind_name": "LocalDef009",
+      "blind_name": "LocalDef011",
       "distance": 1,
-      "id": "D009",
+      "id": "D011",
       "kind": "def",
       "name": "HighamBench.p09FourierTransform",
       "owner_module": "HighamBench.P09Definitions",
@@ -219,9 +239,9 @@
       "semantic_sha256": "e0c7199f0110602d33ed3aff3bd7a23cc1bf8bca0283972a54195512c519270c"
     },
     {
-      "blind_name": "LocalDef010",
+      "blind_name": "LocalDef012",
       "distance": 1,
-      "id": "D010",
+      "id": "D012",
       "kind": "def",
       "name": "HighamBench.p09K",
       "owner_module": "HighamBench.P09Definitions",
@@ -229,9 +249,9 @@
       "semantic_sha256": "39bf931dc3e3c89fffaac8dff2c8d1d574287321eac447358e4a138c2b2e107e"
     },
     {
-      "blind_name": "LocalDef011",
+      "blind_name": "LocalDef013",
       "distance": 2,
-      "id": "D011",
+      "id": "D013",
       "kind": "constructor",
       "name": "HighamBench.P09AsymptoticFftFamily.mk",
       "owner_module": "HighamBench.P09Definitions",
@@ -239,9 +259,9 @@
       "semantic_sha256": "32371c3341e457a1487e33afe768edf86f3661444d5040ff553c448e9b3eaeda"
     },
     {
-      "blind_name": "LocalDef012",
+      "blind_name": "LocalDef014",
       "distance": 2,
-      "id": "D012",
+      "id": "D014",
       "kind": "abbrev",
       "name": "HighamBench.P09AsymptoticFftFamily.model",
       "owner_module": "HighamBench.P09Definitions",
@@ -249,9 +269,9 @@
       "semantic_sha256": "d248a5cebc573fb72a8499e1b19f93fd9eb29345f914e81b4334e5b0dc6185b7"
     },
     {
-      "blind_name": "LocalDef013",
+      "blind_name": "LocalDef015",
       "distance": 2,
-      "id": "D013",
+      "id": "D015",
       "kind": "abbrev",
       "name": "HighamBench.P09AsymptoticFftFamily.run",
       "owner_module": "HighamBench.P09Definitions",
@@ -259,9 +279,9 @@
       "semantic_sha256": "fc24d12bec69b1f519a38db40ede8e5e13817d12e2ee33ed12769122ac2fa7f8"
     },
     {
-      "blind_name": "LocalDef014",
+      "blind_name": "LocalDef016",
       "distance": 2,
-      "id": "D014",
+      "id": "D016",
       "kind": "constructor",
       "name": "HighamBench.P09MixedRadixFftPlan.mk",
       "owner_module": "HighamBench.P09Definitions",
@@ -269,9 +289,9 @@
       "semantic_sha256": "224e3078b523d47eed4831ee496bf17a1d02b41fa0763d192246fcf22e2ee077"
     },
     {
-      "blind_name": "LocalDef015",
+      "blind_name": "LocalDef017",
       "distance": 2,
-      "id": "D015",
+      "id": "D017",
       "kind": "abbrev",
       "name": "HighamBench.P09MixedRadixFftPlan.stage",
       "owner_module": "HighamBench.P09Definitions",
@@ -279,9 +299,9 @@
       "semantic_sha256": "ad56707f6a036114ec955d6b4ba9db86948c41400db74cd3b75d3d50717c33f1"
     },
     {
-      "blind_name": "LocalDef016",
+      "blind_name": "LocalDef018",
       "distance": 2,
-      "id": "D016",
+      "id": "D018",
       "kind": "abbrev",
       "name": "HighamBench.P09MixedRadixFftPlan.stageCount",
       "owner_module": "HighamBench.P09Definitions",
@@ -289,9 +309,9 @@
       "semantic_sha256": "30921e98fa49eb94c73e56f2920669028bd7b13d1850716d80a2c796a715bb63"
     },
     {
-      "blind_name": "LocalDef017",
+      "blind_name": "LocalDef019",
       "distance": 2,
-      "id": "D017",
+      "id": "D019",
       "kind": "abbrev",
       "name": "HighamBench.P09MixedRadixStage.radix",
       "owner_module": "HighamBench.P09Definitions",
@@ -299,19 +319,19 @@
       "semantic_sha256": "98246913018dc94a73395f1a8d9214f1cadb52c7030efdffdf28c4675bf9b56c"
     },
     {
-      "blind_name": "LocalDef018",
+      "blind_name": "LocalDef020",
       "distance": 2,
-      "id": "D018",
+      "id": "D020",
       "kind": "constructor",
-      "name": "HighamBench.P09TheoremOneStageEnvelope.mk",
+      "name": "HighamBench.P09TheoremOneRmsAsymptotic.mk",
       "owner_module": "HighamBench.P09Definitions",
       "role": "local",
-      "semantic_sha256": "c0725f7fb909b274ad77643038c410a81e6910a0842daa3be15a81e2bc8f2835"
+      "semantic_sha256": "e966a3b9525d03f0980df63458bfd20da75a01b080b781bf95e4037cbc431362"
     },
     {
-      "blind_name": "LocalDef019",
+      "blind_name": "LocalDef021",
       "distance": 2,
-      "id": "D019",
+      "id": "D021",
       "kind": "def",
       "name": "HighamBench.p09Alpha",
       "owner_module": "HighamBench.P09Definitions",
@@ -319,9 +339,9 @@
       "semantic_sha256": "5f3504ac34a66a2d03bdab5ce4c356652a582c0b0cc9df3782e7c688f5b1a7d4"
     },
     {
-      "blind_name": "LocalDef020",
+      "blind_name": "LocalDef022",
       "distance": 2,
-      "id": "D020",
+      "id": "D022",
       "kind": "theorem",
       "name": "HighamBench.p09Alpha._proof_1",
       "owner_module": "HighamBench.P09Definitions",
@@ -329,9 +349,9 @@
       "semantic_sha256": "f0d67c1f9aa937523ea334530fdcb9c54b0f8b36c58585f5368070a9577a9b30"
     },
     {
-      "blind_name": "LocalDef021",
+      "blind_name": "LocalDef023",
       "distance": 2,
-      "id": "D021",
+      "id": "D023",
       "kind": "def",
       "name": "HighamBench.p09ComplexNorm2",
       "owner_module": "HighamBench.P09Definitions",
@@ -339,9 +359,9 @@
       "semantic_sha256": "dac663255b034b5dbbdb343457939be9dbbc50d68a1544b39f5567d1393fd306"
     },
     {
-      "blind_name": "LocalDef022",
+      "blind_name": "LocalDef024",
       "distance": 2,
-      "id": "D022",
+      "id": "D024",
       "kind": "def",
       "name": "HighamBench.p09FftRoundoffError",
       "owner_module": "HighamBench.P09Definitions",
@@ -349,9 +369,9 @@
       "semantic_sha256": "1a4cdce6a01953fcd085089e6e711e6976f798ce31ba838da7a106fd2933d718"
     },
     {
-      "blind_name": "LocalDef023",
+      "blind_name": "LocalDef025",
       "distance": 2,
-      "id": "D023",
+      "id": "D025",
       "kind": "theorem",
       "name": "HighamBench.p09K._proof_1",
       "owner_module": "HighamBench.P09Definitions",
@@ -359,9 +379,9 @@
       "semantic_sha256": "424d4812dc24ce5eebc2180fb1e04ea19aa51b9e55f6e5fc7bb423449fbfa114"
     },
     {
-      "blind_name": "LocalDef024",
+      "blind_name": "LocalDef026",
       "distance": 3,
-      "id": "D024",
+      "id": "D026",
       "kind": "inductive",
       "name": "HighamBench.P09FftVariant",
       "owner_module": "HighamBench.P09Definitions",
@@ -369,9 +389,9 @@
       "semantic_sha256": "544b103df55e1b98d9b887d3b2d7c2cc664d2c26c1091e7aca4c4a8033ff8871"
     },
     {
-      "blind_name": "LocalDef025",
+      "blind_name": "LocalDef027",
       "distance": 3,
-      "id": "D025",
+      "id": "D027",
       "kind": "inductive",
       "name": "HighamBench.P09MixedRadixFftRun",
       "owner_module": "HighamBench.P09Definitions",
@@ -379,9 +399,9 @@
       "semantic_sha256": "7ae7362819755681e59b02d02ec4e3a4154cc95d5c14aed537d867f7065735fc"
     },
     {
-      "blind_name": "LocalDef026",
+      "blind_name": "LocalDef028",
       "distance": 3,
-      "id": "D026",
+      "id": "D028",
       "kind": "abbrev",
       "name": "HighamBench.P09MixedRadixFftRun.input",
       "owner_module": "HighamBench.P09Definitions",
@@ -389,9 +409,9 @@
       "semantic_sha256": "41825d1e7ca619b68168a447008455954af8aff1448bd885c5188ba22e07285b"
     },
     {
-      "blind_name": "LocalDef027",
+      "blind_name": "LocalDef029",
       "distance": 3,
-      "id": "D027",
+      "id": "D029",
       "kind": "inductive",
       "name": "HighamBench.P09MixedRadixStage",
       "owner_module": "HighamBench.P09Definitions",
@@ -399,9 +419,9 @@
       "semantic_sha256": "97d9a0204d9304fae64c630fbd0563515344315fcdaec62c9e01341d19d5d52f"
     },
     {
-      "blind_name": "LocalDef028",
+      "blind_name": "LocalDef030",
       "distance": 3,
-      "id": "D028",
+      "id": "D030",
       "kind": "abbrev",
       "name": "HighamBench.P09MixedRadixStage.useTwiddle",
       "owner_module": "HighamBench.P09Definitions",
@@ -409,9 +429,9 @@
       "semantic_sha256": "c9356ca2f52f0ec465420000f3867bc88b0192e7d791b2c028311a392d0ac69e"
     },
     {
-      "blind_name": "LocalDef029",
+      "blind_name": "LocalDef031",
       "distance": 3,
-      "id": "D029",
+      "id": "D031",
       "kind": "inductive",
       "name": "HighamBench.P09WilkinsonModel",
       "owner_module": "HighamBench.P09Definitions",
@@ -419,9 +439,9 @@
       "semantic_sha256": "ae2ce171d4af084f887909ba7d091242f615341789671c72cf38636309bf3c6f"
     },
     {
-      "blind_name": "LocalDef030",
+      "blind_name": "LocalDef032",
       "distance": 3,
-      "id": "D030",
+      "id": "D032",
       "kind": "abbrev",
       "name": "HighamBench.P09WilkinsonModel.epsilon",
       "owner_module": "HighamBench.P09Definitions",
@@ -429,9 +449,9 @@
       "semantic_sha256": "afcd2bd12fb818dddebe74e72bfdb4939ca7e7ec5eace06ba903d8bb16522de0"
     },
     {
-      "blind_name": "LocalDef031",
+      "blind_name": "LocalDef033",
       "distance": 3,
-      "id": "D031",
+      "id": "D033",
       "kind": "abbrev",
       "name": "HighamBench.P09WilkinsonModel.gamma",
       "owner_module": "HighamBench.P09Definitions",
@@ -439,9 +459,9 @@
       "semantic_sha256": "3d920d708ae4d25f186c74885d8c6fa22ca6b3a16c98ff3446234ae6f769f2d7"
     },
     {
-      "blind_name": "LocalDef032",
+      "blind_name": "LocalDef034",
       "distance": 3,
-      "id": "D032",
+      "id": "D034",
       "kind": "theorem",
       "name": "HighamBench.p09Alpha._proof_2",
       "owner_module": "HighamBench.P09Definitions",
@@ -449,9 +469,9 @@
       "semantic_sha256": "6fa74342f2d0b17a3ab9c3ded60e69ed185dc96f25e08cf01b0caca9b320f9a3"
     },
     {
-      "blind_name": "LocalDef033",
+      "blind_name": "LocalDef035",
       "distance": 3,
-      "id": "D033",
+      "id": "D035",
       "kind": "def",
       "name": "HighamBench.p09ApplyMixedRadixStages",
       "owner_module": "HighamBench.P09Definitions",
@@ -459,9 +479,9 @@
       "semantic_sha256": "6d1f89ec8780f8922da1b485245770d1366f3d55fbcea211c6be4de5132b638a"
     },
     {
-      "blind_name": "LocalDef034",
+      "blind_name": "LocalDef036",
       "distance": 3,
-      "id": "D034",
+      "id": "D036",
       "kind": "def",
       "name": "HighamBench.p09ComplexNorm2Sq",
       "owner_module": "HighamBench.P09Definitions",
@@ -469,9 +489,9 @@
       "semantic_sha256": "bd70ea90c5242fc190eff58133ee8b749d712c4305a4737bde63afb0370210a4"
     },
     {
-      "blind_name": "LocalDef035",
+      "blind_name": "LocalDef037",
       "distance": 3,
-      "id": "D035",
+      "id": "D037",
       "kind": "def",
       "name": "HighamBench.p09ComplexVecSub",
       "owner_module": "HighamBench.P09Definitions",
@@ -479,9 +499,9 @@
       "semantic_sha256": "e18378dc8b51a54c7ae368e4d70e31bada06d8b0eb437292dcaddeb75f3ce4ea"
     },
     {
-      "blind_name": "LocalDef036",
+      "blind_name": "LocalDef038",
       "distance": 3,
-      "id": "D036",
+      "id": "D038",
       "kind": "def",
       "name": "HighamBench.p09FftComputedOutput",
       "owner_module": "HighamBench.P09Definitions",
@@ -489,34 +509,14 @@
       "semantic_sha256": "f20888fa918df54f4166fcc27d6e30545e2be8b24e8252a46ac089bf1ce201b5"
     },
     {
-      "blind_name": "LocalDef037",
+      "blind_name": "LocalDef039",
       "distance": 3,
-      "id": "D037",
+      "id": "D039",
       "kind": "def",
       "name": "HighamBench.p09Permute",
       "owner_module": "HighamBench.P09Definitions",
       "role": "local",
       "semantic_sha256": "5ed965dd03cc5016ab1b31e813a65f6c3565bf677ccb3b546de7e476adf28bc6"
-    },
-    {
-      "blind_name": "LocalDef038",
-      "distance": 3,
-      "id": "D038",
-      "kind": "def",
-      "name": "HighamBench.p09PropagatedFftStageError",
-      "owner_module": "HighamBench.P09Definitions",
-      "role": "local",
-      "semantic_sha256": "38e9e18385d964cb704b9e1befe1aba994c00efd800114e411b75afdc384cc7b"
-    },
-    {
-      "blind_name": "LocalDef039",
-      "distance": 3,
-      "id": "D039",
-      "kind": "def",
-      "name": "HighamBench.p09StageFirstOrderBudget",
-      "owner_module": "HighamBench.P09Definitions",
-      "role": "local",
-      "semantic_sha256": "0fccc0bf77aca301ce82c7d141fdb1570fd0397668f88176d02e2d39a4e57bff"
     },
     {
       "blind_name": "LocalDef040",
@@ -593,35 +593,15 @@
       "distance": 4,
       "id": "D047",
       "kind": "def",
-      "name": "HighamBench.p09ExactFftCompletion",
-      "owner_module": "HighamBench.P09Definitions",
-      "role": "local",
-      "semantic_sha256": "840e7181f34c3c96488d9f15d9b7915203323f0ce8e212b29666ac35c645b844"
-    },
-    {
-      "blind_name": "LocalDef048",
-      "distance": 4,
-      "id": "D048",
-      "kind": "def",
-      "name": "HighamBench.p09FftStageLocalError",
-      "owner_module": "HighamBench.P09Definitions",
-      "role": "local",
-      "semantic_sha256": "c7ef3a65e1833075460f99d6753186b179fca7dcc5ea27d252a9f9fb3dba594b"
-    },
-    {
-      "blind_name": "LocalDef049",
-      "distance": 4,
-      "id": "D049",
-      "kind": "def",
       "name": "HighamBench.p09MixedRadixStageApply",
       "owner_module": "HighamBench.P09Definitions",
       "role": "local",
       "semantic_sha256": "52f9e50ce9db2fa11f7db33f9492e55308a51a9d3bed484c7c7e660e87604af7"
     },
     {
-      "blind_name": "LocalDef050",
+      "blind_name": "LocalDef048",
       "distance": 5,
-      "id": "D050",
+      "id": "D048",
       "kind": "abbrev",
       "name": "HighamBench.P09MixedRadixStage.blockCount",
       "owner_module": "HighamBench.P09Definitions",
@@ -629,9 +609,9 @@
       "semantic_sha256": "0937910c9974bbc2e70ae36f7e93eb0631c166e136798bd95b2ff09cc0f0999d"
     },
     {
-      "blind_name": "LocalDef051",
+      "blind_name": "LocalDef049",
       "distance": 5,
-      "id": "D051",
+      "id": "D049",
       "kind": "abbrev",
       "name": "HighamBench.P09MixedRadixStage.permutation",
       "owner_module": "HighamBench.P09Definitions",
@@ -639,9 +619,9 @@
       "semantic_sha256": "b9f504d3f725fed8dad757d214d7c4c47cf61c082cdb013b946e7a30aabf55a6"
     },
     {
-      "blind_name": "LocalDef052",
+      "blind_name": "LocalDef050",
       "distance": 5,
-      "id": "D052",
+      "id": "D050",
       "kind": "abbrev",
       "name": "HighamBench.P09MixedRadixStage.reindex",
       "owner_module": "HighamBench.P09Definitions",
@@ -649,9 +629,9 @@
       "semantic_sha256": "374121ed62e4a39bd302ffbfa17a3d3e9359e4a3d9ac669a2dab912de210ebef"
     },
     {
-      "blind_name": "LocalDef053",
+      "blind_name": "LocalDef051",
       "distance": 5,
-      "id": "D053",
+      "id": "D051",
       "kind": "abbrev",
       "name": "HighamBench.P09MixedRadixStage.twiddleExponent",
       "owner_module": "HighamBench.P09Definitions",
@@ -659,9 +639,9 @@
       "semantic_sha256": "db98c941769582a85cce2f46995205dcf3183f1c6e723f8e405bf03932644209"
     },
     {
-      "blind_name": "LocalDef054",
+      "blind_name": "LocalDef052",
       "distance": 5,
-      "id": "D054",
+      "id": "D052",
       "kind": "abbrev",
       "name": "HighamBench.P09WilkinsonModel.flInput",
       "owner_module": "HighamBench.P09Definitions",
@@ -669,19 +649,9 @@
       "semantic_sha256": "88461bf36f5d05f146587259086005272493e2b2632ee79ecb87ed470d76ed00"
     },
     {
-      "blind_name": "LocalDef055",
+      "blind_name": "LocalDef053",
       "distance": 5,
-      "id": "D055",
-      "kind": "def",
-      "name": "HighamBench.p09ApplyExactStageList",
-      "owner_module": "HighamBench.P09Definitions",
-      "role": "local",
-      "semantic_sha256": "b8085926ef9763bde0def80a350171e24d2568e90ec0c8556153365c2c72523c"
-    },
-    {
-      "blind_name": "LocalDef056",
-      "distance": 5,
-      "id": "D056",
+      "id": "D053",
       "kind": "theorem",
       "name": "HighamBench.p09MixedRadixStageApply._proof_1",
       "owner_module": "HighamBench.P09Definitions",
@@ -689,9 +659,9 @@
       "semantic_sha256": "f48b056ebd17901d63a6bf3cfa537dcc4dedf4bb58478a8045fbc9ad7cd6ed71"
     },
     {
-      "blind_name": "LocalDef057",
+      "blind_name": "LocalDef054",
       "distance": 5,
-      "id": "D057",
+      "id": "D054",
       "kind": "def",
       "name": "HighamBench.p09RoundedMixedRadixStageApply",
       "owner_module": "HighamBench.P09Definitions",
@@ -699,9 +669,9 @@
       "semantic_sha256": "3d40db49b142e3dc7a16dc4f3aaa4a6352c9626979f9245e76dd61de12869378"
     },
     {
-      "blind_name": "LocalDef058",
+      "blind_name": "LocalDef055",
       "distance": 6,
-      "id": "D058",
+      "id": "D055",
       "kind": "def",
       "name": "HighamBench.p09RoundedComplexMul",
       "owner_module": "HighamBench.P09Definitions",
@@ -709,9 +679,9 @@
       "semantic_sha256": "59512442ef796e982dcc6b938563fd1a7822791c70724a4ba10840384c283696"
     },
     {
-      "blind_name": "LocalDef059",
+      "blind_name": "LocalDef056",
       "distance": 6,
-      "id": "D059",
+      "id": "D056",
       "kind": "def",
       "name": "HighamBench.p09RoundedComplexSum",
       "owner_module": "HighamBench.P09Definitions",
@@ -719,9 +689,9 @@
       "semantic_sha256": "60d1148fd0f75669a9783f59120b2ca14643d9fa5e0f9b558fd75dd269a733e8"
     },
     {
-      "blind_name": "LocalDef060",
+      "blind_name": "LocalDef057",
       "distance": 6,
-      "id": "D060",
+      "id": "D057",
       "kind": "def",
       "name": "HighamBench.p09RoundedRoot",
       "owner_module": "HighamBench.P09Definitions",
@@ -729,9 +699,9 @@
       "semantic_sha256": "9cbfc6d2a8e3f2857e4524c89e77e458df5524778eba3fdf763c6b4759deea37"
     },
     {
-      "blind_name": "LocalDef061",
+      "blind_name": "LocalDef058",
       "distance": 7,
-      "id": "D061",
+      "id": "D058",
       "kind": "abbrev",
       "name": "HighamBench.P09WilkinsonModel.flAdd",
       "owner_module": "HighamBench.P09Definitions",
@@ -739,9 +709,9 @@
       "semantic_sha256": "cc28522466fac0d813d439269e2f928c936d68287934ef0a0c90b79a1be399d5"
     },
     {
-      "blind_name": "LocalDef062",
+      "blind_name": "LocalDef059",
       "distance": 7,
-      "id": "D062",
+      "id": "D059",
       "kind": "abbrev",
       "name": "HighamBench.P09WilkinsonModel.flCos",
       "owner_module": "HighamBench.P09Definitions",
@@ -749,9 +719,9 @@
       "semantic_sha256": "7ce72510832649d0f92748c22a87870b1815b0d105e6f06f61d0d5a5c2392880"
     },
     {
-      "blind_name": "LocalDef063",
+      "blind_name": "LocalDef060",
       "distance": 7,
-      "id": "D063",
+      "id": "D060",
       "kind": "abbrev",
       "name": "HighamBench.P09WilkinsonModel.flMul",
       "owner_module": "HighamBench.P09Definitions",
@@ -759,9 +729,9 @@
       "semantic_sha256": "ef8dec4b6ee6bd7778d604c9a442e49c12e7f519b63e15363380f949ca8141d5"
     },
     {
-      "blind_name": "LocalDef064",
+      "blind_name": "LocalDef061",
       "distance": 7,
-      "id": "D064",
+      "id": "D061",
       "kind": "abbrev",
       "name": "HighamBench.P09WilkinsonModel.flSin",
       "owner_module": "HighamBench.P09Definitions",
@@ -769,9 +739,9 @@
       "semantic_sha256": "05b6756f200d9776e59c023a63a3609af6f1943ceb31320e2eb05fe8bb16a955"
     },
     {
-      "blind_name": "LocalDef065",
+      "blind_name": "LocalDef062",
       "distance": 7,
-      "id": "D065",
+      "id": "D062",
       "kind": "def",
       "name": "HighamBench.p09RootAngle",
       "owner_module": "HighamBench.P09Definitions",
@@ -779,9 +749,9 @@
       "semantic_sha256": "e7b2e7fd3bdf545ee0a976fc13331c988e862d8981dc9519d2625fb12c6f46ca"
     },
     {
-      "blind_name": "LocalDef066",
+      "blind_name": "LocalDef063",
       "distance": 7,
-      "id": "D066",
+      "id": "D063",
       "kind": "def",
       "name": "HighamBench.recursiveSum",
       "owner_module": "HighamBench.Core",
@@ -789,9 +759,9 @@
       "semantic_sha256": "3a24e7a5c707c014d59b9d90d536db1f1c79ef135d2ba34adb6af8a4258efe41"
     },
     {
-      "blind_name": "LocalDef067",
+      "blind_name": "LocalDef064",
       "distance": 8,
-      "id": "D067",
+      "id": "D064",
       "kind": "theorem",
       "name": "HighamBench.recursiveSum._proof_1",
       "owner_module": "HighamBench.Core",
@@ -799,9 +769,9 @@
       "semantic_sha256": "7f01e5fdb761df0e050b0929b93312fc9084bc345726c816952ed0fd4844be27"
     },
     {
-      "blind_name": "LocalDef068",
+      "blind_name": "LocalDef065",
       "distance": 8,
-      "id": "D068",
+      "id": "D065",
       "kind": "abbrev",
       "name": "HighamBench.recursiveSum.match_1",
       "owner_module": "HighamBench.Core",
@@ -811,7 +781,7 @@
     {
       "blind_name": "And",
       "distance": 1,
-      "id": "D069",
+      "id": "D066",
       "kind": "inductive",
       "name": "And",
       "owner_module": "Init.Prelude",
@@ -821,7 +791,7 @@
     {
       "blind_name": "Complex",
       "distance": 1,
-      "id": "D070",
+      "id": "D067",
       "kind": "inductive",
       "name": "Complex",
       "owner_module": "Mathlib.Data.Complex.Basic",
@@ -831,7 +801,7 @@
     {
       "blind_name": "DivInvMonoid.toDiv",
       "distance": 1,
-      "id": "D071",
+      "id": "D068",
       "kind": "abbrev",
       "name": "DivInvMonoid.toDiv",
       "owner_module": "Mathlib.Algebra.Group.Defs",
@@ -841,7 +811,7 @@
     {
       "blind_name": "Eq",
       "distance": 1,
-      "id": "D072",
+      "id": "D069",
       "kind": "inductive",
       "name": "Eq",
       "owner_module": "Init.Prelude",
@@ -851,7 +821,7 @@
     {
       "blind_name": "Exists",
       "distance": 1,
-      "id": "D073",
+      "id": "D070",
       "kind": "inductive",
       "name": "Exists",
       "owner_module": "Init.Core",
@@ -861,7 +831,7 @@
     {
       "blind_name": "HAdd.hAdd",
       "distance": 1,
-      "id": "D074",
+      "id": "D071",
       "kind": "abbrev",
       "name": "HAdd.hAdd",
       "owner_module": "Init.Prelude",
@@ -871,7 +841,7 @@
     {
       "blind_name": "HDiv.hDiv",
       "distance": 1,
-      "id": "D075",
+      "id": "D072",
       "kind": "abbrev",
       "name": "HDiv.hDiv",
       "owner_module": "Init.Prelude",
@@ -881,7 +851,7 @@
     {
       "blind_name": "HMul.hMul",
       "distance": 1,
-      "id": "D076",
+      "id": "D073",
       "kind": "abbrev",
       "name": "HMul.hMul",
       "owner_module": "Init.Prelude",
@@ -891,7 +861,7 @@
     {
       "blind_name": "HPow.hPow",
       "distance": 1,
-      "id": "D077",
+      "id": "D074",
       "kind": "abbrev",
       "name": "HPow.hPow",
       "owner_module": "Init.Prelude",
@@ -901,7 +871,7 @@
     {
       "blind_name": "LE.le",
       "distance": 1,
-      "id": "D078",
+      "id": "D075",
       "kind": "abbrev",
       "name": "LE.le",
       "owner_module": "Init.Prelude",
@@ -911,7 +881,7 @@
     {
       "blind_name": "LT.lt",
       "distance": 1,
-      "id": "D079",
+      "id": "D076",
       "kind": "abbrev",
       "name": "LT.lt",
       "owner_module": "Init.Prelude",
@@ -921,7 +891,7 @@
     {
       "blind_name": "Monoid.toNatPow",
       "distance": 1,
-      "id": "D080",
+      "id": "D077",
       "kind": "def",
       "name": "Monoid.toNatPow",
       "owner_module": "Mathlib.Algebra.Group.Defs",
@@ -931,7 +901,7 @@
     {
       "blind_name": "MulZeroClass.toZero",
       "distance": 1,
-      "id": "D081",
+      "id": "D078",
       "kind": "abbrev",
       "name": "MulZeroClass.toZero",
       "owner_module": "Mathlib.Algebra.GroupWithZero.Defs",
@@ -941,7 +911,7 @@
     {
       "blind_name": "Nat",
       "distance": 1,
-      "id": "D082",
+      "id": "D079",
       "kind": "inductive",
       "name": "Nat",
       "owner_module": "Init.Prelude",
@@ -951,7 +921,7 @@
     {
       "blind_name": "Nat.cast",
       "distance": 1,
-      "id": "D083",
+      "id": "D080",
       "kind": "def",
       "name": "Nat.cast",
       "owner_module": "Init.Data.Cast",
@@ -961,7 +931,7 @@
     {
       "blind_name": "Nat.instMulZeroClass",
       "distance": 1,
-      "id": "D084",
+      "id": "D081",
       "kind": "def",
       "name": "Nat.instMulZeroClass",
       "owner_module": "Mathlib.Algebra.GroupWithZero.Nat",
@@ -971,7 +941,7 @@
     {
       "blind_name": "NeZero",
       "distance": 1,
-      "id": "D085",
+      "id": "D082",
       "kind": "inductive",
       "name": "NeZero",
       "owner_module": "Init.Data.NeZero",
@@ -981,7 +951,7 @@
     {
       "blind_name": "OfNat.ofNat",
       "distance": 1,
-      "id": "D086",
+      "id": "D083",
       "kind": "abbrev",
       "name": "OfNat.ofNat",
       "owner_module": "Init.Prelude",
@@ -991,7 +961,7 @@
     {
       "blind_name": "Real",
       "distance": 1,
-      "id": "D087",
+      "id": "D084",
       "kind": "inductive",
       "name": "Real",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1001,7 +971,7 @@
     {
       "blind_name": "Real.instAdd",
       "distance": 1,
-      "id": "D088",
+      "id": "D085",
       "kind": "def",
       "name": "Real.instAdd",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1011,7 +981,7 @@
     {
       "blind_name": "Real.instDivInvMonoid",
       "distance": 1,
-      "id": "D089",
+      "id": "D086",
       "kind": "def",
       "name": "Real.instDivInvMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1021,7 +991,7 @@
     {
       "blind_name": "Real.instLE",
       "distance": 1,
-      "id": "D090",
+      "id": "D087",
       "kind": "def",
       "name": "Real.instLE",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1031,7 +1001,7 @@
     {
       "blind_name": "Real.instLT",
       "distance": 1,
-      "id": "D091",
+      "id": "D088",
       "kind": "def",
       "name": "Real.instLT",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1041,7 +1011,7 @@
     {
       "blind_name": "Real.instMonoid",
       "distance": 1,
-      "id": "D092",
+      "id": "D089",
       "kind": "def",
       "name": "Real.instMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1051,7 +1021,7 @@
     {
       "blind_name": "Real.instMul",
       "distance": 1,
-      "id": "D093",
+      "id": "D090",
       "kind": "def",
       "name": "Real.instMul",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1061,7 +1031,7 @@
     {
       "blind_name": "Real.instNatCast",
       "distance": 1,
-      "id": "D094",
+      "id": "D091",
       "kind": "def",
       "name": "Real.instNatCast",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1071,7 +1041,7 @@
     {
       "blind_name": "Real.instZero",
       "distance": 1,
-      "id": "D095",
+      "id": "D092",
       "kind": "def",
       "name": "Real.instZero",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1081,7 +1051,7 @@
     {
       "blind_name": "Real.sqrt",
       "distance": 1,
-      "id": "D096",
+      "id": "D093",
       "kind": "def",
       "name": "Real.sqrt",
       "owner_module": "Mathlib.Data.Real.Sqrt",
@@ -1091,7 +1061,7 @@
     {
       "blind_name": "Subtype.val",
       "distance": 1,
-      "id": "D097",
+      "id": "D094",
       "kind": "abbrev",
       "name": "Subtype.val",
       "owner_module": "Init.Prelude",
@@ -1101,7 +1071,7 @@
     {
       "blind_name": "ZMod",
       "distance": 1,
-      "id": "D098",
+      "id": "D095",
       "kind": "def",
       "name": "ZMod",
       "owner_module": "Mathlib.Data.ZMod.Defs",
@@ -1111,7 +1081,7 @@
     {
       "blind_name": "Zero.toOfNat0",
       "distance": 1,
-      "id": "D099",
+      "id": "D096",
       "kind": "def",
       "name": "Zero.toOfNat0",
       "owner_module": "Init.Data.Zero",
@@ -1121,7 +1091,7 @@
     {
       "blind_name": "instHAdd",
       "distance": 1,
-      "id": "D100",
+      "id": "D097",
       "kind": "def",
       "name": "instHAdd",
       "owner_module": "Init.Prelude",
@@ -1131,7 +1101,7 @@
     {
       "blind_name": "instHDiv",
       "distance": 1,
-      "id": "D101",
+      "id": "D098",
       "kind": "def",
       "name": "instHDiv",
       "owner_module": "Init.Prelude",
@@ -1141,7 +1111,7 @@
     {
       "blind_name": "instHMul",
       "distance": 1,
-      "id": "D102",
+      "id": "D099",
       "kind": "def",
       "name": "instHMul",
       "owner_module": "Init.Prelude",
@@ -1151,7 +1121,7 @@
     {
       "blind_name": "instHPow",
       "distance": 1,
-      "id": "D103",
+      "id": "D100",
       "kind": "def",
       "name": "instHPow",
       "owner_module": "Init.Prelude",
@@ -1161,7 +1131,7 @@
     {
       "blind_name": "instOfNatNat",
       "distance": 1,
-      "id": "D104",
+      "id": "D101",
       "kind": "def",
       "name": "instOfNatNat",
       "owner_module": "Init.Prelude",
@@ -1171,7 +1141,7 @@
     {
       "blind_name": "AddChar",
       "distance": 2,
-      "id": "D105",
+      "id": "D102",
       "kind": "inductive",
       "name": "AddChar",
       "owner_module": "Mathlib.Algebra.Group.AddChar",
@@ -1181,7 +1151,7 @@
     {
       "blind_name": "AddChar.instFunLike",
       "distance": 2,
-      "id": "D106",
+      "id": "D103",
       "kind": "def",
       "name": "AddChar.instFunLike",
       "owner_module": "Mathlib.Algebra.Group.AddChar",
@@ -1191,7 +1161,7 @@
     {
       "blind_name": "AddGroupWithOne.toAddMonoidWithOne",
       "distance": 2,
-      "id": "D107",
+      "id": "D104",
       "kind": "abbrev",
       "name": "AddGroupWithOne.toAddMonoidWithOne",
       "owner_module": "Mathlib.Data.Int.Cast.Defs",
@@ -1201,7 +1171,7 @@
     {
       "blind_name": "AddMonoidWithOne.toAddMonoid",
       "distance": 2,
-      "id": "D108",
+      "id": "D105",
       "kind": "abbrev",
       "name": "AddMonoidWithOne.toAddMonoid",
       "owner_module": "Mathlib.Data.Nat.Cast.Defs",
@@ -1211,7 +1181,7 @@
     {
       "blind_name": "CommRing.toNonUnitalCommRing",
       "distance": 2,
-      "id": "D109",
+      "id": "D106",
       "kind": "def",
       "name": "CommRing.toNonUnitalCommRing",
       "owner_module": "Mathlib.Algebra.Ring.Defs",
@@ -1221,7 +1191,7 @@
     {
       "blind_name": "CommRing.toRing",
       "distance": 2,
-      "id": "D110",
+      "id": "D107",
       "kind": "abbrev",
       "name": "CommRing.toRing",
       "owner_module": "Mathlib.Algebra.Ring.Defs",
@@ -1231,7 +1201,7 @@
     {
       "blind_name": "Complex.instMul",
       "distance": 2,
-      "id": "D111",
+      "id": "D108",
       "kind": "def",
       "name": "Complex.instMul",
       "owner_module": "Mathlib.Data.Complex.Basic",
@@ -1241,7 +1211,7 @@
     {
       "blind_name": "Complex.instNormedAddCommGroup",
       "distance": 2,
-      "id": "D112",
+      "id": "D109",
       "kind": "def",
       "name": "Complex.instNormedAddCommGroup",
       "owner_module": "Mathlib.Analysis.Complex.Norm",
@@ -1251,7 +1221,7 @@
     {
       "blind_name": "Complex.instNormedField",
       "distance": 2,
-      "id": "D113",
+      "id": "D110",
       "kind": "def",
       "name": "Complex.instNormedField",
       "owner_module": "Mathlib.Analysis.Complex.Basic",
@@ -1261,7 +1231,7 @@
     {
       "blind_name": "Complex.instSemiring",
       "distance": 2,
-      "id": "D114",
+      "id": "D111",
       "kind": "def",
       "name": "Complex.instSemiring",
       "owner_module": "Mathlib.Data.Complex.Basic",
@@ -1271,7 +1241,7 @@
     {
       "blind_name": "DFunLike.coe",
       "distance": 2,
-      "id": "D115",
+      "id": "D112",
       "kind": "abbrev",
       "name": "DFunLike.coe",
       "owner_module": "Mathlib.Data.FunLike.Basic",
@@ -1281,7 +1251,7 @@
     {
       "blind_name": "Distrib.toMul",
       "distance": 2,
-      "id": "D116",
+      "id": "D113",
       "kind": "abbrev",
       "name": "Distrib.toMul",
       "owner_module": "Mathlib.Algebra.Ring.Defs",
@@ -1291,7 +1261,7 @@
     {
       "blind_name": "ENormedAddCommMonoid.toESeminormedAddCommMonoid",
       "distance": 2,
-      "id": "D117",
+      "id": "D114",
       "kind": "abbrev",
       "name": "ENormedAddCommMonoid.toESeminormedAddCommMonoid",
       "owner_module": "Mathlib.Analysis.Normed.Group.Defs",
@@ -1301,7 +1271,7 @@
     {
       "blind_name": "ESeminormedAddCommMonoid.toAddCommMonoid",
       "distance": 2,
-      "id": "D118",
+      "id": "D115",
       "kind": "abbrev",
       "name": "ESeminormedAddCommMonoid.toAddCommMonoid",
       "owner_module": "Mathlib.Analysis.Normed.Group.Defs",
@@ -1311,7 +1281,7 @@
     {
       "blind_name": "Fin",
       "distance": 2,
-      "id": "D119",
+      "id": "D116",
       "kind": "inductive",
       "name": "Fin",
       "owner_module": "Init.Prelude",
@@ -1321,7 +1291,7 @@
     {
       "blind_name": "Fin.fintype",
       "distance": 2,
-      "id": "D120",
+      "id": "D117",
       "kind": "def",
       "name": "Fin.fintype",
       "owner_module": "Mathlib.Data.Fintype.Basic",
@@ -1331,7 +1301,7 @@
     {
       "blind_name": "Finset.sum",
       "distance": 2,
-      "id": "D121",
+      "id": "D118",
       "kind": "def",
       "name": "Finset.sum",
       "owner_module": "Mathlib.Algebra.BigOperators.Group.Finset.Defs",
@@ -1341,7 +1311,7 @@
     {
       "blind_name": "Finset.univ",
       "distance": 2,
-      "id": "D122",
+      "id": "D119",
       "kind": "def",
       "name": "Finset.univ",
       "owner_module": "Mathlib.Data.Fintype.Defs",
@@ -1351,7 +1321,7 @@
     {
       "blind_name": "HSub.hSub",
       "distance": 2,
-      "id": "D123",
+      "id": "D120",
       "kind": "abbrev",
       "name": "HSub.hSub",
       "owner_module": "Init.Prelude",
@@ -1361,7 +1331,7 @@
     {
       "blind_name": "MonoidWithZero.toMonoid",
       "distance": 2,
-      "id": "D124",
+      "id": "D121",
       "kind": "abbrev",
       "name": "MonoidWithZero.toMonoid",
       "owner_module": "Mathlib.Algebra.GroupWithZero.Defs",
@@ -1371,7 +1341,7 @@
     {
       "blind_name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
       "distance": 2,
-      "id": "D125",
+      "id": "D122",
       "kind": "abbrev",
       "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
       "owner_module": "Mathlib.Algebra.Ring.Defs",
@@ -1381,7 +1351,7 @@
     {
       "blind_name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
       "distance": 2,
-      "id": "D126",
+      "id": "D123",
       "kind": "abbrev",
       "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
       "owner_module": "Mathlib.Algebra.Ring.Defs",
@@ -1391,7 +1361,7 @@
     {
       "blind_name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
       "distance": 2,
-      "id": "D127",
+      "id": "D124",
       "kind": "abbrev",
       "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
       "owner_module": "Mathlib.Algebra.Ring.Defs",
@@ -1401,7 +1371,7 @@
     {
       "blind_name": "NonUnitalNonAssocSemiring.toDistrib",
       "distance": 2,
-      "id": "D128",
+      "id": "D125",
       "kind": "abbrev",
       "name": "NonUnitalNonAssocSemiring.toDistrib",
       "owner_module": "Mathlib.Algebra.Ring.Defs",
@@ -1411,7 +1381,7 @@
     {
       "blind_name": "Norm.norm",
       "distance": 2,
-      "id": "D129",
+      "id": "D126",
       "kind": "abbrev",
       "name": "Norm.norm",
       "owner_module": "Mathlib.Analysis.Normed.Group.Defs",
@@ -1421,7 +1391,7 @@
     {
       "blind_name": "NormedAddCommGroup.toENormedAddCommMonoid",
       "distance": 2,
-      "id": "D130",
+      "id": "D127",
       "kind": "def",
       "name": "NormedAddCommGroup.toENormedAddCommMonoid",
       "owner_module": "Mathlib.Analysis.Normed.Group.Continuity",
@@ -1431,7 +1401,7 @@
     {
       "blind_name": "NormedCommRing.toNormedRing",
       "distance": 2,
-      "id": "D131",
+      "id": "D128",
       "kind": "abbrev",
       "name": "NormedCommRing.toNormedRing",
       "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
@@ -1441,7 +1411,7 @@
     {
       "blind_name": "NormedCommRing.toSeminormedCommRing",
       "distance": 2,
-      "id": "D132",
+      "id": "D129",
       "kind": "def",
       "name": "NormedCommRing.toSeminormedCommRing",
       "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
@@ -1451,7 +1421,7 @@
     {
       "blind_name": "NormedField.toNormedCommRing",
       "distance": 2,
-      "id": "D133",
+      "id": "D130",
       "kind": "def",
       "name": "NormedField.toNormedCommRing",
       "owner_module": "Mathlib.Analysis.Normed.Field.Basic",
@@ -1461,7 +1431,7 @@
     {
       "blind_name": "NormedRing.toNorm",
       "distance": 2,
-      "id": "D134",
+      "id": "D131",
       "kind": "abbrev",
       "name": "NormedRing.toNorm",
       "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
@@ -1471,7 +1441,7 @@
     {
       "blind_name": "One.toOfNat1",
       "distance": 2,
-      "id": "D135",
+      "id": "D132",
       "kind": "def",
       "name": "One.toOfNat1",
       "owner_module": "Init.Data.Zero",
@@ -1481,7 +1451,7 @@
     {
       "blind_name": "Pi.normedRing",
       "distance": 2,
-      "id": "D136",
+      "id": "D133",
       "kind": "def",
       "name": "Pi.normedRing",
       "owner_module": "Mathlib.Analysis.Normed.Ring.Lemmas",
@@ -1491,7 +1461,7 @@
     {
       "blind_name": "PseudoMetricSpace.toUniformSpace",
       "distance": 2,
-      "id": "D137",
+      "id": "D134",
       "kind": "abbrev",
       "name": "PseudoMetricSpace.toUniformSpace",
       "owner_module": "Mathlib.Topology.MetricSpace.Pseudo.Defs",
@@ -1501,7 +1471,7 @@
     {
       "blind_name": "Real.instAddCommMonoid",
       "distance": 2,
-      "id": "D138",
+      "id": "D135",
       "kind": "def",
       "name": "Real.instAddCommMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1511,7 +1481,7 @@
     {
       "blind_name": "Real.instOne",
       "distance": 2,
-      "id": "D139",
+      "id": "D136",
       "kind": "def",
       "name": "Real.instOne",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1521,7 +1491,7 @@
     {
       "blind_name": "Real.instSub",
       "distance": 2,
-      "id": "D140",
+      "id": "D137",
       "kind": "def",
       "name": "Real.instSub",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1531,7 +1501,7 @@
     {
       "blind_name": "Ring.toAddGroupWithOne",
       "distance": 2,
-      "id": "D141",
+      "id": "D138",
       "kind": "abbrev",
       "name": "Ring.toAddGroupWithOne",
       "owner_module": "Mathlib.Algebra.Ring.Defs",
@@ -1541,7 +1511,7 @@
     {
       "blind_name": "SeminormedCommRing.toSeminormedRing",
       "distance": 2,
-      "id": "D142",
+      "id": "D139",
       "kind": "abbrev",
       "name": "SeminormedCommRing.toSeminormedRing",
       "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
@@ -1551,7 +1521,7 @@
     {
       "blind_name": "SeminormedRing.toPseudoMetricSpace",
       "distance": 2,
-      "id": "D143",
+      "id": "D140",
       "kind": "abbrev",
       "name": "SeminormedRing.toPseudoMetricSpace",
       "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
@@ -1561,7 +1531,7 @@
     {
       "blind_name": "Semiring.toMonoidWithZero",
       "distance": 2,
-      "id": "D144",
+      "id": "D141",
       "kind": "abbrev",
       "name": "Semiring.toMonoidWithZero",
       "owner_module": "Mathlib.Algebra.Ring.Defs",
@@ -1571,7 +1541,7 @@
     {
       "blind_name": "Subtype",
       "distance": 2,
-      "id": "D145",
+      "id": "D142",
       "kind": "inductive",
       "name": "Subtype",
       "owner_module": "Init.Prelude",
@@ -1581,7 +1551,7 @@
     {
       "blind_name": "UniformSpace.toTopologicalSpace",
       "distance": 2,
-      "id": "D146",
+      "id": "D143",
       "kind": "abbrev",
       "name": "UniformSpace.toTopologicalSpace",
       "owner_module": "Mathlib.Topology.UniformSpace.Defs",
@@ -1591,7 +1561,7 @@
     {
       "blind_name": "ZMod.commRing",
       "distance": 2,
-      "id": "D147",
+      "id": "D144",
       "kind": "def",
       "name": "ZMod.commRing",
       "owner_module": "Mathlib.Data.ZMod.Defs",
@@ -1601,7 +1571,7 @@
     {
       "blind_name": "ZMod.fintype",
       "distance": 2,
-      "id": "D148",
+      "id": "D145",
       "kind": "def",
       "name": "ZMod.fintype",
       "owner_module": "Mathlib.Data.ZMod.Defs",
@@ -1611,7 +1581,7 @@
     {
       "blind_name": "ZMod.stdAddChar",
       "distance": 2,
-      "id": "D149",
+      "id": "D146",
       "kind": "def",
       "name": "ZMod.stdAddChar",
       "owner_module": "Mathlib.Analysis.SpecialFunctions.Complex.CircleAddChar",
@@ -1621,7 +1591,7 @@
     {
       "blind_name": "instHSub",
       "distance": 2,
-      "id": "D150",
+      "id": "D147",
       "kind": "def",
       "name": "instHSub",
       "owner_module": "Init.Prelude",
@@ -1631,7 +1601,7 @@
     {
       "blind_name": "instOfNatAtLeastTwo",
       "distance": 2,
-      "id": "D151",
+      "id": "D148",
       "kind": "def",
       "name": "instOfNatAtLeastTwo",
       "owner_module": "Mathlib.Data.Nat.Cast.Defs",
@@ -1641,7 +1611,7 @@
     {
       "blind_name": "Bool",
       "distance": 3,
-      "id": "D152",
+      "id": "D149",
       "kind": "inductive",
       "name": "Bool",
       "owner_module": "Init.Prelude",
@@ -1651,7 +1621,7 @@
     {
       "blind_name": "Decidable.decide",
       "distance": 3,
-      "id": "D153",
+      "id": "D150",
       "kind": "def",
       "name": "Decidable.decide",
       "owner_module": "Init.Prelude",
@@ -1661,7 +1631,7 @@
     {
       "blind_name": "Equiv",
       "distance": 3,
-      "id": "D154",
+      "id": "D151",
       "kind": "inductive",
       "name": "Equiv",
       "owner_module": "Mathlib.Logic.Equiv.Defs",
@@ -1671,7 +1641,7 @@
     {
       "blind_name": "Fin.val",
       "distance": 3,
-      "id": "D155",
+      "id": "D152",
       "kind": "abbrev",
       "name": "Fin.val",
       "owner_module": "Init.Prelude",
@@ -1681,7 +1651,7 @@
     {
       "blind_name": "Finset.prod",
       "distance": 3,
-      "id": "D156",
+      "id": "D153",
       "kind": "def",
       "name": "Finset.prod",
       "owner_module": "Mathlib.Algebra.BigOperators.Group.Finset.Defs",
@@ -1691,7 +1661,7 @@
     {
       "blind_name": "Function.Surjective",
       "distance": 3,
-      "id": "D157",
+      "id": "D154",
       "kind": "def",
       "name": "Function.Surjective",
       "owner_module": "Init.Data.Function",
@@ -1701,7 +1671,7 @@
     {
       "blind_name": "Nat.AtLeastTwo",
       "distance": 3,
-      "id": "D158",
+      "id": "D155",
       "kind": "inductive",
       "name": "Nat.AtLeastTwo",
       "owner_module": "Mathlib.Data.Nat.Init",
@@ -1711,7 +1681,7 @@
     {
       "blind_name": "Nat.decLt",
       "distance": 3,
-      "id": "D159",
+      "id": "D156",
       "kind": "def",
       "name": "Nat.decLt",
       "owner_module": "Init.Prelude",
@@ -1721,7 +1691,7 @@
     {
       "blind_name": "Nat.instCommMonoid",
       "distance": 3,
-      "id": "D160",
+      "id": "D157",
       "kind": "def",
       "name": "Nat.instCommMonoid",
       "owner_module": "Mathlib.Algebra.Group.Nat.Defs",
@@ -1731,7 +1701,7 @@
     {
       "blind_name": "instAddNat",
       "distance": 3,
-      "id": "D161",
+      "id": "D158",
       "kind": "def",
       "name": "instAddNat",
       "owner_module": "Init.Prelude",
@@ -1741,7 +1711,7 @@
     {
       "blind_name": "instDecidableEqNat",
       "distance": 3,
-      "id": "D162",
+      "id": "D159",
       "kind": "def",
       "name": "instDecidableEqNat",
       "owner_module": "Init.Prelude",
@@ -1751,7 +1721,7 @@
     {
       "blind_name": "instLTNat",
       "distance": 3,
-      "id": "D163",
+      "id": "D160",
       "kind": "def",
       "name": "instLTNat",
       "owner_module": "Init.Prelude",
@@ -1761,7 +1731,7 @@
     {
       "blind_name": "ite",
       "distance": 3,
-      "id": "D164",
+      "id": "D161",
       "kind": "def",
       "name": "ite",
       "owner_module": "Init.Prelude",
@@ -1769,19 +1739,9 @@
       "semantic_sha256": "3029bae29d2d16b5aeb879ad3c12a1b3c4e78998083bf1ab4614942fafdece0e"
     },
     {
-      "blind_name": "Bool.true",
-      "distance": 4,
-      "id": "D165",
-      "kind": "constructor",
-      "name": "Bool.true",
-      "owner_module": "Init.Prelude",
-      "role": "external-frontier",
-      "semantic_sha256": "97e763ea95d8452117cf5762fd67acddd549677f08ccfa348c4bf23db7eaa9d8"
-    },
-    {
       "blind_name": "Complex.instNorm",
       "distance": 4,
-      "id": "D166",
+      "id": "D162",
       "kind": "def",
       "name": "Complex.instNorm",
       "owner_module": "Mathlib.Analysis.Complex.Norm",
@@ -1791,7 +1751,7 @@
     {
       "blind_name": "Complex.instSub",
       "distance": 4,
-      "id": "D167",
+      "id": "D163",
       "kind": "def",
       "name": "Complex.instSub",
       "owner_module": "Mathlib.Data.Complex.Basic",
@@ -1801,7 +1761,7 @@
     {
       "blind_name": "Equiv.instEquivLike",
       "distance": 4,
-      "id": "D168",
+      "id": "D164",
       "kind": "def",
       "name": "Equiv.instEquivLike",
       "owner_module": "Mathlib.Logic.Equiv.Defs",
@@ -1811,7 +1771,7 @@
     {
       "blind_name": "EquivLike.toFunLike",
       "distance": 4,
-      "id": "D169",
+      "id": "D165",
       "kind": "def",
       "name": "EquivLike.toFunLike",
       "owner_module": "Mathlib.Data.FunLike.Equiv",
@@ -1821,7 +1781,7 @@
     {
       "blind_name": "List.foldl",
       "distance": 4,
-      "id": "D170",
+      "id": "D166",
       "kind": "def",
       "name": "List.foldl",
       "owner_module": "Init.Prelude",
@@ -1831,7 +1791,7 @@
     {
       "blind_name": "List.ofFn",
       "distance": 4,
-      "id": "D171",
+      "id": "D167",
       "kind": "def",
       "name": "List.ofFn",
       "owner_module": "Init.Data.List.OfFn",
@@ -1839,19 +1799,19 @@
       "semantic_sha256": "e54777dd091df49539c6c1473fd1928ad87f9e135ba5940e57702ecd3f83b095"
     },
     {
-      "blind_name": "instDecidableEqBool",
-      "distance": 4,
-      "id": "D172",
-      "kind": "def",
-      "name": "instDecidableEqBool",
+      "blind_name": "Bool.true",
+      "distance": 5,
+      "id": "D168",
+      "kind": "constructor",
+      "name": "Bool.true",
       "owner_module": "Init.Prelude",
       "role": "external-frontier",
-      "semantic_sha256": "dedf43b35e221c78c811d0b7268b7be703d67b744ad16b23df01af14b2aa5899"
+      "semantic_sha256": "97e763ea95d8452117cf5762fd67acddd549677f08ccfa348c4bf23db7eaa9d8"
     },
     {
       "blind_name": "Equiv.symm",
       "distance": 5,
-      "id": "D173",
+      "id": "D169",
       "kind": "def",
       "name": "Equiv.symm",
       "owner_module": "Mathlib.Logic.Equiv.Defs",
@@ -1859,19 +1819,9 @@
       "semantic_sha256": "57ee9c638939cfeecafbbd4c55de44dd6a442327ab164c9ed3cd729233289347"
     },
     {
-      "blind_name": "List.drop",
-      "distance": 5,
-      "id": "D174",
-      "kind": "def",
-      "name": "List.drop",
-      "owner_module": "Init.Data.List.Basic",
-      "role": "external-frontier",
-      "semantic_sha256": "af1ade8c661cbb3f92d7891857e35a845894dfaf2528f449badd7581df7a2ad8"
-    },
-    {
       "blind_name": "Ne",
       "distance": 5,
-      "id": "D175",
+      "id": "D170",
       "kind": "def",
       "name": "Ne",
       "owner_module": "Init.Core",
@@ -1881,7 +1831,7 @@
     {
       "blind_name": "Prod",
       "distance": 5,
-      "id": "D176",
+      "id": "D171",
       "kind": "inductive",
       "name": "Prod",
       "owner_module": "Init.Prelude",
@@ -1891,7 +1841,7 @@
     {
       "blind_name": "Prod.fst",
       "distance": 5,
-      "id": "D177",
+      "id": "D172",
       "kind": "abbrev",
       "name": "Prod.fst",
       "owner_module": "Init.Prelude",
@@ -1901,7 +1851,7 @@
     {
       "blind_name": "Prod.mk",
       "distance": 5,
-      "id": "D178",
+      "id": "D173",
       "kind": "constructor",
       "name": "Prod.mk",
       "owner_module": "Init.Prelude",
@@ -1911,7 +1861,7 @@
     {
       "blind_name": "Prod.snd",
       "distance": 5,
-      "id": "D179",
+      "id": "D174",
       "kind": "abbrev",
       "name": "Prod.snd",
       "owner_module": "Init.Prelude",
@@ -1921,7 +1871,7 @@
     {
       "blind_name": "Real.cos",
       "distance": 5,
-      "id": "D180",
+      "id": "D175",
       "kind": "def",
       "name": "Real.cos",
       "owner_module": "Mathlib.Analysis.Complex.Trigonometric",
@@ -1931,7 +1881,7 @@
     {
       "blind_name": "Real.instAddGroup",
       "distance": 5,
-      "id": "D181",
+      "id": "D176",
       "kind": "def",
       "name": "Real.instAddGroup",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1941,7 +1891,7 @@
     {
       "blind_name": "Real.lattice",
       "distance": 5,
-      "id": "D182",
+      "id": "D177",
       "kind": "def",
       "name": "Real.lattice",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1951,7 +1901,7 @@
     {
       "blind_name": "Real.sin",
       "distance": 5,
-      "id": "D183",
+      "id": "D178",
       "kind": "def",
       "name": "Real.sin",
       "owner_module": "Mathlib.Analysis.Complex.Trigonometric",
@@ -1961,7 +1911,7 @@
     {
       "blind_name": "abs",
       "distance": 5,
-      "id": "D184",
+      "id": "D179",
       "kind": "def",
       "name": "abs",
       "owner_module": "Mathlib.Algebra.Order.Group.Unbundled.Abs",
@@ -1969,9 +1919,19 @@
       "semantic_sha256": "8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b"
     },
     {
+      "blind_name": "instDecidableEqBool",
+      "distance": 5,
+      "id": "D180",
+      "kind": "def",
+      "name": "instDecidableEqBool",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "dedf43b35e221c78c811d0b7268b7be703d67b744ad16b23df01af14b2aa5899"
+    },
+    {
       "blind_name": "instMulNat",
       "distance": 5,
-      "id": "D185",
+      "id": "D181",
       "kind": "def",
       "name": "instMulNat",
       "owner_module": "Init.Prelude",
@@ -1979,19 +1939,9 @@
       "semantic_sha256": "15abc50804fa78aecc5a807f82f13a6b67bcdff9061558426471fc4b606841aa"
     },
     {
-      "blind_name": "List",
-      "distance": 6,
-      "id": "D186",
-      "kind": "inductive",
-      "name": "List",
-      "owner_module": "Init.Prelude",
-      "role": "external-frontier",
-      "semantic_sha256": "ec06a72bb009eecaedd9dbf6a3349bbea0bbc480e0a21179f4e21b3e219b952d"
-    },
-    {
       "blind_name": "Complex.im",
       "distance": 7,
-      "id": "D187",
+      "id": "D182",
       "kind": "abbrev",
       "name": "Complex.im",
       "owner_module": "Mathlib.Data.Complex.Basic",
@@ -2001,7 +1951,7 @@
     {
       "blind_name": "Complex.mk",
       "distance": 7,
-      "id": "D188",
+      "id": "D183",
       "kind": "constructor",
       "name": "Complex.mk",
       "owner_module": "Mathlib.Data.Complex.Basic",
@@ -2011,7 +1961,7 @@
     {
       "blind_name": "Complex.re",
       "distance": 7,
-      "id": "D189",
+      "id": "D184",
       "kind": "abbrev",
       "name": "Complex.re",
       "owner_module": "Mathlib.Data.Complex.Basic",
@@ -2021,7 +1971,7 @@
     {
       "blind_name": "Distrib.toAdd",
       "distance": 7,
-      "id": "D190",
+      "id": "D185",
       "kind": "abbrev",
       "name": "Distrib.toAdd",
       "owner_module": "Mathlib.Algebra.Ring.Defs",
@@ -2031,7 +1981,7 @@
     {
       "blind_name": "Fin.instAdd",
       "distance": 7,
-      "id": "D191",
+      "id": "D186",
       "kind": "def",
       "name": "Fin.instAdd",
       "owner_module": "Init.Data.Fin.Basic",
@@ -2041,7 +1991,7 @@
     {
       "blind_name": "Fin.instMul",
       "distance": 7,
-      "id": "D192",
+      "id": "D187",
       "kind": "def",
       "name": "Fin.instMul",
       "owner_module": "Init.Data.Fin.Basic",
@@ -2051,7 +2001,7 @@
     {
       "blind_name": "Neg.neg",
       "distance": 7,
-      "id": "D193",
+      "id": "D188",
       "kind": "abbrev",
       "name": "Neg.neg",
       "owner_module": "Init.Prelude",
@@ -2061,7 +2011,7 @@
     {
       "blind_name": "Real.instNeg",
       "distance": 7,
-      "id": "D194",
+      "id": "D189",
       "kind": "def",
       "name": "Real.instNeg",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -2071,7 +2021,7 @@
     {
       "blind_name": "RingEquiv.toEquiv",
       "distance": 7,
-      "id": "D195",
+      "id": "D190",
       "kind": "abbrev",
       "name": "RingEquiv.toEquiv",
       "owner_module": "Mathlib.Algebra.Ring.Equiv",
@@ -2081,7 +2031,7 @@
     {
       "blind_name": "ZMod.finEquiv",
       "distance": 7,
-      "id": "D196",
+      "id": "D191",
       "kind": "def",
       "name": "ZMod.finEquiv",
       "owner_module": "Mathlib.Data.ZMod.Basic",
@@ -2091,7 +2041,7 @@
     {
       "blind_name": "Fin.castSucc",
       "distance": 8,
-      "id": "D197",
+      "id": "D192",
       "kind": "def",
       "name": "Fin.castSucc",
       "owner_module": "Init.Data.Fin.Basic",
@@ -2101,7 +2051,7 @@
     {
       "blind_name": "Fin.last",
       "distance": 8,
-      "id": "D198",
+      "id": "D193",
       "kind": "def",
       "name": "Fin.last",
       "owner_module": "Init.Data.Fin.Basic",
@@ -2111,7 +2061,7 @@
     {
       "blind_name": "Fin.mk",
       "distance": 8,
-      "id": "D199",
+      "id": "D194",
       "kind": "constructor",
       "name": "Fin.mk",
       "owner_module": "Init.Prelude",
@@ -2121,7 +2071,7 @@
     {
       "blind_name": "Nat.below",
       "distance": 8,
-      "id": "D200",
+      "id": "D195",
       "kind": "abbrev",
       "name": "Nat.below",
       "owner_module": "Init.Prelude",
@@ -2131,7 +2081,7 @@
     {
       "blind_name": "Nat.brecOn",
       "distance": 8,
-      "id": "D201",
+      "id": "D196",
       "kind": "abbrev",
       "name": "Nat.brecOn",
       "owner_module": "Init.Prelude",
@@ -2141,7 +2091,7 @@
     {
       "blind_name": "Nat.succ",
       "distance": 8,
-      "id": "D202",
+      "id": "D197",
       "kind": "constructor",
       "name": "Nat.succ",
       "owner_module": "Init.Prelude",
@@ -2151,7 +2101,7 @@
     {
       "blind_name": "Not",
       "distance": 8,
-      "id": "D203",
+      "id": "D198",
       "kind": "def",
       "name": "Not",
       "owner_module": "Init.Prelude",
@@ -2161,7 +2111,7 @@
     {
       "blind_name": "Real.pi",
       "distance": 8,
-      "id": "D204",
+      "id": "D199",
       "kind": "def",
       "name": "Real.pi",
       "owner_module": "Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic",
@@ -2171,7 +2121,7 @@
     {
       "blind_name": "ZMod.val",
       "distance": 8,
-      "id": "D205",
+      "id": "D200",
       "kind": "def",
       "name": "ZMod.val",
       "owner_module": "Mathlib.Data.ZMod.Basic",
@@ -2181,7 +2131,7 @@
     {
       "blind_name": "dite",
       "distance": 8,
-      "id": "D206",
+      "id": "D201",
       "kind": "def",
       "name": "dite",
       "owner_module": "Init.Prelude",
@@ -2191,7 +2141,7 @@
     {
       "blind_name": "Nat.casesOn",
       "distance": 9,
-      "id": "D207",
+      "id": "D202",
       "kind": "abbrev",
       "name": "Nat.casesOn",
       "owner_module": "Init.Prelude",
@@ -2201,7 +2151,7 @@
     {
       "blind_name": "Nat.zero",
       "distance": 9,
-      "id": "D208",
+      "id": "D203",
       "kind": "constructor",
       "name": "Nat.zero",
       "owner_module": "Init.Prelude",
@@ -3831,259 +3781,379 @@
       "parent": "HighamBench.P09PositiveEpsilon"
     },
     {
-      "child": "Complex",
+      "child": "HighamBench.P09AsymptoticFftFamily",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic"
     },
     {
       "child": "HighamBench.P09MixedRadixFftPlan",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic"
     },
     {
-      "child": "HighamBench.P09TheoremOneStageEnvelope.mk",
+      "child": "HighamBench.P09TheoremOneRmsAsymptotic.mk",
       "origin": "constructor",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic"
     },
     {
       "child": "MulZeroClass.toZero",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic"
     },
     {
       "child": "Nat.instMulZeroClass",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic"
     },
     {
       "child": "NeZero",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope"
-    },
-    {
-      "child": "ZMod",
-      "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope"
-    },
-    {
-      "child": "Complex",
-      "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
-    },
-    {
-      "child": "Eq",
-      "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
-    },
-    {
-      "child": "Fin",
-      "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic"
     },
     {
       "child": "HAdd.hAdd",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "HMul.hMul",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "HPow.hPow",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "HighamBench.P09AsymptoticFftFamily",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "HighamBench.P09AsymptoticFftFamily.input",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
-    },
-    {
-      "child": "HighamBench.P09AsymptoticFftFamily.model",
-      "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
-    },
-    {
-      "child": "HighamBench.P09AsymptoticFftFamily.run",
-      "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "HighamBench.P09MixedRadixFftPlan",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stageCount",
-      "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "HighamBench.P09PositiveEpsilon",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
-      "child": "HighamBench.P09TheoremOneStageEnvelope",
+      "child": "HighamBench.P09TheoremOneRmsAsymptotic",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "HighamBench.p09ComplexRms",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
-      "child": "HighamBench.p09PropagatedFftStageError",
+      "child": "HighamBench.p09FamilyFftRoundoffError",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
-      "child": "HighamBench.p09StageFirstOrderBudget",
+      "child": "HighamBench.p09K",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "LE.le",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "LT.lt",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Monoid.toNatPow",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "MulZeroClass.toZero",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Nat.cast",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Nat.instMulZeroClass",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "NeZero",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "OfNat.ofNat",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Real.instAdd",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Real.instLE",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Real.instLT",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Real.instMonoid",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Real.instMul",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Real.instNatCast",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Real.instZero",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Real.sqrt",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Subtype.val",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
-    },
-    {
-      "child": "ZMod",
-      "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "Zero.toOfNat0",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "instHAdd",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "instHMul",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "instHPow",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
     },
     {
       "child": "instOfNatNat",
       "origin": "type",
-      "parent": "HighamBench.P09TheoremOneStageEnvelope.mk"
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.mk"
+    },
+    {
+      "child": "HighamBench.P09AsymptoticFftFamily",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "HighamBench.P09AsymptoticFftFamily",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "HighamBench.P09MixedRadixFftPlan",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "HighamBench.P09MixedRadixFftPlan",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "HighamBench.P09TheoremOneRmsAsymptotic",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "HighamBench.P09TheoremOneRmsAsymptotic",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "MulZeroClass.toZero",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "MulZeroClass.toZero",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "Nat.instMulZeroClass",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "Nat.instMulZeroClass",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "NeZero",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "NeZero",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.radius"
+    },
+    {
+      "child": "HighamBench.P09AsymptoticFftFamily",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P09AsymptoticFftFamily",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P09MixedRadixFftPlan",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P09MixedRadixFftPlan",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P09TheoremOneRmsAsymptotic",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "HighamBench.P09TheoremOneRmsAsymptotic",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "MulZeroClass.toZero",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "MulZeroClass.toZero",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "Nat.instMulZeroClass",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "Nat.instMulZeroClass",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "NeZero",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "NeZero",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff"
     },
     {
       "child": "HighamBench.P09WilkinsonModel.mk",
@@ -4499,96 +4569,6 @@
       "child": "instOfNatNat",
       "origin": "type",
       "parent": "HighamBench.p09Alpha._proof_2"
-    },
-    {
-      "child": "Complex",
-      "origin": "body",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "Complex",
-      "origin": "type",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixStage",
-      "origin": "body",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixStage",
-      "origin": "type",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "HighamBench.p09MixedRadixStageApply",
-      "origin": "body",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "List",
-      "origin": "body",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "List",
-      "origin": "type",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "List.foldl",
-      "origin": "body",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "MulZeroClass.toZero",
-      "origin": "body",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "MulZeroClass.toZero",
-      "origin": "type",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "Nat.instMulZeroClass",
-      "origin": "body",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "Nat.instMulZeroClass",
-      "origin": "type",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "NeZero",
-      "origin": "body",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "NeZero",
-      "origin": "type",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "ZMod",
-      "origin": "body",
-      "parent": "HighamBench.p09ApplyExactStageList"
-    },
-    {
-      "child": "ZMod",
-      "origin": "type",
-      "parent": "HighamBench.p09ApplyExactStageList"
     },
     {
       "child": "Complex",
@@ -5147,116 +5127,6 @@
     },
     {
       "child": "Complex",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "Complex",
-      "origin": "type",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan",
-      "origin": "type",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.finalPermutation",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stage",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stageCount",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixStage",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "HighamBench.p09ApplyExactStageList",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "HighamBench.p09Permute",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "List.drop",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "List.ofFn",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "MulZeroClass.toZero",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "MulZeroClass.toZero",
-      "origin": "type",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "Nat.instMulZeroClass",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "Nat.instMulZeroClass",
-      "origin": "type",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "NeZero",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "NeZero",
-      "origin": "type",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "ZMod",
-      "origin": "body",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "ZMod",
-      "origin": "type",
-      "parent": "HighamBench.p09ExactFftCompletion"
-    },
-    {
-      "child": "Complex",
       "origin": "type",
       "parent": "HighamBench.p09FamilyFftRoundoffError"
     },
@@ -5559,156 +5429,6 @@
       "child": "ZMod",
       "origin": "type",
       "parent": "HighamBench.p09FftRoundoffError"
-    },
-    {
-      "child": "Complex",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "Fin",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "Fin",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "Fin.val",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HAdd.hAdd",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stage",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stageCount",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stageCount",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftRun",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftRun",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftRun.stageState",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.P09WilkinsonModel",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.P09WilkinsonModel",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.p09ComplexVecSub",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "HighamBench.p09MixedRadixStageApply",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "MulZeroClass.toZero",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "MulZeroClass.toZero",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "Nat.instMulZeroClass",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "Nat.instMulZeroClass",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "NeZero",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "NeZero",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "OfNat.ofNat",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "ZMod",
-      "origin": "type",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "instAddNat",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "instHAdd",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
-    },
-    {
-      "child": "instOfNatNat",
-      "origin": "body",
-      "parent": "HighamBench.p09FftStageLocalError"
     },
     {
       "child": "AddChar",
@@ -6606,146 +6326,6 @@
       "parent": "HighamBench.p09Permute"
     },
     {
-      "child": "Complex",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "Fin",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "Fin",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "Fin.val",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HAdd.hAdd",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stageCount",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stageCount",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftRun",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftRun",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HighamBench.P09WilkinsonModel",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HighamBench.P09WilkinsonModel",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HighamBench.p09ExactFftCompletion",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "HighamBench.p09FftStageLocalError",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "MulZeroClass.toZero",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "MulZeroClass.toZero",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "Nat.instMulZeroClass",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "Nat.instMulZeroClass",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "NeZero",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "NeZero",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "OfNat.ofNat",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "ZMod",
-      "origin": "type",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "instAddNat",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "instHAdd",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
-      "child": "instOfNatNat",
-      "origin": "body",
-      "parent": "HighamBench.p09PropagatedFftStageError"
-    },
-    {
       "child": "DivInvMonoid.toDiv",
       "origin": "body",
       "parent": "HighamBench.p09RootAngle"
@@ -7451,196 +7031,6 @@
       "parent": "HighamBench.p09RoundedRoot"
     },
     {
-      "child": "Bool",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Bool.true",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Eq",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Fin",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Fin",
-      "origin": "type",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HAdd.hAdd",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HMul.hMul",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan",
-      "origin": "type",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stage",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stageCount",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixFftPlan.stageCount",
-      "origin": "type",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixStage.radix",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HighamBench.P09MixedRadixStage.useTwiddle",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HighamBench.p09Alpha",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HighamBench.p09Alpha._proof_1",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "HighamBench.p09K._proof_1",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "MulZeroClass.toZero",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "MulZeroClass.toZero",
-      "origin": "type",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Nat.instMulZeroClass",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Nat.instMulZeroClass",
-      "origin": "type",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "NeZero",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "NeZero",
-      "origin": "type",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "OfNat.ofNat",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Real",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Real",
-      "origin": "type",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Real.instAdd",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Real.instMul",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Real.instNatCast",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Real.instZero",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "Zero.toOfNat0",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "instDecidableEqBool",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "instHAdd",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "instHMul",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "instOfNatAtLeastTwo",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
-      "child": "ite",
-      "origin": "body",
-      "parent": "HighamBench.p09StageFirstOrderBudget"
-    },
-    {
       "child": "And",
       "origin": "type",
       "parent": "HighamBench.p09_t2_fictional_input_backward_error"
@@ -7706,7 +7096,17 @@
       "parent": "HighamBench.p09_t2_fictional_input_backward_error"
     },
     {
-      "child": "HighamBench.P09TheoremOneStageEnvelope",
+      "child": "HighamBench.P09TheoremOneRmsAsymptotic",
+      "origin": "type",
+      "parent": "HighamBench.p09_t2_fictional_input_backward_error"
+    },
+    {
+      "child": "HighamBench.P09TheoremOneRmsAsymptotic.radius",
+      "origin": "type",
+      "parent": "HighamBench.p09_t2_fictional_input_backward_error"
+    },
+    {
+      "child": "HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff",
       "origin": "type",
       "parent": "HighamBench.p09_t2_fictional_input_backward_error"
     },
@@ -8151,31 +7551,31 @@
   "inputs": {
     "blind_dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/inputs/blind_dependency_inventory.json",
-      "sha256": "2ea809f723b9828030b2da782b55dde66ef1994a1549be1b94937d17bd42534f"
+      "sha256": "7fd63cb3d76ca64de3012f97ede701e0e99797b84dc26793b1d9926fab183ffe"
     },
     "blind_dossier": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/inputs/blind_dossier.md",
-      "sha256": "073e4dc099c4dbd823dc336482204e6ff57e62e38cc420a31def27d7398d5c64"
+      "sha256": "0c975951024c16273cbff4fcfb118387e77662bb9424d2740d5525e3e3f926fc"
     },
     "blind_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/inputs/blind_review_packet.md",
-      "sha256": "073e4dc099c4dbd823dc336482204e6ff57e62e38cc420a31def27d7398d5c64"
+      "sha256": "0c975951024c16273cbff4fcfb118387e77662bb9424d2740d5525e3e3f926fc"
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "85ec494a238812c5d5c24e401e65884309bafc8562b1fd9f11cbd044097299a8"
+      "sha256": "15dba63b57d9b3690d0179581d160a4d2aaae767626e1ec281f04817eeea6267"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/inputs/dependency_inventory.json",
-      "sha256": "83baf03811a70b72c2b9273dd65365937157d48d08008961d0bc869ac2f057c5"
+      "sha256": "ac4a43ae69afafdc168b21fdeb3963d798e6e38ed2904247434b84636da2729d"
     },
     "direct_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/inputs/direct_review_packet.md",
-      "sha256": "3ecae609c9bb1e76a89cdd53b12e12fbfe13c270d5030f24ba43f08a3cfa52eb"
+      "sha256": "aaf01687c9432344e24d4ca7ec3f7a1c70aed9cf70e003232fea873cc2ca153b"
     },
     "source_locator": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/inputs/source_locator.json",
-      "sha256": "49d1205d051040de49c5f69f4f9a1e0b8c8bb23b23fee9b6f36ab7202bb2504f"
+      "sha256": "4b1b954e2df0431e5626df4ee70a912ba59a36064b3ad45d272bc96b4f10cb3c"
     }
   },
   "lean_environment": {
@@ -8208,37 +7608,37 @@
       ],
       "module": "HighamBench.P09Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean",
-      "sha256": "11150996f99fcd84de6a3a8c5651ccbab0ccdacc7058cd38b7ba8902a1502dfa"
+      "sha256": "f4bceddad456502243e482822ebd4c2179894c1d1aa4083349fa4a7ddc8e398e"
     }
   ],
   "outputs": {
     "adjudicator": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/agent_outputs/adjudicator.json",
-      "sha256": "5720596917e91eabf65ff6afa0e3ed71724c5a2ca9ec3c76621fd1d2d84e494a"
+      "sha256": "32d231526124ff7216b8ced4a4a26e993c38898a007eeb01bb4d3d8be0ccd984"
     },
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "0202885894838ab362f451064d66327321df6aa23ea69ad54e661fe5183442d2"
+      "sha256": "a30dce2ebd4d1302e853803a3c7521d60436006ec060dbdb90d91ca2128af8e8"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/decision.json",
-      "sha256": "a924d401332161e695e9bd36cf1822267d365873c433d19476fe73f5cd7493ed"
+      "sha256": "a604cd8884284212475c66f3b1d0ea99fed2091c5e95db97ab12226b16bc3c25"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "5212034f088cbde5190ceeed90b0ad1eef5ff9a6f2ff5438571d0c0a74291b93"
+      "sha256": "b1b9103364f63cf3c66eb246aa93ab9c6c9d55260c44e19bb40a832890836102"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/report.md",
-      "sha256": "569974a75695e8715141a009d7d02eb7b7ab02f201953a3df930df68356e6551"
+      "sha256": "c2addfc79e0baec60136db57f4fc1eb099ac78adc99ae7a2254f512b5f051534"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "16e552b55e2dd1a5682dac70791c86b055a01be7ada05b32d7c4ecbf1340014b"
+      "sha256": "571a985f3040da45d5311799fe56cd67f51edea078dd5de81c92e675a7a969dc"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P09/T2/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "9ac6fe5b5525884c25b9e12ecefa44a5b14c0cf1cac5898f43de43c60cf446bd"
+      "sha256": "f5ae5a89c6846df0dcafaacd3635022fc7111591b14d5f6cc70fcd42c412e35e"
     }
   },
   "paper": {
@@ -8263,21 +7663,14 @@
         "anchor": "equations (3.1)-(3.2), absolute trigonometric model, Theorem 1, and K(N,gamma)",
         "pdf_page": 3,
         "printed_page": "759",
-        "role": "floating-point model, Theorem 1 statement, and forward-error constant",
+        "role": "floating-point model and inherited forward-error constant",
         "section": "3. Roundoff Errors in the Fast Fourier Transform"
       },
       {
         "anchor": "assumption fl(x)=x before equation (3.6)",
         "pdf_page": 5,
         "printed_page": "761",
-        "role": "exact input representation for the stage-local derivation",
-        "section": "3. Roundoff Errors in the Fast Fourier Transform"
-      },
-      {
-        "anchor": "equations (3.6)-(3.8) and their propagation through the remaining FFT factors",
-        "pdf_page": 6,
-        "printed_page": "762",
-        "role": "stage-local block-Fourier and twiddle error budgets used to derive Theorem 1(a)",
+        "role": "exact input representation for the inherited analysis",
         "section": "3. Roundoff Errors in the Fast Fourier Transform"
       },
       {
@@ -8289,7 +7682,7 @@
       }
     ]
   },
-  "prepared_at_utc": "2026-08-22T18:32:52.274458+00:00",
+  "prepared_at_utc": "2026-08-21T18:08:38.372919+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
@@ -8377,12 +7770,12 @@
   "target": {
     "declaration": "HighamBench.p09_t2_fictional_input_backward_error",
     "path": "paper_bencmark/highambench/tasks/P09/T2/Target.lean",
-    "sha256": "3817f663b3d7b50fe06b6ec0197027f47621bee5a6de7a84aa2ffad9b077cc79"
+    "sha256": "6bfa09c58a6330e01b1b9d20bec0aa34397c6124deba04bcc0ab0c740a4017b0"
   },
   "task_id": "P09-T2",
   "task_metadata": {
     "path": "paper_bencmark/highambench/tasks/P09/T2/task.json",
     "semantic_evidence": false,
-    "sha256": "794ac59c4ca50a694541a4ee6868743e04daa27e9d0cca57ad535ac45bf414a0"
+    "sha256": "bae0c05dc5c0df3bc2b9884c8673fc47748aa1042558c6b0335e42a7bcb184f5"
   }
 }
