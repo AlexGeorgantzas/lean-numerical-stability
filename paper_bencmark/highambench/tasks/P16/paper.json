@@ -80,9 +80,9 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use the complete backward-error half of Lemma 4.2: retain exact identity (4.18), model the paper's lesssim relation with an explicit O(scale^2) remainder, and derive recurrence (4.15) from (4.1), (4.2), (4.14), and the same first-order iterate comparison used in the proof.",
+      "decision": "Retain the backward-error half of Lemma 4.2 as a project-corrected task: make the proof-required but unstated iterate comparison explicit, retain exact identity (4.18), model lesssim with an O(scale^2) remainder, and derive recurrence (4.15) from (4.1), (4.2), and (4.14). The corrected task is excluded from ordinary faithfulness scoring.",
       "task_id": "P16-T2",
-      "theorem_name": "p16_t2_restarted_residual_recurrence"
+      "theorem_name": "p16_t2_corrected_restarted_residual_recurrence"
     },
     "T3": {
       "available": true,

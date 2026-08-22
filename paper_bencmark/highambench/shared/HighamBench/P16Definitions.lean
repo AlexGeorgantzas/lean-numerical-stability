@@ -73,8 +73,8 @@ def p16FirstOrderLeAt {ι : Type*} (l : Filter ι) (scale lhs rhs : ι → ℝ) 
 
 /-- One computed generic iterative-refinement step in the backward-error
 clause of Lemma 4.2. It records exactly the normwise operation models (4.1),
-(4.2), and (4.14), together with the first-order iterate comparison used in
-the proof of (4.15). -/
+(4.2), and (4.14). The additional iterate comparison needed by the published
+proof is deliberately kept outside this structure. -/
 structure P16Lemma42BackwardStep {n : ℕ} {ι : Type*}
     (l : Filter ι) (scale : ι → ℝ)
     (A : P16Matrix n) (b : P16Vector n) (_iteration : ℕ) where
@@ -109,10 +109,6 @@ structure P16Lemma42BackwardStep {n : ℕ} {ι : Type*}
   omega_nonneg : ∀ t, 0 ≤ omega t
   epsilonR_tendsto_zero : Filter.Tendsto epsilonR l (nhds 0)
   epsilonU_tendsto_zero : Filter.Tendsto epsilonU l (nhds 0)
-  iterate_norm_comparison :
-    p16FirstOrderLeAt l scale
-      (fun t ↦ p16VecNorm (xHat t))
-      (fun t ↦ p16VecNorm (xHatNext t))
 
 /-- Frobenius condition number `kappa_F(A)` represented with the certified
 inverse that occurs in the T3 execution model. -/

@@ -2,15 +2,18 @@ import HighamBench.P16Definitions
 
 namespace HighamBench
 
-/-- P16-T2: the backward-error half of Lemma 4.2. Equation (4.18)
-holds exactly, while the recurrence (4.15) retains the paper's `≲` semantics
-through an explicit second-order remainder. -/
-theorem p16_t2_restarted_residual_recurrence
+/-- P16-T2: project-corrected backward-error half of Lemma 4.2. The iterate
+comparison used but not assumed by the paper is explicit. -/
+theorem p16_t2_corrected_restarted_residual_recurrence
     {n : ℕ} {ι : Type*} {l : Filter ι} [l.NeBot]
     (A : P16Matrix n) (b : P16Vector n) (iteration : ℕ)
     (scale : ι → ℝ) (hscale : Filter.Tendsto scale l (nhds 0))
     (hn : 0 < n) (hA : p16IsNonsingular A) (hb : b ≠ 0)
-    (step : P16Lemma42BackwardStep l scale A b iteration) :
+    (step : P16Lemma42BackwardStep l scale A b iteration)
+    (hiterate :
+      p16FirstOrderLeAt l scale
+        (fun t ↦ p16VecNorm (step.xHat t))
+        (fun t ↦ p16VecNorm (step.xHatNext t))) :
     (∀ t,
       p16MatVec A (step.xHatNext t) - b =
         step.deltaR t + p16MatVec A (step.correctionHat t) -

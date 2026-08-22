@@ -82,7 +82,7 @@ the `theorem` command.
 | `P15-T2` | `LEM` | `Lemma 3.1` | The selected truncation-plus-rounding backward-error result is explicitly named Lemma 3.1. |
 | `P15-T3` | `THM` | `Theorem 4.5` | The selected BLR linear-system backward-error result is explicitly named Theorem 4.5. |
 | `P16-T1` | `UNL` | none | Section 2 gives the selected minimum normwise backward-error identity in an unnumbered display. |
-| `P16-T2` | `LEM` | `Lemma 4.2` | The selected exact identity and first-order restarted residual recurrence are the backward-error half of Lemma 4.2. |
+| `P16-T2` | `LEM` | `Lemma 4.2` | The corrected task remains tied to the backward-error half of Lemma 4.2; its proof-required iterate comparison is documented as a project-added condition. |
 | `P16-T3` | `THM` | `Theorem 6.3` | The selected mixed-precision contraction and attainable-floor result is explicitly named Theorem 6.3. |
 | `P17-T1` | `THM` | `Theorem 3.6` | The selected corrected finite-probability product envelope remains explicitly tied to Theorem 3.6; the project-added sign conditions are documented separately. |
 | `P17-T2` | `THM` | `Theorem 4.1` | The selected recursive-summation bias bound is explicitly named Theorem 4.1. |
