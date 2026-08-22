@@ -84,7 +84,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use the complete conditional existential attainable-forward-error results of Theorems 3.3 and 3.4, equations (3.17) and (3.20), and retain Remark 4's exact identification of the right-only preconditioner-reapplication term.",
+      "decision": "Use the complete conditional existential attainable-forward-error results of Theorems 3.3 and 3.4 as separately quantified claims, derive both dimensions through the first-loss MGS argument, require the full source conditions at every terminal-or-near-dependence candidate as in Appendix C, retain all five terms of condition (3.16), and preserve Remark 4's exact identification of the right-only preconditioner-reapplication term. Use static qualitative first-order semantics, source-authorized square condition-number choices, raw Appendix-C/D gains, and no preselected key dimensions or precision filter.",
       "task_id": "P19-T3",
       "theorem_name": "p19_t3_right_flexible_attainable_forward_error"
     }
@@ -92,6 +92,7 @@
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
     "Represent the source's unspecified low-degree c(n,k) by its value at the selected dimensions, and parameterize the qualitative second-order semantics instead of inventing polynomial coefficients or an asymptotic variable.",
+    "When Section 2 writes an unqualified square condition number, expose the source-authorized Frobenius or induced-2 choice explicitly and apply it consistently to the matrix and its certified inverse.",
     "Represent the paper's four modular error sources and right/flexible precision distinction explicitly.",
     "Do not promote empirical heatmaps, iteration counts, qualified recommendations, or future-work claims to theorem targets.",
     "Keep every public definition free of NumStability imports.",

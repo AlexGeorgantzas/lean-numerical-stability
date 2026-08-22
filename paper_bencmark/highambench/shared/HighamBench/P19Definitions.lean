@@ -1121,4 +1121,362 @@ structure P19FlexibleTheorem34Execution {n : ℕ} {ι : Type*}
   algorithm : P19FlexibleGMRESRun run
   analysis : P19FlexibleForwardAnalysis algorithm
 
+/-- The two square-matrix condition-number readings that Section 2 explicitly
+allows when it subsequently writes an unqualified `kappa`. -/
+inductive P19StaticSquareKappaChoice where
+  | frobenius
+  | inducedTwo
+
+/-- A source-authorized interpretation of an unqualified square condition
+number. The inverse argument remains attached to the matrix it inverts. -/
+noncomputable def p19StaticKappa (choice : P19StaticSquareKappaChoice)
+    {n : ℕ} (A Ainv : P19Matrix n) : ℝ :=
+  match choice with
+  | .frobenius => p19ConditionNumberF A Ainv
+  | .inducedTwo => p19Kappa2 A Ainv
+
+/-- One fixed nonsingular right preconditioner for a static Algorithm 2
+family. The two identity equations express `M_L = I`. -/
+structure P19StaticFixedRightPreconditioner {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics) where
+  MR : P19Matrix n
+  MRinv : P19Matrix n
+  MR_inverse : p19InversePair MR MRinv
+  right_operator_inverse :
+    p19InversePair (p19SquareRectMul family.system.A MRinv)
+      (p19SquareRectMul MR family.system.Ainv)
+  nontrivial : MR ≠ 1
+  left_preconditioner_identity : family.system.ML = 1
+  left_preconditioner_inverse_identity : family.system.MLinv = 1
+
+/-- The condition number of the original matrix in Theorems 3.3-3.4. -/
+noncomputable def p19StaticSystemKappa
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics) : ℝ :=
+  p19StaticKappa choice family.system.A family.system.Ainv
+
+/-- The condition number of the fixed right preconditioner. -/
+noncomputable def p19StaticRightPreconditionerKappa
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    (preconditioner : P19StaticFixedRightPreconditioner family) : ℝ :=
+  p19StaticKappa choice preconditioner.MR preconditioner.MRinv
+
+/-- The condition number of `A M_R^{-1}`. -/
+noncomputable def p19StaticRightOperatorKappa
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    (preconditioner : P19StaticFixedRightPreconditioner family) : ℝ :=
+  p19StaticKappa choice
+    (p19SquareRectMul family.system.A preconditioner.MRinv)
+    (p19SquareRectMul preconditioner.MR family.system.Ainv)
+
+/-- The complete five-entry maximum in condition (3.16), with no numerical
+threshold added to the paper's qualitative smallness notation. -/
+noncomputable def p19StaticCondition316Value
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (ug um ua etaR rhoAR : ℝ) : ℝ :=
+  max (ug * p19StaticRightOperatorKappa choice preconditioner)
+    (max (ug * p19StaticRightPreconditionerKappa choice preconditioner)
+      (max (um * etaR *
+          p19StaticRightPreconditionerKappa choice preconditioner)
+        (max (ua * p19StaticSystemKappa choice family * rhoAR)
+          (ua * p19StaticRightOperatorKappa choice preconditioner *
+            p19StaticRightPreconditionerKappa choice preconditioner))))
+
+/-- The three source terms in equation (3.17). -/
+noncomputable def p19StaticRightAttainableEnvelope
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (ug um ua etaR rhoAR : ℝ) : ℝ :=
+  ug * p19StaticRightOperatorKappa choice preconditioner *
+      p19StaticRightPreconditionerKappa choice preconditioner +
+    um * etaR * p19StaticRightPreconditionerKappa choice preconditioner +
+      ua * p19StaticSystemKappa choice family * rhoAR
+
+/-- The two source terms in equation (3.20). -/
+noncomputable def p19StaticFlexibleAttainableEnvelope
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (ug ua rhoAR : ℝ) : ℝ :=
+  ug * p19StaticRightOperatorKappa choice preconditioner *
+      p19StaticRightPreconditionerKappa choice preconditioner +
+    ua * p19StaticSystemKappa choice family * rhoAR
+
+/-- Raw fixed-preconditioner data shared by the right and flexible paths at
+one dimension. The inaccessible basis is linked by (C.2); no error bound or
+attainable dimension is stored. -/
+structure P19StaticFixedRightCore {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics)
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (k : P19Theorem31Dimension n) where
+  ug : ℝ
+  um : ℝ
+  ua : ℝ
+  etaR : ℝ
+  rhoAR : ℝ
+  zHat : P19RectMatrix n k.1
+  preconditionerDelta : Fin k.1 → P19Matrix n
+  preconditioner_application : ∀ j,
+    p19Column zHat j =
+      p19MatVec (preconditioner.MRinv + preconditionerDelta j)
+        (p19Column (family.iteration k).vHat j)
+  matrixDelta : Fin k.1 → P19Matrix n
+  matrix_application : ∀ j,
+    p19Column (family.iteration k).computedC j =
+      p19MatVec (family.system.A + matrixDelta j) (p19Column zHat j)
+  search_space_equation : ∀ j,
+    p19Column (family.basisFamily.basis k.1) j =
+      p19Column zHat j +
+        p19MatVec family.system.Ainv
+          (p19MatVec (matrixDelta j) (p19Column zHat j))
+  computation_exact : (family.iteration k).deltaC = 0
+  computation_accuracy_zero : (family.iteration k).epsilonC = 0
+  rhs_exact : (family.iteration k).deltaB = 0
+  rhs_accuracy_zero : (family.iteration k).epsilonB = 0
+  gmresMagnitude : ℝ
+  basisPreconditionerMagnitude : ℝ
+  matrixMagnitude : ℝ
+
+/-- The source models (3.14), (C.1), (3.15), the MGS/Givens perturbation,
+and the full qualitative condition (3.16) at one candidate dimension. These
+bound actual perturbations, not propagated forward-error contributions. -/
+structure P19StaticFixedRightCoreConditions
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {preconditioner : P19StaticFixedRightPreconditioner family}
+    {k : P19Theorem31Dimension n}
+    (core : P19StaticFixedRightCore family preconditioner k) where
+  parameters_nonneg :
+    0 ≤ core.ug ∧ 0 ≤ core.um ∧ 0 ≤ core.ua ∧ 0 ≤ core.etaR ∧
+      0 ≤ core.rhoAR
+  magnitudes_nonneg :
+    0 ≤ core.gmresMagnitude ∧ 0 ≤ core.basisPreconditionerMagnitude ∧
+      0 ≤ core.matrixMagnitude
+  least_squares_solution :
+    p19IsLeastSquaresSolution
+      ((family.iteration k).computedC +
+        (family.iteration k).leastSquaresDeltaC)
+      ((family.iteration k).computedB +
+        (family.iteration k).leastSquaresDeltaB)
+      (family.iteration k).yHat
+  least_squares_error_covered : ∀ j : Fin (k.1 + 1),
+    p19VecNorm2
+        (p19Column
+          (p19Augment (family.iteration k).leastSquaresDeltaB
+            (family.iteration k).leastSquaresDeltaC) j) ≤
+      core.gmresMagnitude *
+        p19VecNorm2
+          (p19Column
+            (p19Augment (family.iteration k).computedB
+              (family.iteration k).computedC) j)
+  basis_preconditioner_error_covered : ∀ j,
+    p19FrobNorm (core.preconditionerDelta j) ≤
+      core.basisPreconditionerMagnitude * p19FrobNorm preconditioner.MRinv
+  matrix_error_covered : ∀ j i q,
+    |core.matrixDelta j i q| ≤ core.matrixMagnitude * |family.system.A i q|
+  gmres_magnitude_bound :
+    core.gmresMagnitude ≤ (family.iteration k).dimensionFactor * core.ug
+  basis_preconditioner_magnitude_bound :
+    core.basisPreconditionerMagnitude ≤
+      (family.iteration k).dimensionFactor * core.um * core.etaR
+  matrix_magnitude_bound :
+    core.matrixMagnitude ≤ (family.iteration k).dimensionFactor * core.ua
+  rho_denominator_pos :
+    0 < p19VecNorm2
+      (p19RectMatVec core.zHat (family.iteration k).yHat)
+  rho_equation :
+    core.rhoAR =
+      p19VecNorm2 (p19AbsRectMatVec core.zHat (family.iteration k).yHat) /
+        p19VecNorm2 (p19RectMatVec core.zHat (family.iteration k).yHat)
+  condition316 :
+    semantics.small
+      (p19StaticCondition316Value choice preconditioner
+        core.ug core.um core.ua core.etaR core.rhoAR)
+
+/-- Right-preconditioned solution formation: a product with `V_hat` followed
+by a fresh application of `M_R^{-1}`. -/
+structure P19StaticRightIteration {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics)
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (k : P19Theorem31Dimension n) where
+  core : P19StaticFixedRightCore family preconditioner k
+  solutionBasisDelta : P19RectMatrix n k.1
+  solutionPreconditionerDelta : P19Matrix n
+  solution_equation :
+    (family.iteration k).xHat =
+      p19MatVec (preconditioner.MRinv + solutionPreconditionerDelta)
+        (p19RectMatVec
+          ((family.iteration k).vHat + solutionBasisDelta)
+          (family.iteration k).yHat)
+  reapplicationMagnitude : ℝ
+
+/-- Fixed-precision source error bounds for right solution formation. -/
+structure P19StaticRightConditions
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {preconditioner : P19StaticFixedRightPreconditioner family}
+    {k : P19Theorem31Dimension n}
+    (iteration : P19StaticRightIteration family preconditioner k) where
+  core : P19StaticFixedRightCoreConditions choice iteration.core
+  reapplication_magnitude_nonneg : 0 ≤ iteration.reapplicationMagnitude
+  solution_basis_error_covered : ∀ i j,
+    |iteration.solutionBasisDelta i j| ≤
+      iteration.core.gmresMagnitude * |(family.iteration k).vHat i j|
+  solution_preconditioner_error_covered :
+    p19FrobNorm iteration.solutionPreconditionerDelta ≤
+      iteration.reapplicationMagnitude * p19FrobNorm preconditioner.MRinv
+  reapplication_magnitude_bound :
+    iteration.reapplicationMagnitude ≤
+      (family.iteration k).dimensionFactor *
+        iteration.core.um * iteration.core.etaR
+
+/-- Flexible solution formation: a direct product with the persistently stored
+computed basis `Z_hat`, with no fresh preconditioner application. -/
+structure P19StaticFlexibleIteration {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (family : P19Theorem31Family n semantics)
+    (preconditioner : P19StaticFixedRightPreconditioner family)
+    (k : P19Theorem31Dimension n) where
+  core : P19StaticFixedRightCore family preconditioner k
+  solutionBasisDelta : P19RectMatrix n k.1
+  solution_equation :
+    (family.iteration k).xHat =
+      p19RectMatVec (core.zHat + solutionBasisDelta)
+        (family.iteration k).yHat
+
+/-- Fixed-precision source error bounds for flexible solution formation. -/
+structure P19StaticFlexibleConditions
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    {family : P19Theorem31Family n semantics}
+    {preconditioner : P19StaticFixedRightPreconditioner family}
+    {k : P19Theorem31Dimension n}
+    (iteration : P19StaticFlexibleIteration family preconditioner k) where
+  core : P19StaticFixedRightCoreConditions choice iteration.core
+  solution_basis_error_covered : ∀ i j,
+    |iteration.solutionBasisDelta i j| ≤
+      iteration.core.gmresMagnitude * |iteration.core.zHat i j|
+
+/-- Static right-preconditioned executions at all admissible dimensions. -/
+structure P19StaticRightFamily (n : ℕ)
+    (semantics : P19FirstOrderSemantics) where
+  family : P19Theorem31Family n semantics
+  preconditioner : P19StaticFixedRightPreconditioner family
+  iteration : ∀ k : P19Theorem31Dimension n,
+    P19StaticRightIteration family preconditioner k
+
+/-- Static fixed-preconditioner flexible executions at all admissible
+dimensions. -/
+structure P19StaticFlexibleFamily (n : ℕ)
+    (semantics : P19FirstOrderSemantics) where
+  family : P19Theorem31Family n semantics
+  preconditioner : P19StaticFixedRightPreconditioner family
+  iteration : ∀ k : P19Theorem31Dimension n,
+    P19StaticFlexibleIteration family preconditioner k
+
+/-- Raw Appendix-C propagation at one dimension. The gains multiply actual
+source-error magnitudes; neither `c(n,k)` nor (3.17) is stored. -/
+structure P19StaticRightAppendixCExpansion
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (right : P19StaticRightFamily n semantics)
+    (k : P19Theorem31Dimension n) where
+  gmresContribution : P19Vector n
+  reapplicationContribution : P19Vector n
+  matrixContribution : P19Vector n
+  remainder : P19Vector n
+  error_decomposition :
+    (right.family.iteration k).xHat - right.family.system.xExact =
+      gmresContribution + reapplicationContribution + matrixContribution +
+        remainder
+  remainder_second_order :
+    semantics.secondOrder
+      (p19VecNorm2 remainder / p19VecNorm2 right.family.system.xExact)
+  gmres_gain_bound :
+    p19VecNorm2 gmresContribution /
+          p19VecNorm2 right.family.system.xExact ≤
+      (right.iteration k).core.gmresMagnitude *
+        p19StaticRightOperatorKappa choice right.preconditioner *
+          p19StaticRightPreconditionerKappa choice right.preconditioner
+  reapplication_gain_bound :
+    p19VecNorm2 reapplicationContribution /
+          p19VecNorm2 right.family.system.xExact ≤
+      (right.iteration k).reapplicationMagnitude *
+        p19StaticRightPreconditionerKappa choice right.preconditioner
+  matrix_gain_bound :
+    p19VecNorm2 matrixContribution /
+          p19VecNorm2 right.family.system.xExact ≤
+      (right.iteration k).core.matrixMagnitude *
+        p19StaticSystemKappa choice right.family *
+          (right.iteration k).core.rhoAR
+
+/-- Raw Appendix-D propagation at one dimension. It has no reapplication
+contribution and stores neither `c(n,k)` nor (3.20). -/
+structure P19StaticFlexibleAppendixDExpansion
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (flexible : P19StaticFlexibleFamily n semantics)
+    (k : P19Theorem31Dimension n) where
+  gmresContribution : P19Vector n
+  matrixContribution : P19Vector n
+  remainder : P19Vector n
+  error_decomposition :
+    (flexible.family.iteration k).xHat - flexible.family.system.xExact =
+      gmresContribution + matrixContribution + remainder
+  remainder_second_order :
+    semantics.secondOrder
+      (p19VecNorm2 remainder / p19VecNorm2 flexible.family.system.xExact)
+  gmres_gain_bound :
+    p19VecNorm2 gmresContribution /
+          p19VecNorm2 flexible.family.system.xExact ≤
+      (flexible.iteration k).core.gmresMagnitude *
+        p19StaticRightOperatorKappa choice flexible.preconditioner *
+          p19StaticRightPreconditionerKappa choice flexible.preconditioner
+  matrix_gain_bound :
+    p19VecNorm2 matrixContribution /
+          p19VecNorm2 flexible.family.system.xExact ≤
+      (flexible.iteration k).core.matrixMagnitude *
+        p19StaticSystemKappa choice flexible.family *
+          (flexible.iteration k).core.rhoAR
+
+/-- Uniform Appendix-C dependency. It receives the MGS-selected dimension and
+the source conditions and supplies only the raw propagation above. -/
+structure P19StaticRightAppendixCTheory
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (right : P19StaticRightFamily n semantics) where
+  expansion : ∀ (k : P19Theorem31Dimension n),
+    p19IterationWellConditioned (right.family.iteration k) →
+    (k.1 = n ∨ p19MGSNearDependence (right.family.iteration k)) →
+    P19StaticRightConditions choice (right.iteration k) →
+      P19StaticRightAppendixCExpansion choice right k
+
+/-- Uniform Appendix-D dependency, again without a selected dimension or the
+collected theorem bound. -/
+structure P19StaticFlexibleAppendixDTheory
+    (choice : P19StaticSquareKappaChoice) {n : ℕ}
+    {semantics : P19FirstOrderSemantics}
+    (flexible : P19StaticFlexibleFamily n semantics) where
+  expansion : ∀ (k : P19Theorem31Dimension n),
+    p19IterationWellConditioned (flexible.family.iteration k) →
+    (k.1 = n ∨ p19MGSNearDependence (flexible.family.iteration k)) →
+    P19StaticFlexibleConditions choice (flexible.iteration k) →
+      P19StaticFlexibleAppendixDExpansion choice flexible k
+
 end HighamBench
