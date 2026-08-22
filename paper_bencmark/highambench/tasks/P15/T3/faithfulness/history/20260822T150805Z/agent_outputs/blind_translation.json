@@ -1,0 +1,1325 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "e6325ed646fb36b6a253bbf24b7dd98cddd9305697a7661f0ad37b5286b5eaf7",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For natural numbers b, p, and r, this is the type of a complete run-data package constructed by D028, containing dimensions, choices, matrices, vectors, computed quantities, error functions, and all stated structural, execution, residual, and error-bound assumptions.",
+      "effect_on_target": "The theorem quantifies over an arbitrary inhabitant run of this package; all named data and hypotheses used by the target are projections from run.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "The seventh field of run: a real square matrix A of dimension n = p b.",
+      "effect_on_target": "A is the original coefficient matrix in the perturbed equation and matrix-error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "The eleventh field of run: a function L(u,epsilon) returning an n by n real matrix.",
+      "effect_on_target": "L is the computed lower factor used in both combined errors, the solve scale, and the bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "The twelfth field of run: a function U(u,epsilon) returning an n by n real matrix.",
+      "effect_on_target": "U is the computed upper factor used in both combined errors, the solve scale, and the bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "The eighteenth field of run: the factorization matrix error as a function of u and epsilon.",
+      "effect_on_target": "It is the leading term in the explicitly defined total matrix perturbation.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "The nineteenth field of run: a real-valued factorization remainder function.",
+      "effect_on_target": "The target reasserts its asymptotic property, requires it to be nonnegative for admissible parameters, and adds it to the matrix-error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "The twenty-fourth field of run: the lower-solve matrix error as a function of u and epsilon.",
+      "effect_on_target": "It contributes lowerError times U and lowerError times upperError to the total matrix perturbation, and contributes lowerError times upperRhsError to the total right-hand-side perturbation.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "The twenty-sixth field of run: the lower-solve right-hand-side error vector.",
+      "effect_on_target": "It is the first term of the combined right-hand-side perturbation.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "The sixth field of run: one of the two recompression choices represented by LocalDef029.",
+      "effect_on_target": "Together with the threshold choice, it determines the coefficient xi in the matrix-error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "The fifth field of run: one of the two threshold choices represented by LocalDef030.",
+      "effect_on_target": "Together with the recompression choice, it determines xi.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "The twenty-fifth field of run: the upper-solve matrix error as a function of u and epsilon.",
+      "effect_on_target": "It contributes L times upperError and lowerError times upperError to the total matrix perturbation.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "The twenty-seventh field of run: the upper-solve right-hand-side error vector.",
+      "effect_on_target": "It contributes L times upperRhsError and lowerError times upperRhsError to the combined right-hand-side perturbation.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "The eighth field of run: the original right-hand-side vector v in R^n.",
+      "effect_on_target": "It appears in the exact perturbed system and the right-hand-side error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LocalDef014",
+      "meaning": "The fourteenth field of run: the computed solution vector xHat(u,epsilon) in R^n.",
+      "effect_on_target": "It solves the asserted perturbed system and enters the solve scale.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "LocalDef015",
+      "meaning": "LocalDef015(n) is the type of n by n real matrices, represented as functions Fin n to Fin n to Real.",
+      "effect_on_target": "It fixes every matrix in the target to be square of dimension n = p b.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LocalDef016",
+      "meaning": "LocalDef016(n) is the type of real vectors indexed by Fin n.",
+      "effect_on_target": "It fixes all vectors in the target to have dimension n = p b.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "LocalDef017",
+      "meaning": "Admissibility of u and epsilon for a real c means 0 < u, 0 < epsilon, u < epsilon, and 3 c u < 1.",
+      "effect_on_target": "The perturbed equation, nonnegativity assertions, and norm bounds are required only for admissible u and epsilon.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "LocalDef018",
+      "meaning": "It defines c = b + 2 r sqrt(r) + p, with natural numbers coerced to reals.",
+      "effect_on_target": "This c determines admissibility and the gamma factor gamma_{3c}(u) in the final matrix bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "LocalDef019",
+      "meaning": "It defines xi by a two-by-two case split. For recompression constructor D040, xi is 1 with threshold constructor D043 and p with D042. For recompression constructor D039, xi is p with D043 and p^2/sqrt(6) with D042.",
+      "effect_on_target": "The term xi epsilon multiplies the norm of A in the final matrix perturbation bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "LocalDef020",
+      "meaning": "For matrices E0, EL, EU, L, and U, it returns E0 + EL U + L EU + EL EU.",
+      "effect_on_target": "It is the exact definition imposed on the existential matrixError function.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "LocalDef021",
+      "meaning": "For vectors fL and fU and matrices L and EL, it returns fL + L fU + EL fU.",
+      "effect_on_target": "It is the exact definition imposed on the existential rhsError function.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "LocalDef022",
+      "meaning": "It is the Frobenius norm: ||A||_F = sqrt(sum_i sum_j A_ij^2).",
+      "effect_on_target": "Every matrix norm in the target and its auxiliary definitions is specifically the Frobenius norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "LocalDef023",
+      "meaning": "It defines gamma_k(u) = k u/(1-k u), using real division.",
+      "effect_on_target": "The target uses gamma_p(u) and gamma_{3c}(u); run assumptions also use related gamma factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "LocalDef024",
+      "meaning": "A remainder R satisfies this property when there are C >= 0 and delta > 0 such that |R(u,epsilon)| <= C u epsilon whenever 0 < u < epsilon, both u and epsilon are at most delta, and epsilon > 0.",
+      "effect_on_target": "The target requires this explicit local O(u epsilon) property of the fixed factorRemainder.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "LocalDef025",
+      "meaning": "Relative to a scale S, a remainder R satisfies this property when there are C >= 0 and delta > 0 such that |R(u,epsilon)| <= C u^2 S(u,epsilon) whenever 0 < u < epsilon, u and epsilon are at most delta, and S(u,epsilon) >= 0.",
+      "effect_on_target": "The existential rhsRemainder must have this explicit local O(u^2 solveScale) property.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "LocalDef026",
+      "meaning": "It is ordinary matrix-vector multiplication: (A x)_i = sum_j A_ij x_j.",
+      "effect_on_target": "It gives the exact perturbed linear system and appears in the definitions of combined solve errors.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "LocalDef027",
+      "meaning": "It is the Euclidean vector norm: ||x||_2 = sqrt(sum_i x_i^2).",
+      "effect_on_target": "It defines all vector norms and the solution-dependent solve scale.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "LocalDef028",
+      "meaning": "This constructor builds run from 0 < b, 0 < p, r <= b; an algorithm, threshold, and recompression choice; an invertible n by n matrix A and vector v; approximation Atilde, factors L and U, intermediate yHat and solution xHat; admissible-parameter evidence for thresholding, common minimal block rank r, and the chosen factorization execution model; a factor error E0 and remainder rhoA satisfying A + E0 = L U, ||E0||_F <= (xi epsilon + gamma_p(u))||A||_F + gamma_c(u)||L||_F||U||_F + rhoA, rhoA >= 0, and rhoA = O(u epsilon); lower and upper matrix and right-hand-side errors satisfying (L+EL)yHat = v+fL and (U+EU)xHat = yHat+fU; solve-execution evidence; and bounds ||EL||_F <= gamma_d(u)||L||_F, ||EU||_F <= gamma_d(u)||U||_F, ||fL||_2 <= gamma_p(u)||v||_2, and ||fU||_2 <= gamma_p(u)||yHat||_2, where d = b + r sqrt(r) + p.",
+      "effect_on_target": "It supplies every substantive hypothesis from which the combined backward-error statement is formed. In particular, the stored factor bound uses gamma_c(u), while the target concludes the weaker term gamma_{3c}(u).",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "LocalDef029",
+      "meaning": "A two-constructor choice type with constructors D039 and D040.",
+      "effect_on_target": "It represents the recompression choice and controls xi and recompression-error semantics.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "LocalDef030",
+      "meaning": "A two-constructor choice type with constructors D042 and D043.",
+      "effect_on_target": "It represents the threshold choice and controls xi and threshold scales.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "LocalDef031",
+      "meaning": "A proof that 2 + 1 is a natural number at least two.",
+      "effect_on_target": "It only supports elaboration of the numeral 3 and adds no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "LocalDef032",
+      "meaning": "A proof that 1 + 1 is a natural number at least two.",
+      "effect_on_target": "It only supports numeral elaboration and adds no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "LocalDef033",
+      "meaning": "A proof that 5 + 1 is a natural number at least two.",
+      "effect_on_target": "It only supports elaboration of the numeral 6 and adds no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "LocalDef034",
+      "meaning": "A dependent two-by-two case eliminator for a LocalDef029 choice and a LocalDef030 choice.",
+      "effect_on_target": "It performs the four-way case split defining xi.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "LocalDef035",
+      "meaning": "Ordinary multiplication of square real matrices.",
+      "effect_on_target": "It defines products in the combined errors and in the run's factorization and block-rank assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "LocalDef036",
+      "meaning": "The Frobenius norm of a rectangular real matrix.",
+      "effect_on_target": "Through D022 it fixes the target's matrix norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "LocalDef037",
+      "meaning": "A two-constructor algorithm-choice type with constructors D053 and D054.",
+      "effect_on_target": "The selected constructor determines which factorization execution-evidence type must be inhabited in run.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "LocalDef038",
+      "meaning": "Dependent elimination on LocalDef029, choosing the D040 branch first and the D039 branch second.",
+      "effect_on_target": "It underlies the recompression case split used by xi and recompression-error definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "LocalDef039",
+      "meaning": "One constructor of the recompression-choice type LocalDef029.",
+      "effect_on_target": "In the xi table it gives xi = p for threshold D043 and xi = p^2/sqrt(6) for threshold D042.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "LocalDef040",
+      "meaning": "The other constructor of the recompression-choice type LocalDef029.",
+      "effect_on_target": "In the xi table it gives xi = 1 for threshold D043 and xi = p for threshold D042.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "LocalDef041",
+      "meaning": "Dependent elimination on LocalDef030, choosing the D043 branch first and the D042 branch second.",
+      "effect_on_target": "It underlies the threshold case split used by xi and threshold scales.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "LocalDef042",
+      "meaning": "One constructor of the threshold-choice type LocalDef030.",
+      "effect_on_target": "It selects the p or p^2/sqrt(6) branches of xi and the global matrix-norm threshold scale in nested assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "LocalDef043",
+      "meaning": "The other constructor of the threshold-choice type LocalDef030.",
+      "effect_on_target": "It selects the 1 or p branches of xi and the local block-norm threshold scale in nested assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "LocalDef044",
+      "meaning": "It dispatches on the algorithm choice: constructor D054 requires a nonempty LocalDef059 execution object, while constructor D053 requires a nonempty LocalDef058 execution object.",
+      "effect_on_target": "It is an admissible-run hypothesis; it does not occur directly in the final formulas but restricts which runs exist.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "LocalDef045",
+      "meaning": "A typed execution certificate for a block triangular solve, parameterized by direction, precision u, triangular matrix T, right-hand side, and computed solution.",
+      "effect_on_target": "Run requires nonempty lower- and upper-solve certificates, indirectly constraining the data used in the backward-error conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "LocalDef046",
+      "meaning": "LocalDef046(m,n) is the type of m by n real matrices.",
+      "effect_on_target": "It supplies rectangular block-factor types in nested rank and execution assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "LocalDef047",
+      "meaning": "One constructor of the two-way solve-direction type, selecting indices j < i and lower-triangular structure.",
+      "effect_on_target": "It identifies the lower-solve execution model required by run.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "LocalDef048",
+      "meaning": "The other constructor of the solve-direction type, selecting indices i < j and upper-triangular structure.",
+      "effect_on_target": "It identifies the upper-solve execution model required by run.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "LocalDef049",
+      "meaning": "Atilde is a threshold approximation of block matrix A when every diagonal block is unchanged and every off-diagonal block is a minimum-rank candidate satisfying D062 at tolerance epsilon.",
+      "effect_on_target": "Run assumes this for Atilde at admissible parameters; it restricts run existence but Atilde is not present in the final conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "LocalDef050",
+      "meaning": "It defines d = b + r sqrt(r) + p as a real number.",
+      "effect_on_target": "Run uses gamma_d(u) in its lower- and upper-factor solve-error hypotheses, from which the combined remainder is obtained.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "LocalDef051",
+      "meaning": "L and U both admit off-diagonal block factorizations of rank r, and r is no larger than any rank s that works simultaneously for both.",
+      "effect_on_target": "It makes r a minimal common structural block rank in run; it has no direct occurrence in the final equations except through c and stored assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "LocalDef052",
+      "meaning": "A square matrix is two-sided invertible: there exists Ainv with Ainv A = I and A Ainv = I.",
+      "effect_on_target": "Run assumes A is invertible and nested solve certificates assume invertible diagonal blocks; the target does not assert invertibility of A plus matrixError.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "LocalDef053",
+      "meaning": "One constructor of the algorithm-choice type.",
+      "effect_on_target": "It selects nonempty LocalDef058 factorization evidence in D044.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "LocalDef054",
+      "meaning": "The other constructor of the algorithm-choice type.",
+      "effect_on_target": "It selects nonempty LocalDef059 factorization evidence in D044.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "LocalDef055",
+      "meaning": "The primitive dependent recursor for the two recompression constructors.",
+      "effect_on_target": "It implements case distinctions on recompression and contributes no extra proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "LocalDef056",
+      "meaning": "The primitive dependent recursor for the two threshold constructors.",
+      "effect_on_target": "It implements case distinctions on threshold and contributes no extra proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "LocalDef057",
+      "meaning": "The constructor for a solve certificate. It requires the direction-appropriate triangular structure, invertible diagonal blocks, modeled off-diagonal products and their norm bounds, componentwise right-hand-side and product relative errors bounded by gamma_p(u), diagonal matrix errors bounded by gamma_b(u), and the corresponding block substitution equations.",
+      "effect_on_target": "It gives the exact semantics of the lower and upper solve-execution assumptions stored in run, but those certificates are not exposed in the final conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "LocalDef058",
+      "meaning": "A factorization-execution certificate type constructed by D067, using compressed off-diagonal updated blocks.",
+      "effect_on_target": "For algorithm constructor D053, run must contain evidence that this execution model is realizable.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "LocalDef059",
+      "meaning": "A factorization-execution certificate type constructed by D068, using raw off-diagonal blocks followed by scaled compression.",
+      "effect_on_target": "For algorithm constructor D054, run must contain evidence that this execution model is realizable.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "LocalDef060",
+      "meaning": "A two-constructor direction type with constructors D047 and D048.",
+      "effect_on_target": "It distinguishes lower from upper triangular solve semantics in nested run assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "LocalDef061",
+      "meaning": "A dependent dispatcher on the algorithm choice, selecting the D054 branch first and D053 branch second.",
+      "effect_on_target": "It implements D044's choice of factorization certificate.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "LocalDef062",
+      "meaning": "A block candidate has rank parameter k if it is formed from b by k factors X and Y, with X having orthonormal columns, oriented as X Y^T or Y X^T according to block position, and its Frobenius error from A_ij is at most epsilon times either ||A_ij||_F or ||A||_F according to the threshold choice.",
+      "effect_on_target": "It defines the thresholding property assumed of Atilde inside run and does not directly enter the final bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "LocalDef063",
+      "meaning": "The n by n identity matrix.",
+      "effect_on_target": "It defines two-sided matrix invertibility in D052.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "LocalDef064",
+      "meaning": "A block matrix has off-diagonal block rank at most r when every off-diagonal b by b block can be written X Y^T with X and Y of size b by r.",
+      "effect_on_target": "It defines the common-rank assumption on L and U.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "LocalDef065",
+      "meaning": "It extracts the b by b block A_ij from a p b by p b matrix using flattened index i b + row.",
+      "effect_on_target": "It supplies the block interpretation used throughout the nested structural and execution assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "LocalDef066",
+      "meaning": "A wrapper around the primitive algorithm recursor, selecting the D054 branch then the D053 branch.",
+      "effect_on_target": "It performs algorithm case analysis only.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "LocalDef067",
+      "meaning": "It constructs a LocalDef058 factorization certificate from a recompression-error model, block lower and upper triangularity, modeled rounded updates, equality of diagonal row and column updates, compression certificates for strict off-diagonal updates, diagonal product error models, and lower/upper off-diagonal solve error models.",
+      "effect_on_target": "It specifies one possible algorithm-execution semantics admitted by run; its internal witnesses are not present in the target conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "LocalDef068",
+      "meaning": "It constructs a LocalDef059 factorization certificate from a recompression-error model, triangularity, rounded updates, diagonal product error models, raw lower and upper off-diagonal solve models, positive diagonal block norms, and compression of scaled raw blocks.",
+      "effect_on_target": "It specifies the other possible algorithm-execution semantics admitted by run; its internal witnesses are not present in the target conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "LocalDef069",
+      "meaning": "A dependent dispatcher on the threshold choice, selecting the D043 branch then the D042 branch.",
+      "effect_on_target": "It chooses local block-norm versus global matrix-norm threshold scales in nested definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "LocalDef070",
+      "meaning": "A dependent dispatcher on solve direction, selecting D047 then D048.",
+      "effect_on_target": "It chooses lower- versus upper-triangular index and structure conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "LocalDef071",
+      "meaning": "It flattens a block index i in Fin p and an intra-block row in Fin b to the index i b + row in Fin(p b).",
+      "effect_on_target": "It identifies the block decomposition used in all nested block definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "LocalDef072",
+      "meaning": "A p by p block matrix L is block lower triangular: L_ij = 0 whenever i < j.",
+      "effect_on_target": "It is required of L in factorization and lower-solve execution evidence.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "LocalDef073",
+      "meaning": "A p by p block matrix U is block upper triangular: U_ij = 0 whenever j < i.",
+      "effect_on_target": "It is required of U in factorization and upper-solve execution evidence.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "LocalDef074",
+      "meaning": "It defines b + r sqrt(r) as a real number.",
+      "effect_on_target": "Its gamma factor bounds block-product rounding errors inside solve certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "LocalDef075",
+      "meaning": "For b by r matrices X and Y, it returns X Y^T.",
+      "effect_on_target": "It defines low-rank block representations used in structural, thresholding, and compression assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "LocalDef076",
+      "meaning": "The all-ones vector of length n.",
+      "effect_on_target": "It is used to express componentwise multiplicative relative errors in solve certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "LocalDef077",
+      "meaning": "It returns X Y^T when j < i and Y X^T otherwise.",
+      "effect_on_target": "It orients low-rank candidates according to the off-diagonal block position in thresholding.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "LocalDef078",
+      "meaning": "The columns of X are orthonormal: for all columns j and k, sum_i X_ij X_ik is 1 if j = k and 0 otherwise.",
+      "effect_on_target": "It constrains low-rank factors in threshold and compression candidates.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "LocalDef079",
+      "meaning": "For direction D047 it means j < i; for direction D048 it means i < j.",
+      "effect_on_target": "It selects the off-diagonal blocks participating in lower or upper substitution.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "LocalDef080",
+      "meaning": "For a direction and block row i, it is the finite set of block indices j satisfying D079.",
+      "effect_on_target": "It is the summation set in block triangular substitution equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "LocalDef081",
+      "meaning": "Componentwise vector multiplication.",
+      "effect_on_target": "It expresses multiplicative componentwise relative errors in solve certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "LocalDef082",
+      "meaning": "It extracts block i, a vector of length b, from a vector of length p b.",
+      "effect_on_target": "It gives the block-vector interpretation in solve certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "LocalDef083",
+      "meaning": "The primitive dependent recursor for the two algorithm constructors.",
+      "effect_on_target": "It implements algorithm case analysis and adds no mathematical assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "LocalDef084",
+      "meaning": "A type of certified compressed approximations of a b by b matrix at tolerance epsilon and scale beta.",
+      "effect_on_target": "Its constructor D095 imposes minimum-rank approximation and explicit error conditions in one factorization execution model.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "LocalDef085",
+      "meaning": "A wrapper around the primitive recursor for the two solve directions.",
+      "effect_on_target": "It performs lower/upper direction case analysis only.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "LocalDef086",
+      "meaning": "The threshold scale for block A_ik: it is ||A_ik||_F for constructor D043 and ||A||_F for constructor D042.",
+      "effect_on_target": "It scales nested thresholding and recompression error bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "LocalDef087",
+      "meaning": "It proves that the flattened index i b + row is less than p b.",
+      "effect_on_target": "It makes block-index flattening well typed and has no substantive effect on the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "LocalDef088",
+      "meaning": "A rounded block-update model: for j < k it introduces products L_ij U_jk plus recompression and product errors; bounds each product error by gamma_c(u)||L_ij||_F||U_jk||_F; bounds componentwise input and product relative errors by gamma_p(u); and defines the rounded update as A_ik with componentwise input error minus the sum of products with componentwise product errors.",
+      "effect_on_target": "It constrains intermediate factorization updates inside run's execution evidence but is absent from the final formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "LocalDef089",
+      "meaning": "A block product model asserting L U = input + error with ||error||_F <= gamma_b(u)||L||_F||U||_F.",
+      "effect_on_target": "It models diagonal block factorization error inside the algorithm certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "LocalDef090",
+      "meaning": "A right block-solve model asserting (T + error) X = rhs with ||error||_F <= gamma_b(u)||T||_F.",
+      "effect_on_target": "It models one orientation of off-diagonal block solves inside factorization evidence.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "LocalDef091",
+      "meaning": "A left block-solve model asserting X (T + error) = rhs with ||error||_F <= gamma_b(u)||T||_F.",
+      "effect_on_target": "It models the other orientation of off-diagonal block solves inside factorization evidence.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "LocalDef092",
+      "meaning": "For recompression constructor D040 every recompression error block is zero. For constructor D039, errors with j < k satisfy ||error_ikj||_F <= epsilon times the threshold scale for A_ik.",
+      "effect_on_target": "It defines how the recompression choice constrains nested factorization execution; it influences the coefficient xi obtained in the final bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "LocalDef093",
+      "meaning": "Ordinary multiplication of rectangular real matrices.",
+      "effect_on_target": "It defines low-rank products used by D075.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "LocalDef094",
+      "meaning": "Matrix transpose.",
+      "effect_on_target": "It defines X Y^T in low-rank block representations.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "LocalDef095",
+      "meaning": "The constructor for a compression certificate: it supplies a rank that is minimal among all D101 candidates, an error with compressed = exact + error, and ||error||_F <= epsilon beta.",
+      "effect_on_target": "It gives the exact compression semantics required by D067.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "LocalDef096",
+      "meaning": "The primitive dependent recursor for the two solve-direction constructors.",
+      "effect_on_target": "It implements direction case analysis and adds no proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "LocalDef097",
+      "meaning": "A dependent dispatcher on recompression, selecting D040 then D039.",
+      "effect_on_target": "It implements the two cases in the recompression-error condition D092.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "LocalDef098",
+      "meaning": "For k in Fin p, it is the finite set of j with j < k.",
+      "effect_on_target": "It indexes earlier products in factorization block updates.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "LocalDef099",
+      "meaning": "Entrywise multiplication of two square matrices.",
+      "effect_on_target": "It expresses componentwise relative errors in rounded block updates.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "LocalDef100",
+      "meaning": "The all-ones n by n matrix.",
+      "effect_on_target": "It is the multiplicative identity pattern for componentwise relative-error matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "LocalDef101",
+      "meaning": "A rank-k approximation candidate for exact: there exist b by k matrices X and Y with X having orthonormal columns, candidate = X Y^T, and ||candidate-exact||_F <= epsilon beta.",
+      "effect_on_target": "It defines the candidate class whose minimum rank is certified by D095.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It requires all equalities, remainder properties, nonnegativity statements, and bounds simultaneously.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "Eq",
+      "meaning": "Equality.",
+      "effect_on_target": "It imposes exact functional definitions and the exact perturbed linear-system identity.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It introduces matrixError, then rhsError, then rhsRemainder as dependent witnesses.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type {0,...,n-1}.",
+      "effect_on_target": "It indexes all finite-dimensional matrices, vectors, blocks, and sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "HAdd.hAdd",
+      "meaning": "The heterogeneous-addition operation supplied by the relevant type-class instance.",
+      "effect_on_target": "For reals, matrices, and vectors here it is ordinary or pointwise addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "HMul.hMul",
+      "meaning": "The heterogeneous-multiplication operation supplied by the relevant type-class instance.",
+      "effect_on_target": "For naturals and reals here it is ordinary multiplication; matrix products are separately defined by D035 and D026.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "LE.le",
+      "meaning": "The less-than-or-equal relation supplied by an ordered type.",
+      "effect_on_target": "For reals it expresses nonnegativity and all norm upper bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "Matrix.add",
+      "meaning": "Pointwise matrix addition.",
+      "effect_on_target": "It interprets A + matrixError and all matrix-error sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "Nat",
+      "meaning": "The natural numbers.",
+      "effect_on_target": "The dimensions b, p, and r and all finite ranks are natural numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D111",
+      "name": "Nat.cast",
+      "meaning": "Coercion of a natural number into a type with natural-number casts.",
+      "effect_on_target": "It interprets b, p, and r as reals in c, xi, and gamma factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D112",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "A proof that n+1 is at least two when n is nonzero.",
+      "effect_on_target": "It only supports elaboration of real numerals such as 3.",
+      "status": "understood"
+    },
+    {
+      "id": "D113",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "A proof that every natural successor n+1 is nonzero.",
+      "effect_on_target": "It only supports numeral type-class construction.",
+      "status": "understood"
+    },
+    {
+      "id": "D114",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of a natural-number literal in a target type.",
+      "effect_on_target": "It supplies the real constants 0 and 3 and other numerals in expanded definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D115",
+      "name": "Pi.instAdd",
+      "meaning": "Pointwise addition of dependent functions.",
+      "effect_on_target": "It gives ordinary componentwise vector addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D116",
+      "name": "Real",
+      "meaning": "The real numbers.",
+      "effect_on_target": "All matrix entries, vector entries, parameters, norms, constants, and remainders are real.",
+      "status": "understood"
+    },
+    {
+      "id": "D117",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary real addition.",
+      "effect_on_target": "It interprets all scalar sums in constants and bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D118",
+      "name": "Real.instLE",
+      "meaning": "The ordinary order relation <= on real numbers.",
+      "effect_on_target": "It interprets all real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D119",
+      "name": "Real.instMul",
+      "meaning": "Ordinary real multiplication.",
+      "effect_on_target": "It interprets products in gamma factors, scales, and norm bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D120",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the reals.",
+      "effect_on_target": "It gives the real values of b, p, r, and numeric constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D121",
+      "name": "Real.instZero",
+      "meaning": "The real number zero.",
+      "effect_on_target": "It is used in positivity and nonnegativity conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D122",
+      "name": "Zero.toOfNat0",
+      "meaning": "It interprets the numeral 0 from a type's zero element.",
+      "effect_on_target": "It is elaboration support for real zero and adds no assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D123",
+      "name": "instHAdd",
+      "meaning": "It turns an ordinary addition operation into homogeneous heterogeneous addition.",
+      "effect_on_target": "It routes scalar, matrix, and vector additions to their standard operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D124",
+      "name": "instHMul",
+      "meaning": "It turns an ordinary multiplication operation into homogeneous heterogeneous multiplication.",
+      "effect_on_target": "It routes real and natural products to their standard operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D125",
+      "name": "instMulNat",
+      "meaning": "Ordinary multiplication of natural numbers.",
+      "effect_on_target": "It makes the ambient dimension exactly n = p b.",
+      "status": "understood"
+    },
+    {
+      "id": "D126",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "It constructs a numeral in a type from a natural-number cast when that numeral is at least two.",
+      "effect_on_target": "It only supports elaboration of real numerals such as 3 and 6.",
+      "status": "understood"
+    },
+    {
+      "id": "D127",
+      "name": "instOfNatNat",
+      "meaning": "The standard interpretation of a natural literal as itself.",
+      "effect_on_target": "It is numeral elaboration support only.",
+      "status": "understood"
+    },
+    {
+      "id": "D128",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "The division operation associated with a division-inverse monoid.",
+      "effect_on_target": "It supplies ordinary real division in gamma_k(u) and xi.",
+      "status": "understood"
+    },
+    {
+      "id": "D129",
+      "name": "Fin.fintype",
+      "meaning": "The canonical finite enumeration of Fin n.",
+      "effect_on_target": "It permits sums over all matrix and vector indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D130",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It defines matrix products and Frobenius and Euclidean norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D131",
+      "name": "Finset.univ",
+      "meaning": "The finite set of all elements of a finite type.",
+      "effect_on_target": "It makes all sums range over every relevant finite index.",
+      "status": "understood"
+    },
+    {
+      "id": "D132",
+      "name": "HDiv.hDiv",
+      "meaning": "The heterogeneous-division operation supplied by a type-class instance.",
+      "effect_on_target": "For reals here it is ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D133",
+      "name": "HPow.hPow",
+      "meaning": "The exponentiation operation supplied by a type-class instance.",
+      "effect_on_target": "It supplies real squares in norms and p^2 in xi.",
+      "status": "understood"
+    },
+    {
+      "id": "D134",
+      "name": "HSub.hSub",
+      "meaning": "The heterogeneous-subtraction operation supplied by a type-class instance.",
+      "effect_on_target": "It supplies real, vector, and matrix subtraction in nested definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D135",
+      "name": "LT.lt",
+      "meaning": "The strict-order relation supplied by a type.",
+      "effect_on_target": "It interprets strict positivity and u < epsilon in admissibility and asymptotic conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D136",
+      "name": "Matrix",
+      "meaning": "A matrix with row type m, column type n, and entries in alpha is a function m to n to alpha.",
+      "effect_on_target": "It gives the functional representation of every matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D137",
+      "name": "Monoid.toNatPow",
+      "meaning": "Natural-number exponentiation in a monoid.",
+      "effect_on_target": "It interprets real squares used in norms and xi.",
+      "status": "understood"
+    },
+    {
+      "id": "D138",
+      "name": "One.toOfNat1",
+      "meaning": "It interprets the numeral 1 from a type's multiplicative identity.",
+      "effect_on_target": "It supplies real one in gamma denominators, identity matrices, and all-ones arrays.",
+      "status": "understood"
+    },
+    {
+      "id": "D139",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure of the reals.",
+      "effect_on_target": "It supports finite real sums in products and norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D140",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive group structure of the reals.",
+      "effect_on_target": "It supports subtraction, negation, and absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D141",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The multiplicative division and inverse structure of the reals, with totalized inverse.",
+      "effect_on_target": "It interprets the divisions in gamma_k(u), xi, and nested scaling formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D142",
+      "name": "Real.instLT",
+      "meaning": "The ordinary strict order < on the reals.",
+      "effect_on_target": "It interprets all strict real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D143",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure of the reals.",
+      "effect_on_target": "It supports real multiplication and natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D144",
+      "name": "Real.instOne",
+      "meaning": "The real number one.",
+      "effect_on_target": "It appears in gamma denominators and identity and relative-error arrays.",
+      "status": "understood"
+    },
+    {
+      "id": "D145",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction.",
+      "effect_on_target": "It forms 1-k u and differences in approximation and update models.",
+      "status": "understood"
+    },
+    {
+      "id": "D146",
+      "name": "Real.lattice",
+      "meaning": "The lattice-order structure of the reals.",
+      "effect_on_target": "It supports real absolute value in the explicit remainder bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D147",
+      "name": "Real.sqrt",
+      "meaning": "The nonnegative real square-root function.",
+      "effect_on_target": "It appears in c, d, xi, and the Frobenius and Euclidean norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D148",
+      "name": "Unit",
+      "meaning": "A one-element type.",
+      "effect_on_target": "It is used only to package branches of dependent case dispatchers.",
+      "status": "understood"
+    },
+    {
+      "id": "D149",
+      "name": "abs",
+      "meaning": "Real absolute value, equal to max(a,-a).",
+      "effect_on_target": "It makes the remainder estimates two-sided magnitude bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D150",
+      "name": "instHDiv",
+      "meaning": "It turns ordinary division into homogeneous heterogeneous division.",
+      "effect_on_target": "It routes all real quotients to real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D151",
+      "name": "instHPow",
+      "meaning": "It turns a power operation into homogeneous heterogeneous exponentiation.",
+      "effect_on_target": "It routes squares to ordinary real natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D152",
+      "name": "instHSub",
+      "meaning": "It turns ordinary subtraction into homogeneous heterogeneous subtraction.",
+      "effect_on_target": "It routes real, matrix, and vector differences to pointwise subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D153",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "A proposition certifying that a natural number is at least two.",
+      "effect_on_target": "It is used only for numeral type-class elaboration.",
+      "status": "understood"
+    },
+    {
+      "id": "D154",
+      "name": "Nonempty",
+      "meaning": "Nonempty(T) asserts that the type T has at least one inhabitant.",
+      "effect_on_target": "Run uses it to require existence of factorization and solve execution certificates without exposing their witnesses.",
+      "status": "understood"
+    },
+    {
+      "id": "D155",
+      "name": "Unit.unit",
+      "meaning": "The unique inhabitant of Unit.",
+      "effect_on_target": "It merely invokes branches in dependent case dispatchers.",
+      "status": "understood"
+    },
+    {
+      "id": "D156",
+      "name": "instAddNat",
+      "meaning": "Ordinary addition of natural numbers.",
+      "effect_on_target": "It supports numeral elaboration and index arithmetic in nested definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D157",
+      "name": "instLENat",
+      "meaning": "The ordinary order <= on natural numbers.",
+      "effect_on_target": "It interprets r <= b, minimum-rank conditions, and rank comparisons.",
+      "status": "understood"
+    },
+    {
+      "id": "D158",
+      "name": "instLTNat",
+      "meaning": "The ordinary strict order < on natural numbers.",
+      "effect_on_target": "It interprets 0 < b, 0 < p, and finite-index bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D159",
+      "name": "Ne",
+      "meaning": "Inequality: a is not equal to b.",
+      "effect_on_target": "It selects off-diagonal blocks in thresholding and rank assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D160",
+      "name": "Matrix.sub",
+      "meaning": "Pointwise matrix subtraction.",
+      "effect_on_target": "It forms approximation errors in nested threshold and compression conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D161",
+      "name": "Pi.addCommMonoid",
+      "meaning": "The pointwise additive commutative monoid structure on function spaces.",
+      "effect_on_target": "It supports finite sums of vectors and matrices in nested execution definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D162",
+      "name": "Pi.instSub",
+      "meaning": "Pointwise subtraction on function spaces.",
+      "effect_on_target": "It supplies vector and matrix subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D163",
+      "name": "instDecidableEqFin",
+      "meaning": "Decidable equality on Fin n.",
+      "effect_on_target": "It allows finite-index equality tests in identity matrices and conditional block orientation.",
+      "status": "understood"
+    },
+    {
+      "id": "D164",
+      "name": "ite",
+      "meaning": "The if-then-else operation on a decidable proposition.",
+      "effect_on_target": "It defines identity matrices and orientation-dependent low-rank products.",
+      "status": "understood"
+    },
+    {
+      "id": "D165",
+      "name": "Classical.propDecidable",
+      "meaning": "Classical decidability of every proposition.",
+      "effect_on_target": "It permits noncomputable case distinctions and has no additional mathematical content.",
+      "status": "understood"
+    },
+    {
+      "id": "D166",
+      "name": "Fin.decLt",
+      "meaning": "Decidability of strict order on Fin n.",
+      "effect_on_target": "It permits filtering and branching by finite-index order.",
+      "status": "understood"
+    },
+    {
+      "id": "D167",
+      "name": "Fin.mk",
+      "meaning": "Construction of an element of Fin n from a natural value and a proof that it is less than n.",
+      "effect_on_target": "It constructs flattened block indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D168",
+      "name": "Fin.val",
+      "meaning": "The underlying natural-number value of a finite index.",
+      "effect_on_target": "It is used in block-index flattening and finite-order comparisons.",
+      "status": "understood"
+    },
+    {
+      "id": "D169",
+      "name": "Finset",
+      "meaning": "The type of finite sets.",
+      "effect_on_target": "It represents finite index ranges for sums in nested execution models.",
+      "status": "understood"
+    },
+    {
+      "id": "D170",
+      "name": "Finset.filter",
+      "meaning": "Filtering a finite set by a decidable predicate.",
+      "effect_on_target": "It forms the sets of earlier or direction-relevant block indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D171",
+      "name": "Matrix.zero",
+      "meaning": "The pointwise zero matrix.",
+      "effect_on_target": "It expresses zero off-diagonal blocks and zero recompression errors.",
+      "status": "understood"
+    },
+    {
+      "id": "D172",
+      "name": "instLEFin",
+      "meaning": "The order <= on Fin n induced by the underlying natural values.",
+      "effect_on_target": "It indexes valid factorization updates k <= i.",
+      "status": "understood"
+    },
+    {
+      "id": "D173",
+      "name": "instLTFin",
+      "meaning": "The strict order < on Fin n induced by the underlying natural values.",
+      "effect_on_target": "It defines triangular structure, off-diagonal orientation, and update ranges.",
+      "status": "understood"
+    },
+    {
+      "id": "D174",
+      "name": "Finset.instSetLike",
+      "meaning": "The coercion of a finite set to its underlying set of members.",
+      "effect_on_target": "It supplies membership semantics for finite update-index sets.",
+      "status": "understood"
+    },
+    {
+      "id": "D175",
+      "name": "Matrix.addCommMonoid",
+      "meaning": "The pointwise additive commutative monoid structure on matrices.",
+      "effect_on_target": "It supports finite sums of matrix-valued block products.",
+      "status": "understood"
+    },
+    {
+      "id": "D176",
+      "name": "Membership.mem",
+      "meaning": "The membership relation associated with a collection type.",
+      "effect_on_target": "It expresses that a block index belongs to a filtered finite update range.",
+      "status": "understood"
+    },
+    {
+      "id": "D177",
+      "name": "Nat.instPreorder",
+      "meaning": "The standard preorder on natural numbers.",
+      "effect_on_target": "It supports proofs that flattened indices lie below p b.",
+      "status": "understood"
+    },
+    {
+      "id": "D178",
+      "name": "Preorder.toLT",
+      "meaning": "The strict-order operation associated with a preorder.",
+      "effect_on_target": "It interprets the natural strict inequality in the flattened-index proof.",
+      "status": "understood"
+    },
+    {
+      "id": "D179",
+      "name": "SetLike.instMembership",
+      "meaning": "Membership induced by coercing a set-like object to a set.",
+      "effect_on_target": "It connects finite-set membership notation to the update-index sets used in D088.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "b, p, and r are implicit natural numbers.",
+      "run is an arbitrary inhabitant of LocalDef001(b,p,r), hence a complete run-data package. In particular it contains n = p b dimensional matrices and vectors, choices of algorithm, threshold, and recompression modes, and the assumptions listed below.",
+      "The conclusion existentially chooses, in order, a matrix-valued function matrixError(u,epsilon), a vector-valued function rhsError(u,epsilon), and then a real-valued function rhsRemainder(u,epsilon). The third witness may logically be selected after the first two, although the first two are uniquely fixed by required functional equalities."
+    ],
+    "hypotheses": [
+      "The run package contains proofs that 0 < b, 0 < p, and r <= b. Thus n = p b is positive, while r may be zero.",
+      "It contains an n by n real matrix A, a vector v in R^n, and a two-sided inverse of A.",
+      "It contains a threshold choice, a recompression choice, an algorithm choice, an approximation Atilde(epsilon), factors L(u,epsilon) and U(u,epsilon), an intermediate vector yHat(u,epsilon), and a computed vector xHat(u,epsilon).",
+      "For every admissible u and epsilon, Atilde has unchanged diagonal b by b blocks and minimum-rank off-diagonal threshold approximations; L and U have minimal common off-diagonal block rank r; and the execution-certificate type selected by the algorithm is nonempty.",
+      "Writing c = b + 2 r sqrt(r) + p and xi as in the four-way choice table, the run contains factorError E0 and factorRemainder rhoA such that, for admissible u and epsilon, A + E0 = L U and ||E0||_F <= (xi epsilon + gamma_p(u))||A||_F + gamma_c(u)||L||_F||U||_F + rhoA.",
+      "For admissible u and epsilon, rhoA(u,epsilon) >= 0. Globally, rhoA has the explicit local O(u epsilon) property: there exist C >= 0 and delta > 0 such that |rhoA(u,epsilon)| <= C u epsilon whenever 0 < u < epsilon and u,epsilon <= delta.",
+      "The run contains lower and upper matrix errors EL and EU and right-hand-side errors fL and fU satisfying, for admissible u and epsilon, (L+EL)yHat = v+fL and (U+EU)xHat = yHat+fU.",
+      "Writing d = b + r sqrt(r) + p, the solve errors satisfy ||EL||_F <= gamma_d(u)||L||_F, ||EU||_F <= gamma_d(u)||U||_F, ||fL||_2 <= gamma_p(u)||v||_2, and ||fU||_2 <= gamma_p(u)||yHat||_2 for admissible u and epsilon.",
+      "The lower and upper block triangular solve execution-certificate types are nonempty for admissible u and epsilon."
+    ],
+    "conclusions": [
+      "The matrix perturbation is fixed for every real u and epsilon by matrixError = factorError + lowerError U + L upperError + lowerError upperError.",
+      "The right-hand-side perturbation is fixed for every real u and epsilon by rhsError = lowerRhsError + L upperRhsError + lowerError upperRhsError.",
+      "The fixed factorRemainder satisfies the explicit local O(u epsilon) property.",
+      "There exists rhsRemainder with the explicit local O(u^2 solveScale) property, where solveScale(u,epsilon) = ||L(u,epsilon)||_F ||U(u,epsilon)||_F ||xHat(u,epsilon)||_2.",
+      "For every admissible u and epsilon, factorRemainder(u,epsilon) >= 0 and rhsRemainder(u,epsilon) >= 0.",
+      "For every admissible u and epsilon, the exact perturbed system (A + matrixError(u,epsilon)) xHat(u,epsilon) = v + rhsError(u,epsilon) holds.",
+      "For every admissible u and epsilon, ||matrixError(u,epsilon)||_F <= (xi epsilon + gamma_p(u))||A||_F + gamma_{3c}(u)||L(u,epsilon)||_F||U(u,epsilon)||_F + factorRemainder(u,epsilon).",
+      "For every admissible u and epsilon, ||rhsError(u,epsilon)||_2 <= gamma_p(u)(||v||_2 + ||L(u,epsilon)||_F||U(u,epsilon)||_F||xHat(u,epsilon)||_2) + rhsRemainder(u,epsilon)."
+    ],
+    "mathematical_definitions": [
+      "n = p b.",
+      "c = b + 2 r sqrt(r) + p, with b, p, and r interpreted as real numbers.",
+      "gamma_k(u) = k u/(1-k u). Thus gamma_p(u) = p u/(1-p u) and gamma_{3c}(u) = 3 c u/(1-3 c u).",
+      "For recompression constructor D040, xi = 1 with threshold constructor D043 and xi = p with D042. For recompression constructor D039, xi = p with D043 and xi = p^2/sqrt(6) with D042.",
+      "All matrix products in the displayed perturbations are ordinary matrix-matrix or matrix-vector products.",
+      "||A||_F = sqrt(sum_i sum_j A_ij^2) is the Frobenius norm, not an operator norm.",
+      "||x||_2 = sqrt(sum_i x_i^2) is the Euclidean vector norm.",
+      "matrixError(u,epsilon) = factorError(u,epsilon) + lowerError(u,epsilon) U(u,epsilon) + L(u,epsilon) upperError(u,epsilon) + lowerError(u,epsilon) upperError(u,epsilon).",
+      "rhsError(u,epsilon) = lowerRhsError(u,epsilon) + L(u,epsilon) upperRhsError(u,epsilon) + lowerError(u,epsilon) upperRhsError(u,epsilon).",
+      "solveScale(u,epsilon) = ||L(u,epsilon)||_F ||U(u,epsilon)||_F ||xHat(u,epsilon)||_2.",
+      "Admissible(c,u,epsilon) means 0 < u < epsilon, epsilon > 0, and 3 c u < 1.",
+      "The factor-remainder condition is an explicit local estimate |factorRemainder(u,epsilon)| <= C u epsilon for some C >= 0 and delta > 0 and all 0 < u < epsilon with u,epsilon <= delta.",
+      "The right-hand-side-remainder condition is an explicit local estimate |rhsRemainder(u,epsilon)| <= C u^2 solveScale(u,epsilon) for some C >= 0 and delta > 0 whenever 0 < u < epsilon, u,epsilon <= delta, and solveScale(u,epsilon) >= 0."
+    ],
+    "proposition_plain_english": "For every fully certified run with positive block size b and block count p, rank parameter r <= b, coefficient matrix A, right-hand side v, computed factors L and U, and computed solution xHat, one can combine the run's factorization and triangular-solve errors into explicit total perturbations Delta A and Delta v. One can also choose a second-order right-hand-side remainder. The fixed factorization remainder is locally O(u epsilon), and the new remainder is locally O(u^2 ||L||_F||U||_F||xHat||_2). For every positive pair 0 < u < epsilon satisfying 3(b+2r sqrt(r)+p)u < 1, both remainders are nonnegative, xHat exactly solves (A+Delta A)xHat = v+Delta v, and the stated Frobenius- and Euclidean-norm bounds hold with xi determined by the two discrete threshold and recompression choices, gamma_p(u), and gamma_{3c}(u)."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The outer statement is universal over run. For any b, p, and r for which LocalDef001(b,p,r) is empty, the theorem is vacuously true. Inhabiting run itself forces 0 < b, 0 < p, and r <= b and requires many strong algorithmic and error-model assumptions.",
+    "The pointwise perturbed equation, nonnegativity, and norm bounds are implications from admissibility. They impose no condition at parameter pairs failing 0 < u, 0 < epsilon, u < epsilon, or 3 c u < 1.",
+    "The functional equalities defining matrixError and rhsError hold for all real u and epsilon, including inadmissible values; only their equations and bounds are restricted to admissible values.",
+    "Real division in Lean is totalized at a zero denominator. Under admissibility, however, 1-3 c u is positive; because run forces c >= p > 0, 1-p u is also positive.",
+    "The target uses the Frobenius matrix norm, not the spectral or induced operator norm.",
+    "The factor remainder is fixed by run. Only rhsRemainder is newly free; matrixError and rhsError are existentially presented but uniquely prescribed by exact equalities.",
+    "The asymptotic constants C and radii delta may depend on run and on the chosen remainder, but not on u or epsilon inside their quantified neighborhoods.",
+    "The rhs-remainder property only explicitly applies when solveScale >= 0. Here solveScale is a product of Frobenius and Euclidean norms and is therefore mathematically nonnegative.",
+    "The proposition does not assert that A + matrixError is invertible, that the perturbed solution is unique, or that xHat is close to the exact solution A^{-1}v.",
+    "It gives absolute backward-error bounds. It does not divide by ||A|| or ||v|| and therefore does not state relative backward error.",
+    "No forward-error bound, condition-number estimate, probability statement, complexity claim, or claim about behavior outside the packaged execution model is encoded.",
+    "Although run carries detailed thresholding, rank-minimality, triangularity, invertibility, and execution-certificate assumptions, the conclusion exposes only the combined perturbation equations, remainder properties, and norm bounds.",
+    "The stored factor-error hypothesis uses gamma_c(u), whereas the target's combined matrix bound uses gamma_{3c}(u). The latter is the exact coefficient encoded in the conclusion.",
+    "The parameter r may equal zero; no strict positivity assumption on r is encoded."
+  ],
+  "ambiguities": [
+    "The mathematical behavior of each two-constructor choice is explicit, but the dossier does not encode human-readable semantic labels for constructors D039/D040, D042/D043, or D053/D054. They can only be identified exactly by constructor ID and branch behavior.",
+    "The execution-certificate types precisely constrain admissible runs through their constructors, but no external algorithm name or intended paper terminology is encoded.",
+    "The symbols u and epsilon are real parameters with explicit inequalities and bounds; any interpretation as unit roundoff, compression tolerance, or another application-specific quantity is not part of the proposition itself."
+  ]
+}

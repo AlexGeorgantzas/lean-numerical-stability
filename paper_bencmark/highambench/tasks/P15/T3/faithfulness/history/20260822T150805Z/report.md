@@ -1,26 +1,27 @@
 # Faithfulness audit: P15-T3
 
-- Classification: `not-faithful-weaker`
+- Classification: `not-faithful-different`
 - Accepted as paper-faithful: `false`
 - Adjudicated: `true`
-- Target SHA-256: `8347401e6a0d4f00f502fad866601d985e2e5393cf03f1de3dea0b5d77719475`
+- Target SHA-256: `1877c9100346dbb2c098225c95b1e1eb7427985c008fc24996fa895785fc71e1`
 - Paper SHA-256: `a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7`
 
 ## Decision
 
-The declaration correctly preserves the finite real dimensions, Frobenius and Euclidean norms, BLR rank, UFC/UCF linkage, four xi cases, constants, mixed backward-error equation, and exact perturbation products from printed p. 975. The decisive mismatch is logical: its big-O predicates describe only an arbitrary neighborhood that need not contain the point where the remainder is used. Together with D029's assumption of already-derived perturbation contracts, this makes the formal result strictly less informative and less applicable than Theorem 4.5. The paper's proof and gamma algebra satisfy the declaration's weaker obligations, but the declaration cannot recover the paper's substantive current-parameter bounds.
+The declaration accurately preserves the final perturbed equation, Frobenius and Euclidean norms, c, gamma indices, all four xi values, both displayed remainders, and the exact perturbation compositions. Its unfolded execution domain is nevertheless different from the paper's: upper updates use the wrong predecessor cutoff, matrix triangular solves use a non-equivalent restricted relation, and one fixed-r all-precision family with prior bounds is required. These are substantive antecedent and algorithm changes, not genuine nonvacuous strengthening. Since neither statement entails the other, the correct classification is not-faithful-different.
 
 ## Implications
 
-- **Lean implies paper:** `no`. D025-D026 do not require the current run parameters to lie in their certified neighborhoods. In particular, the existential rhsRemainder can be zero near the origin and arbitrarily positive at the current point, making the final right-hand-side inequality true without the paper's O(u^2) control. The factor remainder admitted by D029 has the analogous defect, and D029 additionally presupposes intermediate conclusions that the paper derives.
-- **Paper implies lean:** `yes`. For a source-compliant execution represented by the declaration, the proof on printed p. 975 supplies exactly the D021-D022 perturbation compositions and the perturbed system. Its gamma bounds yield the principal terms and an O(u^2) remainder proportional to solveScale. Source-controlled remainders satisfy the weaker D025-D026 predicates, while the declaration's additional pre-certified fields only restrict applicability.
+- **Lean implies paper:** `no`. Using the Lean theorem to establish the paper theorem would require embedding every actual Algorithm 1 or 2 computation into the formal run type. The upper-row update in D067-D068/D088 uses j<i instead of j<k, the matrix solve certificates impose a special coefficient-perturbation form, and the run requires a fixed-r family over all admissible parameters. Thus the Lean statement does not cover the paper's execution domain.
+- **Paper implies lean:** `no`. A formal run is not guaranteed to be an execution of Algorithm 1 or 2 because its upper update includes the current j=k product. Moreover, the paper's residual matrix-solve bounds do not imply the common coefficient perturbations required by D090-D091, and its pointwise theorem does not supply the declaration's all-parameter fixed-r family. The paper theorem therefore does not entail the Lean proposition.
 
 ## Findings
 
-- **critical / higher-order remainder current-point disconnect:** A remainder may vanish on its certified neighborhood yet have an arbitrary isolated value at the evaluated run point. The displayed formal inequalities therefore lack the paper's quantitative force.
-- **major / reduced applicability through pre-certified perturbations:** The declaration proves only a composition result for executions already carrying the main intermediate error conclusions. This is reduced applicability, not genuine nonvacuous strengthening.
-- **note / right-hand-side big-O scale:** The explicit solveScale does not block paper-to-Lean; it resolves the round-trip judge's concern about that implication.
-- **note / A versus Atilde notation:** S07 is not a failure. The exact intended algorithm-input symbol remains uncertain in the source, and the declaration's chosen linkage is an additional restriction rather than a computed/exact conflation.
+- **critical / algorithm-indexing:** The formal completion predicates do not denote either algorithm named by Theorem 4.5, which defeats both implications.
+- **major / matrix-triangular-solve-model:** The formal relation is a restricted special case and can exclude valid paper executions; reduced applicability is not theorem strength.
+- **major / quantifier-scope:** The declaration is a conditional family-level composition theorem rather than an equivalent formalization of the paper's pointwise algorithm theorem.
+- **minor / precision-regime:** The exact admissible regime is not faithfully specified, although the source itself leaves the safety margin qualitative.
+- **note / higher-order-and-vacuity:** The target neither omits the higher-order products nor succeeds merely by vacuity; these facts do not repair the execution-model mismatch.
 
 ## Semantic checklist
 
@@ -29,38 +30,38 @@ The declaration correctly preserves the finite real dimensions, Frobenius and Eu
 | `S01` | `pass` | `pass` |
 | `S02` | `pass` | `pass` |
 | `S03` | `fail` | `fail` |
-| `S04` | `pass` | `fail` |
-| `S05` | `fail` | `pass` |
+| `S04` | `fail` | `fail` |
+| `S05` | `pass` | `pass` |
 | `S06` | `fail` | `pass` |
-| `S07` | `pass` | `unclear` |
-| `S08` | `pass` | `pass` |
+| `S07` | `pass` | `pass` |
+| `S08` | `fail` | `pass` |
 | `S09` | `pass` | `pass` |
-| `S10` | `pass` | `pass` |
-| `S11` | `pass` | `pass` |
+| `S10` | `fail` | `pass` |
+| `S11` | `fail` | `fail` |
 | `S12` | `fail` | `fail` |
 | `S13` | `pass` | `pass` |
-| `S14` | `fail` | `fail` |
-| `S15` | `pass` | `pass` |
-| `S16` | `fail` | `fail` |
+| `S14` | `pass` | `unclear` |
+| `S15` | `fail` | `fail` |
+| `S16` | `pass` | `unclear` |
 
 ## Dependency coverage
 
-- Blind translator covered `181` dependencies (`0` hash-reused meanings); unclear: `none`.
-- Direct judge covered `181` dependencies (`0` hash-reused interpretations); failing or unclear: `D001, D025, D026, D029`.
+- Blind translator covered `179` dependencies (`0` hash-reused meanings); unclear: `none`.
+- Direct judge covered `179` dependencies (`0` hash-reused interpretations); failing or unclear: `D001, D017, D028, D044, D058, D059, D067, D068, D088, D090, D091`.
 
 ## Remaining uncertainties
 
-- The PDF does not determine whether the opening Atilde or the subsequent A occurrences in Theorem 4.5 are the typographical error. This source-level ambiguity does not affect the weaker classification.
-- The paper gives no quantitative meaning for 'u is safely smaller than epsilon'; therefore D049's precise u<epsilon condition cannot be proved equivalent to that phrase.
+- The PDF does not specify constants, signs, parameter dependence, or uniformity for O(u epsilon) and O(u^2), so reverse equivalence between the informal notation and the exact predicates D024-D025 is not textually determined.
+- The paper gives no quantitative meaning for 'u safely smaller than epsilon', so the exact intended margin beyond u<epsilon cannot be recovered.
 
 ## Audit artifacts
 
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/agent_outputs/adjudicator.json` (`d5c221a7a85fc2d3850d2538c8769bcb91fc620047ab335ba473b7f314de3ab8`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/agent_outputs/blind_translation.json` (`97dd704fadf41be55af93ef7009ad5d56bcf9b3e3655ec9ade745658fe86f2f3`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/agent_outputs/direct_judge.json` (`cf48c5cdc787f6a98593e61b1905ed176b3d8effae71f170d1d49f435b4c38bf`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/agent_outputs/roundtrip_judge.json` (`7d87ee1d3da0157d0998aaed19156335f2a2acc12c1ccc9143831d1005e76d0f`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/agent_outputs/source_contract.json` (`5dd2632f49b32f3301b7e731dafaae8dedb8ee8545924ee520f059c2e98fa843`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/decision.json` (`2e6084707800ca2a40a81d619c2b6c825149fba92d2d22f016d552bc164a471b`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/agent_outputs/adjudicator.json` (`1db5cf5daed6ef402f69ae2ec6e2b917d762155738a883b394605edc8f9fbec3`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/agent_outputs/blind_translation.json` (`8e9855af311d2ac52a3f75a83d8b01c25446a2425e659d9faba590d7f987a230`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/agent_outputs/direct_judge.json` (`4bc64cd084f1ab210e9e6a86411918da7fe40e622281541ed0639b0171078b57`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/agent_outputs/roundtrip_judge.json` (`3228ffe7d5889f8a24d1463232cef0fd8966857ecddb773e30e53c220c833e71`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/agent_outputs/source_contract.json` (`9213a6b01080286137abb6d59adeddd784792868ccb883b1e732afe1457cc83d`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/decision.json` (`c278860550d35c000e8840062e47a1fd5b40ed1bfc55121c0c48b88ef3fe7671`)
 - `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260820T105914Z/agent_outputs/adjudicator.json` (`4311935f42a62715f3dd0c151b813d51499f63175f836c7cf819ee4d7c90c821`)
 - `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260820T105914Z/agent_outputs/blind_translation.json` (`e863d0a2062602a574fe83b7982e8cb51afd1623973ea809ba9781a983be50df`)
 - `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260820T105914Z/agent_outputs/direct_judge.json` (`6262e2541e9dce9111b21c18f3a8e2e5418fb00d7d291ebbce25212ae41584e2`)
@@ -103,23 +104,10 @@ The declaration correctly preserves the finite real dimensions, Frobenius and Eu
 - `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T114236Z/inputs/dependency_inventory.json` (`036ba11f4faa65d5532d4e22cbe1a3df551d1803057fd847f60f176d4970787a`)
 - `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T114236Z/inputs/direct_review_packet.md` (`e199547e94480887a36cfd7e4bc04ecf4e7970df75a1163622521299904017db`)
 - `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T114236Z/inputs/source_locator.json` (`2546b897434d76fcc20e9d3abfa341bcb971f7d2a631227a21cb12673a47c4e3`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/agent_outputs/adjudicator.json` (`1db5cf5daed6ef402f69ae2ec6e2b917d762155738a883b394605edc8f9fbec3`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/agent_outputs/blind_translation.json` (`8e9855af311d2ac52a3f75a83d8b01c25446a2425e659d9faba590d7f987a230`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/agent_outputs/direct_judge.json` (`4bc64cd084f1ab210e9e6a86411918da7fe40e622281541ed0639b0171078b57`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/agent_outputs/roundtrip_judge.json` (`3228ffe7d5889f8a24d1463232cef0fd8966857ecddb773e30e53c220c833e71`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/agent_outputs/source_contract.json` (`9213a6b01080286137abb6d59adeddd784792868ccb883b1e732afe1457cc83d`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/decision.json` (`c278860550d35c000e8840062e47a1fd5b40ed1bfc55121c0c48b88ef3fe7671`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/inputs/blind_dependency_inventory.json` (`74cb23de4fa14a50453dade253b1bdb034c73139505fff5ae1c928a4622e2df5`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/inputs/blind_dossier.md` (`e6325ed646fb36b6a253bbf24b7dd98cddd9305697a7661f0ad37b5286b5eaf7`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/inputs/blind_review_packet.md` (`e6325ed646fb36b6a253bbf24b7dd98cddd9305697a7661f0ad37b5286b5eaf7`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/inputs/declaration_dossier.md` (`89e224fcae028ae6f11badbad4a996156b24dbcd78b8e43fe47eb1417b333bea`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/inputs/dependency_inventory.json` (`028a642e9cd81fcdc279e80cd7b6124885df47a7c09815e676e07538fe44952c`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/inputs/direct_review_packet.md` (`a61ce4a9458fd60ea2199d4c305c5d376344a52b36af594b7a7a44584b7239d2`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/history/20260822T150805Z/inputs/source_locator.json` (`c398cc06c724316510b1a49b9f84ca80558b9274361807fd0805accdf45fc2f1`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/blind_dependency_inventory.json` (`1a5c81a4a37950ee02e9be242b51417787e343cc4899fbb5c7bf2a601bd1750a`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/blind_dossier.md` (`27fd52f074390e585c9f11a941b36037967ccc3fc3818c0366fdab8e51f09807`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/blind_review_packet.md` (`27fd52f074390e585c9f11a941b36037967ccc3fc3818c0366fdab8e51f09807`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/declaration_dossier.md` (`aded10446f3eade60261be2e6c25ba95fde589e108b850af14dcaad1e0cf742f`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/dependency_inventory.json` (`c4ffd3ca5d1c182bf33e5886f54e32ba914a2fa506854b7d6226b498605668d4`)
-- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/direct_review_packet.md` (`ddff3fced1485fafe25cf772661767f23485eb2a7878e229aa400e97e912bea9`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/blind_dependency_inventory.json` (`74cb23de4fa14a50453dade253b1bdb034c73139505fff5ae1c928a4622e2df5`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/blind_dossier.md` (`e6325ed646fb36b6a253bbf24b7dd98cddd9305697a7661f0ad37b5286b5eaf7`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/blind_review_packet.md` (`e6325ed646fb36b6a253bbf24b7dd98cddd9305697a7661f0ad37b5286b5eaf7`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/declaration_dossier.md` (`89e224fcae028ae6f11badbad4a996156b24dbcd78b8e43fe47eb1417b333bea`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/dependency_inventory.json` (`028a642e9cd81fcdc279e80cd7b6124885df47a7c09815e676e07538fe44952c`)
+- `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/direct_review_packet.md` (`a61ce4a9458fd60ea2199d4c305c5d376344a52b36af594b7a7a44584b7239d2`)
 - `paper_bencmark/highambench/tasks/P15/T3/faithfulness/inputs/source_locator.json` (`c398cc06c724316510b1a49b9f84ca80558b9274361807fd0805accdf45fc2f1`)
