@@ -84,7 +84,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 4.5 over a precision family of completed UFC or UCF executions, retaining dense A versus represented Atilde, exact factor-rank semantics, algorithm-specific threshold and recompression traces, both ordered solves, existential aggregate perturbations, and uniform O(u epsilon) and O(u^2) remainders.",
+      "decision": "Use Theorem 4.5 over a precision family of completed UFC or UCF executions, retaining dense A versus represented Atilde with the equation-(2.3)-(2.4) orientation, orthonormality, and minimum-rank semantics, exact computed-factor rank semantics, algorithm-specific threshold and recompression traces, both ordered equation-(4.22) solves with their c_tri bound, existential aggregate perturbations, and uniform O(u epsilon) and O(u^2) remainders.",
       "task_id": "P15-T3",
       "theorem_name": "p15_t3_blr_lu_solve_backward_error"
     }

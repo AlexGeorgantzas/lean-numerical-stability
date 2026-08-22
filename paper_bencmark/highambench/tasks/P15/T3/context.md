@@ -33,9 +33,11 @@ system matrix but equations (4.23)--(4.24) and the proof use `A`. Section 2.1
 calls `Atilde` a BLR representation of dense `A`. The formalization retains
 both objects and makes that inherited relation explicit with
 `p15BLRRepresents`. Diagonal blocks are unchanged. Each off-diagonal block of
-`Atilde` has its own rank and a truncation error bounded by `epsilon` times the
-local or global Section 2.1 scale. The final backward equation and norm scale
-use dense `A`, exactly as the displayed equations do.
+`Atilde` has its own minimum threshold-satisfying rank, the equation-(2.3)
+lower/upper factor orientation, and an orthonormal `X` factor. Its truncation
+error is bounded by `epsilon` times the local or global Section 2.1 scale. The
+final backward equation and norm scale use dense `A`, exactly as the displayed
+equations do.
 
 The source's `r` is the maximum off-diagonal rank of the computed factors, not
 the input BLR rank and not an arbitrary upper estimate. `p15IsFactorBLRRank`
@@ -45,10 +47,13 @@ therefore says that `r` is the least common rank bound for `L` and `U`.
 ## Computed execution
 
 `P15CompletedBLRFactorization` is tied to the selected algorithm. Each block
-iteration records the exact Schur-complement block update from lines 4 and 6
-of Algorithms 1 and 2. The rounded updated blocks, diagonal factorization, and
-off-diagonal solves obey the relative-error model (2.5), while every stored
-low-rank block has an explicit Assumption-2.1 compression witness. For UFC,
+iteration records the Schur-complement update from lines 4 and 6 of Algorithms
+1 and 2 in the cancellation-safe equation-(4.3) form: the input block and each
+computed product have distinct componentwise perturbations, and each product
+has its own normwise error. Diagonal LU factorizations and off-diagonal solves
+use the backward-error interfaces of Lemmas 2.2--2.3 rather than a relative
+perturbation of a complete matrix result. Every stored low-rank block has an
+explicit minimum-rank truncated-SVD Assumption-2.1 compression witness. For UFC,
 off-diagonal factor blocks are solved before compression; for UCF, updated
 off-diagonal blocks are compressed before the factor solves. UFC compression
 uses the diagonal-norm-scaled local/global thresholds of equations
@@ -58,11 +63,15 @@ zero or satisfy the corresponding threshold bound. Thus the algorithm,
 threshold, and recompression fields all constrain actual block equations and
 cannot act as labels only.
 
-`P15CompletedTriangularSolve` links the computed vector to the printed block
-substitution residual. Lower solves subtract earlier block components; upper
-solves subtract later components. Each diagonal block solve is tied to the
-accumulated standard floating-point model. The family requires the lower solve
-with `L` and `v` first, then the upper solve with `U` and the computed `yHat`.
+`P15CompletedTriangularSolve` records the separate low-rank product errors,
+right-hand-side and product summation errors, and diagonal-solve errors in
+equation (4.22). It does not apply one relative perturbation to the complete
+residual, which would be invalid under cancellation. Every diagonal block is
+nonsingular. Lower solves use earlier block components and upper solves use
+later components. Their aggregate Theorem 4.4 perturbations use
+`c_tri = b + r*sqrt(r) + p`; the larger `c = b + 2*r*sqrt(r) + p` is retained
+only where Theorems 4.2--4.5 use it. The family requires the lower solve with
+`L` and `v` first, then the upper solve with `U` and the computed `yHat`.
 
 The perturbations supplied by Theorems 4.2--4.4 are retained as the
 source-level interface at which the proof of Theorem 4.5 begins. They are tied
