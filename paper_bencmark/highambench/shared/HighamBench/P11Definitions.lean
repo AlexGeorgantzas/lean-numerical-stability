@@ -68,7 +68,7 @@ noncomputable def p11RectOpNorm2 {m n : ℕ}
 noncomputable def p11C1 (m k : ℕ) : ℝ :=
   if k = 1 then 1
   else
-    2 * Real.sqrt 2 * (m : ℝ) * (k : ℝ) +
+    2 * Real.sqrt (2 * (m : ℝ) * (k : ℝ)) +
       2 * Real.sqrt (k : ℝ)
 
 /-- The paper's normal-equations coefficient `c2(m,k)`. -/

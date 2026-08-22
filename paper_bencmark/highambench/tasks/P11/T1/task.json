@@ -7,7 +7,7 @@
   "assumptions": [
     "The dimensions m and n are positive, n is at most m, and the rectangular input A has full column rank.",
     "Q and upper-triangular R are the computed factors represented by the proof-carrying CGS-P first-column execution contract, with r11 linked to the computed norm and q1 linked to componentwise division.",
-    "Every leading block of R has a certified inverse and satisfies condition (3): c4(m,k)*epsilonM*kappa2(R_k)^2 < 1.",
+    "Every leading block of R has a certified inverse and satisfies condition (3): c4(m,k)*epsilonM*kappa2(R_k)^2 < 1, where c4=c2+2*c1 and c1(m,k)=2*sqrt(2*m*k)+2*sqrt(k) for k at least two.",
     "The machine unit epsilonM is positive and less than one; normalized IEEE division has relative error at most epsilonM, and the computed norm has the paper's first-order error plus one unspecified nonnegative O(epsilonM^2) coefficient.",
     "The real-valued arithmetic interface represents the paper's IEEE normalized finite regime; subnormals, overflow, infinities, NaNs, and higher-order contributions outside the recorded norm remainder are outside the claim."
   ],

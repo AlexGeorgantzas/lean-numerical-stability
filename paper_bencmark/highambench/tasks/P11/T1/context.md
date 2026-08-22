@@ -20,6 +20,10 @@ that
 
 `c4(m,k) * epsilonM * kappa2(R_k)^2 < 1`.
 
+Here `c4(m,k) = c2(m,k) + 2*c1(m,k)`, with `c1(m,1) = 1` and
+`c1(m,k) = 2*sqrt(2*m*k) + 2*sqrt(k)` for `k >= 2`, exactly as in
+equation (2) on printed page 302.
+
 This makes `R` nonsingular and in particular gives `r11 > 0`. The arithmetic
 model is the paper's IEEE normalized-range relative-error model with machine
 unit `epsilonM`; overflow, subnormal underflow, infinities, and NaNs are not
