@@ -1,0 +1,362 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "aed47c88b9db8cc106581e87089dea3a60078fb24777699e4f9d382cc879050c",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "A type family indexed by natural numbers n and s. Together with its supplied constructor, LocalDef001 n s represents a run record containing positive dimensions, scalar parameters, vectors, maps, coefficient arrays, stage vectors, update vectors, and proofs of four stage/update equations.",
+      "effect_on_target": "The target universally quantifies over a value run of this type. Thus all assumptions are embedded in the run record rather than listed as separate implications.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "Pointwise addition of two real vectors indexed by Fin n: LocalDef002 x y is the vector whose i-th component is x(i) + y(i).",
+      "effect_on_target": "It forms the sum of the two component error vectors in the equality conclusion and also occurs in the equations packaged by run.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "For a run, this is the pointwise difference schemeNext - perturbedNext.",
+      "effect_on_target": "It is the second component error vector in both conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "For a run, this is the pointwise difference exactNext - schemeNext.",
+      "effect_on_target": "It is the first component error vector in both conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "For a run, this is the pointwise difference exactNext - perturbedNext.",
+      "effect_on_target": "It is the total difference vector on the left side of the vector equality and norm inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "For x : Fin n -> Real, LocalDef006 x is sqrt(sum over i in Fin n of (x(i))^2), the Euclidean 2-norm of x.",
+      "effect_on_target": "It converts each of the three difference vectors into its Euclidean norm in the triangle-inequality conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "The eighth data field of a run, identified by the other supplied definitions as the vector exactNext : Fin n -> Real.",
+      "effect_on_target": "This vector is the first operand in the total and first component differences. The run constructor imposes no equation on it.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "The constructor for a run. It takes proofs 0 < n and 0 < s; real scalars h = step and epsilon with 0 <= h and 0 <= epsilon; vectors initial and exactNext; maps F,tau : R^n -> R^n; arrays aTilde,aPerturbation : Fin s -> Fin s -> Real; vectors bTilde,bPerturbation : Fin s -> Real; stages Y,Ypert : Fin s -> R^n; and updates yS,yP : R^n. It requires, for every i in Fin s, Y_i = initial + h times sum_j aTilde(i,j) F(Y_j), and Ypert_i = initial + (h times sum_j aTilde(i,j) F(Ypert_j) + (epsilon*h) times sum_j aPerturbation(i,j) tau(Ypert_j)). It also requires yS = initial + h times sum_j bTilde(j) F(Y_j), and yP = initial + (h times sum_j bTilde(j) F(Ypert_j) + (epsilon*h) times sum_j bPerturbation(j) tau(Ypert_j)). All vector operations are componentwise.",
+      "effect_on_target": "It determines which run values can be quantified over and supplies exactNext, schemeNext = yS, and perturbedNext = yP. The target conclusions use only those three vectors, although the other data and equation proofs are carried by run.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "The eighteenth data field of a run, namely perturbedNext : Fin n -> Real.",
+      "effect_on_target": "It is subtracted from schemeNext and exactNext in the defined difference vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "The seventeenth data field of a run, namely schemeNext : Fin n -> Real.",
+      "effect_on_target": "It is the intermediate vector that splits exactNext - perturbedNext into exactNext - schemeNext and schemeNext - perturbedNext.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "Pointwise subtraction of real vectors: LocalDef011 x y is the vector whose i-th component is x(i) - y(i).",
+      "effect_on_target": "It defines all three difference vectors D003, D004, and D005.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "The sum of squares of a finite real vector: LocalDef012 x = sum over all i in Fin n of (x(i))^2.",
+      "effect_on_target": "Its square root is LocalDef006, so it supplies the squared Euclidean norm used in the inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "Scalar multiplication of a real vector: LocalDef013 a x has component a*x(i).",
+      "effect_on_target": "It appears in the stage and update equations carried by run but does not occur directly in either conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LocalDef014",
+      "meaning": "Given weights w : Fin s -> Real and vectors v_j : Fin n -> Real, it returns their weighted sum, with k-th component sum over j in Fin s of w(j)*v_j(k).",
+      "effect_on_target": "It defines the weighted combinations in the run's stage and update equations but does not occur directly in either conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "And",
+      "meaning": "Logical conjunction of two propositions.",
+      "effect_on_target": "The target requires both the vector equality and the norm inequality simultaneously.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Eq",
+      "meaning": "Propositional equality between two values of the same type.",
+      "effect_on_target": "It asserts equality of two vectors Fin n -> Real, equivalently equality of all corresponding components.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with n elements, mathematically the indices 0 through n-1.",
+      "effect_on_target": "It indexes vector coordinates by Fin n and stages and coefficients by Fin s.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "HAdd.hAdd",
+      "meaning": "The addition operation selected from an HAdd instance.",
+      "effect_on_target": "With the supplied real-number instance it is ordinary real addition, used pointwise in vectors and to add the two real norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "LE.le",
+      "meaning": "The binary relation selected from an LE instance.",
+      "effect_on_target": "With Real.instLE it is the usual real less-than-or-equal relation in the norm inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "The dimensions n and s are universally quantified natural numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "All vector components, scalar parameters, coefficient entries, sums, norms, and the final inequality are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instAdd",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "It supplies the real HAdd operation used for pointwise vector addition and for the sum of norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instLE",
+      "meaning": "The standard less-than-or-equal ordering on real numbers.",
+      "effect_on_target": "It determines the meaning of the inequality between the total norm and the sum of component norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "instHAdd",
+      "meaning": "It converts a homogeneous Add operation on a type into the corresponding HAdd operation on that same type.",
+      "effect_on_target": "Applied to Real.instAdd, it makes every relevant HAdd expression ordinary real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Real.sqrt",
+      "meaning": "The nonnegative real square-root operation, implemented by projecting the input to the nonnegative reals, taking its nonnegative square root, and coercing back to Real.",
+      "effect_on_target": "Applied to a sum of real squares, it yields the standard Euclidean norm in LocalDef006.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Fin.fintype",
+      "meaning": "The finite enumeration of Fin n obtained from the list of indices 0 through n-1.",
+      "effect_on_target": "It permits summation over every coordinate in Fin n and every stage index in Fin s.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Finset.sum",
+      "meaning": "The finite sum of the values of a function over a finite set, using an additive commutative monoid.",
+      "effect_on_target": "It computes sums of squared coordinates and the weighted stage combinations.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It makes each sum range over all coordinates or all stage indices, with no omitted indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "HMul.hMul",
+      "meaning": "The multiplication operation selected from an HMul instance.",
+      "effect_on_target": "With real instances it is ordinary real multiplication in scalar-vector products, weighted sums, and the factor epsilon*step.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "HPow.hPow",
+      "meaning": "The exponentiation operation selected from an HPow instance.",
+      "effect_on_target": "With the real natural-power instance it interprets each (x(i))^2 as the ordinary square of a real coordinate.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "HSub.hSub",
+      "meaning": "The subtraction operation selected from an HSub instance.",
+      "effect_on_target": "With the real instance it gives ordinary componentwise real subtraction in all three difference vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "LT.lt",
+      "meaning": "The strict-order relation selected from an LT instance.",
+      "effect_on_target": "With instLTNat it interprets the constructor assumptions 0 < n and 0 < s as strict inequalities of natural numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Monoid.toNatPow",
+      "meaning": "Natural-number exponentiation induced by a monoid's multiplication and unit.",
+      "effect_on_target": "For real multiplication it supplies the operation used to square each vector coordinate.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "OfNat.ofNat",
+      "meaning": "The value assigned to a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "It interprets literals such as 0 in positivity and nonnegativity assumptions and 2 in coordinate squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure of the real numbers.",
+      "effect_on_target": "It makes finite real sums well-defined, with ordinary addition and zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure of the real numbers.",
+      "effect_on_target": "It supplies natural powers of real numbers, particularly the square appearing in the norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instMul",
+      "meaning": "Ordinary multiplication of real numbers.",
+      "effect_on_target": "It supplies multiplication in scalar products, weighted sums, epsilon*step, and real powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction, implemented as addition of the additive inverse.",
+      "effect_on_target": "It determines the componentwise subtraction used to define all three difference vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "Real.instZero",
+      "meaning": "The additive zero of the real numbers.",
+      "effect_on_target": "It interprets real zero in the assumptions 0 <= step and 0 <= epsilon and as the empty finite sum when applicable.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "Zero.toOfNat0",
+      "meaning": "It turns a type's distinguished zero into the interpretation of the numeral 0.",
+      "effect_on_target": "For Real, it supplies the literal zero used in the scalar nonnegativity assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "instHMul",
+      "meaning": "It converts a homogeneous Mul operation into the corresponding HMul operation.",
+      "effect_on_target": "Applied to real multiplication, it makes all relevant HMul expressions ordinary real products.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "instHPow",
+      "meaning": "It converts a Pow operation into the corresponding homogeneous HPow operation.",
+      "effect_on_target": "Applied to natural powers of reals, it gives the coordinate-square operation in LocalDef012.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "instHSub",
+      "meaning": "It converts a homogeneous Sub operation into the corresponding HSub operation.",
+      "effect_on_target": "Applied to real subtraction, it makes LocalDef011 ordinary pointwise subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "instLTNat",
+      "meaning": "The usual strict less-than relation on natural numbers.",
+      "effect_on_target": "It gives the constructor's dimension assumptions their standard meanings 0 < n and 0 < s.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "instOfNatNat",
+      "meaning": "The standard interpretation of each natural-number literal as that same natural number.",
+      "effect_on_target": "It supplies natural literals including 0 in the dimension assumptions and 2 as the exponent in each square.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "Natural numbers n and s are implicitly universally quantified.",
+      "A value run : LocalDef001 n s is universally quantified.",
+      "The run contains real scalars step and epsilon; vectors initial, exactNext, schemeNext, and perturbedNext in R^n; and stage families schemeStages and perturbedStages indexed by Fin s.",
+      "The run also contains arbitrary maps F,tau : R^n -> R^n, coefficient arrays aTilde,aPerturbation in R^(s by s), and coefficient vectors bTilde,bPerturbation in R^s."
+    ],
+    "hypotheses": [
+      "The run contains proofs that 0 < n and 0 < s.",
+      "The run contains proofs that 0 <= step and 0 <= epsilon.",
+      "For every i in Fin s, schemeStages_i = initial + step times sum over j in Fin s of aTilde(i,j) F(schemeStages_j).",
+      "schemeNext = initial + step times sum over j in Fin s of bTilde(j) F(schemeStages_j).",
+      "For every i in Fin s, perturbedStages_i = initial + (step times sum over j in Fin s of aTilde(i,j) F(perturbedStages_j) + (epsilon*step) times sum over j in Fin s of aPerturbation(i,j) tau(perturbedStages_j)).",
+      "perturbedNext = initial + (step times sum over j in Fin s of bTilde(j) F(perturbedStages_j) + (epsilon*step) times sum over j in Fin s of bPerturbation(j) tau(perturbedStages_j))."
+    ],
+    "conclusions": [
+      "As vectors in R^n, exactNext - perturbedNext = (exactNext - schemeNext) + (schemeNext - perturbedNext). Equivalently, this equality holds at every coordinate i in Fin n.",
+      "The Euclidean norms satisfy ||exactNext - perturbedNext||_2 <= ||exactNext - schemeNext||_2 + ||schemeNext - perturbedNext||_2."
+    ],
+    "mathematical_definitions": [
+      "Fin m denotes the m coordinate indices 0 through m-1.",
+      "Vector addition, subtraction, and scalar multiplication are componentwise.",
+      "For weights w_j and vectors v_j, their weighted sum has coordinate k equal to sum over j in Fin s of w_j v_j(k).",
+      "Define e_total = exactNext - perturbedNext, e_first = exactNext - schemeNext, and e_second = schemeNext - perturbedNext.",
+      "For x in R^n, ||x||_2 is defined exactly as sqrt(sum over i in Fin n of (x(i))^2)."
+    ],
+    "proposition_plain_english": "For every existing run record with positive dimensions, nonnegative step and epsilon, and the supplied stage and update equations, the difference from exactNext to perturbedNext is exactly the sum of the difference from exactNext to schemeNext and the difference from schemeNext to perturbedNext. Moreover, the Euclidean norm of the total difference is at most the sum of the Euclidean norms of those two component differences."
+  },
+  "restrictions_and_vacuity_risks": [
+    "Because every run carries proofs 0 < n and 0 < s, there can be no run when n = 0 or s = 0; the universal statement is therefore vacuous for either zero dimension.",
+    "The theorem is conditional on an already constructed run containing stages and proofs of all four equations. It does not assert existence or uniqueness of such stages or updates.",
+    "The exactNext vector is unconstrained by the constructor: no equation relates it to initial, F, tau, step, epsilon, any stage, or either coefficient array.",
+    "The maps F and tau and all coefficients are arbitrary; no continuity, Lipschitz, boundedness, triangularity, consistency, or other structural condition is encoded.",
+    "Only nonnegativity of step and epsilon is encoded. Neither is required to be positive, and epsilon has no upper bound.",
+    "The conclusions do not depend on the stage equations, coefficients, maps, step, epsilon, initial vector, or stage count except insofar as a run contains the three update vectors.",
+    "No quantitative error estimate in terms of step, epsilon, coefficients, stages, or stability constants is asserted.",
+    "No existence witnesses occur in the proposition itself; all data and equation witnesses are packaged in the universally quantified run.",
+    "The result is limited to finite real vectors with the explicitly defined Euclidean 2-norm."
+  ],
+  "ambiguities": []
+}

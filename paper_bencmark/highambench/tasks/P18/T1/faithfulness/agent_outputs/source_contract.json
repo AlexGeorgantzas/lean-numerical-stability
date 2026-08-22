@@ -7,193 +7,195 @@
     {
       "pdf_page": 1,
       "printed_page": "1",
-      "anchor": "ODE display in Section 1",
-      "observation": "The paper's standing evolution problem is the autonomous ODE u_t = F(u). [PDF p. 1; anchor: ODE display in Section 1]"
+      "anchor": "equation u_t = F(u) in Section 1",
+      "observation": "The paper introduces the autonomous ODE u_t = F(u), but does not state a state-space dimension, domain or codomain for F, or a norm."
     },
     {
       "pdf_page": 2,
       "printed_page": "2",
-      "anchor": "equation (1.1) and following Butcher-coefficient sentence",
-      "observation": "Equation (1.1) introduces an s-stage Runge–Kutta method with stages y^(i), numerical states u^n and u^(n+1), sums over j=1,...,s, an s-by-s matrix A, and a 1-by-s vector b. [PDF p. 2; anchor: equation (1.1) and following Butcher-coefficient sentence]"
-    },
-    {
-      "pdf_page": 2,
-      "printed_page": "2",
-      "anchor": "stability-qualification paragraph in Section 1",
-      "observation": "The paper limits its analysis to accuracy and states that expectations for global errors are valid only under an assumption of stability; stability effects from low-precision perturbations are not rigorously analyzed. [PDF p. 2; anchor: stability-qualification paragraph in Section 1]"
+      "anchor": "equation (1.1) and the following Butcher-coefficient sentence",
+      "observation": "The standing Runge-Kutta convention is an s-stage method with sums from j = 1 to s; A is described as s by s and b as 1 by s."
     },
     {
       "pdf_page": 3,
       "printed_page": "3",
-      "anchor": "equation (2.3)",
-      "observation": "The perturbation operator is defined by τ(u) = (F(u) - F^ε(u))/ε. [PDF p. 3; anchor: equation (2.3)]"
+      "anchor": "equation (2.3) and the preceding implicit-solver paragraph",
+      "observation": "An inaccurate implicit solve with tolerance O(epsilon) is represented by F^epsilon, and its output satisfies the displayed modified equation exactly. The perturbation operator is defined with orientation tau(u) = (F(u) - F^epsilon(u))/epsilon. Division by epsilon makes epsilon != 0 mathematically necessary, although the paper does not state that restriction separately."
+    },
+    {
+      "pdf_page": 3,
+      "printed_page": "3",
+      "anchor": "paragraphs following equations (2.3) and (2.4)",
+      "observation": "For the motivating midpoint variants, the paper explicitly orients the differences as u^{n+1} - u_epsilon^{n+1} and u^{n+1} - u-hat^{n+1}. It assigns them one-step orders O(epsilon Delta t) and O(epsilon Delta t^2), respectively, with corresponding global contributions O(epsilon) and O(epsilon Delta t)."
     },
     {
       "pdf_page": 4,
       "printed_page": "4",
-      "anchor": "equations (3.1a)-(3.1b) and approximation paragraph immediately following",
-      "observation": "The general method is an additive Runge–Kutta scheme combining F and F^ε through coefficients A, A^ε, b, and b^ε; the paper requires, for any y, that F^ε(y) - F(y) = O(ε). [PDF p. 4; anchor: equations (3.1a)-(3.1b) and approximation paragraph immediately following]"
+      "anchor": "equations (3.1a)-(3.1b)",
+      "observation": "The general mixed-precision method is an additive Runge-Kutta scheme: every stage and the output contain a plus contribution using F with coefficients A,b and a plus contribution using F^epsilon with coefficients A^epsilon,b^epsilon, with each sum indexed j = 1,...,s."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "4",
+      "anchor": "paragraph immediately following equations (3.1a)-(3.1b)",
+      "observation": "The paper requires, for any y, that F^epsilon(y) - F(y) = O(epsilon), and says that the scheme may then be rewritten using F and tau as defined in (2.3)."
     },
     {
       "pdf_page": 5,
       "printed_page": "5",
-      "anchor": "equations (3.2a)-(3.2b)",
-      "observation": "The paper prints the perturbed form with F terms weighted by Ã and b̃ and with plus εΔt terms involving A^ετ and b^ετ; it states Ã_ij = A_ij + A^ε_ij and b̃ = b_j + b^ε_j. [PDF p. 5; anchor: equations (3.2a)-(3.2b)]"
+      "anchor": "equations (3.2a)-(3.2b) and the following coefficient definitions",
+      "observation": "The printed rewrite uses plus epsilon Delta t A^epsilon tau and plus epsilon Delta t b^epsilon tau, with A-tilde = A + A^epsilon and b-tilde described as b + b^epsilon. This sign conflicts algebraically with (2.3), which gives F^epsilon = F - epsilon tau."
     },
     {
       "pdf_page": 5,
       "printed_page": "5",
-      "anchor": "equation (3.3)",
-      "observation": "The second-order additive B-series expansion separates terms labeled \"scheme\" from terms labeled \"perturbation\" and ends with O(Δt^3). [PDF p. 5; anchor: equation (3.3)]"
+      "anchor": "equation (3.3), including the braces labelled scheme and perturbation",
+      "observation": "The second-order B-series expansion partitions the displayed update into a brace labelled scheme, a brace labelled perturbation multiplied by epsilon Delta t, and a final unallocated O(Delta t^3) remainder. The perturbation brace contains tau, tau_y, F_y, and terms of both first and second degree in epsilon."
     },
     {
       "pdf_page": 5,
       "printed_page": "5",
-      "anchor": "unnumbered E = E_sch + E_per display following equation (3.3)",
-      "observation": "The selected display states that, under two sets of conditions, the error at each time-step is E = E_sch + E_per = O(Δt^(p+1)) + O(εΔt^(m+1)), where the prose calls E_sch the scheme approximation error and E_per the perturbation error. [PDF p. 5; anchor: unnumbered E = E_sch + E_per display following equation (3.3)]"
+      "anchor": "paragraph beginning 'This expansion shows two sources of error' and the unnumbered E display",
+      "observation": "The paper says that the error at one time-step can be written as the sum of the approximation error of the scheme, E_sch, and the perturbation error, E_per. It displays E = E_sch + E_per = O(Delta t^{p+1}) + O(epsilon Delta t^{m+1}) at each time-step under two sets of conditions."
     },
     {
       "pdf_page": 5,
       "printed_page": "5",
-      "anchor": "global-error display immediately following the one-step error display",
-      "observation": "The next sentence conditionally states that, if the method is stable, the observed global error has the form Error = O(Δt^p) + O(εΔt^m). [PDF p. 5; anchor: global-error display immediately following the one-step error display]"
+      "anchor": "sentence beginning 'If this method is stable' and the following unnumbered global-error display",
+      "observation": "Separately from the one-step decomposition, the paper conditionally predicts global Error = O(Delta t^p) + O(epsilon Delta t^m) if the method is stable."
     },
     {
       "pdf_page": 6,
       "printed_page": "6",
-      "anchor": "two-scenario discussion preceding Section 3.1",
-      "observation": "The paper distinguishes a smooth case, where F and F^ε have bounded derivatives and perturbation terms may cancel, from a mixed-precision chopping case F^ε = Chop(F), where F^ε and τ need not be Lipschitz and derivatives of τ may not exist. [PDF p. 6; anchor: two-scenario discussion preceding Section 3.1]"
+      "anchor": "paragraphs immediately preceding Section 3.1",
+      "observation": "The paper distinguishes a smooth case, where F, F^epsilon, tau, and relevant derivatives are treated as bounded, from chopping-type mixed precision, where F^epsilon and tau need not be Lipschitz and derivatives of tau may not exist. These alternatives change the perturbation order conditions."
     },
     {
       "pdf_page": 7,
       "printed_page": "7",
-      "anchor": "opening consistency conditions of Section 3.1 and Section 3.1.1",
-      "observation": "Section 3.1 identifies p as the consistency-order level and describes m through the requirement that the perturbation error have order O(εΔt^(m+1)); the displayed condition ladders begin at p≥1 and m≥1. [PDF p. 7; anchor: opening consistency conditions of Section 3.1 and Section 3.1.1]"
-    },
-    {
-      "pdf_page": 8,
-      "printed_page": "8",
-      "anchor": "Section 3.1.2, equations (3.5a)-(3.5f)",
-      "observation": "For well-behaved τ, the paper gives cancellation-based perturbation conditions distinct from the componentwise absolute-value conditions used when τ is not well behaved. [PDF p. 8; anchor: Section 3.1.2, equations (3.5a)-(3.5f)]"
+      "anchor": "opening of Section 3.1 and conditions (3.4)",
+      "observation": "The subsequent section identifies p as the consistency order and m as the perturbation-order index, beginning with p >= 1 and m >= 1 conditions. The unnumbered display on page 5 itself does not bind their domains."
     }
   ],
   "statement": {
     "binders": [
-      "The method has a stage count s, stage index i, and summation index j ranging from 1 through s. [PDF p. 2; anchor: equation (1.1); PDF p. 4; anchor: equations (3.1a)-(3.1b)]",
-      "The step index is n, with current numerical state u^n, stages y^(i), and next numerical state u^(n+1). [PDF p. 2; anchor: equation (1.1); PDF p. 5; anchor: equations (3.2a)-(3.2b)]",
-      "The relevant symbols are step size Δt, perturbation scale ε, operators F and F^ε, perturbation operator τ, and Runge–Kutta coefficients A, A^ε, b, and b^ε. [PDF p. 3; anchor: equation (2.3); PDF p. 4; anchor: equations (3.1a)-(3.1b)]",
-      "The order labels p and m govern respectively the scheme contribution O(Δt^(p+1)) and perturbation contribution O(εΔt^(m+1)); Section 3.1 treats them as order levels beginning at 1. [PDF p. 5; anchor: unnumbered one-step error display; PDF p. 7; anchor: opening consistency and perturbation conditions]"
+      "The underlying autonomous problem uses a state u and operator F in u_t = F(u); no state dimension or scalar/vector type is declared. [PDF p. 1, anchor: equation u_t = F(u)]",
+      "The additive method uses a step index n, step size Delta t, s stages y^(i), summation index j = 1,...,s, and coefficient families A, A^epsilon, b, and b^epsilon. [PDF p. 4, anchor: equations (3.1a)-(3.1b)]",
+      "The perturbation framework uses an approximation F^epsilon, a scale epsilon, and tau defined from F and F^epsilon. [PDF p. 3, anchor: equation (2.3)]",
+      "The local-order statement contains order labels p and m; their roles as consistency and perturbation orders are supplied by the following order-condition section rather than bound in the selected display. [PDF p. 5, anchor: unnumbered E display; PDF p. 7, anchor: opening of Section 3.1]"
     ],
     "hypotheses": [
-      "The underlying problem is u_t = F(u). [PDF p. 1; anchor: ODE display in Section 1]",
-      "The numerical method is the s-stage additive Runge–Kutta scheme of (3.1), equivalently represented in the printed perturbed form (3.2). [PDF p. 4; anchor: equations (3.1a)-(3.1b); PDF p. 5; anchor: equations (3.2a)-(3.2b)]",
-      "For every argument y under consideration, F^ε(y) approximates F(y) with F^ε(y) - F(y) = O(ε). [PDF p. 4; anchor: approximation paragraph preceding equations (3.2a)-(3.2b)]",
-      "The scheme satisfies the appropriate consistency conditions for p and the appropriate perturbation conditions for m; the paper supplies different perturbation conditions depending on whether τ is well behaved. [PDF p. 5; anchor: prose introducing the unnumbered one-step error display; PDF pp. 7-8; anchor: Sections 3.1.1-3.1.2]",
-      "Stability is required only for the stated global-error conclusion. [PDF p. 5; anchor: sentence preceding the global-error display; PDF p. 2; anchor: stability-qualification paragraph]"
+      "The numerical update is the additive Runge-Kutta method (3.1), with plus F and plus F^epsilon contributions. [PDF p. 4, anchor: equations (3.1a)-(3.1b)]",
+      "For any y, the approximation is required to satisfy F^epsilon(y) - F(y) = O(epsilon). [PDF p. 4, anchor: paragraph following equation (3.1)]",
+      "To use tau = (F - F^epsilon)/epsilon literally, epsilon must be nonzero; this is implied by the quotient and is not separately stated. [PDF p. 3, anchor: equation (2.3)]",
+      "The orders O(Delta t^{p+1}) and O(epsilon Delta t^{m+1}) require the two corresponding sets of consistency and perturbation conditions; the selected display does not enumerate them. [PDF p. 5, anchor: paragraph and unnumbered E display following equation (3.3)]",
+      "Stability is not stated as a hypothesis for the one-step split; it is introduced only for the separate global-error prediction. [PDF p. 5, anchor: sentence beginning 'If this method is stable']",
+      "Smoothness or bounded derivatives of tau are not stated as prerequisites for merely naming E_sch and E_per; smooth and nonsmooth tau lead to different later perturbation conditions. [PDF p. 6, anchor: paragraphs preceding Section 3.1]"
     ],
     "conclusions": [
-      "At each time-step, the error is decomposed as E = E_sch + E_per. [PDF p. 5; anchor: unnumbered E = E_sch + E_per display following equation (3.3)]",
-      "Under the two corresponding sets of order conditions, E_sch = O(Δt^(p+1)) and E_per = O(εΔt^(m+1)), so E = O(Δt^(p+1)) + O(εΔt^(m+1)) at each time-step. [PDF p. 5; anchor: prose and unnumbered one-step error display following equation (3.3)]",
-      "If the method is stable, the paper predicts an observed global error of the form Error = O(Δt^p) + O(εΔt^m). [PDF p. 5; anchor: global-error display immediately following the one-step error display]"
+      "At one time-step, the paper asserts the additive source decomposition E = E_sch + E_per, naming E_sch the approximation error of the scheme and E_per the perturbation error. [PDF p. 5, anchor: paragraph beginning 'This expansion shows two sources of error' and unnumbered E display]",
+      "Under the two appropriate sets of order conditions, the displayed one-step error has scheme and perturbation orders represented by O(Delta t^{p+1}) + O(epsilon Delta t^{m+1}). [PDF p. 5, anchor: unnumbered E display]",
+      "The first equality is an asserted bookkeeping decomposition, but the paper supplies no separate formulas for E, E_sch, or E_per; the second equality is asymptotic order notation, not a pointwise equality to specified remainder functions. [PDF p. 5, anchor: paragraph and unnumbered E display following equation (3.3)]",
+      "The global estimate Error = O(Delta t^p) + O(epsilon Delta t^m) is a separate, stability-conditional claim and is not part of the exact one-step split. [PDF p. 5, anchor: unnumbered global-error display]"
     ],
     "definitions_and_conventions": [
-      "The perturbation convention printed in (2.3) is τ(u) = (F(u) - F^ε(u))/ε. [PDF p. 3; anchor: equation (2.3)]",
-      "The combined stage coefficients are Ã_ij = A_ij + A^ε_ij. [PDF p. 5; anchor: definition following equations (3.2a)-(3.2b)]",
-      "The paper prints b̃ = b_j + b^ε_j after using components b̃_j in (3.2b); the intended componentwise convention is indicated by those indexed terms but the left-hand index is omitted in the prose definition. [PDF p. 5; anchor: equation (3.2b) and coefficient definition immediately following]",
-      "E_sch denotes the approximation error of the scheme, and E_per denotes the perturbation error. [PDF p. 5; anchor: prose immediately preceding the unnumbered one-step error display]",
-      "The labels \"scheme\" and \"perturbation\" are attached to the corresponding groups in the B-series expansion (3.3). [PDF p. 5; anchor: equation (3.3)]"
+      "tau(u) = (F(u) - F^epsilon(u))/epsilon, so the definition itself fixes tau with exact-minus-approximate orientation. [PDF p. 3, anchor: equation (2.3)]",
+      "The original additive algorithm adds the F and F^epsilon evaluations, as written in (3.1). [PDF p. 4, anchor: equations (3.1a)-(3.1b)]",
+      "A-tilde is defined as A + A^epsilon; the printed text writes b-tilde = b_j + b_j^epsilon, evidently using a vector symbol on the left and indexed components on the right. [PDF p. 5, anchor: sentence following equation (3.2b)]",
+      "E_sch and E_per are defined only by prose as the scheme-approximation and perturbation portions of the one-step error. [PDF p. 5, anchor: paragraph following equation (3.3)]",
+      "Equation (3.3) uses e, c-tilde, c^epsilon, F_y, and tau_y without defining those symbols in the selected passage; their standard B-series meanings are not restated there. [PDF p. 5, anchor: equation (3.3)]"
     ],
     "implicit_context": [
-      "The states and operator values may be vector-valued, but the paper does not state a state-space dimension in the selected framework; it explicitly gives only the standard coefficient dimensions A∈s-by-s and b∈1-by-s. [PDF p. 2; anchor: equation (1.1) and following Butcher-coefficient sentence]",
-      "The decomposition is motivated by an additive B-series expansion that tracks F and its interactions with τ. [PDF p. 5; anchor: paragraph preceding equation (3.3)]",
-      "For the smooth scenario, the paper assumes that F and F^ε and all their derivatives exist and are bounded; for mixed-precision chopping, it explicitly warns that τ may not be differentiable, and it replaces cancellation conditions by stricter componentwise conditions. [PDF p. 6; anchor: two-scenario discussion preceding Section 3.1]",
-      "The paper's global-error statement is an accuracy expectation rather than a stability theorem. [PDF p. 2; anchor: stability-qualification paragraph; PDF p. 5; anchor: conditional global-error sentence]"
+      "The error split is presented inside an additive B-series analysis of the update (3.1). [PDF p. 4, anchor: Section 3 opening and equation (3.1); PDF p. 5, anchor: equation (3.3)]",
+      "Obtaining an approximation error normally entails comparison with the exact ODE flow, but the paper does not write that reference value into the definitions of E or E_sch at this display. [PDF p. 1, anchor: equation u_t = F(u); PDF p. 5, anchor: unnumbered E display]",
+      "The stage and coefficient dimensions follow the standing s-stage Runge-Kutta convention, but the general passage does not specify the dimension of each state y^(i). [PDF p. 2, anchor: equation (1.1) and Butcher-coefficient sentence; PDF p. 4, anchor: equation (3.1)]"
     ],
-    "algorithm_linkage": "The contract applies specifically to the additive s-stage Runge–Kutta algorithm (3.1), rewritten in the printed perturbed form (3.2), and the one-step decomposition is drawn from its additive B-series analysis (3.3); it is not stated as a result for an arbitrary numerical update. [PDF p. 4; anchor: equations (3.1a)-(3.1b); PDF p. 5; anchor: equations (3.2a)-(3.2b), equation (3.3), and the following one-step error display]",
+    "algorithm_linkage": "The selected split is linked to the additive Runge-Kutta algorithm (3.1), whose F^epsilon terms enter with plus signs. Combining that algorithm with tau = (F - F^epsilon)/epsilon gives F^epsilon = F - epsilon tau and therefore produces minus perturbation terms after substitution. Equations (3.2) and (3.3) instead print plus perturbation terms. This is a genuine sign inconsistency; the paper does not state a convention that reconciles it. The asymptotic magnitudes in the unnumbered E display are insensitive to an overall perturbation sign, but any signed formalization of the update or error components must preserve or explicitly address the inconsistency. [PDF p. 3, anchor: equation (2.3); PDF p. 4, anchor: equation (3.1); PDF p. 5, anchor: equations (3.2)-(3.3)]",
     "numerical_model": [
-      "The general model is an abstract operator perturbation satisfying F^ε(y) - F(y) = O(ε) for any y; no componentwise or relative IEEE floating-point model is imposed. [PDF p. 4; anchor: approximation paragraph preceding equations (3.2a)-(3.2b)]",
-      "In the mixed-precision specialization, the paper describes F^ε = Chop(F), with F^ε bounded but potentially not Lipschitz and τ potentially lacking derivatives. [PDF p. 6; anchor: mixed-precision chopping paragraph preceding Section 3.1]",
-      "No rounding mode, unit-roundoff inequality, overflow rule, underflow rule, or treatment of subnormal values is specified for the selected result. [PDF p. 4; anchor: abstract approximation paragraph; PDF p. 6; anchor: mixed-precision chopping paragraph]"
+      "epsilon is used as a perturbation, solver-tolerance, or precision scale, while F^epsilon is an approximate operator satisfying F^epsilon - F = O(epsilon). [PDF p. 3, anchor: implicit-solver paragraph and equation (2.3); PDF p. 4, anchor: paragraph following equation (3.1)]",
+      "The motivating experiment realizes F^epsilon by truncating F to single or half precision while some F evaluations remain double precision, but this experiment is not imposed as the general model behind (3.1). [PDF p. 4, anchor: opening experimental paragraphs before Section 3]",
+      "No IEEE format, unit-roundoff formula, rounding direction, stochastic model, or operation-by-operation rounding rule is specified for the selected exact split. [PDF p. 4, anchor: equation (3.1) and approximation paragraph; PDF p. 5, anchor: unnumbered E display]"
     ],
     "error_notions": [
-      "E is an error at one time-step and is split into the scheme approximation contribution E_sch and perturbation contribution E_per. [PDF p. 5; anchor: prose and unnumbered one-step error display following equation (3.3)]",
-      "The selected passage does not explicitly define E as a signed difference between an exact ODE solution and u^(n+1), nor does it specify the orientation of such a difference. [PDF p. 5; anchor: prose and unnumbered one-step error display following equation (3.3)]",
-      "The separate symbol Error denotes the predicted global error and is asserted only conditionally on stability. [PDF p. 5; anchor: global-error display immediately following the one-step error display]"
+      "E is described as the error at one time-step, E_sch as the approximation error of the scheme, and E_per as the perturbation error. [PDF p. 5, anchor: paragraph following equation (3.3)]",
+      "The paper does not specify whether E is exact-minus-numerical or numerical-minus-exact, nor whether E and its components are vectors, scalar errors, or norms. [PDF p. 5, anchor: unnumbered E display]",
+      "The local-order claim is O(Delta t^{p+1}) + O(epsilon Delta t^{m+1}) at each time-step. [PDF p. 5, anchor: unnumbered E display]",
+      "The global-error claim loses one power of Delta t in each contribution and is conditional on stability. [PDF p. 5, anchor: sentence and unnumbered global-error display following the local display]",
+      "The explicitly oriented midpoint differences on page 3 do not explicitly define the orientation of the later generic symbol E. [PDF p. 3, anchor: paragraphs following equations (2.3) and (2.4); PDF p. 5, anchor: unnumbered E display]"
     ],
     "norms": [
-      "No norm, absolute value, componentwise ordering, or scalar error functional is specified for E, E_sch, E_per, or the global Error in the selected passage. [PDF p. 5; anchor: unnumbered one-step and global-error displays following equation (3.3)]"
+      "No norm is named for F^epsilon - F = O(epsilon), for E, or for either local or global big-O estimate. [PDF p. 4, anchor: approximation paragraph following equation (3.1); PDF p. 5, anchor: local and global unnumbered error displays]",
+      "Consequently, the source passage supplies no norm equivalence, componentwise-error convention, absolute-error convention, or relative-error convention. [PDF p. 5, anchor: paragraph and displays following equation (3.3)]"
     ],
     "constants_and_indexing": [
-      "Stage sums run from j=1 to s, while stages are indexed by i in the s-stage method. [PDF p. 4; anchor: equations (3.1a)-(3.1b); PDF p. 5; anchor: equations (3.2a)-(3.2b)]",
-      "The standard Runge–Kutta coefficient dimensions are stated as A being s-by-s and b being 1-by-s; the corresponding perturbed arrays use the same stage indices, although their dimensions are not separately restated. [PDF p. 2; anchor: equation (1.1) and following sentence; PDF p. 4; anchor: equations (3.1a)-(3.1b)]",
-      "The local-to-global index offsets are exact in the displayed claim: p+1 becomes p, and m+1 becomes m. [PDF p. 5; anchor: consecutive one-step and global-error displays following equation (3.3)]",
-      "All multiplicative constants are hidden inside big-O notation; the passage gives no values or dependence of those constants. [PDF p. 5; anchor: consecutive one-step and global-error displays following equation (3.3)]"
+      "The additive stage and output sums run from j = 1 through s, with no zero-based offset. [PDF p. 4, anchor: equations (3.1a)-(3.1b)]",
+      "The stage label i appears in y^(i) and A_ij, while the range i = 1,...,s is inherited from the s-stage convention rather than restated beside (3.1). [PDF p. 2, anchor: equation (1.1); PDF p. 4, anchor: equation (3.1a)]",
+      "The displayed local orders use exponents p + 1 and m + 1; the adjacent global orders use p and m. [PDF p. 5, anchor: local and global unnumbered error displays]",
+      "No big-O constants, uniformity domains, final-time dependence, or dependence on F, derivatives, coefficients, epsilon, or Delta t are specified. [PDF p. 5, anchor: local and global unnumbered error displays]"
     ],
     "higher_order_terms": [
-      "Equation (3.3) retains terms through second order in Δt and appends O(Δt^3); its perturbation group contains εΔt times a leading τ term and Δt times interactions involving τ_yF, F_yτ, and an additional ετ_yτ term. [PDF p. 5; anchor: equation (3.3)]",
-      "The selected one-step result suppresses all scheme remainders into O(Δt^(p+1)) and all perturbation remainders into O(εΔt^(m+1)); it does not display coefficients or additional remainder classes. [PDF p. 5; anchor: unnumbered one-step error display following equation (3.3)]",
-      "The paper says the B-series expansion can be extended to higher order, but the selected display itself does not impose an upper bound on p or m. [PDF p. 5; anchor: sentence following the global-error display; PDF pp. 7-8; anchor: displayed order-condition ladders]"
+      "Equation (3.3) retains an unallocated O(Delta t^3) remainder after the explicitly labelled scheme and perturbation braces. [PDF p. 5, anchor: equation (3.3)]",
+      "The source does not say in (3.3) whether the O(Delta t^3) constant depends on epsilon or how that remainder is divided between E_sch and E_per. [PDF p. 5, anchor: equation (3.3) and following paragraph]",
+      "The selected error display suppresses all terms beyond O(Delta t^{p+1}) and O(epsilon Delta t^{m+1}); it does not specify a joint limit or list additional powers of epsilon. [PDF p. 5, anchor: unnumbered E display]",
+      "The next page exhibits higher powers such as epsilon^2 Delta t^2 and epsilon^3 Delta t^3 in the perturbation expansion, showing that the compact selected display is an order summary rather than a complete term-by-term expansion. [PDF p. 6, anchor: perturbation-expansion table]"
     ],
     "exceptional_values": [
-      "Equation (2.3) divides by ε, but the paper does not explicitly state ε≠0 or define τ at ε=0. [PDF p. 3; anchor: equation (2.3)]",
-      "The selected result states no assumptions excluding NaN, infinities, overflow, underflow, subnormal values, or failed implicit solves. [PDF p. 4; anchor: abstract approximation paragraph; PDF p. 5; anchor: one-step error display; PDF p. 6; anchor: chopping discussion]"
+      "epsilon = 0 is not admissible in the literal definition (2.3) unless tau is separately extended, and no such extension is supplied. [PDF p. 3, anchor: equation (2.3)]",
+      "The passage imposes no assumptions concerning NaN, infinity, overflow, underflow, subnormal values, or failed implicit solves. [PDF p. 3, anchor: implicit-solver paragraph and equation (2.3); PDF p. 4, anchor: general additive framework]"
     ]
   },
   "undebatable_constraints": [
-    "The local statement must preserve the exact structural split E = E_sch + E_per. [PDF p. 5; anchor: unnumbered E = E_sch + E_per display following equation (3.3)]",
-    "The two local asymptotic contributions are O(Δt^(p+1)) and O(εΔt^(m+1)); omitting ε or changing either exponent offset changes the claim. [PDF p. 5; anchor: unnumbered one-step error display following equation (3.3)]",
-    "The local estimate is asserted at each time-step and only under the relevant consistency and perturbation conditions. [PDF p. 5; anchor: prose surrounding the unnumbered one-step error display]",
-    "The global estimate is O(Δt^p) + O(εΔt^m) and is conditional on stability. [PDF p. 5; anchor: conditional sentence and global-error display following the one-step result]",
-    "The result is linked to the additive Runge–Kutta stages and output in (3.1)-(3.2), not merely to an arbitrary pair of error terms. [PDF p. 4; anchor: equations (3.1a)-(3.1b); PDF p. 5; anchor: equations (3.2a)-(3.2b)]",
-    "The paper's printed perturbation definition is τ=(F-F^ε)/ε, even though its sign conflicts algebraically with the printed plus signs in (3.2). [PDF p. 3; anchor: equation (2.3); PDF p. 5; anchor: equations (3.2a)-(3.2b)]",
-    "No particular norm, state dimension, big-O constant, or IEEE rounding model may be added as though it were stated by the source. [PDF p. 2; anchor: equation (1.1) and coefficient-dimension sentence; PDF pp. 4-6; anchor: approximation model, error displays, and chopping discussion]"
+    "The source-defined perturbation orientation is tau = (F - F^epsilon)/epsilon, not (F^epsilon - F)/epsilon. [PDF p. 3, anchor: equation (2.3)]",
+    "The authoritative additive algorithm (3.1) adds both the F and F^epsilon contributions. [PDF p. 4, anchor: equations (3.1a)-(3.1b)]",
+    "For nonzero epsilon, substituting the source definition of tau into (3.1) yields negative epsilon A^epsilon tau and negative epsilon b^epsilon tau contributions; the plus signs printed in (3.2) cannot follow from both preceding displays simultaneously. [PDF p. 3, anchor: equation (2.3); PDF p. 4, anchor: equation (3.1); PDF p. 5, anchor: equation (3.2)]",
+    "The paper explicitly names exactly two one-step error sources: scheme approximation and perturbation. [PDF p. 5, anchor: paragraph following equation (3.3)]",
+    "The one-step decomposition preserves both components: E = E_sch + E_per. [PDF p. 5, anchor: unnumbered E display]",
+    "The local orders are p + 1 for the scheme contribution and m + 1 with an epsilon factor for the perturbation contribution. [PDF p. 5, anchor: unnumbered E display]",
+    "The global O(Delta t^p) + O(epsilon Delta t^m) estimate is conditional on stability and is separate from the one-step decomposition. [PDF p. 5, anchor: global-error sentence and display]",
+    "No signed reference baseline and no norm are supplied for the generic symbols E, E_sch, and E_per. [PDF p. 5, anchor: paragraph and displays following equation (3.3)]",
+    "The O(Delta t^3) remainder in (3.3) is outside both labelled braces and is not assigned to either error component. [PDF p. 5, anchor: equation (3.3)]"
   ],
   "ambiguities": [
     {
-      "issue": "The perturbation sign convention is internally inconsistent across the referenced equations.",
-      "evidence": "Equation (2.3) defines τ=(F-F^ε)/ε, while (3.1) adds A^εF^ε and b^εF^ε, Ã and b̃ are defined using addition, and (3.2) nevertheless prints plus εA^ετ and plus εb^ετ. Direct substitution of the printed (2.3) into (3.1) would produce minus signs. [PDF p. 3; anchor: equation (2.3); PDF p. 4; anchor: equations (3.1a)-(3.1b); PDF p. 5; anchor: equations (3.2a)-(3.2b) and following coefficient definitions]",
-      "impact": "The exact signed perturbed algorithm cannot be reconstructed consistently without correcting either the definition of τ or the signs in (3.2). The sign does not alter the displayed big-O orders, but it matters for an exact algebraic formalization."
+      "issue": "The perturbation sign in the rewritten algorithm is inconsistent. [PDF p. 3, anchor: equation (2.3); PDF p. 5, anchor: equation (3.2)]",
+      "evidence": "Equation (2.3) implies F^epsilon = F - epsilon tau, while substituting into the plus F^epsilon terms of (3.1) gives minus perturbation terms; (3.2) and (3.3) print plus signs. [PDF p. 3, anchor: equation (2.3); PDF p. 4, anchor: equation (3.1); PDF p. 5, anchor: equations (3.2)-(3.3)]",
+      "impact": "The source does not determine a consistent signed perturbation update without correcting either the definition or the rewrite. Big-O orders survive an overall sign change, but exact term identities and signed error orientation do not. [PDF p. 5, anchor: equations (3.2)-(3.3) and unnumbered E display]"
     },
     {
-      "issue": "The error quantity and its comparison baseline are not formally defined.",
-      "evidence": "The passage names E_sch as approximation error and E_per as perturbation error, then displays their sum, but it does not specify a signed difference, exact flow value, reference numerical method, or scalar error functional. [PDF p. 5; anchor: prose and unnumbered one-step error display following equation (3.3)]",
-      "impact": "A formal statement must either keep E, E_sch, and E_per abstract or introduce an additional interpretation that is not source-explicit."
+      "issue": "E, E_sch, and E_per lack algebraic definitions and signed orientation. [PDF p. 5, anchor: paragraph and unnumbered E display following equation (3.3)]",
+      "evidence": "They are introduced only by the prose labels 'error at one time-step,' 'approximation error of the scheme,' and 'perturbation error'; no exact-flow value or subtraction formula is shown. [PDF p. 5, anchor: paragraph following equation (3.3)]",
+      "impact": "The source supports an abstract additive source decomposition, but not a choice between exact-minus-computed and computed-minus-exact or a concrete formal definition of each component. [PDF p. 5, anchor: unnumbered E display]"
     },
     {
-      "issue": "The norm or mode in which the big-O estimates hold is unspecified.",
-      "evidence": "Neither the one-step display nor the global-error display names a norm or componentwise interpretation. [PDF p. 5; anchor: consecutive one-step and global-error displays following equation (3.3)]",
-      "impact": "No particular vector norm, absolute error, or componentwise bound is source-mandated."
+      "issue": "The equality chain mixes an asserted decomposition with asymptotic notation. [PDF p. 5, anchor: unnumbered E display]",
+      "evidence": "The prose asserts that the one-step error can be written as a sum, whereas O(Delta t^{p+1}) and O(epsilon Delta t^{m+1}) denote orders under conditions rather than specified numerical expressions. [PDF p. 5, anchor: paragraph and unnumbered E display following equation (3.3)]",
+      "impact": "Only E = E_sch + E_per has an exact additive reading at the paper's bookkeeping level; the trailing big-O equality must be interpreted as a conditional asymptotic classification. [PDF p. 5, anchor: unnumbered E display]"
     },
     {
-      "issue": "The limiting regime and uniformity of the two-parameter big-O notation are unspecified.",
-      "evidence": "The displays contain both Δt and ε but do not state whether Δt→0 with ε fixed, whether ε also tends to zero, or whether constants are uniform in either parameter or in n. [PDF p. 5; anchor: consecutive one-step and global-error displays following equation (3.3)]",
-      "impact": "Quantifier order and dependencies of hidden constants must not be strengthened beyond the displayed asymptotic forms."
+      "issue": "The reference baseline and norm for the generic error are unspecified. [PDF p. 5, anchor: unnumbered E display]",
+      "evidence": "Unlike the explicitly oriented midpoint differences on page 3, the generic display neither identifies an exact reference solution nor applies a named norm. [PDF p. 3, anchor: paragraphs following equations (2.3) and (2.4); PDF p. 5, anchor: unnumbered E display]",
+      "impact": "The contract cannot select vector equality, scalar absolute error, relative error, or any particular norm without adding information absent from the passage. [PDF p. 5, anchor: local and global error displays]"
     },
     {
-      "issue": "The selected passage does not itself quantify p and m or enumerate the conditions that produce them.",
-      "evidence": "The passage refers only to \"two sets of conditions\"; Section 3.1 later treats p and m as order levels beginning at 1 and gives separate condition lists for well-behaved and non-well-behaved τ. [PDF p. 5; anchor: prose before the one-step display; PDF pp. 7-8; anchor: Sections 3.1.1-3.1.2]",
-      "impact": "Positive-integer order indices are strongly indicated by the later condition ladders, but an unrestricted universal quantifier over p and m is not explicitly stated in the selected display."
+      "issue": "The asymptotic regime and constants are unspecified. [PDF p. 5, anchor: local and global unnumbered error displays]",
+      "evidence": "The paper writes separate Delta t and epsilon orders but does not state whether epsilon is fixed, tends to zero jointly with Delta t, or is related to Delta t, and gives no uniformity conditions. [PDF p. 5, anchor: unnumbered E display]",
+      "impact": "No particular quantifier order between epsilon and Delta t, no uniform bound, and no dependence of hidden constants may be imposed from this display alone. [PDF p. 5, anchor: unnumbered E display]"
     },
     {
-      "issue": "The smoothness assumptions behind the displayed B-series expansion do not apply uniformly to the mixed-precision chopping case.",
-      "evidence": "Equation (3.3) uses derivatives of τ, while the paper later says that for F^ε=Chop(F), τ need not be Lipschitz and its derivatives may not exist; a stricter non-cancellation analysis is then used. [PDF p. 5; anchor: equation (3.3); PDF p. 6; anchor: mixed-precision chopping discussion]",
-      "impact": "The local-order contract should be conditioned on the appropriate smooth or nonsmooth perturbation conditions, rather than silently assuming differentiability of τ in all applications."
+      "issue": "The higher-order remainder is not assigned to an error source. [PDF p. 5, anchor: equation (3.3)]",
+      "evidence": "O(Delta t^3) appears after and outside both braces labelled scheme and perturbation. [PDF p. 5, anchor: equation (3.3)]",
+      "impact": "Equation (3.3) does not by itself provide an exact all-orders formula for E_sch and E_per or specify where omitted mixed epsilon terms belong. [PDF p. 5, anchor: equation (3.3) and following paragraph]"
     },
     {
-      "issue": "The state-space dimension and coefficient dimensions for the perturbed arrays are not fully restated.",
-      "evidence": "The paper states A is s-by-s and b is 1-by-s for the standard method, but gives no dimension for u and only implies matching stage-index dimensions for A^ε and b^ε through (3.1). [PDF p. 2; anchor: equation (1.1) and following coefficient sentence; PDF p. 4; anchor: equations (3.1a)-(3.1b)]",
-      "impact": "A fixed scalar or vector dimension, or explicit matrix/vector types beyond the stage indexing, would be an inferred specialization."
+      "issue": "The smoothness regime applicable to the order conditions is not selected in the local display. [PDF p. 5, anchor: unnumbered E display; PDF p. 6, anchor: paragraphs preceding Section 3.1]",
+      "evidence": "The paper later separates bounded-derivative tau from chopping-based tau that may not be Lipschitz and may have nonexistent derivatives. [PDF p. 6, anchor: paragraphs preceding Section 3.1]",
+      "impact": "The exact source-label split remains available, but a formal derivation of the stated perturbation order must choose the applicable later condition family rather than inventing smoothness. [PDF p. 6, anchor: paragraphs preceding Section 3.1]"
     },
     {
-      "issue": "The required notion of stability is not identified.",
-      "evidence": "The paper conditions the global estimate on the method being stable and separately says it does not rigorously analyze stability issues caused by low precision, without naming a stability definition in the selected context. [PDF p. 2; anchor: stability-qualification paragraph; PDF p. 5; anchor: conditional global-error sentence]",
-      "impact": "The global conclusion must remain conditional on an abstract stability assumption unless an external definition is supplied."
-    },
-    {
-      "issue": "The perturbation definition is undefined at ε=0 and floating-point exceptional values are not discussed.",
-      "evidence": "Equation (2.3) divides by ε without an explicit nonzero assumption, while the general approximation and chopping discussions provide no rules for exceptional floating-point values. [PDF p. 3; anchor: equation (2.3); PDF p. 4; anchor: approximation paragraph; PDF p. 6; anchor: chopping discussion]",
-      "impact": "A formalization must either assume ε≠0 for τ or define the zero case separately, and it cannot infer behavior for floating-point exceptions."
+      "issue": "Several B-series symbols and one coefficient-index convention are not locally defined cleanly. [PDF p. 5, anchor: equation (3.3) and coefficient-definition sentence]",
+      "evidence": "The passage uses e, c-tilde, and c^epsilon without local definitions and prints b-tilde on the left but b_j + b_j^epsilon on the right. [PDF p. 5, anchor: sentence following equation (3.2b) and equation (3.3)]",
+      "impact": "Their standard Runge-Kutta meanings may be intended, but exact dimensions and componentwise definitions should not be added solely from this passage. [PDF p. 2, anchor: Butcher-coefficient sentence; PDF p. 5, anchor: equation (3.3)]"
     }
   ],
-  "contract_plain_english": "For the s-stage additive Runge–Kutta scheme (3.1), analyzed through the perturbed form (3.2), the paper splits the error at each time-step exactly into a scheme approximation part and a perturbation part: E=E_sch+E_per. When the corresponding consistency-order-p and perturbation-order-m conditions hold, these parts have orders O(Δt^(p+1)) and O(εΔt^(m+1)). If the method is stable, the predicted global orders lose one power of Δt, giving O(Δt^p)+O(εΔt^m). [PDF pp. 4-5; anchors: equations (3.1a)-(3.3), unnumbered one-step error display, and following global-error display] The source leaves the norm, state dimension, hidden constants, limiting regime, exact error baseline, and stability notion unspecified, and its printed definition τ=(F-F^ε)/ε has a sign conflict with the printed plus perturbation terms in (3.2). [PDF p. 3; anchor: equation (2.3); PDF p. 5; anchor: equations (3.2a)-(3.2b) and the error displays]"
+  "contract_plain_english": "The paper starts from the additive s-stage Runge-Kutta algorithm (3.1), in which F and its approximation F^epsilon both enter with plus signs. [PDF p. 4, anchor: equations (3.1a)-(3.1b)] It defines tau = (F - F^epsilon)/epsilon, requiring nonzero epsilon, but then prints a rewrite with the opposite algebraic sign; that inconsistency must be recorded rather than silently repaired. [PDF p. 3, anchor: equation (2.3); PDF p. 5, anchor: equation (3.2)] After the B-series expansion, the paper asserts that the one-step error is additively partitioned as E = E_sch + E_per, where the components are named the scheme-approximation and perturbation errors but are not otherwise defined. [PDF p. 5, anchor: paragraph and unnumbered E display following equation (3.3)] Under the corresponding order conditions, the two contributions have the displayed orders O(Delta t^{p+1}) and O(epsilon Delta t^{m+1}); this is asymptotic notation, not an exact equality to specified remainder functions. [PDF p. 5, anchor: unnumbered E display] The passage gives no signed error baseline, state-space dimension, norm, hidden constants, or joint epsilon/Delta t limit. [PDF p. 1, anchor: equation u_t = F(u); PDF p. 5, anchor: local error display] The adjacent global estimate O(Delta t^p) + O(epsilon Delta t^m) is a separate claim that requires stability. [PDF p. 5, anchor: global-error sentence and display]"
 }

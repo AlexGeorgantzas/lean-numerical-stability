@@ -5,17 +5,10 @@
   "paper_version": "published journal version; Journal of Scientific Computing 92, article 6, 2022, pages 1-20",
   "source_locations": [
     {
-      "anchor": "equation (2.3)",
-      "pdf_page": 3,
-      "printed_page": "3",
-      "role": "operator perturbation definition and nonzero epsilon requirement",
-      "section": "2. Motivating Example: Mixed Precision Implementation of the Implicit Midpoint Rule"
-    },
-    {
-      "anchor": "equations (3.1a)-(3.1b)",
-      "pdf_page": 4,
-      "printed_page": "4",
-      "role": "original additive Runge--Kutta stages and output, used without the inconsistent (3.2) sign rewrite",
+      "anchor": "equations (3.2a)-(3.2b)",
+      "pdf_page": 5,
+      "printed_page": "5",
+      "role": "additive Runge--Kutta stages, output, and perturbation convention",
       "section": "3. A General Framework for the Analysis of Mixed Precision Runge--Kutta Methods"
     },
     {
