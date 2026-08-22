@@ -98,7 +98,13 @@ noncomputable def p09ComplexRms {n : ℕ} [NeZero n]
 /-- Ramos's maximum component magnitude for a complex vector. -/
 noncomputable def p09ComplexMax {n : ℕ} [NeZero n]
     (x : ZMod n → ℂ) : ℝ :=
-  ‖x‖
+  Finset.univ.sup' Finset.univ_nonempty fun i ↦ ‖x i‖
+
+/-- Every component magnitude is bounded by Ramos's explicit finite maximum. -/
+theorem p09ComplexNorm_le_max {n : ℕ} [NeZero n]
+    (x : ZMod n → ℂ) (i : ZMod n) :
+    ‖x i‖ ≤ p09ComplexMax x := by
+  exact Finset.le_sup' (fun j : ZMod n ↦ ‖x j‖) (Finset.mem_univ i)
 
 /-- The piecewise local FFT constant `alpha(q)` in Theorem 1. -/
 noncomputable def p09Alpha (q : ℕ) (γ : ℝ) : ℝ :=
@@ -127,19 +133,29 @@ structure P09MixedRadixStage (n : ℕ) [NeZero n] where
   useTwiddle : Bool
   twiddleExponent : ZMod n → ZMod n
 
-/-- Exact action of one mixed-radix FFT factor. -/
-noncomputable def p09MixedRadixStageApply {n : ℕ} [NeZero n]
+/-- Exact action of the block-Fourier part `B_l P_l` of one mixed-radix
+factor. -/
+noncomputable def p09MixedRadixBlockApply {n : ℕ} [NeZero n]
     (stage : P09MixedRadixStage n) (x : ZMod n → ℂ) : ZMod n → ℂ := by
   letI : NeZero stage.radix := ⟨stage.radix_ne_zero⟩
   let permuted : ZMod n → ℂ := fun i ↦ x (stage.permutation i)
-  let blocked : ZMod n → ℂ := fun i ↦
+  exact fun i ↦
     let bi := stage.reindex.symm i
     ∑ j : ZMod stage.radix,
       ZMod.stdAddChar (j * bi.2) * permuted (stage.reindex (bi.1, j))
-  exact fun i ↦
+
+/-- Exact action of the optional diagonal twiddle factor `D_l`. -/
+noncomputable def p09MixedRadixTwiddleApply {n : ℕ} [NeZero n]
+    (stage : P09MixedRadixStage n) (x : ZMod n → ℂ) : ZMod n → ℂ :=
+  fun i ↦
     if stage.useTwiddle then
-      ZMod.stdAddChar (stage.twiddleExponent i) * blocked i
-    else blocked i
+      ZMod.stdAddChar (stage.twiddleExponent i) * x i
+    else x i
+
+/-- Exact action of one mixed-radix FFT factor. -/
+noncomputable def p09MixedRadixStageApply {n : ℕ} [NeZero n]
+    (stage : P09MixedRadixStage n) (x : ZMod n → ℂ) : ZMod n → ℂ :=
+  p09MixedRadixTwiddleApply stage (p09MixedRadixBlockApply stage x)
 
 /-- Sequential application of the exact mixed-radix factors, in execution
 order from the input toward the output. -/
@@ -226,25 +242,100 @@ noncomputable def p09RoundedComplexSum {q : ℕ} [NeZero q]
   ⟨recursiveSum model.flAdd q fun i ↦ (term (index i)).re,
     recursiveSum model.flAdd q fun i ↦ (term (index i)).im⟩
 
-/-- One operational mixed-radix FFT stage. It performs the paper's exact
-permutation, evaluates each block Fourier sum with rounded trigonometric,
-multiplication, and addition operations, and then performs the optional rounded
-twiddle multiplication. -/
-noncomputable def p09RoundedMixedRadixStageApply {n : ℕ} [NeZero n]
+/-- Multiplication by a radix-2 Fourier coefficient, implemented only by an
+exact sign change. -/
+def p09RadixTwoCoefficientApply (j : ZMod 2) (x : ℂ) : ℂ :=
+  if j = 0 then x else -x
+
+/-- Multiplication by a radix-4 Fourier coefficient, implemented by exact sign
+changes and exchanges of real and imaginary components. -/
+def p09RadixFourCoefficientApply (j : ZMod 4) (x : ℂ) : ℂ :=
+  if j = 0 then x
+  else if j = 1 then ⟨-x.im, x.re⟩
+  else if j = 2 then -x
+  else ⟨x.im, -x.re⟩
+
+/-- Ramos's multiplication-free radix-2 Fourier block. -/
+noncomputable def p09RoundedRadixTwoBlock (model : P09WilkinsonModel)
+    (x : ZMod 2 → ℂ) (k : ZMod 2) : ℂ :=
+  p09RoundedComplexSum model fun j ↦
+    p09RadixTwoCoefficientApply (j * k) (x j)
+
+/-- Ramos's multiplication-free radix-4 Fourier block. -/
+noncomputable def p09RoundedRadixFourBlock (model : P09WilkinsonModel)
+    (x : ZMod 4 → ℂ) (k : ZMod 4) : ℂ :=
+  p09RoundedComplexSum model fun j ↦
+    p09RadixFourCoefficientApply (j * k) (x j)
+
+/-- The radix-2 kernel is independent of rounded multiplication and
+trigonometric evaluation. -/
+theorem p09RoundedRadixTwoBlock_congr
+    (model₁ model₂ : P09WilkinsonModel)
+    (hadd : model₁.flAdd = model₂.flAdd)
+    (x : ZMod 2 → ℂ) (k : ZMod 2) :
+    p09RoundedRadixTwoBlock model₁ x k =
+      p09RoundedRadixTwoBlock model₂ x k := by
+  simp [p09RoundedRadixTwoBlock, p09RoundedComplexSum, hadd]
+
+/-- The radix-4 kernel is independent of rounded multiplication and
+trigonometric evaluation. -/
+theorem p09RoundedRadixFourBlock_congr
+    (model₁ model₂ : P09WilkinsonModel)
+    (hadd : model₁.flAdd = model₂.flAdd)
+    (x : ZMod 4 → ℂ) (k : ZMod 4) :
+    p09RoundedRadixFourBlock model₁ x k =
+      p09RoundedRadixFourBlock model₂ x k := by
+  simp [p09RoundedRadixFourBlock, p09RoundedComplexSum, hadd]
+
+/-- A generic Fourier block. Unlike the special radix-2 and radix-4 kernels,
+it computes roots and performs rounded complex multiplications. -/
+noncomputable def p09RoundedGenericRadixBlock {q : ℕ} [NeZero q]
+    (model : P09WilkinsonModel) (x : ZMod q → ℂ) (k : ZMod q) : ℂ :=
+  p09RoundedComplexSum model fun j ↦
+    p09RoundedComplexMul model (p09RoundedRoot model (j * k)) (x j)
+
+/-- The operational block-Fourier part of one mixed-radix stage. Radix 2 and
+radix 4 follow the paper's addition-only kernels; all other radices use the
+generic trigonometric and complex-multiplication path. -/
+noncomputable def p09RoundedMixedRadixBlockApply {n : ℕ} [NeZero n]
     (model : P09WilkinsonModel) (stage : P09MixedRadixStage n)
     (x : ZMod n → ℂ) : ZMod n → ℂ := by
   letI : NeZero stage.radix := ⟨stage.radix_ne_zero⟩
   let permuted : ZMod n → ℂ := fun i ↦ x (stage.permutation i)
-  let blocked : ZMod n → ℂ := fun i ↦
-    let bi := stage.reindex.symm i
-    p09RoundedComplexSum model fun j ↦
-      p09RoundedComplexMul model (p09RoundedRoot model (j * bi.2))
-        (permuted (stage.reindex (bi.1, j)))
   exact fun i ↦
+    let bi := stage.reindex.symm i
+    if h2 : stage.radix = 2 then
+      p09RoundedRadixTwoBlock model
+        (fun j : ZMod 2 ↦
+          permuted (stage.reindex (bi.1, h2.symm ▸ j)))
+        (h2 ▸ bi.2)
+    else if h4 : stage.radix = 4 then
+      p09RoundedRadixFourBlock model
+        (fun j : ZMod 4 ↦
+          permuted (stage.reindex (bi.1, h4.symm ▸ j)))
+        (h4 ▸ bi.2)
+    else
+      p09RoundedGenericRadixBlock model
+        (fun j ↦ permuted (stage.reindex (bi.1, j))) bi.2
+
+/-- The optional diagonal twiddle multiplication evaluated separately from the
+block kernel, as in the constants stated after Theorem 1. -/
+noncomputable def p09RoundedMixedRadixTwiddleApply {n : ℕ} [NeZero n]
+    (model : P09WilkinsonModel) (stage : P09MixedRadixStage n)
+    (x : ZMod n → ℂ) : ZMod n → ℂ :=
+  fun i ↦
     if stage.useTwiddle then
       p09RoundedComplexMul model
-        (p09RoundedRoot model (stage.twiddleExponent i)) (blocked i)
-    else blocked i
+        (p09RoundedRoot model (stage.twiddleExponent i)) (x i)
+    else x i
+
+/-- One operational mixed-radix FFT stage: exact permutation, the appropriate
+rounded block kernel, and then the separately evaluated optional twiddle. -/
+noncomputable def p09RoundedMixedRadixStageApply {n : ℕ} [NeZero n]
+    (model : P09WilkinsonModel) (stage : P09MixedRadixStage n)
+    (x : ZMod n → ℂ) : ZMod n → ℂ :=
+  p09RoundedMixedRadixTwiddleApply model stage
+    (p09RoundedMixedRadixBlockApply model stage x)
 
 /-- Sequential execution of all rounded mixed-radix stages. -/
 noncomputable def p09ApplyRoundedMixedRadixStages {r n : ℕ} [NeZero n]
@@ -313,9 +404,9 @@ noncomputable def p09FamilyFftRoundoffError {n : ℕ} [NeZero n]
     ZMod n → ℂ :=
   p09FftRoundoffError (family.run ε)
 
-/-- Theorem 1(a) with the source's `O(epsilon^2)` interpreted uniformly on a
-right neighborhood of zero. This result package is constructed below from
-stage-local coefficients fixed before the varying execution family. -/
+/-- Theorem 1(a) with the source's `O(epsilon^2)` interpreted on a right
+neighborhood of zero for one fixed execution family. This result package is
+constructed below from the separate predecessor estimates `(3.7)`--`(3.8)`. -/
 structure P09TheoremOneRmsAsymptotic {n : ℕ} [NeZero n]
     {plan : P09MixedRadixFftPlan n} {γ : ℝ}
     (family : P09AsymptoticFftFamily plan γ) where
@@ -343,7 +434,8 @@ private lemma p09MixedRadixStageApply_add {n : ℕ} [NeZero n]
         (p09MixedRadixStageApply stage y) := by
   letI : NeZero stage.radix := ⟨stage.radix_ne_zero⟩
   funext i
-  simp only [p09MixedRadixStageApply, p09ComplexVecAdd]
+  simp only [p09MixedRadixStageApply, p09MixedRadixTwiddleApply,
+    p09MixedRadixBlockApply, p09ComplexVecAdd]
   split_ifs <;> simp only [mul_add, Finset.sum_add_distrib]
 
 private lemma p09ApplyExactStageList_add {n : ℕ} [NeZero n]
@@ -389,6 +481,51 @@ noncomputable def p09PropagatedFftStageError {n : ℕ} [NeZero n]
     ZMod n → ℂ :=
   p09ExactFftCompletion plan (i.val + 1) (p09FftStageLocalError run i)
 
+/-- The rounded block output at stage `i`, before the optional twiddle. -/
+noncomputable def p09FftStageRoundedBlock {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (i : Fin plan.stageCount) :
+    ZMod n → ℂ :=
+  p09RoundedMixedRadixBlockApply model (plan.stage i) (run.stageState i.val)
+
+/-- The block-Fourier contribution in equation `(3.6)`, before exact
+application of the stage twiddle. -/
+noncomputable def p09FftStageBlockLocalError {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (i : Fin plan.stageCount) :
+    ZMod n → ℂ :=
+  p09ComplexVecSub (p09FftStageRoundedBlock run i)
+    (p09MixedRadixBlockApply (plan.stage i) (run.stageState i.val))
+
+/-- The separately evaluated twiddle contribution in equation `(3.6)`. -/
+noncomputable def p09FftStageTwiddleLocalError {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (i : Fin plan.stageCount) :
+    ZMod n → ℂ :=
+  p09ComplexVecSub
+    (p09RoundedMixedRadixTwiddleApply model (plan.stage i)
+      (p09FftStageRoundedBlock run i))
+    (p09MixedRadixTwiddleApply (plan.stage i)
+      (p09FftStageRoundedBlock run i))
+
+/-- The block error after the exact stage twiddle and all later exact FFT
+factors. -/
+noncomputable def p09PropagatedFftBlockError {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (i : Fin plan.stageCount) :
+    ZMod n → ℂ :=
+  p09ExactFftCompletion plan (i.val + 1)
+    (p09MixedRadixTwiddleApply (plan.stage i)
+      (p09FftStageBlockLocalError run i))
+
+/-- The twiddle error after all later exact FFT factors. -/
+noncomputable def p09PropagatedFftTwiddleError {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (i : Fin plan.stageCount) :
+    ZMod n → ℂ :=
+  p09ExactFftCompletion plan (i.val + 1)
+    (p09FftStageTwiddleLocalError run i)
+
 private lemma p09ExactFftCompletion_add {n : ℕ} [NeZero n]
     (plan : P09MixedRadixFftPlan n) (k : ℕ) (x y : ZMod n → ℂ) :
     p09ExactFftCompletion plan k (p09ComplexVecAdd x y) =
@@ -396,6 +533,47 @@ private lemma p09ExactFftCompletion_add {n : ℕ} [NeZero n]
         (p09ExactFftCompletion plan k y) := by
   unfold p09ExactFftCompletion
   rw [p09ApplyExactStageList_add, p09Permute_add]
+
+private lemma p09MixedRadixTwiddleApply_sub {n : ℕ} [NeZero n]
+    (stage : P09MixedRadixStage n) (x y : ZMod n → ℂ) :
+    p09MixedRadixTwiddleApply stage (p09ComplexVecSub x y) =
+      p09ComplexVecSub (p09MixedRadixTwiddleApply stage x)
+        (p09MixedRadixTwiddleApply stage y) := by
+  funext i
+  simp only [p09MixedRadixTwiddleApply, p09ComplexVecSub]
+  split_ifs <;> ring
+
+private lemma p09FftStageLocalError_eq_block_add_twiddle
+    {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (i : Fin plan.stageCount) :
+    p09FftStageLocalError run i =
+      p09ComplexVecAdd
+        (p09MixedRadixTwiddleApply (plan.stage i)
+          (p09FftStageBlockLocalError run i))
+        (p09FftStageTwiddleLocalError run i) := by
+  unfold p09FftStageLocalError p09FftStageBlockLocalError
+    p09FftStageTwiddleLocalError p09FftStageRoundedBlock
+  rw [run.stage_step i]
+  unfold p09RoundedMixedRadixStageApply p09MixedRadixStageApply
+  rw [p09MixedRadixTwiddleApply_sub]
+  funext j
+  simp only [p09ComplexVecAdd, p09ComplexVecSub]
+  ring
+
+/-- Equation `(3.6)` after exact propagation: each stage error is the sum of
+its block-Fourier and separately evaluated twiddle contributions. -/
+theorem p09PropagatedFftStageError_eq_block_add_twiddle
+    {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (i : Fin plan.stageCount) :
+    p09PropagatedFftStageError run i =
+      p09ComplexVecAdd (p09PropagatedFftBlockError run i)
+        (p09PropagatedFftTwiddleError run i) := by
+  unfold p09PropagatedFftStageError p09PropagatedFftBlockError
+    p09PropagatedFftTwiddleError
+  rw [p09FftStageLocalError_eq_block_add_twiddle,
+    p09ExactFftCompletion_add]
 
 private lemma p09ExactFftCompletion_step_input {n : ℕ} [NeZero n]
     (plan : P09MixedRadixFftPlan n) (k : ℕ) (hk : k < plan.stageCount)
@@ -584,13 +762,20 @@ theorem p09FamilyErrorRms_le_stage_sum {n : ℕ} [NeZero n]
       _ = p09PrefixStageErrorRms (family.run ε) plan.stageCount := rfl
   exact hbound.trans_eq hsum.symm
 
-/-- The first-order contribution of equations `(3.7)` and `(3.8)` at one
-mixed-radix stage. -/
+/-- The first-order contribution of the separately evaluated twiddle in
+equation `(3.8)`, after propagation to the original input scale. -/
+noncomputable def p09TwiddleFirstOrderBudget {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (γ : ℝ)
+    (i : Fin plan.stageCount) : ℝ :=
+  if (plan.stage i).useTwiddle then 3 + 2 * γ else 0
+
+/-- The combined first-order contribution of equations `(3.7)` and `(3.8)` at
+one mixed-radix stage. -/
 noncomputable def p09StageFirstOrderBudget {n : ℕ} [NeZero n]
     (plan : P09MixedRadixFftPlan n) (γ : ℝ)
     (i : Fin plan.stageCount) : ℝ :=
   p09Alpha (plan.stage i).radix γ +
-    if (plan.stage i).useTwiddle then 3 + 2 * γ else 0
+    p09TwiddleFirstOrderBudget plan γ i
 
 private lemma p09SumRangeBeforeLast (m : ℕ) (hm : 0 < m) (c : ℝ) :
     (∑ k ∈ Finset.range m, if k + 1 < m then c else 0) =
@@ -616,7 +801,7 @@ private lemma p09StageFirstOrderBudget_sum {n : ℕ} [NeZero n]
     (plan : P09MixedRadixFftPlan n) (γ : ℝ) :
     (∑ i : Fin plan.stageCount, p09StageFirstOrderBudget plan γ i) =
       p09K plan γ := by
-  unfold p09StageFirstOrderBudget p09K
+  unfold p09StageFirstOrderBudget p09TwiddleFirstOrderBudget p09K
   rw [Finset.sum_add_distrib]
   congr 1
   let c : ℝ := 3 + 2 * γ
@@ -639,50 +824,103 @@ private lemma p09StageFirstOrderBudget_sum {n : ℕ} [NeZero n]
       simpa [c] using p09SumRangeBeforeLast plan.stageCount
         plan.stageCount_pos c
 
-/-- The stage-local estimates `(3.6)`--`(3.8)`. Their coefficients and common
-radius are fixed for a plan, trigonometric model, and input before the varying
-rounding path and positive precision. -/
-structure P09TheoremOneStageEnvelope {n : ℕ} [NeZero n]
-    (plan : P09MixedRadixFftPlan n) (γ : ℝ) (input : ZMod n → ℂ) where
-  localSecondOrderCoeff : Fin plan.stageCount → ℝ
-  local_second_order_nonneg : ∀ i, 0 ≤ localSecondOrderCoeff i
+/-- The separate block and twiddle estimates `(3.7)` and `(3.8)` for one fixed
+operational execution family. The error vectors themselves are derived above
+from the rounded stage trace and equation `(3.6)`; this record contains only
+the two predecessor estimates and their local `O(epsilon^2)` witnesses. -/
+structure P09TheoremOneLocalAnalysis {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {γ : ℝ}
+    (family : P09AsymptoticFftFamily plan γ) where
+  blockSecondOrderCoeff : Fin plan.stageCount → ℝ
+  block_second_order_nonneg : ∀ i, 0 ≤ blockSecondOrderCoeff i
+  twiddleSecondOrderCoeff : Fin plan.stageCount → ℝ
+  twiddle_second_order_nonneg : ∀ i, 0 ≤ twiddleSecondOrderCoeff i
   radius : ℝ
   radius_pos : 0 < radius
-  local_error_bound : ∀ family : P09AsymptoticFftFamily plan γ,
-    family.input = input →
-      ∀ (ε : P09PositiveEpsilon), ε.1 ≤ radius →
-        ∀ i : Fin plan.stageCount,
-          p09ComplexRms (p09PropagatedFftStageError (family.run ε) i) ≤
-            ε.1 * Real.sqrt (n : ℝ) *
-                p09StageFirstOrderBudget plan γ i *
-                p09ComplexRms input +
-              localSecondOrderCoeff i * ε.1 ^ 2
+  block_error_bound : ∀ (ε : P09PositiveEpsilon), ε.1 ≤ radius →
+    ∀ i : Fin plan.stageCount,
+      p09ComplexRms (p09PropagatedFftBlockError (family.run ε) i) ≤
+        ε.1 * Real.sqrt (n : ℝ) *
+            p09Alpha (plan.stage i).radix γ *
+            p09ComplexRms family.input +
+          blockSecondOrderCoeff i * ε.1 ^ 2
+  twiddle_error_bound : ∀ (ε : P09PositiveEpsilon), ε.1 ≤ radius →
+    ∀ i : Fin plan.stageCount,
+      p09ComplexRms (p09PropagatedFftTwiddleError (family.run ε) i) ≤
+        ε.1 * Real.sqrt (n : ℝ) *
+            p09TwiddleFirstOrderBudget plan γ i *
+            p09ComplexRms family.input +
+          twiddleSecondOrderCoeff i * ε.1 ^ 2
 
-/-- The global second-order coefficient obtained by summing the stage-local
-remainders. -/
-noncomputable def p09TheoremOneStageRemainderSum
+/-- One fixed source-admissible FFT family together with the local estimates
+proved in the paper before Theorem 1. It does not store a global forward or
+backward bound. -/
+structure P09TheoremOneExecution {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (γ : ℝ) where
+  family : P09AsymptoticFftFamily plan γ
+  localAnalysis : P09TheoremOneLocalAnalysis family
+
+/-- The global second-order coefficient obtained by summing the separate block
+and twiddle remainders. -/
+noncomputable def p09TheoremOneLocalRemainderSum
     {n : ℕ} [NeZero n] {plan : P09MixedRadixFftPlan n} {γ : ℝ}
-    {input : ZMod n → ℂ}
-    (stageBounds : P09TheoremOneStageEnvelope plan γ input) : ℝ :=
-  ∑ i : Fin plan.stageCount, stageBounds.localSecondOrderCoeff i
+    {family : P09AsymptoticFftFamily plan γ}
+    (analysis : P09TheoremOneLocalAnalysis family) : ℝ :=
+  ∑ i : Fin plan.stageCount,
+    (analysis.blockSecondOrderCoeff i + analysis.twiddleSecondOrderCoeff i)
 
 /-- Equations `(3.6)`--`(3.8)`, propagated through the exact remaining stages,
 establish the complete RMS statement of Theorem 1(a). -/
-noncomputable def p09TheoremOneRmsAsymptoticOfStageEnvelope
+noncomputable def p09TheoremOneRmsAsymptoticOfLocalAnalysis
     {n : ℕ} [NeZero n] {plan : P09MixedRadixFftPlan n} {γ : ℝ}
-    (family : P09AsymptoticFftFamily plan γ)
-    (stageBounds : P09TheoremOneStageEnvelope plan γ family.input) :
-    P09TheoremOneRmsAsymptotic family := by
-  let secondOrderCoeff := p09TheoremOneStageRemainderSum stageBounds
+    (execution : P09TheoremOneExecution plan γ) :
+    P09TheoremOneRmsAsymptotic execution.family := by
+  let family := execution.family
+  let analysis := execution.localAnalysis
+  let secondOrderCoeff := p09TheoremOneLocalRemainderSum analysis
   have hcoeff : 0 ≤ secondOrderCoeff :=
-    Finset.sum_nonneg fun i _hi ↦ stageBounds.local_second_order_nonneg i
+    Finset.sum_nonneg fun i _hi ↦
+      add_nonneg (analysis.block_second_order_nonneg i)
+        (analysis.twiddle_second_order_nonneg i)
   refine
     { secondOrderCoeff := secondOrderCoeff
       secondOrderCoeff_nonneg := hcoeff
-      radius := stageBounds.radius
-      radius_pos := stageBounds.radius_pos
+      radius := analysis.radius
+      radius_pos := analysis.radius_pos
       error_bound := ?_ }
   intro ε hε
+  have hstage (i : Fin plan.stageCount) :
+      p09ComplexRms (p09PropagatedFftStageError (family.run ε) i) ≤
+        ε.1 * Real.sqrt (n : ℝ) *
+            p09StageFirstOrderBudget plan γ i *
+            p09ComplexRms family.input +
+          (analysis.blockSecondOrderCoeff i +
+            analysis.twiddleSecondOrderCoeff i) * ε.1 ^ 2 := by
+    rw [p09PropagatedFftStageError_eq_block_add_twiddle]
+    calc
+      p09ComplexRms
+          (p09ComplexVecAdd (p09PropagatedFftBlockError (family.run ε) i)
+            (p09PropagatedFftTwiddleError (family.run ε) i)) ≤
+          p09ComplexRms (p09PropagatedFftBlockError (family.run ε) i) +
+            p09ComplexRms (p09PropagatedFftTwiddleError (family.run ε) i) :=
+        p09ComplexRms_add_le _ _
+      _ ≤ (ε.1 * Real.sqrt (n : ℝ) *
+              p09Alpha (plan.stage i).radix γ *
+              p09ComplexRms family.input +
+            analysis.blockSecondOrderCoeff i * ε.1 ^ 2) +
+          (ε.1 * Real.sqrt (n : ℝ) *
+              p09TwiddleFirstOrderBudget plan γ i *
+              p09ComplexRms family.input +
+            analysis.twiddleSecondOrderCoeff i * ε.1 ^ 2) :=
+        add_le_add (analysis.block_error_bound ε hε i)
+          (analysis.twiddle_error_bound ε hε i)
+      _ = ε.1 * Real.sqrt (n : ℝ) *
+              p09StageFirstOrderBudget plan γ i *
+              p09ComplexRms family.input +
+            (analysis.blockSecondOrderCoeff i +
+              analysis.twiddleSecondOrderCoeff i) * ε.1 ^ 2 := by
+        unfold p09StageFirstOrderBudget
+        ring
   calc
     p09ComplexRms (p09FamilyFftRoundoffError family ε) ≤
         ∑ i : Fin plan.stageCount,
@@ -692,31 +930,29 @@ noncomputable def p09TheoremOneRmsAsymptoticOfStageEnvelope
           (ε.1 * Real.sqrt (n : ℝ) *
                 p09StageFirstOrderBudget plan γ i *
                 p09ComplexRms family.input +
-            stageBounds.localSecondOrderCoeff i * ε.1 ^ 2) :=
-      Finset.sum_le_sum fun i _hi ↦
-        stageBounds.local_error_bound family rfl ε hε i
+            (analysis.blockSecondOrderCoeff i +
+              analysis.twiddleSecondOrderCoeff i) * ε.1 ^ 2) :=
+      Finset.sum_le_sum fun i _hi ↦ hstage i
     _ = ε.1 * Real.sqrt (n : ℝ) *
           (∑ i : Fin plan.stageCount, p09StageFirstOrderBudget plan γ i) *
           p09ComplexRms family.input +
         (∑ i : Fin plan.stageCount,
-          stageBounds.localSecondOrderCoeff i) * ε.1 ^ 2 := by
+          (analysis.blockSecondOrderCoeff i +
+            analysis.twiddleSecondOrderCoeff i)) * ε.1 ^ 2 := by
       simp only [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.sum_mul]
     _ = ε.1 * Real.sqrt (n : ℝ) * p09K plan γ *
           p09ComplexRms family.input + secondOrderCoeff * ε.1 ^ 2 := by
       rw [p09StageFirstOrderBudget_sum]
       rfl
 
-/-- The imported derivation of Theorem 1(a), exposed as an existence theorem
-rather than a caller-supplied global error certificate. -/
+/-- The imported derivation of Theorem 1(a). It combines the linked
+equation-`(3.6)` decomposition with the separate predecessor estimates `(3.7)`
+and `(3.8)`; no global forward-error certificate is accepted as input. -/
 theorem p09TheoremOneRmsAsymptotic_exists
     {n : ℕ} [NeZero n] {plan : P09MixedRadixFftPlan n} {γ : ℝ}
-    {input : ZMod n → ℂ}
-    (stageBounds : P09TheoremOneStageEnvelope plan γ input)
-    (family : P09AsymptoticFftFamily plan γ)
-    (family_input : family.input = input) :
-    Nonempty (P09TheoremOneRmsAsymptotic family) := by
-  subst input
-  exact ⟨p09TheoremOneRmsAsymptoticOfStageEnvelope family stageBounds⟩
+    (execution : P09TheoremOneExecution plan γ) :
+    Nonempty (P09TheoremOneRmsAsymptotic execution.family) :=
+  ⟨p09TheoremOneRmsAsymptoticOfLocalAnalysis execution⟩
 
 /-! ## Ramos's multidimensional FFT setting -/
 

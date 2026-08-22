@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete local paper, surveyed its matrix factorization, one- and multidimensional error theorems, proofs, experiment, and concluding backward-error interpretation, rejected delegated, experimental, or redundant candidates, represented selected asymptotic claims with uniform right-neighborhood quantifiers, searched the frozen mathlib and mounted NumStability object baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
+    "method": "Codex read the complete local paper, surveyed its matrix factorization, one- and multidimensional error theorems, proofs, experiment, and concluding backward-error interpretation, rejected delegated, experimental, or redundant candidates, represented retained asymptotic terms with explicit local right-neighborhood witnesses, searched the frozen mathlib and mounted NumStability object baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P09 source selection and benchmark annotation to Codex."
@@ -43,7 +43,7 @@
     },
     {
       "candidate": "the complete first-order formula in Theorem 1(a)",
-      "reason": "It is not selected as a separate target. The P09 shared module proves its operational, epsilon-uniform asymptotic form from the stage-local estimates, and P09-T2 invokes that imported theorem before deriving the fictional-input interpretation."
+      "reason": "It is not selected as a separate target. The P09 shared module derives its family-local asymptotic form from the separate block and twiddle predecessor estimates, and P09-T2 invokes that imported theorem before deriving the fictional-input interpretation."
     },
     {
       "candidate": "the direct-transformation error matrix (3.3) and bounds (3.4)-(3.5)",
@@ -55,7 +55,7 @@
     },
     {
       "candidate": "equations (3.7) and (3.8)",
-      "reason": "These local block and diagonal error estimates are not separate targets. Their uniform stage-envelope form supports the imported derivation of Theorem 1(a) used by P09-T2, while T3 preserves how one-dimensional budgets accumulate across an arbitrary finite collection of transforms."
+      "reason": "These local block and diagonal error estimates are not separate targets. Their distinct, trace-linked forms support the imported derivation of Theorem 1(a) used by P09-T2, while T3 preserves how one-dimensional budgets accumulate across an arbitrary finite collection of transforms."
     },
     {
       "candidate": "Theorem 2(b)",
@@ -79,7 +79,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use the final complex fictional-input backward-error construction, linked to an operational mixed-radix FFT family and retaining both bounds with uniform O(epsilon squared) semantics.",
+      "decision": "Use the final complex fictional-input backward-error construction, linked to the radix-sensitive operational mixed-radix FFT and retaining both bounds with family-local O(epsilon squared) semantics.",
       "task_id": "P09-T2",
       "theorem_name": "p09_t2_fictional_input_backward_error"
     },
@@ -94,7 +94,7 @@
   "selection_policy": [
     "Use mathematically precise claims made and proved in this paper, including asymptotic claims when their uniform quantifier content can be represented.",
     "Reject definitions, experiments, delegated background, and asymptotic claims whose quantifier content cannot be reconstructed from the source context.",
-    "Represent retained O(epsilon squared) contributions by coefficients and radii fixed uniformly before the varying positive epsilon.",
+    "Represent retained O(epsilon squared) contributions by coefficients and radii fixed before the varying positive epsilon, without inventing cross-family uniformity absent from the source.",
     "Keep the fixed Lean setting condition-neutral and paper-scoped.",
     "Assign tiers only after checking the mounted frozen object baseline, not merely the broader source tree."
   ],

@@ -7,57 +7,65 @@ Fourier Transform*. The local PDF SHA-256 is
 `9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758`.
 
 The selected result is the fictional-input construction and its two unnumbered
-bounds on PDF page 12, printed page 768, section 6. Its transform and constants
-come from equations (1.1), (2.1), and (2.2) and Theorem 1.
+bounds on PDF page 12, printed page 768, section 6. The preceding Theorem 1(a)
+and equations (3.6)--(3.8) supply its forward-error estimate.
 
-## Transform and computation
+## Transform, norms, and algorithm
 
-`p09FourierTransform` is the fixed positive-sign, unnormalized complex DFT
+`p09FourierTransform` is the positive-sign, unnormalized complex DFT
 
 ```text
 (T x)(k) = sum_j exp(i 2 pi j k / N) x(j).
 ```
 
-The indices are `ZMod N`, so they represent exactly `0,...,N-1` with cyclic
-arithmetic. `p09StdAddChar_positive_exp` exposes mathlib's elementary identity
-that the kernel is `exp(+i 2 pi j/N)`, resolving the sign directly rather than
-relying on the name `stdAddChar`. `P09MixedRadixFftPlan` records a Cooley-Tukey
-or Sande-Tukey factorization into the paper's permutation, repeated
-block-Fourier, and diagonal twiddle factors. Its certified exact composition is
-the fixed `T`, not an arbitrary orthogonal operator.
+The indices `ZMod N` represent `0,...,N-1`. The theorem
+`p09StdAddChar_positive_exp` exposes the positive exponential convention.
+`p09ComplexRms` is the Euclidean norm divided by `sqrt(N)`, while
+`p09ComplexMax` is explicitly the finite maximum of the component magnitudes.
 
-`P09WilkinsonModel` preserves equations (3.1)--(3.2) and the absolute sine and
-cosine error model: every scalar operation has a theta in `[-1,1]`, arithmetic
-uses `epsilon`, and trigonometric evaluation uses `gamma * theta * epsilon`.
-`p09RoundedMixedRadixStageApply` evaluates each factor operationally. It invokes
-`flCos` and `flSin` for roots of unity, four `flMul` operations and two `flAdd`
-operations for each complex multiplication, and left-to-right `flAdd`
-accumulation for each block Fourier sum. `P09MixedRadixFftRun` requires every
-stage state to equal this rounded computation, and `p09FftComputedOutput`
-derives the result from the final state and permutation. There are no freely
-chosen local-error vectors or per-run remainder coefficients. The run also
-retains the exact-input assumption `fl(x)=x`. As in the source model, it does
-not claim semantics for overflow, underflow, subnormals, NaN, or infinities.
+`P09MixedRadixFftPlan` records a Cooley-Tukey or Sande-Tukey factorization into
+permutations, block Fourier transforms, and the separately evaluated diagonal
+twiddle factors used by the displayed constant. The certified exact
+composition is `T`.
 
-## Asymptotic execution family
+`P09WilkinsonModel` records equations (3.1)--(3.2) and the absolute sine and
+cosine error model. `p09RoundedMixedRadixBlockApply` follows the algorithmic
+case split on printed page 762:
 
-The source's `O(epsilon^2)` notation describes behavior as machine precision
-tends to zero. `P09AsymptoticFftFamily` therefore fixes the factorization,
-`gamma`, and input first, then supplies an operational run for every positive
-`epsilon`. The model at each point has exactly that `epsilon`, the same `gamma`,
-and the same exactly represented input.
+- radix 2 uses only rounded sums and exact sign changes;
+- radix 4 uses only rounded sums and exact sign changes or real/imaginary swaps;
+- every other radix computes roots and performs rounded complex products.
 
-`P09TheoremOneStageEnvelope` packages the stage-local estimates corresponding
-to equations (3.6)--(3.8). For fixed factorization, `gamma`, and input, it
-chooses one nonnegative second-order coefficient per stage and one positive
-radius before both the operational execution family and the particular
-`epsilon`. Its bounds therefore hold uniformly over every permitted rounding
-path with that fixed structural data. It contains neither the global Theorem 1
-bound nor a fictional-input witness.
+`p09RoundedMixedRadixTwiddleApply` then performs the optional rounded diagonal
+twiddle multiplication separately. `P09MixedRadixFftRun` links every stage
+state to these operations and requires exact input representation. As in the
+paper, the real-number model has no additional overflow, underflow, subnormal,
+NaN, or infinity clauses.
 
-## Derived forward result
+## Predecessor analysis
 
-For radix factors `N_l`, the definitions retain the exact Theorem 1 constant
+`P09AsymptoticFftFamily` fixes one plan, `gamma`, exactly represented input, and
+linked operation trace while positive `epsilon` tends to zero. This is only a
+formal interpretation of the paper's retained `O(epsilon^2)` notation; the
+paper does not state the hidden constants or their dependency order.
+
+For one fixed family, the shared module derives the actual block and twiddle
+error vectors from the rounded trace. The theorem
+`p09PropagatedFftStageError_eq_block_add_twiddle` proves equation (3.6): after
+exact propagation, the stage error is the sum of those two computed
+contributions.
+
+`P09TheoremOneLocalAnalysis` packages the two predecessor estimates (3.7) and
+(3.8) separately. Its coefficients and radius are selected after the one
+execution family is fixed and before `epsilon`; there is no quantification over
+other families. `P09TheoremOneExecution` pairs that source analysis with the
+linked family. It stores neither the global Theorem 1(a) estimate nor a
+fictional-input witness.
+
+The shared theorem `p09TheoremOneRmsAsymptotic_exists` performs the remaining
+proof. It applies the RMS triangle inequality to the equation-(3.6)
+decomposition, combines the separate block and twiddle estimates, telescopes
+the stage errors, and proves that their first-order budgets sum to
 
 ```text
 K(N,gamma) = sum_l alpha(N_l) + (M-1)(3+2 gamma),
@@ -66,50 +74,36 @@ alpha(4) = 5,
 alpha(q) = 2 sqrt(q) (q+gamma) otherwise.
 ```
 
-`p09FamilyErrorRms_le_stage_sum` proves that the final operational error is at
-most the sum of the stage-local errors after exact propagation through the
-remaining factors. `p09StageFirstOrderBudget` combines the local block-Fourier
-term from (3.7) with the twiddle term from (3.8), and its sum is proved equal to
-the displayed `K(N,gamma)`. Consequently
-`p09TheoremOneRmsAsymptotic_exists` is an imported proof of the complete
-Theorem 1(a) RMS estimate from the local source envelope; the target no longer
-accepts that complete estimate as a caller-supplied certificate.
-
-The source does not provide numerical values for the hidden second-order
-coefficients, so the formalization does not invent them. It makes the standard
-uniform quantifier content of `O(epsilon^2)` explicit and derives the global
-coefficient by summing the stage-local coefficients.
+Thus the target invokes an imported derivation of Theorem 1(a), not a
+caller-supplied final-error certificate.
 
 ## Selected backward result
 
-At each positive `epsilon`, let
+For each positive `epsilon`, first fix the actual linked error
 
 ```text
-e(epsilon) = computedOutput(epsilon) - T x.
+e = computedOutput - T x.
 ```
 
-The target first derives one nonnegative global second-order coefficient and
-one positive radius. It then constructs a family of fictional complex input
-perturbations `delta(epsilon)` and proves, for every positive `epsilon`,
+The target then chooses a fictional complex perturbation `delta`, dependent on
+that actual error, and proves
 
 ```text
-e(epsilon) = T delta(epsilon),
-||delta(epsilon)||RMS = ||e(epsilon)||RMS / sqrt(N).
+e = T delta,
+||delta||RMS = ||e||RMS / sqrt(N).
 ```
 
-Throughout the same sufficiently small positive-`epsilon` neighborhood it also
-proves
+For sufficiently small positive `epsilon`, the same perturbation satisfies
 
 ```text
-||delta(epsilon)||RMS <= epsilon K(N,gamma) ||x||RMS
-                         + C epsilon^2 / sqrt(N),
-||delta(epsilon)||infinity <= epsilon sqrt(N) K(N,gamma) ||x||RMS
-                              + C epsilon^2.
+||delta||RMS <= epsilon K(N,gamma) ||x||RMS
+                 + C epsilon^2 / sqrt(N),
+||delta||infinity <= epsilon sqrt(N) K(N,gamma) ||x||RMS
+                      + C epsilon^2.
 ```
 
-The transform equation and RMS equality are exact at every precision. Only the
-two upper bounds have uniform second-order remainders. `delta` is the paper's
-fictional backward perturbation; it is not the actual input-representation
-error discussed in the preceding paragraph. The result implies the exact backward identity
-`computedOutput(epsilon) = T (x + delta(epsilon))`, although that inferred
-identity is not added as a separate target conclusion.
+The coefficient and radius are family-specific witnesses for the ordinary
+local meaning of `O(epsilon^2)`. The quantifier order is `forall epsilon,
+exists delta`, matching the paper's choice of a fictional input after the
+actual error is fixed. This `delta` is not the actual input-representation
+error discussed earlier in section 6.
