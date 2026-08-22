@@ -7,102 +7,66 @@ The source is Michael P. Connolly and Nicholas J. Higham (2023),
 local PDF SHA-256 is
 `c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79`.
 
-The selected result is Theorem 4.4, equations (4.16)--(4.17), and its stated
-Frobenius consequence (4.20). They occur on PDF pages 9--10, printed pages
-1154--1155, in section 4.
+The selected result is the sentence “The columnwise bound (4.17) implies a
+normwise one” and equation (4.20), on physical PDF page 10, printed page 1155.
+Equation (4.17), on physical page 9, printed page 1154, supplies the premise.
+This task does not select the complete Theorem 4.4.
 
-## Paper statement
+## Selected implication
 
-Let `A` be a real `m x n` matrix with `m >= n`, and let `RHat` be the computed
-upper-trapezoidal factor produced by Householder QR. Under Model 1.5 and the
-assumption that the local bound (4.2) holds with probability one for every
-Householder application, Theorem 4.4 gives, on one event, an orthogonal matrix
-`Q` and a perturbation `DeltaA` such that
+For a real matrix `A` in `R^(m x n)`, let `DeltaA(u)` be the backward
+perturbation at unit roundoff `u`. Equation (4.17) supplies, simultaneously for
+every column `j`,
 
-`A + DeltaA = Q * RHat`.
+```text
+||Deltaa_j(u)||_2 <=
+  c6 * lambda * sqrt(n) * gammaTilde_m(lambda,u) * ||a_j||_2 + O(u^2).
+```
 
-For every column on that event,
+The selected sentence concludes
 
-`||Deltaa_j||_2 <= c6 * lambda * sqrt(n) * gammaTilde_m(lambda) * ||a_j||_2
-                    + O(u^2)`.
+```text
+||DeltaA(u)||_F <=
+  c6 * lambda * sqrt(n) * gammaTilde_m(lambda,u) * ||A||_F + O(u^2).  (4.20)
+```
 
-The event has probability at least
+The target keeps the source coefficient exactly through
+`p06QRLeadingCoefficient`. Here `c6` is a positive natural constant,
+`lambda > 0`, and
 
-`p4(lambda,m,n) = 1 - 2*m*n*exp(-lambda^2)`.
+```text
+gammaTilde_m(lambda,u) =
+  exp((lambda*sqrt(m)*u + m*u^2)/(1-u)) - 1.
+```
 
-The paper then states that these simultaneous column bounds imply (4.20):
+## Higher-order terms
 
-`||DeltaA||_F <= c6 * lambda * sqrt(n) * gammaTilde_m(lambda) * ||A||_F
-                  + O(u^2)`.
+Each column has a scalar remainder function that is genuinely `O(u^2)` as
+`u` tends to zero. The simultaneous inequalities and the resulting Frobenius
+inequality are eventual statements on the physical domain `0 < u < 1`.
+This avoids treating an arbitrary discrepancy at one fixed positive `u` as a
+second-order term.
 
-Here
+The constructed normwise remainder is the finite sum of the absolute column
+remainders. A finite sum of `O(u^2)` functions is again `O(u^2)`. The source
+does not state uniformity in the dimensions, `lambda`, or the input matrix, so
+none is added.
 
-`gammaTilde_m(lambda) = exp((lambda*sqrt(m)*u + m*u^2)/(1-u)) - 1`,
+## Scope
 
-with `lambda > 0`. The Frobenius conclusion inherits the same event and
-probability; equation (4.20) does not introduce a second probabilistic
-argument.
+Theorem 4.4 has already established the computed Householder factor, the
+orthogonal backward relation, the common probability event, and the
+simultaneous bounds (4.17) before the selected sentence. They are not repeated
+in this reselected implication. The formal premise is exactly the mathematical
+content from (4.17) needed to derive (4.20), rather than an assumed conclusion
+of the result now being selected.
 
-## Numerical model and execution
+The proof identifies the Frobenius norm with the Euclidean norm of the vector
+of column Euclidean norms. Pointwise monotonicity and the Euclidean triangle
+inequality retain the same leading coefficient; the Euclidean norm of the
+column remainder budgets is bounded by their finite `l1` sum.
 
-`P06Model15` records a general probability measure and a finite scalar
-computation trace. Every generated operation satisfies the standard relative
-error equation `fl(x op y)=(x op y)(1+delta)`, with `|delta|<=u`. The errors
-are measurable, integrable, mean zero, and mean independent in computation
-order. `p06MeanIndependent` uses the test-function form of Definition 1.3's
-conditional-expectation identity and does not restrict the sample space to be
-finite.
-
-`P06HouseholderQRRun` records `n>0`, `m>=n`, the local perturbations
-`DeltaP_j`, and the perturbed state recurrence from (4.1). At every step its
-reflector is the output of a deterministic builder applied to the current
-active column; the padded vector has no support above the pivot, its exact
-reflector annihilates the active column below the pivot, and it has squared
-norm two. `p06HouseholderQRStep` explicitly assigns those intended
-subdiagonal entries to zero. The run also records the exact product of the
-same reflectors and its orthogonality. Its last state is the computed `RHat`,
-every output entry is linked to the scalar rounding trace, and the output is
-upper trapezoidal.
-
-`P06Lemma42Assumption` represents the paper's explicit strengthening: the
-event on which every `||DeltaP_j||_2 <= c5*gammaTilde_m(lambda)` holds has
-probability one.
-
-## Lean target
-
-The target no longer assumes Theorem 4.4's simultaneous conclusion.
-`P06Lemma42ColumnCertificate` is the preceding Lemma 4.2 result specialized to
-one input column: it supplies one measurable event, its one-column failure
-bound, one column perturbation, the exact relation with the run's canonical
-orthogonal factor, and one column bound. P06-T1 must apply that interface to
-all columns, intersect the events, derive the factor `n` in `p4` by a finite
-union bound, assemble one `DeltaA`, retain every bound in (4.17), and derive
-(4.20) on that same event.
-
-The formal theorem is uniform in any positive natural `c5` and `c6` for which
-the local and one-column results hold. In particular it applies to the fixed
-integer constants of modest size asserted by the paper; it does not choose
-different constants after seeing an execution or event.
-
-The paper does not specify whether its additive `O(u^2)` is relative to
-`||A||_F`, nor whether its hidden constant is uniform in dimensions or
-`lambda`. `P06SecondOrderControl` therefore leaves the scale unspecified but
-requires both the asymptotic `O(u^2)` property and one nonnegative constant
-that controls the remainder for every unit roundoff between zero and the
-distinguished execution's value. This prevents an isolated value at the
-fixed unit roundoff from making the asserted inequality automatic. The
-derived normwise remainder is `sum_j |remainder_j(u)|`; finite summation
-preserves both forms of second-order control.
-
-The condition `sqrt(m)*n^(3/2)*u < 1` in (4.18) belongs to the paper's
-subsequent interpretation of when first-order growth dominates omitted terms.
-It is documented here but is not silently added as a formal antecedent to
-equation (4.20). Likewise, no separate NaN, infinity, underflow, or overflow
-clause is added: the result is conditional on the relative-error model, just
-as in the paper.
-
-The assumptions are satisfiable. A private construction check instantiates a
-one-point, zero-error Model 1.5 execution of a nonzero `1 x 1` Householder QR
-factorization, including the active-column reflector builder, explicit-zero
-step, exact orthogonal factor, probability-one local event, and the
-one-column Lemma 4.2 certificate.
+No floating-point operation is executed by this implication. NaNs, infinities,
+overflow, and underflow therefore introduce no additional cases. A one-by-one
+zero matrix, zero perturbation family, and zero remainder family establish
+that the assumptions are jointly satisfiable.

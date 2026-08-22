@@ -56,7 +56,7 @@
     },
     {
       "candidate": "full proofs of Lemmas 4.1-4.3",
-      "reason": "Their concentration arguments and detailed local-error constructions are supporting results for Theorem 4.4. P06-T1 exposes Model 1.5, the probability-one local assumption, and the preceding one-column Lemma 4.2 interface, then constructs Theorem 4.4's simultaneous event and the stated Frobenius consequence (4.20). P06-T3 separately retains the exact product-expansion core."
+      "reason": "Their concentration arguments and detailed local-error constructions require a probabilistic proof stack absent from the frozen bundle. P06-T3 separately retains the exact product-expansion core, while P06-T1 selects only the paper's explicit implication from the already established simultaneous column bounds (4.17) to the Frobenius bound (4.20)."
     },
     {
       "candidate": "Theorem 4.5",
@@ -78,9 +78,9 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use equation (4.20) with all inherited Theorem 4.4 semantics: the Model 1.5 Householder-QR execution, probability-one local assumption, computed factor, orthogonal backward relation, simultaneous event and probability, exact coefficient, dimensions, and additive O(u^2) remainder.",
+      "decision": "Use the explicit sentence preceding equation (4.20): the simultaneous columnwise bounds (4.17), with their exact coefficient and O(u^2) remainders, imply the Frobenius-norm bound (4.20) with one O(u^2) remainder.",
       "task_id": "P06-T1",
-      "theorem_name": "p06_t1_householder_qr_frobenius_backward_error"
+      "theorem_name": "p06_t1_columnwise_to_frobenius"
     },
     "T2": {
       "available": true,

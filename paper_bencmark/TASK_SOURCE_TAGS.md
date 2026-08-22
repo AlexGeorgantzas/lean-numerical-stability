@@ -51,7 +51,7 @@ the `theorem` command.
 | `P05-T1` | `LEM` | `Lemma 4.1` | The paper explicitly names the selected result. |
 | `P05-T2` | `THM` | `Theorem 4.2` | The paper explicitly names the selected result. |
 | `P05-T3` | `THM` | `Theorem 4.4` | The paper explicitly names the selected result. |
-| `P06-T1` | `THM` | `Theorem 4.4` | The selected result is Theorem 4.4, equations (4.16)--(4.17), together with its stated Frobenius consequence (4.20). |
+| `P06-T1` | `EQN` | none | The selected result is the explicit implication from the simultaneous columnwise bounds (4.17) to the Frobenius bound (4.20). |
 | `P06-T2` | `EQN` | none | The selected result is equation (3.4), represented in equivalent all-threshold form. |
 | `P06-T3` | `EQN` | none | The selected product expansion is given by equations (4.8)--(4.9). |
 | `P07-T1` | `LEM` | `Lemma 3.2` | The paper explicitly names the selected strict-perturbation rank result. |

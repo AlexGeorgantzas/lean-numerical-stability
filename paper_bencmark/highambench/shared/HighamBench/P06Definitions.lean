@@ -78,6 +78,11 @@ the dimensions, neither of which is specified by equation (4.20). -/
 def p06SecondOrderAtZero (remainder : ℝ → ℝ) : Prop :=
   remainder =O[nhds 0] fun u : ℝ ↦ u ^ 2
 
+/-- The one-sided `O(u²)` interpretation used when unit roundoff ranges over
+strictly positive values below one. -/
+def p06SecondOrderAtZeroRight (remainder : ℝ → ℝ) : Prop :=
+  remainder =O[nhdsWithin 0 (Set.Ioo (0 : ℝ) 1)] fun u : ℝ ↦ u ^ 2
+
 /-- A second-order remainder whose asymptotic witness also controls every
 unit roundoff between zero and the distinguished execution's unit roundoff.
 This closes the gap between a limit statement at zero and evaluation at one

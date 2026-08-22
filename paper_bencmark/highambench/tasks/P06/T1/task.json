@@ -1,18 +1,16 @@
 {
   "annotation": {
-    "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, Model 1.5 Householder execution, Lemma 4.2 column interfaces, Theorem 4.4 event construction, and equation (4.20) aggregation",
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "owner-approved source reselection to the explicit columnwise-to-Frobenius implication preceding equation (4.20), with genuine asymptotic remainder aggregation",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The Householder QR run has positive column dimension n and m >= n; each normalized reflector is deterministically built from the current active column, annihilates that column below its pivot, and is applied with the intended subdiagonal entries explicitly set to zero.",
-    "The scalar computation obeys Model 1.5: equation (1.4), |delta| <= u with 0 <= u < 1, computation-order mean independence, and zero mean under a probability measure.",
-    "The local application bound (4.2) holds for every Householder step on an event of probability one, as explicitly assumed in Lemma 4.2 and Theorem 4.4.",
-    "The paper constants c5 and c6 are positive natural numbers and lambda > 0.",
-    "For each input column, the preceding Lemma 4.2 interface supplies its own measurable event, one-column failure probability, exact perturbation relation with the run's common orthogonal factor, and one-column error bound.",
-    "Each additive column remainder is an otherwise unscaled O(u^2) function with one nonnegative constant controlling all unit roundoffs between zero and the current execution value; no dependence on ||A||, dimensions, or lambda is added beyond what the paper states."
+    "A is a real m-by-n matrix and DeltaA(u) is a real m-by-n perturbation family indexed by unit roundoff u.",
+    "The paper constant c6 is a positive natural number and lambda is positive.",
+    "Every scalar column remainder is O(u^2) as positive u tends to zero.",
+    "Eventually on the physical domain 0 < u < 1, all columns simultaneously satisfy equation (4.17) with the exact coefficient c6*lambda*sqrt(n)*gammaTilde_m(lambda,u)."
   ],
-  "author_label": "Theorem 4.4",
+  "author_label": null,
   "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P06 shared files are present; the frozen NumStability library is also present.",
@@ -20,14 +18,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P06/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p06_t1_householder_qr_frobenius_backward_error {Omega} [MeasurableSpace Omega] {m n : Nat} (A) (model : P06Model15 Omega) (run : P06HouseholderQRRun Omega m n A model) (c5 c6 : Nat) (lambda : Real) ... (perColumn : forall j, P06Lemma42ColumnCertificate ...) : exists goodEvent Q DeltaA columnRemainder normwiseRemainder, the event is measurable with probability >= p4, Q is orthogonal, A+DeltaA=Q*RHat, every bound (4.17) holds, and the Frobenius bound (4.20) holds with controlled O(u^2) remainders",
+    "lean_header": "theorem p06_t1_columnwise_to_frobenius {m n : Nat} (A : Fin m -> Fin n -> Real) (DeltaA : Real -> Fin m -> Fin n -> Real) (columnRemainder : Fin n -> Real -> Real) (c6 : Nat) (lambda : Real) ... : exists normwiseRemainder, p06SecondOrderAtZeroRight normwiseRemainder and eventually ||DeltaA(u)||_F <= p06QRLeadingCoefficient c6 lambda m n u * ||A||_F + |normwiseRemainder(u)|",
     "namespace": "HighamBench",
-    "plain_language": "On the same event as Theorem 4.4, the computed Householder QR factor has an exact orthogonal backward-error certificate and the Frobenius error bound c6*lambda*sqrt(n)*gammaTilde_m(lambda)*||A||_F plus an unspecified second-order remainder.",
+    "plain_language": "If every backward-error column satisfies (4.17) simultaneously with its own O(u^2) remainder, then the whole perturbation satisfies the Frobenius-norm bound (4.20) with the same leading coefficient and one O(u^2) remainder.",
     "target_file": "paper_bencmark/highambench/tasks/P06/T1/Target.lean",
-    "theorem_name": "p06_t1_householder_qr_frobenius_backward_error"
+    "theorem_name": "p06_t1_columnwise_to_frobenius"
   },
-  "informal_proof": "Intersect the n one-column Lemma 4.2 events. De Morgan's law and the finite union bound show that the complement has probability at most n times 2*m*exp(-lambda^2), yielding p4. Assemble DeltaA from the column perturbations; their exact relations use the run's common orthogonal factor and therefore give A+DeltaA=Q*RHat. Retain every column bound (4.17). Regard the column norms as a finite Euclidean vector, use monotonicity and the triangle inequality, identify the column-norm vectors with Frobenius norms, and bound the remainder vector's Euclidean norm by its l1 norm. The sum of absolute column remainders preserves both the asymptotic and through-current-unit-roundoff second-order controls.",
-  "informal_statement": "Equation (4.20), with all inherited Theorem 4.4 Householder-QR, Model 1.5, backward-error, probability, coefficient, dimension, and O(u^2) semantics retained.",
+  "informal_proof": "View the column Euclidean norms as a finite Euclidean vector. Pointwise monotonicity applies the simultaneous column bounds, the Euclidean triangle inequality separates the leading and remainder vectors, and homogeneity identifies the leading vector norm with the same coefficient times ||A||_F. Bound the remainder vector's Euclidean norm by the sum of its absolute entries. That finite sum is O(u^2) because every column remainder is O(u^2).",
+  "informal_statement": "The sentence preceding equation (4.20): the simultaneous columnwise backward-error bounds (4.17) imply the Frobenius-norm bound (4.20), including the additive O(u^2) term.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -40,6 +38,16 @@
   "paper_version": "published journal version; volume 44, issue 3, 2023, printed pages 1146-1163",
   "result_form_tag": "BND",
   "review_record_not_for_run_prompt": {
+    "absence_search": {
+      "patterns": [
+        "columnwise",
+        "Frobenius",
+        "frobNormRect_le_of_col_vecNorm2_le",
+        "vecNorm2_add_le"
+      ],
+      "result": "The frozen library contains generic column-to-Frobenius and Euclidean triangle inequalities, but no theorem carrying P06's exact gammaTilde coefficient together with finite O(u^2) remainder aggregation.",
+      "scope": "all Lean source files corresponding to the frozen NumStability modules"
+    },
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
@@ -48,85 +56,51 @@
       "NumStability.vecNorm2Sq_le_sum_abs_sq",
       "NumStability.frobNormRect_le_of_col_vecNorm2_le"
     ],
-    "note": "The frozen library directly supplies the Euclidean triangle inequality used for the column-norm vectors and nearby exact column-to-Frobenius infrastructure. It has no Model 1.5, probability-event, Householder execution, computed-factor, or asymptotic-remainder theorem matching the repaired target."
+    "note": "The condition-L proof directly reuses NumStability.vecNorm2_add_le for the vector of column budgets. It still constructs and proves the asymptotic normwise remainder required by the selected P06 implication."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "p06VecNorm2",
     "p06FrobNorm",
-    "p06RectMatMul",
-    "p06HouseholderMatrix",
-    "p06Orthogonal",
-    "p06UpperTrapezoidal",
     "p06GammaTilde",
     "p06QRLeadingCoefficient",
-    "p06P4",
-    "p06SecondOrderAtZero",
-    "P06SecondOrderControl",
-    "p06MeanIndependent",
-    "P06Model15",
-    "p06HouseholderQRStep",
-    "p06HouseholderForActiveColumn",
-    "P06HouseholderQRRun",
-    "P06Lemma42Assumption",
-    "P06Lemma42ColumnCertificate"
+    "p06SecondOrderAtZeroRight"
   ],
   "source_locations": [
     {
-      "anchor": "equations (1.4), (1.6), and Definition 1.3",
+      "anchor": "equation (1.6)",
       "pdf_page": 2,
       "printed_page": "1147",
-      "role": "relative-error model, gammaTilde, lambda domain, and mean-independence definition",
+      "role": "definition of gammaTilde and the lambda parameter",
       "section": "1. Introduction"
     },
     {
-      "anchor": "Model 1.5",
-      "pdf_page": 3,
-      "printed_page": "1148",
-      "role": "computation-order mean independence and zero-mean assumptions",
-      "section": "1. Introduction"
-    },
-    {
-      "anchor": "equations (4.1)-(4.2)",
-      "pdf_page": 6,
-      "printed_page": "1151",
-      "role": "perturbed Householder execution and local operator-norm bound",
-      "section": "4. Application of a sequence of Householder matrices"
-    },
-    {
-      "anchor": "paragraph preceding Lemma 4.2 and Lemma 4.2 hypothesis",
-      "pdf_page": 7,
-      "printed_page": "1152",
-      "role": "probability-one strengthening of the local-bound assumption",
-      "section": "4. Application of a sequence of Householder matrices"
-    },
-    {
-      "anchor": "Theorem 4.4 and equations (4.16)-(4.17)",
+      "anchor": "Theorem 4.4, equation (4.17)",
       "pdf_page": 9,
       "printed_page": "1154",
-      "role": "computed factor, exact orthogonal backward relation, simultaneous column bounds, coefficient, and event probability",
+      "role": "simultaneous columnwise premise, exact coefficient, and column O(u^2) terms",
       "section": "4. Application of a sequence of Householder matrices"
     },
     {
-      "anchor": "equations (4.18)-(4.20) and the implication sentence preceding (4.20)",
+      "anchor": "the implication sentence preceding equation (4.20) and equation (4.20)",
       "pdf_page": 10,
       "printed_page": "1155",
-      "role": "higher-order interpretation and the selected Frobenius backward-error consequence",
+      "role": "selected columnwise-to-Frobenius implication and normwise conclusion",
       "section": "4. Application of a sequence of Householder matrices"
     }
   ],
   "source_tags": [
-    "THM"
+    "EQN"
   ],
   "task_id": "P06-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "The L proof directly applies NumStability.vecNorm2_add_le to the finite vector of column budgets. The remaining steps are the finite union bound over the one-column Lemma 4.2 events, assembly of the common exact QR relation, pointwise monotonicity, l2-to-l1 remainder control, and finite preservation of the strengthened O(u^2) control.",
+  "tier_rationale": "The condition-L proof directly applies NumStability.vecNorm2_add_le to the finite vector of column budgets. The remaining steps identify Frobenius and column Euclidean norms, prove coefficient nonnegativity on 0 < u < 1, bound l2 by l1, and show that a finite sum of O(u^2) remainders remains O(u^2).",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P06/T1/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p06_t1_householder_qr_frobenius_backward_error"
+    "required_declaration": "HighamBench.p06_t1_columnwise_to_frobenius"
   }
 }
