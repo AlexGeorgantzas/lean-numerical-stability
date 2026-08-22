@@ -47,13 +47,15 @@ tends to zero. `P09AsymptoticFftFamily` therefore fixes the factorization,
 `epsilon`. The model at each point has exactly that `epsilon`, the same `gamma`,
 and the same exactly represented input.
 
-`P09TheoremOneRmsAsymptotic` is the inherited Theorem 1(a) result for this
-family. It chooses one nonnegative second-order coefficient and one positive
-radius before any particular `epsilon`, and its bound must hold at every
-positive `epsilon` inside that radius. Consequently the coefficient cannot be
-increased after observing one fixed run.
+`P09TheoremOneStageEnvelope` packages the stage-local estimates corresponding
+to equations (3.6)--(3.8). For fixed factorization, `gamma`, and input, it
+chooses one nonnegative second-order coefficient per stage and one positive
+radius before both the operational execution family and the particular
+`epsilon`. Its bounds therefore hold uniformly over every permitted rounding
+path with that fixed structural data. It contains neither the global Theorem 1
+bound nor a fictional-input witness.
 
-## Inherited forward result
+## Derived forward result
 
 For radix factors `N_l`, the definitions retain the exact Theorem 1 constant
 
@@ -64,10 +66,19 @@ alpha(4) = 5,
 alpha(q) = 2 sqrt(q) (q+gamma) otherwise.
 ```
 
-The source does not provide a numerical value for the hidden coefficient, so
-the target does not invent one. It only makes the standard uniform quantifier
-content of `O(epsilon^2)` explicit. This prior result is tied to the operational
-FFT family above, rather than being a certificate for an arbitrary output.
+`p09FamilyErrorRms_le_stage_sum` proves that the final operational error is at
+most the sum of the stage-local errors after exact propagation through the
+remaining factors. `p09StageFirstOrderBudget` combines the local block-Fourier
+term from (3.7) with the twiddle term from (3.8), and its sum is proved equal to
+the displayed `K(N,gamma)`. Consequently
+`p09TheoremOneRmsAsymptotic_exists` is an imported proof of the complete
+Theorem 1(a) RMS estimate from the local source envelope; the target no longer
+accepts that complete estimate as a caller-supplied certificate.
+
+The source does not provide numerical values for the hidden second-order
+coefficients, so the formalization does not invent them. It makes the standard
+uniform quantifier content of `O(epsilon^2)` explicit and derives the global
+coefficient by summing the stage-local coefficients.
 
 ## Selected backward result
 
@@ -77,8 +88,9 @@ At each positive `epsilon`, let
 e(epsilon) = computedOutput(epsilon) - T x.
 ```
 
-The target constructs a family of fictional complex input perturbations
-`delta(epsilon)` and proves, for every positive `epsilon`,
+The target first derives one nonnegative global second-order coefficient and
+one positive radius. It then constructs a family of fictional complex input
+perturbations `delta(epsilon)` and proves, for every positive `epsilon`,
 
 ```text
 e(epsilon) = T delta(epsilon),

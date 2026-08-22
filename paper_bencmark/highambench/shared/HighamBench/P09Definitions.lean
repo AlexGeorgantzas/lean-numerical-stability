@@ -314,8 +314,8 @@ noncomputable def p09FamilyFftRoundoffError {n : ℕ} [NeZero n]
   p09FftRoundoffError (family.run ε)
 
 /-- Theorem 1(a) with the source's `O(epsilon^2)` interpreted uniformly on a
-right neighborhood of zero. The coefficient and radius are chosen after the
-fixed execution family but before any particular positive `epsilon`. -/
+right neighborhood of zero. This result package is constructed below from
+stage-local coefficients fixed before the varying execution family. -/
 structure P09TheoremOneRmsAsymptotic {n : ℕ} [NeZero n]
     {plan : P09MixedRadixFftPlan n} {γ : ℝ}
     (family : P09AsymptoticFftFamily plan γ) where
@@ -328,6 +328,395 @@ structure P09TheoremOneRmsAsymptotic {n : ℕ} [NeZero n]
       ε.1 * Real.sqrt (n : ℝ) * p09K plan γ *
           p09ComplexRms family.input +
         secondOrderCoeff * ε.1 ^ 2
+
+/-! ### The stage-local derivation of Theorem 1(a) -/
+
+/-- Apply a list of exact mixed-radix stages in execution order. -/
+noncomputable def p09ApplyExactStageList {n : ℕ} [NeZero n]
+    (stages : List (P09MixedRadixStage n)) (x : ZMod n → ℂ) : ZMod n → ℂ :=
+  stages.foldl (fun state stage ↦ p09MixedRadixStageApply stage state) x
+
+private lemma p09MixedRadixStageApply_add {n : ℕ} [NeZero n]
+    (stage : P09MixedRadixStage n) (x y : ZMod n → ℂ) :
+    p09MixedRadixStageApply stage (p09ComplexVecAdd x y) =
+      p09ComplexVecAdd (p09MixedRadixStageApply stage x)
+        (p09MixedRadixStageApply stage y) := by
+  letI : NeZero stage.radix := ⟨stage.radix_ne_zero⟩
+  funext i
+  simp only [p09MixedRadixStageApply, p09ComplexVecAdd]
+  split_ifs <;> simp only [mul_add, Finset.sum_add_distrib]
+
+private lemma p09ApplyExactStageList_add {n : ℕ} [NeZero n]
+    (stages : List (P09MixedRadixStage n)) (x y : ZMod n → ℂ) :
+    p09ApplyExactStageList stages (p09ComplexVecAdd x y) =
+      p09ComplexVecAdd (p09ApplyExactStageList stages x)
+        (p09ApplyExactStageList stages y) := by
+  induction stages generalizing x y with
+  | nil => rfl
+  | cons stage stages ih =>
+      simp only [p09ApplyExactStageList, List.foldl_cons]
+      rw [p09MixedRadixStageApply_add]
+      change p09ApplyExactStageList stages
+          (p09ComplexVecAdd (p09MixedRadixStageApply stage x)
+            (p09MixedRadixStageApply stage y)) = _
+      exact ih _ _
+
+private lemma p09Permute_add {n : ℕ} (permutation : ZMod n ≃ ZMod n)
+    (x y : ZMod n → ℂ) :
+    p09Permute permutation (p09ComplexVecAdd x y) =
+      p09ComplexVecAdd (p09Permute permutation x) (p09Permute permutation y) := by
+  rfl
+
+/-- The exact remaining FFT computation after the first `k` stages. -/
+noncomputable def p09ExactFftCompletion {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (k : ℕ) (x : ZMod n → ℂ) :
+    ZMod n → ℂ :=
+  p09Permute plan.finalPermutation
+    (p09ApplyExactStageList ((List.ofFn plan.stage).drop k) x)
+
+/-- The local error introduced by rounded stage `i` in one operational run. -/
+noncomputable def p09FftStageLocalError {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (i : Fin plan.stageCount) :
+    ZMod n → ℂ :=
+  p09ComplexVecSub (run.stageState (i.val + 1))
+    (p09MixedRadixStageApply (plan.stage i) (run.stageState i.val))
+
+/-- A local stage error propagated through all later exact FFT stages. -/
+noncomputable def p09PropagatedFftStageError {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (i : Fin plan.stageCount) :
+    ZMod n → ℂ :=
+  p09ExactFftCompletion plan (i.val + 1) (p09FftStageLocalError run i)
+
+private lemma p09ExactFftCompletion_add {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (k : ℕ) (x y : ZMod n → ℂ) :
+    p09ExactFftCompletion plan k (p09ComplexVecAdd x y) =
+      p09ComplexVecAdd (p09ExactFftCompletion plan k x)
+        (p09ExactFftCompletion plan k y) := by
+  unfold p09ExactFftCompletion
+  rw [p09ApplyExactStageList_add, p09Permute_add]
+
+private lemma p09ExactFftCompletion_step_input {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (k : ℕ) (hk : k < plan.stageCount)
+    (x : ZMod n → ℂ) :
+    p09ExactFftCompletion plan k x =
+      p09ExactFftCompletion plan (k + 1)
+        (p09MixedRadixStageApply (plan.stage ⟨k, hk⟩) x) := by
+  unfold p09ExactFftCompletion
+  have hlength : k < (List.ofFn plan.stage).length := by simpa using hk
+  rw [List.drop_eq_getElem_cons hlength]
+  simp only [p09ApplyExactStageList, List.foldl_cons]
+  congr 2
+  simp
+
+private lemma p09StageState_eq_exact_add_local {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (i : Fin plan.stageCount) :
+    run.stageState (i.val + 1) =
+      p09ComplexVecAdd
+        (p09MixedRadixStageApply (plan.stage i) (run.stageState i.val))
+        (p09FftStageLocalError run i) := by
+  funext j
+  simp [p09FftStageLocalError, p09ComplexVecAdd, p09ComplexVecSub]
+
+private lemma p09ExactFftCompletion_run_step {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (k : ℕ)
+    (hk : k < plan.stageCount) :
+    p09ExactFftCompletion plan (k + 1) (run.stageState (k + 1)) =
+      p09ComplexVecAdd
+        (p09ExactFftCompletion plan k (run.stageState k))
+        (p09PropagatedFftStageError run ⟨k, hk⟩) := by
+  let i : Fin plan.stageCount := ⟨k, hk⟩
+  rw [p09StageState_eq_exact_add_local run i, p09ExactFftCompletion_add]
+  change p09ComplexVecAdd
+      (p09ExactFftCompletion plan (k + 1)
+        (p09MixedRadixStageApply (plan.stage i) (run.stageState k)))
+      (p09PropagatedFftStageError run i) = _
+  rw [← p09ExactFftCompletion_step_input plan k hk]
+
+private lemma p09ComplexNorm2_add_le {n : ℕ} [NeZero n]
+    (x y : ZMod n → ℂ) :
+    p09ComplexNorm2 (p09ComplexVecAdd x y) ≤
+      p09ComplexNorm2 x + p09ComplexNorm2 y := by
+  let toEuclidean (z : ZMod n → ℂ) :
+      EuclideanSpace ℂ (ZMod n) := WithLp.toLp 2 z
+  have hadd : toEuclidean (p09ComplexVecAdd x y) =
+      toEuclidean x + toEuclidean y := by
+    ext i
+    rfl
+  calc
+    p09ComplexNorm2 (p09ComplexVecAdd x y) =
+        ‖toEuclidean (p09ComplexVecAdd x y)‖ := by
+      simp [p09ComplexNorm2, p09ComplexNorm2Sq, toEuclidean,
+        EuclideanSpace.norm_eq]
+    _ = ‖toEuclidean x + toEuclidean y‖ := by rw [hadd]
+    _ ≤ ‖toEuclidean x‖ + ‖toEuclidean y‖ := norm_add_le _ _
+    _ = p09ComplexNorm2 x + p09ComplexNorm2 y := by
+      simp [p09ComplexNorm2, p09ComplexNorm2Sq, toEuclidean,
+        EuclideanSpace.norm_eq]
+
+private lemma p09ComplexRms_add_le {n : ℕ} [NeZero n]
+    (x y : ZMod n → ℂ) :
+    p09ComplexRms (p09ComplexVecAdd x y) ≤
+      p09ComplexRms x + p09ComplexRms y := by
+  have hn : 0 < n := Nat.pos_of_ne_zero (NeZero.ne n)
+  have hsqrt : 0 < Real.sqrt (n : ℝ) :=
+    Real.sqrt_pos.2 (Nat.cast_pos.2 hn)
+  unfold p09ComplexRms
+  rw [← add_div]
+  exact (div_le_div_iff_of_pos_right hsqrt).2 (p09ComplexNorm2_add_le x y)
+
+private noncomputable def p09FftCompletionError {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (k : ℕ) : ZMod n → ℂ :=
+  p09ComplexVecSub (p09ExactFftCompletion plan k (run.stageState k))
+    (p09FourierTransform run.input)
+
+private lemma p09FftCompletionError_zero {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) :
+    p09FftCompletionError run 0 = 0 := by
+  unfold p09FftCompletionError p09ExactFftCompletion
+  rw [run.initial_state]
+  change p09ComplexVecSub
+      (p09Permute plan.finalPermutation
+        (p09ApplyMixedRadixStages plan.stage run.input))
+      (p09FourierTransform run.input) = 0
+  rw [plan.exact_factorization]
+  funext i
+  simp [p09ComplexVecSub]
+
+private lemma p09FftCompletionError_step {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (k : ℕ)
+    (hk : k < plan.stageCount) :
+    p09FftCompletionError run (k + 1) =
+      p09ComplexVecAdd (p09FftCompletionError run k)
+        (p09PropagatedFftStageError run ⟨k, hk⟩) := by
+  unfold p09FftCompletionError
+  rw [p09ExactFftCompletion_run_step run k hk]
+  funext i
+  simp [p09ComplexVecAdd, p09ComplexVecSub]
+  ring
+
+private noncomputable def p09StageErrorRmsNat {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (k : ℕ) : ℝ :=
+  if hk : k < plan.stageCount then
+    p09ComplexRms (p09PropagatedFftStageError run ⟨k, hk⟩)
+  else 0
+
+private noncomputable def p09PrefixStageErrorRms {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (k : ℕ) : ℝ :=
+  ∑ j ∈ Finset.range k, p09StageErrorRmsNat run j
+
+private lemma p09PrefixStageErrorRms_succ {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (k : ℕ)
+    (hk : k < plan.stageCount) :
+    p09PrefixStageErrorRms run (k + 1) =
+      p09PrefixStageErrorRms run k +
+        p09ComplexRms (p09PropagatedFftStageError run ⟨k, hk⟩) := by
+  unfold p09PrefixStageErrorRms
+  rw [Finset.sum_range_succ]
+  simp [p09StageErrorRmsNat, hk]
+
+private lemma p09FftCompletionErrorRms_le_prefix {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) (k : ℕ)
+    (hk : k ≤ plan.stageCount) :
+    p09ComplexRms (p09FftCompletionError run k) ≤
+      p09PrefixStageErrorRms run k := by
+  induction k with
+  | zero =>
+      rw [p09FftCompletionError_zero]
+      simp [p09PrefixStageErrorRms, p09ComplexRms, p09ComplexNorm2,
+        p09ComplexNorm2Sq]
+  | succ k ih =>
+      have hklt : k < plan.stageCount := Nat.lt_of_succ_le hk
+      rw [p09FftCompletionError_step run k hklt,
+        p09PrefixStageErrorRms_succ run k hklt]
+      exact (p09ComplexRms_add_le _ _).trans
+        (add_le_add (ih (Nat.le_of_lt hklt)) le_rfl)
+
+private lemma p09ExactFftCompletion_final {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (x : ZMod n → ℂ) :
+    p09ExactFftCompletion plan plan.stageCount x =
+      p09Permute plan.finalPermutation x := by
+  unfold p09ExactFftCompletion p09ApplyExactStageList
+  rw [List.drop_eq_nil_of_le]
+  · rfl
+  · simp
+
+/-- The global FFT error is bounded by the sum of all propagated local errors. -/
+theorem p09FamilyErrorRms_le_stage_sum {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {γ : ℝ}
+    (family : P09AsymptoticFftFamily plan γ) (ε : P09PositiveEpsilon) :
+    p09ComplexRms (p09FamilyFftRoundoffError family ε) ≤
+      ∑ i : Fin plan.stageCount,
+        p09ComplexRms (p09PropagatedFftStageError (family.run ε) i) := by
+  have hbound := p09FftCompletionErrorRms_le_prefix (family.run ε)
+    plan.stageCount (Nat.le_refl _)
+  have hfinal : p09FftCompletionError (family.run ε) plan.stageCount =
+      p09FamilyFftRoundoffError family ε := by
+    unfold p09FftCompletionError p09FamilyFftRoundoffError
+      p09FftRoundoffError p09FftComputedOutput
+    rw [p09ExactFftCompletion_final]
+  rw [hfinal] at hbound
+  have hsum :
+      (∑ i : Fin plan.stageCount,
+          p09ComplexRms (p09PropagatedFftStageError (family.run ε) i)) =
+        p09PrefixStageErrorRms (family.run ε) plan.stageCount := by
+    calc
+      (∑ i : Fin plan.stageCount,
+          p09ComplexRms (p09PropagatedFftStageError (family.run ε) i)) =
+          ∑ i : Fin plan.stageCount,
+            p09StageErrorRmsNat (family.run ε) i.val := by
+        apply Finset.sum_congr rfl
+        intro i _hi
+        simp [p09StageErrorRmsNat, i.isLt]
+      _ = ∑ k ∈ Finset.range plan.stageCount,
+            p09StageErrorRmsNat (family.run ε) k :=
+        Fin.sum_univ_eq_sum_range _ _
+      _ = p09PrefixStageErrorRms (family.run ε) plan.stageCount := rfl
+  exact hbound.trans_eq hsum.symm
+
+/-- The first-order contribution of equations `(3.7)` and `(3.8)` at one
+mixed-radix stage. -/
+noncomputable def p09StageFirstOrderBudget {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (γ : ℝ)
+    (i : Fin plan.stageCount) : ℝ :=
+  p09Alpha (plan.stage i).radix γ +
+    if (plan.stage i).useTwiddle then 3 + 2 * γ else 0
+
+private lemma p09SumRangeBeforeLast (m : ℕ) (hm : 0 < m) (c : ℝ) :
+    (∑ k ∈ Finset.range m, if k + 1 < m then c else 0) =
+      ((m : ℝ) - 1) * c := by
+  cases m with
+  | zero => omega
+  | succ m =>
+      rw [Finset.sum_range_succ]
+      have hsum : (∑ k ∈ Finset.range m,
+          if k + 1 < m + 1 then c else 0) = (m : ℝ) * c := by
+        calc
+          (∑ k ∈ Finset.range m, if k + 1 < m + 1 then c else 0) =
+              ∑ _k ∈ Finset.range m, c := by
+            apply Finset.sum_congr rfl
+            intro k hk
+            rw [if_pos]
+            exact Nat.succ_lt_succ (Finset.mem_range.1 hk)
+          _ = (m : ℝ) * c := by simp
+      rw [if_neg (by omega), add_zero, hsum]
+      norm_num [Nat.cast_add, Nat.cast_one]
+
+private lemma p09StageFirstOrderBudget_sum {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (γ : ℝ) :
+    (∑ i : Fin plan.stageCount, p09StageFirstOrderBudget plan γ i) =
+      p09K plan γ := by
+  unfold p09StageFirstOrderBudget p09K
+  rw [Finset.sum_add_distrib]
+  congr 1
+  let c : ℝ := 3 + 2 * γ
+  calc
+    (∑ i : Fin plan.stageCount,
+        if (plan.stage i).useTwiddle then 3 + 2 * γ else 0) =
+        ∑ i : Fin plan.stageCount,
+          if i.val + 1 < plan.stageCount then c else 0 := by
+      apply Finset.sum_congr rfl
+      intro i _hi
+      rw [plan.twiddle_pattern i]
+      simp [c]
+    _ = ∑ k ∈ Finset.range plan.stageCount,
+          if k + 1 < plan.stageCount then c else 0 :=
+      by simpa using
+        (Fin.sum_univ_eq_sum_range
+          (fun k ↦ if k + 1 < plan.stageCount then c else 0)
+          plan.stageCount)
+    _ = ((plan.stageCount : ℝ) - 1) * (3 + 2 * γ) := by
+      simpa [c] using p09SumRangeBeforeLast plan.stageCount
+        plan.stageCount_pos c
+
+/-- The stage-local estimates `(3.6)`--`(3.8)`. Their coefficients and common
+radius are fixed for a plan, trigonometric model, and input before the varying
+rounding path and positive precision. -/
+structure P09TheoremOneStageEnvelope {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (γ : ℝ) (input : ZMod n → ℂ) where
+  localSecondOrderCoeff : Fin plan.stageCount → ℝ
+  local_second_order_nonneg : ∀ i, 0 ≤ localSecondOrderCoeff i
+  radius : ℝ
+  radius_pos : 0 < radius
+  local_error_bound : ∀ family : P09AsymptoticFftFamily plan γ,
+    family.input = input →
+      ∀ (ε : P09PositiveEpsilon), ε.1 ≤ radius →
+        ∀ i : Fin plan.stageCount,
+          p09ComplexRms (p09PropagatedFftStageError (family.run ε) i) ≤
+            ε.1 * Real.sqrt (n : ℝ) *
+                p09StageFirstOrderBudget plan γ i *
+                p09ComplexRms input +
+              localSecondOrderCoeff i * ε.1 ^ 2
+
+/-- The global second-order coefficient obtained by summing the stage-local
+remainders. -/
+noncomputable def p09TheoremOneStageRemainderSum
+    {n : ℕ} [NeZero n] {plan : P09MixedRadixFftPlan n} {γ : ℝ}
+    {input : ZMod n → ℂ}
+    (stageBounds : P09TheoremOneStageEnvelope plan γ input) : ℝ :=
+  ∑ i : Fin plan.stageCount, stageBounds.localSecondOrderCoeff i
+
+/-- Equations `(3.6)`--`(3.8)`, propagated through the exact remaining stages,
+establish the complete RMS statement of Theorem 1(a). -/
+noncomputable def p09TheoremOneRmsAsymptoticOfStageEnvelope
+    {n : ℕ} [NeZero n] {plan : P09MixedRadixFftPlan n} {γ : ℝ}
+    (family : P09AsymptoticFftFamily plan γ)
+    (stageBounds : P09TheoremOneStageEnvelope plan γ family.input) :
+    P09TheoremOneRmsAsymptotic family := by
+  let secondOrderCoeff := p09TheoremOneStageRemainderSum stageBounds
+  have hcoeff : 0 ≤ secondOrderCoeff :=
+    Finset.sum_nonneg fun i _hi ↦ stageBounds.local_second_order_nonneg i
+  refine
+    { secondOrderCoeff := secondOrderCoeff
+      secondOrderCoeff_nonneg := hcoeff
+      radius := stageBounds.radius
+      radius_pos := stageBounds.radius_pos
+      error_bound := ?_ }
+  intro ε hε
+  calc
+    p09ComplexRms (p09FamilyFftRoundoffError family ε) ≤
+        ∑ i : Fin plan.stageCount,
+          p09ComplexRms (p09PropagatedFftStageError (family.run ε) i) :=
+      p09FamilyErrorRms_le_stage_sum family ε
+    _ ≤ ∑ i : Fin plan.stageCount,
+          (ε.1 * Real.sqrt (n : ℝ) *
+                p09StageFirstOrderBudget plan γ i *
+                p09ComplexRms family.input +
+            stageBounds.localSecondOrderCoeff i * ε.1 ^ 2) :=
+      Finset.sum_le_sum fun i _hi ↦
+        stageBounds.local_error_bound family rfl ε hε i
+    _ = ε.1 * Real.sqrt (n : ℝ) *
+          (∑ i : Fin plan.stageCount, p09StageFirstOrderBudget plan γ i) *
+          p09ComplexRms family.input +
+        (∑ i : Fin plan.stageCount,
+          stageBounds.localSecondOrderCoeff i) * ε.1 ^ 2 := by
+      simp only [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.sum_mul]
+    _ = ε.1 * Real.sqrt (n : ℝ) * p09K plan γ *
+          p09ComplexRms family.input + secondOrderCoeff * ε.1 ^ 2 := by
+      rw [p09StageFirstOrderBudget_sum]
+      rfl
+
+/-- The imported derivation of Theorem 1(a), exposed as an existence theorem
+rather than a caller-supplied global error certificate. -/
+theorem p09TheoremOneRmsAsymptotic_exists
+    {n : ℕ} [NeZero n] {plan : P09MixedRadixFftPlan n} {γ : ℝ}
+    {input : ZMod n → ℂ}
+    (stageBounds : P09TheoremOneStageEnvelope plan γ input)
+    (family : P09AsymptoticFftFamily plan γ)
+    (family_input : family.input = input) :
+    Nonempty (P09TheoremOneRmsAsymptotic family) := by
+  subst input
+  exact ⟨p09TheoremOneRmsAsymptoticOfStageEnvelope family stageBounds⟩
 
 /-! ## Ramos's multidimensional FFT setting -/
 

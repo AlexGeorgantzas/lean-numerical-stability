@@ -43,7 +43,7 @@
     },
     {
       "candidate": "the complete first-order formula in Theorem 1(a)",
-      "reason": "It is not selected as a separate target. P09-T2 uses its operational, epsilon-uniform asymptotic form as the immediately preceding result from which the paper derives the fictional-input interpretation."
+      "reason": "It is not selected as a separate target. The P09 shared module proves its operational, epsilon-uniform asymptotic form from the stage-local estimates, and P09-T2 invokes that imported theorem before deriving the fictional-input interpretation."
     },
     {
       "candidate": "the direct-transformation error matrix (3.3) and bounds (3.4)-(3.5)",
@@ -55,7 +55,7 @@
     },
     {
       "candidate": "equations (3.7) and (3.8)",
-      "reason": "These are local block and diagonal error estimates with O(epsilon squared) terms; T3 instead preserves how such local budgets accumulate across an arbitrary finite collection of transforms."
+      "reason": "These local block and diagonal error estimates are not separate targets. Their uniform stage-envelope form supports the imported derivation of Theorem 1(a) used by P09-T2, while T3 preserves how one-dimensional budgets accumulate across an arbitrary finite collection of transforms."
     },
     {
       "candidate": "Theorem 2(b)",
