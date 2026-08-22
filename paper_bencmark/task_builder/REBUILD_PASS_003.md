@@ -6,9 +6,9 @@
 - Baseline status: completed, with 59 fully validated eligible results
 - Pass-3 scope: the 25 fully validated Audit 2 results that were not accepted
 - Processing order: the order in the ledger below
-- Active task: `P20-T3`
+- Active task: none; reachable Builder work is complete
 - Rebuilds started: 25/25
-- Rebuilds committed and pushed: 21/25
+- Rebuilds committed and pushed: 22/25
 - Pass-3 audits accepted: 0/25
 
 `P04-T1`, `P04-T2`, `P05-T1`, `P05-T2`, `P05-T3`, and `P06-T1` have been
@@ -19,7 +19,9 @@ rebuilt and pushed. `P07-T2` is blocked on source clarification; `P08-T3`,
 `P15-T3` has been rebuilt and pushed. `P16-T2` is blocked by a missing
 iterate-comparison hypothesis in the printed recurrence, `P16-T3` has been
 rebuilt and pushed, and `P18-T1` and `P18-T3` have been rebuilt and pushed.
-`P19-T2` and `P19-T3` have been rebuilt and pushed. `P20-T3` is in progress.
+`P19-T2`, `P19-T3`, and `P20-T3` have been rebuilt and pushed. The remaining
+three tasks are the source-blocked tasks documented below; no reachable
+pass-3 rebuild remains pending.
 
 ## Operating rules
 
@@ -86,7 +88,7 @@ Audit 2 versions.
 | 22 | `P18-T3` | `not-faithful-weaker` | `no / yes` | `b1616ce83dca` | [decision](../highambench/tasks/P18/T3/faithfulness/decision.json), [report](../highambench/tasks/P18/T3/faithfulness/report.md) | `rebuilt-pushed` | `ae1521f6b` | - |
 | 23 | `P19-T2` | `not-faithful-different` | `no / no` | `a88a277ace1e` | [decision](../highambench/tasks/P19/T2/faithfulness/decision.json), [report](../highambench/tasks/P19/T2/faithfulness/report.md) | `rebuilt-pushed` | `3e66be0df` | - |
 | 24 | `P19-T3` | `not-faithful-weaker` | `no / yes` | `01678017bf60` | [decision](../highambench/tasks/P19/T3/faithfulness/decision.json), [report](../highambench/tasks/P19/T3/faithfulness/report.md) | `rebuilt-pushed` | `fc9da3a86` | - |
-| 25 | `P20-T3` | `not-faithful-different` | `no / no` | `d1ca8c6b6626` | [decision](../highambench/tasks/P20/T3/faithfulness/decision.json), [report](../highambench/tasks/P20/T3/faithfulness/report.md) | `in-progress` | - | - |
+| 25 | `P20-T3` | `not-faithful-different` | `no / no` | `d1ca8c6b6626` | [decision](../highambench/tasks/P20/T3/faithfulness/decision.json), [report](../highambench/tasks/P20/T3/faithfulness/report.md) | `rebuilt-pushed` | `1475db430` | - |
 
 ## Blocked Task Evidence
 
@@ -161,6 +163,9 @@ construction files were changed in pass 3.
 
 ## End-of-pass checkpoint
 
-After all reachable pass-3 rebuilds and audits finish, use `WORKFLOW.md` to
-reconcile semantic metadata, regenerate corpus-wide hashes once, validate the
-settled construction snapshot, and commit the generated metadata separately.
+The Builder phase ended with 22 rebuilt-and-pushed tasks and three documented
+source blocks. Independent pass-3 audits are still pending for the rebuilt
+tasks. After those audits and the three owner decisions are settled, use
+`WORKFLOW.md` to reconcile semantic metadata, regenerate corpus-wide hashes
+once, validate the settled construction snapshot, and commit the generated
+metadata separately.
