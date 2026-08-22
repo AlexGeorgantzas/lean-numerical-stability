@@ -18,23 +18,35 @@ Residual accumulation is either single precision, with `ubar=u`, or double
 precision followed by conversion to single precision, with `ubar=u^2` and
 conversion relative error bounded by `u`.
 
-The iterates are those of column-pivoted iterative refinement:
+The iterates are those of column-pivoted iterative refinement. The actual
+loop starts at `m=1`:
 
 ```text
-x_0 = 0,  r_0 = -b,  d_0 = -x_1,
-r_m = computed(A*x_m-b),
-d_m = computed(A^{-1}*r_m),
-x_(m+1) = computed(x_m-d_m).
+x_1 = computed(A^{-1}*b),
+for m = 1, 2, ...:
+  r_m = computed(A*x_m-b),
+  d_m = computed(A^{-1}*r_m),
+  x_(m+1) = computed(x_m-d_m).
 ```
 
-The subtraction by `b` is performed last when computing `r_m`. Each solve now
-contains an operational column-pivoted Gaussian-elimination trace: every pivot
-is selected as the largest active magnitude in the next column, rows are
-swapped, the trailing matrix and right-hand side are updated in working
-arithmetic, and the final triangular system is solved by rounded back
-substitution. The solve's backward-error relation is tied to that trace's
-output. The real-valued arithmetic models do not represent NaN, infinity,
-overflow results, or undefined operations.
+The paper then introduces `x_0=0`, `r_0=-b`, and `d_0=-x_1` only as convenient
+auxiliary definitions. The Lean run does the same: it does not require a fresh
+solve of `A*d_0=-b` or a rounded computation of `x_1=x_0-d_0`.
+
+The subtraction by `b` is performed last when computing `r_m`. The source does
+not fix the minor computational details of column-pivoted elimination, so the
+Lean run uses the displayed componentwise solve certificate from printed page
+823 instead of selecting a particular pivot/update/back-substitution trace.
+Likewise, the rounded refinement update is represented by the exact source
+equation
+
+```text
+x_(m+1) = x_m-d_m+h_(m+1),
+|h_(m+1)| <= u*|x_m-d_m|.
+```
+
+The real-valued model is conditional on all floating-point results being
+well-defined; it does not add NaN, infinity, overflow, or underflow semantics.
 
 ## Exact residual and norm
 
@@ -78,11 +90,12 @@ matrix constant carries the corresponding dimension-only bound in addition
 to its exact displayed definition.
 
 `P08Lemma43RoundoffAnalysis` does not assume Lemma 4.1 or Lemma 4.2. It records
-the lower-level quantities used in their proofs: the residual-accumulation
-error `f_m`, its equation and printed componentwise bound, and the correction
-solve error after applying equation (3.1). From these data, the proof derives
-Lemma 4.1 using the definitions of `C_6` and `C_7`. It separately derives the
-forward-error half of Lemma 4.2 from the exact identity
+the quantities used in their proofs: the residual-accumulation error `f_m`, its
+equation and printed componentwise bound, and the correction-solve error `g_m`
+after applying equation (3.1). These equations cover the auxiliary `m=0` case
+through the original solve, rather than postulating a second solve. From these
+data, the proof derives Lemma 4.1 using the definitions of `C_6` and `C_7`. It
+separately derives the forward-error half of Lemma 4.2 from the exact identity
 `x_m-d_m-x=A^{-1}q_(m+1)` and the rounded subtraction model. Only then does it
 derive the page-827 recurrence and perform the Lemma 4.3 induction.
 

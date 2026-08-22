@@ -87,171 +87,30 @@ def p08ResidualUnitRoundoff (precision : P08ResidualPrecision)
   | .single => u
   | .double => u ^ 2
 
-/-- A total real-valued floating-point model with the relative-error
-semantics assumed by P08. Totality excludes NaN, infinity, and undefined
-operations from represented executions. -/
-structure P08ScalarArithmeticModel where
-  unitRoundoff : ℝ
-  unitRoundoff_nonneg : 0 ≤ unitRoundoff
-  flAdd : ℝ → ℝ → ℝ
-  flSub : ℝ → ℝ → ℝ
-  flMul : ℝ → ℝ → ℝ
-  flDiv : ℝ → ℝ → ℝ
-  add_model : ∀ x y, ∃ delta, |delta| ≤ unitRoundoff ∧
-    flAdd x y = (x + y) * (1 + delta)
-  sub_model : ∀ x y, ∃ delta, |delta| ≤ unitRoundoff ∧
-    flSub x y = (x - y) * (1 + delta)
-  mul_model : ∀ x y, ∃ delta, |delta| ≤ unitRoundoff ∧
-    flMul x y = (x * y) * (1 + delta)
-  div_model : ∀ x y, y ≠ 0 → ∃ delta, |delta| ≤ unitRoundoff ∧
-    flDiv x y = (x / y) * (1 + delta)
-
-/-- A rounded row dot product in the residual-accumulation precision. -/
-noncomputable def p08RoundedDot
-    (model : P08ScalarArithmeticModel) {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) (i : Fin n) : ℝ :=
-  recursiveSum model.flAdd n fun j : Fin n ↦ model.flMul (A i j) (x j)
-
-/-- A residual computation with the subtraction by `b` performed after the
-rounded matrix-vector product. In the double variant the result is then
-converted to working precision. -/
-structure P08SubtractionLastResidualTrace {n : ℕ}
-    (precision : P08ResidualPrecision)
-    (residualModel : P08ScalarArithmeticModel)
-    (convert : ℝ → ℝ) (A : Fin n → Fin n → ℝ)
-    (b x : Fin n → ℝ) where
-  roundedAx : Fin n → ℝ
-  beforeConversion : Fin n → ℝ
-  output : Fin n → ℝ
-  roundedAx_relation : ∀ i,
-    roundedAx i = p08RoundedDot residualModel A x i
-  subtraction_last : ∀ i,
-    beforeConversion i = residualModel.flSub (roundedAx i) (b i)
-  output_relation : output =
-    match precision with
-    | .single => beforeConversion
-    | .double => fun i ↦ convert (beforeConversion i)
-
-/-- Swap two rows of a square matrix. -/
-def p08SwapRowsMatrix {n : ℕ} (A : Fin n → Fin n → ℝ)
-    (r s : Fin n) : Fin n → Fin n → ℝ :=
-  fun i j ↦ if i = r then A s j else if i = s then A r j else A i j
-
-/-- Swap two entries of a vector. -/
-def p08SwapRowsVector {n : ℕ} (b : Fin n → ℝ)
-    (r s : Fin n) : Fin n → ℝ :=
-  fun i ↦ if i = r then b s else if i = s then b r else b i
-
-/-- One rounded elimination step after the largest active entry in column
-`k` has been moved into the pivot position. -/
-noncomputable def p08ColumnPivotedMatrixStep
-    (model : P08ScalarArithmeticModel) {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (k pivot : Fin n) :
-    Fin n → Fin n → ℝ :=
-  let swapped := p08SwapRowsMatrix A k pivot
-  fun i j ↦
-    if i.val ≤ k.val then
-      swapped i j
-    else if j.val < k.val then
-      swapped i j
-    else if j = k then
-      0
-    else
-      model.flSub (swapped i j)
-        (model.flMul (model.flDiv (swapped i k) (swapped k k))
-          (swapped k j))
-
-/-- The rounded right-hand-side update paired with one elimination step. -/
-noncomputable def p08ColumnPivotedRhsStep
-    (model : P08ScalarArithmeticModel) {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
-    (k pivot : Fin n) : Fin n → ℝ :=
-  let swappedA := p08SwapRowsMatrix A k pivot
-  let swappedB := p08SwapRowsVector b k pivot
-  fun i ↦
-    if i.val ≤ k.val then
-      swappedB i
-    else
-      model.flSub (swappedB i)
-        (model.flMul (model.flDiv (swappedA i k) (swappedA k k))
-          (swappedB k))
-
-/-- Embed an index in the strict tail following row `i`. -/
-def p08UpperTailIndex {n : ℕ} (i : Fin n)
-    (j : Fin (n - (i.val + 1))) : Fin n :=
-  ⟨i.val + 1 + j.val, by omega⟩
-
-/-- Rounded upper-triangular tail dot product used by back substitution. -/
-noncomputable def p08RoundedUpperTailDot
-    (model : P08ScalarArithmeticModel) {n : ℕ}
-    (U : Fin n → Fin n → ℝ) (x : Fin n → ℝ) (i : Fin n) : ℝ :=
-  recursiveSum model.flAdd (n - (i.val + 1)) fun j ↦
-    model.flMul (U i (p08UpperTailIndex i j))
-      (x (p08UpperTailIndex i j))
-
-/-- An operational Gaussian-elimination trace with column pivoting in the
-paper's terminology: at stage `k`, the largest active entry in column `k` is
-moved to the diagonal, the trailing system is updated in working arithmetic,
-and the final triangular system is solved by rounded back substitution. -/
-structure P08ColumnPivotedGaussianEliminationTrace
-    (model : P08ScalarArithmeticModel) {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (rhs output : Fin n → ℝ) where
-  matrixState : ℕ → Fin n → Fin n → ℝ
-  rhsState : ℕ → Fin n → ℝ
-  pivotRow : Fin n → Fin n
-  initial_matrix : matrixState 0 = A
-  initial_rhs : rhsState 0 = rhs
-  pivot_active : ∀ k, k.val ≤ (pivotRow k).val
-  pivot_largest : ∀ k i, k.val ≤ i.val →
-    |matrixState k.val i k| ≤ |matrixState k.val (pivotRow k) k|
-  pivot_nonzero : ∀ k, matrixState k.val (pivotRow k) k ≠ 0
-  matrix_step : ∀ k,
-    matrixState (k.val + 1) =
-      p08ColumnPivotedMatrixStep model (matrixState k.val) k (pivotRow k)
-  rhs_step : ∀ k,
-    rhsState (k.val + 1) =
-      p08ColumnPivotedRhsStep model (matrixState k.val)
-        (rhsState k.val) k (pivotRow k)
-  final_upper_triangular : ∀ i j, j.val < i.val → matrixState n i j = 0
-  final_diagonal_nonzero : ∀ i, matrixState n i i ≠ 0
-  back_substitution : ∀ i,
-    output i = model.flDiv
-      (model.flSub (rhsState n i)
-        (p08RoundedUpperTailDot model (matrixState n) output i))
-      (matrixState n i i)
-
-/-- The componentwise backward-error certificate supplied by an operational
-column-pivoted Gaussian-elimination solve. -/
+/-- The componentwise backward-error interface supplied by a column-pivoted
+Gaussian-elimination solve on printed page 823. The paper deliberately leaves
+the minor computational details behind this interface unspecified. -/
 structure P08ColumnPivotedSolveCertificate {n : ℕ}
-    (model : P08ScalarArithmeticModel)
     (A : Fin n → Fin n → ℝ) (rhs : Fin n → ℝ)
     (C1 : Fin n → Fin n → ℝ) (u : ℝ) where
   output : Fin n → ℝ
-  execution :
-    P08ColumnPivotedGaussianEliminationTrace model A rhs output
   backwardError : Fin n → ℝ
   equation : p08MatVec A output = p08VecAdd rhs backwardError
   backward_error_bound : ∀ i,
     |backwardError i| ≤
       u * p08MatVec C1 (p08AbsAction A output) i
 
-/-- A source-linked execution of section 4's column-pivoted iterative
+/-- A source-level execution of section 4's column-pivoted iterative
 refinement. Index `m` on `iterate`, `computedResidual`, and `correction`
-denotes the paper's `x_m`, `r_m`, and `d_m`. -/
+denotes the paper's `x_m`, `r_m`, and `d_m`. The displayed solve interface and
+the update error `h_(m+1)` are retained without choosing minor implementation
+details that the paper leaves unspecified. -/
 structure P08IterativeRefinementRun (n : ℕ) where
   dimension_pos : 0 < n
   precision : P08ResidualPrecision
   u : ℝ
   u_pos : 0 < u
   dimension_roundoff_small : (n : ℝ) * u ≤ 1 / 100
-  workingModel : P08ScalarArithmeticModel
-  working_roundoff : workingModel.unitRoundoff = u
-  residualModel : P08ScalarArithmeticModel
-  residual_roundoff :
-    residualModel.unitRoundoff = p08ResidualUnitRoundoff precision u
-  convert : ℝ → ℝ
-  conversion_model : ∀ x, ∃ delta, |delta| ≤ u ∧
-    convert x = x * (1 + delta)
   A : Fin n → Fin n → ℝ
   Ainv : Fin n → Fin n → ℝ
   inverse_left : p08MatMul Ainv A = p08IdMatrix n
@@ -261,7 +120,7 @@ structure P08IterativeRefinementRun (n : ℕ) where
   exact_system : p08MatVec A exactSolution = b
   C1 : Fin n → Fin n → ℝ
   C1_nonnegative : p08MatNonnegative C1
-  initialSolve : P08ColumnPivotedSolveCertificate workingModel A b C1 u
+  initialSolve : P08ColumnPivotedSolveCertificate A b C1 u
   iterate : ℕ → Fin n → ℝ
   computedResidual : ℕ → Fin n → ℝ
   correction : ℕ → Fin n → ℝ
@@ -269,16 +128,16 @@ structure P08IterativeRefinementRun (n : ℕ) where
   iterate_one : iterate 1 = initialSolve.output
   residual_zero : computedResidual 0 = fun i ↦ -b i
   correction_zero : correction 0 = fun i ↦ -iterate 1 i
-  residualTrace : ∀ m,
-    P08SubtractionLastResidualTrace precision residualModel convert
-      A b (iterate (m + 1))
-  residual_trace_output : ∀ m,
-    computedResidual (m + 1) = (residualTrace m).output
   correctionSolve : ∀ m,
-    P08ColumnPivotedSolveCertificate workingModel A (computedResidual m) C1 u
-  correction_output : ∀ m, correction m = (correctionSolve m).output
-  update_computation : ∀ m i,
-    iterate (m + 1) i = workingModel.flSub (iterate m i) (correction m i)
+    P08ColumnPivotedSolveCertificate A (computedResidual (m + 1)) C1 u
+  correction_output : ∀ m,
+    correction (m + 1) = (correctionSolve m).output
+  updateError : ℕ → Fin n → ℝ
+  update_equation : ∀ m,
+    iterate (m + 1) = p08VecAdd (p08VecSub (iterate m) (correction m))
+      (updateError (m + 1))
+  update_error_bound : ∀ m i,
+    |updateError (m + 1) i| ≤ u * |iterate m i - correction m i|
 
 /-- Skeel's exact residual `q_(m+1) = A(x_m-d_m)-b`. The Lean index `m`
 is the paper's iteration index, so no artificial `q_0` is introduced. -/
@@ -541,9 +400,10 @@ noncomputable def p08Lemma43Bound {n : ℕ}
       (p08Lemma43InitialVector constants))
     (p08Lemma43StationaryVector constants)
 
-/-- Local residual-accumulation and correction-solve errors used in the proofs
-of Lemmas 4.1 and 4.2.  This records the two operation-level error relations;
-it does not contain either lemma, the Lemma 4.3 recurrence, or its conclusion. -/
+/-- The residual-accumulation error `f_m` and correction-solve error `g_m`
+used in the proof of Lemma 4.1. These are the source's displayed analytic
+interfaces; they do not contain Lemma 4.1, Lemma 4.2, the Lemma 4.3
+recurrence, or its conclusion. -/
 structure P08Lemma43RoundoffAnalysis {n : ℕ}
     (run : P08IterativeRefinementRun n)
     (norm : P08AbsoluteMonotoneNorm n)
@@ -567,10 +427,14 @@ structure P08Lemma43RoundoffAnalysis {n : ℕ}
       run.u *
         |p08MatVec run.A
           (p08VecSub (run.iterate m) run.exactSolution) i|
+  correctionError : ℕ → Fin n → ℝ
+  correction_equation : ∀ m,
+    p08MatVec run.A (run.correction m) =
+      p08VecAdd (run.computedResidual m) (correctionError m)
   correction_error_bound :
     constants.c1 * run.u * p08KappaInverse run norm ≤ 1 / 2 →
       ∀ m i,
-        |(run.correctionSolve m).backwardError i| ≤
+        |correctionError m i| ≤
           run.u * p08MatVec
             (p08MatMul constants.C2 (p08AbsMatrix run.A))
             (p08AbsVec

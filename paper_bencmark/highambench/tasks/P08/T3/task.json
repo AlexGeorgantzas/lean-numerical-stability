@@ -1,18 +1,19 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, operational algorithm linkage, dimension-only constants, local roundoff analysis, and full finite Lemma 4.3 reconstruction",
+    "kind": "source selection, tier label, source-level algorithm linkage, dimension-only constants, local roundoff analysis, and full finite Lemma 4.3 reconstruction",
     "performed_by": "Codex"
   },
   "assumptions": [
     "The system dimension n is positive, A is nonsingular with a two-sided inverse Ainv, and x is the exact solution of A*x=b.",
-    "The iterates, computed residuals, and corrections form the paper's column-pivoted iterative-refinement run, including x_0=0, r_0=-b, d_0=-x_1, and computed x_(m+1)=x_m-d_m.",
-    "The residual subtraction is performed last; residual accumulation is single precision with ubar=u or double precision with ubar=u^2 followed by conversion to working precision.",
-    "The positive working unit roundoff satisfies n*u<=0.01, every represented operation is a well-defined real result, and the operation and conversion traces satisfy the paper's relative-error model.",
-    "Every initial and correction solve carries an operational Gaussian-elimination trace that selects the largest active entry in each next column, performs rounded elimination updates, and finishes with rounded back substitution; its output satisfies the source componentwise backward-error certificate with nonnegative C_1.",
+    "The iterates, computed residuals, and corrections form the paper's column-pivoted iterative-refinement run. The actual solves and updates start at m=1; x_0=0, r_0=-b, and d_0=-x_1 are auxiliary definitions only.",
+    "The residual subtraction is performed last; residual accumulation is single precision with ubar=u or double precision with ubar=u^2 followed by conversion to working precision, as captured by the displayed residual-error equation and bound.",
+    "The positive working unit roundoff satisfies n*u<=0.01, and all represented floating-point results are assumed well-defined.",
+    "The initial solve and each positive-index correction use the paper's displayed componentwise column-pivoted-solve certificate with nonnegative C_1; no unspecified pivot-state or back-substitution implementation is imposed.",
+    "The rounded update is represented by x_(m+1)=x_m-d_m+h_(m+1) with the source componentwise bound |h_(m+1)|<=u*|x_m-d_m|.",
     "The chosen vector norm is absolute, monotone, normalized on basis vectors, and extended to its induced matrix norm; kappa(Ainv)=||abs(A)*abs(Ainv)||.",
     "C_2,C_6,...,C_12 and c_1,c_3,c_4,c_5,c_8 satisfy the exact definitions and nonnegativity properties printed in the Notes on pages 823, 826, and 827, and explicit scalar and entrywise envelopes bound them by functions of n fixed before A and b.",
-    "The residual-accumulation error equation and its operation-level componentwise bound, together with the equation-(3.1) correction-error bound, are available; Lemma 4.1, Lemma 4.2, the page-827 recurrence, and the Lemma 4.3 conclusion are not assumed.",
+    "The residual-accumulation error equation and its componentwise bound, together with the equation-(3.1) correction-error equation and bound, are available; Lemma 4.1, Lemma 4.2, the page-827 recurrence, and the Lemma 4.3 conclusion are not assumed.",
     "The final smallness condition is c_8*u*kappa(Ainv)<=1/2; c_1<=c_8 supplies the earlier Lemma 4.1 condition."
   ],
   "author_label": "Lemma 4.3",
@@ -49,7 +50,7 @@
       "NumStability.matMulVec_matMul",
       "NumStability.matPow_nonneg"
     ],
-    "note": "The mounted MatrixAlgebra module supplies generic matrix-action associativity and matrix-power nonnegativity. It does not contain Skeel's column-pivoted execution, residual and correction error derivations, exact q residual, precision-dependent ubar, dimension-only source constants, Lemma 4.1/4.2 reconstruction, or four-term Lemma 4.3 induction."
+    "note": "The mounted MatrixAlgebra module supplies generic matrix-action associativity and matrix-power nonnegativity. It does not contain Skeel's column-pivoted solve interface, residual and correction error derivations, exact q residual, precision-dependent ubar, dimension-only source constants, Lemma 4.1/4.2 reconstruction, or four-term Lemma 4.3 induction."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
@@ -59,9 +60,6 @@
     "p08AbsMatrix",
     "p08AbsVec",
     "p08ResidualUnitRoundoff",
-    "P08ScalarArithmeticModel",
-    "P08SubtractionLastResidualTrace",
-    "P08ColumnPivotedGaussianEliminationTrace",
     "P08ColumnPivotedSolveCertificate",
     "P08IterativeRefinementRun",
     "p08ExactResidualAfterCorrection",
