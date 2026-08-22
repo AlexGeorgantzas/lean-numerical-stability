@@ -2,88 +2,64 @@
   "accepted": false,
   "adjudicated": true,
   "adjudication_reasons": [
-    "direct judge requested adjudication",
+    "judge classifications differ",
     "round-trip judge requested adjudication",
-    "direct D006 is unclear",
-    "direct D024 is unclear",
-    "direct D025 is unclear",
-    "direct D081 is unclear",
-    "direct S07 is unclear",
-    "direct S14 is unclear",
-    "round-trip S07 is unclear",
-    "round-trip S14 is unclear"
+    "round-trip judge classification is undetermined",
+    "round-trip S14 is unclear",
+    "round-trip S16 is unclear"
   ],
   "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-21T22:53:00.863050+00:00",
+  "completed_at_utc": "2026-08-22T12:29:46.464577+00:00",
   "findings": [
     {
-      "category": "floating-point execution model",
-      "evidence": "Equation (2.5) applies error u to individual scalar operations. Equation (4.3) and Theorem 4.4 perturb operands and product contributions separately. D056, D067, D068, and D083 instead require one relative perturbation of complete residuals or matrix results.",
-      "impact": "Cancellation can make a paper-valid execution fail the Lean trace, while the abstract trace need not correspond to any operation-level run.",
+      "category": "algorithm-indexing",
+      "evidence": "Algorithms 1 and 2 update A_(k,i) using sum_{j<k} L_(k,j)U_(j,i). D067-D068 call D088 with target arguments (k,i), and D088 sums over j<i, thereby retaining the current j=k term.",
+      "impact": "The formal completion predicates do not denote either algorithm named by Theorem 4.5, which defeats both implications.",
       "severity": "critical"
     },
     {
-      "category": "BLR representation",
-      "evidence": "Equations (2.3)-(2.4) require orientation-specific truncated-SVD factors, orthonormal X columns, and the minimum threshold-satisfying rank. D049 requires only an unrestricted XY^T witness and a norm bound.",
-      "impact": "Lean admits approximation structures outside the paper's BLR and compression model.",
+      "category": "matrix-triangular-solve-model",
+      "evidence": "Equations (2.9), (4.4), and (4.19) use residual perturbations. D090-D091 instead require (T+E)X=rhs or X(T+E)=rhs with a single bounded E.",
+      "impact": "The formal relation is a restricted special case and can exclude valid paper executions; reduced applicability is not theorem strength.",
       "severity": "major"
     },
     {
-      "category": "quantifier and premise scope",
-      "evidence": "D028 packages Atilde, factors, solutions, errors, and traces uniformly for every admissible u and epsilon and assumes the component perturbation theorems as fields.",
-      "impact": "The target is a composition lemma over pre-certified families, not the paper's theorem for each successful computed execution. The added hypotheses reduce applicability rather than provide genuine stronger coverage.",
+      "category": "quantifier-scope",
+      "evidence": "The paper result is conditional on one completed computation whose r is determined by its factors. D028 requires one fixed-r family and prior factor and solve bounds for every admissible u and epsilon.",
+      "impact": "The declaration is a conditional family-level composition theorem rather than an equivalent formalization of the paper's pointwise algorithm theorem.",
       "severity": "major"
     },
     {
-      "category": "triangular-solve dependency",
-      "evidence": "Theorem 4.4 uses c_tri=b+r^(3/2)+p. D028 permits lowerError and upperError up to gamma_c with c=b+2r^(3/2)+p and does not require invertible diagonal blocks in D056.",
-      "impact": "Some Lean-certified solve perturbations need not be outputs of the paper's triangular-solve theorem or successful block substitutions.",
-      "severity": "major"
-    },
-    {
-      "category": "precision regime",
-      "evidence": "Printed page 955 assumes u is safely smaller than epsilon without a ratio. D017 substitutes the exact condition u<epsilon.",
-      "impact": "Lean can admit parameter regimes not justified by the stated source assumption.",
-      "severity": "major"
-    },
-    {
-      "category": "source notation",
-      "evidence": "Theorem 4.5 opens with A_tilde and A_tilde x=v but switches to A in equations (4.23)-(4.24) and its proof.",
-      "impact": "Lean's separation of A and Atilde is plausible, but its precise execution linkage cannot be certified from the source.",
+      "category": "precision-regime",
+      "evidence": "The paper assumes u is safely smaller than epsilon, while D017 states only u<epsilon together with gamma validity.",
+      "impact": "The exact admissible regime is not faithfully specified, although the source itself leaves the safety margin qualitative.",
       "severity": "minor"
     },
     {
-      "category": "higher-order terms",
-      "evidence": "D020 and D021 match the exact products on printed page 975, but D024 and D025 fix signs, uniform limit cones, and hidden scales absent from equations (4.24)-(4.25).",
-      "impact": "These predicates add unstated formal commitments and obstruct paper_implies_lean, although they are not the decisive reason for the final classification.",
-      "severity": "minor"
-    },
-    {
-      "category": "displayed conclusion and nonvacuity",
-      "evidence": "The target preserves equations (4.23)-(4.25), Frobenius and Euclidean norms, c, gamma_(3c), all four xi values, and the exact perturbation compositions. Exact identity data with b=p=1 and r=0 can inhabit the run type.",
-      "impact": "The target is nonvacuous and its visible final formulas are accurate; rejection concerns its surrounding semantic domain.",
+      "category": "higher-order-and-vacuity",
+      "evidence": "D020-D021 preserve the exact product terms from printed page 975, and the explicit b=p=1, r=0 identity family inhabits D028 with nonempty admissible parameters.",
+      "impact": "The target neither omits the higher-order products nor succeeds merely by vacuity; these facts do not repair the execution-model mismatch.",
       "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean theorem applies only to uniform certified families satisfying aggregate result-relative rounding traces. Cancellation-valid paper executions need not satisfy those traces or extend to such a family, so Lean does not establish Theorem 4.5 over the paper's full execution domain.",
+      "reasoning": "Using the Lean theorem to establish the paper theorem would require embedding every actual Algorithm 1 or 2 computation into the formal run type. The upper-row update in D067-D068/D088 uses j<i instead of j<k, the matrix solve certificates impose a special coefficient-perturbation form, and the run requires a fixed-r family over all admissible parameters. Thus the Lean statement does not cover the paper's execution domain.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper does not supply the uniform family, exact D024/D025 witnesses, or aggregate trace certificates. Conversely, D049 and the larger solve-error allowance admit abstract records outside the paper's truncated-SVD and Theorem 4.4 interfaces.",
+      "reasoning": "A formal run is not guaranteed to be an execution of Algorithm 1 or 2 because its upper update includes the current j=k product. Moreover, the paper's residual matrix-solve bounds do not imply the common coefficient perturbations required by D090-D091, and its pointwise theorem does not supply the declaration's all-parameter fixed-r family. The paper theorem therefore does not entail the Lean proposition.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
     "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-different"
+    "roundtrip": "undetermined"
   },
-  "rationale": "Primary evidence confirms that the Lean target reproduces the visible backward-error relation, both principal bounds, norms, constants, Table 1 cases, and exact perturbation products. It nevertheless changes the theorem's domain in opposing ways. Uniform family and aggregate-rounding requirements exclude valid paper executions, while the weakened BLR representation, looser triangular-solve interface, and pre-assumed perturbation fields admit abstract records not certified by the paper. The big-O choices are defensible but not compelled, and the A-versus-Atilde notation remains genuinely uncertain. These uncertainties do not prevent classification because the independent execution and representation defects already make both implications fail. The theorem is nonvacuous, but its added hypotheses are reduced applicability rather than genuine stronger coverage.",
+  "rationale": "The declaration accurately preserves the final perturbed equation, Frobenius and Euclidean norms, c, gamma indices, all four xi values, both displayed remainders, and the exact perturbation compositions. Its unfolded execution domain is nevertheless different from the paper's: upper updates use the wrong predecessor cutoff, matrix triangular solves use a non-equivalent restricted relation, and one fixed-r all-precision family with prior bounds is required. These are substantive antecedent and algorithm changes, not genuine nonvacuous strengthening. Since neither statement entails the other, the correct classification is not-faithful-different.",
   "remaining_uncertainties": [
-    "Theorem 4.5 itself uses A_tilde in its opening system but A in equations (4.23)-(4.24) and the proof; the source does not uniquely determine D028's A-versus-Atilde linkage.",
-    "The hidden constants, parameter dependence, and scales in O(u*epsilon) and O(u^2) are not explicitly defined. D024 and D025 are defensible choices but not uniquely compelled.",
-    "The qualitative phrase that u is safely smaller than epsilon has no stated numerical interpretation, so it cannot be identified exactly with u<epsilon."
+    "The PDF does not specify constants, signs, parameter dependence, or uniformity for O(u epsilon) and O(u^2), so reverse equivalence between the informal notation and the exact predicates D024-D025 is not textually determined.",
+    "The paper gives no quantitative meaning for 'u safely smaller than epsilon', so the exact intended margin beyond u<epsilon cannot be recovered."
   ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",

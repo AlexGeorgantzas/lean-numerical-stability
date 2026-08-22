@@ -8,7 +8,7 @@
       "anchor": "Section 2.1, equations (2.2)-(2.4)",
       "pdf_page": 3,
       "printed_page": "953",
-      "role": "dense A versus BLR representation Atilde, equation-(2.3) factor orientation, orthonormal X columns, minimum per-block ranks, local/global threshold scales, and Frobenius norm convention",
+      "role": "dense A versus BLR representation Atilde, per-block ranks, dimensions, local/global threshold scales, and Frobenius norm convention",
       "section": "2.1 Block low-rank matrices"
     },
     {
@@ -57,7 +57,7 @@
       "anchor": "Theorem 4.4, equations (4.21)-(4.22)",
       "pdf_page": 23,
       "printed_page": "973",
-      "role": "ordered BLR triangular-solve product, summation, and diagonal-solve perturbations; c_tri = b + r^(3/2) + p; and the aggregate equation-(4.21) bounds",
+      "role": "ordered BLR triangular-solve perturbation equations and bounds",
       "section": "4.3 BLR triangular systems"
     },
     {
