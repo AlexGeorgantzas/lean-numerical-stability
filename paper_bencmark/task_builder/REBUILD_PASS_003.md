@@ -6,22 +6,18 @@
 - Baseline status: completed, with 59 fully validated eligible results
 - Pass-3 scope: the 25 fully validated Audit 2 results that were not accepted
 - Processing order: the order in the ledger below
-- Active task: none; reachable Builder work is complete
+- Active task: none; Builder work is complete
 - Rebuilds started: 25/25
-- Rebuilds committed and pushed: 22/25
-- Pass-3 audits accepted: 0/25
+- Rebuilds committed and pushed: 25/25
+- Corrected-source audit exclusions: 2 (`P07-T2`, `P16-T2`)
+- Pass-3 audits accepted: 0/23 eligible tasks
 
-`P04-T1`, `P04-T2`, `P05-T1`, `P05-T2`, `P05-T3`, and `P06-T1` have been
-rebuilt and pushed. `P07-T2` is blocked on source clarification; `P08-T3`,
-`P09-T2`, `P09-T3`, `P10-T1`, and `P10-T2` have also been rebuilt and pushed,
-`P10-T3` is blocked by a contradiction in the printed first-order recurrence,
-`P11-T1`, `P11-T3`, `P12-T2`, and `P12-T3` have been rebuilt and pushed, and
-`P15-T3` has been rebuilt and pushed. `P16-T2` is blocked by a missing
-iterate-comparison hypothesis in the printed recurrence, `P16-T3` has been
-rebuilt and pushed, and `P18-T1` and `P18-T3` have been rebuilt and pushed.
-`P19-T2`, `P19-T3`, and `P20-T3` have been rebuilt and pushed. The remaining
-three tasks are the source-blocked tasks documented below; no reachable
-pass-3 rebuild remains pending.
+All 25 tasks have dedicated rebuild commits on the remote branch. The project
+owner resolved the three former source blocks: `P07-T2` and `P16-T2` retain
+their cited results as explicitly project-corrected tasks and are excluded from
+ordinary faithfulness scoring, while `P10-T3` was reselected to the valid exact
+block-inverse reduction in the proof of Theorem 3.3. The decisions and source
+evidence are documented below.
 
 ## Operating rules
 
@@ -54,6 +50,8 @@ pass-3 rebuild remains pending.
 - `audit-pending`: an independent pass-3 audit has been requested or started.
 - `accepted`: the validated pass-3 audit accepted the rebuilt task.
 - `rebuild-again`: the validated pass-3 audit did not accept the rebuilt task.
+- `excluded-source-defect`: the owner-retained corrected task is outside the
+  ordinary faithfulness denominator under a source-validity record.
 
 ## Ledger
 
@@ -70,19 +68,19 @@ Audit 2 versions.
 | 4 | `P05-T2` | `not-faithful-different` | `no / no` | `eb1f4d90e3fd` | [decision](../highambench/tasks/P05/T2/faithfulness/decision.json), [report](../highambench/tasks/P05/T2/faithfulness/report.md) | `rebuilt-pushed` | `5eff63450` | - |
 | 5 | `P05-T3` | `not-faithful-weaker` | `no / yes` | `406fab50515a` | [decision](../highambench/tasks/P05/T3/faithfulness/decision.json), [report](../highambench/tasks/P05/T3/faithfulness/report.md) | `rebuilt-pushed` | `47d060c99` | - |
 | 6 | `P06-T1` | `not-faithful-weaker` | `no / yes` | `be015f6d50ce` | [decision](../highambench/tasks/P06/T1/faithfulness/decision.json), [report](../highambench/tasks/P06/T1/faithfulness/report.md) | `rebuilt-pushed` | `23ca8a94f` | - |
-| 7 | `P07-T2` | `not-faithful-weaker` | `no / yes` | `cef9fdfaa43e` | [decision](../highambench/tasks/P07/T2/faithfulness/decision.json), [report](../highambench/tasks/P07/T2/faithfulness/report.md) | `blocked` | - | source contradiction documented below |
+| 7 | `P07-T2` | `not-faithful-weaker` | `no / yes` | `cef9fdfaa43e` | [decision](../highambench/tasks/P07/T2/faithfulness/decision.json), [report](../highambench/tasks/P07/T2/faithfulness/report.md) | `rebuilt-pushed` | `dab184314` | `excluded-source-defect` |
 | 8 | `P08-T3` | `not-faithful-different` | `no / no` | `b172c68f6218` | [decision](../highambench/tasks/P08/T3/faithfulness/decision.json), [report](../highambench/tasks/P08/T3/faithfulness/report.md) | `rebuilt-pushed` | `e2fcbfdcb` | - |
 | 9 | `P09-T2` | `not-faithful-different` | `no / no` | `d184164e2187` | [decision](../highambench/tasks/P09/T2/faithfulness/decision.json), [report](../highambench/tasks/P09/T2/faithfulness/report.md) | `rebuilt-pushed` | `89fa203cc` | - |
 | 10 | `P09-T3` | `not-faithful-different` | `no / no` | `6b8ca8416867` | [decision](../highambench/tasks/P09/T3/faithfulness/decision.json), [report](../highambench/tasks/P09/T3/faithfulness/report.md) | `rebuilt-pushed` | `85d54831c` | - |
 | 11 | `P10-T1` | `not-faithful-weaker` | `no / yes` | `624ef97f4f9f` | [decision](../highambench/tasks/P10/T1/faithfulness/decision.json), [report](../highambench/tasks/P10/T1/faithfulness/report.md) | `rebuilt-pushed` | `c49e920af` | - |
 | 12 | `P10-T2` | `not-faithful-different` | `no / no` | `ceb4251350f7` | [decision](../highambench/tasks/P10/T2/faithfulness/decision.json), [report](../highambench/tasks/P10/T2/faithfulness/report.md) | `rebuilt-pushed` | `3e42b5a31` | - |
-| 13 | `P10-T3` | `not-faithful-different` | `no / no` | `c985025981ec` | [decision](../highambench/tasks/P10/T3/faithfulness/decision.json), [report](../highambench/tasks/P10/T3/faithfulness/report.md) | `blocked` | - | source contradiction documented below |
+| 13 | `P10-T3` | `not-faithful-different` | `no / no` | `c985025981ec` | [decision](../highambench/tasks/P10/T3/faithfulness/decision.json), [report](../highambench/tasks/P10/T3/faithfulness/report.md) | `rebuilt-pushed` | `a484b0274` | - |
 | 14 | `P11-T1` | `not-faithful-weaker` | `no / yes` | `fd63257e85de` | [decision](../highambench/tasks/P11/T1/faithfulness/decision.json), [report](../highambench/tasks/P11/T1/faithfulness/report.md) | `rebuilt-pushed` | `b8e484e7f` | - |
 | 15 | `P11-T3` | `not-faithful-different` | `no / no` | `9e89faf58c92` | [decision](../highambench/tasks/P11/T3/faithfulness/decision.json), [report](../highambench/tasks/P11/T3/faithfulness/report.md) | `rebuilt-pushed` | `34773e2fa` | - |
 | 16 | `P12-T2` | `not-faithful-weaker` | `no / yes` | `b7d3d843d9a0` | [decision](../highambench/tasks/P12/T2/faithfulness/decision.json), [report](../highambench/tasks/P12/T2/faithfulness/report.md) | `rebuilt-pushed` | `deff8248e` | - |
 | 17 | `P12-T3` | `not-faithful-weaker` | `no / yes` | `c3afb57814be` | [decision](../highambench/tasks/P12/T3/faithfulness/decision.json), [report](../highambench/tasks/P12/T3/faithfulness/report.md) | `rebuilt-pushed` | `16d97346f` | - |
 | 18 | `P15-T3` | `not-faithful-different` | `no / no` | `74f8c0a42173` | [decision](../highambench/tasks/P15/T3/faithfulness/decision.json), [report](../highambench/tasks/P15/T3/faithfulness/report.md) | `rebuilt-pushed` | `779eb38a8` | - |
-| 19 | `P16-T2` | `not-faithful-weaker` | `no / yes` | `e2edb9b4c0cd` | [decision](../highambench/tasks/P16/T2/faithfulness/decision.json), [report](../highambench/tasks/P16/T2/faithfulness/report.md) | `blocked` | - | source contradiction documented below |
+| 19 | `P16-T2` | `not-faithful-weaker` | `no / yes` | `e2edb9b4c0cd` | [decision](../highambench/tasks/P16/T2/faithfulness/decision.json), [report](../highambench/tasks/P16/T2/faithfulness/report.md) | `rebuilt-pushed` | `10590dee8` | `excluded-source-defect` |
 | 20 | `P16-T3` | `not-faithful-different` | `no / no` | `40fd4df778a1` | [decision](../highambench/tasks/P16/T3/faithfulness/decision.json), [report](../highambench/tasks/P16/T3/faithfulness/report.md) | `rebuilt-pushed` | `d5b6f62e8` | - |
 | 21 | `P18-T1` | `undetermined` | `unclear / no` | `ec13f9585b76` | [decision](../highambench/tasks/P18/T1/faithfulness/decision.json), [report](../highambench/tasks/P18/T1/faithfulness/report.md) | `rebuilt-pushed` | `266f923d6` | - |
 | 22 | `P18-T3` | `not-faithful-weaker` | `no / yes` | `b1616ce83dca` | [decision](../highambench/tasks/P18/T3/faithfulness/decision.json), [report](../highambench/tasks/P18/T3/faithfulness/report.md) | `rebuilt-pushed` | `ae1521f6b` | - |
@@ -90,7 +88,7 @@ Audit 2 versions.
 | 24 | `P19-T3` | `not-faithful-weaker` | `no / yes` | `01678017bf60` | [decision](../highambench/tasks/P19/T3/faithfulness/decision.json), [report](../highambench/tasks/P19/T3/faithfulness/report.md) | `rebuilt-pushed` | `fc9da3a86` | - |
 | 25 | `P20-T3` | `not-faithful-different` | `no / no` | `d1ca8c6b6626` | [decision](../highambench/tasks/P20/T3/faithfulness/decision.json), [report](../highambench/tasks/P20/T3/faithfulness/report.md) | `rebuilt-pushed` | `1475db430` | - |
 
-## Blocked Task Evidence
+## Resolved Source Decisions
 
 ### P07-T2
 
@@ -104,12 +102,13 @@ also requires perturbed full column rank (or an equivalent product rule), but
 equation (3.9) places no bound on `DeltaYHat` and the paper states neither
 condition.
 
-Audit 2 consequently rejected the current normal-equation formalization as
-strictly weaker than both printed claims. Rebuilding either printed claim
-would require adding an unprinted range/rank hypothesis; retaining the valid
-factorization and norm estimate would require narrowing the selected source.
-Both choices require project-owner approval under operating rule 8. No P07-T2
-construction files were changed in pass 3.
+Audit 2 consequently rejected the normal-equation formalization as strictly
+weaker than both printed claims. The project owner approved retaining Theorem
+3.5 as a corrected source result. Commit `dab184314` adds perturbed full-column
+rank and perturbed-right-hand-side consistency, proves the actual product
+pseudoinverse and exact perturbed system, and preserves the four-term norm
+budget. Its [source-validity record](../faithfulness_audit/source_validity/P07-T2.md)
+documents the correction; ordinary faithfulness scoring is excluded.
 
 ### P10-T3
 
@@ -130,13 +129,13 @@ error, so the paper's stated suppression of higher-order terms does not remove
 them. The published paper, the authors' final copy, and the arXiv version all
 print the same step; no correction was found.
 
-A sound operational rebuild can use the corrected recurrence and still derive
-a logarithmic-stability result, but it cannot retain the selected equation-(20)
-bound. Retaining equation (20) instead requires assuming the unsupported
-simplification and would reproduce Audit 2's critical assumed-local-analysis
-failure. Either changing the selected source claim or formalizing a corrected
-variant requires project-owner approval under operating rule 8. No P10-T3
-construction files were changed in pass 3.
+A sound operational rebuild could use a corrected recurrence, but it could not
+retain equation (20). The project owner instead approved source reselection.
+Commit `a484b0274` selects the valid unnumbered block inverse in the converse
+proof of Theorem 3.3, PDF page 12 / printed page 70. The new target proves both
+inverse directions and extracts `A*B` from the upper-right block. It does not
+overlap P10-T1 or P10-T2, which both select first-order content from equation
+(8). The rebuilt task remains eligible for an independent pass-3 audit.
 
 ### P16-T2
 
@@ -154,18 +153,24 @@ residual in (4.14) is zero, and every required coefficient is nonnegative.
 Equation (4.15), however, reduces to `1 lesssim epsilonR`, which is not a
 first-order consequence as `epsilonR` becomes small.
 
-Audit 2 already rejected making the missing iterate comparison an explicit
-Lean hypothesis because that narrows the printed lemma. The exact expanded
-inequality immediately following (4.18) is valid without it, but selecting
-that bound instead of (4.15) is a source reselection. Either correction
-requires project-owner approval under operating rule 8. No P16-T2
-construction files were changed in pass 3.
+Audit 2 rejected the previous target as weaker because it already depended on
+this unprinted condition and imposed one particular asymptotic interpretation.
+The project owner approved retaining Lemma 4.2 as a corrected source result.
+Commit `10590dee8` removes the comparison from the printed-step certificate and
+makes it an explicit theorem premise, then derives exact identity (4.18) and
+recurrence (4.15). Its
+[source-validity record](../faithfulness_audit/source_validity/P16-T2.md)
+documents the correction; ordinary faithfulness scoring is excluded.
 
 ## End-of-pass checkpoint
 
-The Builder phase ended with 22 rebuilt-and-pushed tasks and three documented
-source blocks. Independent pass-3 audits are still pending for the rebuilt
-tasks. After those audits and the three owner decisions are settled, use
-`WORKFLOW.md` to reconcile semantic metadata, regenerate corpus-wide hashes
-once, validate the settled construction snapshot, and commit the generated
-metadata separately.
+The Builder phase ended with all 25 tasks rebuilt and pushed. Independent
+pass-3 audits remain pending for the 23 eligible tasks; `P07-T2` and `P16-T2`
+are excluded under their source-validity records.
+
+Corpus-wide controlled manifests, release hashes, environment identity, and
+run order remain intentionally stale during this rebuild/audit cycle. After
+the independent audits and any resulting repairs are settled, use
+`WORKFLOW.md` to reconcile semantic metadata, regenerate those hashes once,
+validate the construction snapshot, and commit the generated metadata
+separately. Benchmark measurements remain forbidden before that checkpoint.
