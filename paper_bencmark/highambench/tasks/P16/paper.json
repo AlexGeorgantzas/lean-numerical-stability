@@ -86,7 +86,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 6.3's fixed-run actual-error convergence for a fully stored mixed-precision restarted MGS-GMRES execution: retain the high-precision residual/update models, operational low-precision MGS-Arnoldi correction, restart-dependent key dimensions, columnwise least-squares model, actual inverse, Theorem 4.1 boundary, uniform c(n,k) envelope, both attainable floors, and the geometric consequences of the two affine recurrences.",
+      "decision": "Use Theorem 6.3's fixed-run actual-error contraction for a fully stored mixed-precision restarted MGS-GMRES execution: retain the high-precision residual/update models, operational low-precision MGS-Arnoldi correction and residual initialization, restart-dependent key dimensions, columnwise least-squares model, actual inverse, dimension-only c(n,k_i), and both attainable floors; formalize the first-order displays by exact affine inequalities without an unprinted stationary denominator.",
       "task_id": "P16-T3",
       "theorem_name": "p16_t3_mixed_precision_geometric_convergence"
     }
@@ -95,7 +95,7 @@
   "selection_policy": [
     "Use results proved in this paper and exact consequences of their displayed hypotheses, not empirical or prospective discussions.",
     "Expose the paper's Euclidean/Frobenius normwise structure with finite-dimensional paper-scoped definitions.",
-    "For fixed-run first-order claims, retain explicit second-order remainders with one bound uniform over all restart indices, and make every restart-dependent quantity and key dimension explicit where the source supplies contraction claims.",
+    "For fixed-run first-order claims, either retain a source-supported higher-order semantics or state an exact strengthening explicitly; do not invent fixed-precision remainder certificates or stationary factors absent from the selected result, and keep every restart-dependent quantity and key dimension explicit.",
     "Keep every public definition paper-scoped and free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."
   ],

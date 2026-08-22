@@ -1,19 +1,18 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, fixed-run first-order semantics, operational mixed-precision restarted MGS-GMRES contract, and formal composition and iteration of Theorem 6.3",
+    "kind": "source selection, tier label, fixed-run first-order strengthening, operational mixed-precision restarted MGS-GMRES contract, and formal composition of Theorem 6.3",
     "performed_by": "Codex"
   },
   "assumptions": [
     "The dimension is positive; A is nonsingular; b is nonzero; xExact solves A*xExact=b; and Ainv has both inverse actions, so kappa_F(A)=||Ainv||_F*||A||_F uses the actual inverse.",
-    "One fixed execution uses the same positive unit roundoffs uHigh and uLow at every restart, with uHigh <= uLow and valid gamma_n factors.",
+    "One fixed execution uses the same positive unit roundoffs uHigh and uLow at every restart; no separate uHigh <= uLow restriction is imposed because Theorem 6.3 does not print one.",
     "At every restart, the computed residual and update satisfy the exact high-precision equations (6.19) and (6.20), including their componentwise error bounds.",
-    "Every correction exposes the fully stored low-precision MGS projection, update, and normalization operations for a positive restart-dependent key dimension k_i <= n, together with the residual cast, Arnoldi product model, columnwise augmented least-squares model, and rounded correction formation.",
-    "Each low-precision operation error is tied to uLow, and witness forms of conditions (3.5)-(3.8) plus the coefficients in (3.12) bound the restart's modular accuracy by dimensionFactor*uLow.",
-    "The prior Theorem 4.1 result is recorded for the same computed quantities. Its factors, coefficients, and quadratic remainders may vary by restart; it does not assume the common contraction, final floors, or geometric conclusion proved by this target.",
-    "The nonnegative dimensionFactor uniformly represents the paper's unspecified c(n,k_i); no polynomial degree or evaluation at an artificial fixed key dimension is assumed.",
-    "The first-order iterate comparisons required by Theorem 4.1 are explicit, and every quadratic remainder has a single bound uniform over the fixed run.",
-    "Lambda=dimensionFactor*uLow*kappa_F(A) is a nonnegative strict contraction. The exact-real standard model excludes underflow, overflow, NaNs, and infinities."
+    "Every correction exposes the fully stored low-precision MGS projection, update, and normalization operations for a positive restart-dependent key dimension k_i <= n, identifies the cast residual with its norm times the first Arnoldi basis vector, and records the Arnoldi product, columnwise augmented least-squares, and rounded correction-formation models.",
+    "Each low-precision operation error is tied to uLow, and witness forms of conditions (3.5)-(3.8), the coefficients in (3.12), and the correction-level estimates inherited from the earlier MGS-GMRES analysis are explicit; no global Theorem 4.1 recurrence is stored.",
+    "A nonnegative bivariate polynomial represents the paper's dimension-only c(n,k), and each contraction and floor evaluates it at the actual restart key dimension k_i rather than at an artificial uniform index.",
+    "Every Lambda_i=c(n,k_i)*uLow*kappa_F(A) is a nonnegative strict contraction. The exact-real standard model excludes underflow, overflow, NaNs, and infinities.",
+    "The target gives exact affine inequalities as a strengthening of the paper's first-order lesssim notation; it does not introduce a fixed-precision remainder certificate or a stationary 1/(1-Lambda) denominator."
   ],
   "author_label": "Theorem 6.3",
   "classification_frozen_before_runs": false,
@@ -23,14 +22,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P16/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p16_t3_mixed_precision_geometric_convergence {n : Nat} (run : P16FixedMixedPrecisionGMRESRun n) (hLambda : 0 <= p16FixedMixedContraction run and p16FixedMixedContraction run < 1) : exists backwardRemainder forwardRemainder, the remainders are the run's Theorem 4.1 remainders, are uniformly second order, every actual backward and forward error obeys the common affine contraction, and both sequences obey the corresponding geometric envelope",
+    "lean_header": "theorem p16_t3_mixed_precision_geometric_convergence {n : Nat} (run : P16FixedMixedPrecisionGMRESRun n) (hLambda : forall i, 0 <= p16FixedMixedContraction run i and p16FixedMixedContraction run i < 1) : (forall i, actualBackwardError_(i+1) <= Lambda_i*actualBackwardError_i + backwardFloor_i) and (forall i, actualForwardError_(i+1) <= Lambda_i*actualForwardError_i + forwardFloor_i)",
     "namespace": "HighamBench",
-    "plain_language": "For one fixed-precision restarted MGS-GMRES execution, every actual normalized backward and relative forward error contracts by the common factor Lambda up to its high-precision floor and a uniform quadratic remainder; iterating these recurrences gives explicit geometric envelopes.",
+    "plain_language": "For one fixed-precision restarted MGS-GMRES execution, every actual normalized backward and relative forward error obeys the paper's restart-local low-precision contraction plus its corresponding high-precision attainable floor.",
     "target_file": "paper_bencmark/highambench/tasks/P16/T3/Target.lean",
     "theorem_name": "p16_t3_mixed_precision_geometric_convergence"
   },
-  "informal_proof": "For each restart, expand the modular accuracy formula (3.12), apply the uLow operation bounds and the dimension-factor inequality, and multiply by kappa_F(A) to dominate both Theorem 4.1 factors by Lambda. Bound the two high-precision coefficients by the displayed backward and forward floors. This yields the two affine recurrences with the recorded uniform quadratic remainders. Induct on the restart count, sum the geometric series, and use 0 <= Lambda < 1 to obtain both envelopes.",
-  "informal_statement": "Theorem 6.3's fixed-run convergence claim for actual mixed-precision restarted MGS-GMRES errors, with Lambda=c(n,k)uLow*kappa_F(A), backward floor c(n,k)uHigh, forward floor c(n,k)uHigh*kappa_F(A), and explicit uniform second-order terms.",
+  "informal_proof": "At each restart, use the high-precision residual and update equations to split the next actual backward and forward errors into the low-precision MGS correction defect and the high-precision roundoff contribution. Apply the correction-level estimates inherited from the earlier MGS-GMRES analysis and the normalized high-precision bounds, both evaluated with c(n,k_i), and add the inequalities.",
+  "informal_statement": "Theorem 6.3's fixed-run first-order contraction for actual mixed-precision restarted MGS-GMRES errors, with Lambda_i=c(n,k_i)uLow*kappa_F(A), backward floor c(n,k_i)uHigh, and forward floor c(n,k_i)uHigh*kappa_F(A).",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -68,9 +67,8 @@
     "p16BackwardError",
     "p16ForwardError",
     "p16AugmentedColumn",
-    "p16UniformSecondOrder",
-    "p16FixedGeometricEnvelope",
-    "P16Theorem41RestartResult",
+    "P16PolynomialFactor",
+    "p16PolynomialFactorValue",
     "P16FixedLowPrecisionMGSRestart",
     "P16FixedMixedPrecisionGMRESRun",
     "p16FixedMixedContraction",
@@ -120,7 +118,7 @@
   "task_id": "P16-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "The mounted condition-L library supplies only generic Euclidean and Frobenius norm facts useful while bounding coefficients. It contains no MGS-Arnoldi execution model, restart-dependent key-dimension framework, mixed-precision operation linkage, actual GMRES error definitions, affine-recurrence iterator, or Theorem 6.3 convergence theorem. Both conditions must establish the paper-specific coefficient bounds and geometric iteration, so the selected result remains an extension task.",
+  "tier_rationale": "The mounted condition-L library supplies only generic Euclidean and Frobenius norm facts useful in the residual and update decompositions. It contains no MGS-Arnoldi execution model, restart-dependent key-dimension framework, mixed-precision operation linkage, actual GMRES error definitions, or Theorem 6.3 composition theorem. Both conditions must establish the paper-specific actual-error split and combine the two precision regimes, so the selected result remains an extension task.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P16/T3/Target.lean",
     "mode": "shared automatic validator",

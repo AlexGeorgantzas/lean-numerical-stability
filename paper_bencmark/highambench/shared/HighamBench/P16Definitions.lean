@@ -412,66 +412,16 @@ def p16AugmentedColumn {n k : ℕ} (rhs : P16Vector n)
     (C : P16RectMatrix n k) (j : Fin (k + 1)) : P16Vector n :=
   Fin.cases rhs (fun q row ↦ C row q) j
 
-/-- A fixed-run interpretation of a uniformly negligible second-order term.
-The coefficient is selected once for the whole restart sequence, not after a
-particular restart. -/
-def p16UniformSecondOrder (uHigh uLow : ℝ)
-    (remainder : ℕ → ℝ) : Prop :=
-  ∃ C : ℝ, 0 ≤ C ∧
-    ∀ i : ℕ, |remainder i| ≤ C * (uHigh + uLow) ^ 2
-
-/-- Exact geometric consequence of a fixed affine contraction with a uniform
-quadratic remainder budget. -/
-def p16FixedGeometricEnvelope (lambda floor uHigh uLow : ℝ)
-    (remainder error : ℕ → ℝ) : Prop :=
-  ∃ C : ℝ, 0 ≤ C ∧
-    (∀ i : ℕ, |remainder i| ≤ C * (uHigh + uLow) ^ 2) ∧
-      ∀ m : ℕ,
-        error m ≤ lambda ^ m * error 0 +
-          (floor + C * (uHigh + uLow) ^ 2) / (1 - lambda)
-
-/-- The local Theorem 4.1 interface used by Theorem 6.3. Its factors and high
-precision coefficients remain restart-specific; P16-T3 must derive their
-common `c(n,k) u_low kappa_F(A)` envelope and the displayed floors. -/
-structure P16Theorem41RestartResult {n : ℕ}
-    (A Ainv : P16Matrix n) (b xExact xCurrent xNext : P16Vector n)
-    (uHigh modularAccuracy dimensionFactor : ℝ) where
-  backwardFactor : ℝ
-  forwardFactor : ℝ
-  backwardHighCoefficient : ℝ
-  forwardHighCoefficient : ℝ
-  backwardRemainder : ℝ
-  forwardRemainder : ℝ
-  backwardFactor_nonneg : 0 ≤ backwardFactor
-  forwardFactor_nonneg : 0 ≤ forwardFactor
-  backwardHighCoefficient_nonneg : 0 ≤ backwardHighCoefficient
-  forwardHighCoefficient_nonneg : 0 ≤ forwardHighCoefficient
-  backward_factor_le :
-    backwardFactor ≤ modularAccuracy * p16ConditionNumberF A Ainv
-  forward_factor_le :
-    forwardFactor ≤ modularAccuracy * p16ConditionNumberF A Ainv
-  backward_high_coefficient_le :
-    backwardHighCoefficient ≤ dimensionFactor
-  forward_high_coefficient_le :
-    forwardHighCoefficient ≤ dimensionFactor * p16ConditionNumberF A Ainv
-  backward_step :
-    p16BackwardError A b xNext ≤
-      backwardFactor * p16BackwardError A b xCurrent +
-        backwardHighCoefficient * uHigh + |backwardRemainder|
-  forward_step :
-    p16ForwardError xExact xNext ≤
-      forwardFactor * p16ForwardError xExact xCurrent +
-        forwardHighCoefficient * uHigh + |forwardRemainder|
-
 /-- One fixed-precision, fully stored MGS-GMRES correction solve at an outer
 restart. The raw fields encode the low-precision residual cast, MGS Arnoldi
 projection/update order, augmented-column least-squares model (3.3), rounded
-correction formation, and key-dimension conditions. The final field is only
-the prior Theorem 4.1 result for these same computed quantities. -/
+correction formation, and key-dimension conditions. The final two fields are
+the correction-level estimates inherited from the earlier MGS-GMRES analysis;
+they stop before the high-precision composition in Theorem 6.3. -/
 structure P16FixedLowPrecisionMGSRestart {n : ℕ}
     (A Ainv : P16Matrix n) (b xExact xCurrent xNext residualHat
       correctionHat : P16Vector n)
-    (uHigh uLow dimensionFactor : ℝ) where
+    (uLow : ℝ) (dimensionFactor : P16PolynomialFactor) where
   keyDimension : ℕ
   keyDimension_pos : 0 < keyDimension
   keyDimension_le : keyDimension ≤ n
@@ -524,6 +474,10 @@ structure P16FixedLowPrecisionMGSRestart {n : ℕ}
   residual_cast_equation : residualLow = residualHat + residualCastError
   residual_cast_bound :
     p16VecNorm residualCastError ≤ uLow * p16VecNorm residualHat
+  residualNorm : ℝ
+  residualNorm_eq : residualNorm = p16VecNorm residualLow
+  residual_starts_basis : ∀ row,
+    residualLow row = residualNorm * basisNext row 0
   epsilonB_eq : epsilonB = uLow
   product_error_bound :
     p16RectFrobNorm arnoldiProductError ≤
@@ -568,7 +522,7 @@ structure P16FixedLowPrecisionMGSRestart {n : ℕ}
     p16NearRankDeficient
       (p16Augment residualLow phi arnoldiProduct)
       ((epsilonC + epsilonB + epsilonLS) *
-        dimensionFactor *
+        p16PolynomialFactorValue dimensionFactor n keyDimension *
           p16RectFrobNorm (p16Augment residualLow phi arnoldiProduct))
   key_image_full_rank :
     (epsilonC + epsilonB + epsilonLS) *
@@ -589,10 +543,20 @@ structure P16FixedLowPrecisionMGSRestart {n : ℕ}
         lambda * epsilonX
   dimension_factor_bound :
     alpha * productWeight + beta * (1 + leastSquaresWeight) +
-        lambda * correctionWeight ≤ dimensionFactor
-  theorem41 :
-    P16Theorem41RestartResult A Ainv b xExact xCurrent xNext
-      uHigh modularAccuracy dimensionFactor
+        lambda * correctionWeight ≤
+      p16PolynomialFactorValue dimensionFactor n keyDimension
+  backward_correction_bound :
+    p16VecNorm (residualHat - p16MatVec A correctionHat) /
+        (p16VecNorm b + p16FrobNorm A * p16VecNorm xNext) ≤
+      (p16PolynomialFactorValue dimensionFactor n keyDimension * uLow *
+          p16ConditionNumberF A Ainv) *
+        p16BackwardError A b xCurrent
+  forward_correction_bound :
+    p16VecNorm (xCurrent + correctionHat - xExact) /
+        p16VecNorm xExact ≤
+      (p16PolynomialFactorValue dimensionFactor n keyDimension * uLow *
+          p16ConditionNumberF A Ainv) *
+        p16ForwardError xExact xCurrent
 
 /-- One fixed-precision execution of unpreconditioned restarted MGS-GMRES in
 Theorem 6.3. The same positive unit roundoffs and system are used at every
@@ -610,7 +574,7 @@ structure P16FixedMixedPrecisionGMRESRun (n : ℕ) where
   updateError : ℕ → P16Vector n
   uHigh : ℝ
   uLow : ℝ
-  dimensionFactor : ℝ
+  dimensionFactor : P16PolynomialFactor
   b_nonzero : b ≠ 0
   nonsingular : p16IsNonsingular A
   left_inverse_action : ∀ z : P16Vector n,
@@ -620,11 +584,6 @@ structure P16FixedMixedPrecisionGMRESRun (n : ℕ) where
   exact_solution : p16MatVec A xExact = b
   uHigh_pos : 0 < uHigh
   uLow_pos : 0 < uLow
-  uHigh_le_uLow : uHigh ≤ uLow
-  dimensionFactor_nonneg : 0 ≤ dimensionFactor
-  high_gamma_valid : GammaValid uHigh n
-  low_gamma_valid : GammaValid uLow n
-  high_gamma_le : gamma uHigh n ≤ dimensionFactor * uHigh
   residual_equation : ∀ i,
     residualHat i = p16Residual A b (xHat i) + residualError i
   residual_error_bound : ∀ i j,
@@ -640,39 +599,38 @@ structure P16FixedMixedPrecisionGMRESRun (n : ℕ) where
   restart : ∀ i,
     P16FixedLowPrecisionMGSRestart A Ainv b xExact
       (xHat i) (xHat (i + 1)) (residualHat i) (correctionHat i)
-      uHigh uLow dimensionFactor
-  iterateCurrentNextRemainder : ℕ → ℝ
-  iterateNextExactRemainder : ℕ → ℝ
-  iterate_current_next : ∀ i,
-    p16VecNorm (xHat i) ≤
-      p16VecNorm (xHat (i + 1)) + |iterateCurrentNextRemainder i|
-  iterate_next_exact : ∀ i,
-    p16VecNorm (xHat (i + 1)) ≤
-      p16VecNorm xExact + |iterateNextExactRemainder i|
-  iterate_current_next_second_order :
-    p16UniformSecondOrder uHigh uLow iterateCurrentNextRemainder
-  iterate_next_exact_second_order :
-    p16UniformSecondOrder uHigh uLow iterateNextExactRemainder
-  backward_remainder_second_order :
-    p16UniformSecondOrder uHigh uLow
-      (fun i ↦ (restart i).theorem41.backwardRemainder)
-  forward_remainder_second_order :
-    p16UniformSecondOrder uHigh uLow
-      (fun i ↦ (restart i).theorem41.forwardRemainder)
+      uLow dimensionFactor
+  backward_high_roundoff_bound : ∀ i,
+    (p16VecNorm (residualError i) +
+          p16VecNorm (p16MatVec A (updateError i))) /
+        (p16VecNorm b + p16FrobNorm A * p16VecNorm (xHat (i + 1))) ≤
+      p16PolynomialFactorValue dimensionFactor n
+          (restart i).keyDimension * uHigh
+  forward_high_roundoff_bound : ∀ i,
+    p16VecNorm (updateError i) / p16VecNorm xExact ≤
+      p16PolynomialFactorValue dimensionFactor n
+          (restart i).keyDimension * uHigh *
+        p16ConditionNumberF A Ainv
 
-/-- The fixed contraction scale in equation (6.17). -/
+/-- The restart-local contraction scale in equation (6.17), with the paper's
+generic dimension factor evaluated at the actual key dimension `k_i`. -/
 noncomputable def p16FixedMixedContraction {n : ℕ}
-    (run : P16FixedMixedPrecisionGMRESRun n) : ℝ :=
-  run.dimensionFactor * run.uLow * p16ConditionNumberF run.A run.Ainv
+    (run : P16FixedMixedPrecisionGMRESRun n) (i : ℕ) : ℝ :=
+  p16PolynomialFactorValue run.dimensionFactor n
+      (run.restart i).keyDimension * run.uLow *
+    p16ConditionNumberF run.A run.Ainv
 
-/-- The fixed high-precision backward-error floor in equation (6.18). -/
+/-- The restart-local high-precision backward-error floor in equation (6.18). -/
 noncomputable def p16FixedBackwardFloor {n : ℕ}
-    (run : P16FixedMixedPrecisionGMRESRun n) : ℝ :=
-  run.dimensionFactor * run.uHigh
+    (run : P16FixedMixedPrecisionGMRESRun n) (i : ℕ) : ℝ :=
+  p16PolynomialFactorValue run.dimensionFactor n
+      (run.restart i).keyDimension * run.uHigh
 
-/-- The fixed high-precision forward-error floor in equation (6.18). -/
+/-- The restart-local high-precision forward-error floor in equation (6.18). -/
 noncomputable def p16FixedForwardFloor {n : ℕ}
-    (run : P16FixedMixedPrecisionGMRESRun n) : ℝ :=
-  run.dimensionFactor * run.uHigh * p16ConditionNumberF run.A run.Ainv
+    (run : P16FixedMixedPrecisionGMRESRun n) (i : ℕ) : ℝ :=
+  p16PolynomialFactorValue run.dimensionFactor n
+      (run.restart i).keyDimension * run.uHigh *
+    p16ConditionNumberF run.A run.Ainv
 
 end HighamBench
