@@ -11,8 +11,8 @@
 - Baseline accepted: 45/57
 - Pass-4 scope: the 12 Audit 3 results that were not accepted
 - Processing order: the order in the ledger below
-- Active task: none
-- Reviews started: 1/12
+- Active task: `P08-T3`
+- Reviews started: 2/12
 - Rebuilds committed and pushed: 1/12
 - Pass-4 audits accepted: 0/12
 
@@ -103,7 +103,7 @@ primary evidence before a task moves to `repair-required`,
 | # | Task | Tier | Audit 3 result | L->P / P->L | Evidence commit | Target SHA-256 | Audit 3 notes | Audit diagnosis | Builder assessment | Pass-4 status | Rebuild commit | Pass-4 audit |
 |---:|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1 | `P04-T2` | T2 | `not-faithful-weaker` | `no / yes` | `7bf69e8ca6a7` | `deb0f26432df` | [decision](../highambench/tasks/P04/T2/faithfulness/decision.json), [report](../highambench/tasks/P04/T2/faithfulness/report.md) | Output precision is unnecessarily restricted to `uLow` or `uHigh`. | Confirmed from C127--C128: only `uFma` is restricted to the low/high formats; Algorithm 3.1's final working/output precision is independent. Removed exactly that unsupported premise and validated a run with a distinct third precision. | `rebuilt-pushed` | `de2a3c719` | - |
-| 2 | `P06-T1` | T1 | `not-faithful-weaker` | `no / yes` | `679d7f4b104d` | `582a7ed4a777` | [decision](../highambench/tasks/P06/T1/faithfulness/decision.json), [report](../highambench/tasks/P06/T1/faithfulness/report.md) | Per-column certificates assume major theorem content, the QR run is not linked to the stochastic trace, and the pointwise higher-order witnesses can be vacuous. | - | `pending-review` | - | - |
+| 2 | `P06-T1` | T1 | `not-faithful-weaker` | `no / yes` | `679d7f4b104d` | `582a7ed4a777` | [decision](../highambench/tasks/P06/T1/faithfulness/decision.json), [report](../highambench/tasks/P06/T1/faithfulness/report.md) | Per-column certificates assume major theorem content, the QR run is not linked to the stochastic trace, and the pointwise higher-order witnesses can be vacuous. | Confirmed from Lemmas 4.2--4.3 and Theorem 4.4: the current `perColumn` premise supplies conclusions that the paper derives from Model 1.5 and the probability-one local bound. The frozen library has no theorem closing that matrix-concentration argument, so a faithful repair of the full selected theorem would require formalizing the missing probabilistic proof stack. The clean alternative is to reselect the paper's explicit implication sentence immediately before (4.20), with simultaneous (4.17) as its premise, but that source narrowing requires owner approval. | `needs-owner-decision` | - | - |
 | 3 | `P08-T3` | T3 | `not-faithful-weaker` | `no / yes` | `9611bc6846c7` | `2e0ed250d2dc` | [decision](../highambench/tasks/P08/T3/faithfulness/decision.json), [report](../highambench/tasks/P08/T3/faithfulness/report.md) | The run adds unsupported `m = 0` correction and update requirements, specializes implementation details, and does not encode dimension-only uniformity. | - | `pending-review` | - | - |
 | 4 | `P09-T2` | T2 | `not-faithful-weaker` | `no / yes` | `c0f50d60c4cf` | `6bfa09c58a63` | [decision](../highambench/tasks/P09/T2/faithfulness/decision.json), [report](../highambench/tasks/P09/T2/faithfulness/report.md) | The RMS asymptotic theorem is supplied as a certificate instead of derived for the modeled FFT execution. | - | `pending-review` | - | - |
 | 5 | `P11-T1` | T1 | `not-faithful-weaker` | `no / yes` | `f5f038d149f4` | `d288077fb173` | [decision](../highambench/tasks/P11/T1/faithfulness/decision.json), [report](../highambench/tasks/P11/T1/faithfulness/report.md) | The inherited all-k condition uses an incorrectly grouped `c1` formula that narrows applicability. | - | `pending-review` | - | - |
