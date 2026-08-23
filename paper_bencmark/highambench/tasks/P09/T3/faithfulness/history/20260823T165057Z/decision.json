@@ -1,0 +1,56 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "round-trip S03 is unclear",
+    "round-trip S06 is unclear",
+    "round-trip S14 is unclear",
+    "round-trip S15 is unclear"
+  ],
+  "classification": "not-faithful-weaker",
+  "completed_at_utc": "2026-08-23T14:07:56.816544+00:00",
+  "findings": [
+    {
+      "category": "added-theorem-derived-premise",
+      "evidence": "Printed page 764 says the local estimate (4.3) is obtained using Theorem 1 and then uses exact scaling (4.4). P09TheoremTwoLocalAsymptotic requires common-radius propagated per-axis first-plus-second-order estimates as the axisBounds premise.",
+      "impact": "A substantive portion of the selected theorem's analysis is assumed rather than derived, so the Lean theorem has strictly reduced applicability.",
+      "severity": "major"
+    },
+    {
+      "category": "degenerate-domain-restriction",
+      "evidence": "The paper's multidimensional index convention does not explicitly exclude length-one coordinates, while each Lean axis plan has at least one stage and every stage radix is at least two.",
+      "impact": "Potential degenerate source cases are excluded; this reinforces the weaker classification but does not alter the numerical conclusion.",
+      "severity": "minor"
+    },
+    {
+      "category": "ratio-domain-explication",
+      "evidence": "The paper divides by exact-output RMS without specifying the zero case, while Lean assumes that RMS is strictly positive.",
+      "impact": "This makes the relative expression well-defined and is not nonvacuous mathematical strengthening of the paper's bound.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean statement supplies no construction of axisBounds from the primitive arithmetic, trigonometric, algorithmic, and exact-input assumptions. It therefore proves the global bound only for already-certified families and cannot entail the paper's broader Theorem 2(a).",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "For each fixed Lean plan and family in the source domain, the paper's Theorem 2(a), under its standard fixed-instance O(epsilon^2) meaning, gives the same relative RMS conclusion. The positive phase matches, while axisBounds, the positive denominator, and the plan-domain conditions only restrict the cases to which the Lean proposition applies.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-weaker",
+    "roundtrip": "undetermined"
+  },
+  "rationale": "The Lean declaration faithfully preserves the product-indexed complex transform, positive unnormalized Fourier phase, nested coordinate order, relative RMS forward-error notion, factorization-dependent K constants, and a standard quantified form of the O(epsilon^2) remainder. The decisive mismatch is axisBounds: it assumes the propagated local asymptotic estimates that the paper derives from Theorem 1 and equations (4.3)-(4.4). Consequently the paper result entails the restricted Lean conclusion, but the Lean theorem does not establish the paper result from its stated primitive hypotheses, so the declaration is not-faithful-weaker.",
+  "remaining_uncertainties": [
+    "The paper does not expressly settle whether a coordinate of length one or a radix factor one is admissible. Lean's nonempty stages with radices at least two exclude such cases, but this uncertainty cannot reverse the implication directions because it only concerns cases outside the Lean domain."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P09-T3"
+}

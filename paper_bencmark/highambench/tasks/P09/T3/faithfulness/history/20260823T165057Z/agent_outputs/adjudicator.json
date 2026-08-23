@@ -1,0 +1,87 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P09-T3",
+  "trigger": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "round-trip S03 is unclear",
+    "round-trip S06 is unclear",
+    "round-trip S14 is unclear",
+    "round-trip S15 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "The declaration is not-faithful-weaker. The phase and higher-order-quantifier concerns are resolvable, while axisBounds remains a substantive additional premise that reduces applicability.",
+      "primary_evidence": "On printed page 764, the paper derives equation (4.3) using Theorem 1 and then propagates it using equation (4.4). The supplied P09TheoremTwoLocalAsymptotic constructor instead requires the corresponding common-radius propagated local estimates from the caller."
+    },
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "Independent review of the primary paper and supplied declaration evidence establishes a definite classification rather than an undetermined one.",
+      "primary_evidence": "The verified PDF states Theorem 2(a) on printed page 764 and completes its derivation on page 765. The Lean target has the same final inequality but adds axisBounds before the conclusion."
+    },
+    {
+      "item": "round-trip judge classification is undetermined",
+      "resolution": "The classification is not-faithful-weaker: the paper implies the restricted Lean proposition, but the Lean proposition does not recover the paper theorem for all computations satisfying the paper's primitive hypotheses.",
+      "primary_evidence": "The paper derives the local analysis from its floating-point FFT model, whereas the Lean target only concludes the global bound after receiving P09TheoremTwoLocalAsymptotic family as an assumption."
+    },
+    {
+      "item": "round-trip S03 is unclear",
+      "resolution": "The witness scope is a faithful fixed-instance interpretation of O(epsilon^2): the plan, gamma, fixed-input execution family, and local certificate are fixed before a coefficient and radius are chosen, and those witnesses are independent of the subsequently quantified epsilon.",
+      "primary_evidence": "Printed page 760 identifies O(epsilon^2) with the second-and-higher-order terms from finite expansions of bounded-theta roundoff factors; pages 764-765 use the same first-order convention. The Lean binder order places the existential coefficient and radius before the universal small positive epsilon."
+    },
+    {
+      "item": "round-trip S06 is unclear",
+      "resolution": "The exact transform has the required positive phase. ZMod.stdAddChar is not semantically unresolved in the supplied declaration evidence.",
+      "primary_evidence": "Equation (1.1) on printed page 757 uses exp(i 2 pi j k/N). The supplied declaration p09StdAddChar_positive_exp identifies ZMod.stdAddChar j with Complex.exp(2*pi*I*j.val/n), and both p09FourierTransform and p09CoordinateTransform apply that character to the modular product of source and target indices."
+    },
+    {
+      "item": "round-trip S14 is unclear",
+      "resolution": "The existential nonnegative coefficient and positive radius followed by a universal bound for all sufficiently small positive epsilon is the standard one-sided quantified meaning of the paper's additive O(epsilon^2) remainder for fixed data and algorithm. The assumed local quadratic bounds are a separate added-premise defect, not a mismatch in the final remainder notation.",
+      "primary_evidence": "Printed page 760 describes the omitted terms as order epsilon^2, and printed page 765 absorbs epsilon times O(epsilon) intermediate perturbations into O(epsilon^2). The Lean conclusion expresses exactly an upper remainder C*epsilon^2 on a positive neighborhood."
+    },
+    {
+      "item": "round-trip S15 is unclear",
+      "resolution": "The positive-output premise makes the paper's displayed relative ratio mathematically defined and is not genuine theorem strengthening. Nonzero dimension and positive axis orders match the operational finite ranges. Requiring a positive stage count with every radix at least two may exclude degenerate unit-length axes, but this only further restricts Lean's applicability and does not create a different conclusion.",
+      "primary_evidence": "Theorem 2(a) on printed page 764 divides by the exact-output RMS without treating a zero denominator. Equation (4.1) uses finite ranges of coordinate lengths. The supplied plan constructors require nonzero m, positive axis orders, positive stage counts, and radices at least two."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean statement supplies no construction of axisBounds from the primitive arithmetic, trigonometric, algorithmic, and exact-input assumptions. It therefore proves the global bound only for already-certified families and cannot entail the paper's broader Theorem 2(a)."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "For each fixed Lean plan and family in the source domain, the paper's Theorem 2(a), under its standard fixed-instance O(epsilon^2) meaning, gives the same relative RMS conclusion. The positive phase matches, while axisBounds, the positive denominator, and the plan-domain conditions only restrict the cases to which the Lean proposition applies."
+    }
+  },
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The paper does not expressly settle whether a coordinate of length one or a radix factor one is admissible. Lean's nonempty stages with radices at least two exclude such cases, but this uncertainty cannot reverse the implication directions because it only concerns cases outside the Lean domain."
+  ],
+  "findings": [
+    {
+      "severity": "major",
+      "category": "added-theorem-derived-premise",
+      "evidence": "Printed page 764 says the local estimate (4.3) is obtained using Theorem 1 and then uses exact scaling (4.4). P09TheoremTwoLocalAsymptotic requires common-radius propagated per-axis first-plus-second-order estimates as the axisBounds premise.",
+      "impact": "A substantive portion of the selected theorem's analysis is assumed rather than derived, so the Lean theorem has strictly reduced applicability."
+    },
+    {
+      "severity": "minor",
+      "category": "degenerate-domain-restriction",
+      "evidence": "The paper's multidimensional index convention does not explicitly exclude length-one coordinates, while each Lean axis plan has at least one stage and every stage radix is at least two.",
+      "impact": "Potential degenerate source cases are excluded; this reinforces the weaker classification but does not alter the numerical conclusion."
+    },
+    {
+      "severity": "note",
+      "category": "ratio-domain-explication",
+      "evidence": "The paper divides by exact-output RMS without specifying the zero case, while Lean assumes that RMS is strictly positive.",
+      "impact": "This makes the relative expression well-defined and is not nonvacuous mathematical strengthening of the paper's bound."
+    }
+  ],
+  "rationale": "The Lean declaration faithfully preserves the product-indexed complex transform, positive unnormalized Fourier phase, nested coordinate order, relative RMS forward-error notion, factorization-dependent K constants, and a standard quantified form of the O(epsilon^2) remainder. The decisive mismatch is axisBounds: it assumes the propagated local asymptotic estimates that the paper derives from Theorem 1 and equations (4.3)-(4.4). Consequently the paper result entails the restricted Lean conclusion, but the Lean theorem does not establish the paper result from its stated primitive hypotheses, so the declaration is not-faithful-weaker."
+}

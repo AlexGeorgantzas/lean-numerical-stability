@@ -10,7 +10,6 @@ theorem p09_t3_multidimensional_rms_error_bound
     {m : ℕ} [NeZero m]
     (plan : P09MultidimensionalFftPlan m) (γ : ℝ)
     (family : P09AsymptoticMultidimensionalFftFamily plan γ)
-    (axisBounds : P09TheoremTwoLocalAsymptotic family)
     (hexactOutput : 0 < p09MultiRms (p09FamilyMultiExactOutput family)) :
     ∃ secondOrderCoeff : ℝ, 0 ≤ secondOrderCoeff ∧
       ∃ radius : ℝ, 0 < radius ∧
@@ -25,8 +24,7 @@ theorem p09_t3_multidimensional_rms_error_bound
 
 ```lean
 ∀ {m : Nat} [inst : NeZero m] (plan : HighamBench.P09MultidimensionalFftPlan m) (γ : Real)
-  (family : HighamBench.P09AsymptoticMultidimensionalFftFamily plan γ)
-  (axisBounds : HighamBench.P09TheoremTwoLocalAsymptotic family),
+  (family : HighamBench.P09AsymptoticMultidimensionalFftFamily plan γ),
   Real.instLT.lt 0 (HighamBench.p09MultiRms (HighamBench.p09FamilyMultiExactOutput family)) →
     Exists fun secondOrderCoeff =>
       And (Real.instLE.le 0 secondOrderCoeff)
@@ -47,7 +45,6 @@ theorem p09_t3_multidimensional_rms_error_bound
 ∀ {m : Nat} [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) m]
   (plan : @HighamBench.P09MultidimensionalFftPlan m inst) (γ : Real)
   (family : @HighamBench.P09AsymptoticMultidimensionalFftFamily m inst plan γ)
-  (axisBounds : @HighamBench.P09TheoremTwoLocalAsymptotic m inst plan γ family)
   (hexactOutput :
     @LT.lt.{0} Real Real.instLT (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
       (@HighamBench.p09MultiRms m (@HighamBench.P09MultidimensionalFftPlan.axis m inst plan)
@@ -204,33 +201,7 @@ Definition body (one-level semantic boundary):
 Subtype fun ε => Real.instLT.lt 0 ε
 ```
 
-### D005: `HighamBench.P09TheoremTwoLocalAsymptotic`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Base`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `0c60dcd3f7eeab991738509407a3367e7ac62c71c3aa922c9cb7acfb2c85ad9e`
-
-Type:
-
-```lean
-{m : Nat} →
-  [inst : NeZero m] →
-    {plan : HighamBench.P09MultidimensionalFftPlan m} →
-      {γ : Real} → HighamBench.P09AsymptoticMultidimensionalFftFamily plan γ → Type
-```
-
-Fully explicit type:
-
-```lean
-{m : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) m] →
-    {plan : @HighamBench.P09MultidimensionalFftPlan m inst} →
-      {γ : Real} → (family : @HighamBench.P09AsymptoticMultidimensionalFftFamily m inst plan γ) → Type
-```
-
-### D006: `HighamBench.p09AxisK`
+### D005: `HighamBench.p09AxisK`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -256,7 +227,7 @@ Definition body (one-level semantic boundary):
 fun axis γ => HighamBench.p09K axis.plan γ
 ```
 
-### D007: `HighamBench.p09FamilyMultiExactOutput`
+### D006: `HighamBench.p09FamilyMultiExactOutput`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -290,7 +261,7 @@ Definition body (one-level semantic boundary):
 fun {m} [NeZero m] {plan} {γ} family => HighamBench.p09ApplyCoordinatePrefix plan.axis m family.input
 ```
 
-### D008: `HighamBench.p09FamilyMultiFftRoundoffError`
+### D007: `HighamBench.p09FamilyMultiFftRoundoffError`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -329,7 +300,7 @@ fun {m} [NeZero m] {plan} {γ} family ε =>
     (HighamBench.p09FamilyMultiExactOutput family)
 ```
 
-### D009: `HighamBench.p09MultiRms`
+### D008: `HighamBench.p09MultiRms`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -355,7 +326,7 @@ Definition body (one-level semantic boundary):
 fun {m} {axis} x => instHDiv.hDiv (HighamBench.p09MultiNorm2 x) (HighamBench.p09MultiCardinality axis).cast.sqrt
 ```
 
-### D010: `HighamBench.P09AsymptoticMultidimensionalFftFamily.input`
+### D009: `HighamBench.P09AsymptoticMultidimensionalFftFamily.input`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -389,7 +360,7 @@ Definition body (one-level semantic boundary):
 fun m [NeZero m] plan γ self => self.2
 ```
 
-### D011: `HighamBench.P09AsymptoticMultidimensionalFftFamily.mk`
+### D010: `HighamBench.P09AsymptoticMultidimensionalFftFamily.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -447,7 +418,7 @@ Fully explicit type:
                       @HighamBench.P09AsymptoticMultidimensionalFftFamily m inst plan γ
 ```
 
-### D012: `HighamBench.P09AsymptoticMultidimensionalFftFamily.model`
+### D011: `HighamBench.P09AsymptoticMultidimensionalFftFamily.model`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -483,7 +454,7 @@ Definition body (one-level semantic boundary):
 fun m [NeZero m] plan γ self => self.3
 ```
 
-### D013: `HighamBench.P09AsymptoticMultidimensionalFftFamily.run`
+### D012: `HighamBench.P09AsymptoticMultidimensionalFftFamily.run`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -521,7 +492,7 @@ Definition body (one-level semantic boundary):
 fun m [NeZero m] plan γ self => self.6
 ```
 
-### D014: `HighamBench.P09FftAxis`
+### D013: `HighamBench.P09FftAxis`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -541,7 +512,7 @@ Fully explicit type:
 Type
 ```
 
-### D015: `HighamBench.P09FftAxis.order`
+### D014: `HighamBench.P09FftAxis.order`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -567,7 +538,7 @@ Definition body (one-level semantic boundary):
 fun self => self.1
 ```
 
-### D016: `HighamBench.P09FftAxis.plan`
+### D015: `HighamBench.P09FftAxis.plan`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -598,7 +569,7 @@ Definition body (one-level semantic boundary):
 fun self => self.3
 ```
 
-### D017: `HighamBench.P09MultiArray`
+### D016: `HighamBench.P09MultiArray`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -624,7 +595,7 @@ Definition body (one-level semantic boundary):
 fun {m} axis => HighamBench.P09MultiIndex axis → Complex
 ```
 
-### D018: `HighamBench.P09MultidimensionalFftPlan.mk`
+### D017: `HighamBench.P09MultidimensionalFftPlan.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -659,97 +630,7 @@ Fully explicit type:
         @HighamBench.P09MultidimensionalFftPlan m inst
 ```
 
-### D019: `HighamBench.P09TheoremTwoLocalAsymptotic.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Base`
-- Declaration kind: `constructor`
-- Distance from target type: `2`
-- Semantic SHA-256: `58cf28bc10bdf6961ba67f2133e5ff898982872d1214b6871dbb3dfeae8c4822`
-
-Type:
-
-```lean
-{m : Nat} →
-  [inst : NeZero m] →
-    {plan : HighamBench.P09MultidimensionalFftPlan m} →
-      {γ : Real} →
-        {family : HighamBench.P09AsymptoticMultidimensionalFftFamily plan γ} →
-          (localSecondOrderCoeff : Fin m → Real) →
-            (∀ (i : Fin m), Real.instLE.le 0 (localSecondOrderCoeff i)) →
-              (radius : Real) →
-                Real.instLT.lt 0 radius →
-                  (∀ (ε : HighamBench.P09PositiveEpsilon),
-                      Real.instLE.le ε.val radius →
-                        ∀ (i : Fin m),
-                          Real.instLE.le (HighamBench.p09MultiRms (HighamBench.p09PropagatedAxisError (family.run ε) i))
-                            (instHAdd.hAdd
-                              (instHMul.hMul (instHMul.hMul ε.val (HighamBench.p09AxisK (plan.axis i) γ))
-                                (HighamBench.p09PropagatedStageInputRms (family.run ε) i))
-                              (instHMul.hMul (localSecondOrderCoeff i) (instHPow.hPow ε.val 2)))) →
-                    HighamBench.P09TheoremTwoLocalAsymptotic family
-```
-
-Fully explicit type:
-
-```lean
-{m : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) m] →
-    {plan : @HighamBench.P09MultidimensionalFftPlan m inst} →
-      {γ : Real} →
-        {family : @HighamBench.P09AsymptoticMultidimensionalFftFamily m inst plan γ} →
-          (localSecondOrderCoeff : Fin m → Real) →
-            (local_second_order_nonneg :
-                ∀ (i : Fin m),
-                  @LE.le.{0} Real Real.instLE
-                    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                    (localSecondOrderCoeff i)) →
-              (radius : Real) →
-                (radius_pos :
-                    @LT.lt.{0} Real Real.instLT
-                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) radius) →
-                  (local_error_bound :
-                      ∀ (ε : HighamBench.P09PositiveEpsilon),
-                        @LE.le.{0} Real Real.instLE
-                            (@Subtype.val.{1} Real
-                              (fun (ε : Real) =>
-                                @LT.lt.{0} Real Real.instLT
-                                  (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
-                              ε)
-                            radius →
-                          ∀ (i : Fin m),
-                            @LE.le.{0} Real Real.instLE
-                              (@HighamBench.p09MultiRms m (@HighamBench.P09MultidimensionalFftPlan.axis m inst plan)
-                                (@HighamBench.p09PropagatedAxisError m inst plan
-                                  (@HighamBench.P09AsymptoticMultidimensionalFftFamily.model m inst plan γ family ε)
-                                  (@HighamBench.P09AsymptoticMultidimensionalFftFamily.run m inst plan γ family ε) i))
-                              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                    (@Subtype.val.{1} Real
-                                      (fun (ε : Real) =>
-                                        @LT.lt.{0} Real Real.instLT
-                                          (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
-                                      ε)
-                                    (HighamBench.p09AxisK (@HighamBench.P09MultidimensionalFftPlan.axis m inst plan i)
-                                      γ))
-                                  (@HighamBench.p09PropagatedStageInputRms m inst plan
-                                    (@HighamBench.P09AsymptoticMultidimensionalFftFamily.model m inst plan γ family ε)
-                                    (@HighamBench.P09AsymptoticMultidimensionalFftFamily.run m inst plan γ family ε) i))
-                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                  (localSecondOrderCoeff i)
-                                  (@HPow.hPow.{0, 0, 0} Real Nat Real
-                                    (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                                    (@Subtype.val.{1} Real
-                                      (fun (ε : Real) =>
-                                        @LT.lt.{0} Real Real.instLT
-                                          (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
-                                      ε)
-                                    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))))) →
-                    @HighamBench.P09TheoremTwoLocalAsymptotic m inst plan γ family
-```
-
-### D020: `HighamBench.p09ApplyCoordinatePrefix`
+### D018: `HighamBench.p09ApplyCoordinatePrefix`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -785,7 +666,7 @@ fun {m} axis x x_1 =>
     x_1
 ```
 
-### D021: `HighamBench.p09AxisK._proof_1`
+### D019: `HighamBench.p09AxisK._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -806,7 +687,7 @@ Fully explicit type:
   @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) (HighamBench.P09FftAxis.order axis)
 ```
 
-### D022: `HighamBench.p09K`
+### D020: `HighamBench.p09K`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -836,7 +717,7 @@ fun {n} [NeZero n] plan γ =>
     (instHMul.hMul (instHSub.hSub plan.stageCount.cast 1) (instHAdd.hAdd 3 (instHMul.hMul 2 γ)))
 ```
 
-### D023: `HighamBench.p09MultiCardinality`
+### D021: `HighamBench.p09MultiCardinality`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -862,7 +743,7 @@ Definition body (one-level semantic boundary):
 fun {m} axis => Finset.univ.prod fun i => (axis i).order
 ```
 
-### D024: `HighamBench.p09MultiComputedOutput`
+### D022: `HighamBench.p09MultiComputedOutput`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -897,7 +778,7 @@ Definition body (one-level semantic boundary):
 fun {m} [NeZero m] {plan} {model} run => run.computedState 0
 ```
 
-### D025: `HighamBench.p09MultiNorm2`
+### D023: `HighamBench.p09MultiNorm2`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -923,7 +804,7 @@ Definition body (one-level semantic boundary):
 fun {m} {axis} x => (PiLp.instNorm 2 fun x => Complex).norm { ofLp := x }
 ```
 
-### D026: `HighamBench.p09MultiVecSub`
+### D024: `HighamBench.p09MultiVecSub`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -953,7 +834,7 @@ Definition body (one-level semantic boundary):
 fun {m} {axis} x y index => instHSub.hSub (x index) (y index)
 ```
 
-### D027: `HighamBench.P09FftAxis.mk`
+### D025: `HighamBench.P09FftAxis.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -982,7 +863,7 @@ Fully explicit type:
       HighamBench.P09FftAxis
 ```
 
-### D028: `HighamBench.P09FftAxis.order_pos`
+### D026: `HighamBench.P09FftAxis.order_pos`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1004,7 +885,7 @@ Fully explicit type:
     (HighamBench.P09FftAxis.order self)
 ```
 
-### D029: `HighamBench.P09MixedRadixFftPlan`
+### D027: `HighamBench.P09MixedRadixFftPlan`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1024,7 +905,7 @@ Fully explicit type:
 (n : Nat) → [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] → Type
 ```
 
-### D030: `HighamBench.P09MixedRadixFftPlan.stage`
+### D028: `HighamBench.P09MixedRadixFftPlan.stage`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1055,7 +936,7 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.3
 ```
 
-### D031: `HighamBench.P09MixedRadixFftPlan.stageCount`
+### D029: `HighamBench.P09MixedRadixFftPlan.stageCount`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1083,7 +964,7 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.1
 ```
 
-### D032: `HighamBench.P09MixedRadixStage.radix`
+### D030: `HighamBench.P09MixedRadixStage.radix`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1111,7 +992,7 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.1
 ```
 
-### D033: `HighamBench.P09MultiIndex`
+### D031: `HighamBench.P09MultiIndex`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1137,7 +1018,7 @@ Definition body (one-level semantic boundary):
 fun {m} axis => (i : Fin m) → ZMod (axis i).order
 ```
 
-### D034: `HighamBench.P09MultidimensionalFftRun`
+### D032: `HighamBench.P09MultidimensionalFftRun`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1159,7 +1040,7 @@ Fully explicit type:
     (plan : @HighamBench.P09MultidimensionalFftPlan m inst) → (model : HighamBench.P09WilkinsonModel) → Type
 ```
 
-### D035: `HighamBench.P09MultidimensionalFftRun.computedState`
+### D033: `HighamBench.P09MultidimensionalFftRun.computedState`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1197,7 +1078,7 @@ Definition body (one-level semantic boundary):
 fun m [NeZero m] plan model self => self.2
 ```
 
-### D036: `HighamBench.P09MultidimensionalFftRun.input`
+### D034: `HighamBench.P09MultidimensionalFftRun.input`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1232,7 +1113,7 @@ Definition body (one-level semantic boundary):
 fun m [NeZero m] plan model self => self.1
 ```
 
-### D037: `HighamBench.P09WilkinsonModel`
+### D035: `HighamBench.P09WilkinsonModel`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1252,7 +1133,7 @@ Fully explicit type:
 Type
 ```
 
-### D038: `HighamBench.P09WilkinsonModel.epsilon`
+### D036: `HighamBench.P09WilkinsonModel.epsilon`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1278,7 +1159,7 @@ Definition body (one-level semantic boundary):
 fun self => self.1
 ```
 
-### D039: `HighamBench.P09WilkinsonModel.gamma`
+### D037: `HighamBench.P09WilkinsonModel.gamma`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1304,7 +1185,7 @@ Definition body (one-level semantic boundary):
 fun self => self.3
 ```
 
-### D040: `HighamBench.p09Alpha`
+### D038: `HighamBench.p09Alpha`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1331,7 +1212,7 @@ fun q γ =>
   ite (Eq q 2) (Real.sqrt 2) (ite (Eq q 4) 5 (instHMul.hMul (instHMul.hMul 2 q.cast.sqrt) (instHAdd.hAdd q.cast γ)))
 ```
 
-### D041: `HighamBench.p09Alpha._proof_1`
+### D039: `HighamBench.p09Alpha._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1354,7 +1235,7 @@ Nat.AtLeastTwo
     (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D042: `HighamBench.p09ApplyCoordinatePrefix.match_1`
+### D040: `HighamBench.p09ApplyCoordinatePrefix.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1394,7 +1275,7 @@ Definition body (one-level semantic boundary):
 fun {m} axis motive x x_1 h_1 h_2 => Nat.casesOn x (h_1 x_1) fun n => h_2 n x_1
 ```
 
-### D043: `HighamBench.p09CoordinateTransformNat`
+### D041: `HighamBench.p09CoordinateTransformNat`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1423,7 +1304,7 @@ Definition body (one-level semantic boundary):
 fun {m} axis i x => if hi : instLTNat.lt i m then HighamBench.p09CoordinateTransform axis ⟨i, hi⟩ x else x
 ```
 
-### D044: `HighamBench.p09K._proof_1`
+### D042: `HighamBench.p09K._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1446,7 +1327,7 @@ Nat.AtLeastTwo
     (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D045: `HighamBench.p09MultiComputedOutput._proof_1`
+### D043: `HighamBench.p09MultiComputedOutput._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1469,7 +1350,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D046: `HighamBench.p09MultiIndexFintype`
+### D044: `HighamBench.p09MultiIndexFintype`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1495,7 +1376,7 @@ Definition body (one-level semantic boundary):
 fun {m} axis => inferInstance
 ```
 
-### D047: `HighamBench.p09PrefixOrderProduct`
+### D045: `HighamBench.p09PrefixOrderProduct`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1521,78 +1402,7 @@ Definition body (one-level semantic boundary):
 fun {m} axis k hk => Finset.univ.prod fun i => (axis (Fin.castLE hk i)).order
 ```
 
-### D048: `HighamBench.p09PropagatedAxisError`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Base`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `a4d7c6586c8dfee1f8ecfd638208c4f41357952c9ee5bdda04404e3a7917df45`
-
-Type:
-
-```lean
-{m : Nat} →
-  [inst : NeZero m] →
-    {plan : HighamBench.P09MultidimensionalFftPlan m} →
-      {model : HighamBench.P09WilkinsonModel} →
-        HighamBench.P09MultidimensionalFftRun plan model → Fin m → HighamBench.P09MultiArray plan.axis
-```
-
-Fully explicit type:
-
-```lean
-{m : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) m] →
-    {plan : @HighamBench.P09MultidimensionalFftPlan m inst} →
-      {model : HighamBench.P09WilkinsonModel} →
-        (run : @HighamBench.P09MultidimensionalFftRun m inst plan model) →
-          (i : Fin m) → @HighamBench.P09MultiArray m (@HighamBench.P09MultidimensionalFftPlan.axis m inst plan)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m} [NeZero m] {plan} {model} run i =>
-  HighamBench.p09ApplyCoordinatePrefix plan.axis i.val (HighamBench.p09AxisLocalError run i)
-```
-
-### D049: `HighamBench.p09PropagatedStageInputRms`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Base`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `a67da1427a25e222d9393e4671544366a435b5467b20170e98f7ca088968035e`
-
-Type:
-
-```lean
-{m : Nat} →
-  [inst : NeZero m] →
-    {plan : HighamBench.P09MultidimensionalFftPlan m} →
-      {model : HighamBench.P09WilkinsonModel} → HighamBench.P09MultidimensionalFftRun plan model → Fin m → Real
-```
-
-Fully explicit type:
-
-```lean
-{m : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) m] →
-    {plan : @HighamBench.P09MultidimensionalFftPlan m inst} →
-      {model : HighamBench.P09WilkinsonModel} →
-        (run : @HighamBench.P09MultidimensionalFftRun m inst plan model) → (i : Fin m) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m} [NeZero m] {plan} {model} run i =>
-  HighamBench.p09MultiRms
-    (HighamBench.p09ApplyCoordinatePrefix plan.axis (instHAdd.hAdd i.val 1) (run.computedState i.succ))
-```
-
-### D050: `HighamBench.P09MixedRadixFftPlan.mk`
+### D046: `HighamBench.P09MixedRadixFftPlan.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1684,7 +1494,7 @@ Fully explicit type:
                           @HighamBench.P09MixedRadixFftPlan n inst
 ```
 
-### D051: `HighamBench.P09MixedRadixStage`
+### D047: `HighamBench.P09MixedRadixStage`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1704,7 +1514,7 @@ Fully explicit type:
 (n : Nat) → [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] → Type
 ```
 
-### D052: `HighamBench.P09MultidimensionalFftRun.mk`
+### D048: `HighamBench.P09MultidimensionalFftRun.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1758,7 +1568,7 @@ Fully explicit type:
                   @HighamBench.P09MultidimensionalFftRun m inst plan model
 ```
 
-### D053: `HighamBench.P09WilkinsonModel.mk`
+### D049: `HighamBench.P09WilkinsonModel.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1872,7 +1682,7 @@ Fully explicit type:
                       HighamBench.P09WilkinsonModel
 ```
 
-### D054: `HighamBench.p09Alpha._proof_2`
+### D050: `HighamBench.p09Alpha._proof_2`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1895,44 +1705,7 @@ Nat.AtLeastTwo
     (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D055: `HighamBench.p09AxisLocalError`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Base`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `9e9e6e9c6255b7f6f4d482b4b5daf2d90579b5786356f5d6d81322fd38e56422`
-
-Type:
-
-```lean
-{m : Nat} →
-  [inst : NeZero m] →
-    {plan : HighamBench.P09MultidimensionalFftPlan m} →
-      {model : HighamBench.P09WilkinsonModel} →
-        HighamBench.P09MultidimensionalFftRun plan model → Fin m → HighamBench.P09MultiArray plan.axis
-```
-
-Fully explicit type:
-
-```lean
-{m : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) m] →
-    {plan : @HighamBench.P09MultidimensionalFftPlan m inst} →
-      {model : HighamBench.P09WilkinsonModel} →
-        (run : @HighamBench.P09MultidimensionalFftRun m inst plan model) →
-          (i : Fin m) → @HighamBench.P09MultiArray m (@HighamBench.P09MultidimensionalFftPlan.axis m inst plan)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m} [NeZero m] {plan} {model} run i =>
-  HighamBench.p09MultiVecSub (run.computedState i.castSucc)
-    (HighamBench.p09CoordinateTransform plan.axis i (run.computedState i.succ))
-```
-
-### D056: `HighamBench.p09CoordinateTransform`
+### D051: `HighamBench.p09CoordinateTransform`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1963,7 +1736,7 @@ fun {m} axis i x index =>
     instHMul.hMul (AddChar.instFunLike.coe ZMod.stdAddChar (instHMul.hMul j (index i))) (x (Function.update index i j))
 ```
 
-### D057: `HighamBench.p09MultiIndexFintype._proof_1`
+### D052: `HighamBench.p09MultiIndexFintype._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -1984,7 +1757,7 @@ Fully explicit type:
   @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) (HighamBench.P09FftAxis.order (axis a))
 ```
 
-### D058: `HighamBench.P09FftVariant`
+### D053: `HighamBench.P09FftVariant`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2004,7 +1777,7 @@ Fully explicit type:
 Type
 ```
 
-### D059: `HighamBench.P09MixedRadixStage.mk`
+### D054: `HighamBench.P09MixedRadixStage.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2045,7 +1818,7 @@ Fully explicit type:
                     (useTwiddle : Bool) → (twiddleExponent : ZMod n → ZMod n) → @HighamBench.P09MixedRadixStage n inst
 ```
 
-### D060: `HighamBench.P09MixedRadixStage.useTwiddle`
+### D055: `HighamBench.P09MixedRadixStage.useTwiddle`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2073,7 +1846,7 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.9
 ```
 
-### D061: `HighamBench.P09WilkinsonModel.flInput`
+### D056: `HighamBench.P09WilkinsonModel.flInput`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2099,7 +1872,7 @@ Definition body (one-level semantic boundary):
 fun self => self.9
 ```
 
-### D062: `HighamBench.p09ApplyMixedRadixStages`
+### D057: `HighamBench.p09ApplyMixedRadixStages`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2128,7 +1901,7 @@ fun {m n} [NeZero n] stages x =>
   List.foldl (fun state stage => HighamBench.p09MixedRadixStageApply stage state) x (List.ofFn stages)
 ```
 
-### D063: `HighamBench.p09ComplexNorm2`
+### D058: `HighamBench.p09ComplexNorm2`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2154,7 +1927,7 @@ Definition body (one-level semantic boundary):
 fun {n} [NeZero n] x => (HighamBench.p09ComplexNorm2Sq x).sqrt
 ```
 
-### D064: `HighamBench.p09ComplexRms`
+### D059: `HighamBench.p09ComplexRms`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2180,7 +1953,7 @@ Definition body (one-level semantic boundary):
 fun {n} [NeZero n] x => instHDiv.hDiv (HighamBench.p09ComplexNorm2 x) n.cast.sqrt
 ```
 
-### D065: `HighamBench.p09FourierTransform`
+### D060: `HighamBench.p09FourierTransform`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2208,7 +1981,7 @@ fun {n} [NeZero n] x k =>
   Finset.univ.sum fun j => instHMul.hMul (AddChar.instFunLike.coe ZMod.stdAddChar (instHMul.hMul j k)) (x j)
 ```
 
-### D066: `HighamBench.p09MixedRadixStageApply`
+### D061: `HighamBench.p09MixedRadixStageApply`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2236,7 +2009,7 @@ Definition body (one-level semantic boundary):
 fun {n} [NeZero n] stage x => HighamBench.p09MixedRadixTwiddleApply stage (HighamBench.p09MixedRadixBlockApply stage x)
 ```
 
-### D067: `HighamBench.p09Permute`
+### D062: `HighamBench.p09Permute`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2262,7 +2035,7 @@ Definition body (one-level semantic boundary):
 fun {n} permutation x i => x (EquivLike.toFunLike.coe permutation i)
 ```
 
-### D068: `HighamBench.p09RoundedCoordinateTransform`
+### D063: `HighamBench.p09RoundedCoordinateTransform`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2295,7 +2068,7 @@ fun {m} axis i model x index =>
   HighamBench.p09RoundedFftApply (axis i).plan model (fun j => x (Function.update index i j)) (index i)
 ```
 
-### D069: `HighamBench.P09FftVariant.cooleyTukey`
+### D064: `HighamBench.P09FftVariant.cooleyTukey`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2315,7 +2088,7 @@ Fully explicit type:
 HighamBench.P09FftVariant
 ```
 
-### D070: `HighamBench.P09FftVariant.sandeTukey`
+### D065: `HighamBench.P09FftVariant.sandeTukey`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2335,7 +2108,7 @@ Fully explicit type:
 HighamBench.P09FftVariant
 ```
 
-### D071: `HighamBench.p09ComplexNorm2Sq`
+### D066: `HighamBench.p09ComplexNorm2Sq`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2361,7 +2134,7 @@ Definition body (one-level semantic boundary):
 fun {n} [NeZero n] x => Finset.univ.sum fun i => instHPow.hPow (Complex.instNorm.norm (x i)) 2
 ```
 
-### D072: `HighamBench.p09MixedRadixBlockApply`
+### D067: `HighamBench.p09MixedRadixBlockApply`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2395,7 +2168,7 @@ fun {n} [NeZero n] stage x =>
       (permuted (EquivLike.toFunLike.coe stage.reindex { fst := bi.fst, snd := j }))
 ```
 
-### D073: `HighamBench.p09MixedRadixTwiddleApply`
+### D068: `HighamBench.p09MixedRadixTwiddleApply`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2425,7 +2198,7 @@ fun {n} [NeZero n] stage x i =>
     (instHMul.hMul (AddChar.instFunLike.coe ZMod.stdAddChar (stage.twiddleExponent i)) (x i)) (x i)
 ```
 
-### D074: `HighamBench.p09RoundedFftApply`
+### D069: `HighamBench.p09RoundedFftApply`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2457,7 +2230,7 @@ fun {n} [NeZero n] plan model x =>
   HighamBench.p09Permute plan.finalPermutation (HighamBench.p09ApplyRoundedMixedRadixStages model plan.stage x)
 ```
 
-### D075: `HighamBench.P09MixedRadixFftPlan.finalPermutation`
+### D070: `HighamBench.P09MixedRadixFftPlan.finalPermutation`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2485,7 +2258,7 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.6
 ```
 
-### D076: `HighamBench.P09MixedRadixStage.blockCount`
+### D071: `HighamBench.P09MixedRadixStage.blockCount`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2513,7 +2286,7 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.4
 ```
 
-### D077: `HighamBench.P09MixedRadixStage.permutation`
+### D072: `HighamBench.P09MixedRadixStage.permutation`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2541,7 +2314,7 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.8
 ```
 
-### D078: `HighamBench.P09MixedRadixStage.reindex`
+### D073: `HighamBench.P09MixedRadixStage.reindex`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2575,7 +2348,7 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.7
 ```
 
-### D079: `HighamBench.P09MixedRadixStage.twiddleExponent`
+### D074: `HighamBench.P09MixedRadixStage.twiddleExponent`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2603,7 +2376,7 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.10
 ```
 
-### D080: `HighamBench.p09ApplyRoundedMixedRadixStages`
+### D075: `HighamBench.p09ApplyRoundedMixedRadixStages`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2635,7 +2408,7 @@ fun {r n} [NeZero n] model stages x =>
   List.foldl (fun state stage => HighamBench.p09RoundedMixedRadixStageApply model stage state) x (List.ofFn stages)
 ```
 
-### D081: `HighamBench.p09MixedRadixBlockApply._proof_1`
+### D076: `HighamBench.p09MixedRadixBlockApply._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2658,7 +2431,7 @@ Fully explicit type:
     (@HighamBench.P09MixedRadixStage.radix n inst stage)
 ```
 
-### D082: `HighamBench.p09RoundedMixedRadixStageApply`
+### D077: `HighamBench.p09RoundedMixedRadixStageApply`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2690,7 +2463,7 @@ fun {n} [NeZero n] model stage x =>
   HighamBench.p09RoundedMixedRadixTwiddleApply model stage (HighamBench.p09RoundedMixedRadixBlockApply model stage x)
 ```
 
-### D083: `HighamBench.p09RoundedMixedRadixBlockApply`
+### D078: `HighamBench.p09RoundedMixedRadixBlockApply`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2736,7 +2509,7 @@ fun {n} [NeZero n] model stage x =>
         (fun j => permuted (EquivLike.toFunLike.coe stage.reindex { fst := bi.fst, snd := j })) bi.snd
 ```
 
-### D084: `HighamBench.p09RoundedMixedRadixTwiddleApply`
+### D079: `HighamBench.p09RoundedMixedRadixTwiddleApply`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2769,7 +2542,7 @@ fun {n} [NeZero n] model stage x i =>
     (HighamBench.p09RoundedComplexMul model (HighamBench.p09RoundedRoot model (stage.twiddleExponent i)) (x i)) (x i)
 ```
 
-### D085: `HighamBench.p09RoundedComplexMul`
+### D080: `HighamBench.p09RoundedComplexMul`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2797,7 +2570,7 @@ fun model x y =>
     im := model.flAdd (model.flMul x.re y.im) (model.flMul x.im y.re) }
 ```
 
-### D086: `HighamBench.p09RoundedGenericRadixBlock`
+### D081: `HighamBench.p09RoundedGenericRadixBlock`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2827,7 +2600,7 @@ fun {q} [NeZero q] model x k =>
     HighamBench.p09RoundedComplexMul model (HighamBench.p09RoundedRoot model (instHMul.hMul j k)) (x j)
 ```
 
-### D087: `HighamBench.p09RoundedMixedRadixBlockApply._proof_1`
+### D082: `HighamBench.p09RoundedMixedRadixBlockApply._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2853,7 +2626,7 @@ Fully explicit type:
     (@HighamBench.P09MixedRadixStage.radix n inst stage)
 ```
 
-### D088: `HighamBench.p09RoundedMixedRadixBlockApply._proof_2`
+### D083: `HighamBench.p09RoundedMixedRadixBlockApply._proof_2`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2879,7 +2652,7 @@ Fully explicit type:
     (@HighamBench.P09MixedRadixStage.radix n inst stage)
 ```
 
-### D089: `HighamBench.p09RoundedRadixFourBlock`
+### D084: `HighamBench.p09RoundedRadixFourBlock`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2913,7 +2686,7 @@ fun model x k =>
     (HighamBench.p09RoundedComplexAdd model (term 2) (term 3))
 ```
 
-### D090: `HighamBench.p09RoundedRadixTwoBlock`
+### D085: `HighamBench.p09RoundedRadixTwoBlock`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2942,7 +2715,7 @@ fun model x k =>
   HighamBench.p09RoundedComplexSum model fun j => HighamBench.p09RadixTwoCoefficientApply (instHMul.hMul j k) (x j)
 ```
 
-### D091: `HighamBench.p09RoundedRoot`
+### D086: `HighamBench.p09RoundedRoot`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2971,7 +2744,7 @@ fun {q} [NeZero q] model j =>
   { re := model.flCos (HighamBench.p09RootAngle j), im := model.flSin (HighamBench.p09RootAngle j) }
 ```
 
-### D092: `HighamBench.P09WilkinsonModel.flAdd`
+### D087: `HighamBench.P09WilkinsonModel.flAdd`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -2997,7 +2770,7 @@ Definition body (one-level semantic boundary):
 fun self => self.5
 ```
 
-### D093: `HighamBench.P09WilkinsonModel.flCos`
+### D088: `HighamBench.P09WilkinsonModel.flCos`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -3023,7 +2796,7 @@ Definition body (one-level semantic boundary):
 fun self => self.8
 ```
 
-### D094: `HighamBench.P09WilkinsonModel.flMul`
+### D089: `HighamBench.P09WilkinsonModel.flMul`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -3049,7 +2822,7 @@ Definition body (one-level semantic boundary):
 fun self => self.6
 ```
 
-### D095: `HighamBench.P09WilkinsonModel.flSin`
+### D090: `HighamBench.P09WilkinsonModel.flSin`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -3075,7 +2848,7 @@ Definition body (one-level semantic boundary):
 fun self => self.7
 ```
 
-### D096: `HighamBench.p09RadixFourCoefficientApply`
+### D091: `HighamBench.p09RadixFourCoefficientApply`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -3104,7 +2877,7 @@ fun j x =>
       (ite (Eq j 2) (Complex.instNeg.neg x) { re := x.im, im := Real.instNeg.neg x.re }))
 ```
 
-### D097: `HighamBench.p09RadixTwoCoefficientApply`
+### D092: `HighamBench.p09RadixTwoCoefficientApply`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -3130,7 +2903,7 @@ Definition body (one-level semantic boundary):
 fun j x => ite (Eq j 0) x (Complex.instNeg.neg x)
 ```
 
-### D098: `HighamBench.p09RootAngle`
+### D093: `HighamBench.p09RootAngle`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -3156,7 +2929,7 @@ Definition body (one-level semantic boundary):
 fun {q} [NeZero q] j => instHDiv.hDiv (instHMul.hMul (instHMul.hMul 2 Real.pi) j.val.cast) q.cast
 ```
 
-### D099: `HighamBench.p09RoundedComplexAdd`
+### D094: `HighamBench.p09RoundedComplexAdd`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -3182,7 +2955,7 @@ Definition body (one-level semantic boundary):
 fun model x y => { re := model.flAdd x.re y.re, im := model.flAdd x.im y.im }
 ```
 
-### D100: `HighamBench.p09RoundedComplexSum`
+### D095: `HighamBench.p09RoundedComplexSum`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -3213,7 +2986,7 @@ fun {q} [NeZero q] model term =>
     im := HighamBench.recursiveSum model.flAdd q fun i => (term (EquivLike.toFunLike.coe index i)).im }
 ```
 
-### D101: `HighamBench.p09RoundedRadixFourBlock._proof_1`
+### D096: `HighamBench.p09RoundedRadixFourBlock._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -3236,7 +3009,7 @@ Fully explicit type:
     (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D102: `HighamBench.p09RoundedRadixTwoBlock._proof_1`
+### D097: `HighamBench.p09RoundedRadixTwoBlock._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Base`
@@ -3259,7 +3032,7 @@ Fully explicit type:
     (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D103: `HighamBench.recursiveSum`
+### D098: `HighamBench.recursiveSum`
 
 - Role: `local`
 - Owner module: `HighamBench.Core`
@@ -3291,7 +3064,7 @@ fun flAdd x x_1 =>
     x_1
 ```
 
-### D104: `HighamBench.recursiveSum._proof_1`
+### D099: `HighamBench.recursiveSum._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.Core`
@@ -3314,7 +3087,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D105: `HighamBench.recursiveSum.match_1`
+### D100: `HighamBench.recursiveSum.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.Core`
@@ -3359,7 +3132,7 @@ fun motive x x_1 h_1 h_2 =>
   Nat.casesOn (motive := fun x => (x_2 : Fin x → Real) → motive x x_2) x (fun x => h_1 x) (fun n x => h_2 n x) x_1
 ```
 
-### D106: `And`
+### D101: `And`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3379,7 +3152,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D107: `DivInvMonoid.toDiv`
+### D102: `DivInvMonoid.toDiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -3405,7 +3178,7 @@ Definition body (one-level semantic boundary):
 fun G [self : DivInvMonoid G] => self.3
 ```
 
-### D108: `Exists`
+### D103: `Exists`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -3425,7 +3198,7 @@ Fully explicit type:
 {α : Sort u} → (p : α → Prop) → Prop
 ```
 
-### D109: `Fin`
+### D104: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3445,7 +3218,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D110: `Fin.fintype`
+### D105: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -3471,7 +3244,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D111: `Finset.sum`
+### D106: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -3497,7 +3270,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D112: `Finset.univ`
+### D107: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -3523,7 +3296,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D113: `HAdd.hAdd`
+### D108: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3549,7 +3322,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D114: `HDiv.hDiv`
+### D109: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3575,7 +3348,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D115: `HMul.hMul`
+### D110: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3601,7 +3374,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D116: `HPow.hPow`
+### D111: `HPow.hPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3627,7 +3400,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HPow α β γ] => self.1
 ```
 
-### D117: `LE.le`
+### D112: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3653,7 +3426,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D118: `LT.lt`
+### D113: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3679,7 +3452,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LT α] => self.1
 ```
 
-### D119: `Monoid.toNatPow`
+### D114: `Monoid.toNatPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -3705,7 +3478,7 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
 ```
 
-### D120: `MulZeroClass.toZero`
+### D115: `MulZeroClass.toZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.GroupWithZero.Defs`
@@ -3731,7 +3504,7 @@ Definition body (one-level semantic boundary):
 fun M₀ [self : MulZeroClass M₀] => self.2
 ```
 
-### D121: `Nat`
+### D116: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3751,7 +3524,7 @@ Fully explicit type:
 Type
 ```
 
-### D122: `Nat.instMulZeroClass`
+### D117: `Nat.instMulZeroClass`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.GroupWithZero.Nat`
@@ -3778,7 +3551,7 @@ Definition body (one-level semantic boundary):
   mul_zero := Nat.mul_zero }
 ```
 
-### D123: `NeZero`
+### D118: `NeZero`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.NeZero`
@@ -3798,7 +3571,7 @@ Fully explicit type:
 {R : Type u_1} → [Zero.{u_1} R] → (n : R) → Prop
 ```
 
-### D124: `OfNat.ofNat`
+### D119: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3824,7 +3597,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D125: `Real`
+### D120: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3844,7 +3617,7 @@ Fully explicit type:
 Type
 ```
 
-### D126: `Real.instAdd`
+### D121: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3870,7 +3643,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D127: `Real.instAddCommMonoid`
+### D122: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3896,7 +3669,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D128: `Real.instDivInvMonoid`
+### D123: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3924,7 +3697,7 @@ Definition body (one-level semantic boundary):
   zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D129: `Real.instLE`
+### D124: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3950,7 +3723,7 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D130: `Real.instLT`
+### D125: `Real.instLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3976,7 +3749,7 @@ Definition body (one-level semantic boundary):
 { lt := Real.lt✝ }
 ```
 
-### D131: `Real.instMonoid`
+### D126: `Real.instMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4002,7 +3775,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D132: `Real.instMul`
+### D127: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4028,7 +3801,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D133: `Real.instZero`
+### D128: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4054,7 +3827,7 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D134: `Subtype.val`
+### D129: `Subtype.val`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4080,7 +3853,7 @@ Definition body (one-level semantic boundary):
 fun α p self => self.1
 ```
 
-### D135: `Zero.toOfNat0`
+### D130: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -4106,7 +3879,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D136: `instHAdd`
+### D131: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4132,7 +3905,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D137: `instHDiv`
+### D132: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4158,7 +3931,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
-### D138: `instHMul`
+### D133: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4184,7 +3957,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D139: `instHPow`
+### D134: `instHPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4210,7 +3983,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
-### D140: `instOfNatNat`
+### D135: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4236,7 +4009,7 @@ Definition body (one-level semantic boundary):
 fun n => { ofNat := n }
 ```
 
-### D141: `Nat.cast`
+### D136: `Nat.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Cast`
@@ -4262,7 +4035,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D142: `Real.instNatCast`
+### D137: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4288,7 +4061,7 @@ Definition body (one-level semantic boundary):
 { natCast := fun n => { cauchy := n.cast } }
 ```
 
-### D143: `Real.sqrt`
+### D138: `Real.sqrt`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Sqrt`
@@ -4314,7 +4087,7 @@ Definition body (one-level semantic boundary):
 fun x => ((instFunLikeOrderIso NNReal NNReal).coe NNReal.sqrt x.toNNReal).toReal
 ```
 
-### D144: `Subtype`
+### D139: `Subtype`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4334,7 +4107,7 @@ Fully explicit type:
 {α : Sort u} → (p : α → Prop) → Sort (max 1 u)
 ```
 
-### D145: `AddCommMonoidWithOne.toAddMonoidWithOne`
+### D140: `AddCommMonoidWithOne.toAddMonoidWithOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -4360,7 +4133,7 @@ Definition body (one-level semantic boundary):
 fun R [self : AddCommMonoidWithOne R] => self.1
 ```
 
-### D146: `AddMonoidWithOne.toNatCast`
+### D141: `AddMonoidWithOne.toNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -4386,7 +4159,7 @@ Definition body (one-level semantic boundary):
 fun R [self : AddMonoidWithOne R] => self.1
 ```
 
-### D147: `Complex`
+### D142: `Complex`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -4406,7 +4179,7 @@ Fully explicit type:
 Type
 ```
 
-### D148: `Complex.instNorm`
+### D143: `Complex.instNorm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Complex.Norm`
@@ -4432,7 +4205,7 @@ Definition body (one-level semantic boundary):
 { norm := fun z => (MonoidWithZeroHom.funLike.coe Complex.normSq z).sqrt }
 ```
 
-### D149: `Complex.instSub`
+### D144: `Complex.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -4458,7 +4231,7 @@ Definition body (one-level semantic boundary):
 { sub := fun z w => { re := instHSub.hSub z.re w.re, im := instHSub.hSub z.im w.im } }
 ```
 
-### D150: `ENNReal`
+### D145: `ENNReal`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ENNReal.Basic`
@@ -4484,7 +4257,7 @@ Definition body (one-level semantic boundary):
 WithTop NNReal
 ```
 
-### D151: `Eq`
+### D146: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4504,7 +4277,7 @@ Fully explicit type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D152: `Fin.instOfNat`
+### D147: `Fin.instOfNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Basic`
@@ -4530,7 +4303,7 @@ Definition body (one-level semantic boundary):
 fun {n} [NeZero n] {i} => { ofNat := Fin.ofNat n i }
 ```
 
-### D153: `Finset.prod`
+### D148: `Finset.prod`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -4556,7 +4329,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [CommMonoid M] s f => (Multiset.map f s.val).prod
 ```
 
-### D154: `HSub.hSub`
+### D149: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4582,7 +4355,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D155: `Nat.below`
+### D150: `Nat.below`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4608,7 +4381,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t => Nat.rec PUnit (fun n n_ih => PProd (motive n) n_ih) t
 ```
 
-### D156: `Nat.brecOn`
+### D151: `Nat.brecOn`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4634,7 +4407,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t F_1 => (Nat.brecOn.go t F_1).1
 ```
 
-### D157: `Nat.instCommMonoid`
+### D152: `Nat.instCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Nat.Defs`
@@ -4662,7 +4435,7 @@ Definition body (one-level semantic boundary):
   mul_comm := Nat.mul_comm }
 ```
 
-### D158: `Nat.ne_of_gt`
+### D153: `Nat.ne_of_gt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Nat.Basic`
@@ -4682,7 +4455,7 @@ Fully explicit type:
 ∀ {a b : Nat} (h : @LT.lt.{0} Nat instLTNat b a), @Ne.{1} Nat a b
 ```
 
-### D159: `Nat.succ`
+### D154: `Nat.succ`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4702,7 +4475,7 @@ Fully explicit type:
 (n : Nat) → Nat
 ```
 
-### D160: `NeZero.mk`
+### D155: `NeZero.mk`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.NeZero`
@@ -4723,7 +4496,7 @@ Fully explicit type:
   (out : @Ne.{u_1 + 1} R n (@OfNat.ofNat.{u_1} R (nat_lit 0) (@Zero.toOfNat0.{u_1} R inst))), @NeZero.{u_1} R inst n
 ```
 
-### D161: `Norm.norm`
+### D156: `Norm.norm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
@@ -4749,7 +4522,7 @@ Definition body (one-level semantic boundary):
 fun E [self : Norm E] => self.1
 ```
 
-### D162: `One.toOfNat1`
+### D157: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -4775,7 +4548,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D163: `PiLp.instNorm`
+### D158: `PiLp.instNorm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Lp.PiLp`
@@ -4809,7 +4582,7 @@ fun p {ι} β [Fintype ι] [inst_1 : (i : ι) → Norm (β i)] =>
             (instHDiv.hDiv 1 p.toReal))) }
 ```
 
-### D164: `Real.instOne`
+### D159: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4835,7 +4608,7 @@ Definition body (one-level semantic boundary):
 { one := Real.one✝ }
 ```
 
-### D165: `Real.instSub`
+### D160: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4861,7 +4634,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D166: `WithLp`
+### D161: `WithLp`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Lp.WithLp`
@@ -4881,7 +4654,7 @@ Fully explicit type:
 (p : ENNReal) → (V : Type u_1) → Type u_1
 ```
 
-### D167: `WithLp.toLp`
+### D162: `WithLp.toLp`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Lp.WithLp`
@@ -4901,7 +4674,7 @@ Fully explicit type:
 (p : ENNReal) → {V : Type u_1} → (ofLp : V) → WithLp.{u_1} p V
 ```
 
-### D168: `instAddCommMonoidWithOneENNReal`
+### D163: `instAddCommMonoidWithOneENNReal`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ENNReal.Basic`
@@ -4927,7 +4700,7 @@ Definition body (one-level semantic boundary):
 WithTop.addCommMonoidWithOne
 ```
 
-### D169: `instAddNat`
+### D164: `instAddNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4953,7 +4726,7 @@ Definition body (one-level semantic boundary):
 { add := Nat.add }
 ```
 
-### D170: `instHSub`
+### D165: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4979,7 +4752,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D171: `instLENat`
+### D166: `instLENat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5005,7 +4778,7 @@ Definition body (one-level semantic boundary):
 { le := Nat.le }
 ```
 
-### D172: `instOfNatAtLeastTwo`
+### D167: `instOfNatAtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -5031,7 +4804,7 @@ Definition body (one-level semantic boundary):
 fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
 ```
 
-### D173: `Fin.castLE`
+### D168: `Fin.castLE`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Basic`
@@ -5057,7 +4830,7 @@ Definition body (one-level semantic boundary):
 fun {n m} h i => ⟨i.val, ⋯⟩
 ```
 
-### D174: `Fin.mk`
+### D169: `Fin.mk`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5077,63 +4850,7 @@ Fully explicit type:
 {n : Nat} → (val : Nat) → (isLt : @LT.lt.{0} Nat instLTNat val n) → Fin n
 ```
 
-### D175: `Fin.succ`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Fin.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `72d7aaf169e5a264dac79e6aeec8a81c4436ffab27e5dbad2956eaeb4a147cad`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  Fin n →
-    Fin
-      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} x => Fin.succ.match_1 (fun x => Fin (instHAdd.hAdd n 1)) x fun i h => ⟨instHAdd.hAdd i 1, ⋯⟩
-```
-
-### D176: `Fin.val`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `4`
-- Semantic SHA-256: `74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Nat
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : Fin n) → Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.1
-```
-
-### D177: `Fintype`
+### D170: `Fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -5153,7 +4870,7 @@ Fully explicit type:
 (α : Type u_4) → Type u_4
 ```
 
-### D178: `Nat.AtLeastTwo`
+### D171: `Nat.AtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Init`
@@ -5173,7 +4890,7 @@ Fully explicit type:
 (n : Nat) → Prop
 ```
 
-### D179: `Nat.casesOn`
+### D172: `Nat.casesOn`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5200,7 +4917,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t zero succ => Nat.rec zero (fun n n_ih => succ n) t
 ```
 
-### D180: `Nat.decLt`
+### D173: `Nat.decLt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5226,7 +4943,7 @@ Definition body (one-level semantic boundary):
 fun n m => n.succ.decLe m
 ```
 
-### D181: `Not`
+### D174: `Not`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5252,7 +4969,7 @@ Definition body (one-level semantic boundary):
 fun a => a → False
 ```
 
-### D182: `Pi.instFintype`
+### D175: `Pi.instFintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Pi`
@@ -5283,7 +5000,7 @@ fun {α} {β} [DecidableEq α] [Fintype α] [(a : α) → Fintype (β a)] =>
   { elems := Fintype.piFinset fun x => Finset.univ, complete := ⋯ }
 ```
 
-### D183: `ZMod`
+### D176: `ZMod`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ZMod.Defs`
@@ -5309,7 +5026,7 @@ Definition body (one-level semantic boundary):
 fun x => ZMod.match_1 (fun x => Type) x (fun _ => Int) fun n => Fin (instHAdd.hAdd n 1)
 ```
 
-### D184: `ZMod.fintype`
+### D177: `ZMod.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ZMod.Defs`
@@ -5337,7 +5054,7 @@ fun x x_1 =>
     Fin.fintype (instHAdd.hAdd n 1)
 ```
 
-### D185: `Zero.ofOfNat0`
+### D178: `Zero.ofOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -5363,7 +5080,7 @@ Definition body (one-level semantic boundary):
 fun {α} [OfNat α 0] => { zero := 0 }
 ```
 
-### D186: `dite`
+### D179: `dite`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5389,7 +5106,7 @@ Definition body (one-level semantic boundary):
 fun {α} c [h : Decidable c] t e => Decidable.casesOn h e t
 ```
 
-### D187: `inferInstance`
+### D180: `inferInstance`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5415,7 +5132,7 @@ Definition body (one-level semantic boundary):
 fun {α} [i : α] => i
 ```
 
-### D188: `instDecidableEqFin`
+### D181: `instDecidableEqFin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5443,7 +5160,7 @@ fun n i j =>
     fun h => Decidable.isFalse ⋯
 ```
 
-### D189: `instDecidableEqNat`
+### D182: `instDecidableEqNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5469,7 +5186,7 @@ Definition body (one-level semantic boundary):
 Nat.decEq
 ```
 
-### D190: `instLTNat`
+### D183: `instLTNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5495,7 +5212,7 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D191: `ite`
+### D184: `ite`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5521,7 +5238,7 @@ Definition body (one-level semantic boundary):
 fun {α} c [h : Decidable c] t e => Decidable.casesOn h (fun x => e) fun x => t
 ```
 
-### D192: `AddChar`
+### D185: `AddChar`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.AddChar`
@@ -5541,7 +5258,7 @@ Fully explicit type:
 (A : Type u_1) → [AddMonoid.{u_1} A] → (M : Type u_2) → [Monoid.{u_2} M] → Type (max u_1 u_2)
 ```
 
-### D193: `AddChar.instFunLike`
+### D186: `AddChar.instFunLike`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.AddChar`
@@ -5571,7 +5288,7 @@ Definition body (one-level semantic boundary):
 fun {A} {M} [AddMonoid A] [Monoid M] => { coe := AddChar.toFun, coe_injective' := ⋯ }
 ```
 
-### D194: `AddGroupWithOne.toAddMonoidWithOne`
+### D187: `AddGroupWithOne.toAddMonoidWithOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Int.Cast.Defs`
@@ -5597,7 +5314,7 @@ Definition body (one-level semantic boundary):
 fun R [self : AddGroupWithOne R] => self.2
 ```
 
-### D195: `AddMonoidWithOne.toAddMonoid`
+### D188: `AddMonoidWithOne.toAddMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -5623,7 +5340,7 @@ Definition body (one-level semantic boundary):
 fun R [self : AddMonoidWithOne R] => self.2
 ```
 
-### D196: `Bool`
+### D189: `Bool`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5643,7 +5360,7 @@ Fully explicit type:
 Type
 ```
 
-### D197: `CommRing.toNonUnitalCommRing`
+### D190: `CommRing.toNonUnitalCommRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -5672,7 +5389,7 @@ fun {α} [s : CommRing α] =>
     left_distrib := ⋯, right_distrib := ⋯, zero_mul := ⋯, mul_zero := ⋯, mul_assoc := ⋯, mul_comm := ⋯ }
 ```
 
-### D198: `CommRing.toRing`
+### D191: `CommRing.toRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -5698,7 +5415,7 @@ Definition body (one-level semantic boundary):
 fun α [self : CommRing α] => self.1
 ```
 
-### D199: `Complex.instMul`
+### D192: `Complex.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -5727,7 +5444,7 @@ Definition body (one-level semantic boundary):
       im := instHAdd.hAdd (instHMul.hMul z.re w.im) (instHMul.hMul z.im w.re) } }
 ```
 
-### D200: `Complex.instNormedAddCommGroup`
+### D193: `Complex.instNormedAddCommGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Complex.Norm`
@@ -5755,7 +5472,7 @@ Definition body (one-level semantic boundary):
     eq_zero_of_map_eq_zero' := Complex.instNormedAddCommGroup._proof_1 }.toNormedAddCommGroup
 ```
 
-### D201: `Complex.instNormedField`
+### D194: `Complex.instNormedField`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Complex.Basic`
@@ -5783,7 +5500,7 @@ Definition body (one-level semantic boundary):
   norm_mul := Complex.norm_mul }
 ```
 
-### D202: `Complex.instSemiring`
+### D195: `Complex.instSemiring`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -5809,7 +5526,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D203: `DFunLike.coe`
+### D196: `DFunLike.coe`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.FunLike.Basic`
@@ -5837,7 +5554,7 @@ Definition body (one-level semantic boundary):
 fun F {α} {β} [self : DFunLike F α β] => self.1
 ```
 
-### D204: `Decidable.decide`
+### D197: `Decidable.decide`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5863,7 +5580,7 @@ Definition body (one-level semantic boundary):
 fun p [h : Decidable p] => Decidable.casesOn h (fun x => Bool.false) fun x => Bool.true
 ```
 
-### D205: `Distrib.toMul`
+### D198: `Distrib.toMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -5889,7 +5606,7 @@ Definition body (one-level semantic boundary):
 fun R [self : Distrib R] => self.1
 ```
 
-### D206: `ENormedAddCommMonoid.toESeminormedAddCommMonoid`
+### D199: `ENormedAddCommMonoid.toESeminormedAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
@@ -5917,7 +5634,7 @@ Definition body (one-level semantic boundary):
 fun E {inst} [self : ENormedAddCommMonoid E] => self.1
 ```
 
-### D207: `ESeminormedAddCommMonoid.toAddCommMonoid`
+### D200: `ESeminormedAddCommMonoid.toAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
@@ -5944,7 +5661,7 @@ Definition body (one-level semantic boundary):
 fun E [TopologicalSpace E] self => { toAddMonoid := self.toAddMonoid, add_comm := ⋯ }
 ```
 
-### D208: `Equiv`
+### D201: `Equiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Logic.Equiv.Defs`
@@ -5964,7 +5681,7 @@ Fully explicit type:
 (α : Sort u_1) → (β : Sort u_2) → Sort (max (max 1 u_1) u_2)
 ```
 
-### D209: `Fin.castSucc`
+### D202: `Fin.castSucc`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Basic`
@@ -5994,7 +5711,7 @@ Definition body (one-level semantic boundary):
 fun {n} => Fin.castAdd 1
 ```
 
-### D210: `Fin.last`
+### D203: `Fin.last`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Basic`
@@ -6023,7 +5740,63 @@ Definition body (one-level semantic boundary):
 fun n => ⟨n, ⋯⟩
 ```
 
-### D211: `Function.Surjective`
+### D204: `Fin.succ`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `72d7aaf169e5a264dac79e6aeec8a81c4436ffab27e5dbad2956eaeb4a147cad`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  Fin n →
+    Fin
+      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} x => Fin.succ.match_1 (fun x => Fin (instHAdd.hAdd n 1)) x fun i h => ⟨instHAdd.hAdd i 1, ⋯⟩
+```
+
+### D205: `Fin.val`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Nat
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : Fin n) → Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.1
+```
+
+### D206: `Function.Surjective`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Function`
@@ -6049,7 +5822,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} f => ∀ (b : β), Exists fun a => Eq (f a) b
 ```
 
-### D212: `Function.update`
+### D207: `Function.update`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Logic.Function.Basic`
@@ -6075,7 +5848,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [DecidableEq α] f a' v a => if h : Eq a a' then Eq.ndrec v ⋯ else f a
 ```
 
-### D213: `MonoidWithZero.toMonoid`
+### D208: `MonoidWithZero.toMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.GroupWithZero.Defs`
@@ -6101,7 +5874,7 @@ Definition body (one-level semantic boundary):
 fun M₀ [self : MonoidWithZero M₀] => self.1
 ```
 
-### D214: `NonUnitalCommRing.toNonUnitalNonAssocCommRing`
+### D209: `NonUnitalCommRing.toNonUnitalNonAssocCommRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -6127,7 +5900,7 @@ Definition body (one-level semantic boundary):
 fun α self => { toNonUnitalNonAssocRing := self.toNonUnitalNonAssocRing, mul_comm := ⋯ }
 ```
 
-### D215: `NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing`
+### D210: `NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -6153,7 +5926,7 @@ Definition body (one-level semantic boundary):
 fun α [self : NonUnitalNonAssocCommRing α] => self.1
 ```
 
-### D216: `NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring`
+### D211: `NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -6181,7 +5954,7 @@ fun α self =>
     zero_mul := ⋯, mul_zero := ⋯ }
 ```
 
-### D217: `NonUnitalNonAssocSemiring.toDistrib`
+### D212: `NonUnitalNonAssocSemiring.toDistrib`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -6207,7 +5980,7 @@ Definition body (one-level semantic boundary):
 fun α self => { toMul := self.toMul, toAdd := self.toAdd, left_distrib := ⋯, right_distrib := ⋯ }
 ```
 
-### D218: `NormedAddCommGroup.toENormedAddCommMonoid`
+### D213: `NormedAddCommGroup.toENormedAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Continuity`
@@ -6242,7 +6015,7 @@ fun {E} [inst : NormedAddCommGroup E] =>
   { toESeminormedAddMonoid := __spread.0.toESeminormedAddMonoid, add_comm := ⋯, enorm_eq_zero := ⋯ }
 ```
 
-### D219: `NormedCommRing.toSeminormedCommRing`
+### D214: `NormedCommRing.toSeminormedCommRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
@@ -6270,7 +6043,7 @@ fun {α} [β : NormedCommRing α] =>
     norm_mul_le := ⋯, mul_comm := ⋯ }
 ```
 
-### D220: `NormedField.toNormedCommRing`
+### D215: `NormedField.toNormedCommRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Field.Basic`
@@ -6299,7 +6072,7 @@ fun {α} [inst : NormedField α] =>
     norm_mul_le := ⋯, mul_comm := ⋯ }
 ```
 
-### D221: `PseudoMetricSpace.toUniformSpace`
+### D216: `PseudoMetricSpace.toUniformSpace`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Topology.MetricSpace.Pseudo.Defs`
@@ -6325,7 +6098,7 @@ Definition body (one-level semantic boundary):
 fun α [self : PseudoMetricSpace α] => self.7
 ```
 
-### D222: `Real.cos`
+### D217: `Real.cos`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Complex.Trigonometric`
@@ -6351,7 +6124,7 @@ Definition body (one-level semantic boundary):
 fun x => (Complex.cos (Complex.ofReal x)).re
 ```
 
-### D223: `Real.instAddGroup`
+### D218: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -6377,7 +6150,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D224: `Real.lattice`
+### D219: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -6403,7 +6176,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D225: `Real.sin`
+### D220: `Real.sin`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Complex.Trigonometric`
@@ -6429,7 +6202,7 @@ Definition body (one-level semantic boundary):
 fun x => (Complex.sin (Complex.ofReal x)).re
 ```
 
-### D226: `Ring.toAddGroupWithOne`
+### D221: `Ring.toAddGroupWithOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -6459,7 +6232,7 @@ fun R self =>
     intCast_negSucc := ⋯ }
 ```
 
-### D227: `SeminormedCommRing.toSeminormedRing`
+### D222: `SeminormedCommRing.toSeminormedRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
@@ -6485,7 +6258,7 @@ Definition body (one-level semantic boundary):
 fun α [self : SeminormedCommRing α] => self.1
 ```
 
-### D228: `SeminormedRing.toPseudoMetricSpace`
+### D223: `SeminormedRing.toPseudoMetricSpace`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
@@ -6511,7 +6284,7 @@ Definition body (one-level semantic boundary):
 fun α [self : SeminormedRing α] => self.3
 ```
 
-### D229: `Semiring.toMonoidWithZero`
+### D224: `Semiring.toMonoidWithZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -6539,7 +6312,7 @@ fun α self =>
     npow_zero := ⋯, npow_succ := ⋯, toZero := self.toZero, zero_mul := ⋯, mul_zero := ⋯ }
 ```
 
-### D230: `UniformSpace.toTopologicalSpace`
+### D225: `UniformSpace.toTopologicalSpace`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Topology.UniformSpace.Defs`
@@ -6565,7 +6338,7 @@ Definition body (one-level semantic boundary):
 fun α [self : UniformSpace α] => self.1
 ```
 
-### D231: `ZMod.commRing`
+### D226: `ZMod.commRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ZMod.Defs`
@@ -6615,7 +6388,7 @@ fun n =>
     intCast_negSucc := ⋯, mul_comm := ⋯ }
 ```
 
-### D232: `ZMod.stdAddChar`
+### D227: `ZMod.stdAddChar`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.SpecialFunctions.Complex.CircleAddChar`
@@ -6647,7 +6420,7 @@ Definition body (one-level semantic boundary):
 fun {N} [NeZero N] => Circle.coeHom.compAddChar ZMod.toCircle
 ```
 
-### D233: `abs`
+### D228: `abs`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
@@ -6674,7 +6447,7 @@ fun {α} [Lattice α] [AddGroup α] a =>
   SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
 ```
 
-### D234: `Equiv.instEquivLike`
+### D229: `Equiv.instEquivLike`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Logic.Equiv.Defs`
@@ -6700,7 +6473,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} => { coe := Equiv.toFun, inv := Equiv.invFun, left_inv := ⋯, right_inv := ⋯, coe_injective' := ⋯ }
 ```
 
-### D235: `EquivLike.toFunLike`
+### D230: `EquivLike.toFunLike`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.FunLike.Equiv`
@@ -6726,7 +6499,7 @@ Definition body (one-level semantic boundary):
 fun {E} {α} {β} [inst : EquivLike E α β] => { coe := inst.coe, coe_injective' := ⋯ }
 ```
 
-### D236: `List.foldl`
+### D231: `List.foldl`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -6757,7 +6530,7 @@ fun {α} {β} f x x_1 =>
     x
 ```
 
-### D237: `List.ofFn`
+### D232: `List.ofFn`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.List.OfFn`
@@ -6783,7 +6556,7 @@ Definition body (one-level semantic boundary):
 fun {α} {n} f => Fin.foldr n (fun x1 x2 => List.cons (f x1) x2) List.nil
 ```
 
-### D238: `Ne`
+### D233: `Ne`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -6809,7 +6582,7 @@ Definition body (one-level semantic boundary):
 fun {α} a b => Not (Eq a b)
 ```
 
-### D239: `Prod`
+### D234: `Prod`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -6829,7 +6602,7 @@ Fully explicit type:
 (α : Type u) → (β : Type v) → Type (max u v)
 ```
 
-### D240: `instMulNat`
+### D235: `instMulNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -6855,7 +6628,7 @@ Definition body (one-level semantic boundary):
 { mul := Nat.mul }
 ```
 
-### D241: `Bool.true`
+### D236: `Bool.true`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -6875,7 +6648,7 @@ Fully explicit type:
 Bool
 ```
 
-### D242: `Equiv.symm`
+### D237: `Equiv.symm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Logic.Equiv.Defs`
@@ -6901,7 +6674,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} e => { toFun := e.invFun, invFun := e.toFun, left_inv := ⋯, right_inv := ⋯ }
 ```
 
-### D243: `Prod.fst`
+### D238: `Prod.fst`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -6927,7 +6700,7 @@ Definition body (one-level semantic boundary):
 fun α β self => self.1
 ```
 
-### D244: `Prod.mk`
+### D239: `Prod.mk`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -6947,7 +6720,7 @@ Fully explicit type:
 {α : Type u} → {β : Type v} → (fst : α) → (snd : β) → Prod.{u, v} α β
 ```
 
-### D245: `Prod.snd`
+### D240: `Prod.snd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -6973,7 +6746,7 @@ Definition body (one-level semantic boundary):
 fun α β self => self.2
 ```
 
-### D246: `instDecidableEqBool`
+### D241: `instDecidableEqBool`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -6999,7 +6772,7 @@ Definition body (one-level semantic boundary):
 Bool.decEq
 ```
 
-### D247: `Eq.rec`
+### D242: `Eq.rec`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -7023,7 +6796,7 @@ Fully explicit type:
       (refl : motive a (@Eq.refl.{u_1} α a)) → {a_1 : α} → (t : @Eq.{u_1} α a a_1) → motive a_1 t
 ```
 
-### D248: `Complex.im`
+### D243: `Complex.im`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -7049,7 +6822,7 @@ Definition body (one-level semantic boundary):
 fun self => self.2
 ```
 
-### D249: `Complex.mk`
+### D244: `Complex.mk`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -7069,7 +6842,7 @@ Fully explicit type:
 (re im : Real) → Complex
 ```
 
-### D250: `Complex.re`
+### D245: `Complex.re`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -7095,7 +6868,7 @@ Definition body (one-level semantic boundary):
 fun self => self.1
 ```
 
-### D251: `Distrib.toAdd`
+### D246: `Distrib.toAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -7121,7 +6894,7 @@ Definition body (one-level semantic boundary):
 fun R [self : Distrib R] => self.2
 ```
 
-### D252: `Fin.instAdd`
+### D247: `Fin.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Basic`
@@ -7147,7 +6920,7 @@ Definition body (one-level semantic boundary):
 fun {n} => { add := Fin.add }
 ```
 
-### D253: `Fin.instMul`
+### D248: `Fin.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Basic`
@@ -7173,7 +6946,7 @@ Definition body (one-level semantic boundary):
 fun {n} => { mul := Fin.mul }
 ```
 
-### D254: `Neg.neg`
+### D249: `Neg.neg`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -7199,7 +6972,7 @@ Definition body (one-level semantic boundary):
 fun α [self : Neg α] => self.1
 ```
 
-### D255: `Real.instNeg`
+### D250: `Real.instNeg`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -7225,7 +6998,7 @@ Definition body (one-level semantic boundary):
 { neg := Real.neg✝ }
 ```
 
-### D256: `RingEquiv.toEquiv`
+### D251: `RingEquiv.toEquiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Equiv`
@@ -7258,7 +7031,7 @@ Definition body (one-level semantic boundary):
 fun R S [Mul R] [Mul S] [Add R] [Add S] self => self.1
 ```
 
-### D257: `ZMod.finEquiv`
+### D252: `ZMod.finEquiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ZMod.Basic`
@@ -7301,7 +7074,7 @@ fun x x_1 =>
     RingEquiv.refl (Fin (instHAdd.hAdd n 1))
 ```
 
-### D258: `AddMonoidWithOne.toOne`
+### D253: `AddMonoidWithOne.toOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -7327,7 +7100,7 @@ Definition body (one-level semantic boundary):
 fun R [self : AddMonoidWithOne R] => self.3
 ```
 
-### D259: `Complex.instNeg`
+### D254: `Complex.instNeg`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -7353,7 +7126,7 @@ Definition body (one-level semantic boundary):
 { neg := fun z => { re := Real.instNeg.neg z.re, im := Real.instNeg.neg z.im } }
 ```
 
-### D260: `NonUnitalNonAssocSemiring.toMulZeroClass`
+### D255: `NonUnitalNonAssocSemiring.toMulZeroClass`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -7379,7 +7152,7 @@ Definition body (one-level semantic boundary):
 fun α self => { toMul := self.toMul, toZero := self.toZero, zero_mul := ⋯, mul_zero := ⋯ }
 ```
 
-### D261: `Real.pi`
+### D256: `Real.pi`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic`
@@ -7405,7 +7178,7 @@ Definition body (one-level semantic boundary):
 instHMul.hMul 2 (Classical.choose Real.exists_cos_eq_zero)
 ```
 
-### D262: `ZMod.decidableEq`
+### D257: `ZMod.decidableEq`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ZMod.Defs`
@@ -7433,7 +7206,7 @@ fun x =>
     inferInstanceAs (DecidableEq (Fin (instHAdd.hAdd n 1)))
 ```
 
-### D263: `ZMod.val`
+### D258: `ZMod.val`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ZMod.Basic`
@@ -7459,7 +7232,7 @@ Definition body (one-level semantic boundary):
 fun x => ZMod.val.match_1 (fun x => ZMod x → Nat) x (fun _ => Int.natAbs) fun n => Fin.val
 ```
 
-### D264: `Nat.zero`
+### D259: `Nat.zero`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`

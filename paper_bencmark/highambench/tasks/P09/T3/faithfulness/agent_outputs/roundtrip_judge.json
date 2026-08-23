@@ -3,129 +3,129 @@
   "role": "roundtrip-judge",
   "task_id": "P09-T3",
   "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
-  "blind_translation_sha256": "6a2c37055a5fd9cfb4e0009c1850f47891f85c8c004bdfaf53fa71cfe34fd7c8",
+  "blind_translation_sha256": "2c1dc8708414cf639b0aec4e838b3e49291454efd9440c68f2153131deeedd7b",
   "semantic_checklist": [
     {
       "id": "S01",
-      "status": "pass",
-      "paper_evidence": "The inspected PDF is the 1971 Mathematics of Computation article by George U. Ramos, with Theorem 1 on printed page 759 and the selected multidimensional RMS result in Theorem 2(a) on printed page 764.",
-      "translation_evidence": "The translation identifies the selected result as a multidimensional relative RMS forward-error bound using the per-axis constants inherited from the one-dimensional staged FFT.",
-      "reasoning": "The paper version, selected theorem clause, and relevant surrounding derivation are correctly identified."
+      "status": "fail",
+      "paper_evidence": "The authoritative PDF is the October 1971 Mathematics of Computation article, volume 25, issue 116, printed pages 757-768. Theorem 2(a) is on PDF page 8, printed page 764. The exact-input statement is on PDF page 9, printed page 765, not PDF page 12, printed page 768.",
+      "translation_evidence": "The translation targets the relative RMS clause of the multidimensional theorem and encodes exact input through componentwise fixed input rounding.",
+      "reasoning": "The substantive theorem selection is correct, but the supplied source locator incorrectly assigns the exact-input statement to printed page 768. That page instead continues the later one-dimensional fictional-input interpretation."
     },
     {
       "id": "S02",
-      "status": "pass",
-      "paper_evidence": "Equation (4.1) uses m coordinates, positive transform orders N_l, complex arrays, and source and target indices ranging from 0 through N_l-1.",
-      "translation_evidence": "The translation uses m nonempty axes, positive orders n_i, complex arrays indexed by the dependent product of ZMod(n_i), and axes indexed by Fin m.",
-      "reasoning": "For positive orders, the finite cyclic index types represent the same zero-based product index sets, and the dimensions and value types agree."
+      "status": "unclear",
+      "paper_evidence": "Equation (4.1) uses m dimensions, coordinate lengths N_l, and indices s_l,t_l from 0 through N_l-1. The paper does not explicitly discuss length-one coordinates.",
+      "translation_evidence": "The translation uses m nonzero, axes indexed by Fin m, and product coordinates ZMod(n_i). Each axis plan has a positive stage count and radices at least two whose product is n_i, thereby forcing n_i at least two.",
+      "reasoning": "Fin m and ZMod(n_i) correctly represent the paper's dimension and zero-based finite coordinates for positive lengths. Whether exclusion of N_l=1 narrows the paper's intended domain is not established by the paper."
     },
     {
       "id": "S03",
       "status": "unclear",
-      "paper_evidence": "The paper treats epsilon as a machine-dependent error constant and writes an unquantified O(epsilon^2) remainder without specifying a family of machines, a neighborhood, or uniformity parameters.",
-      "translation_evidence": "The translation quantifies over a family containing a model and run for every positive epsilon, then existentially chooses C and rho before universally quantifying epsilon at most rho.",
-      "reasoning": "This is a conventional pointwise interpretation of asymptotic notation, but the paper does not provide enough quantifier-level detail to verify that this exact family and witness scope is intended."
+      "paper_evidence": "Theorem 2(a) uses a computer-dependent epsilon and writes an unquantified O(epsilon^2) remainder. It does not specify a radius, hidden-constant dependence, or an epsilon-indexed family of machines and executions.",
+      "translation_evidence": "After fixing m, the plan, gamma, and an entire epsilon-indexed family, the translation existentially chooses C and rho and then quantifies over every positive epsilon at most rho. C and rho may depend on the whole family.",
+      "reasoning": "This is a plausible rigorous interpretation of the paper's asymptotic notation, but the paper does not determine this quantifier order or witness dependence."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The paper assumes the floating arithmetic, trigonometric, nested-FFT, and exact-input models, then states that the local estimate (4.3) follows from Theorem 1 and uses it in the proof.",
-      "translation_evidence": "The translation additionally requires an axisBounds certificate containing common-radius local first-plus-second-order estimates, and the target does not derive that certificate from the primitive floating-point axioms.",
-      "reasoning": "A substantive intermediate result derived in the paper has become an extra premise. The translation therefore applies only after essentially the required local error analysis has already been supplied."
+      "status": "pass",
+      "paper_evidence": "The arithmetic model has epsilon as its positive error scale, gamma is nonnegative, each coordinate uses a Theorem 1 FFT, and Section 6 states that the preceding analysis assumed exactly representable input. Positivity of Y_RMS is implicitly necessary for the displayed ratio.",
+      "translation_evidence": "The family entails gamma at least zero, every epsilon is positive, all axes have validated FFT plans, input rounding fixes the common input componentwise, and the exact-output normalized norm is required to be strictly positive.",
+      "reasoning": "The translation captures the explicit and inherited hypotheses. Its nonzero-denominator condition makes explicit the domain on which the paper's ratio is defined."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Theorem 2(a) bounds relative RMS error by epsilon times the sum of K(N_l,gamma), plus O(epsilon^2), with no total-dimension square-root factor.",
-      "translation_evidence": "The conclusion bounds N(s_0-y)/N(y) by epsilon times the sum of all A_i(gamma), plus C epsilon^2.",
-      "reasoning": "The selected RMS clause, every axis contribution, the denominator, and the absence of the maximum-error dimension factor are preserved."
+      "paper_evidence": "The selected conclusion is Theorem 2(a): global relative RMS forward error is bounded by epsilon times the sum of K(N_l,gamma), plus O(epsilon^2). Clause (b) is a distinct maximum-error result.",
+      "translation_evidence": "The conclusion bounds the relative normalized Euclidean forward error by epsilon B(plan,gamma) plus C epsilon^2, where B is the sum of all per-axis coefficients. It does not substitute the maximum-error clause.",
+      "reasoning": "All first-order components of the selected clause are present. The interpretation of the remainder is assessed separately in S14."
     },
     {
       "id": "S06",
       "status": "unclear",
-      "paper_evidence": "Equation (1.1) explicitly uses the positive-phase kernel exp(i 2 pi j k/N), which is inherited by the multidimensional shorthand in equation (4.1).",
-      "translation_evidence": "The exact axis DFT is described through ZMod.stdAddChar, whose phase is not unfolded in the supplied translation, although floating roots are described using cos(a)+i sin(a) at positive angles.",
-      "reasoning": "The exact imported character remains insufficiently interpreted to verify the paper's positive phase. This cannot be resolved by inferring the intended library definition."
+      "paper_evidence": "Equations (1.1) and (2.1) define the Fourier kernel with the positive phase exp(i 2 pi jk/N); equation (4.1) abbreviates that kernel as e(q).",
+      "translation_evidence": "The exact coordinate transform uses ZMod.stdAddChar, but the dependency ledger cannot recover whether that supplied character is exp(+i 2 pi jk/n) or exp(-i 2 pi jk/n).",
+      "reasoning": "The imported character has not been interpreted far enough to establish the paper's required phase convention. Missing phase information must remain unclear."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper distinguishes exact Y, computed fl(Y), exact intermediates Z_l, computed intermediates, and exactly represented input data.",
-      "translation_evidence": "The translation separately defines exact output y, computed states s_i, global error s_0-y, exact axis transforms, floating axis transforms, and input fixed by flInput.",
-      "reasoning": "Exact, computed, and residual quantities are consistently separated."
+      "paper_evidence": "The paper distinguishes exact Y=T_1...T_m X, computed fl(Y), intermediate exact Z_l, computed intermediates fl(Z_l), and error E=fl(Y)-Y.",
+      "translation_evidence": "The translation separately defines the exact recursive coordinate transform y, computed state zero, fixed exact input, and pointwise forward error as computed output minus y.",
+      "reasoning": "Exact, input-rounded, intermediate, and computed quantities are not conflated."
     },
     {
       "id": "S08",
       "status": "pass",
-      "paper_evidence": "The paper computes fl(T_1 fl(T_2 ... fl(T_m X))), so coordinate m is executed first and coordinate 1 last, using one-dimensional mixed-radix FFT factorizations.",
-      "translation_evidence": "The run has s_m=x and computes s_i from s_{i+1} by floating axis i, while the staged one-dimensional plans contain radix stages, permutations, block DFTs, and twiddles.",
-      "reasoning": "After converting one-based axes to zero-based axes, the nesting order and staged FFT linkage agree."
+      "paper_evidence": "The multidimensional computation is explicitly nested as fl(T_1 fl(T_2 ... fl(T_m X)...)), with each T_l implemented by a mixed-radix one-dimensional FFT containing butterfly, permutation, and interstage twiddle operations.",
+      "translation_evidence": "A run starts with state m equal to the input and obtains state i from state i+1 by the floating staged plan on axis i. Plans contain radix butterflies, permutations, prescribed nonfinal twiddles, and exact-DFT validation.",
+      "reasoning": "The state recurrence has the paper's coordinate nesting, and the coefficient is linked to the actual staged FFT data rather than to an unrelated transform."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "The multidimensional RMS is the square root of the mean squared complex magnitude over N_1...N_m entries, and Theorem 2(a) divides the error RMS by exact-output RMS.",
-      "translation_evidence": "N(z) is the Euclidean norm divided by the square root of the product of all axis orders, and the final quotient uses N(s_0-y)/N(y).",
-      "reasoning": "The normalized, unsquared Euclidean RMS norm and normwise relative quotient match exactly."
+      "paper_evidence": "The multidimensional RMS is the square root of the average of squared complex moduli over all N_1...N_m outputs, and the denominator is the corresponding RMS of exact Y.",
+      "translation_evidence": "The normalized norm is the finite complex l2 norm divided by the square root of the product-grid size, and both error and exact output use this norm.",
+      "reasoning": "The norm is the same global, unsquared RMS norm. The common normalization also makes the translated ratio equal to the paper's relative RMS ratio."
     },
     {
       "id": "S10",
       "status": "pass",
-      "paper_evidence": "Theorem 1 defines K as the sum of piecewise radix contributions plus (M-1)(3+2 gamma), with contributions sqrt(2), 5, and 2 sqrt(n)(n+gamma).",
-      "translation_evidence": "Each A_i uses the corresponding stage-radix sum and real-valued (stageCount-1)(3+2 gamma), with the same three radix cases, and the final sum ranges over every axis.",
-      "reasoning": "Constants, factorization dependence, axis indexing, and the first-order coefficient agree."
+      "paper_evidence": "For each coordinate, K is the sum of alpha over its mixed radices plus (M-1)(3+2 gamma), with alpha(2)=sqrt(2), alpha(4)=5, and alpha(r)=2 sqrt(r)(r+gamma) otherwise. The final coefficient is the sum over all dimensions.",
+      "translation_evidence": "Each axis coefficient is the sum of the identical radix cases plus (stageCount-1)(3+2 gamma), and B sums these coefficients over Fin m.",
+      "reasoning": "The constants, stage offset, factorization dependence, common gamma, and additive dimension indexing agree after the harmless shift from paper indices 1,...,m to Fin m."
     },
     {
       "id": "S11",
       "status": "pass",
-      "paper_evidence": "Equations (3.1)-(3.2) use occurrence-dependent bounded relative perturbations for real addition and multiplication, while sine and cosine use bounded absolute gamma-epsilon errors; exceptional values are not modeled.",
-      "translation_evidence": "The floating model imposes the same operandwise addition, multiplication, sine, and cosine perturbation bounds over real values and requires exact input representation in each run.",
-      "reasoning": "The abstract numerical error equations and exclusion of behavior outside those equations agree. The paper's base and precision formulas explain possible epsilon values rather than altering the theorem's perturbation argument."
+      "paper_evidence": "Equations (3.1)-(3.2) use independent bounded perturbations of addition operands and a bounded relative product perturbation. Sine and cosine use absolute gamma epsilon error, including argument computation. The paper gives rounded/chopped calibrations for epsilon but no exceptional-value semantics.",
+      "translation_evidence": "The model has the same addition, multiplication, sine, and cosine perturbation axioms, with independently bounded theta witnesses, positive epsilon, and nonnegative gamma. It likewise has no overflow, underflow, subnormal, infinity, NaN, or probabilistic assumptions.",
+      "reasoning": "The theorem-level deterministic error model matches. The base, precision, and rounding-mode formulas in the paper calibrate epsilon for concrete machines rather than changing the perturbation hypotheses used by the theorem."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper states the relative RMS inequality for multidimensional FFT computations satisfying its arithmetic and input assumptions, deriving the local estimates during the analysis.",
-      "translation_evidence": "The same numerical inequality is conditional on the additional axisBounds certificate and on an explicit positive exact-output norm.",
-      "reasoning": "Although the inequality direction and first-order coefficient are correct, the added local-bound premise makes the translated proposition logically weaker over the paper's intended computations."
+      "status": "pass",
+      "paper_evidence": "Theorem 2(a) is a non-strict upper bound on the relative RMS error with first-order coefficient sum_l K(N_l,gamma).",
+      "translation_evidence": "For every admissible positive epsilon, the translated conclusion is a non-strict upper bound with the same first-order coefficient and a nonnegative quadratic allowance.",
+      "reasoning": "The inequality direction and non-strict relation agree. The explicit positive denominator and local epsilon radius address definedness and asymptotic scope rather than reversing the relation."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Theorem 2(a) concerns fl(Y)-Y measured in RMS and divided by exact-output RMS, which is a normwise relative forward error.",
-      "translation_evidence": "The target measures the normalized norm of computed output minus exact output and divides by the exact-output normalized norm.",
-      "reasoning": "No backward, residual, componentwise-relative, or probabilistic error notion has been substituted."
+      "paper_evidence": "The numerator is the global RMS of computed output minus exact Fourier output, divided by the exact output RMS. The selected result is neither componentwise nor backward error.",
+      "translation_evidence": "The numerator is the normalized l2 norm of computed state zero minus exact y, divided by the normalized l2 norm of exact y.",
+      "reasoning": "Both statements concern the same normwise relative forward output error."
     },
     {
       "id": "S14",
       "status": "unclear",
-      "paper_evidence": "The paper appends O(epsilon^2), explains that it contains second-order expansion terms, but supplies no bound constant, epsilon threshold, or uniformity domain.",
-      "translation_evidence": "The translation replaces this with nonnegative C and positive rho such that a C epsilon^2 bound holds for all positive epsilon at most rho; local quadratic estimates are separately assumed.",
-      "reasoning": "The existential bound is the standard local big-O reading, but its precise uniformity over the epsilon-indexed family is not specified by the source, and the local remainder control is assumed rather than derived."
+      "paper_evidence": "The paper groups terms of order epsilon squared into O(epsilon^2), but supplies no hidden constant, uniformity claim, admissible epsilon interval, or formal asymptotic quantifiers.",
+      "translation_evidence": "The translation replaces O(epsilon^2) by an exact one-sided bound C epsilon^2, uniformly for all positive epsilon at most an existential radius, across the fixed epsilon-indexed family.",
+      "reasoning": "The replacement is compatible with a standard local big-O reading, but that reading and its required uniformity are not specified by the paper. The paper therefore does not unambiguously entail this exact remainder statement."
     },
     {
       "id": "S15",
       "status": "unclear",
-      "paper_evidence": "The paper operationally uses positive m and N_l but does not explicitly state a radix lower bound for every factor or a nonzero-output hypothesis.",
-      "translation_evidence": "The translation requires m nonzero, every axis order positive, every plan to have at least one stage with radix at least two, and N(y)>0.",
-      "reasoning": "The nonzero-output condition is a reasonable formal domain condition for the source ratio, but the exclusion of unit-length axes is a specialization not explicitly settled by the paper."
+      "paper_evidence": "The theorem concerns mixed-radix multidimensional FFTs and does not explicitly state whether a coordinate of length one is admitted or how K would be represented for such a coordinate.",
+      "translation_evidence": "Validated axes are specialized to positive-stage plans whose radices are at least two, excluding length-one axes, while otherwise allowing the paper's mixed-radix staged algorithms.",
+      "reasoning": "The main algorithmic specialization is appropriate, but the length-one boundary case cannot be classified from the paper's stated domain."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper's assumptions are realized by ordinary nontrivial mixed-radix FFTs with exactly representable nonzero inputs.",
-      "translation_evidence": "Exact arithmetic models, identity input rounding, nonzero inputs, valid radix plans, and zero local residuals can satisfy the translated hypotheses and axisBounds certificate.",
-      "reasoning": "The dependent hypotheses are jointly satisfiable and the relative-error conclusion is not globally vacuous, although the extra certificate restricts applicability."
+      "paper_evidence": "The paper analyzes concrete FFT implementations and nonzero transformed data, so its intended hypotheses describe realizable computations.",
+      "translation_evidence": "The abstract axioms admit exact arithmetic models with zero perturbation witnesses, identity input rounding, nonzero inputs, and ordinary validated FFT plans. The positive radius contains positive epsilon values.",
+      "reasoning": "The hypotheses are mathematically satisfiable, and neither the denominator condition nor the local epsilon quantifier makes the proposition vacuous."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translation only proves the bound for families already equipped with axisBounds and a positive exact-output norm. It provides no way to obtain that local-bound certificate for every FFT execution satisfying only the paper's primitive arithmetic, algorithm, and exact-input assumptions, so it cannot recover the paper result."
+      "verdict": "unclear",
+      "reasoning": "With a positive-phase standard character and the usual local interpretation of O(epsilon^2), the translated exact bound would imply the selected paper statement. The allowed evidence does not identify the character's phase, so implication to the paper's positive-phase transform cannot be established."
     },
     "paper_implies_translation": {
       "verdict": "unclear",
-      "reasoning": "With the conventional pointwise interpretation of O(epsilon^2) and a positive-phase interpretation of ZMod.stdAddChar, the paper result would cover the translated restricted cases. The source does not fix the translation's epsilon-family uniformity, however, and the exact character phase is unresolved, so this implication cannot be certified from the allowed evidence."
+      "reasoning": "The paper gives the matching first-order analysis, but it does not specify the uniform C-and-radius semantics over an arbitrary epsilon-indexed family. It also leaves the length-one coordinate boundary unresolved. Thus it does not unambiguously entail the translated proposition."
     }
   },
   "classification": "undetermined",
@@ -134,32 +134,32 @@
   "findings": [
     {
       "severity": "major",
-      "category": "extra-local-bound-premise",
-      "paper_evidence": "Equation (4.3) is presented as a consequence of Theorem 1 within the proof of Theorem 2(a), not as an additional hypothesis on admissible FFT executions.",
-      "translation_evidence": "axisBounds is a required binder that already supplies common-radius per-axis first-plus-second-order local estimates.",
-      "impact": "The translated proposition is conditional on substantial error-analysis content that the paper derives, so translation-implies-paper fails."
+      "category": "fourier-kernel-phase",
+      "paper_evidence": "The paper's one-dimensional transform explicitly uses exp(+i 2 pi jk/N), inherited by equation (4.1).",
+      "translation_evidence": "The translation denotes the exact kernel by an imported standard additive character whose positive-versus-negative exponential convention is not recovered.",
+      "impact": "The exact transform and algorithm cannot be identified with the selected paper transform. Adjudication needs the character definition or independently verified phase convention."
     },
     {
       "severity": "major",
-      "category": "exact-transform-phase-unresolved",
-      "paper_evidence": "The exact Fourier kernel has positive phase exp(i 2 pi j k/N).",
-      "translation_evidence": "The exact transform uses the unexpanded imported operator ZMod.stdAddChar, and the blind translation explicitly cannot determine its phase.",
-      "impact": "A negative phase would describe a different exact transform. This unresolved operator prevents a definitive paper-implies-translation judgment."
+      "category": "higher-order-quantification",
+      "paper_evidence": "Theorem 2(a) uses informal O(epsilon^2) notation without a hidden constant, epsilon radius, uniformity domain, or dependence statement.",
+      "translation_evidence": "The proposition asserts existence of C and rho giving an exact uniform quadratic remainder bound for every sufficiently small epsilon in a fixed model-and-run family.",
+      "impact": "The central paper-to-translation implication depends on an asymptotic interpretation not fixed by the source and therefore requires adjudication."
     },
     {
       "severity": "minor",
-      "category": "higher-order-quantifier-choice",
-      "paper_evidence": "The O(epsilon^2) term has no stated constant, threshold, epsilon-indexed execution family, or uniformity domain.",
-      "translation_evidence": "The target chooses an explicit family-level formulation with existential C and rho and a universal small-positive-epsilon bound.",
-      "impact": "The formulation is a plausible big-O interpretation but cannot be proved to have exactly the source's intended scope from the paper alone."
+      "category": "domain-specialization",
+      "paper_evidence": "The paper does not explicitly exclude coordinate length N_l=1.",
+      "translation_evidence": "Positive stage count and radices at least two force every translated axis order to be at least two.",
+      "impact": "The translation may omit a degenerate coordinate-length case, although the paper also leaves the corresponding factorization constant unspecified."
     },
     {
       "severity": "note",
-      "category": "formal-domain-restriction",
-      "paper_evidence": "Theorem 2(a) divides by exact-output RMS without stating a nonzero-denominator case distinction.",
-      "translation_evidence": "The target assumes N(y)>0 and restricts plans to positive-stage radices of at least two.",
-      "impact": "The denominator condition resolves an implicit mathematical domain issue, while the plan restriction may exclude degenerate unit-length coordinates."
+      "category": "source-location",
+      "paper_evidence": "The exact-input assumption is printed on page 765; printed page 768 instead contains the continuation of a one-dimensional fictional-input perturbation discussion.",
+      "translation_evidence": "The translation does encode exact input, so the error is in the supplied source locator rather than in that translated hypothesis.",
+      "impact": "The locator should be corrected from PDF page 12 to PDF page 9 for reproducible source verification."
     }
   ],
-  "rationale": "The translated inequality has the correct relative RMS forward-error norm, multidimensional nesting, factorization-dependent constants, and first-order coefficient. Its principal clear defect is that the local estimates derived in the paper are packaged as an additional axisBounds premise, making translation-implies-paper false. Whether the paper implies the restricted translation remains unresolved because the exact additive-character phase and the precise quantified meaning of the paper's O(epsilon^2) notation are not available from the permitted evidence. Adjudication is therefore required to distinguish a merely weaker translation from a different one."
+  "rationale": "The blind translation closely matches the paper's selected first-order relative RMS theorem in its dimensions, product-grid norm, exact-versus-computed distinction, successive coordinate FFT execution, deterministic arithmetic model, exact-input scope, per-radix constants, twiddle contribution, and additive sum over dimensions. Equivalence nevertheless cannot be decided from the permitted evidence: the imported Fourier character's phase is unresolved, and the paper's informal O(epsilon^2) notation does not determine the translation's explicit C, radius, family uniformity, and witness dependence. The possible exclusion of length-one axes is an additional boundary ambiguity. Both logical implications are therefore unclear, so the judgment is undetermined and requires adjudication."
 }

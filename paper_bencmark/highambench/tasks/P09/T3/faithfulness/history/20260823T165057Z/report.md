@@ -1,35 +1,34 @@
 # Faithfulness audit: P09-T3
 
-- Classification: `faithful-equivalent`
-- Accepted as paper-faithful: `true`
+- Classification: `not-faithful-weaker`
+- Accepted as paper-faithful: `false`
 - Adjudicated: `true`
-- Target SHA-256: `cc140cb5ee2c2d77c7fc101c33fd09d48a797d86767c9f1afd1bc12734d9ea07`
+- Target SHA-256: `5b5fcb7203bb05b41b1270924ef4803f5f7e18396775dbe27b10d8f4943b0f4b`
 - Paper SHA-256: `9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758`
 
 ## Decision
 
-Primary paper and declaration evidence identify the same theorem. The declaration computes the complex, unnormalized, positive-phase product Fourier transform by successive coordinate-wise mixed-radix FFTs; models the paper's bounded deterministic addition, multiplication, sine, and cosine errors; requires exactly represented input; measures computed-minus-exact output in the global RMS norm; and uses exactly the paper's per-radix alpha values, interstage contribution, and sum of coordinate K constants. The imported character identity resolves the phase concern. The explicit coefficient-and-radius statement is the standard local meaning of the paper's O(epsilon^2) term, supported by its finite expansion with uniformly bounded perturbations. The positive denominator and nondegenerate staged-plan conditions expose implicit domain conventions rather than changing the selected result.
+The Lean declaration faithfully preserves the product-indexed complex transform, positive unnormalized Fourier phase, nested coordinate order, relative RMS forward-error notion, factorization-dependent K constants, and a standard quantified form of the O(epsilon^2) remainder. The decisive mismatch is axisBounds: it assumes the propagated local asymptotic estimates that the paper derives from Theorem 1 and equations (4.3)-(4.4). Consequently the paper result entails the restricted Lean conclusion, but the Lean theorem does not establish the paper result from its stated primitive hypotheses, so the declaration is not-faithful-weaker.
 
 ## Implications
 
-- **Lean implies paper:** `yes`. For every represented mixed-radix multidimensional FFT, Lean uses the paper's positive-sign exact transform, rounded coordinate execution, exact-input scope, RMS ratio, and sum of K constants. Its bound by epsilon times that sum plus C epsilon^2 immediately yields the paper's first-order bound with an O(epsilon^2) remainder.
-- **Paper implies lean:** `yes`. For fixed plan, gamma, exactly represented input, and admissible execution family, the paper's finite deterministic expansion and uniformly bounded theta factors supply a nonnegative quadratic bound on a sufficiently small positive epsilon interval. This gives the target's coefficient and radius witnesses; its explicit positive-output condition merely restricts the ratio to its defined domain.
+- **Lean implies paper:** `no`. The Lean statement supplies no construction of axisBounds from the primitive arithmetic, trigonometric, algorithmic, and exact-input assumptions. It therefore proves the global bound only for already-certified families and cannot entail the paper's broader Theorem 2(a).
+- **Paper implies lean:** `yes`. For each fixed Lean plan and family in the source domain, the paper's Theorem 2(a), under its standard fixed-instance O(epsilon^2) meaning, gives the same relative RMS conclusion. The positive phase matches, while axisBounds, the positive denominator, and the plan-domain conditions only restrict the cases to which the Lean proposition applies.
 
 ## Findings
 
-- **note / source-location:** The supplied locator contains a page error, but the declaration's exact-input condition agrees with the primary source.
-- **note / defined-ratio-domain:** Lean makes the paper's necessary definedness condition explicit without changing the theorem on its meaningful domain.
-- **note / higher-order-formalization:** This is a rigorous local formulation of the retained remainder, not an exact first-order truncation or an unsupported strengthening.
-- **note / nondegenerate-domain:** This records the standard nondegenerate mixed-radix convention and excludes only redundant identity-coordinate cases, with no classification-relevant loss.
+- **major / added-theorem-derived-premise:** A substantive portion of the selected theorem's analysis is assumed rather than derived, so the Lean theorem has strictly reduced applicability.
+- **minor / degenerate-domain-restriction:** Potential degenerate source cases are excluded; this reinforces the weaker classification but does not alter the numerical conclusion.
+- **note / ratio-domain-explication:** This makes the relative expression well-defined and is not nonvacuous mathematical strengthening of the paper's bound.
 
 ## Semantic checklist
 
 | Check | Direct | Round-trip |
 |---|---|---|
-| `S01` | `pass` | `fail` |
-| `S02` | `pass` | `unclear` |
+| `S01` | `pass` | `pass` |
+| `S02` | `pass` | `pass` |
 | `S03` | `pass` | `unclear` |
-| `S04` | `pass` | `pass` |
+| `S04` | `fail` | `fail` |
 | `S05` | `pass` | `pass` |
 | `S06` | `pass` | `unclear` |
 | `S07` | `pass` | `pass` |
@@ -37,7 +36,7 @@ Primary paper and declaration evidence identify the same theorem. The declaratio
 | `S09` | `pass` | `pass` |
 | `S10` | `pass` | `pass` |
 | `S11` | `pass` | `pass` |
-| `S12` | `pass` | `pass` |
+| `S12` | `pass` | `fail` |
 | `S13` | `pass` | `pass` |
 | `S14` | `pass` | `unclear` |
 | `S15` | `pass` | `unclear` |
@@ -45,21 +44,21 @@ Primary paper and declaration evidence identify the same theorem. The declaratio
 
 ## Dependency coverage
 
-- Blind translator covered `259` dependencies (`0` hash-reused meanings); unclear: `none`.
-- Direct judge covered `259` dependencies (`0` hash-reused interpretations); failing or unclear: `none`.
+- Blind translator covered `264` dependencies (`0` hash-reused meanings); unclear: `none`.
+- Direct judge covered `264` dependencies (`0` hash-reused interpretations); failing or unclear: `D005, D019`.
 
 ## Remaining uncertainties
 
-No remaining uncertainties were recorded.
+- The paper does not expressly settle whether a coordinate of length one or a radix factor one is admissible. Lean's nonempty stages with radices at least two exclude such cases, but this uncertainty cannot reverse the implication directions because it only concerns cases outside the Lean domain.
 
 ## Audit artifacts
 
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/agent_outputs/adjudicator.json` (`cdc193723f263b30f178d9b276080b87085fe56e7263bcafa375b34a2417fc43`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/agent_outputs/blind_translation.json` (`2c1dc8708414cf639b0aec4e838b3e49291454efd9440c68f2153131deeedd7b`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/agent_outputs/direct_judge.json` (`c76fb08c7ba20f9cbb62962183fc79cafbc6f30c81c2bb825072b39cf47fe81e`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/agent_outputs/roundtrip_judge.json` (`a2dc66c372a98e83442ad9ad680147a180d3cf19f23b3dd8a67199657d42320f`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/agent_outputs/source_contract.json` (`2816255ef8894f80b3033bb36ef0cb60aca437087fc598b650c35a2a58ec251d`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/decision.json` (`99f566349d4bd3287c9aadc116f4ac73f8b0217550e9f0f37f9288e2fc23c109`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/agent_outputs/adjudicator.json` (`922b522249158ad2189acac29e18772259d6bc28acdecc7d683b88fcf485077e`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/agent_outputs/blind_translation.json` (`6a2c37055a5fd9cfb4e0009c1850f47891f85c8c004bdfaf53fa71cfe34fd7c8`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/agent_outputs/direct_judge.json` (`fbbeaa87919aeb85d1e5c781c4d0c7aa912f14b8c1f863f597a61dd827de853f`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/agent_outputs/roundtrip_judge.json` (`83ae9fbc62ba54d1b1b849d7f24046fad12e9b3dbf014eda2e9774fbafcd2f6b`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/agent_outputs/source_contract.json` (`93b78c9ecbec460b9e11d9ecd068529a0b9d74650e6013151036d4ce9ad5985e`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/decision.json` (`e7b346630d11bff50a6b697da1812d1cd0558d95698e34b6b7391682edf2d4d0`)
 - `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260815T052751Z/agent_outputs/blind_translation.json` (`a13dee089b0902650277ab595f3dd6019deccc8ca22efc166fd9b39b66d749ce`)
 - `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260815T052751Z/agent_outputs/direct_judge.json` (`a351fdf7f66a9e58b4e57f33f50a761bf0fb8ccc797816aba2a4fdbc11103929`)
 - `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260815T052751Z/agent_outputs/paper_source_contract.json` (`348db3c4cffe4770d8510e9fec47ccdab62bf40c19935e431854786ba7f44db4`)
@@ -101,23 +100,10 @@ No remaining uncertainties were recorded.
 - `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T133306Z/inputs/dependency_inventory.json` (`8b0a121d2072a5f4bfa42592395e43f95671334fd55020714a48c4e157333a6c`)
 - `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T133306Z/inputs/direct_review_packet.md` (`fa8b80cb98aa8f91f3b9d3217dd2cbd649eda6d6de2a64941dc5390f859f5857`)
 - `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T133306Z/inputs/source_locator.json` (`6e0d56fffef27dc86e192c0ea7448d5a6816983611231c18e94c5ab8aaf6818e`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/agent_outputs/adjudicator.json` (`922b522249158ad2189acac29e18772259d6bc28acdecc7d683b88fcf485077e`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/agent_outputs/blind_translation.json` (`6a2c37055a5fd9cfb4e0009c1850f47891f85c8c004bdfaf53fa71cfe34fd7c8`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/agent_outputs/direct_judge.json` (`fbbeaa87919aeb85d1e5c781c4d0c7aa912f14b8c1f863f597a61dd827de853f`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/agent_outputs/roundtrip_judge.json` (`83ae9fbc62ba54d1b1b849d7f24046fad12e9b3dbf014eda2e9774fbafcd2f6b`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/agent_outputs/source_contract.json` (`93b78c9ecbec460b9e11d9ecd068529a0b9d74650e6013151036d4ce9ad5985e`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/decision.json` (`e7b346630d11bff50a6b697da1812d1cd0558d95698e34b6b7391682edf2d4d0`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/inputs/blind_dependency_inventory.json` (`9f729f4b4f649e32f19c31be302f776036eea4beec7f1ed7a7b8dd5109842418`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/inputs/blind_dossier.md` (`4db03e7519d0ab43c22e0dd226f0fe9869216d8e9784daec3e5e9fd71d4d38c3`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/inputs/blind_review_packet.md` (`4db03e7519d0ab43c22e0dd226f0fe9869216d8e9784daec3e5e9fd71d4d38c3`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/inputs/declaration_dossier.md` (`c38f3286b459199c4b1369a5be0e90b5b343cf16c5f484a443f3b83d57590693`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/inputs/dependency_inventory.json` (`4112a4d349d3643b22395e39b804a333a2a19f5ee2bc9f66ac9c94fe0836858e`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/inputs/direct_review_packet.md` (`cbe5462518fc7fd203cd4d4cae40fdab8b1e8146ddea8af3ff73c752d089ac33`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/history/20260823T165057Z/inputs/source_locator.json` (`6e0d56fffef27dc86e192c0ea7448d5a6816983611231c18e94c5ab8aaf6818e`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/blind_dependency_inventory.json` (`ccb077d97ff6caa546e7fb822b81f1a0a06908e81dcaff893e73581cd21f2f39`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/blind_dossier.md` (`c565e2ff62f9b138bdb495abe90b88f534c8cf82b3632835a4d7a175ab32d85a`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/blind_review_packet.md` (`c565e2ff62f9b138bdb495abe90b88f534c8cf82b3632835a4d7a175ab32d85a`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/declaration_dossier.md` (`e0d2700cf7fd2e2bc4d5bab6dae267e87984766c6e2e7d3d029f38d4b433ab19`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/dependency_inventory.json` (`adae219eb36d87f0f470c10d04823d5569cfa3c3cd818738d6ba0f5bf1ebae71`)
-- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/direct_review_packet.md` (`4a424d0976bdfed11a388117d2b53f3a909ce5ed818856a4e6b0c6f87c60a55d`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/blind_dependency_inventory.json` (`9f729f4b4f649e32f19c31be302f776036eea4beec7f1ed7a7b8dd5109842418`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/blind_dossier.md` (`4db03e7519d0ab43c22e0dd226f0fe9869216d8e9784daec3e5e9fd71d4d38c3`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/blind_review_packet.md` (`4db03e7519d0ab43c22e0dd226f0fe9869216d8e9784daec3e5e9fd71d4d38c3`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/declaration_dossier.md` (`c38f3286b459199c4b1369a5be0e90b5b343cf16c5f484a443f3b83d57590693`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/dependency_inventory.json` (`4112a4d349d3643b22395e39b804a333a2a19f5ee2bc9f66ac9c94fe0836858e`)
+- `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/direct_review_packet.md` (`cbe5462518fc7fd203cd4d4cae40fdab8b1e8146ddea8af3ff73c752d089ac33`)
 - `paper_bencmark/highambench/tasks/P09/T3/faithfulness/inputs/source_locator.json` (`6e0d56fffef27dc86e192c0ea7448d5a6816983611231c18e94c5ab8aaf6818e`)

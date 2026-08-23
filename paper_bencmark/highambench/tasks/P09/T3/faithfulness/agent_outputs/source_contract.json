@@ -7,202 +7,190 @@
     {
       "pdf_page": 1,
       "printed_page": "757",
-      "anchor": "equation (1.1) and the definitions immediately following it",
-      "observation": "The one-dimensional transform uses the unnormalized positive-sign kernel exp(i 2 pi j k/N), takes complex input, distinguishes exact y from fl(y), and defines RMS as the square root of the mean squared magnitude."
+      "anchor": "equation (1.1) and the one-dimensional RMS convention",
+      "observation": "The paper defines the complex, unnormalized Fourier transform with kernel exp(i 2 pi jk/N), zero-based indices, and RMS norm equal to the square root of the mean squared complex modulus."
     },
     {
       "pdf_page": 2,
       "printed_page": "758",
-      "anchor": "equation (2.2), algorithm remarks, and equations (3.1)-(3.2)",
-      "observation": "The FFT is represented by permutation, block Fourier, and diagonal twiddle-factor matrices. The factorization applies to both Cooley-Tukey and Sande-Tukey variants with different diagonal matrices. Floating addition and multiplication satisfy Wilkinson-style first-order relative-error models with a machine-dependent epsilon and occurrence-dependent theta in [-1,1]."
+      "anchor": "equation (2.2) and the FFT matrix factorization",
+      "observation": "The one-dimensional FFT is represented by permutation, block-Fourier, and diagonal twiddle-factor matrices. The factorization applies to Cooley-Tukey and Sande-Tukey variants, with different diagonal matrices."
+    },
+    {
+      "pdf_page": 2,
+      "printed_page": "758",
+      "anchor": "equations (3.1)-(3.2)",
+      "observation": "Floating-point addition and multiplication are modeled deterministically using a computer-dependent epsilon and generic factors theta with absolute value at most one."
     },
     {
       "pdf_page": 3,
       "printed_page": "759",
-      "anchor": "absolute sine/cosine error model and Theorem 1",
-      "observation": "The paper introduces gamma >= 0 through absolute errors gamma theta epsilon in computed sines and cosines. Theorem 1 defines K(N,gamma) from the selected one-dimensional FFT radix factorization and gives the piecewise per-radix constant alpha."
+      "anchor": "absolute sine/cosine error model",
+      "observation": "Computed sine and cosine values satisfy an absolute error model with gamma greater than or equal to zero; gamma depends on transform order and implementation but is independent of input data."
+    },
+    {
+      "pdf_page": 3,
+      "printed_page": "759",
+      "anchor": "Theorem 1 and the definition of K(N,gamma)",
+      "observation": "For a chosen mixed-radix factorization, Theorem 1 defines K as the sum of per-radix alpha constants plus one 3+2 gamma contribution for each interstage diagonal multiplication."
     },
     {
       "pdf_page": 4,
       "printed_page": "760",
-      "anchor": "first-order expansion in the proof of Theorem 1(a)",
-      "observation": "After expanding products of factors 1+theta epsilon, the paper states that O(epsilon^2) includes all terms of order epsilon^2."
-    },
-    {
-      "pdf_page": 5,
-      "printed_page": "761",
-      "anchor": "equation (3.6) and its preceding assumptions",
-      "observation": "The one-dimensional FFT analysis assumes fl(x)=x; permutation matrices only reorder values and introduce no roundoff error."
+      "anchor": "first-order expansion following equations (3.1)-(3.2)",
+      "observation": "The proof expands the floating-point factors and places terms of order epsilon squared into O(epsilon^2)."
     },
     {
       "pdf_page": 7,
       "printed_page": "763",
-      "anchor": "equation (4.1) and multidimensional index convention",
-      "observation": "The exact multidimensional transform is a product-indexed, unnormalized Fourier sum over s_1 through s_m, with s_l and t_l ranging from 0 to N_l-1 for l=1 through m."
+      "anchor": "equation (4.1)",
+      "observation": "The exact multidimensional transform is indexed by m coordinate pairs, with s_l and t_l ranging from zero through N_l minus one."
     },
     {
       "pdf_page": 8,
       "printed_page": "764",
       "anchor": "multidimensional error definitions and Theorem 2",
-      "observation": "The paper defines pointwise forward error E, multidimensional RMS and maximum errors, and states both parts of Theorem 2. Part (a) bounds relative RMS error by epsilon times the sum of the one-dimensional constants K(N_l,gamma), plus O(epsilon^2). Part (b) adds the square root of the total number of output entries for the maximum-error bound."
+      "observation": "The paper defines pointwise output error, multidimensional RMS error, and maximum error. Theorem 2(a) gives the selected relative RMS bound; Theorem 2(b) gives a separate maximum-error companion."
     },
     {
       "pdf_page": 8,
       "printed_page": "764",
       "anchor": "nested computation, telescoping decomposition, and equations (4.2)-(4.4)",
-      "observation": "The exact intermediates satisfy Z_0=Y, Z_m=X, and Z_{l-1}=T_l Z_l. The computed nesting applies T_m first and T_1 last. The proof separates the total error into propagated local errors, invokes the one-dimensional local bound (4.3), and uses the exact scaling [Z_{l-1}]_RMS=sqrt(N_l)[Z_l]_RMS."
+      "observation": "The proof writes the transform as successive coordinate transforms, decomposes total error into propagated local errors, bounds each local error using Theorem 1, and uses exact RMS scaling by sqrt(N_l)."
     },
     {
       "pdf_page": 9,
       "printed_page": "765",
-      "anchor": "completion of the proof of Theorem 2(a)",
-      "observation": "The propagated local terms have coefficients sqrt(N_1...N_l)K(N_l,gamma). Computed intermediate RMS values are replaced by their exact values plus O(epsilon), and exact intermediate norms scale from X by sqrt(N_{l+1}...N_m). The final step assumes the stored/computed input RMS equals the exact input RMS, or at least differs by O(epsilon)."
-    },
-    {
-      "pdf_page": 9,
-      "printed_page": "765",
-      "anchor": "proof of Theorem 2(b)",
-      "observation": "Part (b) is obtained by the same RMS-to-maximum argument used for Theorem 1(b)."
+      "anchor": "completion of the proof of Theorem 2(a) and Section 6 exact-input statement",
+      "observation": "The local scaling factors cancel to produce the sum of coordinatewise K constants. The proof requires the input RMS to be exact or correct through first order, and Section 6 states that the preceding analysis assumed exactly representable input data."
     },
     {
       "pdf_page": 12,
       "printed_page": "768",
-      "anchor": "Conclusion paragraph on floating-point representation of input data",
-      "observation": "The author states that the preceding analysis assumed input data exactly representable in machine precision. If input rounding is present, an additional error term is required; the page illustrates this for a one-dimensional input perturbation fl(x)=x+delta."
+      "anchor": "Section 6 continuation using a fictional input perturbation",
+      "observation": "The paper gives a one-dimensional backward interpretation of output roundoff as an exact Fourier transform of a fictional input perturbation; it does not state a multidimensional input-rounding extension of Theorem 2(a)."
     }
   ],
   "statement": {
     "binders": [
-      "The displayed result ranges over coordinate labels l=1,...,m and transform lengths N_l; each source and target index s_l,t_l ranges over 0,...,N_l-1 (PDF p. 7, printed p. 763, anchor: equation (4.1)).",
-      "X(s_1,...,s_m) is the exact multidimensional input and Y(t_1,...,t_m) is its exact Fourier transform; fl(Y(t_1,...,t_m)) is the computed output component (PDF pp. 7-8, printed pp. 763-764, anchors: equation (4.1) and definition of E).",
-      "epsilon is a machine-dependent floating-point error constant, while every occurrence of theta may have a different value but satisfies -1 <= theta <= 1 (PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2) and following paragraph).",
-      "gamma is nonnegative, depends on how trigonometric values and their arguments are computed for a transform order, and is independent of the input data (PDF p. 3, printed p. 759, anchor: absolute sine/cosine error model).",
-      "For each coordinate length N_l, K(N_l,gamma) is inherited from a chosen one-dimensional FFT factorization. If that factorization is disambiguatingly written N_l=product_{r=1}^{M_l} n_{l,r}, then K(N_l,gamma)=sum_{r=1}^{M_l} alpha(n_{l,r})+(M_l-1)(3+2 gamma) (PDF pp. 3 and 8, printed pp. 759 and 764, anchors: Theorem 1 and Theorem 2)."
+      "Let m be the number of transform dimensions and let N_l be the length of coordinate l for l=1,...,m; the displayed index convention is s_l,t_l=0,1,...,N_l-1. [PDF p. 7, printed p. 763, anchor: equation (4.1).]",
+      "Let X(s_1,...,s_m) be complex input data and Y(t_1,...,t_m) its exact multidimensional Fourier transform. [PDF p. 7, printed p. 763, anchor: equation (4.1); PDF p. 1, printed p. 757, anchor: equation (1.1).]",
+      "Let epsilon be the computer-dependent arithmetic error constant, let each occurrence of theta lie in [-1,1], and let gamma be the nonnegative absolute sine/cosine error constant. [PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2); PDF p. 3, printed p. 759, anchor: absolute sine/cosine error model.]",
+      "For each coordinate l, K(N_l,gamma) is instantiated from the mixed-radix factorization used by that coordinate's one-dimensional FFT. [PDF p. 3, printed p. 759, anchor: Theorem 1 and K(N,gamma); PDF p. 8, printed p. 764, anchor: Theorem 2(a).]"
     ],
     "hypotheses": [
-      "Y is computed by a multidimensional floating-point fast Fourier transform formed from nested one-dimensional transforms T_m through T_1 (PDF p. 8, printed p. 764, anchor: nested computation in the proof of Theorem 2).",
-      "Real floating-point additions and multiplications obey equations (3.1)-(3.2), with no separate exceptional-case qualifications in those equations (PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2)).",
-      "Computed sines and cosines obey the absolute-error model fl(sin(fl(a)))=sin(a)+gamma theta epsilon and fl(cos(fl(a)))=cos(a)+gamma theta epsilon (PDF p. 3, printed p. 759, anchor: absolute sine/cosine error model).",
-      "The operational analysis assumes input data exactly representable in machine precision; the proof's final line also says equality of input RMS values, or a difference of O(epsilon), is sufficient for that step (PDF pp. 9 and 12, printed pp. 765 and 768, anchors: completion of Theorem 2(a) and Conclusion input-representation paragraph).",
-      "Each coordinate transform uses the one-dimensional FFT error constant corresponding to its actual radix factorization and separate twiddle-factor multiplications (PDF p. 3, printed p. 759, anchor: Theorem 1 and its parenthetical radix formulas)."
+      "The exact output satisfies Y(t_1,...,t_m)=sum_{s_1}...sum_{s_m} e(s_1 t_1/N_1+...+s_m t_m/N_m)X(s_1,...,s_m), with every sum taken over the corresponding zero-based coordinate range. [PDF p. 7, printed p. 763, anchor: equation (4.1).]",
+      "The computed output fl(Y) is obtained by a multidimensional fast Fourier transform implemented as successive one-dimensional FFTs along the coordinates. [PDF p. 8, printed p. 764, anchor: nested computation fl(T_1 fl(T_2 ... fl(T_m X)...)).]",
+      "Each coordinate FFT is covered by the floating-point mixed-radix analysis of Theorem 1, including separate diagonal twiddle-factor multiplications. [PDF p. 3, printed p. 759, anchor: Theorem 1 and the parenthetical following K(N,gamma).]",
+      "Arithmetic and trigonometric evaluations obey equations (3.1)-(3.2) and the absolute sine/cosine error model. [PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2); PDF p. 3, printed p. 759, anchor: absolute sine/cosine error model.]",
+      "Exact representability of the input data is inherited from the paper's standing scope, although it is not repeated in the displayed statement of Theorem 2(a); the proof says first-order preservation of the input RMS is sufficient for its final step. [PDF p. 9, printed p. 765, anchor: completion of Theorem 2(a) and Section 6 exact-input statement.]"
     ],
     "conclusions": [
-      "Selected clause, Theorem 2(a): [fl(Y)-Y]_RMS/[Y]_RMS <= epsilon sum_{l=1}^m K(N_l,gamma)+O(epsilon^2) (PDF p. 8, printed p. 764, anchor: Theorem 2(a)).",
-      "Sibling clause in the same multi-part theorem, Theorem 2(b): [fl(Y)-Y]_MAX/[Y]_RMS <= epsilon sqrt(N_1 N_2 ... N_m) sum_{l=1}^m K(N_l,gamma)+O(epsilon^2) (PDF p. 8, printed p. 764, anchor: Theorem 2(b)).",
-      "For each local coordinate transform, [fl(Z_{l-1})-Z_{l-1}]_RMS/[Z_l]_RMS <= epsilon sqrt(N_l)K(N_l,gamma)+O(epsilon^2) (PDF p. 8, printed p. 764, anchor: equation (4.3)).",
-      "The exact coordinate transform scales RMS according to [Z_{l-1}]_RMS=sqrt(N_l)[Z_l]_RMS (PDF p. 8, printed p. 764, anchor: equation (4.4)).",
-      "Before final simplification, the accumulated RMS error is bounded by epsilon times the sum over l of sqrt(product_{j=1}^l N_j)K(N_l,gamma)[fl(Z_l)]_RMS, with Z_m=X, plus O(epsilon^2) (PDF p. 9, printed p. 765, anchor: first displayed inequality completing Theorem 2(a))."
+      "The selected conclusion is [fl(Y)-Y]_RMS/Y_RMS <= epsilon sum_{l=1}^m K(N_l,gamma)+O(epsilon^2). [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]"
     ],
     "definitions_and_conventions": [
-      "Equation (4.1) defines Y(t_1,...,t_m)=sum_{s_1}...sum_{s_m} e(s_1t_1/N_1+...+s_mt_m/N_m)X(s_1,...,s_m), with no normalization factor (PDF p. 7, printed p. 763, anchor: equation (4.1)).",
-      "E(t_1,...,t_m)=fl(Y(t_1,...,t_m))-Y(t_1,...,t_m) is a forward error against the exact transform (PDF p. 8, printed p. 764, anchor: definition of E).",
-      "[fl(Y)-Y]_RMS={sum_{t_1}...sum_{t_m}|E(t_1,...,t_m)|^2/(N_1...N_m)}^(1/2) (PDF p. 8, printed p. 764, anchor: multidimensional RMS definition).",
-      "[fl(Y)-Y]_MAX=max_{t_1,...,t_m}|E(t_1,...,t_m)| (PDF p. 8, printed p. 764, anchor: multidimensional maximum-error definition).",
-      "The denominator [Y]_RMS uses the same root-mean-square convention on the exact output Y (PDF pp. 1 and 8, printed pp. 757 and 764, anchors: RMS definition following equation (1.1) and Theorem 2).",
-      "Exact intermediate arrays satisfy Z_0=Y, Z_m=X, and Z_{l-1}=T_l Z_l for l=1,...,m (PDF p. 8, printed p. 764, anchor: system following Theorem 2).",
-      "The piecewise one-dimensional constant is alpha(n)=sqrt(2) for n=2, alpha(n)=5 for n=4, and alpha(n)=2 sqrt(n)(n+gamma) otherwise (PDF p. 3, printed p. 759, anchor: definition of alpha in Theorem 1)."
+      "E(t_1,...,t_m)=fl(Y(t_1,...,t_m))-Y(t_1,...,t_m). [PDF p. 8, printed p. 764, anchor: multidimensional error definition.]",
+      "[fl(Y)-Y]_RMS is the square root of sum_{t_1}...sum_{t_m}|E(t_1,...,t_m)|^2 divided by N_1...N_m. [PDF p. 8, printed p. 764, anchor: multidimensional RMS definition.]",
+      "Y_RMS denotes the corresponding RMS value of the exact output Y; this use follows the paper's RMS convention, although Section 4 does not separately display its formula. [PDF p. 8, printed p. 764, anchor: Theorem 2(a) denominator; PDF p. 1, printed p. 757, anchor: RMS convention.]",
+      "If a coordinate length N_l is factored as N_l=product_{j=1}^{M_l} r_{l,j}, then K(N_l,gamma)=sum_{j=1}^{M_l} alpha(r_{l,j})+(M_l-1)(3+2 gamma). This relabels Theorem 1's radix factors to avoid collision with the multidimensional coordinate index. [PDF p. 3, printed p. 759, anchor: Theorem 1 and K(N,gamma).]",
+      "The per-radix constant is alpha(r)=sqrt(2) for r=2, alpha(r)=5 for r=4, and alpha(r)=2 sqrt(r)(r+gamma) otherwise. [PDF p. 3, printed p. 759, anchor: definition of alpha(N_l).]",
+      "Equation (4.1) literally writes the kernel as e(q); comparison with equations (1.1) and (2.1) indicates the intended positive-sign complex exponential exp(i 2 pi q), but that shorthand is not explicitly defined in Section 4. [PDF p. 7, printed p. 763, anchor: equation (4.1); PDF p. 1, printed p. 757, anchor: equation (1.1); PDF p. 2, printed p. 758, anchor: equation (2.1).]"
     ],
     "implicit_context": [
-      "The multidimensional arrays are complex-valued by inheritance from the paper's complex Fourier-transform setup; equation (1.1) explicitly declares complex input in the one-dimensional case (PDF pp. 1 and 7, printed pp. 757 and 763, anchors: equation (1.1) and equation (4.1)).",
-      "The transform is unnormalized and uses the positive exponential sign inherited from exp(i 2 pi j k/N) in equation (1.1) (PDF pp. 1 and 7, printed pp. 757 and 763, anchors: equations (1.1) and (4.1)).",
-      "Positive-integral m and N_l are operationally required by the finite index ranges, but the theorem does not separately state those quantifiers (PDF p. 7, printed p. 763, anchor: index convention below equation (4.1)).",
-      "The bounds are deterministic worst-case roundoff bounds rather than statistical error estimates; theta is only constrained occurrence by occurrence to [-1,1] (PDF p. 2, printed p. 758, anchor: paragraph following equations (3.1)-(3.2))."
+      "The transform is complex and unnormalized: the one-dimensional convention uses exp(i 2 pi jk/N), with i=sqrt(-1), and contains no forward factor 1/N. [PDF p. 1, printed p. 757, anchor: equation (1.1).]",
+      "The same displayed Theorem 2 has a companion clause (b): [fl(Y)-Y]_MAX/Y_RMS <= epsilon sqrt(N_1...N_m) sum_{l=1}^m K(N_l,gamma)+O(epsilon^2). It is the maximum-error clause, distinct from selected clause (a). [PDF p. 8, printed p. 764, anchor: Theorem 2(b).]",
+      "The inherited one-dimensional factorization covers Cooley-Tukey and Sande-Tukey forms, with different diagonal matrices D_j. [PDF p. 2, printed p. 758, anchor: remarks following equation (2.2).]",
+      "The proof is deterministic and accumulates worst-case local error bounds additively; it invokes no independence or statistical roundoff assumption. [PDF p. 8, printed p. 764, anchor: telescoping decomposition and equation (4.2).]"
     ],
-    "algorithm_linkage": "The proof computes fl(Y)=fl(T_1 fl(T_2 ... fl(T_m X)...)), so dimension m is transformed first and dimension 1 last, while exact intermediates obey Z_{l-1}=T_l Z_l (PDF p. 8, printed p. 764, anchor: nested computation in the proof of Theorem 2). Each T_l invokes Theorem 1's one-dimensional floating-point FFT model, whose matrix factorization contains permutation matrices, radix-sized block Fourier matrices, and separate complex-diagonal twiddle-factor matrices (PDF pp. 2-3, printed pp. 758-759, anchors: equation (2.2) and Theorem 1). Equation (2.2) is stated to apply to both Cooley-Tukey and Sande-Tukey algorithms, with different diagonal matrices (PDF p. 2, printed p. 758, anchor: final algorithm remark before Section 3).",
+    "algorithm_linkage": "Define Z_0=Y and Z_m=X, and for l=1,...,m define Z_{l-1}=T_l Z_l by Z_{l-1}(s_1,...,s_{l-1},t_l,...,t_m)=sum_{s_l} e(s_l t_l/N_l)Z_l(s_1,...,s_l,t_{l+1},...,t_m). The computed nesting is fl(T_1 fl(T_2 ... fl(T_m X)...)). Its exact telescoping decomposition propagates each local term fl(T_l fl(Z_l))-T_l fl(Z_l) through T_1...T_{l-1}. Equation (4.3) gives [fl(Z_{l-1})-Z_{l-1}]_RMS/[Z_l]_RMS <= epsilon sqrt(N_l)K(N_l,gamma)+O(epsilon^2), while equation (4.4) gives [Z_{l-1}]_RMS=sqrt(N_l)[Z_l]_RMS. Iterating the scaling makes every propagated first-order term proportional to Y_RMS and yields the sum over l in Theorem 2(a). [PDF p. 8, printed p. 764, anchors: nested computation, telescoping decomposition, and equations (4.2)-(4.4); PDF p. 9, printed p. 765, anchor: completion of Theorem 2(a).]",
     "numerical_model": [
-      "For floating-point a and b, fl(a+b)=a(1+theta epsilon)+b(1+theta epsilon), with generic theta occurrences independently allowed to vary within [-1,1] (PDF p. 2, printed p. 758, anchor: equation (3.1) and following paragraph).",
-      "For floating-point a and b, fl(ab)=ab(1+theta epsilon), with |theta|<=1 (PDF p. 2, printed p. 758, anchor: equation (3.2) and following paragraph).",
-      "When sums use at least t+1 accumulator digits, epsilon=0.5 beta^(1-t) for rounded operations and epsilon=beta^(1-t) for chopped operations, where beta is the base and t the mantissa digit count (PDF pp. 2-3, printed pp. 758-759, anchor: paragraph spanning the page break after equations (3.1)-(3.2)).",
-      "When sums are accumulated with only t digits, epsilon=0.5(1+1/beta)beta^(1-t) for rounded operations and epsilon=(1+1/beta)beta^(1-t) for chopped operations (PDF p. 3, printed p. 759, anchor: continuation of the epsilon definition).",
-      "Trigonometric values use an absolute, not relative, error model: both the rounded argument and the computed sine or cosine are covered by an additive gamma theta epsilon term (PDF p. 3, printed p. 759, anchor: absolute sine/cosine error model).",
-      "Permutation stages are treated as exact reorderings and introduce no roundoff (PDF p. 5, printed p. 761, anchor: discussion preceding equation (3.6))."
+      "For floating-point numbers a and b, fl(a+b)=a(1+theta epsilon)+b(1+theta epsilon) and fl(ab)=ab(1+theta epsilon), where theta is generic, usually differs at each occurrence, and always lies in [-1,1]. [PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2).]",
+      "With at least t+1 digits used to accumulate sums, epsilon=0.5 beta^(1-t) for rounded operations and epsilon=beta^(1-t) for chopped operations, where beta is the base and t is the mantissa length. [PDF pp. 2-3, printed pp. 758-759, anchor: paragraph following equation (3.2).]",
+      "If sums are accumulated with only t digits, epsilon=0.5(1+1/beta)beta^(1-t) for rounded operations and epsilon=(1+1/beta)beta^(1-t) for chopped operations. [PDF p. 3, printed p. 759, anchor: continuation of the paragraph following equation (3.2).]",
+      "Trigonometric computation obeys fl(sin(fl(a)))=sin(a)+gamma theta epsilon and fl(cos(fl(a)))=cos(a)+gamma theta epsilon. This is an absolute-error model, not a relative-error model. [PDF p. 3, printed p. 759, anchor: absolute sine/cosine error model.]",
+      "Gamma is nonnegative, depends on how the trigonometric functions and their arguments are computed for a given transform order, and is independent of the input data. [PDF p. 3, printed p. 759, anchor: paragraph following the sine/cosine model.]"
     ],
     "error_notions": [
-      "The selected result is a normwise relative forward-error bound: computed multidimensional output minus exact multidimensional Fourier output, measured in RMS and divided by exact-output RMS (PDF p. 8, printed p. 764, anchors: definition of E and Theorem 2(a)).",
-      "The sibling part is a maximum absolute componentwise output error divided by exact-output RMS; it is not divided by a maximum norm (PDF p. 8, printed p. 764, anchors: maximum-error definition and Theorem 2(b)).",
-      "The theorem does not claim a componentwise relative-error bound, a backward-error bound, or a probabilistic mean-square estimate (PDF p. 8, printed p. 764, anchor: Theorem 2).",
-      "The total forward error is decomposed into local roundoff from each coordinate transform propagated through all earlier exact transforms (PDF p. 8, printed p. 764, anchors: telescoping identity and equation (4.2))."
+      "The selected numerator is forward output error: the RMS of computed values minus exact Fourier-transform values. [PDF p. 8, printed p. 764, anchor: definition of E and multidimensional RMS error.]",
+      "The selected relative measure divides global RMS output error by the global RMS value of the exact output; it is not a componentwise relative error and does not divide by the computed output. [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+      "The final first-order coefficient is an additive sum over coordinate FFTs, not a root-sum-square statistical combination. [PDF p. 8, printed p. 764, anchor: equation (4.2) and Theorem 2(a).]",
+      "Input-representation error is outside the selected bound; the paper says a further term is required when the input is not exactly representable. [PDF p. 9, printed p. 765, anchor: Section 6 exact-input statement.]"
     ],
     "norms": [
-      "For an array over N_1...N_m entries, RMS is the Euclidean magnitude divided by sqrt(N_1...N_m) (PDF p. 8, printed p. 764, anchor: multidimensional RMS definition).",
-      "MAX is the largest complex magnitude over all product indices (PDF p. 8, printed p. 764, anchor: multidimensional maximum-error definition).",
-      "The unnormalized one-coordinate Fourier map multiplies RMS by sqrt(N_l), exactly as stated in equation (4.4) (PDF p. 8, printed p. 764, anchor: equation (4.4)).",
-      "Consequently, [Z_l]_RMS=sqrt(N_{l+1}...N_m)[X]_RMS for the exact intermediates used in the proof (PDF p. 9, printed p. 765, anchor: norm substitution completing Theorem 2(a))."
+      "All multidimensional RMS quantities average squared complex moduli over all N_1...N_m entries. [PDF p. 8, printed p. 764, anchor: multidimensional RMS definition.]",
+      "For each exact coordinate transform, [Z_{l-1}]_RMS=sqrt(N_l)[Z_l]_RMS. [PDF p. 8, printed p. 764, anchor: equation (4.4).]",
+      "Consequently, [Z_l]_RMS=sqrt(N_{l+1}...N_m)[X]_RMS and Y_RMS=sqrt(N_1...N_m)X_RMS under the unnormalized transform. [PDF p. 9, printed p. 765, anchor: propagated scaling in the completion of Theorem 2(a).]",
+      "The selected denominator is the exact output RMS, so a nonzero denominator is mathematically required even though the theorem does not state that side condition. [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]"
     ],
     "constants_and_indexing": [
-      "All source and target coordinate indices are zero-based: s_l,t_l=0,1,...,N_l-1 for l=1,...,m (PDF p. 7, printed p. 763, anchor: index convention below equation (4.1)).",
-      "For a one-dimensional factorization N=product_{r=1}^M n_r, K(N,gamma)=sum_{r=1}^M alpha(n_r)+(M-1)(3+2 gamma) (PDF p. 3, printed p. 759, anchor: definition of K in Theorem 1).",
-      "For radix 2, K(2^M,gamma)=(3+sqrt(2)+2 gamma)M-(3+2 gamma); for radix 4, K(4^M,gamma)=(8+2 gamma)M-(3+2 gamma) (PDF p. 3, printed p. 759, anchor: parenthetical special cases after Theorem 1).",
-      "The K constants include separate multiplications by the diagonal twiddle matrices D_r for r=1,...,M-1 (PDF p. 3, printed p. 759, anchor: sentence following the radix-2 and radix-4 formulas).",
-      "Theorem 2 sums one K(N_l,gamma) for every coordinate l, without an additional dimension-dependent coefficient in the relative RMS conclusion (PDF p. 8, printed p. 764, anchor: Theorem 2(a))."
+      "Coordinate indices are zero-based, while the dimension index l runs from 1 through m. [PDF p. 7, printed p. 763, anchor: index convention following equation (4.1).]",
+      "For each coordinate, the radix-factor index runs through its chosen factorization and contributes one alpha value per radix plus M_l-1 copies of 3+2 gamma. [PDF p. 3, printed p. 759, anchor: K(N,gamma).]",
+      "For radix-2 and radix-4 one-dimensional algorithms, Theorem 1 specializes the constant to K(2^M,gamma)=(3+sqrt(2)+2 gamma)M-(3+2 gamma) and K(4^M,gamma)=(8+2 gamma)M-(3+2 gamma). [PDF p. 3, printed p. 759, anchor: radix-2 and radix-4 specializations.]",
+      "The K constants include separate multiplications by D_j for j=1,...,M-1. [PDF p. 3, printed p. 759, anchor: parenthetical following the radix specializations.]",
+      "The selected multidimensional coefficient is exactly sum_{l=1}^m K(N_l,gamma); no factor sqrt(N_1...N_m) remains in clause (a). [PDF p. 8, printed p. 764, anchor: Theorem 2(a); PDF p. 9, printed p. 765, anchor: completion of its proof.]"
     ],
     "higher_order_terms": [
-      "The stated result retains the first-order term epsilon sum_l K(N_l,gamma) and appends O(epsilon^2) (PDF p. 8, printed p. 764, anchor: Theorem 2(a)).",
-      "In the one-dimensional derivation, O(epsilon^2) is said to include all terms of order epsilon^2 arising from expansion of the roundoff factors (PDF p. 4, printed p. 760, anchor: first-order expansion in the proof of Theorem 1(a)).",
-      "The multidimensional proof uses [fl(Z_l)]_RMS=[Z_l]_RMS+O(epsilon) for l=1,...,m-1, so multiplying those first-order norm perturbations by epsilon contributes only to O(epsilon^2) (PDF p. 9, printed p. 765, anchor: completion of Theorem 2(a)).",
-      "No explicit coefficient, uniformity domain, or threshold for the O(epsilon^2) remainder is supplied (PDF pp. 4 and 8-9, printed pp. 760 and 764-765, anchors: definition of O(epsilon^2) and proof of Theorem 2(a))."
+      "The selected result retains an additive O(epsilon^2) term after the first-order coefficient epsilon sum_l K(N_l,gamma). [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+      "The derivation groups terms of order epsilon squared into O(epsilon^2), and uses [fl(Z_l)]_RMS=[Z_l]_RMS+O(epsilon) when replacing computed intermediate norms. [PDF p. 4, printed p. 760, anchor: first-order expansion; PDF p. 9, printed p. 765, anchor: completion of Theorem 2(a).]",
+      "The paper does not specify the hidden O(epsilon^2) constant, its uniformity, an explicit epsilon range, or its dependence on dimensions, factorization, gamma, and data. [PDF p. 8, printed p. 764, anchor: Theorem 2(a); PDF p. 4, printed p. 760, anchor: description of O(epsilon^2).]"
     ],
     "exceptional_values": [
-      "The relative RMS expressions require [Y]_RMS to be nonzero to be ordinary real-valued ratios, but the theorem does not state [Y]_RMS>0 or handle the zero-output case separately (PDF p. 8, printed p. 764, anchor: Theorem 2).",
-      "The rounding model contains no explicit treatment of overflow, underflow, subnormal values, infinities, NaNs, or failed trigonometric evaluation (PDF pp. 2-3, printed pp. 758-759, anchors: equations (3.1)-(3.2) and trigonometric error model).",
-      "Input-representation error is excluded from the preceding analysis by the exact-representability assumption; the paper says a separate term must be added when fl(X) differs from X (PDF p. 12, printed p. 768, anchor: Conclusion input-representation paragraph)."
+      "The ratio in Theorem 2(a) is undefined when Y_RMS=0, and the displayed theorem supplies no nonzero-output hypothesis or zero-output convention. [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+      "The arithmetic model discusses bounded relative perturbations and trigonometric absolute errors but states no treatment of overflow, underflow, subnormals, infinities, NaNs, or other exceptional machine values. [PDF pp. 2-3, printed pp. 758-759, anchors: equations (3.1)-(3.2) and the sine/cosine model.]",
+      "Nonexact input data requires an additional input-rounding contribution; no multidimensional version of that contribution is included in Theorem 2(a). [PDF p. 9, printed p. 765, anchor: Section 6 exact-input statement and additional-term discussion.]"
     ]
   },
   "undebatable_constraints": [
-    "The selected bound is relative RMS forward error, not absolute RMS error: its denominator is the RMS of exact Y (PDF p. 8, printed p. 764, anchor: Theorem 2(a)).",
-    "Its first-order coefficient is exactly sum_{l=1}^m K(N_l,gamma), with no factor sqrt(N_1...N_m) in part (a) (PDF p. 8, printed p. 764, anchor: Theorem 2(a)).",
-    "The square-root total-size factor sqrt(N_1...N_m) belongs to the sibling maximum-error bound in part (b) (PDF p. 8, printed p. 764, anchor: Theorem 2(b)).",
-    "The exact transform is product-indexed with zero-based ranges s_l,t_l=0,...,N_l-1 (PDF p. 7, printed p. 763, anchor: equation (4.1) and its index convention).",
-    "The transform is unnormalized; the exact one-coordinate RMS scaling is sqrt(N_l) (PDF p. 8, printed p. 764, anchor: equation (4.4)).",
-    "The computation is explicitly nested as T_m first through T_1 last (PDF p. 8, printed p. 764, anchor: displayed nested computation).",
-    "Each K(N_l,gamma) must be the Theorem 1 constant for the actual one-dimensional radix factorization used in coordinate l (PDF pp. 3 and 8, printed pp. 759 and 764, anchors: Theorem 1 and Theorem 2).",
-    "The alpha cases n=2, n=4, and otherwise are distinct and must be preserved (PDF p. 3, printed p. 759, anchor: piecewise definition of alpha).",
-    "The analysis includes roundoff in trigonometric values through an absolute gamma theta epsilon model (PDF p. 3, printed p. 759, anchor: sine/cosine error model).",
-    "The result is first-order and explicitly includes an O(epsilon^2) remainder (PDF p. 8, printed p. 764, anchor: Theorem 2(a)).",
-    "The exact-input scope cannot be silently replaced by arbitrary rounded input without adding an input-error contribution (PDF p. 12, printed p. 768, anchor: Conclusion input-representation paragraph).",
-    "The telescoping proof propagates every coordinate's local error; no coordinate term may be omitted from the sum (PDF pp. 8-9, printed pp. 764-765, anchors: equation (4.2) and the accumulated inequality)."
+    "The selected claim is the relative RMS inequality [fl(Y)-Y]_RMS/Y_RMS <= epsilon sum_{l=1}^m K(N_l,gamma)+O(epsilon^2). [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+    "The exact transform is a complex product-indexed multidimensional Fourier transform with zero-based coordinate indices and no forward normalization factor. [PDF p. 7, printed p. 763, anchor: equation (4.1); PDF p. 1, printed p. 757, anchor: equation (1.1).]",
+    "The numerator is a global RMS forward error and the denominator is the RMS of the exact output. [PDF p. 8, printed p. 764, anchors: multidimensional RMS definition and Theorem 2(a).]",
+    "Every dimension contributes its own full Theorem 1 constant K(N_l,gamma), and these constants are added over l=1,...,m. [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+    "K is factorization-sensitive and includes alpha(r)=sqrt(2) for radix 2, alpha(r)=5 for radix 4, alpha(r)=2 sqrt(r)(r+gamma) otherwise, plus (M-1)(3+2 gamma). [PDF p. 3, printed p. 759, anchor: Theorem 1 and K(N,gamma).]",
+    "The proof uses the exact local scaling [Z_{l-1}]_RMS=sqrt(N_l)[Z_l]_RMS, which cancels the local sqrt(N_l) factors in the final relative bound. [PDF p. 8, printed p. 764, anchors: equations (4.3)-(4.4); PDF p. 9, printed p. 765, anchor: completion of Theorem 2(a).]",
+    "The result is a first-order deterministic floating-point bound using the stated addition, multiplication, and absolute trigonometric error models, with all remaining terms represented by O(epsilon^2). [PDF pp. 2-4, printed pp. 758-760, anchors: equations (3.1)-(3.2), sine/cosine model, and first-order expansion.]",
+    "The preceding analysis assumes input data exactly representable in machine precision, although this scope is stated after Theorem 2 rather than in its displayed hypotheses. [PDF p. 9, printed p. 765, anchor: Section 6 exact-input statement.]"
   ],
   "ambiguities": [
     {
-      "issue": "The shorthand e(q) in equation (4.1) is not separately defined on the cited multidimensional pages.",
-      "evidence": "Equation (4.1) literally writes e(s_1t_1/N_1+...+s_mt_m/N_m), while equation (1.1) writes the one-dimensional kernel explicitly as exp(i 2 pi j k/N) (PDF pp. 1 and 7, printed pp. 757 and 763, anchors: equations (1.1) and (4.1)).",
-      "impact": "Interpreting e(q) as exp(i 2 pi q) is strongly inherited from the Fourier context, but a formal contract should mark that identification as inherited rather than as a standalone definition on page 763 (PDF pp. 1 and 7, anchors: equations (1.1) and (4.1))."
+      "issue": "Equation (4.1) uses e(q) without explicitly defining that notation in Section 4. [PDF p. 7, printed p. 763, anchor: equation (4.1).]",
+      "evidence": "The one-dimensional transform and matrix entries use exp(i 2 pi q), while the multidimensional equation switches to e(q) without a displayed definition. [PDF p. 1, printed p. 757, anchor: equation (1.1); PDF p. 2, printed p. 758, anchor: equation (2.1); PDF p. 7, printed p. 763, anchor: equation (4.1).]",
+      "impact": "Identifying e(q) with exp(i 2 pi q) is strongly indicated but inherited or inferred rather than locally explicit; a formal statement should record that interpretation instead of silently treating it as a new arbitrary function. [PDF pp. 1, 2, and 7, anchors: equations (1.1), (2.1), and (4.1).]"
     },
     {
-      "issue": "The notation K(N,gamma) suppresses dependence on the selected radix factorization and therefore is not determined by N alone.",
-      "evidence": "Theorem 1 assumes N=N_1...N_M and defines K using every factor N_l, while Theorem 2 merely refers to K(N_l,gamma) as the error constant from Theorem 1 (PDF pp. 3 and 8, printed pp. 759 and 764, anchors: Theorems 1 and 2).",
-      "impact": "A formal statement must bind the one-dimensional factor list or the concrete FFT algorithm for each coordinate; treating K as a factorization-independent function of N_l would lose source information (PDF p. 3, anchor: definition of K)."
+      "issue": "Section 4 uses Y_RMS in the theorem denominator without separately displaying its multidimensional formula. [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+      "evidence": "The page explicitly defines the RMS of fl(Y)-Y, while the general RMS convention appears earlier for vectors. [PDF p. 8, printed p. 764, anchor: multidimensional RMS definition; PDF p. 1, printed p. 757, anchor: RMS convention.]",
+      "impact": "The natural contract applies the same product-indexed RMS formula to exact Y, but this is an inherited convention rather than a new explicit definition on the theorem page. [PDF p. 8, printed p. 764, anchors: multidimensional RMS definition and Theorem 2(a).]"
     },
     {
-      "issue": "The paper uses one symbol gamma in Theorem 2 even though gamma was described as depending on computation for a transform of a given order.",
-      "evidence": "The trigonometric-model paragraph says gamma depends on how sines, cosines, and their arguments are computed for a transformation of a given order, whereas Theorem 2 writes K(N_l,gamma) with the same gamma for every l (PDF pp. 3 and 8, printed pp. 759 and 764, anchors: trigonometric error model and Theorem 2).",
-      "impact": "For dimensions of different orders, the text does not say whether gamma is a common worst-case bound or whether dimension-specific constants have been collapsed into one symbol (PDF pp. 3 and 8, anchors: trigonometric model and Theorem 2)."
+      "issue": "The notation K(N,gamma) suppresses dependence on the chosen mixed-radix factorization and hence on the concrete one-dimensional FFT variant. [PDF p. 3, printed p. 759, anchor: Theorem 1 and K(N,gamma).]",
+      "evidence": "Theorem 1 first assumes N=N_1...N_M and then defines K by summing alpha over those factors, with separate diagonal-multiplication contributions. [PDF p. 3, printed p. 759, anchor: Theorem 1 and the parenthetical following K.]",
+      "impact": "A formalization cannot determine K from the integer N alone unless it also fixes a factorization or chooses a bound over factorizations. [PDF p. 3, printed p. 759, anchor: K(N,gamma).]"
     },
     {
-      "issue": "The exact-input scope and the weaker final proof condition are not stated identically.",
-      "evidence": "The proof concludes by assuming equality of computed and exact input RMS values, or at least a difference of O(epsilon), while the Conclusion says the preceding analysis assumed every input number exactly representable in machine precision (PDF pp. 9 and 12, printed pp. 765 and 768, anchors: completion of Theorem 2(a) and Conclusion input-representation paragraph).",
-      "impact": "The conservative operational contract is exact representability. The weaker RMS-only condition should not be generalized into an arbitrary componentwise input-perturbation allowance, because the paper says nonexact input requires an additional error term (PDF p. 12, anchor: input-representation paragraph)."
+      "issue": "Theorem 2 uses one gamma for all coordinate lengths even though gamma is said to depend on transformation order and implementation. [PDF p. 3, printed p. 759, anchor: sine/cosine model; PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+      "evidence": "Theorem 2 writes sum_l K(N_l,gamma) with a single gamma, but the earlier definition describes gamma as order-dependent. [PDF p. 3, printed p. 759, anchor: paragraph following the sine/cosine model; PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+      "impact": "The paper does not say whether gamma is identical for every coordinate FFT or is a common upper bound for coordinate-specific constants; replacing it by gamma_l would be an interpretation, not the literal statement. [PDF pp. 3 and 8, anchors: sine/cosine model and Theorem 2(a).]"
     },
     {
-      "issue": "The theorem does not address a zero exact-output RMS denominator.",
-      "evidence": "Both parts divide by [Y]_RMS, but no hypothesis [Y]_RMS>0 and no zero case appears in the theorem statement (PDF p. 8, printed p. 764, anchor: Theorem 2).",
-      "impact": "A formal ratio theorem must either assume [Y]_RMS>0, use a division convention, or state a non-relative equivalent; the source does not choose among these options (PDF p. 8, anchor: Theorem 2)."
+      "issue": "Exact input representability is not written in Theorem 2(a)'s displayed hypotheses. [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+      "evidence": "The proof closes by assuming the input RMS is exact or differs only by O(epsilon), and Section 6 later states that the preceding analysis assumed exactly representable input data. [PDF p. 9, printed p. 765, anchors: completion of Theorem 2(a) and Section 6 exact-input statement.]",
+      "impact": "Exact input is inherited scope. For nonexact input, an additional contribution is required, but the paper does not state its multidimensional form in Theorem 2(a). [PDF p. 9, printed p. 765, anchor: input-rounding discussion.]"
     },
     {
-      "issue": "The asymptotic meaning and uniformity of O(epsilon^2) are not quantified.",
-      "evidence": "The proof says O(epsilon^2) includes terms of order epsilon^2, but supplies no bound constant, epsilon range, or uniformity statement over dimensions, data, or radix choices (PDF pp. 4 and 8-9, printed pp. 760 and 764-765, anchors: first-order expansion and Theorem 2 proof).",
-      "impact": "The source supports a first-order asymptotic claim, not a fully quantified finite-epsilon remainder estimate (PDF pp. 4 and 8, anchors: O(epsilon^2) explanation and Theorem 2(a))."
+      "issue": "The meaning and uniformity of O(epsilon^2) are not quantified. [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+      "evidence": "The proof only says that O(epsilon^2) includes terms of order epsilon squared and supplies no hidden constant or admissible epsilon interval. [PDF p. 4, printed p. 760, anchor: first-order expansion.]",
+      "impact": "The displayed result is a first-order asymptotic error statement, not a fully explicit finite-epsilon inequality unless additional bounds on the omitted terms are supplied. [PDF pp. 4 and 8, anchors: first-order expansion and Theorem 2(a).]"
     },
     {
-      "issue": "The theorem names a multidimensional FFT but does not select uniquely between the Cooley-Tukey and Sande-Tukey one-dimensional variants.",
-      "evidence": "The matrix factorization is stated to hold for both variants with different diagonal matrices, and Theorem 2 inherits Theorem 1 without naming one variant (PDF pp. 2 and 8, printed pp. 758 and 764, anchors: algorithm remark after equation (2.2) and Theorem 2).",
-      "impact": "The contract covers implementations satisfying the inherited factorization and error constants; it should not assert a unique twiddle schedule beyond the explicitly displayed coordinate nesting (PDF pp. 2 and 8, anchors: equation (2.2) remarks and nested computation)."
+      "issue": "The theorem does not exclude Y_RMS=0 even though it divides by Y_RMS. [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+      "evidence": "No nonzero-output or nonzero-input side condition accompanies the displayed ratio. [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]",
+      "impact": "A literal formal ratio theorem needs a nonzero-denominator hypothesis or an explicit convention for the zero transform. [PDF p. 8, printed p. 764, anchor: Theorem 2(a).]"
     },
     {
-      "issue": "Exceptional floating-point behavior is outside the stated model.",
-      "evidence": "Equations (3.1)-(3.2) and the trigonometric model contain only bounded theta errors and do not discuss overflow, underflow, subnormals, infinities, or NaNs (PDF pp. 2-3, printed pp. 758-759, anchors: floating arithmetic and trigonometric models).",
-      "impact": "Any formalization using IEEE exceptional values needs additional assumptions excluding them; those assumptions are not explicitly supplied by the paper (PDF pp. 2-3, anchors: equations (3.1)-(3.2) and trigonometric model)."
+      "issue": "Exceptional floating-point values and range failures are outside the stated model. [PDF pp. 2-3, printed pp. 758-759, anchors: equations (3.1)-(3.2) and the sine/cosine model.]",
+      "evidence": "The model specifies bounded perturbations for ordinary arithmetic and trigonometric results but gives no overflow, underflow, subnormal, infinity, or NaN conditions. [PDF pp. 2-3, printed pp. 758-759, anchors: equations (3.1)-(3.2) and the sine/cosine model.]",
+      "impact": "Any formal theorem using this contract must either assume all operations remain within the ordinary modeled range or add exceptional-value semantics not present in the paper. [PDF pp. 2-3, printed pp. 758-759, anchors: equations (3.1)-(3.2) and the sine/cosine model.]"
     }
   ],
-  "contract_plain_english": "For the product-indexed, unnormalized complex Fourier transform in equation (4.1), compute the dimensions sequentially by floating-point one-dimensional FFTs, applying dimension m first and dimension 1 last (PDF pp. 7-8, printed pp. 763-764, anchors: equation (4.1) and nested computation). Under the paper's bounded floating addition, multiplication, and absolute trigonometric-error models, and within its exact-input scope, the RMS forward error divided by the RMS of the exact output is at most epsilon times the sum of the one-dimensional constants K(N_l,gamma), up to O(epsilon^2) (PDF pp. 2-3, 8, and 12, printed pp. 758-759, 764, and 768, anchors: equations (3.1)-(3.2), trigonometric model, Theorem 2(a), and input-representation paragraph). Each K must retain the radix-factorization-dependent definition from Theorem 1 (PDF p. 3, printed p. 759, anchor: Theorem 1). The enclosing theorem also bounds maximum output error divided by exact-output RMS by the same sum multiplied by sqrt(N_1...N_m) (PDF p. 8, printed p. 764, anchor: Theorem 2(b))."
+  "contract_plain_english": "For an m-dimensional complex, unnormalized Fourier transform with coordinate lengths N_1,...,N_m, compute the output by applying one-dimensional mixed-radix FFTs successively along the coordinates. [PDF p. 7, printed p. 763, anchor: equation (4.1); PDF p. 8, printed p. 764, anchor: nested computation.] Under the paper's deterministic floating-point and absolute trigonometric error models, and within its inherited exact-input scope, Theorem 2(a) says that the global RMS output error divided by the exact output RMS is at most epsilon times the sum of the one-dimensional constants K(N_l,gamma), plus terms of order epsilon squared. [PDF pp. 2-3, printed pp. 758-759, anchors: equations (3.1)-(3.2) and sine/cosine model; PDF p. 8, printed p. 764, anchor: Theorem 2(a); PDF p. 9, printed p. 765, anchor: exact-input statement.] Each K is determined by the actual radix factorization used for that coordinate, including the special radix-2 and radix-4 constants and interstage twiddle multiplications. [PDF p. 3, printed p. 759, anchor: Theorem 1 and K(N,gamma).] The proof adds propagated local RMS bounds and uses exact sqrt(N_l) norm scaling so those dimensional factors cancel from the final relative-RMS coefficient. [PDF p. 8, printed p. 764, anchors: equations (4.2)-(4.4); PDF p. 9, printed p. 765, anchor: completion of Theorem 2(a).]"
 }
