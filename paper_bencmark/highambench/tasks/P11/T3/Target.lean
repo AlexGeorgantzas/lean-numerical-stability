@@ -2,7 +2,8 @@ import HighamBench.P11Definitions
 
 namespace HighamBench
 
-/-- P11-T3: the uniform all-prefix form of equation (7), derived from the
+/-- P11-T3: the uniform all-prefix form of equation (7), with
+`c1(m,k) = 2*sqrt(2)*m*k + 2*sqrt(k)` for later columns, derived from the
 preceding residual estimates for one fixed-input CGS-P execution family. -/
 theorem p11_t3_orthogonality_defect_bound {m n : ℕ}
     (family : P11CGSPTheorem1Family m n)
