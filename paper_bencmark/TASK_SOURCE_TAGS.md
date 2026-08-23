@@ -80,7 +80,7 @@ the `theorem` command.
 | `P14-T3` | `EQN`, `TXT` | none | Equation (1.4) supplies shift invariance and the paper later uses exact normalization and nonnegative mass in prose. |
 | `P15-T1` | `TXT` | none | Section 2.1 states Frobenius submultiplicativity in prose as the first norm property used throughout the analysis. |
 | `P15-T2` | `LEM` | `Lemma 3.1` | The selected truncation-plus-rounding backward-error result is explicitly named Lemma 3.1. |
-| `P15-T3` | `THM` | `Theorem 4.5` | The selected BLR linear-system backward-error result is explicitly named Theorem 4.5. |
+| `P15-T3` | `LEM` | `Lemma 3.3` | The selected two-part low-rank matrix-product error result is explicitly named Lemma 3.3. |
 | `P16-T1` | `UNL` | none | Section 2 gives the selected minimum normwise backward-error identity in an unnumbered display. |
 | `P16-T2` | `LEM` | `Lemma 4.2` | The corrected task remains tied to the backward-error half of Lemma 4.2; its proof-required iterate comparison is documented as a project-added condition. |
 | `P16-T3` | `THM` | `Theorem 6.3` | The selected mixed-precision contraction and attainable-floor result is explicitly named Theorem 6.3. |

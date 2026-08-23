@@ -7,116 +7,107 @@ low-rank linear systems by LU factorization is numerically stable*. The local
 PDF SHA-256 is
 `a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7`.
 
-The selected result remains Theorem 4.5, equations (4.23)--(4.25), and its
-proof on PDF pages 24--25 (printed pages 974--975). The proof invokes Theorems
-4.2 and 4.3 for the factorization and Theorem 4.4 for each triangular solve.
+The selected result is Lemma 3.3, equations (3.10)--(3.11), on PDF pages
+9--10 (printed pages 959--960). This selection replaces the previously audited
+Theorem 4.5 task with the project owner's approval.
 
-## Quantification and matrix roles
+## Source statement
 
-`P15BLRLinearSolveExecution b p r` records one completed computation. It fixes
-the dense matrix `A`, its Section 2.1 BLR representation `Atilde`, the computed
-factors `L` and `U`, the right-hand side `v`, the intermediate solution `yHat`,
-the final solution `xHat`, and one actual precision pair `(u, epsilon)`.
-
-The dimensions are finite real dimensions with matrix order `p*b`. The block
-size and block count are positive, `r <= b`, and `r` is the least common
-off-diagonal rank bound of the computed factors. `p15BLRRepresents` keeps the
-dense and represented matrices distinct and records the paper's oriented,
-minimum-rank truncation semantics. The exact backward equation and norm scale
-use `A`, following the displayed equations and proof of Theorem 4.5. The
-paper's switch between `Atilde` and `A` remains a source notation ambiguity;
-the formalization does not silently identify them.
-
-Admissibility is
+The paper takes `A,B` in `R^(b x b)` and low-rank representations
 
 ```text
-0 < u < epsilon,     0 < epsilon,     3*c*u < 1,
-c = b + 2*r*sqrt(r) + p.
+Atilde = XA*YA^T,       Btilde = YB*XB^T,
 ```
 
-The paper says that `u` is safely smaller than `epsilon` but gives no numerical
-ratio. The explicit inequality `u < epsilon` is the weakest positive ordering
-used here. The real standard model excludes overflow, underflow, NaNs, and
-infinities.
-
-## Factorization theorem
-
-`P15CompletedBLRFactorization` contains a raw UFC or UCF trace on `Atilde` and
-the four distinct error contributions accumulated in the proofs of Theorems
-4.1--4.3:
+where all four factors are `b x r` and `XA` and `XB` have orthonormal
+columns. The approximations satisfy
 
 ```text
-compression error + rounded-input error
-  + factor-arithmetic error + mixed error.
+||A - Atilde||_F <= epsilon*betaA,
+||B - Btilde||_F <= epsilon*betaB.
 ```
 
-The raw trace retains the `j < k` updates, cancellation-safe equation-(4.3)
-operand perturbations, Lemma-2.3 diagonal factorizations, equation-(2.9)
-matrix-solve residuals, Assumption-2.1 compressions, algorithm-specific
-factor/compress ordering, threshold scaling, and optional recompression.
-
-The four analysis terms remain separate. Their bounds respectively use
-`xi_p*epsilon*||A||`, `gamma_p*||A||`,
-`gamma_c*||L||*||U||`, and an `O(u*epsilon)` remainder. The imported theorem
-`p15CompletedBLRFactorization_backwardError` applies Frobenius triangle
-inequalities to derive the single Theorem-4.2/4.3 perturbation. That aggregate
-perturbation, equation, and bound are not fields of the final execution.
-
-## Triangular-solve theorem
-
-Each `P15CompletedTriangularSolve` contains an operation-level block trace of
-equation (4.22). Product errors, right-hand-side summation errors, product
-summation errors, and diagonal-solve errors remain distinct, and every diagonal
-block is nonsingular. Lower solves use prior blocks; upper solves use later
-blocks.
-
-The gathered source analysis retains three matrix contributions with
-coefficients `gamma_d`, `gamma_p`, and `gamma_d*gamma_p`, where
-`d = b + r*sqrt(r)`. The imported theorem
-`p15CompletedTriangularSolve_backwardError` proves their sum is bounded by
-`gamma_(d+p)*||T||` and derives the equation-(4.21) perturbation and
-right-hand-side bound. Thus the two Theorem-4.4 interfaces used by P15-T3 are
-conclusions obtained from the two completed solves, not caller-supplied
-certificates.
-
-## Higher-order terms
-
-`p15IsBigOMixedAtRun remainder u epsilon` gives separate positive radii for
-`u` and `epsilon`, a uniform `C*u*epsilon` bound in that neighborhood, and
-requires the actual execution pair to lie inside it. Consequently the value
-used in equation (4.24) is controlled by the same big-O witness; an isolated
-spike at the current precision is impossible.
-
-The target constructs the right-hand-side remainder and proves
-`p15IsBigOSquareRelativeAtRun` relative to
-`||L||*||U||*||xHat||`. Its certified neighborhood also contains the actual
-execution pair. The proof derives the explicit supporting coefficient
-`16*c^2`, but the controlled target retains the paper's `O(u^2)` form.
-
-## Derived result
-
-The target first derives witnesses for Theorems 4.2--4.4 from the completed
-traces. It then constructs exactly the perturbations printed on page 975:
+The product is evaluated in either of the two orders explicitly allowed by
+the lemma:
 
 ```text
-DeltaA = factorError + lowerError*U + L*upperError
-           + lowerError*upperError,
-Deltav = lowerRhsError + L*upperRhsError
-           + lowerError*upperRhsError.
+(XA*(YA^T*YB))*XB^T
+XA*((YA^T*YB)*XB^T).
 ```
 
-It proves
+Writing `Chat` for the computed result and
+`gammaC = gamma_(b + 2*r^(3/2))`, the two selected conclusions are
 
 ```text
-(A + DeltaA) * xHat = v + Deltav,
+||Chat - Atilde*Btilde||_F
+  <= gammaC*||Atilde||_F*||Btilde||_F,                 (3.10)
 
-||DeltaA|| <= (xi_p*epsilon + gamma_p)*||A||
-              + gamma_(3c)*||L||*||U|| + O(u*epsilon),
-
-||Deltav|| <= gamma_p*(||v|| + ||L||*||U||*||xHat||)
-              + O(u^2).
+||Chat - A*B||_F
+  <= gammaC*||A||_F*||B||_F
+     + epsilon*(1 + gammaC)
+         *(betaA*||B||_F + ||A||_F*betaB
+           + epsilon*betaA*betaB).                    (3.11)
 ```
 
-Matrix norms are unsquared, unnormalized Frobenius norms and vector norms are
-Euclidean. A private one-block exact UFC construction witnesses satisfiability
-of the complete execution and predecessor-analysis interfaces.
+No asymptotic term is introduced: the target retains every term printed in
+the lemma.
+
+## Lean execution model
+
+`P15LowRankMatMulExecution b r` records the two original matrices, all four
+factors, the two approximation errors, unit roundoff, and one raw computation
+trace. It stores
+
+```text
+Atilde = A + approximationErrorA,
+Btilde = B + approximationErrorB.
+```
+
+This reverses the signs of the paper's displayed differences, but Frobenius
+norms are invariant under negation, so the two approximation hypotheses are
+equivalent. The model does not identify `A` with `Atilde` or `B` with
+`Btilde`.
+
+`P15RoundedMatMulStage` contains only a local additive error and the standard
+equation-(2.7) bound
+
+```text
+||error||_F <= gamma_inner*||left input||_F*||right input||_F.
+```
+
+Its output is defined as the exact product plus that error.
+`P15LowRankMatMulTrace` contains exactly three such stages and has separate
+constructors for the two parenthesizations. Therefore `run.trace.result` is a
+computed matrix linked to one of the paper's permitted evaluations; it is not an
+arbitrary matrix and the trace contains neither conclusion (3.10) nor (3.11)
+as a field.
+
+The condition `0 <= unitRoundoff` and
+
+```text
+(b + 2*r*sqrt(r))*unitRoundoff < 1
+```
+
+make every gamma denominator used by the proof positive. The model is over
+real matrices and is the usual finite standard-error abstraction, so overflow,
+underflow, NaNs, and infinities are outside its scope.
+
+## Derived proof obligations
+
+For each trace order, the proof must:
+
+1. derive the first two-product error from the two local stage errors;
+2. use orthonormality to prove left and right Frobenius-norm invariance and
+   `||XA||_F = ||XB||_F = sqrt(r)`;
+3. combine `gamma_b` and `gamma_r*sqrt(r)` into
+   `gamma_(b+r^(3/2))`;
+4. combine the final stage into `gamma_(b+2*r^(3/2))`, proving (3.10);
+5. expand `(A+EA)*(B+EB)-A*B` and use the two approximation bounds to prove
+   (3.11).
+
+The private construction includes a concrete `b=r=1` exact execution, so the
+execution assumptions are jointly satisfiable. Condition L uses the frozen
+NumStability Frobenius nonnegativity, triangle, and rectangular-product
+inequalities. The library contains no complete Lemma-3.3 result, no trace
+composition theorem, and no real-index gamma-composition theorem, so the task
+remains T3.

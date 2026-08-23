@@ -45,24 +45,28 @@
       "reason": "They are classical results recalled from Higham (2002), so their proofs are delegated rather than established in this paper."
     },
     {
-      "candidate": "Lemma 3.2 full-matrix forward error and Lemmas 3.3-3.4 low-rank matrix-product bounds",
-      "reason": "These are viable results, but Lemma 3.1 is the cleanest source-faithful combine task and the selected T3 already exercises the paper's matrix-product error composition at greater depth."
+      "candidate": "Lemma 3.2 full-matrix forward error and Lemma 3.4 low-rank matrix-product bound with intermediate recompression",
+      "reason": "Lemma 3.2 is too close to the selected Lemma 3.1 task, while Lemma 3.4 adds a recompression model beyond the selected Lemma 3.3 three-product computation."
     },
     {
       "candidate": "Lemma 3.5 triangular system with a low-rank right-hand side",
-      "reason": "It is an intermediate UCF factorization kernel; Theorem 4.5 provides the more central end-to-end solve certificate."
+      "reason": "It is an intermediate UCF factorization kernel and would require additional block-triangular execution machinery unrelated to the selected low-rank product task."
     },
     {
       "candidate": "Theorem 4.1 blockwise UFC factorization expansion",
-      "reason": "Its blockwise recurrence and four global error contributions are retained as the source-level factorization analysis from which the imported Theorem-4.2/4.3 interface is derived; Theorem 4.5 remains the selected target."
+      "reason": "Its blockwise recurrence requires a substantially larger source-level BLR factorization model than the self-contained Lemma 3.3 task."
     },
     {
       "candidate": "Corollary 4.1 and Theorems 4.2-4.3 factorization bounds",
-      "reason": "These factorization bounds are predecessor results derived inside the P15 paper development and then consumed by the selected final linear-system theorem."
+      "reason": "These are later factorization results whose faithful standalone execution models would be much larger than the selected low-rank product model."
     },
     {
       "candidate": "Theorem 4.4 BLR triangular-system bound",
-      "reason": "Its aggregate interface is derived from each completed equation-(4.22) solve trace and then consumed twice by the selected final theorem."
+      "reason": "Its faithful formalization requires a complete ordered block-triangular solve trace and is not needed for the selected Lemma 3.3 task."
+    },
+    {
+      "candidate": "Theorem 4.5 BLR linear-system backward-error bound",
+      "reason": "An earlier construction was rejected because completed factorization and solve objects carried predecessor conclusions as certificates. Reconstructing the complete algorithms without those certificates is disproportionate for this corpus, so the project owner approved replacing it with Lemma 3.3."
     },
     {
       "candidate": "Tables, Figures 1-9, SuiteSparse experiments, flop comparisons, and implementation recommendations",
@@ -84,16 +88,16 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 4.5 for one completed UFC or UCF execution. Preserve dense A versus represented Atilde, exact factor-rank semantics, j<k algorithm traces, residual rounding models, algorithm-specific compression, derived Theorem-4.2--4.4 perturbation witnesses, exact aggregate compositions, and O(u epsilon)/O(u^2) controls whose certified neighborhoods contain the actual execution precision.",
+      "decision": "Use Lemma 3.3 equations (3.10)-(3.11) for both permitted evaluations of Atilde*Btilde. Preserve the b-by-r factors, orthonormal outer factors, separate low-rank approximation errors, all three local matrix-product errors, c = b+2*r^(3/2), and both the representation-relative and original-matrix bounds.",
       "task_id": "P15-T3",
-      "theorem_name": "p15_t3_blr_lu_solve_backward_error"
+      "theorem_name": "p15_t3_low_rank_matmul_error"
     }
   },
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
     "Use results proved or exact norm properties explicitly adopted in this paper, not empirical plots or results delegated to earlier sources.",
     "Preserve the paper's Frobenius-norm setting and distinguish low-rank truncation errors from floating-point errors.",
-    "Formalize big-O terms with quantified remainder functions whose certified neighborhoods contain the pointwise execution precision; do not permit uncontrolled current-point values.",
+    "Retain every explicit finite error term in selected bounds; if a future task uses big-O notation, require a quantified remainder whose certified neighborhood contains the pointwise execution precision.",
     "Keep every public definition paper-scoped and free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."
   ],
