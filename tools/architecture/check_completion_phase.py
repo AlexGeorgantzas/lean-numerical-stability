@@ -612,6 +612,19 @@ R07_CLOSEOUT_CHANGED_PATHS = frozenset(
 R07_CLOSEOUT_PATH_LIST_SHA256 = (
     "97AD4EBCA6EE58783C58112AD0185D32D11F2208568471176596F12B8065FAF3"
 )
+R07_CLOSEOUT_CONTROL_SHA = "6867ea68774f1ca250191fa0f2c549ec0227b10d"
+R07_NARRATIVE_REFRESH_SUBJECT = (
+    "docs(reorg): refresh narratives to the integrated R07 statistics"
+)
+R07_NARRATIVE_REFRESH_CHANGED_PATHS = frozenset(
+    {
+        "README.md",
+        "docs/README.md",
+        "docs/architecture/MIGRATION.md",
+        "docs/architecture/phases/README.md",
+        "tools/architecture/check_completion_phase.py",
+    }
+)
 C0005_PLANNED_CONTROL_PARENT_SHA = "59115771c816e0f41967c854beb9e86532317e82"
 C0005_PLANNED_CONTROL_SHA = "2d9dbf7bf8b4b51e9cb7817f5c5dc2d5194e8c42"
 C0005_PLANNED_CONTROL_CI_RUN = "32030191197"
@@ -4835,6 +4848,44 @@ def validate_r07_closeout_commit_shape(
         )
 
 
+def validate_r07_narrative_refresh_commit_shape(
+    *,
+    parents: Sequence[str],
+    subject: str | None,
+    changed_paths: set[str],
+    overlay_paths: set[str],
+    problems: Problems,
+    context: str = "R07 narrative-refresh commit",
+) -> None:
+    """Require the reviewed statistics refresh to keep its exact shape."""
+
+    problems.require(
+        list(parents) == [R07_CLOSEOUT_CONTROL_SHA],
+        f"{context}.parent",
+        "narrative refresh must be a single-parent direct child of the exact "
+        "closeout control",
+    )
+    problems.require(
+        subject == R07_NARRATIVE_REFRESH_SUBJECT,
+        f"{context}.subject",
+        "narrative refresh must retain the exact reviewed subject",
+    )
+    problems.require(
+        changed_paths == set(R07_NARRATIVE_REFRESH_CHANGED_PATHS),
+        f"{context}.paths",
+        "narrative refresh must change exactly the approved narrative and "
+        "checker paths; "
+        f"missing={sorted(set(R07_NARRATIVE_REFRESH_CHANGED_PATHS) - changed_paths)}, "
+        f"extra={sorted(changed_paths - set(R07_NARRATIVE_REFRESH_CHANGED_PATHS))}",
+    )
+    problems.require(
+        not overlay_paths,
+        f"{context}.worktree",
+        "narrative refresh must have a clean overlay; "
+        f"found={sorted(overlay_paths)}",
+    )
+
+
 def validate_reconstructed_r03_tree(
     actual: str | None,
     problems: Problems,
@@ -7963,8 +8014,17 @@ class CompletionValidator:
                         )
                         closeout_overlay: set[str] = set()
                     else:
+                        # The closeout is committed.  A later reviewed
+                        # narrative refresh may sit on top of it, so read the
+                        # closeout's own shape from the exact pinned control
+                        # rather than assuming HEAD is the closeout.
+                        closeout_source = (
+                            "HEAD"
+                            if head == R07_CLOSEOUT_CONTROL_SHA
+                            else R07_CLOSEOUT_CONTROL_SHA
+                        )
                         closeout_metadata = self.git(
-                            "show", "-s", "--format=%P%n%s", "HEAD", check=False
+                            "show", "-s", "--format=%P%n%s", closeout_source, check=False
                         )
                         closeout_lines = closeout_metadata.stdout.splitlines()
                         closeout_parents = (
@@ -7978,7 +8038,7 @@ class CompletionValidator:
                             "--name-only",
                             "--no-renames",
                             R07_INTEGRATION_CONTROL_SHA,
-                            "HEAD",
+                            closeout_source,
                             "--",
                             check=False,
                         )
@@ -7997,6 +8057,8 @@ class CompletionValidator:
                                 "HEAD", f"{context}.integration_closeout.worktree"
                             )
                             - untracked_material
+                            if head == R07_CLOSEOUT_CONTROL_SHA
+                            else set()
                         )
                     validate_r07_closeout_commit_shape(
                         head=head,
@@ -8007,6 +8069,53 @@ class CompletionValidator:
                         problems=self.problems,
                         context=f"{context}.integration_closeout",
                     )
+                    if head not in {
+                        R07_INTEGRATION_CONTROL_SHA,
+                        R07_CLOSEOUT_CONTROL_SHA,
+                    }:
+                        refresh_metadata = self.git(
+                            "show", "-s", "--format=%P%n%s", "HEAD", check=False
+                        )
+                        refresh_lines = refresh_metadata.stdout.splitlines()
+                        refresh_parents = (
+                            refresh_lines[0].split() if refresh_lines else []
+                        )
+                        refresh_subject = (
+                            refresh_lines[1] if len(refresh_lines) == 2 else None
+                        )
+                        refresh_diff = self.git(
+                            "diff",
+                            "--name-only",
+                            "--no-renames",
+                            R07_CLOSEOUT_CONTROL_SHA,
+                            "HEAD",
+                            "--",
+                            check=False,
+                        )
+                        refresh_changed = {
+                            normalize_path(path)
+                            for path in refresh_diff.stdout.splitlines()
+                            if path.strip()
+                        }
+                        if refresh_metadata.returncode or refresh_diff.returncode:
+                            self.problems.add(
+                                f"{context}.narrative_refresh.git",
+                                "cannot read refresh parent, subject, or diff",
+                            )
+                        refresh_overlay = (
+                            self.git_live_change_paths(
+                                "HEAD", f"{context}.narrative_refresh.worktree"
+                            )
+                            - untracked_material
+                        )
+                        validate_r07_narrative_refresh_commit_shape(
+                            parents=refresh_parents,
+                            subject=refresh_subject,
+                            changed_paths=refresh_changed,
+                            overlay_paths=refresh_overlay,
+                            problems=self.problems,
+                            context=f"{context}.narrative_refresh",
+                        )
                     narrative_fragments = (
                         "M07 remains ready and B0010/R07 is delivered",
                         R07_DELIVERY_SHA,
@@ -10376,9 +10485,8 @@ class CompletionValidator:
                     and narrative in R07_ACTIVATION_CHANGED_PATHS
                 ),
                 r07_delivered=(
-                    (self.root / R07_INTEGRATION_AUTHORIZATION_PATH).is_file()
-                    and narrative in R07_ACTIVATION_CHANGED_PATHS
-                ),
+                    self.root / R07_INTEGRATION_AUTHORIZATION_PATH
+                ).is_file(),
             )
         self.problems.require(
             checkpoint.get("inventory")
@@ -18290,6 +18398,78 @@ def run_self_test() -> int:
                 any(diagnostic in message for message in negative.messages),
                 f"self-test R07 integration closeout {label}",
                 f"adversarial closeout mutation missed {diagnostic}: {negative.messages}",
+            )
+        refresh_shape_positive = Problems()
+        validate_r07_narrative_refresh_commit_shape(
+            parents=[R07_CLOSEOUT_CONTROL_SHA],
+            subject=R07_NARRATIVE_REFRESH_SUBJECT,
+            changed_paths=set(R07_NARRATIVE_REFRESH_CHANGED_PATHS),
+            overlay_paths=set(),
+            problems=refresh_shape_positive,
+            context="self-test R07 narrative refresh",
+        )
+        problems.require(
+            len(R07_NARRATIVE_REFRESH_CHANGED_PATHS) == 5
+            and not refresh_shape_positive.messages,
+            "self-test R07 narrative refresh positive",
+            "valid five-path narrative refresh rejected or path contract "
+            f"drifted: {refresh_shape_positive.messages}",
+        )
+        for label, parents, subject, changed, overlay, diagnostic in (
+            (
+                "wrong parent",
+                ["0" * 40],
+                R07_NARRATIVE_REFRESH_SUBJECT,
+                set(R07_NARRATIVE_REFRESH_CHANGED_PATHS),
+                set(),
+                ".parent:",
+            ),
+            (
+                "wrong subject",
+                [R07_CLOSEOUT_CONTROL_SHA],
+                "wrong",
+                set(R07_NARRATIVE_REFRESH_CHANGED_PATHS),
+                set(),
+                ".subject:",
+            ),
+            (
+                "missing path",
+                [R07_CLOSEOUT_CONTROL_SHA],
+                R07_NARRATIVE_REFRESH_SUBJECT,
+                set(R07_NARRATIVE_REFRESH_CHANGED_PATHS) - {"docs/README.md"},
+                set(),
+                ".paths:",
+            ),
+            (
+                "extra path",
+                [R07_CLOSEOUT_CONTROL_SHA],
+                R07_NARRATIVE_REFRESH_SUBJECT,
+                set(R07_NARRATIVE_REFRESH_CHANGED_PATHS) | {"intruder"},
+                set(),
+                ".paths:",
+            ),
+            (
+                "dirty overlay",
+                [R07_CLOSEOUT_CONTROL_SHA],
+                R07_NARRATIVE_REFRESH_SUBJECT,
+                set(R07_NARRATIVE_REFRESH_CHANGED_PATHS),
+                {"intruder"},
+                ".worktree:",
+            ),
+        ):
+            negative = Problems()
+            validate_r07_narrative_refresh_commit_shape(
+                parents=parents,
+                subject=subject,
+                changed_paths=changed,
+                overlay_paths=overlay,
+                problems=negative,
+                context="self-test R07 narrative refresh",
+            )
+            problems.require(
+                any(diagnostic in message for message in negative.messages),
+                f"self-test R07 narrative refresh {label}",
+                f"adversarial refresh mutation missed {diagnostic}: {negative.messages}",
             )
     with tempfile.TemporaryDirectory(
         prefix="completion-r07-live-change-self-test-"

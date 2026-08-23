@@ -8,8 +8,11 @@ The active repository-wide operating contract is
 Its current C0005 checkpoint accepts M04/R04 and M08/R08 at exact integrated
 code commit `ad92bbfae62d538f3e52829a269a846688a8e213`. Generated evidence records
 2,818 production modules: 2,685 classified, 133 unclassified, and 0 mixed. M04
-and M08 are accepted; M07 is ready, while R07 remains blocked until the exact
-acceptance-control CI is green. Branch retirement is a separate later control.
+and M08 are accepted and M07 is ready. B0010/R07 is delivered at
+`2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` and its code is integrated on
+`main` at `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`, after which the live
+tree records 2,860 production modules: 2,770 classified, 90 unclassified, and
+0 mixed. R07 acceptance and branch retirement are separate later controls.
 The checkpoint distinguishes bounded-phase from repository-wide completion and
 records branch, baseline, shared-request, build-lock, and lifecycle rules.
 Validate it with `python tools/architecture/check_phase.py`. Dated packets and
@@ -72,15 +75,17 @@ C0004 accepts M05/R05 and M06/R06 at exact code
 95203051003) passed. P0006/P0007 are retired immutable evidence, and
 R0006/R0007/R0008 are applied.
 The temporary second-operator authority and R05/R06 reservations are released.
-M04/R04 and M08/R08 are ready; every other unaccepted milestone remains
-planned and no successor wave is activated. The official baseline, inventory,
-and 111-path ledger SHA-256 values are
+At C0004 time, M04/R04 and M08/R08 were ready and every other unaccepted
+milestone remained planned; both were later accepted at C0005 as recorded
+above. The C0004 baseline, inventory,
+and 111-path ledger SHA-256 values remain pinned at
 `D3F30A410903B1CA2858951CB26107B94B62630BC424723A0EC9EDF484AEDDDF`,
 `08FA3E41DA0C72E7F5D4ECFD315F0CC6C73EB0F45089CF1DAC6AB04A81A1E326`,
-and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`.
-Bounded-phase and repository-wide completion remain incomplete with 200 debt
-rows, including 191 unclassified modules, 125 noncanonical names, and eight
-declaration-bearing umbrellas. Acceptance-control commit
+and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`;
+the accepted C0005 baseline and inventory supersede them. Bounded-phase and
+repository-wide completion remain incomplete: after the R07 integration, 90
+unclassified modules, 72 noncanonical names, and one declaration-bearing
+umbrella remain. Acceptance-control commit
 `131a0c6f333de0eb47a67698decf36ee82e01dab` passed Lean CI run 31966141900
 (job 95211495907); `primary-human` retired B0006/B0007 at
 `2026-08-16T19:08:57Z`. Their exact remote refs were deleted atomically under

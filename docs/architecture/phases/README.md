@@ -191,20 +191,24 @@ adds `codex-local` to `claude-lane` solely for B0008/R04; B0009/R08 remains
 32030191197 (build job 95388234941). The
 [`activation review`](2026-08-repository-reorganization-completion/reviews/R04-R08-activation.md)
 pins the two atomic new refs and clean LF-configured named worktrees at exact
-C0004. The 37-path union remains integrator-only and unapplied, and both
-workers remain frozen until this activation-control commit passes its exact
-Lean CI build job; no implementation, delivery, integration, or C0005 has
-begun.
+C0004. At activation time the 37-path union remained integrator-only and
+unapplied, and both workers remained frozen until that activation-control
+commit passed its exact Lean CI build job; the deliveries, the integration,
+and the C0005 acceptance recorded above all landed afterward.
 
 C0004 records 2,766 production modules and 200 distinct residual-debt rows:
 191 unclassified, zero mixed, zero missing-module-doc, 125 noncanonical, and
 eight declaration-bearing-umbrella rows, with zero unsorted aggregate imports.
-The inventory has 2,555 complete rows, 211 in-scope rows, and 200 rows with
-debt. The official baseline, inventory, and 111-path ledger SHA-256 values are
+Its inventory has 2,555 complete rows, 211 in-scope rows, and 200 rows with
+debt. The C0004 baseline, inventory, and 111-path ledger SHA-256 values remain
+pinned at
 `D3F30A410903B1CA2858951CB26107B94B62630BC424723A0EC9EDF484AEDDDF`,
 `08FA3E41DA0C72E7F5D4ECFD315F0CC6C73EB0F45089CF1DAC6AB04A81A1E326`,
-and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`.
-Bounded-phase and repository-wide completion remain incomplete.
+and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`;
+the accepted C0005 baseline and inventory supersede them. Bounded-phase and
+repository-wide completion remain incomplete: after the R07 integration, 90
+unclassified modules, 72 noncanonical names, and one declaration-bearing
+umbrella remain.
 
 The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
 passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and
