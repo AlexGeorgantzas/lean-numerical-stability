@@ -1,59 +1,32 @@
 {
-  "accepted": false,
+  "accepted": true,
   "adjudicated": true,
   "adjudication_reasons": [
     "judge classifications differ",
     "round-trip judge requested adjudication",
     "round-trip judge classification is undetermined",
-    "blind dependency D026 is unclear",
-    "blind dependency D039 is unclear",
-    "blind dependency D040 is unclear",
-    "blind dependency D169 is unclear",
-    "round-trip S03 is unclear",
     "round-trip S06 is unclear",
-    "round-trip S16 is unclear"
+    "round-trip S08 is unclear"
   ],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-23T06:12:44.213934+00:00",
-  "findings": [
-    {
-      "category": "hidden-derived-premise",
-      "evidence": "D004 and D031 require a P09TheoremOneLocalAnalysis, and D045 assumes the propagated block and twiddle estimates corresponding to the analysis derived on printed pages 761-763.",
-      "impact": "The declaration proves the backward certificate only for a pre-certified subset of source-admissible executions, making the theorem materially weaker.",
-      "severity": "major"
-    },
-    {
-      "category": "omitted-qualitative-consequence",
-      "evidence": "Printed page 768 includes a least-significant-digit negligibility statement, while the target contains only the exact representation, RMS identity, and two quantitative bounds.",
-      "impact": "The core backward-error certificate is preserved, but the selected passage is not conclusion-complete.",
-      "severity": "minor"
-    },
-    {
-      "category": "resolved-roundtrip-objections",
-      "evidence": "The supplied positive-exponential theorem resolves D169, and D086's singleton branch returns the first term without flAdd.",
-      "impact": "Neither Fourier orientation nor an extra initial rounded addition contributes a faithfulness defect.",
-      "severity": "note"
-    }
-  ],
+  "classification": "faithful-equivalent",
+  "completed_at_utc": "2026-08-23T12:30:09.871131+00:00",
+  "findings": [],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "Lean quantifies only executions already carrying the propagated local estimates that the paper derives, so it does not establish the source theorem for all computations satisfying only the source's primitive hypotheses. It also omits the qualitative negligibility consequence.",
-      "verdict": "no"
+      "reasoning": "The Lean witnesses use the paper's positive-sign unnormalized transform, exact output roundoff error, exact-input operational FFT, RMS and maximum norms, and factorization-sensitive K. The explicit nonnegative coefficient and positive radius instantiate the two O(epsilon^2) terms, so the Lean conclusion yields the complete page-768 backward-error certificate.",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper derives the local block and twiddle estimates for its modeled mixed-radix computation and then gives the exact fictional-input representation and both norm bounds. Under the standard coefficient-and-neighborhood meaning of O(\u03b5\u00b2), those derived facts can be packaged into the stronger Lean premises and yield the restricted Lean conclusion.",
+      "reasoning": "Package a fixed analyzed mixed-radix execution as the epsilon-indexed operational family. The paper's exact inverse-transform perturbation supplies delta, and its two local O(epsilon^2) remainders can be represented by one nonnegative coefficient and one positive radius because n, the plan, gamma, and input are fixed. The RMS remainder's division by sqrt(n) is absorbed by rescaling the common coefficient.",
       "verdict": "yes"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-weaker",
+    "direct": "faithful-equivalent",
     "roundtrip": "undetermined"
   },
-  "rationale": "The declaration faithfully represents the core fictional-input certificate: the same positive-sign unnormalized Fourier transform, exact output-error vector, normalized RMS identity, maximum norm, square-root factors, K formula, special radix constants, exact-input condition, and primitive numerical model are present. The round-trip judge's phase, accumulation, and nonvacuity concerns do not survive examination of the exact declarations. Nevertheless, P09TheoremOneExecution requires the stagewise estimates that Section 3 derives, so the formal theorem has materially reduced applicability. The paper therefore implies the restricted Lean result, but Lean does not imply the full paper result. The appropriate classification is not-faithful-weaker.",
-  "remaining_uncertainties": [
-    "The PDF gives no explicit coefficients, dependencies, or admissible radius for O(\u03b5\u00b2); the target uses the standard local asymptotic interpretation, but the precise constants remain unstated by the source.",
-    "The PDF does not define least significant digit or negligible as mathematical objects, so no unique formal proposition can be assigned to its final qualitative sentence."
-  ],
+  "rationale": "Primary PDF and declaration evidence resolve the only disputed semantic point: both the exact and rounded Fourier kernels use the paper's positive exponential sign. The declaration preserves e=T delta, the exact RMS identity, both normwise bounds, K and alpha, exact input representation, and the local second-order interpretation. Its operation-generated execution and primitive derivation no longer assume the forward or local error estimates that must be proved.",
+  "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P09-T2"
