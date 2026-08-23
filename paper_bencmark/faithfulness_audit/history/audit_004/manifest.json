@@ -1,0 +1,169 @@
+{
+  "schema_version": "highambench-audit-history-4",
+  "audit_id": "audit_004",
+  "status": "completed",
+  "recorded_at_utc": "2026-08-22T21:11:58Z",
+  "finalized_at_utc": "2026-08-23T14:10:01Z",
+  "preliminary_history_entry_commit": "f8320b44f491a075a9a7420dd49d6d9ba7893a4c",
+  "baseline_audit": {
+    "audit_id": "audit_003",
+    "history_entry_commit": "a06728e225be6348dcd72754114d0c9af1b5d4eb",
+    "latest_evidence_commit": "cbfd683407c8fbbfc990511c00e7d1c2e542f91d"
+  },
+  "repository_reference": {
+    "branch": "benchmark_faithfulness_audit",
+    "evidence_is_pinned_per_task": true,
+    "latest_audit_commit": "0185e36049e2bba27f200e34557eb1b33382fa5b"
+  },
+  "scope": {
+    "paper_count": 20,
+    "corpus_task_count": 60,
+    "eligible_task_count": 52,
+    "excluded_task_count": 8,
+    "excluded_tasks": [
+      "P07-T2",
+      "P16-T2",
+      "P16-T3",
+      "P17-T1",
+      "P18-T3",
+      "P19-T2",
+      "P19-T3",
+      "P20-T3"
+    ],
+    "settled_task_count": 52,
+    "accepted_task_count": 50,
+    "not_accepted_task_count": 2,
+    "not_accepted_tasks": [
+      "P09-T3",
+      "P11-T3"
+    ],
+    "pending_task_count": 0,
+    "pending_tasks": [],
+    "carried_forward_accepted_task_count": 43,
+    "fourth_pass_current_target_audit_count": 10,
+    "fourth_pass_eligible_audit_count": 9,
+    "fourth_pass_excluded_audit_count": 1
+  },
+  "aggregates": {
+    "settled": {
+      "total": 52,
+      "accepted": 50,
+      "not_accepted": 2,
+      "adjudicated": 32,
+      "classifications": {
+        "faithful-equivalent": 20,
+        "faithful-stronger": 30,
+        "not-faithful-different": 1,
+        "not-faithful-weaker": 1
+      },
+      "implication_pairs": {
+        "no/no": 1,
+        "no/yes": 1,
+        "yes/no": 30,
+        "yes/yes": 20
+      },
+      "by_tier": {
+        "T1": {
+          "accepted": 19,
+          "adjudicated": 13,
+          "classifications": {
+            "faithful-equivalent": 5,
+            "faithful-stronger": 14
+          },
+          "total": 19
+        },
+        "T2": {
+          "accepted": 17,
+          "adjudicated": 10,
+          "classifications": {
+            "faithful-equivalent": 9,
+            "faithful-stronger": 8
+          },
+          "total": 17
+        },
+        "T3": {
+          "accepted": 14,
+          "adjudicated": 9,
+          "classifications": {
+            "faithful-equivalent": 6,
+            "faithful-stronger": 8,
+            "not-faithful-different": 1,
+            "not-faithful-weaker": 1
+          },
+          "total": 16
+        }
+      }
+    },
+    "fourth_pass_only": {
+      "total": 10,
+      "eligible": 9,
+      "accepted": 7,
+      "eligible_not_accepted": 2,
+      "excluded": 1,
+      "transitions": {
+        "faithful-equivalent -> not-faithful-weaker": 1,
+        "faithful-stronger -> not-faithful-different": 1,
+        "not-faithful-different -> faithful-equivalent": 1,
+        "not-faithful-different -> not-faithful-different": 1,
+        "not-faithful-weaker -> faithful-equivalent": 2,
+        "not-faithful-weaker -> faithful-stronger": 4
+      }
+    }
+  },
+  "validation": {
+    "current_target_complete_bundle_count": 10,
+    "validated_carry_forward_count": 43,
+    "regenerated_semantic_inventory_exact_match_count": 12,
+    "regenerated_semantic_inventory_exact_match_tasks": [
+      "P04-T1",
+      "P04-T3",
+      "P06-T2",
+      "P06-T3",
+      "P08-T1",
+      "P08-T2",
+      "P11-T2",
+      "P12-T1",
+      "P12-T2",
+      "P15-T1",
+      "P15-T2",
+      "P16-T1"
+    ],
+    "owner_module_normalized_semantic_match_count": 1,
+    "owner_module_normalized_semantic_match_tasks": [
+      "P09-T1"
+    ],
+    "semantic_drift_reaudit_count": 2,
+    "semantic_drift_reaudit_tasks": [
+      "P09-T3",
+      "P11-T3"
+    ],
+    "current_target_and_paper_hashes_verified_for_all_eligible": true,
+    "no_benchmark_inputs_modified_by_audit": true,
+    "notes": [
+      "Every fourth-pass bundle passed complete-phase validation at its exact evidence commit.",
+      "All carried-forward accepted tasks retain the Audit 3 target and paper hashes.",
+      "Shared-module changes affecting accepted sibling tasks were checked at the target-relevant declaration-semantic level.",
+      "P09-T3 and P11-T3 were not carried forward because their target-relevant imported semantics changed."
+    ]
+  },
+  "files": [
+    {
+      "path": "paper_bencmark/faithfulness_audit/history/audit_004/results.json",
+      "role": "machine-readable task index and Audit 3 comparison",
+      "sha256": "a4b3f5c5fc93bd34dd6c00eec449f78e7b8e92428316591d837f5a7b945f519e"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/history/audit_004/summary.md",
+      "role": "human-readable completed fourth-pass summary",
+      "sha256": "9a9568dcf38d2ae341df11a87813229f99f3a1d5b4815198168bf06a3f0a5c37"
+    }
+  ],
+  "detailed_evidence": {
+    "task_root": "paper_bencmark/highambench/tasks",
+    "artifact_lookup": "results.json tasks[]",
+    "source_validity_root": "paper_bencmark/faithfulness_audit/source_validity",
+    "pinned_by_per_task_commit": true,
+    "carried_forward_baseline": "audit_003",
+    "global_snapshot_sufficient": false
+  }
+}
