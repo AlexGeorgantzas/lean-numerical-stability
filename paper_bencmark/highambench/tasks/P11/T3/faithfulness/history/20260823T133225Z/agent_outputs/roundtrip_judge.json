@@ -1,0 +1,144 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P11-T3",
+  "paper_sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
+  "blind_translation_sha256": "4ea26bab7407661393e7d5df278ba9e0a23481f4f8aa346359450cf4f975a7cf",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The published 2006 PDF, printed page 302, Theorem 1, equation (7), states the loss-of-orthogonality bound for Algorithm 2.",
+      "translation_evidence": "The translation targets the operator norm of the Gram defect of every computed leading Q prefix.",
+      "reasoning": "The selected source, theorem context, and numbered conclusion are correct."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "The inherited setup has a real m-by-n matrix with m >= n and full column rank; A_k and Q_k are m-by-k and R_k is k-by-k for k=1,...,n.",
+      "translation_evidence": "Runs carry positive m,n, n<=m, injective matrix-vector multiplication by A, and correctly typed A, Q, R, inverse blocks, and prefixes of size p=k.val+1.",
+      "reasoning": "The finite index translation maps Fin n bijectively to paper indices 1,...,n and preserves all matrix dimensions."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "For fixed input and computed factors at precision epsilon_M, Theorem 1 asserts equation (7) for every prefix k, with second-order behavior understood asymptotically.",
+      "translation_evidence": "The family and epsilon-independent analysis coefficients are fixed before choosing positive epsilon, followed by universal quantification over k in Fin n.",
+      "reasoning": "The run family, radii, and coefficient functions explicitly Skolemize the uniform witnesses implicit in the paper's O(epsilon_M^2) convention without changing prefix dependence."
+    },
+    {
+      "id": "S04",
+      "status": "pass",
+      "paper_evidence": "The inherited hypotheses are full column rank, CGS-P computation in normalized-range floating-point arithmetic, and the strict condition c4(m,k) epsilon_M kappa_2(R_k)^2 < 1 for every k.",
+      "translation_evidence": "Each run has full-rank A, certified CGS-P computations, exact leading inverses, and the strict smallness condition; epsilon<=rho activates the uniform norm and second-order estimates.",
+      "reasoning": "The explicit radii and analysis bounds supply a rigorous local interpretation of the paper's first-order estimates and do not omit an inherited premise."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "The selected conclusion is equation (7): ||I-Q_k^T Q_k||_2 <= c4(m,k) kappa_2(R_k)^2 epsilon_M, to within O(epsilon_M^2).",
+      "translation_evidence": "The conclusion contains the same first-order bound for every prefix plus an explicit coefficient E_k epsilon^2.",
+      "reasoning": "Every component of selected equation (7) is present. Equations (4)-(6) occur as inherited analysis dependencies; equations (4)-(6) and (8) need not be additional target conjuncts."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper defines prefixes, the Gram defect, kappa_2(R_k), and c4=c2+2c1.",
+      "translation_evidence": "The dependency ledger unfolds prefix extraction, leading principal blocks, exact inverse blocks, matrix products and transposes, identity matrices, operator norms, and all coefficient definitions.",
+      "reasoning": "All nontrivial operators affecting the conclusion have explicit meanings consistent with the paper."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "A_k is input data, while Q_k and R_k are computed floating-point factors.",
+      "translation_evidence": "The family has a fixed exact A; Q and R are projected from precision-dependent certified runs; B_k is explicitly an exact two-sided inverse of the computed R prefix.",
+      "reasoning": "Exact input, computed factors, and exact mathematical inverses are kept distinct."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Theorem 1 concerns Algorithm 2, CGS-P, whose diagonal is sqrt(psi_k-phi_k) times sqrt(psi_k+phi_k), rather than ||v_k||_2.",
+      "translation_evidence": "Per-column certificates model projection dot products, residual subtraction, computed psi and phi, the two modeled square roots and their product, positive R diagonal entries, and division producing Q.",
+      "reasoning": "The translated runs remain specifically linked to the pythagorean classical Gram-Schmidt algorithm."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Equation (7) uses the matrix 2-norm and the squared condition number kappa_2(R_k)^2=(||R_k||_2||R_k^-1||_2)^2.",
+      "translation_evidence": "All matrix norms are Euclidean induced operator norms, and the first-order term squares ||R_k|| ||B_k||.",
+      "reasoning": "The norm type, normwise defect, inverse factor, and squared condition-number dependence match exactly."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Visual inspection of typeset equation (2) confirms c1(m,k)=2 sqrt(2) m k+2 sqrt(k) for k>=2: the first radical covers only 2 and the second only k. The paper also defines c2 and c4=c2+2c1.",
+      "translation_evidence": "alpha(m,p)=2 sqrt(2) m p+2 sqrt(p) for p>1, beta has the exact c2 branches, c=beta+2alpha, and p=k.val+1.",
+      "reasoning": "Constants, radical grouping, special p=1 branches, polynomial coefficients, and index offsets all match."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "The paper assumes IEEE-style relative-error arithmetic for normalized-range results and gives no separate semantics for subnormal results, overflow, infinities, or NaNs.",
+      "translation_evidence": "Certified arithmetic supplies normalized-operation relative-error bounds for addition, subtraction, multiplication, square root, division, norms, and dot products, with guarantees conditional on normalization.",
+      "reasoning": "The translation abstracts the implementation while retaining the normalized-range numerical assumptions used by the paper and makes no unsupported claim about exceptional values."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Condition (3) is strict, while equation (7) is a non-strict upper bound.",
+      "translation_evidence": "The family condition is c(m,p) epsilon (||R_k|| ||B_k||)^2<1 and the conclusion uses <= for the defect bound.",
+      "reasoning": "Inequality directions, strictness, and the square on the condition factor are preserved."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Equation (7) measures loss of column orthogonality by the norm of I-Q_k^T Q_k.",
+      "translation_evidence": "The target is precisely the Euclidean-operator norm of the Gram defect I_p-Q_k^T Q_k.",
+      "reasoning": "No forward, backward, factorization-residual, or entrywise error notion is substituted for orthogonality loss."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The theorem suppresses terms of order O(epsilon_M^2), and the proof derives the coefficient c4 at first order while absorbing quadratic terms.",
+      "translation_evidence": "The target retains the same first-order coefficient and supplies an explicit epsilon^2 coefficient E_k derived from uniform second-order residual estimates and norm bounds.",
+      "reasoning": "The higher-order treatment is a rigorous strengthening of the paper's suppressed remainder, rather than deletion or alteration of its first-order result."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The result is for finite real rectangular matrices and all nonempty leading prefixes.",
+      "translation_evidence": "The translation uses finite real matrices with the same dimensional relation and prefixes; only the floating-point implementation is generalized to any certified model satisfying the paper's error assumptions.",
+      "reasoning": "The mathematical specialization is unchanged, and the conditional arithmetic abstraction is an identified generalization."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The intended setup has positive dimensions, full-column-rank inputs, and nonsingular R prefixes under condition (3).",
+      "translation_evidence": "Runs require m>0, n>0, full-rank A, positive R diagonals, and exact leading inverses; exact-arithmetic full-rank examples with sufficiently small radii satisfy the bundled requirements.",
+      "reasoning": "The intended instances are satisfiable and the prefix conclusion is nonvacuous. The syntactic n=0 branch has no run inhabitant and does not create an unintended claim about a paper instance."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Because B_k is the exact inverse of R_k, the translated first-order factor is exactly kappa_2(R_k)^2. Its explicit bound c4 kappa_2(R_k)^2 epsilon+E_k epsilon^2 therefore yields paper equation (7) to within O(epsilon^2), with matching dimensions, algorithm, norm, constants, and strict condition."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The selected paper statement suppresses an unspecified O(epsilon_M^2) term. It does not by itself provide the translation's particular explicit coefficient E_k, fixed norm bounds, radii, and second-order coefficient witnesses needed for the exact inequality."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "note",
+      "category": "explicit-second-order-strengthening",
+      "paper_evidence": "Equation (7) is stated only to within unspecified O(epsilon_M^2) terms.",
+      "translation_evidence": "The conclusion gives a concrete exact remainder E_k epsilon^2 under explicit uniform second-order analysis hypotheses.",
+      "impact": "The translation recovers the paper's selected result but is not implied by the paper's displayed first-order statement, so it is faithful-stronger rather than equivalent."
+    }
+  ],
+  "rationale": "The translation faithfully preserves selected equation (7) and its inherited real full-rank dimensions, CGS-P computation, normalized arithmetic model, operator norm, squared R-prefix condition number, strict smallness condition, constants, and indexing. Visual inspection confirms the critical c1 radical grouping. Its only substantive strengthening is replacing the paper's suppressed O(epsilon_M^2) contribution with a specific exact quadratic bound supported by explicit uniform analysis data."
+}
