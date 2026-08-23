@@ -6,15 +6,15 @@
 - Baseline: completed `audit_003` at history commit
   `a06728e225be6348dcd72754114d0c9af1b5d4eb`
 - Corpus: 20 papers and 60 tasks
-- Ordinary audit scope: 52 tasks after eight owner-approved exclusions
-- Accepted in ordinary scope: 50 tasks
-- Not accepted in ordinary scope: `P09-T3` and `P11-T3`
+- Ordinary audit scope: 51 tasks after nine owner-approved exclusions
+- Accepted in ordinary scope: 51 tasks
+- Not accepted in ordinary scope: none
 - Pending tasks: none
-- Current-target fourth-pass audits completed: 10; seven accepted, two eligible
-  tasks not accepted, and one subsequently excluded by owner decision
+- Current-target fourth-pass audits completed: 10; eight accepted and two
+  subsequently excluded by owner decision
 - Latest task-audit reference: branch `benchmark_faithfulness_audit`, commit
-  `0185e36049e2bba27f200e34557eb1b33382fa5b`
-- Finalized: `2026-08-23T14:10:01Z`
+  `f07308a17c10b019db3025acd1a4da6d107443f6`
+- Finalized: `2026-08-23T18:13:54Z`
 
 Task-local `faithfulness/` bundles remain the detailed evidence.
 [`results.json`](results.json) records every task disposition, result, artifact
@@ -25,19 +25,20 @@ pins this summary and machine-readable index.
 
 | View | Eligible | Accepted | Not accepted | Pending |
 |---|---:|---:|---:|---:|
-| Audit 4 completed | 52 | 50 | 2 | 0 |
+| Audit 4 completed | 51 | 51 | 0 | 0 |
 | Audit 3 completed baseline | 57 | 45 | 12 | 0 |
 
-Seven rebuilt tasks moved from an unaccepted Audit 3 classification into an
-accepted category: `P04-T2`, `P06-T1`, `P08-T3`, `P09-T2`, `P11-T1`,
-`P12-T3`, and `P15-T3`. Five additional tasks were excluded by owner decision:
-`P16-T3`, `P18-T3`, `P19-T2`, `P19-T3`, and `P20-T3`.
+Eight fourth-pass tasks finish in an accepted category: `P04-T2`, `P06-T1`,
+`P08-T3`, `P09-T2`, `P09-T3`, `P11-T1`, `P12-T3`, and `P15-T3`. Six
+additional tasks were excluded by owner decision: `P11-T3`, `P16-T3`,
+`P18-T3`, `P19-T2`, `P19-T3`, and `P20-T3`.
 
 The final consistency check found genuine post-Audit-3 semantic changes in the
-imported declarations used by `P09-T3` and `P11-T3`. Fresh independent audits
-replaced their carried-forward acceptances with `not-faithful-weaker` and
-`not-faithful-different`, respectively. This reduces the final accepted count
-from the provisional `52/52` to `50/52`.
+imported declarations used by `P09-T3` and `P11-T3`. After rebuilding,
+`P09-T3` passed a fresh independent audit as `faithful-equivalent`. `P11-T3`
+remained `not-faithful-different` and was excluded by owner decision because a
+faithful replacement requires broader reconstruction. The ordinary audited
+scope therefore closes at `51/51`.
 
 ## Fourth-pass outcomes
 
@@ -47,33 +48,33 @@ from the provisional `52/52` to `50/52`.
 | `P06-T1` | `not-faithful-weaker` | `faithful-stronger` |
 | `P08-T3` | `not-faithful-weaker` | `faithful-stronger` |
 | `P09-T2` | `not-faithful-weaker` | `faithful-equivalent` |
-| `P09-T3` | `faithful-equivalent` | `not-faithful-weaker`; semantic-drift re-audit |
+| `P09-T3` | `faithful-equivalent` | `faithful-equivalent`; rebuilt semantic-drift re-audit |
 | `P11-T1` | `not-faithful-weaker` | `faithful-stronger` |
-| `P11-T3` | `faithful-stronger` | `not-faithful-different`; semantic-drift re-audit |
+| `P11-T3` | `faithful-stronger` | excluded after current `not-faithful-different` audit |
 | `P12-T3` | `not-faithful-weaker` | `faithful-equivalent` |
 | `P15-T3` | `not-faithful-different` | `faithful-equivalent` |
 | `P16-T3` | `not-faithful-different` | excluded after a new `not-faithful-different` audit |
 
 ### P09-T3
 
-The target preserves the multidimensional complex transform, positive
+The rebuilt target preserves the multidimensional complex transform, positive
 unnormalized Fourier phase, nested coordinate order, relative RMS forward
 error, factorization-sensitive `K` constants, and a valid quantified reading
-of the paper's `O(epsilon^2)` term. It nevertheless takes
-`P09TheoremTwoLocalAsymptotic` as `axisBounds`; that input already supplies the
-propagated per-axis estimates that the paper derives from Theorem 1 and
-equations (4.3)-(4.4). The adjudicated result is therefore
-`not-faithful-weaker`: paper implies Lean, but Lean does not establish the
-paper theorem from the paper's primitive hypotheses.
+of the paper's `O(epsilon^2)` term. It now derives the per-axis bounds from the
+rounded FFT operations instead of accepting them through an `axisBounds`
+certificate. The adjudicated result is `faithful-equivalent`.
 
 ### P11-T3
 
-The imported `p11C1` definition uses
-`2 * sqrt (2 * m * k) + 2 * sqrt k`, while equation (2) in the paper uses
-`2 * sqrt 2 * m * k + 2 * sqrt k`. This changes both the leading coefficient
-and the smallness premise. The target also assumes uniform residual and
-normal-equation estimates that the paper derives. Both independent judges
-classify the current target as `not-faithful-different`.
+The restored `p11C1` coefficient now matches equation (2), and the central
+orthogonality formula, spectral norm, prefix indexing, squared condition
+number, and explicit quadratic remainder are sound. The target nevertheless
+assumes the companion estimates (4)-(6) that the paper proves on the way to
+equation (7), requires a globally successful run for every positive epsilon,
+and does not activate normalized-range guards for every traced scalar
+operation. The adjudicated result remains `not-faithful-different`; its audit
+is retained as provenance, but the task is excluded from the ordinary
+faithfulness denominator by owner decision.
 
 ### Other resolutions
 
@@ -91,11 +92,11 @@ and complete forward-error bounds were adjudicated `faithful-equivalent`.
 
 | Classification | Count | Accepted |
 |---|---:|---|
-| `faithful-equivalent` | 20 | yes |
+| `faithful-equivalent` | 21 | yes |
 | `faithful-stronger` | 30 | yes |
-| `not-faithful-weaker` | 1 | no |
-| `not-faithful-different` | 1 | no |
-| **Total** | **52** | **50** |
+| `not-faithful-weaker` | 0 | no |
+| `not-faithful-different` | 0 | no |
+| **Total** | **51** | **51** |
 
 ## Results by tier
 
@@ -103,10 +104,10 @@ and complete forward-error bounds were adjudicated `faithful-equivalent`.
 |---|---:|---:|---:|---:|---:|
 | T1 | 5 | 14 | 0 | 0 | 19/19 |
 | T2 | 9 | 8 | 0 | 0 | 17/17 |
-| T3 | 6 | 8 | 1 | 1 | 14/16 |
+| T3 | 7 | 8 | 0 | 0 | 15/15 |
 
 The denominators exclude `P17-T1` from T1; `P07-T2`, `P16-T2`, and `P19-T2`
-from T2; and `P16-T3`, `P18-T3`, `P19-T3`, and `P20-T3` from T3.
+from T2; and `P11-T3`, `P16-T3`, `P18-T3`, `P19-T3`, and `P20-T3` from T3.
 
 ## Exclusion categories
 
@@ -151,6 +152,11 @@ current targets assume substantial parts of the analysis they are meant to
 formalize, and a faithful replacement would require broader reconstruction or
 an approved source reselection.
 
+- `P11-T3` (`not-faithful-different`): the task assumes the companion
+  residual, normal-equation, and reverse-norm estimates used to prove equation
+  (7), requires a globally successful all-positive-epsilon computation family,
+  and leaves several traced scalar operations outside the normalized-range
+  guards of its arithmetic model.
 - `P16-T3` (`not-faithful-different`): correction-level contraction estimates
   and high-precision bounds containing the paper's central work are supplied
   as inputs, while parts of the attainable-floor conclusion are omitted.
@@ -176,9 +182,9 @@ excluded. Only `E` and `S` are accepted.
 | P06 | S | E | E | 3/3 |
 | P07 | S | X | S | 2/2 |
 | P08 | S | S | S | 3/3 |
-| P09 | S | E | W | 2/3 |
+| P09 | S | E | E | 3/3 |
 | P10 | E | E | E | 3/3 |
-| P11 | S | S | D | 2/3 |
+| P11 | S | S | X | 2/2 |
 | P12 | S | E | E | 3/3 |
 | P13 | E | E | S | 3/3 |
 | P14 | S | S | E | 3/3 |
@@ -188,7 +194,7 @@ excluded. Only `E` and `S` are accepted.
 | P18 | S | E | X | 2/2 |
 | P19 | S | X | X | 1/1 |
 | P20 | S | S | X | 2/2 |
-| **Total** |  |  |  | **50/52** |
+| **Total** |  |  |  | **51/51** |
 
 ## Validation
 
@@ -204,12 +210,16 @@ unchanged.
 
 The same check found genuine target-relevant semantic drift for `P09-T3` and
 `P11-T3`, which is why they were freshly audited instead of carried forward.
-No benchmark target, shared Lean definition, metadata file, context, proof, or
-reference PDF was modified by these audits.
+The rebuilt `P09-T3` bundle passed as `faithful-equivalent` at commit
+`e5b04f47842bba4e946bb9a5d1aaed53c17d3e48`. The current `P11-T3` bundle
+validated as `not-faithful-different` at commit
+`f07308a17c10b019db3025acd1a4da6d107443f6` and is retained as exclusion
+provenance. No benchmark target, shared Lean definition, metadata file,
+context, proof, or reference PDF was modified by these audits.
 
 ## Interpretation
 
-Audit 4 closes with 50 accepted tasks among 52 ordinary eligible tasks, two
-eligible tasks not accepted, no pending tasks, and eight documented exclusions.
+Audit 4 closes with all 51 ordinary eligible tasks accepted, no pending tasks,
+and nine documented exclusions.
 Acceptance measures faithfulness to the selected paper result; it does not by
 itself establish benchmark difficulty, usefulness, or measurement readiness.

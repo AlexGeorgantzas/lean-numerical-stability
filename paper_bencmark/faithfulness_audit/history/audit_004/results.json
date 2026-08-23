@@ -3,10 +3,10 @@
   "audit_id": "audit_004",
   "status": "completed",
   "recorded_at_utc": "2026-08-22T21:11:58Z",
-  "finalized_at_utc": "2026-08-23T14:10:01Z",
+  "finalized_at_utc": "2026-08-23T18:13:54Z",
   "audit_window": {
     "earliest_fourth_pass_completed_at_utc": "2026-08-22T09:49:01.300769+00:00",
-    "latest_fourth_pass_completed_at_utc": "2026-08-23T14:07:56.816544+00:00"
+    "latest_fourth_pass_completed_at_utc": "2026-08-23T17:58:54.479542+00:00"
   },
   "baseline_audit": {
     "audit_id": "audit_003",
@@ -16,15 +16,16 @@
   "repository_reference": {
     "branch": "benchmark_faithfulness_audit",
     "evidence_is_pinned_per_task": true,
-    "latest_audit_commit": "0185e36049e2bba27f200e34557eb1b33382fa5b"
+    "latest_audit_commit": "f07308a17c10b019db3025acd1a4da6d107443f6"
   },
   "scope": {
     "paper_count": 20,
     "corpus_task_count": 60,
-    "eligible_task_count": 52,
-    "excluded_task_count": 8,
+    "eligible_task_count": 51,
+    "excluded_task_count": 9,
     "excluded_tasks": [
       "P07-T2",
+      "P11-T3",
       "P16-T2",
       "P16-T3",
       "P17-T1",
@@ -33,37 +34,30 @@
       "P19-T3",
       "P20-T3"
     ],
-    "settled_task_count": 52,
-    "accepted_task_count": 50,
-    "not_accepted_task_count": 2,
-    "not_accepted_tasks": [
-      "P09-T3",
-      "P11-T3"
-    ],
+    "settled_task_count": 51,
+    "accepted_task_count": 51,
+    "not_accepted_task_count": 0,
+    "not_accepted_tasks": [],
     "pending_task_count": 0,
     "pending_tasks": [],
     "carried_forward_accepted_task_count": 43,
     "fourth_pass_current_target_audit_count": 10,
-    "fourth_pass_eligible_audit_count": 9,
-    "fourth_pass_excluded_audit_count": 1
+    "fourth_pass_eligible_audit_count": 8,
+    "fourth_pass_excluded_audit_count": 2
   },
   "aggregates": {
     "settled": {
-      "total": 52,
-      "accepted": 50,
-      "not_accepted": 2,
+      "total": 51,
+      "accepted": 51,
+      "not_accepted": 0,
       "adjudicated": 32,
       "classifications": {
-        "faithful-equivalent": 20,
-        "faithful-stronger": 30,
-        "not-faithful-different": 1,
-        "not-faithful-weaker": 1
+        "faithful-equivalent": 21,
+        "faithful-stronger": 30
       },
       "implication_pairs": {
-        "no/no": 1,
-        "no/yes": 1,
         "yes/no": 30,
-        "yes/yes": 20
+        "yes/yes": 21
       },
       "by_tier": {
         "T1": {
@@ -85,26 +79,24 @@
           "total": 17
         },
         "T3": {
-          "accepted": 14,
+          "accepted": 15,
           "adjudicated": 9,
           "classifications": {
-            "faithful-equivalent": 6,
-            "faithful-stronger": 8,
-            "not-faithful-different": 1,
-            "not-faithful-weaker": 1
+            "faithful-equivalent": 7,
+            "faithful-stronger": 8
           },
-          "total": 16
+          "total": 15
         }
       }
     },
     "fourth_pass_only": {
       "total": 10,
-      "eligible": 9,
-      "accepted": 7,
-      "eligible_not_accepted": 2,
-      "excluded": 1,
+      "eligible": 8,
+      "accepted": 8,
+      "eligible_not_accepted": 0,
+      "excluded": 2,
       "transitions": {
-        "faithful-equivalent -> not-faithful-weaker": 1,
+        "faithful-equivalent -> faithful-equivalent": 1,
         "faithful-stronger -> not-faithful-different": 1,
         "not-faithful-different -> faithful-equivalent": 1,
         "not-faithful-different -> not-faithful-different": 1,
@@ -146,7 +138,9 @@
       "Every fourth-pass bundle passed complete-phase validation at its exact evidence commit.",
       "All carried-forward accepted tasks retain the Audit 3 target and paper hashes.",
       "Shared-module changes affecting accepted sibling tasks were checked at the target-relevant declaration-semantic level.",
-      "P09-T3 and P11-T3 were not carried forward because their target-relevant imported semantics changed."
+      "P09-T3 and P11-T3 were not carried forward because their target-relevant imported semantics changed.",
+      "The rebuilt P09-T3 was re-audited as faithful-equivalent at evidence commit e5b04f47842bba4e946bb9a5d1aaed53c17d3e48.",
+      "P11-T3 retained its not-faithful-different provenance result and was excluded from the ordinary denominator by owner decision at evidence commit f07308a17c10b019db3025acd1a4da6d107443f6."
     ]
   },
   "tasks": [
@@ -2349,8 +2343,8 @@
       "task_id": "P09-T3",
       "tier": "T3",
       "counted_in_settled_aggregate": true,
-      "disposition": "fourth-pass-semantic-drift-recheck",
-      "evidence_commit": "0185e36049e2bba27f200e34557eb1b33382fa5b",
+      "disposition": "fourth-pass-rebuilt-and-reaccepted",
+      "evidence_commit": "e5b04f47842bba4e946bb9a5d1aaed53c17d3e48",
       "previous": {
         "accepted": true,
         "adjudicated": true,
@@ -2386,26 +2380,26 @@
         }
       },
       "result": {
-        "accepted": false,
+        "accepted": true,
         "adjudicated": true,
         "artifacts": {
           "decision": {
             "path": "paper_bencmark/highambench/tasks/P09/T3/faithfulness/decision.json",
-            "sha256": "e7b346630d11bff50a6b697da1812d1cd0558d95698e34b6b7391682edf2d4d0"
+            "sha256": "99f566349d4bd3287c9aadc116f4ac73f8b0217550e9f0f37f9288e2fc23c109"
           },
           "manifest": {
             "path": "paper_bencmark/highambench/tasks/P09/T3/faithfulness/manifest.json",
-            "sha256": "15639e3fc6e234e14e6f14f6e5e32583744fcaf25d6eae0f86ad45c3ddb669ee"
+            "sha256": "b0ac309202fd03da7f58721fe920771cd175a8f4fee1d81b51caa2c810e104fe"
           },
           "report": {
             "path": "paper_bencmark/highambench/tasks/P09/T3/faithfulness/report.md",
-            "sha256": "8b75d1517191a11f4839ca5fdebd3184655dfffaf290f9a266821705bbd3b7e3"
+            "sha256": "fc3399311a1e942ec41c4b97a8f64b67b19a85c679738d96e1c92fbe3a761e88"
           }
         },
-        "classification": "not-faithful-weaker",
-        "completed_at_utc": "2026-08-23T14:07:56.816544+00:00",
+        "classification": "faithful-equivalent",
+        "completed_at_utc": "2026-08-23T17:19:02.217854+00:00",
         "implications": {
-          "lean_implies_paper": "no",
+          "lean_implies_paper": "yes",
           "paper_implies_lean": "yes"
         },
         "paper": {
@@ -2416,7 +2410,7 @@
         "target": {
           "declaration": "HighamBench.p09_t3_multidimensional_rms_error_bound",
           "path": "paper_bencmark/highambench/tasks/P09/T3/Target.lean",
-          "sha256": "5b5fcb7203bb05b41b1270924ef4803f5f7e18396775dbe27b10d8f4943b0f4b"
+          "sha256": "cc140cb5ee2c2d77c7fc101c33fd09d48a797d86767c9f1afd1bc12734d9ea07"
         }
       },
       "validation": {
@@ -2854,9 +2848,9 @@
     {
       "task_id": "P11-T3",
       "tier": "T3",
-      "counted_in_settled_aggregate": true,
-      "disposition": "fourth-pass-semantic-drift-recheck",
-      "evidence_commit": "a3c75a5500459012d3423787f7c678a0a2f30adf",
+      "counted_in_settled_aggregate": false,
+      "disposition": "excluded-deferred-full-analysis-reconstruction",
+      "evidence_commit": "f07308a17c10b019db3025acd1a4da6d107443f6",
       "previous": {
         "accepted": true,
         "adjudicated": false,
@@ -2893,23 +2887,23 @@
       },
       "result": {
         "accepted": false,
-        "adjudicated": false,
+        "adjudicated": true,
         "artifacts": {
           "decision": {
             "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/decision.json",
-            "sha256": "089d79161dde848919beb03bfd9be498e38c677b7b005af58e04901c42f0cff5"
+            "sha256": "1d63e6b9b1e02ffc1c3a62fdc3b8c90650034ee449813fe054662174b57bf608"
           },
           "manifest": {
             "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/manifest.json",
-            "sha256": "96b1228d4f17c353101d36643aef498411fa1ada9aa908d736916e860d3938ca"
+            "sha256": "706701cf823ff06cd6e7fb2bd8dbb534e99106cbdd934925a96becc017d39e20"
           },
           "report": {
             "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/report.md",
-            "sha256": "dd209ee278434cb45c316d0c75f7f61703b7c576bcc3fc24e049d54e8d30250a"
+            "sha256": "e6d1110acf4e8797c708eb69892fa72a9eea7fed03d4ed0ae22917c1b447dddc"
           }
         },
         "classification": "not-faithful-different",
-        "completed_at_utc": "2026-08-23T14:00:43.649053+00:00",
+        "completed_at_utc": "2026-08-23T17:58:54.479542+00:00",
         "implications": {
           "lean_implies_paper": "no",
           "paper_implies_lean": "no"
@@ -2922,12 +2916,22 @@
         "target": {
           "declaration": "HighamBench.p11_t3_orthogonality_defect_bound",
           "path": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
-          "sha256": "a7c13485b8f32f7701cce22d1839e454af8a5ff237d253a3bd6c7fedfa6d2077"
+          "sha256": "0eaab59fcfb01896aef43b4a9837885c12acc2da6c9c19527293f5261d68f82d"
         }
       },
+      "exclusion": {
+        "category": "deferred-full-analysis-reconstruction",
+        "reason": "A faithful replacement must derive the companion estimates used to prove equation (7), avoid requiring a globally successful all-positive-epsilon family, and connect every traced scalar operation to the normalized-range arithmetic model."
+      },
       "validation": {
+        "status": "excluded-by-owner-decision",
+        "baseline_audit": "audit_003",
+        "provenance_result_retained": true,
+        "current_target": {
+          "path": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
+          "sha256": "0eaab59fcfb01896aef43b4a9837885c12acc2da6c9c19527293f5261d68f82d"
+        },
         "phase": "complete",
-        "status": "validated",
         "validated_at_evidence_commit": true,
         "current_target_and_paper_hashes_verified": true
       }

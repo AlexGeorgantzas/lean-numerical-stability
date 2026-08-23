@@ -3,7 +3,7 @@
   "audit_id": "audit_004",
   "status": "completed",
   "recorded_at_utc": "2026-08-22T21:11:58Z",
-  "finalized_at_utc": "2026-08-23T14:10:01Z",
+  "finalized_at_utc": "2026-08-23T18:13:54Z",
   "preliminary_history_entry_commit": "f8320b44f491a075a9a7420dd49d6d9ba7893a4c",
   "baseline_audit": {
     "audit_id": "audit_003",
@@ -13,15 +13,16 @@
   "repository_reference": {
     "branch": "benchmark_faithfulness_audit",
     "evidence_is_pinned_per_task": true,
-    "latest_audit_commit": "0185e36049e2bba27f200e34557eb1b33382fa5b"
+    "latest_audit_commit": "f07308a17c10b019db3025acd1a4da6d107443f6"
   },
   "scope": {
     "paper_count": 20,
     "corpus_task_count": 60,
-    "eligible_task_count": 52,
-    "excluded_task_count": 8,
+    "eligible_task_count": 51,
+    "excluded_task_count": 9,
     "excluded_tasks": [
       "P07-T2",
+      "P11-T3",
       "P16-T2",
       "P16-T3",
       "P17-T1",
@@ -30,37 +31,30 @@
       "P19-T3",
       "P20-T3"
     ],
-    "settled_task_count": 52,
-    "accepted_task_count": 50,
-    "not_accepted_task_count": 2,
-    "not_accepted_tasks": [
-      "P09-T3",
-      "P11-T3"
-    ],
+    "settled_task_count": 51,
+    "accepted_task_count": 51,
+    "not_accepted_task_count": 0,
+    "not_accepted_tasks": [],
     "pending_task_count": 0,
     "pending_tasks": [],
     "carried_forward_accepted_task_count": 43,
     "fourth_pass_current_target_audit_count": 10,
-    "fourth_pass_eligible_audit_count": 9,
-    "fourth_pass_excluded_audit_count": 1
+    "fourth_pass_eligible_audit_count": 8,
+    "fourth_pass_excluded_audit_count": 2
   },
   "aggregates": {
     "settled": {
-      "total": 52,
-      "accepted": 50,
-      "not_accepted": 2,
+      "total": 51,
+      "accepted": 51,
+      "not_accepted": 0,
       "adjudicated": 32,
       "classifications": {
-        "faithful-equivalent": 20,
-        "faithful-stronger": 30,
-        "not-faithful-different": 1,
-        "not-faithful-weaker": 1
+        "faithful-equivalent": 21,
+        "faithful-stronger": 30
       },
       "implication_pairs": {
-        "no/no": 1,
-        "no/yes": 1,
         "yes/no": 30,
-        "yes/yes": 20
+        "yes/yes": 21
       },
       "by_tier": {
         "T1": {
@@ -82,26 +76,24 @@
           "total": 17
         },
         "T3": {
-          "accepted": 14,
+          "accepted": 15,
           "adjudicated": 9,
           "classifications": {
-            "faithful-equivalent": 6,
-            "faithful-stronger": 8,
-            "not-faithful-different": 1,
-            "not-faithful-weaker": 1
+            "faithful-equivalent": 7,
+            "faithful-stronger": 8
           },
-          "total": 16
+          "total": 15
         }
       }
     },
     "fourth_pass_only": {
       "total": 10,
-      "eligible": 9,
-      "accepted": 7,
-      "eligible_not_accepted": 2,
-      "excluded": 1,
+      "eligible": 8,
+      "accepted": 8,
+      "eligible_not_accepted": 0,
+      "excluded": 2,
       "transitions": {
-        "faithful-equivalent -> not-faithful-weaker": 1,
+        "faithful-equivalent -> faithful-equivalent": 1,
         "faithful-stronger -> not-faithful-different": 1,
         "not-faithful-different -> faithful-equivalent": 1,
         "not-faithful-different -> not-faithful-different": 1,
@@ -143,19 +135,21 @@
       "Every fourth-pass bundle passed complete-phase validation at its exact evidence commit.",
       "All carried-forward accepted tasks retain the Audit 3 target and paper hashes.",
       "Shared-module changes affecting accepted sibling tasks were checked at the target-relevant declaration-semantic level.",
-      "P09-T3 and P11-T3 were not carried forward because their target-relevant imported semantics changed."
+      "P09-T3 and P11-T3 were not carried forward because their target-relevant imported semantics changed.",
+      "The rebuilt P09-T3 was re-audited as faithful-equivalent at evidence commit e5b04f47842bba4e946bb9a5d1aaed53c17d3e48.",
+      "P11-T3 retained its not-faithful-different provenance result and was excluded from the ordinary denominator by owner decision at evidence commit f07308a17c10b019db3025acd1a4da6d107443f6."
     ]
   },
   "files": [
     {
       "path": "paper_bencmark/faithfulness_audit/history/audit_004/results.json",
       "role": "machine-readable task index and Audit 3 comparison",
-      "sha256": "a4b3f5c5fc93bd34dd6c00eec449f78e7b8e92428316591d837f5a7b945f519e"
+      "sha256": "a22655b622161ca0ffcc228b695d7ad939dab3b14de76f05963f7eb296f48cfd"
     },
     {
       "path": "paper_bencmark/faithfulness_audit/history/audit_004/summary.md",
       "role": "human-readable completed fourth-pass summary",
-      "sha256": "9a9568dcf38d2ae341df11a87813229f99f3a1d5b4815198168bf06a3f0a5c37"
+      "sha256": "2d74b908895a4ac437cc1e469e8487d520ddd47542a53f76d9be95efdb77fe19"
     }
   ],
   "detailed_evidence": {
