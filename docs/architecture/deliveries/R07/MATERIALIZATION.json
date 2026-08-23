@@ -1,0 +1,595 @@
+{
+ "base_code_sha": "ad92bbfae62d538f3e52829a269a846688a8e213",
+ "control_head_sha": "35cb1a7c5f136f291398dddd99d8012dcf38f967",
+ "counts": {
+  "destinations": 30,
+  "historical_wrappers_rewritten": 13,
+  "historical_wrappers_unchanged": 32,
+  "source_commands": 194,
+  "tests": 102
+ },
+ "files": [
+  {
+   "path": "NumStability/Analysis/BergerGeneral.lean",
+   "sha256": "07C15E2160A98FD54AEE8D3539B5437E6785C16C524D5AE4DD8A41F2A0BE0A8E"
+  },
+  {
+   "path": "NumStability/Analysis/BergerInequality.lean",
+   "sha256": "A4AC70DAE715EE4C8B2ECA0643566F03C687C3624A2CB4C1B186CA7493E3A04C"
+  },
+  {
+   "path": "NumStability/Analysis/BergerResolvent.lean",
+   "sha256": "DABE2E13723BBB0CF44856D2A582A4D757CB0F2D31101829000A383EE7BC8300"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/Basic/RealMatrixBridge.lean",
+   "sha256": "5033DBA229F9445BE0C34391E4F469E7423C37E060114B36D484921AD99725C0"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/BlockDiagonal.lean",
+   "sha256": "8573888AE1175A7A59FD49D30506096923BD5389060FC1A83BFEBA0797C16955"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/BlockDiagonalCompression.lean",
+   "sha256": "EE4B7A2900FFC06FD94C1AFC7416A983814BA7584AE1C03C451C73C358E4546A"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/ColumnPair.lean",
+   "sha256": "16B6CC5F4169DCF0496697D835FBCF0E19A1F7FC0259C31125D22355AB6713EB"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/ColumnPairPinching.lean",
+   "sha256": "AE617B3423EEC0C99BED488370B675CDFE29576CB39686FE3487FF31EB859B62"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/ColumnPairRangeProjection.lean",
+   "sha256": "0206620B8F77C8C80B7335BAD63B573D257A13E39F9D9A94FE2B362ECF53FAD0"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/ColumnPairRangeReflection.lean",
+   "sha256": "E5CCAB2AFADEB37041502DB1B0B229DB6A5E628DDF1DF28248FB8D98EA6A5E0E"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/FiniteDimensional.lean",
+   "sha256": "72057C3139518CB382BAE3432CE86473C7AE270B42DDB990B2E0B34E518329FE"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/FiniteMatrixOrder.lean",
+   "sha256": "1964046CFA91F238902E4914DE31D3D40DD3D03EC6FEA1F78A6B42361882CE14"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/FiniteRealEmbedding.lean",
+   "sha256": "2DEF56D7E06CDC1E657C50A655D39F24307DA2F7F02E14A2D9E8E76FD5065795"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/FiniteRealOrder.lean",
+   "sha256": "2899C1613649FED2794AFA5F8AB17A8BA9D8FE954FB1955B61A46171CBF76AA4"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/ProjectionReflection.lean",
+   "sha256": "F8BF9DA60D724662EE2BE9BD560B96451DFDAD20C333E0BDE853CF2826B951D2"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/RectangularCompression.lean",
+   "sha256": "3595D1304E33B88E7909205A88196C7AC552662DCB041293FC67F1643317870C"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/RectangularMultiplication.lean",
+   "sha256": "B5557CEFF214765D7B5B71FCABC5F52824AD22AD9F18F2C539887CE0CD9593E2"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/ReflectionAverage.lean",
+   "sha256": "CAD09EA206D8DADE077E7D9BBEE9972BEF6A2038A7369D407DB79DB5C25CA088"
+  },
+  {
+   "path": "NumStability/Analysis/CStarMatrices/FiniteMatrixAlgebra/StrictPositivity.lean",
+   "sha256": "F15F338045923E9F9864E0F11601D2BA49F6078F363B2D623B6E01AE940E3463"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds/NormalMatrices/Powers.lean",
+   "sha256": "9DB848317F7776ACED52EE9508F2A63A07BDF1CD0D1EF133C121D28352041D18"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/NormalCharacterization/Schur.lean",
+   "sha256": "DD466087AF2ABFDB05193F01EA39003978FCF2A2898C261658ECF7586E5F2591"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici/SchurBinomialBounds/Estimates.lean",
+   "sha256": "A2EA69117E11AF8C6993E7F26D486A38AFBE098948E55DF04E4A0D9E71DC4506"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ArcLengthPowerBounds/FiniteDimension.lean",
+   "sha256": "F2CD2D05A39551ED8CC7DF2DD6F1FE67E0F6E00547DD1BD9C809C4013BE27B70"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/FiniteDimensionalPowerBounds/Kreiss.lean",
+   "sha256": "E92A4B70D011198477D43B697738DED64C94AEF9AB433F60B27525CE0AB189BA"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/KreissBridge.lean",
+   "sha256": "3CFDCF50439DACB1265E6A9EEFC12C8D501488DB2F7B4B2085212CF41476FF48"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarArcLength/Variation.lean",
+   "sha256": "FEC34A5F149CE27DB1493779759A654614BD31252A4D0E40AE07512911452911"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarCrossingBounds/Polynomial.lean",
+   "sha256": "05EAE131B7544B393D2320E9E1844C1E02410B9463B862FAA2204A0BF5CF171E"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/ResolventCoefficients/Analytic.lean",
+   "sha256": "7193AB783CE5EE3417F06BE1FC923B5B37D433991BEB03AE037755DF43DA0C6B"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/NumericalRadius/Berger/GeneralPowerInequality/Powers.lean",
+   "sha256": "B01D8118582A70DDCE519E905FB8EE3D809457EA9FD5CF2A6B98DBC4052FBF6F"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/NumericalRadius/Berger/GeneralPowerInequality/PowersOfTwo.lean",
+   "sha256": "BFC9039B2BBD32772C153BC2396F5A7124E17C294E3A1465D7917E52E08EE753"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/NumericalRadius/Berger/Internal/HermitianEuclideanSpaceNotation.lean",
+   "sha256": "F26EDD3990C98E3624D7C9279773B6FB0E59B11F64C7601D3030443BE6059ECE"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/NumericalRadius/Core/Internal/EuclideanSpaceNotation.lean",
+   "sha256": "36E10A7C9783DF62824FBAD64138293975F6F5E7D115B91911CF7F9FD80C344B"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/Pseudospectra/Resolvent/Internal/ScalarNotation.lean",
+   "sha256": "A49FEB29201F5AD18F4A1A87EBF927CC6E3B694D99F46F252469B4FEF0AA438A"
+  },
+  {
+   "path": "NumStability/Analysis/LinearOperators/Schur/Complex/NormalTriangular/Diagonal.lean",
+   "sha256": "A1828E220D749B67CA50316DFA9E774DE1F198BF8C6C78C831B5A7911AD3235D"
+  },
+  {
+   "path": "NumStability/Analysis/MatrixPowersBinomialBound.lean",
+   "sha256": "21ADEE688BC7415C2A9B907C805ACCF42657C674BE84D9DD1FB52E85251827A8"
+  },
+  {
+   "path": "NumStability/Analysis/MatrixPowersHenriciNormal.lean",
+   "sha256": "95B86AC3BE3C652A1E093EA2576916B970BCA8BDB02854ECD4EBAD5F9A6295AC"
+  },
+  {
+   "path": "NumStability/Analysis/MatrixPowersSchur.lean",
+   "sha256": "0FFB0307CB3EBBD58E5388CC5AEC8986CD4810BCF745BE2E0566423B20565856"
+  },
+  {
+   "path": "NumStability/Analysis/MatrixPowersSpijkerClosure.lean",
+   "sha256": "82889A8F7963F11116C5F945D6B2E0CDD05D2A635B4BD4EBCECEDAD991D31079"
+  },
+  {
+   "path": "NumStability/Analysis/MatrixPowersSpijkerPlanar.lean",
+   "sha256": "E9C406704A9503BFA825038BF0D6EB1EA0300D242B15C06B04BB602B81ABFFA3"
+  },
+  {
+   "path": "NumStability/Analysis/MatrixPowersSpijkerPlanarAnalysis.lean",
+   "sha256": "15F1B76108BD60AA26FCB4201266E6AA487F22AB5C418F615EF4C05D877A191C"
+  },
+  {
+   "path": "NumStability/Analysis/NumericalRadius.lean",
+   "sha256": "9014095515D91BA013866D1F5791853F13CE295C63BD03CDFDABB89064A5C5D6"
+  },
+  {
+   "path": "NumStability/Analysis/PseudospectralResolvent.lean",
+   "sha256": "21A033F4000B906EEFCBC5A1E22F3775364F227709CB9D1507521EA98C6410C8"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds/SpijkerKreissUnconditional/Bounds.lean",
+   "sha256": "A84E8C501AC93252B94E484596671DDA6160C76DC2D1C0F981DB37415C586CBF"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/All.lean",
+   "sha256": "5FC19F97072F320054572BB55B198232FD590FC0E76DF84BE5F1F8F0EB8FFD93"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_BlockDiagonal.lean",
+   "sha256": "EDBC4C6237E70F130EFD219988C46C7675B929B43772EE721C5527E1CC642034"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_BlockDiagonalCompression.lean",
+   "sha256": "B2D20F941C79A4DD870367789087E3D3B4BB321FBEECB82995E859E3D0E1FA55"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_ColumnPair.lean",
+   "sha256": "11E86798DE00C9875E80531D641A51D4314AB1AF343D59AC3224F1896EFB8F73"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_ColumnPairPinching.lean",
+   "sha256": "954FD2C323826B11F79F2D01E820B3CE6630B06D2D0CE7AA33E1D02BFB8FB8C5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_ColumnPairRangeProjection.lean",
+   "sha256": "828F71C26CA773B179D62F58B3B1A58DBA63891654B90B7714EACEB728A79895"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_ColumnPairRangeReflection.lean",
+   "sha256": "3F6863319D1A1BDBAA1B3323407AF34F1682DF7F0C6D9B39CF9AF0306013A5C6"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_FiniteDimensional.lean",
+   "sha256": "E7782FA47CDBA65DC705F762CD4787C78F22328353888DE3C1C9B8D86758C78B"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_FiniteMatrixOrder.lean",
+   "sha256": "ED1557E58E0157F28A58E7E9A6C1C70A58FA5CBB38DDE0E30C41DE537B246FD5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_FiniteRealEmbedding.lean",
+   "sha256": "8B3EC9872B40FD8682C26BAFAB6EB06ADBFDD4B24E5EC962FCA8561763F69CF3"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_FiniteRealOrder.lean",
+   "sha256": "30F638E071A7299DECFA2C9C7D4669CE2B908867AB93162A3F288D94E6400B67"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_ProjectionReflection.lean",
+   "sha256": "6677FBCE21C5F6BCA5DE5F156B95F609BF94CD0C9770DE3109DF058DA26C1F79"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_RectangularCompression.lean",
+   "sha256": "3960EC57CDDBA6D1FAD3EC8991404383D6C8ADED456F3EEC8D3B1F87DB9A98A2"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_RectangularMultiplication.lean",
+   "sha256": "34CDF32515F009B333A61DA9C7F01DFEC0B824BD97961C8715953D234BE82538"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_ReflectionAverage.lean",
+   "sha256": "A9ADCEE045F6CDB7B4874E871EBEC814AA8D8301B9D6F3DB498145CC03894FF5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_CStarMatrices_FiniteMatrixAlgebra_StrictPositivity.lean",
+   "sha256": "56249C2790EEB173EE4BB143CA10F576D5BCBE21C109AA4F7FB7695EC49BD42D"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_MatrixPowers_ExactNormBounds_NormalMatrices_Powers.lean",
+   "sha256": "BE85847C80112BF6E9A5EEFDD40581838B6DA8F486DBBF53F9FF6C95D385A951"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_MatrixPowers_Henrici_NormalCharacterization_Schur.lean",
+   "sha256": "4A570239DD13801523549C1AB572DAE30881681E4E25F26E7B0CBBFAD112AEBE"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_MatrixPowers_Henrici_SchurBinomialBounds_Estimates.lean",
+   "sha256": "0EB3716658E23DA10701066EC354211626AF1A3666FF9FC4E09AFC60C46154A2"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_MatrixPowers_Spijker_ArcLengthPowerBounds_FiniteDimension.lean",
+   "sha256": "C797A6C28EF3A756642CEC67B50AB6EC835C710934BD9DBFBAF431FA7FB842CA"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_MatrixPowers_Spijker_FiniteDimensionalPowerBounds_Kreiss.lean",
+   "sha256": "A065BB43998DDC1EDEDE8B4B03569865B11BDF9927C27ECC8C429CC93545888B"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_MatrixPowers_Spijker_PlanarArcLength_Variation.lean",
+   "sha256": "AF1214C6F7C56E742F9F66855908DEAD1C7AA0192F73E58D9FA54EA5E123423A"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_MatrixPowers_Spijker_PlanarCrossingBounds_Polynomial.lean",
+   "sha256": "B6C9E31D67BC594DA439A3DF7A6886107935AA67FC7DF05B39C230462BED8B18"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_MatrixPowers_Spijker_ResolventCoefficients_Analytic.lean",
+   "sha256": "F52AF18E5FB97CD190095FBFD8F7954F310806846EA33A339C6658ED667A3CEF"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_NumericalRadius_Berger_GeneralPowerInequality_Powers.lean",
+   "sha256": "0AA89A9B4388818AE7ED2F30D3A58BC90F24BE9BF09C3814A0FDAC99FF469D4F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_NumericalRadius_Berger_GeneralPowerInequality_PowersOfTwo.lean",
+   "sha256": "E6777EF5597427EA46495704187B1E7F0C81303211D77963344E6ADADC9EBAD8"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_NumericalRadius_Berger_Internal_HermitianEuclideanSpaceNotation.lean",
+   "sha256": "90B796A3A26BAC9F51DC074605254F4655615A35855D804F503418114D03FBD9"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_NumericalRadius_Core_Internal_EuclideanSpaceNotation.lean",
+   "sha256": "DC62844BCDAB25656C1B120DBD022291254ED3D237C7D1D57F4406A6B246783D"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_Pseudospectra_Resolvent_Internal_ScalarNotation.lean",
+   "sha256": "1490285759B5BF9E90320DC5714E719CEAD53E995B74C4B7958A6D040B728AAE"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Analysis_LinearOperators_Schur_Complex_NormalTriangular_Diagonal.lean",
+   "sha256": "5BA41C1B5FAA6B044486FCA72C0837B7FA636BA5EBF52EA647206CD5E7B8F4C5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/CanonicalOnly/NumStability_Source_Higham_Chapter18_Section01_MatrixPowerBounds_NamedBounds_SpijkerKreissUnconditional_Bounds.lean",
+   "sha256": "E0D2CBF477444231D9B56B639884273B83CF294FFE5203B47960958D78374EB7"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Algorithms.lean",
+   "sha256": "7B53DC90E9A41D5012180C28869EB732C0DE0F288CAA89A7B4CB380FC1395927"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Algorithms_RandNLA_ElementwiseTraceMGF.lean",
+   "sha256": "0D8F31F43D28D63CA41B35B0EC5B77B096C6A10E4AD8B0F5AAFDB67722F17ED6"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Algorithms_RandNLA_RowSamplingTraceMGF.lean",
+   "sha256": "1A859B31DB9BA7DD52EF0F22CE346346FF1774B6E10BC16C3FC86BCC3887E847"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Algorithms_RandNLA_UniformRowSamplingMGF.lean",
+   "sha256": "7D3F1878229025F1CFC22D0544C7F9BF5D7CE4280C9299F0D0C6C0759F5AA21F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Algorithms_RandomizedLinearAlgebra_Concentration_TraceMGF_LeverageScore.lean",
+   "sha256": "5414511BDE1C666E01836F5D4C01764A40736D59970970598021D8E263753444"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Algorithms_RandomizedLinearAlgebra_Concentration_TraceMGF_UniformRows.lean",
+   "sha256": "29F7C4146859CC160CB80B3CD85413BFEB29A4F545B7CA87CE396744DDE60D36"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Algorithms_TestMatrices_Higham28Companion.lean",
+   "sha256": "C0B7749AC77135B4F191208EBC8621910E81B58367FF26B3F45D7C8B58E9137A"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Analysis.lean",
+   "sha256": "43443160B662D1D198844C7CDB8B11F35E9ECD062A206F20D6364C4272103954"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Analysis_CStarMatrices_Basic_All.lean",
+   "sha256": "CEB669E29F302B3447909D7E70AF0DC6C16BD089A97F654BFB9A41B2CC0EEF3D"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Analysis_CStarMatrices_Expectation_Finite.lean",
+   "sha256": "AAF592B600A6F45667C139DD6510A4FA321987ED87B74A416B8791BDAA757C85"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Analysis_CStarMatrices_Trace_Basic.lean",
+   "sha256": "128D560211F9D49645717EB41D877D340D9E1E8F7F830368366E9A62BF2AEEA4"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Analysis_FunctionalCalculus_OperatorLog_Monotonicity.lean",
+   "sha256": "48679D7B997AD70E22A35B9D41A0B449CA8DC5EBCDE062B4E1093237F3C9FF2D"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Analysis_LinearOperators_MatrixPowers_Spijker_All.lean",
+   "sha256": "E69042892838160782ECF204145E3088797F2BCAA7C35F5EAF87A55173832D82"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Analysis_LinearOperators_MatrixPowers_Spijker_Rational.lean",
+   "sha256": "E18336C1DC65158F11F46A93234D01A71B9BB9212EA34D21604B6BF9D932D22C"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Analysis_MatrixInequalities_LiebTrace_Concavity.lean",
+   "sha256": "7784B89768C0B3D5E4471885610D172DF571B7B10215CF4B66C0A6D7B7991C0C"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Analysis_TestMatrices_Companion_Companion.lean",
+   "sha256": "9119CA45DD308B89FD72B08AFC57FE924A2AC6F37D00E218ACC6E5A6BDF0B904"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Analysis_TestMatrices_Companion_CompanionSpectral.lean",
+   "sha256": "ECC78FFB1AE5222725E232B21ADA1BE213B88CC34F1AF675EF7F3597BDF53C39"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Source_DrineasMahoney_RandNLA2016_Algorithm01_ElementwiseSampling_TraceMGF.lean",
+   "sha256": "F97E0515F28CAC8529219C4F01FC37D3F5347C3849ED4EC7598A7CF68AE4B838"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Source_DrineasMahoney_RandNLA2016_Equation02_SpectralApproximation_ElementwiseSpectral.lean",
+   "sha256": "B50DF4DF4A36B181315088B77DA91A8D8062C26795DCAA3984130C15016AE647"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Source_DrineasMahoney_RandNLA2016_Equation07_SubspaceEmbedding_LeverageTraceMGF.lean",
+   "sha256": "2A0A1A25D0A2636325F1EC8955BF4CAFA5B42B41CDB5E3281863D97BAED796E0"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Source_DrineasMahoney_RandNLA2016_Equation07_SubspaceEmbedding_RowNormTraceMGF.lean",
+   "sha256": "B89A6E3F0AF0EAB4EE35A20736873857806476D1DD46E6C5E2E1D6F4B43AF147"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Source_Higham_Chapter18_Section01_MatrixPowerBounds_NamedBounds_SpijkerKreiss.lean",
+   "sha256": "94CEF06901DA5E9E04DD519D802ADF18323CCB32BFD9A01748B575BB0D445021"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Source_Higham_Chapter28_Section06_Companion_Companion.lean",
+   "sha256": "7035669267B8AAF809242375B2A2039392BF462F7360F51EF4E4CAF9442626A7"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/Consumer/NumStability_Source_Higham_Chapter28_Section06_Companion_CompanionSpectral.lean",
+   "sha256": "4D60501B2A3172ADA9408BE317FE6BDEF7C0EBC10986CD7EF48359590E77EB17"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Algorithms_MatrixPowers.lean",
+   "sha256": "168BFC27FD95203D83C93EC8DDF9C63E4C07FFF4B4FF9445067973512DA12F08"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Algorithms_MatrixPowersComplex.lean",
+   "sha256": "A455015B16FE94FD56A052768324C37294C4BB3D2EED4C15A1A3C8B44E513088"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Algorithms_MatrixPowersJordan.lean",
+   "sha256": "FCEE8BF9EC477B34F6169493C588F1D81B10ECCBF9613B11ACD23B3BE000CD35"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Algorithms_MatrixPowersLp.lean",
+   "sha256": "A57FD003859AC0F31CA03FA882478AAAACB46B8F7103A1164A1146BF6C6CDCE3"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Algorithms_MatrixPowersLpJordan.lean",
+   "sha256": "06285A34B0F3D753A1308BD60BA51865091B2E8AAD944D5AB8B40C2F18621A2E"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Algorithms_MatrixPowersPseudospectral.lean",
+   "sha256": "E8B1A28597556EB1FA29EB1CDA50D8BEFC7CBBD93BCF6F62452756788EF9A256"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Algorithms_MatrixPowersPseudospectralCriterion.lean",
+   "sha256": "9CE7D67E5168C5C34984F0126C1AE84C9CFF960B74688D4166200918A497446F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Algorithms_MatrixPowersSpectral.lean",
+   "sha256": "E6FBA426E95D89DEACC26291ED150A5FC758F44DF4EFD47167F073260E8F1AB7"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_BergerGeneral.lean",
+   "sha256": "23F83B35EE007FF3B23A67714B55FB0C2DA6F1F1371D904B1F736D70697D13B7"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_BergerInequality.lean",
+   "sha256": "429DB48222D54AC2F5980AE6A22822C46EC892A93881F60E8BDC56C8043E1336"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_BergerResolvent.lean",
+   "sha256": "15CF15B872181E3AAC5C5D59CD5A816916E44E07522903D4A9BD8CC9A15934C2"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_CStarMatrices_Basic_RealMatrixBridge.lean",
+   "sha256": "529443B187D303777B5261AFCBBBA670BEB498CD1E00EB3B6E60D5D36253D1C5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_CStarMatrixBridge.lean",
+   "sha256": "629716226F05622B92ECF6AE752099051CD708BEA436B81E4EFA6341B1D3133E"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_CStarMatrixExpectation.lean",
+   "sha256": "78D08FE41842330F2839D2EAA98CA50E5B0CAE169EC8DBBDB4CE25E9E1547FD9"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_CStarMatrixTrace.lean",
+   "sha256": "3EE493BF7E963121F40E3E4B6D01335EFE902154577CD55BD355E96822B75174"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_DunfordResidue.lean",
+   "sha256": "242247F68BA0440E775676E2C4F75C5B53B4A9AAD5EBB4FDC4BC0F429C10BAFC"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_HenriciExtremal.lean",
+   "sha256": "F7DD8DAC258FD84AFAAE4A3B6AAD630D4528A430A343193E5C69D3C4B02F863D"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_HenriciSharpConstant.lean",
+   "sha256": "51C67A27CD663F499871B30835DD2BEB0EF6C06484616CC5478799385F0F9C86"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_HenriciSharpConstantExact.lean",
+   "sha256": "7A7E110D9E084FCBFCF762285036D51BD3BE3B883FDBAC28522D4304F6B2E9BE"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_JordanNormalForm.lean",
+   "sha256": "6D5F7A6975FB92B2002B625366E81FAD3D63F14402ED62DB19B513823B74D323"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_LiebTrace.lean",
+   "sha256": "32FE841405379F5941120CC87D1B5D4ADE77A40511310F07E94E479501A859D0"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_LinearOperators_MatrixPowers_Spijker_KreissBridge.lean",
+   "sha256": "3A564D166949F950084FA1E5FE3BA5BCBD84C59615647DD514247D3DE4244EE4"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersBaiDemmelGu.lean",
+   "sha256": "61A53596C1ABB18B077D2027E448C07F3120C1E50617330F50BD7A4B91680E45"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersBaiDemmelGuDistance.lean",
+   "sha256": "4816FA8485B15F08B7E825E8750514B807B28BC061BAA249E57701200DD75525"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersBinomialBound.lean",
+   "sha256": "579A6B56DF8DAA422C1FA71ABD035DBFE662D3EC2AF7004040CF5BA281E6684E"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersGautschi.lean",
+   "sha256": "C83FE564E38579F7773373731DC63FC8B041A0387EA8FD58976F3FF6977808F8"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersHenrici.lean",
+   "sha256": "9B35DFFDB39690AFA7FAECDEC95DAE1C4B91315E8C0E03AE5DA83B7B4F7B4008"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersHenriciNormal.lean",
+   "sha256": "23EF3690EC453742868CA7D7F41DED530E101558C2F8B0230518B09098DD1DD6"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersKreiss.lean",
+   "sha256": "F3D884A6D2F3542EE9DA32B34700B98424E117D3E1AFEA365D1A3C813FA6D3DE"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersKreissSpijker.lean",
+   "sha256": "EBE9285B40578D475778C738883D09CC1297D673C93D401A57FCB3788DB32967"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersLaszlo.lean",
+   "sha256": "07612E897DBC363C6FDC69F2FDEBD272C69A991B26B7EBE844DCC16299D8EAA0"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersLp185Primary.lean",
+   "sha256": "C36D7ED2D5880C27CCEFC42350C6BC743F413324A8D97F13523B17EDA1ED5FCA"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersSchur.lean",
+   "sha256": "80B298353CEBA34DAF961EED3FBC9B904DFE51F72BCFA8E549A712A2C80BECD8"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersSpijkerClosure.lean",
+   "sha256": "9895E9AD4C38B53974A8364784563EACC4CD102A2454B86855203A960C48599A"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersSpijkerPlanar.lean",
+   "sha256": "7F6418C925614A86C9A290DDBF281FF09B203CCDD7AC8A3B0DF9A535E07D14F5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersSpijkerPlanarAnalysis.lean",
+   "sha256": "501CE64A4BC3036530CABD995A112F6162C115FAE63D22CD2C42AA562FDD7E69"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_MatrixPowersSpijkerRational.lean",
+   "sha256": "7C73418DB9776DB8A0DD17F4DDDD3574C9F5F8BD84AB6BEE8C2787F4DFFD534F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_NilpotentJordanChain.lean",
+   "sha256": "433174542E7F619471BDE39A4190BCF620D6281AB7A2312094DEECCCD5055A83"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_NumericalRadius.lean",
+   "sha256": "8BEE254D77FD790817CD379A8A7F14EF61F63BF2B4F78229E532578F99776525"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_OperatorLog.lean",
+   "sha256": "FE099F9782778662EEA44E9C8E2EEC655540591E2041D321F3B86B82DC24C65F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_PseudospectralLowerBound.lean",
+   "sha256": "E2D3E85744753EFD158AD016E1623718130B315CA02636FC56F217AC5FF5ECDB"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_PseudospectralPowerBound.lean",
+   "sha256": "831B4295DBAA77C14595F15D1AF788309EBDA744256D1D2B74AD01A4FDCB51E5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_PseudospectralResolvent.lean",
+   "sha256": "88CD9A8FDE860BE6A01163D5D4297D3C072719FB31AB59FA3DF0E5CB310E890F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_ResolventFunctionalCalculus.lean",
+   "sha256": "C18A7A4C82C60B746640E03006C2ABE18A4999DC3E2D19DB3B0B9A80B56FEB87"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/OldOnly/NumStability_Analysis_SpijkerProjectionIntegral.lean",
+   "sha256": "416F3354A307FADCE6420139C7CEFA396BFBACB1F90CC3CBBBAD0294A529FE28"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/PrivateNormalization.lean",
+   "sha256": "3A51C4986EB9B5674168E26ED6F5883188F557683929351F42FE613471DFFC1A"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R07/ReusableSourceBoundary.lean",
+   "sha256": "8068F50AF2FC5932AE580F3B62066E4246A01157C879D34E3DB5A39DF712BF8B"
+  }
+ ],
+ "record_kind": "r07_worker_materialization",
+ "schema_version": 1
+}

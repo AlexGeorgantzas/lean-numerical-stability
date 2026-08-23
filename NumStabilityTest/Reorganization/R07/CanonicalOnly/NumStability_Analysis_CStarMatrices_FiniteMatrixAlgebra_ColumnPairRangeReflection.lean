@@ -1,0 +1,16 @@
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeReflection
+
+/-!
+# R07 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.cstarMatrixColumnPairRangeReflection
+#check @NumStability.cstarMatrixColumnPairRangeReflection_conj_isStrictlyPositive_of_sum
+#check @NumStability.cstarMatrixColumnPairRangeReflection_isSelfAdjoint
+#check @NumStability.cstarMatrixColumnPairRangeReflection_isUnit_of_sum
+#check @NumStability.cstarMatrixColumnPairRangeReflection_mem_unitary_of_sum
+#check @NumStability.cstarMatrixColumnPairRangeReflection_mul_columnPair_of_sum
+#check @NumStability.cstarMatrixColumnPairRangeReflection_mul_self_of_sum
+#check @NumStability.cstarMatrixColumnPair_conjTranspose_mul_rangeReflection_of_sum

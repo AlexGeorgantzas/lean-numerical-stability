@@ -1,0 +1,29 @@
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonal
+
+/-!
+# R07 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.cstarMatrixBlockDiagonal
+#check @NumStability.cstarMatrixBlockDiagonalStarAlgHom
+#check @NumStability.cstarMatrixBlockDiagonalStarAlgHom_apply
+#check @NumStability.cstarMatrixBlockDiagonalStarAlgHom_continuous
+#check @NumStability.cstarMatrixBlockDiagonal_add
+#check @NumStability.cstarMatrixBlockDiagonal_inl_inl
+#check @NumStability.cstarMatrixBlockDiagonal_inl_inr
+#check @NumStability.cstarMatrixBlockDiagonal_inr_inl
+#check @NumStability.cstarMatrixBlockDiagonal_inr_inr
+#check @NumStability.cstarMatrixBlockDiagonal_isSelfAdjoint
+#check @NumStability.cstarMatrixBlockDiagonal_isStrictlyPositive
+#check @NumStability.cstarMatrixBlockDiagonal_isUnit
+#check @NumStability.cstarMatrixBlockDiagonal_left_nonneg
+#check @NumStability.cstarMatrixBlockDiagonal_mul
+#check @NumStability.cstarMatrixBlockDiagonal_neg
+#check @NumStability.cstarMatrixBlockDiagonal_nonneg
+#check @NumStability.cstarMatrixBlockDiagonal_one_one
+#check @NumStability.cstarMatrixBlockDiagonal_right_nonneg
+#check @NumStability.cstarMatrixBlockDiagonal_star
+#check @NumStability.cstarMatrixBlockDiagonal_sub
+#check @NumStability.cstarMatrixBlockDiagonal_zero_zero

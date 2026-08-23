@@ -1,0 +1,15 @@
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ProjectionReflection
+
+/-!
+# R07 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.cstarMatrixProjectionReflection
+#check @NumStability.cstarMatrixProjectionReflection_isSelfAdjoint_of_isSelfAdjoint
+#check @NumStability.cstarMatrixProjectionReflection_isUnit_of_idempotent
+#check @NumStability.cstarMatrixProjectionReflection_mem_unitary_of_isSelfAdjoint_of_idempotent
+#check @NumStability.cstarMatrixProjectionReflection_mul_of_mul_eq_self
+#check @NumStability.cstarMatrixProjectionReflection_mul_self_of_idempotent
+#check @NumStability.cstarMatrix_mul_projectionReflection_of_mul_eq_self

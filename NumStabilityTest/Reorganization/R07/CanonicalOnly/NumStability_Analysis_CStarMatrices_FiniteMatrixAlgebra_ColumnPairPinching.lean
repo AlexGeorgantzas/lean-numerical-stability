@@ -1,0 +1,16 @@
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairPinching
+
+/-!
+# R07 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.cstarMatrixColumnPair_conjTranspose_mul_eq_compression_mul_conjTranspose_of_commute
+#check @NumStability.cstarMatrixColumnPair_conjTranspose_mul_reflectionAverage_of_sum
+#check @NumStability.cstarMatrixColumnPair_mul_columnPair_eq_columnPair_compression_of_commute
+#check @NumStability.cstarMatrixColumnPair_reflectionAverage_commute_rangeProjection_of_sum
+#check @NumStability.cstarMatrixColumnPair_reflectionAverage_commute_rangeReflection_of_sum
+#check @NumStability.cstarMatrixColumnPair_reflectionAverage_compression_of_sum
+#check @NumStability.cstarMatrixColumnPair_reflectionAverage_conj_rangeReflection_of_sum
+#check @NumStability.cstarMatrixColumnPair_reflectionAverage_mul_columnPair_of_sum
