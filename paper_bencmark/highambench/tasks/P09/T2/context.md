@@ -26,7 +26,9 @@ The indices `ZMod N` represent `0,...,N-1`. The theorem
 `P09MixedRadixFftPlan` records a Cooley-Tukey or Sande-Tukey factorization into
 permutations, block Fourier transforms, and the separately evaluated diagonal
 twiddle factors used by the displayed constant. The certified exact
-composition is `T`.
+composition is `T`. Its exact stage-norm scaling field records the Parseval
+identity for each unnormalized block factor; it is an exact factorization
+property, not a rounding-error estimate.
 
 `P09WilkinsonModel` records equations (3.1)--(3.2) and the absolute sine and
 cosine error model. `p09RoundedMixedRadixBlockApply` follows the algorithmic
@@ -49,18 +51,20 @@ linked operation trace while positive `epsilon` tends to zero. This is only a
 formal interpretation of the paper's retained `O(epsilon^2)` notation; the
 paper does not state the hidden constants or their dependency order.
 
-For one fixed family, the shared module derives the actual block and twiddle
-error vectors from the rounded trace. The theorem
+For one fixed family, `HighamBench.P09TheoremOne` derives the actual block and
+twiddle error vectors from the rounded trace. The theorem
 `p09PropagatedFftStageError_eq_block_add_twiddle` proves equation (3.6): after
 exact propagation, the stage error is the sum of those two computed
 contributions.
 
-`P09TheoremOneLocalAnalysis` packages the two predecessor estimates (3.7) and
-(3.8) separately. Its coefficients and radius are selected after the one
-execution family is fixed and before `epsilon`; there is no quantification over
-other families. `P09TheoremOneExecution` pairs that source analysis with the
-linked family. It stores neither the global Theorem 1(a) estimate nor a
-fictional-input witness.
+The operation-level proof establishes scalar addition, multiplication, sine,
+and cosine bounds directly from `P09WilkinsonModel`. It then proves the
+radix-2, balanced radix-4, generic-radix, and twiddle bounds, lifts them to the
+full vector norm, and propagates them through the remaining exact factors. A
+finite-stage growth induction supplies explicit family-specific second-order
+coefficients. `p09PrimitiveTheoremOneLocalAnalysis` therefore constructs the
+two predecessor estimates (3.7) and (3.8); they are not accepted from the
+caller.
 
 The shared theorem `p09TheoremOneRmsAsymptotic_exists` performs the remaining
 proof. It applies the RMS triangle inequality to the equation-(3.6)
@@ -74,8 +78,9 @@ alpha(4) = 5,
 alpha(q) = 2 sqrt(q) (q+gamma) otherwise.
 ```
 
-Thus the target invokes an imported derivation of Theorem 1(a), not a
-caller-supplied final-error certificate.
+Thus the target accepts only the linked operational family and invokes an
+imported derivation of Theorem 1(a). It receives neither local predecessor
+estimates nor a global final-error certificate.
 
 ## Selected backward result
 

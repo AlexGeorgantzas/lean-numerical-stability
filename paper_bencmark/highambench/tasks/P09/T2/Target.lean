@@ -10,25 +10,25 @@ imported derivation combines the paper's separate block and twiddle estimates
 theorem p09_t2_fictional_input_backward_error
     {n : ℕ} [NeZero n]
     (plan : P09MixedRadixFftPlan n) (γ : ℝ)
-    (execution : P09TheoremOneExecution plan γ) :
+    (family : P09AsymptoticFftFamily plan γ) :
     ∃ secondOrderCoeff : ℝ, 0 ≤ secondOrderCoeff ∧
       ∃ radius : ℝ, 0 < radius ∧
         ∀ ε : P09PositiveEpsilon, ∃ δ : ZMod n → ℂ,
-          p09FamilyFftRoundoffError execution.family ε =
+          p09FamilyFftRoundoffError family ε =
               p09FourierTransform δ ∧
             p09ComplexRms δ =
               p09ComplexRms
-                  (p09FamilyFftRoundoffError execution.family ε) /
+                  (p09FamilyFftRoundoffError family ε) /
                 Real.sqrt (n : ℝ) ∧
             (ε.1 ≤ radius →
               p09ComplexRms δ ≤
                   ε.1 * p09K plan γ *
-                      p09ComplexRms execution.family.input +
+                      p09ComplexRms family.input +
                     (secondOrderCoeff * ε.1 ^ 2) /
                       Real.sqrt (n : ℝ) ∧
                 p09ComplexMax δ ≤
                   ε.1 * Real.sqrt (n : ℝ) * p09K plan γ *
-                      p09ComplexRms execution.family.input +
+                      p09ComplexRms family.input +
                     secondOrderCoeff * ε.1 ^ 2) := by
   -- PROOF_START
   sorry
