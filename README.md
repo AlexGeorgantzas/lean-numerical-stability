@@ -14,10 +14,13 @@ integration-control commit applies exact R0011 and reviewed correction
 `DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909`.
 The resulting projection is 2,860 production modules: 2,770 classified, 90
 unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
-P0010 and R0011 remain active, R0011 remains unresolved, and M07 remains ready.
-The remote worker ref remains preserved at the immutable delivery. Exact
-integration-control Lean CI is pending before closeout. No R07 self-acceptance,
-checkpoint acceptance, R0011 resolution, or branch retirement is recorded.
+Exact integration-control commit `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`
+passed GitHub Lean CI run 32616508317 (job 97138028649). R07 code is integrated
+on `main`, but B0010 remains delivered and unaccepted with null integration
+metadata; P0010 and R0011 remain active, R0011 remains unresolved, and M07
+remains ready. The remote worker ref remains preserved at the immutable
+delivery. No R07 self-acceptance, checkpoint acceptance, R0011 resolution,
+P0010 retirement, or branch retirement is recorded.
 
 A Lean 4 library for formally verified floating-point error analysis, following
 Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*

@@ -585,6 +585,33 @@ R07_INTEGRATION_STATIC_CHANGED_PATHS = frozenset(
 R07_INTEGRATION_PATH_LIST_SHA256 = (
     "A3476E9FF4AF748A3013996453290FAF1321B0E5639CF023165813FB0BCA2BA8"
 )
+R07_INTEGRATION_CONTROL_SHA = "b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5"
+R07_INTEGRATION_CONTROL_TREE = "d0e7c754cf6cfa2cc454b282b88f5e06b89f195c"
+R07_INTEGRATION_CONTROL_CI_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/R07-integration-control-ci.json"
+)
+R07_INTEGRATION_CONTROL_CI_SHA256 = (
+    "BD97DE328D48092706424C753FA1B2D967E53CC58FA16AE2E359D0E5C47A7333"
+)
+R07_INTEGRATION_CONTROL_CI_RUN = 32616508317
+R07_INTEGRATION_CONTROL_CI_JOB = 97138028649
+R07_INTEGRATION_CONTROL_CI_SUITE = 88389538290
+R07_CLOSEOUT_CHANGED_PATHS = frozenset(
+    {
+        "README.md",
+        "docs/architecture/phases/README.md",
+        (
+            "docs/architecture/phases/2026-08-repository-reorganization-"
+            "completion/README.md"
+        ),
+        R07_INTEGRATION_CONTROL_CI_PATH,
+        "tools/architecture/check_completion_phase.py",
+    }
+)
+R07_CLOSEOUT_PATH_LIST_SHA256 = (
+    "97AD4EBCA6EE58783C58112AD0185D32D11F2208568471176596F12B8065FAF3"
+)
 C0005_PLANNED_CONTROL_PARENT_SHA = "59115771c816e0f41967c854beb9e86532317e82"
 C0005_PLANNED_CONTROL_SHA = "2d9dbf7bf8b4b51e9cb7817f5c5dc2d5194e8c42"
 C0005_PLANNED_CONTROL_CI_RUN = "32030191197"
@@ -4358,6 +4385,246 @@ def validate_r07_activation_control_ci(
     )
 
 
+def validate_r07_integration_control_ci(
+    record: dict[str, Any],
+    problems: Problems,
+    *,
+    context: str = "R07 integration-control CI",
+) -> None:
+    """Validate the exact green CI attestation for the integration control."""
+
+    expected_keys = {
+        "cardinality",
+        "check_run",
+        "check_suite",
+        "evidence_scope",
+        "integration_control",
+        "job",
+        "phase_id",
+        "record_kind",
+        "repository",
+        "run",
+        "schema_version",
+        "source_api",
+        "workflow",
+    }
+    problems.require(
+        set(record) == expected_keys,
+        f"{context}.schema",
+        f"expected exactly {sorted(expected_keys)}",
+    )
+    integration = record.get("integration_control")
+    run = record.get("run")
+    job = record.get("job")
+    suite = record.get("check_suite")
+    check_run = record.get("check_run")
+    problems.require(
+        record.get("schema_version") == 1
+        and record.get("record_kind") == "r07_integration_control_ci"
+        and record.get("phase_id") == PHASE_ID
+        and record.get("repository")
+        == "AlexGeorgantzas/lean-numerical-stability",
+        f"{context}.identity",
+        "expected exact R07 integration-control CI identity",
+    )
+    problems.require(
+        integration
+        == {
+            "commit_sha": R07_INTEGRATION_CONTROL_SHA,
+            "commit_tree_sha": R07_INTEGRATION_CONTROL_TREE,
+            "parent_true_merge_sha": R07_MERGE_SHA,
+            "previous_main_sha": R07_ACTIVATION_CONTROL_SHA,
+            "subject": "refactor(reorganization): integrate R07 under R0011",
+        },
+        f"{context}.integration_control",
+        "CI evidence must identify the exact 54-path integration-control commit",
+    )
+    problems.require(
+        isinstance(run, dict)
+        and run.get("id") == R07_INTEGRATION_CONTROL_CI_RUN
+        and run.get("name") == "Lean CI"
+        and run.get("workflow_id") == 240911818
+        and run.get("head_sha") == R07_INTEGRATION_CONTROL_SHA
+        and run.get("head_branch") == "main"
+        and run.get("event") == "push"
+        and run.get("run_attempt") == 1
+        and run.get("status") == "completed"
+        and run.get("conclusion") == "success"
+        and run.get("actor") == {"id": 11722713, "login": "kfoynt"}
+        and run.get("triggering_actor")
+        == {"id": 11722713, "login": "kfoynt"},
+        f"{context}.run",
+        "integration-control CI must be the exact successful main push run",
+    )
+    expected_steps = [
+        (1, "Set up job"),
+        (2, "Run actions/checkout@v5"),
+        (3, "Check architecture source graph and Python tooling"),
+        (4, "Build library and smoke tests"),
+        (8, "Post Run actions/checkout@v5"),
+        (9, "Complete job"),
+    ]
+    steps = job.get("steps") if isinstance(job, dict) else None
+    problems.require(
+        isinstance(job, dict)
+        and job.get("id") == R07_INTEGRATION_CONTROL_CI_JOB
+        and job.get("run_id") == R07_INTEGRATION_CONTROL_CI_RUN
+        and job.get("head_sha") == R07_INTEGRATION_CONTROL_SHA
+        and job.get("head_branch") == "main"
+        and job.get("name") == "build"
+        and job.get("run_attempt") == 1
+        and job.get("status") == "completed"
+        and job.get("conclusion") == "success"
+        and isinstance(steps, list)
+        and [(step.get("number"), step.get("name")) for step in steps]
+        == expected_steps
+        and all(
+            isinstance(step, dict)
+            and step.get("status") == "completed"
+            and step.get("conclusion") == "success"
+            for step in steps
+        ),
+        f"{context}.job",
+        "the sole build job and each of its exact six steps must be green",
+    )
+    github_app = {"id": 15368, "name": "GitHub Actions", "slug": "github-actions"}
+    problems.require(
+        isinstance(suite, dict)
+        and suite.get("id") == R07_INTEGRATION_CONTROL_CI_SUITE
+        and suite.get("before_sha") == R07_ACTIVATION_CONTROL_SHA
+        and suite.get("after_sha") == R07_INTEGRATION_CONTROL_SHA
+        and suite.get("head_sha") == R07_INTEGRATION_CONTROL_SHA
+        and suite.get("head_branch") == "main"
+        and suite.get("latest_check_runs_count") == 1
+        and suite.get("status") == "completed"
+        and suite.get("conclusion") == "success"
+        and suite.get("app") == github_app,
+        f"{context}.suite",
+        "normalized suite before_sha/after_sha must bind the exact successful main transition",
+    )
+    problems.require(
+        isinstance(check_run, dict)
+        and check_run.get("id") == R07_INTEGRATION_CONTROL_CI_JOB
+        and check_run.get("check_suite_id") == R07_INTEGRATION_CONTROL_CI_SUITE
+        and check_run.get("head_sha") == R07_INTEGRATION_CONTROL_SHA
+        and check_run.get("name") == "build"
+        and check_run.get("status") == "completed"
+        and check_run.get("conclusion") == "success"
+        and check_run.get("app") == github_app,
+        f"{context}.check_run",
+        "check run must be the exact successful sole build check",
+    )
+    problems.require(
+        record.get("cardinality")
+        == {
+            "artifact_count": 0,
+            "check_run_count": 1,
+            "check_suite_count": 1,
+            "commit_pull_request_count": 0,
+            "job_count": 1,
+            "job_ids": [R07_INTEGRATION_CONTROL_CI_JOB],
+            "referenced_workflow_count": 0,
+            "run_pull_request_count": 0,
+        },
+        f"{context}.cardinality",
+        "CI evidence must retain the exact sole-job/no-PR/no-artifact census",
+    )
+    problems.require(
+        record.get("workflow")
+        == {
+            "file_blob_oid": "00e7ec449e46353f181eca7c9c8dfb538f1a4c47",
+            "file_sha256": (
+                "0A9E8B535D7A780623557A107E00D02B44513E650A4F6C5A259FC0323A435FD7"
+            ),
+            "id": 240911818,
+            "name": "Lean CI",
+            "path": ".github/workflows/lean_action_ci.yml",
+        },
+        f"{context}.workflow",
+        "CI evidence must retain the exact workflow identity and bytes",
+    )
+    problems.require(
+        record.get("evidence_scope")
+        == {
+            "does_not_authorize_or_record": [
+                "R07 self-acceptance",
+                "C0006 or checkpoint acceptance",
+                "P0010 retirement",
+                "R0011 resolution",
+                "B0010 integration-field population",
+                "B0010 branch retirement",
+                "remote ref deletion",
+                "worker worktree removal",
+            ],
+            "proves": [
+                "the exact R07 integration-control commit completed GitHub Lean CI successfully",
+                "the sole recorded build job and every recorded job step completed successfully",
+            ],
+            "use": (
+                "R07 integration CI closeout only; acceptance remains a separate "
+                "primary-human control"
+            ),
+        },
+        f"{context}.evidence_scope",
+        "CI closeout must preserve every acceptance, resolution, and retirement exclusion",
+    )
+    expected_api = {
+        "artifacts": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/actions/runs/"
+            f"{R07_INTEGRATION_CONTROL_CI_RUN}/artifacts?per_page=100"
+        ),
+        "check_run": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/check-runs/"
+            f"{R07_INTEGRATION_CONTROL_CI_JOB}"
+        ),
+        "check_suite": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/check-suites/"
+            f"{R07_INTEGRATION_CONTROL_CI_SUITE}"
+        ),
+        "check_suite_runs": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/check-suites/"
+            f"{R07_INTEGRATION_CONTROL_CI_SUITE}/check-runs?filter=all&per_page=100"
+        ),
+        "commit_pull_requests": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/commits/"
+            f"{R07_INTEGRATION_CONTROL_SHA}/pulls?per_page=100"
+        ),
+        "commit_runs": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/commits/"
+            f"{R07_INTEGRATION_CONTROL_SHA}/check-runs?filter=all&per_page=100"
+        ),
+        "commit_suites": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/commits/"
+            f"{R07_INTEGRATION_CONTROL_SHA}/check-suites?per_page=100"
+        ),
+        "job": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/actions/jobs/"
+            f"{R07_INTEGRATION_CONTROL_CI_JOB}"
+        ),
+        "jobs": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/actions/runs/"
+            f"{R07_INTEGRATION_CONTROL_CI_RUN}/jobs?filter=all&per_page=100"
+        ),
+        "run": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/actions/runs/"
+            f"{R07_INTEGRATION_CONTROL_CI_RUN}"
+        ),
+        "workflow": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/actions/workflows/240911818"
+        ),
+        "workflow_contents": (
+            "/repos/AlexGeorgantzas/lean-numerical-stability/contents/"
+            ".github/workflows/lean_action_ci.yml?ref="
+            f"{R07_INTEGRATION_CONTROL_SHA}"
+        ),
+    }
+    problems.require(
+        record.get("source_api") == expected_api,
+        f"{context}.source_api",
+        "CI evidence must retain the exact API provenance endpoints",
+    )
+
+
 def validate_r07_integration_authorization(
     record: dict[str, Any],
     problems: Problems,
@@ -4516,6 +4783,54 @@ def validate_r07_integration_commit_shape(
             not overlay_paths,
             f"{context}.worktree",
             "committed integration control must have a clean overlay; "
+            f"found={sorted(overlay_paths)}",
+        )
+
+
+def validate_r07_closeout_commit_shape(
+    *,
+    head: str,
+    parents: Sequence[str],
+    subject: str | None,
+    changed_paths: set[str],
+    overlay_paths: set[str],
+    problems: Problems,
+    context: str = "R07 integration-CI closeout commit",
+) -> None:
+    """Require the exact five-path overlay or sole-child closeout commit."""
+
+    precommit = head == R07_INTEGRATION_CONTROL_SHA
+    if not precommit:
+        problems.require(
+            list(parents) == [R07_INTEGRATION_CONTROL_SHA],
+            f"{context}.parent",
+            "committed closeout must be a single-parent direct child of the exact integration control",
+        )
+        problems.require(
+            subject == "docs(reorg): record the R07 integration",
+            f"{context}.subject",
+            "committed closeout must retain the exact reviewed subject",
+        )
+    problems.require(
+        len(R07_CLOSEOUT_CHANGED_PATHS) == 5
+        and path_list_sha256(R07_CLOSEOUT_CHANGED_PATHS)
+        == R07_CLOSEOUT_PATH_LIST_SHA256,
+        f"{context}.contract",
+        "closeout contract must retain exact five-path identity",
+    )
+    problems.require(
+        changed_paths == set(R07_CLOSEOUT_CHANGED_PATHS),
+        f"{context}.paths",
+        ("precommit overlay" if precommit else "committed closeout")
+        + " must change exactly the five approved paths; "
+        f"missing={sorted(set(R07_CLOSEOUT_CHANGED_PATHS) - changed_paths)}, "
+        f"extra={sorted(changed_paths - set(R07_CLOSEOUT_CHANGED_PATHS))}",
+    )
+    if not precommit:
+        problems.require(
+            not overlay_paths,
+            f"{context}.worktree",
+            "committed closeout must have a clean overlay; "
             f"found={sorted(overlay_paths)}",
         )
 
@@ -5422,7 +5737,7 @@ class CompletionValidator:
         return postimages
 
     def validate_r07_planned_control(self) -> None:
-        """Validate exact C0005-rooted R07 planning and optional activation."""
+        """Validate C0005-rooted R07 planning through CI-attested integration."""
 
         contract = self.r07_contract
         assert contract is not None
@@ -5431,13 +5746,26 @@ class CompletionValidator:
         activation_present = activation_path.is_file()
         authorization_path = self.root / R07_INTEGRATION_AUTHORIZATION_PATH
         delivered_present = authorization_path.is_file()
+        integration_ci_path = self.root / R07_INTEGRATION_CONTROL_CI_PATH
+        closeout_present = integration_ci_path.is_file()
         self.r07_state = (
-            "delivered" if delivered_present else "active" if activation_present else "planned"
+            "integrated"
+            if closeout_present
+            else "delivered"
+            if delivered_present
+            else "active"
+            if activation_present
+            else "planned"
         )
         self.problems.require(
             not delivered_present or activation_present,
             f"{context}.lifecycle",
             "delivered mode requires the exact earlier activation record",
+        )
+        self.problems.require(
+            not closeout_present or delivered_present,
+            f"{context}.lifecycle",
+            "integration-CI closeout requires exact delivery and integration authority",
         )
         counts = contract.get("counts")
         headers = contract.get("headers")
@@ -5647,7 +5975,7 @@ class CompletionValidator:
         overlap = records["overlap"] or {}
 
         if delivered_present:
-            delivered_artifacts = (
+            delivered_artifacts = [
                 (R07_ACTIVATION_CONTROL_CI_PATH, R07_ACTIVATION_CONTROL_CI_SHA256),
                 (
                     R07_INTEGRATION_AUTHORIZATION_PATH,
@@ -5656,7 +5984,14 @@ class CompletionValidator:
                 (R07_DELIVERY_REPORT_PATH, R07_DELIVERY_REPORT_SHA256),
                 (R07_DELIVERY_SCOPE_PATH, R07_DELIVERY_SCOPE_SHA256),
                 (R07_CORRECTION_PATH, R07_CORRECTION_SHA256),
-            )
+            ]
+            if closeout_present:
+                delivered_artifacts.append(
+                    (
+                        R07_INTEGRATION_CONTROL_CI_PATH,
+                        R07_INTEGRATION_CONTROL_CI_SHA256,
+                    )
+                )
             for delivered_path, delivered_digest in delivered_artifacts:
                 self.artifact(
                     {"path": delivered_path, "sha256": delivered_digest},
@@ -5681,6 +6016,16 @@ class CompletionValidator:
                     self.problems,
                     context=R07_INTEGRATION_AUTHORIZATION_PATH,
                 )
+            if closeout_present:
+                integration_ci = self.read_json(
+                    integration_ci_path, R07_INTEGRATION_CONTROL_CI_PATH
+                )
+                if integration_ci is not None:
+                    validate_r07_integration_control_ci(
+                        integration_ci,
+                        self.problems,
+                        context=R07_INTEGRATION_CONTROL_CI_PATH,
+                    )
 
         expected_review = {
             "schema_version": 1,
@@ -7522,6 +7867,67 @@ class CompletionValidator:
                 integration_expected = request_paths | set(
                     R07_INTEGRATION_STATIC_CHANGED_PATHS
                 )
+                integration_committed = head != R07_MERGE_SHA or closeout_present
+                if integration_committed:
+                    integration_metadata = self.git(
+                        "show",
+                        "-s",
+                        "--format=%T%n%P%n%cI%n%s",
+                        R07_INTEGRATION_CONTROL_SHA,
+                        check=False,
+                    )
+                    self.problems.require(
+                        integration_metadata.returncode == 0
+                        and integration_metadata.stdout.splitlines()
+                        == [
+                            R07_INTEGRATION_CONTROL_TREE,
+                            R07_MERGE_SHA,
+                            "2026-08-22T23:47:14-04:00",
+                            "refactor(reorganization): integrate R07 under R0011",
+                        ],
+                        f"{context}.integration_control.identity",
+                        "integration control must retain exact tree, sole merge parent, time, and subject",
+                    )
+                    historical_integration_diff = self.git(
+                        "diff",
+                        "--name-only",
+                        "--no-renames",
+                        R07_MERGE_SHA,
+                        R07_INTEGRATION_CONTROL_SHA,
+                        "--",
+                        check=False,
+                    )
+                    historical_integration_paths = {
+                        normalize_path(path)
+                        for path in historical_integration_diff.stdout.splitlines()
+                        if path.strip()
+                    }
+                    if historical_integration_diff.returncode:
+                        self.problems.add(
+                            f"{context}.integration_control.history",
+                            "cannot read exact historical integration-control diff",
+                        )
+                    validate_r07_integration_commit_shape(
+                        head=R07_INTEGRATION_CONTROL_SHA,
+                        parents=[R07_MERGE_SHA],
+                        changed_paths=historical_integration_paths,
+                        expected_changed_paths=integration_expected,
+                        overlay_paths=set(),
+                        problems=self.problems,
+                        context=f"{context}.integration_control.history",
+                    )
+                    integration_ancestry = self.git(
+                        "merge-base",
+                        "--is-ancestor",
+                        R07_INTEGRATION_CONTROL_SHA,
+                        "HEAD",
+                        check=False,
+                    )
+                    self.problems.require(
+                        integration_ancestry.returncode == 0,
+                        f"{context}.integration_control.ancestry",
+                        "exact 54-path integration control must be an ancestor of live HEAD",
+                    )
                 cache_result = self.git(
                     "ls-files",
                     "--others",
@@ -7544,68 +7950,163 @@ class CompletionValidator:
                         f"{context}.integration_control.material",
                         "cannot enumerate disposable untracked .cache material",
                     )
-                if head == R07_MERGE_SHA:
-                    integration_parents: list[str] = []
-                    integration_changed = (
-                        self.git_live_change_paths(
-                            R07_MERGE_SHA,
-                            f"{context}.integration_control.precommit",
+                if closeout_present:
+                    if head == R07_INTEGRATION_CONTROL_SHA:
+                        closeout_parents: list[str] = []
+                        closeout_subject: str | None = None
+                        closeout_changed = (
+                            self.git_live_change_paths(
+                                R07_INTEGRATION_CONTROL_SHA,
+                                f"{context}.integration_closeout.precommit",
+                            )
+                            - untracked_material
                         )
-                        - untracked_material
+                        closeout_overlay: set[str] = set()
+                    else:
+                        closeout_metadata = self.git(
+                            "show", "-s", "--format=%P%n%s", "HEAD", check=False
+                        )
+                        closeout_lines = closeout_metadata.stdout.splitlines()
+                        closeout_parents = (
+                            closeout_lines[0].split() if closeout_lines else []
+                        )
+                        closeout_subject = (
+                            closeout_lines[1] if len(closeout_lines) == 2 else None
+                        )
+                        closeout_diff = self.git(
+                            "diff",
+                            "--name-only",
+                            "--no-renames",
+                            R07_INTEGRATION_CONTROL_SHA,
+                            "HEAD",
+                            "--",
+                            check=False,
+                        )
+                        closeout_changed = {
+                            normalize_path(path)
+                            for path in closeout_diff.stdout.splitlines()
+                            if path.strip()
+                        }
+                        if closeout_metadata.returncode or closeout_diff.returncode:
+                            self.problems.add(
+                                f"{context}.integration_closeout.git",
+                                "cannot read closeout parent, subject, or diff",
+                            )
+                        closeout_overlay = (
+                            self.git_live_change_paths(
+                                "HEAD", f"{context}.integration_closeout.worktree"
+                            )
+                            - untracked_material
+                        )
+                    validate_r07_closeout_commit_shape(
+                        head=head,
+                        parents=closeout_parents,
+                        subject=closeout_subject,
+                        changed_paths=closeout_changed,
+                        overlay_paths=closeout_overlay,
+                        problems=self.problems,
+                        context=f"{context}.integration_closeout",
                     )
-                    integration_overlay: set[str] = set()
-                else:
-                    integration_parent_result = self.git(
-                        "show", "-s", "--format=%P", "HEAD", check=False
-                    )
-                    integration_parents = integration_parent_result.stdout.split()
-                    integration_diff = self.git(
-                        "diff",
-                        "--name-only",
-                        "--no-renames",
+                    narrative_fragments = (
+                        "M07 remains ready and B0010/R07 is delivered",
+                        R07_DELIVERY_SHA,
+                        "true merge",
                         R07_MERGE_SHA,
-                        "HEAD",
-                        "--",
-                        check=False,
+                        R07_ACTIVATION_CONTROL_SHA,
+                        R07_CORRECTION_SHA256,
+                        R07_INTEGRATION_CONTROL_SHA,
+                        (
+                            "2,860 production modules: 2,770 classified, 90 "
+                            "unclassified, and 0 mixed"
+                        ),
+                        "R09=72 and R10=18",
+                        (
+                            f"passed GitHub Lean CI run {R07_INTEGRATION_CONTROL_CI_RUN} "
+                            f"(job {R07_INTEGRATION_CONTROL_CI_JOB})"
+                        ),
+                        "R07 code is integrated on `main`",
+                        (
+                            "B0010 remains delivered and unaccepted with null integration "
+                            "metadata"
+                        ),
+                        "P0010 and R0011 remain active, R0011 remains unresolved, and M07 remains ready",
+                        (
+                            "No R07 self-acceptance, checkpoint acceptance, R0011 resolution, "
+                            "P0010 retirement, or branch retirement is recorded."
+                        ),
                     )
-                    integration_changed = {
-                        normalize_path(path)
-                        for path in integration_diff.stdout.splitlines()
-                        if path.strip()
-                    }
-                    if integration_parent_result.returncode or integration_diff.returncode:
-                        self.problems.add(
-                            f"{context}.integration_control.git",
-                            "cannot read integration-control parent/diff",
+                else:
+                    if head == R07_MERGE_SHA:
+                        integration_parents: list[str] = []
+                        integration_changed = (
+                            self.git_live_change_paths(
+                                R07_MERGE_SHA,
+                                f"{context}.integration_control.precommit",
+                            )
+                            - untracked_material
                         )
-                    integration_overlay = (
-                        self.git_live_change_paths(
-                            "HEAD", f"{context}.integration_control.worktree"
+                        integration_overlay: set[str] = set()
+                    else:
+                        integration_parent_result = self.git(
+                            "show", "-s", "--format=%P", "HEAD", check=False
                         )
-                        - untracked_material
+                        integration_parents = integration_parent_result.stdout.split()
+                        integration_diff = self.git(
+                            "diff",
+                            "--name-only",
+                            "--no-renames",
+                            R07_MERGE_SHA,
+                            "HEAD",
+                            "--",
+                            check=False,
+                        )
+                        integration_changed = {
+                            normalize_path(path)
+                            for path in integration_diff.stdout.splitlines()
+                            if path.strip()
+                        }
+                        if (
+                            integration_parent_result.returncode
+                            or integration_diff.returncode
+                        ):
+                            self.problems.add(
+                                f"{context}.integration_control.git",
+                                "cannot read integration-control parent/diff",
+                            )
+                        integration_overlay = (
+                            self.git_live_change_paths(
+                                "HEAD", f"{context}.integration_control.worktree"
+                            )
+                            - untracked_material
+                        )
+                    validate_r07_integration_commit_shape(
+                        head=head,
+                        parents=integration_parents,
+                        changed_paths=integration_changed,
+                        expected_changed_paths=integration_expected,
+                        overlay_paths=integration_overlay,
+                        problems=self.problems,
+                        context=f"{context}.integration_control",
                     )
-                validate_r07_integration_commit_shape(
-                    head=head,
-                    parents=integration_parents,
-                    changed_paths=integration_changed,
-                    expected_changed_paths=integration_expected,
-                    overlay_paths=integration_overlay,
-                    problems=self.problems,
-                    context=f"{context}.integration_control",
-                )
-                narrative_fragments = (
-                    "M07 remains ready and B0010/R07 is delivered",
-                    R07_DELIVERY_SHA,
-                    "true merge",
-                    R07_MERGE_SHA,
-                    R07_ACTIVATION_CONTROL_SHA,
-                    R07_CORRECTION_SHA256,
-                    "2,860 production modules: 2,770 classified, 90 unclassified, and 0 mixed",
-                    "R09=72 and R10=18",
-                    "P0010 and R0011 remain active, R0011 remains unresolved",
-                    "Exact integration-control Lean CI is pending before closeout",
-                    "No R07 self-acceptance, checkpoint acceptance, R0011 resolution, or branch retirement is recorded.",
-                )
+                    narrative_fragments = (
+                        "M07 remains ready and B0010/R07 is delivered",
+                        R07_DELIVERY_SHA,
+                        "true merge",
+                        R07_MERGE_SHA,
+                        R07_ACTIVATION_CONTROL_SHA,
+                        R07_CORRECTION_SHA256,
+                        (
+                            "2,860 production modules: 2,770 classified, 90 "
+                            "unclassified, and 0 mixed"
+                        ),
+                        "R09=72 and R10=18",
+                        "P0010 and R0011 remain active, R0011 remains unresolved",
+                        "Exact integration-control Lean CI is pending before closeout",
+                        (
+                            "No R07 self-acceptance, checkpoint acceptance, R0011 "
+                            "resolution, or branch retirement is recorded."
+                        ),
+                    )
             else:
                 if head == R07_PLANNED_CONTROL_SHA:
                     activation_parents = []
@@ -17411,6 +17912,7 @@ def run_self_test() -> int:
 
     activation_ci_fixture_path = ROOT / R07_ACTIVATION_CONTROL_CI_PATH
     authorization_fixture_path = ROOT / R07_INTEGRATION_AUTHORIZATION_PATH
+    integration_ci_fixture_path = ROOT / R07_INTEGRATION_CONTROL_CI_PATH
     request_fixture_path = ROOT / DEFAULT_PHASE_DIR / "requests/R0011.json"
     try:
         activation_ci_fixture = json.loads(
@@ -17418,6 +17920,9 @@ def run_self_test() -> int:
         )
         authorization_fixture = json.loads(
             authorization_fixture_path.read_text(encoding="utf-8")
+        )
+        integration_ci_fixture = json.loads(
+            integration_ci_fixture_path.read_text(encoding="utf-8")
         )
         request_fixture = json.loads(request_fixture_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
@@ -17531,6 +18036,92 @@ def run_self_test() -> int:
                 f"{diagnostic}: {negative.messages}",
             )
 
+        integration_ci_positive = Problems()
+        validate_r07_integration_control_ci(
+            integration_ci_fixture,
+            integration_ci_positive,
+            context="self-test R07 integration-control CI",
+        )
+        problems.require(
+            sha256_path(integration_ci_fixture_path)
+            == R07_INTEGRATION_CONTROL_CI_SHA256
+            and not integration_ci_positive.messages,
+            "self-test R07 integration-control CI positive",
+            "exact integration-control CI rejected or digest drifted: "
+            f"{integration_ci_positive.messages}",
+        )
+        for label, mutate, diagnostic in (
+            (
+                "failed run",
+                lambda value: value["run"].__setitem__("conclusion", "failure"),
+                ".run:",
+            ),
+            (
+                "wrong job",
+                lambda value: value["job"].__setitem__("id", 1),
+                ".job:",
+            ),
+            (
+                "missing step",
+                lambda value: value["job"]["steps"].pop(),
+                ".job:",
+            ),
+            (
+                "raw suite key",
+                lambda value: (
+                    value["check_suite"].__setitem__(
+                        "before", value["check_suite"].pop("before_sha")
+                    )
+                ),
+                ".suite:",
+            ),
+            (
+                "wrong suite transition",
+                lambda value: value["check_suite"].__setitem__(
+                    "after_sha", "0" * 40
+                ),
+                ".suite:",
+            ),
+            (
+                "extra job",
+                lambda value: value["cardinality"].__setitem__("job_count", 2),
+                ".cardinality:",
+            ),
+            (
+                "wrong workflow",
+                lambda value: value["workflow"].__setitem__(
+                    "file_sha256", "0" * 64
+                ),
+                ".workflow:",
+            ),
+            (
+                "acceptance authorized",
+                lambda value: value["evidence_scope"].__setitem__(
+                    "does_not_authorize_or_record", []
+                ),
+                ".evidence_scope:",
+            ),
+            (
+                "wrong API provenance",
+                lambda value: value["source_api"].__setitem__("run", "/wrong"),
+                ".source_api:",
+            ),
+        ):
+            mutated = json.loads(canonical_json(integration_ci_fixture))
+            mutate(mutated)
+            negative = Problems()
+            validate_r07_integration_control_ci(
+                mutated,
+                negative,
+                context="self-test R07 integration-control CI",
+            )
+            problems.require(
+                any(diagnostic in message for message in negative.messages),
+                f"self-test R07 integration-control CI {label}",
+                f"adversarial integration-CI mutation missed {diagnostic}: "
+                f"{negative.messages}",
+            )
+
         request_fixture_paths = (
             set(request_fixture.get("paths", []))
             if isinstance(request_fixture.get("paths"), list)
@@ -17604,6 +18195,101 @@ def run_self_test() -> int:
                 any(diagnostic in message for message in negative.messages),
                 f"self-test R07 integration control {label}",
                 f"adversarial integration mutation missed {diagnostic}: {negative.messages}",
+            )
+        closeout_shape_positive = Problems()
+        for closeout_head, closeout_parents, closeout_subject in (
+            (R07_INTEGRATION_CONTROL_SHA, [], None),
+            (
+                "f" * 40,
+                [R07_INTEGRATION_CONTROL_SHA],
+                "docs(reorg): record the R07 integration",
+            ),
+        ):
+            validate_r07_closeout_commit_shape(
+                head=closeout_head,
+                parents=closeout_parents,
+                subject=closeout_subject,
+                changed_paths=set(R07_CLOSEOUT_CHANGED_PATHS),
+                overlay_paths=set(),
+                problems=closeout_shape_positive,
+                context="self-test R07 integration closeout",
+            )
+        problems.require(
+            R07_CLOSEOUT_CHANGED_PATHS
+            == {
+                "README.md",
+                "docs/architecture/phases/README.md",
+                (
+                    "docs/architecture/phases/2026-08-repository-reorganization-"
+                    "completion/README.md"
+                ),
+                R07_INTEGRATION_CONTROL_CI_PATH,
+                "tools/architecture/check_completion_phase.py",
+            }
+            and len(R07_CLOSEOUT_CHANGED_PATHS) == 5
+            and path_list_sha256(R07_CLOSEOUT_CHANGED_PATHS)
+            == R07_CLOSEOUT_PATH_LIST_SHA256
+            and not closeout_shape_positive.messages,
+            "self-test R07 integration closeout positive",
+            "valid five-path precommit/sole-child closeout rejected or path contract drifted: "
+            f"{closeout_shape_positive.messages}",
+        )
+        for label, parents, subject, changed, overlay, diagnostic in (
+            (
+                "wrong parent",
+                ["0" * 40],
+                "docs(reorg): record the R07 integration",
+                set(R07_CLOSEOUT_CHANGED_PATHS),
+                set(),
+                ".parent:",
+            ),
+            (
+                "wrong subject",
+                [R07_INTEGRATION_CONTROL_SHA],
+                "wrong",
+                set(R07_CLOSEOUT_CHANGED_PATHS),
+                set(),
+                ".subject:",
+            ),
+            (
+                "missing path",
+                [R07_INTEGRATION_CONTROL_SHA],
+                "docs(reorg): record the R07 integration",
+                set(R07_CLOSEOUT_CHANGED_PATHS) - {R07_INTEGRATION_CONTROL_CI_PATH},
+                set(),
+                ".paths:",
+            ),
+            (
+                "extra path",
+                [R07_INTEGRATION_CONTROL_SHA],
+                "docs(reorg): record the R07 integration",
+                set(R07_CLOSEOUT_CHANGED_PATHS) | {"intruder"},
+                set(),
+                ".paths:",
+            ),
+            (
+                "dirty committed overlay",
+                [R07_INTEGRATION_CONTROL_SHA],
+                "docs(reorg): record the R07 integration",
+                set(R07_CLOSEOUT_CHANGED_PATHS),
+                {"intruder"},
+                ".worktree:",
+            ),
+        ):
+            negative = Problems()
+            validate_r07_closeout_commit_shape(
+                head="f" * 40,
+                parents=parents,
+                subject=subject,
+                changed_paths=changed,
+                overlay_paths=overlay,
+                problems=negative,
+                context="self-test R07 integration closeout",
+            )
+            problems.require(
+                any(diagnostic in message for message in negative.messages),
+                f"self-test R07 integration closeout {label}",
+                f"adversarial closeout mutation missed {diagnostic}: {negative.messages}",
             )
     with tempfile.TemporaryDirectory(
         prefix="completion-r07-live-change-self-test-"
@@ -20188,9 +20874,9 @@ No implementation began before activation-control CI. The worker remains frozen 
         "and premature branch-retirement rejection"
         "; plus pure R07 contract identity/lifecycle, cross-artifact relation, UTF-16 "
         "source-coordinate, planned/active/delivered branch delta, hash-pinned "
-        "activation/planned-CI/ref/worktree and activation-control-CI/integration-authority "
-        "evidence, and planned/activation/integration precommit/direct-child commit-shape "
-        "adversarial tests"
+        "activation/planned-CI/ref/worktree, activation-control-CI/integration-authority, "
+        "and integration-control-CI evidence, plus planned/activation/integration/closeout "
+        "precommit/direct-child commit-shape adversarial tests"
     )
     return 0
 
@@ -20233,6 +20919,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         "delivered": (
             "delivered-but-unaccepted immutable 166-path true merge plus exact "
             "R0011/correction integration control"
+        ),
+        "integrated": (
+            "CI-attested integrated code with B0010 still delivered/unaccepted, "
+            "P0010 active, and R0011 active/unresolved"
         ),
     }.get(validator.r07_state, validator.r07_state)
     print(
