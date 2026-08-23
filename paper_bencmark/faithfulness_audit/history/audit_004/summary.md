@@ -7,13 +7,13 @@
   `a06728e225be6348dcd72754114d0c9af1b5d4eb`
 - Corpus: 20 papers and 60 tasks
 - Ordinary audit scope: 53 tasks after seven owner-approved exclusions
-- Currently accepted in ordinary scope: 50 tasks
+- Currently accepted in ordinary scope: 51 tasks
 - Pending fresh audits: none
-- Audited but still not accepted: `P09-T2`, `P15-T3`, `P16-T3`
-- Current-target fourth-pass audits completed: 8; 5 accepted and 3 not accepted
+- Audited but still not accepted: `P09-T2`, `P16-T3`
+- Current-target fourth-pass audits completed: 8; 6 accepted and 2 not accepted
 - Latest completed fourth-pass audit reference: branch
   `benchmark_faithfulness_audit`, commit
-  `9a6b60b3d8a044c8cafd121593c65d5189ec22c7`
+  `92a868cdc3fc662f13975559aaf773682d3664f9`
 - Recorded as an in-progress history entry: `2026-08-23`
 
 Task-local `faithfulness/` bundles remain the detailed evidence. The final
@@ -24,12 +24,13 @@ settled, so they can pin the final controlled inputs and task-audit commits.
 
 | View | Eligible | Accepted | Not accepted | Pending |
 |---|---:|---:|---:|---:|
-| Audit 4 current state | 53 | 50 | 3 | 0 |
+| Audit 4 current state | 53 | 51 | 2 | 0 |
 | Audit 3 completed baseline | 57 | 45 | 12 | 0 |
 
-Five rebuilt tasks have moved from an unaccepted Audit 3 classification into
-an accepted category: `P04-T2`, `P06-T1`, `P08-T3`, `P11-T1`, and `P12-T3`. Four
-additional tasks have been excluded by owner decision: `P18-T3`, `P19-T2`,
+Six rebuilt tasks have moved from an unaccepted Audit 3 classification into
+an accepted category: `P04-T2`, `P06-T1`, `P08-T3`, `P11-T1`, `P12-T3`, and
+`P15-T3`. Four additional tasks have been excluded by owner decision:
+`P18-T3`, `P19-T2`,
 `P19-T3`, and `P20-T3`. These exclusions reduce the ordinary denominator from
 57 to 53 but do not convert their existing negative audit tags into accepted
 results.
@@ -42,7 +43,7 @@ results.
 | `P08-T3` | `not-faithful-weaker` | `faithful-stronger` |
 | `P11-T1` | `not-faithful-weaker` | `faithful-stronger` |
 | `P12-T3` | `not-faithful-weaker` | `faithful-equivalent` |
-| `P15-T3` | `not-faithful-different` | `undetermined`; further repair remains open |
+| `P15-T3` | `not-faithful-different` | `faithful-equivalent`; adjudicated current-target audit at `92a868cdc` |
 | `P16-T3` | `not-faithful-different` | `not-faithful-different`; further repair remains open |
 | `P06-T1` | `not-faithful-weaker` | `faithful-stronger` |
 | `P09-T2` | `not-faithful-weaker` | `not-faithful-weaker`; adjudicated current-target audit at `9a6b60b3d` |
@@ -57,14 +58,20 @@ qualitative negligibility sentence is a minor additional completeness issue.
 Adjudication rejected the round-trip concerns about Fourier phase, an extra
 initial rounded addition, and vacuity.
 
-`P15-T3` now preserves the final algebra and detailed UFC/UCF and
-triangular-solve traces, but its run still assumes aggregate predecessor
-analyses that the paper derives; the paper's `A`/`Atilde` and Big-O ambiguity
-also prevents the reverse implication from being decided. `P16-T3` remains
-different because correction-level contraction estimates and high-precision
-bounds containing the paper's central work are still supplied as proof-carrying
-inputs, while the target omits parts of the paper's final attainable-level
-conclusion.
+`P15-T3` was reselected with owner approval from Theorem 4.5 to Lemma 3.3,
+equations (3.10)--(3.11). The rebuilt target preserves the two low-rank factor
+orientations, both permitted three-product evaluation orders, the local
+equation-(2.7) rounding certificates, Frobenius norms, the exact
+`gamma_(b + 2*r^(3/2))` coefficient, and both complete forward-error bounds.
+Adjudication resolved the judges' equivalent-versus-stronger disagreement as
+`faithful-equivalent`: the additional natural-dimension boundary cases are
+vacuous or trivial, and the signed parameters encode the same nonnegative
+approximation budgets rather than new substantive cases.
+
+`P16-T3` remains different because correction-level contraction estimates and
+high-precision bounds containing the paper's central work are still supplied
+as proof-carrying inputs, while the target omits parts of the paper's final
+attainable-level conclusion.
 
 ## Exclusion categories
 
@@ -147,21 +154,20 @@ undetermined, `P` pending, and `X` excluded. Only `E` and `S` are accepted.
 | P12 | S | E | E | 3/3 |
 | P13 | E | E | S | 3/3 |
 | P14 | S | S | E | 3/3 |
-| P15 | E | E | U | 2/3 |
+| P15 | E | E | E | 3/3 |
 | P16 | E | X | D | 1/2 |
 | P17 | X | S | S | 2/2 |
 | P18 | S | E | X | 2/2 |
 | P19 | S | X | X | 1/1 |
 | P20 | S | S | X | 2/2 |
-| **Current total** |  |  |  | **50/53** |
+| **Current total** |  |  |  | **51/53** |
 
 ## Completion condition
 
 All planned current-target fourth-pass reruns now have task-local audits.
-The aggregate remains `50/53` because `P09-T2`, `P15-T3`, and `P16-T3` are
-eligible and not accepted. Reaching 100% requires all three tasks to be rebuilt
-and accepted, or separate explicit owner decisions changing their scope or
-exclusion status.
+The aggregate is now `51/53`. `P09-T2` and `P16-T3` remain eligible and not
+accepted. Reaching 100% requires both tasks to be rebuilt and accepted, or
+separate explicit owner decisions changing their scope or exclusion status.
 
 After all dispositions are settled, Audit 4 must receive its final
 machine-readable task index and manifest, exact per-task evidence commits,
