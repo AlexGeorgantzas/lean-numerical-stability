@@ -1,0 +1,91 @@
+{
+  "accepted": false,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-23T14:00:43.649053+00:00",
+  "findings": [
+    {
+      "category": "constant-definition",
+      "impact": "For every admissible later column, the formal leading constant is generally strictly smaller than the paper's, changing both the hypothesis and selected conclusion.",
+      "lean_evidence": "D030 defines c1 as 2*sqrt(2*m*k)+2*sqrt(k), and D008 propagates it to c4, condition (3), and the target bound.",
+      "paper_evidence": "PDF page 4, equation (2), defines c1(m,k)=2*sqrt(2)*m*k+2*sqrt(k) for k=2,...,n and c4=c2+2*c1.",
+      "severity": "critical"
+    },
+    {
+      "category": "hypothesis-conclusion-reversal",
+      "impact": "The formal proposition assumes substantial content that the paper theorem proves and omits the remaining theorem conclusions, yielding a restricted derived lemma rather than Theorem 1.",
+      "lean_evidence": "D026 requires exact residual and reverse-norm bounds as an analysis argument, while the target returns only the orthogonality inequality.",
+      "paper_evidence": "Theorem 1 derives residual bounds (4)-(6), orthogonality bound (7), and norm bound (8) from the Algorithm-2 setup and condition (3).",
+      "severity": "major"
+    },
+    {
+      "category": "quantifier-and-applicability",
+      "impact": "Added uniform-family hypotheses exclude paper instances and cannot be counted as genuine theorem strength.",
+      "lean_evidence": "D001, D019, and D026 require runs and bounds uniformly across a real epsilon neighborhood, together with separate norm, inverse-norm, and residual radii.",
+      "paper_evidence": "The paper states the result for the computed factors at one machine unit epsilon_M satisfying condition (3).",
+      "severity": "major"
+    },
+    {
+      "category": "floating-point-model-linkage",
+      "impact": "The formal algorithm trace can contain pythagorean operations unconstrained by its advertised rounding model; residual assumptions, rather than the execution model, must carry the theorem.",
+      "lean_evidence": "D051's add, subtract, multiply, and square-root axioms are conditional on D061, but D050 does not require the corresponding executed results to satisfy that predicate.",
+      "paper_evidence": "The paper's relative-error reasoning applies to results in the normalized range and its CGS-P conclusion excludes breakdown.",
+      "severity": "major"
+    },
+    {
+      "category": "constant-mistranslation",
+      "impact": "Both the leading orthogonality coefficient and the strict smallness condition are changed, producing a substantially smaller first term for nontrivial dimensions.",
+      "paper_evidence": "For p>=2, equation (2) has c1(m,p)=2 sqrt(2) m p+2 sqrt(p).",
+      "severity": "critical",
+      "translation_evidence": "The translation defines alpha(m,p)=2 sqrt(2mp)+2 sqrt(p)."
+    },
+    {
+      "category": "theorem-recast-as-conditional-propagation",
+      "impact": "The core numerical-analysis content is assumed rather than established, narrowing the theorem to computations already equipped with the needed estimates.",
+      "paper_evidence": "Theorem 1 derives residual, normal-equation, norm-comparison, orthogonality, and Q-norm bounds from CGS-P and condition (3).",
+      "severity": "critical",
+      "translation_evidence": "A separate analysis package assumes exact second-order residual, normal-equation, and reverse-norm estimates, plus uniform bounds and radii, before the target derives the Gram-defect bound."
+    },
+    {
+      "category": "missing-conclusions",
+      "impact": "The translated proposition does not preserve the complete paper result.",
+      "paper_evidence": "Equations (4)-(8) are all conclusions of Theorem 1.",
+      "severity": "major",
+      "translation_evidence": "Only an equation-(7)-style bound is concluded; equation (8) is absent and the other estimates occur only as hypotheses."
+    },
+    {
+      "category": "higher-order-treatment",
+      "impact": "The translation proves a different exact theorem under additional assumptions rather than preserving the source's first-order statement.",
+      "paper_evidence": "The displayed theorem is qualified by an unspecified O(epsilon_M^2), and the appendix leaves that remainder unquantified.",
+      "severity": "major",
+      "translation_evidence": "The translation gives an exact C_k epsilon^2 remainder with C_k determined by arbitrary supplied second-order coefficients and uniform bounds."
+    },
+    {
+      "category": "numerical-model-and-domain",
+      "impact": "The class of computations and the quantifier scope differ in both broader and narrower directions, preventing either whole statement from implying the other.",
+      "paper_evidence": "The source assumes IEEE floating-point arithmetic and a normalized-range first-order model for one machine unit.",
+      "severity": "major",
+      "translation_evidence": "The translation uses abstract operation models, an arbitrary normalized predicate, runs indexed by every positive epsilon, and a master admissible radius."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean proposition only covers computations extendable to a uniform epsilon family with supplied exact residual asymptotics and auxiliary norm bounds. Moreover, its hidden condition uses the incorrectly smaller c4. It therefore does not establish the paper theorem for every Algorithm-2 computation satisfying the paper's hypotheses.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper's bound uses the larger coefficient c4 formed with 2*sqrt(2)*m*k, so it cannot imply the target's smaller leading coefficient uniformly as epsilon tends to zero. The paper also does not supply the target's epsilon-indexed family, exact residual witnesses, or particular explicit remainder coefficient.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The PDF confirms the intended CGS-P orthogonality bound, its full-rank rectangular context, condition (3), spectral norm, squared condition number, and first-order O(epsilon_M^2) qualification. The formal matrix and algorithm encodings largely match those features, and the explicit remainder is a reasonable big-O formalization. However, c1 is mis-parenthesized, making c4 wrong in the selected leading term and premise. The proposition also assumes uniform residual conclusions and auxiliary bounds over an epsilon family instead of deriving the paper's multi-part theorem from its stated hypotheses. These changes make the two propositions logically incomparable rather than equivalent, stronger, or merely weaker.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P11-T3"
+}

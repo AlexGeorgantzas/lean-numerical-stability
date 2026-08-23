@@ -121,7 +121,7 @@
     "module_count": 5166,
     "sorted_module_names_sha256": "075d801f7bde73eb40092417de373c990808f365218c2ea301d7777ed666ba52"
   },
-  "completed_at_utc": "2026-08-23T17:58:54.479542+00:00",
+  "completed_at_utc": "2026-08-23T14:00:43.649053+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P11/T3/context.md",
     "semantic_evidence": false,
@@ -426,7 +426,7 @@
       "name": "HighamBench.p11C1",
       "owner_module": "HighamBench.P11Definitions",
       "role": "local",
-      "semantic_sha256": "b7b08e3c7e58aa7c905346648ccb433c270d24b16ce1b39a791f3a8b77c4f09f"
+      "semantic_sha256": "477c74b04fe05eb7235fbdc5068d7a787f7f81ae546651bd7ae8bbaed5c66b29"
     },
     {
       "blind_name": "LocalDef031",
@@ -5810,27 +5810,27 @@
   "inputs": {
     "blind_dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/blind_dependency_inventory.json",
-      "sha256": "a1e882e2ed79466783af96690b24574177457c8d5d1900efea4e8632d8d6750d"
+      "sha256": "c9af3899302ca29a55ea21b259e788b5235a45b2da9d85a7153da1b0420c142e"
     },
     "blind_dossier": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/blind_dossier.md",
-      "sha256": "d8d6091a491a4931a5560c2d56f69d6bd46b7a8d23eabd3b7832cffc595d5bf3"
+      "sha256": "d303f49bf5e8b305ef4d49e817b77b69068aa49be6cb2355b34f97ed2518db59"
     },
     "blind_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/blind_review_packet.md",
-      "sha256": "d8d6091a491a4931a5560c2d56f69d6bd46b7a8d23eabd3b7832cffc595d5bf3"
+      "sha256": "d303f49bf5e8b305ef4d49e817b77b69068aa49be6cb2355b34f97ed2518db59"
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "1cfe2e4ce46fa6b5b11003d7f44354da818491b22c701deaae859752643f898b"
+      "sha256": "dfc2b49094f25598067df3a12d568a37169bff1aa27627a4c01cef28cf7a6a66"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/dependency_inventory.json",
-      "sha256": "c70cbdea0326dd64c675d82ce4bd0f8d8aa65b2bc22523f617a0549fc62b1678"
+      "sha256": "14ea7bcd2306779772d42578c27a5f283f45277e9413281da40ad48d77075cca"
     },
     "direct_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/direct_review_packet.md",
-      "sha256": "d2956c81c97f3513bbffdee2b6cc67aa63f5689951752b7d59221416d50ad8a4"
+      "sha256": "cd3ffa8aa06c074195dc24ee547d739b61ce95863a432d14cd7343be526c12c3"
     },
     "source_locator": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/inputs/source_locator.json",
@@ -5866,37 +5866,33 @@
       ],
       "module": "HighamBench.P11Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean",
-      "sha256": "3ec45c6fbd29587ee731d6a89fead89df8b7935d00d5555ccb3393b5e8655466"
+      "sha256": "6974a7fbb76e7578a62a26911b039cd6d9b90366378b2f4ddd37bd790b8e3fa4"
     }
   ],
   "outputs": {
-    "adjudicator": {
-      "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/agent_outputs/adjudicator.json",
-      "sha256": "8be3bcf8fd082b4806f67f6c8b9fe4fb4c9cc692c25541e9da6b3aac40d81409"
-    },
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "c0270009404eedc3fa3a8e9d93f37cb2b11ce9c441d4a301b4063dc691018a49"
+      "sha256": "c7b5d693a4500628d62df8a916505c292ed9dd8c98b98cd7a614a54cc5ef5603"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/decision.json",
-      "sha256": "1d63e6b9b1e02ffc1c3a62fdc3b8c90650034ee449813fe054662174b57bf608"
+      "sha256": "089d79161dde848919beb03bfd9be498e38c677b7b005af58e04901c42f0cff5"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "42fd778c0e84834a5a4b31a25405775343626f359fe0aceeccc34048ceb52403"
+      "sha256": "3921cd1b44edb064d9ed12361e4a9d0aaadde1746d72793393c08a2a7fdd23a9"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/report.md",
-      "sha256": "e6d1110acf4e8797c708eb69892fa72a9eea7fed03d4ed0ae22917c1b447dddc"
+      "sha256": "dd209ee278434cb45c316d0c75f7f61703b7c576bcc3fc24e049d54e8d30250a"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "e52569a45557738a82b0aa8cae7967a307ac17c32ff78cb7569e59a8cd9d1a72"
+      "sha256": "8e4e292dd57ab10b64ba4fd0cce818b6f37336a31982fb01de8b795e41d1ca59"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P11/T3/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "265050d1f0e7d154d81e852d1d2b183b2731efeaf1662602acc92f40b2ce0c14"
+      "sha256": "914758345fb1c46246bc04ac3f836a00673565e3a91e4399bffd9d03061b1a82"
     }
   },
   "paper": {
@@ -5933,7 +5929,7 @@
       }
     ]
   },
-  "prepared_at_utc": "2026-08-23T17:33:53.367564+00:00",
+  "prepared_at_utc": "2026-08-23T13:32:26.007220+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
@@ -6021,7 +6017,7 @@
   "target": {
     "declaration": "HighamBench.p11_t3_orthogonality_defect_bound",
     "path": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
-    "sha256": "0eaab59fcfb01896aef43b4a9837885c12acc2da6c9c19527293f5261d68f82d"
+    "sha256": "a7c13485b8f32f7701cce22d1839e454af8a5ff237d253a3bd6c7fedfa6d2077"
   },
   "task_id": "P11-T3",
   "task_metadata": {

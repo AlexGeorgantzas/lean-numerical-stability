@@ -379,14 +379,14 @@
     },
     {
       "blind_name": "LocalDef030",
-      "body_readable": "fun m k =>\n  ite (Eq k 1) 1\n    (instHAdd.hAdd (instHMul.hMul (instHMul.hMul (instHMul.hMul 2 (Real.sqrt 2)) m.cast) k.cast)\n      (instHMul.hMul 2 k.cast.sqrt))",
+      "body_readable": "fun m k =>\n  ite (Eq k 1) 1\n    (instHAdd.hAdd (instHMul.hMul 2 (instHMul.hMul (instHMul.hMul 2 m.cast) k.cast).sqrt) (instHMul.hMul 2 k.cast.sqrt))",
       "distance": 2,
       "id": "D030",
       "kind": "def",
       "name": "LocalDef030",
       "owner_module": "LocalImport001",
       "role": "local",
-      "semantic_sha256": "b7b08e3c7e58aa7c905346648ccb433c270d24b16ce1b39a791f3a8b77c4f09f",
+      "semantic_sha256": "477c74b04fe05eb7235fbdc5068d7a787f7f81ae546651bd7ae8bbaed5c66b29",
       "type_explicit": "(m k : Nat) \u2192 Real",
       "type_readable": "Nat \u2192 Nat \u2192 Real"
     },
