@@ -9,7 +9,6 @@ theorem p09_t3_multidimensional_rms_error_bound
     {m : ℕ} [NeZero m]
     (plan : P09MultidimensionalFftPlan m) (γ : ℝ)
     (family : P09AsymptoticMultidimensionalFftFamily plan γ)
-    (axisBounds : P09TheoremTwoLocalAsymptotic family)
     (hexactOutput : 0 < p09MultiRms (p09FamilyMultiExactOutput family)) :
     ∃ secondOrderCoeff : ℝ, 0 ≤ secondOrderCoeff ∧
       ∃ radius : ℝ, 0 < radius ∧

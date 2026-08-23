@@ -2207,6 +2207,53 @@ private lemma p09PrimitiveTwiddleSecondOrderCoeff_nonneg
           (p09GrowthEnvelope_nonneg plan hγ i.val))))
     (Real.sqrt_nonneg _)
 
+/-- The data-independent second-order factor contributed by one mixed-radix
+stage in the operation-level proof of Theorem 1(a). -/
+noncomputable def p09PrimitiveFftStageSecondOrderBudget
+    {n : ℕ} [NeZero n] (plan : P09MixedRadixFftPlan n) (γ : ℝ)
+    (i : Fin plan.stageCount) : ℝ :=
+  (p09Alpha (plan.stage i).radix γ *
+        p09GrowthEnvelope plan γ i.val +
+      p09BlockVectorSecondOrder (plan.stage i).radix γ *
+        (1 + p09GrowthEnvelope plan γ i.val)) +
+    (p09TwiddleFirstOrderBudget plan γ i *
+        p09GrowthEnvelope plan γ i.val +
+      p09TwiddlePropagatedSecondOrder plan γ i *
+        (1 + p09GrowthEnvelope plan γ i.val))
+
+theorem p09PrimitiveFftStageSecondOrderBudget_nonneg
+    {n : ℕ} [NeZero n] (plan : P09MixedRadixFftPlan n) {γ : ℝ}
+    (hγ : 0 ≤ γ) (i : Fin plan.stageCount) :
+    0 ≤ p09PrimitiveFftStageSecondOrderBudget plan γ i := by
+  unfold p09PrimitiveFftStageSecondOrderBudget
+  exact add_nonneg
+    (add_nonneg
+      (mul_nonneg (p09Alpha_nonneg _ hγ)
+        (p09GrowthEnvelope_nonneg plan hγ i.val))
+      (mul_nonneg (p09BlockVectorSecondOrder_nonneg _ hγ)
+        (add_nonneg (by norm_num)
+          (p09GrowthEnvelope_nonneg plan hγ i.val))))
+    (add_nonneg
+      (mul_nonneg (p09TwiddleFirstOrderBudget_nonneg plan hγ i)
+        (p09GrowthEnvelope_nonneg plan hγ i.val))
+      (mul_nonneg (p09TwiddlePropagatedSecondOrder_nonneg plan hγ i)
+        (add_nonneg (by norm_num)
+          (p09GrowthEnvelope_nonneg plan hγ i.val))))
+
+/-- The data-independent second-order factor in the operation-level
+one-dimensional FFT estimate. -/
+noncomputable def p09PrimitiveFftSecondOrderBudget
+    {n : ℕ} [NeZero n] (plan : P09MixedRadixFftPlan n) (γ : ℝ) : ℝ :=
+  ∑ i : Fin plan.stageCount,
+    p09PrimitiveFftStageSecondOrderBudget plan γ i
+
+theorem p09PrimitiveFftSecondOrderBudget_nonneg
+    {n : ℕ} [NeZero n] (plan : P09MixedRadixFftPlan n) {γ : ℝ}
+    (hγ : 0 ≤ γ) :
+    0 ≤ p09PrimitiveFftSecondOrderBudget plan γ := by
+  exact Finset.sum_nonneg fun i _ ↦
+    p09PrimitiveFftStageSecondOrderBudget_nonneg plan hγ i
+
 private lemma p09PrimitiveBlockRmsBound
     {n : ℕ} [NeZero n] {plan : P09MixedRadixFftPlan n}
     {model : P09WilkinsonModel} (run : P09MixedRadixFftRun plan model)
@@ -2240,6 +2287,368 @@ private lemma p09PrimitiveTwiddleRmsBound
     (p09TwiddleFirstOrderBudget_nonneg plan model.gamma_nonneg i)
     (p09TwiddlePropagatedSecondOrder_nonneg plan model.gamma_nonneg i)
     hεone (p09_norm_propagatedFftTwiddleError_le run i hεone)
+
+/-- Theorem 1(a)'s operation-level estimate for one concrete represented
+fiber. Its second-order coefficient is explicit and scales with the fiber
+norm, so it can be summed uniformly in the multidimensional proof. -/
+theorem p09RoundedFftRmsError_le
+    {n : ℕ} [NeZero n] (plan : P09MixedRadixFftPlan n)
+    (model : P09WilkinsonModel) (input : ZMod n → ℂ)
+    (hεone : model.epsilon ≤ 1) :
+    p09ComplexRms
+        (p09ComplexVecSub (p09RoundedFftApply plan model input)
+          (p09FourierTransform input)) ≤
+      model.epsilon * Real.sqrt (n : ℝ) * p09K plan model.gamma *
+          p09ComplexRms input +
+        (p09PrimitiveFftSecondOrderBudget plan model.gamma *
+          p09ComplexNorm2 input) * model.epsilon ^ 2 := by
+  let run := p09CanonicalFftRun plan model input
+  have hεone' : (p09ModelWithExactInput model).epsilon ≤ 1 := by
+    simpa [p09ModelWithExactInput] using hεone
+  have hstage (i : Fin plan.stageCount) :
+      p09ComplexRms (p09PropagatedFftStageError run i) ≤
+        model.epsilon * Real.sqrt (n : ℝ) *
+            p09StageFirstOrderBudget plan model.gamma i *
+            p09ComplexRms input +
+          (p09PrimitiveFftStageSecondOrderBudget plan model.gamma i *
+            p09ComplexNorm2 input) * model.epsilon ^ 2 := by
+    rw [p09PropagatedFftStageError_eq_block_add_twiddle]
+    have hblock := p09PrimitiveBlockRmsBound run i hεone'
+    have htwiddle := p09PrimitiveTwiddleRmsBound run i hεone'
+    simp only [run, p09CanonicalFftRun, p09ModelWithExactInput] at hblock htwiddle
+    calc
+      p09ComplexRms
+          (p09ComplexVecAdd (p09PropagatedFftBlockError run i)
+            (p09PropagatedFftTwiddleError run i)) ≤
+          p09ComplexRms (p09PropagatedFftBlockError run i) +
+            p09ComplexRms (p09PropagatedFftTwiddleError run i) :=
+        p09ComplexRms_add_le _ _
+      _ ≤
+          (model.epsilon * Real.sqrt (n : ℝ) *
+                p09Alpha (plan.stage i).radix model.gamma *
+                p09ComplexRms input +
+              p09PrimitiveBlockSecondOrderCoeff plan model.gamma input i *
+                model.epsilon ^ 2) +
+            (model.epsilon * Real.sqrt (n : ℝ) *
+                p09TwiddleFirstOrderBudget plan model.gamma i *
+                p09ComplexRms input +
+              p09PrimitiveTwiddleSecondOrderCoeff plan model.gamma input i *
+                model.epsilon ^ 2) :=
+        add_le_add hblock htwiddle
+      _ = model.epsilon * Real.sqrt (n : ℝ) *
+              p09StageFirstOrderBudget plan model.gamma i *
+              p09ComplexRms input +
+            (p09PrimitiveFftStageSecondOrderBudget plan model.gamma i *
+              p09ComplexNorm2 input) * model.epsilon ^ 2 := by
+        unfold p09StageFirstOrderBudget
+          p09PrimitiveFftStageSecondOrderBudget
+          p09PrimitiveBlockSecondOrderCoeff
+          p09PrimitiveTwiddleSecondOrderCoeff
+        ring
+  have hglobal := p09FftErrorRms_le_stage_sum run
+  have houtput : p09FftComputedOutput run =
+      p09RoundedFftApply plan model input := by
+    dsimp only [run]
+    exact p09CanonicalFftRun_computed_output plan model input
+  have hinput : run.input = input := by rfl
+  have hglobal' :
+      p09ComplexRms
+          (p09ComplexVecSub (p09RoundedFftApply plan model input)
+            (p09FourierTransform input)) ≤
+        ∑ i : Fin plan.stageCount,
+          p09ComplexRms (p09PropagatedFftStageError run i) := by
+    unfold p09FftRoundoffError at hglobal
+    rw [hinput, houtput] at hglobal
+    exact hglobal
+  exact hglobal'.trans <| by
+    calc
+      (∑ i : Fin plan.stageCount,
+          p09ComplexRms (p09PropagatedFftStageError run i)) ≤
+          ∑ i : Fin plan.stageCount,
+            (model.epsilon * Real.sqrt (n : ℝ) *
+                p09StageFirstOrderBudget plan model.gamma i *
+                p09ComplexRms input +
+              (p09PrimitiveFftStageSecondOrderBudget plan model.gamma i *
+                p09ComplexNorm2 input) * model.epsilon ^ 2) :=
+        Finset.sum_le_sum fun i _ ↦ hstage i
+      _ = model.epsilon * Real.sqrt (n : ℝ) *
+              (∑ i : Fin plan.stageCount,
+                p09StageFirstOrderBudget plan model.gamma i) *
+              p09ComplexRms input +
+            ((∑ i : Fin plan.stageCount,
+                p09PrimitiveFftStageSecondOrderBudget plan model.gamma i) *
+              p09ComplexNorm2 input) * model.epsilon ^ 2 := by
+        simp only [Finset.sum_add_distrib, ← Finset.mul_sum,
+          ← Finset.sum_mul]
+      _ = model.epsilon * Real.sqrt (n : ℝ) * p09K plan model.gamma *
+              p09ComplexRms input +
+            (p09PrimitiveFftSecondOrderBudget plan model.gamma *
+              p09ComplexNorm2 input) * model.epsilon ^ 2 := by
+        rw [p09StageFirstOrderBudget_sum_eq_k]
+        rfl
+
+/-- The relative norm coefficient obtained from the concrete one-dimensional
+FFT estimate. -/
+noncomputable def p09RoundedFftErrorCoefficient
+    {n : ℕ} [NeZero n] (plan : P09MixedRadixFftPlan n)
+    (model : P09WilkinsonModel) : ℝ :=
+  model.epsilon * p09K plan model.gamma +
+    p09PrimitiveFftSecondOrderBudget plan model.gamma * model.epsilon ^ 2
+
+theorem p09RoundedFftErrorCoefficient_nonneg
+    {n : ℕ} [NeZero n] (plan : P09MixedRadixFftPlan n)
+    (model : P09WilkinsonModel) :
+    0 ≤ p09RoundedFftErrorCoefficient plan model := by
+  have hstage : ∀ i : Fin plan.stageCount,
+      0 ≤ p09StageFirstOrderBudget plan model.gamma i := by
+    intro i
+    exact add_nonneg (p09Alpha_nonneg _ model.gamma_nonneg)
+      (p09TwiddleFirstOrderBudget_nonneg plan model.gamma_nonneg i)
+  have hk : 0 ≤ p09K plan model.gamma := by
+    rw [← p09StageFirstOrderBudget_sum_eq_k]
+    exact Finset.sum_nonneg fun i _ ↦ hstage i
+  unfold p09RoundedFftErrorCoefficient
+  exact add_nonneg
+    (mul_nonneg model.epsilon_pos.le hk)
+    (mul_nonneg
+      (p09PrimitiveFftSecondOrderBudget_nonneg plan model.gamma_nonneg)
+      (sq_nonneg _))
+
+/-- The concrete one-dimensional estimate in norm-relative form. -/
+theorem p09RoundedFftNormError_le
+    {n : ℕ} [NeZero n] (plan : P09MixedRadixFftPlan n)
+    (model : P09WilkinsonModel) (input : ZMod n → ℂ)
+    (hεone : model.epsilon ≤ 1) :
+    p09ComplexNorm2
+        (p09ComplexVecSub (p09RoundedFftApply plan model input)
+          (p09FourierTransform input)) ≤
+      p09RoundedFftErrorCoefficient plan model *
+        p09ComplexNorm2 (p09FourierTransform input) := by
+  have hn : 0 < n := Nat.pos_of_ne_zero (NeZero.ne n)
+  have hsqrt : 0 < Real.sqrt (n : ℝ) :=
+    Real.sqrt_pos.2 (Nat.cast_pos.2 hn)
+  have hrms := p09RoundedFftRmsError_le plan model input hεone
+  unfold p09ComplexRms at hrms
+  have hnorm := (div_le_iff₀ hsqrt).mp hrms
+  calc
+    p09ComplexNorm2
+        (p09ComplexVecSub (p09RoundedFftApply plan model input)
+          (p09FourierTransform input)) ≤
+        (model.epsilon * Real.sqrt (n : ℝ) *
+              p09K plan model.gamma *
+              (p09ComplexNorm2 input / Real.sqrt (n : ℝ)) +
+            p09PrimitiveFftSecondOrderBudget plan model.gamma *
+              p09ComplexNorm2 input * model.epsilon ^ 2) *
+          Real.sqrt (n : ℝ) := hnorm
+    _ = p09RoundedFftErrorCoefficient plan model *
+        p09ComplexNorm2 (p09FourierTransform input) := by
+      rw [p09ComplexNorm2_fourier plan]
+      unfold p09RoundedFftErrorCoefficient
+      field_simp [ne_of_gt hsqrt]
+      <;> ring
+
+private abbrev P09AxisFiberBase {m : ℕ}
+    (axis : Fin m → P09FftAxis) (i : Fin m) :=
+  {index : P09MultiIndex axis // index i = 0}
+
+private noncomputable def p09AxisFiberEquiv {m : ℕ}
+    (axis : Fin m → P09FftAxis) (i : Fin m) :
+    P09AxisFiberBase axis i × ZMod (axis i).order ≃ P09MultiIndex axis where
+  toFun pair := Function.update pair.1.1 i pair.2
+  invFun index :=
+    (⟨Function.update index i 0, by simp⟩, index i)
+  left_inv pair := by
+    apply Prod.ext
+    · apply Subtype.ext
+      funext k
+      by_cases hki : k = i
+      · subst k
+        simp [pair.1.2]
+      · simp [Function.update, hki]
+    · simp
+  right_inv index := by
+    funext k
+    by_cases hki : k = i
+    · subst k
+      simp
+    · simp [Function.update, hki]
+
+private lemma p09MultiNorm2_le_mul_of_axis_fiber_bound {m : ℕ}
+    {axis : Fin m → P09FftAxis} (i : Fin m)
+    [NeZero (axis i).order]
+    (x error : P09MultiArray axis) {coefficient : ℝ}
+    (hcoefficient : 0 ≤ coefficient)
+    (hfiber : ∀ base : P09AxisFiberBase axis i,
+      p09ComplexNorm2
+          (fun j ↦ error (Function.update base.1 i j)) ≤
+        coefficient * p09ComplexNorm2
+          (fun j ↦ x (Function.update base.1 i j))) :
+    p09MultiNorm2 error ≤ coefficient * p09MultiNorm2 x := by
+  letI (j : Fin m) : NeZero (axis j).order :=
+    ⟨Nat.ne_of_gt (axis j).order_pos⟩
+  let reindex := p09AxisFiberEquiv axis i
+  have hfiberSq (base : P09AxisFiberBase axis i) :
+      (∑ j : ZMod (axis i).order,
+          ‖error (Function.update base.1 i j)‖ ^ 2) ≤
+        coefficient ^ 2 *
+          ∑ j : ZMod (axis i).order,
+            ‖x (Function.update base.1 i j)‖ ^ 2 := by
+    have h := hfiber base
+    unfold p09ComplexNorm2 p09ComplexNorm2Sq at h
+    have hleft : 0 ≤ Real.sqrt
+        (∑ j : ZMod (axis i).order,
+          ‖error (Function.update base.1 i j)‖ ^ 2) := Real.sqrt_nonneg _
+    have hright : 0 ≤ coefficient * Real.sqrt
+        (∑ j : ZMod (axis i).order,
+          ‖x (Function.update base.1 i j)‖ ^ 2) :=
+      mul_nonneg hcoefficient (Real.sqrt_nonneg _)
+    have hsq := (sq_le_sq₀ hleft hright).2 h
+    rw [Real.sq_sqrt (Finset.sum_nonneg fun _ _ ↦ sq_nonneg _),
+      mul_pow,
+      Real.sq_sqrt (Finset.sum_nonneg fun _ _ ↦ sq_nonneg _)] at hsq
+    exact hsq
+  have hsum :
+      (∑ index : P09MultiIndex axis, ‖error index‖ ^ 2) ≤
+        coefficient ^ 2 *
+          ∑ index : P09MultiIndex axis, ‖x index‖ ^ 2 := by
+    rw [← reindex.sum_comp, ← reindex.sum_comp]
+    simp only [Fintype.sum_prod_type]
+    calc
+      (∑ base : P09AxisFiberBase axis i,
+          ∑ j : ZMod (axis i).order,
+            ‖error (Function.update base.1 i j)‖ ^ 2) ≤
+          ∑ base : P09AxisFiberBase axis i,
+            coefficient ^ 2 *
+              ∑ j : ZMod (axis i).order,
+                ‖x (Function.update base.1 i j)‖ ^ 2 :=
+        Finset.sum_le_sum fun base _ ↦ hfiberSq base
+      _ = coefficient ^ 2 *
+          ∑ base : P09AxisFiberBase axis i,
+            ∑ j : ZMod (axis i).order,
+              ‖x (Function.update base.1 i j)‖ ^ 2 := by
+        rw [Finset.mul_sum]
+  unfold p09MultiNorm2
+  simp only [EuclideanSpace.norm_eq]
+  calc
+    Real.sqrt (∑ index : P09MultiIndex axis, ‖error index‖ ^ 2) ≤
+        Real.sqrt (coefficient ^ 2 *
+          ∑ index : P09MultiIndex axis, ‖x index‖ ^ 2) :=
+      Real.sqrt_le_sqrt hsum
+    _ = coefficient *
+        Real.sqrt (∑ index : P09MultiIndex axis, ‖x index‖ ^ 2) := by
+      rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq_eq_abs,
+        abs_of_nonneg hcoefficient]
+
+private lemma p09AxisLocalErrorFiber {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    (run : P09MultidimensionalFftRun plan model) (i : Fin m)
+    [NeZero (plan.axis i).order]
+    (base : P09AxisFiberBase plan.axis i) :
+    (fun k : ZMod (plan.axis i).order ↦
+        p09AxisLocalError run i (Function.update base.1 i k)) =
+      p09ComplexVecSub
+        (p09RoundedFftApply (plan.axis i).plan model
+          (fun j ↦ run.computedState i.succ
+            (Function.update base.1 i j)))
+        (p09FourierTransform
+          (fun j ↦ run.computedState i.succ
+            (Function.update base.1 i j))) := by
+  funext k
+  unfold p09AxisLocalError p09MultiVecSub
+  rw [run.stage_step i]
+  simp only [p09RoundedCoordinateTransform, p09CoordinateTransform,
+    p09ComplexVecSub, p09FourierTransform]
+  simp only [Function.update_self, Function.update_idem]
+
+private lemma p09CoordinateTransformFiber {m : ℕ}
+    (axis : Fin m → P09FftAxis) (i : Fin m)
+    [NeZero (axis i).order] (x : P09MultiArray axis)
+    (base : P09AxisFiberBase axis i) :
+    (fun k : ZMod (axis i).order ↦
+        p09CoordinateTransform axis i x (Function.update base.1 i k)) =
+      p09FourierTransform
+        (fun j ↦ x (Function.update base.1 i j)) := by
+  funext k
+  simp only [p09CoordinateTransform, p09FourierTransform,
+    Function.update_self, Function.update_idem]
+
+private lemma p09AxisLocalErrorNorm_le {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    (run : P09MultidimensionalFftRun plan model) (i : Fin m)
+    [NeZero (plan.axis i).order]
+    (hεone : model.epsilon ≤ 1) :
+    p09MultiNorm2 (p09AxisLocalError run i) ≤
+      p09RoundedFftErrorCoefficient (plan.axis i).plan model *
+        p09MultiNorm2
+          (p09CoordinateTransform plan.axis i
+            (run.computedState i.succ)) := by
+  apply p09MultiNorm2_le_mul_of_axis_fiber_bound i _ _
+    (p09RoundedFftErrorCoefficient_nonneg (plan.axis i).plan model)
+  intro base
+  rw [p09AxisLocalErrorFiber run i base,
+    p09CoordinateTransformFiber plan.axis i _ base]
+  exact p09RoundedFftNormError_le (plan.axis i).plan model _ hεone
+
+private lemma p09MultiCardinality_pos' {m : ℕ}
+    (axis : Fin m → P09FftAxis) :
+    0 < p09MultiCardinality axis := by
+  unfold p09MultiCardinality
+  exact Finset.prod_pos fun i _ ↦ (axis i).order_pos
+
+private lemma p09MultiRms_le_mul_of_norm_bound {m : ℕ}
+    {axis : Fin m → P09FftAxis} (x error : P09MultiArray axis)
+    {coefficient : ℝ}
+    (hnorm : p09MultiNorm2 error ≤ coefficient * p09MultiNorm2 x) :
+    p09MultiRms error ≤ coefficient * p09MultiRms x := by
+  have hcard : 0 < Real.sqrt (p09MultiCardinality axis : ℝ) :=
+    Real.sqrt_pos.2 (Nat.cast_pos.2 (p09MultiCardinality_pos' axis))
+  unfold p09MultiRms
+  calc
+    p09MultiNorm2 error / Real.sqrt (p09MultiCardinality axis : ℝ) ≤
+        (coefficient * p09MultiNorm2 x) /
+          Real.sqrt (p09MultiCardinality axis : ℝ) :=
+      (div_le_div_iff_of_pos_right hcard).2 hnorm
+    _ = coefficient *
+        (p09MultiNorm2 x / Real.sqrt (p09MultiCardinality axis : ℝ)) := by
+      ring
+
+private lemma p09ApplyCoordinatePrefix_succ_fin {m : ℕ}
+    (axis : Fin m → P09FftAxis) (i : Fin m)
+    (x : P09MultiArray axis) :
+    p09ApplyCoordinatePrefix axis (i.val + 1) x =
+      p09ApplyCoordinatePrefix axis i.val
+        (p09CoordinateTransform axis i x) := by
+  simp [p09ApplyCoordinatePrefix, p09CoordinateTransformNat, i.isLt]
+
+/-- Equations `(4.3)` and `(4.4)` for one generated coordinate execution,
+derived from the scalar Wilkinson model and the one-dimensional FFT analysis. -/
+theorem p09PropagatedAxisErrorRms_le_operations {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    (run : P09MultidimensionalFftRun plan model) (i : Fin m)
+    [NeZero (plan.axis i).order]
+    (hεone : model.epsilon ≤ 1) :
+    p09MultiRms (p09PropagatedAxisError run i) ≤
+      p09RoundedFftErrorCoefficient (plan.axis i).plan model *
+        p09PropagatedStageInputRms run i := by
+  let coefficient := p09RoundedFftErrorCoefficient (plan.axis i).plan model
+  have hlocalNorm := p09AxisLocalErrorNorm_le run i hεone
+  have hlocalRms :
+      p09MultiRms (p09AxisLocalError run i) ≤
+        coefficient * p09MultiRms
+          (p09CoordinateTransform plan.axis i
+            (run.computedState i.succ)) :=
+    p09MultiRms_le_mul_of_norm_bound _ _ hlocalNorm
+  have hscaleNonneg :
+      0 ≤ Real.sqrt
+        (p09PrefixOrderProduct plan.axis i.val (Nat.le_of_lt i.isLt) : ℝ) :=
+    Real.sqrt_nonneg _
+  have hscaled := mul_le_mul_of_nonneg_left hlocalRms hscaleNonneg
+  unfold p09PropagatedAxisError p09PropagatedStageInputRms
+  rw [plan.prefix_rms_scaling i.val (Nat.le_of_lt i.isLt),
+    p09ApplyCoordinatePrefix_succ_fin,
+    plan.prefix_rms_scaling i.val (Nat.le_of_lt i.isLt)]
+  dsimp only [coefficient] at hscaled ⊢
+  simpa [mul_assoc, mul_left_comm, mul_comm] using hscaled
 
 /-- The paper's local estimates `(3.7)` and `(3.8)`, derived from the scalar
 Wilkinson model and the operational mixed-radix kernels. -/

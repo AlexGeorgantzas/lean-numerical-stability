@@ -59,22 +59,28 @@ identified in section 6. The sentence on printed page 765 that also permits an
 `O(epsilon)` input-RMS change is a possible extension of the proof; it is not
 used as an unlinked alternative input certificate here.
 
-## One-axis hypotheses
+## Derived one-axis analysis
 
-`P09TheoremTwoLocalAsymptotic` contains only uniform applications of the
-one-dimensional Theorem 1 estimate. For each coordinate and every sufficiently
-small positive `epsilon`, equation (4.3), propagated through equation (4.4),
-bounds the RMS of the derived local error by
+The target accepts no local-error bound or theorem certificate from its
+caller. `p09PropagatedAxisErrorRms_le_operations` constructs the
+one-dimensional trace of each coordinate fiber from the same rounded roots,
+products, and sums used by `p09RoundedCoordinateTransform`. The operation-level
+proof of Theorem 1 then gives an explicit estimate for every fiber, and a
+finite-product norm argument combines the fibers. Equation (4.4) propagates
+that estimate through the preceding exact coordinate transforms.
+
+For each coordinate and `epsilon <= 1`, the derived estimate has the form
 
 ```text
-epsilon * K(N_l, gamma) * RMS(propagated computed stage input)
-  + C_l * epsilon^2.
+(epsilon * K(N_l, gamma) + B_l * epsilon^2)
+  * RMS(propagated computed stage input),
 ```
 
-The nonnegative `C_l` values and one positive radius are fixed before
-`epsilon`. The structure does not assume any intermediate-state approximation,
-telescoping identity, total-error estimate, or instance of the target
-conclusion.
+where `B_l` is an explicit nonnegative constant determined only by the fixed
+axis plan and `gamma`. The proof of the target derives the telescoping identity,
+bounds the generated intermediate states, solves the resulting small-epsilon
+recurrence, and absorbs the quadratic products into one coefficient fixed
+before `epsilon`.
 
 ## Target conclusion
 

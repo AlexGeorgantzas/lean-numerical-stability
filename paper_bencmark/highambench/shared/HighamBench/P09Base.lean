@@ -385,12 +385,74 @@ structure P09MixedRadixFftRun {n : ℕ} [NeZero n]
     stageState (i.val + 1) =
       p09RoundedMixedRadixStageApply model (plan.stage i) (stageState i.val)
 
+/-- The same arithmetic model with the current one-dimensional input treated
+as exactly represented. The FFT kernels do not inspect `flInput`; this model
+is used when Theorem 1 is applied to an intermediate multidimensional fiber. -/
+noncomputable def p09ModelWithExactInput (model : P09WilkinsonModel) :
+    P09WilkinsonModel where
+  epsilon := model.epsilon
+  epsilon_pos := model.epsilon_pos
+  gamma := model.gamma
+  gamma_nonneg := model.gamma_nonneg
+  flAdd := model.flAdd
+  flMul := model.flMul
+  flSin := model.flSin
+  flCos := model.flCos
+  flInput := id
+  add_model := model.add_model
+  mul_model := model.mul_model
+  sin_model := model.sin_model
+  cos_model := model.cos_model
+
+/-- The generated one-dimensional FFT state after the first `k` rounded
+mixed-radix stages. -/
+noncomputable def p09CanonicalFftStageState {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (model : P09WilkinsonModel)
+    (input : ZMod n → ℂ) (k : ℕ) : ZMod n → ℂ :=
+  ((List.ofFn plan.stage).take k).foldl
+    (fun state stage ↦
+      p09RoundedMixedRadixStageApply (p09ModelWithExactInput model) stage state)
+    input
+
+/-- The canonical trace of `p09RoundedFftApply` on one represented fiber. -/
+noncomputable def p09CanonicalFftRun {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (model : P09WilkinsonModel)
+    (input : ZMod n → ℂ) :
+    P09MixedRadixFftRun plan (p09ModelWithExactInput model) where
+  input := input
+  stageState := p09CanonicalFftStageState plan model input
+  input_exact := by simp [p09ModelWithExactInput]
+  initial_state := by simp [p09CanonicalFftStageState]
+  stage_step := by
+    intro i
+    unfold p09CanonicalFftStageState
+    rw [List.take_succ_eq_append_getElem]
+    · rw [List.foldl_append]
+      simp
+    · simpa using i.isLt
+
 /-- The computed output obtained after all rounded stages and the exact final
 permutation. -/
 def p09FftComputedOutput {n : ℕ} [NeZero n]
     {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
     (run : P09MixedRadixFftRun plan model) : ZMod n → ℂ :=
   p09Permute plan.finalPermutation (run.stageState plan.stageCount)
+
+/-- The canonical trace computes the operational FFT defined above. -/
+theorem p09CanonicalFftRun_computed_output {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (model : P09WilkinsonModel)
+    (input : ZMod n → ℂ) :
+    p09FftComputedOutput (p09CanonicalFftRun plan model input) =
+      p09RoundedFftApply plan model input := by
+  unfold p09FftComputedOutput p09CanonicalFftRun p09CanonicalFftStageState
+    p09RoundedFftApply p09ApplyRoundedMixedRadixStages
+  change p09Permute plan.finalPermutation
+      (((List.ofFn plan.stage).take plan.stageCount).foldl
+        (fun state stage ↦
+          p09RoundedMixedRadixStageApply (p09ModelWithExactInput model)
+            stage state) input) = _
+  rw [List.take_of_length_le (by simp)]
+  rfl
 
 /-- The exact output roundoff error of a linked FFT execution. -/
 noncomputable def p09FftRoundoffError {n : ℕ} [NeZero n]
@@ -654,7 +716,7 @@ lemma p09ComplexNorm2_add_le {n : ℕ} [NeZero n]
       simp [p09ComplexNorm2, p09ComplexNorm2Sq, toEuclidean,
         EuclideanSpace.norm_eq]
 
-private lemma p09ComplexRms_add_le {n : ℕ} [NeZero n]
+lemma p09ComplexRms_add_le {n : ℕ} [NeZero n]
     (x y : ZMod n → ℂ) :
     p09ComplexRms (p09ComplexVecAdd x y) ≤
       p09ComplexRms x + p09ComplexRms y := by
@@ -749,37 +811,45 @@ lemma p09ExactFftCompletion_final {n : ℕ} [NeZero n]
   · simp
 
 /-- The global FFT error is bounded by the sum of all propagated local errors. -/
+theorem p09FftErrorRms_le_stage_sum {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) :
+    p09ComplexRms (p09FftRoundoffError run) ≤
+      ∑ i : Fin plan.stageCount,
+        p09ComplexRms (p09PropagatedFftStageError run i) := by
+  have hbound := p09FftCompletionErrorRms_le_prefix run
+    plan.stageCount (Nat.le_refl _)
+  have hfinal : p09FftCompletionError run plan.stageCount =
+      p09FftRoundoffError run := by
+    unfold p09FftCompletionError p09FftRoundoffError p09FftComputedOutput
+    rw [p09ExactFftCompletion_final]
+  rw [hfinal] at hbound
+  have hsum :
+      (∑ i : Fin plan.stageCount,
+          p09ComplexRms (p09PropagatedFftStageError run i)) =
+        p09PrefixStageErrorRms run plan.stageCount := by
+    calc
+      (∑ i : Fin plan.stageCount,
+          p09ComplexRms (p09PropagatedFftStageError run i)) =
+          ∑ i : Fin plan.stageCount,
+            p09StageErrorRmsNat run i.val := by
+        apply Finset.sum_congr rfl
+        intro i _hi
+        simp [p09StageErrorRmsNat, i.isLt]
+      _ = ∑ k ∈ Finset.range plan.stageCount,
+            p09StageErrorRmsNat run k :=
+        Fin.sum_univ_eq_sum_range _ _
+      _ = p09PrefixStageErrorRms run plan.stageCount := rfl
+  exact hbound.trans_eq hsum.symm
+
+/-- The family form of `p09FftErrorRms_le_stage_sum`. -/
 theorem p09FamilyErrorRms_le_stage_sum {n : ℕ} [NeZero n]
     {plan : P09MixedRadixFftPlan n} {γ : ℝ}
     (family : P09AsymptoticFftFamily plan γ) (ε : P09PositiveEpsilon) :
     p09ComplexRms (p09FamilyFftRoundoffError family ε) ≤
       ∑ i : Fin plan.stageCount,
-        p09ComplexRms (p09PropagatedFftStageError (family.run ε) i) := by
-  have hbound := p09FftCompletionErrorRms_le_prefix (family.run ε)
-    plan.stageCount (Nat.le_refl _)
-  have hfinal : p09FftCompletionError (family.run ε) plan.stageCount =
-      p09FamilyFftRoundoffError family ε := by
-    unfold p09FftCompletionError p09FamilyFftRoundoffError
-      p09FftRoundoffError p09FftComputedOutput
-    rw [p09ExactFftCompletion_final]
-  rw [hfinal] at hbound
-  have hsum :
-      (∑ i : Fin plan.stageCount,
-          p09ComplexRms (p09PropagatedFftStageError (family.run ε) i)) =
-        p09PrefixStageErrorRms (family.run ε) plan.stageCount := by
-    calc
-      (∑ i : Fin plan.stageCount,
-          p09ComplexRms (p09PropagatedFftStageError (family.run ε) i)) =
-          ∑ i : Fin plan.stageCount,
-            p09StageErrorRmsNat (family.run ε) i.val := by
-        apply Finset.sum_congr rfl
-        intro i _hi
-        simp [p09StageErrorRmsNat, i.isLt]
-      _ = ∑ k ∈ Finset.range plan.stageCount,
-            p09StageErrorRmsNat (family.run ε) k :=
-        Fin.sum_univ_eq_sum_range _ _
-      _ = p09PrefixStageErrorRms (family.run ε) plan.stageCount := rfl
-  exact hbound.trans_eq hsum.symm
+        p09ComplexRms (p09PropagatedFftStageError (family.run ε) i) :=
+  p09FftErrorRms_le_stage_sum (family.run ε)
 
 /-- The first-order contribution of the separately evaluated twiddle in
 equation `(3.8)`, after propagation to the original input scale. -/
@@ -842,6 +912,13 @@ private lemma p09StageFirstOrderBudget_sum {n : ℕ} [NeZero n]
     _ = ((plan.stageCount : ℝ) - 1) * (3 + 2 * γ) := by
       simpa [c] using p09SumRangeBeforeLast plan.stageCount
         plan.stageCount_pos c
+
+/-- The stagewise first-order budgets sum to Ramos's `K(N,gamma)`. -/
+theorem p09StageFirstOrderBudget_sum_eq_k {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (γ : ℝ) :
+    (∑ i : Fin plan.stageCount, p09StageFirstOrderBudget plan γ i) =
+      p09K plan γ :=
+  p09StageFirstOrderBudget_sum plan γ
 
 /-- The separate block and twiddle estimates `(3.7)` and `(3.8)` for one fixed
 operational execution family. The error vectors themselves are derived above
@@ -981,6 +1058,9 @@ structure P09FftAxis where
   order : ℕ
   order_pos : 0 < order
   plan : @P09MixedRadixFftPlan order ⟨Nat.ne_of_gt order_pos⟩
+
+instance p09FftAxisOrderNeZero (axis : P09FftAxis) : NeZero axis.order :=
+  ⟨Nat.ne_of_gt axis.order_pos⟩
 
 /-- The one-dimensional Theorem 1 constant for a packaged axis. -/
 noncomputable def p09AxisK (axis : P09FftAxis) (γ : ℝ) : ℝ :=
@@ -1166,31 +1246,5 @@ noncomputable def p09FamilyMultiFftRoundoffError {m : ℕ} [NeZero m]
     (ε : P09PositiveEpsilon) : P09MultiArray plan.axis :=
   p09MultiVecSub (p09MultiComputedOutput (family.run ε))
     (p09FamilyMultiExactOutput family)
-
-/-- Uniform applications of the one-dimensional Theorem 1 estimate to every
-coordinate in an operational multidimensional family. Equation `(4.4)` has
-already propagated each local estimate through the preceding exact coordinate
-transforms. No intermediate-state or final multidimensional estimate is a
-field of this structure. -/
-structure P09TheoremTwoLocalAsymptotic {m : ℕ} [NeZero m]
-    {plan : P09MultidimensionalFftPlan m} {γ : ℝ}
-    (family : P09AsymptoticMultidimensionalFftFamily plan γ) where
-  localSecondOrderCoeff : Fin m → ℝ
-  local_second_order_nonneg : ∀ i, 0 ≤ localSecondOrderCoeff i
-  radius : ℝ
-  radius_pos : 0 < radius
-  local_error_bound : ∀ (ε : P09PositiveEpsilon), ε.1 ≤ radius →
-    ∀ i : Fin m,
-      p09MultiRms (p09PropagatedAxisError (family.run ε) i) ≤
-        ε.1 * p09AxisK (plan.axis i) γ *
-            p09PropagatedStageInputRms (family.run ε) i +
-          localSecondOrderCoeff i * ε.1 ^ 2
-
-/-- Sum of the uniform propagated local second-order coefficients. -/
-noncomputable def p09TheoremTwoLocalRemainderSum {m : ℕ} [NeZero m]
-    {plan : P09MultidimensionalFftPlan m} {γ : ℝ}
-    {family : P09AsymptoticMultidimensionalFftFamily plan γ}
-    (axisBounds : P09TheoremTwoLocalAsymptotic family) : ℝ :=
-  ∑ i : Fin m, axisBounds.localSecondOrderCoeff i
 
 end HighamBench
