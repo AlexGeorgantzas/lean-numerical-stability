@@ -7,213 +7,176 @@
     {
       "pdf_page": 3,
       "printed_page": "953",
-      "anchor": "Section 2.1, equations (2.2)-(2.4)",
-      "observation": "The paper distinguishes a dense matrix A from its BLR representation A_tilde, uses p by p blocks of size b by b with n = pb, leaves diagonal blocks uncompressed, specifies the two off-diagonal low-rank factor orientations, requires orthonormal columns in X_ij, chooses minimum admissible block ranks, defines local and global thresholds, and declares the analysis normwise in the Frobenius norm. [PDF p. 3, printed p. 953, Section 2.1 and eqs. (2.2)-(2.4)]"
+      "anchor": "Section 2.1, LR factor representation and Frobenius norm convention",
+      "observation": "At this anchor, an LR approximation is represented as A_tilde = XY^T with X having orthonormal columns. The unsubscripted norm is defined to be the Frobenius norm, and the analysis is explicitly normwise. [PDF p. 3, printed p. 953; anchor: LR representation and Frobenius norm convention]"
     },
     {
       "pdf_page": 4,
       "printed_page": "954",
-      "anchor": "Frobenius-norm continuation, equation (2.5), and gamma definition",
-      "observation": "The Frobenius norm is related to block norms by the square root of the sum of squared block norms. Floating-point operations satisfy fl(x op y) = (x op y)(1 + delta), |delta| <= u, and gamma_k = ku/(1-ku) for ku < 1; the stated gamma relations also permit noninteger indices. [PDF p. 4, printed p. 954, Frobenius-norm continuation and eq. (2.5)]"
+      "anchor": "Continuation of the Frobenius norm properties",
+      "observation": "The Frobenius norm is submultiplicative, invariant under multiplication by a matrix with orthonormal columns, and satisfies the blockwise-to-global identity. Orthonormal columns require X^T X = I but not XX^T = I. [PDF p. 4, printed p. 954; anchor: continuation of Frobenius norm properties]"
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "954",
+      "anchor": "Equation (2.5) and the definition of gamma_k",
+      "observation": "The arithmetic model is fl(x op y) = (x op y)(1+delta), |delta| <= u, for op in {+, -, multiplication, division}. The paper defines gamma_k = ku/(1-ku) when ku < 1 and permits non-integer gamma indices. [PDF p. 4, printed p. 954; anchor: equation (2.5) and gamma_k definition]"
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "954",
+      "anchor": "Lemma 2.1, equation (2.7)",
+      "observation": "For a conventional matrix product with inner dimension b, the computed product satisfies C_hat = AB + Delta C and ||Delta C|| <= gamma_b ||A|| ||B||. [PDF p. 4, printed p. 954; anchor: Lemma 2.1, equation (2.7)]"
     },
     {
       "pdf_page": 5,
       "printed_page": "955",
-      "anchor": "Assumption 2.1",
-      "observation": "Computed truncated-SVD blocks satisfy A_tilde_ij = A_ij + Delta A_ij with ||Delta A_ij|| <= epsilon beta_ij, rounding errors in the compression are ignored, and the standing analysis assumes unit roundoff u safely smaller than epsilon. [PDF p. 5, printed p. 955, Assumption 2.1]"
+      "anchor": "Assumption 2.1 and its following paragraph",
+      "observation": "The analysis assumes LR approximations satisfy normwise truncation bounds while rounding in their truncated-SVD construction is ignored. It also assumes throughout that unit roundoff u is safely smaller than the LR threshold epsilon. [PDF p. 5, printed p. 955; anchor: Assumption 2.1 and following paragraph]"
     },
     {
-      "pdf_page": 12,
-      "printed_page": "962",
-      "anchor": "Opening of Section 4 and definition of r",
-      "observation": "Section 4 defines r as the largest rank among off-diagonal blocks of the BLR LU factors; r can exceed the BLR rank of the input and is determined by the matrix and threshold rather than chosen independently. [PDF p. 12, printed p. 962, opening of Section 4]"
+      "pdf_page": 7,
+      "printed_page": "957",
+      "anchor": "Lemma 3.2, equations (3.5)-(3.6)",
+      "observation": "Lemma 3.2 supplies the cross-referenced forward-error bound for multiplying an LR matrix by a full matrix, with constant b+r^(3/2). [PDF p. 7, printed p. 957; anchor: Lemma 3.2, equations (3.5)-(3.6)]"
     },
     {
-      "pdf_page": 13,
-      "printed_page": "963",
-      "anchor": "Algorithm 1 and Theorem 4.1",
-      "observation": "Algorithm 1 is the UFC update-factor-compress trace. Theorem 4.1 assumes a nonsingular real matrix partitioned into p squared blocks of order b and requires Algorithm 1 to run to completion before asserting a computed BLR factorization bound. [PDF p. 13, printed p. 963, Algorithm 1 and Theorem 4.1]"
+      "pdf_page": 8,
+      "printed_page": "958",
+      "anchor": "Paragraph beginning 'It is important to note that Lemma 3.1'",
+      "observation": "The paper states that its results provide normwise, rather than componentwise, error bounds because LR approximations do not provide useful componentwise bounds. [PDF p. 8, printed p. 958; anchor: paragraph on normwise error bounds]"
     },
     {
-      "pdf_page": 17,
-      "printed_page": "967",
-      "anchor": "Equations (4.13)-(4.15)",
-      "observation": "For UFC, the paper introduces scaled local and global compression parameters that remove diagonal-factor norms from the truncation bound; these yield xi_p = 1 and xi_p = p without intermediate recompressions. [PDF p. 17, printed p. 967, eqs. (4.13)-(4.15)]"
+      "pdf_page": 9,
+      "printed_page": "959",
+      "anchor": "Lemma 3.3 and equations (3.10)-(3.11)",
+      "observation": "Lemma 3.3 specifies real b-by-b matrices A and B, shared-rank factors A_tilde = X_A Y_A^T and B_tilde = Y_B X_B^T, orthonormal columns in X_A and X_B, two truncation bounds, two permitted evaluation orders, and the two stated forward-error bounds with c = b+2r^(3/2). [PDF p. 9, printed p. 959; anchor: Lemma 3.3 and equations (3.10)-(3.11)]"
     },
     {
-      "pdf_page": 19,
-      "printed_page": "969",
-      "anchor": "Table 1 and Theorem 4.2",
-      "observation": "Table 1 gives xi_p as 1, p, p, and p^2/sqrt(6) for, respectively, local without recompression, global without recompression, local with recompression, and global with recompression. Theorem 4.2 gives the UFC predecessor bound with c = b + 2r^(3/2) + p. [PDF p. 19, printed p. 969, Table 1 and Theorem 4.2, eq. (4.16)]"
+      "pdf_page": 9,
+      "printed_page": "959",
+      "anchor": "Proof of Lemma 3.3, first intermediate product",
+      "observation": "For the first parenthesization, the proof applies Lemma 3.2 to W = A_tilde Y_B and obtains ||Delta W|| <= gamma_(b+r^(3/2)) ||A_tilde|| ||B_tilde||. The second parenthesization is declared analogous. [PDF p. 9, printed p. 959; anchor: proof of Lemma 3.3, first intermediate product]"
     },
     {
-      "pdf_page": 21,
-      "printed_page": "971",
-      "anchor": "Algorithm 2 and Theorem 4.3",
-      "observation": "Algorithm 2 is the UCF update-compress-factor trace. Theorem 4.3 assumes a nonsingular real matrix, a p squared block partition of order b, and successful completion, and supplies the same form of factorization predecessor bound with xi_p from Table 1. [PDF p. 21, printed p. 971, Algorithm 2 and Theorem 4.3, eq. (4.17)]"
+      "pdf_page": 10,
+      "printed_page": "960",
+      "anchor": "Proof of Lemma 3.3, final multiplication and replacement by A+E_A and B+E_B",
+      "observation": "The final multiplication by X_B^T is bounded, the accumulated floating-point error F is reduced to gamma_c ||A_tilde|| ||B_tilde||, and replacing A_tilde and B_tilde by A+E_A and B+E_B yields equation (3.11), including all epsilon and gamma_c cross terms. [PDF p. 10, printed p. 960; anchor: proof completion of Lemma 3.3]"
     },
     {
-      "pdf_page": 23,
-      "printed_page": "973",
-      "anchor": "Theorem 4.4 and equation (4.21)",
-      "observation": "Theorem 4.4 analyzes block triangular substitution for a triangular BLR matrix and gives (T_tilde + Delta T_tilde)x_hat = v + Delta v, with ||Delta T_tilde|| <= gamma_c||T_tilde|| and ||Delta v|| <= gamma_p||v||, where its local constant is c = b + r^(3/2) + p. [PDF p. 23, printed p. 973, Theorem 4.4 and eq. (4.21)]"
-    },
-    {
-      "pdf_page": 24,
-      "printed_page": "974",
-      "anchor": "Equation (4.22) and Theorem 4.5, equations (4.23)-(4.25)",
-      "observation": "Equation (4.22) records the blockwise lower-triangular execution. Theorem 4.5 explicitly binds A_tilde but then writes the system and conclusions using unadorned A; it states the perturbed equation and both norm bounds, with c = b + 2r^(3/2) + p and xi_p from Table 1. [PDF p. 24, printed p. 974, eq. (4.22) and Theorem 4.5, eqs. (4.23)-(4.25)]"
-    },
-    {
-      "pdf_page": 25,
-      "printed_page": "975",
-      "anchor": "Proof of Theorem 4.5",
-      "observation": "The proof composes the factorization perturbation with perturbations from the two triangular solves by exact products, then bounds the final matrix perturbation using gamma_3c plus O(u epsilon) and the final right-hand-side perturbation using gamma_p plus O(u^2). [PDF p. 25, printed p. 975, proof of Theorem 4.5]"
+      "pdf_page": 10,
+      "printed_page": "960",
+      "anchor": "Equation (3.12) and transition to intermediate recompression",
+      "observation": "Immediately after Lemma 3.3, the paper gives the specialization beta_A = ||A|| and beta_B = ||B||, then introduces intermediate recompression as a separate algorithm covered by Lemma 3.4 rather than Lemma 3.3. [PDF p. 10, printed p. 960; anchor: equation (3.12) and recompression transition]"
     }
   ],
   "statement": {
     "binders": [
-      "Theorem 4.5 explicitly binds A_tilde in R^(n by n), described as a pb by pb BLR matrix, and v in R^n. [PDF p. 24, printed p. 974, Theorem 4.5 opening sentence]",
-      "The unadorned A occurring in Ax = v and equations (4.23)-(4.24) is not separately bound in Theorem 4.5; Section 2.1 defines A as the dense matrix represented by A_tilde. [PDF p. 3, printed p. 953, eq. (2.2); PDF p. 24, printed p. 974, Theorem 4.5 and eqs. (4.23)-(4.24)]",
-      "The inherited block parameters are p and b with p by p blocks, each of size b by b, and n = pb. [PDF p. 3, printed p. 953, discussion following eq. (2.3)]",
-      "epsilon > 0 is the LR threshold, u is the unit roundoff, and beta_ij specifies the scale of each compression error. [PDF p. 3, printed p. 953, eq. (2.4); PDF p. 4, printed p. 954, eq. (2.5)]",
-      "r is the maximum off-diagonal rank in the computed BLR LU factors, not the input BLR rank. [PDF p. 12, printed p. 962, opening definition of r]",
-      "For each admissible input and successful permitted execution producing L_tilde, U_tilde, y_hat, and x_hat, the conclusion introduces final perturbations Delta A and Delta v after those computed quantities are fixed. [PDF p. 24, printed p. 974, Theorem 4.5, eqs. (4.23)-(4.25); PDF p. 25, printed p. 975, proof of Theorem 4.5]"
+      "Explicitly, A and B are real b-by-b matrices, A_tilde = X_A Y_A^T, and B_tilde = Y_B X_B^T. The displayed dimensions make X_A, Y_A, Y_B, and X_B b-by-r matrices. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 factor display]",
+      "The two approximations use the same rank parameter r and the same LR threshold epsilon, with scaling parameters beta_A and beta_B. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 hypotheses]",
+      "C denotes the exact LR product A_tilde B_tilde, while C_hat denotes the result produced in floating-point arithmetic. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 computation clause]",
+      "The roundoff parameter is u, gamma_k = ku/(1-ku), and the lemma sets c = b+2r^(3/2). [PDF p. 4, printed p. 954; anchor: gamma_k definition] [PDF p. 9, printed p. 959; anchor: equation (3.10)]"
     ],
     "hypotheses": [
-      "Explicitly, the system Ax = v is solved by first solving L_tilde y = v and then U_tilde x = y, where L_tilde and U_tilde are BLR LU factors computed by either Algorithm 1 or Algorithm 2. [PDF p. 24, printed p. 974, Theorem 4.5 opening sentence]",
-      "Inherited through Theorems 4.2 and 4.3, the underlying unadorned A is nonsingular and partitioned into p squared blocks of order b. [PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3]",
-      "Inherited through Theorems 4.2 and 4.3, the selected factorization algorithm must run to completion. [PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3]",
-      "Each off-diagonal compression obeys the truncated-SVD model A_tilde_ij = A_ij + Delta A_ij with ||Delta A_ij|| <= epsilon beta_ij. [PDF p. 5, printed p. 955, Assumption 2.1]",
-      "The standing analysis assumes u safely smaller than epsilon so that compression-rounding errors may be ignored relative to the prescribed truncation error. [PDF p. 5, printed p. 955, Assumption 2.1]",
-      "The triangular solves use the block-substitution operation analyzed in Theorem 4.4; for the displayed lower-triangular trace, x_i consists of entries (i-1)b+1 through ib and T_ii x_i is solved against v_i minus the sum over j = 1 through i-1. [PDF p. 23, printed p. 973, Theorem 4.4]",
-      "The gamma quantities used in the bounds are defined only in the regime ku < 1; in particular, the displayed gamma_p and gamma_3c require valid indices under that definition. [PDF p. 4, printed p. 954, gamma definition; PDF p. 24, printed p. 974, eqs. (4.24)-(4.25)]",
-      "A choice of local or global threshold and whether intermediate recompressions are performed determines xi_p through Table 1. [PDF p. 19, printed p. 969, Table 1]"
+      "X_A and X_B have orthonormal columns, equivalently X_A^T X_A = I_r and X_B^T X_B = I_r; no orthonormality condition is imposed on Y_A or Y_B. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 orthonormality clause]",
+      "The exact approximations satisfy ||A-A_tilde|| <= epsilon beta_A and ||B-B_tilde|| <= epsilon beta_B. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 approximation inequalities]",
+      "The product is evaluated using either (X_A(Y_A^T Y_B))X_B^T or X_A((Y_A^T Y_B)X_B^T), with the parentheses fixing the intermediate-product order. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 computation clause]",
+      "The standard floating-point model (2.5) and conventional matrix-product bound (2.7) are inherited by the computation. [PDF p. 4, printed p. 954; anchor: equation (2.5) and Lemma 2.1 equation (2.7)]",
+      "Because gamma_k is defined only for ku < 1, use of gamma_c inherits the condition cu < 1 for c = b+2r^(3/2). [PDF p. 4, printed p. 954; anchor: gamma_k definition] [PDF p. 9, printed p. 959; anchor: definition of c]",
+      "The paper's standing analysis assumption is that u is safely smaller than epsilon. [PDF p. 5, printed p. 955; anchor: paragraph following Assumption 2.1]"
     ],
     "conclusions": [
-      "There are final perturbations Delta A and Delta v such that (A + Delta A)x_hat = v + Delta v. [PDF p. 24, printed p. 974, eq. (4.23)]",
-      "The coefficient-matrix perturbation satisfies ||Delta A|| <= (xi_p epsilon + gamma_p)||A|| + gamma_(3c)||L_tilde||||U_tilde|| + O(u epsilon). [PDF p. 24, printed p. 974, eq. (4.24)]",
-      "The right-hand-side perturbation satisfies ||Delta v|| <= gamma_p(||v|| + ||L_tilde||||U_tilde||||x_hat||) + O(u^2). [PDF p. 24, printed p. 974, eq. (4.25)]",
-      "Writing the proof's perturbations with distinct names, the exact matrix-side composition is Delta A_final = Delta A_factor + Delta L U_tilde + L_tilde Delta U + Delta L Delta U. [PDF p. 25, printed p. 975, first exact product in the proof of Theorem 4.5]",
-      "With the same disambiguating renaming, the exact right-hand-side composition is Delta v_final = Delta v_lower + L_tilde Delta y_hat + Delta L Delta y_hat. [PDF p. 25, printed p. 975, second exact product in the proof of Theorem 4.5]"
+      "For either permitted evaluation order, ||C_hat-A_tilde B_tilde|| <= gamma_c ||A_tilde|| ||B_tilde||, where c = b+2r^(3/2). [PDF p. 9, printed p. 959; anchor: equation (3.10)]",
+      "Consequently, ||C_hat-AB|| <= gamma_c ||A|| ||B|| + epsilon(1+gamma_c)(beta_A||B|| + ||A||beta_B + epsilon beta_A beta_B). [PDF p. 9, printed p. 959; anchor: equation (3.11)]"
     ],
     "definitions_and_conventions": [
-      "A_tilde is defined in Section 2.1 as a BLR representation of a dense matrix A: diagonal blocks remain A_ii and off-diagonal blocks are replaced by low-rank approximations A_tilde_ij. [PDF p. 3, printed p. 953, eq. (2.2)]",
-      "For i > j, A_tilde_ij = X_ij Y_ij^T; for i < j, A_tilde_ij = Y_ij X_ij^T. Both X_ij and Y_ij are b by k_ij, and X_ij has orthonormal columns. [PDF p. 3, printed p. 953, eq. (2.3)]",
-      "The rank k_ij is the minimum ell_ij for which ||A_ij - A_tilde_ij|| <= epsilon beta_ij and rank(A_tilde_ij) = ell_ij. [PDF p. 3, printed p. 953, eq. (2.4)]",
-      "The base local threshold uses beta_ij = ||A_ij||, while the base global threshold uses beta_ij = ||A||. [PDF p. 3, printed p. 953, discussion following eq. (2.4)]",
-      "For UFC, the later simplified bounds use scaled local parameters beta_ik = ||A_ik||/||U_tilde_kk|| for i > k and beta_ik = ||A_ik||/||L_tilde_ii|| for i < k, or the analogous global parameters with ||A|| in the numerator. [PDF p. 17, printed p. 967, eqs. (4.13)-(4.15)]",
-      "With intermediate recompressions, an additional update error H_ik is accumulated, and Table 1 incorporates its effect into xi_p. [PDF p. 19, printed p. 969, Section 4.1.3 and Table 1]",
-      "A tilde denotes a BLR representation or BLR factor, while a hat denotes a computed solution or intermediate; in particular, L_tilde and U_tilde are computed BLR factors even though they are not written with hats. [PDF p. 13, printed p. 963, Algorithm 1 and Theorem 4.1; PDF p. 24, printed p. 974, Theorem 4.5]"
+      "Every unsubscripted matrix norm in the result is the Frobenius norm, not the spectral norm or a componentwise measure. [PDF p. 3, printed p. 953; anchor: Frobenius norm convention]",
+      "A matrix with orthonormal columns satisfies X^T X = I; it need not be square or satisfy XX^T = I. [PDF p. 4, printed p. 954; anchor: continuation of Frobenius norm properties]",
+      "The general LR-threshold setup treats epsilon as positive and uses positive beta scaling parameters; Lemma 3.3 itself states only the resulting approximation inequalities. [PDF p. 5, printed p. 955; anchor: Assumption 2.1] [PDF p. 9, printed p. 959; anchor: Lemma 3.3 hypotheses]",
+      "The immediately following specialization beta_A = ||A|| and beta_B = ||B|| gives ||C_hat-AB|| <= (2epsilon+epsilon^2+gamma_c(1+epsilon)^2)||A||||B||; this is equation (3.12), not an additional hypothesis of Lemma 3.3. [PDF p. 10, printed p. 960; anchor: equation (3.12)]"
     ],
     "implicit_context": [
-      "All matrices and vectors in the theorem chain are real. [PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3; PDF p. 24, printed p. 974, Theorem 4.5]",
-      "Nonsingularity and runs-to-completion are not restated in Theorem 4.5 but are inherited because its proof invokes Theorems 4.2 and 4.3. [PDF p. 24, printed p. 974, proof opening; PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3]",
-      "The block triangular solves must themselves complete with usable diagonal triangular blocks; Theorem 4.4's proof invokes the nonsingular triangular-solve model of Lemma 2.2. [PDF p. 4, printed p. 954, Lemma 2.2; PDF p. 23, printed p. 973, Theorem 4.4]",
-      "The final proof uses the larger factorization constant c = b + 2r^(3/2) + p for both triangular-solve perturbations, although Theorem 4.4 alone states the smaller b + r^(3/2) + p. [PDF p. 23, printed p. 973, eq. (4.21); PDF p. 24, printed p. 974, Theorem 4.5; PDF p. 25, printed p. 975, proof]",
-      "No bounded-growth condition on ||L_tilde||||U_tilde|| is imposed in the theorem; that factor remains explicit in both final bounds. [PDF p. 24, printed p. 974, eqs. (4.24)-(4.25)]",
-      "The source's dense-A versus BLR-A_tilde notation must remain unresolved because Theorem 4.5 binds A_tilde but perturbs unadorned A. [PDF p. 3, printed p. 953, eq. (2.2); PDF p. 24, printed p. 974, Theorem 4.5]"
+      "The displayed matrix dimensions and orthonormal-column requirements imply positive integer matrix dimensions and r <= b, although Lemma 3.3 does not explicitly quantify b and r or state this inequality. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 factor display]",
+      "The paper assumes accurate truncated-SVD construction of LR approximations in its BLR setting, but Lemma 3.3 is stated conditionally from the two norm inequalities and does not require a specific construction algorithm in its own text. [PDF p. 5, printed p. 955; anchor: Assumption 2.1] [PDF p. 9, printed p. 959; anchor: Lemma 3.3 hypotheses]",
+      "No symmetry, definiteness, nonsingularity, or invertibility condition is imposed on A or B in Lemma 3.3. [PDF p. 9, printed p. 959; anchor: opening of Lemma 3.3]"
     ],
-    "algorithm_linkage": "Theorem 4.5 permits the computed factors from either Algorithm 1, whose left-looking order is update then factor then compress (UFC), or Algorithm 2, whose order is update then compress then factor (UCF). It then links those factorization traces to two block triangular substitutions through Theorem 4.4. Optional intermediate recompressions during factorization change xi_p according to Table 1. [PDF p. 13, printed p. 963, Algorithm 1; PDF p. 21, printed p. 971, Algorithm 2; PDF p. 23, printed p. 973, Theorem 4.4; PDF p. 24, printed p. 974, Theorem 4.5; PDF p. 19, printed p. 969, Table 1]",
+    "algorithm_linkage": "Lemma 3.3 concerns direct multiplication of two LR factors with the middle product Y_A^T Y_B formed first and with either left-associated or right-associated completion. The proof treats (X_A(Y_A^T Y_B))X_B^T and says the other order is analogous. Intermediate recompression of Y_A^T Y_B is introduced only afterward and belongs to Lemma 3.4, so it is outside this contract. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 computation clause and proof] [PDF p. 10, printed p. 960; anchor: transition to Lemma 3.4]",
     "numerical_model": [
-      "Scalar operations use fl(x op y) = (x op y)(1 + delta), |delta| <= u, for op in {+, -, multiplication, division}. [PDF p. 4, printed p. 954, eq. (2.5)]",
-      "gamma_k is ku/(1-ku) for ku < 1, with j gamma_k <= gamma_jk and gamma_j + gamma_k + gamma_j gamma_k <= gamma_(j+k); noninteger gamma indices are explicitly allowed. [PDF p. 4, printed p. 954, gamma definition following eq. (2.5)]",
-      "Compression is modeled by the norm bound ||Delta A_ij|| <= epsilon beta_ij, with rounding errors in the truncated SVD omitted under Assumption 2.1. [PDF p. 5, printed p. 955, Assumption 2.1]",
-      "The precision is abstracted by u rather than fixed to a particular IEEE format, and the standing theorem analysis assumes u safely smaller than epsilon. [PDF p. 4, printed p. 954, eq. (2.5); PDF p. 5, printed p. 955, Assumption 2.1]",
-      "At block row i, equation (4.22) represents the computed lower-triangular operation as the sum from j = 1 through i of (T_tilde_ij + Delta T_tilde_ij)x_hat_j equaling v_i componentwise perturbed by a vector bounded with gamma_p. [PDF p. 24, printed p. 974, eq. (4.22)]"
+      "Scalar operations obey fl(x op y) = (x op y)(1+delta), |delta| <= u, for addition, subtraction, multiplication, and division. [PDF p. 4, printed p. 954; anchor: equation (2.5)]",
+      "gamma_k is exactly ku/(1-ku) for ku < 1; the paper explicitly permits non-integer gamma indices, which is necessary for indices containing r^(3/2). [PDF p. 4, printed p. 954; anchor: gamma_k definition]",
+      "The inherited matrix-product model is C_hat = AB+Delta C with ||Delta C|| <= gamma_b||A||||B|| when b is the inner dimension. [PDF p. 4, printed p. 954; anchor: equation (2.7)]",
+      "For the first evaluation order, the proof first obtains ||Delta W|| <= gamma_(b+r^(3/2))||A_tilde||||B_tilde|| and then bounds the final multiplication by gamma_(r^(3/2))(1+gamma_(b+r^(3/2)))||A_tilde||||B_tilde|| before combining these contributions into gamma_c. [PDF p. 9, printed p. 959; anchor: proof's W_hat bound] [PDF p. 10, printed p. 960; anchor: proof's final multiplication bound]",
+      "Rounding in the construction of LR approximations is ignored under the paper's standing truncated-SVD assumption, and u is assumed safely smaller than epsilon. [PDF p. 5, printed p. 955; anchor: Assumption 2.1 and following paragraph]"
     ],
     "error_notions": [
-      "The result is a normwise backward-error statement with simultaneous perturbations to the coefficient matrix and right-hand side. [PDF p. 24, printed p. 974, eqs. (4.23)-(4.25)]",
-      "It is not a coefficient-only backward error because Delta v is generally nonzero. [PDF p. 24, printed p. 974, eqs. (4.23) and (4.25)]",
-      "The matrix perturbation is controlled by both a truncation-and-input term proportional to ||A|| and a floating-point term proportional to ||L_tilde||||U_tilde||. [PDF p. 24, printed p. 974, eq. (4.24)]",
-      "The right-hand-side perturbation depends on ||v|| and on ||L_tilde||||U_tilde||||x_hat||; it is not stated solely as a relative multiple of ||v||. [PDF p. 24, printed p. 974, eq. (4.25)]",
-      "The paper explicitly rejects a componentwise interpretation because low-rank approximation errors generally satisfy only normwise bounds. [PDF p. 3, printed p. 953, paragraph following eq. (2.4)]"
+      "Equation (3.10) is a normwise forward-error bound from the computed C_hat to the exact product of the supplied LR approximations, A_tilde B_tilde. [PDF p. 9, printed p. 959; anchor: equation (3.10)]",
+      "Equation (3.11) is a normwise forward-error bound from C_hat to the exact full-matrix product AB; it combines floating-point product error with the two LR approximation errors. [PDF p. 9, printed p. 959; anchor: equation (3.11)]",
+      "Neither equation is stated as a backward-error result for the LR-by-LR product. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 conclusions]",
+      "The paper explicitly characterizes its LR results as normwise and does not claim useful componentwise bounds. [PDF p. 8, printed p. 958; anchor: paragraph on normwise error bounds]"
     ],
     "norms": [
-      "Every unsubscripted matrix norm in the analysis is the Frobenius norm ||A||_F = (sum over i,j of |a_ij|^2)^(1/2). [PDF p. 3, printed p. 953, Frobenius-norm convention]",
-      "For a block partition, ||A|| is the square root of the sum of the squared Frobenius norms of the blocks. [PDF p. 4, printed p. 954, continuation of the Frobenius-norm convention]",
-      "The Frobenius norm is used as a submultiplicative norm and is invariant under left multiplication by a matrix with orthonormal columns. [PDF p. 3, printed p. 953, Frobenius-norm discussion; PDF p. 4, printed p. 954, continuation]",
-      "The same unsubscripted notation is used for vectors v, x_hat, and Delta v; for vectors this is the Euclidean/Frobenius vector norm, although Theorem 4.5 does not relabel it separately. [PDF p. 3, printed p. 953, global norm convention; PDF p. 24, printed p. 974, eq. (4.25)]"
+      "The norm is ||M||_F = (sum_(i,j)|m_ij|^2)^(1/2), written without a subscript throughout the paper. [PDF p. 3, printed p. 953; anchor: Frobenius norm definition]",
+      "The proof relies on Frobenius submultiplicativity, ||AB|| <= ||A||||B||, and invariance under orthonormal factors. [PDF p. 3, printed p. 953; anchor: Frobenius norm properties] [PDF p. 4, printed p. 954; anchor: continuation of those properties]",
+      "The orthonormal outer factors yield the identities used in the proof, including ||Y_B|| = ||B_tilde|| and ||X_B|| = sqrt(r). [PDF p. 9, printed p. 959; anchor: proof's W_hat bound] [PDF p. 10, printed p. 960; anchor: proof's final multiplication bound]"
     ],
     "constants_and_indexing": [
-      "The scalar dimension is n = pb, arising from a p by p block partition with b by b blocks. [PDF p. 3, printed p. 953, discussion following eq. (2.3)]",
-      "The final theorem's constant is exactly c = b + 2r^(3/2) + p. [PDF p. 24, printed p. 974, line following eq. (4.25)]",
-      "r is the maximum rank of an off-diagonal block in the BLR LU factors and can differ from the input BLR rank. [PDF p. 12, printed p. 962, definition of r]",
-      "The coefficient bound uses gamma_(3c), not 3 gamma_c, while the right-hand-side bound uses gamma_p. [PDF p. 24, printed p. 974, eqs. (4.24)-(4.25)]",
-      "Without intermediate recompressions, xi_p = 1 for a local threshold and xi_p = p for a global threshold. [PDF p. 19, printed p. 969, Table 1]",
-      "With intermediate recompressions, xi_p = p for a local threshold and xi_p = p^2/sqrt(6) for a global threshold. [PDF p. 19, printed p. 969, Table 1]",
-      "The displayed lower-triangular block substitution indexes x_i as x((i-1)b+1 : ib) and uses predecessors j = 1 through i-1; equation (4.22) then sums j = 1 through i after including the diagonal solve. [PDF p. 23, printed p. 973, Theorem 4.4; PDF p. 24, printed p. 974, eq. (4.22)]"
+      "The final constant is exactly c = b+2r^(3/2), and the roundoff coefficient is gamma_c rather than gamma_b or an unspecified constant. [PDF p. 9, printed p. 959; anchor: equation (3.10)]",
+      "Both LR factorizations use the same displayed rank r: X_A and Y_B are b-by-r, while Y_A^T and X_B^T are r-by-b. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 factor dimensions]",
+      "The proof's intermediate gamma indices are b+r^(3/2) and r^(3/2), which combine using the paper's gamma identities into b+2r^(3/2). [PDF p. 4, printed p. 954; anchor: gamma identities] [PDF pp. 9-10, printed pp. 959-960; anchor: proof of Lemma 3.3]"
     ],
     "higher_order_terms": [
-      "The matrix perturbation bound retains an unspecified O(u epsilon) term. [PDF p. 24, printed p. 974, eq. (4.24)]",
-      "The right-hand-side perturbation bound retains an unspecified O(u^2) term. [PDF p. 24, printed p. 974, eq. (4.25)]",
-      "The exact factor-and-solve product contains the quadratic term Delta L Delta U before simplification into the final gamma_(3c) and higher-order expression. [PDF p. 25, printed p. 975, first exact perturbation product]",
-      "The exact right-hand-side composition contains the quadratic term Delta L Delta y_hat before simplification into O(u^2). [PDF p. 25, printed p. 975, second exact perturbation product]",
-      "The theorem gives no explicit constants or dimension dependence for either big-O term, and no O(epsilon^2) term appears in equations (4.24)-(4.25). [PDF p. 24, printed p. 974, eqs. (4.24)-(4.25)]"
+      "Equations (3.10) and (3.11) contain no big-O remainder; their displayed terms are explicit. [PDF p. 9, printed p. 959; anchor: equations (3.10)-(3.11)]",
+      "The epsilon beta_A beta_B term inside the parentheses in equation (3.11) must be retained; after the outer epsilon is applied, it contributes epsilon^2(1+gamma_c)beta_A beta_B. [PDF p. 9, printed p. 959; anchor: equation (3.11)]",
+      "The factor (1+gamma_c) multiplying all three truncation contributions must be retained, including the mixed roundoff-truncation terms. [PDF p. 10, printed p. 960; anchor: F and G decomposition yielding equation (3.11)]"
     ],
     "exceptional_values": [
-      "The factorization guarantees require nonsingularity and successful completion; nonsingularity alone is not used to erase the runs-to-completion requirement. [PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3]",
-      "The gamma definition excludes indices k for which ku >= 1, so the theorem's displayed gamma terms are meaningful only in their valid regime. [PDF p. 4, printed p. 954, gamma definition]",
-      "The standard relative-error model does not explicitly specify behavior for overflow, gradual underflow, NaNs, infinities, or other IEEE exceptional values. [PDF p. 4, printed p. 954, eq. (2.5)]",
-      "No nonzero assumption is stated for v; v is simply any vector in R^n. [PDF p. 24, printed p. 974, Theorem 4.5 opening sentence]",
-      "The BLR definition permits zero-rank approximations for sufficiently small blocks under a global threshold. [PDF p. 3, printed p. 953, discussion following eq. (2.4)]"
+      "The selected passages do not separately discuss overflow, underflow, subnormal numbers, NaNs, infinities, or division by zero; they state only the standard relative-error model (2.5). [PDF p. 4, printed p. 954; anchor: equation (2.5)]",
+      "The only explicit domain restriction attached to gamma_k is ku < 1, hence gamma_c requires cu < 1. [PDF p. 4, printed p. 954; anchor: gamma_k definition] [PDF p. 9, printed p. 959; anchor: c definition]"
     ]
   },
   "undebatable_constraints": [
-    "The final perturbed equation is (A + Delta A)x_hat = v + Delta v. [PDF p. 24, printed p. 974, eq. (4.23)]",
-    "The exact parenthesization of the first matrix-error term is (xi_p epsilon + gamma_p)||A||. [PDF p. 24, printed p. 974, eq. (4.24)]",
-    "The matrix-error factor term is gamma_(3c)||L_tilde||||U_tilde||, followed by O(u epsilon). [PDF p. 24, printed p. 974, eq. (4.24)]",
-    "The exact right-hand-side bound is gamma_p(||v|| + ||L_tilde||||U_tilde||||x_hat||) + O(u^2). [PDF p. 24, printed p. 974, eq. (4.25)]",
-    "The constant is c = b + 2r^(3/2) + p, with r taken from the off-diagonal ranks of the BLR LU factors. [PDF p. 12, printed p. 962, definition of r; PDF p. 24, printed p. 974, line following eq. (4.25)]",
-    "The four xi_p values are exactly 1, p, p, and p^2/sqrt(6) in the Table 1 order local/no recompression, global/no recompression, local/recompression, global/recompression. [PDF p. 19, printed p. 969, Table 1]",
-    "The permitted factorization variants are Algorithm 1 UFC and Algorithm 2 UCF. [PDF p. 24, printed p. 974, Theorem 4.5; PDF p. 13, printed p. 963, Algorithm 1; PDF p. 21, printed p. 971, Algorithm 2]",
-    "Nonsingularity and runs-to-completion are inherited from the factorization theorems used in the proof. [PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3; PDF p. 24, printed p. 974, proof opening]",
-    "All displayed matrix bounds use the Frobenius norm and are normwise rather than componentwise. [PDF p. 3, printed p. 953, Frobenius and normwise conventions]",
-    "Compression obeys ||Delta A_ij|| <= epsilon beta_ij under the standing regime that u is safely smaller than epsilon. [PDF p. 5, printed p. 955, Assumption 2.1]",
-    "Neither O(u epsilon) nor O(u^2) may be silently dropped from the source statement. [PDF p. 24, printed p. 974, eqs. (4.24)-(4.25)]",
-    "The literal source distinction between the bound variable A_tilde and the unadorned A in the system and conclusion must be preserved as an ambiguity. [PDF p. 3, printed p. 953, eq. (2.2); PDF p. 24, printed p. 974, Theorem 4.5]"
+    "A and B must be real b-by-b matrices with supplied rank-r factorizations A_tilde = X_A Y_A^T and B_tilde = Y_B X_B^T. [PDF p. 9, printed p. 959; anchor: opening and factor display of Lemma 3.3]",
+    "Only X_A and X_B are required to have orthonormal columns. [PDF p. 9, printed p. 959; anchor: orthonormality clause of Lemma 3.3]",
+    "Both approximation bounds, ||A-A_tilde|| <= epsilon beta_A and ||B-B_tilde|| <= epsilon beta_B, are required. [PDF p. 9, printed p. 959; anchor: approximation inequalities]",
+    "The theorem covers both stated parenthesizations and uses the same bound for each. [PDF p. 9, printed p. 959; anchor: computation clause preceding equation (3.10)]",
+    "The first conclusion compares C_hat with A_tilde B_tilde and has right-hand side gamma_c||A_tilde||||B_tilde||. [PDF p. 9, printed p. 959; anchor: equation (3.10)]",
+    "The second conclusion compares C_hat with AB and includes gamma_c||A||||B|| plus epsilon(1+gamma_c)(beta_A||B||+||A||beta_B+epsilon beta_A beta_B). [PDF p. 9, printed p. 959; anchor: equation (3.11)]",
+    "All norms are Frobenius norms and the claims are normwise. [PDF p. 3, printed p. 953; anchor: Frobenius norm convention] [PDF p. 8, printed p. 958; anchor: normwise-error paragraph]",
+    "The constant is c = b+2r^(3/2), with gamma_c defined by gamma_k = ku/(1-ku). [PDF p. 4, printed p. 954; anchor: gamma_k definition] [PDF p. 9, printed p. 959; anchor: equation (3.10)]",
+    "Intermediate recompression is not part of Lemma 3.3. [PDF p. 10, printed p. 960; anchor: transition from equation (3.12) to Lemma 3.4]"
   ],
   "ambiguities": [
     {
-      "issue": "Theorem 4.5 binds A_tilde but writes Ax = v and perturbs unadorned A. [PDF p. 24, printed p. 974, Theorem 4.5 and eqs. (4.23)-(4.24)]",
-      "evidence": "Section 2.1 expressly defines A_tilde as a BLR representation of a dense A, whereas the theorem begins with A_tilde in R^(n by n) but immediately changes to unadorned A without an equality or fresh binder. [PDF p. 3, printed p. 953, eq. (2.2); PDF p. 24, printed p. 974, Theorem 4.5]",
-      "impact": "The passage alone does not settle whether the theorem's input should be the dense A, its BLR representation A_tilde, or whether the initial tilde is typographical; a formal contract must not identify them silently. [PDF p. 3, printed p. 953, eq. (2.2); PDF p. 24, printed p. 974, Theorem 4.5]"
+      "issue": "Lemma 3.3 does not explicitly quantify b and r or state 1 <= r <= b. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 factor display]",
+      "evidence": "The source gives only the matrix dimensions b-by-r and the requirement that X_A and X_B have orthonormal columns, from which positive integer dimensions and r <= b are inferred. [PDF p. 9, printed p. 959; anchor: factor dimensions and orthonormality clause]",
+      "impact": "A formalization may make the dimension and rank constraints explicit, but it should identify them as type-level or inferred conditions rather than additional written hypotheses."
     },
     {
-      "issue": "The factorization perturbation symbol changes sign convention between the predecessor theorems and the proof of Theorem 4.5. [PDF p. 19, printed p. 969, eq. (4.16); PDF p. 21, printed p. 971, eq. (4.17); PDF p. 24, printed p. 974, proof opening]",
-      "evidence": "Equations (4.16) and (4.17) write A = L_tilde U_tilde + Delta A, while the proof of Theorem 4.5 writes A + Delta A = L_tilde U_tilde. [PDF p. 19, printed p. 969, eq. (4.16); PDF p. 21, printed p. 971, eq. (4.17); PDF p. 24, printed p. 974, proof opening]",
-      "impact": "The norm bound is unchanged after replacing Delta A by its negative, but an exact formal composition must rename or negate the predecessor perturbation rather than treating both displayed identities as definitionally identical. [PDF p. 24, printed p. 974, proof opening; PDF p. 25, printed p. 975, exact perturbation composition]"
+      "issue": "The signs and intended choices of beta_A and beta_B are not restated inside Lemma 3.3. [PDF p. 9, printed p. 959; anchor: approximation inequalities]",
+      "evidence": "The earlier LR setup uses positive beta parameters and local or global norm scales, while Lemma 3.3 only assumes the two inequalities; the following equation (3.12) separately treats beta_A=||A|| and beta_B=||B||. [PDF p. 5, printed p. 955; anchor: Assumption 2.1] [PDF p. 10, printed p. 960; anchor: equation (3.12)]",
+      "impact": "The general contract must not replace beta_A and beta_B by matrix norms unless explicitly specializing to equation (3.12)."
     },
     {
-      "issue": "The labels local and global in Table 1 do not encode one uniform beta_ik formula across UFC and UCF. [PDF p. 17, printed p. 967, eqs. (4.13)-(4.15); PDF p. 19, printed p. 969, Table 1; PDF p. 22, printed p. 972, discussion after Theorem 4.3]",
-      "evidence": "The UFC derivation says subsequent bounds use scaled thresholds involving diagonal factor norms, while the UCF discussion says such scaling is unnecessary and its proof uses beta_ik = ||A_ik|| or ||A||. [PDF p. 17, printed p. 967, Section 4.1.1 and Corollary 4.1; PDF p. 22, printed p. 972, proof and discussion of Theorem 4.3]",
-      "impact": "A formalization must associate the Table 1 coefficient with the selected algorithm's threshold convention rather than assuming the same raw beta_ik expression in both traces. [PDF p. 19, printed p. 969, Table 1; PDF p. 22, printed p. 972, discussion after Theorem 4.3]"
+      "issue": "The standing condition that u is 'safely smaller' than epsilon is qualitative. [PDF p. 5, printed p. 955; anchor: paragraph following Assumption 2.1]",
+      "evidence": "No numerical factor or exact inequality stronger than the gamma-domain condition is supplied for the phrase 'safely smaller.' [PDF p. 5, printed p. 955; anchor: paragraph following Assumption 2.1]",
+      "impact": "A faithful formal statement should either retain this qualitative standing assumption separately or use only explicit conditions such as cu < 1; it should not invent a numerical threshold."
     },
     {
-      "issue": "Theorem 4.4 displays only the forward, lower-triangular block indexing although Theorem 4.5 also applies it to the upper-triangular solve. [PDF p. 23, printed p. 973, Theorem 4.4; PDF p. 25, printed p. 975, proof of Theorem 4.5]",
-      "evidence": "The displayed operation uses the predecessor range j = 1 through i-1; the proof of Theorem 4.5 handles U_tilde by saying similarly, without displaying the reversed upper-triangular indices. [PDF p. 23, printed p. 973, Theorem 4.4; PDF p. 25, printed p. 975, paragraph beginning Similarly]",
-      "impact": "The mirrored back-substitution trace is inherited by analogy but its exact loop ordering is not written in the cited theorem statement. [PDF p. 23, printed p. 973, Theorem 4.4; PDF p. 25, printed p. 975, proof of Theorem 4.5]"
+      "issue": "The source fixes matrix-level parenthesization but not a loop-level summation order or named matrix-multiplication implementation. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 computation clause]",
+      "evidence": "The proof invokes the generic product bound (2.7) and Lemma 3.2 rather than specifying an implementation beyond the two parenthesizations. [PDF p. 4, printed p. 954; anchor: equation (2.7)] [PDF pp. 9-10, printed pp. 959-960; anchor: proof of Lemma 3.3]",
+      "impact": "The computation should be modeled through the stated local error bounds, not through an unstated concrete loop order."
     },
     {
-      "issue": "No specific pivoting strategy is fixed by Algorithms 1 or 2 or by Theorem 4.5. [PDF p. 13, printed p. 963, Algorithm 1; PDF p. 21, printed p. 971, Algorithm 2; PDF p. 24, printed p. 974, Theorem 4.5]",
-      "evidence": "The pseudocode says to compute block LU factorizations and requires successful completion, while surrounding discussion mentions pivoting strategies without incorporating a permutation or a particular strategy into the theorem statement. [PDF p. 13, printed p. 963, Algorithm 1 and Theorem 4.1; PDF p. 21, printed p. 971, text preceding Theorem 4.3]",
-      "impact": "The contract may require completion and retain the factor-norm terms, but it cannot assume partial, rook, or any other particular pivoting rule. [PDF p. 13, printed p. 963, Theorem 4.1; PDF p. 24, printed p. 974, eqs. (4.24)-(4.25)]"
+      "issue": "The selected passage contains no explicit exceptional-value policy. [PDF p. 4, printed p. 954; anchor: equation (2.5)]",
+      "evidence": "Overflow, underflow, subnormals, NaNs, and infinities are not mentioned alongside the standard relative-error model. [PDF p. 4, printed p. 954; anchor: equation (2.5)]",
+      "impact": "Such exclusions may be conventional consequences of adopting the model, but they must not be presented as separately stated paper hypotheses."
     },
     {
-      "issue": "The standing phrase u safely smaller than epsilon is qualitative. [PDF p. 5, printed p. 955, Assumption 2.1]",
-      "evidence": "Assumption 2.1 states that compression-rounding errors can be ignored only if u is safely smaller than epsilon, but supplies no numerical separation factor. [PDF p. 5, printed p. 955, Assumption 2.1]",
-      "impact": "Beyond gamma-domain conditions, the source does not provide an exact inequality that formalizes safely smaller. [PDF p. 4, printed p. 954, gamma definition; PDF p. 5, printed p. 955, Assumption 2.1]"
-    },
-    {
-      "issue": "The constants hidden by O(u epsilon) and O(u^2) are unspecified. [PDF p. 24, printed p. 974, eqs. (4.24)-(4.25)]",
-      "evidence": "The theorem and proof retain big-O notation without giving explicit coefficients or quantified small-u thresholds for those terms. [PDF p. 24, printed p. 974, eqs. (4.24)-(4.25); PDF p. 25, printed p. 975, final proof bounds]",
-      "impact": "The passage supports asymptotic remainder terms but not a fully explicit numerical inequality for them. [PDF p. 25, printed p. 975, final proof bounds]"
-    },
-    {
-      "issue": "The standard arithmetic model does not state exceptional IEEE behavior. [PDF p. 4, printed p. 954, eq. (2.5)]",
-      "evidence": "Equation (2.5) gives only a relative-error formula for the four scalar operations and does not discuss overflow, underflow, NaNs, or infinities. [PDF p. 4, printed p. 954, eq. (2.5)]",
-      "impact": "Absence of exceptional values is implicit in applicability of the model, not an independently quantified theorem hypothesis. [PDF p. 4, printed p. 954, eq. (2.5)]"
+      "issue": "The provenance of A_tilde and B_tilde is not fixed by Lemma 3.3 itself. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 hypotheses]",
+      "evidence": "The broader paper assumes truncated-SVD LR approximations, but Lemma 3.3 only consumes factor forms, orthonormality, and normwise approximation bounds. [PDF p. 5, printed p. 955; anchor: Assumption 2.1] [PDF p. 9, printed p. 959; anchor: Lemma 3.3]",
+      "impact": "A faithful theorem may abstract over any approximations satisfying the stated conditions and should not require a particular SVD algorithm unless importing the broader BLR construction context."
     }
   ],
-  "contract_plain_english": "For an admissible real block system whose BLR LU factors are successfully computed by UFC or UCF and whose block compressions obey the truncated-SVD threshold model with u safely below epsilon, two computed block triangular solves produce x_hat for which both the matrix and right-hand side can be perturbed to make the equation exact. [PDF p. 5, printed p. 955, Assumption 2.1; PDF p. 19, printed p. 969, Theorem 4.2; PDF p. 21, printed p. 971, Theorem 4.3; PDF p. 24, printed p. 974, Theorem 4.5] The exact source bounds are ||Delta A|| <= (xi_p epsilon + gamma_p)||A|| + gamma_(3c)||L_tilde||||U_tilde|| + O(u epsilon) and ||Delta v|| <= gamma_p(||v|| + ||L_tilde||||U_tilde||||x_hat||) + O(u^2), with c = b + 2r^(3/2) + p. [PDF p. 24, printed p. 974, eqs. (4.24)-(4.25)] Here r is the maximum off-diagonal rank in the BLR factors, and xi_p is 1, p, p, or p^2/sqrt(6) according to the local/global and no-recompression/recompression cases in Table 1. [PDF p. 12, printed p. 962, definition of r; PDF p. 19, printed p. 969, Table 1] All matrix norms are Frobenius norms, the guarantee is normwise rather than componentwise, and the two big-O terms remain part of the result. [PDF p. 3, printed p. 953, norm convention; PDF p. 24, printed p. 974, eqs. (4.24)-(4.25)] The source literally binds A_tilde but writes and perturbs unadorned A, so their exact relationship at Theorem 4.5 must be recorded as unresolved rather than silently identified. [PDF p. 3, printed p. 953, eq. (2.2); PDF p. 24, printed p. 974, Theorem 4.5]"
+  "contract_plain_english": "Given real b-by-b matrices A and B and shared-rank LR approximations A_tilde=X_A Y_A^T and B_tilde=Y_B X_B^T, with only X_A and X_B required to have orthonormal columns and with Frobenius-norm errors at most epsilon beta_A and epsilon beta_B, respectively, compute A_tilde B_tilde in either of the two parenthesized orders stated by Lemma 3.3. [PDF p. 9, printed p. 959; anchor: Lemma 3.3 hypotheses and computation clause] Under the paper's standard floating-point model, the computed C_hat differs from the exact LR product by at most gamma_c||A_tilde||||B_tilde||, where c=b+2r^(3/2), and differs from the exact full product AB by at most gamma_c||A||||B||+epsilon(1+gamma_c)(beta_A||B||+||A||beta_B+epsilon beta_A beta_B). [PDF p. 4, printed p. 954; anchor: equation (2.5) and gamma_k definition] [PDF p. 9, printed p. 959; anchor: equations (3.10)-(3.11)] These are explicit normwise forward-error bounds with no omitted big-O term, and they do not cover intermediate recompression. [PDF p. 8, printed p. 958; anchor: normwise-error paragraph] [PDF p. 10, printed p. 960; anchor: transition to Lemma 3.4]"
 }

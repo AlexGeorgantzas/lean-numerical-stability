@@ -3,154 +3,51 @@
   "role": "adjudicator",
   "task_id": "P15-T3",
   "trigger": [
-    "direct judge requested adjudication",
-    "round-trip judge requested adjudication",
-    "direct judge classification is undetermined",
-    "round-trip judge classification is undetermined",
-    "direct D001 is unclear",
-    "direct D032 is unclear",
-    "direct D050 is unclear",
-    "direct D053 is unclear",
-    "direct S04 is unclear",
-    "direct S07 is unclear",
-    "round-trip S14 is unclear"
+    "judge classifications differ"
   ],
   "resolved_items": [
     {
-      "item": "direct judge requested adjudication",
-      "resolution": "The explicit equation, norms, constants, xi cases, algorithms, and perturbation products match. However, D050 and D051 are assumed predecessor-analysis conclusions rather than execution-only evidence. The A/Atilde issue remains intrinsically unresolved by the paper.",
-      "primary_evidence": "Theorem 4.5 and its proof derive the final result by invoking Theorems 4.2-4.4 [PDF pp. 24-25, printed pp. 974-975]. D050 requires both a factorization trace and Nonempty D064; D051 requires both a solve trace and Nonempty D065."
+      "item": "judge classifications differ",
+      "resolution": "The classifications are resolved as faithful-equivalent. Both implication directions hold; the apparent scope extensions identified by the round-trip judge do not constitute genuine additional numerical content.",
+      "primary_evidence": "Lemma 3.3 states exactly the two factor forms, orthonormality conditions, approximation bounds, parenthesizations, and conclusions represented by the Lean declaration [PDF p. 9, printed p. 959, equations (3.10)-(3.11)]. Its proof derives those conclusions solely from the local matrix-product bounds, Frobenius identities, approximation budgets, and gamma algebra [PDF pp. 9-10, printed pp. 959-960]."
     },
     {
-      "item": "round-trip judge requested adjudication",
-      "resolution": "The central objection about assumed LocalAnalysis certificates is upheld. The broader claim that the detailed relational traces are not execution evidence is rejected: D063, D072, and D073 preserve the relevant operation order and error relations. The target is therefore a restricted composition theorem, not a completely vacuous or wholly circular statement.",
-      "primary_evidence": "Algorithms 1 and 2 and equation (4.22) specify the source operation orders [PDF pp. 13, 21, 23-24]. D071, D083, and D084 encode those orders, while D064 and D065 separately encode already-gathered analysis equations and bounds."
+      "item": "parameter and dimension scope",
+      "resolution": "Omitted sign conventions and zero-dimensional totalization do not make the theorem genuinely stronger. For every inhabitable Lean run, pA=epsilon*betaA and pB=epsilon*betaB are nonnegative, and the conclusion depends on these parameters only through pA, pB, and pA*pB. Negative sign choices are therefore reparameterizations of the same nonnegative error budgets. Cases with r>b have no run, while zero-dimensional cases are trivial boundary cases; the paper also expressly permits zero-rank matrices.",
+      "primary_evidence": "The declaration requires ||EA||_F<=epsilon*betaA and ||EB||_F<=epsilon*betaB, and its second right-hand side rewrites to gammaC||A||_F||B||_F+(1+gammaC)(pA||B||_F+||A||_FpB+pApB). The PDF defines positive approximation budgets in the surrounding setup and explicitly discusses zero-rank matrices [PDF p. 3, printed p. 953], while Lemma 3.3 itself states only the resulting approximation inequalities [PDF p. 9, printed p. 959]."
     },
     {
-      "item": "direct judge classification is undetermined",
-      "resolution": "Adjudication establishes that Lean does not imply the paper theorem because its run hypothesis already requires predecessor stability analyses. Paper-implies-Lean remains unclear because the source does not settle the A/Atilde binder or the exact remainder predicates. The schema-consistent classification therefore remains undetermined and is not accepted.",
-      "primary_evidence": "The paper derives predecessor bounds from successful executions [PDF pp. 19, 21, 23-25]. The Lean constructor requires D050 and two D051 values before the target is applied, while Theorem 4.5 binds Atilde but uses unbound A [PDF p. 24]."
-    },
-    {
-      "item": "round-trip judge classification is undetermined",
-      "resolution": "The classification remains undetermined for a narrower, evidence-based reason: one implication is definitively no, while the reverse implication cannot be fixed without resolving source-level notation and Big-O semantics that the PDF leaves unspecified.",
-      "primary_evidence": "The strengthened Lean antecedent is explicit in D032, D050, and D051. The unresolved source notation is visible in Theorem 4.5 [PDF p. 24], and equations (4.24)-(4.25) leave both higher-order terms as unquantified Big-O expressions."
-    },
-    {
-      "item": "direct D001 is unclear",
-      "resolution": "D001 is a proof-carrying restricted run type, not merely a successful BLR execution. Through D032 it includes raw traces, exact precision conditions, and nonempty aggregate factorization and solve analyses. Its task-specific paper match therefore fails as an execution-only binder, independently of its satisfiability.",
-      "primary_evidence": "D032 requires factorization_completed, lower_completed, and upper_completed. D050 and D051 unfold these fields to include Nonempty D064 and D065 certificates containing gathered equations and norm bounds."
-    },
-    {
-      "item": "direct D032 is unclear",
-      "resolution": "The positive dimensions, r <= b, nonsingularity, factor-rank condition, and successful traces are source-consistent. The constructor nevertheless strengthens the antecedent with LocalAnalysis certificates, replaces qualitative safe separation by u < epsilon, and chooses a specific A/Atilde linkage. It is not equivalent to the paper hypothesis contract.",
-      "primary_evidence": "Theorems 4.2 and 4.3 require nonsingularity and completion [PDF pp. 19 and 21]. Assumption 2.1 says only that u is safely smaller than epsilon [PDF p. 5]. D032 additionally requires D050 and two D051 certificates and relates distinct A and Atilde through D054."
-    },
-    {
-      "item": "direct D050 is unclear",
-      "resolution": "D050 is not legitimate execution-only evidence. Its first conjunct is a detailed UFC/UCF trace, but its second conjunct is Nonempty P15FactorizationLocalAnalysis, whose fields already assert the factorization decomposition and the xi, gamma_p, gamma_c, and O(u*epsilon) component bounds. It assumes the substance of Theorem 4.2 or 4.3 and restricts the target to executions already carrying that analysis.",
-      "primary_evidence": "D050 is trace(Atilde,L,U) AND Nonempty D064(A,L,U). D074 requires A plus four error components to equal L*U and imposes the predecessor bounds. In the paper those bounds are conclusions of Theorems 4.2 and 4.3 [PDF pp. 19 and 21], not run-to-completion hypotheses."
-    },
-    {
-      "item": "direct D053 is unclear",
-      "resolution": "The conditions 0 < u, 0 < epsilon, and 3*c*u < 1 are legitimate positivity and gamma-domain requirements. The condition u < epsilon is only a necessary weak reading of 'u safely smaller than epsilon'; the PDF supplies no margin making it equivalent. Thus paper applicability plausibly implies this Lean condition, but the converse does not follow.",
-      "primary_evidence": "The paper defines gamma_k only for k*u < 1 [PDF p. 4] and uses gamma_(3c) in Theorem 4.5 [PDF p. 24]. Assumption 2.1 uses the qualitative phrase 'safely smaller' without a numerical separation factor [PDF p. 5]. D053 uses plain u < epsilon."
-    },
-    {
-      "item": "direct S04 is unclear",
-      "resolution": "S04 does not pass. The structural source hypotheses are represented, but the Lean antecedent additionally assumes predecessor analysis certificates and uses an unsupported exact replacement for the qualitative precision regime.",
-      "primary_evidence": "Successful completion is the source hypothesis in Theorems 4.2 and 4.3 [PDF pp. 19 and 21], whereas D050 and D051 require both completion traces and aggregate analysis certificates. The precision discrepancy is D053 versus Assumption 2.1 [PDF p. 5]."
-    },
-    {
-      "item": "direct S07 is unclear",
-      "resolution": "The source ambiguity cannot be resolved further. Lean coherently keeps A and Atilde distinct, requires Atilde to represent A, traces factorization on Atilde, and perturbs A, but the PDF does not force that particular repair. This remains a material uncertainty rather than a pass.",
-      "primary_evidence": "Section 2.1 defines Atilde as a BLR representation of dense A [PDF p. 3]. Theorem 4.5 binds Atilde but immediately writes Ax=v and bounds DeltaA relative to A [PDF p. 24]. D032 and D050 select one definite two-matrix interpretation."
-    },
-    {
-      "item": "round-trip S14 is unclear",
-      "resolution": "The exact Lean remainder predicates are not equivalent to the paper's Big-O notation. D028 and D029 choose constants and neighborhoods after a fixed run, so they do not impose uniform control across executions as u and epsilon vary. The rhs scale ||L||*||U||*||xHat|| is plausible from the quadratic product in the proof but is not specified in equation (4.25). This is a weakening, not a stronger theorem.",
-      "primary_evidence": "Equations (4.24)-(4.25) retain only O(u*epsilon) and O(u^2) [PDF p. 24], and the proof identifies the quadratic products [PDF p. 25]. D028 and D029 quantify constants inside predicates indexed by the already-fixed run and D029 fixes the displayed solveScale."
-    },
-    {
-      "item": "D051 LocalAnalysis dispute",
-      "resolution": "D051 has the same defect as D050. Its trace conjunct is source-level solve evidence, but Nonempty D065 already supplies the gathered perturbed solve equation and all component bounds used to derive Theorem 4.4. It is a predecessor conclusion assumed as part of the run.",
-      "primary_evidence": "D051 is Nonempty D063 AND Nonempty D065. D075 states the gathered solve equation and kernel, summation, interaction, and rhs bounds. The paper derives the aggregate guarantee in Theorem 4.4 from equation (4.22) [PDF pp. 23-24]."
-    },
-    {
-      "item": "round-trip S02 and S03 disputes",
-      "resolution": "S02 remains unclear only for the A/Atilde binder; dimensions and object types otherwise match. S03 fails because predecessor analysis witnesses are moved into the antecedent, although the final perturbations remain existential after the run is fixed.",
-      "primary_evidence": "The source fixes a successful execution and then derives perturbations [PDF pp. 24-25]. D032 requires D050 and D051 before the target's existential factor, lower, upper, matrixError, rhsError, and rhsRemainder witnesses."
-    },
-    {
-      "item": "round-trip S11 dispute",
-      "resolution": "The absence of an executable rounding function is not an independent faithfulness failure. The detailed traces are relational encodings of the source operation equations and error bounds, which is appropriate for a theorem proposition. Their inability, in the supplied declarations, to produce D064 and D065 without assuming them is the actual defect.",
-      "primary_evidence": "Equation (2.5), Algorithms 1 and 2, and equation (4.22) provide relational arithmetic constraints [PDF pp. 4, 13, 21, 24]. D071, D083, D084, and D101 retain those constraints and operation orders."
-    },
-    {
-      "item": "round-trip S12 dispute",
-      "resolution": "The displayed equality and inequality directions match, but overall logical strength does not. Extra predecessor assumptions and per-run remainder controls reduce applicability and asymptotic content.",
-      "primary_evidence": "Equations (4.23)-(4.25) match the target's final equation and leading bounds [PDF p. 24]. D050, D051, D028, and D029 alter the antecedent and remainder quantification."
-    },
-    {
-      "item": "round-trip S16 dispute",
-      "resolution": "The target is satisfiable and the final composition is nontrivial, so it is not vacuous. Nevertheless, satisfiability does not cure its reduced applicability, and the extra assumptions cannot be reclassified as genuine theorem strength.",
-      "primary_evidence": "The target still constructs exact four-term and three-term composed perturbations and the gamma_(3c) bound from predecessor certificates. D032 permits ordinary positive dimensions and zero rhs data, while D050 and D051 impose additional but not contradictory certificates."
+      "item": "certified-stage abstraction",
+      "resolution": "Quantifying over certified additive stage errors is an equivalent formalization of the proof-relevant arithmetic contract, not a substantive strengthening. Every paper computation supplies such certificates, and the paper's derivation applies to every trace satisfying them.",
+      "primary_evidence": "Equation (2.7) represents a computed matrix product as the exact product plus an additive error bounded by gamma of the inner dimension [PDF p. 4, printed p. 954]. The Lean stage constructor imposes precisely this relation, and the proof of Lemma 3.3 uses only these bounds for the three products [PDF pp. 9-10, printed pp. 959-960]."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean theorem applies only to run values already carrying nonempty factorization and solve LocalAnalysis certificates. It therefore does not establish the paper's result from successful UFC/UCF and triangular-solve executions under the source arithmetic model. Its per-run remainder predicates also do not recover the source's ordinary asymptotic uniformity. This is reduced applicability, not genuine stronger coverage."
+      "verdict": "yes",
+      "reasoning": "Each matrix product in either paper parenthesization satisfies equation (2.7), so the three computed products instantiate a Lean trace; the paper's factor, orthonormality, approximation, and gamma-domain data instantiate the remaining run fields. The Lean conjunction then yields equations (3.10) and (3.11)."
     },
     "paper_implies_lean": {
-      "verdict": "unclear",
-      "reasoning": "Under the contextual two-matrix reading, Theorems 4.2-4.4 could supply the assumed LocalAnalysis witnesses, 'safely smaller' would imply u < epsilon, and genuine Big-O estimates could specialize to the weaker per-run predicates. However, the PDF does not determine whether A or Atilde is the algorithm input and does not specify D028/D029's two-parameter neighborhoods or rhs scale. Every paper instance therefore cannot be mapped to the exact Lean run and witnesses from the supplied evidence alone."
+      "verdict": "yes",
+      "reasoning": "Every Lean run selects one of the two paper parenthesizations and supplies exactly the local additive-error inequalities used on printed pages 959-960. Applying that derivation gives both Lean conclusions. Nonstandard parameter signs merely encode the same nonnegative approximation budgets, and degenerate dimensions add only vacuous or trivial boundary cases."
     }
   },
-  "classification": "undetermined",
-  "accepted": false,
-  "remaining_uncertainties": [
-    "Theorem 4.5 does not determine whether its initial Atilde is intentional, whether unadorned A is the represented dense matrix, or which of them is the Algorithm 1/2 input.",
-    "The phrase 'u safely smaller than epsilon' has no quantitative separation factor, so its exact relation to D053 cannot be proved beyond the necessary strict inequality.",
-    "The paper does not specify the constants, multivariable neighborhood, cross-execution uniformity, or exact problem scale hidden in O(u*epsilon) and O(u^2)."
-  ],
+  "classification": "faithful-equivalent",
+  "accepted": true,
+  "remaining_uncertainties": [],
   "findings": [
     {
-      "severity": "critical",
-      "category": "assumed-predecessor-analysis",
-      "evidence": "D050 includes Nonempty D064 and D051 includes Nonempty D065. D064 and D065 already contain the gathered equations and component bounds that the paper derives in Theorems 4.2-4.4 [PDF pp. 19, 21, 23-24].",
-      "impact": "The target is a composition theorem for executions already certified by predecessor stability analyses, not Theorem 4.5 from its stated execution hypotheses."
-    },
-    {
-      "severity": "major",
-      "category": "A-versus-Atilde",
-      "evidence": "Section 2.1 distinguishes dense A and BLR Atilde [PDF p. 3], while Theorem 4.5 binds Atilde and uses A [PDF p. 24]. Lean traces Atilde, relates it to A, and perturbs A.",
-      "impact": "Lean selects a coherent but non-authoritative resolution, preventing a definitive paper-to-Lean implication."
-    },
-    {
-      "severity": "major",
-      "category": "remainder-semantics",
-      "evidence": "The paper retains unspecified O(u*epsilon) and O(u^2) terms [PDF p. 24]. D028 and D029 use run-local constants and neighborhoods, and D029 fixes solveScale.",
-      "impact": "The formal predicates do not preserve ordinary uniform asymptotic content and must not be presented as a stronger result."
-    },
-    {
-      "severity": "major",
-      "category": "precision-regime",
-      "evidence": "Assumption 2.1 requires u to be safely smaller than epsilon [PDF p. 5], whereas D053 requires only u < epsilon in addition to gamma validity.",
-      "impact": "Some Lean runs may satisfy the exact predicate without lying in the paper's intended compression-rounding regime."
+      "severity": "note",
+      "category": "qualitative standing assumption",
+      "evidence": "The PDF says that u is assumed to be safely smaller than epsilon but supplies no quantitative predicate; Lemma 3.3 instead uses the explicit approximation and gamma conditions [PDF p. 5, printed p. 955; PDF pp. 9-10, printed pp. 959-960].",
+      "impact": "Its omission cannot establish a formal failure of the reverse implication, particularly because the displayed theorem and proof require no additional numerical threshold."
     },
     {
       "severity": "note",
-      "category": "execution-traces",
-      "evidence": "D071, D083, D084, and D101 retain lower/upper substitution order, UFC/UCF order, block updates, and source-style perturbation bounds.",
-      "impact": "Relational rather than executable traces are not the decisive mismatch; the separately assumed LocalAnalysis certificates are."
-    },
-    {
-      "severity": "note",
-      "category": "matched-final-algebra",
-      "evidence": "The target reproduces equations (4.23)-(4.25), c=b+2*r^(3/2)+p, Table 1, Frobenius and Euclidean norms, and both exact perturbation products [PDF pp. 19, 24-25].",
-      "impact": "The final displayed algebra is accurate, but it does not repair the hypothesis and domain discrepancies."
+      "category": "domain totalization",
+      "evidence": "Lean indexes matrices by arbitrary natural b and r, but orthonormal b-by-r columns preclude runs for r>b, and the PDF's LR setup permits rank zero [PDF p. 3, printed p. 953].",
+      "impact": "The extra indices do not provide genuine nonvacuous strength over the paper's substantive matrix cases."
     }
   ],
-  "rationale": "Primary evidence resolves the main disagreement: D050 and D051 combine genuine detailed traces with aggregate LocalAnalysis certificates that already state the predecessor stability equations and bounds. They are legitimate inputs to a composition lemma, but they are not raw source-level execution evidence and materially restrict the claimed Theorem 4.5. The final composition remains nonvacuous and its explicit algebra matches the paper. D053 correctly enforces gamma validity but only weakly approximates the qualitative safe-separation condition. D028 and D029 preserve order labels syntactically while weakening their uniform asymptotic force through run-local quantification. Consequently Lean does not imply the paper theorem. The reverse implication remains unclear because the PDF's A/Atilde binder and exact Big-O semantics are genuinely unresolved. With one implication no and the other unclear, undetermined is the only classification consistent with the required implication directions, and the task is not accepted."
+  "rationale": "Primary evidence confirms that the declaration captures Lemma 3.3's exact matrices, factor orientations, Frobenius norms, gamma constant c=b+2r^(3/2), two evaluation orders, and both complete forward-error bounds. The alleged strengthening comes from representational totalizations and an equation-(2.7) execution abstraction that the paper's own proof treats universally. Since each paper computation induces a Lean run and the paper derivation establishes the target for every Lean run, both implications hold and the final classification is faithful-equivalent."
 }

@@ -1,0 +1,179 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P15-T3",
+  "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
+  "blind_translation_sha256": "a5b2cd934655a302ea4af644e3f304ec5e483b02f4aaf5b4b609c722476b7085",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF has the supplied SHA-256 and contains Theorem 4.5 on PDF page 24, printed page 974, with its proof continuing on printed page 975 and the cited predecessor results in Sections 2 and 4.",
+      "translation_evidence": "The blind translation targets the BLR linear-system result with the perturbed equation, the two bounds, the UFC/UCF predecessors, and the proof-level perturbation compositions.",
+      "reasoning": "The paper version, theorem, equations, and surrounding definitions selected for comparison are correct."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.5 binds Atilde and v but immediately uses unadorned A in Ax=v and equations (4.23)-(4.24); Section 2.1 distinguishes dense A from its BLR representation Atilde without resolving the theorem's binder inconsistency.",
+      "translation_evidence": "D001, D002, D032, and D054 supply separate matrices A and Atilde and require Atilde to be a threshold-accurate BLR representation of A; b, p, and r are additional explicit outer indices.",
+      "reasoning": "The dimensions n=p*b and the matrix/vector types match, but the translation selects a definite two-matrix interpretation of an unresolved source binder. That changes the binder contract."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The paper first assumes an admissible matrix and a successful Algorithm 1 or 2 execution producing factors and computed triangular solves, and only afterward introduces the final perturbations.",
+      "translation_evidence": "The universal run binder already packages Nonempty aggregate factorization and solve certificates through D050, D051, D064, and D065; the conclusion then existentially repackages factor, lower, upper, DeltaA, deltav, and remainder witnesses.",
+      "reasoning": "Core predecessor error witnesses have been moved into the scope of the hypotheses. This is not the paper's quantifier order and restricts application to runs for which substantial parts of the desired analysis are already certified."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The inherited hypotheses are nonsingularity, successful completion of UFC or UCF, valid block compressions, valid gamma indices, and the qualitative standing assumption that u is safely smaller than epsilon.",
+      "translation_evidence": "D032 and D053 encode invertibility, complete trace evidence, 0<u<epsilon, and 3*c*u<1, but D050 and D051 additionally assume aggregate backward-error certificates containing the principal factorization and solve bounds.",
+      "reasoning": "Several structural hypotheses match, and 3*c*u<1 correctly validates the displayed gamma terms. However, assuming the aggregate error results is a major extra hypothesis, while u<epsilon is an unsupported exact replacement for the qualitative safely-smaller regime."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "Equations (4.23)-(4.25) state the exact perturbed system and both norm bounds; the proof on printed page 975 gives the exact matrix-side and right-hand-side perturbation products.",
+      "translation_evidence": "The conclusion includes the exact equation, both leading bounds, the four-term DeltaA formula, the three-term deltav formula, and witnesses for both retained remainder terms.",
+      "reasoning": "All displayed conclusions and proof-level perturbation compositions are represented. The semantic adequacy of the formal remainder predicates is assessed separately under S14."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper defines block extraction, oriented low-rank products, orthonormal factors, Frobenius and vector norms, gamma, threshold modes, and ordinary matrix operations in the cited sections.",
+      "translation_evidence": "D015-D031, D041-D042, D067-D081, and D091-D112 unfold the corresponding finite matrices, vectors, products, norms, gamma function, block layout, threshold scales, orientations, and rank-minimal compression predicates.",
+      "reasoning": "The nontrivial mathematical operators and imported definitions have usable interpretations in the dependency ledger."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes the dense system matrix, its BLR representation, computed BLR factors, computed yHat and xHat, and factorization and solve perturbations.",
+      "translation_evidence": "A, Atilde, L, U, yHat, xHat, E_f, E_L, E_U, d_L, and d_U are distinct objects, and the aggregate errors are defined by exact products rather than identified with computed quantities.",
+      "reasoning": "Exact, represented, computed, and perturbed objects are not conflated. The unsupported resolution of the A/Atilde binder ambiguity remains the separate S02 failure."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Theorem 4.5 permits Algorithm 1 UFC and Algorithm 2 UCF, followed by lower and upper block triangular substitutions; Table 1 accounts for threshold and recompression choices.",
+      "translation_evidence": "D043, D058-D059, D062, D072-D084, and D101-D105 encode the update-factor-compress and update-compress-factor branch orders, while D063 and D071 encode complete lower and upper block solve traces.",
+      "reasoning": "The unnamed constructors remain semantically linked to the two permitted algorithms and both solve directions through their detailed branch behavior."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "All unsubscripted matrix norms are Frobenius norms, vector norms are Euclidean, and the result is normwise rather than componentwise.",
+      "translation_evidence": "D026 and D042 define unsquared Frobenius norms, D031 defines the Euclidean vector norm, and every final matrix and vector bound uses those norms.",
+      "reasoning": "Norm kind, unsquared form, and normwise interpretation match."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "The paper has n=p*b, c=b+2*r^(3/2)+p, gamma_(3c), gamma_p, the four xi_p values 1, p, p, and p^2/sqrt(6), and one-based block ranges corresponding to predecessor block indices.",
+      "translation_evidence": "D022-D023 encode the same c and xi values; D078 maps zero-based Fin indices to i*b+row; D093-D096 encode forward and backward predecessor sets. D056 makes r the least common exact factor width for all off-diagonal blocks.",
+      "reasoning": "For nonnegative natural r, r*sqrt(r)=r^(3/2). Minimal common exact factor width equals the maximum actual off-diagonal rank, and the zero-based indexing is the expected reindexing of the paper's one-based blocks."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Equation (2.5) assumes each scalar operation satisfies fl(x op y)=(x op y)(1+delta), |delta|<=u, for addition, subtraction, multiplication, and division; exceptional IEEE behavior is left unspecified.",
+      "translation_evidence": "D071, D074, D075, and D101 postulate exact real equations with gamma-level entrywise or aggregate perturbation certificates. The translation explicitly notes that it does not assert execution, termination, or computability.",
+      "reasoning": "The omission of overflow, underflow, NaNs, and a rounding mode is consistent with the paper, but the primitive floating-point operation model is replaced by broader existential error relations whose realizability by the paper's operations is not required."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper derives backward-error bounds from successful algorithm executions and retains asymptotic remainder terms without requiring those bounds as input certificates.",
+      "translation_evidence": "The run hypothesis already requires the aggregate inequalities later used to construct the conclusion, and the formal remainder predicates permit constants and radii that depend on the individual run and its current u and epsilon.",
+      "reasoning": "Although the leading equalities, inequality directions, and strict gamma-domain condition are correct, the stronger hypotheses and per-run remainder interpretation materially alter logical strength."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Theorem 4.5 is a simultaneous normwise backward-error result for both the coefficient matrix and right-hand side, not a forward-error, residual-only, or coefficient-only result.",
+      "translation_evidence": "The conclusion gives (A+DeltaA)*xHat=v+deltav with separate norm bounds for DeltaA and deltav and introduces no exact solution, condition number, or forward-error bound.",
+      "reasoning": "The error notion matches the paper."
+    },
+    {
+      "id": "S14",
+      "status": "unclear",
+      "paper_evidence": "Equations (4.24)-(4.25) retain O(u*epsilon) and O(u^2), but the theorem supplies no explicit constants, parameter-uniformity conditions, neighborhood, or scale for either term.",
+      "translation_evidence": "D028 makes the matrix remainder locally O(u*epsilon) at each current run, while D029 makes the right-hand-side remainder locally O(u^2*S) with S=||L||_F*||U||_F*||xHat||_2; constants and radii may depend on that run.",
+      "reasoning": "The source does not determine the translation's pointwise-in-run asymptotic semantics or the specific S scaling. Conversely, those predicates can be nearly vacuous at fixed positive parameters because their constants may depend on the current run. Equivalence cannot be established from the supplied evidence."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The theorem chain concerns finite-dimensional real matrices with p by p blocks of size b by b and n=p*b.",
+      "translation_evidence": "All matrices and vectors are finite functions over Fin indices with real entries and dimensions p*b; b and p are positive and r<=b.",
+      "reasoning": "The real, finite-dimensional specialization matches, and the positivity and rank bounds are structural consequences of a nonempty block partition."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper's conclusion is substantive because factorization and solve error bounds are derived from the arithmetic model and successful algorithms rather than assumed as theorem hypotheses.",
+      "translation_evidence": "A run may not exist for arbitrary data, and any inhabited run already contains D064 and two D065 certificates encoding the principal factorization and solve equations and bounds needed by the conclusion.",
+      "reasoning": "The run type may be satisfiable in simple cases, but the target is largely a repackaging and composition of error certificates assumed in the sole hypothesis. This is an unintended trivialization of the paper's stability result."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation applies only after a run containing aggregate factorization and solve backward-error certificates has been supplied. It therefore cannot recover the paper's result for an arbitrary successful UFC or UCF execution from the execution and floating-point model alone."
+    },
+    "paper_implies_translation": {
+      "verdict": "unclear",
+      "reasoning": "The paper supports the leading equations, constants, norms, and proof-level compositions, but it does not resolve the Atilde-versus-A binder or specify the run-dependent local remainder predicates, especially the O(u^2*S) scale. It is therefore unclear whether every paper instance supplies the exact translated witnesses."
+    }
+  },
+  "classification": "undetermined",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "assumed-backward-error-certificates",
+      "paper_evidence": "Theorems 4.2-4.5 derive the factorization and triangular-solve perturbation guarantees from successful algorithms under the rounding model.",
+      "translation_evidence": "D050 and D051 require Nonempty D064 and D065 certificates carrying those same aggregate equations and bounds before the target conclusion is invoked.",
+      "impact": "The translated theorem does not establish stability from algorithm execution alone and has materially restricted, largely circular applicability."
+    },
+    {
+      "severity": "major",
+      "category": "A-versus-Atilde-binder",
+      "paper_evidence": "Theorem 4.5 binds Atilde but writes and perturbs A, while Section 2.1 distinguishes the two and gives no theorem-local equality.",
+      "translation_evidence": "The run binds both A and Atilde and requires Atilde to be a BLR approximation of A.",
+      "impact": "The translation chooses one resolution of a source ambiguity that the evidence requires to remain unresolved."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point-execution-model",
+      "paper_evidence": "The analysis assumes the standard per-operation relative-error model and actual Algorithms 1 and 2 running to completion.",
+      "translation_evidence": "The run uses existential exact-real perturbation traces and aggregate gamma certificates and expressly does not assert operational execution or computability.",
+      "impact": "The encoded runs are not shown to coincide with outcomes realizable under the paper's floating-point model."
+    },
+    {
+      "severity": "major",
+      "category": "higher-order-remainder-semantics",
+      "paper_evidence": "The source retains unspecified O(u*epsilon) and O(u^2) terms.",
+      "translation_evidence": "The translation gives per-run local predicates with run-dependent constants and scales the second remainder by ||L||_F*||U||_F*||xHat||_2.",
+      "impact": "The source does not support this exact asymptotic interpretation, and the per-run formulation may fail to enforce a uniform higher-order estimate."
+    },
+    {
+      "severity": "major",
+      "category": "precision-regime",
+      "paper_evidence": "Assumption 2.1 uses the qualitative phrase that u is safely smaller than epsilon and provides no numerical separation factor.",
+      "translation_evidence": "D053 replaces that condition by the exact inequality u<epsilon.",
+      "impact": "The translated admissible regime may include parameter pairs not justified by the paper's standing compression-rounding assumption."
+    },
+    {
+      "severity": "note",
+      "category": "matched-leading-result",
+      "paper_evidence": "Equations (4.23)-(4.25), Table 1, and the proof give the perturbed equation, leading bounds, c, xi_p, Frobenius norms, and exact perturbation products.",
+      "translation_evidence": "The conclusion reproduces those leading formulas, constants, norms, algorithm cases, and product compositions.",
+      "impact": "The central displayed algebra is accurately represented, but it does not cure the hypothesis, binder, numerical-model, and remainder discrepancies."
+    }
+  ],
+  "rationale": "The blind translation accurately reproduces the dimensions, norms, leading constants, xi cases, algorithm branch order, perturbed equation, and exact proof-level error compositions. It is not presently acceptable because its sole run hypothesis already assumes aggregate backward-error certificates that the paper derives, it resolves the source's Atilde/A ambiguity, and it replaces the primitive floating-point model with existential real-error certificates. The paper also does not determine the translation's per-run big-O predicates or the O(u^2*S) scaling. Translation-implies-paper therefore fails, while paper-implies-translation remains unclear and requires adjudication."
+}
