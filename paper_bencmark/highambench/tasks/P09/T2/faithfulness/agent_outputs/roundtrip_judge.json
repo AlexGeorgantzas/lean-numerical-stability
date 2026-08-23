@@ -3,129 +3,129 @@
   "role": "roundtrip-judge",
   "task_id": "P09-T2",
   "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
-  "blind_translation_sha256": "0202885894838ab362f451064d66327321df6aa23ea69ad54e661fe5183442d2",
+  "blind_translation_sha256": "9b43474c5e69f059249b68303521d231fd11f6024d7ea5ef73616c02660af719",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The PDF hash matches the specified published 1971 paper. Equation (1.1), Theorem 1, the exact-input discussion, and the fictional-input result occur on PDF pages 1, 3, 5, and 12 respectively.",
-      "translation_evidence": "The translation concerns the one-dimensional FFT backward-error result, including the transform-preimage equation and both perturbation bounds.",
-      "reasoning": "The selected source and surrounding passages are the correct primary evidence for P09-T2."
+      "paper_evidence": "The PDF identifies the published Mathematics of Computation version, volume 25, number 116, October 1971, printed pages 757-768. The selected backward-error passage appears on printed page 768 in Section 6.",
+      "translation_evidence": "The translation addresses the one-dimensional FFT backward interpretation, including an exact Fourier-image equation and RMS and infinity-norm certificates.",
+      "reasoning": "The version, selected passage, and inherited Theorem 1 context are correctly identified."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "The paper fixes an order N=N_1...N_M, a complex N-vector input x, the corresponding computed output error e, epsilon, and gamma, and then introduces a complex N-vector delta.",
-      "translation_evidence": "The proposition additionally binds a valid plan, a stageBounds object, and a family containing executions for every positive epsilon, followed by witnesses C, r, and a perturbation function delta(epsilon).",
-      "reasoning": "The complex vector dimensions agree, but the execution-family and stage-envelope binders are semantically active additions rather than mere representations of paper binders."
+      "status": "pass",
+      "paper_evidence": "Printed pages 757-759 use complex N-vectors indexed by 0 through N-1, with N=N_1...N_M and a fictional complex N-vector delta.",
+      "translation_evidence": "The translation uses n != 0, vectors ZMod n -> Complex, stage radices whose product is n, and an epsilon-dependent perturbation of the same vector type.",
+      "reasoning": "For nonzero n, ZMod n has n indices and represents the paper's finite index set. The complex scalar type and dimensions match."
     },
     {
       "id": "S03",
       "status": "unclear",
-      "paper_evidence": "On printed page 768 the actual error e is fixed before some fictional delta is chosen. The paper treats epsilon as a computer-dependent constant and gives no explicit quantifiers for its O(epsilon^2) notation.",
-      "translation_evidence": "After the complete all-epsilon family is fixed, the translation chooses one C, then one radius r, then a function delta defined for every positive epsilon; stageBounds has coefficients and a radius uniform over every matching family.",
-      "reasoning": "Pointwise witness dependence on the already determined error is preserved, but the simultaneous all-epsilon Skolemization and uniformity scopes have no explicit counterpart in the paper."
+      "paper_evidence": "The paper describes epsilon as a machine-dependent constant for a fixed computation and then chooses a fictional delta after the error e is fixed. Its O(epsilon^2) notation has no explicit quantifier order, radius, or uniform coefficient.",
+      "translation_evidence": "The translation chooses C and r before universally quantifying every positive epsilon, requires one family containing a model and run for every epsilon, and then chooses delta_epsilon.",
+      "reasoning": "This is a standard possible formalization of asymptotic big-O, but the paper does not establish the required all-epsilon computation family or explicitly specify this uniform witness scope."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The proof assumes fl(x)=x and derives the stage estimates from the arithmetic and trigonometric models through equations (3.6)-(3.8).",
-      "translation_evidence": "Exact input representation and gamma>=0 are enforced by the family, but the propagated local-error estimates are supplied as a separate stageBounds hypothesis.",
-      "reasoning": "Exact input representation matches. However, assuming a uniform stage-error envelope that the paper derives adds a substantial hypothesis and weakens the proposition's applicability."
+      "paper_evidence": "The paper assumes the factorized FFT, exact input representation, and the arithmetic and trigonometric models; it derives the local block and twiddle estimates in equations (3.6)-(3.8).",
+      "translation_evidence": "An execution must already contain D045, a certificate supplying propagated stagewise block and twiddle bounds with nonnegative second-order coefficients and a common positive radius.",
+      "reasoning": "The translation turns substantive estimates derived in the paper into an additional prerequisite. It therefore applies only to pre-certified executions, a narrower hypothesis class than the source states."
     },
     {
       "id": "S05",
-      "status": "pass",
-      "paper_evidence": "Printed page 768 states e=T delta, the exact RMS identity ||delta||_RMS=||e||_RMS/sqrt(N), the RMS bound, and the maximum-norm bound with an additional sqrt(N).",
-      "translation_evidence": "The conclusion states E_epsilon=F_n(delta(epsilon)), the exact normalized-norm identity, the RMS bound, and the Pi-norm bound with the required sqrt(n) factor.",
-      "reasoning": "The central conclusions of the selected fictional-input result are all represented, and the backward equation for the computed output follows from linearity and the definition of E_epsilon."
+      "status": "fail",
+      "paper_evidence": "Printed page 768 states e=T delta, the exact RMS identity, both perturbation bounds, and the qualitative consequence that roundoff is negligible under the least-significant-digit comparison.",
+      "translation_evidence": "The exact transform equation, norm identity, and both bounds are present, but no negligibility conclusion or corresponding predicate appears.",
+      "reasoning": "The core mathematical certificates are present, but one stated conclusion from the selected passage is omitted, even though the source leaves that conclusion qualitative."
     },
     {
       "id": "S06",
       "status": "unclear",
-      "paper_evidence": "Equations (1.1) and (2.1) define T(j,k)=exp(+i2pi jk/N), with no normalization. The maximum norm is explicitly max_k |z(k)|.",
-      "translation_evidence": "F_n uses ZMod.stdAddChar, whose phase sign is explicitly reported as unresolved. The second norm is supplied by a Pi normed-ring instance whose exact body is likewise not exposed, although its conventional interpretation is the supremum norm.",
-      "reasoning": "The imported definitions cannot be identified conclusively with the paper's positive-sign kernel and explicit maximum norm using the permitted evidence."
+      "paper_evidence": "Equations (1.1) and (2.1) define T with the positive phase exp(i 2 pi j k/N), without normalization.",
+      "translation_evidence": "F_n is defined using ZMod.stdAddChar. D169 reports that the phase orientation of the underlying ZMod.toCircle definition was not unfolded and cannot be recovered from the packet.",
+      "reasoning": "Most operators are interpreted, but the sign of the exact Fourier kernel is an essential unresolved imported-definition dependency."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper distinguishes the exact output y=Tx, the computed FFT output fl(y), the actual forward error e=fl(y)-y, exact stored input, and the fictional backward perturbation delta.",
-      "translation_evidence": "The translation separately defines F_n(input), the final floating state, E_epsilon as their difference, exact input fixation, and delta(epsilon) as a transform preimage of E_epsilon.",
-      "reasoning": "Exact, computed, forward-error, and fictional-input quantities are not conflated."
+      "paper_evidence": "The source distinguishes exact y=Tx, computed fl(y), exact forward error e=fl(y)-y, actual input rounding, and the separate fictional perturbation satisfying e=T delta.",
+      "translation_evidence": "E_epsilon is the computed final state minus exact F_n(x); the selected input is converted exactly; delta_epsilon is only an existential Fourier preimage.",
+      "reasoning": "Computed output error, exact transform values, actual input conversion, and fictional backward perturbations are not conflated."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "The paper analyzes factorization (2.2) with separate nonfinal D_l twiddle multiplications. On printed page 762 it obtains alpha(2)=sqrt(2) and alpha(4)=5 specifically because radix-2 and radix-4 blocks compute no sines, cosines, or multiplications.",
-      "translation_evidence": "The plan has nonfinal twiddles and staged block transforms, but LocalDef057-L060 describe every character as computed through floating sine and cosine and every character-data product through floating complex multiplication, without radix-2 or radix-4 execution special cases.",
-      "reasoning": "The general staged structure matches, but the executable algorithm does not implement the optimization on which the paper's special radix constants depend."
+      "paper_evidence": "On printed page 759 the analyzed inner-product algorithm initializes the accumulator with the first product and invokes floating addition only from the second term onward. Printed page 762 uses the corresponding addition-only radix-2 and radix-4 kernels.",
+      "translation_evidence": "D086 defines every nonempty sequential sum by starting from the empty value 0 and applying flAdd while appending each term, thereby introducing flAdd(0, firstTerm). D083 uses this summation in the Fourier kernels.",
+      "reasoning": "The translation contains an additional rounded addition not present in the paper's analyzed accumulation algorithm. Under D048, addition with zero is not guaranteed exact, so this can alter the error count and the special-radix constants."
     },
     {
       "id": "S09",
-      "status": "unclear",
-      "paper_evidence": "The RMS norm is sqrt(sum |z(k)|^2/N), the maximum norm is max_k |z(k)|, and e=T delta gives the exact factor ||delta||_RMS=||e||_RMS/sqrt(N).",
-      "translation_evidence": "LocalDef007 is exactly the normalized Euclidean/RMS norm and the stated transform scaling is correct. LocalDef006 is described only as the canonical Pi norm, conventionally the finite supremum norm.",
-      "reasoning": "The RMS semantics and exact scaling match, but exact identification of the second norm with the paper's maximum norm is unavailable under the isolation rule."
+      "status": "pass",
+      "paper_evidence": "The paper defines RMS as sqrt((sum |z(k)|^2)/N), infinity norm as max |z(k)|, and states ||delta||RMS=||e||RMS/sqrt(N).",
+      "translation_evidence": "The normalized Euclidean norm is sqrt(sum |z(i)|^2)/sqrt(n), the infinity norm is the finite maximum of complex moduli, and the same Fourier scaling equality is concluded.",
+      "reasoning": "For n>0 the two RMS formulas are equal, and the infinity and exact scaling semantics match."
     },
     {
       "id": "S10",
       "status": "pass",
-      "paper_evidence": "Theorem 1 defines K as sum_l alpha(N_l)+(M-1)(3+2gamma), with alpha(2)=sqrt(2), alpha(4)=5, and alpha(q)=2sqrt(q)(q+gamma) otherwise.",
-      "translation_evidence": "LocalDef010 and LocalDef019 give the same formula using the plan radices and positive stage count; nonfinal twiddle flags produce exactly s-1 additions of 3+2gamma.",
-      "reasoning": "The coefficient formulas, stage count, special radix values, and maximum-bound sqrt(n) factor agree."
+      "paper_evidence": "Printed page 759 defines K as the sum of alpha(N_l) plus (M-1)(3+2 gamma), with alpha(2)=sqrt(2), alpha(4)=5, and alpha(q)=2 sqrt(q)(q+gamma) otherwise.",
+      "translation_evidence": "D010 and D019 give the same piecewise coefficient and K formula, while the plan enables twiddles on exactly the first m-1 stages.",
+      "reasoning": "The displayed constants, stage indexing, radix dependence, and number of twiddle contributions match. Whether these constants remain valid for D086's altered accumulation is recorded separately under S08."
     },
     {
       "id": "S11",
       "status": "pass",
-      "paper_evidence": "Equations (3.1)-(3.2) use separate bounded operand perturbations for addition and a bounded relative perturbation for multiplication; sine and cosine use absolute gamma-epsilon errors. No overflow, underflow, or exceptional-value model is stated.",
-      "translation_evidence": "LocalDef046 encodes the same addition, multiplication, sine, and cosine error representations with per-occurrence bounded parameters, epsilon>0, and gamma>=0, and likewise supplies no range or exceptional-value semantics.",
-      "reasoning": "The operational numerical model matches. The paper's base, mantissa, and rounded-versus-chopped formulas instantiate epsilon but do not alter the encoded error equations."
+      "paper_evidence": "Equations (3.1)-(3.2) use independently varying relative perturbations bounded by epsilon, and printed page 759 uses absolute sine and cosine errors bounded by gamma epsilon with gamma >= 0. Exceptional values are not modeled.",
+      "translation_evidence": "D048 gives the same two-perturbation addition model, one-perturbation multiplication model, and absolute sine and cosine models, with all perturbations bounded in magnitude by one. It likewise uses real-valued total operations without exceptional-value clauses.",
+      "reasoning": "The operative deterministic error model matches. The paper's beta, precision, and rounded-versus-chopped formulas instantiate epsilon but do not change the abstract equations used in the result."
     },
     {
       "id": "S12",
       "status": "pass",
-      "paper_evidence": "The fictional-input relation and RMS scaling are exact equalities, while both printed perturbation certificates use non-strict upper bounds.",
-      "translation_evidence": "The transform-preimage and normalized-norm relations use exact equality, and both perturbation estimates use non-strict inequalities in the same direction.",
-      "reasoning": "The relation strength and inequality directions of the selected backward-error result match."
+      "paper_evidence": "Printed page 768 gives the exact relation e=T delta, an exact RMS equality, and non-strict upper bounds.",
+      "translation_evidence": "The translation uses exact equality for E_epsilon=F_n(delta_epsilon), exact RMS scaling, and non-strict inequalities when epsilon <= r.",
+      "reasoning": "Within the translation's quantified regime, equality, inequality direction, and strictness agree; the radius is the usual local interpretation of the big-O estimates."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Printed page 768 introduces a fictional input perturbation whose exact transform is the actual output roundoff error; it is distinct from the actual stored-input error discussed on printed page 765.",
-      "translation_evidence": "The selected input is exactly fixed by flInput, while delta(epsilon) is introduced only as a transform preimage of the computed forward error.",
-      "reasoning": "The translation preserves the backward-error interpretation and does not substitute actual input rounding, a residual, or a componentwise relative error."
+      "paper_evidence": "The paper first defines the forward error e=fl(y)-y and then gives a normwise backward interpretation through a fictional delta satisfying e=T delta.",
+      "translation_evidence": "E_epsilon is explicitly the forward output error, while delta_epsilon is an existential input-space preimage bounded in normalized Euclidean and infinity norms.",
+      "reasoning": "The forward-error vector and normwise backward certificate retain their distinct roles, and no componentwise or actual-input-rounding claim is substituted."
     },
     {
       "id": "S14",
-      "status": "unclear",
-      "paper_evidence": "The paper says only that O(epsilon^2) includes terms of order epsilon^2. It gives no explicit constants, radii, or uniformity over dimensions, factorizations, inputs, gamma, executions, or error occurrences.",
-      "translation_evidence": "The proposition uses a common existential C and radius r for an all-epsilon execution family, while stageBounds uses coefficients and a radius common to every matching family.",
-      "reasoning": "For fixed n the displayed C epsilon^2 scalings can represent additive O(epsilon^2), but the paper does not establish the translation's precise uniformity and quantifier scopes."
+      "status": "pass",
+      "paper_evidence": "The equation e=T delta and RMS scaling identity are exact, while both upper estimates retain unspecified additive O(epsilon^2) terms.",
+      "translation_evidence": "The exact relations remain unconditional, and the estimates include C epsilon^2/sqrt(n) and C epsilon^2 under a positive radius instead of dropping second-order terms.",
+      "reasoning": "For fixed positive n, these quadratic terms are valid explicit big-O forms, and a common C can dominate two separate big-O coefficients. The unresolved uniform quantifier interpretation is recorded under S03."
     },
     {
       "id": "S15",
       "status": "pass",
-      "paper_evidence": "The selected result is for a finite one-dimensional complex N-point mixed-radix transform with positive order.",
-      "translation_evidence": "The proposition uses complex-valued functions on the n-element type ZMod n with n nonzero and a finite staged factorization whose radices multiply to n.",
-      "reasoning": "The finite complex dimension, scalar field, and one-dimensional setting are preserved; differences in algorithm execution are recorded under S08."
+      "paper_evidence": "The selected result concerns the one-dimensional finite complex transform and a mixed-radix factorization with separate nonfinal twiddle stages.",
+      "translation_evidence": "The translation remains finite-dimensional and complex, with block Fourier stages, permutations, and separate twiddles on all nonfinal stages.",
+      "reasoning": "There is no scalar, real-only, multidimensional, or normalized-transform specialization. The plan abstraction has the same factorized structural form."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The paper derives its radix-2 and radix-4 constants from implementations that avoid trigonometric evaluation and multiplication in those Fourier blocks.",
-      "translation_evidence": "The floating stage still performs those operations while stageBounds demands first-order coefficients sqrt(2) or 5 uniformly over every matching family. Any additional allowed first-order trigonometric or multiplication error cannot be absorbed by c_i epsilon^2 for arbitrarily small epsilon.",
-      "reasoning": "The stageBounds type can therefore be uninhabited for important intended radix plans and inputs, making the proposition vacuous exactly where the paper advertises its special constants."
+      "status": "unclear",
+      "paper_evidence": "The paper identifies Cooley-Tukey and Sande-Tukey realizations and reports actual mixed-radix computations, so its intended algorithm class is nonempty.",
+      "translation_evidence": "No witness is supplied that an intended paper plan and arithmetic family inhabit the certified Execution type. Negative gamma has no executions, and D045 plus the extra initial flAdd may exclude otherwise intended runs.",
+      "reasoning": "The encoded restriction for gamma < 0 is explainable, but nonvacuity for the intended paper algorithms cannot be established from the blind translation alone."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The translation applies only after supplying a uniform stageBounds premise and hardcodes a floating implementation that does not reproduce the paper's optimized radix-2 and radix-4 blocks. It therefore does not establish the paper result for all computations admitted by the paper."
+      "reasoning": "The translation applies only after the local error estimates have been packaged into a certificate, uses a different floating summation recurrence, and omits the paper's qualitative negligibility consequence. Its truth therefore does not recover the full paper claim for every computation satisfying only the paper's stated hypotheses."
     },
     "paper_implies_translation": {
       "verdict": "unclear",
-      "reasoning": "The paper does not specify an all-positive-epsilon execution family, common asymptotic witnesses with the translation's scopes, or a stage envelope uniform over every matching family. In addition, the permitted translation evidence does not resolve the standard-character sign or the exact Pi-norm definition."
+      "reasoning": "This implication would require the unresolved standard-character phase to be positive, the paper's informal O(epsilon^2) terms to support the translation's uniform all-epsilon family, and the paper algorithm to instantiate the stronger certificate despite the added flAdd(0, firstTerm). The permitted evidence does not establish those points."
     }
   },
   "classification": "undetermined",
@@ -134,39 +134,39 @@
   "findings": [
     {
       "severity": "critical",
-      "category": "radix-specialized execution and vacuity",
-      "paper_evidence": "Printed page 762 derives alpha(2)=sqrt(2) and alpha(4)=5 from blocks requiring no sine, cosine, or multiplication operations.",
-      "translation_evidence": "LocalDef057-L060 apply floating trigonometric evaluation and floating complex multiplication to every block, while stageBounds still assumes the paper's special coefficients.",
-      "impact": "The required stage envelope may be impossible for radix-2 or radix-4 plans, so the theorem can become vacuous for the principal special cases."
+      "category": "fourier-phase-convention",
+      "paper_evidence": "The paper's T uses the unnormalized positive phase exp(i 2 pi j k/N).",
+      "translation_evidence": "The exact transform uses ZMod.stdAddChar, whose phase orientation is explicitly unresolved in D169.",
+      "impact": "Until the imported character is expanded, the exact equation may concern a different Fourier operator, preventing either equivalence or reverse implication from being certified."
     },
     {
       "severity": "major",
-      "category": "stage-envelope premise",
-      "paper_evidence": "Equations (3.6)-(3.8) derive local block and twiddle errors from the numerical model and propagate them to obtain K.",
-      "translation_evidence": "LocalDef005 and LocalDef018 assume a uniform propagated local-error analysis over every matching execution family.",
-      "impact": "A substantive part of the paper's result is moved into an additional hypothesis, so the translation does not provide the paper's unconditional guarantee under the stated arithmetic model."
+      "category": "strengthened-hypotheses-and-nonvacuity",
+      "paper_evidence": "The local block and twiddle estimates are derived from the arithmetic model in equations (3.6)-(3.8), not assumed as part of an input execution certificate.",
+      "translation_evidence": "Every quantified execution must already carry D045, including uniform local bounds, second-order coefficients, and a positive radius.",
+      "impact": "The formal claim is restricted to pre-certified executions and may be vacuous unless the intended paper algorithms are separately shown to inhabit that type."
     },
     {
       "severity": "major",
-      "category": "DFT convention",
-      "paper_evidence": "The transform is explicitly the positive-sign unnormalized kernel exp(+i2pi jk/N).",
-      "translation_evidence": "The dependency ledger states that the phase convention of ZMod.stdAddChar cannot be determined from the exposed definition.",
-      "impact": "The exact transform-preimage equation cannot be identified with the paper's equation without adjudicating the imported character definition."
+      "category": "accumulation-algorithm",
+      "paper_evidence": "The paper initializes each inner-product accumulator with the first product and then adds terms two through n.",
+      "translation_evidence": "D086 starts from zero and applies flAdd for every term, including the first.",
+      "impact": "The extra floating addition can introduce first-order error under the stated model and can invalidate or make uninhabitable the certificates using the paper's alpha(2), alpha(4), and general coefficients."
     },
     {
       "severity": "major",
-      "category": "higher-order and quantifier uniformity",
-      "paper_evidence": "The O(epsilon^2) remainders are unquantified and have no stated uniformity.",
-      "translation_evidence": "One execution family spans all positive epsilon, and common coefficients and radii are introduced with explicit scopes over epsilon and, for stageBounds, all matching families.",
-      "impact": "Paper-implies-translation cannot be established from the primary evidence because the formal asymptotic statement may be stronger or differently scoped."
+      "category": "epsilon-quantifier-and-big-O-scope",
+      "paper_evidence": "The paper uses a fixed machine-dependent epsilon and unspecified O(epsilon^2) notation without a formal radius or family of computations.",
+      "translation_evidence": "One execution contains runs for every positive epsilon, while C and r are uniform and chosen before epsilon.",
+      "impact": "This may be a legitimate asymptotic formalization, but its witness dependence and uniformity are not established by the source and require adjudication."
     },
     {
       "severity": "minor",
-      "category": "maximum-norm import",
-      "paper_evidence": "The paper defines the second norm explicitly as max_k |z(k)|.",
-      "translation_evidence": "LocalDef006 is only conventionally identified as the finite Pi-space supremum norm; its defining norm body is not exposed.",
-      "impact": "The maximum-norm certificate and its sqrt(n) factor otherwise match, but exact operator identity requires dependency adjudication."
+      "category": "omitted-qualitative-conclusion",
+      "paper_evidence": "Printed page 768 calls roundoff negligible when epsilon sqrt(N) K(N,gamma)||x||RMS is below the least significant input digit.",
+      "translation_evidence": "No negligibility predicate or least-significant-digit condition is included.",
+      "impact": "The translation omits part of the selected passage, although the paper itself does not define the qualitative terms precisely enough for direct formalization."
     }
   ],
-  "rationale": "The translation captures the central backward-error algebra, exact input condition, RMS scaling, K formula, and additional sqrt(n) maximum-bound factor. It cannot be accepted because it assumes the stage analysis instead of deriving it and its executable radix-2/radix-4 stages contradict the optimization supporting the special constants, creating a serious vacuity risk. The reverse implication remains unclear because the DFT sign, Pi norm, and formal uniformity of O(epsilon^2) cannot be resolved from the permitted evidence."
+  "rationale": "The translation preserves the core backward-error shape, complex dimensions, normalized RMS and infinity norms, exact Fourier norm scaling, K formula, special radix constants, exact-input condition, and first- plus second-order bound structure. It cannot be accepted because the exact Fourier phase is unresolved, substantive local estimates have become hypotheses, the computed summation performs an additional floating addition, and nonvacuity for the intended paper algorithms is unproved. The source-to-translation implication consequently remains unclear, so the fixed classification is undetermined and independent adjudication is required."
 }

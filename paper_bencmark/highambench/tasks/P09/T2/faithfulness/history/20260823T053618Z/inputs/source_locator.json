@@ -26,24 +26,17 @@
       "section": "3. Roundoff Errors in the Fast Fourier Transform"
     },
     {
-      "anchor": "assumption fl(x)=x and equation (3.6)",
+      "anchor": "assumption fl(x)=x before equation (3.6)",
       "pdf_page": 5,
       "printed_page": "761",
-      "role": "exact input representation and block/twiddle error decomposition",
+      "role": "exact input representation for the stage-local derivation",
       "section": "3. Roundoff Errors in the Fast Fourier Transform"
     },
     {
-      "anchor": "Figures 2-3 and the special radix-2 and radix-4 block discussion",
+      "anchor": "equations (3.6)-(3.8) and their propagation through the remaining FFT factors",
       "pdf_page": 6,
       "printed_page": "762",
-      "role": "addition-only small-radix execution semantics and alpha(2), alpha(4)",
-      "section": "3. Roundoff Errors in the Fast Fourier Transform"
-    },
-    {
-      "anchor": "equations (3.7)-(3.8) and propagation through the remaining FFT factors",
-      "pdf_page": 7,
-      "printed_page": "763",
-      "role": "separate block-Fourier and twiddle estimates used to derive Theorem 1(a)",
+      "role": "stage-local block-Fourier and twiddle error budgets used to derive Theorem 1(a)",
       "section": "3. Roundoff Errors in the Fast Fourier Transform"
     },
     {
