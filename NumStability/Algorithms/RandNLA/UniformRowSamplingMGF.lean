@@ -1,7 +1,7 @@
 import NumStability.Algorithms.RandNLA.UniformRowSampling
 import NumStability.Algorithms.RandomizedLinearAlgebra.Concentration.TraceMGF.UniformRows
-import NumStability.Analysis.LiebTrace
 import NumStability.Analysis.MatrixConcentration
+import NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity
 
 /-!
 # NumStability.Algorithms.RandNLA.UniformRowSamplingMGF

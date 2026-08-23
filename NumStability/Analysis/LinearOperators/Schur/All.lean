@@ -1,5 +1,6 @@
 import NumStability.Analysis.LinearOperators.Schur.Complex.BlockEmbedding
 import NumStability.Analysis.LinearOperators.Schur.Complex.Deflation
+import NumStability.Analysis.LinearOperators.Schur.Complex.NormalTriangular
 import NumStability.Analysis.LinearOperators.Schur.Complex.Triangulation
 import NumStability.Analysis.LinearOperators.Schur.Real.InvariantSubspace.Complexification
 import NumStability.Analysis.LinearOperators.Schur.Real.InvariantSubspace.Existence

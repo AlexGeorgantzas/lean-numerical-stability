@@ -12,8 +12,6 @@ import NumStability.Analysis.AlternativeNumberSystems
 import NumStability.Analysis.Approximation.SineTaylor.OddDegreeFiveError.Theorems
 import NumStability.Analysis.Asymptotics
 import NumStability.Analysis.BeneficialRounding
-import NumStability.Analysis.BergerGeneral
-import NumStability.Analysis.BergerInequality
 import NumStability.Analysis.BrentBaseOptimality
 import NumStability.Analysis.Chopping
 import NumStability.Analysis.ComplexArithmetic
@@ -21,9 +19,6 @@ import NumStability.Analysis.ComplexSqrt
 import NumStability.Analysis.ConditionEstimatorLowerBound
 import NumStability.Analysis.Conditioning
 import NumStability.Analysis.CStarMatrices
-import NumStability.Analysis.CStarMatrixBridge
-import NumStability.Analysis.CStarMatrixExpectation
-import NumStability.Analysis.CStarMatrixTrace
 import NumStability.Analysis.Equidistribution
 import NumStability.Analysis.Error.MatrixProducts
 import NumStability.Analysis.Error.Measures.All
@@ -43,10 +38,8 @@ import NumStability.Analysis.FloatingPointArithmetic.TrigonometricCancellation.A
 import NumStability.Analysis.FloatingPointArithmetic.TrigonometricCancellation.Core
 import NumStability.Analysis.ForwardError
 import NumStability.Analysis.FunctionalCalculus
-import NumStability.Analysis.HenriciSharpConstantExact
 import NumStability.Analysis.Heron
 import NumStability.Analysis.LeadingDigits
-import NumStability.Analysis.LiebTrace
 import NumStability.Analysis.LinearOperators
 import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.All
 import NumStability.Analysis.MatrixAlgebra
@@ -54,23 +47,15 @@ import NumStability.Analysis.MatrixConcentration
 import NumStability.Analysis.MatrixEquations.SylvesterExistence
 import NumStability.Analysis.MatrixInequalities
 import NumStability.Analysis.MatrixNorms
-import NumStability.Analysis.MatrixPowersBinomialBound
-import NumStability.Analysis.MatrixPowersGautschi
-import NumStability.Analysis.MatrixPowersLaszlo
-import NumStability.Analysis.MatrixPowersLp185Primary
-import NumStability.Analysis.MatrixPowersSpijkerClosure
 import NumStability.Analysis.MatrixSpectral
 import NumStability.Analysis.Monotonicity
-import NumStability.Analysis.NilpotentJordanChain
 import NumStability.Analysis.Nonassociativity
-import NumStability.Analysis.OperatorLog
 import NumStability.Analysis.OperatorNorms
 import NumStability.Analysis.Perturbation
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.Probability
 import NumStability.Analysis.ProblemDependentStability.All
 import NumStability.Analysis.ProblemDependentStability.HessenbergDeterminant
-import NumStability.Analysis.PseudospectralLowerBound
 import NumStability.Analysis.Quadratic
 import NumStability.Analysis.RelativePrecision
 import NumStability.Analysis.Rounding
@@ -188,6 +173,7 @@ import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditionin
 import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation27
 import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.Equation28
 import NumStability.Source.Higham.Chapter17.Equation22
+import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional
 
 /-!
 # NumStability analysis

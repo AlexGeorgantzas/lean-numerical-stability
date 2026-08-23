@@ -1,8 +1,9 @@
 import NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.LeverageScore.Core
 import NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.RowNorm.Core
 import NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.UniformRows.Core
-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
 import NumStability.Analysis.CStarMatrices.Expectation.Finite
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealOrder
 import NumStability.Analysis.CStarMatrices.Trace.Basic
 import NumStability.Analysis.FiniteProbability
 import NumStability.Analysis.FunctionalCalculus.OperatorLog.Monotonicity

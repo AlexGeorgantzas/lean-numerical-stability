@@ -11,8 +11,16 @@ import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.Topology.Algebra.Polynomial
 import Mathlib.Topology.ContinuousMap.Weierstrass
-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
 import NumStability.Analysis.CStarMatrices.Expectation.Finite
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonal
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonalCompression
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPair
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairPinching
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeReflection
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteMatrixOrder
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularCompression
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularMultiplication
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.StrictPositivity
 import NumStability.Analysis.CStarMatrices.Trace.Basic
 import NumStability.Analysis.FiniteProbability
 import NumStability.Analysis.FunctionalCalculus.OperatorLog.Monotonicity

@@ -1,0 +1,37 @@
+{
+ "authorization_context": "primary-human review and integration of delivery 2f55e0aa5687829ca3a7dd54d5f90663ec4293cc, including exact R0011 and its supplemental correction",
+ "authorization_id": "R07-C0005-integration-v1",
+ "authorized_actions": [
+  "review and true-merge immutable R07 delivery 2f55e0aa5687829ca3a7dd54d5f90663ec4293cc onto exact main 35cb1a7c5f136f291398dddd99d8012dcf38f967",
+  "apply exact R0011 patch 6C4BCAFDEB8CF97197F7A46D2CAA5BF05F5A1F81A1DAC4284A615B5AD8E9C122",
+  "apply exact R0011 correction DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909",
+  "update integrator-owned shared paths, B0010 delivery state, completion checker, and integration narratives",
+  "create the R07 integration commits and push the resulting integration head to main with an exact lease",
+  "monitor exact main CI and record the integration closeout"
+ ],
+ "authority_id": "primary-human",
+ "base": {
+  "accepted_control_sha": "52552c8e3ddd9381f36bec8ccb694cf8c830cd49",
+  "activation_control_sha": "35cb1a7c5f136f291398dddd99d8012dcf38f967",
+  "checkpoint_id": "C0005",
+  "code_sha": "ad92bbfae62d538f3e52829a269a846688a8e213",
+  "delivery_sha": "2f55e0aa5687829ca3a7dd54d5f90663ec4293cc",
+  "planned_control_sha": "bb3b1e3c9ccf4a96344fe574159389f0b994ac23"
+ },
+ "decision": "approved",
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "preserved_exclusions": [
+  "R07 self-acceptance",
+  "checkpoint acceptance",
+  "R0011 resolution",
+  "branch retirement"
+ ],
+ "record_kind": "r07_integration_authorization",
+ "recorded_at": "2026-08-23T03:01:48Z",
+ "schema_version": 1,
+ "source": {
+  "channel": "current Codex task",
+  "message": "I explicitly authorize you."
+ },
+ "superseded_activation_exclusion": "R07 integration"
+}

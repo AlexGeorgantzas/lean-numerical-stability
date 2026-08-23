@@ -1,6 +1,6 @@
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
 import NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss.ResolventBound
-import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge
+import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ResolventCoefficients.Analytic
 import NumStability.Analysis.SingularValues.Basic
 
 /-!

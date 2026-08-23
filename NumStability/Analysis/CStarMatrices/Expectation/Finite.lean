@@ -1,4 +1,5 @@
-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.StrictPositivity
 import NumStability.Analysis.CStarMatrices.Trace.Basic
 import NumStability.Analysis.FiniteProbability
 

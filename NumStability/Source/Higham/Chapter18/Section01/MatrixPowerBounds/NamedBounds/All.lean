@@ -10,6 +10,7 @@ import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBou
 import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.Laszlo
 import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.NumericalRadius
 import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreiss
+import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional
 import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerProjectionIntegral
 import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerRational
 

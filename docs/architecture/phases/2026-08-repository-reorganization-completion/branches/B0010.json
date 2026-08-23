@@ -5,9 +5,15 @@
  "branch_id": "B0010",
  "branch_name": "codex/reorg-completion-2026-08-r07-matrix-functions-powers-ch18",
  "delivery": {
-  "commit_sha": null,
-  "report": null,
-  "scope_evidence": null
+  "commit_sha": "2f55e0aa5687829ca3a7dd54d5f90663ec4293cc",
+  "report": {
+   "path": "docs/architecture/deliveries/R07/DELIVERY.md",
+   "sha256": "397EAD1EAAE5BABCE781FE03A9757E05DD584167C577D76C23FF1B2017B5143C"
+  },
+  "scope_evidence": {
+   "path": "docs/architecture/deliveries/R07/CHANGED_PATHS.md",
+   "sha256": "7F61CD102B331FF2E9F643CF668D35C01F08CC827B571D58F68A08B9DEFC9481"
+  }
  },
  "destination_prefixes": [
   {
@@ -11777,6 +11783,6 @@
  "shared_request_ids": [
   "R0011"
  ],
- "status": "active",
+ "status": "delivered",
  "wave_id": "R07"
 }

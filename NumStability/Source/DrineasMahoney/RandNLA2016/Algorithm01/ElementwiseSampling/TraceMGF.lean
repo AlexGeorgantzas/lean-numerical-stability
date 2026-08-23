@@ -2,8 +2,8 @@ import Mathlib.Data.Fin.Tuple.Basic
 import NumStability.Algorithms.RandomizedLinearAlgebra.Concentration.HitCounts.Bounds
 import NumStability.Algorithms.RandomizedLinearAlgebra.Concentration.TraceMGF.Elementwise
 import NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.Elementwise.Core
-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
 import NumStability.Analysis.CStarMatrices.Expectation.Finite
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
 import NumStability.Analysis.CStarMatrices.Trace.Basic
 import NumStability.Analysis.FiniteProbability
 import NumStability.Analysis.FunctionalCalculus.OperatorLog.Monotonicity

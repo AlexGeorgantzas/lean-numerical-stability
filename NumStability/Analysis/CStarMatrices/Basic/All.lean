@@ -1,4 +1,4 @@
-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra
 
 /-!
 # Analysis.CStarMatrices.Basic.All

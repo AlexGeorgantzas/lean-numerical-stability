@@ -5,16 +5,19 @@
 C0005 accepts M04/R04 and M08/R08 at exact integrated code commit
 `ad92bbfae62d538f3e52829a269a846688a8e213`. Its generated evidence records
 2,818 production modules: 2,685 classified, 133 unclassified, and 0 mixed. M04
-and M08 are accepted; M07 is ready and B0010/R07 is active at exact C0005 base
-code `ad92bbfae62d538f3e52829a269a846688a8e213`. Exact planned-control commit
-`bb3b1e3c9ccf4a96344fe574159389f0b994ac23` passed Lean CI run 32480533045
-(job 96765696176). The local and remote
-`codex/reorg-completion-2026-08-r07-matrix-functions-powers-ch18` refs and clean
-LF named worktree `C:\Users\qed_s\higham-worktrees\completion-r07-codex` point
-to that exact base. The worker is frozen until the separate activation-control
-commit passes Lean CI. No R07 implementation, delivery, integration,
-self-acceptance, checkpoint acceptance, or branch retirement is recorded.
-Acceptance and branch retirement remain separate controls.
+and M08 are accepted; M07 remains ready and B0010/R07 is delivered from exact
+C0005 base code `ad92bbfae62d538f3e52829a269a846688a8e213`. Immutable delivery
+`2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` is preserved by true merge
+`4e298a102c6f914b42581492152ab9eea1cd0edf`, whose first parent is exact
+activation-control commit `35cb1a7c5f136f291398dddd99d8012dcf38f967`. The separate
+integration-control commit applies exact R0011 and reviewed correction
+`DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909`.
+The resulting projection is 2,860 production modules: 2,770 classified, 90
+unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
+P0010 and R0011 remain active, R0011 remains unresolved, and M07 remains ready.
+The remote worker ref remains preserved at the immutable delivery. Exact
+integration-control Lean CI is pending before closeout. No R07 self-acceptance,
+checkpoint acceptance, R0011 resolution, or branch retirement is recorded.
 
 A Lean 4 library for formally verified floating-point error analysis, following
 Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*

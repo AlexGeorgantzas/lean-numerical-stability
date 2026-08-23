@@ -14,10 +14,10 @@ import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.Haar.Basic
 import Mathlib.Probability.Distributions.Gaussian.Real
-import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
 import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
 import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
-import NumStability.Analysis.JordanNormalForm
+import NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.TestMatrices.Companion.Basic
 import NumStability.Analysis.TestMatrices.Companion.Companion

@@ -2,7 +2,9 @@ import Mathlib.Analysis.CStarAlgebra.CStarMatrix
 import Mathlib.Analysis.CStarAlgebra.Classes
 import Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.ExpLog.Order
 import Mathlib.Topology.Instances.Matrix
-import NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealEmbedding
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteRealOrder
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.StrictPositivity
 import NumStability.Analysis.MatrixAlgebra
 
 /-!

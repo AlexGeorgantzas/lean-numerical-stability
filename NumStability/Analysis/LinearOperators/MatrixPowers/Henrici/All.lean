@@ -2,7 +2,9 @@ import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.BinomialPowerB
 import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.DepartureFromNormality
 import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.Extremal
 import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.ImprovedConstant
+import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalCharacterization
 import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalMatrices
+import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SchurBinomialBounds
 import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SharpConstant
 
 /-!

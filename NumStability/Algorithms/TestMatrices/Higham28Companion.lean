@@ -1,6 +1,6 @@
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Minpoly
 import NumStability.Algorithms.TestMatrices.Higham28Contracts
-import NumStability.Analysis.JordanNormalForm
+import NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition
 import NumStability.Analysis.TestMatrices.Companion.Companion
 import NumStability.Source.Higham.Chapter28.Section06.Companion.Companion
 

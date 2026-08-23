@@ -1,6 +1,6 @@
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 import NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss.ResolventBound
-import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge
+import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ArcLengthPowerBounds.FiniteDimension
 import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.Kreiss
 
 /-!

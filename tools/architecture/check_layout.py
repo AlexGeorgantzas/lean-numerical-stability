@@ -387,7 +387,11 @@ def check() -> int:
             expected = {
                 name
                 for name in by_name
-                if name.startswith(contract) and name not in structural
+                if (
+                    name.startswith(contract)
+                    and name not in structural
+                    and assignment.get(name) != "internal"
+                )
             }
         elif (
             isinstance(contract, list)

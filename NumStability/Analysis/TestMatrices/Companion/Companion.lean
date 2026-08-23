@@ -97,10 +97,10 @@ import Mathlib.Topology.Algebra.Polynomial
 import Mathlib.Topology.ContinuousMap.Weierstrass
 import Mathlib.Topology.Instances.Matrix
 import Mathlib.Topology.MetricSpace.ProperSpace
-import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
 import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
 import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
-import NumStability.Analysis.JordanNormalForm
+import NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.TestMatrices.Companion.Basic
 import NumStability.Analysis.TestMatrices.Companion.Contracts

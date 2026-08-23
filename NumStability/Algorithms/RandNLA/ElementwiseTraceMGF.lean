@@ -1,7 +1,7 @@
 import Mathlib.Data.Fin.Tuple.Basic
 import NumStability.Algorithms.RandNLA.HitCountConcentration
 import NumStability.Algorithms.RandomizedLinearAlgebra.Concentration.TraceMGF.Elementwise
-import NumStability.Analysis.LiebTrace
+import NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity
 import NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling.TraceMGF
 
 /-!

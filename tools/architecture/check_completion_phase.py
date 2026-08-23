@@ -492,6 +492,99 @@ R07_ACTIVATION_CHANGED_PATHS = frozenset(
         "tools/architecture/check_completion_phase.py",
     }
 )
+R07_ACTIVATION_CONTROL_SHA = "35cb1a7c5f136f291398dddd99d8012dcf38f967"
+R07_ACTIVATION_CONTROL_TREE = "86988489459d3122e572c82ecdd4d75792b25278"
+R07_ACTIVATION_CONTROL_CI_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/R07-activation-control-ci.json"
+)
+R07_ACTIVATION_CONTROL_CI_SHA256 = (
+    "FFBCDC072D0D158D9A10F61AC78ED0A147B4243E0D4299147AB5B812F5210054"
+)
+R07_ACTIVATION_CONTROL_CI_RUN = 32484357063
+R07_ACTIVATION_CONTROL_CI_JOB = 96777433776
+R07_ACTIVATION_CONTROL_CI_SUITE = 88057246921
+R07_DELIVERED_BRANCH_SHA256 = (
+    "69EF4B557EE065A8790D8DE5AA8D551C9E1DE953121B1C974C2F53A620737EA1"
+)
+R07_DELIVERY_SHA = "2f55e0aa5687829ca3a7dd54d5f90663ec4293cc"
+R07_DELIVERY_TREE = "29fd7694d1b747995d534f63fd34a2ab542e9ba0"
+R07_DELIVERY_REPORT_PATH = "docs/architecture/deliveries/R07/DELIVERY.md"
+R07_DELIVERY_REPORT_SHA256 = (
+    "397EAD1EAAE5BABCE781FE03A9757E05DD584167C577D76C23FF1B2017B5143C"
+)
+R07_DELIVERY_SCOPE_PATH = "docs/architecture/deliveries/R07/CHANGED_PATHS.md"
+R07_DELIVERY_SCOPE_SHA256 = (
+    "7F61CD102B331FF2E9F643CF668D35C01F08CC827B571D58F68A08B9DEFC9481"
+)
+R07_R0011_REQUEST_SHA256 = (
+    "EA1DB32ACE4243F8223696D2A2AFAAB43C24AC97187861D0A07462B722E4C28C"
+)
+R07_R0011_PATH_LIST_SHA256 = (
+    "C05FA858BF0B5CC3A23F06DEC83F0738780566EA89A172DCA446D4F7129CB901"
+)
+R07_R0011_PATCH_SHA256 = (
+    "6C4BCAFDEB8CF97197F7A46D2CAA5BF05F5A1F81A1DAC4284A615B5AD8E9C122"
+)
+R07_R0011_POSTIMAGES_SHA256 = (
+    "C7B86B602A290650F8ABEA64281DF02A7C6DF94202C4C3FEB5694566A748D0DE"
+)
+R07_R0011_IMPORT_MANIFEST_SHA256 = (
+    "3F25D0F9A5F1BE095870F96ADD1F6A8E3341176668CB770D4AC917796A69D853"
+)
+R07_R0011_PLAN_SHA256 = (
+    "9316DE9A594E7E924CC2213692ED23B49DCBB5BCCD21285642A60D5B0E09E35D"
+)
+R07_R0011_TREE = "1f5daf23bec193dc68c932f854f754a6b6bcb01e"
+R07_CORRECTION_PATH = "docs/architecture/deliveries/R07/R0011-CORRECTION.patch"
+R07_CORRECTION_SHA256 = (
+    "DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909"
+)
+R07_CORRECTION_TREE = "6c1127df3be9221aa9b51e3b93bfd20ef168f3a6"
+R07_CORRECTION_POSTIMAGES = {
+    "NumStability/Algorithms.lean": (
+        "2A3D0971877BDCB5A9FEF1C35F0897242BE75B51E4B12F30348BA4009F5B737F"
+    ),
+    "NumStability/Analysis.lean": (
+        "E7E0DA9DAA5C8E7EC88212BDF68B94A9F55FABBA09E65A23ADB6E7CB410ABD57"
+    ),
+    "docs/architecture/layout-exceptions.json": (
+        "FD58D44C5C9150A3EE2AC4007B4F1D4523735DAFD6CAE93B7D4538E796E96CE6"
+    ),
+    "tools/architecture/check_layout.py": (
+        "FDDED75CF63F0C59EA09E345E4062DBB55E99CA34ABC1289EB2AE5DEEFBF878D"
+    ),
+}
+R07_MERGE_SHA = "4e298a102c6f914b42581492152ab9eea1cd0edf"
+R07_MERGE_TREE = "5694f6ba49d04d019f19839845988e1acdf44170"
+R07_INTEGRATION_AUTHORIZATION_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/R07-integration-authorization.json"
+)
+R07_INTEGRATION_AUTHORIZATION_SHA256 = (
+    "A4BA1FE4111BDF3818B075F201CBED19F0D0732BBAF466FCD9BEE350A7A47FEF"
+)
+R07_INTEGRATION_STATIC_CHANGED_PATHS = frozenset(
+    {
+        "README.md",
+        "docs/architecture/phases/README.md",
+        (
+            "docs/architecture/phases/2026-08-repository-reorganization-"
+            "completion/README.md"
+        ),
+        (
+            "docs/architecture/phases/2026-08-repository-reorganization-"
+            "completion/branches/B0010.json"
+        ),
+        R07_ACTIVATION_CONTROL_CI_PATH,
+        R07_INTEGRATION_AUTHORIZATION_PATH,
+        "tools/architecture/check_completion_phase.py",
+        "tools/architecture/check_layout.py",
+    }
+)
+R07_INTEGRATION_PATH_LIST_SHA256 = (
+    "A3476E9FF4AF748A3013996453290FAF1321B0E5639CF023165813FB0BCA2BA8"
+)
 C0005_PLANNED_CONTROL_PARENT_SHA = "59115771c816e0f41967c854beb9e86532317e82"
 C0005_PLANNED_CONTROL_SHA = "2d9dbf7bf8b4b51e9cb7817f5c5dc2d5194e8c42"
 C0005_PLANNED_CONTROL_CI_RUN = "32030191197"
@@ -2009,6 +2102,7 @@ def validate_c0005_acceptance_narrative(
     *,
     context: str,
     r07_active: bool = False,
+    r07_delivered: bool = False,
 ) -> None:
     """Require each acceptance narrative to carry the same material facts."""
 
@@ -2040,7 +2134,14 @@ def validate_c0005_acceptance_narrative(
         context,
         "narrative must record M07 ready",
     )
-    if r07_active:
+    if r07_delivered:
+        problems.require(
+            re.search(r"(?is)(?:R07.{0,120}delivered|delivered.{0,120}R07)", text)
+            is not None,
+            context,
+            "narrative must record the delivered-but-unaccepted R07 boundary",
+        )
+    elif r07_active:
         problems.require(
             re.search(r"(?is)(?:R07.{0,120}active|active.{0,120}R07)", text)
             is not None,
@@ -4099,6 +4200,249 @@ def validate_r07_active_branch_delta(
     )
 
 
+def validate_r07_delivered_branch_delta(
+    active: dict[str, Any],
+    delivered: dict[str, Any],
+    problems: Problems,
+    *,
+    context: str = "R07 delivered branch delta",
+) -> None:
+    """Allow only active->delivered plus the immutable delivery references."""
+
+    expected = json.loads(canonical_json(active))
+    expected["status"] = "delivered"
+    expected["delivery"] = {
+        "commit_sha": R07_DELIVERY_SHA,
+        "report": {
+            "path": R07_DELIVERY_REPORT_PATH,
+            "sha256": R07_DELIVERY_REPORT_SHA256,
+        },
+        "scope_evidence": {
+            "path": R07_DELIVERY_SCOPE_PATH,
+            "sha256": R07_DELIVERY_SCOPE_SHA256,
+        },
+    }
+    problems.require(
+        delivered == expected,
+        context,
+        "B0010 may change only active->delivered plus the exact immutable delivery references",
+    )
+
+
+def validate_r07_activation_control_ci(
+    record: dict[str, Any],
+    problems: Problems,
+    *,
+    context: str = "R07 activation-control CI",
+) -> None:
+    """Validate the hash-pinned green CI facts for the activation control."""
+
+    problems.require(
+        set(record)
+        == {
+            "activation_control",
+            "cardinality",
+            "check_run",
+            "check_suite",
+            "job",
+            "phase_id",
+            "record_kind",
+            "repository",
+            "run",
+            "schema_version",
+            "source_api",
+            "workflow",
+        },
+        f"{context}.schema",
+        "unexpected activation-control CI schema",
+    )
+    activation = record.get("activation_control")
+    run = record.get("run")
+    job = record.get("job")
+    suite = record.get("check_suite")
+    check_run = record.get("check_run")
+    cardinality = record.get("cardinality")
+    workflow = record.get("workflow")
+    problems.require(
+        record.get("schema_version") == 1
+        and record.get("record_kind") == "r07_activation_control_ci"
+        and record.get("phase_id") == PHASE_ID
+        and record.get("repository")
+        == "AlexGeorgantzas/lean-numerical-stability",
+        f"{context}.identity",
+        "expected exact R07 activation-control CI identity",
+    )
+    problems.require(
+        activation
+        == {
+            "commit_sha": R07_ACTIVATION_CONTROL_SHA,
+            "commit_tree_sha": R07_ACTIVATION_CONTROL_TREE,
+            "parent_planned_control_sha": R07_PLANNED_CONTROL_SHA,
+            "subject": "chore(reorg): activate R07 matrix powers epoch",
+        },
+        f"{context}.activation_control",
+        "CI evidence must identify the exact activation-control commit",
+    )
+    problems.require(
+        isinstance(run, dict)
+        and run.get("id") == R07_ACTIVATION_CONTROL_CI_RUN
+        and run.get("head_sha") == R07_ACTIVATION_CONTROL_SHA
+        and run.get("head_branch") == "main"
+        and run.get("event") == "push"
+        and run.get("run_attempt") == 1
+        and run.get("status") == "completed"
+        and run.get("conclusion") == "success",
+        f"{context}.run",
+        "activation-control CI must be the exact successful main push run",
+    )
+    problems.require(
+        isinstance(job, dict)
+        and job.get("id") == R07_ACTIVATION_CONTROL_CI_JOB
+        and job.get("run_id") == R07_ACTIVATION_CONTROL_CI_RUN
+        and job.get("head_sha") == R07_ACTIVATION_CONTROL_SHA
+        and job.get("head_branch") == "main"
+        and job.get("run_attempt") == 1
+        and job.get("status") == "completed"
+        and job.get("conclusion") == "success"
+        and isinstance(job.get("steps"), list)
+        and bool(job["steps"])
+        and all(
+            isinstance(step, dict)
+            and step.get("status") == "completed"
+            and step.get("conclusion") == "success"
+            for step in job["steps"]
+        ),
+        f"{context}.job",
+        "the sole activation-control build job and every recorded step must be green",
+    )
+    problems.require(
+        isinstance(suite, dict)
+        and suite.get("id") == R07_ACTIVATION_CONTROL_CI_SUITE
+        and suite.get("before_sha") == R07_PLANNED_CONTROL_SHA
+        and suite.get("after_sha") == R07_ACTIVATION_CONTROL_SHA
+        and suite.get("head_sha") == R07_ACTIVATION_CONTROL_SHA
+        and suite.get("head_branch") == "main"
+        and suite.get("status") == "completed"
+        and suite.get("conclusion") == "success"
+        and isinstance(check_run, dict)
+        and check_run.get("id") == R07_ACTIVATION_CONTROL_CI_JOB
+        and check_run.get("check_suite_id") == R07_ACTIVATION_CONTROL_CI_SUITE
+        and check_run.get("head_sha") == R07_ACTIVATION_CONTROL_SHA
+        and check_run.get("status") == "completed"
+        and check_run.get("conclusion") == "success",
+        f"{context}.suite",
+        "check suite/run must bind the exact successful activation-control push",
+    )
+    problems.require(
+        isinstance(cardinality, dict)
+        and cardinality.get("artifact_count") == 0
+        and cardinality.get("check_run_count") == 1
+        and cardinality.get("check_suite_count") == 1
+        and cardinality.get("commit_pull_request_count") == 0
+        and cardinality.get("job_count") == 1
+        and cardinality.get("job_ids") == [R07_ACTIVATION_CONTROL_CI_JOB]
+        and cardinality.get("referenced_workflow_count") == 0
+        and cardinality.get("run_pull_request_count") == 0
+        and workflow
+        == {
+            "file_blob_oid": "00e7ec449e46353f181eca7c9c8dfb538f1a4c47",
+            "file_sha256": (
+                "0A9E8B535D7A780623557A107E00D02B44513E650A4F6C5A259FC0323A435FD7"
+            ),
+            "id": 240911818,
+            "name": "Lean CI",
+            "path": ".github/workflows/lean_action_ci.yml",
+        },
+        f"{context}.cardinality",
+        "CI evidence must retain the exact sole-job/no-PR/no-artifact census and workflow",
+    )
+
+
+def validate_r07_integration_authorization(
+    record: dict[str, Any],
+    problems: Problems,
+    *,
+    context: str = "R07 integration authorization",
+) -> None:
+    """Validate the hash-pinned primary-human authority and preserved exclusions."""
+
+    expected_keys = {
+        "authorization_context",
+        "authorization_id",
+        "authorized_actions",
+        "authority_id",
+        "base",
+        "decision",
+        "phase_id",
+        "preserved_exclusions",
+        "record_kind",
+        "recorded_at",
+        "schema_version",
+        "source",
+        "superseded_activation_exclusion",
+    }
+    problems.require(
+        set(record) == expected_keys,
+        f"{context}.schema",
+        f"expected exactly {sorted(expected_keys)}",
+    )
+    problems.require(
+        record.get("schema_version") == 1
+        and record.get("record_kind") == "r07_integration_authorization"
+        and record.get("phase_id") == PHASE_ID
+        and record.get("authorization_id") == "R07-C0005-integration-v1"
+        and record.get("authority_id") == "primary-human"
+        and record.get("decision") == "approved"
+        and record.get("recorded_at") == "2026-08-23T03:01:48Z"
+        and RFC3339_RE.fullmatch(record.get("recorded_at", "")) is not None,
+        f"{context}.identity",
+        "expected exact primary-human R07 integration approval identity and recording time",
+    )
+    problems.require(
+        record.get("base")
+        == {
+            "accepted_control_sha": R07_ACCEPTED_CONTROL_SHA,
+            "activation_control_sha": R07_ACTIVATION_CONTROL_SHA,
+            "checkpoint_id": C0005_CHECKPOINT_ID,
+            "code_sha": C0005_CODE_SHA,
+            "delivery_sha": R07_DELIVERY_SHA,
+            "planned_control_sha": R07_PLANNED_CONTROL_SHA,
+        },
+        f"{context}.base",
+        "authorization must bind exact C0005, planned, activation, and delivery identities",
+    )
+    actions = record.get("authorized_actions")
+    problems.require(
+        isinstance(actions, list)
+        and len(actions) == 6
+        and all(isinstance(action, str) for action in actions)
+        and R07_DELIVERY_SHA in actions[0]
+        and "true-merge" in actions[0]
+        and "6C4BCAFDEB8CF97197F7A46D2CAA5BF05F5A1F81A1DAC4284A615B5AD8E9C122"
+        in actions[1]
+        and R07_CORRECTION_SHA256 in actions[2]
+        and "integration narratives" in actions[3]
+        and "exact lease" in actions[4]
+        and "integration closeout" in actions[5],
+        f"{context}.actions",
+        "authorization must enumerate the exact merge/request/correction/control/push/monitor actions",
+    )
+    problems.require(
+        record.get("preserved_exclusions")
+        == [
+            "R07 self-acceptance",
+            "checkpoint acceptance",
+            "R0011 resolution",
+            "branch retirement",
+        ]
+        and record.get("superseded_activation_exclusion") == "R07 integration"
+        and record.get("source")
+        == {"channel": "current Codex task", "message": "I explicitly authorize you."},
+        f"{context}.exclusions",
+        "integration authority must preserve self-acceptance/checkpoint/request-resolution/retirement exclusions",
+    )
+
+
 def validate_r07_activation_commit_shape(
     *,
     head: str,
@@ -4129,6 +4473,49 @@ def validate_r07_activation_commit_shape(
             not overlay_paths,
             f"{context}.worktree",
             "committed activation control must have a clean overlay; "
+            f"found={sorted(overlay_paths)}",
+        )
+
+
+def validate_r07_integration_commit_shape(
+    *,
+    head: str,
+    parents: Sequence[str],
+    changed_paths: set[str],
+    expected_changed_paths: set[str],
+    overlay_paths: set[str],
+    problems: Problems,
+    context: str = "R07 integration-control commit",
+) -> None:
+    """Require the exact direct-child control commit or its merge-HEAD overlay."""
+
+    precommit = head == R07_MERGE_SHA
+    if not precommit:
+        problems.require(
+            list(parents) == [R07_MERGE_SHA],
+            f"{context}.parent",
+            "committed integration control must be a single-parent direct child of the exact true merge",
+        )
+    problems.require(
+        len(expected_changed_paths) == 54
+        and path_list_sha256(expected_changed_paths)
+        == R07_INTEGRATION_PATH_LIST_SHA256,
+        f"{context}.contract",
+        "expected integration-control contract must retain exact 54-path identity",
+    )
+    problems.require(
+        changed_paths == expected_changed_paths,
+        f"{context}.paths",
+        ("precommit overlay" if precommit else "committed integration control")
+        + " must change exactly the reviewed 54 paths; "
+        f"missing={sorted(expected_changed_paths - changed_paths)}, "
+        f"extra={sorted(changed_paths - expected_changed_paths)}",
+    )
+    if not precommit:
+        problems.require(
+            not overlay_paths,
+            f"{context}.worktree",
+            "committed integration control must have a clean overlay; "
             f"found={sorted(overlay_paths)}",
         )
 
@@ -4310,6 +4697,7 @@ class CompletionValidator:
         self._r03_expected_tree: str | None = None
         self.r07_contract: dict[str, Any] | None = None
         self.r07_contract_artifacts: dict[str, str] = {}
+        self.r07_state = "absent"
 
     def relative(self, path: Path) -> str:
         try:
@@ -4927,6 +5315,112 @@ class CompletionValidator:
                     postimages[path] = shown.stdout
         return postimages
 
+    def replay_r07_correction(
+        self,
+        base_sha: str,
+        request_patch_path: Path,
+        request_paths: set[str],
+        request_tree: str,
+        correction_patch_path: Path,
+    ) -> dict[str, bytes]:
+        """Replay R0011 then its four-path correction in one disposable index."""
+
+        context = "R0011 corrected disposable-index replay"
+        postimages: dict[str, bytes] = {}
+        correction_paths = set(R07_CORRECTION_POSTIMAGES)
+        with tempfile.TemporaryDirectory(prefix="completion-r07-correction-") as directory:
+            index = Path(directory) / "index"
+            env = os.environ.copy()
+            env["GIT_INDEX_FILE"] = str(index)
+            read = self.git("read-tree", base_sha, check=False, env=env)
+            if read.returncode:
+                self.problems.add(
+                    context,
+                    "cannot initialize exact base tree: "
+                    + (read.stderr.strip() or read.stdout.strip()),
+                )
+                return postimages
+            request_applied = self.git(
+                "apply",
+                "--cached",
+                "--unidiff-zero",
+                "--whitespace=nowarn",
+                str(request_patch_path),
+                check=False,
+                env=env,
+            )
+            if request_applied.returncode:
+                self.problems.add(
+                    context,
+                    "R0011 does not apply before its correction: "
+                    + (request_applied.stderr.strip() or request_applied.stdout.strip()),
+                )
+                return postimages
+            request_written = self.git("write-tree", check=False, env=env)
+            actual_request_tree = request_written.stdout.strip()
+            self.problems.require(
+                request_written.returncode == 0 and actual_request_tree == request_tree,
+                f"{context}.request_tree",
+                f"expected exact R0011 tree {request_tree}, found {actual_request_tree!r}",
+            )
+            if request_written.returncode or actual_request_tree != request_tree:
+                return postimages
+            correction_applied = self.git(
+                "apply",
+                "--cached",
+                "--unidiff-zero",
+                "--whitespace=nowarn",
+                str(correction_patch_path),
+                check=False,
+                env=env,
+            )
+            if correction_applied.returncode:
+                self.problems.add(
+                    context,
+                    "correction does not apply after exact R0011: "
+                    + (
+                        correction_applied.stderr.strip()
+                        or correction_applied.stdout.strip()
+                    ),
+                )
+                return postimages
+            changed = {
+                normalize_path(line)
+                for line in self.git(
+                    "diff", "--cached", "--name-only", request_tree, env=env
+                ).stdout.splitlines()
+                if line.strip()
+            }
+            self.problems.require(
+                changed == correction_paths,
+                f"{context}.paths",
+                "correction must change every and only its four reviewed paths; "
+                f"missing={sorted(correction_paths - changed)}, "
+                f"extra={sorted(changed - correction_paths)}",
+            )
+            corrected_written = self.git("write-tree", check=False, env=env)
+            corrected_tree = corrected_written.stdout.strip()
+            self.problems.require(
+                corrected_written.returncode == 0
+                and corrected_tree == R07_CORRECTION_TREE,
+                f"{context}.tree",
+                f"expected exact corrected shared tree {R07_CORRECTION_TREE}, "
+                f"found {corrected_tree!r}",
+            )
+            if corrected_written.returncode:
+                return postimages
+            for path in sorted(request_paths | correction_paths):
+                shown = self.git_bytes(
+                    "show", f"{corrected_tree}:{path}", check=False
+                )
+                if shown.returncode:
+                    self.problems.add(
+                        f"{context}[{path}]", "missing postimage in corrected tree"
+                    )
+                else:
+                    postimages[path] = shown.stdout
+        return postimages
+
     def validate_r07_planned_control(self) -> None:
         """Validate exact C0005-rooted R07 planning and optional activation."""
 
@@ -4935,6 +5429,16 @@ class CompletionValidator:
         context = "authenticated R07 planned control"
         activation_path = self.root / R07_ACTIVATION_PATH
         activation_present = activation_path.is_file()
+        authorization_path = self.root / R07_INTEGRATION_AUTHORIZATION_PATH
+        delivered_present = authorization_path.is_file()
+        self.r07_state = (
+            "delivered" if delivered_present else "active" if activation_present else "planned"
+        )
+        self.problems.require(
+            not delivered_present or activation_present,
+            f"{context}.lifecycle",
+            "delivered mode requires the exact earlier activation record",
+        )
         counts = contract.get("counts")
         headers = contract.get("headers")
         if not isinstance(counts, dict) or not isinstance(headers, dict):
@@ -5065,6 +5569,7 @@ class CompletionValidator:
         if planned_branch is None:
             return
         activation: dict[str, Any] | None = None
+        active_branch: dict[str, Any] | None = None
         if activation_present:
             self.problems.require(
                 sha256_path(activation_path) == R07_ACTIVATION_SHA256,
@@ -5076,17 +5581,55 @@ class CompletionValidator:
                 validate_r07_activation_record(
                     activation, self.problems, context=R07_ACTIVATION_PATH
                 )
+            active_branch = self.git_json(
+                R07_ACTIVATION_CONTROL_SHA,
+                paths["branch"],
+                f"{context}.branch.historical_active",
+            )
+            historical_active_bytes = self.git_bytes(
+                "show",
+                f"{R07_ACTIVATION_CONTROL_SHA}:{self.relative(paths['branch'])}",
+                check=False,
+            )
             self.problems.require(
-                sha256_path(paths["branch"]) == R07_ACTIVE_BRANCH_SHA256,
-                f"{context}.branch.active_hash",
-                f"expected exact active B0010 SHA-256 {R07_ACTIVE_BRANCH_SHA256}",
+                historical_active_bytes.returncode == 0
+                and hashlib.sha256(historical_active_bytes.stdout).hexdigest().upper()
+                == R07_ACTIVE_BRANCH_SHA256,
+                f"{context}.branch.historical_active_hash",
+                "activation commit must retain exact active B0010 bytes",
             )
-            validate_r07_active_branch_delta(
-                planned_branch,
-                branch,
-                self.problems,
-                context=f"{context}.branch.activation_delta",
-            )
+            if active_branch is not None:
+                validate_r07_active_branch_delta(
+                    planned_branch,
+                    active_branch,
+                    self.problems,
+                    context=f"{context}.branch.activation_delta",
+                )
+            if delivered_present:
+                self.problems.require(
+                    sha256_path(paths["branch"]) == R07_DELIVERED_BRANCH_SHA256,
+                    f"{context}.branch.delivered_hash",
+                    f"expected exact delivered B0010 SHA-256 {R07_DELIVERED_BRANCH_SHA256}",
+                )
+                if active_branch is not None:
+                    validate_r07_delivered_branch_delta(
+                        active_branch,
+                        branch,
+                        self.problems,
+                        context=f"{context}.branch.delivery_delta",
+                    )
+            else:
+                self.problems.require(
+                    sha256_path(paths["branch"]) == R07_ACTIVE_BRANCH_SHA256,
+                    f"{context}.branch.active_hash",
+                    f"expected exact active B0010 SHA-256 {R07_ACTIVE_BRANCH_SHA256}",
+                )
+                validate_r07_active_branch_delta(
+                    planned_branch,
+                    branch,
+                    self.problems,
+                    context=f"{context}.branch.activation_delta.live",
+                )
         else:
             self.problems.require(
                 sha256_path(paths["branch"]) == R07_PLANNED_BRANCH_SHA256
@@ -5102,6 +5645,42 @@ class CompletionValidator:
         render = records["render"] or {}
         projection_review = records["projection_review"] or {}
         overlap = records["overlap"] or {}
+
+        if delivered_present:
+            delivered_artifacts = (
+                (R07_ACTIVATION_CONTROL_CI_PATH, R07_ACTIVATION_CONTROL_CI_SHA256),
+                (
+                    R07_INTEGRATION_AUTHORIZATION_PATH,
+                    R07_INTEGRATION_AUTHORIZATION_SHA256,
+                ),
+                (R07_DELIVERY_REPORT_PATH, R07_DELIVERY_REPORT_SHA256),
+                (R07_DELIVERY_SCOPE_PATH, R07_DELIVERY_SCOPE_SHA256),
+                (R07_CORRECTION_PATH, R07_CORRECTION_SHA256),
+            )
+            for delivered_path, delivered_digest in delivered_artifacts:
+                self.artifact(
+                    {"path": delivered_path, "sha256": delivered_digest},
+                    f"{context}.delivered_artifact[{delivered_path}]",
+                )
+            activation_ci = self.read_json(
+                self.root / R07_ACTIVATION_CONTROL_CI_PATH,
+                R07_ACTIVATION_CONTROL_CI_PATH,
+            )
+            if activation_ci is not None:
+                validate_r07_activation_control_ci(
+                    activation_ci,
+                    self.problems,
+                    context=R07_ACTIVATION_CONTROL_CI_PATH,
+                )
+            authorization = self.read_json(
+                authorization_path, R07_INTEGRATION_AUTHORIZATION_PATH
+            )
+            if authorization is not None:
+                validate_r07_integration_authorization(
+                    authorization,
+                    self.problems,
+                    context=R07_INTEGRATION_AUTHORIZATION_PATH,
+                )
 
         expected_review = {
             "schema_version": 1,
@@ -5272,7 +5851,13 @@ class CompletionValidator:
             "base_sha": base_sha,
             "baseline_projection_id": "P0010",
             "shared_request_ids": ["R0011"],
-            "status": "active" if activation_present else "planned",
+            "status": (
+                "delivered"
+                if delivered_present
+                else "active"
+                if activation_present
+                else "planned"
+            ),
         }
         for key, expected in branch_identity.items():
             self.problems.require(
@@ -5280,15 +5865,44 @@ class CompletionValidator:
                 f"{context}.branch.{key}",
                 f"expected {expected!r}",
             )
+        expected_delivery = (
+            {
+                "commit_sha": R07_DELIVERY_SHA,
+                "report": {
+                    "path": R07_DELIVERY_REPORT_PATH,
+                    "sha256": R07_DELIVERY_REPORT_SHA256,
+                },
+                "scope_evidence": {
+                    "path": R07_DELIVERY_SCOPE_PATH,
+                    "sha256": R07_DELIVERY_SCOPE_SHA256,
+                },
+            }
+            if delivered_present
+            else {"commit_sha": None, "report": None, "scope_evidence": None}
+        )
         self.problems.require(
-            branch.get("delivery")
-            == {"commit_sha": None, "report": None, "scope_evidence": None}
+            branch.get("delivery") == expected_delivery
             and branch.get("integration")
             == {"accepted_checkpoint_id": None, "accepted_sha": None, "method": None}
             and isinstance(branch.get("retirement"), dict)
             and branch["retirement"].get("status") == "not_due",
             f"{context}.branch.lifecycle",
-            "planned/active branch must have null delivery/integration and not_due retirement",
+            "branch must retain the exact mode-specific delivery, null integration, and not_due retirement",
+        )
+        m07 = next(
+            (
+                row
+                for row in self.phase.get("milestones", [])
+                if isinstance(row, dict) and row.get("milestone_id") == "M07"
+            ),
+            None,
+        )
+        self.problems.require(
+            isinstance(m07, dict)
+            and m07.get("status") == "ready"
+            and m07.get("accepted_checkpoint_id") is None,
+            f"{context}.milestone.lifecycle",
+            "M07 must remain ready and unaccepted through delivered integration-control state",
         )
 
         projection_identity = {
@@ -6085,6 +6699,72 @@ class CompletionValidator:
             f"{context}.request.postimages",
             "replayed bytes, postimage ledger, and render review must agree for all 46 paths",
         )
+        if delivered_present:
+            request_exact = (
+                sha256_path(paths["request"]) == R07_R0011_REQUEST_SHA256
+                and len(request_paths) == 46
+                and path_list_sha256(request_paths) == R07_R0011_PATH_LIST_SHA256
+                and isinstance(patch_ref, dict)
+                and patch_ref.get("sha256") == R07_R0011_PATCH_SHA256
+                and sha256_path(patch_path) == R07_R0011_PATCH_SHA256
+                and artifact_map.get(self.relative(request_post_path))
+                == R07_R0011_POSTIMAGES_SHA256
+                and artifact_map.get(self.relative(request_manifest_path))
+                == R07_R0011_IMPORT_MANIFEST_SHA256
+                and artifact_map.get(self.relative(request_plan_path))
+                == R07_R0011_PLAN_SHA256
+                and render.get("forward_tree") == R07_R0011_TREE
+            )
+            self.problems.require(
+                request_exact,
+                f"{context}.request.delivered_identity",
+                "delivered mode must retain the exact reviewed 46-path R0011 request, patch, ledgers, manifest, plan, and replay tree",
+            )
+            correction_paths = set(R07_CORRECTION_POSTIMAGES)
+            self.problems.require(
+                correction_paths & request_paths
+                == correction_paths - {"tools/architecture/check_layout.py"},
+                f"{context}.request.correction_scope",
+                "the correction must alter exactly three R0011 paths plus check_layout.py",
+            )
+            corrected_postimages = self.replay_r07_correction(
+                base_sha,
+                patch_path,
+                request_paths,
+                R07_R0011_TREE,
+                self.root / R07_CORRECTION_PATH,
+            )
+            expected_live = dict(postimage_payloads)
+            expected_live.update(
+                {
+                    path: corrected_postimages.get(path, b"")
+                    for path in correction_paths
+                }
+            )
+            for path in sorted(request_paths | correction_paths):
+                live_path = self.root / Path(*PurePosixPath(path).parts)
+                try:
+                    live_payload = live_path.read_bytes()
+                except OSError as error:
+                    self.problems.add(
+                        f"{context}.request.live_postimage[{path}]",
+                        f"cannot read exact live postimage: {error}",
+                    )
+                    continue
+                self.problems.require(
+                    live_payload == expected_live.get(path),
+                    f"{context}.request.live_postimage[{path}]",
+                    "live bytes must equal the sequential exact R0011+correction replay",
+                )
+            for path, digest in R07_CORRECTION_POSTIMAGES.items():
+                self.problems.require(
+                    hashlib.sha256(corrected_postimages.get(path, b""))
+                    .hexdigest()
+                    .upper()
+                    == digest,
+                    f"{context}.request.correction_postimage[{path}]",
+                    f"expected exact corrected postimage SHA-256 {digest}",
+                )
 
         manifest_by_path = {
             row.get("path", ""): row for row in request_manifest_rows
@@ -6670,59 +7350,311 @@ class CompletionValidator:
             "cannot resolve live HEAD",
         )
         if activation_present:
-            if head == R07_PLANNED_CONTROL_SHA:
-                activation_parents: list[str] = []
-                activation_changed = self.git_live_change_paths(
+            activation_metadata = self.git(
+                "show",
+                "-s",
+                "--format=%T%n%P%n%cI%n%s",
+                R07_ACTIVATION_CONTROL_SHA,
+                check=False,
+            )
+            self.problems.require(
+                activation_metadata.returncode == 0
+                and activation_metadata.stdout.splitlines()
+                == [
+                    R07_ACTIVATION_CONTROL_TREE,
                     R07_PLANNED_CONTROL_SHA,
-                    f"{context}.activation_commit.precommit",
+                    "2026-08-21T08:55:29-04:00",
+                    "chore(reorg): activate R07 matrix powers epoch",
+                ],
+                f"{context}.activation_commit.identity",
+                "activation control must retain exact tree, parent, time, and message",
+            )
+            activation_diff = self.git(
+                "diff",
+                "--name-only",
+                "--no-renames",
+                R07_PLANNED_CONTROL_SHA,
+                R07_ACTIVATION_CONTROL_SHA,
+                "--",
+                check=False,
+            )
+            activation_changed = {
+                normalize_path(path)
+                for path in activation_diff.stdout.splitlines()
+                if path.strip()
+            }
+            validate_r07_activation_commit_shape(
+                head=R07_ACTIVATION_CONTROL_SHA,
+                parents=[R07_PLANNED_CONTROL_SHA],
+                changed_paths=activation_changed,
+                overlay_paths=set(),
+                problems=self.problems,
+                context=f"{context}.activation_commit.history",
+            )
+            if delivered_present:
+                delivery_metadata = self.git(
+                    "show",
+                    "-s",
+                    "--format=%T%n%P%n%cI%n%s",
+                    R07_DELIVERY_SHA,
+                    check=False,
                 )
-                activation_overlay: set[str] = set()
-            else:
-                parent_result = self.git(
-                    "show", "-s", "--format=%P", "HEAD", check=False
+                self.problems.require(
+                    delivery_metadata.returncode == 0
+                    and delivery_metadata.stdout.splitlines()
+                    == [
+                        R07_DELIVERY_TREE,
+                        C0005_CODE_SHA,
+                        "2026-08-22T22:34:43-04:00",
+                        "refactor(reorg): deliver R07 matrix powers epoch",
+                    ],
+                    f"{context}.delivery.identity",
+                    "delivery must retain exact tree, C0005 parent, time, and message",
                 )
-                activation_parents = parent_result.stdout.split()
-                activation_diff = self.git(
+                delivery_status = self.git(
                     "diff",
-                    "--name-only",
+                    "--name-status",
                     "--no-renames",
-                    R07_PLANNED_CONTROL_SHA,
-                    "HEAD",
+                    C0005_CODE_SHA,
+                    R07_DELIVERY_SHA,
                     "--",
                     check=False,
                 )
-                activation_changed = {
-                    normalize_path(path)
-                    for path in activation_diff.stdout.splitlines()
-                    if path.strip()
-                }
-                if parent_result.returncode or activation_diff.returncode:
-                    self.problems.add(
-                        f"{context}.activation_commit.git",
-                        "cannot read activation parent/diff",
+                actual_delivery_rows: dict[str, str] = {}
+                malformed_delivery_rows: list[str] = []
+                for line in delivery_status.stdout.splitlines():
+                    fields = line.split("\t", 1)
+                    if len(fields) != 2 or fields[0] not in {"A", "M"}:
+                        malformed_delivery_rows.append(line)
+                    else:
+                        actual_delivery_rows[normalize_path(fields[1])] = fields[0]
+                try:
+                    scope_text = (self.root / R07_DELIVERY_SCOPE_PATH).read_text(
+                        encoding="utf-8"
                     )
-                activation_overlay = self.git_live_change_paths(
-                    "HEAD", f"{context}.activation_commit.worktree"
+                except (OSError, UnicodeError) as error:
+                    self.problems.add(
+                        f"{context}.delivery.scope", f"cannot read scope: {error}"
+                    )
+                    scope_text = ""
+                declared_delivery_rows = {
+                    match.group(2): match.group(1)
+                    for match in re.finditer(
+                        r"^\| ([AM]) \| `([^`]+)` \|$", scope_text, re.MULTILINE
+                    )
+                }
+                delivery_paths = set(actual_delivery_rows)
+                production_paths = {
+                    path for path in delivery_paths if path.startswith("NumStability/")
+                }
+                test_paths = {
+                    path
+                    for path in delivery_paths
+                    if path.startswith("NumStabilityTest/Reorganization/R07/")
+                }
+                evidence_paths = {
+                    path
+                    for path in delivery_paths
+                    if path.startswith("docs/architecture/deliveries/R07/")
+                }
+                self.problems.require(
+                    delivery_status.returncode == 0
+                    and not malformed_delivery_rows
+                    and len(actual_delivery_rows) == 166
+                    and Counter(actual_delivery_rows.values())
+                    == Counter({"A": 153, "M": 13})
+                    and declared_delivery_rows == actual_delivery_rows
+                    and len(production_paths) == 43
+                    and len(test_paths) == 102
+                    and len(evidence_paths) == 21
+                    and production_paths | test_paths | evidence_paths == delivery_paths,
+                    f"{context}.delivery.scope",
+                    "delivery and hash-pinned scope must agree on exact 166=153A+13M paths split 43 production/102 tests/21 evidence",
                 )
-            validate_r07_activation_commit_shape(
-                head=head,
-                parents=activation_parents,
-                changed_paths=activation_changed,
-                overlay_paths=activation_overlay,
-                problems=self.problems,
-                context=f"{context}.activation_commit",
-            )
-            narrative_fragments = (
-                "B0010/R07 is active",
-                R07_PLANNED_CONTROL_SHA,
-                f"Lean CI run {R07_PLANNED_CONTROL_CI_RUN}",
-                f"job {R07_PLANNED_CONTROL_CI_JOB}",
-                "codex/reorg-completion-2026-08-r07-matrix-functions-powers-ch18",
-                C0005_CODE_SHA,
-                r"C:\Users\qed_s\higham-worktrees\completion-r07-codex",
-                "frozen until the separate activation-control commit passes Lean CI",
-                "No R07 implementation, delivery, integration, self-acceptance, checkpoint acceptance, or branch retirement is recorded",
-            )
+                self.problems.require(
+                    delivery_paths.isdisjoint(request_paths)
+                    and delivery_paths.isdisjoint(R07_INTEGRATION_STATIC_CHANGED_PATHS),
+                    f"{context}.delivery.scope_overlap",
+                    "immutable worker delivery must not contain integrator-owned R0011/control paths",
+                )
+                merge_metadata = self.git(
+                    "show",
+                    "-s",
+                    "--format=%T%n%P%n%cI%n%s",
+                    R07_MERGE_SHA,
+                    check=False,
+                )
+                self.problems.require(
+                    merge_metadata.returncode == 0
+                    and merge_metadata.stdout.splitlines()
+                    == [
+                        R07_MERGE_TREE,
+                        f"{R07_ACTIVATION_CONTROL_SHA} {R07_DELIVERY_SHA}",
+                        "2026-08-22T22:56:43-04:00",
+                        "merge(reorg): integrate immutable R07 delivery",
+                    ],
+                    f"{context}.merge.identity",
+                    "R07 delivery must be preserved by the exact two-parent true merge",
+                )
+                merge_first_parent_diff = self.git(
+                    "diff",
+                    "--name-status",
+                    "--no-renames",
+                    R07_ACTIVATION_CONTROL_SHA,
+                    R07_MERGE_SHA,
+                    "--",
+                    check=False,
+                )
+                self.problems.require(
+                    merge_first_parent_diff.returncode == 0
+                    and merge_first_parent_diff.stdout == delivery_status.stdout,
+                    f"{context}.merge.first_parent_delta",
+                    "true merge first-parent delta must reproduce the immutable 166-path delivery exactly",
+                )
+                merge_ancestry = self.git(
+                    "merge-base", "--is-ancestor", R07_MERGE_SHA, "HEAD", check=False
+                )
+                self.problems.require(
+                    merge_ancestry.returncode == 0,
+                    f"{context}.merge.ancestry",
+                    "exact R07 true merge must be an ancestor of live HEAD",
+                )
+                integration_expected = request_paths | set(
+                    R07_INTEGRATION_STATIC_CHANGED_PATHS
+                )
+                cache_result = self.git(
+                    "ls-files",
+                    "--others",
+                    "--exclude-standard",
+                    "--",
+                    ".cache",
+                    check=False,
+                )
+                untracked_material = (
+                    {
+                        normalize_path(path)
+                        for path in cache_result.stdout.splitlines()
+                        if path.strip()
+                    }
+                    if cache_result.returncode == 0
+                    else set()
+                )
+                if cache_result.returncode:
+                    self.problems.add(
+                        f"{context}.integration_control.material",
+                        "cannot enumerate disposable untracked .cache material",
+                    )
+                if head == R07_MERGE_SHA:
+                    integration_parents: list[str] = []
+                    integration_changed = (
+                        self.git_live_change_paths(
+                            R07_MERGE_SHA,
+                            f"{context}.integration_control.precommit",
+                        )
+                        - untracked_material
+                    )
+                    integration_overlay: set[str] = set()
+                else:
+                    integration_parent_result = self.git(
+                        "show", "-s", "--format=%P", "HEAD", check=False
+                    )
+                    integration_parents = integration_parent_result.stdout.split()
+                    integration_diff = self.git(
+                        "diff",
+                        "--name-only",
+                        "--no-renames",
+                        R07_MERGE_SHA,
+                        "HEAD",
+                        "--",
+                        check=False,
+                    )
+                    integration_changed = {
+                        normalize_path(path)
+                        for path in integration_diff.stdout.splitlines()
+                        if path.strip()
+                    }
+                    if integration_parent_result.returncode or integration_diff.returncode:
+                        self.problems.add(
+                            f"{context}.integration_control.git",
+                            "cannot read integration-control parent/diff",
+                        )
+                    integration_overlay = (
+                        self.git_live_change_paths(
+                            "HEAD", f"{context}.integration_control.worktree"
+                        )
+                        - untracked_material
+                    )
+                validate_r07_integration_commit_shape(
+                    head=head,
+                    parents=integration_parents,
+                    changed_paths=integration_changed,
+                    expected_changed_paths=integration_expected,
+                    overlay_paths=integration_overlay,
+                    problems=self.problems,
+                    context=f"{context}.integration_control",
+                )
+                narrative_fragments = (
+                    "M07 remains ready and B0010/R07 is delivered",
+                    R07_DELIVERY_SHA,
+                    "true merge",
+                    R07_MERGE_SHA,
+                    R07_ACTIVATION_CONTROL_SHA,
+                    R07_CORRECTION_SHA256,
+                    "2,860 production modules: 2,770 classified, 90 unclassified, and 0 mixed",
+                    "R09=72 and R10=18",
+                    "P0010 and R0011 remain active, R0011 remains unresolved",
+                    "Exact integration-control Lean CI is pending before closeout",
+                    "No R07 self-acceptance, checkpoint acceptance, R0011 resolution, or branch retirement is recorded.",
+                )
+            else:
+                if head == R07_PLANNED_CONTROL_SHA:
+                    activation_parents = []
+                    live_activation_changed = self.git_live_change_paths(
+                        R07_PLANNED_CONTROL_SHA,
+                        f"{context}.activation_commit.precommit",
+                    )
+                    activation_overlay = set()
+                else:
+                    live_activation_parent = self.git(
+                        "show", "-s", "--format=%P", "HEAD", check=False
+                    )
+                    activation_parents = live_activation_parent.stdout.split()
+                    live_activation_diff = self.git(
+                        "diff",
+                        "--name-only",
+                        "--no-renames",
+                        R07_PLANNED_CONTROL_SHA,
+                        "HEAD",
+                        "--",
+                        check=False,
+                    )
+                    live_activation_changed = {
+                        normalize_path(path)
+                        for path in live_activation_diff.stdout.splitlines()
+                        if path.strip()
+                    }
+                    activation_overlay = self.git_live_change_paths(
+                        "HEAD", f"{context}.activation_commit.worktree"
+                    )
+                validate_r07_activation_commit_shape(
+                    head=head,
+                    parents=activation_parents,
+                    changed_paths=live_activation_changed,
+                    overlay_paths=activation_overlay,
+                    problems=self.problems,
+                    context=f"{context}.activation_commit.live",
+                )
+                narrative_fragments = (
+                    "B0010/R07 is active",
+                    R07_PLANNED_CONTROL_SHA,
+                    f"Lean CI run {R07_PLANNED_CONTROL_CI_RUN}",
+                    f"job {R07_PLANNED_CONTROL_CI_JOB}",
+                    "codex/reorg-completion-2026-08-r07-matrix-functions-powers-ch18",
+                    C0005_CODE_SHA,
+                    r"C:\Users\qed_s\higham-worktrees\completion-r07-codex",
+                    "frozen until the separate activation-control commit passes Lean CI",
+                    "No R07 implementation, delivery, integration, self-acceptance, checkpoint acceptance, or branch retirement is recorded",
+                )
             for narrative_path in (
                 self.root / "README.md",
                 self.root / "docs/architecture/phases/README.md",
@@ -6741,7 +7673,7 @@ class CompletionValidator:
                     self.problems.require(
                         fragment in normalized_narrative,
                         self.relative(narrative_path),
-                        f"missing exact activation narrative fragment {fragment!r}",
+                        f"missing exact {self.r07_state} narrative fragment {fragment!r}",
                     )
         else:
             self.problems.require(
@@ -8940,6 +9872,10 @@ class CompletionValidator:
                 context=narrative,
                 r07_active=(
                     (self.root / R07_ACTIVATION_PATH).is_file()
+                    and narrative in R07_ACTIVATION_CHANGED_PATHS
+                ),
+                r07_delivered=(
+                    (self.root / R07_INTEGRATION_AUTHORIZATION_PATH).is_file()
                     and narrative in R07_ACTIVATION_CHANGED_PATHS
                 ),
             )
@@ -12227,14 +13163,11 @@ class CompletionValidator:
             "NumStabilityTest.lean",
             "benchmark-results",
         )
-        production_diff = self.git(
-            "diff",
-            "--name-only",
-            C0004_CODE_SHA,
-            "--",
-            *production_scope,
-            check=False,
-        )
+        production_diff_args = ["diff", "--name-only", C0004_CODE_SHA]
+        if (self.root / R07_INTEGRATION_AUTHORIZATION_PATH).is_file():
+            production_diff_args.append(R07_ACCEPTED_CONTROL_SHA)
+        production_diff_args.extend(["--", *production_scope])
+        production_diff = self.git(*production_diff_args, check=False)
         live_production_paths = (
             {line.strip() for line in production_diff.stdout.splitlines() if line.strip()}
             if production_diff.returncode == 0
@@ -13190,10 +14123,23 @@ class CompletionValidator:
                     )
                     if code.returncode == 0:
                         code_sha256 = hashlib.sha256(code.stdout).hexdigest().upper()
+                live_sha256 = sha256_path(live) if live.is_file() else None
+                if (
+                    (self.root / R07_INTEGRATION_AUTHORIZATION_PATH).is_file()
+                    and path not in C0005_ACCEPTANCE_NARRATIVE_PATHS
+                ):
+                    historical_live = self.git_bytes(
+                        "show", f"{R07_ACCEPTED_CONTROL_SHA}:{path}", check=False
+                    )
+                    live_sha256 = (
+                        hashlib.sha256(historical_live.stdout).hexdigest().upper()
+                        if historical_live.returncode == 0
+                        else None
+                    )
                 validate_c0005_union_materialization(
                     path,
                     union_postimages.get(path),
-                    sha256_path(live) if live.is_file() else None,
+                    live_sha256,
                     code_sha256,
                     terminal,
                     self.problems,
@@ -15645,7 +16591,14 @@ class CompletionValidator:
             if unknown:
                 self.problems.add(self.relative(path), f"{milestone} has unknown dependencies {sorted(unknown)}")
         self.check_acyclic(dependencies, self.relative(path))
-        live_edges = self.live_wave_import_edges(worker_waves)
+        live_edges = self.live_wave_import_edges(
+            worker_waves,
+            commit=(
+                R07_ACCEPTED_CONTROL_SHA
+                if (self.root / R07_INTEGRATION_AUTHORIZATION_PATH).is_file()
+                else None
+            ),
+        )
         declared_edges: Counter[tuple[str, str]] = Counter()
         if edge_mode:
             edge_rows = [
@@ -15827,7 +16780,7 @@ class CompletionValidator:
             visit(node)
 
     def live_wave_import_edges(
-        self, worker_waves: set[str]
+        self, worker_waves: set[str], *, commit: str | None = None
     ) -> Counter[tuple[str, str]]:
         path_to_wave = {
             row["path"]: row["wave_id"]
@@ -15836,13 +16789,41 @@ class CompletionValidator:
         }
         module_to_path = {module_from_path(path): path for path in path_to_wave}
         quotient: Counter[tuple[str, str]] = Counter()
+        historical_payloads: dict[str, bytes] = {}
+        if commit is not None:
+            tree_blobs = self.git_tree_blobs(commit)
+            path_oids = {
+                path: tree_blobs[path]
+                for path in path_to_wave
+                if path in tree_blobs
+            }
+            blob_payloads = self.git_blob_payloads(
+                path_oids.values(), "milestone immutable import graph"
+            )
+            historical_payloads = {
+                path: blob_payloads[oid]
+                for path, oid in path_oids.items()
+                if oid in blob_payloads
+            }
         for path, wave in path_to_wave.items():
-            source = self.root / path
-            try:
-                text = source.read_text(encoding="utf-8-sig", errors="replace")
-            except OSError as error:
-                self.problems.add("milestone import graph", f"cannot read {path}: {error}")
-                continue
+            if commit is None:
+                source = self.root / path
+                try:
+                    text = source.read_text(encoding="utf-8-sig", errors="replace")
+                except OSError as error:
+                    self.problems.add(
+                        "milestone import graph", f"cannot read {path}: {error}"
+                    )
+                    continue
+            else:
+                payload = historical_payloads.get(path)
+                if payload is None:
+                    self.problems.add(
+                        "milestone import graph",
+                        f"cannot read {path} at immutable control {commit}",
+                    )
+                    continue
+                text = payload.decode("utf-8-sig", errors="replace")
             for imported in IMPORT_RE.findall(remove_lean_comments(text)):
                 target = module_to_path.get(imported)
                 if target is None:
@@ -16176,17 +17157,35 @@ def run_self_test() -> int:
         )
 
     activation_fixture_path = ROOT / R07_ACTIVATION_PATH
-    active_branch_fixture_path = (
+    delivered_branch_fixture_path = (
         ROOT / DEFAULT_PHASE_DIR / "branches/B0010.json"
     )
     try:
         activation_fixture = json.loads(
             activation_fixture_path.read_text(encoding="utf-8")
         )
-        active_branch_fixture = json.loads(
-            active_branch_fixture_path.read_text(encoding="utf-8")
+        active_branch_payload = subprocess.run(
+            [
+                "git",
+                "show",
+                f"{R07_ACTIVATION_CONTROL_SHA}:"
+                f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0010.json",
+            ],
+            cwd=ROOT,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        ).stdout
+        active_branch_fixture = json.loads(active_branch_payload.decode("utf-8"))
+        delivered_branch_fixture = json.loads(
+            delivered_branch_fixture_path.read_text(encoding="utf-8")
         )
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+    except (
+        OSError,
+        UnicodeError,
+        json.JSONDecodeError,
+        subprocess.CalledProcessError,
+    ) as error:
         problems.add(
             "self-test R07 activation fixtures",
             f"cannot load exact activation fixtures: {error}",
@@ -16200,7 +17199,7 @@ def run_self_test() -> int:
         )
         problems.require(
             sha256_path(activation_fixture_path) == R07_ACTIVATION_SHA256
-            and sha256_path(active_branch_fixture_path)
+            and hashlib.sha256(active_branch_payload).hexdigest().upper()
             == R07_ACTIVE_BRANCH_SHA256
             and not activation_positive.messages,
             "self-test R07 activation record positive",
@@ -16293,6 +17292,59 @@ def run_self_test() -> int:
                 "adversarial branch delta was not rejected",
             )
 
+        delivered_delta_positive = Problems()
+        validate_r07_delivered_branch_delta(
+            active_branch_fixture,
+            delivered_branch_fixture,
+            delivered_delta_positive,
+            context="self-test R07 delivered branch delta",
+        )
+        problems.require(
+            sha256_path(delivered_branch_fixture_path) == R07_DELIVERED_BRANCH_SHA256
+            and not delivered_delta_positive.messages,
+            "self-test R07 delivered branch delta positive",
+            "valid delivered branch delta rejected or digest drifted: "
+            f"{delivered_delta_positive.messages}",
+        )
+        for label, mutate in (
+            (
+                "accepted integration",
+                lambda value: value["integration"].__setitem__(
+                    "accepted_sha", "0" * 40
+                ),
+            ),
+            (
+                "retired branch",
+                lambda value: value["retirement"].__setitem__(
+                    "status", "retired"
+                ),
+            ),
+            (
+                "wrong delivery",
+                lambda value: value["delivery"].__setitem__(
+                    "commit_sha", "0" * 40
+                ),
+            ),
+            (
+                "unrelated field",
+                lambda value: value.__setitem__("base_sha", "0" * 40),
+            ),
+        ):
+            mutated = json.loads(canonical_json(delivered_branch_fixture))
+            mutate(mutated)
+            delivered_delta_negative = Problems()
+            validate_r07_delivered_branch_delta(
+                active_branch_fixture,
+                mutated,
+                delivered_delta_negative,
+                context="self-test R07 delivered branch delta",
+            )
+            problems.require(
+                bool(delivered_delta_negative.messages),
+                f"self-test R07 delivered branch delta {label}",
+                "adversarial delivered lifecycle mutation was not rejected",
+            )
+
     activation_shape_positive = Problems()
     for head, parents in (
         (R07_PLANNED_CONTROL_SHA, []),
@@ -16356,6 +17408,203 @@ def run_self_test() -> int:
             f"adversarial activation shape missed {diagnostic}: "
             f"{activation_shape_negative.messages}",
         )
+
+    activation_ci_fixture_path = ROOT / R07_ACTIVATION_CONTROL_CI_PATH
+    authorization_fixture_path = ROOT / R07_INTEGRATION_AUTHORIZATION_PATH
+    request_fixture_path = ROOT / DEFAULT_PHASE_DIR / "requests/R0011.json"
+    try:
+        activation_ci_fixture = json.loads(
+            activation_ci_fixture_path.read_text(encoding="utf-8")
+        )
+        authorization_fixture = json.loads(
+            authorization_fixture_path.read_text(encoding="utf-8")
+        )
+        request_fixture = json.loads(request_fixture_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        problems.add(
+            "self-test R07 delivered fixtures",
+            f"cannot load exact delivered fixtures: {error}",
+        )
+    else:
+        activation_ci_positive = Problems()
+        validate_r07_activation_control_ci(
+            activation_ci_fixture,
+            activation_ci_positive,
+            context="self-test R07 activation-control CI",
+        )
+        problems.require(
+            sha256_path(activation_ci_fixture_path)
+            == R07_ACTIVATION_CONTROL_CI_SHA256
+            and not activation_ci_positive.messages,
+            "self-test R07 activation-control CI positive",
+            "exact activation-control CI rejected or digest drifted: "
+            f"{activation_ci_positive.messages}",
+        )
+        for label, mutate, diagnostic in (
+            (
+                "failed run",
+                lambda value: value["run"].__setitem__("conclusion", "failure"),
+                ".run:",
+            ),
+            (
+                "wrong job",
+                lambda value: value["job"].__setitem__("id", 1),
+                ".job:",
+            ),
+            (
+                "wrong suite base",
+                lambda value: value["check_suite"].__setitem__(
+                    "before_sha", "0" * 40
+                ),
+                ".suite:",
+            ),
+            (
+                "extra job",
+                lambda value: value["cardinality"].__setitem__("job_count", 2),
+                ".cardinality:",
+            ),
+        ):
+            mutated = json.loads(canonical_json(activation_ci_fixture))
+            mutate(mutated)
+            negative = Problems()
+            validate_r07_activation_control_ci(
+                mutated,
+                negative,
+                context="self-test R07 activation-control CI",
+            )
+            problems.require(
+                any(diagnostic in message for message in negative.messages),
+                f"self-test R07 activation-control CI {label}",
+                f"adversarial CI mutation missed {diagnostic}: {negative.messages}",
+            )
+
+        authorization_positive = Problems()
+        validate_r07_integration_authorization(
+            authorization_fixture,
+            authorization_positive,
+            context="self-test R07 integration authorization",
+        )
+        problems.require(
+            sha256_path(authorization_fixture_path)
+            == R07_INTEGRATION_AUTHORIZATION_SHA256
+            and not authorization_positive.messages,
+            "self-test R07 integration authorization positive",
+            "exact integration authorization rejected or digest drifted: "
+            f"{authorization_positive.messages}",
+        )
+        for label, mutate, diagnostic in (
+            (
+                "denied",
+                lambda value: value.__setitem__("decision", "denied"),
+                ".identity:",
+            ),
+            (
+                "wrong delivery",
+                lambda value: value["base"].__setitem__(
+                    "delivery_sha", "0" * 40
+                ),
+                ".base:",
+            ),
+            (
+                "missing action",
+                lambda value: value["authorized_actions"].pop(),
+                ".actions:",
+            ),
+            (
+                "self-acceptance authorized",
+                lambda value: value.__setitem__("preserved_exclusions", []),
+                ".exclusions:",
+            ),
+        ):
+            mutated = json.loads(canonical_json(authorization_fixture))
+            mutate(mutated)
+            negative = Problems()
+            validate_r07_integration_authorization(
+                mutated,
+                negative,
+                context="self-test R07 integration authorization",
+            )
+            problems.require(
+                any(diagnostic in message for message in negative.messages),
+                f"self-test R07 integration authorization {label}",
+                "adversarial authorization mutation missed "
+                f"{diagnostic}: {negative.messages}",
+            )
+
+        request_fixture_paths = (
+            set(request_fixture.get("paths", []))
+            if isinstance(request_fixture.get("paths"), list)
+            else set()
+        )
+        integration_fixture_paths = request_fixture_paths | set(
+            R07_INTEGRATION_STATIC_CHANGED_PATHS
+        )
+        integration_shape_positive = Problems()
+        for integration_head, integration_parents in (
+            (R07_MERGE_SHA, []),
+            ("f" * 40, [R07_MERGE_SHA]),
+        ):
+            validate_r07_integration_commit_shape(
+                head=integration_head,
+                parents=integration_parents,
+                changed_paths=integration_fixture_paths,
+                expected_changed_paths=integration_fixture_paths,
+                overlay_paths=set(),
+                problems=integration_shape_positive,
+                context="self-test R07 integration control",
+            )
+        problems.require(
+            len(request_fixture_paths) == 46
+            and not integration_shape_positive.messages,
+            "self-test R07 integration control positive",
+            "valid precommit/committed integration-control shapes rejected: "
+            f"{integration_shape_positive.messages}",
+        )
+        for label, parents, changed, overlay, diagnostic in (
+            (
+                "wrong parent",
+                ["0" * 40],
+                integration_fixture_paths,
+                set(),
+                ".parent:",
+            ),
+            (
+                "missing path",
+                [R07_MERGE_SHA],
+                integration_fixture_paths - {R07_INTEGRATION_AUTHORIZATION_PATH},
+                set(),
+                ".paths:",
+            ),
+            (
+                "extra path",
+                [R07_MERGE_SHA],
+                integration_fixture_paths | {"intruder"},
+                set(),
+                ".paths:",
+            ),
+            (
+                "dirty committed overlay",
+                [R07_MERGE_SHA],
+                integration_fixture_paths,
+                {"intruder"},
+                ".worktree:",
+            ),
+        ):
+            negative = Problems()
+            validate_r07_integration_commit_shape(
+                head="f" * 40,
+                parents=parents,
+                changed_paths=changed,
+                expected_changed_paths=integration_fixture_paths,
+                overlay_paths=overlay,
+                problems=negative,
+                context="self-test R07 integration control",
+            )
+            problems.require(
+                any(diagnostic in message for message in negative.messages),
+                f"self-test R07 integration control {label}",
+                f"adversarial integration mutation missed {diagnostic}: {negative.messages}",
+            )
     with tempfile.TemporaryDirectory(
         prefix="completion-r07-live-change-self-test-"
     ) as directory:
@@ -18938,8 +20187,9 @@ No implementation began before activation-control CI. The worker remains frozen 
         "R0009/R0010 resolutions and gate evidence, M07 readiness, live-HEAD ancestry, "
         "and premature branch-retirement rejection"
         "; plus pure R07 contract identity/lifecycle, cross-artifact relation, UTF-16 "
-        "source-coordinate, planned/active branch delta, hash-pinned activation/CI/ref/"
-        "worktree evidence, and planned/activation precommit/direct-child commit-shape "
+        "source-coordinate, planned/active/delivered branch delta, hash-pinned "
+        "activation/planned-CI/ref/worktree and activation-control-CI/integration-authority "
+        "evidence, and planned/activation/integration precommit/direct-child commit-shape "
         "adversarial tests"
     )
     return 0
@@ -18975,11 +20225,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 1
-    r07_lifecycle = (
-        "active six-path activation control with exact planned-CI/ref/worktree evidence"
-        if (ROOT / R07_ACTIVATION_PATH).is_file()
-        else "planned controls"
-    )
+    r07_lifecycle = {
+        "planned": "planned controls",
+        "active": (
+            "active six-path activation control with exact planned-CI/ref/worktree evidence"
+        ),
+        "delivered": (
+            "delivered-but-unaccepted immutable 166-path true merge plus exact "
+            "R0011/correction integration control"
+        ),
+    }.get(validator.r07_state, validator.r07_state)
     print(
         f"completion phase passed: {validator.current_checkpoint_id} control state, "
         "C0000-pinned 2,593-row freeze, 492-row scope, exact R01/R02 98/145-path "
