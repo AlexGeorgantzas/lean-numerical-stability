@@ -1,0 +1,62 @@
+diff --git a/NumStability/Algorithms.lean b/NumStability/Algorithms.lean
+index 7e6cd7f1254cab58cfe0ea0356e91329bb874168..7b21c4361ec82336c0503036e97bf9327203f9e5 100644
+--- a/NumStability/Algorithms.lean
++++ b/NumStability/Algorithms.lean
+@@ -18,7 +17,0 @@
+-import NumStability.Algorithms.LU.GaussianElimination
+-import NumStability.Algorithms.LU.GrowthFactor
+-import NumStability.Algorithms.LU.LUSolve
+-import NumStability.Algorithms.LU.SpecialMatrices
+-import NumStability.Algorithms.LU.Tridiagonal
+-import NumStability.Algorithms.LU.TridiagonalCond
+-import NumStability.Algorithms.LU.TridiagonalRecurrence
+@@ -32,0 +26 @@
++import NumStability.Algorithms.LinearSystems.LeastSquares
+@@ -35 +28,0 @@
+-import NumStability.Algorithms.LinearSystems.LeastSquares
+@@ -60 +53,7 @@
+-import NumStability.Algorithms.MMatrix
++import NumStability.Algorithms.LU.GaussianElimination
++import NumStability.Algorithms.LU.GrowthFactor
++import NumStability.Algorithms.LU.LUSolve
++import NumStability.Algorithms.LU.SpecialMatrices
++import NumStability.Algorithms.LU.Tridiagonal
++import NumStability.Algorithms.LU.TridiagonalCond
++import NumStability.Algorithms.LU.TridiagonalRecurrence
+@@ -63,2 +61,0 @@
+-import NumStability.Algorithms.MatSeqProduct
+-import NumStability.Algorithms.MatVec
+@@ -68,0 +66,3 @@
++import NumStability.Algorithms.MatSeqProduct
++import NumStability.Algorithms.MatVec
++import NumStability.Algorithms.MMatrix
+@@ -141,0 +142 @@
++import NumStability.Analysis.ConditionEstimatorLowerBound
+@@ -143 +143,0 @@
+-import NumStability.Analysis.ConditionEstimatorLowerBound
+diff --git a/NumStability/Analysis.lean b/NumStability/Analysis.lean
+index 7763cda7595fefafcbd5865f5405c83c30a07e76..13b3b4f9f5ba9209766dcbe15276bae8e6e92dbe 100644
+--- a/NumStability/Analysis.lean
++++ b/NumStability/Analysis.lean
+@@ -16 +15,0 @@
+-import NumStability.Analysis.CStarMatrices
+@@ -21,0 +21 @@
++import NumStability.Analysis.CStarMatrices
+diff --git a/docs/architecture/layout-exceptions.json b/docs/architecture/layout-exceptions.json
+index 14a544c281b631c62ef69c04d08145c9bbc9d8c1..9255e0e5df8746a6c6383664f043d19d23ea2425 100644
+--- a/docs/architecture/layout-exceptions.json
++++ b/docs/architecture/layout-exceptions.json
+@@ -278 +278 @@
+-      "NumStability.Source.": 72
++      "NumStability.Source.": 73
+diff --git a/tools/architecture/check_layout.py b/tools/architecture/check_layout.py
+index d6f75f9619a03842e6497d0b8f044c9060167b69..42b9197afdcd3231d8020b962e236fe4b35c00da 100644
+--- a/tools/architecture/check_layout.py
++++ b/tools/architecture/check_layout.py
+@@ -390 +390,5 @@
+-                if name.startswith(contract) and name not in structural
++                if (
++                    name.startswith(contract)
++                    and name not in structural
++                    and assignment.get(name) != "internal"
++                )

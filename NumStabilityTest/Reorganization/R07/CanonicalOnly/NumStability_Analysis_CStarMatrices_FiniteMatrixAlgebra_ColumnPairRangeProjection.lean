@@ -1,0 +1,13 @@
+import NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeProjection
+
+/-!
+# R07 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.cstarMatrixColumnPairRangeProjection
+#check @NumStability.cstarMatrixColumnPairRangeProjection_isSelfAdjoint
+#check @NumStability.cstarMatrixColumnPairRangeProjection_mul_columnPair_of_sum
+#check @NumStability.cstarMatrixColumnPairRangeProjection_mul_self_of_sum
+#check @NumStability.cstarMatrixColumnPair_conjTranspose_mul_rangeProjection_of_sum

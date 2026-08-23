@@ -1,0 +1,21 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ResolventCoefficients.Analytic
+
+/-!
+# R07 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.cstarMatrixEuclideanCoefficientCLM
+#check @NumStability.cstarMatrixEuclideanCoefficientCLM_apply
+#check @NumStability.cstarMatrixEuclideanCoefficientCLM_circleIntegral
+#check @NumStability.cstarMatrixEuclideanCoefficientLinear
+#check @NumStability.hasDerivAt_spijkerPowerAntiderivative
+#check @NumStability.spijkerResolventCoefficient
+#check @NumStability.spijkerResolventCoefficientCurve
+#check @NumStability.spijkerResolventCoefficientCurve_deriv_continuous
+#check @NumStability.spijkerResolventCoefficientCurve_deriv_intervalIntegrable
+#check @NumStability.spijkerResolventCoefficientCurve_differentiableAt
+#check @NumStability.spijkerResolventCoefficientCurve_hasDerivAt
+#check @NumStability.spijkerResolventCoefficient_pow_eq_circleIntegral
+#check @NumStability.spijkerResolventCoefficient_pow_eq_intervalIntegral

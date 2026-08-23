@@ -1,0 +1,28 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge
+
+/-!
+# R07 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.SpijkerArcLengthBound
+#check @NumStability.cstarMatrixEuclideanCoefficientCLM
+#check @NumStability.cstarMatrixEuclideanCoefficientCLM_apply
+#check @NumStability.cstarMatrixEuclideanCoefficientCLM_circleIntegral
+#check @NumStability.cstarMatrixEuclideanCoefficientLinear
+#check @NumStability.hasDerivAt_spijkerPowerAntiderivative
+#check @NumStability.norm_cstarMatrixEuclideanCoefficient_pow_le_of_spijker
+#check @NumStability.norm_pow_le_exp_mul_dim_of_spijker
+#check @NumStability.norm_pow_le_of_spijker_circle
+#check @NumStability.norm_spijkerMoment_le_arcLength
+#check @NumStability.norm_spijkerResolventCoefficient_le
+#check @NumStability.powerBound_exp_mul_dim_of_spijker
+#check @NumStability.spijkerResolventCoefficient
+#check @NumStability.spijkerResolventCoefficientCurve
+#check @NumStability.spijkerResolventCoefficientCurve_deriv_continuous
+#check @NumStability.spijkerResolventCoefficientCurve_deriv_intervalIntegrable
+#check @NumStability.spijkerResolventCoefficientCurve_differentiableAt
+#check @NumStability.spijkerResolventCoefficientCurve_hasDerivAt
+#check @NumStability.spijkerResolventCoefficient_pow_eq_circleIntegral
+#check @NumStability.spijkerResolventCoefficient_pow_eq_intervalIntegral

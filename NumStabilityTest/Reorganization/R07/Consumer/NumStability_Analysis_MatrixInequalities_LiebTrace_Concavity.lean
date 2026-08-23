@@ -1,0 +1,44 @@
+import NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity
+
+/-!
+# R07 consumer test
+
+imports only NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity and checks its exact 36-declaration direct format-2 use frontier after NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge->NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonal;NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.BlockDiagonalCompression;NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPair;NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairPinching;NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.ColumnPairRangeReflection;NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.FiniteMatrixOrder;NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularCompression;NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.RectangularMultiplication;NumStability.Analysis.CStarMatrices.FiniteMatrixAlgebra.StrictPositivity
+-/
+
+#check @NumStability.cstarMatrixBlockDiagonal
+#check @NumStability.cstarMatrixBlockDiagonalStarAlgHom
+#check @NumStability.cstarMatrixBlockDiagonalStarAlgHom_continuous
+#check @NumStability.cstarMatrixBlockDiagonal_inl_inl
+#check @NumStability.cstarMatrixBlockDiagonal_inl_inr
+#check @NumStability.cstarMatrixBlockDiagonal_inr_inl
+#check @NumStability.cstarMatrixBlockDiagonal_inr_inr
+#check @NumStability.cstarMatrixBlockDiagonal_isSelfAdjoint
+#check @NumStability.cstarMatrixBlockDiagonal_isStrictlyPositive
+#check @NumStability.cstarMatrixColumnPair
+#check @NumStability.cstarMatrixColumnPairRangeReflection
+#check @NumStability.cstarMatrixColumnPairRangeReflection_conj_isStrictlyPositive_of_sum
+#check @NumStability.cstarMatrixColumnPairRangeReflection_isSelfAdjoint
+#check @NumStability.cstarMatrixColumnPairRangeReflection_mem_unitary_of_sum
+#check @NumStability.cstarMatrixColumnPair_conjTranspose_mul_blockDiagonal_mul_columnPair
+#check @NumStability.cstarMatrixColumnPair_conjTranspose_mul_self_eq_one_of_sum
+#check @NumStability.cstarMatrixColumnPair_inl
+#check @NumStability.cstarMatrixColumnPair_inr
+#check @NumStability.cstarMatrixColumnPair_reflectionAverage_compression_of_sum
+#check @NumStability.cstarMatrixColumnPair_reflectionAverage_mul_columnPair_of_sum
+#check @NumStability.cstarMatrixCompressionCLM
+#check @NumStability.cstarMatrix_add_mul_rect
+#check @NumStability.cstarMatrix_compression_add
+#check @NumStability.cstarMatrix_compression_one_of_conjTranspose_mul_self_eq_one
+#check @NumStability.cstarMatrix_compression_real_smul
+#check @NumStability.cstarMatrix_compression_sub
+#check @NumStability.cstarMatrix_le_of_matrix_le
+#check @NumStability.cstarMatrix_mul_add_rect
+#check @NumStability.cstarMatrix_mul_assoc_rect
+#check @NumStability.cstarMatrix_mul_one_rect
+#check @NumStability.cstarMatrix_mul_smul_rect
+#check @NumStability.cstarMatrix_nonneg_of_matrix_posSemidef
+#check @NumStability.cstarMatrix_one_mul_rect
+#check @NumStability.cstarMatrix_pos_real_smul_one_isStrictlyPositive
+#check @NumStability.cstarMatrix_smul_mul_rect
+#check @NumStability.cstarMatrix_units_inv_mul_rect_eq_mul_units_inv_of_mul_eq
