@@ -3,2118 +3,2256 @@
   "role": "direct-judge",
   "task_id": "P09-T3",
   "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
-  "dossier_sha256": "fa8b80cb98aa8f91f3b9d3217dd2cbd649eda6d6de2a64941dc5390f859f5857",
+  "dossier_sha256": "cbe5462518fc7fd203cd4d4cae40fdab8b1e8146ddea8af3ff73c752d089ac33",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "HighamBench.P09AsymptoticMultidimensionalFftFamily",
-      "interpretation": "A fixed-input family indexed by every positive real epsilon, with gamma nonnegative, model epsilon equal to the index, common gamma, exact-input nested FFT runs.",
-      "effect_on_target": "Supplies the asymptotic object over which the target chooses one quadratic coefficient and radius.",
-      "paper_match": "This is a precise operationalization of the paper's fixed algorithm/input first-order family and common gamma.",
+      "interpretation": "A fixed-input family of modeled FFT executions indexed by positive epsilon.",
+      "effect_on_target": "Supplies the exact output and computed outputs across the asymptotic parameter.",
+      "paper_match": "Faithfully packages the paper's fixed-data first-order asymptotic setting.",
       "status": "pass"
     },
     {
       "id": "D002",
       "name": "HighamBench.P09MultidimensionalFftPlan",
-      "interpretation": "A nonempty-dimensional plan packaging one FFT axis per coordinate and exact RMS scaling for every coordinate prefix.",
-      "effect_on_target": "Fixes the product-indexed multidimensional transform and the scaling used to propagate local errors.",
-      "paper_match": "Matches the coordinate plans and equation (4.4).",
+      "interpretation": "A nonempty finite list of coordinate FFT axes with RMS-scaling data.",
+      "effect_on_target": "Determines dimensions, coordinate transforms, and per-axis constants.",
+      "paper_match": "Matches the paper's m coordinate transformations.",
       "status": "pass"
     },
     {
       "id": "D003",
       "name": "HighamBench.P09MultidimensionalFftPlan.axis",
-      "interpretation": "Projection of the plan's function from Fin m to FFT-axis data.",
-      "effect_on_target": "Makes the target sum one K constant for each of the m coordinates.",
-      "paper_match": "Matches l = 1,...,m after the zero-based Fin reindexing.",
+      "interpretation": "Maps each Fin m coordinate to its FFT axis.",
+      "effect_on_target": "Indexes the product domain and the sum of K constants.",
+      "paper_match": "Matches coordinates l=1 through m after zero-based reindexing.",
       "status": "pass"
     },
     {
       "id": "D004",
       "name": "HighamBench.P09PositiveEpsilon",
-      "interpretation": "The subtype of real epsilon values satisfying 0 < epsilon.",
-      "effect_on_target": "Restricts the asymptotic bound to positive machine-error parameters.",
-      "paper_match": "Matches the positive error constant implicit in the paper's model.",
+      "interpretation": "The subtype of real epsilon satisfying epsilon greater than zero.",
+      "effect_on_target": "Restricts the asymptotic inequality to positive error parameters.",
+      "paper_match": "Matches the positive machine-error parameter implicit in the paper.",
       "status": "pass"
     },
     {
       "id": "D005",
       "name": "HighamBench.P09TheoremTwoLocalAsymptotic",
-      "interpretation": "A package asserting uniform small-epsilon propagated local axis bounds with nonnegative quadratic coefficients.",
-      "effect_on_target": "Provides the formal counterpart of the local estimate used in (4.2)-(4.3).",
-      "paper_match": "Matches the paper's invocation of Theorem 1 for every coordinate, with O(epsilon^2).",
-      "status": "pass"
+      "interpretation": "A supplied package of uniform propagated per-axis error bounds.",
+      "effect_on_target": "Adds the explicit axisBounds premise needed to derive the final bound.",
+      "paper_match": "The paper derives these local bounds from Theorem 1 rather than assuming them separately.",
+      "status": "fail"
     },
     {
       "id": "D006",
       "name": "HighamBench.p09AxisK",
-      "interpretation": "Returns p09K for an axis's selected mixed-radix plan and gamma.",
-      "effect_on_target": "Produces each summand in the target's first-order coefficient.",
-      "paper_match": "Matches K(N_l,gamma), including dependence on the chosen factorization.",
+      "interpretation": "The mixed-radix K constant of an axis plan at gamma.",
+      "effect_on_target": "Provides each summand in the first-order coefficient.",
+      "paper_match": "Matches K(N_l,gamma) with factorization dependence retained.",
       "status": "pass"
     },
     {
       "id": "D007",
       "name": "HighamBench.p09FamilyMultiExactOutput",
-      "interpretation": "Applies all exact coordinate transforms to the family's fixed input.",
-      "effect_on_target": "Defines the exact Y used in the denominator.",
-      "paper_match": "Matches the unnormalized exact multidimensional transform Y.",
+      "interpretation": "All exact coordinate transforms applied to the family's fixed input.",
+      "effect_on_target": "Defines exact Y and the denominator of the relative error.",
+      "paper_match": "Matches the unnormalized multidimensional Fourier output.",
       "status": "pass"
     },
     {
       "id": "D008",
       "name": "HighamBench.p09FamilyMultiFftRoundoffError",
-      "interpretation": "Pointwise computed output minus exact family output.",
-      "effect_on_target": "Defines the forward roundoff-error array whose RMS is bounded.",
-      "paper_match": "Matches E = fl(Y)-Y.",
+      "interpretation": "Computed output minus exact output, pointwise.",
+      "effect_on_target": "Defines the forward-error numerator.",
+      "paper_match": "Matches E=fl(Y)-Y.",
       "status": "pass"
     },
     {
       "id": "D009",
       "name": "HighamBench.p09MultiRms",
-      "interpretation": "Euclidean l2 norm divided by the square root of the product cardinality.",
-      "effect_on_target": "Implements RMS over all output multi-indices.",
-      "paper_match": "Matches the paper's square root of the average squared complex magnitudes.",
+      "interpretation": "Product-array Euclidean norm divided by the square root of cardinality.",
+      "effect_on_target": "Measures numerator and denominator in RMS.",
+      "paper_match": "Exactly matches the paper's multidimensional RMS convention.",
       "status": "pass"
     },
     {
       "id": "D010",
       "name": "HighamBench.P09AsymptoticMultidimensionalFftFamily.input",
-      "interpretation": "Projection of the single complex multidimensional input shared by the epsilon family.",
-      "effect_on_target": "Keeps X fixed while epsilon varies.",
-      "paper_match": "Matches the fixed input data in the paper's asymptotic analysis.",
+      "interpretation": "The common complex input array for every epsilon.",
+      "effect_on_target": "Prevents input data from varying with epsilon.",
+      "paper_match": "Matches the fixed exactly represented input used in the analysis.",
       "status": "pass"
     },
     {
       "id": "D011",
       "name": "HighamBench.P09AsymptoticMultidimensionalFftFamily.mk",
-      "interpretation": "Constructor requiring gamma >= 0, fixed input, epsilon-indexed Wilkinson models/runs, matching epsilon and gamma, and the same run input.",
-      "effect_on_target": "Encodes the standing numerical-model and fixed-input hypotheses behind the target.",
-      "paper_match": "Matches the paper's common gamma, exact input setting, and first-order epsilon variation.",
+      "interpretation": "Builds a family with gamma nonnegative, fixed input, matching model parameters, and fixed run input.",
+      "effect_on_target": "Carries the numerical-model and input-consistency hypotheses hidden by D001.",
+      "paper_match": "Matches the paper's gamma, epsilon, fixed-input, and exact-input scope.",
       "status": "pass"
     },
     {
       "id": "D012",
       "name": "HighamBench.P09AsymptoticMultidimensionalFftFamily.model",
-      "interpretation": "Projection of the Wilkinson model selected at each positive epsilon.",
-      "effect_on_target": "Connects every run to operations satisfying the paper's error equations.",
-      "paper_match": "Matches the epsilon-dependent interpretation needed to make O(epsilon^2) explicit.",
+      "interpretation": "Selects a Wilkinson model for each positive epsilon.",
+      "effect_on_target": "Links every execution to arithmetic and trigonometric error models.",
+      "paper_match": "Matches the paper's parameterized first-order model.",
       "status": "pass"
     },
     {
       "id": "D013",
       "name": "HighamBench.P09AsymptoticMultidimensionalFftFamily.run",
-      "interpretation": "Projection of the multidimensional nested FFT run at each epsilon.",
-      "effect_on_target": "Supplies the computed states used in the roundoff error.",
-      "paper_match": "Matches fl(T_1 fl(T_2 ... fl(T_m X))).",
+      "interpretation": "Selects the multidimensional FFT execution at each epsilon.",
+      "effect_on_target": "Supplies computed states used in the roundoff error.",
+      "paper_match": "Matches repeated execution of the prescribed nested FFT.",
       "status": "pass"
     },
     {
       "id": "D014",
       "name": "HighamBench.P09FftAxis",
-      "interpretation": "A positive transform order together with a mixed-radix plan for that order.",
-      "effect_on_target": "Represents one coordinate length N_l and its factorization.",
-      "paper_match": "Matches a coordinate FFT governed by Theorem 1.",
+      "interpretation": "A positive transform order paired with a mixed-radix plan.",
+      "effect_on_target": "Represents one coordinate length and its algorithm.",
+      "paper_match": "Matches one N_l together with its chosen factorization.",
       "status": "pass"
     },
     {
       "id": "D015",
       "name": "HighamBench.P09FftAxis.order",
-      "interpretation": "Projection of an axis's positive natural transform order.",
-      "effect_on_target": "Determines its ZMod index set and the total array cardinality.",
+      "interpretation": "The positive natural transform length of an axis.",
+      "effect_on_target": "Determines its cyclic index set and array cardinality.",
       "paper_match": "Matches N_l.",
       "status": "pass"
     },
     {
       "id": "D016",
       "name": "HighamBench.P09FftAxis.plan",
-      "interpretation": "Projection of the mixed-radix plan for the axis order.",
-      "effect_on_target": "Determines the exact factorization, rounded execution, and K value.",
-      "paper_match": "Matches the factorization-dependent algorithm assumed by Theorem 1.",
+      "interpretation": "The mixed-radix FFT plan attached to an axis.",
+      "effect_on_target": "Determines K and rounded coordinate execution.",
+      "paper_match": "Retains the factorization dependence suppressed by the paper's K notation.",
       "status": "pass"
     },
     {
       "id": "D017",
       "name": "HighamBench.P09MultiArray",
-      "interpretation": "A function from the dependent product of coordinate index sets to Complex.",
-      "effect_on_target": "Types X, Y, states, and errors as complex product-indexed arrays.",
-      "paper_match": "Matches the complex m-dimensional arrays in (4.1).",
+      "interpretation": "A complex-valued function on the product index type.",
+      "effect_on_target": "Provides the exact, computed, and error arrays.",
+      "paper_match": "Matches the paper's complex product-indexed arrays.",
       "status": "pass"
     },
     {
       "id": "D018",
       "name": "HighamBench.P09MultidimensionalFftPlan.mk",
-      "interpretation": "Constructor taking axes and asserting exact RMS scaling by sqrt of every prefix order product.",
-      "effect_on_target": "Makes equation (4.4), iterated over prefixes, available as plan data.",
-      "paper_match": "Matches unnormalized Fourier RMS scaling; packaging a true identity as a field does not change the result.",
+      "interpretation": "Builds an axis plan with exact prefix RMS-scaling identities.",
+      "effect_on_target": "Supplies the norm propagation used across earlier coordinate transforms.",
+      "paper_match": "Matches repeated use of equation (4.4).",
       "status": "pass"
     },
     {
       "id": "D019",
       "name": "HighamBench.P09TheoremTwoLocalAsymptotic.mk",
-      "interpretation": "Constructor giving per-axis C_i >= 0 and one positive radius such that each propagated local error is at most epsilon K_i times the propagated stage-input RMS plus C_i epsilon^2.",
-      "effect_on_target": "Supplies exactly the local terms needed for telescoping and first-order accumulation.",
-      "paper_match": "Matches (4.2)-(4.3) after exact-prefix propagation and the paper's O(epsilon^2) convention.",
-      "status": "pass"
+      "interpretation": "Packages nonnegative local remainder coefficients, a radius, and propagated per-axis error inequalities.",
+      "effect_on_target": "Requires the caller to furnish the principal local roundoff estimates.",
+      "paper_match": "Its inequality reflects Theorem 1 and equations (4.2)-(4.4), but the paper proves rather than assumes it.",
+      "status": "fail"
     },
     {
       "id": "D020",
       "name": "HighamBench.p09ApplyCoordinatePrefix",
-      "interpretation": "Recursively applies exact coordinate transforms numbered 0 through k-1.",
-      "effect_on_target": "Defines exact output and propagation by preceding coordinate operators.",
-      "paper_match": "Matches T_1...T_k under the zero-based coordinate reindexing.",
+      "interpretation": "For prefix k, applies coordinate k-1 first and coordinate 0 last.",
+      "effect_on_target": "Defines exact output and propagation through earlier coordinates.",
+      "paper_match": "Matches T_m first through T_1 last when Fin index 0 represents coordinate 1.",
       "status": "pass"
     },
     {
       "id": "D021",
       "name": "HighamBench.p09AxisK._proof_1",
-      "interpretation": "Derives NeZero for every positive axis order.",
-      "effect_on_target": "Ensures p09K is well typed for every axis.",
-      "paper_match": "Matches the paper's positive transform orders.",
+      "interpretation": "Generated proof that every axis order is nonzero.",
+      "effect_on_target": "Enables use of its mixed-radix K definition.",
+      "paper_match": "Reflects the operational positivity of N_l.",
       "status": "pass"
     },
     {
       "id": "D022",
       "name": "HighamBench.p09K",
-      "interpretation": "Sum of per-stage alpha(radix,gamma) plus (stageCount-1)(3+2 gamma).",
-      "effect_on_target": "Defines the exact first-order constant used by the target.",
-      "paper_match": "Matches Theorem 1's K(N,gamma) formula.",
+      "interpretation": "Sum of stage alpha constants plus (M-1)(3+2 gamma).",
+      "effect_on_target": "Defines the exact first-order constant for each axis.",
+      "paper_match": "Exactly matches Theorem 1's K formula.",
       "status": "pass"
     },
     {
       "id": "D023",
       "name": "HighamBench.p09MultiCardinality",
-      "interpretation": "Product of all axis orders.",
-      "effect_on_target": "Provides the number of multi-indices in RMS normalization.",
-      "paper_match": "Matches N_1...N_m.",
+      "interpretation": "Product of all coordinate orders.",
+      "effect_on_target": "Normalizes the multidimensional Euclidean norm to RMS.",
+      "paper_match": "Matches N_1 times through N_m.",
       "status": "pass"
     },
     {
       "id": "D024",
       "name": "HighamBench.p09MultiComputedOutput",
-      "interpretation": "The computedState at index 0.",
-      "effect_on_target": "Selects the result after all rounded coordinate stages.",
-      "paper_match": "Matches the outermost fl(Y) of the nested computation.",
+      "interpretation": "Computed state zero of a nested run.",
+      "effect_on_target": "Defines fl(Y).",
+      "paper_match": "Matches the result after coordinate 1 is computed last.",
       "status": "pass"
     },
     {
       "id": "D025",
       "name": "HighamBench.p09MultiNorm2",
-      "interpretation": "The finite dependent-function l2 norm at p=2 with Complex component norms.",
-      "effect_on_target": "Supplies the unsquared Euclidean norm underlying p09MultiRms.",
-      "paper_match": "Matches square root of the sum of squared complex magnitudes.",
+      "interpretation": "The finite product-array l2 norm.",
+      "effect_on_target": "Forms the unnormalized numerator of multidimensional RMS.",
+      "paper_match": "Matches the square root of the sum of squared complex magnitudes.",
       "status": "pass"
     },
     {
       "id": "D026",
       "name": "HighamBench.p09MultiVecSub",
-      "interpretation": "Pointwise complex subtraction of two multidimensional arrays.",
-      "effect_on_target": "Forms computed-minus-exact and local error arrays.",
-      "paper_match": "Matches the paper's forward error subtraction.",
+      "interpretation": "Pointwise complex subtraction of arrays.",
+      "effect_on_target": "Forms computed-minus-exact errors.",
+      "paper_match": "Matches the paper's forward-error subtraction.",
       "status": "pass"
     },
     {
       "id": "D027",
       "name": "HighamBench.P09FftAxis.mk",
-      "interpretation": "Constructor requiring a positive natural order and a mixed-radix plan of that order.",
-      "effect_on_target": "Excludes empty coordinate index sets and binds each axis to its algorithm.",
-      "paper_match": "Matches positive N_l and its FFT factorization.",
+      "interpretation": "Builds an axis from a positive order and corresponding mixed-radix plan.",
+      "effect_on_target": "Ensures every coordinate index set is finite and nonempty.",
+      "paper_match": "Matches positive transform lengths with selected factorizations.",
       "status": "pass"
     },
     {
       "id": "D028",
       "name": "HighamBench.P09FftAxis.order_pos",
-      "interpretation": "Projection/proof that every axis order is positive.",
-      "effect_on_target": "Guarantees nonempty coordinate domains and valid square-root scaling.",
-      "paper_match": "Matches the intended N_l > 0 setting.",
+      "interpretation": "Proof that an axis order is positive.",
+      "effect_on_target": "Excludes empty cyclic coordinate domains.",
+      "paper_match": "Matches the operational requirement N_l greater than zero.",
       "status": "pass"
     },
     {
       "id": "D029",
       "name": "HighamBench.P09MixedRadixFftPlan",
-      "interpretation": "A package for a positive-order mixed-radix FFT factorization.",
-      "effect_on_target": "Carries stages, permutations, variant, exact Fourier identity, and RMS facts used by each axis.",
-      "paper_match": "Matches the one-dimensional FFT plan inherited by Theorem 2.",
+      "interpretation": "A staged factorization of a positive one-dimensional transform order.",
+      "effect_on_target": "Determines exact and rounded axis algorithms and K.",
+      "paper_match": "Matches Theorem 1's mixed-radix factorization.",
       "status": "pass"
     },
     {
       "id": "D030",
       "name": "HighamBench.P09MixedRadixFftPlan.stage",
-      "interpretation": "Projection of the finite sequence of mixed-radix stages.",
-      "effect_on_target": "Feeds both exact and rounded stage folds and the alpha sum.",
-      "paper_match": "Matches the factors indexed r = 1,...,M_l.",
+      "interpretation": "The stage indexed by Fin stageCount.",
+      "effect_on_target": "Provides each radix block and twiddle stage.",
+      "paper_match": "Matches the factors indexed through M.",
       "status": "pass"
     },
     {
       "id": "D031",
       "name": "HighamBench.P09MixedRadixFftPlan.stageCount",
-      "interpretation": "Projection of the positive number of factorization stages.",
-      "effect_on_target": "Sets the number of radix factors and the M_l-1 twiddle term.",
-      "paper_match": "Matches M_l.",
+      "interpretation": "The positive number M of radix stages.",
+      "effect_on_target": "Determines the alpha sum and M-1 twiddle contribution.",
+      "paper_match": "Matches M in Theorem 1.",
       "status": "pass"
     },
     {
       "id": "D032",
       "name": "HighamBench.P09MixedRadixStage.radix",
-      "interpretation": "Projection of a stage's nonzero radix.",
-      "effect_on_target": "Determines its block DFT and alpha contribution.",
-      "paper_match": "Matches n_{l,r}.",
+      "interpretation": "The radix of a mixed-radix stage.",
+      "effect_on_target": "Selects the alpha case and contributes to the order product.",
+      "paper_match": "Matches each factor n_r.",
       "status": "pass"
     },
     {
       "id": "D033",
       "name": "HighamBench.P09MultiIndex",
-      "interpretation": "Dependent functions i : Fin m -> ZMod(order_i).",
-      "effect_on_target": "Represents all tuples with each coordinate ranging from 0 to N_i-1.",
-      "paper_match": "Matches the paper's product index convention.",
+      "interpretation": "A function assigning each axis an element of ZMod N_i.",
+      "effect_on_target": "Represents the finite product index set.",
+      "paper_match": "Equivalent to zero-based tuples 0 through N_i-1.",
       "status": "pass"
     },
     {
       "id": "D034",
       "name": "HighamBench.P09MultidimensionalFftRun",
-      "interpretation": "A run containing input and m+1 computed states for one plan and Wilkinson model.",
-      "effect_on_target": "Represents the actual nested rounded execution at a fixed epsilon.",
-      "paper_match": "Matches the multidimensional floating-point computation.",
+      "interpretation": "A modeled nested FFT run with input and m+1 computed states.",
+      "effect_on_target": "Links computed output to sequential rounded coordinate transforms.",
+      "paper_match": "Matches the displayed nesting in the proof of Theorem 2.",
       "status": "pass"
     },
     {
       "id": "D035",
       "name": "HighamBench.P09MultidimensionalFftRun.computedState",
-      "interpretation": "Projection of states indexed 0,...,m, with 0 output and m input.",
-      "effect_on_target": "Supports stage equations and telescoping local errors.",
-      "paper_match": "Matches Z_0 through Z_m, with computed intermediate states.",
+      "interpretation": "The sequence of arrays from output state 0 to input state m.",
+      "effect_on_target": "Defines stage inputs, local errors, and final computed output.",
+      "paper_match": "Matches the computed intermediate arrays fl(Z_l).",
       "status": "pass"
     },
     {
       "id": "D036",
       "name": "HighamBench.P09MultidimensionalFftRun.input",
-      "interpretation": "Projection of the run's complex input array.",
-      "effect_on_target": "Connects exact input representation and the final computed state.",
+      "interpretation": "The exact input array recorded by a run.",
+      "effect_on_target": "Connects the family input to each execution.",
       "paper_match": "Matches X.",
       "status": "pass"
     },
     {
       "id": "D037",
       "name": "HighamBench.P09WilkinsonModel",
-      "interpretation": "A record of epsilon, gamma, rounded real operations, input representation, and error-model witnesses.",
-      "effect_on_target": "Formalizes the deterministic arithmetic assumptions used by the algorithm.",
+      "interpretation": "A positive-epsilon, nonnegative-gamma arithmetic and trigonometric error model.",
+      "effect_on_target": "Defines all rounded primitive operations used by the FFT.",
       "paper_match": "Matches equations (3.1)-(3.2) and the absolute sine/cosine model.",
       "status": "pass"
     },
     {
       "id": "D038",
       "name": "HighamBench.P09WilkinsonModel.epsilon",
-      "interpretation": "Projection of the model's positive real error constant.",
-      "effect_on_target": "Links operation errors to the family parameter epsilon.",
+      "interpretation": "The model's positive real error constant.",
+      "effect_on_target": "Is identified with the family's varying epsilon.",
       "paper_match": "Matches the paper's machine-dependent epsilon.",
       "status": "pass"
     },
     {
       "id": "D039",
       "name": "HighamBench.P09WilkinsonModel.gamma",
-      "interpretation": "Projection of the model's nonnegative trigonometric-error constant.",
-      "effect_on_target": "Keeps the same gamma in operations and K values.",
-      "paper_match": "Matches the common gamma in Theorem 2.",
+      "interpretation": "The model's nonnegative absolute trigonometric-error multiplier.",
+      "effect_on_target": "Is fixed across the family and enters K.",
+      "paper_match": "Matches gamma in the paper.",
       "status": "pass"
     },
     {
       "id": "D040",
       "name": "HighamBench.p09Alpha",
-      "interpretation": "Piecewise alpha: sqrt(2) at radix 2, 5 at radix 4, and 2 sqrt(q)(q+gamma) otherwise.",
-      "effect_on_target": "Defines every stage contribution to K.",
-      "paper_match": "Matches Theorem 1 exactly.",
+      "interpretation": "sqrt(2) at radix 2, 5 at radix 4, and 2 sqrt(q)(q+gamma) otherwise.",
+      "effect_on_target": "Provides every stage contribution to K.",
+      "paper_match": "Exactly matches the piecewise alpha definition.",
       "status": "pass"
     },
     {
       "id": "D041",
       "name": "HighamBench.p09Alpha._proof_1",
-      "interpretation": "Typeclass proof that the numeral 2 is at least two for real coercion.",
-      "effect_on_target": "Only elaborates the literal in alpha.",
-      "paper_match": "No independent paper content; it does not alter the constant.",
+      "interpretation": "Generated numeral proof supporting the radix-2 branch.",
+      "effect_on_target": "Only elaborates the real numeral 2.",
+      "paper_match": "No independent numerical claim beyond alpha's radix-2 case.",
       "status": "not-applicable"
     },
     {
       "id": "D042",
       "name": "HighamBench.p09ApplyCoordinatePrefix.match_1",
-      "interpretation": "Generated natural-number case splitter for the prefix recursion.",
-      "effect_on_target": "Implements the zero/successor branches without adding semantics.",
-      "paper_match": "No independent paper analogue.",
+      "interpretation": "Natural-number case splitter for prefix application.",
+      "effect_on_target": "Implements the zero and successor recursion cases.",
+      "paper_match": "Implementation machinery with no separate paper analogue.",
       "status": "not-applicable"
     },
     {
       "id": "D043",
       "name": "HighamBench.p09CoordinateTransformNat",
-      "interpretation": "Applies coordinate i when i<m and otherwise returns the input unchanged.",
-      "effect_on_target": "Makes the natural recursion total; all target-relevant calls use in-range indices.",
-      "paper_match": "On its in-range use it is exactly the paper's coordinate transform; the fallback is unreachable in the stated prefixes.",
+      "interpretation": "Applies coordinate i when i is in range and otherwise returns the input.",
+      "effect_on_target": "Supports prefix recursion; target uses only indices below m.",
+      "paper_match": "On reachable indices it is exactly the paper's coordinate transform.",
       "status": "pass"
     },
     {
       "id": "D044",
       "name": "HighamBench.p09K._proof_1",
-      "interpretation": "Typeclass proof that the numeral 3 is at least two.",
-      "effect_on_target": "Only elaborates the literal 3 in K.",
-      "paper_match": "No independent paper content.",
+      "interpretation": "Generated numeral proof for the constant 3.",
+      "effect_on_target": "Only elaborates the real numeral in K.",
+      "paper_match": "No separate paper content.",
       "status": "not-applicable"
     },
     {
       "id": "D045",
       "name": "HighamBench.p09MultiComputedOutput._proof_1",
-      "interpretation": "Proof that m+1 is nonzero so Fin(m+1) has index 0.",
-      "effect_on_target": "Makes computedState 0 well typed.",
-      "paper_match": "No independent paper content beyond ordinary state indexing.",
+      "interpretation": "Generated proof that m+1 is nonzero.",
+      "effect_on_target": "Makes state index zero well typed.",
+      "paper_match": "Indexing machinery only.",
       "status": "not-applicable"
     },
     {
       "id": "D046",
       "name": "HighamBench.p09MultiIndexFintype",
-      "interpretation": "Fintype instance for the finite dependent product of ZMod coordinate sets.",
-      "effect_on_target": "Allows norms, sums, and products to enumerate every multi-index.",
-      "paper_match": "Matches finite enumeration of all N_1...N_m entries.",
+      "interpretation": "Finite enumeration of all product indices.",
+      "effect_on_target": "Allows finite norms, sums, and products over arrays.",
+      "paper_match": "Matches finite product ranges in equation (4.1).",
       "status": "pass"
     },
     {
       "id": "D047",
       "name": "HighamBench.p09PrefixOrderProduct",
-      "interpretation": "Product of orders for axes with indices below k.",
-      "effect_on_target": "Gives the exact scaling factor for a transformed prefix.",
-      "paper_match": "Matches N_1...N_k after zero-based reindexing.",
+      "interpretation": "Product of the first k coordinate orders.",
+      "effect_on_target": "Supplies exact RMS amplification of a coordinate prefix.",
+      "paper_match": "Matches square roots of N_1 through N_k in the proof.",
       "status": "pass"
     },
     {
       "id": "D048",
       "name": "HighamBench.p09PropagatedAxisError",
-      "interpretation": "Applies exact coordinate prefixes 0 through i-1 to axis i's local error.",
-      "effect_on_target": "Represents the i-th telescoping error after propagation to output space.",
-      "paper_match": "Matches the terms T_1...T_{l-1}[fl(T_l fl(Z_l))-T_l fl(Z_l)] in (4.2).",
+      "interpretation": "A local axis error propagated through all earlier exact coordinates.",
+      "effect_on_target": "Represents one telescoping summand in total forward error.",
+      "paper_match": "Matches the propagated local terms in equation (4.2).",
       "status": "pass"
     },
     {
       "id": "D049",
       "name": "HighamBench.p09PropagatedStageInputRms",
-      "interpretation": "RMS of exact coordinates 0 through i applied to computedState i+1.",
-      "effect_on_target": "Equals the prefix scaling times the RMS of the computed input to stage i.",
-      "paper_match": "Matches the first-order propagated factor multiplying K(N_l,gamma) on printed page 765.",
+      "interpretation": "RMS of the stage input after applying the exact prefix through that stage.",
+      "effect_on_target": "Provides the scaled norm multiplying epsilon K in each local bound.",
+      "paper_match": "Matches equations (4.3)-(4.4) after propagation.",
       "status": "pass"
     },
     {
       "id": "D050",
       "name": "HighamBench.P09MixedRadixFftPlan.mk",
-      "interpretation": "Constructor requiring positive stage count, product of radices equal to n, twiddles on all but the final stage, an exact factorization up to final permutation, a Cooley/Sande tag, Fourier surjectivity, and exact RMS scaling.",
-      "effect_on_target": "Restricts axis plans to exact unnormalized mixed-radix FFTs and supplies their structural facts.",
-      "paper_match": "Matches the factorization, twiddle count, algorithm variants, and sqrt(n) scaling inherited from Theorem 1.",
+      "interpretation": "Builds a positive staged radix factorization with prescribed twiddles, permutation, exact Fourier factorization, and norm scaling.",
+      "effect_on_target": "Restricts axis plans to exact mixed-radix FFT realizations.",
+      "paper_match": "Matches the matrix factorization and scaling properties used in Theorem 1.",
       "status": "pass"
     },
     {
       "id": "D051",
       "name": "HighamBench.P09MixedRadixStage",
-      "interpretation": "A stage package containing radix/block decomposition, reindexing, permutation, twiddle flag, and twiddle exponent.",
-      "effect_on_target": "Represents one block Fourier factor and optional diagonal twiddle factor.",
-      "paper_match": "Matches the B_r, P_r, and D_r structure of (2.2).",
+      "interpretation": "One radix block stage with reindexing, permutation, and optional twiddle.",
+      "effect_on_target": "Defines exact and rounded one-dimensional FFT stages.",
+      "paper_match": "Matches block Fourier, permutation, and diagonal twiddle factors.",
       "status": "pass"
     },
     {
       "id": "D052",
       "name": "HighamBench.P09MultidimensionalFftRun.mk",
-      "interpretation": "Constructor requiring exact representation of every actual input value, state m=input, and state i=rounded coordinate i applied to state i+1.",
-      "effect_on_target": "Fixes execution order from coordinate m-1 down to 0 and excludes input-rounding error.",
-      "paper_match": "Matches the nested computation and the paper's standing exactly-representable-input assumption.",
+      "interpretation": "Builds a run with exactly represented input and descending rounded coordinate-state equations.",
+      "effect_on_target": "Enforces computed state m=input and state i=rounded T_i of state i+1.",
+      "paper_match": "Matches exact-input scope and T_m-first, T_1-last nesting.",
       "status": "pass"
     },
     {
       "id": "D053",
       "name": "HighamBench.P09WilkinsonModel.mk",
-      "interpretation": "Constructor with epsilon>0, gamma>=0, real flAdd/flMul/flSin/flCos, arbitrary flInput, independent bounded theta witnesses for every operation, and the paper's displayed error equations.",
-      "effect_on_target": "Defines the admissible deterministic arithmetic models used by runs.",
-      "paper_match": "Matches (3.1), (3.2), and fl(sin(fl(a)))/fl(cos(fl(a))) absolute-error models; global real-domain axioms are a conservative abstraction.",
+      "interpretation": "Builds rounded addition, multiplication, sine, cosine, and input operations satisfying bounded-theta equations.",
+      "effect_on_target": "Carries the primitive floating-point assumptions into every run.",
+      "paper_match": "Matches the paper's first-order models, treating flSin/flCos as the aggregate argument-and-evaluation operation.",
       "status": "pass"
     },
     {
       "id": "D054",
       "name": "HighamBench.p09Alpha._proof_2",
-      "interpretation": "Typeclass proof that the numeral 5 is at least two.",
-      "effect_on_target": "Only elaborates alpha's radix-4 literal.",
+      "interpretation": "Generated numeral proof supporting the radix-4 branch.",
+      "effect_on_target": "Only elaborates the real numeral 4.",
       "paper_match": "No independent paper content.",
       "status": "not-applicable"
     },
     {
       "id": "D055",
       "name": "HighamBench.p09AxisLocalError",
-      "interpretation": "Computed state after rounded axis i minus the exact coordinate transform of that stage's computed input.",
-      "effect_on_target": "Defines the local forward error before preceding-coordinate propagation.",
-      "paper_match": "Matches each local difference in the telescoping decomposition.",
+      "interpretation": "Rounded coordinate result minus the exact coordinate transform of the same computed stage input.",
+      "effect_on_target": "Defines local forward roundoff before propagation.",
+      "paper_match": "Matches fl(T_l fl(Z_l))-T_l fl(Z_l).",
       "status": "pass"
     },
     {
       "id": "D056",
       "name": "HighamBench.p09CoordinateTransform",
-      "interpretation": "Unnormalized coordinate DFT: sum over j in ZMod(order_i) of the standard positive additive character at j*output_i times the input with coordinate i replaced by j.",
-      "effect_on_target": "Defines each exact T_i while leaving other coordinates fixed.",
-      "paper_match": "Matches equation (4.1), positive exponential sign, and 0,...,N_i-1 indexing.",
+      "interpretation": "An unnormalized positive-sign Fourier sum along one coordinate fiber.",
+      "effect_on_target": "Defines every exact T_l.",
+      "paper_match": "Matches the coordinate equation following Theorem 2.",
       "status": "pass"
     },
     {
       "id": "D057",
       "name": "HighamBench.p09MultiIndexFintype._proof_1",
-      "interpretation": "Derives nonzero order for each axis when constructing its ZMod Fintype.",
-      "effect_on_target": "Ensures every dependent coordinate has the intended finite cardinality.",
-      "paper_match": "Matches positive axis orders.",
+      "interpretation": "Generated proof that every coordinate modulus is nonzero.",
+      "effect_on_target": "Enables finite ZMod enumeration.",
+      "paper_match": "Reflects positive coordinate orders.",
       "status": "pass"
     },
     {
       "id": "D058",
       "name": "HighamBench.P09FftVariant",
-      "interpretation": "Two-valued tag for the Cooley-Tukey or Sande-Tukey form.",
-      "effect_on_target": "Records which paper-recognized mixed-radix variant a plan represents.",
-      "paper_match": "Matches the two variants discussed after (2.2).",
+      "interpretation": "The two supported one-dimensional FFT variants.",
+      "effect_on_target": "Labels a mixed-radix plan as Cooley-Tukey or Sande-Tukey.",
+      "paper_match": "Matches the two variants explicitly covered by the paper.",
       "status": "pass"
     },
     {
       "id": "D059",
       "name": "HighamBench.P09MixedRadixStage.mk",
-      "interpretation": "Constructor requiring nonzero radix and block count with blockCount*radix=n, plus reindexing, permutation, twiddle flag, and exponent.",
-      "effect_on_target": "Ensures each exact/rounded stage is a block radix DFT with optional unit-root multiplication.",
-      "paper_match": "Matches one mixed-radix FFT stage in the paper's matrix factorization.",
+      "interpretation": "Builds a radix-at-least-two stage with block decomposition, reindexing, permutation, twiddle flag, and exponent map.",
+      "effect_on_target": "Specifies the concrete factors used by exact and rounded stage evaluation.",
+      "paper_match": "Represents the paper's block and diagonal factor stages.",
       "status": "pass"
     },
     {
       "id": "D060",
       "name": "HighamBench.P09MixedRadixStage.useTwiddle",
-      "interpretation": "Projection of the stage's Boolean twiddle flag.",
-      "effect_on_target": "Controls whether the diagonal root multiplication is included.",
-      "paper_match": "Matches the M-1 separate D_r multiplications.",
+      "interpretation": "Boolean indicating whether a stage performs separate twiddle multiplication.",
+      "effect_on_target": "Controls exact and rounded diagonal-factor application.",
+      "paper_match": "Matches the M-1 separate D stages counted in K.",
       "status": "pass"
     },
     {
       "id": "D061",
       "name": "HighamBench.P09WilkinsonModel.flInput",
-      "interpretation": "Projection of the model's complex input-rounding function.",
-      "effect_on_target": "The run requires this function to fix every actual input entry.",
-      "paper_match": "Matches the exactly representable input scope and excludes the later extra input-rounding term.",
+      "interpretation": "The model's complex input-representation operation.",
+      "effect_on_target": "Is required to fix every input component in a run.",
+      "paper_match": "Enforces the paper's exactly representable input assumption.",
       "status": "pass"
     },
     {
       "id": "D062",
       "name": "HighamBench.p09ApplyMixedRadixStages",
-      "interpretation": "Left-fold application of the exact mixed-radix stage sequence.",
-      "effect_on_target": "Defines the exact factorized algorithm before final permutation.",
-      "paper_match": "Matches ordered multiplication of the factors in (2.2), as certified by exact_factorization.",
+      "interpretation": "Left fold of exact mixed-radix stages in Fin order.",
+      "effect_on_target": "Defines the staged exact one-dimensional algorithm before final permutation.",
+      "paper_match": "Matches sequential application of the paper's factor matrices.",
       "status": "pass"
     },
     {
       "id": "D063",
-      "name": "HighamBench.p09ComplexRms",
-      "interpretation": "One-dimensional Euclidean norm divided by sqrt(n).",
-      "effect_on_target": "Supplies the RMS scaling facts stored in each axis plan.",
-      "paper_match": "Matches the paper's one-dimensional RMS convention.",
+      "name": "HighamBench.p09ComplexNorm2",
+      "interpretation": "Square root of the sum of squared complex magnitudes.",
+      "effect_on_target": "Supports one-dimensional norm-scaling fields in plans.",
+      "paper_match": "Matches the Euclidean norm underlying RMS.",
       "status": "pass"
     },
     {
       "id": "D064",
-      "name": "HighamBench.p09FourierTransform",
-      "interpretation": "Unnormalized positive-sign DFT over ZMod n using the standard additive character.",
-      "effect_on_target": "Defines the exact one-dimensional transform certified by every axis plan.",
-      "paper_match": "Matches equation (1.1).",
+      "name": "HighamBench.p09ComplexRms",
+      "interpretation": "One-dimensional Euclidean norm divided by sqrt(n).",
+      "effect_on_target": "States exact Fourier RMS scaling in a mixed-radix plan.",
+      "paper_match": "Matches the paper's one-dimensional RMS definition.",
       "status": "pass"
     },
     {
       "id": "D065",
-      "name": "HighamBench.p09Permute",
-      "interpretation": "Reindexes a complex vector by an equivalence.",
-      "effect_on_target": "Models exact permutation matrices and the plan's final permutation.",
-      "paper_match": "Matches the roundoff-free P_r factors.",
+      "name": "HighamBench.p09FourierTransform",
+      "interpretation": "The unnormalized positive-sign complex Fourier transform on ZMod n.",
+      "effect_on_target": "Defines the exact transform implemented by every axis plan.",
+      "paper_match": "Matches equation (1.1).",
       "status": "pass"
     },
     {
       "id": "D066",
-      "name": "HighamBench.p09RoundedCoordinateTransform",
-      "interpretation": "Applies the selected axis's rounded mixed-radix FFT independently on each fiber of the other coordinates.",
-      "effect_on_target": "Defines one floating-point coordinate stage in a multidimensional run.",
-      "paper_match": "Matches applying a one-dimensional FFT T_i along coordinate i.",
+      "name": "HighamBench.p09MixedRadixStageApply",
+      "interpretation": "Exact radix block transform followed by its optional twiddle multiplication.",
+      "effect_on_target": "Defines one exact mixed-radix factor.",
+      "paper_match": "Matches the block Fourier and diagonal stages in equation (2.2).",
       "status": "pass"
     },
     {
       "id": "D067",
-      "name": "HighamBench.P09FftVariant.cooleyTukey",
-      "interpretation": "Constructor/tag for the Cooley-Tukey variant.",
-      "effect_on_target": "Allows plans to record this paper-covered factorization family.",
-      "paper_match": "Matches the paper's Cooley-Tukey case.",
+      "name": "HighamBench.p09Permute",
+      "interpretation": "Exact reordering by an index equivalence.",
+      "effect_on_target": "Implements stage and final permutations without arithmetic error.",
+      "paper_match": "Matches exact permutation matrices.",
       "status": "pass"
     },
     {
       "id": "D068",
-      "name": "HighamBench.P09FftVariant.sandeTukey",
-      "interpretation": "Constructor/tag for the Sande-Tukey variant.",
-      "effect_on_target": "Allows plans to record this paper-covered factorization family.",
-      "paper_match": "Matches the paper's Sande-Tukey case.",
+      "name": "HighamBench.p09RoundedCoordinateTransform",
+      "interpretation": "Applies the modeled rounded mixed-radix FFT to each fiber of one coordinate.",
+      "effect_on_target": "Defines each computed multidimensional stage.",
+      "paper_match": "Matches nested one-dimensional floating-point FFTs.",
       "status": "pass"
     },
     {
       "id": "D069",
-      "name": "HighamBench.p09ComplexNorm2",
-      "interpretation": "Square root of the sum of squared complex moduli.",
-      "effect_on_target": "Defines the one-dimensional Euclidean norm used by p09ComplexRms.",
-      "paper_match": "Matches the unsquared l2 norm behind RMS.",
+      "name": "HighamBench.P09FftVariant.cooleyTukey",
+      "interpretation": "The Cooley-Tukey variant label.",
+      "effect_on_target": "Permits plans of this paper-covered variant.",
+      "paper_match": "Explicitly covered after equation (2.2).",
       "status": "pass"
     },
     {
       "id": "D070",
-      "name": "HighamBench.p09MixedRadixStageApply",
-      "interpretation": "Exact stage: permute, reindex into blocks, take a positive-sign radix DFT, and optionally multiply by a unit root.",
-      "effect_on_target": "Defines the exact B/P/D operation corresponding to one stage.",
-      "paper_match": "Matches the paper's block Fourier and twiddle factors.",
+      "name": "HighamBench.P09FftVariant.sandeTukey",
+      "interpretation": "The Sande-Tukey variant label.",
+      "effect_on_target": "Permits plans of this paper-covered variant.",
+      "paper_match": "Explicitly covered after equation (2.2).",
       "status": "pass"
     },
     {
       "id": "D071",
-      "name": "HighamBench.p09RoundedFftApply",
-      "interpretation": "Applies all rounded mixed-radix stages and then the exact final permutation.",
-      "effect_on_target": "Defines a coordinate's computed one-dimensional FFT.",
-      "paper_match": "Matches the factorized floating-point FFT, with permutations treated as exact.",
+      "name": "HighamBench.p09ComplexNorm2Sq",
+      "interpretation": "Finite sum of squared complex magnitudes.",
+      "effect_on_target": "Defines the one-dimensional Euclidean norm.",
+      "paper_match": "Matches the squared norm used by RMS.",
       "status": "pass"
     },
     {
       "id": "D072",
-      "name": "HighamBench.P09MixedRadixFftPlan.finalPermutation",
-      "interpretation": "Projection of the exact output permutation.",
-      "effect_on_target": "Completes exact and rounded factorized FFT outputs.",
-      "paper_match": "Matches the permutation factor P_{M+1}.",
+      "name": "HighamBench.p09MixedRadixBlockApply",
+      "interpretation": "Exact blockwise radix Fourier sum after stage permutation and reindexing.",
+      "effect_on_target": "Implements the B factor of a stage.",
+      "paper_match": "Matches the radix-sized block Fourier matrices.",
       "status": "pass"
     },
     {
       "id": "D073",
-      "name": "HighamBench.P09MixedRadixStage.blockCount",
-      "interpretation": "Projection of the number of radix-sized blocks.",
-      "effect_on_target": "Determines the stage's block decomposition of an n-vector.",
-      "paper_match": "Matches the block-diagonal B_r organization.",
+      "name": "HighamBench.p09MixedRadixTwiddleApply",
+      "interpretation": "Optional exact multiplication by a standard Fourier root.",
+      "effect_on_target": "Implements the D factor of a stage.",
+      "paper_match": "Matches separate diagonal twiddle multiplication.",
       "status": "pass"
     },
     {
       "id": "D074",
-      "name": "HighamBench.P09MixedRadixStage.permutation",
-      "interpretation": "Projection of a stage's input permutation.",
-      "effect_on_target": "Reorders entries before its block transforms without rounding.",
-      "paper_match": "Matches a P_r factor.",
+      "name": "HighamBench.p09RoundedFftApply",
+      "interpretation": "Rounded stage fold followed by an exact final permutation.",
+      "effect_on_target": "Defines the computed one-dimensional FFT used along each axis.",
+      "paper_match": "Matches rounded arithmetic with error-free permutations.",
       "status": "pass"
     },
     {
       "id": "D075",
-      "name": "HighamBench.P09MixedRadixStage.reindex",
-      "interpretation": "Equivalence between block/radix coordinates and ZMod n.",
-      "effect_on_target": "Identifies each radix DFT fiber inside the n-vector.",
-      "paper_match": "Matches the block decomposition implicit in B_r.",
+      "name": "HighamBench.P09MixedRadixFftPlan.finalPermutation",
+      "interpretation": "The final exact index permutation of a plan.",
+      "effect_on_target": "Reorders staged output into exact Fourier order.",
+      "paper_match": "Matches P_{M+1} in equation (2.2).",
       "status": "pass"
     },
     {
       "id": "D076",
-      "name": "HighamBench.P09MixedRadixStage.twiddleExponent",
-      "interpretation": "Projection assigning the root exponent for each output position.",
-      "effect_on_target": "Defines the diagonal twiddle values used by exact and rounded stages.",
-      "paper_match": "Matches the algorithm-dependent D_r entries.",
+      "name": "HighamBench.P09MixedRadixStage.blockCount",
+      "interpretation": "Number of radix blocks in a stage.",
+      "effect_on_target": "Determines the product reindexing domain.",
+      "paper_match": "Matches N divided by the stage radix.",
       "status": "pass"
     },
     {
       "id": "D077",
-      "name": "HighamBench.p09ApplyRoundedMixedRadixStages",
-      "interpretation": "Left-fold application of rounded stages in plan order.",
-      "effect_on_target": "Defines accumulated floating-point stage execution before final permutation.",
-      "paper_match": "Matches the paper's ordered FFT factor evaluation.",
+      "name": "HighamBench.P09MixedRadixStage.permutation",
+      "interpretation": "Exact input permutation for a stage.",
+      "effect_on_target": "Reorders data before block Fourier evaluation.",
+      "paper_match": "Matches the stage permutation matrices.",
       "status": "pass"
     },
     {
       "id": "D078",
-      "name": "HighamBench.p09ComplexNorm2Sq",
-      "interpretation": "Finite sum of |x_i|^2.",
-      "effect_on_target": "Provides the squared Euclidean quantity whose square root and normalization form RMS.",
-      "paper_match": "Matches the paper's sum of squared complex magnitudes.",
+      "name": "HighamBench.P09MixedRadixStage.reindex",
+      "interpretation": "Equivalence between block/radix indices and ZMod n.",
+      "effect_on_target": "Identifies entries belonging to each radix block.",
+      "paper_match": "Faithfully encodes block-diagonal organization.",
       "status": "pass"
     },
     {
       "id": "D079",
-      "name": "HighamBench.p09MixedRadixStageApply._proof_1",
-      "interpretation": "Derives NeZero for a stage radix from its constructor invariant.",
-      "effect_on_target": "Makes the radix ZMod Fourier sum finite and nonempty.",
-      "paper_match": "Matches nonzero radix factors.",
+      "name": "HighamBench.P09MixedRadixStage.twiddleExponent",
+      "interpretation": "Index-dependent exponent of a stage's Fourier-root multiplier.",
+      "effect_on_target": "Determines each diagonal twiddle value.",
+      "paper_match": "Matches the diagonal complex exponential entries.",
       "status": "pass"
     },
     {
       "id": "D080",
-      "name": "HighamBench.p09RoundedMixedRadixStageApply",
-      "interpretation": "Rounded stage using exact permutations/reindexing, rounded roots, rounded complex products, recursive rounded sums, and optional rounded twiddle multiplication.",
-      "effect_on_target": "Defines where stage arithmetic roundoff occurs.",
-      "paper_match": "Matches the operation-level FFT model used to obtain alpha and K.",
+      "name": "HighamBench.p09ApplyRoundedMixedRadixStages",
+      "interpretation": "Left fold of rounded stage applications in plan order.",
+      "effect_on_target": "Builds the computed one-dimensional FFT state.",
+      "paper_match": "Matches sequential floating-point stage execution.",
       "status": "pass"
     },
     {
       "id": "D081",
-      "name": "HighamBench.p09RoundedComplexMul",
-      "interpretation": "Complex multiplication implemented by four modeled real products and two modeled real additions, with exact negation.",
-      "effect_on_target": "Determines the rounded arithmetic within roots times data and twiddles.",
-      "paper_match": "Matches the paper's reduction of complex arithmetic to real Wilkinson operations.",
+      "name": "HighamBench.p09MixedRadixBlockApply._proof_1",
+      "interpretation": "Generated proof that a stage radix is nonzero.",
+      "effect_on_target": "Enables ZMod radix Fourier summation.",
+      "paper_match": "Follows from the paper's nontrivial radices.",
       "status": "pass"
     },
     {
       "id": "D082",
-      "name": "HighamBench.p09RoundedComplexSum",
-      "interpretation": "Sums real and imaginary parts separately in a fixed recursive order using modeled flAdd.",
-      "effect_on_target": "Determines accumulation roundoff in each radix DFT.",
-      "paper_match": "Matches the sequential floating-point summation analyzed before (3.3).",
+      "name": "HighamBench.p09RoundedMixedRadixStageApply",
+      "interpretation": "Rounded block evaluation followed by rounded optional twiddle multiplication.",
+      "effect_on_target": "Defines one computed mixed-radix stage.",
+      "paper_match": "Matches the operations counted in Theorem 1.",
       "status": "pass"
     },
     {
       "id": "D083",
-      "name": "HighamBench.p09RoundedRoot",
-      "interpretation": "Builds a complex root from modeled flCos and flSin of the exact root angle.",
-      "effect_on_target": "Introduces the absolute trigonometric errors governed by gamma.",
-      "paper_match": "Matches fl(cos(fl(a))) and fl(sin(fl(a))) after combining argument/value error in the stated model.",
+      "name": "HighamBench.p09RoundedMixedRadixBlockApply",
+      "interpretation": "Dispatches radix 2 and 4 to special algorithms and all other radices to the generic algorithm.",
+      "effect_on_target": "Preserves the three alpha cases operationally.",
+      "paper_match": "Matches the paper's separate treatment of radices 2, 4, and otherwise.",
       "status": "pass"
     },
     {
       "id": "D084",
-      "name": "HighamBench.P09WilkinsonModel.flAdd",
-      "interpretation": "Projection of modeled floating-point real addition.",
-      "effect_on_target": "Used in rounded complex sums and products.",
-      "paper_match": "Matches equation (3.1).",
+      "name": "HighamBench.p09RoundedMixedRadixTwiddleApply",
+      "interpretation": "Optional modeled complex multiplication by a computed trigonometric root.",
+      "effect_on_target": "Introduces arithmetic and trigonometric roundoff in twiddle factors.",
+      "paper_match": "Matches the separate D-stage contribution including gamma.",
       "status": "pass"
     },
     {
       "id": "D085",
-      "name": "HighamBench.P09WilkinsonModel.flCos",
-      "interpretation": "Projection of modeled cosine evaluation.",
-      "effect_on_target": "Used for real parts of rounded Fourier roots.",
-      "paper_match": "Matches the paper's absolute cosine error model.",
+      "name": "HighamBench.p09RoundedComplexMul",
+      "interpretation": "Complex multiplication using four modeled real products and two modeled real additions.",
+      "effect_on_target": "Implements rounded complex products in blocks and twiddles.",
+      "paper_match": "Matches componentwise floating-point complex multiplication used by the analysis.",
       "status": "pass"
     },
     {
       "id": "D086",
-      "name": "HighamBench.P09WilkinsonModel.flMul",
-      "interpretation": "Projection of modeled floating-point real multiplication.",
-      "effect_on_target": "Used in rounded complex multiplication.",
-      "paper_match": "Matches equation (3.2).",
+      "name": "HighamBench.p09RoundedGenericRadixBlock",
+      "interpretation": "Generic radix Fourier block using computed roots, rounded complex products, and rounded sums.",
+      "effect_on_target": "Implements the non-2/non-4 branch underlying alpha.",
+      "paper_match": "Matches the generic direct radix-block computation analyzed by the paper.",
       "status": "pass"
     },
     {
       "id": "D087",
-      "name": "HighamBench.P09WilkinsonModel.flSin",
-      "interpretation": "Projection of modeled sine evaluation.",
-      "effect_on_target": "Used for imaginary parts of rounded Fourier roots.",
-      "paper_match": "Matches the paper's absolute sine error model.",
-      "status": "pass"
+      "name": "HighamBench.p09RoundedMixedRadixBlockApply._proof_1",
+      "interpretation": "Generated equality-symmetry proof for the radix-2 cast.",
+      "effect_on_target": "Only transports indices into the specialized branch.",
+      "paper_match": "No numerical content.",
+      "status": "not-applicable"
     },
     {
       "id": "D088",
-      "name": "HighamBench.p09RootAngle",
-      "interpretation": "The representative angle 2*pi*val(j)/q for j in ZMod q.",
-      "effect_on_target": "Fixes positive-sign q-th roots used by exact and rounded stages.",
-      "paper_match": "Matches exp(i 2*pi*j/q).",
-      "status": "pass"
+      "name": "HighamBench.p09RoundedMixedRadixBlockApply._proof_2",
+      "interpretation": "Generated equality-symmetry proof for the radix-4 cast.",
+      "effect_on_target": "Only transports indices into the specialized branch.",
+      "paper_match": "No numerical content.",
+      "status": "not-applicable"
     },
     {
       "id": "D089",
-      "name": "HighamBench.recursiveSum",
-      "interpretation": "Left-associated recursive summation, returning the sole term without addition and otherwise applying flAdd in index order.",
-      "effect_on_target": "Fixes the real accumulation algorithm assumed by p09RoundedComplexSum.",
-      "paper_match": "Matches the paper's begin-with-first-term, then sequential-addition algorithm.",
+      "name": "HighamBench.p09RoundedRadixFourBlock",
+      "interpretation": "Radix-4 butterfly using exact unit coefficients and modeled complex additions.",
+      "effect_on_target": "Implements the special radix-4 stage without trigonometric evaluation or general multiplication.",
+      "paper_match": "Matches the radix-4 special case yielding alpha equal to 5.",
       "status": "pass"
     },
     {
       "id": "D090",
-      "name": "HighamBench.recursiveSum._proof_1",
-      "interpretation": "Generated proof that n+1 is positive in the singleton branch.",
-      "effect_on_target": "Only justifies a Fin index used by recursiveSum.",
-      "paper_match": "No independent paper content.",
-      "status": "not-applicable"
+      "name": "HighamBench.p09RoundedRadixTwoBlock",
+      "interpretation": "Radix-2 butterfly using exact signs and modeled summation.",
+      "effect_on_target": "Implements the special radix-2 stage without trigonometric evaluation or multiplication.",
+      "paper_match": "Matches the radix-2 special case yielding alpha equal to sqrt(2).",
+      "status": "pass"
     },
     {
       "id": "D091",
-      "name": "HighamBench.recursiveSum.match_1",
-      "interpretation": "Generated zero/successor eliminator for recursiveSum.",
-      "effect_on_target": "Implements recursion without changing numerical meaning.",
-      "paper_match": "No independent paper analogue.",
-      "status": "not-applicable"
+      "name": "HighamBench.p09RoundedRoot",
+      "interpretation": "Complex root whose real and imaginary parts use modeled cosine and sine.",
+      "effect_on_target": "Introduces the paper's absolute trigonometric errors.",
+      "paper_match": "Matches computed Fourier roots with gamma-theta-epsilon errors.",
+      "status": "pass"
     },
     {
       "id": "D092",
-      "name": "And",
-      "interpretation": "Logical conjunction.",
-      "effect_on_target": "Requires each witness coefficient/radius to satisfy positivity together with its bound.",
-      "paper_match": "Standard logic only; no independent numerical-paper claim.",
-      "status": "not-applicable"
+      "name": "HighamBench.P09WilkinsonModel.flAdd",
+      "interpretation": "The model's rounded real addition operation.",
+      "effect_on_target": "Used by all computed sums and complex arithmetic.",
+      "paper_match": "Matches equation (3.1).",
+      "status": "pass"
     },
     {
       "id": "D093",
-      "name": "DivInvMonoid.toDiv",
-      "interpretation": "Projection of division from a division-inverse monoid instance.",
-      "effect_on_target": "Routes the target's quotient to ordinary real division.",
-      "paper_match": "The resulting operation is the paper's relative-error ratio.",
+      "name": "HighamBench.P09WilkinsonModel.flCos",
+      "interpretation": "The model's computed cosine operation.",
+      "effect_on_target": "Forms rounded root real parts.",
+      "paper_match": "Matches the absolute cosine-error model.",
       "status": "pass"
     },
     {
       "id": "D094",
-      "name": "Exists",
-      "interpretation": "Existential quantification.",
-      "effect_on_target": "Expresses the coefficient and radius witnesses hidden by O(epsilon^2).",
-      "paper_match": "Matches the standard quantified meaning of the paper's big-O remainder.",
+      "name": "HighamBench.P09WilkinsonModel.flMul",
+      "interpretation": "The model's rounded real multiplication operation.",
+      "effect_on_target": "Used by computed complex multiplication.",
+      "paper_match": "Matches equation (3.2).",
       "status": "pass"
     },
     {
       "id": "D095",
-      "name": "Fin",
-      "interpretation": "Natural indices strictly below a bound.",
-      "effect_on_target": "Indexes exactly m axes and m+1 computed states.",
-      "paper_match": "Matches finite coordinate/stage ranges after zero-based reindexing.",
+      "name": "HighamBench.P09WilkinsonModel.flSin",
+      "interpretation": "The model's computed sine operation.",
+      "effect_on_target": "Forms rounded root imaginary parts.",
+      "paper_match": "Matches the absolute sine-error model.",
       "status": "pass"
     },
     {
       "id": "D096",
-      "name": "Fin.fintype",
-      "interpretation": "Canonical finite enumeration of Fin n.",
-      "effect_on_target": "Enables summation over every axis exactly once.",
-      "paper_match": "Matches l=1,...,m.",
+      "name": "HighamBench.p09RadixFourCoefficientApply",
+      "interpretation": "Exact multiplication by 1, i, -1, or -i via signs and component swaps.",
+      "effect_on_target": "Avoids modeled multiplication and trigonometric error in radix 4.",
+      "paper_match": "Matches the exact coefficients shown for fourth-order blocks.",
       "status": "pass"
     },
     {
       "id": "D097",
-      "name": "Finset.sum",
-      "interpretation": "Finite commutative sum.",
-      "effect_on_target": "Forms sum_i K_i and the finite l2 squared norms.",
-      "paper_match": "Matches all displayed finite sums.",
+      "name": "HighamBench.p09RadixTwoCoefficientApply",
+      "interpretation": "Exact multiplication by 1 or -1.",
+      "effect_on_target": "Avoids modeled multiplication and trigonometric error in radix 2.",
+      "paper_match": "Matches the exact coefficients of second-order blocks.",
       "status": "pass"
     },
     {
       "id": "D098",
-      "name": "Finset.univ",
-      "interpretation": "The finite set of every element of a Fintype.",
-      "effect_on_target": "Ensures sums/products range over all axes or indices.",
-      "paper_match": "Matches the paper's complete index ranges.",
+      "name": "HighamBench.p09RootAngle",
+      "interpretation": "The positive angle 2*pi*j/q using the canonical residue representative.",
+      "effect_on_target": "Determines roots used in rounded Fourier products.",
+      "paper_match": "Matches the paper's positive exponential sign.",
       "status": "pass"
     },
     {
       "id": "D099",
-      "name": "HAdd.hAdd",
-      "interpretation": "Typeclass-dispatched heterogeneous addition.",
-      "effect_on_target": "Elaborates additions as real or natural addition at use sites.",
-      "paper_match": "No independent paper content; concrete instances determine meaning.",
-      "status": "not-applicable"
+      "name": "HighamBench.p09RoundedComplexAdd",
+      "interpretation": "Componentwise modeled real addition of complex values.",
+      "effect_on_target": "Implements floating-point complex addition.",
+      "paper_match": "Matches the real-arithmetic expansion used by the paper.",
+      "status": "pass"
     },
     {
       "id": "D100",
-      "name": "HDiv.hDiv",
-      "interpretation": "Typeclass-dispatched heterogeneous division.",
-      "effect_on_target": "Elaborates target and RMS quotients as real division.",
-      "paper_match": "No independent paper content beyond the concrete real operation.",
-      "status": "not-applicable"
+      "name": "HighamBench.p09RoundedComplexSum",
+      "interpretation": "Separately recursively sums real and imaginary components with modeled addition.",
+      "effect_on_target": "Implements the prescribed floating-point accumulation order.",
+      "paper_match": "Matches the repeated-addition algorithm used in the analysis.",
+      "status": "pass"
     },
     {
       "id": "D101",
-      "name": "HMul.hMul",
-      "interpretation": "Typeclass-dispatched heterogeneous multiplication.",
-      "effect_on_target": "Elaborates products in coefficients, transforms, and cardinalities.",
-      "paper_match": "No independent paper content beyond concrete instances.",
+      "name": "HighamBench.p09RoundedRadixFourBlock._proof_1",
+      "interpretation": "Generated proof that 4 is nonzero.",
+      "effect_on_target": "Makes the radix-4 ZMod index well typed.",
+      "paper_match": "No independent paper content.",
       "status": "not-applicable"
     },
     {
       "id": "D102",
-      "name": "HPow.hPow",
-      "interpretation": "Typeclass-dispatched exponentiation.",
-      "effect_on_target": "Elaborates epsilon^2 and squared norms.",
-      "paper_match": "No independent paper content beyond natural power on reals.",
+      "name": "HighamBench.p09RoundedRadixTwoBlock._proof_1",
+      "interpretation": "Generated proof that 2 is nonzero.",
+      "effect_on_target": "Makes the radix-2 ZMod index well typed.",
+      "paper_match": "No independent paper content.",
       "status": "not-applicable"
     },
     {
       "id": "D103",
-      "name": "LE.le",
-      "interpretation": "Typeclass projection of non-strict order.",
-      "effect_on_target": "Expresses coefficient nonnegativity, epsilon radius restriction, and the final upper bound.",
-      "paper_match": "Matches the upper-bound relation used in the source, with strict typography immaterial under existential O coefficient.",
+      "name": "HighamBench.recursiveSum",
+      "interpretation": "Sequential left-associated summation with no operation for a singleton and one modeled addition per later term.",
+      "effect_on_target": "Fixes the accumulation algorithm used in generic and radix-2 blocks.",
+      "paper_match": "Matches the paper's initialized accumulator followed by repeated additions.",
       "status": "pass"
     },
     {
       "id": "D104",
-      "name": "LT.lt",
-      "interpretation": "Typeclass projection of strict order.",
-      "effect_on_target": "Expresses m/axis/model positivity indirectly and explicit positive epsilon, radius, and output RMS.",
-      "paper_match": "Matches necessary positivity/nonzero conditions.",
-      "status": "pass"
+      "name": "HighamBench.recursiveSum._proof_1",
+      "interpretation": "Generated bound proving a singleton index exists in the base successor case.",
+      "effect_on_target": "Only discharges Fin indexing.",
+      "paper_match": "No numerical content.",
+      "status": "not-applicable"
     },
     {
       "id": "D105",
-      "name": "Monoid.toNatPow",
-      "interpretation": "Natural-power operation induced by a monoid.",
-      "effect_on_target": "Makes real epsilon^2 ordinary multiplication power.",
-      "paper_match": "Matches the quadratic remainder order.",
-      "status": "pass"
+      "name": "HighamBench.recursiveSum.match_1",
+      "interpretation": "Natural-number case eliminator for recursive summation.",
+      "effect_on_target": "Implements empty and successor branches.",
+      "paper_match": "Implementation machinery only.",
+      "status": "not-applicable"
     },
     {
       "id": "D106",
-      "name": "MulZeroClass.toZero",
-      "interpretation": "Projection of a zero element from multiplication-with-zero structure.",
-      "effect_on_target": "Supplies Nat zero for NeZero m in elaborated types.",
-      "paper_match": "Pure typeclass plumbing.",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "Combines nonnegativity, radius positivity, and quantified-bound conditions.",
+      "paper_match": "Logical structure only.",
       "status": "not-applicable"
     },
     {
       "id": "D107",
-      "name": "Nat",
-      "interpretation": "Natural numbers.",
-      "effect_on_target": "Types dimension count, axis orders, stage counts, radices, and finite indices.",
-      "paper_match": "Matches the paper's finite positive integer dimensions and orders.",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Extracts real division from its algebraic instance.",
+      "effect_on_target": "Supports the relative RMS ratio.",
+      "paper_match": "Uses ordinary real division as intended.",
       "status": "pass"
     },
     {
       "id": "D108",
-      "name": "Nat.instMulZeroClass",
-      "interpretation": "Standard natural multiplication and zero structure.",
-      "effect_on_target": "Supports NeZero and products of orders/radices.",
-      "paper_match": "Standard arithmetic infrastructure; no independent paper choice.",
+      "name": "Exists",
+      "interpretation": "Existential quantification.",
+      "effect_on_target": "Quantifies the remainder coefficient and radius.",
+      "paper_match": "Logical structure only.",
       "status": "not-applicable"
     },
     {
       "id": "D109",
-      "name": "NeZero",
-      "interpretation": "Proposition that a value is not zero.",
-      "effect_on_target": "Requires m, axis orders, and radices to be nonzero where used.",
-      "paper_match": "Matches the intended nonempty dimension/order domains.",
+      "name": "Fin",
+      "interpretation": "Zero-based finite indices below a natural bound.",
+      "effect_on_target": "Indexes axes, stages, and states.",
+      "paper_match": "Matches finite zero-based coordinate and factor ranges.",
       "status": "pass"
     },
     {
       "id": "D110",
-      "name": "OfNat.ofNat",
-      "interpretation": "Projection of numeric literals from OfNat instances.",
-      "effect_on_target": "Interprets literals 0,1,2,3,4,5 in the formulas.",
-      "paper_match": "Literal elaboration only.",
-      "status": "not-applicable"
+      "name": "Fin.fintype",
+      "interpretation": "Finite enumeration of Fin n.",
+      "effect_on_target": "Enables summation over all axes.",
+      "paper_match": "Matches summation over l=1 through m after reindexing.",
+      "status": "pass"
     },
     {
       "id": "D111",
-      "name": "Real",
-      "interpretation": "Mathematical real numbers.",
-      "effect_on_target": "Types epsilon, gamma, norms, K constants, coefficients, and radius.",
-      "paper_match": "Matches the real-valued deterministic error analysis.",
+      "name": "Finset.sum",
+      "interpretation": "Finite commutative sum.",
+      "effect_on_target": "Forms the sum of all per-axis K constants.",
+      "paper_match": "Matches the theorem's sum over coordinates.",
       "status": "pass"
     },
     {
       "id": "D112",
-      "name": "Real.instAdd",
-      "interpretation": "Ordinary real addition.",
-      "effect_on_target": "Combines first- and second-order terms and constants.",
-      "paper_match": "Matches real arithmetic in the bounds.",
+      "name": "Finset.univ",
+      "interpretation": "The finite set of every value of a finite type.",
+      "effect_on_target": "Selects all axes or indices without omission.",
+      "paper_match": "Matches complete finite index ranges.",
       "status": "pass"
     },
     {
       "id": "D113",
-      "name": "Real.instAddCommMonoid",
-      "interpretation": "Commutative additive monoid structure on reals.",
-      "effect_on_target": "Allows finite sums of K values and squared magnitudes.",
-      "paper_match": "Algebraic infrastructure with the standard intended operation.",
-      "status": "not-applicable"
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition.",
+      "effect_on_target": "Forms the first- and second-order terms.",
+      "paper_match": "Instantiates ordinary real addition.",
+      "status": "pass"
     },
     {
       "id": "D114",
-      "name": "Real.instDivInvMonoid",
-      "interpretation": "Ordinary real division/inversion structure.",
-      "effect_on_target": "Defines RMS normalization and the relative-error quotient.",
-      "paper_match": "Matches division by sqrt(cardinality) and by exact output RMS.",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched division.",
+      "effect_on_target": "Forms relative RMS error.",
+      "paper_match": "Instantiates the paper's ordinary real ratio.",
       "status": "pass"
     },
     {
       "id": "D115",
-      "name": "Real.instLE",
-      "interpretation": "Usual order <= on reals.",
-      "effect_on_target": "Gives the target's bound and nonnegativity predicates their standard meaning.",
-      "paper_match": "Matches real upper bounds.",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "Forms coefficients, products, transforms, and bounds.",
+      "paper_match": "Instantiates intended real, complex, natural, and modular products.",
       "status": "pass"
     },
     {
       "id": "D116",
-      "name": "Real.instLT",
-      "interpretation": "Usual strict order < on reals.",
-      "effect_on_target": "Gives positive epsilon, radius, and output RMS their standard meaning.",
-      "paper_match": "Matches the meaningful relative-error domain.",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "Forms epsilon squared.",
+      "paper_match": "Matches the second-order remainder scale.",
       "status": "pass"
     },
     {
       "id": "D117",
-      "name": "Real.instMonoid",
-      "interpretation": "Multiplicative monoid structure on reals.",
-      "effect_on_target": "Supports natural powers such as epsilon^2.",
-      "paper_match": "Standard algebraic infrastructure.",
-      "status": "not-applicable"
+      "name": "LE.le",
+      "interpretation": "Nonstrict order relation.",
+      "effect_on_target": "Expresses the upper bound and nonnegative coefficient.",
+      "paper_match": "Matches the paper's less-than-or-equal bounds.",
+      "status": "pass"
     },
     {
       "id": "D118",
-      "name": "Real.instMul",
-      "interpretation": "Ordinary real multiplication.",
-      "effect_on_target": "Forms epsilon*K, C*epsilon^2, scaling factors, and model errors.",
-      "paper_match": "Matches the source formulas.",
+      "name": "LT.lt",
+      "interpretation": "Strict order relation.",
+      "effect_on_target": "Expresses positive epsilon, radius, and denominator.",
+      "paper_match": "Correctly formalizes required positivity.",
       "status": "pass"
     },
     {
       "id": "D119",
-      "name": "Real.instZero",
-      "interpretation": "The real number zero.",
-      "effect_on_target": "Defines positivity and nonnegativity baselines.",
-      "paper_match": "Matches standard real arithmetic.",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number powers in a monoid.",
+      "effect_on_target": "Interprets real epsilon raised to 2.",
+      "paper_match": "Matches epsilon squared.",
       "status": "pass"
     },
     {
       "id": "D120",
-      "name": "Subtype.val",
-      "interpretation": "Projection from a subtype to its underlying value.",
-      "effect_on_target": "Uses a positive epsilon as a real in inequalities and model equality.",
-      "paper_match": "Preserves exactly the paper's epsilon value.",
-      "status": "pass"
-    },
-    {
-      "id": "D121",
-      "name": "Zero.toOfNat0",
-      "interpretation": "Builds literal 0 from a Zero instance.",
-      "effect_on_target": "Elaborates zero constants.",
+      "name": "MulZeroClass.toZero",
+      "interpretation": "Extracts a zero operation from an algebraic structure.",
+      "effect_on_target": "Supports NeZero elaboration for naturals.",
       "paper_match": "Typeclass plumbing only.",
       "status": "not-applicable"
     },
     {
+      "id": "D121",
+      "name": "Nat",
+      "interpretation": "Natural numbers.",
+      "effect_on_target": "Represent m, coordinate orders, stage counts, and radices.",
+      "paper_match": "Matches positive integral dimensions and factors.",
+      "status": "pass"
+    },
+    {
       "id": "D122",
-      "name": "instHAdd",
-      "interpretation": "Homogeneous HAdd instance derived from Add.",
-      "effect_on_target": "Routes hAdd on reals/naturals to their standard addition.",
-      "paper_match": "Typeclass plumbing only.",
+      "name": "Nat.instMulZeroClass",
+      "interpretation": "Natural multiplication-with-zero instance.",
+      "effect_on_target": "Supports natural products and NeZero constraints.",
+      "paper_match": "Algebraic infrastructure only.",
       "status": "not-applicable"
     },
     {
       "id": "D123",
-      "name": "instHDiv",
-      "interpretation": "Homogeneous HDiv instance derived from Div.",
-      "effect_on_target": "Routes hDiv on reals to standard division.",
-      "paper_match": "Typeclass plumbing only.",
-      "status": "not-applicable"
+      "name": "NeZero",
+      "interpretation": "Proposition that a value is not zero.",
+      "effect_on_target": "Requires m and relevant moduli to be nonzero.",
+      "paper_match": "Matches nonempty operational dimensions.",
+      "status": "pass"
     },
     {
       "id": "D124",
-      "name": "instHMul",
-      "interpretation": "Homogeneous HMul instance derived from Mul.",
-      "effect_on_target": "Routes hMul to ordinary real, natural, complex, or ZMod multiplication.",
-      "paper_match": "Typeclass plumbing only.",
+      "name": "OfNat.ofNat",
+      "interpretation": "Interprets numeral literals in a target type.",
+      "effect_on_target": "Provides constants 0, 1, and 2.",
+      "paper_match": "Literal elaboration only.",
       "status": "not-applicable"
     },
     {
       "id": "D125",
-      "name": "instHPow",
-      "interpretation": "Homogeneous-result HPow instance derived from Pow.",
-      "effect_on_target": "Routes epsilon^2 and norm squares to natural exponentiation.",
-      "paper_match": "Typeclass plumbing only.",
-      "status": "not-applicable"
+      "name": "Real",
+      "interpretation": "Real numbers.",
+      "effect_on_target": "Represent epsilon, gamma, RMS values, constants, and radii.",
+      "paper_match": "Matches the real-valued error bounds.",
+      "status": "pass"
     },
     {
       "id": "D126",
-      "name": "instOfNatNat",
-      "interpretation": "Canonical natural-number literal instance.",
-      "effect_on_target": "Makes a Nat literal equal to that natural.",
-      "paper_match": "Literal infrastructure only.",
-      "status": "not-applicable"
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary real addition.",
+      "effect_on_target": "Combines first- and second-order bound terms.",
+      "paper_match": "Matches real arithmetic in the theorem.",
+      "status": "pass"
     },
     {
       "id": "D127",
-      "name": "Nat.cast",
-      "interpretation": "Coercion of naturals into a NatCast type.",
-      "effect_on_target": "Converts orders, stage counts, radices, and products to reals in sqrt and K.",
-      "paper_match": "Matches treating these counts as real coefficients.",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "Commutative additive structure on reals.",
+      "effect_on_target": "Supports the finite sum of K constants.",
+      "paper_match": "Uses ordinary finite real summation.",
       "status": "pass"
     },
     {
       "id": "D128",
-      "name": "Real.instNatCast",
-      "interpretation": "Canonical embedding of naturals into reals.",
-      "effect_on_target": "Defines the casts used in K and RMS scaling.",
-      "paper_match": "Matches ordinary real-valued integer constants.",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "Ordinary real division and inversion structure.",
+      "effect_on_target": "Interprets the relative-error quotient.",
+      "paper_match": "Matches the paper's ratio for a nonzero denominator.",
       "status": "pass"
     },
     {
       "id": "D129",
-      "name": "Real.sqrt",
-      "interpretation": "Nonnegative real square root.",
-      "effect_on_target": "Defines RMS normalization, Fourier scaling, and alpha factors.",
-      "paper_match": "Matches every sqrt(N) and sqrt(2) in the paper.",
+      "name": "Real.instLE",
+      "interpretation": "Ordinary real less-than-or-equal order.",
+      "effect_on_target": "Interprets all weak inequalities.",
+      "paper_match": "Matches the source inequality direction.",
       "status": "pass"
     },
     {
       "id": "D130",
-      "name": "Subtype",
-      "interpretation": "Values paired with a proof of a predicate.",
-      "effect_on_target": "Defines P09PositiveEpsilon as positive reals.",
-      "paper_match": "Matches restricting epsilon to its intended domain.",
+      "name": "Real.instLT",
+      "interpretation": "Ordinary strict real order.",
+      "effect_on_target": "Interprets positivity assumptions.",
+      "paper_match": "Matches the intended positive quantities.",
       "status": "pass"
     },
     {
       "id": "D131",
-      "name": "AddCommMonoidWithOne.toAddMonoidWithOne",
-      "interpretation": "Superclass projection used in numeric casting.",
-      "effect_on_target": "Supports elaboration of ENNReal/natural literals for norms.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
+      "name": "Real.instMonoid",
+      "interpretation": "Multiplicative monoid structure on reals.",
+      "effect_on_target": "Supplies natural powers.",
+      "paper_match": "Ordinary real arithmetic only.",
+      "status": "pass"
     },
     {
       "id": "D132",
-      "name": "AddMonoidWithOne.toNatCast",
-      "interpretation": "Superclass projection providing natural casts.",
-      "effect_on_target": "Supports ordinary numeral coercions.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "Forms epsilon coefficients and scaling factors.",
+      "paper_match": "Matches source arithmetic.",
+      "status": "pass"
     },
     {
       "id": "D133",
-      "name": "Complex",
-      "interpretation": "Pairs of real and imaginary parts with complex arithmetic.",
-      "effect_on_target": "Types input, exact/computed outputs, roots, and errors.",
-      "paper_match": "Matches the paper's complex-valued transforms and magnitudes.",
+      "name": "Real.instZero",
+      "interpretation": "Real zero.",
+      "effect_on_target": "States positivity and nonnegative remainder coefficients.",
+      "paper_match": "Matches ordinary zero.",
       "status": "pass"
     },
     {
       "id": "D134",
-      "name": "Complex.instNorm",
-      "interpretation": "Complex modulus sqrt(re^2+im^2).",
-      "effect_on_target": "Supplies |A(index)| in l2/RMS norms.",
-      "paper_match": "Matches complex magnitude in the paper.",
+      "name": "Subtype.val",
+      "interpretation": "Extracts the real value of a positive epsilon subtype.",
+      "effect_on_target": "Uses epsilon numerically in bounds and models.",
+      "paper_match": "Preserves the paper's epsilon value.",
       "status": "pass"
     },
     {
       "id": "D135",
-      "name": "Complex.instSub",
-      "interpretation": "Componentwise complex subtraction.",
-      "effect_on_target": "Defines computed-minus-exact error entries.",
-      "paper_match": "Matches E=fl(Y)-Y.",
-      "status": "pass"
+      "name": "Zero.toOfNat0",
+      "interpretation": "Constructs numeral zero from a Zero instance.",
+      "effect_on_target": "Elaborates positivity and nonnegativity formulas.",
+      "paper_match": "Literal infrastructure only.",
+      "status": "not-applicable"
     },
     {
       "id": "D136",
-      "name": "ENNReal",
-      "interpretation": "Extended nonnegative reals, used here only to select p=2 for PiLp.",
-      "effect_on_target": "Parametrizes the finite l2 norm implementation.",
-      "paper_match": "At p=2 it yields the paper's Euclidean norm; no extra exceptional value enters.",
-      "status": "pass"
+      "name": "instHAdd",
+      "interpretation": "Lifts homogeneous addition into HAdd.",
+      "effect_on_target": "Dispatches real and natural additions.",
+      "paper_match": "Typeclass infrastructure only.",
+      "status": "not-applicable"
     },
     {
       "id": "D137",
-      "name": "Eq",
-      "interpretation": "Propositional equality.",
-      "effect_on_target": "States fixed inputs, model parameters, exact factorizations, scaling identities, and stage transitions.",
-      "paper_match": "Standard logic; substantive equalities are assessed at their declaring dependencies.",
+      "name": "instHDiv",
+      "interpretation": "Lifts homogeneous division into HDiv.",
+      "effect_on_target": "Dispatches real division.",
+      "paper_match": "Typeclass infrastructure only.",
       "status": "not-applicable"
     },
     {
       "id": "D138",
-      "name": "Fin.instOfNat",
-      "interpretation": "Canonical finite-index literal when the bound is nonzero.",
-      "effect_on_target": "Interprets computedState 0 as the first state.",
-      "paper_match": "Standard indexing infrastructure.",
+      "name": "instHMul",
+      "interpretation": "Lifts homogeneous multiplication into HMul.",
+      "effect_on_target": "Dispatches arithmetic products.",
+      "paper_match": "Typeclass infrastructure only.",
       "status": "not-applicable"
     },
     {
       "id": "D139",
-      "name": "Finset.prod",
-      "interpretation": "Finite commutative product.",
-      "effect_on_target": "Forms total array cardinality, prefix order products, and radix products.",
-      "paper_match": "Matches N_1...N_m and each mixed-radix factorization.",
-      "status": "pass"
+      "name": "instHPow",
+      "interpretation": "Lifts power into HPow.",
+      "effect_on_target": "Dispatches epsilon squared.",
+      "paper_match": "Typeclass infrastructure only.",
+      "status": "not-applicable"
     },
     {
       "id": "D140",
-      "name": "HSub.hSub",
-      "interpretation": "Typeclass-dispatched subtraction.",
-      "effect_on_target": "Elaborates complex/real subtraction in errors and K's M-1 term.",
-      "paper_match": "Concrete subtraction instances give the intended meaning.",
+      "name": "instOfNatNat",
+      "interpretation": "Natural numeral instance.",
+      "effect_on_target": "Elaborates natural constants and exponent 2.",
+      "paper_match": "Literal infrastructure only.",
       "status": "not-applicable"
     },
     {
       "id": "D141",
-      "name": "Nat.below",
-      "interpretation": "Course-of-values recursion accumulator type.",
-      "effect_on_target": "Supports total definitions of prefix application and recursive summation.",
-      "paper_match": "Implementation infrastructure only.",
-      "status": "not-applicable"
+      "name": "Nat.cast",
+      "interpretation": "Casts natural values into a numeric target.",
+      "effect_on_target": "Converts orders, radices, and stage counts to reals.",
+      "paper_match": "Matches their use as real coefficients.",
+      "status": "pass"
     },
     {
       "id": "D142",
-      "name": "Nat.brecOn",
-      "interpretation": "Course-of-values recursion on naturals.",
-      "effect_on_target": "Implements prefix transforms and sequential sums.",
-      "paper_match": "Implementation infrastructure; branch definitions determine the numerical meaning.",
-      "status": "not-applicable"
+      "name": "Real.instNatCast",
+      "interpretation": "Canonical natural-to-real casting.",
+      "effect_on_target": "Interprets dimension and radix constants in real formulas.",
+      "paper_match": "Matches ordinary embedding into the reals.",
+      "status": "pass"
     },
     {
       "id": "D143",
-      "name": "Nat.instCommMonoid",
-      "interpretation": "Commutative multiplication monoid on naturals.",
-      "effect_on_target": "Supports finite products of orders and radices.",
-      "paper_match": "Standard arithmetic infrastructure.",
-      "status": "not-applicable"
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square root.",
+      "effect_on_target": "Defines RMS normalization and Fourier norm scaling.",
+      "paper_match": "Matches every square-root factor in the paper.",
+      "status": "pass"
     },
     {
       "id": "D144",
-      "name": "Nat.ne_of_gt",
-      "interpretation": "Converts strict positivity into nonzeroness.",
-      "effect_on_target": "Builds NeZero instances for positive axis orders.",
-      "paper_match": "Logical arithmetic infrastructure; preserves the intended positive orders.",
-      "status": "not-applicable"
+      "name": "Subtype",
+      "interpretation": "A value paired with proof of a predicate.",
+      "effect_on_target": "Represents strictly positive epsilon.",
+      "paper_match": "Faithful formal restriction.",
+      "status": "pass"
     },
     {
       "id": "D145",
-      "name": "Nat.succ",
-      "interpretation": "Natural successor.",
-      "effect_on_target": "Indexes recursive stages and m+1 states.",
-      "paper_match": "Standard indexing infrastructure.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D146",
-      "name": "NeZero.mk",
-      "interpretation": "Constructor of nonzeroness from inequality with zero.",
-      "effect_on_target": "Packages positive axis/radix facts for typeclass use.",
-      "paper_match": "No independent numerical-paper content.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D147",
-      "name": "Norm.norm",
-      "interpretation": "Projection of a norm operation.",
-      "effect_on_target": "Evaluates complex and finite l2 norms used by RMS.",
-      "paper_match": "Matches normwise error semantics through the concrete norm instances.",
-      "status": "pass"
-    },
-    {
-      "id": "D148",
-      "name": "One.toOfNat1",
-      "interpretation": "Builds literal 1 from a One instance.",
-      "effect_on_target": "Elaborates unit constants in models and formulas.",
-      "paper_match": "Literal infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D149",
-      "name": "PiLp.instNorm",
-      "interpretation": "Finite p-norm on dependent functions; at p=2 it is (sum_i ||x_i||^2)^(1/2).",
-      "effect_on_target": "Defines p09MultiNorm2.",
-      "paper_match": "Matches the multidimensional Euclidean norm exactly.",
-      "status": "pass"
-    },
-    {
-      "id": "D150",
-      "name": "Real.instOne",
-      "interpretation": "The real number one.",
-      "effect_on_target": "Appears in 1+theta*epsilon and numeric constants.",
-      "paper_match": "Matches the paper's real unit.",
-      "status": "pass"
-    },
-    {
-      "id": "D151",
-      "name": "Real.instSub",
-      "interpretation": "Ordinary real subtraction.",
-      "effect_on_target": "Defines stageCount-1 and real components of complex subtraction.",
-      "paper_match": "Matches M-1 and standard arithmetic.",
-      "status": "pass"
-    },
-    {
-      "id": "D152",
-      "name": "WithLp",
-      "interpretation": "A type wrapper used to attach an l_p norm without changing underlying function data.",
-      "effect_on_target": "Allows the multidimensional array to be viewed with p=2 norm.",
-      "paper_match": "At p=2 this is representation-only and preserves the paper's array values.",
-      "status": "pass"
-    },
-    {
-      "id": "D153",
-      "name": "WithLp.toLp",
-      "interpretation": "Constructor wrapping a value as WithLp p.",
-      "effect_on_target": "Feeds an array into PiLp's p=2 norm.",
-      "paper_match": "Representation-only; it does not alter values or paper semantics.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D154",
-      "name": "instAddCommMonoidWithOneENNReal",
-      "interpretation": "Standard additive/numeral structure on ENNReal.",
-      "effect_on_target": "Interprets the p=2 norm parameter.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D155",
-      "name": "instAddNat",
-      "interpretation": "Ordinary natural addition.",
-      "effect_on_target": "Forms i+1 and m+1 in stage indexing.",
-      "paper_match": "Standard indexing arithmetic.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D156",
-      "name": "instHSub",
-      "interpretation": "Homogeneous HSub instance derived from Sub.",
-      "effect_on_target": "Routes subtraction to standard real/complex subtraction.",
+      "name": "AddCommMonoidWithOne.toAddMonoidWithOne",
+      "interpretation": "Algebraic superclass projection.",
+      "effect_on_target": "Supports numeral coercions in norm infrastructure.",
       "paper_match": "Typeclass plumbing only.",
       "status": "not-applicable"
     },
     {
+      "id": "D146",
+      "name": "AddMonoidWithOne.toNatCast",
+      "interpretation": "Extracts natural casting from an additive structure.",
+      "effect_on_target": "Supports numeric coercions.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D147",
+      "name": "Complex",
+      "interpretation": "Complex numbers with real and imaginary parts.",
+      "effect_on_target": "Values all input, output, intermediate, and error arrays.",
+      "paper_match": "Matches the paper's complex Fourier data.",
+      "status": "pass"
+    },
+    {
+      "id": "D148",
+      "name": "Complex.instNorm",
+      "interpretation": "Complex modulus as the square root of norm squared.",
+      "effect_on_target": "Defines l2 and RMS magnitudes.",
+      "paper_match": "Matches absolute complex magnitude.",
+      "status": "pass"
+    },
+    {
+      "id": "D149",
+      "name": "Complex.instSub",
+      "interpretation": "Componentwise complex subtraction.",
+      "effect_on_target": "Forms computed-minus-exact errors.",
+      "paper_match": "Matches complex forward error.",
+      "status": "pass"
+    },
+    {
+      "id": "D150",
+      "name": "ENNReal",
+      "interpretation": "Extended nonnegative real exponent type used by PiLp.",
+      "effect_on_target": "Carries the fixed l2 exponent 2.",
+      "paper_match": "Norm-library representation only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D151",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "Links models, runs, factorizations, and computed states.",
+      "paper_match": "Logical structure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D152",
+      "name": "Fin.instOfNat",
+      "interpretation": "Numeral indexing for nonempty Fin types.",
+      "effect_on_target": "Selects computed state zero.",
+      "paper_match": "Index elaboration only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D153",
+      "name": "Finset.prod",
+      "interpretation": "Finite commutative product.",
+      "effect_on_target": "Forms total and prefix products of coordinate orders and radices.",
+      "paper_match": "Matches products N_1 through N_m and radix factorizations.",
+      "status": "pass"
+    },
+    {
+      "id": "D154",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "Forms errors and M-1 in K.",
+      "paper_match": "Instantiates intended complex, real, and natural subtraction contexts.",
+      "status": "pass"
+    },
+    {
+      "id": "D155",
+      "name": "Nat.below",
+      "interpretation": "Course-of-values recursion data for naturals.",
+      "effect_on_target": "Supports recursive prefix and summation definitions.",
+      "paper_match": "Implementation machinery only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D156",
+      "name": "Nat.brecOn",
+      "interpretation": "Course-of-values recursion on naturals.",
+      "effect_on_target": "Implements prefix transforms and recursive sums.",
+      "paper_match": "Implementation machinery only.",
+      "status": "not-applicable"
+    },
+    {
       "id": "D157",
-      "name": "instLENat",
-      "interpretation": "Usual natural order <=.",
-      "effect_on_target": "States prefix length k<=m and epsilon-independent index bounds.",
-      "paper_match": "Matches ordinary finite-prefix ordering.",
+      "name": "Nat.instCommMonoid",
+      "interpretation": "Natural multiplication with unit.",
+      "effect_on_target": "Supports products of dimensions and radices.",
+      "paper_match": "Matches ordinary natural products.",
       "status": "pass"
     },
     {
       "id": "D158",
-      "name": "instOfNatAtLeastTwo",
-      "interpretation": "Numeral instance from NatCast for literals at least two.",
-      "effect_on_target": "Elaborates real/ENNReal constants such as 2,3,4,5.",
-      "paper_match": "Literal/cast infrastructure only.",
+      "name": "Nat.ne_of_gt",
+      "interpretation": "Positive naturals are nonzero.",
+      "effect_on_target": "Constructs modulus nonzero proofs from order positivity.",
+      "paper_match": "Logical arithmetic support only.",
       "status": "not-applicable"
     },
     {
       "id": "D159",
-      "name": "Fin.castLE",
-      "interpretation": "Embeds Fin k into Fin m under k<=m without changing the value.",
-      "effect_on_target": "Enumerates exactly the first k axes in prefix products.",
-      "paper_match": "Matches the first k coordinate orders.",
-      "status": "pass"
+      "name": "Nat.succ",
+      "interpretation": "Natural successor.",
+      "effect_on_target": "Indexes prefix depth and m+1 states.",
+      "paper_match": "Indexing infrastructure only.",
+      "status": "not-applicable"
     },
     {
       "id": "D160",
-      "name": "Fin.mk",
-      "interpretation": "Pairs a natural value with proof it is below the bound.",
-      "effect_on_target": "Constructs valid coordinate/stage indices.",
-      "paper_match": "Matches bounded index ranges.",
-      "status": "pass"
+      "name": "NeZero.mk",
+      "interpretation": "Constructs a NeZero instance from inequality with zero.",
+      "effect_on_target": "Supplies nonzero moduli to FFT definitions.",
+      "paper_match": "Typeclass infrastructure only.",
+      "status": "not-applicable"
     },
     {
       "id": "D161",
-      "name": "Fin.succ",
-      "interpretation": "Maps i:Fin m to index i+1 in Fin(m+1).",
-      "effect_on_target": "Selects the input state immediately before rounded axis i.",
-      "paper_match": "Matches adjacent Z_l states in the nested computation.",
+      "name": "Norm.norm",
+      "interpretation": "Extracts a norm function from its instance.",
+      "effect_on_target": "Evaluates complex and product-array l2 norms.",
+      "paper_match": "Uses the intended complex magnitude and l2 norm.",
       "status": "pass"
     },
     {
       "id": "D162",
-      "name": "Fin.val",
-      "interpretation": "Underlying natural value of a Fin index.",
-      "effect_on_target": "Sets prefix length i and accesses zero-based stage numbers.",
-      "paper_match": "Matches l-1 under reindexing.",
-      "status": "pass"
-    },
-    {
-      "id": "D163",
-      "name": "Fintype",
-      "interpretation": "A type equipped with a complete finite enumeration.",
-      "effect_on_target": "Makes all array index sets and axis sets finite.",
-      "paper_match": "Matches finite Fourier dimensions.",
-      "status": "pass"
-    },
-    {
-      "id": "D164",
-      "name": "Nat.AtLeastTwo",
-      "interpretation": "Proof class used to elaborate numerals >=2 in castable types.",
-      "effect_on_target": "Supports constants in alpha/K and p=2.",
+      "name": "One.toOfNat1",
+      "interpretation": "Constructs numeral one from a One instance.",
+      "effect_on_target": "Elaborates constants in models and K.",
       "paper_match": "Literal infrastructure only.",
       "status": "not-applicable"
     },
     {
+      "id": "D163",
+      "name": "PiLp.instNorm",
+      "interpretation": "For p=2 on a finite function type, gives the square root of the sum of squared component norms.",
+      "effect_on_target": "Defines p09MultiNorm2.",
+      "paper_match": "Exactly supplies the Euclidean norm required by RMS.",
+      "status": "pass"
+    },
+    {
+      "id": "D164",
+      "name": "Real.instOne",
+      "interpretation": "Real one.",
+      "effect_on_target": "Appears in Wilkinson factors and powers.",
+      "paper_match": "Matches ordinary real one.",
+      "status": "pass"
+    },
+    {
       "id": "D165",
-      "name": "Nat.casesOn",
-      "interpretation": "Zero/successor case analysis on naturals.",
-      "effect_on_target": "Implements total recursion helpers and ZMod branches.",
-      "paper_match": "Implementation infrastructure only.",
-      "status": "not-applicable"
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction.",
+      "effect_on_target": "Forms stageCount minus one in K.",
+      "paper_match": "Matches M-1 because stageCount is positive.",
+      "status": "pass"
     },
     {
       "id": "D166",
-      "name": "Nat.decLt",
-      "interpretation": "Decision procedure for natural strict inequality.",
-      "effect_on_target": "Chooses in-range coordinate transforms and twiddle flags.",
-      "paper_match": "Computational proof infrastructure; it does not change the stated ranges.",
+      "name": "WithLp",
+      "interpretation": "Type wrapper carrying an Lp norm.",
+      "effect_on_target": "Lets the function array receive the PiLp l2 norm.",
+      "paper_match": "Norm-library representation only.",
       "status": "not-applicable"
     },
     {
       "id": "D167",
-      "name": "Not",
-      "interpretation": "Logical negation as implication to False.",
-      "effect_on_target": "Expresses nonzero conditions and branches.",
-      "paper_match": "Standard logic only.",
+      "name": "WithLp.toLp",
+      "interpretation": "Wraps a function as a WithLp value.",
+      "effect_on_target": "Feeds arrays to the PiLp norm.",
+      "paper_match": "Norm-library representation only.",
       "status": "not-applicable"
     },
     {
       "id": "D168",
-      "name": "Pi.instFintype",
-      "interpretation": "Fintype instance for a finite dependent function space.",
-      "effect_on_target": "Enumerates every multidimensional index tuple exactly once.",
-      "paper_match": "Matches the Cartesian product of coordinate ranges.",
-      "status": "pass"
+      "name": "instAddCommMonoidWithOneENNReal",
+      "interpretation": "Numeric structure on ENNReal.",
+      "effect_on_target": "Interprets the PiLp exponent literal 2.",
+      "paper_match": "Norm-library infrastructure only.",
+      "status": "not-applicable"
     },
     {
       "id": "D169",
-      "name": "ZMod",
-      "interpretation": "Integers modulo a positive natural order.",
-      "effect_on_target": "Represents each cyclic Fourier index set canonically.",
-      "paper_match": "Matches indices 0,...,N-1 with modular multiplication in exponents.",
-      "status": "pass"
+      "name": "instAddNat",
+      "interpretation": "Natural-number addition.",
+      "effect_on_target": "Forms successor state and prefix indices.",
+      "paper_match": "Index arithmetic only.",
+      "status": "not-applicable"
     },
     {
       "id": "D170",
-      "name": "ZMod.fintype",
-      "interpretation": "Finite enumeration of ZMod n for nonzero n.",
-      "effect_on_target": "Makes coordinate and radix Fourier sums range over n residues.",
-      "paper_match": "Matches all n input/output indices.",
-      "status": "pass"
-    },
-    {
-      "id": "D171",
-      "name": "Zero.ofOfNat0",
-      "interpretation": "Builds a Zero instance from literal-zero support.",
-      "effect_on_target": "Supports elaboration of nonzero state/index bounds.",
+      "name": "instHSub",
+      "interpretation": "Lifts homogeneous subtraction into HSub.",
+      "effect_on_target": "Dispatches real and complex subtraction.",
       "paper_match": "Typeclass infrastructure only.",
       "status": "not-applicable"
     },
     {
+      "id": "D171",
+      "name": "instLENat",
+      "interpretation": "Ordinary natural less-than-or-equal order.",
+      "effect_on_target": "Bounds prefix lengths and radix conditions.",
+      "paper_match": "Matches finite-index arithmetic.",
+      "status": "pass"
+    },
+    {
       "id": "D172",
-      "name": "dite",
-      "interpretation": "Dependent conditional.",
-      "effect_on_target": "Implements total definitions whose branch types depend on a proposition.",
-      "paper_match": "Implementation infrastructure only.",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Casts numeral literals at least two through NatCast.",
+      "effect_on_target": "Elaborates real and ENNReal constants such as 2, 3, and 4.",
+      "paper_match": "Literal infrastructure only.",
       "status": "not-applicable"
     },
     {
       "id": "D173",
-      "name": "inferInstance",
-      "interpretation": "Returns the available typeclass instance.",
-      "effect_on_target": "Selects canonical Fintype and algebra structures.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
+      "name": "Fin.castLE",
+      "interpretation": "Embeds Fin k into Fin m given k less than or equal to m.",
+      "effect_on_target": "Selects the first k axis orders in prefix products.",
+      "paper_match": "Matches coordinate prefixes.",
+      "status": "pass"
     },
     {
       "id": "D174",
-      "name": "instDecidableEqFin",
-      "interpretation": "Decidable equality for finite indices.",
-      "effect_on_target": "Supports function update and finite enumeration.",
-      "paper_match": "Computational infrastructure; mathematical equality is unchanged.",
+      "name": "Fin.mk",
+      "interpretation": "Builds a bounded natural index.",
+      "effect_on_target": "Constructs valid coordinate and stage indices.",
+      "paper_match": "Indexing infrastructure only.",
       "status": "not-applicable"
     },
     {
       "id": "D175",
-      "name": "instDecidableEqNat",
-      "interpretation": "Decidable equality for naturals.",
-      "effect_on_target": "Supports piecewise alpha, recursion, and branch decisions.",
-      "paper_match": "Computational infrastructure only.",
-      "status": "not-applicable"
+      "name": "Fin.succ",
+      "interpretation": "Maps a bounded index to its successor in Fin(n+1).",
+      "effect_on_target": "Selects the computed state supplying stage input.",
+      "paper_match": "Matches the Z_{l} to Z_{l-1} state relation.",
+      "status": "pass"
     },
     {
       "id": "D176",
-      "name": "instLTNat",
-      "interpretation": "Usual strict order on naturals.",
-      "effect_on_target": "Expresses positive orders/stage counts and index bounds.",
-      "paper_match": "Matches ordinary positive finite sizes.",
+      "name": "Fin.val",
+      "interpretation": "The zero-based natural value of a Fin index.",
+      "effect_on_target": "Controls coordinate order, prefix depth, and state positions.",
+      "paper_match": "Matches zero-based formal indexing of paper coordinates.",
       "status": "pass"
     },
     {
       "id": "D177",
-      "name": "ite",
-      "interpretation": "Nondependent if-then-else.",
-      "effect_on_target": "Selects alpha cases, twiddle use, and total out-of-range behavior.",
-      "paper_match": "Matches the stated piecewise constants and algorithm flags at substantive use sites.",
+      "name": "Fintype",
+      "interpretation": "A type equipped with a finite complete enumeration.",
+      "effect_on_target": "Supports sums, products, and norms over finite indices.",
+      "paper_match": "Matches all finite transform domains.",
       "status": "pass"
     },
     {
       "id": "D178",
-      "name": "AddChar",
-      "interpretation": "A multiplicative-valued homomorphism from an additive monoid.",
-      "effect_on_target": "Types the Fourier root kernel on ZMod.",
-      "paper_match": "Matches the exponential character e(q) used in the paper.",
-      "status": "pass"
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "Typeclass evidence that a numeral is at least two.",
+      "effect_on_target": "Supports overloaded numeral casts.",
+      "paper_match": "Literal infrastructure only.",
+      "status": "not-applicable"
     },
     {
       "id": "D179",
-      "name": "AddChar.instFunLike",
-      "interpretation": "Coercion of an additive character to its function.",
-      "effect_on_target": "Evaluates the standard character at modular products in Fourier sums.",
-      "paper_match": "Preserves the positive complex exponential kernel.",
-      "status": "pass"
+      "name": "Nat.casesOn",
+      "interpretation": "Zero-or-successor elimination for naturals.",
+      "effect_on_target": "Implements recursive definitions and modulus cases.",
+      "paper_match": "Implementation machinery only.",
+      "status": "not-applicable"
     },
     {
       "id": "D180",
-      "name": "AddGroupWithOne.toAddMonoidWithOne",
-      "interpretation": "Superclass projection used in ZMod's additive structure and casts.",
-      "effect_on_target": "Supports construction of the standard additive character.",
-      "paper_match": "Typeclass infrastructure only.",
+      "name": "Nat.decLt",
+      "interpretation": "Decision procedure for natural strict inequality.",
+      "effect_on_target": "Chooses valid-coordinate and twiddle branches.",
+      "paper_match": "Computational logic only.",
       "status": "not-applicable"
     },
     {
       "id": "D181",
-      "name": "AddMonoidWithOne.toAddMonoid",
-      "interpretation": "Superclass projection of additive monoid structure.",
-      "effect_on_target": "Supports the domain structure of ZMod additive characters.",
-      "paper_match": "Typeclass infrastructure only.",
+      "name": "Not",
+      "interpretation": "Logical negation as implication to false.",
+      "effect_on_target": "Expresses nonzero and failed branch conditions.",
+      "paper_match": "Logical structure only.",
       "status": "not-applicable"
     },
     {
       "id": "D182",
-      "name": "Bool",
-      "interpretation": "Two-valued Boolean type.",
-      "effect_on_target": "Stores whether a mixed-radix stage performs a twiddle multiplication.",
-      "paper_match": "Matches the presence/absence of D_r at a stage.",
+      "name": "Pi.instFintype",
+      "interpretation": "Finite enumeration of dependent functions over a finite domain.",
+      "effect_on_target": "Makes the product index type finite.",
+      "paper_match": "Matches enumeration of all multidimensional index tuples.",
       "status": "pass"
     },
     {
       "id": "D183",
-      "name": "CommRing.toNonUnitalCommRing",
-      "interpretation": "Superclass projection from commutative rings.",
-      "effect_on_target": "Contributes algebra instances for ZMod arithmetic.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
+      "name": "ZMod",
+      "interpretation": "Finite cyclic residues for positive moduli.",
+      "effect_on_target": "Represents each coordinate's zero-based Fourier indices.",
+      "paper_match": "Equivalent to 0 through N_l-1 with modular arithmetic.",
+      "status": "pass"
     },
     {
       "id": "D184",
-      "name": "CommRing.toRing",
-      "interpretation": "Superclass projection from commutative rings.",
-      "effect_on_target": "Contributes ring/cast structure for ZMod.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
+      "name": "ZMod.fintype",
+      "interpretation": "Finite enumeration of residues modulo a nonzero natural.",
+      "effect_on_target": "Supports Fourier sums and multidimensional norms.",
+      "paper_match": "Matches complete zero-based index ranges.",
+      "status": "pass"
     },
     {
       "id": "D185",
-      "name": "Complex.instMul",
-      "interpretation": "Ordinary complex multiplication.",
-      "effect_on_target": "Multiplies exact Fourier roots by data and exact twiddles.",
-      "paper_match": "Matches complex multiplication in the exact transform.",
-      "status": "pass"
+      "name": "Zero.ofOfNat0",
+      "interpretation": "Obtains a Zero instance from numeral zero.",
+      "effect_on_target": "Supports generated NeZero instances.",
+      "paper_match": "Typeclass infrastructure only.",
+      "status": "not-applicable"
     },
     {
       "id": "D186",
-      "name": "Complex.instNormedAddCommGroup",
-      "interpretation": "Standard normed additive group structure on Complex.",
-      "effect_on_target": "Supports finite l2 norms and subtraction.",
-      "paper_match": "Matches standard complex modulus/norm algebra.",
-      "status": "pass"
+      "name": "dite",
+      "interpretation": "Dependent conditional expression.",
+      "effect_on_target": "Implements range-checked coordinate application.",
+      "paper_match": "Implementation machinery only.",
+      "status": "not-applicable"
     },
     {
       "id": "D187",
-      "name": "Complex.instNormedField",
-      "interpretation": "Standard normed field structure on Complex with multiplicative norm.",
-      "effect_on_target": "Supplies norm/algebra instances used by Fourier and PiLp definitions.",
-      "paper_match": "Matches ordinary complex arithmetic.",
-      "status": "pass"
+      "name": "inferInstance",
+      "interpretation": "Selects an available typeclass instance.",
+      "effect_on_target": "Supplies finite and algebraic structures.",
+      "paper_match": "Elaboration machinery only.",
+      "status": "not-applicable"
     },
     {
       "id": "D188",
-      "name": "Complex.instSemiring",
-      "interpretation": "Semiring structure on Complex.",
-      "effect_on_target": "Supplies monoid structure needed by additive characters.",
-      "paper_match": "Algebraic typeclass infrastructure; substantive multiplication is already standard.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D189",
-      "name": "DFunLike.coe",
-      "interpretation": "Generic coercion of function-like structures to functions.",
-      "effect_on_target": "Allows additive characters and equivalences to be evaluated.",
-      "paper_match": "Coercion infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D190",
-      "name": "Decidable.decide",
-      "interpretation": "Converts a decidable proposition to Bool.",
-      "effect_on_target": "Sets useTwiddle true exactly when i+1<stageCount.",
-      "paper_match": "Matches twiddles on the first M-1 stages.",
-      "status": "pass"
-    },
-    {
-      "id": "D191",
-      "name": "Distrib.toMul",
-      "interpretation": "Superclass projection of multiplication from distributive structure.",
-      "effect_on_target": "Supplies ZMod multiplication to ring equivalences.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D192",
-      "name": "ENormedAddCommMonoid.toESeminormedAddCommMonoid",
-      "interpretation": "Normed-structure superclass projection.",
-      "effect_on_target": "Supports construction of Complex l2 norms.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D193",
-      "name": "ESeminormedAddCommMonoid.toAddCommMonoid",
-      "interpretation": "Additive-structure superclass projection.",
-      "effect_on_target": "Provides the additive monoid needed for finite norm-related sums.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D194",
-      "name": "Equiv",
-      "interpretation": "A bijection with inverse.",
-      "effect_on_target": "Represents exact permutations and block reindexings.",
-      "paper_match": "Matches permutation matrices/reindexing, which introduce no roundoff.",
-      "status": "pass"
-    },
-    {
-      "id": "D195",
-      "name": "Fin.castSucc",
-      "interpretation": "Embeds Fin m into Fin(m+1) at the same natural value.",
-      "effect_on_target": "Selects computed state i after rounded axis i.",
-      "paper_match": "Matches the adjacent output side of a stage transition.",
-      "status": "pass"
-    },
-    {
-      "id": "D196",
-      "name": "Fin.last",
-      "interpretation": "The final index m in Fin(m+1).",
-      "effect_on_target": "Selects computedState m as the input state.",
-      "paper_match": "Matches Z_m=X.",
-      "status": "pass"
-    },
-    {
-      "id": "D197",
-      "name": "Function.Surjective",
-      "interpretation": "Every codomain value has a preimage.",
-      "effect_on_target": "Stored as a mathematical property of the exact one-dimensional Fourier transform.",
-      "paper_match": "Supports normalization/nonzero reasoning; the unnormalized finite Fourier map is indeed surjective as in the paper.",
-      "status": "pass"
-    },
-    {
-      "id": "D198",
-      "name": "Function.update",
-      "interpretation": "Replaces one coordinate of a dependent function and leaves all others fixed.",
-      "effect_on_target": "Forms coordinate fibers for exact and rounded T_i transforms.",
-      "paper_match": "Matches summing over s_i while retaining all other indices.",
-      "status": "pass"
-    },
-    {
-      "id": "D199",
-      "name": "MonoidWithZero.toMonoid",
-      "interpretation": "Superclass projection of multiplicative monoid structure.",
-      "effect_on_target": "Supplies Complex codomain structure for additive characters.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D200",
-      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
-      "interpretation": "Ring-structure superclass projection.",
-      "effect_on_target": "Contributes ZMod arithmetic instances.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D201",
-      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
-      "interpretation": "Ring-structure superclass projection.",
-      "effect_on_target": "Contributes ZMod arithmetic instances.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D202",
-      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
-      "interpretation": "Ring-structure superclass projection.",
-      "effect_on_target": "Contributes ZMod addition/multiplication instances.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D203",
-      "name": "NonUnitalNonAssocSemiring.toDistrib",
-      "interpretation": "Superclass projection of distributive addition/multiplication.",
-      "effect_on_target": "Contributes ZMod arithmetic instances used by ring equivalences.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D204",
-      "name": "NormedAddCommGroup.toENormedAddCommMonoid",
-      "interpretation": "Normed-structure conversion.",
-      "effect_on_target": "Supports Complex component norms in PiLp.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D205",
-      "name": "NormedCommRing.toSeminormedCommRing",
-      "interpretation": "Normed-ring superclass conversion.",
-      "effect_on_target": "Supports Complex norm topology/algebra instances.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D206",
-      "name": "NormedField.toNormedCommRing",
-      "interpretation": "Normed-field superclass conversion.",
-      "effect_on_target": "Supports Complex norm and multiplication instances.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D207",
-      "name": "PseudoMetricSpace.toUniformSpace",
-      "interpretation": "Topology superclass projection.",
-      "effect_on_target": "Supports normed Complex typeclass resolution.",
-      "paper_match": "No target-level paper semantics.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D208",
-      "name": "Real.cos",
-      "interpretation": "The ordinary real cosine.",
-      "effect_on_target": "Defines exact real parts against which flCos error is measured.",
-      "paper_match": "Matches cos(a) in the paper's absolute trigonometric model.",
-      "status": "pass"
-    },
-    {
-      "id": "D209",
-      "name": "Real.instAddGroup",
-      "interpretation": "Standard additive group on reals.",
-      "effect_on_target": "Supports absolute values, subtraction, and negation.",
-      "paper_match": "Algebraic infrastructure with ordinary real meaning.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D210",
-      "name": "Real.lattice",
-      "interpretation": "Usual lattice order on reals.",
-      "effect_on_target": "Supports real absolute value in theta bounds.",
-      "paper_match": "Matches |theta| through the standard real order.",
-      "status": "pass"
-    },
-    {
-      "id": "D211",
-      "name": "Real.sin",
-      "interpretation": "The ordinary real sine.",
-      "effect_on_target": "Defines exact imaginary parts against which flSin error is measured.",
-      "paper_match": "Matches sin(a) in the paper's absolute trigonometric model.",
-      "status": "pass"
-    },
-    {
-      "id": "D212",
-      "name": "Ring.toAddGroupWithOne",
-      "interpretation": "Ring superclass projection for addition, negation, one, and casts.",
-      "effect_on_target": "Supports ZMod additive characters and casts.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D213",
-      "name": "SeminormedCommRing.toSeminormedRing",
-      "interpretation": "Normed-ring superclass projection.",
-      "effect_on_target": "Supports Complex normed structure resolution.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D214",
-      "name": "SeminormedRing.toPseudoMetricSpace",
-      "interpretation": "Metric superclass projection.",
-      "effect_on_target": "Supports Complex normed structure resolution.",
-      "paper_match": "No independent paper semantics.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D215",
-      "name": "Semiring.toMonoidWithZero",
-      "interpretation": "Semiring superclass projection.",
-      "effect_on_target": "Provides Complex monoid structure for additive characters.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D216",
-      "name": "UniformSpace.toTopologicalSpace",
-      "interpretation": "Topology superclass projection.",
-      "effect_on_target": "Supports normed-space instance resolution.",
-      "paper_match": "No target-level paper semantics.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D217",
-      "name": "ZMod.commRing",
-      "interpretation": "Canonical commutative ring arithmetic modulo n.",
-      "effect_on_target": "Defines modular addition and multiplication of Fourier indices/exponents.",
-      "paper_match": "Matches exponent arithmetic modulo each transform order.",
-      "status": "pass"
-    },
-    {
-      "id": "D218",
-      "name": "ZMod.stdAddChar",
-      "interpretation": "The standard positive complex additive character on ZMod N.",
-      "effect_on_target": "Supplies exp(i*2*pi*j*k/N) in exact coordinate, stage, and full Fourier transforms.",
-      "paper_match": "Matches the paper's inherited e(q)=exp(i2*pi*q) positive-sign kernel.",
-      "status": "pass"
-    },
-    {
-      "id": "D219",
-      "name": "abs",
-      "interpretation": "Usual lattice absolute value on reals.",
-      "effect_on_target": "States |theta|<=1 in every Wilkinson operation witness.",
-      "paper_match": "Matches theta in [-1,1].",
-      "status": "pass"
-    },
-    {
-      "id": "D220",
-      "name": "Equiv.instEquivLike",
-      "interpretation": "Function/inverse coercion instance for equivalences.",
-      "effect_on_target": "Allows exact permutations and reindexings to be applied.",
-      "paper_match": "Coercion infrastructure; bijection semantics are unchanged.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D221",
-      "name": "EquivLike.toFunLike",
-      "interpretation": "Forgets inverse data and exposes an equivalence as a function.",
-      "effect_on_target": "Evaluates permutations and reindexings in stage definitions.",
-      "paper_match": "Coercion infrastructure only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D222",
-      "name": "List.foldl",
-      "interpretation": "Left fold over a list.",
-      "effect_on_target": "Applies exact or rounded FFT stages in their listed order.",
-      "paper_match": "Matches sequential stage execution certified by the plan's exact factorization.",
-      "status": "pass"
-    },
-    {
-      "id": "D223",
-      "name": "List.ofFn",
-      "interpretation": "Lists f(0),...,f(n-1) from a Fin-indexed function.",
-      "effect_on_target": "Turns the stage family into ordered stage data for foldl.",
-      "paper_match": "Matches r=1,...,M order after zero-based reindexing.",
-      "status": "pass"
-    },
-    {
-      "id": "D224",
-      "name": "Ne",
-      "interpretation": "Inequality defined as negated equality.",
-      "effect_on_target": "Expresses nonzero radices/block counts and derived size facts.",
-      "paper_match": "Matches positive/nonzero finite factors; standard logic only.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D225",
-      "name": "Prod",
-      "interpretation": "Ordered pairs.",
-      "effect_on_target": "Types block index and within-block radix index for a stage reindexing.",
-      "paper_match": "Matches block-diagonal FFT coordinates.",
-      "status": "pass"
-    },
-    {
-      "id": "D226",
-      "name": "instMulNat",
-      "interpretation": "Ordinary natural multiplication.",
-      "effect_on_target": "Defines products of orders, radices, and blockCount*radix.",
-      "paper_match": "Matches integer factorization and cardinality products.",
-      "status": "pass"
-    },
-    {
-      "id": "D227",
-      "name": "Bool.true",
-      "interpretation": "The true Boolean value.",
-      "effect_on_target": "Selects execution of a stage twiddle multiplication.",
-      "paper_match": "Matches stages carrying a D_r factor.",
-      "status": "pass"
-    },
-    {
-      "id": "D228",
-      "name": "Equiv.symm",
-      "interpretation": "Inverse of an equivalence.",
-      "effect_on_target": "Maps a vector index back to its block/radix coordinates.",
-      "paper_match": "Matches exact inverse reindexing in a block factor.",
-      "status": "pass"
-    },
-    {
-      "id": "D229",
-      "name": "Prod.fst",
-      "interpretation": "First projection of a pair.",
-      "effect_on_target": "Selects the block number after stage reindexing.",
-      "paper_match": "Matches the fixed-block coordinate.",
-      "status": "pass"
-    },
-    {
-      "id": "D230",
-      "name": "Prod.mk",
-      "interpretation": "Constructor of an ordered pair.",
-      "effect_on_target": "Combines a block number with a summation radix index.",
-      "paper_match": "Matches addressing entries within one block DFT.",
-      "status": "pass"
-    },
-    {
-      "id": "D231",
-      "name": "Prod.snd",
-      "interpretation": "Second projection of a pair.",
-      "effect_on_target": "Selects the within-block output coordinate in a radix DFT exponent.",
-      "paper_match": "Matches the radix Fourier output index.",
-      "status": "pass"
-    },
-    {
-      "id": "D232",
-      "name": "instDecidableEqBool",
-      "interpretation": "Decision procedure for Boolean equality.",
-      "effect_on_target": "Selects the twiddle/no-twiddle branch.",
+      "name": "instDecidableEqFin",
+      "interpretation": "Decidable equality on finite indices.",
+      "effect_on_target": "Supports coordinate updates and finite constructions.",
       "paper_match": "Computational infrastructure only.",
       "status": "not-applicable"
     },
     {
+      "id": "D189",
+      "name": "instDecidableEqNat",
+      "interpretation": "Decidable equality on natural numbers.",
+      "effect_on_target": "Selects radix and recursion cases.",
+      "paper_match": "Computational infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D190",
+      "name": "instLTNat",
+      "interpretation": "Ordinary strict order on naturals.",
+      "effect_on_target": "Expresses positive dimensions and valid indices.",
+      "paper_match": "Matches finite range conditions.",
+      "status": "pass"
+    },
+    {
+      "id": "D191",
+      "name": "ite",
+      "interpretation": "Nondependent conditional expression.",
+      "effect_on_target": "Selects radix, twiddle, and valid-index branches.",
+      "paper_match": "Faithfully implements the stated piecewise algorithms.",
+      "status": "pass"
+    },
+    {
+      "id": "D192",
+      "name": "AddChar",
+      "interpretation": "An additive character into a multiplicative target.",
+      "effect_on_target": "Represents complex Fourier kernels on ZMod.",
+      "paper_match": "Matches exponential characters in equations (1.1) and (4.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D193",
+      "name": "AddChar.instFunLike",
+      "interpretation": "Coerces an additive character to its value function.",
+      "effect_on_target": "Evaluates Fourier roots in sums and twiddles.",
+      "paper_match": "Preserves the intended complex exponential values.",
+      "status": "pass"
+    },
+    {
+      "id": "D194",
+      "name": "AddGroupWithOne.toAddMonoidWithOne",
+      "interpretation": "Algebraic superclass projection.",
+      "effect_on_target": "Supports the ZMod additive-character instance.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D195",
+      "name": "AddMonoidWithOne.toAddMonoid",
+      "interpretation": "Algebraic superclass projection.",
+      "effect_on_target": "Supports the additive-character domain structure.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D196",
+      "name": "Bool",
+      "interpretation": "Two-valued boolean type.",
+      "effect_on_target": "Stores whether a stage has a twiddle factor.",
+      "paper_match": "Faithfully encodes presence or absence of D stages.",
+      "status": "pass"
+    },
+    {
+      "id": "D197",
+      "name": "CommRing.toNonUnitalCommRing",
+      "interpretation": "Algebraic superclass construction.",
+      "effect_on_target": "Supports modular arithmetic instances.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D198",
+      "name": "CommRing.toRing",
+      "interpretation": "Algebraic superclass projection.",
+      "effect_on_target": "Supports ZMod casting and additive characters.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D199",
+      "name": "Complex.instMul",
+      "interpretation": "Ordinary complex multiplication.",
+      "effect_on_target": "Defines exact Fourier products and twiddles.",
+      "paper_match": "Matches complex multiplication in the exact transform.",
+      "status": "pass"
+    },
+    {
+      "id": "D200",
+      "name": "Complex.instNormedAddCommGroup",
+      "interpretation": "Normed additive-group structure on complex numbers.",
+      "effect_on_target": "Supports finite l2 norms of complex arrays.",
+      "paper_match": "Uses ordinary complex modulus and addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D201",
+      "name": "Complex.instNormedField",
+      "interpretation": "Normed-field structure on complex numbers.",
+      "effect_on_target": "Supports complex norm and multiplication infrastructure.",
+      "paper_match": "Uses standard complex arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D202",
+      "name": "Complex.instSemiring",
+      "interpretation": "Semiring structure on complex numbers.",
+      "effect_on_target": "Supports Fourier additive characters and products.",
+      "paper_match": "Uses standard complex arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D203",
+      "name": "DFunLike.coe",
+      "interpretation": "Coerces a function-like structure to a dependent function.",
+      "effect_on_target": "Supports character and equivalence evaluation.",
+      "paper_match": "Elaboration machinery only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D204",
+      "name": "Decidable.decide",
+      "interpretation": "Converts a decidable proposition to a boolean.",
+      "effect_on_target": "Marks exactly the nonfinal stages as twiddle stages.",
+      "paper_match": "Matches the M-1 twiddle pattern.",
+      "status": "pass"
+    },
+    {
+      "id": "D205",
+      "name": "Distrib.toMul",
+      "interpretation": "Algebraic multiplication projection.",
+      "effect_on_target": "Supports ZMod ring-equivalence types.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D206",
+      "name": "ENormedAddCommMonoid.toESeminormedAddCommMonoid",
+      "interpretation": "Normed-structure superclass projection.",
+      "effect_on_target": "Supports complex finite l2 norm instances.",
+      "paper_match": "Norm-library plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D207",
+      "name": "ESeminormedAddCommMonoid.toAddCommMonoid",
+      "interpretation": "Additive-structure superclass projection.",
+      "effect_on_target": "Supports finite sums in norm infrastructure.",
+      "paper_match": "Norm-library plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D208",
+      "name": "Equiv",
+      "interpretation": "A bijection with an explicit inverse.",
+      "effect_on_target": "Represents exact permutations and block reindexings.",
+      "paper_match": "Matches permutation matrices and index rearrangements.",
+      "status": "pass"
+    },
+    {
+      "id": "D209",
+      "name": "Fin.castSucc",
+      "interpretation": "Embeds Fin m into Fin(m+1) without changing its value.",
+      "effect_on_target": "Selects each stage's computed output state.",
+      "paper_match": "Matches state index l-1 after zero-based conversion.",
+      "status": "pass"
+    },
+    {
+      "id": "D210",
+      "name": "Fin.last",
+      "interpretation": "The final index m of Fin(m+1).",
+      "effect_on_target": "Selects the run's computed input state.",
+      "paper_match": "Matches Z_m=X.",
+      "status": "pass"
+    },
+    {
+      "id": "D211",
+      "name": "Function.Surjective",
+      "interpretation": "Every codomain value has a preimage.",
+      "effect_on_target": "Records surjectivity of the exact Fourier transform in a plan.",
+      "paper_match": "The unnormalized finite Fourier transform is invertible, as used implicitly by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D212",
+      "name": "Function.update",
+      "interpretation": "Replaces one coordinate of a dependent function.",
+      "effect_on_target": "Varies the active coordinate while fixing all other multidimensional indices.",
+      "paper_match": "Matches each one-coordinate Fourier sum.",
+      "status": "pass"
+    },
+    {
+      "id": "D213",
+      "name": "MonoidWithZero.toMonoid",
+      "interpretation": "Algebraic superclass projection.",
+      "effect_on_target": "Supports the complex-valued additive character.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D214",
+      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
+      "interpretation": "Algebraic superclass projection.",
+      "effect_on_target": "Supports ZMod operation instances.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D215",
+      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
+      "interpretation": "Algebraic superclass projection.",
+      "effect_on_target": "Supports ZMod operation instances.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D216",
+      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
+      "interpretation": "Algebraic superclass construction.",
+      "effect_on_target": "Supports ZMod operation instances.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D217",
+      "name": "NonUnitalNonAssocSemiring.toDistrib",
+      "interpretation": "Algebraic superclass projection.",
+      "effect_on_target": "Supports ZMod addition and multiplication.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D218",
+      "name": "NormedAddCommGroup.toENormedAddCommMonoid",
+      "interpretation": "Normed-structure conversion.",
+      "effect_on_target": "Supports complex PiLp norm instances.",
+      "paper_match": "Norm-library plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D219",
+      "name": "NormedCommRing.toSeminormedCommRing",
+      "interpretation": "Normed-ring superclass conversion.",
+      "effect_on_target": "Supports standard complex topology and norms.",
+      "paper_match": "Norm-library plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D220",
+      "name": "NormedField.toNormedCommRing",
+      "interpretation": "Normed-field superclass conversion.",
+      "effect_on_target": "Supports standard complex norm infrastructure.",
+      "paper_match": "Norm-library plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D221",
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "interpretation": "Topological superclass projection.",
+      "effect_on_target": "Supports complex norm instances.",
+      "paper_match": "Topological infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D222",
+      "name": "Real.cos",
+      "interpretation": "The standard real cosine.",
+      "effect_on_target": "Defines exact root real parts in the trigonometric model.",
+      "paper_match": "Matches cosine in the paper's root computation.",
+      "status": "pass"
+    },
+    {
+      "id": "D223",
+      "name": "Real.instAddGroup",
+      "interpretation": "Additive-group structure on reals.",
+      "effect_on_target": "Supports absolute values and signed arithmetic.",
+      "paper_match": "Standard real infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D224",
+      "name": "Real.lattice",
+      "interpretation": "Lattice order on reals.",
+      "effect_on_target": "Supports real absolute value in theta bounds.",
+      "paper_match": "Matches ordinary absolute-value bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D225",
+      "name": "Real.sin",
+      "interpretation": "The standard real sine.",
+      "effect_on_target": "Defines exact root imaginary parts in the trigonometric model.",
+      "paper_match": "Matches sine in the paper's root computation.",
+      "status": "pass"
+    },
+    {
+      "id": "D226",
+      "name": "Ring.toAddGroupWithOne",
+      "interpretation": "Algebraic superclass construction.",
+      "effect_on_target": "Supports ZMod additive-character instances.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D227",
+      "name": "SeminormedCommRing.toSeminormedRing",
+      "interpretation": "Normed-ring superclass projection.",
+      "effect_on_target": "Supports complex metric infrastructure.",
+      "paper_match": "Norm-library plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D228",
+      "name": "SeminormedRing.toPseudoMetricSpace",
+      "interpretation": "Metric superclass projection.",
+      "effect_on_target": "Supports standard complex topology.",
+      "paper_match": "Topological infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D229",
+      "name": "Semiring.toMonoidWithZero",
+      "interpretation": "Algebraic superclass construction.",
+      "effect_on_target": "Supports the complex multiplicative character target.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D230",
+      "name": "UniformSpace.toTopologicalSpace",
+      "interpretation": "Topological superclass projection.",
+      "effect_on_target": "Supports normed complex structures.",
+      "paper_match": "Topological infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D231",
+      "name": "ZMod.commRing",
+      "interpretation": "Standard modular addition and multiplication.",
+      "effect_on_target": "Computes Fourier exponents and cyclic indices.",
+      "paper_match": "Matches arithmetic modulo each transform length.",
+      "status": "pass"
+    },
+    {
+      "id": "D232",
+      "name": "ZMod.stdAddChar",
+      "interpretation": "The standard positive complex additive character on ZMod N.",
+      "effect_on_target": "Supplies exp(i*2*pi*j*k/N) kernels.",
+      "paper_match": "Matches the paper's unnormalized positive-sign Fourier convention.",
+      "status": "pass"
+    },
+    {
       "id": "D233",
-      "name": "Complex.im",
-      "interpretation": "Imaginary-part projection.",
-      "effect_on_target": "Used in rounded complex multiplication/summation and complex modulus.",
-      "paper_match": "Matches the imaginary component of complex arithmetic.",
+      "name": "abs",
+      "interpretation": "Ordinary lattice absolute value.",
+      "effect_on_target": "Expresses each theta bound as abs(theta) less than or equal to 1.",
+      "paper_match": "Matches -1 less than or equal to theta less than or equal to 1.",
       "status": "pass"
     },
     {
       "id": "D234",
-      "name": "Complex.mk",
-      "interpretation": "Constructor from real and imaginary parts.",
-      "effect_on_target": "Builds rounded complex sums, products, and roots.",
-      "paper_match": "Matches ordinary complex values assembled from modeled real operations.",
+      "name": "Equiv.instEquivLike",
+      "interpretation": "Function-like interface for equivalences.",
+      "effect_on_target": "Evaluates permutations and reindexings.",
+      "paper_match": "Preserves exact bijective rearrangements.",
       "status": "pass"
     },
     {
       "id": "D235",
-      "name": "Complex.re",
-      "interpretation": "Real-part projection.",
-      "effect_on_target": "Used in rounded complex multiplication/summation and complex modulus.",
-      "paper_match": "Matches the real component of complex arithmetic.",
-      "status": "pass"
+      "name": "EquivLike.toFunLike",
+      "interpretation": "Coerces an equivalence-like object to a function-like object.",
+      "effect_on_target": "Applies exact index maps.",
+      "paper_match": "Elaboration machinery only.",
+      "status": "not-applicable"
     },
     {
       "id": "D236",
-      "name": "Distrib.toAdd",
-      "interpretation": "Superclass projection of addition from a distributive structure.",
-      "effect_on_target": "Supplies ZMod addition to ring equivalences.",
-      "paper_match": "Typeclass infrastructure only.",
-      "status": "not-applicable"
+      "name": "List.foldl",
+      "interpretation": "Left fold over a list.",
+      "effect_on_target": "Applies exact and rounded stages in listed order.",
+      "paper_match": "Matches sequential factor execution.",
+      "status": "pass"
     },
     {
       "id": "D237",
-      "name": "Fin.instAdd",
-      "interpretation": "Canonical modular addition on Fin n.",
-      "effect_on_target": "Supports the concrete positive-modulus representation of ZMod.",
-      "paper_match": "Representation/typeclass infrastructure; ZMod ring semantics are assessed separately.",
-      "status": "not-applicable"
+      "name": "List.ofFn",
+      "interpretation": "Lists Fin-indexed values in increasing index order.",
+      "effect_on_target": "Fixes the stage order consumed by folds.",
+      "paper_match": "Matches stage order 1 through M after zero-based conversion.",
+      "status": "pass"
     },
     {
       "id": "D238",
-      "name": "Fin.instMul",
-      "interpretation": "Canonical modular multiplication on Fin n.",
-      "effect_on_target": "Supports the concrete positive-modulus representation of ZMod.",
-      "paper_match": "Representation/typeclass infrastructure; exponent semantics are assessed at ZMod.commRing.",
+      "name": "Ne",
+      "interpretation": "Propositional inequality.",
+      "effect_on_target": "Expresses nonzero radices, block counts, and dimensions.",
+      "paper_match": "Logical support for nonempty factors.",
       "status": "not-applicable"
     },
     {
       "id": "D239",
-      "name": "Neg.neg",
-      "interpretation": "Typeclass projection of unary negation.",
-      "effect_on_target": "Negates the second product in the real part of rounded complex multiplication.",
-      "paper_match": "Matches exact sign change in standard complex multiplication.",
+      "name": "Prod",
+      "interpretation": "Cartesian product type.",
+      "effect_on_target": "Pairs block and within-block indices.",
+      "paper_match": "Matches block decomposition of each radix stage.",
       "status": "pass"
     },
     {
       "id": "D240",
-      "name": "Real.instNeg",
-      "interpretation": "Ordinary real negation.",
-      "effect_on_target": "Implements the subtraction sign in rounded complex multiplication.",
-      "paper_match": "Matches standard real/complex arithmetic.",
+      "name": "instMulNat",
+      "interpretation": "Ordinary natural multiplication.",
+      "effect_on_target": "Forms blockCount*radix and dimension products.",
+      "paper_match": "Matches factorization arithmetic.",
       "status": "pass"
     },
     {
       "id": "D241",
-      "name": "RingEquiv.toEquiv",
-      "interpretation": "Forgets ring preservation and exposes a ring equivalence as a bijection.",
-      "effect_on_target": "Lets ZMod.finEquiv enumerate residues by Fin indices in recursive sums.",
-      "paper_match": "Representation-only coercion.",
-      "status": "not-applicable"
+      "name": "Bool.true",
+      "interpretation": "The enabled boolean value.",
+      "effect_on_target": "Selects execution of a twiddle multiplication.",
+      "paper_match": "Matches presence of a diagonal D factor.",
+      "status": "pass"
     },
     {
       "id": "D242",
-      "name": "ZMod.finEquiv",
-      "interpretation": "Canonical equivalence Fin n ~= ZMod n for n>0.",
-      "effect_on_target": "Orders the q terms in p09RoundedComplexSum as residues 0,...,q-1.",
-      "paper_match": "Matches the paper's sequential summation index order.",
+      "name": "Equiv.symm",
+      "interpretation": "Inverse of an equivalence.",
+      "effect_on_target": "Recovers block coordinates from a flat stage index.",
+      "paper_match": "Matches inverse reindexing of block matrices.",
       "status": "pass"
     },
     {
       "id": "D243",
-      "name": "Real.pi",
-      "interpretation": "The usual real constant pi.",
-      "effect_on_target": "Defines Fourier root angles 2*pi*j/q.",
-      "paper_match": "Matches the 2*pi phase in equations (1.1) and (4.1).",
-      "status": "pass"
+      "name": "Prod.fst",
+      "interpretation": "First component of a product.",
+      "effect_on_target": "Selects a radix block number.",
+      "paper_match": "Index projection only.",
+      "status": "not-applicable"
     },
     {
       "id": "D244",
-      "name": "ZMod.val",
-      "interpretation": "Canonical natural representative of a modular residue.",
-      "effect_on_target": "Chooses j in 0,...,q-1 when forming root angles.",
-      "paper_match": "Matches the paper's explicit representative index range.",
-      "status": "pass"
+      "name": "Prod.mk",
+      "interpretation": "Constructor for a product pair.",
+      "effect_on_target": "Builds block/radix indices for reindexing.",
+      "paper_match": "Index construction only.",
+      "status": "not-applicable"
     },
     {
       "id": "D245",
+      "name": "Prod.snd",
+      "interpretation": "Second component of a product.",
+      "effect_on_target": "Selects the within-block radix index.",
+      "paper_match": "Index projection only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D246",
+      "name": "instDecidableEqBool",
+      "interpretation": "Decidable equality on booleans.",
+      "effect_on_target": "Chooses whether to execute twiddle multiplication.",
+      "paper_match": "Computational infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D247",
+      "name": "Eq.rec",
+      "interpretation": "Transport of data along equality.",
+      "effect_on_target": "Casts generic radix indices into specialized radix-2 or radix-4 indices.",
+      "paper_match": "Type-theoretic infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D248",
+      "name": "Complex.im",
+      "interpretation": "Imaginary component of a complex number.",
+      "effect_on_target": "Supports rounded componentwise operations and special coefficients.",
+      "paper_match": "Matches standard complex arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D249",
+      "name": "Complex.mk",
+      "interpretation": "Constructs a complex number from real and imaginary parts.",
+      "effect_on_target": "Builds rounded products, sums, and roots.",
+      "paper_match": "Matches standard complex representation.",
+      "status": "pass"
+    },
+    {
+      "id": "D250",
+      "name": "Complex.re",
+      "interpretation": "Real component of a complex number.",
+      "effect_on_target": "Supports rounded componentwise operations and special coefficients.",
+      "paper_match": "Matches standard complex arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D251",
+      "name": "Distrib.toAdd",
+      "interpretation": "Algebraic addition projection.",
+      "effect_on_target": "Supports ZMod ring-equivalence types.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D252",
+      "name": "Fin.instAdd",
+      "interpretation": "Modular addition on finite indices.",
+      "effect_on_target": "Supports the concrete positive-modulus implementation of ZMod.",
+      "paper_match": "Low-level modular arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D253",
+      "name": "Fin.instMul",
+      "interpretation": "Modular multiplication on finite indices.",
+      "effect_on_target": "Supports the concrete positive-modulus implementation of ZMod.",
+      "paper_match": "Low-level modular arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D254",
+      "name": "Neg.neg",
+      "interpretation": "Typeclass-dispatched negation.",
+      "effect_on_target": "Implements signs in complex multiplication and special radices.",
+      "paper_match": "Matches exact and real arithmetic negation.",
+      "status": "pass"
+    },
+    {
+      "id": "D255",
+      "name": "Real.instNeg",
+      "interpretation": "Ordinary real negation.",
+      "effect_on_target": "Forms subtraction terms and exact sign changes.",
+      "paper_match": "Matches standard real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D256",
+      "name": "RingEquiv.toEquiv",
+      "interpretation": "Forgets algebraic preservation and retains a bijection.",
+      "effect_on_target": "Uses the canonical Fin-to-ZMod map for enumeration.",
+      "paper_match": "Index representation only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D257",
+      "name": "ZMod.finEquiv",
+      "interpretation": "Canonical equivalence between Fin n and ZMod n for positive n.",
+      "effect_on_target": "Enumerates residues in zero-based order for sums.",
+      "paper_match": "Matches indices 0 through n-1.",
+      "status": "pass"
+    },
+    {
+      "id": "D258",
+      "name": "AddMonoidWithOne.toOne",
+      "interpretation": "Algebraic one projection.",
+      "effect_on_target": "Supports numeric constants in modular and character structures.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D259",
+      "name": "Complex.instNeg",
+      "interpretation": "Componentwise complex negation.",
+      "effect_on_target": "Implements exact -1 coefficients in special radix blocks.",
+      "paper_match": "Matches exact sign changes requiring no roundoff.",
+      "status": "pass"
+    },
+    {
+      "id": "D260",
+      "name": "NonUnitalNonAssocSemiring.toMulZeroClass",
+      "interpretation": "Algebraic superclass construction.",
+      "effect_on_target": "Supports NeZero and modular instances.",
+      "paper_match": "Typeclass plumbing only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D261",
+      "name": "Real.pi",
+      "interpretation": "The standard real constant pi.",
+      "effect_on_target": "Defines Fourier-root angles 2*pi*j/q.",
+      "paper_match": "Matches the paper's exponential kernel.",
+      "status": "pass"
+    },
+    {
+      "id": "D262",
+      "name": "ZMod.decidableEq",
+      "interpretation": "Decidable equality on modular residues.",
+      "effect_on_target": "Supports finite sums and special coefficient branches.",
+      "paper_match": "Computational infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D263",
+      "name": "ZMod.val",
+      "interpretation": "Canonical natural representative of a residue.",
+      "effect_on_target": "Chooses j in 0 through q-1 for root angles.",
+      "paper_match": "Matches the paper's zero-based Fourier indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D264",
       "name": "Nat.zero",
-      "interpretation": "The natural number zero.",
-      "effect_on_target": "Base case for dimensions, recursion, indices, and literal elaboration.",
-      "paper_match": "Standard arithmetic constructor; no independent paper claim.",
+      "interpretation": "The zero natural constructor.",
+      "effect_on_target": "Supports base cases and zero-based indexing.",
+      "paper_match": "Foundational syntax only.",
       "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
-      "status": "fail",
-      "paper_evidence": "The PDF is the October 1971 Mathematics of Computation article, volume 25, issue 116, printed pages 757-768. Theorem 1/K is on PDF page 3 (printed 759), (4.1) on page 7 (763), and Theorem 2(a) with proof on pages 8-9 (764-765). The exact-input sentence is on PDF page 9 (printed 765), whereas the supplied locator assigns that role to PDF page 12 (printed 768), which only continues the later backward-error discussion.",
-      "lean_evidence": "The target models Theorem 2(a), and P09MultidimensionalFftRun.mk enforces exact input representation. The declaration selection itself is correct.",
-      "reasoning": "The paper version and selected result are correct, but one cited source location is factually wrong. This is a resolved citation defect, not a semantic defect in the Lean proposition."
+      "status": "pass",
+      "paper_evidence": "The published October 1971 journal version states Theorem 2(a) on printed page 764, with its multidimensional transform on page 763 and proof continuing on page 765.",
+      "lean_evidence": "The target is the multidimensional relative RMS error bound with the supplied paper hash and the same first-order coefficient.",
+      "reasoning": "The selected source, version, theorem clause, and surrounding definitions are correct."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "Equation (4.1) uses m positive dimensions, axis lengths N_l, complex arrays X and Y, and indices s_l,t_l=0,...,N_l-1.",
-      "lean_evidence": "m:Nat with NeZero m; plan.axis:Fin m->P09FftAxis with positive orders; P09MultiIndex axis=(i:Fin m)->ZMod(order_i); P09MultiArray axis=P09MultiIndex axis->Complex.",
-      "reasoning": "Fin m and ZMod positive orders are the exact zero-based finite product indexing of the paper; all data and scalar types agree."
+      "paper_evidence": "Equation (4.1) uses m coordinate lengths N_l and zero-based source and target indices, with complex arrays inherited from equation (1.1).",
+      "lean_evidence": "m is nonzero, axes are indexed by Fin m, each positive order uses ZMod, and P09MultiArray is a product-index-to-Complex function.",
+      "reasoning": "Binders, dimensions, complex value type, and finite product indices have the intended meanings."
     },
     {
       "id": "S03",
       "status": "pass",
-      "paper_evidence": "Theorem 2(a) is a first-order assertion for a fixed transform, factorization, gamma, and input as epsilon tends to zero; its O(epsilon^2) coefficient may depend on those fixed data.",
-      "lean_evidence": "The target universally fixes m, plan, gamma, family, and local bounds, then chooses secondOrderCoeff and radius before universally quantifying positive epsilon within the radius.",
-      "reasoning": "Witnesses may depend on all fixed algorithm/input data but not on epsilon, exactly the standard quantifier scope of a uniform local big-O bound."
+      "paper_evidence": "The O(epsilon^2) statement concerns fixed data, dimensions, factorization, and gamma as epsilon tends to zero.",
+      "lean_evidence": "The plan, gamma, family, and local-bound package precede existential coefficient and radius witnesses, which precede the universal positive epsilon.",
+      "reasoning": "Witnesses may depend on the fixed algorithm and family but not on epsilon, which is the correct big-O quantifier scope."
     },
     {
       "id": "S04",
-      "status": "pass",
-      "paper_evidence": "The paper assumes mixed-radix one-dimensional FFTs satisfying Theorem 1, Wilkinson arithmetic, gamma>=0, nested coordinate execution, exactly representable input, and implicitly a nonzero output RMS for the displayed ratio.",
-      "lean_evidence": "Family.mk carries gamma>=0 and matched Wilkinson models; Run.mk carries exact input and nested stage steps; plan/axis constructors carry positive dimensions and exact Fourier factorizations/scaling; axisBounds is the explicit (4.3) local asymptotic estimate; hexactOutput states exact-output RMS>0.",
-      "reasoning": "All operational and domain hypotheses are present. Packaging equation (4.3) and exact RMS scaling as inputs modularizes paper-proved facts rather than introducing a different numerical assumption."
+      "status": "fail",
+      "paper_evidence": "Theorem 2 states the result for a multidimensional floating-point FFT under the inherited model; its proof invokes Theorem 1 to establish equation (4.3) and does not assume a separate local-bound package.",
+      "lean_evidence": "The target has the explicit premise axisBounds:P09TheoremTwoLocalAsymptotic family; D019 requires all propagated per-axis first-order bounds and their second-order coefficients.",
+      "reasoning": "Exact input, gamma nonnegativity, positive dimensions, and nonzero denominator are appropriately represented, but axisBounds is an additional substantive hypothesis that restricts applicability."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "The selected result is Theorem 2(a): relative RMS forward error <= epsilon sum_l K(N_l,gamma)+O(epsilon^2). Theorem 2(b) is a separate maximum-error conclusion.",
-      "lean_evidence": "The conclusion bounds only p09MultiRms(roundoff error)/p09MultiRms(exact output) by epsilon*sum_i p09AxisK+quadratic remainder.",
-      "reasoning": "Every component of selected part (a) is present; omission of separate part (b) is consistent with the selected RMS task."
+      "paper_evidence": "The selected clause is Theorem 2(a): relative RMS error is bounded by epsilon times the sum of K(N_l,gamma), plus O(epsilon^2).",
+      "lean_evidence": "The conclusion contains the same relative RMS inequality, all m K summands, and an explicit quadratic remainder.",
+      "reasoning": "The complete selected clause is present; sibling part (b) is not part of this target."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The paper defines the positive-sign unnormalized Fourier kernel, nested coordinate maps T_l, RMS, K, alpha, and the Wilkinson/trigonometric operations.",
-      "lean_evidence": "D006-D009, D017-D025, D033, D040, D048-D056, D063-D089, D149, D169, and D218 unfold these notions to product-indexed complex arrays, positive standard characters, Euclidean RMS, exact mixed-radix stages, and modeled rounded real operations.",
-      "reasoning": "All nontrivial target operators have concrete supplied meanings and align with the source definitions."
+      "paper_evidence": "The paper defines the Fourier transform, RMS, local transforms, K, alpha, arithmetic model, and trigonometric model on pages 757-765.",
+      "lean_evidence": "The reviewed dependencies unfold product arrays, ZMod indices, positive-sign Fourier sums, RMS, mixed-radix stages, K, alpha, and rounded primitives.",
+      "reasoning": "All nontrivial operators affecting the proposition have faithful interpretations."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper distinguishes exact Y=T_1...T_m X, nested computed fl(Y), exact intermediates Z_l, computed intermediates fl(Z_l), and E=fl(Y)-Y.",
-      "lean_evidence": "p09FamilyMultiExactOutput applies exact coordinate prefixes; run.computedState records rounded states; p09MultiComputedOutput is state 0; p09FamilyMultiFftRoundoffError is computed minus exact; local errors compare each rounded state step to the exact coordinate map on that computed stage input.",
-      "reasoning": "Exact, computed, and local-error quantities are not conflated."
+      "paper_evidence": "The paper distinguishes exact Y, computed fl(Y), exact intermediates Z_l, and computed intermediate states.",
+      "lean_evidence": "p09FamilyMultiExactOutput is exact prefix application, p09MultiComputedOutput is run state zero, and the error is their pointwise difference.",
+      "reasoning": "Exact and computed quantities are not conflated."
     },
     {
       "id": "S08",
       "status": "pass",
-      "paper_evidence": "Theorem 2 computes fl(T_1 fl(T_2 ... fl(T_m X))) and each T_l is a Theorem 1 mixed-radix FFT; (2.2) covers Cooley-Tukey and Sande-Tukey variants.",
-      "lean_evidence": "Run.mk forces state i=roundedCoordinateTransform i(state i+1); each axis owns a P09MixedRadixFftPlan with exact stage factorization, M-1 twiddle pattern, final permutation, and a Cooley/Sande variant; p09RoundedFftApply executes those stages.",
-      "reasoning": "The proposition remains tied to the nested mixed-radix FFT execution rather than an abstract direct multidimensional sum."
+      "paper_evidence": "The proof explicitly computes T_m first and T_1 last using one-dimensional mixed-radix FFTs with block, permutation, and twiddle factors.",
+      "lean_evidence": "Run states descend from m to 0 via p09RoundedCoordinateTransform, whose axis plans execute mixed-radix block and twiddle stages followed by exact permutation.",
+      "reasoning": "The statement remains operationally linked to the paper's nested FFT model."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "The RMS is sqrt((sum over all output tuples |E|^2)/(N_1...N_m)); part (a) divides its unsquared RMS by exact output RMS.",
-      "lean_evidence": "p09MultiNorm2 is the finite PiLp p=2 norm of complex values; p09MultiRms divides it by sqrt(product axis orders); the target takes the quotient of two such RMS values.",
-      "reasoning": "Norm kind, square root, averaging cardinality, complex modulus, and normwise relative form all match."
+      "paper_evidence": "RMS is the square root of the mean squared complex magnitude, and Theorem 2(a) divides error RMS by exact-output RMS.",
+      "lean_evidence": "p09MultiRms is the finite l2 norm divided by sqrt(product orders), and the target divides error RMS by exact-output RMS.",
+      "reasoning": "Norm kind, square-root convention, normalization, and relative form match exactly."
     },
     {
       "id": "S10",
       "status": "pass",
-      "paper_evidence": "K(N_l,gamma)=sum_r alpha(n_{l,r})+(M_l-1)(3+2gamma), with alpha(2)=sqrt(2), alpha(4)=5, otherwise 2sqrt(n)(n+gamma), and Theorem 2(a) sums l=1,...,m without a product-size factor.",
-      "lean_evidence": "p09Alpha and p09K have those exact formulas; plan constructors require product radices=axis order and positive stage count; the target sums p09AxisK over Fin m and has no sqrt(N_1...N_m) multiplier.",
-      "reasoning": "Constants, offsets, factorization dependence, and axis indexing agree exactly."
+      "paper_evidence": "The first-order coefficient is sum_l K(N_l,gamma), with K determined by each radix factorization and the three alpha cases.",
+      "lean_evidence": "The target sums p09AxisK over Fin m; p09K and p09Alpha reproduce the paper's formulas, including M-1 twiddle terms.",
+      "reasoning": "Constants, indexing, coefficients, and factorization dependence match."
     },
     {
       "id": "S11",
       "status": "pass",
-      "paper_evidence": "Equations (3.1)-(3.2) use independent theta values in [-1,1]; sine/cosine use absolute gamma*theta*epsilon error; epsilon's base/precision formulas calibrate the abstract constant; exceptional arithmetic is outside the equations; input is exactly representable.",
-      "lean_evidence": "P09WilkinsonModel.mk has independent bounded theta witnesses for addition operands and each multiplication/trigonometric call, epsilon>0, gamma>=0, and the displayed equations; Run.mk requires flInput(input)=input. No overflow, underflow, NaN, or infinity constructors are present.",
-      "reasoning": "The theorem depends on the error equations, not a particular beta/t encoding. Lean abstracts epsilon while preserving the paper's deterministic ordinary-value model and exceptional-value exclusion."
+      "paper_evidence": "Equations (3.1)-(3.2) use bounded occurrence-dependent theta, and sine/cosine use additive gamma-theta-epsilon error; exceptional values are outside the stated model.",
+      "lean_evidence": "P09WilkinsonModel imposes the corresponding addition, multiplication, sine, and cosine equations with abs(theta)<=1, positive epsilon, and nonnegative gamma; runs require exact input.",
+      "reasoning": "The formal abstract model faithfully captures the paper's model and does not silently add IEEE exceptional behavior."
     },
     {
       "id": "S12",
       "status": "pass",
-      "paper_evidence": "Theorem 2(a) is an upper bound with first-order coefficient sum_l K plus O(epsilon^2).",
-      "lean_evidence": "The target states a real <= inequality with the same first-order term and an existential nonnegative quadratic upper coefficient.",
-      "reasoning": "The direction and logical strength match. Any typographic strict '<' in the PDF is asymptotically equivalent here because an existential quadratic coefficient can be enlarged for positive epsilon."
+      "paper_evidence": "Theorem 2(a) is a nonstrict upper bound with first-order coefficient sum K and an additive O(epsilon^2) term.",
+      "lean_evidence": "The conclusion is <= epsilon*sum K + C*epsilon^2 with C nonnegative.",
+      "reasoning": "Inequality direction, strictness, and bound polarity are correct."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Part (a) bounds forward output error fl(Y)-Y in RMS relative to exact output RMS; the later fictional-input discussion is separate.",
-      "lean_evidence": "p09FamilyMultiFftRoundoffError is computed output minus exact output, and the target divides its RMS by exact output RMS.",
-      "reasoning": "No backward error, residual, input error, maximum norm, or stochastic error notion is substituted."
+      "paper_evidence": "E=fl(Y)-Y is a normwise forward output error, not a backward or componentwise-relative error.",
+      "lean_evidence": "p09FamilyMultiFftRoundoffError is computed output minus exact Fourier output and is measured in relative RMS.",
+      "reasoning": "The error notion matches exactly."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Theorem 2(a) retains an unspecified O(epsilon^2); the paper gives no constant or epsilon interval.",
-      "lean_evidence": "The target states there exist C>=0 and r>0 such that for every 0<epsilon<=r the error is <= epsilon*sum K+C*epsilon^2.",
-      "reasoning": "This is the standard one-sided explicit consequence and converse formulation of the displayed local big-O upper bound; it does not delete the remainder or claim a paper-supplied numerical constant."
+      "paper_evidence": "The paper retains the first-order term and writes O(epsilon^2), without an explicit coefficient or threshold.",
+      "lean_evidence": "The target expands this as existence of a nonnegative coefficient and positive radius giving a C*epsilon^2 bound for all smaller positive epsilon.",
+      "reasoning": "For a fixed family this is the standard one-sided quantified interpretation of the displayed O(epsilon^2) remainder."
     },
     {
       "id": "S15",
       "status": "pass",
-      "paper_evidence": "The selected source result is finite-dimensional Theorem 2(a) for positive m and finite axis lengths, using one common gamma and mixed-radix coordinate FFTs.",
-      "lean_evidence": "The target formalizes exactly that finite complex RMS part, adds the necessary exact-output-RMS positivity condition, and makes the asymptotic family and local Theorem 1 estimates explicit.",
-      "reasoning": "This is an acceptable formal explication of the selected part (a), not a scalar/real restriction or an unclassified narrower theorem."
+      "paper_evidence": "The paper's theorem concerns finite complex product arrays and positive integral coordinate orders computed by mixed-radix FFTs.",
+      "lean_evidence": "The formal statement uses finite ZMod product indices, complex values, nonzero m, positive axis orders, and explicit mixed-radix plans.",
+      "reasoning": "This is a faithful representation rather than an unintended scalar, real, or dimensional specialization."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "For any nonzero exactly representable input and a valid FFT, the exact output RMS is positive by Fourier invertibility/scaling; zero roundoff is allowed by theta=0.",
-      "lean_evidence": "A concrete model can take m=1, an order-1 exact mixed-radix plan, a nonzero complex input, exact flAdd/flMul/flSin/flCos/flInput, constant runs, local second-order coefficient 0, and any positive radius. All constructor hypotheses and hexactOutput are then satisfiable, and the conclusion bounds zero error.",
-      "reasoning": "The hypotheses have an explicit nonempty model, and the theorem is not true merely from an impossible premise or zero denominator."
+      "paper_evidence": "The source ratio tacitly requires nonzero exact-output RMS, and ordinary nonzero inputs and FFT plans provide nontrivial instances.",
+      "lean_evidence": "hexactOutput explicitly enforces a positive denominator; exact arithmetic or sufficiently bounded modeled runs provide satisfiable family and axisBounds instances.",
+      "reasoning": "The hypotheses are satisfiable and the conclusion is not vacuous, although the extra axisBounds premise weakens applicability."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "yes",
-      "reasoning": "For every Lean family satisfying the encoded mixed-radix, nested-run, Wilkinson, exact-input, local Theorem 1, scaling, and nonzero-output conditions, the target is exactly Theorem 2(a)'s relative RMS inequality with O(epsilon^2) made explicit by C and a radius."
+      "verdict": "no",
+      "reasoning": "The Lean proposition only yields the bound after a caller supplies P09TheoremTwoLocalAsymptotic, which already contains the essential propagated per-axis error estimates. It therefore does not establish the paper's theorem from the paper's FFT and floating-point hypotheses alone."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "Under the standard mathematical meaning of the paper's O(epsilon^2), Theorem 1 supplies the per-coordinate local asymptotic estimates packaged by axisBounds, equations (4.2)-(4.4) supply propagation/scaling, and Theorem 2(a) yields witnesses C>=0 and r>0 for any represented fixed plan/input family with positive output RMS."
+      "reasoning": "For any Lean plan and family satisfying its stronger premise set, the paper's Theorem 2(a), with O(epsilon^2) read in its standard fixed-instance sense, supplies the asserted coefficient, radius, and relative RMS inequality."
     }
   },
-  "classification": "faithful-equivalent",
-  "accepted": true,
+  "classification": "not-faithful-weaker",
+  "accepted": false,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "minor",
-      "category": "source-location",
-      "paper_evidence": "The sentence 'It was assumed that these numbers were exactly representable in machine precision' is on PDF page 9, printed page 765. PDF page 12, printed page 768, contains only the continuation of the later fictional-input/backward-error discussion.",
-      "lean_evidence": "P09MultidimensionalFftRun.mk correctly requires model.flInput(input index)=input index, so the declaration itself reflects the actual paper assumption.",
-      "impact": "Correct the source locator from PDF page 12 to PDF page 9 for exact-input scope; this does not change the faithfulness classification."
-    },
-    {
-      "severity": "note",
-      "category": "modular-local-bound",
-      "paper_evidence": "On printed pages 764-765 the proof invokes Theorem 1 to obtain (4.3), propagates each local term through exact preceding transforms, and then uses (4.4).",
-      "lean_evidence": "P09TheoremTwoLocalAsymptotic is an explicit axisBounds premise containing those uniform propagated local estimates, while P09MultidimensionalFftPlan stores prefix RMS scaling.",
-      "impact": "The target measures the multidimensional accumulation step modularly. These premises are paper-established facts for the represented plans, not unsupported hypotheses, so they do not make the selected task vacuous or semantically weaker."
-    },
-    {
-      "severity": "note",
-      "category": "asymptotic-explication",
-      "paper_evidence": "The paper writes O(epsilon^2) without an explicit constant, dependency list, or epsilon interval.",
-      "lean_evidence": "The target replaces it by existential C>=0 and r>0 followed by a uniform bound for 0<epsilon<=r over a fixed-input epsilon-indexed family.",
-      "impact": "This is the standard explicit local big-O reading; no finite-epsilon claim or deleted remainder is introduced."
+      "severity": "major",
+      "category": "added-hypothesis",
+      "paper_evidence": "Theorem 2(a) states the multidimensional bound directly, and its proof derives the local estimate (4.3) by applying Theorem 1 before propagating and summing all coordinate errors.",
+      "lean_evidence": "The target explicitly takes axisBounds:P09TheoremTwoLocalAsymptotic family; its constructor requires a radius, per-axis quadratic coefficients, and every propagated local inequality.",
+      "impact": "The formal theorem assumes a substantive part of the paper's analysis instead of deriving it from the modeled FFT execution. This restricts applicability and makes the Lean proposition weaker than the selected paper result."
     }
   ],
-  "rationale": "The exact target is a faithful explicit formalization of the selected Theorem 2(a) relative RMS result. Its complex product index set, positive-sign unnormalized Fourier maps, nested rounded coordinate execution, exact-input scope, deterministic Wilkinson/trigonometric model, factorization-dependent K constants, RMS normalization, telescoping local-error propagation, and first-order coefficient all match the PDF. The output-RMS positivity hypothesis repairs the paper's implicit denominator domain, and the existential quadratic coefficient/radius faithfully expands O(epsilon^2). Both semantic implications hold for the represented setting. The only failure is a resolved page-number error in the supplied source locator, not a declaration mismatch."
+  "rationale": "The exact transform, product indexing, nesting order, complex RMS forward error, K and alpha constants, floating-point model, exact-input scope, and explicit quadratic interpretation of O(epsilon^2) all match Theorem 2(a). The decisive mismatch is the additional axisBounds premise: it requires the caller to provide the per-coordinate asymptotic roundoff estimates that the paper obtains from Theorem 1. Consequently the paper result entails the restricted Lean conclusion, but the Lean theorem does not recover the paper result for all modeled multidimensional FFT runs."
 }

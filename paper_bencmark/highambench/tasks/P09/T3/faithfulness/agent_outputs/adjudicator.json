@@ -6,106 +6,82 @@
     "judge classifications differ",
     "round-trip judge requested adjudication",
     "round-trip judge classification is undetermined",
-    "blind dependency D218 is unclear",
+    "round-trip S03 is unclear",
     "round-trip S06 is unclear",
-    "round-trip S15 is unclear",
-    "round-trip S16 is unclear"
+    "round-trip S14 is unclear",
+    "round-trip S15 is unclear"
   ],
   "resolved_items": [
     {
       "item": "judge classifications differ",
-      "resolution": "Resolved as faithful-equivalent. The local-bound parameter is the proof object for the per-axis consequence of Theorem 1 used explicitly in Theorem 2's proof, while the remaining disputed transform, norm, model, and remainder semantics match.",
-      "primary_evidence": "PDF p. 3 (printed p. 759) proves Theorem 1 with the stated K; PDF pp. 8-9 (printed pp. 764-765) invokes it as equation (4.3), propagates the local errors through (4.2), and applies scaling (4.4). D019 packages precisely the propagated form of that estimate, and D048-D049 define its two sides."
+      "resolution": "The declaration is not-faithful-weaker. The phase and higher-order-quantifier concerns are resolvable, while axisBounds remains a substantive additional premise that reduces applicability.",
+      "primary_evidence": "On printed page 764, the paper derives equation (4.3) using Theorem 1 and then propagates it using equation (4.4). The supplied P09TheoremTwoLocalAsymptotic constructor instead requires the corresponding common-radius propagated local estimates from the caller."
     },
     {
       "item": "round-trip judge requested adjudication",
-      "resolution": "Adjudication is complete. Direct PDF and declaration evidence resolves the local-bound, Fourier-sign, machine-model, nonvacuity, source-location, and uniform-remainder issues without relying on either judge's vote.",
-      "primary_evidence": "The verified PDF has SHA-256 9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758. The decisive declaration evidence is D019, D050, D052-D053, D056, D064, D083, and the supplied theorem p09StdAddChar_positive_exp."
+      "resolution": "Independent review of the primary paper and supplied declaration evidence establishes a definite classification rather than an undetermined one.",
+      "primary_evidence": "The verified PDF states Theorem 2(a) on printed page 764 and completes its derivation on page 765. The Lean target has the same final inequality but adds axisBounds before the conclusion."
     },
     {
       "item": "round-trip judge classification is undetermined",
-      "resolution": "The classification is no longer undetermined: both semantic implication directions are established, so the declaration is faithful-equivalent and accepted.",
-      "primary_evidence": "The target conclusion is the PDF's Theorem 2(a) with O(epsilon^2) expanded into existential coefficient and radius witnesses. Theorem 1 and equations (4.2)-(4.4) discharge the modular local premise for every represented paper FFT."
+      "resolution": "The classification is not-faithful-weaker: the paper implies the restricted Lean proposition, but the Lean proposition does not recover the paper theorem for all computations satisfying the paper's primitive hypotheses.",
+      "primary_evidence": "The paper derives the local analysis from its floating-point FFT model, whereas the Lean target only concludes the global bound after receiving P09TheoremTwoLocalAsymptotic family as an assumption."
     },
     {
-      "item": "blind dependency D218 is unclear",
-      "resolution": "D218 is the positive-sign character required by the paper.",
-      "primary_evidence": "The supplied direct source contains the explicit theorem p09StdAddChar_positive_exp: ZMod.stdAddChar j = Complex.exp (2 * Real.pi * Complex.I * (j.val : Complex) / (n : Complex)). D056 and D064 evaluate this character at j*k. This matches equation (1.1) on PDF p. 1 (printed p. 757), which uses exp(i 2 pi jk/N)."
+      "item": "round-trip S03 is unclear",
+      "resolution": "The witness scope is a faithful fixed-instance interpretation of O(epsilon^2): the plan, gamma, fixed-input execution family, and local certificate are fixed before a coefficient and radius are chosen, and those witnesses are independent of the subsequently quantified epsilon.",
+      "primary_evidence": "Printed page 760 identifies O(epsilon^2) with the second-and-higher-order terms from finite expansions of bounded-theta roundoff factors; pages 764-765 use the same first-order convention. The Lean binder order places the existential coefficient and radius before the universal small positive epsilon."
     },
     {
       "item": "round-trip S06 is unclear",
-      "resolution": "S06 resolves to pass. The exact transform, positive kernel, computed transform, RMS norm, error subtraction, K constant, and primitive rounded operations all have concrete meanings matching the paper.",
-      "primary_evidence": "D009 defines RMS as complex l2 divided by sqrt of the product cardinality; D008 and D026 define computed-minus-exact error; D022 and D040 give the exact K and alpha formulas; D056 and D064 give the unnormalized coordinate and one-dimensional transforms; D053 and D081-D089 give the operation model."
+      "resolution": "The exact transform has the required positive phase. ZMod.stdAddChar is not semantically unresolved in the supplied declaration evidence.",
+      "primary_evidence": "Equation (1.1) on printed page 757 uses exp(i 2 pi j k/N). The supplied declaration p09StdAddChar_positive_exp identifies ZMod.stdAddChar j with Complex.exp(2*pi*I*j.val/n), and both p09FourierTransform and p09CoordinateTransform apply that character to the modular product of source and target indices."
+    },
+    {
+      "item": "round-trip S14 is unclear",
+      "resolution": "The existential nonnegative coefficient and positive radius followed by a universal bound for all sufficiently small positive epsilon is the standard one-sided quantified meaning of the paper's additive O(epsilon^2) remainder for fixed data and algorithm. The assumed local quadratic bounds are a separate added-premise defect, not a mismatch in the final remainder notation.",
+      "primary_evidence": "Printed page 760 describes the omitted terms as order epsilon^2, and printed page 765 absorbs epsilon times O(epsilon) intermediate perturbations into O(epsilon^2). The Lean conclusion expresses exactly an upper remainder C*epsilon^2 on a positive neighborhood."
     },
     {
       "item": "round-trip S15 is unclear",
-      "resolution": "S15 resolves to pass. The certified plan class is the paper's generic mixed-radix block-DFT, permutation, and M-1 twiddle factorization. Abstracting epsilon from beta, precision, and rounding mode retains the operative perturbation equations and does not exclude paper executions.",
-      "primary_evidence": "PDF p. 2 (printed p. 758) gives factorization (2.2) and states that it covers Cooley-Tukey and Sande-Tukey. D050 requires the radix product, exact factorization into DFT stages, M-1 twiddle pattern, final permutation, and Fourier scaling. PDF pp. 2-3 (printed pp. 758-759) derives epsilon calibrations but conducts the error proof through equations (3.1)-(3.2) and bounded theta; D053 encodes those exact operative equations."
-    },
-    {
-      "item": "round-trip S16 is unclear",
-      "resolution": "S16 resolves to pass. The hypotheses have explicit nontrivial inhabitants, including exact-arithmetic runs with nonzero input and zero local and global roundoff error.",
-      "primary_evidence": "D053 permits theta=0 for exact flAdd, flMul, flSin, and flCos at every positive epsilon. D052 then permits exact computed states, D019 is inhabited with all local quadratic coefficients zero and any positive radius, and D007 has positive RMS for a nonzero input under the certified Fourier scaling. An order-one, one-axis plan supplies a concrete instance."
-    },
-    {
-      "item": "P09TheoremTwoLocalAsymptotic antecedent",
-      "resolution": "It is a faithful modular use of the paper's proved Theorem 1, not an unrelated antecedent. Its fields reproduce the local estimate after exact-prefix propagation; finite axis count permits one common radius and finitely many uniform quadratic coefficients.",
-      "primary_evidence": "Equation (4.3) on PDF p. 8 (printed p. 764) is explicitly obtained using Theorem 1. D055 is the local computed-minus-exact coordinate error, D048 applies the preceding exact transforms, and D049 equals the resulting sqrt(N_1...N_l)-scaled stage-input RMS by D018. D019 then states exactly the propagated first-order term plus a quadratic remainder."
-    },
-    {
-      "item": "abstract machine-model scope",
-      "resolution": "The omission of beta, mantissa length, and rounded-versus-chopped calibration is not a semantic loss in the selected bound. Those data explain which physical epsilon satisfies the model; the proof and constants depend only on the displayed perturbation equations and bounded theta values.",
-      "primary_evidence": "PDF pp. 2-3 (printed pp. 758-759) first states equations (3.1)-(3.2), then gives the beta and precision formulas parenthetically. The expansion on PDF p. 4 (printed p. 760) uses factors 1+theta epsilon and |theta|<=1. D053 imposes those same equations globally, so every paper machine execution can be represented."
-    },
-    {
-      "item": "source-location discrepancy",
-      "resolution": "The exact-input statement is on PDF page 9, printed page 765, not PDF page 12, printed page 768. Page 12 only continues the fictional-input backward-error discussion.",
-      "primary_evidence": "At the bottom of PDF p. 9 (printed p. 765), Section 6 states that the preceding analysis assumed input numbers exactly representable in machine precision. PDF p. 12 (printed p. 768) discusses representing the roundoff error as T delta."
-    },
-    {
-      "item": "hidden O(epsilon^2) witness uniformity",
-      "resolution": "The existential nonnegative coefficient and positive radius give the standard uniform right-sided interpretation of the paper's O(epsilon^2) for fixed plan, gamma, and input. The witnesses are chosen before epsilon, and finite stages and axes allow all local remainders and radii to be combined.",
-      "primary_evidence": "PDF p. 4 (printed p. 760) says O(epsilon^2) collects higher-order terms from finite products of 1+theta epsilon; PDF pp. 8-9 (printed pp. 764-765) performs finitely many local accumulations. D001 fixes plan, gamma, and input across epsilon, D019 fixes local coefficients and a radius before epsilon, and the target similarly fixes its global coefficient and radius before epsilon."
+      "resolution": "The positive-output premise makes the paper's displayed relative ratio mathematically defined and is not genuine theorem strengthening. Nonzero dimension and positive axis orders match the operational finite ranges. Requiring a positive stage count with every radix at least two may exclude degenerate unit-length axes, but this only further restricts Lean's applicability and does not create a different conclusion.",
+      "primary_evidence": "Theorem 2(a) on printed page 764 divides by the exact-output RMS without treating a zero denominator. Equation (4.1) uses finite ranges of coordinate lengths. The supplied plan constructors require nonzero m, positive axis orders, positive stage counts, and radices at least two."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "yes",
-      "reasoning": "For each represented paper FFT, Theorem 1 supplies the D019 local certificate used in the PDF's own proof. Instantiating that proof object in the Lean declaration yields the same relative RMS coefficient sum and a quadratic upper remainder; rewriting the latter as O(epsilon^2) gives Theorem 2(a)."
+      "verdict": "no",
+      "reasoning": "The Lean statement supplies no construction of axisBounds from the primitive arithmetic, trigonometric, algorithmic, and exact-input assumptions. It therefore proves the global bound only for already-certified families and cannot entail the paper's broader Theorem 2(a)."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "For fixed plan, gamma, input, and epsilon-indexed runs, Theorem 1 and equations (4.2)-(4.4) provide uniform per-axis and global first-order bounds. Finiteness permits common positive radii and nonnegative quadratic majorants, producing the witnesses required by the Lean target. The abstract model retains every equation used by the paper's proof."
+      "reasoning": "For each fixed Lean plan and family in the source domain, the paper's Theorem 2(a), under its standard fixed-instance O(epsilon^2) meaning, gives the same relative RMS conclusion. The positive phase matches, while axisBounds, the positive denominator, and the plan-domain conditions only restrict the cases to which the Lean proposition applies."
     }
   },
-  "classification": "faithful-equivalent",
-  "accepted": true,
-  "remaining_uncertainties": [],
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The paper does not expressly settle whether a coordinate of length one or a radix factor one is admissible. Lean's nonempty stages with radices at least two exclude such cases, but this uncertainty cannot reverse the implication directions because it only concerns cases outside the Lean domain."
+  ],
   "findings": [
     {
+      "severity": "major",
+      "category": "added-theorem-derived-premise",
+      "evidence": "Printed page 764 says the local estimate (4.3) is obtained using Theorem 1 and then uses exact scaling (4.4). P09TheoremTwoLocalAsymptotic requires common-radius propagated per-axis first-plus-second-order estimates as the axisBounds premise.",
+      "impact": "A substantive portion of the selected theorem's analysis is assumed rather than derived, so the Lean theorem has strictly reduced applicability."
+    },
+    {
       "severity": "minor",
-      "category": "source-location",
-      "evidence": "The exact-input assumption occurs on PDF p. 9, printed p. 765; PDF p. 12, printed p. 768 contains the later fictional-input discussion.",
-      "impact": "The packet's page-12 locator should be corrected, but the declaration itself enforces the correct exact-input scope."
+      "category": "degenerate-domain-restriction",
+      "evidence": "The paper's multidimensional index convention does not explicitly exclude length-one coordinates, while each Lean axis plan has at least one stage and every stage radix is at least two.",
+      "impact": "Potential degenerate source cases are excluded; this reinforces the weaker classification but does not alter the numerical conclusion."
     },
     {
       "severity": "note",
-      "category": "modular-local-bound",
-      "evidence": "D019 is the propagated form of the estimate that PDF p. 764 explicitly derives using Theorem 1.",
-      "impact": "The parameter modularizes an already-proved source lemma and does not alter the intended theorem domain."
-    },
-    {
-      "severity": "note",
-      "category": "Fourier-kernel sign",
-      "evidence": "The supplied theorem p09StdAddChar_positive_exp identifies D218 with exp(+i 2 pi j/N).",
-      "impact": "The exact and rounded transforms use the paper's positive sign; the blind dossier's uncertainty is resolved."
-    },
-    {
-      "severity": "note",
-      "category": "numerical-model abstraction",
-      "evidence": "D053 retains equations (3.1)-(3.2), the absolute trigonometric model, positive epsilon, nonnegative gamma, and independently bounded theta witnesses.",
-      "impact": "Machine-format formulas calibrate epsilon but are not additional premises used in the proof of the selected estimate."
+      "category": "ratio-domain-explication",
+      "evidence": "The paper divides by exact-output RMS without specifying the zero case, while Lean assumes that RMS is strictly positive.",
+      "impact": "This makes the relative expression well-defined and is not nonvacuous mathematical strengthening of the paper's bound."
     }
   ],
-  "rationale": "The declaration faithfully states Theorem 2(a) for the positive-sign unnormalized product-indexed complex Fourier transform computed by nested mixed-radix coordinate FFTs. Its RMS normalization, forward-error numerator, exact-output denominator, K constants, exact-input scope, deterministic operation model, and quadratic remainder all match the PDF. P09TheoremTwoLocalAsymptotic is exactly the per-coordinate Theorem 1 estimate after the propagation performed in equations (4.2)-(4.4); primary source evidence therefore makes it a valid modular proof parameter rather than a foreign restriction. The full declaration evidence resolves D218 to the positive exponential, the model is nonvacuous, and the explicit coefficient-radius quantifiers are the uniform local meaning of O(epsilon^2). The only defect is the packet's incorrect page locator for the exact-input statement."
+  "rationale": "The Lean declaration faithfully preserves the product-indexed complex transform, positive unnormalized Fourier phase, nested coordinate order, relative RMS forward-error notion, factorization-dependent K constants, and a standard quantified form of the O(epsilon^2) remainder. The decisive mismatch is axisBounds: it assumes the propagated local asymptotic estimates that the paper derives from Theorem 1 and equations (4.3)-(4.4). Consequently the paper result entails the restricted Lean conclusion, but the Lean theorem does not establish the paper result from its stated primitive hypotheses, so the declaration is not-faithful-weaker."
 }
