@@ -1,0 +1,21 @@
+import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedExpectation
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.expectedGinibreAlternatingCount
+#check @NumStability.expectedGinibreAlternatingCount_add_two
+#check @NumStability.expectedGinibreAlternatingCount_eq_dimension
+#check @NumStability.expectedGinibreAlternatingPairCount
+#check @NumStability.expectedGinibreAlternatingPairCount_one
+#check @NumStability.expectedRealEigenvalueCount_eq_alternating_sub_two_pairs
+#check @NumStability.expectedRealEigenvalueCount_shift_eq_neg_two_mul_pair_shift
+#check @NumStability.ginibreAlternatingEigenvalueCount_eq_dimension
+#check @NumStability.integrable_ginibreAlternatingEigenvalueCount
+#check @NumStability.integrable_ginibreAlternatingPairEigenvalueCount
+#check @NumStability.measurable_ginibreAlternatingEigenvalueCount
+#check @NumStability.measurable_ginibreAlternatingPairEigenvalueCount
+#check @NumStability.realEigenvalueCount_cast_eq_alternating_sub_two_pairs

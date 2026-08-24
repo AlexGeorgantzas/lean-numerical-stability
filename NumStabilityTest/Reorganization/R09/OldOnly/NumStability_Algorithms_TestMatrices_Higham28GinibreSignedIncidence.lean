@@ -1,0 +1,23 @@
+import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedIncidence
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.expectedGinibreAlternatingPairCount_succ_eq_factor_mul_oneRootMoment
+#check @NumStability.ginibreNuisanceReorder
+#check @NumStability.ginibreNuisanceReorder_apply
+#check @NumStability.ginibreSignedOneRootMoment
+#check @NumStability.ginibreSignedTwoRootSlice
+#check @NumStability.integrable_ginibreCoordinate_density
+#check @NumStability.integrable_ginibreSignedIncidence
+#check @NumStability.integrable_incidenceCoordinateDensity_of_integrable_realGinibre
+#check @NumStability.integral_ginibreAlternatingPair_eq_signedIncidence
+#check @NumStability.integral_ginibreCoordinate_alternatingPair_density_eq_expected
+#check @NumStability.integral_ginibreSignedNuisance_eq_oneRootMoment
+#check @NumStability.integral_ginibreSignedTwoRootNuisance_eq_slice
+#check @NumStability.integral_realGinibre_det_mul_alternatingBelow_eq_factor_mul_slice
+#check @NumStability.integral_realGinibre_eq_incidenceCoordinateDensity
+#check @NumStability.measurePreserving_ginibreNuisanceReorder

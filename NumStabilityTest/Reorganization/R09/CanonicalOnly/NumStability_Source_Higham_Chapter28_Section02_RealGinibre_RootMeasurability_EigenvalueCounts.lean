@@ -1,0 +1,29 @@
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.RootMeasurability.EigenvalueCounts
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.aestronglyMeasurable_realEigenvalueCount
+#check @NumStability.analyticSet_complexRootTupleBelowCountProjection
+#check @NumStability.analyticSet_complexRootTupleCountProjection
+#check @NumStability.complexUpperEigenvalueCount_eq
+#check @NumStability.complexUpperEigenvalueCount_le
+#check @NumStability.ginibreComplexPairsMeasurableSpace
+#check @NumStability.integrable_complexUpperEigenvalueCount
+#check @NumStability.integrable_realEigenvalueCount
+#check @NumStability.integrable_realEigenvalueCount_of_aestronglyMeasurable
+#check @NumStability.measurableSet_complexRootTupleBelowCountSet
+#check @NumStability.measurableSet_complexRootTupleCountSet
+#check @NumStability.measurableSet_realEigenvalueBelowCount_level
+#check @NumStability.measurableSet_realEigenvalueCount_level
+#check @NumStability.measurable_complexTupleRealBelowCount
+#check @NumStability.measurable_complexTupleRealCount
+#check @NumStability.measurable_complexUpperEigenvalueCount
+#check @NumStability.measurable_complexUpperEigenvalueCount_real
+#check @NumStability.measurable_realEigenvalueBelowCount
+#check @NumStability.measurable_realEigenvalueCount
+#check @NumStability.measurable_realEigenvalueCount_real
+#check @NumStability.realEigenvalueCount_add_two_mul_complexUpperEigenvalueCount

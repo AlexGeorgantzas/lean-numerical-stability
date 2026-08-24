@@ -1,0 +1,18 @@
+import NumStability.Algorithms.TestMatrices.Higham28GinibreIncidence
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.ginibreIncidenceRootRank_lt_of_chart_eq
+#check @NumStability.injOn_ginibreIncidenceChart_rankPiece
+#check @NumStability.lintegral_ginibreIncidence_regular_eq_sum_rank_images
+#check @NumStability.measurableSet_ginibreIncidenceRankPiece
+#check @NumStability.measurableSet_ginibreIncidenceRegularSet
+#check @NumStability.measurable_ginibreCoordinatesFinMatrix
+#check @NumStability.measurable_ginibreIncidenceChart
+#check @NumStability.measurable_ginibreIncidenceEigenvalue
+#check @NumStability.measurable_ginibreIncidenceRootRank
+#check @NumStability.measure_ginibreIncidence_criticalImage_eq_zero

@@ -1,0 +1,14 @@
+import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedConclusion
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.neg_two_mul_corollary31_product_mul_signedMoment_eq_closedForm_shift
+#check @NumStability.realGinibreExpectedCountLimit_of_shift
+#check @NumStability.realGinibreExpectedCountLimit_of_signedPairShift
+#check @NumStability.realGinibreFiniteExpectationFormula_of_shift
+#check @NumStability.realGinibreFiniteExpectationFormula_of_signedPairShift
+#check @NumStability.signedPairShift_of_kernelTransfer

@@ -1,0 +1,35 @@
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.OneRootMomentReduction
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.expectedGinibreAlternatingPairCount_succ_eq_factor_mul_oneRootMoment
+#check @NumStability.expectedRealEigenvalueCount_succ_eq_corollary31Factor_mul_moment
+#check @NumStability.gaussianZeroPow_mul_integral_ginibreProjectiveWeight
+#check @NumStability.ginibreIncidenceLebesgueMeasure_eq_volume
+#check @NumStability.ginibreNuisanceReorder
+#check @NumStability.ginibreNuisanceReorder_apply
+#check @NumStability.ginibreSignedOneRootMoment
+#check @NumStability.ginibreSignedTwoRootSlice
+#check @NumStability.integrable_ginibreCoordinate_density
+#check @NumStability.integrable_ginibreProjectiveWeight
+#check @NumStability.integrable_ginibreSignedIncidence
+#check @NumStability.integrable_incidenceCoordinateDensity_of_integrable_realGinibre
+#check @NumStability.integral_ginibreAlternatingPair_eq_signedIncidence
+#check @NumStability.integral_ginibreCoordinate_alternatingPair_density_eq_expected
+#check @NumStability.integral_ginibreSignedFixedFiber_of_orthogonal
+#check @NumStability.integral_ginibreSignedNuisance_eq_oneRootMoment
+#check @NumStability.integral_ginibreSignedTwoRootNuisance_eq_slice
+#check @NumStability.integral_realGinibre_det_mul_alternatingBelow_eq_factor_mul_slice
+#check @NumStability.integral_realGinibre_eq_incidenceCoordinateDensity
+#check @NumStability.lintegral_ginibreFixedFiber
+#check @NumStability.lintegral_ginibreFixedFiber_of_orthogonal
+#check @NumStability.lintegral_ginibreIncidence_gaussian_eq_corollary31Factor_mul_momentLIntegral
+#check @NumStability.lintegral_ginibreOrthogonalBlockDensity
+#check @NumStability.measurePreserving_ginibreNuisanceReorder
+#check @NumStability.ofReal_expectedRealEigenvalueCount_succ_eq_corollary31Factor_mul_momentLIntegral
+#check @NumStability.volume_preserving_ginibreCoordinateReorder
+#check @NumStability.volume_preserving_ginibreCoordinatesFinMatrix

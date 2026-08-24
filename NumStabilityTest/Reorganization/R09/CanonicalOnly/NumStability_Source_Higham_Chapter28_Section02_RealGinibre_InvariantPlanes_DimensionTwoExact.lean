@@ -1,0 +1,17 @@
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.DimensionTwoExact
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.expectedRealEigenvalueCount_eq_closedForm_two
+#check @NumStability.expectedRealEigenvalueCount_two
+#check @NumStability.measurableSet_realGinibreTwoNonnegativeDiscriminantSet
+#check @NumStability.measurable_ginibreAbsDetTwoEntryVector
+#check @NumStability.measurable_ginibreTwoEntryVector
+#check @NumStability.measurePreserving_ginibreAbsDetTwoEntryVector
+#check @NumStability.realGinibreAbsoluteCharacteristicMoment_two_eq_normalFormIntegral
+#check @NumStability.realGinibreMeasure_two_discriminant_nonnegative_real
+#check @NumStability.realGinibreMeasure_two_map_ginibreTwoEntryVector

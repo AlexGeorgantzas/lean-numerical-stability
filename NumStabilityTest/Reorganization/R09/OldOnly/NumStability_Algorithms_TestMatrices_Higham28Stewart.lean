@@ -1,0 +1,23 @@
+import NumStability.Algorithms.TestMatrices.Higham28Stewart
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.StewartTheorem28_1HaarConclusion
+#check @NumStability.measurable_matMul_of_measurable
+#check @NumStability.measurable_matrixListProduct_eval
+#check @NumStability.measurable_stewartEmbeddedHouseholder
+#check @NumStability.measurable_stewartHouseholderListProduct
+#check @NumStability.measurable_stewartOrthogonalGroupOutput
+#check @NumStability.measurable_stewartOrthogonalMatrix
+#check @NumStability.measurable_stewartSignDiagonal
+#check @NumStability.singleHouseholder_randsvd_correction_rank_le_two
+#check @NumStability.singleHouseholder_randsvd_eq_diagonal_add_rankTwo
+#check @NumStability.stewartHouseholderFunctionList_measurable
+#check @NumStability.stewartOrthogonalGroupLaw
+#check @NumStability.stewartOrthogonalGroupLaw_univ
+#check @NumStability.stewartOrthogonalGroupLaw_univ_of_measurable
+#check @NumStability.stewartTheorem28_1HaarConclusion_iff_isHaarMeasure

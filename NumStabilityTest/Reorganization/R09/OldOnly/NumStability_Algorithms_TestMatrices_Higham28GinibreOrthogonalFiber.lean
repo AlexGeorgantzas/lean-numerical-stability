@@ -1,0 +1,19 @@
+import NumStability.Algorithms.TestMatrices.Higham28GinibreOrthogonalFiber
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.expectedRealEigenvalueCount_succ_eq_corollary31Factor_mul_moment
+#check @NumStability.ginibreIncidenceLebesgueMeasure_eq_volume
+#check @NumStability.integrable_ginibreProjectiveWeight
+#check @NumStability.integral_ginibreSignedFixedFiber_of_orthogonal
+#check @NumStability.lintegral_ginibreFixedFiber
+#check @NumStability.lintegral_ginibreFixedFiber_of_orthogonal
+#check @NumStability.lintegral_ginibreIncidence_gaussian_eq_corollary31Factor_mul_momentLIntegral
+#check @NumStability.lintegral_ginibreOrthogonalBlockDensity
+#check @NumStability.ofReal_expectedRealEigenvalueCount_succ_eq_corollary31Factor_mul_momentLIntegral
+#check @NumStability.volume_preserving_ginibreCoordinateReorder
+#check @NumStability.volume_preserving_ginibreCoordinatesFinMatrix

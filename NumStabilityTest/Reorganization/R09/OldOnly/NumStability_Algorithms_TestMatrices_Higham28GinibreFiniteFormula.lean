@@ -1,0 +1,27 @@
+import NumStability.Algorithms.TestMatrices.Higham28GinibreFiniteFormula
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.ch28gfMeasurableSpaceRSqMat
+#check @NumStability.ch28gf_expectedRealEigenvalueCount_eq_closedForm
+#check @NumStability.ch28gf_integrable_detSq_matrix
+#check @NumStability.ch28gf_integrable_det_shift_matrix
+#check @NumStability.ch28gf_integrable_oneRootIntegrand
+#check @NumStability.ch28gf_integrable_sliceIntegrand
+#check @NumStability.ch28gf_integrable_wgt_detSq
+#check @NumStability.ch28gf_integral_detShift_prod_eq_kernel
+#check @NumStability.ch28gf_integral_detSq_eq
+#check @NumStability.ch28gf_integral_slice_eq_kernelMoment
+#check @NumStability.ch28gf_kernelTransfer
+#check @NumStability.ch28gf_measurable_det_shift
+#check @NumStability.ch28gf_measurable_det_shift_matrix
+#check @NumStability.ch28gf_oneRootMoment_eq_factor_mul_integral_slice
+#check @NumStability.ch28gf_oneRootMoment_eq_factor_mul_kernelMoment
+#check @NumStability.ch28gf_realGinibreExpectedCountLimit
+#check @NumStability.ch28gf_realGinibreExpectedProportionLimit
+#check @NumStability.ch28gf_realGinibreFiniteExpectationFormula
+#check @NumStability.ch28gf_slice_eq

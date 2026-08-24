@@ -1,0 +1,28 @@
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.ExpectedCountTransfer
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.ae_ginibreRegularFiberMultiplicity_eq_realEigenvalueCount
+#check @NumStability.ginibreIncidenceLebesgueMeasure_isAddHaarMeasure
+#check @NumStability.ginibreIncidenceLebesgueMeasure_map
+#check @NumStability.ginibreIncidenceRootRank_lt_of_chart_eq
+#check @NumStability.ginibreRegularFiberMultiplicity_eq_realEigenvalueCount
+#check @NumStability.injOn_ginibreIncidenceChart_rankPiece
+#check @NumStability.lintegral_ginibreCoordinate_rootCount_density_eq_expected
+#check @NumStability.lintegral_ginibreIncidence_gaussian_eq_expected
+#check @NumStability.lintegral_ginibreIncidence_gaussian_eq_rootCount
+#check @NumStability.lintegral_ginibreIncidence_regular_eq_rootCount
+#check @NumStability.lintegral_ginibreIncidence_regular_eq_sum_rank_images
+#check @NumStability.measurableSet_ginibreIncidenceRankImage
+#check @NumStability.measurableSet_ginibreIncidenceRankPiece
+#check @NumStability.measurableSet_ginibreIncidenceRegularSet
+#check @NumStability.measurable_ginibreCoordinatesFinMatrix
+#check @NumStability.measurable_ginibreIncidenceChart
+#check @NumStability.measurable_ginibreIncidenceEigenvalue
+#check @NumStability.measurable_ginibreIncidenceRootRank
+#check @NumStability.measure_ginibreIncidence_criticalImage_eq_zero
+#check @NumStability.sum_lintegral_ginibreRankImages_eq_fiberMultiplicity

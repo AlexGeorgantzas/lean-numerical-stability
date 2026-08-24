@@ -1,0 +1,15 @@
+import NumStability.Source.Higham.Chapter28.Section04.Pascal.OscillationSpectrum
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.pascalOscillation_compoundMatrix_pascal_mul_sortedEigenvectorMatrix
+#check @NumStability.pascalOscillation_compoundMatrix_pascal_mul_sortedPlucker
+#check @NumStability.pascalOscillation_compoundSortedCoefficient_eigen
+#check @NumStability.pascalOscillation_pascalLeadingPlucker_same_sign
+#check @NumStability.pascalOscillation_pascalSortedEigenvalue_strictAdjacent
+#check @NumStability.pascalSortedEigenvalue_strictAnti
+#check @NumStability.pascalSortedEigenvector_signChangeCount_le

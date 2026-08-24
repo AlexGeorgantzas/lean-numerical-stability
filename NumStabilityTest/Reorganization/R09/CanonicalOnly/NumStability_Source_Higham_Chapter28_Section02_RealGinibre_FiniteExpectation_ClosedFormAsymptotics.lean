@@ -1,0 +1,31 @@
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.ClosedFormAsymptotics
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.RealGinibreFiniteExpectationFormula
+#check @NumStability.abs_ginibreHypergeometricTerm_succ_le
+#check @NumStability.abs_ginibreHypergeometricTerm_succ_le_half
+#check @NumStability.abs_realGinibre_hypergeometric_sub_one_le
+#check @NumStability.expectedRealEigenvalueCount_eq_closedForm_one
+#check @NumStability.expectedRealEigenvalueCount_one
+#check @NumStability.ginibreCorollary31Factor_mul_increment_eq_closedForm_shift
+#check @NumStability.ginibreHypergeometricTerm_two_eq_binomialTail
+#check @NumStability.realGinibreExpectedCountClosedForm_even_finiteSum
+#check @NumStability.realGinibreExpectedCountClosedForm_even_gammaSum
+#check @NumStability.realGinibreExpectedCountClosedForm_limit
+#check @NumStability.realGinibreExpectedCountClosedForm_odd_finiteSum
+#check @NumStability.realGinibreExpectedCountClosedForm_odd_gammaSum
+#check @NumStability.realGinibreExpectedCountClosedForm_one
+#check @NumStability.realGinibreExpectedCountClosedForm_shift_two
+#check @NumStability.realGinibreExpectedCountClosedForm_two
+#check @NumStability.realGinibreExpectedCountLimit_of_finiteExpectationFormula
+#check @NumStability.realGinibreParityIncrement_zero
+#check @NumStability.realGinibre_hypergeometric_one
+#check @NumStability.realGinibre_hypergeometric_shift_two
+#check @NumStability.realGinibre_hypergeometric_tendsto_one
+#check @NumStability.realGinibre_hypergeometric_two
+#check @NumStability.summable_ginibreHypergeometricTerm

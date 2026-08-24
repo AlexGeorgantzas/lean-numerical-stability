@@ -1,0 +1,911 @@
+{
+ "base_code_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+ "control_head_sha": "ac2253a514ee2ad25c763f1ee5a6365061f42146",
+ "counts": {
+  "destinations": 41,
+  "historical_wrappers_rewritten": 68,
+  "historical_wrappers_unchanged": 4,
+  "source_commands": 570,
+  "tests": 115
+ },
+ "files": [
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28.lean",
+   "sha256": "D501F26D1B87081EBBA57760B5A643EF8FAD9605424A87E8EDCCBBF5F8C91C99"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28Companion.lean",
+   "sha256": "2472B32512F589364D0AEDCA47EC31E3D06AAFEB01F777F26C9DD8A66C361BA2"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28CompanionSpectral.lean",
+   "sha256": "FDBBDE1A8428B436F3B68719FE200AE47218371E64A3D239641B71A5CF55455B"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28Contracts.lean",
+   "sha256": "FCEDD5B9AF941BC97C369CDB6BC6C6FF99F45232E5CD58DFFFA6450A2F6F27E9"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GaussianDirection.lean",
+   "sha256": "23582E6204A0776F9A51584E03D26C53126D618AF6D485DC3F347F4FB0D5E2B2"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GaussianOrthogonal.lean",
+   "sha256": "02270CF373FDB02E1EE526D6D4EC1527251571C6500D1BF66C20E1A23EF000B5"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GaussianQRHaar.lean",
+   "sha256": "2EE6D39D468D284C6F7C89E4C6301A142C9A43F81F4FB747362B50514384BBD8"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28Ginibre.lean",
+   "sha256": "F4E34D8B8B9BA0162D8033DEC2FEDCA9099FB6EC1495F7C9D0A142B1B8BA94E6"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreAbsoluteDetRecurrence.lean",
+   "sha256": "188668D66E48A872BB0BBE2005A798A73AC732522EA7E7C729047F1738553A21"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreAtlas.lean",
+   "sha256": "696E95A1910A69C56C317C429FF5C8A42062815D0BAFAF6BF5049FB811510DC3"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreCharacteristicProduct.lean",
+   "sha256": "761B3A1DFFDAA671699B43CB85E7C4C2F341B219E3D45C8B64C0120E9AC55DAD"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreComplexPairs.lean",
+   "sha256": "E8D51E6D66CEE9CCD45158B575E0D09D37B9992E9F3CDF1380A16925748F098E"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreCorollary31Factor.lean",
+   "sha256": "4DC503C0418BCD64AF045D89091C8F3D81072994C1FC40DA2673CD8DDC41ED6F"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreDeterminantIntegral.lean",
+   "sha256": "75F71E1188B58C43F142BA86628ABF7C3A6F6A619FA58D7FA960DE2657D6BC9A"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreDeterminantMoment.lean",
+   "sha256": "9EA7298FBBBB55951DD14A2BE58F68D5B86A66414D2CC5755ECEDC8E2C76A136"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreDimensionTwo.lean",
+   "sha256": "0A7F39DDB0BA9FA5D5A6153CF6A1CE6A7602278A2AC1D152D16D6188B7C0F003"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreExpectationGlue.lean",
+   "sha256": "729FEBF6F963070F0408494FEDD9EBB2523906AD82396055B895C9BED2DA983F"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreFiniteFormula.lean",
+   "sha256": "B3663790284201640C30640B5AEDDF0F5AFE34FB3877D993F5F99F074B7F6BB5"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreGaussianBridge.lean",
+   "sha256": "46C08CC1AAED17CF69B893D565BA7FE2B76E3407D369A893792E9813113799B3"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreIncidence.lean",
+   "sha256": "66136FC884B5F5C859FD9022B7FFE57D7F269FC194458AD3397361A6FDFE0DCA"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreIntegral.lean",
+   "sha256": "9CF44B9B81AC70158F9651D8B8FD8D8771D66FD6A07698606C0F35339572659E"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreJointDensity.lean",
+   "sha256": "0F52D4D302B5216287F0C757E1BE82B3E2228B37B2459E8491B240DB04DD85A9"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreMeasure.lean",
+   "sha256": "718921AD41686471415D4FA5B45AC015D2CBB8539F92AAECC509C70A7FE46930"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreMultiplicity.lean",
+   "sha256": "EC2301CBC94A275B8726B67458D2B83D612D83005B7DBCA41CEB15B56E25B512"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreOrthogonalFiber.lean",
+   "sha256": "ADCFB46066DDD52DAD0BA802A66A93C1FAC6FEC704CCD745D9A559E3CB2F8651"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreParity.lean",
+   "sha256": "45167D85D7C10541CB38D2208AD42F3528B4FD95FDA8F3EE0E9BFFBF2815F0FA"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibrePlaneChart.lean",
+   "sha256": "41430701491B3940D53FD927B1E3ADCB046CEB5B59E9A10A9F4D818AE62EB266"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibrePlaneIncidence.lean",
+   "sha256": "9B8C95790FCC9DCFA7613EFBE37433793B537345D98F0F2A46937AF4AFB55EE5"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibrePlaneSylvester.lean",
+   "sha256": "63BF245843E7B579857C57A962D8B85DC93F987F181A10D69285EDD5DB26850B"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreProjectiveIntegral.lean",
+   "sha256": "D7E171C448DE0B3F7D52E49D671FB34CF874923DA67BACAAD43AA3F3D48E39B9"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreRecurrence.lean",
+   "sha256": "21F6052087B913DF340E7F828C7313982D7A8D0356DD83E10D9F57CEB86B92A8"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreRoots.lean",
+   "sha256": "87AE032B092F32EAC9A55081DE947A45A3E65638C9B9BE765CA32895D1805068"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreSignedConclusion.lean",
+   "sha256": "8D8F8BCB9E1F6C8CA01CC63C1DCB894260E571AC049B17F8E807E27CB168454F"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreSignedExpectation.lean",
+   "sha256": "C14BA22387B40F96EC9C713BB1F5CD0B34CAC2880DBAB5F07DB5B18C7BD17784"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreSignedGaussian.lean",
+   "sha256": "751B4A01BD368DC30B70FBD729C9130B38FCE7AA631323E2D59E11343A142F7D"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreSignedIncidence.lean",
+   "sha256": "F21441FFADB04742912064AAC12B9DFDFFF1AB2D7C933CCC46842F88E5EF5426"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreSignedIncidenceAlgebra.lean",
+   "sha256": "94E12E9268EEC383E23BF8A53B63B6D80AE58212A1E4C5D97CD914087F06B90C"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreSignedKernel.lean",
+   "sha256": "C8642BCAF5DD1697229B91618C1E99D1922EBC4FFF4B575DAE96FA70B2930CB6"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreSignedRank.lean",
+   "sha256": "A4F007B056643BA1B7253993FF7ACD40FC216735026029AD569ABFBF25AA19E9"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreSignedRankTransfer.lean",
+   "sha256": "80382132ED2E761460279286EEF5F5D47C1ED2BEE6DE0C1D1C0A1B757578A738"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreSignedScalar.lean",
+   "sha256": "6379243B8BE94B0F018054CC5D2E7F6157279BE467D6E878529CBEC3EE6701A6"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreTraceDensity.lean",
+   "sha256": "BF64D4CD7244A84DB9D66A8129BE00E91A527E2E4B1CD9BE700CD7A62DABC531"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28GinibreTruncatedIncidence.lean",
+   "sha256": "61AFE567EC5CD4EB5FC7316B3CEBA73795043DA69B1355185F16FCCDB41377E9"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28HilbertAsymptotic.lean",
+   "sha256": "AC3A3480EFABA6641B2B3FEDB04CDF978933FA4FE72BE3769E55D1B2CAB4828F"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28HilbertCondition.lean",
+   "sha256": "6C75098A56A420C85EC0301621111F1AA339CEB3DBA407D767893ADB343DAC86"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28Moments.lean",
+   "sha256": "85D3764A5D1976CCDBDDBECB063A217F36924E66EFC399B6BAE32D6A033C3090"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28OrthogonalCoordinates.lean",
+   "sha256": "384373A3E4CCB7174FE485853E9FB398FF0E27217F8A1870EE1F47E42B1541C2"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28OrthogonalFibers.lean",
+   "sha256": "93DB02282DBAA72D4D948861D8333094E619F97FCCE9E9EFD7A39CBCD789739C"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28OrthogonalHaar.lean",
+   "sha256": "8853E8F6191CD23EFD8315E63573C2538467AD8A2837548EA0F71FE577D7177E"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28OrthogonalSphere.lean",
+   "sha256": "CF86CD87DED04BC70A929A99DCEBCD42A701001F9F4AEAD429C1D40FD0487487"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28Pascal.lean",
+   "sha256": "E7B065146C3BF026C3C736EA2DB59C09CB9956B45F369745389C5D5B76F5E376"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28PascalCondition.lean",
+   "sha256": "A48A3168DE0617D688E8E91A7FCDA73450CAB715EB3912ED13D91348BFABCE48"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28PascalDualFlag.lean",
+   "sha256": "E319CEDE9352A4B28B964D5F3846675C607640F5E0448CF4C332E3BA8648292C"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28PascalOscillation.lean",
+   "sha256": "2DFA1C2D212BCA77A56A759C70F4D57DA355C8A7788CD52AD0A44D867D21BBD6"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28PascalOscillationCore.lean",
+   "sha256": "CC88A3BD2C1E82CD10EFF031A47098AA3D445A4865022C7A5F99853DDEEBF67B"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28PascalOscillationExact.lean",
+   "sha256": "5B3F85F500069BB7651A806801F2414CA25559CB71288DD4ABCEEB31800655AD"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28PascalSpectral.lean",
+   "sha256": "5421406DD73F4E6FFE4968DFBC7CDC8BCD54E2D169260E240DB7CA00AF3CE253"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28PascalTotalPositivity.lean",
+   "sha256": "A661AEB48FAC05D0E70CAB1041546AF8A2B0777EBC67A40725B078E430F3490E"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28Probability.lean",
+   "sha256": "87992DADA91E865AC76505E5F49AB42FEE60ABF05D99124F40BECEA0A58192C4"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28ReciprocalSPD.lean",
+   "sha256": "72D1ABB1C2B67790D3BA92E7F025E7589F4A5CE1EE8BBBAAD1D8FB2CD512CF74"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28ShiftedHilbert.lean",
+   "sha256": "B6E6A6ED3FE2770FDA6D9FFED7A6DE496E3ABED16DBFF6E4393D75C6F3553582"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28Stewart.lean",
+   "sha256": "A26857B3B8D341FD7F6C06FCA27D6E99CEB5ABF0A62367D2D13CA2E2F0009C92"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28StewartHaar.lean",
+   "sha256": "D55CA4441CA05857031FEFE7A56A9978C0DE2F1060DB278B9F4FDC808727A916"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28StewartRawFiber.lean",
+   "sha256": "988DE67500FD3DE2C589255A5054AD3AAE9711B2017604D09332BB595C7C7240"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28StewartRecursion.lean",
+   "sha256": "3F0B8F6B25007215229B44DAF3C2EBB0E135D9BE1BC951F9792FF054EEF2A431"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28ToeplitzCondition.lean",
+   "sha256": "312E1663B2FDBF0A13EECD26959D2A09CCFE05F547131D33948DBAADAC54B9E9"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28ToeplitzGeneral.lean",
+   "sha256": "2866A957ECB6F692DA047CB6AEB6B5613213CE4D7CBD81657DAE63D3AA6B0F4E"
+  },
+  {
+   "path": "NumStability/Algorithms/TestMatrices/Higham28ToeplitzSpectrum.lean",
+   "sha256": "AF0DA59ED53D45D46E3EAB8D8DE7B9EDD7DAF5874242AA85E0C9C2D1664AFCEC"
+  },
+  {
+   "path": "NumStability/Analysis/Polynomials/RealRootCounting.lean",
+   "sha256": "0D71A79413DA32094655076B2C436CD83E950BCE1B65853007BD37D4DAA546E6"
+  },
+  {
+   "path": "NumStability/Analysis/Probability/Haar/NormalizedOrthogonalMatrixLaw.lean",
+   "sha256": "4C3A7B009581E6B97FC9AEF90033B10803D1C768AF2FA3DEBEE291E7F5C09F5D"
+  },
+  {
+   "path": "NumStability/Analysis/TestMatrices/Orthogonal/HaarFiberMeasure.lean",
+   "sha256": "C0D04F70F0E25E6E31312C42C4A118E0BF468AF3813492EDF6FA9CDF5C8198DA"
+  },
+  {
+   "path": "NumStability/Analysis/TestMatrices/RandomSVD/GroupLawRecursion.lean",
+   "sha256": "D47359D166999864EC43C749B1A7D5474A38F504619E4698053893B6249878E4"
+  },
+  {
+   "path": "NumStability/Analysis/TestMatrices/RandomSVD/StewartMeasurability.lean",
+   "sha256": "45F27A7A46C351F8DCF615A944815B25726273A6EFEDE6FA640FA32E723DC64D"
+  },
+  {
+   "path": "NumStability/Analysis/TestMatrices/RealGinibre/ProjectiveWeightIntegral.lean",
+   "sha256": "232354F9F40F7EE361516EA561D068B977345AD31EE1C0E377D649D7D7788A8C"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Equation02/DeterminantAsymptotics.lean",
+   "sha256": "E8ACB879A4DFED903251D0FEB2595368134CE260446332673CAA3FDBB7CEF707"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/ConditionLogRate.lean",
+   "sha256": "810C34171D66ECEC2A8A299A74CA1BF139CAC7187A4D0FEAEF11AD7879BB5842"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/CharacteristicProductMoments.lean",
+   "sha256": "E2BAAE1EB43E13449E249AFAE2F6FE17344B644455A2DABF1CF26D9F51632701"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/ClosedFormAsymptotics.lean",
+   "sha256": "5FCE7B110428085F28DBD81F7A77828E58919FA933F75D9F2404914C81867610"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/ExpectedCountFormula.lean",
+   "sha256": "728A4A77D90E6CFF633527A8DDB6D74EC4928293DB2F4C6E9AE1EDDD85E7C52B"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/ExpectedCountTransfer.lean",
+   "sha256": "6E188CBA760FBBA01472C08B08F36DCC263313FAF56B8C732E96D581A6FE4CA5"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/DimensionTwoExact.lean",
+   "sha256": "D44B1AC50540F48433D3ABB522137116C5C141D965F2FA39AC872852180411A6"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/PlaneSylvesterJacobian.lean",
+   "sha256": "7C009B466C8F17D46B03F59811A262FDD87B889149ECC4BA9E1A8DD3DC1509B1"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/LebesgueMomentDensities.lean",
+   "sha256": "C7E5D5FF5D5E8BB1EA2A3E66054F85682EAF8E99F1B6BB917B6B6208C0D69807"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/ProductLaw.lean",
+   "sha256": "601119D35BA0B57041E2ED57B99C6285F6BC4158A67FD3760B44250EBEBCA35C"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/EigenvalueCounts.lean",
+   "sha256": "790B64192ABD951797E5CF79AF8063D87CBDE3E131570D3F11967FC5AA2AFA12"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/AlternatingRankSheets.lean",
+   "sha256": "0BCEACDEB0015B2978030C5948B4DE3F5C70028099A8C1D3681BDDC8B787EF05"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/OneRootMomentReduction.lean",
+   "sha256": "9EDFC1D19B8318767244FBC00ADBA1B7C4A9845BFFC63DA41BE7CCD5316E0FCA"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section02/UniformPositive/PerronAlmostSure.lean",
+   "sha256": "44F1333B2809C3B694BD458AC2D0336738A76D1B0E4C150C35780521F0FB11E0"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section03/RandomSVD/SingleHouseholderRankTwo.lean",
+   "sha256": "8F750697A668943622A6A81B8FB17A284EAB2CCBB6B31D7B9B6B83179D4A4257"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/HaarConclusion.lean",
+   "sha256": "5FB0B90D0182F5499C22521D78CAA88C8FC769EE48602BE3109D2F054BAE7EDE"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/QRFactorHaar.lean",
+   "sha256": "A800DDB91A536423C2E1B530DB7FF1A5081DE581B10472AF66B4A8A186E44B9E"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/RawFiberConclusion.lean",
+   "sha256": "3CE23BE60E3120C89E8340E3DD05D30337645F014C3909064F437190ABA0EFF4"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/IdentityCubeRoot.lean",
+   "sha256": "086E55CA4BEE5E85D3E0EEF4AB4A2F47E8AF756EEC2E8D78E8667FFBC1165E10"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/MomentMatrix.lean",
+   "sha256": "FC179A42DCE4288C16C103B1F2810BB69B733A15005E5E7B1699DA4D4BBFFF4A"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/OptimalPerturbationRate.lean",
+   "sha256": "037F5C2BEFE1016C8A9DF0CFE3D0CCE69DC940ED6652CF31AF081774CAADAEB8"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/OscillationEigenbasis.lean",
+   "sha256": "0203FE5778660A4F71A3353540654F1BB8D582CC8B8CF2449260ADF8359C307F"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/OscillationSpectrum.lean",
+   "sha256": "5091E128AC91005B70BA89D370D10FAA8DED0B01DA09E4239F5704E228971DFE"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/SignChangeCount.lean",
+   "sha256": "8B35C9739B07C9CC845872E063562932EB8A3946E127BB589BBE190936D59ED6"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/SingularizingPerturbation.lean",
+   "sha256": "E07E96587434A368EB258142AD603591F7E585448386DD638DFB072C73160528"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/TotalPositivity.lean",
+   "sha256": "2EB40939733FC923C06BD016B22EDA96F6BDB4433B7E905BAC547D3A173B58AA"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/TriangularInvolution.lean",
+   "sha256": "8357A7B136F19D7E5A52BF040625BCF8787D463907AB6333E4D0D5D1CC5861A2"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/CharacteristicPolynomial.lean",
+   "sha256": "7747846D7B850459DE73358BB8BB1BC4CC2E703D4647386293B24F0F404DC172"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/SecondDifferenceCondition.lean",
+   "sha256": "E4DA0C2C9587B2CF48E9055185185C8FC9A8FD8D0A901D27CF8C95C01C292A65"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/SineEigenpairs.lean",
+   "sha256": "8C73A66B33A810A53E98C61EA6532792C8541EE4EC99E55A45983BC307283222"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/SineEigenvectors.lean",
+   "sha256": "62714672AB12D162EAF5236455A265884C6C54F996C3F4513FB6D33D5FEF517D"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section06/Companion/CharacteristicPolynomial.lean",
+   "sha256": "CF4B47D08FBB604C1C781FAA4DF18231BA23E316F64FDEE0E7456C8F9A5C9A2F"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section06/Companion/Nonderogatory.lean",
+   "sha256": "0536BA4A30C605C237AD2518C6530CC23F71311884B7D804AF6BA78357925D73"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section06/Companion/Normality.lean",
+   "sha256": "A644B3872BD531E4EDB9FDF88B2548A6C567D34D4F9C9600EB8FF3FAEF1FB996"
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter28/Section06/Companion/SingularValues.lean",
+   "sha256": "221051C53A275808BE2E0F9D68D889CD356A26628A53F1EA7E01258AFC0A62AA"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/All.lean",
+   "sha256": "4FFB40B58CBB495083FC607C586B4960BBC382342952E99F7E0391C0FF9F650D"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Analysis_Polynomials_RealRootCounting.lean",
+   "sha256": "127FCE041F30C0DD02BE8816981B1AB1EA365EB89749456738268E163D9A723F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Analysis_Probability_Haar_NormalizedOrthogonalMatrixLaw.lean",
+   "sha256": "8283B1235A37E651ACCCC0AD8266C9DFEDE6EA538162CE36296EE09414A2D66C"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Analysis_TestMatrices_Orthogonal_HaarFiberMeasure.lean",
+   "sha256": "53A2B77F0583ED9E15D0FDAC5B678A0E3C49E32B63CDD6AB9D50F046DEA2EF6A"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Analysis_TestMatrices_RandomSVD_GroupLawRecursion.lean",
+   "sha256": "7F369E2E713E429553A228B89FFEBF94B7F3A29942C1BC90B7D91E9C6029D394"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Analysis_TestMatrices_RandomSVD_StewartMeasurability.lean",
+   "sha256": "E847EE9442CA835726DE0AF69DE2F4E13D2DAC84E52897FA7128ED0C9157CEB5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Analysis_TestMatrices_RealGinibre_ProjectiveWeightIntegral.lean",
+   "sha256": "87891F30592D90FBA00BA060A2CAF864EF2AD76050C3B3672B20064D81E626BD"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Equation02_DeterminantAsymptotics.lean",
+   "sha256": "4F10E3C948E8F80C5D7091CA081998D29C6397EA727E002FAC465C39C02E8DDA"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section01_HilbertConditioning_ConditionLogRate.lean",
+   "sha256": "579F36359C8A9B50A5C7FCDF82558E8EA5F971FDF80B79474C2F32C7FC31C301"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_FiniteExpectation_CharacteristicProductMoments.lean",
+   "sha256": "3C04BC760B32201F1F9EF38B7EE1292768342E8CDC5815DDDFC0FD1F6B8DBEEB"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_FiniteExpectation_ClosedFormAsymptotics.lean",
+   "sha256": "CC592544EEF878E13500BA9817AA879459CC8CBA873B0013065A84BC993C27E2"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_FiniteExpectation_ExpectedCountFormula.lean",
+   "sha256": "A5FAD67A750FC55260835EFC25F9E8576E73371BEE7C091D364187867319CE74"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_Incidence_ExpectedCountTransfer.lean",
+   "sha256": "96AFD5286937A4C1D346FFC613250994E39BBBEC96F53A712B71AB79F0B3AEF7"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_InvariantPlanes_DimensionTwoExact.lean",
+   "sha256": "E7F954D8ED6A3FE76EF9CBC5A8D91D07B788B358CC1455C93C37DBE7C8F4C0CF"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_InvariantPlanes_PlaneSylvesterJacobian.lean",
+   "sha256": "098421C5FC70FE40C8B2D89C91C03EFE30F3479606C777111343D4E5289FB79F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_ProbabilityLaw_LebesgueMomentDensities.lean",
+   "sha256": "263238F16C8862BC82BAFE11683FF89A679B64FAC08C02CAEEBC0AABAE244692"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_ProbabilityLaw_ProductLaw.lean",
+   "sha256": "5BAAA84B53F7381AB042D63B21CF27B1F850F3B6CD60ACBA15FEDC8C8CBC90F2"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_RootMeasurability_EigenvalueCounts.lean",
+   "sha256": "04E2AE8099259D6F20CEBB8D73E8DF962072E107F483AAD93B07EACF1B10148C"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_SignedIncidence_AlternatingRankSheets.lean",
+   "sha256": "756E19ECF46ABED5BDDB0B78D41D930E04456E8C0D47DD0DB5011516ACAE722B"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_RealGinibre_SignedIncidence_OneRootMomentReduction.lean",
+   "sha256": "2408064B6CF9F55E09A93D34F70428251E4D8014894FD9E31A5A8982DA58F2DA"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section02_UniformPositive_PerronAlmostSure.lean",
+   "sha256": "9AA7A64591A7FC3AA43414350A5E51922BB5F1247BF371EE8A58489735C704AE"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section03_RandomSVD_SingleHouseholderRankTwo.lean",
+   "sha256": "3C9A663B9C7DBA3B145C61D745BD89634A18E14D1AD6C609BF01F8AF49507A25"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section03_Theorem01_StewartHaar_HaarConclusion.lean",
+   "sha256": "B1E5CC2DCFDBEC4603277B93F104B4AB5DCA5F8301D987D0004E77B0F0BD3B3F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section03_Theorem01_StewartHaar_QRFactorHaar.lean",
+   "sha256": "49DA2641C379C971B3B7E751EF7C5158F5FEA43B2273C3D0D5F86BF041C6F835"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section03_Theorem01_StewartHaar_RawFiberConclusion.lean",
+   "sha256": "E172F0A295D9C45DC0CC64C6FF6BDDF87B79FE749A8B9FA0356ADA889F3D4F42"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section04_Pascal_IdentityCubeRoot.lean",
+   "sha256": "502A36AF69D1626665CE9949F1F7805C739391952B24F068294846B55007BA9C"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section04_Pascal_MomentMatrix.lean",
+   "sha256": "201576D91EF82994A1253FB39B8AD711881D3DC2A67AE2A5D5126FD84536196F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section04_Pascal_OptimalPerturbationRate.lean",
+   "sha256": "EFAF79D431397ADFA452727AEB44B2C1C2BA5EEC0EDA3777A902556B288CFBF7"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section04_Pascal_OscillationEigenbasis.lean",
+   "sha256": "80A4DE6963F825BDEADDBCB2472EE5B70E355EFC69A805FAFABAC16EE5B06749"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section04_Pascal_OscillationSpectrum.lean",
+   "sha256": "8EB0CBD19166EABB966A55DA3FBC985C5916B88370BBFDDAA5895F30C09B31FE"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section04_Pascal_SignChangeCount.lean",
+   "sha256": "5646995E43B20977D952538AC400BD2B7A0EE5FF2032DE984B79158D0EC48BED"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section04_Pascal_SingularizingPerturbation.lean",
+   "sha256": "F3C9F9A8134FD57E5EA4A8EED2194ED3C5D67368B37B4A2AB39165BE79868B1E"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section04_Pascal_TotalPositivity.lean",
+   "sha256": "E9559B712740C7A6774477A48A277907CBC00F562EAFAD7F472704ABFF405234"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section04_ReciprocalSpectrumSPD_TriangularInvolution.lean",
+   "sha256": "0E6428DB38AB76CB1BA37A5AF2837BD3643BA65452A1D7893D690D0075FF22CF"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section05_TridiagonalToeplitz_CharacteristicPolynomial.lean",
+   "sha256": "2E6AFD8C94A7C09BBFAAE8B70E5201A9D6C53F865D84E49090F2E3A96F3FAD77"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section05_TridiagonalToeplitz_SecondDifferenceCondition.lean",
+   "sha256": "3881BD383EEC3D8E572262A925E26D17E3C5E8C89E13AABAC6F03B868C2F5C84"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section05_TridiagonalToeplitz_SineEigenpairs.lean",
+   "sha256": "D9C3AF21A99FF001358289AC28FF89B92737385AEECD048C670B7CBC861CD714"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section05_TridiagonalToeplitz_SineEigenvectors.lean",
+   "sha256": "7210DAC5A660A0ADC50DA46F705C4E371B0EF95DDC9A2996B7CC10758F4D21A2"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section06_Companion_CharacteristicPolynomial.lean",
+   "sha256": "4C9F75CC01139362C5FC12C8B060B132FEA06B44624C6444AE49363BF15C6B28"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section06_Companion_Nonderogatory.lean",
+   "sha256": "93FF890D70572B36A8661E59857E565DFA0500CFF223B53F7885EDF09E7BC994"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section06_Companion_Normality.lean",
+   "sha256": "ADC4BD71ADCB818323528CD291F30F02CE0C425CFF0CF4197D5922D8B982FEAF"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/CanonicalOnly/NumStability_Source_Higham_Chapter28_Section06_Companion_SingularValues.lean",
+   "sha256": "0824DFB793471B9B3C8F6E108AA563755D422D297308993E583DCB7B220E50A6"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28.lean",
+   "sha256": "71B4CE6C7117EA35B0BF3E9DFC5B1D84894E9CE15D113B53871A5DFFF93C9CAA"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28Asymptotics.lean",
+   "sha256": "910EB5543EDA3E71523139EB74C8640BAABE363E1F6738979B1EBB80E350210A"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28Cauchy.lean",
+   "sha256": "DF847EE0FD82FA200E0D22767E3EB87357BB2F3F9666A6BC9F87E6C0B387982D"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28Companion.lean",
+   "sha256": "EB7A8FF14952751DC1FFA34DF020AA6A95AEF35B6D93D89A7DE756F29EBC6285"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28CompanionSpectral.lean",
+   "sha256": "D875D575437BA5C643D1B06B0069D9623A189E4679A11232EE19381942324C35"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28Contracts.lean",
+   "sha256": "4C0C4FF744A70865802B4052B306F59C89A7F9E24F5C09AE65F5EBC3E3BA2BC3"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28Exact.lean",
+   "sha256": "6D29DA9F9E9EA3857982ECBE7D6D37DB6EE8874EE18819229DD2C94E0AAAD7B1"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GaussianDirection.lean",
+   "sha256": "A4D248B96260EF1DC96595FDBE4F8E103146966D77F1AA9DDFAB81FE28B36F0A"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GaussianOrthogonal.lean",
+   "sha256": "2418E7E37A0FA5587F8D297D4117FF9ED4009A3E0B41A170E0F63518EB3214BA"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GaussianQRHaar.lean",
+   "sha256": "3D6A27DD37887BC4C0678D265036125C9BEF3AF7FC4EC14303AEFD33C9853F4B"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28Ginibre.lean",
+   "sha256": "5B6FC100856079D93CAB29B75907616FEFD628309B30A34112CCB8452CCE7EAD"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreAbsoluteDetRecurrence.lean",
+   "sha256": "BCEAB6DF7DBF29684F65956CC84AFC80B43049E230EB28FD729DF394D81C103D"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreAtlas.lean",
+   "sha256": "199FCBEF8D9F8B701BFF82016572069719135DD305562C73FBAF8A1176D429E8"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreCharacteristicProduct.lean",
+   "sha256": "A036601F916BCFFB421BBC9FB16021352A7B9111119F3FD72B9D47B5874A65AE"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreComplexPairs.lean",
+   "sha256": "012AF8C94471ECCECCAA061937E86B455FEC2A72F1BC0AF04C24DC959D0412E0"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreCorollary31Factor.lean",
+   "sha256": "C2213BE7BD13DB6DA8A34C362E717F8A78507BA5C3300B12D17FD61288F2DC79"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreDeterminantIntegral.lean",
+   "sha256": "F2B284B37036F089EA54FAE4BBCF5FBF2D5D4B4F9DA109B165C4C4BBD9F82791"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreDeterminantMoment.lean",
+   "sha256": "33E6AF14FD00FE0128CC443AE83461BC2A243AFE1E2267FB16207F3EBC71901A"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreDimensionTwo.lean",
+   "sha256": "A15C64DB0BDADCF4EF3E6AAD639CF21ADE031C5EF4DE5352F0E25477BB5EBAC7"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreExpectationGlue.lean",
+   "sha256": "63C9681CD5EC523109D8D70C1400B3717E2B09EEA9E8BBBC592707D1F44AE4AB"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreFiniteFormula.lean",
+   "sha256": "768CF5450A91CE5BF29AB52FF5B208910269BA1B71C4E92E9C0355F49D36458F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreGaussianBridge.lean",
+   "sha256": "B3850C7021F1E33795F431695739EA20E33AEA278FD9A54F245C3E840638AAA9"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreIncidence.lean",
+   "sha256": "E7639BBECDF94B04B2C9143F32278183EC91CB54D8B7A2C6438ACD7228DA9A8B"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreIntegral.lean",
+   "sha256": "4B84BDFBFA06FB08FF6083F88B877F4D02BB910E9D2023B1F2D3ABFDD4A1D8B7"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreJointDensity.lean",
+   "sha256": "D6BE87569BA8EA0EC21B255A9502774162BB65BB9D274EAEBB85A6685DDF737E"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreMeasure.lean",
+   "sha256": "E019E2CC1C692C0A041977B5E590DBC49DC79A555B1B3DF288F291D53BF14A35"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreMultiplicity.lean",
+   "sha256": "F1B478606578A6A277AEDC03E52E3B8414386EE96F229FA06D3451AB3BFA040B"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreOrthogonalFiber.lean",
+   "sha256": "17D1F74A163F5BDDC3403A6CBAEB9CEEB9DBAA0257E8DDC9A9E033E6B0CD036E"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreParity.lean",
+   "sha256": "9063840249AAA5A366E5DC181881B69B2C9A25B7528451914583A983E6361067"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibrePlaneChart.lean",
+   "sha256": "F1640A2EFD6568CABC267247568BF405ADCF365B5EE9F8BDEC9CA301459DC158"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibrePlaneIncidence.lean",
+   "sha256": "9FE75344B554B65A963DE9250E4CBCCDBCF078A273E618AAE159F56975A19D65"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibrePlaneSylvester.lean",
+   "sha256": "1D94CB5F2924D725265FF6E4DDCC2AF6B0232932E2C243F8B34BB02B3E8BD67B"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreProjectiveIntegral.lean",
+   "sha256": "D6B9994B7EAA14DEAAE20A49DBF39497882A84A17D2574152D6C29E0F8AE769F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreRecurrence.lean",
+   "sha256": "54EB129016A8385B7C9A4C7B29FCDC559A871E409C38426D206FC09BFD8D6CD0"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreRoots.lean",
+   "sha256": "7AE0963CBCC4AB0F443D15E2343CB660D84B01FCBE5CC68C1B9CDB06FBB10ECC"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreSignedConclusion.lean",
+   "sha256": "9898A9111617ECE35496F0EA7BDBADFF6FB310BC96532A61E66D568ED46DF117"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreSignedExpectation.lean",
+   "sha256": "597B5C89819C3107216A66676429FCA25426FBFA5714ADECF4A3D7E2ADE6BAB9"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreSignedGaussian.lean",
+   "sha256": "FBE066D88E9C61094D28A65394D41A989A034C683D0D2C2D1D22A6652A93E523"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreSignedIncidence.lean",
+   "sha256": "C9555D65F64013888239C93870674979BEDA98AE18DED272A5FF57EDB15EC513"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreSignedIncidenceAlgebra.lean",
+   "sha256": "418B631CE02B735F52246183999CE11088ACD9AAD2330051F6FA68626B9DE8B2"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreSignedKernel.lean",
+   "sha256": "AFB06DA62C10A5D91E1C34FC42DBDE78E0962956FFDD4A99A49F1DBE47A1FA10"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreSignedRank.lean",
+   "sha256": "948B00C44F1944FF0642E25BBD5F6F83DCE99184ACB1DDDA6BDBE4F72734FF84"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreSignedRankTransfer.lean",
+   "sha256": "43B0787220BBB28973C02874D25F2846491E51DC5DB6C317E549AEB2312F9C18"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreSignedScalar.lean",
+   "sha256": "7C039EE16D7FECC406BE74D238092FAEBAA28C46FBAC073F9EACE455CC4CAEE6"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreTraceDensity.lean",
+   "sha256": "9F2F8638B45885053F018F3CA846E5175A43601BF8162A93A95AF9243DE2ED86"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28GinibreTruncatedIncidence.lean",
+   "sha256": "F12B603623B8BE756200B42CCAEDF1158AD036D8AEE75372348A989A69D2BA72"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28HilbertAsymptotic.lean",
+   "sha256": "A87BC14E6BA2AD2713E26624682DAFFF1644067693CAF18BA907A827E4E1863A"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28HilbertCondition.lean",
+   "sha256": "C1651626410CEC708432488AD817B76D78FFF9B286C35CD733BDB0E5ADB749B8"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28Moments.lean",
+   "sha256": "9338C1D0D035B36F70B1A515356DA851AB5A969985FD3ED9CDBE7104D35999E1"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28OrthogonalCoordinates.lean",
+   "sha256": "499259B36BC5EB8E760838494467FF870529E62B95DB95C44E1EC16B3A1442FC"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28OrthogonalFibers.lean",
+   "sha256": "8F4C04F627C180BD108E33003BF1B0A449C1647A6F61323280BCE7D20BA88953"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28OrthogonalHaar.lean",
+   "sha256": "738AAC149ECEA0C1C874FAE96E11769F76B5DB7B299044BD0BAA5FEFAE2A7CA4"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28OrthogonalSphere.lean",
+   "sha256": "5F270EF2F95DF8A0B30C22DFFF5E09BE58B5AA5D4915B588B18657BB05C16DE5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28Pascal.lean",
+   "sha256": "778007CF01729E5D0C521753DEB62B11967BAC7FA6100C1B8A79543D45DFBABD"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28PascalCondition.lean",
+   "sha256": "FD71644A7534DD08C1AD776A17AB033BC17ACC7A84A0AF95FD8EE297EA4EBC76"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28PascalDualFlag.lean",
+   "sha256": "DB561D1B17FF1B2F1348F9DC24C61C2D5A16799C24D06BBC856D49D988B8C92C"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28PascalOscillation.lean",
+   "sha256": "2F5CE1DD26BC9484D70EF6296B0C89A5F8D3BC50A30D60D0DC11A92108A6C622"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28PascalOscillationCore.lean",
+   "sha256": "5062A17BE7F614B2DF4CF7F7218A7F0323D846F8B804BA3A1ABFB686B475C1AD"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28PascalOscillationExact.lean",
+   "sha256": "CA45EEE5E56656F587F5142FDF596FD822F39603D332646807647E59F466FB64"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28PascalSpectral.lean",
+   "sha256": "BFE29E8E942429E7DAAF2624CECAA556E65F4AEF44B7EACD82E743DDCDBCD227"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28PascalTotalPositivity.lean",
+   "sha256": "11BF50F99A79601E172CED0334BB0ECA3ABB91CD55BD778C893F508CA7EDF396"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28Probability.lean",
+   "sha256": "214F449D3E54022BDEC06FE987CBBC927B478690A08BBED69CB235728CAF94ED"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28RandsvdNorm.lean",
+   "sha256": "198E3A2969FDFF1AF11A782FE8DD3F103E0C2E0AA9EF769FA339828CE5C5171E"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28ReciprocalSPD.lean",
+   "sha256": "A129FA1E08F06DB8DF1670AA8CFE409E090E9FE2832F9B69FEB48EAADE660109"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28ShiftedHilbert.lean",
+   "sha256": "B769A477DD3E2535E8D68995BC234A53828847DB5CC1E3465307C6C164737650"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28Stewart.lean",
+   "sha256": "E7A1A10ECE64CA2E39A22A852811C0CD2FB159EE2ABC599631E6F533FD2CC3C7"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28StewartHaar.lean",
+   "sha256": "DA4CBCACA2516D5D1344FF71A0C46F519A2B5FF58F6DB907845BFFAF8AD00B0F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28StewartRawFiber.lean",
+   "sha256": "19EC2458DF77DC348C2B7B8FC8660D2B89D6D220285FE60CB46B77F225F30B33"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28StewartRecursion.lean",
+   "sha256": "2512489C29B3E38DD50A0E21B2F27E1489E84725BD60827414EF6FCF413CCDC7"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28ToeplitzCondition.lean",
+   "sha256": "082A8FCD2CD7B2018F5F4D89C5AF712D2DC1D6C6B5FBA33944116FFD70E95567"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28ToeplitzGeneral.lean",
+   "sha256": "91F281466BEBDFF19EA749C47B006A4BEBED8E848BB8D0E3D2C28E1D9EEFE8C3"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/OldOnly/NumStability_Algorithms_TestMatrices_Higham28ToeplitzSpectrum.lean",
+   "sha256": "FCA91E412B2D3C6FB73961E72EF185D2FA194BC7C64F093772FF0CB995AA82B9"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R09/PrivateNormalization.lean",
+   "sha256": "B353943617F62AF3CFC5991746312C0447A9C508A3413F3F9166E80B6E41D517"
+  }
+ ],
+ "record_kind": "r09_worker_materialization",
+ "schema_version": 1
+}

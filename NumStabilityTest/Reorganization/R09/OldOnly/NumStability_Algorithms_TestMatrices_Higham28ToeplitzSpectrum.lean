@@ -1,0 +1,13 @@
+import NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.complexTridiagonalToeplitz_p522_unrestricted_charpoly
+#check @NumStability.tridiagonalToeplitz_p522_charpoly_of_product_zero
+#check @NumStability.tridiagonalToeplitz_p522_roots_charpoly_of_product_zero
+#check @NumStability.tridiagonalToeplitz_p522_unrestricted_charpoly
+#check @NumStability.tridiagonalToeplitz_p522_unrestricted_roots_charpoly
