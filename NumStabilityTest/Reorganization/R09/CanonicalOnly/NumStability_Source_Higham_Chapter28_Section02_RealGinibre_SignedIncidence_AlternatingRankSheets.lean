@@ -1,0 +1,35 @@
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.AlternatingRankSheets
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.expectedGinibreAlternatingCount
+#check @NumStability.expectedGinibreAlternatingCount_add_two
+#check @NumStability.expectedGinibreAlternatingCount_eq_dimension
+#check @NumStability.expectedGinibreAlternatingPairCount
+#check @NumStability.expectedGinibreAlternatingPairCount_one
+#check @NumStability.expectedRealEigenvalueCount_eq_alternating_sub_two_pairs
+#check @NumStability.expectedRealEigenvalueCount_shift_eq_neg_two_mul_pair_shift
+#check @NumStability.ginibreAlternatingEigenvalueCount_eq_dimension
+#check @NumStability.integrableOn_ginibreSignedIncidenceBelow
+#check @NumStability.integrable_ginibreAlternatingEigenvalueCount
+#check @NumStability.integrable_ginibreAlternatingPairEigenvalueCount
+#check @NumStability.integral_ginibreAlternatingBelow_eq_signedIncidenceBelow
+#check @NumStability.integral_ginibreIncidence_rankPieceBelow_eq_image
+#check @NumStability.integral_ginibreIncidence_rankPiece_eq_image
+#check @NumStability.lintegral_ginibreIncidence_rankPiece_eq_image
+#check @NumStability.measurableSet_ginibreIncidenceRankPieceBelow
+#check @NumStability.measurableSet_ginibreIncidenceRankPieceBelow_image
+#check @NumStability.measurable_ginibreAlternatingEigenvalueCount
+#check @NumStability.measurable_ginibreAlternatingPairEigenvalueCount
+#check @NumStability.mem_ginibreIncidenceRankImage_iff_lt_rootCount
+#check @NumStability.mem_ginibreIncidenceRankPieceBelow_image_iff_lt_belowCount
+#check @NumStability.natCast_eq_alternating_sub_two_pairs
+#check @NumStability.neg_one_pow_rootRank_mul_abs_det
+#check @NumStability.realEigenvalueCount_cast_eq_alternating_sub_two_pairs
+#check @NumStability.sum_ginibreIncidenceRankImage_pairPrefix_eq_alternatingPairCount
+#check @NumStability.sum_ginibreIncidenceRankImage_sign_eq_alternatingCount
+#check @NumStability.sum_ginibreIncidenceRankPieceBelow_image_sign_eq_alternatingCount

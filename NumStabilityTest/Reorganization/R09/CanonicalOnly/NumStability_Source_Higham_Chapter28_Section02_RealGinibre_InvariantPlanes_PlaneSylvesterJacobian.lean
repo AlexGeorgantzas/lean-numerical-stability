@@ -1,0 +1,29 @@
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.PlaneSylvesterJacobian
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.continuous_ginibrePlaneChart
+#check @NumStability.differentiable_ginibrePlaneChart
+#check @NumStability.fderiv_ginibrePlaneChart
+#check @NumStability.ginibrePlaneChartBorelSpace
+#check @NumStability.ginibrePlaneChartDerivativeLinearMap
+#check @NumStability.ginibrePlaneChartDerivativeLinearMap_det
+#check @NumStability.ginibrePlaneChartMeasurableSpace
+#check @NumStability.ginibrePlaneMatrixNormedAddCommGroup
+#check @NumStability.ginibrePlaneMatrixNormedSpace
+#check @NumStability.ginibrePlaneSylvesterBridgeModule
+#check @NumStability.ginibrePlaneSylvesterLinearMap_det_complex_eq_characteristicProduct
+#check @NumStability.ginibrePlaneSylvesterLinearMap_det_eq_charpoly_aeval
+#check @NumStability.ginibrePlaneSylvesterOperator
+#check @NumStability.ginibrePlaneSylvesterOperator_det_complex_eq_characteristicProduct
+#check @NumStability.ginibrePlaneSylvesterOperator_det_eq_charpoly_aeval
+#check @NumStability.ginibrePlaneSylvesterOperator_toMatrix_apply
+#check @NumStability.ginibrePlaneSylvesterOperator_toMatrix_eq_reindex_block
+#check @NumStability.hasFDerivAt_ginibrePlaneChart
+#check @NumStability.hasFDerivAt_ginibrePlaneChartTopRight
+#check @NumStability.integral_realGinibre_ginibrePlaneSylvesterOperator_det
+#check @NumStability.measurable_ginibrePlaneChart

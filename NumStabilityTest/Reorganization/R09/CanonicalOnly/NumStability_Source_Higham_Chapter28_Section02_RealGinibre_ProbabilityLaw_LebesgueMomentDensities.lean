@@ -1,0 +1,37 @@
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.LebesgueMomentDensities
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.expectedRealEigenvalueCount_eq_lebesgue
+#check @NumStability.ginibreDeterminantMomentMeasurableSpace
+#check @NumStability.ginibreDeterminantMomentSigmaFinite
+#check @NumStability.integrable_realGinibreDensityReal
+#check @NumStability.integral_realGinibre_prod_gaussian_eq_jointDensity
+#check @NumStability.measurable_abs_det_ginibreShift
+#check @NumStability.measurable_abs_det_ginibreShiftReal
+#check @NumStability.measurable_abs_det_matrix
+#check @NumStability.measurable_abs_det_matrixReal
+#check @NumStability.measurable_ginibreShiftShear
+#check @NumStability.measurable_ginibreTraceCorrelatedDensityReal
+#check @NumStability.measurable_ginibreUnshiftShear
+#check @NumStability.measurable_realGinibreDensityReal
+#check @NumStability.measurePreserving_ginibreShiftShear
+#check @NumStability.realGinibreAbsoluteCharacteristicMoment
+#check @NumStability.realGinibreAbsoluteCharacteristicMomentLIntegral
+#check @NumStability.realGinibreAbsoluteCharacteristicMomentLIntegral_eq_jointDensity
+#check @NumStability.realGinibreAbsoluteCharacteristicMomentLIntegral_eq_shiftedJointDensity
+#check @NumStability.realGinibreAbsoluteCharacteristicMomentLIntegral_eq_traceDensity
+#check @NumStability.realGinibreAbsoluteCharacteristicMoment_eq_toReal_lintegral
+#check @NumStability.realGinibreAbsoluteCharacteristicMoment_eq_traceDensityIntegral
+#check @NumStability.realGinibreAbsoluteCharacteristicMoment_one
+#check @NumStability.realGinibreAbsoluteCharacteristicMoment_zero
+#check @NumStability.realGinibreLebesgueMeasure
+#check @NumStability.realGinibreLebesgueMeasure_absolutelyContinuous
+#check @NumStability.realGinibreMeasure_absolutelyContinuous_lebesgue
+#check @NumStability.realGinibreMeasure_eq_withDensity
+#check @NumStability.realGinibreMeasure_one_map_entry
+#check @NumStability.realGinibreMeasure_one_prod_map_entry

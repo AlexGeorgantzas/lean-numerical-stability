@@ -2,11 +2,5 @@ import NumStability.Algorithms.TestMatrices.Higham28OrthogonalSphere
 import NumStability.Analysis.TestMatrices.Gaussian.GaussianDirection
 
 /-!
-# Higham28GaussianDirection (compatibility module)
-
-Import-only module retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GaussianDirection`
-keep resolving. Every declaration moved unchanged to the canonical
-modules imported above. The module's own original imports are
-re-stated so consumers reaching an identifier transitively through
-this path still see the same surface.
+Historical owner retained as an import-only compatibility wrapper; its declarations were relocated under the R09/R10 completion waves per the reviewed route ledger.
 -/

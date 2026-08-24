@@ -1,0 +1,17 @@
+import NumStability.Algorithms.TestMatrices.Higham28GinibrePlaneSylvester
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.ginibrePlaneSylvesterBridgeModule
+#check @NumStability.ginibrePlaneSylvesterLinearMap_det_complex_eq_characteristicProduct
+#check @NumStability.ginibrePlaneSylvesterLinearMap_det_eq_charpoly_aeval
+#check @NumStability.ginibrePlaneSylvesterOperator
+#check @NumStability.ginibrePlaneSylvesterOperator_det_complex_eq_characteristicProduct
+#check @NumStability.ginibrePlaneSylvesterOperator_det_eq_charpoly_aeval
+#check @NumStability.ginibrePlaneSylvesterOperator_toMatrix_apply
+#check @NumStability.ginibrePlaneSylvesterOperator_toMatrix_eq_reindex_block
+#check @NumStability.integral_realGinibre_ginibrePlaneSylvesterOperator_det

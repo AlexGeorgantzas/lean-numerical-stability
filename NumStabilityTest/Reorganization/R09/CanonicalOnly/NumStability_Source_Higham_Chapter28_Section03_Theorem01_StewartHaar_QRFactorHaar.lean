@@ -1,0 +1,22 @@
+import NumStability.Source.Higham.Chapter28.Section03.Theorem01.StewartHaar.QRFactorHaar
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.ae_linearIndependent_standardGaussianColumns
+#check @NumStability.ae_linearIndependent_standardGaussianColumns_aux
+#check @NumStability.gaussianColumnMatrixMeasureOfScale_det_ne_zero_ae
+#check @NumStability.gaussianColumnMatrixMeasure_det_ne_zero_ae
+#check @NumStability.gaussianQRQLawOfScale_eq_normalizedOrthogonalHaar
+#check @NumStability.gaussianQRQLawOfScale_isProbabilityMeasure
+#check @NumStability.gaussianQRQLaw_eq_normalizedOrthogonalHaar
+#check @NumStability.gaussianQRQLaw_isHaarMeasure
+#check @NumStability.gaussianQRQLaw_isMulLeftInvariant
+#check @NumStability.gaussianQRQLaw_isProbabilityMeasure
+#check @NumStability.gaussianQRQ_orthogonalLeftMul_ae
+#check @NumStability.measurable_gaussianQRQ
+#check @NumStability.measurable_gaussianQRQMatrix
+#check @NumStability.measurable_modifiedGramSchmidtQ

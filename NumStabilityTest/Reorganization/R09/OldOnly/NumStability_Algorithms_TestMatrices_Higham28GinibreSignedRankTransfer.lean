@@ -1,0 +1,15 @@
+import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRankTransfer
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.integral_ginibreIncidence_rankPieceBelow_eq_image
+#check @NumStability.integral_ginibreIncidence_rankPiece_eq_image
+#check @NumStability.measurableSet_ginibreIncidenceRankPieceBelow
+#check @NumStability.mem_ginibreIncidenceRankPieceBelow_image_iff_lt_belowCount
+#check @NumStability.sum_ginibreIncidenceRankImage_pairPrefix_eq_alternatingPairCount
+#check @NumStability.sum_ginibreIncidenceRankImage_sign_eq_alternatingCount
+#check @NumStability.sum_ginibreIncidenceRankPieceBelow_image_sign_eq_alternatingCount

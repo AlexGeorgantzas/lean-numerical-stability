@@ -1,0 +1,25 @@
+import NumStability.Source.Higham.Chapter28.Section06.Companion.SingularValues
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.companionExceptionalSquaredSingularValueMinus_le_one
+#check @NumStability.companionExceptionalSquaredSingularValueMinus_occurs
+#check @NumStability.companionExceptionalSquaredSingularValuePlus_occurs
+#check @NumStability.companionGram_eigenvalue_eq_one_or_exceptional
+#check @NumStability.companionSingularValues_eq_one_or_eq_exceptional
+#check @NumStability.companionSingularValues_multiset_eq
+#check @NumStability.companionSquaredSingularValues_count_one
+#check @NumStability.companionSquaredSingularValues_count_one_eq_sub_two
+#check @NumStability.companionSquaredSingularValues_eq_one_or_eq_plus_or_eq_minus
+#check @NumStability.companionSquaredSingularValues_eq_one_or_exceptional
+#check @NumStability.companionSquaredSingularValues_multiset_eq
+#check @NumStability.companion_conjTranspose_mul_self_charpoly
+#check @NumStability.companion_conjTranspose_mul_self_charpoly_linearFactors
+#check @NumStability.companion_conjTranspose_mul_self_eigenvalue_eq_one_or_exceptional
+#check @NumStability.companion_conjTranspose_mul_self_roots_charpoly
+#check @NumStability.companion_conjTranspose_mul_self_sub_one_rank_le_two
+#check @NumStability.one_le_companionExceptionalSquaredSingularValuePlus

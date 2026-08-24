@@ -1,0 +1,22 @@
+import NumStability.Algorithms.TestMatrices.Higham28GinibreTraceDensity
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.measurable_abs_det_ginibreShift
+#check @NumStability.measurable_abs_det_ginibreShiftReal
+#check @NumStability.measurable_abs_det_matrix
+#check @NumStability.measurable_abs_det_matrixReal
+#check @NumStability.measurable_ginibreShiftShear
+#check @NumStability.measurable_ginibreTraceCorrelatedDensityReal
+#check @NumStability.measurable_ginibreUnshiftShear
+#check @NumStability.measurePreserving_ginibreShiftShear
+#check @NumStability.realGinibreAbsoluteCharacteristicMomentLIntegral
+#check @NumStability.realGinibreAbsoluteCharacteristicMomentLIntegral_eq_jointDensity
+#check @NumStability.realGinibreAbsoluteCharacteristicMomentLIntegral_eq_shiftedJointDensity
+#check @NumStability.realGinibreAbsoluteCharacteristicMomentLIntegral_eq_traceDensity
+#check @NumStability.realGinibreAbsoluteCharacteristicMoment_eq_toReal_lintegral
+#check @NumStability.realGinibreAbsoluteCharacteristicMoment_eq_traceDensityIntegral

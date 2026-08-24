@@ -1,0 +1,33 @@
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.ExpectedCountFormula
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.ch28gfMeasurableSpaceRSqMat
+#check @NumStability.ch28gf_expectedRealEigenvalueCount_eq_closedForm
+#check @NumStability.ch28gf_integrable_detSq_matrix
+#check @NumStability.ch28gf_integrable_det_shift_matrix
+#check @NumStability.ch28gf_integrable_oneRootIntegrand
+#check @NumStability.ch28gf_integrable_sliceIntegrand
+#check @NumStability.ch28gf_integrable_wgt_detSq
+#check @NumStability.ch28gf_integral_detShift_prod_eq_kernel
+#check @NumStability.ch28gf_integral_detSq_eq
+#check @NumStability.ch28gf_integral_slice_eq_kernelMoment
+#check @NumStability.ch28gf_kernelTransfer
+#check @NumStability.ch28gf_measurable_det_shift
+#check @NumStability.ch28gf_measurable_det_shift_matrix
+#check @NumStability.ch28gf_oneRootMoment_eq_factor_mul_integral_slice
+#check @NumStability.ch28gf_oneRootMoment_eq_factor_mul_kernelMoment
+#check @NumStability.ch28gf_realGinibreExpectedCountLimit
+#check @NumStability.ch28gf_realGinibreExpectedProportionLimit
+#check @NumStability.ch28gf_realGinibreFiniteExpectationFormula
+#check @NumStability.ch28gf_slice_eq
+#check @NumStability.neg_two_mul_corollary31_product_mul_signedMoment_eq_closedForm_shift
+#check @NumStability.realGinibreExpectedCountLimit_of_shift
+#check @NumStability.realGinibreExpectedCountLimit_of_signedPairShift
+#check @NumStability.realGinibreFiniteExpectationFormula_of_shift
+#check @NumStability.realGinibreFiniteExpectationFormula_of_signedPairShift
+#check @NumStability.signedPairShift_of_kernelTransfer

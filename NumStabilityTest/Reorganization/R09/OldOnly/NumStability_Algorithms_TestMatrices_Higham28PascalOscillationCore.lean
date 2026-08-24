@@ -1,0 +1,15 @@
+import NumStability.Algorithms.TestMatrices.Higham28PascalOscillationCore
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.pascalOscillation_compoundMatrix_pascal_mul_sortedEigenvectorMatrix
+#check @NumStability.pascalOscillation_compoundMatrix_pascal_mul_sortedPlucker
+#check @NumStability.pascalOscillation_compoundSortedCoefficient_eigen
+#check @NumStability.pascalOscillation_pascalLeadingPlucker_same_sign
+#check @NumStability.pascalOscillation_pascalSortedEigenvalue_strictAdjacent
+#check @NumStability.pascalSortedEigenvalue_strictAnti
+#check @NumStability.pascalSortedEigenvector_signChangeCount_le

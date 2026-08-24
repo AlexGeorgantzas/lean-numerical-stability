@@ -1,0 +1,22 @@
+import NumStability.Algorithms.TestMatrices.Higham28GinibreRoots
+
+/-!
+# R09 old_only test
+
+isolated historical import preserves the exact supported declaration surface
+-/
+
+#check @NumStability.aestronglyMeasurable_realEigenvalueCount
+#check @NumStability.analyticSet_complexRootTupleBelowCountProjection
+#check @NumStability.analyticSet_complexRootTupleCountProjection
+#check @NumStability.card_filter_lt_card_filter_of_mem
+#check @NumStability.integrable_realEigenvalueCount
+#check @NumStability.measurableSet_complexRootTupleBelowCountSet
+#check @NumStability.measurableSet_complexRootTupleCountSet
+#check @NumStability.measurableSet_realEigenvalueBelowCount_level
+#check @NumStability.measurableSet_realEigenvalueCount_level
+#check @NumStability.measurable_complexTupleRealBelowCount
+#check @NumStability.measurable_complexTupleRealCount
+#check @NumStability.measurable_realEigenvalueBelowCount
+#check @NumStability.measurable_realEigenvalueCount
+#check @NumStability.measurable_realEigenvalueCount_real

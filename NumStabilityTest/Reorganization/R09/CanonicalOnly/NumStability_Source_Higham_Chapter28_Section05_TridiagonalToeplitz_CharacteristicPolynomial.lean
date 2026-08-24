@@ -1,0 +1,13 @@
+import NumStability.Source.Higham.Chapter28.Section05.TridiagonalToeplitz.CharacteristicPolynomial
+
+/-!
+# R09 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.complexTridiagonalToeplitz_p522_unrestricted_charpoly
+#check @NumStability.tridiagonalToeplitz_p522_charpoly_of_product_zero
+#check @NumStability.tridiagonalToeplitz_p522_roots_charpoly_of_product_zero
+#check @NumStability.tridiagonalToeplitz_p522_unrestricted_charpoly
+#check @NumStability.tridiagonalToeplitz_p522_unrestricted_roots_charpoly
