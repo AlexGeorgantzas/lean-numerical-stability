@@ -6,14 +6,13 @@ A fixed proof means that the theorem statement is chosen before a run and the
 agent may change only the proof.
 
 The current corpus contains 60 tasks drawn from papers P01--P20, with three
-fixed tasks per paper. Task rebuilding and independent faithfulness auditing are
-currently active. The committed global snapshot metadata may therefore describe
-an earlier checkpoint and must not be used to start measurements. A new
-construction snapshot will be generated after the active cycle settles, and a
-measurement-ready snapshot will be created only after all repairs, audits, tier
-decisions, and construction checks are complete. Paper titles, source hashes,
-exact task locations, and the ordered task catalog are recorded in
-`metadata/manifest.json` at each finalized checkpoint.
+fixed tasks per paper. Task reconstruction is complete and execution preparation
+continues on the `benchmark_exec` branch. The committed global snapshot metadata
+must not authorize measurements until the final Linux-host construction check,
+review binding, compiled-bundle hashing, and measurement-ready refresh all pass.
+Paper titles, source hashes, exact task locations, and the ordered task catalog
+are recorded in `metadata/manifest.json` at each finalized checkpoint. See
+`EXECUTION_FREEZE.md` for the executable package boundary and finalization order.
 
 ## Task types
 
@@ -82,7 +81,7 @@ metadata is intentionally provisional during that interval and no benchmark
 measurement may run.
 
 At a stable checkpoint, after all task and audit writers have finished, refresh
-all derived metadata once with:
+all derived metadata once on the frozen Linux benchmark host with:
 
 ```text
 python3 paper_bencmark/highambench/tools/refresh_snapshot.py \

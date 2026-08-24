@@ -49,9 +49,9 @@ except ImportError:  # Direct script execution.
     import run_ultra_orchestration_canary as ultra_canary  # type: ignore
 
 
-# A release manifest must cover the complete benchmark tree.  These entries are
-# also named explicitly so a truncated manifest cannot silently omit a runtime
-# component while still verifying the files it happens to list.
+# A release manifest must cover the complete executable evaluation package.
+# These entries are also named explicitly so a truncated manifest cannot
+# silently omit a runtime component while still verifying the files it lists.
 REQUIRED_RUNTIME_RELEASE_FILES = {
     "agent_prompt.md",
     "condition_prompts/L.md",
@@ -85,24 +85,6 @@ REQUIRED_RUNTIME_RELEASE_FILES = {
     "tools/runner.py",
     "tools/task_tags.py",
     "tools/validator.py",
-    "tools/tests/__init__.py",
-    "tools/tests/test_analyze.py",
-    "tools/tests/test_check_construction.py",
-    "tools/tests/test_hashes.py",
-    "tools/tests/test_isolation_adapters.py",
-    "tools/tests/test_preflight.py",
-    "tools/tests/test_provider_token_gate.py",
-    "tools/tests/test_promote_live_canary.py",
-    "tools/tests/test_render_p01_report.py",
-    "tools/tests/test_render_report.py",
-    "tools/tests/test_result_set.py",
-    "tools/tests/test_refresh_snapshot.py",
-    "tools/tests/test_run_matrix.py",
-    "tools/tests/test_runner.py",
-    "tools/tests/test_token_control_canary.py",
-    "tools/tests/test_ultra_orchestration_canary.py",
-    "tools/tests/test_task_tags.py",
-    "tools/tests/test_validator.py",
 }
 RELEASE_MANIFEST_RELATIVE = "metadata/release_files.json"
 FROZEN_RELEASE_MANIFEST_PATH = "paper_bencmark/highambench/metadata/release_files.json"
@@ -3612,8 +3594,19 @@ def _require_git_sources_clean(repository: Path, paths: list[str], label: str) -
 def _in_release_scope(relative: str) -> bool:
     if relative == "agent_prompt.md" or relative == CONDITION_L_PROMPT_RELATIVE:
         return True
-    if relative.startswith(("shared/", "tasks/", "tools/", "metadata/controlled/")):
+    if relative.startswith(("shared/", "metadata/controlled/")):
         return True
+    if relative.startswith("tools/"):
+        return not relative.startswith("tools/tests/")
+    parts = PurePosixPath(relative).parts
+    if len(parts) == 3 and parts[0] == "tasks":
+        return bool(re.fullmatch(r"P\d{2}", parts[1])) and parts[2] == "paper.json"
+    if len(parts) == 4 and parts[0] == "tasks":
+        return (
+            bool(re.fullmatch(r"P\d{2}", parts[1]))
+            and parts[2] in {"T1", "T2", "T3"}
+            and parts[3] in {"Target.lean", "context.md", "task.json"}
+        )
     return relative in {
         "metadata/manifest.json",
         "metadata/run_order.json",

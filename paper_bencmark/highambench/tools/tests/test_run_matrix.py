@@ -1621,6 +1621,24 @@ class RunMatrixTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.base = Path(self.temporary.name)
 
+    def test_release_scope_excludes_task_audit_material(self) -> None:
+        included = {
+            "tasks/P11/paper.json",
+            "tasks/P11/T3/Target.lean",
+            "tasks/P11/T3/context.md",
+            "tasks/P11/T3/task.json",
+        }
+        excluded = {
+            "tasks/P11/T3/.DS_Store",
+            "tasks/P11/T3/faithfulness/decision.json",
+            "tasks/P11/T3/faithfulness/history/run/report.md",
+            "tasks/P11/T3/notes.md",
+            "tools/tests/test_run_matrix.py",
+        }
+
+        self.assertTrue(all(run_matrix._in_release_scope(path) for path in included))
+        self.assertTrue(all(not run_matrix._in_release_scope(path) for path in excluded))
+
     def tearDown(self) -> None:
         self.temporary.cleanup()
 

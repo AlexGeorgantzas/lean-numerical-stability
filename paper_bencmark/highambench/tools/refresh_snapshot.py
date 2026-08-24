@@ -68,6 +68,22 @@ TOKEN_MEASUREMENT_SOURCE = "codex_app_server_rawResponse/completed"
 TOKEN_USAGE_NOTIFICATION = "rawResponse/completed"
 
 
+def _local_shared_imports(path: Path) -> list[tuple[str, int]]:
+    """Return local HighamBench modules imported by a controlled source."""
+
+    imports: list[tuple[str, int]] = []
+    for line_number, raw_line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        line = raw_line.split("--", 1)[0].strip()
+        if not line.startswith("import "):
+            continue
+        for module in line.removeprefix("import ").split():
+            if module.startswith("HighamBench."):
+                imports.append((module, line_number))
+    return imports
+
+
 def _session_isolation_record() -> dict[str, Any]:
     """Return the fixed no-history/no-proof-transfer contract for each run."""
 
@@ -187,6 +203,7 @@ def _sync_shared_bindings(
     known_papers = set(paper_ids)
     by_paper = {paper_id: [] for paper_id in paper_ids}
     seen_paths: set[str] = set()
+    scopes_by_path: dict[str, set[str]] = {}
     for index, raw_entry in enumerate(raw_entries):
         entry = _object(raw_entry, f"controlled_shared_files[{index}]")
         relative = _benchmark_relative_path(
@@ -233,6 +250,24 @@ def _sync_shared_bindings(
         )
         for paper_id in scope:
             by_paper[paper_id].append(relative)
+        scopes_by_path[relative] = set(scope)
+
+    for relative, importer_scope in scopes_by_path.items():
+        for module, line_number in _local_shared_imports(root / relative):
+            imported = f"shared/{module.replace('.', '/')}.lean"
+            dependency_scope = scopes_by_path.get(imported)
+            if dependency_scope is None:
+                raise BenchmarkToolError(
+                    f"controlled shared file {relative}:{line_number} imports undeclared "
+                    f"local module {module}"
+                )
+            missing_scope = sorted(importer_scope - dependency_scope)
+            if missing_scope:
+                raise BenchmarkToolError(
+                    f"controlled shared file {relative}:{line_number} imports {module}, "
+                    "but that dependency is unavailable to papers: "
+                    + ", ".join(missing_scope)
+                )
 
     missing = [paper_id for paper_id, files in by_paper.items() if not files]
     if missing:

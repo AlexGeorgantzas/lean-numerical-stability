@@ -166,6 +166,21 @@ class RefreshSnapshotTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    def test_shared_binding_rejects_undeclared_local_import(self) -> None:
+        source = self.root / "shared" / "HighamBench" / "P07Definitions.lean"
+        source.write_text("import HighamBench.P07Base\n", encoding="utf-8")
+        manifest = read_json(self.root / "metadata" / "manifest.json")
+
+        with self.assertRaisesRegex(
+            BenchmarkToolError, "imports undeclared local module HighamBench.P07Base"
+        ):
+            refresh_snapshot_module._sync_shared_bindings(
+                self.root,
+                manifest,
+                ["P07", "P12"],
+                phase=PHASE_CONSTRUCTION,
+            )
+
     def test_provider_gate_refresh_rejects_legacy_freeze_protocols(self) -> None:
         legacy = {
             "schema_version": 1,
