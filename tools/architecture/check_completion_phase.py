@@ -691,6 +691,16 @@ C0006_ACCEPTANCE_EXEMPT_CONTRACT_PATHS = frozenset(
         f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0011.json",
     }
 )
+C0006_ACCEPTED_CONTROL_SHA = "35c9cb8305265ce63633ea6f7404e7b5067dc1c5"
+C0006_NARRATIVE_REFRESH_SUBJECT = (
+    "docs(reorg): record the C0006 acceptance in the README"
+)
+C0006_NARRATIVE_REFRESH_CHANGED_PATHS = frozenset(
+    {
+        "README.md",
+        "tools/architecture/check_completion_phase.py",
+    }
+)
 C0006_COMBINED_BASELINE_SHA256 = (
     "5F61A60D5743E507D5DE4D82852DFA551861E1CAECD8610D8F345CC942DB1C76"
 )
@@ -8500,8 +8510,18 @@ class CompletionValidator:
                             )
                             acceptance_overlay: set[str] = set()
                         else:
+                            # The acceptance control is committed; a later
+                            # reviewed narrative refresh may sit on top of it,
+                            # so read the acceptance's own shape from the
+                            # exact pinned control rather than assuming HEAD.
+                            acceptance_source = (
+                                "HEAD"
+                                if acceptance_head == C0006_ACCEPTED_CONTROL_SHA
+                                else C0006_ACCEPTED_CONTROL_SHA
+                            )
                             acceptance_metadata = self.git(
-                                "show", "-s", "--format=%P%n%s", "HEAD", check=False
+                                "show", "-s", "--format=%P%n%s",
+                                acceptance_source, check=False
                             )
                             acceptance_lines = acceptance_metadata.stdout.splitlines()
                             acceptance_parents = (
@@ -8517,7 +8537,7 @@ class CompletionValidator:
                                 "--name-only",
                                 "--no-renames",
                                 C0006_CODE_SHA,
-                                "HEAD",
+                                acceptance_source,
                                 "--",
                                 check=False,
                             )
@@ -8539,6 +8559,8 @@ class CompletionValidator:
                                     "HEAD", f"{context}.c0006_acceptance.worktree"
                                 )
                                 - untracked_material
+                                if acceptance_source == "HEAD"
+                                else set()
                             )
                         validate_c0006_acceptance_commit_shape(
                             head=acceptance_head,
@@ -8549,6 +8571,82 @@ class CompletionValidator:
                             problems=self.problems,
                             context=f"{context}.c0006_acceptance",
                         )
+                        if acceptance_head not in {
+                            C0006_CODE_SHA,
+                            C0006_ACCEPTED_CONTROL_SHA,
+                        }:
+                            c0006_refresh_metadata = self.git(
+                                "show", "-s", "--format=%P%n%s", "HEAD", check=False
+                            )
+                            c0006_refresh_lines = (
+                                c0006_refresh_metadata.stdout.splitlines()
+                            )
+                            c0006_refresh_parents = (
+                                c0006_refresh_lines[0].split()
+                                if c0006_refresh_lines
+                                else []
+                            )
+                            c0006_refresh_subject = (
+                                c0006_refresh_lines[1]
+                                if len(c0006_refresh_lines) == 2
+                                else None
+                            )
+                            c0006_refresh_diff = self.git(
+                                "diff",
+                                "--name-only",
+                                "--no-renames",
+                                C0006_ACCEPTED_CONTROL_SHA,
+                                "HEAD",
+                                "--",
+                                check=False,
+                            )
+                            c0006_refresh_changed = {
+                                normalize_path(path)
+                                for path in c0006_refresh_diff.stdout.splitlines()
+                                if path.strip()
+                            }
+                            if (
+                                c0006_refresh_metadata.returncode
+                                or c0006_refresh_diff.returncode
+                            ):
+                                self.problems.add(
+                                    f"{context}.c0006_refresh.git",
+                                    "cannot read refresh parent, subject, or diff",
+                                )
+                            c0006_refresh_overlay = (
+                                self.git_live_change_paths(
+                                    "HEAD", f"{context}.c0006_refresh.worktree"
+                                )
+                                - untracked_material
+                            )
+                            self.problems.require(
+                                c0006_refresh_parents
+                                == [C0006_ACCEPTED_CONTROL_SHA],
+                                f"{context}.c0006_refresh.parent",
+                                "C0006 narrative refresh must be a single-parent "
+                                "direct child of the exact acceptance control",
+                            )
+                            self.problems.require(
+                                c0006_refresh_subject
+                                == C0006_NARRATIVE_REFRESH_SUBJECT,
+                                f"{context}.c0006_refresh.subject",
+                                "C0006 narrative refresh must retain the exact "
+                                "reviewed subject",
+                            )
+                            self.problems.require(
+                                c0006_refresh_changed
+                                == set(C0006_NARRATIVE_REFRESH_CHANGED_PATHS),
+                                f"{context}.c0006_refresh.paths",
+                                "C0006 narrative refresh must change exactly the "
+                                "approved README and checker paths; "
+                                f"found={sorted(c0006_refresh_changed)}",
+                            )
+                            self.problems.require(
+                                not c0006_refresh_overlay,
+                                f"{context}.c0006_refresh.worktree",
+                                "C0006 narrative refresh must have a clean "
+                                f"overlay; found={sorted(c0006_refresh_overlay)}",
+                            )
                         narrative_fragments = (
                             "C0006",
                             C0006_CODE_SHA,

@@ -1,6 +1,6 @@
 # NumStability
 
-## C0005 R04/R08 acceptance
+## C0005 R04/R08 and C0006 R07 acceptance
 
 C0005 accepts M04/R04 and M08/R08 at exact integrated code commit
 `ad92bbfae62d538f3e52829a269a846688a8e213`. Its generated evidence records
@@ -202,11 +202,11 @@ approximation, and least-squares preconditioning.
 ## Project statistics
 
 Current production-tree snapshot on `main` after accepted checkpoint
-[`C0005`](docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0005-gates.md)
-(accepted code commit `ad92bbfae62d538f3e52829a269a846688a8e213`) and the
-integrated R07 matrix-powers epoch (integration control
-`b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`, recorded at closeout
-`6867ea68774f1ca250191fa0f2c549ec0227b10d`):
+[`C0006`](docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md)
+(checkpoint code commit `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`,
+acceptance control `35c9cb8305265ce63633ea6f7404e7b5067dc1c5`), which accepts
+the integrated R07 matrix-powers epoch (integration control
+`b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`):
 
 | Formalization size | Count |
 |---|---:|
@@ -227,7 +227,7 @@ integrated R07 matrix-powers epoch (integration control
 |---|---:|
 | Import cycles | **0** |
 | Classified modules | **2,770 (96.853%)** |
-| Unclassified modules | **90** |
+| Unclassified modules | **90** (R09=72 and R10=18, the final planned waves toward 0) |
 | Source / aggregate / compatibility modules | **1,166 / 395 / 622** |
 | Reusable / internal / upstream / mixed modules | **577 / 5 / 5 / 0** |
 | Compatibility wrappers / direct targets / import exceptions | **622 / 1,945 / 2** |
