@@ -11328,9 +11328,9 @@
   }
  ],
  "integration": {
-  "accepted_checkpoint_id": null,
-  "accepted_sha": null,
-  "method": null
+  "accepted_checkpoint_id": "C0006",
+  "accepted_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+  "method": "merge"
  },
  "lane_id": "codex-lane",
  "operator_ids": [
@@ -11630,7 +11630,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0010.json",
-    "sha256": "DF459DA1FE80CC491C97CBDB2A55F03D82AC255BEA7DDE6D123CEBE151926AD1"
+    "sha256": "F727AF60D4E6BE8C4438941DB17A0164A5BBC706C805E0F7E662A1099AB86049"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0010.tsv.gz",
@@ -11650,7 +11650,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0011.json",
-    "sha256": "EA1DB32ACE4243F8223696D2A2AFAAB43C24AC97187861D0A07462B722E4C28C"
+    "sha256": "7EB2351AEEA493419F4FB92215CDDAE74F748FE8531E81D8BD80D61F82BC4431"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0011.patch",
@@ -11777,12 +11777,12 @@
   "retired_at": null,
   "retired_by": null,
   "rule": "delivery_ancestor_of_green_checkpoint",
-  "status": "not_due"
+  "status": "due"
  },
  "schema_version": 1,
  "shared_request_ids": [
   "R0011"
  ],
- "status": "delivered",
+ "status": "accepted",
  "wave_id": "R07"
 }

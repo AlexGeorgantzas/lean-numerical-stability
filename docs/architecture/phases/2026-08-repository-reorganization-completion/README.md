@@ -4,7 +4,7 @@ This active successor is rooted at predecessor C0008 code `b1b18772d80185ec08f49
 
 C0005 accepts M04/R04 and M08/R08. Its generated evidence records 2,818
 production modules: 2,685 classified, 133 unclassified, and 0 mixed. M04 and
-M08 are accepted; M07 remains ready and B0010/R07 is delivered from exact C0005
+M08 are accepted; M07 became ready and B0010/R07 was delivered from exact C0005
 base code `ad92bbfae62d538f3e52829a269a846688a8e213`. Immutable delivery
 `2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` is preserved by true merge
 `4e298a102c6f914b42581492152ab9eea1cd0edf`, whose first parent is exact
@@ -14,12 +14,13 @@ integration-control commit applies exact R0011 and reviewed correction
 The resulting projection is 2,860 production modules: 2,770 classified, 90
 unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
 Exact integration-control commit `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`
-passed GitHub Lean CI run 32616508317 (job 97138028649). R07 code is integrated
-on `main`, but B0010 remains delivered and unaccepted with null integration
-metadata; P0010 and R0011 remain active, R0011 remains unresolved, and M07
-remains ready. The remote worker ref remains preserved at the immutable
-delivery. No R07 self-acceptance, checkpoint acceptance, R0011 resolution,
-P0010 retirement, or branch retirement is recorded.
+passed GitHub Lean CI run 32616508317 (job 97138028649). Checkpoint C0006 is
+accepted by `primary-human` at exact code commit
+`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`: M07 is accepted at C0006, B0010 is
+accepted with retirement due, and P0010 is retired and R0011 is applied with
+its reviewed supplemental correction. The remote worker ref remains preserved
+at the immutable delivery. Branch retirement remains a separate later
+control.
 
 R01 (`codex-local`) and R02 (`claude-local`) were delivered from exact C0000, preserved by separate true merges, and accepted at C0001 after exact local gates and GitHub Lean CI run 31539572494 passed. M01 and M02 are accepted, P0001/P0002 are retired evidence, and R0001/R0002/R0002T are applied. After acceptance-control commit `93883eb0ec69a01704ff24ac71713a03f0be5a49` passed GitHub Lean CI run 31542177523 (job 93946871439), B0001/B0002 were retired at `2026-08-11T22:34:24Z`; their exact remote delivery refs were deleted with expected-tip leases and verified absent. Ignored delivery evidence was hash-verified under `C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0001-R01-R02-20260811` before both clean named worker worktrees were removed without force. Local delivery branches remain preserved at their immutable tips; [`reviews/R01-R02-retirement.md`](reviews/R01-R02-retirement.md) records the exact archive manifest and cleanup evidence.
 

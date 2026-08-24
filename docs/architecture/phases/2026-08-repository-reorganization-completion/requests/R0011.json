@@ -249,15 +249,20 @@
  "request_id": "R0011",
  "requester_id": "primary-human",
  "resolution": {
-  "checkpoint_id": null,
-  "commit_sha": null,
-  "reason": null,
-  "resolved_at": null,
-  "resolved_by": null,
-  "validation_evidence": []
+  "checkpoint_id": "C0006",
+  "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+  "reason": "Applied as the reviewed R0011 shared-file request with its reviewed four-path supplemental correction after the immutable R07 delivery merge, integrated on main with green integration-control CI.",
+  "resolved_at": "2026-08-24T00:01:01Z",
+  "resolved_by": "primary-human",
+  "validation_evidence": [
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   }
+  ]
  },
  "schema_version": 1,
- "status": "active",
+ "status": "applied",
  "superseded_by": null,
  "supersedes": null,
  "target_base_sha": "ad92bbfae62d538f3e52829a269a846688a8e213",

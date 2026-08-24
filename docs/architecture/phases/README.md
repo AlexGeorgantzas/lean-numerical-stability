@@ -9,7 +9,7 @@ at exact integrated code commit `ad92bbfae62d538f3e52829a269a846688a8e213`.
 C0005 accepts M04/R04 and M08/R08 on top of C0004's accepted R05/R06. Its
 generated evidence records 2,818 production modules: 2,685 classified, 133
 unclassified, and 0 mixed. M04 and M08 are accepted; M07 remains ready and
-B0010/R07 is delivered from exact C0005 base code
+B0010/R07 was delivered (M07 having become ready) from exact C0005 base code
 `ad92bbfae62d538f3e52829a269a846688a8e213`. Immutable delivery
 `2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` is preserved by true merge
 `4e298a102c6f914b42581492152ab9eea1cd0edf`, whose first parent is exact
@@ -19,12 +19,13 @@ integration-control commit applies exact R0011 and reviewed correction
 The resulting projection is 2,860 production modules: 2,770 classified, 90
 unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
 Exact integration-control commit `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`
-passed GitHub Lean CI run 32616508317 (job 97138028649). R07 code is integrated
-on `main`, but B0010 remains delivered and unaccepted with null integration
-metadata; P0010 and R0011 remain active, R0011 remains unresolved, and M07
-remains ready. The remote worker ref remains preserved at the immutable
-delivery. No R07 self-acceptance, checkpoint acceptance, R0011 resolution,
-P0010 retirement, or branch retirement is recorded.
+passed GitHub Lean CI run 32616508317 (job 97138028649). Checkpoint C0006 is
+accepted by `primary-human` at exact code commit
+`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`: M07 is accepted at C0006, B0010 is
+accepted with retirement due, and P0010 is retired and R0011 is applied with
+its reviewed supplemental correction. The remote worker ref remains preserved
+at the immutable delivery. Branch retirement remains a separate later
+control.
 This successor has precedence over dated migration packets and historical
 handoffs.
 

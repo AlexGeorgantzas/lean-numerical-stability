@@ -7,8 +7,12 @@ and M08 are accepted and M07 is ready. B0010/R07 is delivered at
 `2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` and its code is integrated on
 `main` at `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5` under exact R0011 and the
 reviewed supplemental correction, after which the live tree records 2,860
-production modules: 2,770 classified, 90 unclassified, and 0 mixed. R07
-acceptance and branch retirement are separate later controls.
+production modules: 2,770 classified, 90 unclassified, and 0 mixed.
+Checkpoint C0006 (exact code commit
+`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`) is accepted: M07 is accepted,
+B0010 is accepted with retirement due, P0010 is retired, and R0011 is
+applied. The remaining queue is exactly R09=72 and R10=18; branch retirement
+remains a separate later control.
 
 This directory separates current policy from dated evidence and source-audit
 history. When two documents disagree, use the precedence order below.
@@ -27,7 +31,9 @@ history. When two documents disagree, use the precedence order below.
    per-file licensing and upstream-attribution policy.
 6. [`architecture/phases/2026-08-repository-reorganization-completion/`](architecture/phases/2026-08-repository-reorganization-completion/README.md)
    is the active repository-wide scope, authority, wave, checkpoint, and branch
-   contract. Its current checkpoint is C0005 at exact integrated code commit
+   contract. Its current checkpoint is C0006 at exact code commit
+   `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`, accepting the R07 epoch on top
+   of C0005 at exact integrated code commit
    `ad92bbfae62d538f3e52829a269a846688a8e213`. M04/R04 and M08/R08 are
    accepted; P0008/P0009 are retired evidence, R0009/R0010 are applied, and the
    temporary operator expansion and wave reservations are released. M07 is

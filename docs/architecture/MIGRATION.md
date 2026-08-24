@@ -12,7 +12,11 @@ and M08 are accepted and M07 is ready. B0010/R07 is delivered at
 `2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` and its code is integrated on
 `main` at `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`, after which the live
 tree records 2,860 production modules: 2,770 classified, 90 unclassified, and
-0 mixed. R07 acceptance and branch retirement are separate later controls.
+0 mixed. Checkpoint C0006 (exact code commit
+`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`) is accepted: M07 is accepted,
+B0010 is accepted with retirement due, P0010 is retired, and R0011 is
+applied. The remaining queue is exactly R09=72 and R10=18; branch retirement
+remains a separate later control.
 The checkpoint distinguishes bounded-phase from repository-wide completion and
 records branch, baseline, shared-request, build-lock, and lifecycle rules.
 Validate it with `python tools/architecture/check_phase.py`. Dated packets and

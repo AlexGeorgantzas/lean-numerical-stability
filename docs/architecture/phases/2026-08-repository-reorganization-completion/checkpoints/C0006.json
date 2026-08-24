@@ -1,0 +1,206 @@
+{
+ "accepted_at": "2026-08-24T00:01:01Z",
+ "accepted_by": "primary-human",
+ "checkpoint_id": "C0006",
+ "combined_baseline": {
+  "artifact": {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0006-combined.json",
+   "sha256": "5F61A60D5743E507D5DE4D82852DFA551861E1CAECD8610D8F345CC942DB1C76"
+  },
+  "format_version": 2,
+  "generation_command": "python -B tools/architecture/generate_baseline.py --output-dir docs/architecture/phases/2026-08-repository-reorganization-completion/baselines --name C0006-combined --keep-dependency-tsv benchmark-results/C0006-combined.tsv",
+  "summary_artifact": {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0006-combined.md",
+   "sha256": "D417B835CC5A1ACAFCAD3FCE725CCE7163604623CD21819F5E6BA1004730E8E5"
+  }
+ },
+ "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+ "gates": [
+  {
+   "command": "C0006 acceptance gate architecture at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "github-actions",
+   "gate_id": "architecture",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate canonical_import at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "primary-human",
+   "gate_id": "canonical_import",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate combined_baseline at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "primary-human",
+   "gate_id": "combined_baseline",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate compatibility at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "primary-human",
+   "gate_id": "compatibility",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate focused_build at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "primary-human",
+   "gate_id": "focused_build",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate full_build at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "github-actions",
+   "gate_id": "full_build",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate full_tests at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "github-actions",
+   "gate_id": "full_tests",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate layout at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "primary-human",
+   "gate_id": "layout",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate old_import at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "primary-human",
+   "gate_id": "old_import",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate provenance at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "primary-human",
+   "gate_id": "provenance",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate scope at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "primary-human",
+   "gate_id": "scope",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  },
+  {
+   "command": "C0006 acceptance gate strict_source at exact code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "commit_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+   "evidence": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md",
+    "sha256": "464FA2F8F33AF58ED6D4A28F1BC4BA3FE84EF09E96EEDE1AF1D76848674FA12A"
+   },
+   "executor_id": "primary-human",
+   "gate_id": "strict_source",
+   "lock_name": null,
+   "requires_large_build_lock": false,
+   "status": "PASS"
+  }
+ ],
+ "inventory": {
+  "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-inventory.tsv",
+  "sha256": "FCAAD0014B1614CFE419F9945F2A6F508217BE576628D6274C3774AD81A2E993"
+ },
+ "metrics": {
+  "declaration_bearing_umbrellas": 1,
+  "missing_module_docstrings": 0,
+  "mixed_modules": 0,
+  "noncanonical_modules": 72,
+  "production_modules": 2860,
+  "unclassified_modules": 90,
+  "unsorted_aggregate_imports": 0
+ },
+ "milestones_satisfied": [
+  "M01",
+  "M02",
+  "M03",
+  "M04",
+  "M05",
+  "M06",
+  "M07",
+  "M08",
+  "M11",
+  "M12"
+ ],
+ "parent_checkpoint_id": "C0005",
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "record_kind": "phase_checkpoint",
+ "schema_version": 1,
+ "unblocks": []
+}
