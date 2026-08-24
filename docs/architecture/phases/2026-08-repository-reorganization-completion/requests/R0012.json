@@ -1,0 +1,152 @@
+{
+ "blocks": [
+  "R09"
+ ],
+ "created_at": "2026-08-24T00:00:00Z",
+ "depends_on": [],
+ "lane_id": "claude-lane",
+ "patch": {
+  "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0012.patch",
+  "sha256": "286035E05241C89BA3A5005BACBA1F20429B218381B44027D485E46AE1C5A9AE"
+ },
+ "paths": [
+  "NumStability/Algorithms.lean",
+  "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Algebra/DixonCompletion.lean",
+  "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/PowerBounds/DixonCompletion.lean",
+  "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Probability/DixonCompletion.lean",
+  "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Probability/DixonProbability.lean",
+  "NumStability/Analysis.lean",
+  "NumStability/Analysis/Polynomials.lean",
+  "NumStability/Analysis/Probability/Haar.lean",
+  "NumStability/Analysis/TestMatrices.lean",
+  "NumStability/Source/Higham/Chapter15/Theorem06/Dixon/Basic.lean",
+  "NumStability/Source/Higham/Chapter28.lean",
+  "NumStability/Source/Higham/Chapter28/Equation02.lean",
+  "NumStability/Source/Higham/Chapter28/Equation02/RatioDiscrepancy.lean",
+  "NumStability/Source/Higham/Chapter28/Section01.lean",
+  "NumStability/Source/Higham/Chapter28/Section02.lean",
+  "NumStability/Source/Higham/Chapter28/Section03.lean",
+  "NumStability/Source/Higham/Chapter28/Section04.lean",
+  "NumStability/Source/Higham/Chapter28/Section05.lean",
+  "NumStability/Source/Higham/Chapter28/Section06.lean",
+  "NumStabilityTest.lean",
+  "docs/architecture/COMPATIBILITY.md",
+  "docs/architecture/layout-exceptions.json",
+  "docs/architecture/tiers.json"
+ ],
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "preimage_blobs": [
+  {
+   "blob_oid": "7b21c4361ec82336c0503036e97bf9327203f9e5",
+   "path": "NumStability/Algorithms.lean"
+  },
+  {
+   "blob_oid": "b135f0c623ab2b768c9aec45ea3775ea2afcc976",
+   "path": "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Algebra/DixonCompletion.lean"
+  },
+  {
+   "blob_oid": "149be48000148ef0f7a165fd43067dafad9f59cc",
+   "path": "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/PowerBounds/DixonCompletion.lean"
+  },
+  {
+   "blob_oid": "8ab409e6c2f937d2672a03ad746bea2d0ce4f158",
+   "path": "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Probability/DixonCompletion.lean"
+  },
+  {
+   "blob_oid": "89c9b641e8c15cce31221dc77c2cabc70df80124",
+   "path": "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Probability/DixonProbability.lean"
+  },
+  {
+   "blob_oid": "13b3b4f9f5ba9209766dcbe15276bae8e6e92dbe",
+   "path": "NumStability/Analysis.lean"
+  },
+  {
+   "blob_oid": null,
+   "path": "NumStability/Analysis/Polynomials.lean"
+  },
+  {
+   "blob_oid": "aa798a6fb56713087d5b306a9ce1f89d5114bdd7",
+   "path": "NumStability/Analysis/Probability/Haar.lean"
+  },
+  {
+   "blob_oid": null,
+   "path": "NumStability/Analysis/TestMatrices.lean"
+  },
+  {
+   "blob_oid": "830f106f44e2242ccba3df3f20202f94015a1343",
+   "path": "NumStability/Source/Higham/Chapter15/Theorem06/Dixon/Basic.lean"
+  },
+  {
+   "blob_oid": "5ed470c55098a52dfc6c76e90b8e4995b6af2c28",
+   "path": "NumStability/Source/Higham/Chapter28.lean"
+  },
+  {
+   "blob_oid": "6ec9ff13fb1b60ed28da841af79ca13a03675977",
+   "path": "NumStability/Source/Higham/Chapter28/Equation02.lean"
+  },
+  {
+   "blob_oid": "77444adf045069b5705f66f02522150ed4fad5a0",
+   "path": "NumStability/Source/Higham/Chapter28/Equation02/RatioDiscrepancy.lean"
+  },
+  {
+   "blob_oid": null,
+   "path": "NumStability/Source/Higham/Chapter28/Section01.lean"
+  },
+  {
+   "blob_oid": null,
+   "path": "NumStability/Source/Higham/Chapter28/Section02.lean"
+  },
+  {
+   "blob_oid": null,
+   "path": "NumStability/Source/Higham/Chapter28/Section03.lean"
+  },
+  {
+   "blob_oid": null,
+   "path": "NumStability/Source/Higham/Chapter28/Section04.lean"
+  },
+  {
+   "blob_oid": null,
+   "path": "NumStability/Source/Higham/Chapter28/Section05.lean"
+  },
+  {
+   "blob_oid": null,
+   "path": "NumStability/Source/Higham/Chapter28/Section06.lean"
+  },
+  {
+   "blob_oid": "a194cd043e04a5cc26b4a363c49ea65475273f47",
+   "path": "NumStabilityTest.lean"
+  },
+  {
+   "blob_oid": "a5f8eb501511a0417f2be70d1a987fd16249862b",
+   "path": "docs/architecture/COMPATIBILITY.md"
+  },
+  {
+   "blob_oid": "9255e0e5df8746a6c6383664f043d19d23ea2425",
+   "path": "docs/architecture/layout-exceptions.json"
+  },
+  {
+   "blob_oid": "8e6fbb6a2dcf93b88337af41b991445c4e1804db",
+   "path": "docs/architecture/tiers.json"
+  }
+ ],
+ "rationale": "Integrator-owned shared surface for the R09 test-matrices wave: tier and exception registration, compatibility rows, aggregate and umbrella wiring within the reviewed import ceilings, test root, and the reviewed consumer retargets off the historical Higham28 owners.",
+ "record_kind": "shared_file_request",
+ "request_id": "R0012",
+ "requester_id": "primary-human",
+ "resolution": {
+  "checkpoint_id": null,
+  "commit_sha": null,
+  "reason": null,
+  "resolved_at": null,
+  "resolved_by": null,
+  "validation_evidence": []
+ },
+ "schema_version": 1,
+ "status": "active",
+ "superseded_by": null,
+ "supersedes": null,
+ "target_base_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+ "target_checkpoint_id": "C0006",
+ "valid_through_checkpoint_id": "C0006",
+ "wave_id": "R09"
+}

@@ -16,6 +16,7 @@
    {
     "lane_id": "codex-lane",
     "operator_ids": [
+     "claude-local",
      "codex-local"
     ],
     "owner_id": "primary-human"
@@ -642,6 +643,26 @@
   },
   {
    "match": "exact",
+   "path": "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Algebra/DixonCompletion.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/PowerBounds/DixonCompletion.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Probability/DixonCompletion.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Probability/DixonProbability.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra.lean"
+  },
+  {
+   "match": "exact",
    "path": "NumStability/Algorithms/StationaryIterationSeries.lean"
   },
   {
@@ -659,6 +680,18 @@
   {
    "match": "exact",
    "path": "NumStability/Analysis/Perturbation/LeastSquares/Contract.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Analysis/Polynomials.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Analysis/Probability/Haar.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Analysis/TestMatrices.lean"
   },
   {
    "match": "exact",
@@ -766,6 +799,10 @@
   },
   {
    "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter15/Theorem06/Dixon/Basic.lean"
+  },
+  {
+   "match": "exact",
    "path": "NumStability/Source/Higham/Chapter17.lean"
   },
   {
@@ -846,6 +883,22 @@
   },
   {
    "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter28.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter28/Equation02.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter28/Equation02/RatioDiscrepancy.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter28/Section01.lean"
+  },
+  {
+   "match": "exact",
    "path": "NumStability/Source/Higham/Chapter28/Section01/Cauchy/Cauchy.lean"
   },
   {
@@ -855,6 +908,10 @@
   {
    "match": "exact",
    "path": "NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/HilbertCondition.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter28/Section02.lean"
   },
   {
    "match": "exact",
@@ -994,6 +1051,10 @@
   },
   {
    "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter28/Section03.lean"
+  },
+  {
+   "match": "exact",
    "path": "NumStability/Source/Higham/Chapter28/Section03/RandomSVD/RandsvdNorm.lean"
   },
   {
@@ -1007,6 +1068,10 @@
   {
    "match": "exact",
    "path": "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/StewartRawFiber.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter28/Section04.lean"
   },
   {
    "match": "exact",
@@ -1026,11 +1091,19 @@
   },
   {
    "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter28/Section05.lean"
+  },
+  {
+   "match": "exact",
    "path": "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzCondition.lean"
   },
   {
    "match": "exact",
    "path": "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzGeneral.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter28/Section06.lean"
   },
   {
    "match": "exact",

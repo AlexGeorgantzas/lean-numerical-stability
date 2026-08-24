@@ -701,6 +701,97 @@ C0006_NARRATIVE_REFRESH_CHANGED_PATHS = frozenset(
         "tools/architecture/check_completion_phase.py",
     }
 )
+C0006_NARRATIVE_REFRESH_SHA = "1eae3a035adc43aac0832bee3864ac15bc6b54e1"
+# The R09/R10 successor pair is planned in a single control commit, exactly as
+# the C0005 epoch planned the R04/R08 pair. R09 runs in claude-lane; the
+# immutable scope freeze assigns R10 to codex-lane, so B0012 runs there under a
+# reviewed temporary operator authorization.
+R09R10_OPERATOR_PAIR = ("claude-local", "codex-local")
+R09_R10_PLANNED_CONTROL_SUBJECT = (
+    "chore(reorg): plan R09 and R10 successor pair"
+)
+# The planned control reserves the integrator-owned surface of the reviewed
+# 25-path R0012/R0013 union that C0005's accepted 160 rules do not already
+# cover. Planning may add exactly these and nothing else.
+R09_R10_PLANNED_SHARED_RESERVATIONS = frozenset(
+    {
+        "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Algebra/"
+        "DixonCompletion.lean",
+        "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/PowerBounds/"
+        "DixonCompletion.lean",
+        "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Probability/"
+        "DixonCompletion.lean",
+        "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Probability/"
+        "DixonProbability.lean",
+        "NumStability/Algorithms/RandomizedLinearAlgebra.lean",
+        "NumStability/Analysis/Polynomials.lean",
+        "NumStability/Analysis/Probability/Haar.lean",
+        "NumStability/Analysis/TestMatrices.lean",
+        "NumStability/Source/Higham/Chapter15/Theorem06/Dixon/Basic.lean",
+        "NumStability/Source/Higham/Chapter28.lean",
+        "NumStability/Source/Higham/Chapter28/Equation02.lean",
+        "NumStability/Source/Higham/Chapter28/Equation02/RatioDiscrepancy.lean",
+        "NumStability/Source/Higham/Chapter28/Section01.lean",
+        "NumStability/Source/Higham/Chapter28/Section02.lean",
+        "NumStability/Source/Higham/Chapter28/Section03.lean",
+        "NumStability/Source/Higham/Chapter28/Section04.lean",
+        "NumStability/Source/Higham/Chapter28/Section05.lean",
+        "NumStability/Source/Higham/Chapter28/Section06.lean",
+    }
+)
+C0006_REVIEW_FACTS = {
+    "reviews/C0006-destination-rule-amendment.md":
+        "5749CE3E334B61679F10A08850E8136FC882608A18F197879EF81B25C2AB9BC9",
+    "reviews/R10-operator-authorization.md":
+        "61C76D457B205F24B730814D6EB41876A2CC71B364F589B59ADE2133D912D49C",
+    "reviews/C0006-R09-R10-selection.md":
+        "0CADEFBB968D5492CF6A2C4434FA81CACCD4A8E0BAED0FDEAD1AAE20A84412DD",
+    "requests/R0012-R0013-union-review.md":
+        "0D8D7269E41C3223B6CEA63CD9C05800132EBB9DF2A9F0414B231B959AA358EB",
+}
+R09_R10_PLANNED_CONTROL_CHANGED_PATHS = frozenset(
+    {
+        "docs/architecture/phases/README.md",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/phase.json",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/selectors/R09.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/selectors/R10.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0011.json",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0012.json",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/projections/P0011.json",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/projections/P0011.tsv.gz",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/projections/P0012.json",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/projections/P0012.tsv.gz",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0012.json",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0012.patch",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0012-postimages.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0013.json",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0013.patch",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0013-postimages.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0012-R0013-union.patch",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0012-R0013-union-postimages.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0012-R0013-union-review.md",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/C0006-R09-R10-selection.md",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/C0006-acceptance-control-ci.json",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/R10-operator-authorization.md",
+        "tools/architecture/check_completion_phase.py",
+        # owner-approved amendment permitting exact destination rules, plus its
+        # reviewed rationale
+        "tools/architecture/check_phase.py",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/"
+        "C0006-destination-rule-amendment.md",
+    }
+    | {
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/{branch}-{sidecar}.tsv"
+        for branch in ("B0011", "B0012")
+        for sidecar in (
+            "declaration-routes",
+            "private-normalization",
+            "destination-modules",
+            "destination-dag",
+            "wrapper-imports",
+        )
+    }
+)
 C0006_COMBINED_BASELINE_SHA256 = (
     "5F61A60D5743E507D5DE4D82852DFA551861E1CAECD8610D8F345CC942DB1C76"
 )
@@ -8619,34 +8710,108 @@ class CompletionValidator:
                                 )
                                 - untracked_material
                             )
-                            self.problems.require(
-                                c0006_refresh_parents
-                                == [C0006_ACCEPTED_CONTROL_SHA],
-                                f"{context}.c0006_refresh.parent",
-                                "C0006 narrative refresh must be a single-parent "
-                                "direct child of the exact acceptance control",
+                            # Two reviewed states sit past the acceptance
+                            # control: the narrative refresh, and the R09/R10
+                            # planned control that succeeds it. While the
+                            # planning artifacts are still uncommitted, HEAD is
+                            # the refresh and the overlay is the planning path
+                            # set, so that precommit shape is validated here
+                            # rather than rejected as a dirty refresh.
+                            planning_precommit = (
+                                acceptance_head == C0006_NARRATIVE_REFRESH_SHA
+                                and bool(c0006_refresh_overlay)
                             )
-                            self.problems.require(
-                                c0006_refresh_subject
-                                == C0006_NARRATIVE_REFRESH_SUBJECT,
-                                f"{context}.c0006_refresh.subject",
-                                "C0006 narrative refresh must retain the exact "
-                                "reviewed subject",
-                            )
-                            self.problems.require(
-                                c0006_refresh_changed
-                                == set(C0006_NARRATIVE_REFRESH_CHANGED_PATHS),
-                                f"{context}.c0006_refresh.paths",
-                                "C0006 narrative refresh must change exactly the "
-                                "approved README and checker paths; "
-                                f"found={sorted(c0006_refresh_changed)}",
-                            )
-                            self.problems.require(
-                                not c0006_refresh_overlay,
-                                f"{context}.c0006_refresh.worktree",
-                                "C0006 narrative refresh must have a clean "
-                                f"overlay; found={sorted(c0006_refresh_overlay)}",
-                            )
+                            if acceptance_head == C0006_NARRATIVE_REFRESH_SHA:
+                                self.problems.require(
+                                    c0006_refresh_parents
+                                    == [C0006_ACCEPTED_CONTROL_SHA],
+                                    f"{context}.c0006_refresh.parent",
+                                    "C0006 narrative refresh must be a "
+                                    "single-parent direct child of the exact "
+                                    "acceptance control",
+                                )
+                                self.problems.require(
+                                    c0006_refresh_subject
+                                    == C0006_NARRATIVE_REFRESH_SUBJECT,
+                                    f"{context}.c0006_refresh.subject",
+                                    "C0006 narrative refresh must retain the "
+                                    "exact reviewed subject",
+                                )
+                                self.problems.require(
+                                    c0006_refresh_changed
+                                    == set(C0006_NARRATIVE_REFRESH_CHANGED_PATHS),
+                                    f"{context}.c0006_refresh.paths",
+                                    "C0006 narrative refresh must change exactly "
+                                    "the approved README and checker paths; "
+                                    f"found={sorted(c0006_refresh_changed)}",
+                                )
+                            if planning_precommit:
+                                extra = c0006_refresh_overlay - set(
+                                    R09_R10_PLANNED_CONTROL_CHANGED_PATHS)
+                                self.problems.require(
+                                    not extra,
+                                    f"{context}.r09_r10_planned.precommit",
+                                    "the only overlay permitted on the C0006 "
+                                    "narrative refresh is the reviewed R09/R10 "
+                                    f"planned-control path set; found extra={sorted(extra)}",
+                                )
+                            elif acceptance_head == C0006_NARRATIVE_REFRESH_SHA:
+                                self.problems.require(
+                                    not c0006_refresh_overlay,
+                                    f"{context}.c0006_refresh.worktree",
+                                    "C0006 narrative refresh must have a clean "
+                                    f"overlay; found={sorted(c0006_refresh_overlay)}",
+                                )
+                            else:
+                                r09_r10_planned_diff = self.git(
+                                    "diff",
+                                    "--name-only",
+                                    "--no-renames",
+                                    C0006_NARRATIVE_REFRESH_SHA,
+                                    "HEAD",
+                                    "--",
+                                    check=False,
+                                )
+                                r09_r10_planned_changed = {
+                                    normalize_path(path)
+                                    for path in r09_r10_planned_diff.stdout.splitlines()
+                                    if path.strip()
+                                }
+                                if r09_r10_planned_diff.returncode:
+                                    self.problems.add(
+                                        f"{context}.r09_r10_planned.git",
+                                        "cannot read planned-control diff",
+                                    )
+                                self.problems.require(
+                                    c0006_refresh_parents
+                                    == [C0006_NARRATIVE_REFRESH_SHA],
+                                    f"{context}.r09_r10_planned.parent",
+                                    "the R09/R10 planned control must be a "
+                                    "single-parent direct child of the exact "
+                                    "C0006 narrative refresh",
+                                )
+                                self.problems.require(
+                                    c0006_refresh_subject
+                                    == R09_R10_PLANNED_CONTROL_SUBJECT,
+                                    f"{context}.r09_r10_planned.subject",
+                                    "the R09/R10 planned control must retain the "
+                                    "exact reviewed subject",
+                                )
+                                self.problems.require(
+                                    r09_r10_planned_changed
+                                    == set(R09_R10_PLANNED_CONTROL_CHANGED_PATHS),
+                                    f"{context}.r09_r10_planned.paths",
+                                    "the R09/R10 planned control must change "
+                                    "exactly the reviewed planning paths; missing="
+                                    f"{sorted(set(R09_R10_PLANNED_CONTROL_CHANGED_PATHS) - r09_r10_planned_changed)}, "
+                                    f"extra={sorted(r09_r10_planned_changed - set(R09_R10_PLANNED_CONTROL_CHANGED_PATHS))}",
+                                )
+                                self.problems.require(
+                                    not c0006_refresh_overlay,
+                                    f"{context}.r09_r10_planned.worktree",
+                                    "the R09/R10 planned control must have a "
+                                    f"clean overlay; found={sorted(c0006_refresh_overlay)}",
+                                )
                         narrative_fragments = (
                             "C0006",
                             C0006_CODE_SHA,
@@ -9098,6 +9263,32 @@ class CompletionValidator:
                                         milestone["accepted_checkpoint_id"] = (
                                             C0006_CHECKPOINT_ID
                                         )
+                                # the R09/R10 planned control may also carry
+                                # the reviewed codex-lane operator pair
+                                for _lane in (
+                                    expected_phase.get("authority", {})
+                                    .get("lanes", [])
+                                ):
+                                    if (
+                                        isinstance(_lane, dict)
+                                        and _lane.get("lane_id") == R03_LANE_ID
+                                        and isinstance(
+                                            _lane.get("operator_ids"), list
+                                        )
+                                    ):
+                                        _live = [
+                                            l
+                                            for l in phase.get("authority", {})
+                                            .get("lanes", [])
+                                            if isinstance(l, dict)
+                                            and l.get("lane_id") == R03_LANE_ID
+                                        ]
+                                        if _live and sorted(
+                                            _live[0].get("operator_ids") or []
+                                        ) == sorted(R09R10_OPERATOR_PAIR):
+                                            _lane["operator_ids"] = list(
+                                                _live[0]["operator_ids"]
+                                            )
                             self.problems.require(
                                 phase == expected_phase,
                                 "phase.json R07 planned lifecycle",
@@ -9116,13 +9307,23 @@ class CompletionValidator:
                                 (rule.match, rule.path) for rule in self.shared_rules
                             }
                             if accepted_present:
+                                # Accepted C0006 restores C0005's exact 160
+                                # rules; the R09/R10 planned control then adds
+                                # exactly the reviewed successor reservations.
+                                planned_keys = accepted_keys | {
+                                    ("exact", path)
+                                    for path in R09_R10_PLANNED_SHARED_RESERVATIONS
+                                }
                                 self.problems.require(
                                     len(accepted_rules) == 160
-                                    and live_keys == accepted_keys,
+                                    and live_keys in (accepted_keys, planned_keys),
                                     "phase.json.shared_paths",
                                     "accepted C0006 must release the 36 R0011 "
-                                    "reservations and restore C0005's exact "
-                                    "160 rules",
+                                    "reservations and restore C0005's exact 160 "
+                                    "rules, optionally plus the reviewed R09/R10 "
+                                    "planned reservations; unexpected="
+                                    f"{sorted(live_keys - planned_keys)}, missing="
+                                    f"{sorted(accepted_keys - live_keys)}",
                                 )
                             else:
                                 self.problems.require(
@@ -15738,6 +15939,13 @@ class CompletionValidator:
                 "phase must add exactly the 32 new union reservations and retain five prefixes",
             )
 
+        for local_path, digest in C0006_REVIEW_FACTS.items():
+            path = self.phase_dir / local_path
+            self.problems.require(
+                path.is_file() and sha256_path(path) == digest,
+                self.relative(path),
+                f"reviewed C0006 planning document must hash to {digest}",
+            )
         for local_path, digest in C0005_REVIEW_FACTS.items():
             path = self.phase_dir / local_path
             self.problems.require(
@@ -16397,10 +16605,27 @@ class CompletionValidator:
             if self.current_checkpoint_id == C0003_CHECKPOINT_ID
             else R03_OPERATOR_IDS
         )
+        # At C0006 the R09/R10 planned control may additionally carry the
+        # reviewed B0012-scoped pair from reviews/R10-operator-authorization.md,
+        # because the immutable scope assigns R10 to codex-lane while
+        # claude-local operates it.
+        allowed_operator_sets = {expected_operators}
+        # The widened pair is accepted only while the reviewed authorization is
+        # present with its exact pinned bytes, so the executable allowance and
+        # the governance record cannot drift apart.
+        _auth_rel = "reviews/R10-operator-authorization.md"
+        _auth_path = self.phase_dir / _auth_rel
+        _auth_ok = (
+            _auth_path.is_file()
+            and sha256_path(_auth_path) == C0006_REVIEW_FACTS[_auth_rel]
+        )
+        allowed_operator_sets = allowed_codex_lane_operator_sets(
+            self.current_checkpoint_id, expected_operators, _auth_ok
+        )
         self.problems.require(
             len(matches) == 1
             and lane.get("owner_id") == "primary-human"
-            and operators == expected_operators,
+            and operators in allowed_operator_sets,
             f"phase.json.authority.lanes[{R03_LANE_ID}]",
             "codex-lane requires the reviewed R03 pair before C0003 and, after the "
             "R05/R06 planning control, the reviewed B0006-scoped pair recorded in "
@@ -18345,6 +18570,24 @@ class CompletionValidator:
                     quotient[wave, target_wave] += 1
         return quotient
 
+
+
+def allowed_codex_lane_operator_sets(
+    checkpoint_id: str | None,
+    base_expected: tuple[str, ...],
+    authorization_valid: bool,
+) -> set[tuple[str, ...]]:
+    """Operator sets codex-lane may legitimately carry at `checkpoint_id`.
+
+    The R09/R10 planned control may additionally carry the reviewed
+    B0012-scoped pair, but only at C0006 and only while
+    reviews/R10-operator-authorization.md is present with its exact pinned
+    bytes, so the executable allowance cannot outlive its governance record.
+    """
+    allowed = {base_expected}
+    if checkpoint_id == C0006_CHECKPOINT_ID and authorization_valid:
+        allowed.add(R09R10_OPERATOR_PAIR)
+    return allowed
 
 def run_self_test() -> int:
     problems = Problems()
@@ -20805,6 +21048,27 @@ All future Lean operations serialize under `Local\\lean-reorganization-2026-08`.
         ],
         "refresh": {"evidence": r0008_evidence_fixture},
     }
+    problems.require(
+        allowed_codex_lane_operator_sets(
+            C0006_CHECKPOINT_ID, (R03_OPERATOR_ID,), True
+        )
+        == {(R03_OPERATOR_ID,), R09R10_OPERATOR_PAIR},
+        "self-test R09/R10 operator widening positive",
+        "authorized C0006 must admit the reviewed codex-lane pair",
+    )
+    for label, checkpoint, authorized in (
+        ("missing authorization", C0006_CHECKPOINT_ID, False),
+        ("wrong checkpoint", C0005_CHECKPOINT_ID, True),
+        ("wrong checkpoint unauthorized", C0004_CHECKPOINT_ID, False),
+    ):
+        problems.require(
+            R09R10_OPERATOR_PAIR
+            not in allowed_codex_lane_operator_sets(
+                checkpoint, (R03_OPERATOR_ID,), authorized
+            ),
+            f"self-test R09/R10 operator widening {label}",
+            f"{label} must not admit the widened codex-lane pair",
+        )
     positive_pair = Problems()
     validate_r05r06_branch_record(r05_record_fixture, "R05", positive_pair)
     problems.require(

@@ -260,3 +260,23 @@ after the C0005 acceptance-control commit passed Lean CI.
 Closed or superseded phases remain here as immutable evidence. A retained
 phase must identify its status and successor rather than silently changing its
 original scope.
+
+Exact-C0006 successor planning now records
+[`B0011/R09`](2026-08-repository-reorganization-completion/branches/B0011.json)
+and
+[`B0012/R10`](2026-08-repository-reorganization-completion/branches/B0012.json)
+as planned branches, with frozen baseline projections P0011/P0012 and active
+common-base requests R0012/R0013. The 23- and 7-path requests intersect on
+exactly five integrator-owned files and are reconciled by the reviewed
+[`25-path common-base union`](2026-08-repository-reorganization-completion/requests/R0012-R0013-union-review.md).
+The
+[`selection review`](2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-selection.md)
+records zero peer overlap across every enforced dimension. B0011/R09 runs in
+`claude-lane`; the immutable scope freeze assigns R10 to `codex-lane`, so B0012
+runs there under a
+[`temporary operator authorization`](2026-08-repository-reorganization-completion/reviews/R10-operator-authorization.md)
+adding `claude-local` to that lane. No worker ref or worktree exists, neither wave is activated, and
+implementation remains prohibited until this exact planned-control commit passes
+Lean CI and a later activation-control commit is green. Completing the pair
+empties the unclassified ratchet: R09 reclassifies the 72 `Higham28*` owners and
+R10 the last 18 `RandNLA*` owners.

@@ -1,0 +1,278 @@
+{
+ "base_checkpoint_id": "C0006",
+ "base_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+ "baseline_projection_id": "P0012",
+ "branch_id": "B0012",
+ "branch_name": "claude/reorg-completion-2026-08-r10-randnla-drineas-mahoney",
+ "delivery": {
+  "commit_sha": null,
+  "report": null,
+  "scope_evidence": null
+ },
+ "destination_prefixes": [
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Preconditioning/CountSketch/HashCollisionProbabilities.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Preconditioning/CountSketch/SketchInjectivityBounds.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Preconditioning/CountSketch/SketchedGramLoewnerCovers.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Preconditioning/CountSketch/SketchedGramMoments.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Preconditioning/ExactTransforms/UniformRowEmbedding.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Sampling/UniformRows/GramDotFloatingPoint.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Sampling/UniformRows/GramMoments.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm01/ElementwiseSampling/HitPairEvents.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm03/RandomProjectionPreconditioning/SparsePreconditionedEmbeddings.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm03/RandomProjectionPreconditioning/SparsePreconditionedGramBounds.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm03/RandomProjectionPreconditioning/SparsePreconditionedGramGrids.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation02/SpectralApproximation/ResidualMomentBounds.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation02/SpectralApproximation/SpectralEventEndpoints.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation05/GramApproximation/SampledGramEndpoints.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/SampledGramOperatorNorm.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/FloatingPointObjectiveBounds.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/SketchedObjectiveBounds.lean"
+  },
+  {
+   "match": "prefix",
+   "path": "NumStabilityTest/Reorganization/R10/"
+  },
+  {
+   "match": "prefix",
+   "path": "docs/architecture/deliveries/R10/"
+  }
+ ],
+ "forbidden_paths": [
+  {
+   "match": "exact",
+   "path": "lake-manifest.json"
+  },
+  {
+   "match": "exact",
+   "path": "lakefile.toml"
+  },
+  {
+   "match": "exact",
+   "path": "lean-toolchain"
+  },
+  {
+   "match": "prefix",
+   "path": ".github/"
+  },
+  {
+   "match": "prefix",
+   "path": "docs/architecture/phases/"
+  },
+  {
+   "match": "prefix",
+   "path": "tools/"
+  }
+ ],
+ "integration": {
+  "accepted_checkpoint_id": null,
+  "accepted_sha": null,
+  "method": null
+ },
+ "lane_id": "codex-lane",
+ "operator_ids": [
+  "claude-local"
+ ],
+ "owned_paths": [
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/ElementwiseSampling.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/ElementwiseSpectral.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/ElementwiseTraceMGF.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/HitCountConcentration.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/LeastSquaresSketch.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/LowRankApprox.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/Preconditioning.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/RowSampling.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/RowSamplingGram.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/RowSamplingLeverage.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/RowSamplingLeverageComputedBasis.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/RowSamplingLeverageMGF.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/RowSamplingTraceMGF.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/UniformRowSampling.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/UniformRowSamplingComposition.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/UniformRowSamplingFP.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Algorithms/RandNLA/UniformRowSamplingMGF.lean"
+  }
+ ],
+ "owner_id": "primary-human",
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "record_kind": "phase_branch",
+ "refresh": {
+  "decision": "current",
+  "evidence": [
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-declaration-routes.tsv",
+    "sha256": "6F5ED10338D7B6344824CEDB625BB4C77D4C9A0B94DEC9A8350B8480EF4D461F"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-destination-dag.tsv",
+    "sha256": "8F02E18FB4C5752FA7032F0C504EF3A84526799C85599948BC7FF0BB0103189C"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-destination-modules.tsv",
+    "sha256": "52282376689BE89049B2A7D9654F37CD9C68E6FB5F3B7F8CA061679DF1A4A6CF"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-private-normalization.tsv",
+    "sha256": "8C32212542D49640263214B7816863CCEF44279E3B0CF98A71D7F7D994F6238C"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-wrapper-imports.tsv",
+    "sha256": "FB8FE68A8E50CD94024654787AB8FB2735634AF928AC588ED3A26C7C44E058B8"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0012.json",
+    "sha256": "252630935F55B2D18F4B94A12525352607BB1B4E9D2795995B351D90940956F3"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0012.tsv.gz",
+    "sha256": "2E5A95D8EFF802AD5894189D6ECCDC1BAD764CA28DBCC47B4C43AEBACF381FC3"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0012-R0013-union-review.md",
+    "sha256": "0D8D7269E41C3223B6CEA63CD9C05800132EBB9DF2A9F0414B231B959AA358EB"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0013-postimages.tsv",
+    "sha256": "3AECB34386A4CDC11A429D463FE8A74073B3A09E7678E06A2107350C646D06D2"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0013.json",
+    "sha256": "4EFC8B59FEEBFD1A3D9EBDDAD471A6A3FD4C5C113EBC4652BBC8092061ABFD38"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-selection.md",
+    "sha256": "0CADEFBB968D5492CF6A2C4434FA81CACCD4A8E0BAED0FDEAD1AAE20A84412DD"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-destination-rule-amendment.md",
+    "sha256": "5749CE3E334B61679F10A08850E8136FC882608A18F197879EF81B25C2AB9BC9"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R10-operator-authorization.md",
+    "sha256": "61C76D457B205F24B730814D6EB41876A2CC71B364F589B59ADE2133D912D49C"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/selectors/R10.tsv",
+    "sha256": "24E3BD565946AECFDBAB9D2D21BF1201B86ECD16197F892E1B62A30162D9EE00"
+   }
+  ],
+  "reviewed_checkpoint_id": "C0006"
+ },
+ "retirement": {
+  "ancestry_checkpoint_id": null,
+  "remote_ref": "refs/heads/claude/reorg-completion-2026-08-r10-randnla-drineas-mahoney",
+  "retired_at": null,
+  "retired_by": null,
+  "rule": "delivery_ancestor_of_green_checkpoint",
+  "status": "not_due"
+ },
+ "schema_version": 1,
+ "shared_request_ids": [
+  "R0013"
+ ],
+ "status": "planned",
+ "wave_id": "R10"
+}

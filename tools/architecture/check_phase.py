@@ -1633,10 +1633,10 @@ class PhaseValidator:
                 obj.get("destination_prefixes"), f"{context}.destination_prefixes"
             )
             for rule in obj["_destination_rules"]:
-                if rule.match != "prefix":
+                if rule.match not in {"prefix", "exact"}:
                     self.problems.malformed(
                         f"{context}.destination_prefixes",
-                        "destination rules must all use match 'prefix'",
+                        "destination rules must use match 'prefix' or 'exact'",
                     )
             obj["_forbidden_rules"] = self.path_rules(obj.get("forbidden_paths"), f"{context}.forbidden_paths")
             sorted_unique_strings(obj.get("shared_request_ids"), f"{context}.shared_request_ids", self.problems)
@@ -2732,7 +2732,42 @@ class PhaseValidator:
                 for row in scope_rows
                 if row["path"] not in {wave_row["path"] for wave_row in wave_rows}
             ]
+            # An exact destination rule authorizes creating exactly one new
+            # file, which is strictly narrower than any prefix rule. To keep it
+            # from ever claiming an existing module it must name a path that is
+            # absent at the branch's base commit.
+            base_sha_for_destinations = branch.get("base_sha")
             for destination in destinations:
+                if destination.match == "exact":
+                    if not isinstance(base_sha_for_destinations, str) or not SHA1_RE.fullmatch(
+                        base_sha_for_destinations
+                    ):
+                        self.problems.malformed(
+                            f"{context}.destination_prefixes",
+                            "exact destination rules require a valid base_sha to"
+                            " prove the path is new",
+                        )
+                    else:
+                        probe = subprocess.run(
+                            [
+                                "git",
+                                "cat-file",
+                                "-e",
+                                f"{base_sha_for_destinations}:{destination.path}",
+                            ],
+                            cwd=self.root,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            check=False,
+                        )
+                        if probe.returncode == 0:
+                            self.problems.violation(
+                                context,
+                                "exact destination "
+                                f"{destination.path} already exists at base "
+                                f"{base_sha_for_destinations}; exact destination"
+                                " rules may only create new files",
+                            )
                 for own in owned:
                     if destination.intersects(own):
                         self.problems.violation(
