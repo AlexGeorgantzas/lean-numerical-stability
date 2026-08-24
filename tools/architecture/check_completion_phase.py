@@ -750,6 +750,8 @@ C0006_REVIEW_FACTS = {
         "0D8D7269E41C3223B6CEA63CD9C05800132EBB9DF2A9F0414B231B959AA358EB",
     "reviews/C0006-R09-R10-activation-authorization.json":
         "C0A3CC748DF248FCC38864810586214590E16F2C9892C9C7D08B3529C6DE0D5E",
+    "reviews/C0006-R09-R10-sidecar-correction.md":
+        "5C8C1B4944DDCFF607048C178124F6E7EB79FF43FCBF461BFAF32BD080ED5DB0",
     "reviews/R09-R10-activation.json":
         "34AD672B1AF02B782AEAF6BBF6770D956DEB7523E60246C4A8BED9E15D3B1670",
 }
@@ -851,6 +853,44 @@ B0011_ACTIVE_SHA256 = (
 )
 B0012_ACTIVE_SHA256 = (
     "571FFC9AB39F5DC6AC5AF31759F1EE85BF3793D57C3DBEC0224DD89E6B1BD13B"
+)
+# The activation control could not pin its own SHA; the correction lands it.
+R09_R10_ACTIVATION_CONTROL_SHA = (
+    "ecffb3860d491631b34e698d6928181b66e54d5e"
+)
+R09_R10_CORRECTION_REVIEW_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/C0006-R09-R10-sidecar-correction.md"
+)
+R09_R10_CORRECTION_REVIEW_SHA256 = (
+    "5C8C1B4944DDCFF607048C178124F6E7EB79FF43FCBF461BFAF32BD080ED5DB0"
+)
+R09_R10_CORRECTION_SUBJECT = (
+    "fix(reorg): correct the R09/R10 branch sidecars"
+)
+R09_R10_CORRECTION_CHANGED_PATHS = frozenset(
+    {
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0011-declaration-routes.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0011-private-closure.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0011-post-move-import-manifest.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0011-test-plan.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0012-declaration-routes.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0012-private-closure.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0012-post-move-import-manifest.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0012-test-plan.tsv",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0011.json",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0012.json",
+        R09_R10_CORRECTION_REVIEW_PATH,
+        "tools/architecture/check_completion_phase.py",
+    }
+)
+# Branch records after the correction. The activation-time digests above stay as
+# the historical record for the activation control's own tree.
+B0011_CORRECTED_SHA256 = (
+    "4ABE2D1BC8F1937950CF21E0648F67EF58EB395B8FF0820ECFBB0B34F32486D8"
+)
+B0012_CORRECTED_SHA256 = (
+    "BE3A387CEA28ABD69DD3EC1288463DA4600E5544539D25B52A1D142B94594545"
 )
 C0006_COMBINED_BASELINE_SHA256 = (
     "5F61A60D5743E507D5DE4D82852DFA551861E1CAECD8610D8F345CC942DB1C76"
@@ -4221,7 +4261,15 @@ def validate_r09_r10_activation_state(
     )
     expected_lane = {"B0011": "claude-lane", "B0012": "codex-lane"}
     expected_wave = {"B0011": "R09", "B0012": "R10"}
-    expected_active = {"B0011": B0011_ACTIVE_SHA256, "B0012": B0012_ACTIVE_SHA256}
+    # The sidecar correction re-digests both branch records. Expect the
+    # corrected digests once its review is present, the activation-time ones
+    # before that, so both states stay exactly pinned.
+    if (root / R09_R10_CORRECTION_REVIEW_PATH).is_file():
+        expected_active = {"B0011": B0011_CORRECTED_SHA256,
+                           "B0012": B0012_CORRECTED_SHA256}
+    else:
+        expected_active = {"B0011": B0011_ACTIVE_SHA256,
+                           "B0012": B0012_ACTIVE_SHA256}
     for bid in sorted(set(branches) & {"B0011", "B0012"}):
         block = branches[bid] or {}
         creation = block.get("creation") or {}
@@ -9057,6 +9105,60 @@ class CompletionValidator:
                                     f"{sorted(activation_precommit_extra)}",
                                 )
                             elif (
+                                acceptance_head != R09_R10_ACTIVATION_CONTROL_SHA
+                                and c0006_refresh_parents
+                                == [R09_R10_ACTIVATION_CONTROL_SHA]
+                            ):
+                                # sidecar correction over the activation control
+                                correction_diff = self.git(
+                                    "diff",
+                                    "--name-only",
+                                    "--no-renames",
+                                    R09_R10_ACTIVATION_CONTROL_SHA,
+                                    "HEAD",
+                                    "--",
+                                    check=False,
+                                )
+                                correction_changed = {
+                                    normalize_path(path)
+                                    for path in correction_diff.stdout.splitlines()
+                                    if path.strip()
+                                }
+                                if correction_diff.returncode:
+                                    self.problems.add(
+                                        f"{context}.r09_r10_correction.git",
+                                        "cannot read sidecar-correction diff",
+                                    )
+                                self.problems.require(
+                                    c0006_refresh_subject
+                                    == R09_R10_CORRECTION_SUBJECT,
+                                    f"{context}.r09_r10_correction.subject",
+                                    "the R09/R10 sidecar correction must retain "
+                                    "the exact reviewed subject",
+                                )
+                                self.problems.require(
+                                    correction_changed
+                                    == set(R09_R10_CORRECTION_CHANGED_PATHS),
+                                    f"{context}.r09_r10_correction.paths",
+                                    "the R09/R10 sidecar correction must change "
+                                    "exactly the approved sidecar, branch record, "
+                                    "review and checker paths; "
+                                    f"missing={sorted(set(R09_R10_CORRECTION_CHANGED_PATHS) - correction_changed)}, "
+                                    f"extra={sorted(correction_changed - set(R09_R10_CORRECTION_CHANGED_PATHS))}",
+                                )
+                                self.problems.require(
+                                    not c0006_refresh_overlay,
+                                    f"{context}.r09_r10_correction.worktree",
+                                    "the R09/R10 sidecar correction must have a "
+                                    "clean overlay; found="
+                                    f"{sorted(c0006_refresh_overlay)}",
+                                )
+                                validate_r09_r10_activation_state(
+                                    self.root,
+                                    self.problems,
+                                    context=f"{context}.r09_r10_correction",
+                                )
+                            elif (
                                 acceptance_head != R09_R10_NARRATIVE_REFRESH_SHA
                                 and c0006_refresh_parents
                                 == [R09_R10_NARRATIVE_REFRESH_SHA]
@@ -9098,12 +9200,17 @@ class CompletionValidator:
                                     f"missing={sorted(set(R09_R10_ACTIVATION_CONTROL_CHANGED_PATHS) - activation_changed)}, "
                                     f"extra={sorted(activation_changed - set(R09_R10_ACTIVATION_CONTROL_CHANGED_PATHS))}",
                                 )
+                                correction_extra = (
+                                    c0006_refresh_overlay
+                                    - set(R09_R10_CORRECTION_CHANGED_PATHS)
+                                )
                                 self.problems.require(
-                                    not c0006_refresh_overlay,
+                                    not correction_extra,
                                     f"{context}.r09_r10_activation.worktree",
-                                    "the R09/R10 activation control must have a "
-                                    "clean overlay; found="
-                                    f"{sorted(c0006_refresh_overlay)}",
+                                    "the only overlay permitted on the R09/R10 "
+                                    "activation control is the reviewed sidecar-"
+                                    "correction path set; found extra="
+                                    f"{sorted(correction_extra)}",
                                 )
                                 validate_r09_r10_activation_state(
                                     self.root,

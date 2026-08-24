@@ -204,7 +204,7 @@
   "evidence": [
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-declaration-routes.tsv",
-    "sha256": "6F5ED10338D7B6344824CEDB625BB4C77D4C9A0B94DEC9A8350B8480EF4D461F"
+    "sha256": "0A63EF69BE9541DC6F1B413E39AEDD7D56144E189F7616588A3E4A5DC5319E9E"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-destination-dag.tsv",
@@ -215,8 +215,20 @@
     "sha256": "52282376689BE89049B2A7D9654F37CD9C68E6FB5F3B7F8CA061679DF1A4A6CF"
    },
    {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-post-move-import-manifest.tsv",
+    "sha256": "79FFBAD0B43F934135863898DFE909838AC018AC2EB293C98BCB9D927EE8BBDD"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-private-closure.tsv",
+    "sha256": "0075F712627B5614238C9C8679F2B235A0D96E147A47BA314DB92AC122CA376C"
+   },
+   {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-private-normalization.tsv",
     "sha256": "8C32212542D49640263214B7816863CCEF44279E3B0CF98A71D7F7D994F6238C"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-test-plan.tsv",
+    "sha256": "F51EF755334C279F485C8B23EB4F8FAE8E30CC77D5F42C55466A4388D8DB03B4"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-wrapper-imports.tsv",
@@ -249,6 +261,10 @@
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-selection.md",
     "sha256": "0CADEFBB968D5492CF6A2C4434FA81CACCD4A8E0BAED0FDEAD1AAE20A84412DD"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-sidecar-correction.md",
+    "sha256": "5C8C1B4944DDCFF607048C178124F6E7EB79FF43FCBF461BFAF32BD080ED5DB0"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-destination-rule-amendment.md",
