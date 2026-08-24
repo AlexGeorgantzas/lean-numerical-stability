@@ -5,9 +5,15 @@
  "branch_id": "B0011",
  "branch_name": "claude/reorg-completion-2026-08-r09-test-matrices-ch28",
  "delivery": {
-  "commit_sha": null,
-  "report": null,
-  "scope_evidence": null
+  "commit_sha": "3de7b02333d7415664f440ceb6ad7ea899f32f57",
+  "report": {
+   "path": "docs/architecture/deliveries/R09/DELIVERY.md",
+   "sha256": "C35BDD006AA7AD1A742333D4328972E05B7BDD7F4B3E2985A36A2B79A6F934DD"
+  },
+  "scope_evidence": {
+   "path": "docs/architecture/deliveries/R09/CHANGED_PATHS.md",
+   "sha256": "1C63AED8F5E1339AF6F7229F0B54FD193FBBE2940E63F30E7CF05976FCA7AC8A"
+  }
  },
  "destination_prefixes": [
   {
@@ -528,7 +534,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0011-post-move-import-manifest.tsv",
-    "sha256": "7C3163B5B004E5B1C7E1467F4DAFDEE95871CBA1EDE90BF7F5C0CCD3B8381632"
+    "sha256": "9FE7CD5BDF44C1D4C0E755F82242C9C38AFCC013EC66590C1E3E48DDD4DFBDDA"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0011-private-closure.tsv",
@@ -571,12 +577,20 @@
     "sha256": "C0A3CC748DF248FCC38864810586214590E16F2C9892C9C7D08B3529C6DE0D5E"
    },
    {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-integration-authorization.json",
+    "sha256": "3C6B7EC113A9F8B7A79F7519A91542EEFE28B7F64E40BE806F07BFD49264AC8F"
+   },
+   {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-selection.md",
     "sha256": "0CADEFBB968D5492CF6A2C4434FA81CACCD4A8E0BAED0FDEAD1AAE20A84412DD"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-sidecar-correction.md",
     "sha256": "5C8C1B4944DDCFF607048C178124F6E7EB79FF43FCBF461BFAF32BD080ED5DB0"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-tier-amendment.md",
+    "sha256": "54BD6A18FE315C67E08E1FA0B29D4277B760DF2BC54DF3E8E19B2FE6CE6A21A6"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-destination-rule-amendment.md",
@@ -609,6 +623,6 @@
  "shared_request_ids": [
   "R0012"
  ],
- "status": "active",
+ "status": "delivered",
  "wave_id": "R09"
 }

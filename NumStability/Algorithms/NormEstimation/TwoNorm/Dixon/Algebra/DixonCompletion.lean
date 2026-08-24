@@ -12,7 +12,7 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LU.GrowthFactor
-import NumStability.Algorithms.TestMatrices.Higham28OrthogonalCoordinates
+import NumStability.Analysis.TestMatrices.Orthogonal.OrthogonalCoordinates
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.EntrywiseAbsolute.Basic
 import NumStability.Analysis.MatrixNorms.SpectralExtrema.Basic

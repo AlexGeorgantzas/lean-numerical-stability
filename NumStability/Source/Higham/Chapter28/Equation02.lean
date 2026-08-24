@@ -1,3 +1,6 @@
+import NumStability.Source.Higham.Chapter28.Equation02.DeterminantAsymptotics
+import NumStability.Source.Higham.Chapter28.Equation02.ExactHilbertDeterminant.Basic
+import NumStability.Source.Higham.Chapter28.Equation02.ExactHilbertDeterminant.Exact
 import NumStability.Source.Higham.Chapter28.Equation02.RatioDiscrepancy
 
 /-!

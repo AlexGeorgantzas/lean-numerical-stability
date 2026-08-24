@@ -571,6 +571,8 @@ import NumStabilityTest.Worker.Ch09.WaveE
 import NumStabilityTest.Worker.ClassificationAudit
 import NumStabilityTest.Worker.LsqCh20
 import NumStabilityTest.Worker.QrCh19
+import NumStabilityTest.Reorganization.R09.All
+import NumStabilityTest.Reorganization.R10.All
 
 /-!
 # NumStability test suite

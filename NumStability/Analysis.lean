@@ -53,7 +53,9 @@ import NumStability.Analysis.Nonassociativity
 import NumStability.Analysis.OperatorNorms
 import NumStability.Analysis.Perturbation
 import NumStability.Analysis.PerturbationTheory
+import NumStability.Analysis.Polynomials
 import NumStability.Analysis.Probability
+import NumStability.Analysis.Probability.Haar.NormalizedOrthogonalMatrixLaw
 import NumStability.Analysis.ProblemDependentStability.All
 import NumStability.Analysis.ProblemDependentStability.HessenbergDeterminant
 import NumStability.Analysis.Quadratic
@@ -67,40 +69,7 @@ import NumStability.Analysis.Statistics.SampleVariance.All
 import NumStability.Analysis.Statistics.SampleVariance.RoundingErrorBounds.Theorems
 import NumStability.Analysis.SubtractionFold
 import NumStability.Analysis.Summation
-import NumStability.Analysis.TestMatrices.Cauchy.Basic
-import NumStability.Analysis.TestMatrices.Cauchy.Cauchy
-import NumStability.Analysis.TestMatrices.Cauchy.Contracts
-import NumStability.Analysis.TestMatrices.Companion.Basic
-import NumStability.Analysis.TestMatrices.Companion.Companion
-import NumStability.Analysis.TestMatrices.Companion.CompanionSpectral
-import NumStability.Analysis.TestMatrices.Companion.Contracts
-import NumStability.Analysis.TestMatrices.Gaussian.GaussianDirection
-import NumStability.Analysis.TestMatrices.Gaussian.GaussianOrthogonal
-import NumStability.Analysis.TestMatrices.Hilbert.Asymptotics
-import NumStability.Analysis.TestMatrices.Hilbert.Basic
-import NumStability.Analysis.TestMatrices.Hilbert.Exact
-import NumStability.Analysis.TestMatrices.Hilbert.HilbertAsymptotic
-import NumStability.Analysis.TestMatrices.Hilbert.ShiftedHilbert
-import NumStability.Analysis.TestMatrices.Orthogonal.Basic
-import NumStability.Analysis.TestMatrices.Orthogonal.OrthogonalCoordinates
-import NumStability.Analysis.TestMatrices.Orthogonal.OrthogonalFibers
-import NumStability.Analysis.TestMatrices.Orthogonal.OrthogonalHaar
-import NumStability.Analysis.TestMatrices.Orthogonal.OrthogonalSphere
-import NumStability.Analysis.TestMatrices.Pascal.Basic
-import NumStability.Analysis.TestMatrices.Pascal.Contracts
-import NumStability.Analysis.TestMatrices.Pascal.Exact
-import NumStability.Analysis.TestMatrices.Pascal.PascalDualFlag
-import NumStability.Analysis.TestMatrices.Pascal.PascalOscillation
-import NumStability.Analysis.TestMatrices.Pascal.PascalOscillationCore
-import NumStability.Analysis.TestMatrices.Pascal.PascalSpectral
-import NumStability.Analysis.TestMatrices.Pascal.PascalTotalPositivity
-import NumStability.Analysis.TestMatrices.RandomSVD.Basic
-import NumStability.Analysis.TestMatrices.RandomSVD.Stewart
-import NumStability.Analysis.TestMatrices.RandomSVD.StewartHaar
-import NumStability.Analysis.TestMatrices.RandomSVD.StewartRecursion
-import NumStability.Analysis.TestMatrices.RealGinibre.GinibreRoots
-import NumStability.Analysis.TestMatrices.Toeplitz.Basic
-import NumStability.Analysis.TestMatrices.Toeplitz.Contracts
+import NumStability.Analysis.TestMatrices
 import NumStability.Analysis.TieRules
 import NumStability.Analysis.VectorNorms
 import NumStability.FloatingPoint.FusedMultiplyAdd.Core
@@ -176,9 +145,7 @@ import NumStability.Source.Higham.Chapter17.Equation22
 import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreissUnconditional
 
 /-!
-# NumStability analysis
+# Analysis aggregate
 
-This aggregate re-exports every canonical module below `NumStability.Analysis`.
-Historical compatibility wrappers are tested separately and are not part of
-the completeness contract.
+Declaration-free aggregate for the reusable analysis subtree.
 -/

@@ -889,6 +889,77 @@ R09_R10_CORRECTION_CHANGED_PATHS = frozenset(
 B0011_CORRECTED_SHA256 = (
     "4ABE2D1BC8F1937950CF21E0648F67EF58EB395B8FF0820ECFBB0B34F32486D8"
 )
+R09_R10_INTEGRATION_AUTH_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-integration-authorization.json"
+)
+R09_R10_INTEGRATION_AUTH_SHA256 = (
+    "3C6B7EC113A9F8B7A79F7519A91542EEFE28B7F64E40BE806F07BFD49264AC8F"
+)
+R09_R10_TIER_AMENDMENT_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-tier-amendment.md"
+)
+R09_R10_TIER_AMENDMENT_SHA256 = (
+    "54BD6A18FE315C67E08E1FA0B29D4277B760DF2BC54DF3E8E19B2FE6CE6A21A6"
+)
+# The amendment re-anchors exactly this union row; the other 24 postimages stay
+# byte-exact against the reviewed ledger.
+R09_R10_AMENDED_UNION_PATH = "docs/architecture/tiers.json"
+R09_R10_AMENDED_UNION_SHA256 = (
+    "3695B84D0644E447765FD5CF30FDD9FF65FBEC794276F494EC3FC2D3709C4C1E"
+)
+R09_R10_UNION_POSTIMAGES_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "requests/R0012-R0013-union-postimages.tsv"
+)
+R09_DELIVERY_SHA = "3de7b02333d7415664f440ceb6ad7ea899f32f57"
+R10_DELIVERY_SHA = "6be9f1100557c78f7187da99b269eb3767befba0"
+R09_R10_R09_MERGE_SHA = "0089a00082653b6fe0d393003432d0d2a1b7574d"
+R09_R10_R10_MERGE_SHA = "fc36ec2a48f276d9c7f0915a3749619ea41627c5"
+R09_R10_INTEGRATION_CONTROL_SUBJECT = (
+    "refactor(reorganization): integrate R09 and R10 under the union"
+)
+R09_R10_INTEGRATION_CHANGED_PATHS = frozenset(
+    {
+        "NumStability/Algorithms.lean",
+        "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Algebra/DixonCompletion.lean",
+        "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/PowerBounds/DixonCompletion.lean",
+        "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Probability/DixonCompletion.lean",
+        "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Probability/DixonProbability.lean",
+        "NumStability/Algorithms/RandomizedLinearAlgebra.lean",
+        "NumStability/Analysis.lean",
+        "NumStability/Analysis/Polynomials.lean",
+        "NumStability/Analysis/Probability/Haar.lean",
+        "NumStability/Analysis/TestMatrices.lean",
+        "NumStability/Source.lean",
+        "NumStability/Source/Higham/Chapter15/Theorem06/Dixon/Basic.lean",
+        "NumStability/Source/Higham/Chapter28.lean",
+        "NumStability/Source/Higham/Chapter28/Equation02.lean",
+        "NumStability/Source/Higham/Chapter28/Equation02/RatioDiscrepancy.lean",
+        "NumStability/Source/Higham/Chapter28/Section01.lean",
+        "NumStability/Source/Higham/Chapter28/Section02.lean",
+        "NumStability/Source/Higham/Chapter28/Section03.lean",
+        "NumStability/Source/Higham/Chapter28/Section04.lean",
+        "NumStability/Source/Higham/Chapter28/Section05.lean",
+        "NumStability/Source/Higham/Chapter28/Section06.lean",
+        "NumStabilityTest.lean",
+        "docs/architecture/COMPATIBILITY.md",
+        "docs/architecture/layout-exceptions.json",
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0011-post-move-import-manifest.tsv",
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0011.json",
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012-post-move-import-manifest.tsv",
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012.json",
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-integration-authorization.json",
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-tier-amendment.md",
+        "docs/architecture/tiers.json",
+        "tools/architecture/check_completion_phase.py",
+    }
+)
+B0011_DELIVERED_SHA256 = (
+    "ED64475E2E631B732E7229EEF174DF9EABFF29157E28DB9B29A2DCBD60B97F42"
+)
+B0012_DELIVERED_SHA256 = (
+    "1574E760BB97EA5DEACDEDD567E41161DD9FF127470FCF646CCD624AB68EEC3D"
+)
 B0012_CORRECTED_SHA256 = (
     "BE3A387CEA28ABD69DD3EC1288463DA4600E5544539D25B52A1D142B94594545"
 )
@@ -7879,7 +7950,56 @@ class CompletionValidator:
                     for path in correction_paths
                 }
             )
+            # A later reviewed epoch supersedes an earlier terminal ratchet, as
+            # R07's superseded C0004's. Once the R09/R10 integration is present,
+            # R07's live replay no longer describes these files; the union
+            # postimage check below replaces it.
+            r09_r10_integrated = (
+                self.root / R09_R10_INTEGRATION_AUTH_PATH
+            ).is_file()
+            if r09_r10_integrated:
+                amendment = self.root / R09_R10_TIER_AMENDMENT_PATH
+                self.problems.require(
+                    amendment.is_file()
+                    and sha256_path(amendment) == R09_R10_TIER_AMENDMENT_SHA256,
+                    f"{context}.request.tier_amendment",
+                    "the reviewed tier amendment must be present with its exact "
+                    "pinned bytes",
+                )
+                union_rows = [
+                    line.split("\t")
+                    for line in (self.root / R09_R10_UNION_POSTIMAGES_PATH)
+                    .read_text(encoding="utf-8").splitlines()[1:]
+                    if line.strip()
+                ]
+                self.problems.require(
+                    len(union_rows) == 25,
+                    f"{context}.request.union_ledger",
+                    "the reviewed R0012/R0013 union must carry exactly 25 paths",
+                )
+                for row in union_rows:
+                    expected = row[3].upper()
+                    if row[0] == R09_R10_AMENDED_UNION_PATH:
+                        expected = R09_R10_AMENDED_UNION_SHA256
+                    union_path = self.root / Path(*PurePosixPath(row[0]).parts)
+                    try:
+                        payload = union_path.read_bytes()
+                    except OSError as error:
+                        self.problems.add(
+                            f"{context}.request.union_postimage[{row[0]}]",
+                            f"cannot read exact union postimage: {error}",
+                        )
+                        continue
+                    self.problems.require(
+                        hashlib.sha256(payload).hexdigest().upper() == expected,
+                        f"{context}.request.union_postimage[{row[0]}]",
+                        "live bytes must equal the reviewed R0012/R0013 union "
+                        "postimage, or the amended postimage for the re-anchored "
+                        "row",
+                    )
             for path in sorted(request_paths | correction_paths):
+                if r09_r10_integrated:
+                    break
                 live_path = self.root / Path(*PurePosixPath(path).parts)
                 try:
                     live_payload = live_path.read_bytes()
@@ -9104,6 +9224,80 @@ class CompletionValidator:
                                     "activation-control path set; found extra="
                                     f"{sorted(activation_precommit_extra)}",
                                 )
+                            elif acceptance_head == R09_R10_R10_MERGE_SHA:
+                                integration_precommit_extra = (
+                                    c0006_refresh_overlay
+                                    - set(R09_R10_INTEGRATION_CHANGED_PATHS)
+                                )
+                                self.problems.require(
+                                    not integration_precommit_extra,
+                                    f"{context}.r09_r10_integration.precommit",
+                                    "the only overlay permitted on the R09/R10 "
+                                    "second true merge is the reviewed "
+                                    "integration path set; found extra="
+                                    f"{sorted(integration_precommit_extra)}",
+                                )
+                            elif c0006_refresh_parents == [R09_R10_R10_MERGE_SHA]:
+                                integration_diff = self.git(
+                                    "diff", "--name-only", "--no-renames",
+                                    R09_R10_R10_MERGE_SHA, "HEAD", "--",
+                                    check=False,
+                                )
+                                integration_changed = {
+                                    normalize_path(path)
+                                    for path in integration_diff.stdout.splitlines()
+                                    if path.strip()
+                                }
+                                self.problems.require(
+                                    c0006_refresh_subject
+                                    == R09_R10_INTEGRATION_CONTROL_SUBJECT,
+                                    f"{context}.r09_r10_integration.subject",
+                                    "the R09/R10 integration control must retain "
+                                    "the exact reviewed subject",
+                                )
+                                self.problems.require(
+                                    integration_changed
+                                    == set(R09_R10_INTEGRATION_CHANGED_PATHS),
+                                    f"{context}.r09_r10_integration.paths",
+                                    "the R09/R10 integration control must change "
+                                    "exactly the approved paths; "
+                                    f"missing={sorted(set(R09_R10_INTEGRATION_CHANGED_PATHS) - integration_changed)}, "
+                                    f"extra={sorted(integration_changed - set(R09_R10_INTEGRATION_CHANGED_PATHS))}",
+                                )
+                                self.problems.require(
+                                    not c0006_refresh_overlay,
+                                    f"{context}.r09_r10_integration.worktree",
+                                    "the R09/R10 integration control must have a "
+                                    "clean overlay; found="
+                                    f"{sorted(c0006_refresh_overlay)}",
+                                )
+                                for label, tip in (("R09", R09_DELIVERY_SHA),
+                                                   ("R10", R10_DELIVERY_SHA)):
+                                    preserved = self.git(
+                                        "merge-base", "--is-ancestor", tip, "HEAD",
+                                        check=False,
+                                    )
+                                    self.problems.require(
+                                        preserved.returncode == 0,
+                                        f"{context}.r09_r10_integration.{label}_tip",
+                                        f"the immutable {label} delivery {tip} must "
+                                        "be preserved as an ancestor",
+                                    )
+                                for bid, digest in (
+                                    ("B0011", B0011_DELIVERED_SHA256),
+                                    ("B0012", B0012_DELIVERED_SHA256),
+                                ):
+                                    record = (
+                                        self.root / DEFAULT_PHASE_DIR.as_posix()
+                                        / "branches" / f"{bid}.json"
+                                    )
+                                    self.problems.require(
+                                        record.is_file()
+                                        and sha256_path(record) == digest,
+                                        f"{context}.r09_r10_integration.{bid}",
+                                        f"expected exact delivered {bid} SHA-256 "
+                                        f"{digest}",
+                                    )
                             elif (
                                 acceptance_head != R09_R10_ACTIVATION_CONTROL_SHA
                                 and c0006_refresh_parents

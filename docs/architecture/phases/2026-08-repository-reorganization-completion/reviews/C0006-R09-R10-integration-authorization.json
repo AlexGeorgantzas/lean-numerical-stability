@@ -1,0 +1,61 @@
+{
+ "authority_id": "primary-human",
+ "authorization_context": "primary-human review and integration of immutable deliveries 3de7b02333d7415664f440ceb6ad7ea899f32f57 (R09) and 6be9f1100557c78f7187da99b269eb3767befba0 (R10), including the reviewed 25-path R0012/R0013 common-base union",
+ "authorization_id": "R09-R10-C0006-integration-v1",
+ "authorized_actions": [
+  "review and true-merge immutable R09 delivery 3de7b02333d7415664f440ceb6ad7ea899f32f57 onto exact main ac2253a514ee2ad25c763f1ee5a6365061f42146",
+  "review and true-merge immutable R10 delivery 6be9f1100557c78f7187da99b269eb3767befba0 onto the R09 integration",
+  "apply the reviewed 25-path R0012/R0013 common-base union exactly once",
+  "update integrator-owned shared paths, B0011/B0012 delivery state, the completion checker, and the integration narratives",
+  "create the R09/R10 integration commits and push the resulting integration head to main with an exact lease",
+  "monitor exact main CI and record the integration closeout"
+ ],
+ "base": {
+  "accepted_control_sha": "35c9cb8305265ce63633ea6f7404e7b5067dc1c5",
+  "activation_control_sha": "ecffb3860d491631b34e698d6928181b66e54d5e",
+  "checkpoint_id": "C0006",
+  "code_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+  "correction_control_sha": "ac2253a514ee2ad25c763f1ee5a6365061f42146",
+  "planned_control_sha": "b12c9c6b829f9cf80a9ad6cf2d0c55f3530cd0d7",
+  "r09_delivery_sha": "3de7b02333d7415664f440ceb6ad7ea899f32f57",
+  "r09_delivery_tree": "6586f131947aa0a31556cb2dce3bfa878f675aa6",
+  "r10_delivery_sha": "6be9f1100557c78f7187da99b269eb3767befba0",
+  "r10_delivery_tree": "69b531c7cb8c984a04f911f2a383ef1adc1465c5"
+ },
+ "corrected_delivery_note": "An initial pair of delivery commits included the integrator-owned shared-request paths and was rejected by check_phase.py's shared-path contract. Those commits were superseded on the worker branches before any integration reached main; the deliveries recorded here exclude R0012/R0013 entirely, matching R07's delivery, which contains none of its 46 R0011 paths.",
+ "decision": "approved",
+ "delivery_evidence_note": "Both deliveries ship 16 of R07's 20 evidence artifacts and carry no executable verification: all four checker scripts are withheld because the C0006 planned control never landed the branch sidecars and request artifacts they read. Each package's DELIVERY.md names every absent verification and the exact inputs it would require. The integrator treats projection replay, request replay, scope replay and static replay as NOT PERFORMED, and relies instead on the recorded green gate transcripts, the byte-exact postimage ledgers, and the union postimage verification performed at integration.",
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "preserved_exclusions": [
+  "R09 or R10 self-acceptance",
+  "checkpoint acceptance",
+  "branch retirement"
+ ],
+ "record_kind": "r09_r10_integration_authorization",
+ "recorded_at": "2026-08-25T01:46:00Z",
+ "schema_version": 1,
+ "source": {
+  "channel": "interactive Claude Code session",
+  "operator_id": "claude-local",
+  "received_at_source": "session transcript user-message timestamp",
+  "summary": "primary-human directed claude-local to proceed with delivery and integration"
+ },
+ "superseded_activation_exclusions": [
+  "R09 or R10 delivery",
+  "R09 or R10 integration"
+ ],
+ "tier_amendment": {
+  "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-tier-amendment.md",
+  "reason": "the integrated tree failed generate_baseline.py --strict-source with 66 forbidden reusable-to-source reachability pairs; the amendment re-anchors exactly the docs/architecture/tiers.json union row, re-tiers 13 wave destinations reusable -> source and withdraws the declared reusable entry point NumStability.Analysis.Probability"
+ },
+ "union": {
+  "patch": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0012-R0013-union.patch",
+  "patch_sha256": "C3E16C4D303BEDB97220006850A4621E372705D68EE4B9F41D2A418773FA7C8F",
+  "path_count": 25,
+  "postimages": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0012-R0013-union-postimages.tsv",
+  "postimages_sha256": "498E048EBA346B65051615400038A66C2FDE3DD6CF10D4E5384A911C85BD3F60",
+  "review": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0012-R0013-union-review.md",
+  "review_sha256": "0D8D7269E41C3223B6CEA63CD9C05800132EBB9DF2A9F0414B231B959AA358EB",
+  "verification": "all 25 postimages materialized from the C0006 base and verified byte-for-byte against the reviewed ledger at integration"
+ }
+}

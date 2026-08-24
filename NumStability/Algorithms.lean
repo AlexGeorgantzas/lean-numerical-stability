@@ -1,6 +1,3 @@
--- Algorithms.lean
--- Re-exports all modules in the NumStability.Algorithms submodule.
-
 import NumStability.Algorithms.AitkenDenominator
 import NumStability.Algorithms.Arithmetic.DotProduct.NoGuard
 import NumStability.Algorithms.BlockDotProduct
@@ -74,69 +71,11 @@ import NumStability.Algorithms.PolynomialEvaluation.DerivativeEvaluation.ErrorBo
 import NumStability.Algorithms.PriestAccuracy
 import NumStability.Algorithms.PriestDefectBounded
 import NumStability.Algorithms.Quadrature
-import NumStability.Algorithms.RandNLA
+import NumStability.Algorithms.RandomizedLinearAlgebra
 import NumStability.Algorithms.RankOneUpdate
 import NumStability.Algorithms.SquareDifference
 import NumStability.Algorithms.Summation
 import NumStability.Algorithms.Sylvester
-import NumStability.Algorithms.TestMatrices.Higham28
-import NumStability.Algorithms.TestMatrices.Higham28Asymptotics
-import NumStability.Algorithms.TestMatrices.Higham28Cauchy
-import NumStability.Algorithms.TestMatrices.Higham28Companion
-import NumStability.Algorithms.TestMatrices.Higham28CompanionSpectral
-import NumStability.Algorithms.TestMatrices.Higham28Contracts
-import NumStability.Algorithms.TestMatrices.Higham28Exact
-import NumStability.Algorithms.TestMatrices.Higham28GaussianQRHaar
-import NumStability.Algorithms.TestMatrices.Higham28Ginibre
-import NumStability.Algorithms.TestMatrices.Higham28GinibreAbsoluteDetRecurrence
-import NumStability.Algorithms.TestMatrices.Higham28GinibreAtlas
-import NumStability.Algorithms.TestMatrices.Higham28GinibreCharacteristicProduct
-import NumStability.Algorithms.TestMatrices.Higham28GinibreComplexPairs
-import NumStability.Algorithms.TestMatrices.Higham28GinibreCorollary31Factor
-import NumStability.Algorithms.TestMatrices.Higham28GinibreDeterminantIntegral
-import NumStability.Algorithms.TestMatrices.Higham28GinibreDeterminantMoment
-import NumStability.Algorithms.TestMatrices.Higham28GinibreDimensionTwo
-import NumStability.Algorithms.TestMatrices.Higham28GinibreExpectationGlue
-import NumStability.Algorithms.TestMatrices.Higham28GinibreFiniteFormula
-import NumStability.Algorithms.TestMatrices.Higham28GinibreGaussianBridge
-import NumStability.Algorithms.TestMatrices.Higham28GinibreIncidence
-import NumStability.Algorithms.TestMatrices.Higham28GinibreIntegral
-import NumStability.Algorithms.TestMatrices.Higham28GinibreJointDensity
-import NumStability.Algorithms.TestMatrices.Higham28GinibreMeasure
-import NumStability.Algorithms.TestMatrices.Higham28GinibreMultiplicity
-import NumStability.Algorithms.TestMatrices.Higham28GinibreOrthogonalFiber
-import NumStability.Algorithms.TestMatrices.Higham28GinibreParity
-import NumStability.Algorithms.TestMatrices.Higham28GinibrePlaneChart
-import NumStability.Algorithms.TestMatrices.Higham28GinibrePlaneIncidence
-import NumStability.Algorithms.TestMatrices.Higham28GinibrePlaneSylvester
-import NumStability.Algorithms.TestMatrices.Higham28GinibreProjectiveIntegral
-import NumStability.Algorithms.TestMatrices.Higham28GinibreRecurrence
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedConclusion
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedExpectation
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedGaussian
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedIncidence
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedIncidenceAlgebra
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedKernel
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRank
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRankTransfer
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedScalar
-import NumStability.Algorithms.TestMatrices.Higham28GinibreTraceDensity
-import NumStability.Algorithms.TestMatrices.Higham28GinibreTruncatedIncidence
-import NumStability.Algorithms.TestMatrices.Higham28HilbertAsymptotic
-import NumStability.Algorithms.TestMatrices.Higham28HilbertCondition
-import NumStability.Algorithms.TestMatrices.Higham28Moments
-import NumStability.Algorithms.TestMatrices.Higham28Pascal
-import NumStability.Algorithms.TestMatrices.Higham28PascalCondition
-import NumStability.Algorithms.TestMatrices.Higham28PascalOscillationExact
-import NumStability.Algorithms.TestMatrices.Higham28PascalSpectral
-import NumStability.Algorithms.TestMatrices.Higham28Probability
-import NumStability.Algorithms.TestMatrices.Higham28RandsvdNorm
-import NumStability.Algorithms.TestMatrices.Higham28ReciprocalSPD
-import NumStability.Algorithms.TestMatrices.Higham28ShiftedHilbert
-import NumStability.Algorithms.TestMatrices.Higham28StewartRawFiber
-import NumStability.Algorithms.TestMatrices.Higham28ToeplitzCondition
-import NumStability.Algorithms.TestMatrices.Higham28ToeplitzGeneral
-import NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum
 import NumStability.Algorithms.TestMatrices.UpperTriangularStress
 import NumStability.Algorithms.TreeDotProduct
 import NumStability.Analysis.ConditionEstimatorLowerBound
@@ -233,10 +172,7 @@ import NumStability.Source.Higham.Chapter27
 import NumStability.Source.Higham.Chapter28
 
 /-!
-# Historical algorithms aggregate
+# Algorithms aggregate
 
-Complete compatibility and discovery surface for the repository's algorithm
-layer. This aggregate intentionally preserves older source-correspondence and
-analysis imports; it is not the pure reusable API. New implementation modules
-should import the narrowest canonical family or leaf module they need.
+Declaration-free aggregate for the algorithms subtree.
 -/

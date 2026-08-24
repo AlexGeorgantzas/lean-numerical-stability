@@ -15,7 +15,7 @@ import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.Algebra.DixonCompletion
 import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.Probability.DixonCompletion
 import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.Probability.DixonProbability
-import NumStability.Algorithms.TestMatrices.Higham28OrthogonalCoordinates
+import NumStability.Analysis.TestMatrices.Orthogonal.OrthogonalCoordinates
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.EntrywiseAbsolute.Basic
 import NumStability.Analysis.MatrixNorms.SpectralExtrema.Basic
