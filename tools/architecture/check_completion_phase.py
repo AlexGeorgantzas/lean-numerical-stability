@@ -792,6 +792,18 @@ R09_R10_PLANNED_CONTROL_CHANGED_PATHS = frozenset(
         )
     }
 )
+R09_R10_PLANNED_CONTROL_SHA = (
+    "b12c9c6b829f9cf80a9ad6cf2d0c55f3530cd0d7"
+)
+R09_R10_NARRATIVE_REFRESH_SUBJECT = (
+    "docs(reorg): record the R09/R10 planning in the README"
+)
+R09_R10_NARRATIVE_REFRESH_CHANGED_PATHS = frozenset(
+    {
+        "README.md",
+        "tools/architecture/check_completion_phase.py",
+    }
+)
 C0006_COMBINED_BASELINE_SHA256 = (
     "5F61A60D5743E507D5DE4D82852DFA551861E1CAECD8610D8F345CC942DB1C76"
 )
@@ -8762,6 +8774,53 @@ class CompletionValidator:
                                     "C0006 narrative refresh must have a clean "
                                     f"overlay; found={sorted(c0006_refresh_overlay)}",
                                 )
+                            elif (
+                                acceptance_head != R09_R10_PLANNED_CONTROL_SHA
+                                and c0006_refresh_parents
+                                == [R09_R10_PLANNED_CONTROL_SHA]
+                            ):
+                                # narrative refresh recording the planned pair
+                                refresh_diff = self.git(
+                                    "diff",
+                                    "--name-only",
+                                    "--no-renames",
+                                    R09_R10_PLANNED_CONTROL_SHA,
+                                    "HEAD",
+                                    "--",
+                                    check=False,
+                                )
+                                refresh_changed = {
+                                    normalize_path(path)
+                                    for path in refresh_diff.stdout.splitlines()
+                                    if path.strip()
+                                }
+                                if refresh_diff.returncode:
+                                    self.problems.add(
+                                        f"{context}.r09_r10_refresh.git",
+                                        "cannot read planning-refresh diff",
+                                    )
+                                self.problems.require(
+                                    c0006_refresh_subject
+                                    == R09_R10_NARRATIVE_REFRESH_SUBJECT,
+                                    f"{context}.r09_r10_refresh.subject",
+                                    "the R09/R10 planning narrative refresh must "
+                                    "retain the exact reviewed subject",
+                                )
+                                self.problems.require(
+                                    refresh_changed
+                                    == set(R09_R10_NARRATIVE_REFRESH_CHANGED_PATHS),
+                                    f"{context}.r09_r10_refresh.paths",
+                                    "the R09/R10 planning narrative refresh must "
+                                    "change exactly the approved README and checker "
+                                    f"paths; found={sorted(refresh_changed)}",
+                                )
+                                self.problems.require(
+                                    not c0006_refresh_overlay,
+                                    f"{context}.r09_r10_refresh.worktree",
+                                    "the R09/R10 planning narrative refresh must "
+                                    "have a clean overlay; found="
+                                    f"{sorted(c0006_refresh_overlay)}",
+                                )
                             else:
                                 r09_r10_planned_diff = self.git(
                                     "diff",
@@ -8806,11 +8865,17 @@ class CompletionValidator:
                                     f"{sorted(set(R09_R10_PLANNED_CONTROL_CHANGED_PATHS) - r09_r10_planned_changed)}, "
                                     f"extra={sorted(r09_r10_planned_changed - set(R09_R10_PLANNED_CONTROL_CHANGED_PATHS))}",
                                 )
+                                planned_overlay_extra = (
+                                    c0006_refresh_overlay
+                                    - set(R09_R10_NARRATIVE_REFRESH_CHANGED_PATHS)
+                                )
                                 self.problems.require(
-                                    not c0006_refresh_overlay,
+                                    not planned_overlay_extra,
                                     f"{context}.r09_r10_planned.worktree",
-                                    "the R09/R10 planned control must have a "
-                                    f"clean overlay; found={sorted(c0006_refresh_overlay)}",
+                                    "the only overlay permitted on the R09/R10 "
+                                    "planned control is the reviewed narrative "
+                                    "refresh path set; found extra="
+                                    f"{sorted(planned_overlay_extra)}",
                                 )
                         narrative_fragments = (
                             "C0006",

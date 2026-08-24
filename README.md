@@ -1,6 +1,6 @@
 # NumStability
 
-## C0005 R04/R08 and C0006 R07 acceptance
+## C0005 R04/R08 and C0006 R07 acceptance, and R09/R10 planning
 
 C0005 accepts M04/R04 and M08/R08 at exact integrated code commit
 `ad92bbfae62d538f3e52829a269a846688a8e213`. Its generated evidence records
@@ -22,6 +22,41 @@ accepted with retirement due, and P0010 is retired and R0011 is applied with
 its reviewed supplemental correction. The remote worker ref remains preserved
 at the immutable delivery. Branch retirement remains a separate later
 control.
+
+Exact-C0006 successor planning records
+[`B0011/R09`](docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0011.json)
+and
+[`B0012/R10`](docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012.json)
+as planned branches at exact C0006 code
+`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`, with frozen baseline projections
+P0011 (570 declarations) and P0012 (225 declarations) and active common-base
+shared-file requests R0012 and R0013. The 23-path and 7-path requests intersect
+on exactly five integrator-owned files and are reconciled by the reviewed
+[`25-path common-base union`](docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0012-R0013-union-review.md).
+The
+[`selection review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-selection.md)
+records zero peer overlap across all eight enforced dimensions. B0011/R09 runs
+in `claude-lane`; the immutable C0000 scope freeze assigns R09's 72 owners there
+and R10's 18 owners to `codex-lane`, so B0012 records that lane and operates it
+under a reviewed
+[`temporary operator authorization`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R10-operator-authorization.md).
+
+Two contract amendments accompany the pair, each with its rationale hash-pinned
+in both the branch refresh evidence and the checker, so no allowance can outlive
+the record that justifies it. A branch may now declare `exact` destination
+rules, each required to name a path absent at its base commit, because
+prefix-only destinations could not express a wave that adds a new canonical leaf
+beside already-complete siblings; an exact rule authorizes one new file and
+nothing else, which is strictly narrower than any prefix, and prefix-only
+records validate unchanged. Separately, `codex-lane` may carry the reviewed
+B0012-scoped operator pair at C0006 only while that authorization is present
+with its exact pinned bytes.
+
+Neither wave is activated, no worker ref or worktree exists, and implementation
+remains prohibited until the exact planned-control commit passes Lean CI and a
+later activation-control commit is green. The live ratchet therefore still
+records 90 unclassified modules and 72 noncanonical names; completing the pair
+is what empties both.
 
 A Lean 4 library for formally verified floating-point error analysis, following
 Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*
