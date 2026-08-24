@@ -1,0 +1,13 @@
+import NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.CountSketch.SketchInjectivityBounds
+
+/-!
+# R10 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.countSketchHashProbability_eventProb_flSparseGramDot_rowGram_perturb_ge_one_sub_square_inv
+#check @NumStability.countSketchHashProbability_eventProb_injective_ge_one_sub_pair_sum
+#check @NumStability.countSketchHashProbability_eventProb_injective_ge_one_sub_square_inv
+#check @NumStability.countSketchProbability_eventProb_flSparseGramDot_rowGram_perturb_ge_one_sub_square_inv
+#check @NumStability.countSketchProbability_expectationReal_pairCollisionIndicator_eq_inv

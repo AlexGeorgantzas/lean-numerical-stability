@@ -1,0 +1,271 @@
+{
+ "base_code_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+ "control_head_sha": "ac2253a514ee2ad25c763f1ee5a6365061f42146",
+ "counts": {
+  "destinations": 17,
+  "historical_wrappers_rewritten": 9,
+  "historical_wrappers_unchanged": 9,
+  "source_commands": 225,
+  "tests": 38
+ },
+ "files": [
+  {
+   "path": "NumStability/Algorithms/RandNLA/ElementwiseSpectral.lean",
+   "sha256": "C2BB52C17D0A7DEA050D57A99E6BB52B905E34CD05A5C232979C3D3FC517C986"
+  },
+  {
+   "path": "NumStability/Algorithms/RandNLA/HitCountConcentration.lean",
+   "sha256": "389842EE9EB5A40A31A16DCFA90C2D5DB551FEEA6313A2AB7FF68451F3F7C64F"
+  },
+  {
+   "path": "NumStability/Algorithms/RandNLA/LeastSquaresSketch.lean",
+   "sha256": "CEAE50347B975F6E666925023FBC2CE405134F81A481009A3834DDAF230A70B9"
+  },
+  {
+   "path": "NumStability/Algorithms/RandNLA/Preconditioning.lean",
+   "sha256": "E06F9AA029962B58D3272516E113D64E88710DB902A07C63C9432B20F1F38159"
+  },
+  {
+   "path": "NumStability/Algorithms/RandNLA/RowSamplingGram.lean",
+   "sha256": "236A9BBE02726B38150B89C6A89C01911ABFA263D0E8599BCBC1BEB0A174185C"
+  },
+  {
+   "path": "NumStability/Algorithms/RandNLA/RowSamplingLeverage.lean",
+   "sha256": "06D8E1BBA4D861B2AA8F6BA1D3ECDA1F4018FA1D9D384F204D43A70775CDC24D"
+  },
+  {
+   "path": "NumStability/Algorithms/RandNLA/UniformRowSampling.lean",
+   "sha256": "76CFB830C72E602DAC952720FC889B3B32CD86A8679DF4154E886652D5D4CD41"
+  },
+  {
+   "path": "NumStability/Algorithms/RandNLA/UniformRowSamplingComposition.lean",
+   "sha256": "5236D2FB25199B7A894C71A290ACD6D6831D19E228BBF761BB0BA5192F438A7C"
+  },
+  {
+   "path": "NumStability/Algorithms/RandNLA/UniformRowSamplingFP.lean",
+   "sha256": "BC7FD1F25C87C45DA1C1FB9C9DFF64E2C74A1A20749958F1352E46BC88188E1A"
+  },
+  {
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Preconditioning/CountSketch/HashCollisionProbabilities.lean",
+   "sha256": "0EE9C5C54842129A185C6C99D6B4EC30C008AB94CB004FCD75C6AF4E5DA1756A"
+  },
+  {
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Preconditioning/CountSketch/SketchedGramLoewnerCovers.lean",
+   "sha256": "C42DDECC6FC4726C33E823A7543CFD8D30E6729FC66FE087A5F5A3A64570FBDC"
+  },
+  {
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Preconditioning/CountSketch/SketchedGramMoments.lean",
+   "sha256": "0998800254FCC702CA0FC5D65A304807393A3863D615D96A473F6476C4E3B950"
+  },
+  {
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Preconditioning/CountSketch/SketchInjectivityBounds.lean",
+   "sha256": "CF21983F9366E62382AD12DE9F228D95D776922382C6A239BFF9540AB4190D07"
+  },
+  {
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Preconditioning/ExactTransforms/UniformRowEmbedding.lean",
+   "sha256": "ABA9DC3D405DDBDF5AEE1933C21E1E6C4438868FC4B23152918C9ACD2E40E794"
+  },
+  {
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Sampling/UniformRows/GramDotFloatingPoint.lean",
+   "sha256": "E55DE8EC5B9A00E8DCEDB2288E43567634A8DC53305E421DE511BCD26E6C53EC"
+  },
+  {
+   "path": "NumStability/Algorithms/RandomizedLinearAlgebra/Sampling/UniformRows/GramMoments.lean",
+   "sha256": "BA4019BE89F2417F160C3A90C88DF08989F6103F36EA4965E73C29CBB35332A1"
+  },
+  {
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm01/ElementwiseSampling/HitPairEvents.lean",
+   "sha256": "11267FD26244E3F457FF1349CAC45B14098CA1FF0A41DEA41194E2478E2763AE"
+  },
+  {
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm03/RandomProjectionPreconditioning/SparsePreconditionedEmbeddings.lean",
+   "sha256": "767CCA1F14FC31D1891093E19886414460052BE1ABBF3FE4DB42CA92E92F5943"
+  },
+  {
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm03/RandomProjectionPreconditioning/SparsePreconditionedGramBounds.lean",
+   "sha256": "014E9029BDCCD83F2585ABA074C9A85DEB633E67BA13E6082DBC2BF337249DB5"
+  },
+  {
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Algorithm03/RandomProjectionPreconditioning/SparsePreconditionedGramGrids.lean",
+   "sha256": "9CE3E49CE4E2C5DC0C78E07B3F58D4598A320DA072537F9B777E19F8EBD4D7B1"
+  },
+  {
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation02/SpectralApproximation/ResidualMomentBounds.lean",
+   "sha256": "DFA31CD88A5074830A614AE99E04B2BEF7320BAE0983AA2A3E4CF182C9F6AAFF"
+  },
+  {
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation02/SpectralApproximation/SpectralEventEndpoints.lean",
+   "sha256": "1AF2573F24475036EAF053930CD51487CF36DA9B38C18285956D42AA4BF54E92"
+  },
+  {
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation05/GramApproximation/SampledGramEndpoints.lean",
+   "sha256": "F15E890BD30A68F03A10C861A684701E5408EA0B0BABB04B1AAD81FAB8A21FE4"
+  },
+  {
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation07/SubspaceEmbedding/SampledGramOperatorNorm.lean",
+   "sha256": "BE0E4F6459DB192FBE2707B1C97B6359D05379B42F7B993310EEF140A6A3FFCE"
+  },
+  {
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/FloatingPointObjectiveBounds.lean",
+   "sha256": "6AE8BB72821265804814187A3A54418F9F63AE4F5D77BE608367CEFD48C7D8CE"
+  },
+  {
+   "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/SketchedObjectiveBounds.lean",
+   "sha256": "DB1018B19C4B3F33786202E9921A7966778D3560DB81B293AEFAD2B51C769B1A"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/All.lean",
+   "sha256": "B1213D3ACF8DF2696373612503D185E9AA851876929F80921E5722BA995B75DB"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Algorithms_RandomizedLinearAlgebra_Preconditioning_CountSketch_HashCollisionProbabilities.lean",
+   "sha256": "9F9357B39FD24CFA2B8E5259D541F0AE7DD9F26711ADD949C05246F219AB3EEF"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Algorithms_RandomizedLinearAlgebra_Preconditioning_CountSketch_SketchedGramLoewnerCovers.lean",
+   "sha256": "9B0759021891C4E0205DF0D89A990C54BBF4FE8E68EEFFF55D47EE01204A8DF5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Algorithms_RandomizedLinearAlgebra_Preconditioning_CountSketch_SketchedGramMoments.lean",
+   "sha256": "A9734CEF025D4F88540BA885AE9F29630309105FB6E23BE02FFD36472D2D9801"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Algorithms_RandomizedLinearAlgebra_Preconditioning_CountSketch_SketchInjectivityBounds.lean",
+   "sha256": "9BB9BD2785DE658D43B084EF613EF909FE4490151ED2D8DEC5F41AF20F7FE8F6"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Algorithms_RandomizedLinearAlgebra_Preconditioning_ExactTransforms_UniformRowEmbedding.lean",
+   "sha256": "BB82F8311D4109C382F939C3226DA53801729635931797133AD70001CD937CF8"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Algorithms_RandomizedLinearAlgebra_Sampling_UniformRows_GramDotFloatingPoint.lean",
+   "sha256": "E54C87790B49A8636A0DA97DAFC161DDED3D7E226D8157945028693017ABF284"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Algorithms_RandomizedLinearAlgebra_Sampling_UniformRows_GramMoments.lean",
+   "sha256": "F030ACB6D5EE263EC48BE56C63EC61206D440B20520734BBDF1EDDE404DDA787"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Source_DrineasMahoney_RandNLA2016_Algorithm01_ElementwiseSampling_HitPairEvents.lean",
+   "sha256": "518DB1A6E6819A2917343476C3FF3AEBEB75FB2249D49D2F2A37B76C090746B8"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Source_DrineasMahoney_RandNLA2016_Algorithm03_RandomProjectionPreconditioning_SparsePreconditionedEmbeddings.lean",
+   "sha256": "1B13D1A540ADEE5F68852512CC98A522F644A2B5A2FD51F78F51086A26D506A2"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Source_DrineasMahoney_RandNLA2016_Algorithm03_RandomProjectionPreconditioning_SparsePreconditionedGramBounds.lean",
+   "sha256": "720E752C320D4D5C5BB7DF70A3ABEC5146C3711A9173AB2A2E4D05F37A560076"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Source_DrineasMahoney_RandNLA2016_Algorithm03_RandomProjectionPreconditioning_SparsePreconditionedGramGrids.lean",
+   "sha256": "C6336285F01682880875CD6D10D26C9E491CBF97F93C744238A80E18389D4B3F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Source_DrineasMahoney_RandNLA2016_Equation02_SpectralApproximation_ResidualMomentBounds.lean",
+   "sha256": "A3112F4054BC1F39EFC12B272508B73383E841F018424C75C074B012DF7B3200"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Source_DrineasMahoney_RandNLA2016_Equation02_SpectralApproximation_SpectralEventEndpoints.lean",
+   "sha256": "0FC815FE9BBEDC7B532C3D4313D9AD66C12D956B22996EA50CFA6F5DDA899BB5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Source_DrineasMahoney_RandNLA2016_Equation05_GramApproximation_SampledGramEndpoints.lean",
+   "sha256": "32F211C5DAE4C2596B08E72E97300BD80C43585F2CD727C7AAAAD062DE33FBA5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Source_DrineasMahoney_RandNLA2016_Equation07_SubspaceEmbedding_SampledGramOperatorNorm.lean",
+   "sha256": "62BAD53FB5D6CFBC9508AC0A08767071B30C6339A6ADF53520908CA9D97CCE13"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Source_DrineasMahoney_RandNLA2016_Equation08_LeastSquaresSketch_FloatingPointObjectiveBounds.lean",
+   "sha256": "EBF1815ACEA2314ADA57CE7653DC1A5855CBD3518CFDD8B427775DFF5D99908B"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/CanonicalOnly/Source_DrineasMahoney_RandNLA2016_Equation08_LeastSquaresSketch_SketchedObjectiveBounds.lean",
+   "sha256": "5C5FB0F5F1CB143171AA7FD6BB7E10D4BB6683549AE89005528062ED1A6DC8A0"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/Focused/ProtectedCanonicalTargets.lean",
+   "sha256": "EB70D99AA026905320A25574A27C4B0B0FDA6BD7D12E722E6E79CC816C5C09E3"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA.lean",
+   "sha256": "226487C4F69AB03304C98EE259523D4E7BBE2F2C23D921E04D83BB4AFDC7C1F4"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_ElementwiseSampling.lean",
+   "sha256": "1C0FA89ACBE0AF2C60E21C11787AE6D330EC1075D6ED8E7821271110D50CB6C1"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_ElementwiseSpectral.lean",
+   "sha256": "2B661D1F71E5B5632D0B46530814E7460A2DFABD719AF8E04F9A5BAF69E5AD31"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_ElementwiseTraceMGF.lean",
+   "sha256": "3C7AA5E28097FF8D8DAD55760996FBD9C350B42615CC20435E3AB5F89643BABE"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_HitCountConcentration.lean",
+   "sha256": "CDEF521385F69F25310878C9AEC2B40D3FE8B071894531DA4800A66CA65B2E7C"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_LeastSquaresSketch.lean",
+   "sha256": "967E06ED899ED98245EE1F9D182256DF88167DD18F567F081C2E5A107C6A153F"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_LowRankApprox.lean",
+   "sha256": "451E062591ECBE6ED29B84DDB5BED3B605F955769FE0C72D9A7860900FBAFBAA"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_Preconditioning.lean",
+   "sha256": "84C7890655E8403B17A0AAC3DA3F463E1E8153ED3F15EE9C7D611977D76D522B"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_RowSampling.lean",
+   "sha256": "F6887073AD916DF50B9817A0DF935CE83DB40E9E7FA11DC91C706BB3F1C26732"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_RowSamplingGram.lean",
+   "sha256": "537FC0A13D9E589F1429D48054124DDD3AE760D7699C9AF45C8C89D280D3FACA"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_RowSamplingLeverage.lean",
+   "sha256": "3D004285D36976CC2C8D0A752F2B99A57306E362E909F38E53CED95D6170A9DF"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_RowSamplingLeverageComputedBasis.lean",
+   "sha256": "572A2B0308AA755736EE8B39CC93BDCF5FFEE8203A5B0D05AA3A847AB2100E62"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_RowSamplingLeverageMGF.lean",
+   "sha256": "B870325B5FADC1F502DA2D32CEF9DFC55FBDCDC2841F66FB0DA4700B9323D175"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_RowSamplingTraceMGF.lean",
+   "sha256": "01E58AA2B06C21124B87A2125EBF6BD99B8D4C522693A30D9BE64287083896E6"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_UniformRowSampling.lean",
+   "sha256": "0260C1F3E21CA317EF7BFEF4C03D9F1D970FD115173166319A79E4640C023ADF"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_UniformRowSamplingComposition.lean",
+   "sha256": "048EEFBC6153F48C7A7646DC52C0770E41D61C58B648B4B9675462A178BB9C11"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_UniformRowSamplingFP.lean",
+   "sha256": "CB1E3DFD315C93E1A3278A6ABEA0B41E779532549340BCC693F349BAA45C46E0"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/OldOnly/NumStability_Algorithms_RandNLA_UniformRowSamplingMGF.lean",
+   "sha256": "DE5441F1C85F960A00F535CC5D8A6B0B70620CD383D49A2EA0701830407C34A5"
+  },
+  {
+   "path": "NumStabilityTest/Reorganization/R10/PrivateNormalization.lean",
+   "sha256": "DC0B1B354E077DD8F8EB15265A4558F5E37992B6E86BBCD309E84F459B0A4BAC"
+  }
+ ],
+ "record_kind": "r10_worker_materialization",
+ "schema_version": 1
+}

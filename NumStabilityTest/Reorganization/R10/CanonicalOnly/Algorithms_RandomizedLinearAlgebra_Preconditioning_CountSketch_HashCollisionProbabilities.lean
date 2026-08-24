@@ -1,0 +1,12 @@
+import NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.CountSketch.HashCollisionProbabilities
+
+/-!
+# R10 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.countSketchHashProbability_eventProb_pairCollision_eq_inv
+#check @NumStability.countSketchHashProbability_eventProb_pairNoCollision_eq_one_sub_inv
+#check @NumStability.countSketchHashProbability_expectationReal_collision_coeff_sq_eq_inv_mul
+#check @NumStability.countSketchHashProbability_expectationReal_pairCollisionIndicator_eq_inv
