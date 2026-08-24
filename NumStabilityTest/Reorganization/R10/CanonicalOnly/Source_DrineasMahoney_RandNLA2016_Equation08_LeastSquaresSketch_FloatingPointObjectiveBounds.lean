@@ -1,0 +1,11 @@
+import NumStability.Source.DrineasMahoney.RandNLA2016.Equation08.LeastSquaresSketch.FloatingPointObjectiveBounds
+
+/-!
+# R10 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.leverageTraceProbability_eventProb_fl_lsObjective_le_one_add_eta_of_augmentedSpan
+#check @NumStability.leverageTraceProbability_eventProb_fl_lsObjective_le_one_add_eta_of_coordinate_quadratic_error
+#check @NumStability.leverageTraceProbability_eventProb_fl_lsObjective_le_one_add_eta_of_idBasis

@@ -1,0 +1,10 @@
+import NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding.SampledGramOperatorNorm
+
+/-!
+# R10 canonical_only test
+
+isolated canonical import checks representative routed declarations
+-/
+
+#check @NumStability.leverageTraceProbability_eventProb_fl_rowSampleGramDot_opNorm2_error_le_epsilon_add_budget
+#check @NumStability.leverageTraceProbability_eventProb_rowSampleGram_opNorm2_error_le_epsilon
