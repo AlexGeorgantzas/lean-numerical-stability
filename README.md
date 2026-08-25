@@ -12,8 +12,11 @@ C0005 base code `ad92bbfae62d538f3e52829a269a846688a8e213`. Immutable delivery
 activation-control commit `35cb1a7c5f136f291398dddd99d8012dcf38f967`. The separate
 integration-control commit applies exact R0011 and reviewed correction
 `DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909`.
-The resulting projection is 2,860 production modules: 2,770 classified, 90
+The resulting projection was 2,860 production modules: 2,770 classified, 90
 unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
+That queue is now empty: R09 and R10 were integrated at
+`09512c1b15fd4f6892a313341b1edc8c02bb913d` and the live ratchet records 2,927
+production modules with 0 unclassified.
 Exact integration-control commit `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`
 passed GitHub Lean CI run 32616508317 (job 97138028649). Checkpoint C0006 is
 accepted by `primary-human` at exact code commit
@@ -70,11 +73,28 @@ was reviewed. The activation record likewise names the local push reflog as the
 source of each remote-ref creation time, because the repository CreateEvent feed
 surfaced no CreateEvent of any age at capture time.
 
-Both workers remain frozen and implementation remains prohibited until the
-activation-control commit passes Lean CI. No implementation, delivery,
-integration, self-acceptance, checkpoint acceptance, or branch retirement is
-recorded. The live ratchet therefore still records 90 unclassified modules and
-72 noncanonical names; completing the pair is what empties both.
+Both waves are now delivered and integrated. The immutable deliveries
+`3de7b02333d7415664f440ceb6ad7ea899f32f57` (R09, 240 paths) and
+`6be9f1100557c78f7187da99b269eb3767befba0` (R10, 80 paths) are preserved by
+separate true merges, and integration control
+`09512c1b15fd4f6892a313341b1edc8c02bb913d` applies the reviewed 25-path
+R0012/R0013 common-base union exactly once, every postimage verified
+byte-for-byte. Neither delivery contains an integrator-owned shared path, so the
+two waves are disjoint on disk and both merges were automatic.
+
+**The ratchet is empty.** The live figures are 2,927 production modules with 0
+unclassified, 0 mixed, 0 missing module docs and 0 noncanonical names. One
+reviewed declaration-bearing umbrella is the only remaining layout debt.
+
+Both deliveries ship 16 of the 20 house evidence artifacts and carry no
+executable verification: all four checker scripts are withheld because the C0006
+planned control never landed the branch sidecars and request artifacts they
+read, so projection, request, scope and static replay are recorded as not
+performed. The reviewed tier amendment re-anchors one union row,
+`docs/architecture/tiers.json`, re-tiering thirteen wave destinations from
+`reusable` to `source` and withdrawing one declared reusable entry point.
+Wave self-acceptance, checkpoint acceptance and branch retirement remain
+outstanding.
 
 A Lean 4 library for formally verified floating-point error analysis, following
 Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*
@@ -263,32 +283,32 @@ the integrated R07 matrix-powers epoch (integration control
 
 | Formalization size | Count |
 |---|---:|
-| Production Lean modules | **2,860** |
-| Physical Lean source lines (including comments, blanks, and relocation padding) | **3,987,554** |
-| Nonblank Lean source lines | **1,457,233** |
-| Lean source bytes | **74,873,180** |
+| Production Lean modules | **2,927** |
+| Physical Lean source lines (including comments, blanks, and relocation padding) | **3,982,215** |
+| Nonblank Lean source lines | **1,457,465** |
+| Lean source bytes | **74,904,891** |
 | Elaborated declarations | **56,903** |
 | Theorem declarations (including source `theorem` and `lemma` commands) | **43,173** |
 | Definition declarations | **11,978** |
 | Inductive / constructor / recursor declarations | **509 / 734 / 509** |
 | Public / private / internal declarations | **55,219 / 1,680 / 4** |
-| Direct imports (internal / external) | **30,694 (18,987 / 11,707)** |
+| Direct imports (internal / external) | **31,329 (19,558 / 11,771)** |
 | Signature / body-or-proof / union declaration edges | **266,387 / 382,872 / 424,082** |
 | Proof placeholders / top-level axiom or constant commands | **0** |
 
 | Organization state | Count |
 |---|---:|
 | Import cycles | **0** |
-| Classified modules | **2,770 (96.853%)** |
-| Unclassified modules | **90** (R09=72 and R10=18, the final planned waves toward 0) |
-| Source / aggregate / compatibility modules | **1,166 / 395 / 622** |
+| Classified modules | **2,927 (100.000%)** |
+| Unclassified modules | **0** (R09 and R10 integrated; the queue is empty) |
+| Source / aggregate / compatibility modules | **1,224 / 404 / 712** |
 | Reusable / internal / upstream / mixed modules | **577 / 5 / 5 / 0** |
-| Compatibility wrappers / direct targets / import exceptions | **622 / 1,945 / 2** |
-| Modules with documentation / missing module docs | **2,860 / 0** |
-| Noncanonical names under review | **72** |
+| Compatibility wrappers / direct targets / import exceptions | **712 / 2,364 / 2** |
+| Modules with documentation / missing module docs | **2,927 / 0** |
+| Noncanonical names under review | **0** |
 | Declaration-bearing umbrellas | **1** |
 | Unsorted aggregate imports | **0** |
-| C0005 inventory rows complete / in scope / with debt | **2,671 / 147 / 136** |
+| C0006 inventory rows complete / in scope / with debt | **2,758 / 102 / 91** |
 | Reusable-to-Source reachability | **0** |
 
 The classification, tier, source-volume, and import figures are recomputed
@@ -296,8 +316,13 @@ directly from the tree at the recorded closeout commit; the declaration-graph
 figures come from the hash-pinned
 [`C0005 combined baseline`](docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0005-combined.json)
 (SHA-256 `2FC0C95FFECF114A2EDB8C14DB8C2874BDBB85FCEBA722C345AA084B3E97C02A`),
-whose declaration totals remain exact because the R07 epoch was reviewed as
-declaration-preserving (zero declarations added, lost, or renamed), generated by
+whose declaration totals remained exact because the R07 epoch was reviewed as
+declaration-preserving (zero declarations added, lost, or renamed). Those
+declaration-graph rows are carried forward unchanged here and have **not** yet
+been re-measured against a fresh graph for the R09/R10 epoch; the C0007 combined
+baseline generated for the R09/R10 acceptance will settle them. The
+classification, tier, source-volume, import and wrapper rows above are measured
+from the integrated tree. Baselines are generated by
 [`tools/architecture/generate_baseline.py`](tools/architecture/generate_baseline.py).
 Declaration counts are taken from Lean's elaborated format-2 graph, so theorem
 declarations include both source `theorem` and `lemma` commands. Physical lines
@@ -517,9 +542,9 @@ and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`;
 the accepted C0005 baseline and inventory supersede them at
 `2FC0C95FFECF114A2EDB8C14DB8C2874BDBB85FCEBA722C345AA084B3E97C02A` and
 `7C383B1AF57F65F9559C81402013412172CC93B623F7ED2E26968B9C7AFB4172`.
-Bounded-phase and repository-wide completion remain incomplete: after the
-R07 integration, 90 unclassified modules, 72 noncanonical names, and one
-declaration-bearing umbrella remain (91 distinct debt-flagged modules). The
+Bounded-phase completion is reached: after the R09/R10 integration, 0
+unclassified modules, 0 noncanonical names, and one reviewed
+declaration-bearing umbrella remain (1 distinct debt-flagged module). The
 [`active phase registry`](docs/architecture/phases/2026-08-repository-reorganization-completion/README.md)
 is the authoritative status record; the predecessor C0008 phase remains
 immutable historical evidence.
@@ -728,11 +753,11 @@ the old-to-new path map and removal policy. The
 dated audit evidence.
 
 This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After accepted checkpoint C0005 and the
-integrated R07 epoch, the live ratchet records 90 unclassified modules, zero
-mixed modules, zero missing module docs, 72 noncanonical names, and one
-reviewed declaration-bearing umbrella across 91 distinct debt-flagged
-modules. CI enforces the per-prefix
+corpus is already Mathlib-style. After accepted checkpoint C0006 and the
+integrated R09/R10 epoch, the live ratchet records zero unclassified modules,
+zero mixed modules, zero missing module docs, zero noncanonical names, and one
+reviewed declaration-bearing umbrella, the single remaining debt-flagged
+module. CI enforces the per-prefix
 direct-import ceilings recorded in `docs/architecture/layout-exceptions.json`
 and prevents these queues from growing while each dependency-contained family
 is migrated. In particular, the Chapter 14, Chapter 21, and Chapter 28 moves
@@ -945,10 +970,10 @@ destinations) under the reviewed 37-path union, and the R07 matrix-powers
 delivery `2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` was integrated on `main`
 at `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5` under exact R0011 and its
 reviewed supplemental correction.
-The current C0005-accepted, R07-integrated counts are authoritative.
-Subsequent accepted batches must reduce the current 90 unclassified modules,
-72 noncanonical names, one declaration-bearing
-umbrella, and the remaining reviewed giant-file outliers; mixed-tier and
+The current C0006-accepted, R09/R10-integrated counts are authoritative.
+The unclassified and noncanonical queues are both empty; one
+declaration-bearing umbrella and the remaining reviewed giant-file outliers are
+what subsequent accepted batches must still reduce. Mixed-tier and
 missing-module-documentation debt are both zero.
 The sequence and safety gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md), with exact

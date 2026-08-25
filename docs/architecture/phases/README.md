@@ -18,6 +18,10 @@ integration-control commit applies exact R0011 and reviewed correction
 `DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909`.
 The resulting projection is 2,860 production modules: 2,770 classified, 90
 unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
+That queue is now empty: R09 and R10 were integrated at
+`09512c1b15fd4f6892a313341b1edc8c02bb913d` under the reviewed 25-path
+R0012/R0013 union, and the live ratchet records 2,927 production modules with 0
+unclassified and 0 noncanonical names.
 Exact integration-control commit `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`
 passed GitHub Lean CI run 32616508317 (job 97138028649). Checkpoint C0006 is
 accepted by `primary-human` at exact code commit
@@ -221,10 +225,9 @@ pinned at
 `D3F30A410903B1CA2858951CB26107B94B62630BC424723A0EC9EDF484AEDDDF`,
 `08FA3E41DA0C72E7F5D4ECFD315F0CC6C73EB0F45089CF1DAC6AB04A81A1E326`,
 and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`;
-the accepted C0005 baseline and inventory supersede them. Bounded-phase and
-repository-wide completion remain incomplete: after the R07 integration, 90
-unclassified modules, 72 noncanonical names, and one declaration-bearing
-umbrella remain.
+the accepted C0005 baseline and inventory supersede them. Bounded-phase completion is reached: after the
+R09/R10 integration, 0 unclassified modules, 0 noncanonical names, and one
+reviewed declaration-bearing umbrella remain.
 
 The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
 passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and
@@ -291,7 +294,9 @@ records zero peer overlap across every enforced dimension. B0011/R09 runs in
 runs there under a
 [`temporary operator authorization`](2026-08-repository-reorganization-completion/reviews/R10-operator-authorization.md)
 adding `claude-local` to that lane. No worker ref or worktree exists, neither wave is activated, and
-implementation remains prohibited until this exact planned-control commit passes
-Lean CI and a later activation-control commit is green. Completing the pair
-empties the unclassified ratchet: R09 reclassifies the 72 `Higham28*` owners and
-R10 the last 18 `RandNLA*` owners.
+both waves were activated, delivered and integrated. R09 reclassified the 72
+`Higham28*` owners and R10 the last 18 `RandNLA*` owners, which emptied the
+unclassified ratchet. Integration control
+`09512c1b15fd4f6892a313341b1edc8c02bb913d` preserves both immutable delivery
+tips by separate true merges and applies the reviewed 25-path R0012/R0013 union
+exactly once.

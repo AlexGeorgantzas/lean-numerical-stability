@@ -913,6 +913,10 @@ R09_R10_UNION_POSTIMAGES_PATH = (
 )
 R09_DELIVERY_SHA = "3de7b02333d7415664f440ceb6ad7ea899f32f57"
 R10_DELIVERY_SHA = "6be9f1100557c78f7187da99b269eb3767befba0"
+# the integration control could not pin its own SHA; the closeout lands it
+R09_R10_INTEGRATION_CONTROL_SHA = (
+    "09512c1b15fd4f6892a313341b1edc8c02bb913d"
+)
 R09_R10_R09_MERGE_SHA = "0089a00082653b6fe0d393003432d0d2a1b7574d"
 R09_R10_R10_MERGE_SHA = "fc36ec2a48f276d9c7f0915a3749619ea41627c5"
 R09_R10_INTEGRATION_CONTROL_SUBJECT = (
@@ -959,6 +963,29 @@ B0011_DELIVERED_SHA256 = (
 )
 B0012_DELIVERED_SHA256 = (
     "1574E760BB97EA5DEACDEDD567E41161DD9FF127470FCF646CCD624AB68EEC3D"
+)
+R09_R10_INTEGRATION_CONTROL_CI_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R09-R10-integration-control-ci.json"
+)
+R09_R10_INTEGRATION_CONTROL_CI_SHA256 = (
+    "6CC51506A707C09B5F54AAD94F21A63BB069351B0D19F8F2C8E0C96136C70717"
+)
+R09_R10_INTEGRATION_CONTROL_CI_RUN = 32788870454
+R09_R10_INTEGRATION_CONTROL_CI_JOB = 97626304846
+R09_R10_INTEGRATION_CONTROL_CI_SUITE = 88825649241
+R09_R10_CLOSEOUT_SUBJECT = (
+    "docs(reorg): refresh narratives to the integrated R09/R10 statistics"
+)
+R09_R10_CLOSEOUT_CHANGED_PATHS = frozenset(
+    {
+        "README.md",
+        "docs/README.md",
+        "docs/architecture/MIGRATION.md",
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/README.md",
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R09-R10-integration-control-ci.json",
+        "docs/architecture/phases/README.md",
+        "tools/architecture/check_completion_phase.py",
+    }
 )
 B0012_CORRECTED_SHA256 = (
     "BE3A387CEA28ABD69DD3EC1288463DA4600E5544539D25B52A1D142B94594545"
@@ -9224,6 +9251,82 @@ class CompletionValidator:
                                     "activation-control path set; found extra="
                                     f"{sorted(activation_precommit_extra)}",
                                 )
+                            elif acceptance_head == R09_R10_INTEGRATION_CONTROL_SHA:
+                                # closeout precommit: HEAD is the integration
+                                # control and the overlay is the reviewed
+                                # closeout path set.
+                                closeout_precommit_extra = (
+                                    c0006_refresh_overlay
+                                    - set(R09_R10_CLOSEOUT_CHANGED_PATHS)
+                                )
+                                self.problems.require(
+                                    not closeout_precommit_extra,
+                                    f"{context}.r09_r10_closeout.precommit",
+                                    "the only overlay permitted on the R09/R10 "
+                                    "integration control is the reviewed closeout "
+                                    f"path set; found extra={sorted(closeout_precommit_extra)}",
+                                )
+                            elif c0006_refresh_parents == [R09_R10_INTEGRATION_CONTROL_SHA]:
+                                closeout_diff = self.git(
+                                    "diff", "--name-only", "--no-renames",
+                                    R09_R10_INTEGRATION_CONTROL_SHA, "HEAD", "--",
+                                    check=False,
+                                )
+                                closeout_changed = {
+                                    normalize_path(path)
+                                    for path in closeout_diff.stdout.splitlines()
+                                    if path.strip()
+                                }
+                                self.problems.require(
+                                    c0006_refresh_subject == R09_R10_CLOSEOUT_SUBJECT,
+                                    f"{context}.r09_r10_closeout.subject",
+                                    "the R09/R10 closeout must retain the exact "
+                                    "reviewed subject",
+                                )
+                                self.problems.require(
+                                    closeout_changed
+                                    == set(R09_R10_CLOSEOUT_CHANGED_PATHS),
+                                    f"{context}.r09_r10_closeout.paths",
+                                    "the R09/R10 closeout must change exactly the "
+                                    "approved narrative, attestation and checker "
+                                    "paths; "
+                                    f"missing={sorted(set(R09_R10_CLOSEOUT_CHANGED_PATHS) - closeout_changed)}, "
+                                    f"extra={sorted(closeout_changed - set(R09_R10_CLOSEOUT_CHANGED_PATHS))}",
+                                )
+                                self.problems.require(
+                                    not c0006_refresh_overlay,
+                                    f"{context}.r09_r10_closeout.worktree",
+                                    "the R09/R10 closeout must have a clean "
+                                    f"overlay; found={sorted(c0006_refresh_overlay)}",
+                                )
+                                attestation = self.root / R09_R10_INTEGRATION_CONTROL_CI_PATH
+                                self.problems.require(
+                                    attestation.is_file()
+                                    and sha256_path(attestation)
+                                    == R09_R10_INTEGRATION_CONTROL_CI_SHA256,
+                                    f"{context}.r09_r10_closeout.ci_artifact",
+                                    "the integration-control CI attestation must be "
+                                    "present with its exact pinned bytes",
+                                )
+                                if attestation.is_file():
+                                    record = self.read_json(
+                                        attestation, R09_R10_INTEGRATION_CONTROL_CI_PATH
+                                    )
+                                    run = record.get("run") or {}
+                                    job = record.get("job") or {}
+                                    suite = record.get("check_suite") or {}
+                                    self.problems.require(
+                                        run.get("id") == R09_R10_INTEGRATION_CONTROL_CI_RUN
+                                        and run.get("head_sha") == R09_R10_INTEGRATION_CONTROL_SHA
+                                        and run.get("conclusion") == "success"
+                                        and job.get("id") == R09_R10_INTEGRATION_CONTROL_CI_JOB
+                                        and job.get("conclusion") == "success"
+                                        and suite.get("id") == R09_R10_INTEGRATION_CONTROL_CI_SUITE
+                                        and suite.get("conclusion") == "success",
+                                        f"{context}.r09_r10_closeout.ci",
+                                        "the closeout must prove the exact integration "
+                                        "control passed Lean CI",
+                                    )
                             elif acceptance_head == R09_R10_R10_MERGE_SHA:
                                 integration_precommit_extra = (
                                     c0006_refresh_overlay

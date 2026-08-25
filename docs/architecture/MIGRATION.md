@@ -11,8 +11,10 @@ code commit `ad92bbfae62d538f3e52829a269a846688a8e213`. Generated evidence recor
 and M08 are accepted and M07 is ready. B0010/R07 is delivered at
 `2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` and its code is integrated on
 `main` at `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`, after which the live
-tree records 2,860 production modules: 2,770 classified, 90 unclassified, and
-0 mixed. Checkpoint C0006 (exact code commit
+tree recorded 2,860 production modules: 2,770 classified, 90 unclassified, and
+0 mixed. R09 and R10 were then integrated at
+`09512c1b15fd4f6892a313341b1edc8c02bb913d`, after which the live tree records 2,927 production modules: 2,927 classified, 0 unclassified,
+and 0 mixed, with zero noncanonical names. Checkpoint C0006 (exact code commit
 `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`) is accepted: M07 is accepted,
 B0010 is accepted with retirement due, P0010 is retired, and R0011 is
 applied. The remaining queue is exactly R09=72 and R10=18; branch retirement
@@ -86,10 +88,9 @@ and 111-path ledger SHA-256 values remain pinned at
 `D3F30A410903B1CA2858951CB26107B94B62630BC424723A0EC9EDF484AEDDDF`,
 `08FA3E41DA0C72E7F5D4ECFD315F0CC6C73EB0F45089CF1DAC6AB04A81A1E326`,
 and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`;
-the accepted C0005 baseline and inventory supersede them. Bounded-phase and
-repository-wide completion remain incomplete: after the R07 integration, 90
-unclassified modules, 72 noncanonical names, and one declaration-bearing
-umbrella remain. Acceptance-control commit
+the accepted C0005 baseline and inventory supersede them. Bounded-phase completion is reached: after the
+R09/R10 integration, 0 unclassified modules, 0 noncanonical names, and one
+reviewed declaration-bearing umbrella remain. Acceptance-control commit
 `131a0c6f333de0eb47a67698decf36ee82e01dab` passed Lean CI run 31966141900
 (job 95211495907); `primary-human` retired B0006/B0007 at
 `2026-08-16T19:08:57Z`. Their exact remote refs were deleted atomically under

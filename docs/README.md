@@ -6,8 +6,11 @@ C0005 accepts M04/R04 and M08/R08 at exact integrated code commit
 and M08 are accepted and M07 is ready. B0010/R07 is delivered at
 `2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` and its code is integrated on
 `main` at `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5` under exact R0011 and the
-reviewed supplemental correction, after which the live tree records 2,860
-production modules: 2,770 classified, 90 unclassified, and 0 mixed.
+reviewed supplemental correction, after which the live tree recorded 2,860
+production modules: 2,770 classified, 90 unclassified, and 0 mixed. R09 and R10
+were then integrated at `09512c1b15fd4f6892a313341b1edc8c02bb913d`, after which
+the live tree records 2,927 production modules: 2,927 classified, 0 unclassified,
+and 0 mixed, with zero noncanonical names.
 Checkpoint C0006 (exact code commit
 `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`) is accepted: M07 is accepted,
 B0010 is accepted with retirement due, P0010 is retired, and R0011 is
@@ -60,8 +63,8 @@ history. When two documents disagree, use the precedence order below.
    the accepted C0005 baseline and inventory supersede them at
    `2FC0C95FFECF114A2EDB8C14DB8C2874BDBB85FCEBA722C345AA084B3E97C02A` and
    `7C383B1AF57F65F9559C81402013412172CC93B623F7ED2E26968B9C7AFB4172`.
-   Bounded-phase and repository-wide completion remain incomplete: after the
-   R07 integration, 90 unclassified modules, 72 noncanonical names, and one
+   Bounded-phase completion is reached: after the R09/R10
+   integration, 0 unclassified modules, 0 noncanonical names, and one reviewed
    declaration-bearing umbrella remain. Dated worker packets do not override
    it.
 

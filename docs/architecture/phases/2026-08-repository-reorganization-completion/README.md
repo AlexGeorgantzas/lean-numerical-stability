@@ -13,6 +13,10 @@ integration-control commit applies exact R0011 and reviewed correction
 `DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909`.
 The resulting projection is 2,860 production modules: 2,770 classified, 90
 unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
+That queue is now empty: R09 and R10 were integrated at
+`09512c1b15fd4f6892a313341b1edc8c02bb913d` under the reviewed 25-path
+R0012/R0013 union, and the live ratchet records 2,927 production modules with 0
+unclassified and 0 noncanonical names.
 Exact integration-control commit `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`
 passed GitHub Lean CI run 32616508317 (job 97138028649). Checkpoint C0006 is
 accepted by `primary-human` at exact code commit
