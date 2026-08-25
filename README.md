@@ -295,11 +295,13 @@ approximation, and least-squares preconditioning.
 ## Project statistics
 
 Current production-tree snapshot on `main` after accepted checkpoint
-[`C0006`](docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0006-gates.md)
-(checkpoint code commit `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`,
-acceptance control `35c9cb8305265ce63633ea6f7404e7b5067dc1c5`), which accepts
-the integrated R07 matrix-powers epoch (integration control
-`b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`):
+[`C0007`](docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0007-gates.md)
+(checkpoint code commit `4e26820d1f4989ec4ec77b7113085f593570e11b`,
+acceptance control `691d82b0b014862a4edd1aa1787f70bba04b462e`, green on Lean CI
+run 32798189585), which accepts the integrated R09 test-matrices and R10
+randomized-linear-algebra epoch (integration control
+`09512c1b15fd4f6892a313341b1edc8c02bb913d`) and empties the classification
+queue:
 
 | Formalization size | Count |
 |---|---:|

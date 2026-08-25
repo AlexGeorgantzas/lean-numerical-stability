@@ -631,6 +631,17 @@ C0007_CODE_SHA = "4e26820d1f4989ec4ec77b7113085f593570e11b"
 # the closeout could not pin its own SHA; the C0007 acceptance lands it
 R09_R10_CLOSEOUT_SHA = C0007_CODE_SHA
 C0007_ACCEPTANCE_SUBJECT = "chore(reorganization): accept C0007 R09/R10 epoch"
+# the C0007 acceptance could not pin its own SHA; the narrative refresh lands it
+C0007_ACCEPTED_CONTROL_SHA = "691d82b0b014862a4edd1aa1787f70bba04b462e"
+C0007_ACCEPTANCE_CONTROL_CI_RUN = 32798189585
+C0007_ACCEPTANCE_CONTROL_CI_JOB = 97653702917
+C0007_ACCEPTANCE_CONTROL_CI_SUITE = 88850134180
+C0007_ACCEPTANCE_CONTROL_CI_SHA256 = (
+    "01D54375A6BD86734DEAB3E501F534EF78116F879C23B922BB2814C63B457809"
+)
+C0007_NARRATIVE_REFRESH_SUBJECT = (
+    "docs(reorg): record the C0007 acceptance in the README"
+)
 C0007_METRICS = {
     "production_modules": 2927,
     "unclassified_modules": 0,
@@ -710,6 +721,16 @@ C0006_ACCEPTANCE_EXEMPT_CONTRACT_PATHS = frozenset(
     }
 )
 C0006_ACCEPTED_CONTROL_SHA = "35c9cb8305265ce63633ea6f7404e7b5067dc1c5"
+C0007_ACCEPTANCE_CONTROL_CI_PATH = (
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/C0007-acceptance-control-ci.json"
+)
+C0007_NARRATIVE_REFRESH_CHANGED_PATHS = frozenset(
+    {
+        "README.md",
+        C0007_ACCEPTANCE_CONTROL_CI_PATH,
+        "tools/architecture/check_completion_phase.py",
+    }
+)
 C0007_ACCEPTANCE_CONTROL_PATHS = frozenset(
     {
         *C0005_ACCEPTANCE_NARRATIVE_PATHS,
@@ -9454,12 +9475,19 @@ class CompletionValidator:
                                 }
                                 # one source of truth: the same pure shape
                                 # function the adversarial self-tests exercise.
+                                # refresh precommit: at commit time HEAD is
+                                # still the acceptance, so the reviewed
+                                # narrative-refresh set is the one overlay
+                                # allowed on it.
                                 validate_c0007_acceptance_commit_shape(
                                     head=acceptance_head,
                                     parents=c0006_refresh_parents,
                                     subject=c0006_refresh_subject,
                                     changed_paths=acceptance_changed,
-                                    overlay_paths=c0006_refresh_overlay,
+                                    overlay_paths=(
+                                        c0006_refresh_overlay
+                                        - set(C0007_NARRATIVE_REFRESH_CHANGED_PATHS)
+                                    ),
                                     problems=self.problems,
                                     context=f"{context}.c0007_acceptance",
                                 )
@@ -9497,6 +9525,77 @@ class CompletionValidator:
                                         == C0007_MILESTONES,
                                         f"{context}.c0007_acceptance.milestones",
                                         "C0007 must satisfy exactly M01 through M12",
+                                    )
+                            elif c0006_refresh_parents == [C0007_ACCEPTED_CONTROL_SHA]:
+                                # C0007 narrative refresh: records the
+                                # acceptance control's own SHA and CI, which
+                                # that commit could not contain.
+                                refresh_diff = self.git(
+                                    "diff", "--name-only", "--no-renames",
+                                    C0007_ACCEPTED_CONTROL_SHA, "HEAD", "--",
+                                    check=False,
+                                )
+                                refresh_changed = {
+                                    normalize_path(path)
+                                    for path in refresh_diff.stdout.splitlines()
+                                    if path.strip()
+                                }
+                                self.problems.require(
+                                    c0006_refresh_subject
+                                    == C0007_NARRATIVE_REFRESH_SUBJECT,
+                                    f"{context}.c0007_refresh.subject",
+                                    "the C0007 narrative refresh must retain the "
+                                    "exact reviewed subject",
+                                )
+                                self.problems.require(
+                                    refresh_changed
+                                    == set(C0007_NARRATIVE_REFRESH_CHANGED_PATHS),
+                                    f"{context}.c0007_refresh.paths",
+                                    "the C0007 narrative refresh must change exactly "
+                                    "the README, the acceptance-control attestation "
+                                    "and the checker; "
+                                    f"missing={sorted(set(C0007_NARRATIVE_REFRESH_CHANGED_PATHS) - refresh_changed)}, "
+                                    f"extra={sorted(refresh_changed - set(C0007_NARRATIVE_REFRESH_CHANGED_PATHS))}",
+                                )
+                                self.problems.require(
+                                    not c0006_refresh_overlay,
+                                    f"{context}.c0007_refresh.worktree",
+                                    "the C0007 narrative refresh must have a clean "
+                                    f"overlay; found={sorted(c0006_refresh_overlay)}",
+                                )
+                                attestation = (
+                                    self.root / C0007_ACCEPTANCE_CONTROL_CI_PATH
+                                )
+                                self.problems.require(
+                                    attestation.is_file()
+                                    and sha256_path(attestation)
+                                    == C0007_ACCEPTANCE_CONTROL_CI_SHA256,
+                                    f"{context}.c0007_refresh.ci_artifact",
+                                    "the acceptance-control CI attestation must be "
+                                    "present with its exact pinned bytes",
+                                )
+                                if attestation.is_file():
+                                    att = self.read_json(
+                                        attestation, f"{context}.c0007_refresh.ci"
+                                    )
+                                    att_run = att.get("run") or {}
+                                    att_job = att.get("job") or {}
+                                    att_suite = att.get("check_suite") or {}
+                                    self.problems.require(
+                                        att_run.get("id")
+                                        == C0007_ACCEPTANCE_CONTROL_CI_RUN
+                                        and att_run.get("head_sha")
+                                        == C0007_ACCEPTED_CONTROL_SHA
+                                        and att_run.get("conclusion") == "success"
+                                        and att_job.get("id")
+                                        == C0007_ACCEPTANCE_CONTROL_CI_JOB
+                                        and att_job.get("conclusion") == "success"
+                                        and att_suite.get("id")
+                                        == C0007_ACCEPTANCE_CONTROL_CI_SUITE
+                                        and att_suite.get("conclusion") == "success",
+                                        f"{context}.c0007_refresh.ci",
+                                        "the refresh must prove the exact C0007 "
+                                        "acceptance control passed Lean CI",
                                     )
                             elif acceptance_head == R09_R10_R10_MERGE_SHA:
                                 integration_precommit_extra = (
