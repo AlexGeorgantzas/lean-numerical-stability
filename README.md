@@ -15,6 +15,34 @@ tracks a selected precise scope and distinguishes source-strength proofs,
 checked discrepancies with corrected statements, and claims that the source
 does not specify precisely enough to formalize honestly.
 
+## Reorganization acceptance record
+
+The accepted C0007/R09-R10 epoch retains the following checkpoint facts as
+immutable history; the current production statistics appear below.
+C0005 accepts M04/R04 and M08/R08 at exact integrated code commit
+`ad92bbfae62d538f3e52829a269a846688a8e213`. Its generated evidence records
+2,818 production modules: 2,685 classified, 133 unclassified, and 0 mixed. M04
+and M08 are accepted; M07 became ready and B0010/R07 was delivered from exact
+C0005 base code `ad92bbfae62d538f3e52829a269a846688a8e213`. Immutable delivery
+`2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` is preserved by true merge
+`4e298a102c6f914b42581492152ab9eea1cd0edf`, whose first parent is exact
+activation-control commit `35cb1a7c5f136f291398dddd99d8012dcf38f967`.
+The separate integration-control commit applies exact R0011 and reviewed
+correction `DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909`.
+The resulting projection was 2,860 production modules: 2,770 classified, 90
+unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
+That queue is now empty: R09 and R10 were integrated at
+`09512c1b15fd4f6892a313341b1edc8c02bb913d` and the live ratchet records 2,927
+production modules with 0 unclassified.
+
+Exact integration-control commit `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`
+passed GitHub Lean CI run 32616508317 (job 97138028649). Checkpoint C0006 is
+accepted by `primary-human` at exact code commit
+`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`: M07 is accepted at C0006, B0010 is
+accepted with retirement due, and P0010 is retired and R0011 is applied with
+its reviewed supplemental correction. The remote worker ref remains preserved
+at the immutable delivery. Branch retirement remains a separate later control.
+
 ## Floating-point model
 
 The core library uses an

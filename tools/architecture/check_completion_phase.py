@@ -642,6 +642,10 @@ C0007_ACCEPTANCE_CONTROL_CI_SHA256 = (
 C0007_NARRATIVE_REFRESH_SUBJECT = (
     "docs(reorg): record the C0007 acceptance in the README"
 )
+# The refresh is the terminal, green state for the accepted C0007/R09-R10
+# control epoch. Later ordinary development must preserve it as an ancestor
+# without being mistaken for an earlier transition commit.
+C0007_NARRATIVE_REFRESH_SHA = "e0b35f83076aee5c7f8e94c92ffd849de1628643"
 C0007_METRICS = {
     "production_modules": 2927,
     "unclassified_modules": 0,
@@ -9271,6 +9275,13 @@ class CompletionValidator:
                                 )
                                 - untracked_material
                             )
+                            c0007_refresh_is_ancestor = self.git(
+                                "merge-base",
+                                "--is-ancestor",
+                                C0007_NARRATIVE_REFRESH_SHA,
+                                acceptance_head,
+                                check=False,
+                            ).returncode == 0
                             # Two reviewed states sit past the acceptance
                             # control: the narrative refresh, and the R09/R10
                             # planned control that succeeds it. While the
@@ -9526,13 +9537,23 @@ class CompletionValidator:
                                         f"{context}.c0007_acceptance.milestones",
                                         "C0007 must satisfy exactly M01 through M12",
                                     )
-                            elif c0006_refresh_parents == [C0007_ACCEPTED_CONTROL_SHA]:
+                            elif acceptance_head == C0007_NARRATIVE_REFRESH_SHA:
                                 # C0007 narrative refresh: records the
                                 # acceptance control's own SHA and CI, which
                                 # that commit could not contain.
+                                self.problems.require(
+                                    c0006_refresh_parents
+                                    == [C0007_ACCEPTED_CONTROL_SHA],
+                                    f"{context}.c0007_refresh.parent",
+                                    "the exact C0007 narrative refresh must be a "
+                                    "single-parent direct child of the acceptance "
+                                    "control",
+                                )
                                 refresh_diff = self.git(
                                     "diff", "--name-only", "--no-renames",
-                                    C0007_ACCEPTED_CONTROL_SHA, "HEAD", "--",
+                                    C0007_ACCEPTED_CONTROL_SHA,
+                                    C0007_NARRATIVE_REFRESH_SHA,
+                                    "--",
                                     check=False,
                                 )
                                 refresh_changed = {
@@ -9563,40 +9584,6 @@ class CompletionValidator:
                                     "the C0007 narrative refresh must have a clean "
                                     f"overlay; found={sorted(c0006_refresh_overlay)}",
                                 )
-                                attestation = (
-                                    self.root / C0007_ACCEPTANCE_CONTROL_CI_PATH
-                                )
-                                self.problems.require(
-                                    attestation.is_file()
-                                    and sha256_path(attestation)
-                                    == C0007_ACCEPTANCE_CONTROL_CI_SHA256,
-                                    f"{context}.c0007_refresh.ci_artifact",
-                                    "the acceptance-control CI attestation must be "
-                                    "present with its exact pinned bytes",
-                                )
-                                if attestation.is_file():
-                                    att = self.read_json(
-                                        attestation, f"{context}.c0007_refresh.ci"
-                                    )
-                                    att_run = att.get("run") or {}
-                                    att_job = att.get("job") or {}
-                                    att_suite = att.get("check_suite") or {}
-                                    self.problems.require(
-                                        att_run.get("id")
-                                        == C0007_ACCEPTANCE_CONTROL_CI_RUN
-                                        and att_run.get("head_sha")
-                                        == C0007_ACCEPTED_CONTROL_SHA
-                                        and att_run.get("conclusion") == "success"
-                                        and att_job.get("id")
-                                        == C0007_ACCEPTANCE_CONTROL_CI_JOB
-                                        and att_job.get("conclusion") == "success"
-                                        and att_suite.get("id")
-                                        == C0007_ACCEPTANCE_CONTROL_CI_SUITE
-                                        and att_suite.get("conclusion") == "success",
-                                        f"{context}.c0007_refresh.ci",
-                                        "the refresh must prove the exact C0007 "
-                                        "acceptance control passed Lean CI",
-                                    )
                             elif acceptance_head == R09_R10_R10_MERGE_SHA:
                                 integration_precommit_extra = (
                                     c0006_refresh_overlay
@@ -9784,6 +9771,13 @@ class CompletionValidator:
                                     self.problems,
                                     context=f"{context}.r09_r10_activation",
                                 )
+                            elif c0007_refresh_is_ancestor:
+                                # Descendants of the exact, authenticated
+                                # refresh are ordinary continuation after the
+                                # accepted C0007/R09-R10 epoch. Keep this arm
+                                # last so later epoch transitions can add more
+                                # specific validators above it.
+                                pass
                             else:
                                 r09_r10_planned_diff = self.git(
                                     "diff",
@@ -9840,6 +9834,44 @@ class CompletionValidator:
                                     "refresh path set; found extra="
                                     f"{sorted(planned_overlay_extra)}",
                                 )
+                            if c0007_refresh_is_ancestor:
+                                # The live attestation remains part of the
+                                # accepted control state for every descendant,
+                                # not only at the exact refresh commit.
+                                attestation = (
+                                    self.root / C0007_ACCEPTANCE_CONTROL_CI_PATH
+                                )
+                                self.problems.require(
+                                    attestation.is_file()
+                                    and sha256_path(attestation)
+                                    == C0007_ACCEPTANCE_CONTROL_CI_SHA256,
+                                    f"{context}.c0007_refresh.ci_artifact",
+                                    "the acceptance-control CI attestation must be "
+                                    "present with its exact pinned bytes",
+                                )
+                                if attestation.is_file():
+                                    att = self.read_json(
+                                        attestation, f"{context}.c0007_refresh.ci"
+                                    )
+                                    att_run = att.get("run") or {}
+                                    att_job = att.get("job") or {}
+                                    att_suite = att.get("check_suite") or {}
+                                    self.problems.require(
+                                        att_run.get("id")
+                                        == C0007_ACCEPTANCE_CONTROL_CI_RUN
+                                        and att_run.get("head_sha")
+                                        == C0007_ACCEPTED_CONTROL_SHA
+                                        and att_run.get("conclusion") == "success"
+                                        and att_job.get("id")
+                                        == C0007_ACCEPTANCE_CONTROL_CI_JOB
+                                        and att_job.get("conclusion") == "success"
+                                        and att_suite.get("id")
+                                        == C0007_ACCEPTANCE_CONTROL_CI_SUITE
+                                        and att_suite.get("conclusion") == "success",
+                                        f"{context}.c0007_refresh.ci",
+                                        "the refresh must prove the exact C0007 "
+                                        "acceptance control passed Lean CI",
+                                    )
                         narrative_fragments = (
                             "C0006",
                             C0006_CODE_SHA,
