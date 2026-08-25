@@ -120,9 +120,9 @@
   }
  ],
  "integration": {
-  "accepted_checkpoint_id": null,
-  "accepted_sha": null,
-  "method": null
+  "accepted_checkpoint_id": "C0007",
+  "accepted_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+  "method": "merge"
  },
  "lane_id": "codex-lane",
  "operator_ids": [
@@ -242,7 +242,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0012.json",
-    "sha256": "252630935F55B2D18F4B94A12525352607BB1B4E9D2795995B351D90940956F3"
+    "sha256": "E7ED8400957C16612F41B532F97DCB3FFBFDAFB8E6210669C81FC14C3028F073"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0012.tsv.gz",
@@ -258,7 +258,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0013.json",
-    "sha256": "4EFC8B59FEEBFD1A3D9EBDDAD471A6A3FD4C5C113EBC4652BBC8092061ABFD38"
+    "sha256": "2CD1FAB3003C8567746A5DBEED9C5E0CDE38BB478EC4FBCF1F9FF10EBEE4A04E"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-activation-authorization.json",
@@ -305,12 +305,12 @@
   "retired_at": null,
   "retired_by": null,
   "rule": "delivery_ancestor_of_green_checkpoint",
-  "status": "not_due"
+  "status": "due"
  },
  "schema_version": 1,
  "shared_request_ids": [
   "R0013"
  ],
- "status": "delivered",
+ "status": "accepted",
  "wave_id": "R10"
 }

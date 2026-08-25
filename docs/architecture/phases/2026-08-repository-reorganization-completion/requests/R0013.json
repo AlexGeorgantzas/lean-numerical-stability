@@ -54,15 +54,20 @@
  "request_id": "R0013",
  "requester_id": "primary-human",
  "resolution": {
-  "checkpoint_id": null,
-  "commit_sha": null,
-  "reason": null,
-  "resolved_at": null,
-  "resolved_by": null,
-  "validation_evidence": []
+  "checkpoint_id": "C0007",
+  "commit_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+  "reason": "Applied as the reviewed R0012 and R0013 common-base shared-file requests, reconciled as the reviewed 25-path union and applied by the integrator after both immutable delivery merges, integrated on main with green integration-control CI.",
+  "resolved_at": "2026-08-25T01:15:00Z",
+  "resolved_by": "primary-human",
+  "validation_evidence": [
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0007-gates.md",
+    "sha256": "75A838606398B2D166250FF9CF522D639A7B3AABBBE2BC3D12A9D6C76D791EBA"
+   }
+  ]
  },
  "schema_version": 1,
- "status": "active",
+ "status": "applied",
  "superseded_by": null,
  "supersedes": null,
  "target_base_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",

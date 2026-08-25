@@ -14,8 +14,14 @@ and 0 mixed, with zero noncanonical names.
 Checkpoint C0006 (exact code commit
 `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`) is accepted: M07 is accepted,
 B0010 is accepted with retirement due, P0010 is retired, and R0011 is
-applied. The remaining queue is exactly R09=72 and R10=18; branch retirement
-remains a separate later control.
+applied.
+
+Checkpoint C0007 (exact code commit
+`4e26820d1f4989ec4ec77b7113085f593570e11b`, green on Lean CI run 32794282084)
+is accepted: M09 and M10 are accepted, B0011 and B0012 are accepted with
+retirement due, P0011 and P0012 are retired, and R0012 and R0013 are applied as
+the reviewed 25-path union. The remaining queue is exactly I01=12; branch
+retirement remains a separate later control.
 
 This directory separates current policy from dated evidence and source-audit
 history. When two documents disagree, use the precedence order below.
@@ -34,10 +40,10 @@ history. When two documents disagree, use the precedence order below.
    per-file licensing and upstream-attribution policy.
 6. [`architecture/phases/2026-08-repository-reorganization-completion/`](architecture/phases/2026-08-repository-reorganization-completion/README.md)
    is the active repository-wide scope, authority, wave, checkpoint, and branch
-   contract. Its current checkpoint is C0006 at exact code commit
-   `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`, accepting the R07 epoch on top
-   of C0005 at exact integrated code commit
-   `ad92bbfae62d538f3e52829a269a846688a8e213`. M04/R04 and M08/R08 are
+   contract. Its current checkpoint is C0007 at exact code commit
+   `4e26820d1f4989ec4ec77b7113085f593570e11b`, accepting the R09/R10 epoch on
+   top of C0006 at exact integrated code commit
+   `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`. M04/R04 and M08/R08 are
    accepted; P0008/P0009 are retired evidence, R0009/R0010 are applied, and the
    temporary operator expansion and wave reservations are released. M07 is
    ready; B0010/R07 was activated, delivered, and integrated on `main`, with

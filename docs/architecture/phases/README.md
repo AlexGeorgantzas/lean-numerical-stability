@@ -27,9 +27,18 @@ passed GitHub Lean CI run 32616508317 (job 97138028649). Checkpoint C0006 is
 accepted by `primary-human` at exact code commit
 `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`: M07 is accepted at C0006, B0010 is
 accepted with retirement due, and P0010 is retired and R0011 is applied with
-its reviewed supplemental correction. The remote worker ref remains preserved
-at the immutable delivery. Branch retirement remains a separate later
-control.
+its reviewed supplemental correction.
+
+Checkpoint C0007 is accepted by `primary-human` at exact code commit
+`4e26820d1f4989ec4ec77b7113085f593570e11b`, which passed GitHub Lean CI run
+32794282084: M09 and M10 are accepted at C0007, B0011 and B0012 are accepted
+with retirement due, P0011 and P0012 are retired, and R0012 and R0013 are
+applied as the reviewed 25-path union. The eighteen wave-specific shared-path
+reservations are released, leaving seven perennial. C0007 is the first
+checkpoint with an empty classification queue, leaving M13 and its I01 wave of
+twelve reserved modules as the phase's remaining wave work. Both remote worker
+refs remain preserved at their immutable deliveries. Branch retirement remains a
+separate later control.
 
 B0011/R09 and B0012/R10 are active at exact C0006 base code
 `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`. Exact planned-control commit

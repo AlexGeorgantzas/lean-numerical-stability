@@ -17,8 +17,14 @@ tree recorded 2,860 production modules: 2,770 classified, 90 unclassified, and
 and 0 mixed, with zero noncanonical names. Checkpoint C0006 (exact code commit
 `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`) is accepted: M07 is accepted,
 B0010 is accepted with retirement due, P0010 is retired, and R0011 is
-applied. The remaining queue is exactly R09=72 and R10=18; branch retirement
-remains a separate later control.
+applied.
+
+Checkpoint C0007 (exact code commit
+`4e26820d1f4989ec4ec77b7113085f593570e11b`, green on Lean CI run 32794282084)
+is accepted: M09 and M10 are accepted, B0011 and B0012 are accepted with
+retirement due, P0011 and P0012 are retired, and R0012 and R0013 are applied as
+the reviewed 25-path union. The remaining queue is exactly I01=12; branch
+retirement remains a separate later control.
 The checkpoint distinguishes bounded-phase from repository-wide completion and
 records branch, baseline, shared-request, build-lock, and lifecycle rules.
 Validate it with `python tools/architecture/check_phase.py`. Dated packets and
