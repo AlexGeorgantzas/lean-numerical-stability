@@ -1,1013 +1,231 @@
 # NumStability
 
-## C0006 R07 and C0007 R09/R10 acceptance
+NumStability is a Lean 4 library for machine-checked floating-point error
+analysis and numerical stability. It develops reusable mathematics for rounding,
+summation, matrix computations, perturbation theory, and related numerical
+algorithms. It also provides source correspondence with Nicholas J. Higham's
+*Accuracy and Stability of Numerical Algorithms* (2nd ed.) and a randomized
+numerical linear algebra (RandNLA) case study based on work by Drineas and
+Mahoney.
 
-C0005 accepts M04/R04 and M08/R08 at exact integrated code commit
-`ad92bbfae62d538f3e52829a269a846688a8e213`. Its generated evidence records
-2,818 production modules: 2,685 classified, 133 unclassified, and 0 mixed. M04
-and M08 are accepted; M07 became ready and B0010/R07 was delivered from exact
-C0005 base code `ad92bbfae62d538f3e52829a269a846688a8e213`. Immutable delivery
-`2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` is preserved by true merge
-`4e298a102c6f914b42581492152ab9eea1cd0edf`, whose first parent is exact
-activation-control commit `35cb1a7c5f136f291398dddd99d8012dcf38f967`. The separate
-integration-control commit applies exact R0011 and reviewed correction
-`DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909`.
-The resulting projection was 2,860 production modules: 2,770 classified, 90
-unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
-That queue is now empty: R09 and R10 were integrated at
-`09512c1b15fd4f6892a313341b1edc8c02bb913d` and the live ratchet records 2,927
-production modules with 0 unclassified.
-Exact integration-control commit `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`
-passed GitHub Lean CI run 32616508317 (job 97138028649). Checkpoint C0006 is
-accepted by `primary-human` at exact code commit
-`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`: M07 is accepted at C0006, B0010 is
-accepted with retirement due, and P0010 is retired and R0011 is applied with
-its reviewed supplemental correction. The remote worker ref remains preserved
-at the immutable delivery. Branch retirement remains a separate later
-control.
-
-Exact-C0006 successor planning records
-[`B0011/R09`](docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0011.json)
-and
-[`B0012/R10`](docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012.json)
-as planned branches at exact C0006 code
-`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`, with frozen baseline projections
-P0011 (570 declarations) and P0012 (225 declarations) and active common-base
-shared-file requests R0012 and R0013. The 23-path and 7-path requests intersect
-on exactly five integrator-owned files and are reconciled by the reviewed
-[`25-path common-base union`](docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0012-R0013-union-review.md).
-The
-[`selection review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-selection.md)
-records zero peer overlap across all eight enforced dimensions. B0011/R09 runs
-in `claude-lane`; the immutable C0000 scope freeze assigns R09's 72 owners there
-and R10's 18 owners to `codex-lane`, so B0012 records that lane and operates it
-under a reviewed
-[`temporary operator authorization`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R10-operator-authorization.md).
-
-Two contract amendments accompany the pair, each with its rationale hash-pinned
-in both the branch refresh evidence and the checker, so no allowance can outlive
-the record that justifies it. A branch may now declare `exact` destination
-rules, each required to name a path absent at its base commit, because
-prefix-only destinations could not express a wave that adds a new canonical leaf
-beside already-complete siblings; an exact rule authorizes one new file and
-nothing else, which is strictly narrower than any prefix, and prefix-only
-records validate unchanged. Separately, `codex-lane` may carry the reviewed
-B0012-scoped operator pair at C0006 only while that authorization is present
-with its exact pinned bytes.
-
-B0011/R09 and B0012/R10 are active at exact C0006 base code
-`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`, authorized by the reviewed
-[`activation authorization`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-activation-authorization.json)
-and attested by the
-[`activation record`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R09-R10-activation.json).
-The planned control `b12c9c6b829f9cf80a9ad6cf2d0c55f3530cd0d7` passed
-Lean CI run 32747422537 (job 97496170577) before either worker was created. Both local
-and remote refs and both clean LF named worktrees point to that exact base with
-no `.lake` or olean material and zero CRLF tracked files.
-
-The authorization is deliberately narrower than the R07 precedent, which
-recorded a primary-human semantic review over 25 hash-pinned artifacts. This one
-records an activation grant over an already-reviewed plan and states in its
-`basis` block what it does not include, so the ledger does not overclaim what
-was reviewed. The activation record likewise names the local push reflog as the
-source of each remote-ref creation time, because the repository CreateEvent feed
-surfaced no CreateEvent of any age at capture time.
-
-Both waves are now delivered and integrated. The immutable deliveries
-`3de7b02333d7415664f440ceb6ad7ea899f32f57` (R09, 240 paths) and
-`6be9f1100557c78f7187da99b269eb3767befba0` (R10, 80 paths) are preserved by
-separate true merges, and integration control
-`09512c1b15fd4f6892a313341b1edc8c02bb913d` applies the reviewed 25-path
-R0012/R0013 common-base union exactly once, every postimage verified
-byte-for-byte. Neither delivery contains an integrator-owned shared path, so the
-two waves are disjoint on disk and both merges were automatic.
-
-**The ratchet is empty.** The live figures are 2,927 production modules with 0
-unclassified, 0 mixed, 0 missing module docs and 0 noncanonical names. One
-reviewed declaration-bearing umbrella is the only remaining layout debt.
-
-Checkpoint C0007 is accepted by `primary-human` at exact code commit
-`4e26820d1f4989ec4ec77b7113085f593570e11b`, which passed GitHub Lean CI run
-32794282084. M09 and M10 are accepted at C0007; B0011 and B0012 are accepted
-with retirement due; P0011 and P0012 are retired; and R0012 and R0013 are
-applied as the reviewed 25-path union. The eighteen wave-specific shared-path
-reservations are released, leaving the seven perennial ones. The reviewed
-B0012-scoped `codex-lane` operator expansion also expires, having been
-authorized only while R10 was operated, so the lane reverts to its immutable
-single operator. C0007 is the first checkpoint at which the classification
-queue is empty, so M13 and its I01 wave of twelve reserved modules are the
-phase's remaining wave work. Branch
-retirement and the acceptance-control CI attestation remain separate later
-controls.
-
-The C0007 evidence is generated, not asserted: a combined baseline, a 2,927-row
-inventory carrying exactly one debt row, a 38-path integration ledger, and a
-final gate report recording all twelve acceptance gates PASS. The ledger carries
-no request-correction path, unlike C0006's four, because the reviewed union
-applied exactly as written.
-
-Both deliveries ship 16 of the 20 house evidence artifacts and carry no
-executable verification: all four checker scripts are withheld because the C0006
-planned control never landed the branch sidecars and request artifacts they
-read, so projection, request, scope and static replay are recorded as not
-performed. The reviewed tier amendment re-anchors one union row,
-`docs/architecture/tiers.json`, re-tiering thirteen wave destinations from
-`reusable` to `source` and withdrawing one declared reusable entry point.
-Wave self-acceptance, checkpoint acceptance and branch retirement remain
-outstanding.
-
-A Lean 4 library for formally verified floating-point error analysis, following
-Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*
-(2nd ed., SIAM, 2002), together with a randomized numerical linear algebra
-(RandNLA) case study.
-
-The library contains machine-checked material from **all 28 chapters** of
-Higham. The tree contains **no `sorry` or `admit`, and no source-level `axiom`
-or `constant` commands**. Sampled headline theorems depend only on the standard
-`[propext, Classical.choice, Quot.sound]` axioms. The fresh audit makes every
-selected core row terminal: precise claims are proved at source strength,
-false claims have theorem-level counterexamples and faithful corrections, and
-source text that does not determine a proposition is explicitly deferred.
+The library contains material from all 28 chapters of Higham. This does not mean
+that every sentence in the book has been formalized: the
+[source audit](docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_2026-07-21.md)
+tracks a selected precise scope and distinguishes source-strength proofs,
+checked discrepancies with corrected statements, and claims that the source
+does not specify precisely enough to formalize honestly.
 
 ## Floating-point model
 
-The library uses an **abstract** floating-point model
-([`FloatingPoint/Model.lean`](NumStability/FloatingPoint/Model.lean)), not a concrete IEEE-754
-representation. An `FPModel` carries a unit roundoff `u` and rounding operations
-`fl_add / fl_sub / fl_mul / fl_div / fl_sqrt`, each satisfying the standard model
+The core library uses an
+[abstract real-arithmetic model](NumStability/FloatingPoint/Model.lean), not a
+concrete IEEE-754 implementation. An `FPModel` supplies a nonnegative unit
+roundoff `u` and rounded addition, subtraction, multiplication, division, and
+square root. For the binary operations, the central relative-error law is
 
+```text
+fl(x ◦ y) = (x ◦ y)(1 + δ),    |δ| ≤ u.
 ```
-fl(x ∘ y) = (x ∘ y)(1 + δ),   |δ| ≤ u
-```
 
-Because everything is parametric over `u` and the rounding operations, results
-hold for **any** arithmetic satisfying the standard model. A concrete instance
-`FPModel.exactWithUnitRoundoff` (operations exact, `δ = 0`, formal `u ≥ 0`) is
-used to *prove obstructions* — for example, to refute overly strong norm or
-factor-identification claims before replacing them with faithful statements.
+Division carries a nonzero-denominator condition, square root a nonnegative-input
+condition, and the model assumes `fl_add 0 x = x`. Individual theorems state any
+additional guards they need, such as bounds ensuring `γ(n)` is defined.
 
-## What's covered
+Results are parameterized by this model. The exact-arithmetic instance
+`FPModel.exactWithUnitRoundoff` is also useful for proving that an overly strong
+claim cannot follow from the abstract assumptions alone. Exact algebra and
+matrix norms come from Mathlib; new APIs use Mathlib's `Matrix` and norm
+interfaces directly, while older function-shaped matrix APIs remain available
+through compatibility wrappers.
 
-Higham chapters 1–28, plus the RandNLA case study. Per-chapter status is tracked
-in the ledgers under [`docs/source_coverage/`](docs/source_coverage/). The
-authoritative from-scratch audit is the fresh PDF-first source-strength audit
-[`docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_2026-07-21.md`](docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_2026-07-21.md).
-It froze remote `main` at
-`2bb76d004b7dddd0e6dfb61f84c0be8e6816fa19`, re-read all 28 chapter PDFs
-(513 pages; corpus fingerprint recorded in the report), inventoried 165 named
-body results and 585 numbered body equations, and then checked declaration
-types and 60 exact-label producer-to-consumer chapter pairs independently of the
-ledger conclusions. It distinguishes source-strength proofs, compiled source
-counterexamples, undefined source statements, and external-citation deferrals.
-Older reports are retained as historical records but are superseded by this
-rerun, which found additional source-strength and traceability gaps.
+## Coverage
 
-| Ch | Topic | Strict gate |
-|----|-------|-------------|
-| 1  | Principles of finite precision | PASS |
-| 2  | Floating point arithmetic | PASS |
-| 3  | Basics (dot products, `γ(n)`) | PASS |
-| 4  | Summation | PASS |
-| 5  | Polynomials (Horner) | PASS |
-| 6  | Norms | PASS / SOURCE-DISCREPANCY |
-| 7  | Perturbation theory for linear systems | PASS / SOURCE-DISCREPANCY |
-| 8  | Triangular systems | PASS / SOURCE-DISCREPANCY / DEFER |
-| 9  | LU factorization and linear equations | PASS |
-| 10 | Cholesky factorization | PASS / SOURCE-DISCREPANCY |
-| 11 | Symmetric indefinite / skew-symmetric systems | PASS / SOURCE-DISCREPANCY |
-| 12 | Iterative refinement | PASS / DEFER |
-| 13 | Block LU factorization | PASS |
-| 14 | Matrix inversion | PASS / SOURCE-DISCREPANCY / DEFER |
-| 15 | Condition number estimation | PASS / SOURCE-DISCREPANCY / DEFER |
-| 16 | The Sylvester equation | PASS / DEFER |
-| 17 | Stationary iterative methods | PASS |
-| 18 | Matrix powers | PASS / DEFER |
-| 19 | QR factorization | PASS / SOURCE-DISCREPANCY / DEFER (explicit domain) |
-| 20 | The least squares problem | PASS / SOURCE-DISCREPANCY / DEFER (explicit domain) |
-| 21 | Underdetermined systems | PASS / SOURCE-DISCREPANCY |
-| 22 | Vandermonde systems | PASS / SOURCE-DISCREPANCY |
-| 23 | Fast matrix multiplication | PASS / DEFER |
-| 24 | The FFT and applications | PASS |
-| 25 | Nonlinear systems and Newton's method | PASS / SOURCE-DISCREPANCY / DEFER |
-| 26 | Automatic error analysis | PASS / SOURCE-DISCREPANCY / DEFER |
-| 27 | Software issues in floating point | PASS / SOURCE-DISCREPANCY / DEFER |
-| 28 | A gallery of test matrices | PASS / SOURCE-DISCREPANCY / DEFER |
+All 28 chapter rows are terminal under the audit rules, with no unresolved
+precise core rows. In the table, **Closed** means compiled at source strength,
+**Discrepancy** means the printed claim has a compiled counterexample and a
+faithful correction, and **Defer** records an imprecise source statement or an
+external citation rather than a proof hole. The detailed evidence lives in the
+[per-chapter ledgers](docs/source_coverage/) and the
+[PDF-first audit](docs/source_coverage/AUDIT_ch01-28_PDF_FIRST_2026-07-21.md).
 
-Fresh result: **28 chapters terminal, 0 unresolved precise core rows**.
-The explicit `DEFER` entries are source-level indeterminacy or external-citation
-boundaries, not hidden proof holes.
+| Ch. | Topic | Audit result |
+|---:|---|---|
+| 1 | Principles of finite precision | Closed |
+| 2 | Floating-point arithmetic | Closed |
+| 3 | Basics (dot products, `γ(n)`) | Closed |
+| 4 | Summation | Closed |
+| 5 | Polynomials and Horner's method | Closed |
+| 6 | Norms | Discrepancy |
+| 7 | Perturbation theory for linear systems | Discrepancy |
+| 8 | Triangular systems | Discrepancy · Defer |
+| 9 | LU factorization and linear equations | Closed |
+| 10 | Cholesky factorization | Discrepancy |
+| 11 | Symmetric indefinite and skew-symmetric systems | Discrepancy |
+| 12 | Iterative refinement | Closed · Defer |
+| 13 | Block LU factorization | Closed |
+| 14 | Matrix inversion | Closed · Discrepancy · Defer |
+| 15 | Condition-number estimation | Discrepancy · Defer |
+| 16 | The Sylvester equation | Closed · Defer |
+| 17 | Stationary iterative methods | Closed |
+| 18 | Matrix powers | Closed · Defer |
+| 19 | QR factorization | Closed · Discrepancy · Defer |
+| 20 | The least-squares problem | Discrepancy · Defer |
+| 21 | Underdetermined systems | Discrepancy |
+| 22 | Vandermonde systems | Discrepancy |
+| 23 | Fast matrix multiplication | Closed · Defer |
+| 24 | The FFT and applications | Closed |
+| 25 | Nonlinear systems and Newton's method | Discrepancy · Defer |
+| 26 | Automatic error analysis | Discrepancy · Defer |
+| 27 | Software issues in floating point | Discrepancy · Defer |
+| 28 | A gallery of test matrices | Discrepancy · Defer |
 
-`PASS` means every precise selected theorem, lemma, equation, and
-implementation-facing claim is terminal under the audit rules. A
-`SOURCE-DISCREPANCY` qualification means the printed statement is false and the
-library contains both a theorem-level counterexample and a faithful correction;
-it does not mean that the source formula was made provable by adding a hidden
-hypothesis. Unparameterized higher-order notation, qualitative observations,
-visual tables, and unspecified algorithms are explicitly inventoried and
-deferred rather than converted into arbitrary propositions.
-
-- **Chapter 11:** A bounded-search exact rook trace now constructs its schedule,
-  permutations, `L`, and block-diagonal `D`, and proves the printed multiplier,
-  pivot-block, growth, and Theorem 11.4 product bounds without caller-supplied
-  rook certificates. Two compiled examples show why that exact growth statement
-  cannot be attached unchanged to the present rounded mixed-pivot executor: its
-  terminal `2 x 2` predicate is too weak, and even an aligned legal division
-  rounding can exceed the exact bound. Theorem 11.8 is separately false as
-  printed at `n=1`; the actual scalar Aasen execution and sharp corrected bound
-  close that discrepancy. For Algorithm 11.1 complete pivoting, the new
-  block-atomic sharp analysis proves Bunch's printed
-  `3.07 (n-1)^0.446` comparison with the Chapter 9 (9.14) bound, exposes its
-  separate order-one defect, and now closes the strict source-to-result route.
-  Every symmetric nonsingular source matrix constructs an exact complete-
-  search/symmetric-permutation/Schur trace; selected principal-minor
-  determinant recurrences identify every whole-block pivot product, and
-  Hadamard's inequality is derived for every contiguous whole-block segment.
-  Thus
-  `higham11_1_exists_exactBunchTrace_all_stageRatio_le_maxEntryNorm` returns
-  the all-stage sharp ratio bound without caller-supplied trace, determinant,
-  Hadamard, growth, or target certificates. Displayed equation (11.7) is also
-  composed from the actual mixed block-LDLT/triangular-solve executor into the
-  Chapter 9 (9.23) forward-error route.
-- **Chapter 9:** the corrected 15-item PDF inventory includes the previously
-  omitted Theorem 9.7. Its exact real extremal classification now starts from
-  a constructed leading-row-on-ties GEPP trace and uses the full reduced-matrix
-  growth history. Equation (9.14) likewise now bounds the supremum over the
-  original matrix and every actual recursively generated GECP reduced stage,
-  rather than only the exposed final upper factor. Theorems 9.8--9.11 now also have their printed complex-domain
-  endpoints, including genuine complex GEPP traces and a full no-pivot
-  diagonal-dominance history for Theorem 9.9.
-- **Chapters 19 and 20:** literal rounded MGS and pivoted stored-QR / least-
-  squares executors close their source-rate endpoints. Theorem 19.10 now starts
-  from the canonical Givens matrix stage-fold and constructs orthogonal `Q`,
-  `Rhat`, and `DeltaA` with the PDF's `m+n-2` columnwise coefficient. Computed
-  nonbreakdown is stated only where it is the natural domain implicit in the
-  source's “computed matrices” and “computed solution” language, not assumed as
-  an error budget. Theorem 19.5 is now genuinely columnwise for the actual QR
-  solve, (19.14) exposes its hidden inverse domain, and the Section 19.7
-  componentwise residual is obtained by a direct Chapter 6 Lemma 6.6 bridge.
-- **Chapters 10, 25, 26, and 28:** false printed formulas remain visible as checked
-  source discrepancies with corrected theorems. Chapter 10 now includes the
-  literal pivoted-Cholesky success/error chain, the premise-free Mathias
-  completion theorem for (10.29), and an internally constructed complex
-  no-pivot LU trace with exact growth `< 3`. The following unquantified
-  qualitative backward-stability sentence is deferred, and a compiled complex
-  `γ_n` counterexample prevents substituting a stronger real-field claim.
-  Chapter 25's multiplicity-one bordered eigenproblem is closed. Chapter 26
-  constructs the complex cube roots in Cardano's formula and proves the
-  nonzero-branch handoff to the original cubic; a zero-branch counterexample
-  records the missing qualification in the sentence after (26.5). Chapter 28's
-  exact Hilbert rate and Gaussian-QR Haar law are otherwise closed.
-- **Chapters 4, 8, 14, 15, 20, and 22:** the fresh repairs add the missing
-  literal finite-format/executor, fan-in, finalized Gauss-Jordan, concrete
-  rectangular general-`p` calculus, pivoted least-squares, and monomial-stage
-  bridges instead of relying on target-bearing readiness or residual premises.
-  The Chapter 14 result now includes Algorithm 14.4's literal rounded
-  Doolittle phase, final divisions, derived uniform-inverse regularity, and
-  source-domain constructor. The Chapter 12-to-22 refinement bridge now starts
-  from the actual rounded real/complex differentiated-Horner residual instead
-  of assuming a contraction conclusion; a compiled counterexample terminates
-  the false literal (12.9) coefficient and the corrected route proves finite
-  (12.8)--(12.10).
-- **Cross-chapter bridges:** a second, exact-label projection corrected the
-  initial mixed bridge count and exposed five additional composition gaps.
-  The tree now gives the literal boundary-inclusive no-guard model (2.6) an
-  actual dot-product path to (3.3)--(3.5), composes the concrete (7.31) safety
-  vector with (15.1), connects
-  the Chapter 9 complete-pivoting and forward-error producers to the precise
-  Chapter 11 claims, gives the actual Chapter 9 LU solve a finite Chapter 12
-  forward-error handoff, and supplies the Chapter 13 matrix-product handoff used by
-  the block-WY analysis (19.17)--(19.22). Earlier-Problem and qualitative
-  references are listed separately in the audit instead of inflating the
-  exact-label graph.
-
-The **RandNLA case study** is split into 19 reusable modules under
-[`NumStability/Algorithms/RandomizedLinearAlgebra/`](NumStability/Algorithms/RandomizedLinearAlgebra)
-and 18 exact source-correspondence modules under
-[`NumStability/Source/DrineasMahoney/RandNLA2016/`](NumStability/Source/DrineasMahoney/RandNLA2016).
-The historical 17-module
-[`NumStability/Algorithms/RandNLA/`](NumStability/Algorithms/RandNLA) surface
-remains available as a compatibility facade. Together they formalize the
-meta-algorithms of Drineas and Mahoney's CACM survey
-["RandNLA: Randomized Numerical Linear Algebra"](https://dl.acm.org/doi/10.1145/2842602)
-— row/elementwise/leverage-score sampling, matrix concentration, low-rank
-approximation, and least-squares preconditioning.
+The RandNLA case study separates reusable algorithms and analysis under
+[`NumStability/Algorithms/RandomizedLinearAlgebra/`](NumStability/Algorithms/RandomizedLinearAlgebra/)
+from source correspondence under
+[`NumStability/Source/DrineasMahoney/RandNLA2016/`](NumStability/Source/DrineasMahoney/RandNLA2016/).
+Historical `NumStability.Algorithms.RandNLA` imports remain available as
+compatibility paths. The development covers sampling, matrix concentration,
+low-rank approximation, and least-squares preconditioning.
 
 ## Project statistics
 
-Current production-tree snapshot on `main` after accepted checkpoint
-[`C0007`](docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0007-gates.md)
-(checkpoint code commit `4e26820d1f4989ec4ec77b7113085f593570e11b`,
-acceptance control `691d82b0b014862a4edd1aa1787f70bba04b462e`, green on Lean CI
-run 32798189585), which accepts the integrated R09 test-matrices and R10
-randomized-linear-algebra epoch (integration control
-`09512c1b15fd4f6892a313341b1edc8c02bb913d`) and empties the classification
-queue:
+The latest generated production snapshot is the accepted
+[`C0007` baseline](docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0007-combined.json):
 
-| Formalization size | Count |
+| Metric | Count |
 |---|---:|
 | Production Lean modules | **2,927** |
-| Physical Lean source lines (including comments, blanks, and relocation padding) | **3,982,215** |
 | Nonblank Lean source lines | **1,457,465** |
-| Lean source bytes | **74,904,891** |
 | Elaborated declarations | **56,913** |
-| Theorem declarations (including source `theorem` and `lemma` commands) | **43,179** |
+| Theorem and lemma declarations | **43,179** |
 | Definition declarations | **11,982** |
-| Inductive / constructor / recursor declarations | **509 / 734 / 509** |
-| Public / private / internal declarations | **55,219 / 1,690 / 4** |
-| Direct imports (internal / external) | **31,329 (19,558 / 11,771)** |
-| Signature / body-or-proof / union declaration edges | **266,402 / 382,872 / 424,097** |
-| Proof placeholders / top-level axiom or constant commands | **0** |
-
-| Organization state | Count |
-|---|---:|
+| Direct imports | **31,329** (19,558 internal; 11,771 external) |
 | Import cycles | **0** |
-| Classified modules | **2,927 (100.000%)** |
-| Unclassified modules | **0** (R09 and R10 integrated; the queue is empty) |
-| Source / aggregate / compatibility modules | **1,224 / 404 / 712** |
-| Reusable / internal / upstream / mixed modules | **577 / 5 / 5 / 0** |
-| Compatibility wrappers / direct targets / import exceptions | **712 / 2,364 / 2** |
-| Modules with documentation / missing module docs | **2,927 / 0** |
-| Noncanonical names under review | **0** |
-| Declaration-bearing umbrellas | **1** |
-| Unsorted aggregate imports | **0** |
-| C0006 inventory rows complete / in scope / with debt | **2,758 / 102 / 91** |
-| Reusable-to-Source reachability | **0** |
+| Classified modules | **2,927 / 2,927 (100%)** |
+| Modules with documentation | **2,927 / 2,927 (100%)** |
+| `sorry` / `admit` / top-level `axiom` or `constant` commands | **0** |
 
-Every figure above is recomputed directly from the tree at the accepted C0007
-code commit and recorded in the hash-pinned
-[`C0007 combined baseline`](docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0007-combined.json)
-(SHA-256 `EA85C78A41E23A89B428747FB00519184AA557A183E56A659AA8248DB135A932`).
-The declaration-graph rows are measured rather than carried forward. Through
-C0006 they were held at their C0005 values because the R07 epoch was reviewed
-as declaration-preserving; the R09/R10 epoch is not. Against C0005 the fresh
-graph adds ten declarations (56,903 to 56,913), six theorems and four
-definitions, and eighty-five cross-module union edges. Every added declaration
-is private: the public count is unchanged at 55,219 while the private count
-rises from 1,680 to 1,690. Public surface preservation, not total declaration
-preservation, is the property this epoch holds. Baselines are generated by
-[`tools/architecture/generate_baseline.py`](tools/architecture/generate_baseline.py).
-Declaration counts are taken from Lean's elaborated format-2 graph, so theorem
-declarations include both source `theorem` and `lemma` commands. Physical lines
-include blank padding retained by byte-identical declaration relocation; the
-nonblank count is the more useful source-volume comparison. The placeholder
-result and live migration-debt values are enforced by
-[`tools/architecture/check_layout.py`](tools/architecture/check_layout.py),
-with compatibility and provenance checked separately.
-
-The repository-reorganization successor remains in progress. C0004 accepts
-R05/R06 on top of C0003's R03, C0002's R11/R12, and C0001's R01/R02, so M01,
-M02, M03, M05, M06, M11, and M12 are accepted; bounded-phase and
-repository-wide completion both remain incomplete. B0001/B0002 are
-retired, their remote delivery refs are deleted, and their named worker worktrees were
-removed after evidence archival. P0001/P0002 remain retired immutable
-evidence, and R0001/R0002/R0002T are applied. B0003/R11 (QR and Chapter 19)
-and B0004/R12 (Chapter 13 equations and Table 01) were delivered from exact
-C0001 at immutable tips
-`444a03259af510bdfe0921d1847b6add1b26ed73` and
-`0726678a0f2db56e533f3b956a2f7f1531059d7d`, respectively. Separate true merge
-commits `10169717ce4966e9963885b04e7b7733a3bc7730` and
-`1495047a1befb1431f0501cf7a423c8e77f8661a` preserve both deliveries. The
-reviewed same-C0001 R0003/R0004 union was applied exactly once after both merges,
-together with its bounded Chapter 19 integration follow-ups. At C0002,
-B0003/B0004 are retired, P0003/P0004 are retired immutable evidence, and
-R0003/R0004 are applied. Acceptance-control commit
-`c92c48a348a0e09e7d6ac9d4ff1db7673a027648` passed exact Lean CI run
-31678412178 before the two remote delivery refs were deleted with exact-tip
-leases and both clean named worker worktrees were removed without force after
-evidence archival. Local delivery refs remain at their immutable tips. The
-temporary `codex-local` authorization on `claude-lane` expired at C0002 and the
-lane's single-operator boundary is restored. A fresh C0002 review selected
-M03/R03 as a singleton: B0005 was planned at control commit
-`fb5a021b4640dd595a99f7560ce252ad9836a5b6`, activated at
-`1166874cb986d09f357d092f1171a31d7f8b2332`, expanded to a reviewed temporary
-second operator (`claude-local`) at `c4f66cbdfdce6cf64d484be13290e7d2e60547f5`,
-and route-amended for the fanIn7 private-closure repair at
-`09b3962dc6ed18b6de6eea5dc4a0e0e7c8ba4bb7` — each with its own green Lean CI.
-The R03 delivery (47 owners; 2,389 declarations, 2,132 relocated into 47
-canonical destinations plus one documented bridge; 398 private
-normalizations; 2,150 isolated tests) landed at immutable tip
-`1f8ff4ca5b0b136901a2f47d43e1064dc09aa556` with parent exact C0002 and is
-preserved by a true merge. The reviewed same-C0002 R0005 request (121 paths)
-was applied exactly once after the merge. Against its expected postimage, 115
-request paths are byte-exact and exactly six carry only their reviewed bounded
-deviations: two aggregate-sort reconciliations, the two source
-reclassifications, compatibility-row reconciliation, the layout ratchet, and
-one consumer import-superset repair restoring a non-owner transitive supply
-invisible to the typed declaration graph. The full merge-to-integration audit
-separately accounts for exactly 21 additional paths: 11 aggregate follow-ups,
-3 R03 test paths, 4 narrative documents, and 3 milestone-DAG/evidence paths.
-At C0003, P0005 is retired immutable evidence and R0005 is applied. After exact
-green control-chain head `a61438448beb02773ef6b0f4f50cbedf8d675d29`
-passed Lean CI run 31833811860 (job 94875463331), `primary-human` retired B0005
-at `2026-08-14T19:44:43Z`. Its exact remote delivery ref
-`refs/heads/codex/reorg-completion-2026-08-r03-floating-point-foundations-ch01-ch12`
-was deleted under an expected-tip lease and verified absent; seven ignored material artifacts
-totaling 117,422,618 bytes were archived and verified under
-`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0003-R03-20260814`.
-The named worktree
-`C:\Users\qed_s\higham-worktrees\completion-r03-codex` was removed without
-force after its `.lake`-only residue was moved recoverably under
-`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0003-R03-20260814\disposable-worktree-residue\completion-r03-codex`.
-The local
-delivery branch remains preserved at
-`1f8ff4ca5b0b136901a2f47d43e1064dc09aa556`; the
-[`R03 retirement review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-retirement.md)
-records the exact cleanup evidence. The temporary `claude-local`
-second-operator authority on `codex-lane` expired at C0003. A fresh
-exact-C0003 review selected the R05+R06 pair, the only candidate pair zero on
-all seven overlap dimensions, and planned B0006/R05 and B0007/R06 with
-whole-owner routes, frozen shared requests under a reviewed five-path union,
-identity projection replays, and a temporary `claude-local` second-operator
-expansion scoped to B0006. The immutable R05 tip
-`26e89100b3c7c8a64a41426d517cbd563a40db72` and R06 tip
-`bfaf2ae917ed79165caa6cc58b3782984aa8d3d9`, each a direct child of the
-accepted C0003 code, are now preserved by separate true merge commits
-`538c7d248a0ccaec407a082ecb73b92d7c3faec2` and
-`deee8e7ea0aeac7cfbd9fc2582eaf1f5b841fd0c`. After both merges, the reviewed
-67-path R0006/R0007 union patch (SHA-256
-`639DA03437C3FBAA6934E71B55EFE7D85DF51835D94978790C59162585690D4E`)
-was applied exactly once from the common C0003 preimages; sequential request
-replacement was not used. The original bounded follow-up ledger remains exactly
-13 unique paths: 6 aggregate paths adding 31 direct-import edges over 29 unique
-destinations, 3 milestone-DAG/evidence paths, and these 4 narrative paths. It
-is disjoint from the later approved R0008 compatibility repair and remains the
-immutable account of that earlier follow-up. R0008 repairs exactly 27 paths
-(26 production importers plus `docs/architecture/COMPATIBILITY.md`): 4 replace
-union postimages through an exact SHA-256 chain and 23 add integration paths,
-while `R0006-R0007-union-postimages.tsv` remains untouched. Variant A trims
-only the `NumStability.Algorithms` umbrella's newly expanded Source imports,
-preserving its `NumStability.Source.` direct-import ceiling at 49 without a
-layout-baseline change. Registration covers 16 logical governance paths: 5
-request artifacts, including the immutable `R0008-approval.md` addendum, 2
-delivered branch records, the existing 3 milestone-DAG/evidence paths, these 4
-narratives, and 2 validators. Seven were already staged in the 13-path ledger,
-so registration added 9 new paths. One stale Algorithms smoke-test correction
-brought the exact integration range to 111 paths in all (78 before R0008 + 23
-repair-only + 9 registration-only + 1 smoke correction). The earlier battery
-exposed one stale Source-only Algorithms `#check`; it was removed under D1 and
-the targeted smoke file passes. The final candidate evidence run
-`.lake/integration-r05-r06-20260816T172806Z` passed all 11 gates with a stable
-tree, including the full `NumStability`/`NumStabilityTest` build and `lake test`
-(`DONE.json` SHA-256
-`A5DA29ED1EE40AF2A4B3967EDB1981ECB041A5821D61EDD117F3F8A55735C166`).
-Independent package and committed-diff audits are green.
-
-C0004 accepts M05/R05 and M06/R06 at exact code commit
-`783ae9a4951407ece046adb8631d5a8ff1795a18`; exact-code Lean CI run
-31962707569 (job 95203051003) passed. P0006/P0007 are retired immutable
-evidence and R0006/R0007/R0008 are applied. The temporary second-operator
-authority and all R05/R06 temporary path reservations are released, restoring
-`codex-lane` to `codex-local` alone. At C0004 time, M04/R04 and M08/R08 were
-dependency-ready with their successor branches activated below, and M07/R07
-remained planned; both were later accepted at C0005 and M07 became ready, as
-recorded further down. After acceptance-control commit
-`131a0c6f333de0eb47a67698decf36ee82e01dab` passed Lean CI run 31966141900
-(job 95211495907), `primary-human` retired B0006/B0007 at
-`2026-08-16T19:08:57Z`. Their exact remote delivery refs were deleted atomically
-under expected-tip leases and verified absent. Exactly five R05 material files
-totaling 117,327,061 bytes were archived and verified under
-`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0004-R05-R06-20260816`;
-R06 had no material artifacts. Named worktrees `completion-r05-claude` and
-`completion-r06-codex` were removed without force with no residue. Local
-delivery branches remain preserved at
-`26e89100b3c7c8a64a41426d517cbd563a40db72` and
-`bfaf2ae917ed79165caa6cc58b3782984aa8d3d9`. The
-[`R05/R06 retirement review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R05-R06-retirement.md)
-records the exact leases, absence checks, archive, worktree cleanup, and local
-branch preservation.
-
-Exact-C0004 successor activation now records
-[`B0008/R04`](docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0008.json)
-and
-[`B0009/R08`](docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0009.json)
-as active branches, with frozen baseline projections P0008/P0009 and active
-common-base shared requests R0009/R0010. R04 selects 19 owners and 289
-declarations into 31 production destinations; R08 selects 45 owners and 211
-declarations into 21 production destinations. The 28- and 14-path requests
-intersect on exactly five integrator-owned files and are reconciled by the
-reviewed
-[`37-path common-base union`](docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0009-R0010-union-review.md).
-The
-[`selection review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0004-R04-R08-selection.md)
-records zero peer overlap across every enforced dimension, while the
-[`temporary operator authorization`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R04-R08-operator-authorization.md)
-adds `codex-local` to `claude-lane` solely for B0008/R04; B0009/R08 remains
-`claude-local`-only. Planned-control commit
-`2d9dbf7bf8b4b51e9cb7817f5c5dc2d5194e8c42` passed exact Lean CI run
-32030191197 (build job 95388234941). The
-[`activation review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R04-R08-activation.md)
-pins the two atomic new refs and clean LF-configured named worktrees at exact
-C0004. At activation time the 37-path union remained integrator-only and
-unapplied, and both workers remained frozen until that activation-control
-commit passed its exact Lean CI build job; the deliveries, the integration,
-and the C0005 acceptance recorded below all landed afterward.
-
-Both successor deliveries now exist on their worker branches, each a single
-commit sole-parented on exact C0004. B0008/R04 was implemented by
-`claude-local` under the reviewed
-[`operator redesignation`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R04-operator-redesignation-amendment.md)
-(control commit `8cbfbe984469024725b5ba8781d8fc3dab0935a4`, Lean CI run
-32235392913) and delivered at `e92d0fa270b1113ea630f41c4c797051e68e5d26`:
-289 declarations routed per the frozen packet (127 whole-owner, 64 split, 61
-umbrella-extract, 37 retained in place), the 115-row private map realized
-(101 renames, 14 identities), 76 branch test modules, full build and
-`lake test` green, and a zero-mismatch P0008 projection replay (289 selected /
-252 relocated declarations, 990 signature and 2,239 body edges). B0009/R08 was
-delivered at `e9a09b17deabe14baaa56036e55eeb6ac67b04fb`: 211 declarations
-routed whole-owner into 21 new Source leaves, the 48-row private map realized
-with zero identities, 79 branch test modules, and a zero-mismatch P0009 replay
-(1,229 signature and 2,886 body edges), after the reviewed Variant A
-import-manifest amendment (29 additions, zero removals) recorded in the branch
-delivery evidence. Each delivery carries its evidence under
-`docs/architecture/deliveries/`.
-
-Both deliveries are now integrated. Integration commit
-`7beb0e7985f2a884c2462acc12055bf4db38a9c0` preserves each immutable tip by a
-separate true merge and then applies the reviewed 37-path R0009/R0010
-common-base union exactly once. Thirty-six union postimages verified
-byte-exact. The thirty-seventh, the control-line document
-`docs/architecture/MIGRATION.md`, is re-anchored by the reviewed
-[`union-migration amendment`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R0009-R0010-union-migration-amendment.md):
-the frozen union pinned that preimage to exact C0004 code, but the C0004
-acceptance commit had already rewritten the document, so the zero-context hunk
-landed at a stale offset. The frozen union patch and its `patch_sha256` pin are
-unmodified and the as-reviewed ledger stays immutable in planned-control
-history; only the ledger row and its evidence pins move. Two reviewed
-integration follow-ups outside both worker selectors, each forced by the union
-itself, are included: `Chapter10.Theorem07` now imports its thirteen routed
-destinations rather than the newly historical
-`NumStability.Algorithms.HighamChapter10`, and `Import/SourceCanonical.lean`
-gains the direct test import of the union-registered canonical target
-`NumStability.Algorithms.ComplexBackwardError`.
-
-`check_completion_phase.py` gains the delivered-state ratchet: a synchronous
-delivered epoch, pinned delivery records, a production allowlist of exactly the
-two immutable delivery diffs plus the union plus those two follow-ups, applied
-union postimage verification, and explicit amended-row exemptions that still
-materialize the frozen patch against its original postimages. The integrated
-tree passes the full battery — completion phase, phase contract, layout,
-compatibility, provenance, the complete `NumStability`/`NumStabilityTest`
-build, and `lake test`. Layout now reports no legacy debt increased: applying
-the union closed every aggregate-reachability, tier-registration and
-umbrella-baseline hand-off both waves had deferred to the integrator.
-
-`C0005` acceptance and milestone acceptance for M04/M08 are now recorded at
-acceptance-control commit `52552c8e3ddd9381f36bec8ccb694cf8c830cd49`; both
-branch records stand at `accepted` with exact C0005 integration metadata, and
-only B0008/B0009 branch retirement remains outstanding.
-
-The C0004 baseline, inventory, and 111-path integration ledger remain pinned
-at SHA-256 values
-`D3F30A410903B1CA2858951CB26107B94B62630BC424723A0EC9EDF484AEDDDF`,
-`08FA3E41DA0C72E7F5D4ECFD315F0CC6C73EB0F45089CF1DAC6AB04A81A1E326`,
-and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`;
-the accepted C0005 baseline and inventory supersede them at
-`2FC0C95FFECF114A2EDB8C14DB8C2874BDBB85FCEBA722C345AA084B3E97C02A` and
-`7C383B1AF57F65F9559C81402013412172CC93B623F7ED2E26968B9C7AFB4172`.
-Bounded-phase completion is reached: after the R09/R10 integration, 0
-unclassified modules, 0 noncanonical names, and one reviewed
-declaration-bearing umbrella remain (1 distinct debt-flagged module). The
-[`active phase registry`](docs/architecture/phases/2026-08-repository-reorganization-completion/README.md)
-is the authoritative status record; the predecessor C0008 phase remains
-immutable historical evidence.
-
-Everything is proved against Mathlib; sampled headline theorems depend only on
-the standard `[propext, Classical.choice, Quot.sound]` axioms. The retained
-evidence includes the
-[`Phase 12 BlockLU semantic migration`](docs/architecture/migrations/2026-07-27-blocklu-semantic-phase12.md),
-the [`complete Chapter 9 reconciliation`](docs/architecture/migrations/worker-ch09-closure-tail-e-migration.md),
-the [`LSQ/Chapter 20 delivery`](docs/architecture/migrations/worker-lsq-ch20-delivery.md),
-the [`QR/Chapter 19 delivery`](docs/architecture/migrations/worker-qr-ch19-delivery.md),
-and the [`four-lane final integration`](docs/architecture/migrations/2026-07-31-four-lane-final-integration.md).
-Those historical records, together with the C0005, C0004, C0003, C0002, C0001, and predecessor C0008 gate evidence, preserve the
-finer ownership, source-span, dependency, isolated import-test, and axiom-probe
-evidence behind the summary above.
+Source, import, tier, and declaration figures come from the generated baseline.
+The placeholder and layout invariants are enforced by
+[`tools/architecture/check_layout.py`](tools/architecture/check_layout.py);
+the accepted checkpoint evidence is recorded in
+[`C0007-gates.md`](docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0007-gates.md).
 
 ## Building
 
-Requires [`elan`](https://github.com/leanprover/elan). The repository pins
-Lean/Lake in `lean-toolchain` (`leanprover/lean4:v4.29.0-rc3`) and pins Mathlib
-to the exact revision recorded in `lake-manifest.json`. From a clone:
+Install Git and [elan](https://github.com/leanprover/elan), then clone the
+repository. The project pins Lean `4.29.0-rc3` in
+[`lean-toolchain`](lean-toolchain) and pins Mathlib to an exact revision in
+[`lakefile.toml`](lakefile.toml).
 
 ```bash
-lake exe cache get   # download prebuilt Mathlib oleans — skipping this makes the build very slow
-lake build NumStability
+lake exe cache get
+lake build NumStability NumStabilityTest
 lake test
 ```
 
-Build a single module, e.g.:
+To build one module, pass its Lean module name to Lake, for example:
 
 ```bash
-lake build NumStability.Algorithms.GaussJordan
+lake build NumStability.FloatingPoint.Model
 ```
 
-If a fresh build fails fetching ProofWidgets, drop its release build in place:
+## Key entry points
 
-```bash
-curl -L https://github.com/leanprover-community/ProofWidgets4/releases/download/v0.0.90/ProofWidgets4.tar.gz -o /tmp/pw.tar.gz
-mkdir -p .lake/build/packages/proofwidgets && tar xzf /tmp/pw.tar.gz -C .lake/build/packages/proofwidgets
-```
+Choose the narrowest import that supplies the declarations you need.
 
-## Library organization
+| Import | Purpose |
+|---|---|
+| `NumStability.Core` | Small reusable foundation for the floating-point model and core error analysis |
+| `NumStability.FloatingPoint` | Reusable floating-point foundations and IEEE-facing utilities |
+| `NumStability.Analysis` | Broad analysis discovery surface; prefer a narrower family import when possible |
+| `NumStability.Algorithms` | Broad historical algorithm surface; prefer a canonical family import when possible |
+| `NumStability.Source` | Canonical umbrella for book- and paper-specific correspondence |
+| `NumStability.Source.Higham` | Higham chapter correspondence and cross-chapter bridges |
+| `NumStability.All` | Complete supported library surface |
+| `NumStability` | Historical compatibility entry point forwarding to `NumStability.All` |
 
-Choose the narrowest entry point that matches the material you need:
-
-- `NumStability.Core` contains the foundational floating-point model and core
-  analysis infrastructure.
-- `NumStability.Algorithms.Arithmetic.DotProduct.NoGuard` is the reusable
-  no-guard dot-product surface; its `Core` and `Tree` leaves avoid importing
-  source-specific Higham correspondence.
-- `NumStability.Algorithms.Summation` is the public umbrella for the summation
-  algorithm family. Reusable recursive and pairwise consumers should choose
-  `Summation.Recursive.Core` or `Summation.Pairwise.Core`. Reusable insertion
-  consumers should choose `Insertion.ActiveList`, `Insertion.Executor`,
-  `Insertion.Schedule`, `Insertion.RunningError`, or
-  `Insertion.ScheduleExecution`; the broad family modules also preserve their
-  supported Chapter 4 source declarations.
-- `NumStability.Algorithms.LinearSystems.Triangular` is the reusable umbrella
-  for forward/back substitution and triangular-system error bounds.
-- `NumStability.Algorithms.LinearSystems.QR` is the reusable QR umbrella;
-  numbered Chapter 19 correspondence is under
-  `NumStability.Source.Higham.Chapter19`. The former `Algorithms.QR.*` paths
-  remain import-only compatibility shims.
-- Least-squares algorithms and perturbation analysis are organized under
-  `NumStability.Algorithms.LinearSystems.LeastSquares` and
-  `NumStability.Analysis.Perturbation.LeastSquares`, with numbered Chapter 20
-  material under `NumStability.Source.Higham.Chapter20`. Eleven tightly
-  source-coupled leaves are explicitly classified as source rather than being
-  hidden behind a reusable-family exemption.
-- Symmetric-indefinite reusable structure is exposed through
-  `NumStability.Algorithms.LinearSystems.SymmetricIndefinite`; Chapter 11
-  correspondence is split under `NumStability.Source.Higham.Chapter11`. The
-  historical `Algorithms.HighamChapter11` owner is now an import-only facade.
-- `NumStability.Analysis.Summation` is the complete summation-analysis umbrella;
-  `NumStability.Analysis.Summation.Signs` is its reusable sign/absolute-value
-  leaf, while `ErrorBounds` contains the reusable conditioning and rounded-fold
-  error theory.
-- `NumStability.Analysis.Equidistribution` is the reusable equidistribution
-  umbrella. Its `AddCircle` leaf provides finite-orbit measures, Fourier/Haar
-  convergence, and ball and half-open-arc frequency theorems.
-- `NumStability.Analysis.LeadingDigits` is the reusable leading-digit umbrella
-  over decimal predicates, decimal powers, empirical histograms, and the
-  logarithmic distribution.
-- The declaration-free reusable norm family entry points are
-  `NumStability.Analysis.Asymptotics`, `LinearOperators`, `OperatorNorms`,
-  `VectorNorms`, `MatrixNorms`, `SingularValues`, and `Conditioning`. Their
-  semantic leaves separate foundational definitions, attainment, duality,
-  interpolation, matrix comparisons and Lp norms, singular values,
-  realification, spectral-radius bounds, and perturbation conditioning.
-  `SingularValues.WeylMirsky` remains the independently extracted generic
-  all-index perturbation API used by Higham Chapter 14 Problem 14.15 and by
-  reusable least-squares analysis.
-- `NumStability.Analysis.Norms.Core` is now a declaration-free reusable
-  aggregate over the 20 Phase 11B1 reusable owners. The path remains importable
-  for the former reusable subset, but numbered Chapter 6 results now live under
-  `NumStability.Source.Higham.Chapter06`; the historical
-  `NumStability.Analysis.Norms` path remains an import-only two-target facade
-  over Core and `NumStability.Source.Higham.Chapter06.Norms`.
-- `NumStability.Analysis.Probability` is the reusable probability-analysis
-  umbrella. Its `Probability.Gaussian` aggregate exposes
-  `Probability.Gaussian.AbsoluteMoment`, the source-neutral Gaussian first-
-  absolute-moment API used by the Chapter 28 Ginibre development. Its
-  `Probability.Haar` aggregate exposes
-  `Probability.Haar.HomogeneousSpaceUniqueness`, the generic Haar-fiber and
-  invariant-probability uniqueness API used by the Chapter 28 Stewart proof.
-- `NumStability.Algorithms.MatrixEquations.Sylvester` is the reusable
-  Sylvester/Lyapunov entry point, with narrow equation, backward-error,
-  conditioning, perturbation, and generalized-equation families. Reusable
-  Schur and inverse-operator results live under
-  `NumStability.Analysis.LinearOperators.Schur` and
-  `NumStability.Analysis.SingularValues.InverseBounds`; numbered source
-  correspondence lives under `NumStability.Source.Higham.Chapter16` and
-  `Chapter18`. `NumStability.Algorithms.Sylvester` remains the complete
-  historical discovery surface during migration.
-- `NumStability.Algorithms.FastMatMul.Recurrences` is the reusable Strassen and
-  Winograd--Strassen recurrence API. `NumStability.Algorithms.FastMatMul` is the
-  complete historical family aggregate; unsupported declarations inherited
-  from that path live in `FastMatMul.Internal.LegacyBounds`.
-- `NumStability.Source` is the canonical umbrella for source-faithful material.
-- `NumStability.Source.Higham` collects Higham chapter results and explicit
-  cross-chapter bridges. The complete nonrandom-rounding correspondence is
-  `NumStability.Source.Higham.Chapter01.Section17`; its five semantic leaves
-  separate Horner evaluation, interval propagation, grid variation, stored
-  IEEE-double inputs, and the final error-spread result. The historical
-  `Analysis.NonrandomRounding*` paths are import-only compatibility shims. For
-  Chapter 2, Problem 2.2 is the canonical
-  `NumStability.Source.Higham.Chapter02.Problem02` leaf. Problem 2.11's source
-  samples are in `Chapter02.Problem11`, with reusable decimal and empirical
-  support under `Analysis.LeadingDigits`. The Section 2.7 power-frequency
-  conclusion is `Chapter02.Section07.PowerLeadingDigits`; its reusable
-  AddCircle and decimal-power development lives under `Analysis`. The
-  declaration-free `Chapter06.Norms` aggregate exposes Problems 6.1, 6.5,
-  6.9, and 6.10 together with the literal ambient-radius form of Theorem 6.4.
-  Phase 11B2 adds `Lemma06`, `Equation01`, and `Equation02`; four semantic
-  leaves below `Chapter06.Asides`; and the `BlockAntidiagonalNorm.InducedLp`
-  and `BlockAntidiagonalNorm.OperatorTwo` leaves. The declaration-free
-  `Asides` aggregate preserves the six-topic historical asides surface, while
-  `BlockAntidiagonalNorm` groups its two norm results. The declaration-free
-  `Chapter06` aggregate imports `Norms`, `Asides`, `BlockAntidiagonalNorm`,
-  `Equation02`, and `Lemma06`. The four former Algorithms/Analysis owners are
-  exact compatibility wrappers, not preferred declaration homes.
-  Chapter 14
-  contains `Problem13`, the canonical `Problem14` owner for Problem 14.14's
-  Hyman determinant result, `Problem15` for the source-specific determinant
-  bound and counterexample, and the declaration-free `Section05` Schulz family
-  aggregate. The generic singular-value perturbation support for Problem 14.15
-  lives in reusable `Analysis.SingularValues.WeylMirsky`; the former
-  `Algorithms.Chapter14Problem1415Weyl` path is an import-only wrapper. Chapter
-  21 now contains `RowScalingInvariance`, the declaration-free `Theorem03`
-  aggregate over `Theorem03.Attainment`, and the declaration-free `Theorem04`
-  aggregate over `Theorem04.RowwiseBackwardError`. The former
-  `Algorithms.Underdetermined.Higham21RowwiseMeasure` path is an import-only
-  wrapper. The comprehensive historical Chapter 21 discovery surface remains
-  `NumStability.Algorithms.Underdetermined.Higham21` during migration. Chapter
-  28 now has a declaration-free canonical aggregate; its `Equation02`
-  aggregate exposes the source-specific `RatioDiscrepancy` leaf, while the
-  former `Algorithms.TestMatrices.Higham28HilbertRatioDiscrepancy` path is an
-  import-only wrapper. That leaf deliberately still imports the historical
-  `Higham28HilbertAsymptotic` dependency until the wider Hilbert family moves.
-  The homogeneous-space uniqueness lemmas remain source-independent under
-  `Analysis.Probability.Haar`. These are dependency-contained frontiers, not
-  completed migrations of the broader chapter families. For
-  fast matrix multiplication, import
-  `NumStability.Source.Higham.Chapter23` or one of its semantic theorem,
-  equation, algorithm, or problem leaves. Chapters 12, 22, and 27 now have
-  complete declaration-free aggregates at
-  `NumStability.Source.Higham.Chapter12`,
-  `NumStability.Source.Higham.Chapter22`, and
-  `NumStability.Source.Higham.Chapter27`;
-  Chapter 22's real and complex refinement leaves are grouped by the
-  declaration-free `NumStability.Source.Higham.Chapter22.Section03` aggregate.
-  Reusable block-LU mathematics is published from
-  `NumStability.Algorithms.LinearSystems.LU.BlockLU`. Higham Chapter 13's
-  numbered block-LU correspondence is published from the declaration-free
-  `NumStability.Source.Higham.Chapter13.BlockLU` aggregate, with narrower
-  section, theorem, lemma, and Problem 13.4 family aggregates below it.
-  `NumStability.Source.Higham.Chapter13` combines that source surface with the
-  independent `DemmelSharpMultiplier` leaf. The historical
-  `NumStability.Algorithms.LU.BlockLU` path remains importable as a two-target
-  compatibility facade; new code should choose the reusable or source path
-  explicitly. The follow-on sibling migration also reduces the ten former
-  declaration-bearing `Algorithms.LU.BlockLU*` paths to tested compatibility
-  wrappers over 22 reusable and Chapter 13 semantic destinations.
-  Reusable Cholesky factorization, solve, perturbation, rounded-factorization,
-  positive-semidefinite, and error-analysis APIs are collected by
-  `NumStability.Algorithms.LinearSystems.Cholesky`; their numbered Chapter 10
-  counterparts are collected by `NumStability.Source.Higham.Chapter10`.
-- `NumStability.Higham` is the historical compatibility entry point; new code
-  should import `NumStability.Source.Higham`.
-- `NumStability.All` exposes the complete supported library surface.
-- `NumStability` currently remains a compatibility entry point for
-  `NumStability.All`.
-
-New code should import canonical semantic paths. Historical paths listed in
-the compatibility manifest are import-only shims, not preferred APIs; retained
-aggregates continue to provide their documented broad surfaces. See
-[`ARCHITECTURE.md`](ARCHITECTURE.md) for the layer contract,
-[`docs/architecture/NAMING.md`](docs/architecture/NAMING.md) for naming and
-module-placement rules, [`CONTRIBUTING.md`](CONTRIBUTING.md) for the required
-checks,
-[`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md) for the
-evidence-gated migration sequence, and
-[`docs/architecture/COMPATIBILITY.md`](docs/architecture/COMPATIBILITY.md) for
-the old-to-new path map and removal policy. The
-[`docs/README.md`](docs/README.md) index distinguishes current policy from
-dated audit evidence.
-
-This is an enforced migration state, not a claim that the whole historical
-corpus is already Mathlib-style. After accepted checkpoint C0006 and the
-integrated R09/R10 epoch, the live ratchet records zero unclassified modules,
-zero mixed modules, zero missing module docs, zero noncanonical names, and one
-reviewed declaration-bearing umbrella, the single remaining debt-flagged
-module. CI enforces the per-prefix
-direct-import ceilings recorded in `docs/architecture/layout-exceptions.json`
-and prevents these queues from growing while each dependency-contained family
-is migrated. In particular, the Chapter 14, Chapter 21, and Chapter 28 moves
-above establish only their documented frontiers; their broader historical
-families remain in the migration queue.
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for layer boundaries and the full entry
+point map. Historical imports are documented in
+[`docs/architecture/COMPATIBILITY.md`](docs/architecture/COMPATIBILITY.md).
 
 ## Use as a dependency
 
-Add to your `lakefile.toml`:
+Add the latest tagged release to your `lakefile.toml`:
 
 ```toml
 [[require]]
 name = "numStability"
 git = "https://github.com/AlexGeorgantzas/lean-numerical-stability"
-rev = "main"
+rev = "v0.1.0"
 ```
 
-For a narrow dependency, import the canonical family or leaf named above. The
-following deliberately uses `import NumStability`, the historical complete
-compatibility surface, to make all supported declarations available:
+Use `rev = "main"` instead if you intentionally want the current development
+branch. A minimal reusable import looks like this:
 
 ```lean
-import NumStability
+import NumStability.FloatingPoint.Model
+
 open NumStability
 
-variable (fp : FPModel) (n : ℕ)
-
-#check gamma fp n                -- γ(n) = nu / (1 - nu)
-#check dotProduct_error_bound    -- |fl(x·y) - x·y| ≤ γ(n)·Σ|xᵢ||yᵢ|
-#check backSub_backward_error    -- (U + ΔU)x̂ = b, |ΔU| ≤ γ(n)|U|
-#check lu_solve_backward_error   -- (A + ΔA)x̂ = b, |ΔA| ≤ (3γ(n)+γ(n)²)|L̂||Û|
+#check FPModel
+#check FPModel.exactWithUnitRoundoff
 ```
 
 ## Project structure
 
-```
-NumStability.lean              -- historical complete compatibility entry point
+```text
+NumStability.lean                 compatibility entry point → NumStability.All
 NumStability/
-  Core.lean                    -- foundational reusable entry point
-  All.lean                     -- complete supported library surface
-  FloatingPoint.lean           -- floating-point foundations umbrella
-  FloatingPoint/
-    IEEE.lean                  -- IEEE-facing operations umbrella
-    IEEE/
-      NaiveMaximum.lean        -- reusable maximum/NaN comparison API
-    Model.lean                 -- the abstract floating-point model
-  Analysis.lean                -- complete analysis aggregate, including legacy work
-  Analysis/                    -- stability, perturbation theory, matrix algebra,
-                               --   norms, concentration, and probability
-    Asymptotics.lean           -- reusable asymptotic-bound umbrella
-    Conditioning.lean          -- reusable conditioning umbrella
-    Equidistribution.lean      -- reusable equidistribution umbrella
-    Equidistribution/
-      AddCircle.lean           -- Fourier/Haar orbit equidistribution API
-    LeadingDigits.lean         -- reusable leading-digit umbrella
-    LeadingDigits/
-      Decimal.lean             -- decimal leading-digit predicate
-      DecimalPowers.lean       -- powers, logarithms, and decimal arcs
-      Empirical.lean           -- finite empirical digit histograms
-      LogarithmicDistribution.lean -- logarithmic leading-digit law
-    LinearOperators.lean       -- reusable linear-operator umbrella
-    MatrixNorms.lean           -- reusable matrix-norm umbrella
-    Norms.lean                 -- historical two-target compatibility facade
-    Norms/
-      Core.lean                -- declaration-free legacy Core surface
-    OperatorNorms.lean         -- reusable operator-norm umbrella
-    Probability.lean           -- reusable probability-analysis umbrella
-    Probability/
-      Gaussian.lean            -- Gaussian-analysis umbrella
-      Gaussian/AbsoluteMoment.lean -- reusable Gaussian moment API
-      Haar.lean                -- reusable Haar-analysis umbrella
-      Haar/HomogeneousSpaceUniqueness.lean -- invariant-measure uniqueness
-    SingularValues.lean        -- reusable singular-value umbrella
-    Summation.lean             -- import-only summation-analysis umbrella
-    Summation/
-      Signs.lean               -- reusable sign and absolute-sum API
-      ErrorBounds.lean         -- reusable conditioning and error-bound layer
-    VectorNorms.lean           -- reusable vector-norm umbrella
-  Algorithms.lean              -- numerical-algorithm umbrella
-  Algorithms/                  -- algorithm formalizations, with clusters such as
-                               --   LU, QR, Cholesky, RandNLA, and TestMatrices
-    Arithmetic/DotProduct/
-      NoGuard.lean             -- reusable no-guard dot-product umbrella
-    Summation.lean             -- complete summation-family umbrella
-    Summation/
-      Insertion.lean           -- complete insertion-family umbrella
-      Insertion/               -- active list, executor, schedule, and error layers
-    FastMatMul.lean             -- complete historical fast-multiplication aggregate
-    FastMatMul/
-      Recurrences.lean         -- reusable recurrence API
-      Internal/LegacyBounds.lean -- unsupported historical bounds
-  Source.lean                  -- canonical source-faithful umbrella
-  Source/
-    Higham.lean                -- Higham source umbrella
-    Higham/
-      Chapter01/
-      Chapter02/
-        Problem11.lean         -- Problem 2.11 source samples and locator
-        Section07.lean         -- declaration-free Section 2.7 aggregate
-        Section07/PowerLeadingDigits.lean -- power-frequency source conclusion
-      Chapter04/
-      Chapter06.lean           -- complete current Chapter 6 aggregate
-      Chapter06/
-        Asides.lean            -- six-topic historical-asides aggregate
-        Asides/
-          ConditionNumberBounds.lean
-          EuclideanNormDifferentiability.lean
-          MaxNormInconsistency.lean
-          UnitaryInvariance.lean
-        BlockAntidiagonalNorm.lean -- induced-Lp/operator-2 family aggregate
-        BlockAntidiagonalNorm/
-          InducedLp.lean
-          OperatorTwo.lean
-        Equation01.lean        -- Hölder equality and endpoint witnesses
-        Equation02.lean        -- dual-of-dual source correspondence
-        Lemma06.lean           -- Lemma 6.6 parts (a), (c), and sharpness
-        Norms.lean             -- numbered norm-result aggregate
-        Problem01.lean         -- Problem 6.1 source closure
-        Problem05.lean         -- Problem 6.5 source closure
-        Problem09.lean         -- Problem 6.9 source closure
-        Problem10.lean         -- Problem 6.10 source closure
-        Theorem04.lean         -- literal ambient-radius Theorem 6.4
-      Chapter08/, Chapter10/
-      Chapter11.lean          -- declaration-free Chapter 11 aggregate
-      Chapter11/              -- symmetric-indefinite/skew source owners
-      Chapter12/, Chapter13/, Chapter17/
-      Chapter19.lean          -- declaration-free Chapter 19 QR aggregate
-      Chapter19/              -- numbered QR source owners
-      Chapter20.lean          -- declaration-free Chapter 20 LSQ aggregate
-      Chapter20/              -- numbered least-squares source owners
-      Chapter14/
-        Problem14.lean         -- Problem 14.14 Hyman determinant result
-      Chapter21/
-        Theorem03.lean         -- declaration-free Theorem 21.3 aggregate
-        Theorem03/Attainment.lean -- attainment and nonattainment boundary
-      Chapter22/, Chapter23/, Chapter24/, Chapter25/, Chapter26/, Chapter27/
-                               -- canonical numbered source correspondence
-      CrossChapter/            -- explicitly cross-chapter source bridges
-  Higham.lean                  -- historical import-only compatibility entry point
+├── Core.lean                    small reusable foundation
+├── All.lean                     complete supported surface
+├── FloatingPoint.lean
+├── FloatingPoint/               abstract model and IEEE-facing support
+├── Analysis.lean
+├── Analysis/                    reusable analysis and historical aggregates
+├── Algorithms.lean
+├── Algorithms/                  numerical algorithm families
+├── Source.lean
+├── Source/
+│   ├── Higham/                  Higham chapter correspondence
+│   └── DrineasMahoney/          RandNLA source correspondence
+├── Higham/                      historical compatibility paths
+└── Upstream/                    attributed adapted or backported code
+NumStabilityTest/                import, compatibility, and theorem smoke tests
 docs/
-  source_coverage/            -- per-chapter coverage ledgers + fresh ch01–28 audit
-  chapterNN/                  -- detailed source inventories / proof ledgers
+├── source_coverage/             chapter ledgers and source audits
+└── architecture/                policy, manifests, and migration evidence
+tools/architecture/              generated baselines and repository checks
 ```
 
-## Exact algebra and matrix norms
+## Documentation and status
 
-Mathlib is the source of truth for exact algebra and norms; new APIs use Mathlib
-notation directly (e.g. `‖A‖` under the appropriate matrix-norm scope) and the
-alias `RMat m n := Matrix (Fin m) (Fin n) ℝ`. The legacy algorithm layer uses
-function-shaped matrices `RMatFn m n := Fin m → Fin n → ℝ` with documented
-compatibility wrappers (`frobNorm`, `infNorm`) that coerce through `Matrix.of`
-and reuse Mathlib's norms — they are not independent norm definitions.
+- [`docs/README.md`](docs/README.md) maps current policy, source audits, and
+  historical evidence.
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) defines layers, dependency direction, and
+  supported entry points.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) explains module placement and required
+  checks.
+- [`CHANGELOG.md`](CHANGELOG.md) records release-facing changes.
+
+The selected source-audit scope is terminal, but repository organization work
+is still in progress. Checkpoint C0007 is accepted; the
+[active phase registry](docs/architecture/phases/2026-08-repository-reorganization-completion/README.md)
+is the authoritative source for remaining migration work.
 
 ## References
 
 - N. J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed.,
   SIAM, 2002.
 - P. Drineas and M. W. Mahoney,
-  ["RandNLA: Randomized Numerical Linear Algebra"](https://dl.acm.org/doi/10.1145/2842602),
+  [“RandNLA: Randomized Numerical Linear Algebra”](https://dl.acm.org/doi/10.1145/2842602),
   *Communications of the ACM* 59(6), 80–90, 2016.
 
-## Roadmap
-
-The selected formalization core scope is closed; the repository-organization
-migration is not. Phase 11B1 split the transitional `Analysis.Norms.Core`
-owner, and Phase 11B2 moved the remaining audited Chapter 6 source owners.
-Phase 12 has now split the historical 82k-line `Algorithms.LU.BlockLU`
-declaration owner into reusable and 68-owner Chapter 13 source surfaces, then
-migrated all ten declaration-bearing BlockLU siblings into 22 semantic owners
-while preserving every old import as a compatibility facade. The completed
-parallel checkpoint physically split all 4,420 Chapter 9 declarations into 20
-canonical destinations, all 6,385 Chapter 11 declarations from 66 historical
-owners into 73 destinations, all 3,991 QR declarations into 60 destinations,
-and all 5,129 LSQ/Chapter 20 declarations into 73 destinations. The QR-to-LSQ
-ownership handoff is resolved and the strict classified graph has no reusable-
-to-source or reusable-to-mixed path. The first post-integration cleanup also
-classified 42 declaration-free Chapter 19 facades and normalized all production
-consumers to their canonical imports. C0005 subsequently accepted the W03 split
-of 26 Cholesky/Chapter 10 owners into 61 canonical production modules and the
-W05 split of 10 Sylvester/Schur owners into 79 canonical production modules,
-while retaining every projection-required historical declaration and import.
-C0006 then accepted the W06 split of 67 Chapter 16/18 owners into 176 canonical
-production modules and the W08 split of 42 matrix-inversion/Chapter 14 owners
-into 73 canonical production modules. C0007 then accepted the W04 split of 29
-Chapter 21/underdetermined owners into 84 canonical production modules, the W09
-split of 72 test-matrix/Chapter 28 owners into 93 canonical production modules,
-and the W11 split of 18 RandNLA owners into 37 canonical production modules.
-C0008 then accepted the W07 split of 5 Chapter 17/stationary-iteration owners
-into 34 canonical production modules and the W10 split of 27 Chapter 15/
-norm-estimation owners into 96 canonical production modules. M90 is ready but
-remains unactivated. Successor C0001 then accepted R01/R02 cleanup of 44
-residual owners into 38 new production modules. Those delivery branches are
-retired. C0002 then accepted the exact-C0001 R11/R12 deliveries, reorganizing
-68 residual owners and adding 11 canonical production modules. B0003/B0004 are
-retired: their exact remote refs were deleted after acceptance-control CI went
-green, their named worker worktrees were removed after evidence archival, and
-their local delivery refs remain preserved. C0003 accepted the exact-C0002 R03
-delivery, reorganizing 47 residual owners into canonical floating-point
-foundations and Higham Chapters 1--12 surfaces. B0005 is retired after exact
-green control-chain CI, expected-tip remote-ref deletion, evidence archival,
-and removal of its named worktree without force; its local delivery branch
-remains preserved at `1f8ff4ca5b0b136901a2f47d43e1064dc09aa556`. P0005 is
-retired and R0005 is applied. C0004 accepted the exact-C0003 R05/R06
-deliveries at `783ae9a4951407ece046adb8631d5a8ff1795a18`. B0006/B0007 are
-retired after exact green acceptance-control CI, P0006/P0007 are retired, and
-R0006/R0007/R0008 are applied; their local delivery branches remain preserved.
-C0005 then accepted the exact-C0004 R04 delivery (19 owners, 289 declarations
-into 31 destinations) and R08 delivery (45 owners, 211 declarations into 21
-destinations) under the reviewed 37-path union, and the R07 matrix-powers
-delivery `2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` was integrated on `main`
-at `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5` under exact R0011 and its
-reviewed supplemental correction.
-The current C0006-accepted, R09/R10-integrated counts are authoritative.
-The unclassified and noncanonical queues are both empty; one
-declaration-bearing umbrella and the remaining reviewed giant-file outliers are
-what subsequent accepted batches must still reduce. Mixed-tier and
-missing-module-documentation debt are both zero.
-The sequence and safety gates are tracked in
-[`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md), with exact
-ownership, checkpoints, and wave dependencies in the active
-[`August 2026 successor phase contract`](docs/architecture/phases/2026-08-repository-reorganization-completion/README.md).
-
-## License
+## License and citation
 
 Except where an individual file states otherwise, NumStability is licensed
 under the [MIT License](LICENSE). Files carrying an Apache-2.0 notice are
 licensed under the [Apache License, Version 2.0](LICENSES/Apache-2.0.txt).
-Third-party attribution and upstream references are recorded in
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-Citation metadata is available in [`CITATION.cff`](CITATION.cff).
+Third-party attribution is recorded in
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md), and citation metadata is
+available in [`CITATION.cff`](CITATION.cff).
