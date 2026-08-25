@@ -174,28 +174,147 @@ open NumStability
 
 ## Project structure
 
+The map below emphasizes canonical entry points and stable family boundaries
+rather than every theorem leaf. Paired `Family.lean` and `Family/` paths are
+usually an import umbrella and its implementation subtree. See
+[`ARCHITECTURE.md`](ARCHITECTURE.md) for the authoritative API tiers and
+dependency rules.
+
 ```text
-NumStability.lean                 compatibility entry point → NumStability.All
+NumStability.lean                    historical complete-tree entry point → NumStability.All
 NumStability/
-├── Core.lean                    small reusable foundation
-├── All.lean                     complete supported surface
-├── FloatingPoint.lean
-├── FloatingPoint/               abstract model and IEEE-facing support
-├── Analysis.lean
-├── Analysis/                    reusable analysis and historical aggregates
-├── Algorithms.lean
-├── Algorithms/                  numerical algorithm families
-├── Source.lean
+├── Core.lean                       intentionally small reusable foundation
+├── All.lean                        reusable code, source correspondence, and case studies
+├── FloatingPoint.lean              complete reusable floating-point umbrella
+├── FloatingPoint/
+│   ├── Model.lean                  abstract FPModel and primitive rounding assumptions
+│   ├── OperationLaws.lean          laws for rounded operations
+│   ├── FusedMultiplyAdd/           FMA foundations and dot-product operation counts
+│   ├── IEEE.lean                   IEEE-facing operations umbrella
+│   └── IEEE/
+│       └── NaiveMaximum.lean       value-level maximum and NaN comparison API
+├── Analysis.lean                   broad analysis discovery aggregate, including legacy work
+├── Analysis/
+│   ├── Error/
+│   │   ├── Measures/               forward, backward, and relative error measures
+│   │   ├── MatrixProducts/         matrix-product error analysis
+│   │   └── RoundingProducts/       reusable rounding-product bounds
+│   ├── FloatingPointArithmetic/    formats, rounding, special values, and local error laws
+│   ├── Asymptotics/                reusable asymptotic bounds
+│   ├── FirstOrder/                 fixed-precision and asymptotic first-order analysis
+│   ├── Conditioning/               distance-to-singularity and inverse-perturbation theory
+│   ├── Perturbation/               perturbation theory, including least squares
+│   ├── LinearOperators/
+│   │   ├── Jordan/                 Jordan-form support
+│   │   ├── MatrixPowers/           power bounds and semiconvergence
+│   │   ├── NumericalRadius/        numerical-radius inequalities
+│   │   ├── Pseudospectra/          pseudospectral analysis
+│   │   └── Schur/                  real and complex Schur theory
+│   ├── VectorNorms/                duality, interpolation, and attainment
+│   ├── OperatorNorms/              operator-norm definitions and attainment
+│   ├── MatrixNorms/                comparisons, spectral extrema, and invariant norms
+│   ├── SingularValues/             singular-value and Weyl–Mirsky theory
+│   ├── Equidistribution/
+│   │   └── AddCircle.lean          Fourier/Haar orbit-equidistribution API
+│   ├── LeadingDigits/
+│   │   ├── Decimal.lean            decimal leading-digit predicate
+│   │   ├── DecimalPowers.lean      powers, logarithms, and decimal arcs
+│   │   ├── Empirical.lean          finite empirical digit histograms
+│   │   └── LogarithmicDistribution.lean  logarithmic leading-digit law
+│   ├── Probability/
+│   │   ├── Gaussian/               Gaussian probability analysis
+│   │   └── Haar/                   Haar probability and invariant measures
+│   ├── Summation/
+│   │   ├── Signs.lean              sign and absolute-sum identities
+│   │   └── ErrorBounds.lean        summation conditioning and error bounds
+│   ├── Statistics/                 sample-statistics analysis
+│   └── TestMatrices/               reusable structured and random matrix families
+├── Algorithms.lean                 broad historical algorithm aggregate
+├── Algorithms/
+│   ├── Arithmetic/DotProduct/      sequential, no-guard, and tree dot products
+│   ├── Summation/
+│   │   ├── Recursive/              sequential recursive summation
+│   │   ├── Pairwise/               pairwise summation
+│   │   ├── Compensated/            compensated summation
+│   │   ├── Insertion/              insertion schedules and error layers
+│   │   └── Tree/                   tree-structured summation
+│   ├── LinearSystems/              canonical semantic hierarchy for linear solvers
+│   │   ├── Cholesky/               factorization, solves, and error analysis
+│   │   ├── CramersRule/            reusable Cramer's-rule core
+│   │   ├── GaussJordan/            Gauss–Jordan analysis
+│   │   ├── Iterative/              stationary iterations and semiconvergence
+│   │   ├── IterativeRefinement/    iterative-refinement methods
+│   │   ├── LeastSquares/           QR, normal equations, and refinement
+│   │   ├── LU/                     block LU, Doolittle, and related families
+│   │   ├── QR/                     Givens, Gram–Schmidt, Householder, and solves
+│   │   ├── SymmetricIndefinite/    Aasen, block LDLᵀ, pivoting, and error analysis
+│   │   ├── Triangular/             forward/back substitution and error bounds
+│   │   └── Underdetermined/        minimum-norm and seminormal methods
+│   ├── MatrixEquations/Sylvester/  equations, solvers, perturbation, and conditioning
+│   ├── MatrixInversion/
+│   │   ├── LUFactors/              inversion from LU factors
+│   │   ├── Residuals/              residual-based analysis
+│   │   └── Triangular/             triangular inversion
+│   ├── MatrixPowers/               computed iteration and Jordan-based methods
+│   ├── NormEstimation/
+│   │   ├── OneNorm/                one-norm estimators
+│   │   ├── PNorm/                  p-norm estimators
+│   │   └── TwoNorm/                two-norm estimators
+│   ├── PolynomialEvaluation/       scalar, derivative, and matrix-polynomial bounds
+│   ├── RandomizedLinearAlgebra/
+│   │   ├── Sampling/               randomized sampling primitives
+│   │   ├── Concentration/          concentration inequalities
+│   │   ├── LowRankApproximation/   randomized low-rank methods
+│   │   ├── LeastSquaresSketching/  sketched least-squares methods
+│   │   └── Preconditioning/        randomized preconditioners
+│   └── FastMatMul/                 reusable recurrences plus unsupported historical internals
+├── Source.lean                      canonical source-correspondence entry point
 ├── Source/
-│   ├── Higham/                  Higham chapter correspondence
-│   └── DrineasMahoney/          RandNLA source correspondence
-├── Higham/                      historical compatibility paths
-└── Upstream/                    attributed adapted or backported code
-NumStabilityTest/                import, compatibility, and theorem smoke tests
+│   ├── Higham.lean                 Higham source-correspondence umbrella
+│   ├── Higham/
+│   │   ├── Chapter01.lean … Chapter28.lean
+│   │   │                              chapter-level import umbrellas
+│   │   ├── Chapter01/ … Chapter28/ numbered results, algorithms, problems, and corrections
+│   │   ├── CrossChapter.lean       cross-chapter umbrella
+│   │   └── CrossChapter/           explicit bridges between chapters
+│   └── DrineasMahoney/
+│       └── RandNLA2016/             algorithm- and equation-indexed correspondence
+│           ├── Algorithm01/ … Algorithm03/
+│           └── Equation02/, Equation04/ … Equation09/
+├── Higham.lean                      historical wrapper → NumStability.Source.Higham
+├── Higham/                          historical Higham compatibility paths
+└── Upstream/Lindemann/              attributed Mathlib adaptation and backports
+
+NumStabilityTest.lean                complete test-library entry point
+NumStabilityTest/
+├── Import/                          entry-point and canonical-import smoke tests
+├── Compatibility/                   forwarding-path regression tests
+├── Reorganization/                  migration and declaration-placement regressions
+└── Worker/                          focused proof-audit and integration suites
+
 docs/
-├── source_coverage/             chapter ledgers and source audits
-└── architecture/                policy, manifests, and migration evidence
-tools/architecture/              generated baselines and repository checks
+├── architecture/
+│   ├── COMPATIBILITY.md             forwarding-path contract
+│   └── baselines/                   generated graph and inventory baselines
+├── source_coverage/                  per-chapter ledgers and PDF-first audits
+├── chapter12/, chapter14/
+├── chapter20/ … chapter28/           detailed proof ledgers for selected chapters
+└── benchmarking/                     benchmark methodology and reports
+
+tools/
+├── architecture/                     layout, provenance, compatibility, and graph checks
+└── benchmark/                        reproducible build-timing runner
+
+examples/LibraryLookup.lean           representative executable #check lookup
+experiments/                          C/Python reproductions of selected source examples
+├── chapter01/
+├── chapter02/
+└── chapter04/
+
+ARCHITECTURE.md                       API-tier and dependency policy
+RENAME_LEDGER.md                      historical-to-canonical module mapping
+lakefile.toml                         Lake package and build configuration
+lean-toolchain                        pinned Lean toolchain
 ```
 
 ## Documentation and status
