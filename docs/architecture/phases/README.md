@@ -26,6 +26,21 @@ accepted with retirement due, and P0010 is retired and R0011 is applied with
 its reviewed supplemental correction. The remote worker ref remains preserved
 at the immutable delivery. Branch retirement remains a separate later
 control.
+
+B0011/R09 and B0012/R10 are active at exact C0006 base code
+`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`. Exact planned-control commit
+`b12c9c6b829f9cf80a9ad6cf2d0c55f3530cd0d7` passed Lean CI run 32747422537
+(job 97496170577). The local and remote
+`claude/reorg-completion-2026-08-r09-test-matrices-ch28` and
+`claude/reorg-completion-2026-08-r10-randnla-drineas-mahoney` refs and the
+clean LF named worktrees `C:\Users\qed_s\higham-worktrees\completion-r09-claude` and
+`C:\Users\qed_s\higham-worktrees\completion-r10-claude` point to that exact base. Both
+workers are frozen until the separate activation-control commit passes Lean CI.
+Activation is authorized by a reviewed primary-human activation authorization
+that is deliberately narrower than the R07 precedent's semantic review and
+records what it does not cover. No R09 or R10 implementation, delivery,
+integration, self-acceptance, checkpoint acceptance, or branch retirement is
+recorded.
 This successor has precedence over dated migration packets and historical
 handoffs.
 

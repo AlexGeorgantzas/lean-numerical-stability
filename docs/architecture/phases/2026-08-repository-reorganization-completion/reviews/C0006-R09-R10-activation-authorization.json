@@ -1,0 +1,108 @@
+{
+ "accepted_control_sha": "35c9cb8305265ce63633ea6f7404e7b5067dc1c5",
+ "artifacts": [
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0011.json",
+   "role": "planned_branch_record",
+   "sha256": "0742266573AEC8E721C2B3DF72B2DEF54C0AABA9ED715F4965BB3ABEFBA74A7F"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0012.json",
+   "role": "planned_branch_record",
+   "sha256": "63151C4B8864BDC04C5D08780DA2227C6BD9008D8A9BC42482916255DF7EA00E"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0011.json",
+   "role": "baseline_projection",
+   "sha256": "E6F7730070144D2B79B0CFCE10ECB40DC0BD8B472FC7BF38CA826B32CAE74077"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0012.json",
+   "role": "baseline_projection",
+   "sha256": "252630935F55B2D18F4B94A12525352607BB1B4E9D2795995B351D90940956F3"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0012-R0013-union-review.md",
+   "role": "shared_request_union_review",
+   "sha256": "0D8D7269E41C3223B6CEA63CD9C05800132EBB9DF2A9F0414B231B959AA358EB"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0012.json",
+   "role": "shared_file_request",
+   "sha256": "D3B68F63F22D7D7A88A31F15D26A5FF07B2823AB6C74150EEC423052078FC3AC"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0013.json",
+   "role": "shared_file_request",
+   "sha256": "4EFC8B59FEEBFD1A3D9EBDDAD471A6A3FD4C5C113EBC4652BBC8092061ABFD38"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-selection.md",
+   "role": "selection_review",
+   "sha256": "0CADEFBB968D5492CF6A2C4434FA81CACCD4A8E0BAED0FDEAD1AAE20A84412DD"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-acceptance-control-ci.json",
+   "role": "ci_attestation",
+   "sha256": "5FBD9462DFA45748C69D01B3F4CBCB0CE7FEA7F6DFB7C306DC2DDBE14FA96B02"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-destination-rule-amendment.md",
+   "role": "contract_amendment",
+   "sha256": "5749CE3E334B61679F10A08850E8136FC882608A18F197879EF81B25C2AB9BC9"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R10-operator-authorization.md",
+   "role": "operator_authorization",
+   "sha256": "61C76D457B205F24B730814D6EB41876A2CC71B364F589B59ADE2133D912D49C"
+  }
+ ],
+ "authorized_actions": [
+  "creation of local branches B0011 and B0012 at exact C0006 code fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+  "creation of remote branches claude/reorg-completion-2026-08-r09-test-matrices-ch28 and claude/reorg-completion-2026-08-r10-randnla-drineas-mahoney at that exact code commit",
+  "creation of named worktrees completion-r09-claude and completion-r10-claude at that exact code commit",
+  "activation-control main commit/push and CI monitoring"
+ ],
+ "base_checkpoint_id": "C0006",
+ "base_code_sha": "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5",
+ "basis": {
+  "did_not_include": [
+   "a fresh per-owner semantic review of the 72 R09 owners or the 18 R10 owners",
+   "review of materialized wave content, which does not exist at this control and is prohibited until the activation-control CI is green",
+   "any re-review of the C0006 checkpoint acceptance"
+  ],
+  "relied_on": [
+   "the reviewed selection freeze recording zero peer overlap across all eight enforced dimensions",
+   "the reviewed destination-rule contract amendment and its absent-at-base guard",
+   "the reviewed temporary operator authorization for the B0012 codex-lane pair",
+   "the reviewed 25-path common-base union reconciling R0012 and R0013",
+   "green GitHub Lean CI on the exact planned control b12c9c6b829f9cf80a9ad6cf2d0c55f3530cd0d7",
+   "green GitHub Lean CI on the planning narrative refresh 86d747121dc1f26cfb84af5c55cda8a39107da83"
+  ],
+  "statement": "Primary-human authorized activation of the already-reviewed R09/R10 successor pair. This record attests an activation authorization, not a semantic review of wave contents; it is deliberately narrower than the R07 precedent reviews/R07-primary-human-review.json, which recorded a primary_human_semantic_review over 25 hash-pinned artifacts. The authority granted here is limited to the actions enumerated in authorized_actions and is bounded by exclusions."
+ },
+ "decision": "approved",
+ "exclusions": [
+  "R09 implementation before the activation-control CI is green",
+  "R10 implementation before the activation-control CI is green",
+  "R09 or R10 delivery",
+  "R09 or R10 integration",
+  "wave self-acceptance",
+  "checkpoint acceptance",
+  "branch retirement"
+ ],
+ "instruction": {
+  "channel": "interactive Claude Code session",
+  "operator_id": "claude-local",
+  "received_at": "2026-08-24T23:37:07Z",
+  "received_at_source": "session transcript user-message timestamp",
+  "summary": "primary-human directed claude-local to perform the activation control and push it to remote main"
+ },
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "planned_control_sha": "b12c9c6b829f9cf80a9ad6cf2d0c55f3530cd0d7",
+ "record_kind": "primary_human_activation_authorization",
+ "review_id": "R09-R10-C0006-activation-v1",
+ "reviewed_at": "2026-08-24T23:37:07Z",
+ "reviewer_id": "primary-human",
+ "schema_version": 1
+}

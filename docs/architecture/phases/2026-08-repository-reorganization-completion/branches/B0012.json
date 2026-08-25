@@ -243,12 +243,20 @@
     "sha256": "4EFC8B59FEEBFD1A3D9EBDDAD471A6A3FD4C5C113EBC4652BBC8092061ABFD38"
    },
    {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-activation-authorization.json",
+    "sha256": "C0A3CC748DF248FCC38864810586214590E16F2C9892C9C7D08B3529C6DE0D5E"
+   },
+   {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-selection.md",
     "sha256": "0CADEFBB968D5492CF6A2C4434FA81CACCD4A8E0BAED0FDEAD1AAE20A84412DD"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-destination-rule-amendment.md",
     "sha256": "5749CE3E334B61679F10A08850E8136FC882608A18F197879EF81B25C2AB9BC9"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R09-R10-activation.json",
+    "sha256": "34AD672B1AF02B782AEAF6BBF6770D956DEB7523E60246C4A8BED9E15D3B1670"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R10-operator-authorization.md",
@@ -273,6 +281,6 @@
  "shared_request_ids": [
   "R0013"
  ],
- "status": "planned",
+ "status": "active",
  "wave_id": "R10"
 }

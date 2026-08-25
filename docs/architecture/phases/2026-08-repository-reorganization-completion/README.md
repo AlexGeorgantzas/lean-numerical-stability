@@ -22,6 +22,21 @@ its reviewed supplemental correction. The remote worker ref remains preserved
 at the immutable delivery. Branch retirement remains a separate later
 control.
 
+B0011/R09 and B0012/R10 are active at exact C0006 base code
+`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`. Exact planned-control commit
+`b12c9c6b829f9cf80a9ad6cf2d0c55f3530cd0d7` passed Lean CI run 32747422537
+(job 97496170577). The local and remote
+`claude/reorg-completion-2026-08-r09-test-matrices-ch28` and
+`claude/reorg-completion-2026-08-r10-randnla-drineas-mahoney` refs and the
+clean LF named worktrees `C:\Users\qed_s\higham-worktrees\completion-r09-claude` and
+`C:\Users\qed_s\higham-worktrees\completion-r10-claude` point to that exact base. Both
+workers are frozen until the separate activation-control commit passes Lean CI.
+Activation is authorized by a reviewed primary-human activation authorization
+that is deliberately narrower than the R07 precedent's semantic review and
+records what it does not cover. No R09 or R10 implementation, delivery,
+integration, self-acceptance, checkpoint acceptance, or branch retirement is
+recorded.
+
 R01 (`codex-local`) and R02 (`claude-local`) were delivered from exact C0000, preserved by separate true merges, and accepted at C0001 after exact local gates and GitHub Lean CI run 31539572494 passed. M01 and M02 are accepted, P0001/P0002 are retired evidence, and R0001/R0002/R0002T are applied. After acceptance-control commit `93883eb0ec69a01704ff24ac71713a03f0be5a49` passed GitHub Lean CI run 31542177523 (job 93946871439), B0001/B0002 were retired at `2026-08-11T22:34:24Z`; their exact remote delivery refs were deleted with expected-tip leases and verified absent. Ignored delivery evidence was hash-verified under `C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0001-R01-R02-20260811` before both clean named worker worktrees were removed without force. Local delivery branches remain preserved at their immutable tips; [`reviews/R01-R02-retirement.md`](reviews/R01-R02-retirement.md) records the exact archive manifest and cleanup evidence.
 
 C0001 contains 2,631 production modules and 423 distinct residual-debt rows: 277 unclassified, 9 mixed, 72 missing module docs, 244 noncanonical, and 21 declaration-bearing umbrellas, with zero unsorted aggregate imports. A fresh C0001 import/declaration graph identified R11 (QR/Chapter 19) and R12 (Chapter 13 equations/table) as the only ready pair with zero owner, destination, import, reachability, signature, body, and shared-consumer overlap. Planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be` passed Lean CI run 31546978830 (job 93961477202); B0003/B0004 were then created from exact C0001 code `117aa2bb7e61f41e1531a78452f9f7f6cd5b0771` and activated synchronously. Both waves retain their immutable `claude-lane` assignment. A primary-human review temporarily authorized `codex-local` only for B0004/R12 through C0002; that authorization is now expired. [`reviews/R11-R12-activation.md`](reviews/R11-R12-activation.md) records the exact refs, worktrees, operators, activation tips, and green planned-control gate.

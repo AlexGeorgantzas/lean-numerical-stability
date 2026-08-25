@@ -52,11 +52,29 @@ records validate unchanged. Separately, `codex-lane` may carry the reviewed
 B0012-scoped operator pair at C0006 only while that authorization is present
 with its exact pinned bytes.
 
-Neither wave is activated, no worker ref or worktree exists, and implementation
-remains prohibited until the exact planned-control commit passes Lean CI and a
-later activation-control commit is green. The live ratchet therefore still
-records 90 unclassified modules and 72 noncanonical names; completing the pair
-is what empties both.
+B0011/R09 and B0012/R10 are active at exact C0006 base code
+`fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`, authorized by the reviewed
+[`activation authorization`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-activation-authorization.json)
+and attested by the
+[`activation record`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R09-R10-activation.json).
+The planned control `b12c9c6b829f9cf80a9ad6cf2d0c55f3530cd0d7` passed
+Lean CI run 32747422537 (job 97496170577) before either worker was created. Both local
+and remote refs and both clean LF named worktrees point to that exact base with
+no `.lake` or olean material and zero CRLF tracked files.
+
+The authorization is deliberately narrower than the R07 precedent, which
+recorded a primary-human semantic review over 25 hash-pinned artifacts. This one
+records an activation grant over an already-reviewed plan and states in its
+`basis` block what it does not include, so the ledger does not overclaim what
+was reviewed. The activation record likewise names the local push reflog as the
+source of each remote-ref creation time, because the repository CreateEvent feed
+surfaced no CreateEvent of any age at capture time.
+
+Both workers remain frozen and implementation remains prohibited until the
+activation-control commit passes Lean CI. No implementation, delivery,
+integration, self-acceptance, checkpoint acceptance, or branch retirement is
+recorded. The live ratchet therefore still records 90 unclassified modules and
+72 noncanonical names; completing the pair is what empties both.
 
 A Lean 4 library for formally verified floating-point error analysis, following
 Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*

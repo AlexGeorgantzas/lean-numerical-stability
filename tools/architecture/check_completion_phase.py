@@ -748,6 +748,10 @@ C0006_REVIEW_FACTS = {
         "0CADEFBB968D5492CF6A2C4434FA81CACCD4A8E0BAED0FDEAD1AAE20A84412DD",
     "requests/R0012-R0013-union-review.md":
         "0D8D7269E41C3223B6CEA63CD9C05800132EBB9DF2A9F0414B231B959AA358EB",
+    "reviews/C0006-R09-R10-activation-authorization.json":
+        "C0A3CC748DF248FCC38864810586214590E16F2C9892C9C7D08B3529C6DE0D5E",
+    "reviews/R09-R10-activation.json":
+        "34AD672B1AF02B782AEAF6BBF6770D956DEB7523E60246C4A8BED9E15D3B1670",
 }
 R09_R10_PLANNED_CONTROL_CHANGED_PATHS = frozenset(
     {
@@ -803,6 +807,50 @@ R09_R10_NARRATIVE_REFRESH_CHANGED_PATHS = frozenset(
         "README.md",
         "tools/architecture/check_completion_phase.py",
     }
+)
+R09_R10_NARRATIVE_REFRESH_SHA = (
+    "86d747121dc1f26cfb84af5c55cda8a39107da83"
+)
+# Planned-control CI, proven green before worker activation.  The ids are read
+# out of reviews/R09-R10-activation.json when this pin is generated, so the
+# constant and the attestation cannot disagree.
+R09_R10_PLANNED_CONTROL_CI_RUN = 32747422537
+R09_R10_PLANNED_CONTROL_CI_JOB = 97496170577
+R09_R10_PLANNED_CONTROL_CI_SUITE = 88713094650
+R09_R10_ACTIVATION_AUTHORITY_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/C0006-R09-R10-activation-authorization.json"
+)
+R09_R10_ACTIVATION_AUTHORITY_SHA256 = (
+    "C0A3CC748DF248FCC38864810586214590E16F2C9892C9C7D08B3529C6DE0D5E"
+)
+R09_R10_ACTIVATION_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/R09-R10-activation.json"
+)
+R09_R10_ACTIVATION_SHA256 = (
+    "34AD672B1AF02B782AEAF6BBF6770D956DEB7523E60246C4A8BED9E15D3B1670"
+)
+R09_R10_ACTIVATION_CONTROL_SUBJECT = (
+    "chore(reorg): activate R09 and R10 successor pair"
+)
+R09_R10_ACTIVATION_CONTROL_CHANGED_PATHS = frozenset(
+    {
+        "README.md",
+        "docs/architecture/phases/README.md",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/README.md",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0011.json",
+        f"{DEFAULT_PHASE_DIR.as_posix()}/branches/B0012.json",
+        R09_R10_ACTIVATION_AUTHORITY_PATH,
+        R09_R10_ACTIVATION_PATH,
+        "tools/architecture/check_completion_phase.py",
+    }
+)
+B0011_ACTIVE_SHA256 = (
+    "3B627BE5308CA099A05F9D75374DDEB50B1B77D3961FB9CDCDD7F8B5FFCD480B"
+)
+B0012_ACTIVE_SHA256 = (
+    "571FFC9AB39F5DC6AC5AF31759F1EE85BF3793D57C3DBEC0224DD89E6B1BD13B"
 )
 C0006_COMBINED_BASELINE_SHA256 = (
     "5F61A60D5743E507D5DE4D82852DFA551861E1CAECD8610D8F345CC942DB1C76"
@@ -4049,6 +4097,188 @@ def validate_r07_planned_commit_shape(
             f"{context}.worktree",
             "committed planned control must have no staged, unstaged, or nonignored "
             f"untracked overlay; found={sorted(overlay_paths)}",
+        )
+
+
+def validate_r09_r10_activation_state(
+    root: Path,
+    problems: Problems,
+    *,
+    context: str = "R09/R10 activation",
+) -> None:
+    """Validate the activation record, its authority, and both active branches.
+
+    The pair analogue of validate_r07_activation_record.  Two divergences from
+    that precedent are deliberate and are asserted here rather than assumed:
+    the primary review is a primary_human_activation_authorization, and the
+    remote-ref creation source may be the local push reflog when the repository
+    CreateEvent feed has surfaced nothing.
+    """
+
+    act_path = root / R09_R10_ACTIVATION_PATH
+    auth_path = root / R09_R10_ACTIVATION_AUTHORITY_PATH
+    for path, rel, digest in (
+        (act_path, R09_R10_ACTIVATION_PATH, R09_R10_ACTIVATION_SHA256),
+        (auth_path, R09_R10_ACTIVATION_AUTHORITY_PATH,
+         R09_R10_ACTIVATION_AUTHORITY_SHA256),
+    ):
+        if not path.is_file():
+            problems.add(f"{context}.artifact", f"missing {rel}")
+            return
+        if sha256_path(path) != digest:
+            problems.add(f"{context}.artifact",
+                         f"{rel} must match exact SHA-256 {digest}")
+            return
+
+    record = json.loads(act_path.read_text(encoding="utf-8"))
+    auth_record = json.loads(auth_path.read_text(encoding="utf-8"))
+
+    problems.require(
+        record.get("record_kind") == "r09_r10_activation_control"
+        and record.get("schema_version") == 1
+        and record.get("activation_id") == "R09-R10-C0006-activation-v1",
+        f"{context}.identity",
+        "activation record must keep its exact kind, version and id",
+    )
+
+    base = record.get("base") or {}
+    problems.require(
+        base.get("accepted_control_sha") == C0006_ACCEPTED_CONTROL_SHA
+        and base.get("checkpoint_id") == "C0006"
+        and base.get("code_sha") == C0006_CODE_SHA,
+        f"{context}.base",
+        "activation must be rooted at exact accepted C0006 code",
+    )
+
+    authority = record.get("authority") or {}
+    primary = authority.get("primary_review") or {}
+    problems.require(
+        authority.get("decision") == "approved"
+        and authority.get("reviewer_id") == "primary-human"
+        and authority.get("review_id") == "R09-R10-C0006-activation-v1"
+        and primary.get("path") == R09_R10_ACTIVATION_AUTHORITY_PATH
+        and primary.get("sha256") == R09_R10_ACTIVATION_AUTHORITY_SHA256,
+        f"{context}.authority",
+        "activation must cite the exact primary-human activation authorization",
+    )
+    problems.require(
+        auth_record.get("record_kind") == "primary_human_activation_authorization"
+        and auth_record.get("decision") == "approved"
+        and auth_record.get("reviewer_id") == "primary-human"
+        and auth_record.get("base_code_sha") == C0006_CODE_SHA
+        and auth_record.get("planned_control_sha") == R09_R10_PLANNED_CONTROL_SHA
+        and isinstance((auth_record.get("basis") or {}).get("did_not_include"), list)
+        and (auth_record.get("basis") or {}).get("did_not_include"),
+        f"{context}.authority.record",
+        "the authorization must be an approved primary-human activation grant "
+        "at exact C0006 code that states what it does not include",
+    )
+
+    planned = record.get("planned_control") or {}
+    problems.require(
+        planned.get("commit_sha") == R09_R10_PLANNED_CONTROL_SHA
+        and planned.get("narrative_refresh_sha") == R09_R10_NARRATIVE_REFRESH_SHA,
+        f"{context}.planned_control",
+        "activation must pin the exact planned control and its narrative refresh",
+    )
+
+    ci = record.get("planned_control_ci") or {}
+    run = ci.get("run") or {}
+    job = ci.get("job") or {}
+    suite = ci.get("check_suite") or {}
+    problems.require(
+        run.get("id") == R09_R10_PLANNED_CONTROL_CI_RUN
+        and run.get("head_sha") == R09_R10_PLANNED_CONTROL_SHA
+        and run.get("conclusion") == "success"
+        and job.get("id") == R09_R10_PLANNED_CONTROL_CI_JOB
+        and job.get("run_id") == R09_R10_PLANNED_CONTROL_CI_RUN
+        and job.get("conclusion") == "success"
+        and suite.get("id") == R09_R10_PLANNED_CONTROL_CI_SUITE
+        and suite.get("head_sha") == R09_R10_PLANNED_CONTROL_SHA
+        and suite.get("conclusion") == "success",
+        f"{context}.planned_control_ci",
+        "activation must prove the exact planned control passed Lean CI",
+    )
+    problems.require(
+        all(step.get("conclusion") == "success"
+            for step in (job.get("steps") or [])) and bool(job.get("steps")),
+        f"{context}.planned_control_ci.steps",
+        "every recorded planned-control job step must have succeeded",
+    )
+
+    scope = record.get("evidence_scope") or {}
+    problems.require(
+        scope.get("worker_state") == "frozen_pending_activation_control_ci",
+        f"{context}.evidence_scope",
+        "activation must keep both workers frozen pending activation-control CI",
+    )
+
+    branches = record.get("branches") or {}
+    problems.require(
+        set(branches) == {"B0011", "B0012"},
+        f"{context}.branches",
+        "activation must cover exactly the B0011/B0012 pair",
+    )
+    expected_lane = {"B0011": "claude-lane", "B0012": "codex-lane"}
+    expected_wave = {"B0011": "R09", "B0012": "R10"}
+    expected_active = {"B0011": B0011_ACTIVE_SHA256, "B0012": B0012_ACTIVE_SHA256}
+    for bid in sorted(set(branches) & {"B0011", "B0012"}):
+        block = branches[bid] or {}
+        creation = block.get("creation") or {}
+        worktree = block.get("worktree") or {}
+        problems.require(
+            block.get("branch_id") == bid
+            and block.get("wave_id") == expected_wave[bid]
+            and block.get("lane_id") == expected_lane[bid]
+            and block.get("local_tip") == C0006_CODE_SHA
+            and block.get("remote_tip") == C0006_CODE_SHA
+            and block.get("local_ref") == block.get("remote_ref"),
+            f"{context}.{bid}.branch",
+            f"{bid} must be created at exact C0006 code on matching refs",
+        )
+        problems.require(
+            creation.get("base_sha") == C0006_CODE_SHA
+            and creation.get("remote_lease_expected_tip") == "absent"
+            and creation.get("remote_push_refspec")
+            == f"{C0006_CODE_SHA}:{block.get('local_ref')}"
+            and bool(creation.get("remote_ref_creation_source")),
+            f"{context}.{bid}.creation",
+            f"{bid} must record an absent-lease push of exact C0006 code and "
+            "name the source of its remote-ref creation time",
+        )
+        problems.require(
+            worktree.get("head_sha") == C0006_CODE_SHA
+            and worktree.get("lake_present") is False
+            and worktree.get("olean_count") == 0
+            and worktree.get("tracked_crlf_count") == 0
+            and worktree.get("clean_status_rows") == 0
+            and (worktree.get("config") or {}).get("core.eol") == "lf",
+            f"{context}.{bid}.worktree",
+            f"{bid} worktree must be clean, LF-configured, and free of .lake "
+            "and olean material at exact C0006 code",
+        )
+        branch_file = root / DEFAULT_PHASE_DIR.as_posix() / "branches" / f"{bid}.json"
+        if not branch_file.is_file():
+            problems.add(f"{context}.{bid}.record", f"missing {bid}.json")
+            continue
+        problems.require(
+            sha256_path(branch_file) == expected_active[bid],
+            f"{context}.{bid}.record",
+            f"expected exact active {bid} SHA-256 {expected_active[bid]}",
+        )
+        record_json = json.loads(branch_file.read_text(encoding="utf-8"))
+        evidence = {
+            row.get("path"): row.get("sha256")
+            for row in (record_json.get("refresh") or {}).get("evidence") or []
+        }
+        problems.require(
+            record_json.get("status") == "active"
+            and evidence.get(R09_R10_ACTIVATION_PATH) == R09_R10_ACTIVATION_SHA256
+            and evidence.get(R09_R10_ACTIVATION_AUTHORITY_PATH)
+            == R09_R10_ACTIVATION_AUTHORITY_SHA256,
+            f"{context}.{bid}.active",
+            f"{bid} must be active and carry both hash-pinned activation "
+            "evidence rows",
         )
 
 
@@ -8814,12 +9044,71 @@ class CompletionValidator:
                                     "change exactly the approved README and checker "
                                     f"paths; found={sorted(refresh_changed)}",
                                 )
+                                activation_precommit_extra = (
+                                    c0006_refresh_overlay
+                                    - set(R09_R10_ACTIVATION_CONTROL_CHANGED_PATHS)
+                                )
+                                self.problems.require(
+                                    not activation_precommit_extra,
+                                    f"{context}.r09_r10_refresh.worktree",
+                                    "the only overlay permitted on the R09/R10 "
+                                    "planning narrative refresh is the reviewed "
+                                    "activation-control path set; found extra="
+                                    f"{sorted(activation_precommit_extra)}",
+                                )
+                            elif (
+                                acceptance_head != R09_R10_NARRATIVE_REFRESH_SHA
+                                and c0006_refresh_parents
+                                == [R09_R10_NARRATIVE_REFRESH_SHA]
+                            ):
+                                # activation control activating the planned pair
+                                activation_diff = self.git(
+                                    "diff",
+                                    "--name-only",
+                                    "--no-renames",
+                                    R09_R10_NARRATIVE_REFRESH_SHA,
+                                    "HEAD",
+                                    "--",
+                                    check=False,
+                                )
+                                activation_changed = {
+                                    normalize_path(path)
+                                    for path in activation_diff.stdout.splitlines()
+                                    if path.strip()
+                                }
+                                if activation_diff.returncode:
+                                    self.problems.add(
+                                        f"{context}.r09_r10_activation.git",
+                                        "cannot read activation-control diff",
+                                    )
+                                self.problems.require(
+                                    c0006_refresh_subject
+                                    == R09_R10_ACTIVATION_CONTROL_SUBJECT,
+                                    f"{context}.r09_r10_activation.subject",
+                                    "the R09/R10 activation control must retain "
+                                    "the exact reviewed subject",
+                                )
+                                self.problems.require(
+                                    activation_changed
+                                    == set(R09_R10_ACTIVATION_CONTROL_CHANGED_PATHS),
+                                    f"{context}.r09_r10_activation.paths",
+                                    "the R09/R10 activation control must change "
+                                    "exactly the approved narrative, branch, "
+                                    "review and checker paths; "
+                                    f"missing={sorted(set(R09_R10_ACTIVATION_CONTROL_CHANGED_PATHS) - activation_changed)}, "
+                                    f"extra={sorted(activation_changed - set(R09_R10_ACTIVATION_CONTROL_CHANGED_PATHS))}",
+                                )
                                 self.problems.require(
                                     not c0006_refresh_overlay,
-                                    f"{context}.r09_r10_refresh.worktree",
-                                    "the R09/R10 planning narrative refresh must "
-                                    "have a clean overlay; found="
+                                    f"{context}.r09_r10_activation.worktree",
+                                    "the R09/R10 activation control must have a "
+                                    "clean overlay; found="
                                     f"{sorted(c0006_refresh_overlay)}",
+                                )
+                                validate_r09_r10_activation_state(
+                                    self.root,
+                                    self.problems,
+                                    context=f"{context}.r09_r10_activation",
                                 )
                             else:
                                 r09_r10_planned_diff = self.git(
