@@ -17,6 +17,17 @@ does not specify precisely enough to formalize honestly.
 
 ## Reorganization acceptance record
 
+The current accepted checkpoint is C0007 at exact code
+`4e26820d1f4989ec4ec77b7113085f593570e11b`. It accepts M09 and M10;
+B0011/R09 and B0012/R10 are accepted with retirement due; P0011/P0012 are
+retired; and R0012/R0013 are applied as the reviewed 25-path union. The live
+inventory classifies 2,927 of 2,927 production modules, with zero unclassified,
+mixed, or noncanonical modules. M13/I01 is planned with exactly twelve modules.
+Bounded-phase and repository-wide completion remain incomplete, and lifecycle
+retirement is separate from checkpoint acceptance.
+
+### Archived accepted-checkpoint chronology
+
 The accepted C0007/R09-R10 epoch retains the following checkpoint facts as
 immutable history; the current production statistics appear below.
 C0005 accepts M04/R04 and M08/R08 at exact integrated code commit
@@ -340,7 +351,7 @@ experiments/                          C/Python reproductions of selected source 
 └── chapter04/
 
 ARCHITECTURE.md                       API-tier and dependency policy
-RENAME_LEDGER.md                      historical-to-canonical module mapping
+RENAME_LEDGER.md                      archived package/repository/library identity record
 lakefile.toml                         Lake package and build configuration
 lean-toolchain                        pinned Lean toolchain
 ```
@@ -354,6 +365,9 @@ lean-toolchain                        pinned Lean toolchain
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) explains module placement and required
   checks.
 - [`CHANGELOG.md`](CHANGELOG.md) records release-facing changes.
+- [`docs/architecture/COMPATIBILITY.md`](docs/architecture/COMPATIBILITY.md)
+  is the current historical-to-canonical module-forwarding map;
+  [`RENAME_LEDGER.md`](RENAME_LEDGER.md) is archived identity history.
 
 The selected source-audit scope is terminal, but repository organization work
 is still in progress. Checkpoint C0007 is accepted; the

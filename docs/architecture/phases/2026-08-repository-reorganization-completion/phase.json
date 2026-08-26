@@ -750,6 +750,18 @@
   },
   {
    "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Inputs.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Results.lean"
+  },
+  {
+   "match": "exact",
    "path": "NumStability/Source/Higham/Chapter15.lean"
   },
   {
@@ -775,6 +787,10 @@
   {
    "match": "exact",
    "path": "NumStability/Source/Higham/Chapter19/Algorithm12/MGSPaddedClosure.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStability/Source/Higham/Chapter19/Core.lean"
   },
   {
    "match": "exact",
@@ -1043,6 +1059,30 @@
   {
    "match": "exact",
    "path": "NumStabilityTest.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Algorithms_NormEstimation_PNorm_All.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStabilityTest/Reorganization/I01/All.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter17_Results_Series.lean"
+  },
+  {
+   "match": "exact",
+   "path": "NumStabilityTest/Reorganization/I01/OldOnly/NumStability_Analysis_DoubleRounding.lean"
   },
   {
    "match": "exact",

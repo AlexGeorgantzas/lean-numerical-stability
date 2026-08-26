@@ -50,6 +50,7 @@ RECORD_FILE_RE = {
 }
 
 PHASE_STATUSES = {"draft", "active", "integration", "closed", "superseded", "cancelled"}
+TERMINAL_PHASE_STATUSES = {"closed", "superseded", "cancelled"}
 MILESTONE_STATUSES = {"planned", "ready", "accepted", "superseded", "cancelled"}
 BRANCH_STATUSES = {
     "planned",
@@ -235,6 +236,26 @@ class ScopeSnapshot:
     rows: list[dict[str, str]]
 
 
+@dataclass
+class RetainedPhaseState:
+    directory: Path
+    phase_id: str
+    original_status: str
+    phase: dict[str, Any]
+    effective_status: str = ""
+    successor_phase_id: str | None = None
+
+
+@dataclass
+class PhaseSupersession:
+    predecessor_phase_id: str
+    successor_phase_id: str
+    successor_path: str
+    context: str
+    document: dict[str, Any]
+    valid: bool = True
+
+
 class Problems:
     def __init__(self) -> None:
         self.format_errors: list[str] = []
@@ -354,6 +375,7 @@ class PhaseValidator:
         self._hash_cache: dict[Path, str] = {}
         self._snapshot_cache: dict[str, tuple[dict[str, tuple[str, str]], dict[str, str], dict[str, set[str]]]] = {}
         self._ancestor_cache: dict[tuple[str, str], bool] = {}
+        self._historical_shared_path_cache: dict[str, list[PathRule]] = {}
 
     def relative_context(self, path: Path) -> str:
         try:
@@ -548,6 +570,25 @@ class PhaseValidator:
             self.problems.malformed(context, "historical JSON must be an object")
             return None
         return value
+
+    def historical_shared_paths(
+        self, commit: str, context: str
+    ) -> list[PathRule]:
+        """Read the shared-path set recorded at an immutable checkpoint commit."""
+
+        cached = self._historical_shared_path_cache.get(commit)
+        if cached is not None:
+            return cached
+        phase_path = self.relative_context(self.phase_dir / "phase.json")
+        phase = self.git_json_at(commit, phase_path, context)
+        if phase is None:
+            self._historical_shared_path_cache[commit] = []
+            return []
+        rules = self.path_rules(
+            phase.get("shared_paths"), f"{context}.historical_shared_paths"
+        )
+        self._historical_shared_path_cache[commit] = rules
+        return rules
 
     def snapshot_metadata(
         self, commit: str
@@ -2644,6 +2685,38 @@ class PhaseValidator:
             if superseded_by is not None and superseded_by not in self.projections:
                 self.problems.violation(context, f"unknown superseding projection {superseded_by}")
 
+    def branch_epoch_shared_paths(
+        self,
+        branch: dict[str, Any],
+        live_statuses: set[str],
+        context: str,
+    ) -> list[PathRule]:
+        """Select live reservations or the terminal branch's checkpoint-era set."""
+
+        if branch.get("status") in live_statuses:
+            return self.shared_paths
+        integration = branch.get("integration")
+        accepted_id = (
+            integration.get("accepted_checkpoint_id")
+            if isinstance(integration, dict)
+            else None
+        )
+        # Accepted/retired records have an immutable integration checkpoint
+        # that captures their terminal ownership epoch. A cancelled or
+        # superseded pre-integration record has no such snapshot, so retain the
+        # conservative live-set check for it.
+        if accepted_id is None:
+            return self.shared_paths
+        checkpoint = self.checkpoints.get(accepted_id)
+        commit = checkpoint.get("commit_sha") if isinstance(checkpoint, dict) else None
+        if not isinstance(commit, str) or not SHA1_RE.fullmatch(commit):
+            self.problems.violation(
+                context,
+                "terminal branch lacks a valid checkpoint epoch for shared-path validation",
+            )
+            return []
+        return self.historical_shared_paths(commit, context)
+
     def validate_branches(self, current_id: str) -> None:
         live_statuses = {"planned", "active", "delivered"}
         branch_names: dict[str, str] = {}
@@ -2696,6 +2769,9 @@ class PhaseValidator:
                 self.problems.violation(context, f"unknown base checkpoint {base_id}")
             elif branch.get("base_sha") != base.get("commit_sha"):
                 self.problems.violation(context, "base_sha must equal the base checkpoint commit")
+            epoch_shared_paths = self.branch_epoch_shared_paths(
+                branch, live_statuses, context
+            )
             projection_id = branch.get("baseline_projection_id")
             projection = self.projections.get(projection_id)
             if projection is None:
@@ -2721,7 +2797,7 @@ class PhaseValidator:
                     "owned_paths must be exact rules for every and only immutable scope path assigned to the wave",
                 )
             for own in owned:
-                for shared in self.shared_paths:
+                for shared in epoch_shared_paths:
                     if own.intersects(shared):
                         self.problems.violation(context, f"owned path {own.path} overlaps integrator-owned shared path {shared.path}")
                 for blocked in forbidden:
@@ -2774,7 +2850,7 @@ class PhaseValidator:
                             context,
                             f"destination prefix {destination.path} overlaps existing owned path {own.path}",
                         )
-                for shared in self.shared_paths:
+                for shared in epoch_shared_paths:
                     if destination.intersects(shared):
                         self.problems.violation(
                             context,
@@ -2835,7 +2911,9 @@ class PhaseValidator:
                 if self.commit_exists(delivery_sha, f"{context}.delivery.commit_sha") and isinstance(branch.get("base_sha"), str):
                     if not self.is_ancestor(branch["base_sha"], delivery_sha, context):
                         self.problems.violation(context, "delivery commit does not descend from branch base")
-                    self.validate_branch_diff(branch, delivery_sha, context)
+                    self.validate_branch_diff(
+                        branch, delivery_sha, context, epoch_shared_paths
+                    )
             integration = branch.get("integration", {})
             integrated_required = status in {"accepted", "retired"}
             integration_values = [integration.get("method"), integration.get("accepted_checkpoint_id"), integration.get("accepted_sha")]
@@ -2875,7 +2953,13 @@ class PhaseValidator:
                         if left_rule.intersects(right_rule):
                             self.problems.violation("branch ownership", f"live branches {left_id} and {right_id} overlap at {left_rule.path!r} / {right_rule.path!r}")
 
-    def validate_branch_diff(self, branch: dict[str, Any], delivery_sha: str, context: str) -> None:
+    def validate_branch_diff(
+        self,
+        branch: dict[str, Any],
+        delivery_sha: str,
+        context: str,
+        epoch_shared_paths: Sequence[PathRule],
+    ) -> None:
         base_sha = branch.get("base_sha")
         if not isinstance(base_sha, str):
             return
@@ -2890,7 +2974,7 @@ class PhaseValidator:
                 self.problems.violation(context, f"delivery changed unowned path {path}")
             if any(rule.matches(path) for rule in forbidden):
                 self.problems.violation(context, f"delivery changed forbidden path {path}")
-            if any(rule.matches(path) for rule in self.shared_paths):
+            if any(rule.matches(path) for rule in epoch_shared_paths):
                 self.problems.violation(context, f"delivery changed integrator-owned shared path {path}")
 
     def blob_at(self, commit: str, path: str, context: str) -> str | None:
@@ -3260,6 +3344,492 @@ def sha256_file(path: Path) -> str:
 def write_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+
+
+def read_lifecycle_json(path: Path, context: str, problems: Problems) -> dict[str, Any] | None:
+    try:
+        value = json.loads(
+            path.read_text(encoding="utf-8"),
+            object_pairs_hook=duplicate_safe_object,
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, DuplicateKeyError) as error:
+        problems.malformed(context, f"cannot read JSON: {error}")
+        return None
+    if not isinstance(value, dict):
+        problems.malformed(context, "expected a JSON object")
+        return None
+    return value
+
+
+def validate_retained_phase_lifecycle(
+    root: Path,
+    active_dir: Path | None,
+    phase_dirs: Sequence[Path] | None = None,
+) -> tuple[Problems, dict[Path, RetainedPhaseState]]:
+    """Validate effective phase status without rewriting historical phase ledgers."""
+
+    problems = Problems()
+    phase_root = root / PHASES_ROOT
+    if phase_dirs is None:
+        if not phase_root.is_dir():
+            problems.malformed("retained phases", f"missing {PHASES_ROOT.as_posix()}")
+            return problems, {}
+        phase_dirs = sorted(
+            path
+            for path in phase_root.iterdir()
+            if path.is_dir() and (path / "phase.json").is_file()
+        )
+    if not phase_dirs:
+        problems.malformed("retained phases", "no retained phase directories found")
+        return problems, {}
+
+    states: dict[Path, RetainedPhaseState] = {}
+    by_id: dict[str, RetainedPhaseState] = {}
+    for phase_dir in phase_dirs:
+        resolved = phase_dir.resolve()
+        context = (phase_dir / "phase.json").relative_to(root).as_posix()
+        phase = read_lifecycle_json(phase_dir / "phase.json", context, problems)
+        if phase is None:
+            continue
+        phase_id = phase.get("phase_id")
+        status = phase.get("status")
+        if not isinstance(phase_id, str) or not ID_RE.fullmatch(phase_id):
+            problems.malformed(context, "phase_id must be a stable slug")
+            continue
+        if status not in PHASE_STATUSES:
+            problems.malformed(context, f"status must be one of {sorted(PHASE_STATUSES)}")
+            continue
+        state = RetainedPhaseState(
+            directory=resolved,
+            phase_id=phase_id,
+            original_status=status,
+            effective_status=status,
+            phase=phase,
+        )
+        states[resolved] = state
+        if phase_id in by_id:
+            problems.violation("retained phases", f"duplicate phase_id {phase_id}")
+        else:
+            by_id[phase_id] = state
+
+    supersessions: dict[str, PhaseSupersession] = {}
+    required_keys = {
+        "schema_version",
+        "record_kind",
+        "predecessor_phase_id",
+        "preserved_phase_sha256",
+        "effective_status",
+        "successor_phase_id",
+        "successor_path",
+        "decision_review",
+        "reviewer_id",
+        "decided_at",
+    }
+    for state in states.values():
+        supersession_path = state.directory / "supersession.json"
+        if not supersession_path.is_file():
+            continue
+        context = supersession_path.relative_to(root).as_posix()
+        document = read_lifecycle_json(supersession_path, context, problems)
+        if document is None:
+            continue
+        missing = sorted(required_keys - set(document))
+        unexpected = sorted(set(document) - required_keys)
+        if missing:
+            problems.malformed(context, "missing key(s): " + ", ".join(missing))
+        if unexpected:
+            problems.malformed(context, "unexpected key(s): " + ", ".join(unexpected))
+        local_valid = not missing and not unexpected
+        if document.get("schema_version") != 1:
+            problems.malformed(context, "schema_version must be 1")
+            local_valid = False
+        if document.get("record_kind") != "phase_supersession":
+            problems.malformed(context, "record_kind must be 'phase_supersession'")
+            local_valid = False
+        predecessor_id = document.get("predecessor_phase_id")
+        if predecessor_id != state.phase_id:
+            problems.violation(
+                context,
+                "predecessor_phase_id must match the containing phase.json",
+            )
+            local_valid = False
+        preserved_hash = document.get("preserved_phase_sha256")
+        if not isinstance(preserved_hash, str) or not SHA256_RE.fullmatch(preserved_hash):
+            problems.malformed(context, "preserved_phase_sha256 must be a SHA-256 digest")
+            local_valid = False
+        elif preserved_hash.upper() != sha256_file(state.directory / "phase.json"):
+            problems.violation(
+                context,
+                "preserved phase.json SHA-256 mismatch",
+            )
+            local_valid = False
+        if document.get("effective_status") != "superseded":
+            problems.violation(context, "effective_status must be terminal status 'superseded'")
+            local_valid = False
+        successor_id = document.get("successor_phase_id")
+        if not isinstance(successor_id, str) or not ID_RE.fullmatch(successor_id):
+            problems.malformed(context, "successor_phase_id must be a stable slug")
+            local_valid = False
+        successor_path = document.get("successor_path")
+        if not isinstance(successor_path, str) or not is_repo_path(successor_path):
+            problems.malformed(context, "successor_path must be a repository-relative directory")
+            local_valid = False
+        reviewer_id = document.get("reviewer_id")
+        if not isinstance(reviewer_id, str) or not ID_RE.fullmatch(reviewer_id):
+            problems.malformed(context, "reviewer_id must be a stable principal id")
+            local_valid = False
+        decided_at = document.get("decided_at")
+        if (
+            not isinstance(decided_at, str)
+            or not decided_at.endswith("Z")
+            or not is_rfc3339(decided_at)
+        ):
+            problems.malformed(context, "decided_at must be an RFC3339 UTC timestamp ending in Z")
+            local_valid = False
+        review = document.get("decision_review")
+        if not isinstance(review, dict):
+            problems.malformed(context, "decision_review must be an artifact object")
+            local_valid = False
+        else:
+            review_missing = sorted({"path", "sha256"} - set(review))
+            review_unexpected = sorted(set(review) - {"path", "sha256"})
+            if review_missing:
+                problems.malformed(
+                    f"{context}.decision_review",
+                    "missing key(s): " + ", ".join(review_missing),
+                )
+                local_valid = False
+            if review_unexpected:
+                problems.malformed(
+                    f"{context}.decision_review",
+                    "unexpected key(s): " + ", ".join(review_unexpected),
+                )
+                local_valid = False
+            review_path = review.get("path")
+            review_hash = review.get("sha256")
+            if not isinstance(review_path, str) or not is_repo_path(review_path):
+                problems.malformed(
+                    f"{context}.decision_review.path",
+                    "must be a repository-relative file",
+                )
+                local_valid = False
+            elif isinstance(successor_path, str) and not review_path.startswith(
+                successor_path.rstrip("/") + "/reviews/"
+            ):
+                problems.violation(
+                    f"{context}.decision_review.path",
+                    "must name a review retained by the successor phase",
+                )
+                local_valid = False
+            else:
+                absolute_review = root / review_path
+                if not absolute_review.is_file():
+                    problems.violation(
+                        f"{context}.decision_review.path",
+                        f"missing decision review {review_path}",
+                    )
+                    local_valid = False
+                elif not isinstance(review_hash, str) or not SHA256_RE.fullmatch(review_hash):
+                    problems.malformed(
+                        f"{context}.decision_review.sha256",
+                        "must be a SHA-256 digest",
+                    )
+                    local_valid = False
+                elif review_hash.upper() != sha256_file(absolute_review):
+                    problems.violation(
+                        f"{context}.decision_review",
+                        "decision-review SHA-256 mismatch",
+                    )
+                    local_valid = False
+        if isinstance(predecessor_id, str) and isinstance(successor_id, str) and isinstance(successor_path, str):
+            supersessions[state.phase_id] = PhaseSupersession(
+                predecessor_phase_id=predecessor_id,
+                successor_phase_id=successor_id,
+                successor_path=successor_path,
+                context=context,
+                document=document,
+                valid=local_valid,
+            )
+
+    for predecessor_id, supersession in supersessions.items():
+        if not supersession.valid:
+            continue
+        if supersession.successor_phase_id == predecessor_id:
+            problems.violation(supersession.context, "a phase cannot supersede itself")
+            supersession.valid = False
+            continue
+        successor = by_id.get(supersession.successor_phase_id)
+        if successor is None:
+            problems.violation(
+                supersession.context,
+                f"unknown successor phase {supersession.successor_phase_id}",
+            )
+            supersession.valid = False
+            continue
+        expected_path = successor.directory.relative_to(root).as_posix()
+        if supersession.successor_path != expected_path:
+            problems.violation(
+                supersession.context,
+                f"successor_path must be {expected_path}",
+            )
+            supersession.valid = False
+        authority = successor.phase.get("authority")
+        principals = authority.get("principals", []) if isinstance(authority, dict) else []
+        known_principals = {
+            principal.get("principal_id")
+            for principal in principals
+            if isinstance(principal, dict)
+        }
+        if supersession.document.get("reviewer_id") not in known_principals:
+            problems.violation(
+                supersession.context,
+                "reviewer_id must name a principal in the successor phase authority",
+            )
+            supersession.valid = False
+
+    # A supersession cycle invalidates every record in the cycle, so historical
+    # status is never overridden by a circular assertion.
+    for start in sorted(supersessions):
+        positions: dict[str, int] = {}
+        trail: list[str] = []
+        cursor = start
+        while cursor in supersessions and supersessions[cursor].valid:
+            if cursor in positions:
+                cycle = trail[positions[cursor] :]
+                problems.violation(
+                    "phase supersession chain",
+                    "successor cycle includes " + ", ".join(cycle),
+                )
+                for phase_id in cycle:
+                    supersessions[phase_id].valid = False
+                break
+            positions[cursor] = len(trail)
+            trail.append(cursor)
+            cursor = supersessions[cursor].successor_phase_id
+
+    # Every surviving chain must terminate at a phase whose preserved status
+    # is active. Records that terminate elsewhere are not allowed to override
+    # the preserved phase status.
+    changed = True
+    while changed:
+        changed = False
+        for supersession in supersessions.values():
+            if not supersession.valid:
+                continue
+            cursor = supersession.successor_phase_id
+            while cursor in supersessions and supersessions[cursor].valid:
+                cursor = supersessions[cursor].successor_phase_id
+            terminal = by_id.get(cursor)
+            if terminal is None or terminal.original_status != "active":
+                problems.violation(
+                    supersession.context,
+                    "successor chain must terminate at an active retained phase",
+                )
+                supersession.valid = False
+                changed = True
+
+    for state in states.values():
+        supersession = supersessions.get(state.phase_id)
+        if supersession is not None and supersession.valid:
+            state.effective_status = "superseded"
+            state.successor_phase_id = supersession.successor_phase_id
+        else:
+            state.effective_status = state.original_status
+            state.successor_phase_id = None
+
+    active_states = sorted(
+        (state for state in states.values() if state.effective_status == "active"),
+        key=lambda state: state.phase_id,
+    )
+    if len(active_states) != 1:
+        ids = ", ".join(state.phase_id for state in active_states) or "none"
+        problems.violation(
+            "retained phases",
+            f"expected exactly one effective active phase, found {len(active_states)}: {ids}",
+        )
+    elif active_dir is not None and active_states[0].directory != active_dir.resolve():
+        problems.violation(
+            "active-phase pointer",
+            f"must select sole effective active phase {active_states[0].phase_id}",
+        )
+
+    pointer_state = states.get(active_dir.resolve()) if active_dir is not None else None
+    if active_dir is not None and pointer_state is None:
+        problems.violation("active-phase pointer", "target is not a retained phase")
+    elif pointer_state is not None and pointer_state.effective_status != "active":
+        problems.violation(
+            "active-phase pointer",
+            "selects terminal effective status " + repr(pointer_state.effective_status),
+        )
+
+    for state in states.values():
+        if active_dir is not None and state.directory == active_dir.resolve():
+            continue
+        if state.effective_status not in TERMINAL_PHASE_STATUSES:
+            problems.violation(
+                "retained phases",
+                f"nonpointer phase {state.phase_id} has nonterminal effective status "
+                f"{state.effective_status!r}",
+            )
+
+    if len(active_states) == 1:
+        active_id = active_states[0].phase_id
+        for supersession in supersessions.values():
+            if not supersession.valid:
+                continue
+            cursor = supersession.successor_phase_id
+            while cursor in supersessions and supersessions[cursor].valid:
+                cursor = supersessions[cursor].successor_phase_id
+            if cursor != active_id:
+                problems.violation(
+                    supersession.context,
+                    f"successor chain terminates at {cursor}, not active phase {active_id}",
+                )
+
+    return problems, states
+
+
+def run_phase_lifecycle_self_test() -> int:
+    with tempfile.TemporaryDirectory(prefix="numstability-phase-lifecycle-selftest-") as temporary:
+        base = Path(temporary)
+
+        def make_fixture(
+            name: str,
+            *,
+            pointer_phase: str = "phase-b",
+            supersession_specs: Sequence[tuple[str, str, bool]] = (("phase-a", "phase-b", False),),
+        ) -> tuple[Path, Path]:
+            root = base / name
+            phases = root / PHASES_ROOT
+            phase_ids = {
+                "phase-a": "phase-a-id",
+                "phase-b": "phase-b-id",
+                "phase-missing": "phase-missing-id",
+            }
+            for directory_name in ("phase-a", "phase-b"):
+                write_json(
+                    phases / directory_name / "phase.json",
+                    {
+                        "phase_id": phase_ids[directory_name],
+                        "status": "active",
+                        "authority": {
+                            "principals": [{"principal_id": "primary-human"}],
+                        },
+                    },
+                )
+            for predecessor_name, successor_name, bad_hash in supersession_specs:
+                predecessor_dir = phases / predecessor_name
+                successor_path = (PHASES_ROOT / successor_name).as_posix()
+                review_path = (
+                    phases
+                    / successor_name
+                    / "reviews"
+                    / f"{predecessor_name}-supersession.md"
+                )
+                review_path.parent.mkdir(parents=True, exist_ok=True)
+                review_path.write_text(
+                    f"# Supersession review\n\n{predecessor_name} -> {successor_name}.\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                preserved_hash = sha256_file(predecessor_dir / "phase.json")
+                if bad_hash:
+                    preserved_hash = "0" * 64
+                write_json(
+                    predecessor_dir / "supersession.json",
+                    {
+                        "schema_version": 1,
+                        "record_kind": "phase_supersession",
+                        "predecessor_phase_id": phase_ids[predecessor_name],
+                        "preserved_phase_sha256": preserved_hash,
+                        "effective_status": "superseded",
+                        "successor_phase_id": phase_ids[successor_name],
+                        "successor_path": successor_path,
+                        "decision_review": {
+                            "path": review_path.relative_to(root).as_posix(),
+                            "sha256": sha256_file(review_path),
+                        },
+                        "reviewer_id": "primary-human",
+                        "decided_at": "2026-08-25T00:00:00Z",
+                    },
+                )
+            write_json(
+                phases / "active-phase.json",
+                {
+                    "schema_version": 1,
+                    "record_kind": "active_reorganization_phase",
+                    "phase_id": phase_ids[pointer_phase],
+                    "path": (PHASES_ROOT / pointer_phase).as_posix(),
+                },
+            )
+            active_dir, pointer_errors = active_phase_dir(root)
+            if pointer_errors or active_dir is None:
+                raise AssertionError("invalid lifecycle self-test pointer: " + "; ".join(pointer_errors))
+            return root, active_dir
+
+        positive_root, positive_active = make_fixture("positive")
+        positive, positive_states = validate_retained_phase_lifecycle(
+            positive_root, positive_active
+        )
+        positive_by_id = {state.phase_id: state for state in positive_states.values()}
+        if (
+            not positive.ok
+            or positive_by_id.get("phase-a-id") is None
+            or positive_by_id["phase-a-id"].effective_status != "superseded"
+            or positive_by_id.get("phase-b-id") is None
+            or positive_by_id["phase-b-id"].effective_status != "active"
+        ):
+            positive.render()
+            print(
+                "self-test failure: valid retained-phase supersession was rejected",
+                file=sys.stderr,
+            )
+            return 1
+
+        cases = (
+            (
+                "two-active",
+                {"supersession_specs": ()},
+                "expected exactly one effective active phase, found 2",
+            ),
+            (
+                "pointer-terminal",
+                {"pointer_phase": "phase-a"},
+                "selects terminal effective status 'superseded'",
+            ),
+            (
+                "missing-successor",
+                {"supersession_specs": (("phase-a", "phase-missing", False),)},
+                "unknown successor phase phase-missing-id",
+            ),
+            (
+                "successor-cycle",
+                {
+                    "supersession_specs": (
+                        ("phase-a", "phase-b", False),
+                        ("phase-b", "phase-a", False),
+                    )
+                },
+                "successor cycle includes",
+            ),
+            (
+                "hash-mismatch",
+                {"supersession_specs": (("phase-a", "phase-b", True),)},
+                "preserved phase.json SHA-256 mismatch",
+            ),
+        )
+        for name, options, expected in cases:
+            case_root, case_active = make_fixture(name, **options)
+            result, _ = validate_retained_phase_lifecycle(case_root, case_active)
+            messages = result.format_errors + result.contract_errors
+            if not any(expected in message for message in messages):
+                result.render()
+                print(
+                    f"self-test failure: {name} lifecycle fixture was not rejected as expected",
+                    file=sys.stderr,
+                )
+                return 1
+    return 0
 
 
 def run_self_test() -> int:
@@ -4272,6 +4842,11 @@ def run_self_test() -> int:
         # the amendment can be validated as applied.  A deliberately divergent
         # current index below must not affect this historical check.
         subprocess.run(
+            ["git", "add", "--", (phase_rel / "phase.json").as_posix()],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
             ["git", "commit", "-qm", "self-test amendment postimages"],
             cwd=root,
             check=True,
@@ -4395,6 +4970,66 @@ def run_self_test() -> int:
             "reason": "Applied in the synthetic successor checkpoint.",
         }
         write_amendment_and_branch()
+
+        # Current reservations belong to the current execution epoch. They
+        # must constrain a live delivery, but must not retroactively invalidate
+        # an accepted branch whose checkpoint-era phase.json did not reserve
+        # those paths.
+        phase["shared_paths"] = [
+            {"match": "exact", "path": "NumStability.lean"},
+            {"match": "exact", "path": "NumStability/Foo.lean"},
+            {
+                "match": "exact",
+                "path": "NumStabilityTest/Reorganization/W1/Smoke.lean",
+            },
+        ]
+        write_json(phase_dir / "phase.json", phase)
+        terminal_new_reservations = PhaseValidator(root, phase_dir).validate()
+        if not terminal_new_reservations.ok:
+            terminal_new_reservations.render()
+            print(
+                "self-test failure: current reservations invalidated terminal branch history",
+                file=sys.stderr,
+            )
+            return 1
+
+        accepted_integration = branch["integration"]
+        branch["status"] = "delivered"
+        branch["integration"] = {
+            "method": None,
+            "accepted_checkpoint_id": None,
+            "accepted_sha": None,
+        }
+        projection["status"] = "active"
+        write_amendment_and_branch()
+        write_json(phase_dir / "projections/P0001.json", projection)
+        live_new_reservations = PhaseValidator(root, phase_dir).validate()
+        live_messages = live_new_reservations.contract_errors
+        expected_live_reservation_errors = (
+            "owned path NumStability/Foo.lean overlaps integrator-owned shared path "
+            "NumStability/Foo.lean",
+            "destination prefix NumStabilityTest/Reorganization/W1/ overlaps "
+            "integrator-owned shared path "
+            "NumStabilityTest/Reorganization/W1/Smoke.lean",
+            "delivery changed integrator-owned shared path "
+            "NumStabilityTest/Reorganization/W1/Smoke.lean",
+        )
+        if not all(
+            any(expected in message for message in live_messages)
+            for expected in expected_live_reservation_errors
+        ):
+            live_new_reservations.render()
+            print(
+                "self-test failure: live branch ignored current shared-path reservations",
+                file=sys.stderr,
+            )
+            return 1
+        branch["status"] = "accepted"
+        branch["integration"] = accepted_integration
+        projection["status"] = "retired"
+        write_amendment_and_branch()
+        write_json(phase_dir / "projections/P0001.json", projection)
+
         foo_path.write_text(
             "/-! Later live-index edit. -/\ntheorem foo : True := by trivial\n",
             encoding="utf-8",
@@ -4452,15 +5087,21 @@ def run_self_test() -> int:
             print("self-test failure: artifact tampering was not rejected", file=sys.stderr)
             return 1
 
+    if run_phase_lifecycle_self_test() != 0:
+        return 1
+
     print(
         "phase contract self-test passed: valid fixture accepted; queue drift, semantic "
         "status mismatch, wrong ownership, destination overlap, stale baseline metadata, "
         "unpassed gates, projection count drift, cycle, premature unblock, premature "
         "completion, unauthorized live operator, live shared-path release, and hash "
         "tampering and unknown terminal operators rejected; known terminal historical "
-        "operator attribution and terminal shared-path release accepted; integration "
+        "operator attribution, terminal shared-path release, and checkpoint-era branch "
+        "reservations accepted while current reservations constrain live delivery; integration "
         "amendment active-index, applied-commit, predecessor-chain, approval, and "
-        "malformed-input lifecycle cases verified"
+        "malformed-input lifecycle cases verified; retained-phase supersession accepted, "
+        "and two-active, terminal-pointer, missing-successor, successor-cycle, and "
+        "preserved-hash drift rejected"
     )
     return 0
 
@@ -4489,13 +5130,13 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def active_phase_dir() -> tuple[Path | None, list[str]]:
+def active_phase_dir(root: Path = ROOT) -> tuple[Path | None, list[str]]:
     """Resolve and validate the repository's explicit active-phase pointer."""
 
-    pointer_path = ROOT / ACTIVE_PHASE_POINTER
+    pointer_path = root / ACTIVE_PHASE_POINTER
     errors: list[str] = []
     if not pointer_path.is_file():
-        if (ROOT / LEGACY_DEFAULT_PHASE_DIR).is_dir():
+        if (root / LEGACY_DEFAULT_PHASE_DIR).is_dir():
             errors.append(
                 f"missing active-phase pointer: {ACTIVE_PHASE_POINTER.as_posix()}"
             )
@@ -4531,8 +5172,8 @@ def active_phase_dir() -> tuple[Path | None, list[str]]:
     if not isinstance(relative, str) or not is_repo_path(relative):
         errors.append("active-phase pointer path must be a repository-relative directory")
         return None, errors
-    phase_dir = (ROOT / relative).resolve()
-    phases_root = (ROOT / PHASES_ROOT).resolve()
+    phase_dir = (root / relative).resolve()
+    phases_root = (root / PHASES_ROOT).resolve()
     try:
         phase_dir.relative_to(phases_root)
     except ValueError:
@@ -4579,16 +5220,44 @@ def main(argv: Sequence[str] | None = None) -> int:
             print("phase contract malformed: no retained phase directories found", file=sys.stderr)
             return 2
         exit_code = 0
+        lifecycle_problems, lifecycle_states = validate_retained_phase_lifecycle(
+            ROOT, active_dir, phase_dirs
+        )
+        if not lifecycle_problems.ok:
+            print("retained phase lifecycle validation failed", file=sys.stderr)
+            lifecycle_problems.render()
+            exit_code = max(
+                exit_code,
+                2 if lifecycle_problems.format_errors else 1,
+            )
         for phase_dir in phase_dirs:
             validator = PhaseValidator(ROOT, phase_dir)
             problems = validator.validate()
             if problems.ok:
-                marker = " [active]" if active_dir == phase_dir.resolve() else ""
+                state = lifecycle_states.get(phase_dir.resolve())
+                if state is None:
+                    marker = ""
+                elif state.successor_phase_id is not None:
+                    marker = (
+                        f" [effective {state.effective_status} -> "
+                        f"{state.successor_phase_id}]"
+                    )
+                elif active_dir == phase_dir.resolve():
+                    marker = f" [effective {state.effective_status}; pointer]"
+                else:
+                    marker = f" [effective {state.effective_status}]"
                 print(validator.summary() + marker)
                 continue
             print(f"phase validation failed: {phase_dir.relative_to(ROOT).as_posix()}", file=sys.stderr)
             problems.render()
             exit_code = max(exit_code, 2 if problems.format_errors else 1)
+        if lifecycle_problems.ok:
+            active_state = lifecycle_states.get(active_dir.resolve()) if active_dir else None
+            if active_state is not None:
+                print(
+                    "retained phase lifecycle passed: sole effective active phase "
+                    + active_state.phase_id
+                )
         return exit_code
 
     phase_dir = args.phase_dir

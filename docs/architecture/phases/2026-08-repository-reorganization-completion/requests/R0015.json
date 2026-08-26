@@ -1,0 +1,47 @@
+{
+ "blocks": [
+  "I01"
+ ],
+ "created_at": "2026-08-25T15:42:49Z",
+ "depends_on": [],
+ "lane_id": "integration-lane",
+ "patch": {
+  "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015.patch",
+  "sha256": "A6EAA922363136C5B15351849260632094C1A707D7134E7084CBA6556415E820"
+ },
+ "paths": [
+  "NumStability/Source/Higham/Chapter19/Core.lean",
+  "tools/architecture/check_compatibility.py"
+ ],
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "preimage_blobs": [
+  {
+   "blob_oid": "9d753fc27d6ce54cce21283b45158022e667e3bc",
+   "path": "NumStability/Source/Higham/Chapter19/Core.lean"
+  },
+  {
+   "blob_oid": "2786591fe5ca54ecc8a024279b28e664414dab6d",
+   "path": "tools/architecture/check_compatibility.py"
+  }
+ ],
+ "rationale": "CODE-03 is an indivisible two-path compatibility cleanup: switch Chapter19.Core from the two R11 historical support wrappers to their canonical StoredQR and TrailingPanels destinations, then remove the exhausted two-edge retained-production exception and Core source pin while ratcheting production imports of historical paths to zero.",
+ "record_kind": "shared_file_request",
+ "request_id": "R0015",
+ "requester_id": "primary-human",
+ "resolution": {
+  "checkpoint_id": null,
+  "commit_sha": null,
+  "reason": null,
+  "resolved_at": null,
+  "resolved_by": null,
+  "validation_evidence": []
+ },
+ "schema_version": 1,
+ "status": "active",
+ "superseded_by": null,
+ "supersedes": null,
+ "target_base_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+ "target_checkpoint_id": "C0007",
+ "valid_through_checkpoint_id": "C0007",
+ "wave_id": "I01"
+}

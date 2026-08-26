@@ -1,0 +1,91 @@
+{
+ "activation_conditions": [
+  "the planned-control commit is a direct child of control head 8960f2a980be22166f321c4ba452eb547529b1fd and changes only paths classified planned_control in the authorized path manifest",
+  "check_phase.py --self-test, check_phase.py --all-phases, check_completion_phase.py --self-test, and check_completion_phase.py all pass on the exact planned-control commit",
+  "GitHub Lean CI succeeds on the exact planned-control commit before either implementation patch is applied",
+  "R0014 and R0015 replay from exact C0007 code 4e26820d1f4989ec4ec77b7113085f593570e11b and reproduce every hash-pinned postimage",
+  "implementation changes are limited to the exact implementation rows of the authorized path manifest and each request remains an indivisible rollback unit",
+  "an independent registered non-service principal who did not author or generate the exact evidence and did not perform the exact action under review records the required inspection"
+ ],
+ "authorization_id": "C0007-M13-I01-CODE03-bounded-v1",
+ "authority_id": "primary-human",
+ "authorized_actions": [
+  "prepare, validate, commit, and exact-lease push the bounded planned controls",
+  "dispatch and monitor CI for the exact planned-control and later bounded control commits",
+  "after exact planned-control CI succeeds, apply the hash-pinned R0014 and R0015 implementation packets",
+  "prepare implementation, verification, independent-review, and acceptance-candidate evidence within the authorized manifest",
+  "commit and exact-lease push bounded implementation and verification controls that satisfy the recorded activation conditions"
+ ],
+ "base": {
+  "active_phase_pointer_sha256": "C99061ACCE56AF121B1ACF0FBE2C757B53602A5A8599DC93193871095D3AB360",
+  "control_head_sha": "8960f2a980be22166f321c4ba452eb547529b1fd",
+  "control_tree_sha": "70cee1e77e1311129b00aeb0945770483d1aa5db",
+  "current_checkpoint_id": "C0007",
+  "current_checkpoint_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+  "phase_sha256": "7DCF4E6B47F3EDEC92D1F6945426F0AB13215A5AC3C362D9356A58C413288AAC",
+  "remote_main_sha": "8960f2a980be22166f321c4ba452eb547529b1fd"
+ },
+ "decision": "approved",
+ "expiry": {
+  "events": [
+   "C0008 acceptance",
+   "explicit cancellation or supersession",
+   "base, path-manifest, request-patch, or postimage drift",
+   "an exact-lease mismatch",
+   "primary-human revocation"
+  ],
+  "valid_through_checkpoint_id": "C0008"
+ },
+ "operator_id": "codex-local",
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "preserved_exclusions": [
+  "tracking, committing, or pushing REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+  "any public declaration, namespace, normalized type, visibility, or supported-entrypoint reachability change",
+  "any tracked path absent from the authorized path manifest",
+  "partial application of either R0014 or R0015",
+  "resolving R0014 or R0015 under an identity other than primary-human",
+  "C0008 checkpoint acceptance without a separate exact acceptance control",
+  "repository-wide completion or final release acceptance",
+  "branch retirement, remote-ref deletion, force push, or history rewrite"
+ ],
+ "record_kind": "primary_human_bounded_epoch_authorization",
+ "recorded_at": "2026-08-25T15:14:31Z",
+ "schema_version": 1,
+ "scope": {
+  "authorized_path_manifest": {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-authorized-paths.tsv",
+   "row_count": 56,
+   "sha256": "121D11A73AF2CD23885FB7A6B38D14B0D8A5440940D913A83F3A5D6941511ECE"
+  },
+  "milestone_id": "M13",
+  "request_ids": [
+   "R0014",
+   "R0015"
+  ],
+  "target_checkpoint_id": "C0008",
+  "task_ids": [
+   "ACCEPT-01",
+   "CODE-01",
+   "CODE-02",
+   "CODE-03",
+   "GOV-01",
+   "GOV-02",
+   "GOV-03",
+   "GOV-04",
+   "I01-01",
+   "I01-02",
+   "VERIFY-01",
+   "VERIFY-02",
+   "VERIFY-03",
+   "VERIFY-04"
+  ],
+  "wave_id": "I01"
+ },
+ "source": {
+  "channel": "current Codex desktop task",
+  "instruction": "I authorize you to do whatever you need.",
+  "received_at": "2026-08-25T15:14:31Z",
+  "received_at_source": "task user-message timestamp",
+  "user_principal_id": "primary-human"
+ }
+}

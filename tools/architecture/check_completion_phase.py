@@ -18,6 +18,7 @@ import gzip
 import hashlib
 import io
 import json
+import math
 import os
 import re
 import subprocess
@@ -25,6 +26,7 @@ import sys
 import tempfile
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
+from datetime import datetime
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Iterator, Sequence
 
@@ -646,6 +648,352 @@ C0007_NARRATIVE_REFRESH_SUBJECT = (
 # control epoch. Later ordinary development must preserve it as an ancestor
 # without being mistaken for an earlier transition commit.
 C0007_NARRATIVE_REFRESH_SHA = "e0b35f83076aee5c7f8e94c92ffd849de1628643"
+C0007_BOUNDED_CONTROL_HEAD_SHA = "8960f2a980be22166f321c4ba452eb547529b1fd"
+C0007_BOUNDED_CONTROL_TREE_SHA = "70cee1e77e1311129b00aeb0945770483d1aa5db"
+C0007_BOUNDED_AUTHORIZATION_ID = "C0007-M13-I01-CODE03-bounded-v1"
+C0007_BOUNDED_AUTHORIZATION_PATH = (
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/"
+    "C0007-bounded-epoch-operator-authorization.json"
+)
+C0007_BOUNDED_AUTHORIZED_PATHS_PATH = (
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/"
+    "C0007-bounded-epoch-authorized-paths.tsv"
+)
+C0007_BOUNDED_PLANNED_CONTROL_PATH = (
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/"
+    "C0007-bounded-planned-control.json"
+)
+C0007_BOUNDED_AUTHORIZED_PATHS_SHA256 = (
+    "121D11A73AF2CD23885FB7A6B38D14B0D8A5440940D913A83F3A5D6941511ECE"
+)
+C0007_BOUNDED_PLANNED_PATHS_SHA256 = (
+    "F27C9B79FD8F365F28EDE87FA3F2689678F929E1EE74BAB4820EDCB9A7A39BFC"
+)
+C0007_BOUNDED_ARTIFACT_PATHS_SHA256 = (
+    "040808277F8BBBA4B0C88F7B134D38BE4CB2DF57A8E90D000603941C4433BD2F"
+)
+C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256 = (
+    "29BD21B735E94B3B8670E03A766FCF20F2E5762D9472C62028332A871403E189"
+)
+C0007_BOUNDED_R0014_PATHS_SHA256 = (
+    "8112252AD70DB64DDB3A53F477DAD267CB7CC5DFEBC34FF24D4577058173A25E"
+)
+C0007_BOUNDED_R0015_PATHS_SHA256 = (
+    "87340E567079B7C6B52CC23A1F6A5BC20390AD8CC8A0F161250320C8940F1CE9"
+)
+C0007_BOUNDED_BRANCH = "codex/reorg-closeout-2026-08-m13-i01"
+C0007_BOUNDED_REPOSITORY = "AlexGeorgantzas/lean-numerical-stability"
+C0007_BOUNDED_REPOSITORY_ID = "R_kgDORdQhag"
+C0007_BOUNDED_REPOSITORY_DATABASE_ID = 1171530090
+C0007_BOUNDED_REPOSITORY_API_URL = (
+    "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability"
+)
+C0007_BOUNDED_REPOSITORY_OWNER_LOGIN = "AlexGeorgantzas"
+C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID = 144732584
+C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID = "U_kgDOCKBxqA"
+C0007_BOUNDED_REMOTE = "origin"
+C0007_BOUNDED_REMOTE_URL = (
+    "https://github.com/AlexGeorgantzas/lean-numerical-stability.git"
+)
+C0007_BOUNDED_REMOTE_MAIN_REF = "refs/heads/main"
+C0007_BOUNDED_REMOTE_BRANCH_REF = f"refs/heads/{C0007_BOUNDED_BRANCH}"
+C0007_BOUNDED_WORKFLOW_PATH = ".github/workflows/lean_action_ci.yml"
+C0007_BOUNDED_WORKFLOW_SHA256 = (
+    "1080F77A2934E4B0F350A8A484B96F2CC9B86D94B5A2FF8BCB441ECEF3C78AEC"
+)
+C0007_BOUNDED_WORKFLOW_NAME = "Lean CI"
+C0007_BOUNDED_WORKFLOW_ID = 240911818
+C0007_BOUNDED_JOB_NAME = "build"
+C0007_BOUNDED_ARCHITECTURE_STEP = "Check architecture source graph and Python tooling"
+C0007_BOUNDED_BUILD_STEP = "Build library and smoke tests"
+C0007_BOUNDED_SUPPORTED_API_STEP = "Verify supported API from the built environment"
+C0007_BOUNDED_TEST_STEP = "Run Lake test driver"
+C0007_BOUNDED_TOOLCHAIN = "leanprover/lean4:v4.29.0-rc3"
+C0007_BOUNDED_SUPPORTED_API_PATH = "docs/architecture/supported-api.json"
+C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH = (
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/C0008-supported-api.json"
+)
+C0007_BOUNDED_COMMIT_SUBJECTS = {
+    "planned": "chore(reorganization): plan M13 I01 and CODE03",
+    "activation_pending": "docs(reorganization): record M13 planned-control review",
+    "active": "chore(reorganization): activate M13 I01 and CODE03",
+    "implementation": "refactor(reorganization): implement M13 I01 and CODE03",
+    "verified": "docs(reorganization): attest M13 implementation",
+}
+C0007_BOUNDED_SHARED_RESERVATIONS = frozenset(
+    {
+        "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean",
+        "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Inputs.lean",
+        "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Results.lean",
+        "NumStability/Source/Higham/Chapter19/Core.lean",
+        "NumStabilityTest/Reorganization/I01/Aggregate/"
+        "NumStability_Algorithms_NormEstimation_PNorm_All.lean",
+        "NumStabilityTest/Reorganization/I01/Aggregate/"
+        "NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample.lean",
+        "NumStabilityTest/Reorganization/I01/All.lean",
+        "NumStabilityTest/Reorganization/I01/Canonical/"
+        "NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs.lean",
+        "NumStabilityTest/Reorganization/I01/Canonical/"
+        "NumStability_Source_Higham_Chapter17_Results_Series.lean",
+        "NumStabilityTest/Reorganization/I01/OldOnly/"
+        "NumStability_Analysis_DoubleRounding.lean",
+    }
+)
+C0007_BOUNDED_TASK_IDS = (
+    "ACCEPT-01",
+    "CODE-01",
+    "CODE-02",
+    "CODE-03",
+    "GOV-01",
+    "GOV-02",
+    "GOV-03",
+    "GOV-04",
+    "I01-01",
+    "I01-02",
+    "VERIFY-01",
+    "VERIFY-02",
+    "VERIFY-03",
+    "VERIFY-04",
+)
+C0007_FULL_TESTS_CORRECTION_PATH = (
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/"
+    "C0007-full-tests-evidence-correction.json"
+)
+C0007_CHECKPOINT_SHA256 = (
+    "D1C9C3AEBAA00077D118790E730C5DEFCD1925AE69E866776105A38CCE3F3EF8"
+)
+C0007_GATES_SHA256 = (
+    "75A838606398B2D166250FF9CF522D639A7B3AABBBE2BC3D12A9D6C76D791EBA"
+)
+C0007_BUILD_ONLY_WORKFLOW_SHA256 = (
+    "0A9E8B535D7A780623557A107E00D02B44513E650A4F6C5A259FC0323A435FD7"
+)
+C0007_BUILD_ONLY_RUN_ID = 32846311774
+C0007_BUILD_ONLY_JOB_ID = 97796705380
+C0007_GOV04_COMPATIBILITY_SHA256 = (
+    "BE965647B4799D85A6A3397A6B99DC45676A57C7B83FEF31DB6EA75D6AB02939"
+)
+PINNED_CHECKOUT_ACTION = "actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09"
+PINNED_LEAN_ACTION = (
+    "leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596"
+)
+I01_SELECTOR_PATH = f"{DEFAULT_PHASE_DIR.as_posix()}/selectors/I01.tsv"
+I01_SELECTOR_HEADER = (
+    "row_id",
+    "module",
+    "path",
+    "preimage_blob_oid",
+    "preimage_sha256",
+    "current_tier",
+    "decision",
+    "production_write",
+    "postimage_paths",
+    "postimage_sha256s",
+    "supported_signature_witnesses",
+    "test_modules",
+    "reviewer_id",
+    "status",
+)
+I01_PREIMAGE_FACTS = (
+    (
+        "NumStability.Algorithms",
+        "NumStability/Algorithms.lean",
+        "ac3cedcf0d17c7efc39e9e912479ae781fd15f53",
+        "D297DD946420DE2B00868A1576417BC97998420A4D0506CA19C36CCD21AED010",
+        "aggregate",
+    ),
+    (
+        "NumStability.Algorithms.NormEstimation.PNorm.All",
+        "NumStability/Algorithms/NormEstimation/PNorm/All.lean",
+        "82b6e3282e317bee5516995ba6423e29a17a9be9",
+        "D28918C3A5FBBA3950C34E7F661DDACE783CBCF8718F03B10E532F9BBE2634D5",
+        "aggregate",
+    ),
+    (
+        "NumStability.Algorithms.NormEstimation.PNorm.Rectangular.RectangularTermination",
+        "NumStability/Algorithms/NormEstimation/PNorm/Rectangular/RectangularTermination.lean",
+        "aa5a5961c0e6e39bb6b351da62f74af43e8767b2",
+        "A44599F9371D7932DCE3F4B30DE831319E758892EEBDED2F36647209D0ADED87",
+        "reusable",
+    ),
+    (
+        "NumStability.Algorithms.StationaryIterationSeries",
+        "NumStability/Algorithms/StationaryIterationSeries.lean",
+        "30ff4d1641ec1544448ee7c047c63e4c90a160fa",
+        "E437A3F78641D08EB418BFD54786CD1C1A54A3E87F2C4A1360FB2B4588AA1346",
+        "compatibility",
+    ),
+    (
+        "NumStability.Analysis",
+        "NumStability/Analysis.lean",
+        "2165e088fe39fbaf02b95d250f324465ade2db4a",
+        "10ECEB249EEA0CDC9B5A0E6495E7F04FF6334854FAD915FD55672BF219D07FAC",
+        "aggregate",
+    ),
+    (
+        "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample",
+        "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean",
+        "4590bda01de2f052cd7208966beb19ff7e026b5b",
+        "7339602F5B7E4F0791EE1291856EC02058F244E2CE300B82FF06E5EE4285FC9E",
+        "source",
+    ),
+    (
+        "NumStability.Source.Higham.Chapter15",
+        "NumStability/Source/Higham/Chapter15.lean",
+        "ad97f994d3e2270a78fe52137f16bc934e9c046d",
+        "23764C15F48D921E4D2E5BA77C146B066049DE99BF965ED9F504397973094815",
+        "aggregate",
+    ),
+    (
+        "NumStability.Source.Higham.Chapter15.Lemma02.PNormPowerMethod.PNormRectangular",
+        "NumStability/Source/Higham/Chapter15/Lemma02/PNormPowerMethod/PNormRectangular.lean",
+        "e09f634c1b5c83e600a7c9406b88d003ab72bfa9",
+        "B3A6F5833A753DA08779FAB8912CA335092B96332951BDECE82E32EDD1C2DB02",
+        "source",
+    ),
+    (
+        "NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.ConvergenceStatements",
+        "NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/ConvergenceStatements.lean",
+        "ae0f77f4668fd4b2d8c5e8c58518da96691b07cc",
+        "992550C29CE832AF7C922DD4A09C67AF6BDEDB3C9DDCCFB09A717F7657D03DE2",
+        "source",
+    ),
+    (
+        "NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.RectangularTermination",
+        "NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/RectangularTermination.lean",
+        "850c0d8754bb81ecd0a5fd19cfed864de7652a4a",
+        "040EA7580F2F27BE3E4324759C723F27530E32E0C2AFBC2A5A7EE196670E5E1F",
+        "source",
+    ),
+    (
+        "NumStability.Source.Higham.Chapter17",
+        "NumStability/Source/Higham/Chapter17.lean",
+        "eb32e87179d48fd6f43c55878bd1b177cb168dc1",
+        "EB5D9DA0446935915BA3E845C4A642C11743E2E385D6E3C845B6E9623CF49660",
+        "aggregate",
+    ),
+    (
+        "NumStability.Source.Higham.Chapter17.Equation22",
+        "NumStability/Source/Higham/Chapter17/Equation22.lean",
+        "75d7c53a7a221e2b234efd7e5a865aa551160698",
+        "0D385CC461D22765487022894EA946C3E46031CC9969324283764AA6B3EF248A",
+        "source",
+    ),
+)
+I01_SPLIT_POSTIMAGES = (
+    (
+        "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/"
+        "Counterexample.lean",
+        "C8A8F1FC308090F5625ED76E74EFC72B07151078FFB4F42CAB1E225D26FDE644",
+    ),
+    (
+        "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/"
+        "Counterexample/Inputs.lean",
+        "95754733A5414D0DC0DCC976923D8E8D3F5F43C4FE9DEA37760954D8AE01E42D",
+    ),
+    (
+        "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/"
+        "Counterexample/Results.lean",
+        "C253015D301D59714B89A042F08E7C58ACB9080C9B42EAA43225B70DF7CCD1DD",
+    ),
+)
+R0014_PATHS = (
+    "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean",
+    "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Inputs.lean",
+    "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Results.lean",
+    "NumStabilityTest.lean",
+    "NumStabilityTest/Reorganization/I01/Aggregate/"
+    "NumStability_Algorithms_NormEstimation_PNorm_All.lean",
+    "NumStabilityTest/Reorganization/I01/Aggregate/"
+    "NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample.lean",
+    "NumStabilityTest/Reorganization/I01/All.lean",
+    "NumStabilityTest/Reorganization/I01/Canonical/"
+    "NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs.lean",
+    "NumStabilityTest/Reorganization/I01/Canonical/"
+    "NumStability_Source_Higham_Chapter17_Results_Series.lean",
+    "NumStabilityTest/Reorganization/I01/OldOnly/"
+    "NumStability_Analysis_DoubleRounding.lean",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json",
+)
+R0014_PREIMAGE_BLOBS = (
+    "4590bda01de2f052cd7208966beb19ff7e026b5b",
+    None,
+    "27ac0065b39048678b2af0d023f457b63350e3b6",
+    "0a1561cf3d1fb30808f9d74b12388d942daa9dc1",
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    "d78c09e39364a9ebdc883194e1afbe9b480099cc",
+    "4aa692fcd2e0af04e4feabd701c118fb6ac62ad3",
+)
+R0014_PACKET_ARTIFACT_SHA256 = {
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014-postimages.tsv": (
+        "42F4ED7EFE7C611DE214A0E6FE4ABADA11034632A9086952EADCD1A8AA33A1C9"
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014-review.md": (
+        "52AF5C9D9A50F2E2415397E255E95EB28101EF2F478F0D412BA5C90EA90D9094"
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014.json": (
+        "F5A402E3FE4DEB8066B87657B86A2BB21FD744859E48DDA53A69C815B2F61A8B"
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014.patch": (
+        "3AC31AFC44B697FF830E0CF393FF1725F18B49022ABCF81D83742220FCCB3A88"
+    ),
+    C0007_BOUNDED_AUTHORIZATION_PATH: (
+        "7AD0DD3ACD880CDDB1D89C1DD28824F8EF6116415462A9466C95E4F593D02439"
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/I01-changed-paths.tsv": (
+        "32D0E95A1F3AC0230647B86C94E3AFF869546BDDEA62678657C93EF22233AFC4"
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/I01-selection-overlap.md": (
+        "92AC290C49860B74E5056A932B6C4186370AA829B57A610E15048FDF521D4366"
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/I01-test-plan.tsv": (
+        "6A4FDD8A6D467896A32BB9FDB1B3AF6CFFCEEB6DC5E9D33E95D59C70C60B2879"
+    ),
+    I01_SELECTOR_PATH: (
+        "4F669961538A406AF235C8E02B038D039A072F510C60F3863EFD7E93D417536F"
+    ),
+}
+I01_APPROVAL_PATH = f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/I01-approval.json"
+R0015_PATHS = (
+    "NumStability/Source/Higham/Chapter19/Core.lean",
+    "tools/architecture/check_compatibility.py",
+)
+R0015_PREIMAGE_BLOBS = (
+    "9d753fc27d6ce54cce21283b45158022e667e3bc",
+    "2786591fe5ca54ecc8a024279b28e664414dab6d",
+)
+R0015_PACKET_ARTIFACT_SHA256 = {
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.json": (
+        "AFA8737EF46193829D174589FDD1F8064C54046F897453694C4383AC8D86CDA5"
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.patch": (
+        "A6EAA922363136C5B15351849260632094C1A707D7134E7084CBA6556415E820"
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015-postimages.tsv": (
+        "F92A484CAFBB2F8885A14CE5A7A0A9DB4A774888757797BB836254D4600BED8D"
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015-review.md": (
+        "242BB7526AF3FD7C423EC0A3B3ABF15C4CC0319C48DF1ED75C2E622F7F47C718"
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/CODE03-consumers.tsv": (
+        "98AEAB52682F02B631B4A6D3F5D62D6739C553D622C561FBA512BFF0E482AA69"
+    ),
+}
+CODE03_APPROVAL_PATH = f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/CODE03-approval.json"
+CODE03_CONSUMERS_PATH = f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/CODE03-consumers.tsv"
+CODE03_CONSUMERS_HEADER = (
+    "module",
+    "path",
+    "blob_oid",
+    "sha256",
+    "downstream_test",
+)
 C0007_METRICS = {
     "production_modules": 2927,
     "unclassified_modules": 0,
@@ -2029,6 +2377,2475 @@ class Problems:
     def require(self, condition: bool, context: str, message: str) -> None:
         if not condition:
             self.add(context, message)
+
+
+def validate_c0007_bounded_authorization_payload(
+    authorization: dict[str, Any],
+    manifest_header: Sequence[str],
+    manifest_rows: Sequence[dict[str, str]],
+    problems: Problems,
+    *,
+    context: str = C0007_BOUNDED_AUTHORIZATION_PATH,
+) -> None:
+    """Validate the primary-human grant without widening phase-global authority."""
+
+    expected_keys = {
+        "activation_conditions",
+        "authorization_id",
+        "authority_id",
+        "authorized_actions",
+        "base",
+        "decision",
+        "expiry",
+        "operator_id",
+        "phase_id",
+        "preserved_exclusions",
+        "record_kind",
+        "recorded_at",
+        "schema_version",
+        "scope",
+        "source",
+    }
+    problems.require(
+        set(authorization) == expected_keys,
+        context,
+        "authorization keys must match the bounded-epoch schema exactly",
+    )
+    exact_fields = {
+        "schema_version": 1,
+        "record_kind": "primary_human_bounded_epoch_authorization",
+        "phase_id": PHASE_ID,
+        "authorization_id": C0007_BOUNDED_AUTHORIZATION_ID,
+        "decision": "approved",
+        "authority_id": "primary-human",
+        "operator_id": "codex-local",
+    }
+    for key, expected in exact_fields.items():
+        problems.require(
+            authorization.get(key) == expected,
+            f"{context}.{key}",
+            f"expected {expected!r}",
+        )
+    recorded_at = authorization.get("recorded_at")
+    problems.require(
+        isinstance(recorded_at, str)
+        and RFC3339_RE.fullmatch(recorded_at) is not None,
+        f"{context}.recorded_at",
+        "expected an RFC3339 timestamp",
+    )
+
+    base = authorization.get("base")
+    expected_base = {
+        "active_phase_pointer_sha256": (
+            "C99061ACCE56AF121B1ACF0FBE2C757B53602A5A8599DC93193871095D3AB360"
+        ),
+        "control_head_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+        "control_tree_sha": C0007_BOUNDED_CONTROL_TREE_SHA,
+        "current_checkpoint_id": C0007_CHECKPOINT_ID,
+        "current_checkpoint_sha": C0007_CODE_SHA,
+        "phase_sha256": (
+            "7DCF4E6B47F3EDEC92D1F6945426F0AB13215A5AC3C362D9356A58C413288AAC"
+        ),
+        "remote_main_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+    }
+    problems.require(
+        base == expected_base,
+        f"{context}.base",
+        "base must pin the exact audited C0007 control, tree, phase, pointer, and remote main",
+    )
+
+    source = authorization.get("source")
+    problems.require(
+        isinstance(source, dict)
+        and set(source)
+        == {
+            "channel",
+            "instruction",
+            "received_at",
+            "received_at_source",
+            "user_principal_id",
+        }
+        and source.get("channel") == "current Codex desktop task"
+        and source.get("instruction") == "I authorize you to do whatever you need."
+        and source.get("received_at") == recorded_at
+        and source.get("user_principal_id") == "primary-human",
+        f"{context}.source",
+        "source must preserve the exact primary-human task instruction and timestamp",
+    )
+
+    scope = authorization.get("scope")
+    manifest = scope.get("authorized_path_manifest") if isinstance(scope, dict) else None
+    problems.require(
+        isinstance(scope, dict)
+        and set(scope)
+        == {
+            "authorized_path_manifest",
+            "milestone_id",
+            "request_ids",
+            "target_checkpoint_id",
+            "task_ids",
+            "wave_id",
+        }
+        and scope.get("milestone_id") == "M13"
+        and scope.get("wave_id") == "I01"
+        and scope.get("request_ids") == ["R0014", "R0015"]
+        and scope.get("target_checkpoint_id") == "C0008"
+        and scope.get("task_ids") == list(C0007_BOUNDED_TASK_IDS),
+        f"{context}.scope",
+        "scope must be the exact M13/I01, R0014/R0015, C0008 bounded task set",
+    )
+    problems.require(
+        manifest
+        == {
+            "path": C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            "row_count": 56,
+            "sha256": C0007_BOUNDED_AUTHORIZED_PATHS_SHA256,
+        },
+        f"{context}.scope.authorized_path_manifest",
+        "authorized-path manifest identity drifted",
+    )
+
+    conditions = authorization.get("activation_conditions")
+    actions = authorization.get("authorized_actions")
+    exclusions = authorization.get("preserved_exclusions")
+    problems.require(
+        isinstance(conditions, list)
+        and len(conditions) == 6
+        and all(isinstance(item, str) and item for item in conditions),
+        f"{context}.activation_conditions",
+        "expected six nonempty bounded activation conditions",
+    )
+    problems.require(
+        isinstance(actions, list)
+        and len(actions) == 5
+        and all(isinstance(item, str) and item for item in actions),
+        f"{context}.authorized_actions",
+        "expected five nonempty bounded actions",
+    )
+    required_exclusion_fragments = (
+        "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+        "public declaration",
+        "absent from the authorized path manifest",
+        "partial application",
+        "identity other than primary-human",
+        "separate exact acceptance control",
+        "repository-wide completion",
+        "force push",
+    )
+    problems.require(
+        isinstance(exclusions, list)
+        and len(exclusions) == len(required_exclusion_fragments)
+        and all(
+            any(fragment in item for item in exclusions if isinstance(item, str))
+            for fragment in required_exclusion_fragments
+        ),
+        f"{context}.preserved_exclusions",
+        "the eight required safety exclusions must remain explicit",
+    )
+    problems.require(
+        authorization.get("expiry")
+        == {
+            "events": [
+                "C0008 acceptance",
+                "explicit cancellation or supersession",
+                "base, path-manifest, request-patch, or postimage drift",
+                "an exact-lease mismatch",
+                "primary-human revocation",
+            ],
+            "valid_through_checkpoint_id": "C0008",
+        },
+        f"{context}.expiry",
+        "expiry must remain bounded by exact C0008 and drift/lease/revocation events",
+    )
+
+    expected_header = ("path", "packet_id", "stage", "operation")
+    problems.require(
+        tuple(manifest_header) == expected_header,
+        C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+        "authorized-path header drifted",
+    )
+    manifest_paths = [row.get("path", "") for row in manifest_rows]
+    problems.require(
+        len(manifest_rows) == 56
+        and manifest_paths == sorted(set(manifest_paths)),
+        C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+        "authorized paths must be exactly 56 sorted unique rows",
+    )
+    problems.require(
+        all(
+            set(row) == set(expected_header)
+            and row.get("packet_id")
+            and row.get("stage") in {"planned_control", "implementation"}
+            and row.get("operation") in {"add", "modify"}
+            for row in manifest_rows
+        ),
+        C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+        "every row must have a packet, bounded stage, and add/modify operation",
+    )
+    implementation_paths = {
+        row.get("path") for row in manifest_rows if row.get("stage") == "implementation"
+    }
+    problems.require(
+        C0007_BOUNDED_SHARED_RESERVATIONS <= implementation_paths,
+        C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+        "all ten C0007 shared reservations must be implementation paths",
+    )
+    problems.require(
+        "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md" not in manifest_paths,
+        C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+        "the local completion ledger must not enter tracked authority scope",
+    )
+
+
+def validate_i01_selector_payload(
+    header: Sequence[str],
+    rows: Sequence[dict[str, str]],
+    problems: Problems,
+    *,
+    context: str = I01_SELECTOR_PATH,
+) -> None:
+    """Authenticate the exact C0007 I01 intake and its one production split."""
+
+    problems.require(
+        tuple(header) == I01_SELECTOR_HEADER,
+        context,
+        "I01 selector header must match the 14-column intake schema exactly",
+    )
+    problems.require(
+        len(rows) == len(I01_PREIMAGE_FACTS),
+        context,
+        f"expected exactly {len(I01_PREIMAGE_FACTS)} ordered C0007 intake rows",
+    )
+    statuses: set[str] = set()
+    production_rows: list[str] = []
+    for index, expected in enumerate(I01_PREIMAGE_FACTS, start=1):
+        row_context = f"{context}[I01-{index:02d}]"
+        if index > len(rows):
+            continue
+        row = rows[index - 1]
+        if not isinstance(row, dict):
+            problems.add(row_context, "selector row must be a string-valued mapping")
+            continue
+        problems.require(
+            set(row) == set(I01_SELECTOR_HEADER)
+            and all(isinstance(row.get(column), str) for column in I01_SELECTOR_HEADER),
+            row_context,
+            "row must contain exactly the 14 string-valued selector columns",
+        )
+        expected_id = f"I01-{index:02d}"
+        problems.require(
+            row.get("row_id") == expected_id,
+            f"{row_context}.row_id",
+            f"expected ordered row id {expected_id}",
+        )
+        for column, expected_value in zip(
+            (
+                "module",
+                "path",
+                "preimage_blob_oid",
+                "preimage_sha256",
+                "current_tier",
+            ),
+            expected,
+        ):
+            problems.require(
+                row.get(column) == expected_value,
+                f"{row_context}.{column}",
+                f"expected exact C0007 fact {expected_value!r}",
+            )
+        blob_oid = row.get("preimage_blob_oid", "")
+        preimage_sha = row.get("preimage_sha256", "")
+        problems.require(
+            SHA1_RE.fullmatch(blob_oid) is not None,
+            f"{row_context}.preimage_blob_oid",
+            "preimage blob must be an exact lowercase SHA-1",
+        )
+        problems.require(
+            SHA256_RE.fullmatch(preimage_sha) is not None
+            and preimage_sha == preimage_sha.upper(),
+            f"{row_context}.preimage_sha256",
+            "preimage content digest must be an uppercase SHA-256",
+        )
+        problems.require(
+            bool(split_values(row.get("supported_signature_witnesses", ""))),
+            f"{row_context}.supported_signature_witnesses",
+            "at least one supported-signature or byte-identity witness is required",
+        )
+        problems.require(
+            bool(split_values(row.get("test_modules", ""))),
+            f"{row_context}.test_modules",
+            "at least one deterministic test module is required",
+        )
+        problems.require(
+            row.get("reviewer_id") == "primary-human",
+            f"{row_context}.reviewer_id",
+            "the independently eligible reviewer must remain primary-human",
+        )
+        status = row.get("status", "")
+        statuses.add(status)
+        problems.require(
+            status in {"awaiting_independent_review", "approved"},
+            f"{row_context}.status",
+            "status must be awaiting independent review or independently approved",
+        )
+
+        if index == 6:
+            production_rows.append(expected_id)
+            problems.require(
+                row.get("decision") == "indivisible_three_path_split"
+                and row.get("production_write") == "true",
+                row_context,
+                "I01-06 must be the sole indivisible production split",
+            )
+            problems.require(
+                row.get("postimage_paths")
+                == ";".join(path for path, _digest in I01_SPLIT_POSTIMAGES),
+                f"{row_context}.postimage_paths",
+                "split destinations must be the exact parent, Inputs, and Results paths",
+            )
+            problems.require(
+                row.get("postimage_sha256s")
+                == ";".join(digest for _path, digest in I01_SPLIT_POSTIMAGES),
+                f"{row_context}.postimage_sha256s",
+                "split destinations must carry the exact reviewed postimage digests",
+            )
+        else:
+            expected_decision = (
+                "retain_wrapper_byte_identical_no_op"
+                if index == 4
+                else "byte_identical_no_op"
+            )
+            problems.require(
+                row.get("decision") == expected_decision
+                and row.get("production_write") == "false",
+                row_context,
+                "non-split intake rows must remain explicit byte-identical no-ops",
+            )
+            problems.require(
+                row.get("postimage_paths") == row.get("path")
+                and row.get("postimage_sha256s") == preimage_sha,
+                row_context,
+                "a no-op row must repeat its exact path and preimage SHA-256",
+            )
+
+    problems.require(
+        production_rows == ["I01-06"],
+        context,
+        "I01-06 must be the only production-write row",
+    )
+    problems.require(
+        len(statuses) == 1,
+        context,
+        "all selector rows must advance through review as one indivisible packet",
+    )
+
+
+def validate_c0007_bounded_request_payload(
+    request: dict[str, Any],
+    request_id: str,
+    paths: Sequence[str],
+    preimage_blobs: Sequence[str | None],
+    patch_sha256: str,
+    depends_on: Sequence[str],
+    blocks: Sequence[str],
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Validate one exact active C0007 shared-file request before activation."""
+
+    expected_keys = {
+        "blocks",
+        "created_at",
+        "depends_on",
+        "lane_id",
+        "patch",
+        "paths",
+        "phase_id",
+        "preimage_blobs",
+        "rationale",
+        "record_kind",
+        "request_id",
+        "requester_id",
+        "resolution",
+        "schema_version",
+        "status",
+        "superseded_by",
+        "supersedes",
+        "target_base_sha",
+        "target_checkpoint_id",
+        "valid_through_checkpoint_id",
+        "wave_id",
+    }
+    problems.require(
+        set(request) == expected_keys,
+        context,
+        "request keys must match the bounded shared-file schema exactly",
+    )
+    exact_fields = {
+        "schema_version": 1,
+        "record_kind": "shared_file_request",
+        "phase_id": PHASE_ID,
+        "request_id": request_id,
+        "requester_id": "primary-human",
+        "lane_id": "integration-lane",
+        "wave_id": "I01",
+        "target_base_sha": C0007_CODE_SHA,
+        "target_checkpoint_id": C0007_CHECKPOINT_ID,
+        "valid_through_checkpoint_id": C0007_CHECKPOINT_ID,
+        "status": "active",
+        "superseded_by": None,
+        "supersedes": None,
+    }
+    for key, expected in exact_fields.items():
+        problems.require(
+            request.get(key) == expected,
+            f"{context}.{key}",
+            f"expected {expected!r}",
+        )
+    problems.require(
+        request.get("depends_on") == list(depends_on)
+        and request.get("blocks") == list(blocks),
+        f"{context}.dependencies",
+        "dependency/block relation must preserve the exact I01/CODE03 order",
+    )
+    problems.require(
+        request.get("paths") == list(paths),
+        f"{context}.paths",
+        "request paths must equal the exact ordered implementation boundary",
+    )
+    expected_preimages = [
+        {"blob_oid": blob_oid, "path": path}
+        for path, blob_oid in zip(paths, preimage_blobs)
+    ]
+    problems.require(
+        len(paths) == len(preimage_blobs)
+        and request.get("preimage_blobs") == expected_preimages,
+        f"{context}.preimage_blobs",
+        "preimages must be the exact ordered C0007 Git blobs, including null additions",
+    )
+    problems.require(
+        request.get("patch")
+        == {
+            "path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/{request_id}.patch",
+            "sha256": patch_sha256,
+        },
+        f"{context}.patch",
+        "patch path and SHA-256 must match the exact reviewed packet",
+    )
+    problems.require(
+        request.get("resolution")
+        == {
+            "checkpoint_id": None,
+            "commit_sha": None,
+            "reason": None,
+            "resolved_at": None,
+            "resolved_by": None,
+            "validation_evidence": [],
+        },
+        f"{context}.resolution",
+        "an active request must retain an exact empty resolution",
+    )
+    problems.require(
+        RFC3339_RE.fullmatch(str(request.get("created_at", ""))) is not None,
+        f"{context}.created_at",
+        "created_at must be an RFC3339 timestamp",
+    )
+    rationale = request.get("rationale")
+    problems.require(
+        isinstance(rationale, str)
+        and "indivisible" in rationale.casefold(),
+        f"{context}.rationale",
+        "rationale must record indivisible application semantics",
+    )
+
+
+def validate_c0007_bounded_ci_evidence(
+    evidence: Any,
+    expected_status: str,
+    expected_sha: str | None,
+    expected_tree: str | None,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    keys = {
+        "branch",
+        "candidate_sha",
+        "candidate_tree",
+        "check_suite_id",
+        "completed_at",
+        "conclusion",
+        "event",
+        "full_build",
+        "full_tests",
+        "job_id",
+        "job_completed_at",
+        "job_log_byte_count",
+        "job_log_sha256",
+        "job_name",
+        "job_started_at",
+        "repository",
+        "runner_name",
+        "run_attempt",
+        "run_id",
+        "started_at",
+        "status",
+        "workflow_path",
+    }
+    if not isinstance(evidence, dict):
+        problems.add(context, "CI evidence must be an object")
+        return
+    problems.require(
+        set(evidence) == keys,
+        context,
+        "CI evidence keys must match the exact bounded schema",
+    )
+    problems.require(
+        evidence.get("branch") == C0007_BOUNDED_BRANCH
+        and evidence.get("repository") == C0007_BOUNDED_REPOSITORY
+        and evidence.get("workflow_path") == C0007_BOUNDED_WORKFLOW_PATH,
+        context,
+        "CI must name the exact repository, workflow, and bounded branch",
+    )
+    problems.require(
+        evidence.get("status") == expected_status,
+        f"{context}.status",
+        f"expected lifecycle CI status {expected_status!r}",
+    )
+    if expected_status in {"pending", "not_due"}:
+        problems.require(
+            all(
+                evidence.get(key) is None
+                for key in keys
+                - {"branch", "repository", "status", "workflow_path"}
+            ),
+            context,
+            f"{expected_status} CI evidence must not claim a run or gate result",
+        )
+        return
+
+    problems.require(
+        expected_status == "success"
+        and evidence.get("candidate_sha") == expected_sha
+        and evidence.get("candidate_tree") == expected_tree
+        and SHA1_RE.fullmatch(str(expected_sha or "")) is not None
+        and SHA1_RE.fullmatch(str(expected_tree or "")) is not None,
+        context,
+        "successful CI must bind the exact lifecycle commit and tree",
+    )
+    problems.require(
+        evidence.get("event") == "workflow_dispatch"
+        and type(evidence.get("run_id")) is int
+        and evidence.get("run_id", 0) > 0
+        and type(evidence.get("run_attempt")) is int
+        and evidence.get("run_attempt", 0) > 0
+        and type(evidence.get("job_id")) is int
+        and evidence.get("job_id", 0) > 0
+        and type(evidence.get("check_suite_id")) is int
+        and evidence.get("check_suite_id", 0) > 0
+        and evidence.get("job_name") == C0007_BOUNDED_JOB_NAME
+        and isinstance(evidence.get("runner_name"), str)
+        and bool(evidence.get("runner_name"))
+        and type(evidence.get("job_log_byte_count")) is int
+        and evidence.get("job_log_byte_count", 0) > 0
+        and isinstance(evidence.get("job_log_sha256"), str)
+        and SHA256_RE.fullmatch(evidence.get("job_log_sha256", "")) is not None
+        and evidence.get("job_log_sha256") == evidence.get("job_log_sha256", "").upper()
+        and evidence.get("conclusion") == "success"
+        and parse_rfc3339(evidence.get("started_at")) is not None
+        and parse_rfc3339(evidence.get("completed_at")) is not None
+        and parse_rfc3339(evidence.get("job_started_at")) is not None
+        and parse_rfc3339(evidence.get("job_completed_at")) is not None
+        and parse_rfc3339(evidence.get("started_at"))
+        <= parse_rfc3339(evidence.get("job_started_at"))
+        <= parse_rfc3339(evidence.get("job_completed_at"))
+        <= parse_rfc3339(evidence.get("completed_at")),
+        context,
+        "successful CI requires an exact run/job/suite/log identity and ordered timestamps",
+    )
+    full_build = evidence.get("full_build")
+    full_tests = evidence.get("full_tests")
+    if isinstance(full_build, dict) and isinstance(full_tests, dict):
+        validate_distinct_build_test_evidence(
+            full_build,
+            full_tests,
+            problems,
+            context=context,
+        )
+        for gate_name, gate in (("full_build", full_build), ("full_tests", full_tests)):
+            problems.require(
+                gate.get("candidate_sha") == expected_sha
+                and gate.get("run_id") == evidence.get("run_id")
+                and gate.get("job_id") == evidence.get("job_id")
+                and gate.get("runner") == evidence.get("runner_name"),
+                f"{context}.{gate_name}",
+                "gate must bind the same candidate, run, job, and runner as its CI record",
+            )
+    else:
+        problems.add(context, "successful CI requires distinct build and test evidence")
+
+
+def validate_c0007_bounded_review(
+    review: Any,
+    expected_status: str,
+    expected_commit: str | None,
+    expected_tree: str | None,
+    expected_contract_blob: str | None,
+    expected_scope: dict[str, Any],
+    expected_supersedes: Sequence[str],
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    keys = {
+        "action_performer_id",
+        "attestation_kind",
+        "ci_is_semantic_review",
+        "decision",
+        "generator_id",
+        "reviewed_at",
+        "reviewed_commit_sha",
+        "reviewed_contract_blob_oid",
+        "reviewed_tree_sha",
+        "reviewer_id",
+        "reviewer_kind",
+        "scope",
+        "source",
+        "status",
+        "supersedes_pending_reviews",
+    }
+    source_keys = {
+        "author_association",
+        "author_database_id",
+        "author_login",
+        "author_node_id",
+        "author_type",
+        "comment_api_url",
+        "comment_database_id",
+        "comment_html_url",
+        "comment_node_id",
+        "created_at",
+        "issue_api_url",
+        "issue_database_id",
+        "issue_html_url",
+        "issue_node_id",
+        "issue_number",
+        "message",
+        "message_sha256",
+        "performed_via_github_app",
+        "provider",
+        "repository_api_url",
+        "repository_database_id",
+        "repository_full_name",
+        "repository_node_id",
+        "updated_at",
+    }
+    if not isinstance(review, dict):
+        problems.add(context, "review must be an object")
+        return
+    problems.require(
+        set(review) == keys,
+        context,
+        "review keys must match the exact separation schema",
+    )
+    problems.require(
+        review.get("status") == expected_status
+        and review.get("reviewer_id") == "primary-human"
+        and review.get("reviewer_kind") == "human"
+        and review.get("generator_id") == "codex-local"
+        and review.get("action_performer_id") == "codex-local"
+        and review.get("attestation_kind")
+        == "github_repository_owner_issue_comment_v1"
+        and review.get("ci_is_semantic_review") is False,
+        context,
+        "review must preserve human/agent separation and reject CI as reviewer",
+    )
+    problems.require(
+        review.get("scope") == expected_scope
+        and review.get("supersedes_pending_reviews") == list(expected_supersedes),
+        f"{context}.scope",
+        "review must bind the exact packet/API/workflow/checker scope and pending-review relation",
+    )
+    source = review.get("source")
+    if not isinstance(source, dict):
+        problems.add(f"{context}.source", "source must be an object")
+        return
+    problems.require(
+        set(source) == source_keys,
+        f"{context}.source",
+        "source keys must match the exact live GitHub owner-comment schema",
+    )
+    problems.require(
+        source.get("provider") == "github_issue_comment"
+        and source.get("repository_full_name") == C0007_BOUNDED_REPOSITORY
+        and source.get("repository_database_id")
+        == C0007_BOUNDED_REPOSITORY_DATABASE_ID
+        and source.get("repository_node_id") == C0007_BOUNDED_REPOSITORY_ID
+        and source.get("repository_api_url")
+        == C0007_BOUNDED_REPOSITORY_API_URL
+        and source.get("author_login")
+        == C0007_BOUNDED_REPOSITORY_OWNER_LOGIN
+        and source.get("author_database_id")
+        == C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID
+        and source.get("author_node_id")
+        == C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID
+        and source.get("author_type") == "User"
+        and source.get("author_association") == "OWNER"
+        and source.get("performed_via_github_app") is None,
+        f"{context}.source",
+        "source must pin the exact non-app GitHub repository owner identity",
+    )
+    event_fields = (
+        "comment_api_url",
+        "comment_database_id",
+        "comment_html_url",
+        "comment_node_id",
+        "created_at",
+        "issue_api_url",
+        "issue_database_id",
+        "issue_html_url",
+        "issue_node_id",
+        "issue_number",
+        "message",
+        "message_sha256",
+        "updated_at",
+    )
+    if expected_status in {"pending", "not_due"}:
+        problems.require(
+            all(
+                review.get(key) is None
+                for key in (
+                    "decision",
+                    "reviewed_at",
+                    "reviewed_commit_sha",
+                    "reviewed_contract_blob_oid",
+                    "reviewed_tree_sha",
+                )
+            )
+            and all(source.get(key) is None for key in event_fields),
+            context,
+            f"{expected_status} review must not claim a human decision",
+        )
+        return
+    scope_sha256 = canonical_json_sha256(expected_scope)
+    expected_message = (
+        "I, primary-human, independently reviewed and approve "
+        f"{expected_scope.get('review_purpose')} at commit {expected_commit}, "
+        f"tree {expected_tree}, contract blob {expected_contract_blob}, and scope "
+        f"SHA-256 {scope_sha256}. I confirm that CI is evidence, not semantic "
+        "review, and authorize only the exact bounded next transition."
+    )
+    source_message = source.get("message")
+    source_created_at = parse_rfc3339(source.get("created_at"))
+    source_updated_at = parse_rfc3339(source.get("updated_at"))
+    reviewed_at = parse_rfc3339(review.get("reviewed_at"))
+    issue_number = source.get("issue_number")
+    issue_database_id = source.get("issue_database_id")
+    comment_database_id = source.get("comment_database_id")
+    expected_issue_api_url = (
+        f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/{issue_number}"
+    )
+    expected_issue_html_url = (
+        f"https://github.com/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}"
+    )
+    expected_comment_api_url = (
+        f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/comments/"
+        f"{comment_database_id}"
+    )
+    expected_comment_html_url = (
+        f"{expected_issue_html_url}#issuecomment-{comment_database_id}"
+    )
+    problems.require(
+        expected_status == "approved"
+        and review.get("decision") == "approved"
+        and review.get("reviewed_commit_sha") == expected_commit
+        and review.get("reviewed_tree_sha") == expected_tree
+        and review.get("reviewed_contract_blob_oid") == expected_contract_blob
+        and SHA1_RE.fullmatch(str(expected_commit or "")) is not None
+        and SHA1_RE.fullmatch(str(expected_tree or "")) is not None
+        and SHA1_RE.fullmatch(str(expected_contract_blob or "")) is not None
+        and source_message == expected_message
+        and source.get("message_sha256")
+        == hashlib.sha256(expected_message.encode("utf-8")).hexdigest().upper()
+        and type(issue_number) is int
+        and issue_number > 0
+        and type(issue_database_id) is int
+        and issue_database_id > 0
+        and isinstance(source.get("issue_node_id"), str)
+        and bool(source.get("issue_node_id"))
+        and type(comment_database_id) is int
+        and comment_database_id > 0
+        and isinstance(source.get("comment_node_id"), str)
+        and bool(source.get("comment_node_id"))
+        and source.get("issue_api_url") == expected_issue_api_url
+        and source.get("issue_html_url") == expected_issue_html_url
+        and source.get("comment_api_url") == expected_comment_api_url
+        and source.get("comment_html_url") == expected_comment_html_url
+        and source_created_at is not None
+        and source_updated_at is not None
+        and reviewed_at is not None
+        and source_created_at == source_updated_at == reviewed_at,
+        context,
+        "approved review must identify the exact unedited GitHub owner attestation for the reviewed commit/tree/blob/scope",
+    )
+
+
+def validate_c0007_github_review_observation(
+    review: dict[str, Any],
+    repository: Any,
+    issue: Any,
+    comment: Any,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Authenticate a recorded semantic decision against live GitHub state."""
+
+    source = review.get("source")
+    if not isinstance(source, dict):
+        problems.add(context, "review source must be an object")
+        return
+    owner = repository.get("owner") if isinstance(repository, dict) else None
+    problems.require(
+        isinstance(repository, dict)
+        and repository.get("full_name") == C0007_BOUNDED_REPOSITORY
+        and repository.get("id") == C0007_BOUNDED_REPOSITORY_DATABASE_ID
+        and repository.get("node_id") == C0007_BOUNDED_REPOSITORY_ID
+        and repository.get("url") == C0007_BOUNDED_REPOSITORY_API_URL
+        and repository.get("fork") is False
+        and isinstance(owner, dict)
+        and owner.get("login") == C0007_BOUNDED_REPOSITORY_OWNER_LOGIN
+        and owner.get("id") == C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID
+        and owner.get("node_id") == C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID
+        and owner.get("type") == "User",
+        f"{context}.repository",
+        "live repository must retain the exact non-fork identity and individual owner",
+    )
+    issue_number = source.get("issue_number")
+    issue_api_url = source.get("issue_api_url")
+    issue_html_url = source.get("issue_html_url")
+    problems.require(
+        isinstance(issue, dict)
+        and issue.get("repository_url") == C0007_BOUNDED_REPOSITORY_API_URL
+        and issue.get("url") == issue_api_url
+        and issue.get("html_url") == issue_html_url
+        and issue.get("id") == source.get("issue_database_id")
+        and issue.get("node_id") == source.get("issue_node_id")
+        and issue.get("number") == issue_number
+        and issue.get("comments_url") == f"{issue_api_url}/comments"
+        and "pull_request" not in issue,
+        f"{context}.issue",
+        "live source must be the exact ordinary issue in the pinned repository",
+    )
+    user = comment.get("user") if isinstance(comment, dict) else None
+    problems.require(
+        isinstance(comment, dict)
+        and comment.get("url") == source.get("comment_api_url")
+        and comment.get("html_url") == source.get("comment_html_url")
+        and comment.get("issue_url") == issue_api_url
+        and comment.get("id") == source.get("comment_database_id")
+        and comment.get("node_id") == source.get("comment_node_id")
+        and comment.get("body") == source.get("message")
+        and comment.get("created_at") == source.get("created_at")
+        and comment.get("updated_at") == source.get("updated_at")
+        and comment.get("author_association") == "OWNER"
+        and "performed_via_github_app" in comment
+        and comment.get("performed_via_github_app") is None
+        and isinstance(user, dict)
+        and user.get("login") == C0007_BOUNDED_REPOSITORY_OWNER_LOGIN
+        and user.get("id") == C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID
+        and user.get("node_id") == C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID
+        and user.get("type") == "User",
+        f"{context}.comment",
+        "live comment must be the exact unedited, non-app repository-owner attestation",
+    )
+
+
+def validate_c0007_github_ci_observation(
+    evidence: dict[str, Any],
+    run: Any,
+    jobs_payload: Any,
+    job_log_sha256: str | None,
+    job_log_byte_count: int | None,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Relate a successful contract record to live GitHub Actions observations."""
+
+    if not isinstance(run, dict):
+        problems.add(context, "GitHub run observation must be an object")
+        return
+    repository = run.get("repository")
+    head_repository = run.get("head_repository")
+    problems.require(
+        run.get("id") == evidence.get("run_id")
+        and run.get("run_attempt") == evidence.get("run_attempt")
+        and run.get("check_suite_id") == evidence.get("check_suite_id")
+        and run.get("event") == "workflow_dispatch"
+        and run.get("head_branch") == C0007_BOUNDED_BRANCH
+        and run.get("head_sha") == evidence.get("candidate_sha")
+        and run.get("status") == "completed"
+        and run.get("conclusion") == "success"
+        and run.get("name") == C0007_BOUNDED_WORKFLOW_NAME
+        and run.get("workflow_id") == C0007_BOUNDED_WORKFLOW_ID
+        and run.get("path") == C0007_BOUNDED_WORKFLOW_PATH
+        and isinstance(repository, dict)
+        and repository.get("full_name") == C0007_BOUNDED_REPOSITORY
+        and repository.get("node_id") == C0007_BOUNDED_REPOSITORY_ID
+        and isinstance(head_repository, dict)
+        and head_repository.get("full_name") == C0007_BOUNDED_REPOSITORY
+        and head_repository.get("node_id") == C0007_BOUNDED_REPOSITORY_ID
+        and head_repository.get("fork") is False
+        and run.get("referenced_workflows") == []
+        and run.get("run_started_at") == evidence.get("started_at")
+        and run.get("updated_at") == evidence.get("completed_at"),
+        f"{context}.run",
+        "live GitHub run must equal the exact non-fork repository/head/workflow/ref/attempt/suite/success/timestamps and use no reusable workflow",
+    )
+    jobs = jobs_payload.get("jobs") if isinstance(jobs_payload, dict) else None
+    problems.require(
+        isinstance(jobs_payload, dict)
+        and jobs_payload.get("total_count") == 1
+        and isinstance(jobs, list)
+        and len(jobs) == 1,
+        f"{context}.jobs",
+        "the reviewed workflow must expose exactly its one bounded build job",
+    )
+    matching_jobs = [
+        job
+        for job in jobs if isinstance(job, dict) and job.get("id") == evidence.get("job_id")
+    ] if isinstance(jobs, list) else []
+    problems.require(
+        len(matching_jobs) == 1,
+        f"{context}.job",
+        "exactly one observed job must match the recorded job ID",
+    )
+    if len(matching_jobs) != 1:
+        return
+    job = matching_jobs[0]
+    problems.require(
+        job.get("run_id") == evidence.get("run_id")
+        and job.get("head_sha") == evidence.get("candidate_sha")
+        and job.get("run_attempt") == evidence.get("run_attempt")
+        and job.get("head_branch") == C0007_BOUNDED_BRANCH
+        and job.get("workflow_name") == C0007_BOUNDED_WORKFLOW_NAME
+        and job.get("name") == C0007_BOUNDED_JOB_NAME
+        and job.get("status") == "completed"
+        and job.get("conclusion") == "success"
+        and job.get("runner_name") == evidence.get("runner_name")
+        and job.get("started_at") == evidence.get("job_started_at")
+        and job.get("completed_at") == evidence.get("job_completed_at"),
+        f"{context}.job",
+        "observed job must bind the same run/head, exact name, runner, and successful conclusion",
+    )
+    problems.require(
+        isinstance(job_log_sha256, str)
+        and job_log_sha256 == evidence.get("job_log_sha256")
+        and type(job_log_byte_count) is int
+        and job_log_byte_count == evidence.get("job_log_byte_count")
+        and job_log_byte_count > 0,
+        f"{context}.job_log_sha256",
+        "downloaded GitHub job log hash must equal the recorded immutable SHA-256",
+    )
+    steps = job.get("steps")
+    observed_gate_steps: dict[str, dict[str, Any]] = {}
+    for gate_name, expected_name in (
+        ("full_build", C0007_BOUNDED_BUILD_STEP),
+        ("full_tests", C0007_BOUNDED_TEST_STEP),
+    ):
+        gate = evidence.get(gate_name)
+        matching_steps = [
+            step
+            for step in steps
+            if isinstance(step, dict) and step.get("name") == expected_name
+        ] if isinstance(steps, list) else []
+        step = matching_steps[0] if len(matching_steps) == 1 else None
+        if isinstance(step, dict):
+            observed_gate_steps[gate_name] = step
+        job_started = parse_rfc3339(job.get("started_at"))
+        job_completed = parse_rfc3339(job.get("completed_at"))
+        step_started = parse_rfc3339(step.get("started_at")) if isinstance(step, dict) else None
+        step_completed = parse_rfc3339(step.get("completed_at")) if isinstance(step, dict) else None
+        problems.require(
+            isinstance(gate, dict)
+            and len(matching_steps) == 1
+            and isinstance(step, dict)
+            and step.get("name") == gate.get("step_name")
+            and step.get("number") == gate.get("step_number")
+            and step.get("status") == "completed"
+            and step.get("conclusion") == gate.get("conclusion") == "success"
+            and step.get("started_at") == gate.get("started_at")
+            and step.get("completed_at") == gate.get("completed_at")
+            and gate.get("runner") == job.get("runner_name")
+            and all(
+                value is not None
+                for value in (job_started, step_started, step_completed, job_completed)
+            )
+            and job_started <= step_started <= step_completed <= job_completed,
+            f"{context}.{gate_name}",
+            "observed GitHub step number/name/timing/runner/conclusion must equal the gate record",
+        )
+    observed_control_steps: dict[str, dict[str, Any]] = {}
+    for control_name, expected_name in (
+        ("architecture", C0007_BOUNDED_ARCHITECTURE_STEP),
+        ("supported_api", C0007_BOUNDED_SUPPORTED_API_STEP),
+    ):
+        matching_steps = [
+            step
+            for step in steps
+            if isinstance(step, dict) and step.get("name") == expected_name
+        ] if isinstance(steps, list) else []
+        step = matching_steps[0] if len(matching_steps) == 1 else None
+        if isinstance(step, dict):
+            observed_control_steps[control_name] = step
+        step_started = parse_rfc3339(step.get("started_at")) if isinstance(step, dict) else None
+        step_completed = parse_rfc3339(step.get("completed_at")) if isinstance(step, dict) else None
+        job_started = parse_rfc3339(job.get("started_at"))
+        job_completed = parse_rfc3339(job.get("completed_at"))
+        problems.require(
+            len(matching_steps) == 1
+            and isinstance(step, dict)
+            and type(step.get("number")) is int
+            and step.get("number", 0) > 0
+            and step.get("status") == "completed"
+            and step.get("conclusion") == "success"
+            and all(
+                value is not None
+                for value in (job_started, step_started, step_completed, job_completed)
+            )
+            and job_started <= step_started <= step_completed <= job_completed,
+            f"{context}.{control_name}",
+            "observed control step must be unique, ordered within the job, and successfully completed",
+        )
+    ordered_steps = [
+        observed_control_steps.get("architecture"),
+        observed_gate_steps.get("full_build"),
+        observed_control_steps.get("supported_api"),
+        observed_gate_steps.get("full_tests"),
+    ]
+    ordered_numbers = [
+        step.get("number") if isinstance(step, dict) else None
+        for step in ordered_steps
+    ]
+    ordered_started = [
+        parse_rfc3339(step.get("started_at")) if isinstance(step, dict) else None
+        for step in ordered_steps
+    ]
+    ordered_completed = [
+        parse_rfc3339(step.get("completed_at")) if isinstance(step, dict) else None
+        for step in ordered_steps
+    ]
+    problems.require(
+        all(type(number) is int for number in ordered_numbers)
+        and all(
+            ordered_numbers[index] < ordered_numbers[index + 1]
+            for index in range(len(ordered_numbers) - 1)
+        )
+        and all(value is not None for value in ordered_started + ordered_completed)
+        and all(
+            ordered_completed[index] <= ordered_started[index + 1]
+            for index in range(len(ordered_steps) - 1)
+        ),
+        f"{context}.step_order",
+        "GitHub must report non-overlapping architecture -> build -> supported-API -> lake-test steps in exact numeric order",
+    )
+
+
+def validate_c0007_transition_projection(
+    historical: dict[str, Any],
+    current: dict[str, Any],
+    expected_state: str,
+    historical_parents: Sequence[str],
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Enforce append-only P/A/T evidence across immutable historical blobs."""
+
+    historical_lifecycle = historical.get("lifecycle")
+    current_lifecycle = current.get("lifecycle")
+    problems.require(
+        isinstance(historical_lifecycle, dict)
+        and historical_lifecycle.get("state") == expected_state,
+        f"{context}.lifecycle.state",
+        f"expected historical state {expected_state!r}",
+    )
+    immutable_keys = (
+        "application_mode",
+        "artifacts",
+        "authority",
+        "base",
+        "branch",
+        "control_id",
+        "exclusions",
+        "expiry",
+        "milestone_id",
+        "packets",
+        "path_census",
+        "phase_id",
+        "record_kind",
+        "schema_version",
+        "wave_id",
+        "workflow",
+    )
+    problems.require(
+        all(historical.get(key) == current.get(key) for key in immutable_keys),
+        context,
+        "immutable authority/base/branch/artifact/packet/workflow snapshots drifted across lifecycle",
+    )
+    prefix_spec = {
+        "planned": ((), (), ()),
+        "activation_pending": (
+            (
+                "planned_commit_sha",
+                "planned_tree_sha",
+                "planned_contract_blob_oid",
+            ),
+            ("planned_control",),
+            ("activation",),
+        ),
+        "active": (
+            (
+                "planned_commit_sha",
+                "planned_tree_sha",
+                "planned_contract_blob_oid",
+                "activation_candidate_commit_sha",
+                "activation_candidate_tree_sha",
+                "activation_candidate_contract_blob_oid",
+            ),
+            ("planned_control", "activation_candidate"),
+            ("activation",),
+        ),
+    }
+    lifecycle_keys, ci_keys, review_keys = prefix_spec.get(
+        expected_state, ((), (), ())
+    )
+    if isinstance(historical_lifecycle, dict) and isinstance(current_lifecycle, dict):
+        problems.require(
+            all(
+                historical_lifecycle.get(key) == current_lifecycle.get(key)
+                for key in lifecycle_keys
+            ),
+            f"{context}.lifecycle.prefix",
+            "later states must preserve every previously committed lifecycle identity",
+        )
+    historical_ci = historical.get("ci")
+    current_ci = current.get("ci")
+    if isinstance(historical_ci, dict) and isinstance(current_ci, dict):
+        problems.require(
+            all(historical_ci.get(key) == current_ci.get(key) for key in ci_keys),
+            f"{context}.ci.prefix",
+            "later states must preserve every previously committed CI record",
+        )
+    historical_reviews = historical.get("reviews")
+    current_reviews = current.get("reviews")
+    if isinstance(historical_reviews, dict) and isinstance(current_reviews, dict):
+        problems.require(
+            all(
+                historical_reviews.get(key) == current_reviews.get(key)
+                for key in review_keys
+            ),
+            f"{context}.reviews.prefix",
+            "later states must preserve every previously committed human review",
+        )
+    if expected_state in {"activation_pending", "active"}:
+        parent_key = (
+            "planned_commit_sha"
+            if expected_state == "activation_pending"
+            else "activation_candidate_commit_sha"
+        )
+        problems.require(
+            isinstance(historical_lifecycle, dict)
+            and list(historical_parents)
+            == [str(historical_lifecycle.get(parent_key) or "")],
+            f"{context}.parent_relation",
+            f"historical {expected_state} contract must bind its actual parent in {parent_key}",
+        )
+
+
+def validate_c0007_bounded_planned_control_payload(
+    contract: dict[str, Any],
+    manifest_header: Sequence[str],
+    manifest_rows: Sequence[dict[str, str]],
+    problems: Problems,
+    *,
+    context: str = C0007_BOUNDED_PLANNED_CONTROL_PATH,
+) -> None:
+    """Validate the bounded P/A/T/I/V state description without trusting it."""
+
+    expected_keys = {
+        "application_mode",
+        "artifacts",
+        "authority",
+        "base",
+        "branch",
+        "ci",
+        "control_id",
+        "exclusions",
+        "expiry",
+        "lifecycle",
+        "milestone_id",
+        "packets",
+        "path_census",
+        "phase_id",
+        "record_kind",
+        "reviews",
+        "schema_version",
+        "wave_id",
+        "workflow",
+    }
+    problems.require(
+        set(contract) == expected_keys,
+        context,
+        "planned-control keys must match the bounded state-machine schema exactly",
+    )
+    problems.require(
+        contract.get("schema_version") == 2
+        and contract.get("record_kind") == "c0007_bounded_planned_control"
+        and contract.get("control_id") == "C0007-M13-I01-CODE03-planned-v1"
+        and contract.get("phase_id") == PHASE_ID
+        and contract.get("milestone_id") == "M13"
+        and contract.get("wave_id") == "I01"
+        and contract.get("application_mode") == "single_atomic_14_path_union",
+        context,
+        "planned-control identity or atomic application mode drifted",
+    )
+    problems.require(
+        contract.get("base")
+        == {
+            "planned_control_parent_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "planned_control_parent_tree": C0007_BOUNDED_CONTROL_TREE_SHA,
+            "remote_main_sha_at_authorization": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "request_replay_checkpoint_id": C0007_CHECKPOINT_ID,
+            "request_replay_code_sha": C0007_CODE_SHA,
+        },
+        f"{context}.base",
+        "base must distinguish the C0007 request replay from the control parent",
+    )
+    problems.require(
+        contract.get("branch")
+        == {
+            "base_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "local_branch": C0007_BOUNDED_BRANCH,
+            "operator_id": "codex-local",
+            "owner_id": "primary-human",
+            "push_policy": "fast_forward_only_with_exact_observed_lease",
+            "remote": C0007_BOUNDED_REMOTE,
+            "remote_url": C0007_BOUNDED_REMOTE_URL,
+            "remote_main_ref": C0007_BOUNDED_REMOTE_MAIN_REF,
+            "remote_ref": C0007_BOUNDED_REMOTE_BRANCH_REF,
+            "repository": C0007_BOUNDED_REPOSITORY,
+            "repository_id": C0007_BOUNDED_REPOSITORY_ID,
+            "retirement_authorized": False,
+        },
+        f"{context}.branch",
+        "bounded branch registry must pin the exact repository/ref/base/owner/operator and forbid retirement",
+    )
+    problems.require(
+        contract.get("authority")
+        == {
+            "authority_id": "primary-human",
+            "authorization_id": C0007_BOUNDED_AUTHORIZATION_ID,
+            "authorization_path": C0007_BOUNDED_AUTHORIZATION_PATH,
+            "authorization_sha256": R0014_PACKET_ARTIFACT_SHA256[
+                C0007_BOUNDED_AUTHORIZATION_PATH
+            ],
+            "authorized_manifest_path": C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            "authorized_manifest_rows": 56,
+            "authorized_manifest_sha256": C0007_BOUNDED_AUTHORIZED_PATHS_SHA256,
+            "global_human_only_authority_unchanged": True,
+            "operator_id": "codex-local",
+        },
+        f"{context}.authority",
+        "authority must bind the exact task grant without widening global arrays",
+    )
+
+    expected_header = ("path", "packet_id", "stage", "operation")
+    problems.require(
+        tuple(manifest_header) == expected_header,
+        f"{context}.manifest",
+        "authorized manifest header drifted",
+    )
+    planned_rows = [row for row in manifest_rows if row.get("stage") == "planned_control"]
+    implementation_rows = [
+        row for row in manifest_rows if row.get("stage") == "implementation"
+    ]
+    planned_paths = [row.get("path", "") for row in planned_rows]
+    implementation_paths = [row.get("path", "") for row in implementation_rows]
+    artifact_paths = [
+        path for path in planned_paths if path != C0007_BOUNDED_PLANNED_CONTROL_PATH
+    ]
+    r0014_paths = [
+        row.get("path", "")
+        for row in implementation_rows
+        if row.get("packet_id") == "R0014"
+    ]
+    r0015_paths = [
+        row.get("path", "")
+        for row in implementation_rows
+        if row.get("packet_id") == "R0015"
+    ]
+    census = contract.get("path_census")
+    expected_census = {
+        "R0014": {
+            "path_count": 12,
+            "path_set_sha256": C0007_BOUNDED_R0014_PATHS_SHA256,
+        },
+        "R0015": {
+            "path_count": 2,
+            "path_set_sha256": C0007_BOUNDED_R0015_PATHS_SHA256,
+        },
+        "artifact_snapshot": {
+            "path_count": 41,
+            "path_set_sha256": C0007_BOUNDED_ARTIFACT_PATHS_SHA256,
+        },
+        "contract_path": C0007_BOUNDED_PLANNED_CONTROL_PATH,
+        "implementation": {
+            "add_count": 7,
+            "modify_count": 7,
+            "path_count": 14,
+            "path_set_sha256": C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256,
+        },
+        "local_ledger_exclusion": "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+        "planned_control": {
+            "add_count": 25,
+            "modify_count": 17,
+            "path_count": 42,
+            "path_set_sha256": C0007_BOUNDED_PLANNED_PATHS_SHA256,
+        },
+        "self_hash_policy": "excluded_from_artifact_hashes_but_bound_by_commit",
+    }
+    problems.require(
+        census == expected_census,
+        f"{context}.path_census",
+        "path census must retain all exact counts, operation counts, and hashes",
+    )
+    problems.require(
+        len(planned_paths) == 42
+        and len(implementation_paths) == 14
+        and len(artifact_paths) == 41
+        and path_list_sha256(planned_paths) == C0007_BOUNDED_PLANNED_PATHS_SHA256
+        and path_list_sha256(artifact_paths) == C0007_BOUNDED_ARTIFACT_PATHS_SHA256
+        and path_list_sha256(implementation_paths)
+        == C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256
+        and path_list_sha256(r0014_paths) == C0007_BOUNDED_R0014_PATHS_SHA256
+        and path_list_sha256(r0015_paths) == C0007_BOUNDED_R0015_PATHS_SHA256,
+        f"{context}.manifest",
+        "live manifest path sets must reproduce every canonical census hash",
+    )
+
+    artifacts = contract.get("artifacts")
+    parsed_artifacts: dict[str, dict[str, Any]] = {}
+    artifact_order: list[str] = []
+    valid_artifacts = isinstance(artifacts, list)
+    expected_by_path = {row.get("path", ""): row for row in planned_rows}
+    for index, item in enumerate(artifacts if isinstance(artifacts, list) else []):
+        item_context = f"{context}.artifacts[{index}]"
+        if not isinstance(item, dict) or set(item) != {
+            "base_blob_oid",
+            "base_mode",
+            "operation",
+            "packet_id",
+            "path",
+            "post_blob_oid",
+            "post_mode",
+            "sha256",
+        }:
+            problems.add(item_context, "artifact row must match the exact snapshot schema")
+            valid_artifacts = False
+            continue
+        path = item.get("path")
+        if not isinstance(path, str) or path in parsed_artifacts:
+            problems.add(item_context, "artifact path must be a unique string")
+            valid_artifacts = False
+            continue
+        artifact_order.append(path)
+        parsed_artifacts[path] = item
+        expected_row = expected_by_path.get(path, {})
+        problems.require(
+            item.get("packet_id") == expected_row.get("packet_id")
+            and item.get("operation") == expected_row.get("operation"),
+            item_context,
+            "artifact packet/operation must match the authorized manifest",
+        )
+        operation = item.get("operation")
+        base_blob = item.get("base_blob_oid")
+        base_mode = item.get("base_mode")
+        problems.require(
+            (operation == "add" and base_blob is None and base_mode is None)
+            or (
+                operation == "modify"
+                and isinstance(base_blob, str)
+                and SHA1_RE.fullmatch(base_blob) is not None
+                and base_mode == "100644"
+            ),
+            f"{item_context}.base_blob_oid",
+            "additions require null preimages; modifications require exact 100644 Git blobs",
+        )
+        problems.require(
+            item.get("post_mode") == "100644"
+            and isinstance(item.get("post_blob_oid"), str)
+            and SHA1_RE.fullmatch(item.get("post_blob_oid", "")) is not None,
+            f"{item_context}.post_blob_oid",
+            "every planned postimage must be an exact regular-file Git blob",
+        )
+        digest = item.get("sha256")
+        problems.require(
+            isinstance(digest, str)
+            and SHA256_RE.fullmatch(digest) is not None
+            and digest == digest.upper(),
+            f"{item_context}.sha256",
+            "artifact content must carry an uppercase SHA-256",
+        )
+    problems.require(
+        valid_artifacts
+        and artifact_order == sorted(artifact_paths)
+        and set(parsed_artifacts) == set(artifact_paths),
+        f"{context}.artifacts",
+        "snapshot must contain exactly the 41 sorted non-contract planned artifacts",
+    )
+
+    packets = contract.get("packets")
+    packet_by_id = {
+        item.get("request_id"): item
+        for item in packets
+        if isinstance(item, dict) and isinstance(item.get("request_id"), str)
+    } if isinstance(packets, list) else {}
+    problems.require(
+        isinstance(packets, list)
+        and [item.get("request_id") for item in packets if isinstance(item, dict)]
+        == ["R0014", "R0015"]
+        and len(packet_by_id) == 2,
+        f"{context}.packets",
+        "packets must be exactly ordered R0014 then R0015",
+    )
+    packet_specs = {
+        "R0014": (
+            12,
+            C0007_BOUNDED_R0014_PATHS_SHA256,
+            R0014_PACKET_ARTIFACT_SHA256,
+            I01_APPROVAL_PATH,
+        ),
+        "R0015": (
+            2,
+            C0007_BOUNDED_R0015_PATHS_SHA256,
+            R0015_PACKET_ARTIFACT_SHA256,
+            CODE03_APPROVAL_PATH,
+        ),
+    }
+    for request_id, (count, path_hash, packet_hashes, approval_path) in packet_specs.items():
+        packet = packet_by_id.get(request_id, {})
+        request_prefix = f"{DEFAULT_PHASE_DIR.as_posix()}/requests/{request_id}"
+        problems.require(
+            isinstance(packet, dict)
+            and set(packet)
+            == {
+                "approval",
+                "indivisible",
+                "patch",
+                "path_count",
+                "path_set_sha256",
+                "postimages",
+                "request",
+                "request_id",
+                "review",
+                "target_code_sha",
+            }
+            and packet.get("path_count") == count
+            and packet.get("path_set_sha256") == path_hash
+            and packet.get("target_code_sha") == C0007_CODE_SHA
+            and packet.get("indivisible") is True,
+            f"{context}.packets[{request_id}]",
+            "packet identity, base, path count/hash, or indivisibility drifted",
+        )
+        for field, suffix in (
+            ("request", ".json"),
+            ("patch", ".patch"),
+            ("postimages", "-postimages.tsv"),
+            ("review", "-review.md"),
+        ):
+            artifact = packet.get(field)
+            artifact_path = request_prefix + suffix
+            problems.require(
+                artifact
+                == {
+                    "path": artifact_path,
+                    "sha256": packet_hashes[artifact_path],
+                },
+                f"{context}.packets[{request_id}].{field}",
+                "packet artifact path or immutable SHA-256 drifted",
+            )
+        approval = packet.get("approval")
+        approval_digest = parsed_artifacts.get(approval_path, {}).get("sha256")
+        problems.require(
+            isinstance(approval, dict)
+            and approval.get("path") == approval_path
+            and approval.get("sha256") == approval_digest,
+            f"{context}.packets[{request_id}].approval",
+            "packet approval must match its exact artifact-snapshot digest",
+        )
+
+    workflow = contract.get("workflow")
+    workflow_digest = parsed_artifacts.get(
+        ".github/workflows/lean_action_ci.yml", {}
+    ).get("sha256")
+    problems.require(
+        workflow_digest == C0007_BOUNDED_WORKFLOW_SHA256,
+        f"{context}.workflow.sha256",
+        "workflow artifact must equal the exact reviewed bounded-workflow digest",
+    )
+    problems.require(
+        workflow
+        == {
+            "build_step_name": C0007_BOUNDED_BUILD_STEP,
+            "checkout_action": PINNED_CHECKOUT_ACTION,
+            "full_build_command": "lake build NumStability NumStabilityTest",
+            "github_actions_read_permission": True,
+            "github_issues_read_permission": True,
+            "job_name": C0007_BOUNDED_JOB_NAME,
+            "lean_action": PINNED_LEAN_ACTION,
+            "path": C0007_BOUNDED_WORKFLOW_PATH,
+            "sha256": workflow_digest,
+            "supported_api_commands": [
+                "python tools/architecture/check_supported_api.py --self-test",
+                "python tools/architecture/check_supported_api.py --baseline docs/architecture/supported-api.json --mode lifecycle",
+            ],
+            "supported_api_step_name": C0007_BOUNDED_SUPPORTED_API_STEP,
+            "test_step_name": C0007_BOUNDED_TEST_STEP,
+            "test_command": "lake test",
+            "toolchain": C0007_BOUNDED_TOOLCHAIN,
+            "workflow_name": C0007_BOUNDED_WORKFLOW_NAME,
+            "workflow_id": C0007_BOUNDED_WORKFLOW_ID,
+        },
+        f"{context}.workflow",
+        "workflow must bind its exact artifact bytes, actions, commands, and toolchain",
+    )
+
+    lifecycle = contract.get("lifecycle")
+    lifecycle_keys = {
+        "activation_candidate_commit_sha",
+        "activation_candidate_contract_blob_oid",
+        "activation_candidate_tree_sha",
+        "active_attestation_commit_sha",
+        "active_attestation_contract_blob_oid",
+        "active_attestation_tree_sha",
+        "implementation_allowed",
+        "implementation_commit_sha",
+        "implementation_contract_blob_oid",
+        "implementation_tree_sha",
+        "planned_commit_sha",
+        "planned_contract_blob_oid",
+        "planned_tree_sha",
+        "state",
+    }
+    if not isinstance(lifecycle, dict) or set(lifecycle) != lifecycle_keys:
+        problems.add(
+            f"{context}.lifecycle",
+            "lifecycle keys must match the exact P/A/T/I/V schema",
+        )
+        return
+    state = lifecycle.get("state")
+    problems.require(
+        state in {"planned", "activation_pending", "active", "verified"},
+        f"{context}.lifecycle.state",
+        "unsupported bounded lifecycle state",
+    )
+    identity_groups = (
+        (
+            "planned_commit_sha",
+            "planned_tree_sha",
+            "planned_contract_blob_oid",
+        ),
+        (
+            "activation_candidate_commit_sha",
+            "activation_candidate_tree_sha",
+            "activation_candidate_contract_blob_oid",
+        ),
+        (
+            "active_attestation_commit_sha",
+            "active_attestation_tree_sha",
+            "active_attestation_contract_blob_oid",
+        ),
+        (
+            "implementation_commit_sha",
+            "implementation_tree_sha",
+            "implementation_contract_blob_oid",
+        ),
+    )
+    required_group_count = {
+        "planned": 0,
+        "activation_pending": 1,
+        "active": 2,
+        "verified": 4,
+    }.get(str(state), 0)
+    for index, group in enumerate(identity_groups):
+        values = [lifecycle.get(key) for key in group]
+        if index < required_group_count:
+            problems.require(
+                all(isinstance(value, str) and SHA1_RE.fullmatch(value) for value in values),
+                f"{context}.lifecycle.{group[0]}",
+                "required historical commit/tree/blob identities must be lowercase SHA-1",
+            )
+        else:
+            problems.require(
+                values == [None, None, None],
+                f"{context}.lifecycle.{group[0]}",
+                "future self-referential lifecycle identities must remain null",
+            )
+    problems.require(
+        lifecycle.get("implementation_allowed") is False,
+        f"{context}.lifecycle.implementation_allowed",
+        "the persisted contract must never self-assert write permission; runtime Git/ref gates derive it",
+    )
+
+    ci = contract.get("ci")
+    reviews = contract.get("reviews")
+    problems.require(
+        isinstance(ci, dict)
+        and set(ci) == {"activation_candidate", "implementation", "planned_control"},
+        f"{context}.ci",
+        "CI records must cover planned, activation-candidate, and implementation heads",
+    )
+    problems.require(
+        isinstance(reviews, dict)
+        and set(reviews) == {"activation", "implementation"},
+        f"{context}.reviews",
+        "review records must cover activation and implementation separately",
+    )
+    review_scope_common = {
+        "artifact_inventory_sha256": canonical_json_sha256(artifacts),
+        "authorization_sha256": R0014_PACKET_ARTIFACT_SHA256[
+            C0007_BOUNDED_AUTHORIZATION_PATH
+        ],
+        "completion_checker_sha256": parsed_artifacts.get(
+            "tools/architecture/check_completion_phase.py", {}
+        ).get("sha256"),
+        "full_tests_correction_sha256": parsed_artifacts.get(
+            C0007_FULL_TESTS_CORRECTION_PATH, {}
+        ).get("sha256"),
+        "implementation_path_set_sha256": C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256,
+        "packet_snapshot_sha256": canonical_json_sha256(packets),
+        "planned_path_set_sha256": C0007_BOUNDED_PLANNED_PATHS_SHA256,
+        "supported_api_baseline_sha256": parsed_artifacts.get(
+            C0007_BOUNDED_SUPPORTED_API_PATH, {}
+        ).get("sha256"),
+        "supported_api_checker_sha256": parsed_artifacts.get(
+            "tools/architecture/check_supported_api.py", {}
+        ).get("sha256"),
+        "supported_api_review_sha256": parsed_artifacts.get(
+            C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH, {}
+        ).get("sha256"),
+        "workflow_sha256": workflow_digest,
+    }
+    activation_review_scope = {
+        **review_scope_common,
+        "review_purpose": "P activation for atomic R0014/R0015 implementation",
+    }
+    implementation_review_scope = {
+        **review_scope_common,
+        "review_purpose": "I verification for atomic R0014/R0015 implementation",
+    }
+    activation_supersedes = (
+        I01_APPROVAL_PATH,
+        CODE03_APPROVAL_PATH,
+        C0007_FULL_TESTS_CORRECTION_PATH,
+        C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH,
+    )
+    planned_status = "pending" if state == "planned" else "success"
+    activation_ci_status = (
+        "not_due"
+        if state == "planned"
+        else "pending"
+        if state == "activation_pending"
+        else "success"
+    )
+    implementation_ci_status = "success" if state == "verified" else (
+        "pending" if state == "active" else "not_due"
+    )
+    activation_review_status = "pending" if state == "planned" else "approved"
+    implementation_review_status = "approved" if state == "verified" else (
+        "pending" if state == "active" else "not_due"
+    )
+    if isinstance(ci, dict):
+        validate_c0007_bounded_ci_evidence(
+            ci.get("planned_control"),
+            planned_status,
+            lifecycle.get("planned_commit_sha"),
+            lifecycle.get("planned_tree_sha"),
+            problems,
+            context=f"{context}.ci.planned_control",
+        )
+        validate_c0007_bounded_ci_evidence(
+            ci.get("activation_candidate"),
+            activation_ci_status,
+            lifecycle.get("activation_candidate_commit_sha"),
+            lifecycle.get("activation_candidate_tree_sha"),
+            problems,
+            context=f"{context}.ci.activation_candidate",
+        )
+        validate_c0007_bounded_ci_evidence(
+            ci.get("implementation"),
+            implementation_ci_status,
+            lifecycle.get("implementation_commit_sha"),
+            lifecycle.get("implementation_tree_sha"),
+            problems,
+            context=f"{context}.ci.implementation",
+        )
+    if isinstance(reviews, dict):
+        validate_c0007_bounded_review(
+            reviews.get("activation"),
+            activation_review_status,
+            lifecycle.get("planned_commit_sha"),
+            lifecycle.get("planned_tree_sha"),
+            lifecycle.get("planned_contract_blob_oid"),
+            activation_review_scope,
+            activation_supersedes,
+            problems,
+            context=f"{context}.reviews.activation",
+        )
+        validate_c0007_bounded_review(
+            reviews.get("implementation"),
+            implementation_review_status,
+            lifecycle.get("implementation_commit_sha"),
+            lifecycle.get("implementation_tree_sha"),
+            lifecycle.get("implementation_contract_blob_oid"),
+            implementation_review_scope,
+            (),
+            problems,
+            context=f"{context}.reviews.implementation",
+        )
+
+    if isinstance(ci, dict):
+        successful_records = [
+            record
+            for record in ci.values()
+            if isinstance(record, dict) and record.get("status") == "success"
+        ]
+        run_ids = [record.get("run_id") for record in successful_records]
+        job_ids = [record.get("job_id") for record in successful_records]
+        suite_ids = [record.get("check_suite_id") for record in successful_records]
+        identity_types_valid = all(
+            type(value) is int
+            for values in (run_ids, job_ids, suite_ids)
+            for value in values
+        )
+        problems.require(
+            identity_types_valid
+            and len(run_ids) == len(set(run_ids))
+            and len(job_ids) == len(set(job_ids))
+            and len(suite_ids) == len(set(suite_ids)),
+            f"{context}.ci",
+            "P, A, and I must use positive integer, distinct authenticated run, job, and check-suite identities",
+        )
+    if isinstance(ci, dict) and isinstance(reviews, dict) and state != "planned":
+        planned_completed = parse_rfc3339(
+            ci.get("planned_control", {}).get("completed_at")
+            if isinstance(ci.get("planned_control"), dict)
+            else None
+        )
+        activation_review = reviews.get("activation")
+        activation_source = (
+            activation_review.get("source")
+            if isinstance(activation_review, dict)
+            else None
+        )
+        activation_received = parse_rfc3339(
+            activation_source.get("created_at")
+            if isinstance(activation_source, dict)
+            else None
+        )
+        problems.require(
+            planned_completed is not None
+            and activation_received is not None
+            and planned_completed <= activation_received,
+            f"{context}.reviews.activation",
+            "human activation review must be received only after exact P CI completed",
+        )
+    if isinstance(ci, dict) and isinstance(reviews, dict) and state == "verified":
+        implementation_completed = parse_rfc3339(
+            ci.get("implementation", {}).get("completed_at")
+            if isinstance(ci.get("implementation"), dict)
+            else None
+        )
+        implementation_review = reviews.get("implementation")
+        implementation_source = (
+            implementation_review.get("source")
+            if isinstance(implementation_review, dict)
+            else None
+        )
+        implementation_received = parse_rfc3339(
+            implementation_source.get("created_at")
+            if isinstance(implementation_source, dict)
+            else None
+        )
+        problems.require(
+            implementation_completed is not None
+            and implementation_received is not None
+            and implementation_completed <= implementation_received,
+            f"{context}.reviews.implementation",
+            "human implementation review must be received only after exact I CI completed",
+        )
+        activation_comment_id = (
+            activation_source.get("comment_database_id")
+            if isinstance(activation_source, dict)
+            else None
+        )
+        implementation_comment_id = (
+            implementation_source.get("comment_database_id")
+            if isinstance(implementation_source, dict)
+            else None
+        )
+        problems.require(
+            type(activation_comment_id) is int
+            and type(implementation_comment_id) is int
+            and activation_comment_id != implementation_comment_id,
+            f"{context}.reviews",
+            "activation and implementation decisions require distinct live GitHub owner comments",
+        )
+
+    problems.require(
+        contract.get("expiry")
+        == {
+            "acceptance_requires_new_authority": True,
+            "disabled_after_c0008_acceptance": True,
+            "events": [
+                "C0008 acceptance",
+                "explicit cancellation or supersession",
+                "base, path-manifest, request-patch, postimage, or artifact drift",
+                "an exact-lease mismatch or remote-main drift",
+                "primary-human revocation",
+            ],
+            "implementation_requires_current_checkpoint_id": C0007_CHECKPOINT_ID,
+            "valid_through_checkpoint_id": "C0008",
+        },
+        f"{context}.expiry",
+        "expiry must disable implementation at C0008 and require new acceptance authority",
+    )
+    exclusions = contract.get("exclusions")
+    exclusion_fragments = (
+        "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+        "public declaration",
+        "partial",
+        "request resolution",
+        "C0008",
+        "repository-wide completion",
+        "force push",
+        "branch retirement",
+    )
+    problems.require(
+        isinstance(exclusions, list)
+        and len(exclusions) == len(exclusion_fragments)
+        and all(
+            any(fragment in item for item in exclusions if isinstance(item, str))
+            for fragment in exclusion_fragments
+        ),
+        f"{context}.exclusions",
+        "all eight bounded safety exclusions must remain explicit",
+    )
+
+
+def validate_c0007_bounded_commit_shape(
+    parents: Sequence[str],
+    changed_paths: set[str],
+    subject: str,
+    expected_parent: str,
+    expected_paths: set[str],
+    expected_subject: str,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Pure direct-child/path/subject gate shared by every P/A/T/I/V edge."""
+
+    problems.require(
+        list(parents) == [expected_parent],
+        f"{context}.parent",
+        f"must be a single-parent direct child of {expected_parent}",
+    )
+    problems.require(
+        changed_paths == expected_paths,
+        f"{context}.paths",
+        "must change the exact lifecycle path set; "
+        f"missing={sorted(expected_paths - changed_paths)}, "
+        f"extra={sorted(changed_paths - expected_paths)}",
+    )
+    problems.require(
+        subject == expected_subject,
+        f"{context}.subject",
+        f"expected exact subject {expected_subject!r}",
+    )
+
+
+def validate_c0007_implementation_path_set(
+    touched: set[str],
+    expected: set[str],
+    implementation_allowed: bool,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Reject pre-activation writes and every partial 14-path epoch."""
+
+    if not implementation_allowed:
+        problems.require(
+            not touched,
+            context,
+            f"implementation is locked; found={sorted(touched)}",
+        )
+        return
+    problems.require(
+        not touched or touched == expected,
+        context,
+        "active implementation must be absent or the complete 14-path union",
+    )
+
+
+def validate_c0007_remote_observation(
+    *,
+    state: str | None,
+    head: str,
+    planned_commit: str | None,
+    activation_commit: str | None,
+    active_commit: str | None,
+    implementation_commit: str | None,
+    symbolic_branch: str | None,
+    configured_remote_names: Sequence[str],
+    configured_remote_urls: Sequence[str],
+    configured_push_urls: Sequence[str],
+    configured_fetch_refspecs: Sequence[str],
+    configured_push_refspecs: Sequence[str],
+    configured_mirror_values: Sequence[str],
+    configured_push_default_values: Sequence[str],
+    configured_branch_remote_values: Sequence[str],
+    configured_branch_push_remote_values: Sequence[str],
+    resolved_fetch_urls: Sequence[str],
+    resolved_push_urls: Sequence[str],
+    remote_main_tip: str | None,
+    remote_branch_tip: str | None,
+    implementation_overlay: bool,
+    problems: Problems,
+    context: str,
+) -> bool:
+    """Validate expiry refs and derive local write permission without trusting JSON."""
+
+    remote_identity_ok = (
+        list(configured_remote_names) == [C0007_BOUNDED_REMOTE]
+        and list(configured_remote_urls) == [C0007_BOUNDED_REMOTE_URL]
+        and list(configured_push_urls) == []
+        and list(configured_fetch_refspecs)
+        == ["+refs/heads/*:refs/remotes/origin/*"]
+        and list(configured_push_refspecs) == []
+        and list(configured_mirror_values) == []
+        and list(configured_push_default_values) == []
+        and list(configured_branch_remote_values) == []
+        and list(configured_branch_push_remote_values) == []
+        and list(resolved_fetch_urls) == [C0007_BOUNDED_REMOTE_URL]
+        and list(resolved_push_urls) == [C0007_BOUNDED_REMOTE_URL]
+    )
+    problems.require(
+        remote_identity_ok,
+        f"{context}.identity",
+        "remote configuration must contain only origin with the exact singleton canonical URL, standard fetch refspec, no push URL/refspec/mirror/default/branch override, and singleton resolved fetch/push URLs",
+    )
+    main_ok = remote_main_tip == C0007_BOUNDED_CONTROL_HEAD_SHA
+    problems.require(
+        main_ok,
+        f"{context}.main",
+        "bounded authority expires unless live remote main remains the exact authorized control head",
+    )
+    if state == "planned":
+        allowed_tips: set[str | None] = (
+            {None}
+            if head == C0007_BOUNDED_CONTROL_HEAD_SHA
+            else {None, head}
+        )
+    elif state == "activation_pending":
+        allowed_tips = {planned_commit, head}
+    elif state == "active":
+        allowed_tips = {activation_commit, active_commit, head}
+    elif state == "verified":
+        allowed_tips = {implementation_commit, head}
+    else:
+        allowed_tips = set()
+    branch_ok = remote_branch_tip in allowed_tips
+    problems.require(
+        branch_ok,
+        f"{context}.branch",
+        "live bounded ref must be absent only before P push, or equal the exact current/prior fast-forward lifecycle tip; "
+        f"found={remote_branch_tip!r}, allowed={sorted(tip for tip in allowed_tips if tip)}",
+    )
+    write_allowed = (
+        remote_identity_ok
+        and main_ok
+        and branch_ok
+        and state == "active"
+        and active_commit is not None
+        and head == active_commit
+        and symbolic_branch == C0007_BOUNDED_BRANCH
+        and remote_branch_tip == active_commit
+    )
+    if implementation_overlay:
+        problems.require(
+            write_allowed,
+            f"{context}.write_permission",
+            "new implementation may be staged only on the exact symbolic bounded branch with remote main fixed and the remote bounded ref at committed T",
+        )
+    return write_allowed
+
+
+def validate_c0007_live_postimages(
+    actual: dict[str, str | None],
+    expected: dict[str, str],
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Require exact implementation bytes, not merely an authorized path set."""
+
+    problems.require(
+        set(actual) == set(expected),
+        context,
+        "live/expected postimage path sets must be identical",
+    )
+    for path in sorted(set(actual) | set(expected)):
+        problems.require(
+            actual.get(path) == expected.get(path),
+            f"{context}[{path}]",
+            f"live SHA-256 {actual.get(path)!r} != expected {expected.get(path)!r}",
+        )
+
+
+def validate_c0007_contract_index_binding(
+    index_entry: tuple[str | None, str | None, str | None] | None,
+    live_payload: bytes | None,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Bind the parsed lifecycle JSON bytes to the exact stage-0 index blob."""
+
+    live_blob = git_blob_oid(live_payload) if live_payload is not None else None
+    problems.require(
+        index_entry == ("100644", live_blob, "0"),
+        context,
+        "lifecycle contract must be a stage-0 100644 blob exactly equal to the parsed worktree bytes",
+    )
+
+
+def validate_c0007_full_tests_correction_payload(
+    correction: dict[str, Any],
+    current_workflow: str,
+    principal_kinds: dict[str, str],
+    problems: Problems,
+    *,
+    context: str = C0007_FULL_TESTS_CORRECTION_PATH,
+) -> None:
+    """Keep immutable C0007 bytes while correcting their test semantics."""
+
+    problems.require(
+        set(correction)
+        == {
+            "accepted_history",
+            "authorization",
+            "correction",
+            "correction_id",
+            "phase_id",
+            "record_kind",
+            "review",
+            "schema_version",
+            "source_ci",
+        },
+        context,
+        "correction keys must match the exact evidence-semantic schema",
+    )
+    problems.require(
+        correction.get("schema_version") == 1
+        and correction.get("record_kind")
+        == "checkpoint_gate_semantic_correction"
+        and correction.get("phase_id") == PHASE_ID
+        and correction.get("correction_id")
+        == "C0007-full-tests-evidence-semantics-v1",
+        context,
+        "correction identity drifted",
+    )
+    problems.require(
+        correction.get("accepted_history")
+        == {
+            "checkpoint": {
+                "path": f"{DEFAULT_PHASE_DIR.as_posix()}/checkpoints/C0007.json",
+                "sha256": C0007_CHECKPOINT_SHA256,
+            },
+            "code_sha": C0007_CODE_SHA,
+            "gates": {
+                "path": f"{DEFAULT_PHASE_DIR.as_posix()}/checkpoints/C0007-gates.md",
+                "sha256": C0007_GATES_SHA256,
+            },
+            "mutation_policy": "preserve both accepted artifacts byte-for-byte",
+        },
+        f"{context}.accepted_history",
+        "accepted C0007 checkpoint/gates custody drifted",
+    )
+    source = correction.get("source_ci")
+    source_run = source.get("run") if isinstance(source, dict) else None
+    source_job = source.get("job") if isinstance(source, dict) else None
+    source_workflow = source.get("workflow") if isinstance(source, dict) else None
+    problems.require(
+        isinstance(source, dict)
+        and set(source)
+        == {"event", "head_branch", "head_sha", "job", "run", "workflow"}
+        and source.get("event") == "push"
+        and source.get("head_branch") == "main"
+        and source.get("head_sha") == C0007_BOUNDED_CONTROL_HEAD_SHA,
+        f"{context}.source_ci",
+        "source CI must be the exact audited main push",
+    )
+    problems.require(
+        isinstance(source_run, dict)
+        and source_run.get("id") == C0007_BUILD_ONLY_RUN_ID
+        and source_run.get("conclusion") == "success"
+        and RFC3339_RE.fullmatch(str(source_run.get("started_at", ""))) is not None
+        and RFC3339_RE.fullmatch(str(source_run.get("completed_at", ""))) is not None,
+        f"{context}.source_ci.run",
+        "run identity, conclusion, and timestamps drifted",
+    )
+    problems.require(
+        isinstance(source_job, dict)
+        and source_job.get("id") == C0007_BUILD_ONLY_JOB_ID
+        and source_job.get("name") == "build"
+        and source_job.get("conclusion") == "success"
+        and RFC3339_RE.fullmatch(str(source_job.get("started_at", ""))) is not None
+        and RFC3339_RE.fullmatch(str(source_job.get("completed_at", ""))) is not None,
+        f"{context}.source_ci.job",
+        "job identity, conclusion, and timestamps drifted",
+    )
+    problems.require(
+        source_workflow
+        == {
+            "build_args": "NumStability NumStabilityTest",
+            "build_input": True,
+            "lint_input": False,
+            "path": ".github/workflows/lean_action_ci.yml",
+            "sha256": C0007_BUILD_ONLY_WORKFLOW_SHA256,
+            "test_input": False,
+        },
+        f"{context}.source_ci.workflow",
+        "historical workflow must prove build=true and test=false exactly",
+    )
+    semantic = correction.get("correction")
+    problems.require(
+        isinstance(semantic, dict)
+        and set(semantic)
+        == {
+            "corrected_semantic_label",
+            "observed_build_command",
+            "observed_test_driver_command",
+            "original_gate_id",
+            "prohibition",
+            "reason",
+            "required_successor_evidence",
+        }
+        and semantic.get("corrected_semantic_label") == "test-library compilation"
+        and semantic.get("observed_build_command")
+        == "lake build NumStability NumStabilityTest"
+        and semantic.get("observed_test_driver_command") is None
+        and semantic.get("original_gate_id") == "full_tests"
+        and "MUST NOT" in str(semantic.get("prohibition", ""))
+        and "lake test" in str(semantic.get("prohibition", ""))
+        and semantic.get("required_successor_evidence")
+        == [
+            "a distinct full_build gate for literal command lake build NumStability NumStabilityTest",
+            "a distinct full_tests gate for literal command lake test",
+            "one authenticated complete GitHub job log with exact byte count and SHA-256, plus distinct build/test step numbers, names, timestamps, and GitHub success conclusions",
+        ],
+        f"{context}.correction",
+        "semantic correction must distinguish compilation from an absent test driver",
+    )
+    problems.require(
+        correction.get("authorization")
+        == {
+            "authority_id": "primary-human",
+            "bounded_authorization_id": C0007_BOUNDED_AUTHORIZATION_ID,
+            "decision": "approved",
+        },
+        f"{context}.authorization",
+        "correction must remain under the exact bounded primary-human grant",
+    )
+    review = correction.get("review")
+    reviewer = review.get("reviewer_id") if isinstance(review, dict) else None
+    reviewed_at = review.get("reviewed_at") if isinstance(review, dict) else None
+    pending_review = (
+        isinstance(review, dict)
+        and set(review)
+        == {"approved_by", "reviewed_at", "reviewer_id", "status"}
+        and review
+        == {
+            "approved_by": None,
+            "reviewed_at": None,
+            "reviewer_id": None,
+            "status": "pending_independent_review",
+        }
+    )
+    problems.require(
+        pending_review,
+        f"{context}.review",
+        "the immutable generated correction must remain pending; only the later exact planned-control human attestation may supersede it",
+    )
+
+    normalized_workflow = current_workflow.replace("\r\n", "\n")
+    problems.require(
+        PINNED_CHECKOUT_ACTION in normalized_workflow,
+        ".github/workflows/lean_action_ci.yml.actions.checkout",
+        "checkout action must be pinned to the reviewed immutable commit",
+    )
+    problems.require(
+        PINNED_LEAN_ACTION in normalized_workflow,
+        ".github/workflows/lean_action_ci.yml.actions.lean",
+        "Lean action must be pinned to the reviewed immutable commit",
+    )
+    problems.require(
+        re.search(
+            r"(?m)^\s*- name: Run Lake test driver\s*$\n\s*run: lake test\s*$",
+            normalized_workflow,
+        )
+        is not None,
+        ".github/workflows/lean_action_ci.yml.full_tests",
+        "workflow must run literal lake test in a separate named step",
+    )
+
+
+def validate_distinct_build_test_evidence(
+    full_build: dict[str, Any],
+    full_tests: dict[str, Any],
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Validate the non-aliasing gate shape required for C0008 and later."""
+
+    required = {
+        "candidate_sha",
+        "command",
+        "completed_at",
+        "conclusion",
+        "job_id",
+        "run_id",
+        "runner",
+        "started_at",
+        "step_name",
+        "step_number",
+        "toolchain",
+    }
+    for name, evidence, command, step_name in (
+        (
+            "full_build",
+            full_build,
+            "lake build NumStability NumStabilityTest",
+            C0007_BOUNDED_BUILD_STEP,
+        ),
+        ("full_tests", full_tests, "lake test", C0007_BOUNDED_TEST_STEP),
+    ):
+        problems.require(
+            set(evidence) == required,
+            f"{context}.{name}",
+            "gate evidence keys must match the durable exact-command schema",
+        )
+        problems.require(
+            evidence.get("command") == command
+            and evidence.get("step_name") == step_name
+            and evidence.get("toolchain") == C0007_BOUNDED_TOOLCHAIN,
+            f"{context}.{name}.command",
+            f"expected exact command, step name, and toolchain for {name}",
+        )
+        problems.require(
+            SHA1_RE.fullmatch(str(evidence.get("candidate_sha", ""))) is not None
+            and evidence.get("conclusion") == "success"
+            and type(evidence.get("run_id")) is int
+            and evidence.get("run_id", 0) > 0
+            and type(evidence.get("job_id")) is int
+            and evidence.get("job_id", 0) > 0
+            and isinstance(evidence.get("runner"), str)
+            and bool(evidence.get("runner"))
+            and type(evidence.get("step_number")) is int
+            and evidence.get("step_number", 0) > 0
+            and parse_rfc3339(evidence.get("started_at")) is not None
+            and parse_rfc3339(evidence.get("completed_at")) is not None
+            and parse_rfc3339(evidence.get("started_at"))
+            <= parse_rfc3339(evidence.get("completed_at")),
+            f"{context}.{name}",
+            "gate requires exact SHA/timing/runner/step/toolchain and authenticated GitHub success",
+        )
+    problems.require(
+        full_build.get("candidate_sha") == full_tests.get("candidate_sha"),
+        context,
+        "build and test evidence must name the same candidate SHA",
+    )
+    problems.require(
+        full_build.get("step_name") != full_tests.get("step_name")
+        and full_build.get("step_number") != full_tests.get("step_number"),
+        context,
+        "full_tests may not alias the build step",
+    )
+    build_step_number = full_build.get("step_number")
+    test_step_number = full_tests.get("step_number")
+    build_completed_at = parse_rfc3339(full_build.get("completed_at"))
+    test_started_at = parse_rfc3339(full_tests.get("started_at"))
+    problems.require(
+        type(build_step_number) is int
+        and type(test_step_number) is int
+        and build_step_number < test_step_number
+        and build_completed_at is not None
+        and test_started_at is not None
+        and build_completed_at <= test_started_at,
+        f"{context}.gate_order",
+        "full build must complete before the later distinct lake-test step starts",
+    )
+
+
+def validate_c0007_bounded_workflow_text(
+    workflow_text: str,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Enforce executable YAML blocks in addition to the human-reviewed blob hash."""
+
+    normalized = workflow_text.replace("\r\n", "\n")
+    problems.require(
+        hashlib.sha256(normalized.encode("utf-8")).hexdigest().upper()
+        == C0007_BOUNDED_WORKFLOW_SHA256,
+        f"{context}.sha256",
+        "workflow bytes after CRLF normalization must equal the exact reviewed bounded workflow",
+    )
+    architecture_block = (
+        f"      - name: {C0007_BOUNDED_ARCHITECTURE_STEP}\n"
+        "        env:\n"
+        "          GH_TOKEN: ${{ github.token }}\n"
+        "        run: |\n"
+        "          python -m py_compile tools/architecture/generate_baseline.py tools/architecture/check_compatibility.py tools/architecture/check_layout.py tools/architecture/check_phase.py tools/architecture/check_phase_projection.py tools/architecture/check_completion_phase_projection.py tools/architecture/check_completion_phase.py tools/architecture/check_provenance.py tools/architecture/check_supported_api.py tools/architecture/normalize_apache_notices.py tools/architecture/sort_aggregate_imports.py tools/benchmark/run.py\n"
+        "          python tools/architecture/check_phase.py --self-test\n"
+        "          python tools/architecture/check_phase_projection.py --self-test\n"
+        "          python tools/architecture/check_completion_phase_projection.py --self-test\n"
+        "          python tools/architecture/check_completion_phase.py --self-test\n"
+        "          python tools/architecture/check_phase.py --all-phases\n"
+        "          python tools/architecture/check_completion_phase.py\n"
+        "          python tools/architecture/check_layout.py\n"
+        "          python tools/architecture/check_compatibility.py\n"
+        "          python tools/architecture/check_provenance.py\n"
+        "          python tools/architecture/generate_baseline.py --skip-declarations --strict-source --output-dir benchmark-results/ci-architecture --name source\n"
+    )
+    supported_api_block = (
+        f"      - name: {C0007_BOUNDED_SUPPORTED_API_STEP}\n"
+        "        run: |\n"
+        "          python tools/architecture/check_supported_api.py --self-test\n"
+        "          python tools/architecture/check_supported_api.py --baseline docs/architecture/supported-api.json --mode lifecycle\n"
+    )
+    permissions_match = re.search(
+        r"(?m)^permissions:\n((?:  [^\n]+\n)+)", normalized
+    )
+    problems.require(
+        permissions_match is not None
+        and permissions_match.group(1)
+        == "  actions: read\n  contents: read\n  issues: read\n",
+        f"{context}.permissions",
+        "workflow must grant only explicit Actions/content/issue read permissions needed for authenticated evidence",
+    )
+    uses = re.findall(r"(?m)^\s+-?\s*uses:\s*([^\s#]+)\s*$", normalized)
+    problems.require(
+        uses == [PINNED_CHECKOUT_ACTION, PINNED_LEAN_ACTION],
+        f"{context}.actions",
+        "workflow must invoke exactly the two reviewed commit-pinned actions",
+    )
+    problems.require(
+        re.search(
+            rf"(?m)^      - uses: {re.escape(PINNED_CHECKOUT_ACTION)}\n"
+            r"        with:\n          fetch-depth: 0$",
+            normalized,
+        )
+        is not None,
+        f"{context}.checkout",
+        "checkout must be the exact pinned full-history step",
+    )
+    problems.require(
+        normalized.count(
+            architecture_block + f"      - name: {C0007_BOUNDED_BUILD_STEP}\n"
+        )
+        == 1,
+        f"{context}.architecture_gate",
+        "architecture gate must run the exact reviewed command block with the GitHub read token immediately before the build",
+    )
+    problems.require(
+        re.search(
+            rf"(?m)^      - name: {re.escape(C0007_BOUNDED_BUILD_STEP)}\n"
+            rf"        uses: {re.escape(PINNED_LEAN_ACTION)}\n"
+            r"        with:\n"
+            r"          build: true\n"
+            r"          build-args: NumStability NumStabilityTest\n"
+            r"          test: false\n"
+            r"          lint: false$",
+            normalized,
+        )
+        is not None,
+        f"{context}.full_build",
+        "full build must be the exact unconditional pinned Lean-action step",
+    )
+    problems.require(
+        normalized.count(
+            supported_api_block + f"      - name: {C0007_BOUNDED_TEST_STEP}\n"
+        )
+        == 1,
+        f"{context}.supported_api",
+        "supported API must run its exact reviewed block once, immediately before lake test",
+    )
+    problems.require(
+        re.search(
+            rf"(?m)^      - name: {re.escape(C0007_BOUNDED_TEST_STEP)}\n"
+            r"        run: lake test$",
+            normalized,
+        )
+        is not None,
+        f"{context}.full_tests",
+        "lake test must be the exact separate unconditional step",
+    )
+    problems.require(
+        "continue-on-error:" not in normalized
+        and re.search(r"(?m)^\s+if:\s*", normalized) is None,
+        context,
+        "bounded CI may not weaken any gate with continue-on-error or a conditional step",
+    )
+    ordered_step_names = (
+        C0007_BOUNDED_BUILD_STEP,
+        C0007_BOUNDED_SUPPORTED_API_STEP,
+        C0007_BOUNDED_TEST_STEP,
+    )
+    ordered_positions = [
+        normalized.find(f"      - name: {name}\n") for name in ordered_step_names
+    ]
+    problems.require(
+        all(position >= 0 for position in ordered_positions)
+        and ordered_positions == sorted(ordered_positions),
+        f"{context}.step_order",
+        "full build, built-environment supported-API verification, and lake test must run in that exact order",
+    )
+    step_headers = re.findall(
+        r"(?m)^      - (uses|name): ([^\n]+)$", normalized
+    )
+    problems.require(
+        step_headers
+        == [
+            ("uses", PINNED_CHECKOUT_ACTION),
+            ("name", C0007_BOUNDED_ARCHITECTURE_STEP),
+            ("name", C0007_BOUNDED_BUILD_STEP),
+            ("name", C0007_BOUNDED_SUPPORTED_API_STEP),
+            ("name", C0007_BOUNDED_TEST_STEP),
+        ]
+        and normalized.rstrip("\n").endswith(
+            f"      - name: {C0007_BOUNDED_TEST_STEP}\n        run: lake test"
+        ),
+        f"{context}.steps",
+        "workflow must contain exactly the reviewed five-step sequence with lake test as the final step",
+    )
 
 
 def validate_c0005_branch_header(
@@ -4029,6 +6846,62 @@ def canonical_json(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
+def canonical_json_sha256(value: Any) -> str:
+    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest().upper()
+
+
+def strict_json_loads(text: str, *, max_depth: int = 64) -> Any:
+    """Parse JSON without duplicate keys, non-finite numbers, or deep nesting."""
+
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate JSON key {key!r}")
+            result[key] = value
+        return result
+
+    def finite_float(value: str) -> float:
+        parsed = float(value)
+        if not math.isfinite(parsed):
+            raise ValueError(f"non-finite JSON number {value!r}")
+        return parsed
+
+    def reject_constant(value: str) -> Any:
+        raise ValueError(f"non-standard JSON constant {value!r}")
+
+    value = json.loads(
+        text,
+        object_pairs_hook=unique_object,
+        parse_float=finite_float,
+        parse_constant=reject_constant,
+    )
+    stack: list[tuple[Any, int]] = [(value, 1)]
+    while stack:
+        item, depth = stack.pop()
+        if depth > max_depth:
+            raise ValueError(f"JSON nesting exceeds maximum depth {max_depth}")
+        if isinstance(item, dict):
+            stack.extend((child, depth + 1) for child in item.values())
+        elif isinstance(item, list):
+            stack.extend((child, depth + 1) for child in item)
+    return value
+
+
+def git_blob_oid(payload: bytes) -> str:
+    header = f"blob {len(payload)}\0".encode("ascii")
+    return hashlib.sha1(header + payload).hexdigest()
+
+
+def parse_rfc3339(value: Any) -> datetime | None:
+    if not isinstance(value, str) or RFC3339_RE.fullmatch(value) is None:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
 def path_list_sha256(paths: Iterable[str]) -> str:
     payload = ("\n".join(sorted(paths)) + "\n").encode("utf-8")
     return hashlib.sha256(payload).hexdigest().upper()
@@ -5937,6 +8810,11 @@ class CompletionValidator:
         self.r07_contract: dict[str, Any] | None = None
         self.r07_contract_artifacts: dict[str, str] = {}
         self.r07_state = "absent"
+        self.c0007_bounded_contract: dict[str, Any] | None = None
+        self.c0007_bounded_state = "absent"
+        self.c0007_implementation_epoch_valid = False
+        self.c0007_implementation_write_allowed = False
+        self.c0007_implementation_allowed = False
 
     def relative(self, path: Path) -> str:
         try:
@@ -5960,8 +8838,17 @@ class CompletionValidator:
 
     def read_json(self, path: Path, context: str) -> dict[str, Any] | None:
         try:
-            value = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError) as error:
+            payload = path.read_bytes()
+            if len(payload) > 64 * 1024 * 1024:
+                raise ValueError("tracked JSON exceeds the 64 MiB safety limit")
+            value = strict_json_loads(payload.decode("utf-8"))
+        except (
+            OSError,
+            UnicodeError,
+            json.JSONDecodeError,
+            ValueError,
+            RecursionError,
+        ) as error:
             self.problems.add(context, f"cannot read JSON: {error}")
             return None
         if not isinstance(value, dict):
@@ -5980,8 +8867,15 @@ class CompletionValidator:
             self.problems.add(context, f"cannot read {relative} at {commit}")
             return None
         try:
-            value = json.loads(process.stdout.decode("utf-8"))
-        except (UnicodeError, json.JSONDecodeError) as error:
+            if len(process.stdout) > 64 * 1024 * 1024:
+                raise ValueError("historical JSON exceeds the 64 MiB safety limit")
+            value = strict_json_loads(process.stdout.decode("utf-8"))
+        except (
+            UnicodeError,
+            json.JSONDecodeError,
+            ValueError,
+            RecursionError,
+        ) as error:
             self.problems.add(context, f"cannot parse {relative} at {commit}: {error}")
             return None
         if not isinstance(value, dict):
@@ -6077,17 +8971,33 @@ class CompletionValidator:
             )
         return Artifact(normalized, digest.upper())
 
-    def git(self, *args: str, check: bool = True, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-        process = subprocess.run(
-            ["git", *args],
-            cwd=self.root,
-            env=env,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+    def git(
+        self,
+        *args: str,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+    ) -> subprocess.CompletedProcess[str]:
+        try:
+            process = subprocess.run(
+                ["git", *args],
+                cwd=self.root,
+                env=env,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except (OSError, ValueError, UnicodeError) as error:
+            detail = f"cannot execute git: {error}"
+            if check:
+                raise RuntimeError(detail) from error
+            return subprocess.CompletedProcess(
+                ["git", *args],
+                128,
+                stdout="",
+                stderr=detail,
+            )
         if check and process.returncode:
             raise RuntimeError(
                 f"git {' '.join(args)} failed ({process.returncode}): "
@@ -6101,13 +9011,24 @@ class CompletionValidator:
         check: bool = True,
         env: dict[str, str] | None = None,
     ) -> subprocess.CompletedProcess[bytes]:
-        process = subprocess.run(
-            ["git", *args],
-            cwd=self.root,
-            env=env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+        try:
+            process = subprocess.run(
+                ["git", *args],
+                cwd=self.root,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except (OSError, ValueError, UnicodeError) as error:
+            detail = f"cannot execute git: {error}".encode("utf-8", errors="replace")
+            if check:
+                raise RuntimeError(detail.decode("utf-8")) from error
+            return subprocess.CompletedProcess(
+                ["git", *args],
+                128,
+                stdout=b"",
+                stderr=detail,
+            )
         if check and process.returncode:
             detail = (process.stderr or process.stdout).decode(
                 "utf-8", errors="replace"
@@ -6280,6 +9201,11 @@ class CompletionValidator:
         self.load_r07_planned_contract()
         self.validate_pointer()
         self.load_phase()
+        self.validate_c0007_bounded_authorization()
+        self.validate_i01_selector()
+        self.validate_c0007_bounded_planned_control()
+        self.validate_c0007_bounded_packets()
+        self.validate_c0007_full_tests_correction()
         self.validate_checkpoint_and_scope()
         self.validate_branches()
         self.validate_routes_and_tests()
@@ -6294,6 +9220,1775 @@ class CompletionValidator:
         if self.r07_contract is not None:
             self.validate_r07_planned_control()
         return self.problems
+
+    def validate_c0007_bounded_authorization(self) -> None:
+        """Authenticate the live task-bounded grant and preserve old epochs."""
+
+        authorization_path = self.root / C0007_BOUNDED_AUTHORIZATION_PATH
+        if not authorization_path.is_file():
+            # The exact audited base predates this successor packet. Descendants
+            # may not silently add the four reservations without its grant.
+            if self.current_checkpoint_id == C0007_CHECKPOINT_ID:
+                live_paths = {rule.path for rule in self.shared_rules}
+                self.problems.require(
+                    not (C0007_BOUNDED_SHARED_RESERVATIONS & live_paths),
+                    C0007_BOUNDED_AUTHORIZATION_PATH,
+                    "bounded reservations require the primary-human authorization",
+                )
+            return
+        authorization = self.read_json(
+            authorization_path, C0007_BOUNDED_AUTHORIZATION_PATH
+        )
+        manifest_path = self.root / C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+        manifest_header, manifest_rows = self.read_tsv(
+            manifest_path,
+            C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            ("path", "packet_id", "stage", "operation"),
+        )
+        if manifest_path.is_file():
+            self.problems.require(
+                sha256_path(manifest_path)
+                == C0007_BOUNDED_AUTHORIZED_PATHS_SHA256,
+                C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+                "authorized-path manifest SHA-256 drifted",
+            )
+        if authorization is not None:
+            validate_c0007_bounded_authorization_payload(
+                authorization,
+                manifest_header,
+                manifest_rows,
+                self.problems,
+            )
+
+        authority = self.phase.get("authority")
+        principals = authority.get("principals") if isinstance(authority, dict) else []
+        principal_kinds = {
+            row.get("principal_id"): row.get("kind")
+            for row in principals
+            if isinstance(row, dict)
+        }
+        lanes = authority.get("lanes") if isinstance(authority, dict) else []
+        integration_lane = next(
+            (
+                row
+                for row in lanes
+                if isinstance(row, dict)
+                and row.get("lane_id") == "integration-lane"
+            ),
+            None,
+        )
+        self.problems.require(
+            principal_kinds.get("primary-human") == "human"
+            and principal_kinds.get("codex-local") == "agent",
+            f"{C0007_BOUNDED_AUTHORIZATION_PATH}.principals",
+            "grant principals must retain primary-human and codex-local kinds",
+        )
+        self.problems.require(
+            isinstance(integration_lane, dict)
+            and integration_lane.get("owner_id") == "primary-human"
+            and integration_lane.get("operator_ids") == ["primary-human"],
+            "phase.json.authority.lanes[integration-lane]",
+            "task-bounded delegation must not widen the phase-global integration lane",
+        )
+        self.problems.require(
+            isinstance(authority, dict)
+            and authority.get("integration_authority_id") == "primary-human"
+            and authority.get("release_manager_id") == "primary-human"
+            and authority.get("main_push_authority_ids") == ["primary-human"]
+            and authority.get("shared_path_authority_ids") == ["primary-human"]
+            and authority.get("branch_registry_authority_ids") == ["primary-human"],
+            "phase.json.authority",
+            "global human-only authority arrays must remain unchanged",
+        )
+
+        if self.current_checkpoint_id != C0007_CHECKPOINT_ID:
+            return
+        live_rule_keys = {(rule.match, rule.path) for rule in self.shared_rules}
+        historical_phase = self.git_json(
+            C0007_BOUNDED_CONTROL_HEAD_SHA,
+            self.phase_dir / "phase.json",
+            f"{C0007_BOUNDED_AUTHORIZATION_PATH}.base_phase",
+        )
+        if historical_phase is None:
+            return
+        historical_rules = self.parse_rules(
+            historical_phase.get("shared_paths"),
+            f"{C0007_BOUNDED_AUTHORIZATION_PATH}.base_shared_paths",
+        )
+        historical_rule_keys = {(rule.match, rule.path) for rule in historical_rules}
+        expected_rule_keys = historical_rule_keys | {
+            ("exact", path) for path in C0007_BOUNDED_SHARED_RESERVATIONS
+        }
+        self.problems.require(
+            live_rule_keys == expected_rule_keys,
+            "phase.json.shared_paths",
+            "C0007 bounded control must add exactly the ten R0014/R0015 reservations",
+        )
+        expected_phase = json.loads(canonical_json(historical_phase))
+        expected_phase["shared_paths"] = self.phase.get("shared_paths")
+        self.problems.require(
+            self.phase == expected_phase,
+            "phase.json bounded authority",
+            "at C0007 the bounded control may change only the four shared-path reservations",
+        )
+
+        tree_result = self.git(
+            "rev-parse", f"{C0007_BOUNDED_CONTROL_HEAD_SHA}^{{tree}}", check=False
+        )
+        self.problems.require(
+            tree_result.returncode == 0
+            and tree_result.stdout.strip() == C0007_BOUNDED_CONTROL_TREE_SHA,
+            f"{C0007_BOUNDED_AUTHORIZATION_PATH}.base.control_tree_sha",
+            "the authorized control-head tree is unavailable or drifted",
+        )
+        ancestor = self.git(
+            "merge-base",
+            "--is-ancestor",
+            C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "HEAD",
+            check=False,
+        )
+        self.problems.require(
+            ancestor.returncode == 0,
+            f"{C0007_BOUNDED_AUTHORIZATION_PATH}.base.control_head_sha",
+            "live HEAD must descend from the exact authorized control head",
+        )
+
+    def validate_i01_selector(self) -> None:
+        selector_path = self.root / I01_SELECTOR_PATH
+        if not selector_path.is_file():
+            if (self.root / C0007_BOUNDED_AUTHORIZATION_PATH).is_file():
+                self.problems.add(
+                    I01_SELECTOR_PATH,
+                    "bounded successor controls require the exact I01 intake selector",
+                )
+            return
+        header, rows = self.read_tsv(
+            selector_path,
+            I01_SELECTOR_PATH,
+            I01_SELECTOR_HEADER,
+        )
+        validate_i01_selector_payload(header, rows, self.problems)
+
+        base_blobs = self.git_tree_blobs(C0007_CODE_SHA)
+        selected_oids: set[str] = set()
+        for index, expected in enumerate(I01_PREIMAGE_FACTS, start=1):
+            _module, path, expected_oid, _digest, _tier = expected
+            actual_oid = base_blobs.get(path)
+            self.problems.require(
+                actual_oid == expected_oid,
+                f"{I01_SELECTOR_PATH}[I01-{index:02d}].preimage_blob_oid",
+                f"exact C0007 Git blob is {actual_oid!r}, expected {expected_oid!r}",
+            )
+            if actual_oid is not None:
+                selected_oids.add(actual_oid)
+        payloads = self.git_blob_payloads(selected_oids, f"{I01_SELECTOR_PATH} preimages")
+        for index, expected in enumerate(I01_PREIMAGE_FACTS, start=1):
+            _module, _path, expected_oid, expected_digest, _tier = expected
+            payload = payloads.get(expected_oid)
+            actual_digest = (
+                hashlib.sha256(payload).hexdigest().upper()
+                if payload is not None
+                else None
+            )
+            self.problems.require(
+                actual_digest == expected_digest,
+                f"{I01_SELECTOR_PATH}[I01-{index:02d}].preimage_sha256",
+                f"exact C0007 content SHA-256 is {actual_digest!r}, expected {expected_digest!r}",
+            )
+
+    def validate_c0007_bounded_planned_control(self) -> None:
+        authorization_path = self.root / C0007_BOUNDED_AUTHORIZATION_PATH
+        if not authorization_path.is_file():
+            return
+        contract_path = self.root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+        if not contract_path.is_file():
+            self.problems.add(
+                C0007_BOUNDED_PLANNED_CONTROL_PATH,
+                "bounded successor work requires the final fail-closed planned-control contract",
+            )
+            return
+        start_problem_count = len(self.problems.messages)
+        contract = self.read_json(
+            contract_path,
+            C0007_BOUNDED_PLANNED_CONTROL_PATH,
+        )
+        manifest_path = self.root / C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+        manifest_header, manifest_rows = self.read_tsv(
+            manifest_path,
+            C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            ("path", "packet_id", "stage", "operation"),
+        )
+        if contract is None:
+            return
+        local = Problems()
+        validate_c0007_bounded_planned_control_payload(
+            contract,
+            manifest_header,
+            manifest_rows,
+            local,
+        )
+        local.require(
+            self.current_checkpoint_id == C0007_CHECKPOINT_ID,
+            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.expiry",
+            "bounded implementation authority is disabled outside current checkpoint C0007",
+        )
+        if (
+            len(self.problems.messages) != start_problem_count
+            or local.messages
+        ):
+            self.problems.messages.extend(local.messages)
+            self.c0007_bounded_state = "invalid"
+            return
+        self.c0007_bounded_contract = contract
+        lifecycle = contract.get("lifecycle")
+        state = lifecycle.get("state") if isinstance(lifecycle, dict) else None
+        self.c0007_bounded_state = str(state or "invalid")
+
+        def gh_api_command(endpoint: str) -> list[str]:
+            return [
+                "gh",
+                "api",
+                "--hostname",
+                "github.com",
+                "-H",
+                "Accept: application/vnd.github+json",
+                "-H",
+                "X-GitHub-Api-Version: 2022-11-28",
+                endpoint,
+            ]
+
+        def gh_api_json(endpoint: str, label: str) -> Any | None:
+            try:
+                process = subprocess.run(
+                    gh_api_command(endpoint),
+                    cwd=self.root,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=60,
+                )
+            except (
+                OSError,
+                ValueError,
+                UnicodeError,
+                subprocess.TimeoutExpired,
+            ) as error:
+                local.add(label, f"cannot execute authenticated GitHub query: {error}")
+                return None
+            if process.returncode:
+                local.add(
+                    label,
+                    "cannot authenticate GitHub evidence: "
+                    + (process.stderr or process.stdout).decode(
+                        "utf-8", errors="replace"
+                    ).strip(),
+                )
+                return None
+            try:
+                if len(process.stdout) > 64 * 1024 * 1024:
+                    raise ValueError("GitHub API JSON exceeds the 64 MiB safety limit")
+                return strict_json_loads(process.stdout.decode("utf-8"))
+            except (
+                UnicodeError,
+                json.JSONDecodeError,
+                ValueError,
+                RecursionError,
+            ) as error:
+                local.add(label, f"GitHub API returned invalid JSON: {error}")
+                return None
+
+        def gh_api_log_identity(
+            endpoint: str, label: str
+        ) -> tuple[str, int] | None:
+            try:
+                with tempfile.TemporaryFile() as output:
+                    process = subprocess.run(
+                        gh_api_command(endpoint),
+                        cwd=self.root,
+                        stdout=output,
+                        stderr=subprocess.PIPE,
+                        timeout=300,
+                    )
+                    if process.returncode:
+                        local.add(
+                            label,
+                            "cannot download authenticated GitHub evidence: "
+                            + process.stderr.decode("utf-8", errors="replace").strip(),
+                        )
+                        return None
+                    output.seek(0)
+                    digest = hashlib.sha256()
+                    byte_count = 0
+                    for block in iter(lambda: output.read(1024 * 1024), b""):
+                        digest.update(block)
+                        byte_count += len(block)
+                    if byte_count == 0:
+                        local.add(label, "authenticated GitHub job log is empty")
+                        return None
+                    return digest.hexdigest().upper(), byte_count
+            except (
+                OSError,
+                ValueError,
+                UnicodeError,
+                subprocess.TimeoutExpired,
+            ) as error:
+                local.add(label, f"cannot download or hash authenticated GitHub log: {error}")
+                return None
+
+        ci_records = contract.get("ci")
+        if isinstance(ci_records, dict):
+            for ci_name in ("planned_control", "activation_candidate", "implementation"):
+                evidence = ci_records.get(ci_name)
+                if not isinstance(evidence, dict) or evidence.get("status") != "success":
+                    continue
+                run_id = evidence.get("run_id")
+                run_attempt = evidence.get("run_attempt")
+                job_id = evidence.get("job_id")
+                evidence_context = (
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.ci.{ci_name}.github"
+                )
+                run = gh_api_json(
+                    f"repos/{C0007_BOUNDED_REPOSITORY}/actions/runs/"
+                    f"{run_id}/attempts/{run_attempt}",
+                    f"{evidence_context}.run",
+                )
+                jobs = gh_api_json(
+                    f"repos/{C0007_BOUNDED_REPOSITORY}/actions/runs/"
+                    f"{run_id}/attempts/{run_attempt}/jobs?per_page=100",
+                    f"{evidence_context}.jobs",
+                )
+                log_identity = gh_api_log_identity(
+                    f"repos/{C0007_BOUNDED_REPOSITORY}/actions/jobs/{job_id}/logs",
+                    f"{evidence_context}.log",
+                )
+                if run is not None and jobs is not None:
+                    validate_c0007_github_ci_observation(
+                        evidence,
+                        run,
+                        jobs,
+                        log_identity[0] if log_identity is not None else None,
+                        log_identity[1] if log_identity is not None else None,
+                        local,
+                        context=evidence_context,
+                    )
+                candidate_sha = evidence.get("candidate_sha")
+                candidate_tree = self.git(
+                    "rev-parse", f"{candidate_sha}^{{tree}}", check=False
+                )
+                local.require(
+                    candidate_tree.returncode == 0
+                    and candidate_tree.stdout.strip() == evidence.get("candidate_tree"),
+                    f"{evidence_context}.candidate_tree",
+                    "recorded candidate tree must be independently derived from the exact CI head",
+                )
+
+        review_records = contract.get("reviews")
+        review_records = review_records if isinstance(review_records, dict) else {}
+        approved_reviews = {
+            name: review
+            for name, review in (
+                ("activation", review_records.get("activation")),
+                ("implementation", review_records.get("implementation")),
+            )
+            if isinstance(review, dict)
+            and review.get("status") == "approved"
+        }
+        if approved_reviews:
+            repository_observation = gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}",
+                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.reviews.github.repository",
+            )
+            for review_name, review in approved_reviews.items():
+                source = review.get("source")
+                source = source if isinstance(source, dict) else {}
+                issue_number = source.get("issue_number")
+                comment_id = source.get("comment_database_id")
+                review_context = (
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.reviews."
+                    f"{review_name}.github"
+                )
+                issue_observation = gh_api_json(
+                    f"repos/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}",
+                    f"{review_context}.issue",
+                )
+                comment_observation = gh_api_json(
+                    f"repos/{C0007_BOUNDED_REPOSITORY}/issues/comments/"
+                    f"{comment_id}",
+                    f"{review_context}.comment",
+                )
+                if (
+                    repository_observation is not None
+                    and issue_observation is not None
+                    and comment_observation is not None
+                ):
+                    validate_c0007_github_review_observation(
+                        review,
+                        repository_observation,
+                        issue_observation,
+                        comment_observation,
+                        local,
+                        context=review_context,
+                    )
+
+        planned_rows = {
+            row.get("path", ""): row
+            for row in manifest_rows
+            if row.get("stage") == "planned_control"
+        }
+        implementation_rows = {
+            row.get("path", ""): row
+            for row in manifest_rows
+            if row.get("stage") == "implementation"
+        }
+        planned_paths = set(planned_rows)
+        implementation_paths = set(implementation_rows)
+        artifact_entries = contract.get("artifacts")
+        artifacts = {
+            item.get("path", ""): item
+            for item in artifact_entries
+            if isinstance(item, dict) and isinstance(item.get("path"), str)
+        } if isinstance(artifact_entries, list) else {}
+
+        def tree_rows(commit: str, paths: set[str], label: str) -> dict[str, tuple[str, str]]:
+            result = self.git(
+                "ls-tree", "-r", "-z", commit, "--", *sorted(paths), check=False
+            )
+            rows: dict[str, tuple[str, str]] = {}
+            if result.returncode:
+                local.add(
+                    label,
+                    "cannot read Git tree rows: "
+                    + (result.stderr.strip() or result.stdout.strip()),
+                )
+                return rows
+            for record in result.stdout.split("\0"):
+                if not record:
+                    continue
+                try:
+                    metadata, raw_path = record.split("\t", 1)
+                    mode, kind, oid = metadata.split()
+                except ValueError:
+                    local.add(label, f"cannot parse Git tree row {record!r}")
+                    continue
+                if kind != "blob":
+                    local.add(label, f"non-blob Git tree row for {raw_path!r}")
+                    continue
+                rows[normalize_path(raw_path)] = (mode, oid)
+            return rows
+
+        def index_rows(paths: set[str], label: str) -> dict[str, tuple[str, str, str]]:
+            result = self.git(
+                "ls-files", "--stage", "-z", "--", *sorted(paths), check=False
+            )
+            rows: dict[str, tuple[str, str, str]] = {}
+            if result.returncode:
+                local.add(
+                    label,
+                    "cannot read Git index rows: "
+                    + (result.stderr.strip() or result.stdout.strip()),
+                )
+                return rows
+            for record in result.stdout.split("\0"):
+                if not record:
+                    continue
+                try:
+                    metadata, raw_path = record.split("\t", 1)
+                    mode, oid, stage = metadata.split()
+                except ValueError:
+                    local.add(label, f"cannot parse Git index row {record!r}")
+                    continue
+                rows[normalize_path(raw_path)] = (mode, oid, stage)
+            return rows
+
+        base_entries = tree_rows(
+            C0007_BOUNDED_CONTROL_HEAD_SHA,
+            set(artifacts),
+            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.artifacts.base",
+        )
+        planned_index = index_rows(
+            planned_paths,
+            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.artifacts.index",
+        )
+        local.require(
+            set(planned_index) == planned_paths,
+            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.artifacts.index",
+            "all 42 planned-control paths must have exact stage-0 index entries",
+        )
+        for path, item in artifacts.items():
+            actual_base_mode, actual_base_blob = base_entries.get(path, (None, None))
+            local.require(
+                item.get("base_blob_oid") == actual_base_blob
+                and item.get("base_mode") == actual_base_mode,
+                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.artifacts[{path}].base_blob_oid",
+                f"control-head preimage is {(actual_base_mode, actual_base_blob)!r}",
+            )
+            artifact_path = self.root / path
+            try:
+                payload = artifact_path.read_bytes()
+            except OSError:
+                payload = None
+            actual_digest = (
+                hashlib.sha256(payload).hexdigest().upper()
+                if payload is not None
+                else None
+            )
+            actual_post_blob = git_blob_oid(payload) if payload is not None else None
+            index_mode, index_blob, index_stage = planned_index.get(path, (None, None, None))
+            local.require(
+                actual_digest == item.get("sha256")
+                and actual_post_blob == item.get("post_blob_oid")
+                and index_mode == item.get("post_mode") == "100644"
+                and index_blob == item.get("post_blob_oid")
+                and index_stage == "0",
+                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.artifacts[{path}].sha256",
+                "live bytes and stage-0 regular-file Git blob must equal the reviewed artifact inventory; "
+                f"found digest/blob/index={actual_digest!r}/{actual_post_blob!r}/"
+                f"{(index_mode, index_blob, index_stage)!r}",
+            )
+        contract_index = planned_index.get(C0007_BOUNDED_PLANNED_CONTROL_PATH)
+        try:
+            contract_payload = contract_path.read_bytes()
+        except OSError as error:
+            local.add(
+                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.mode",
+                f"cannot read lifecycle contract bytes: {error}",
+            )
+            contract_payload = None
+        validate_c0007_contract_index_binding(
+            contract_index,
+            contract_payload,
+            local,
+            context=f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.mode",
+        )
+        workflow_path = self.root / C0007_BOUNDED_WORKFLOW_PATH
+        try:
+            workflow_text = workflow_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as error:
+            local.add(
+                C0007_BOUNDED_WORKFLOW_PATH,
+                f"cannot read bounded workflow as UTF-8: {error}",
+            )
+        else:
+            validate_c0007_bounded_workflow_text(
+                workflow_text,
+                local,
+                context=C0007_BOUNDED_WORKFLOW_PATH,
+            )
+
+        ledger_path = "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md"
+        tracked_ledger = self.git(
+            "ls-files", "--error-unmatch", "--", ledger_path, check=False
+        )
+        local.require(
+            tracked_ledger.returncode != 0,
+            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.local_ledger",
+            "local completion ledger must remain untracked",
+        )
+
+        def git_identity(commit: str, label: str) -> tuple[list[str], str, str] | None:
+            result = self.git(
+                "show",
+                "-s",
+                "--format=%P%n%s%n%T",
+                commit,
+                check=False,
+            )
+            lines = result.stdout.splitlines()
+            if result.returncode or len(lines) < 3:
+                local.add(
+                    label,
+                    "cannot resolve commit parents/subject/tree: "
+                    + (result.stderr.strip() or result.stdout.strip()),
+                )
+                return None
+            return lines[0].split(), lines[1], lines[2]
+
+        def changed_paths(base: str, tip: str, label: str) -> set[str]:
+            result = self.git(
+                "diff",
+                "--name-only",
+                "--no-renames",
+                base,
+                tip,
+                "--",
+                check=False,
+            )
+            if result.returncode:
+                local.add(
+                    label,
+                    "cannot enumerate commit delta: "
+                    + (result.stderr.strip() or result.stdout.strip()),
+                )
+                return set()
+            return {
+                normalize_path(path)
+                for path in result.stdout.splitlines()
+                if path.strip()
+            }
+
+        def overlay_paths(base: str, label: str) -> set[str]:
+            commands = (
+                ("diff", "--name-only", "--no-renames", base, "--"),
+                ("diff", "--cached", "--name-only", "--no-renames", base, "--"),
+                ("ls-files", "--others", "--exclude-standard"),
+            )
+            paths: set[str] = set()
+            for command in commands:
+                result = self.git(*command, check=False)
+                if result.returncode:
+                    local.add(
+                        label,
+                        f"cannot enumerate {' '.join(command)}: "
+                        + (result.stderr.strip() or result.stdout.strip()),
+                    )
+                    continue
+                paths.update(
+                    normalize_path(path)
+                    for path in result.stdout.splitlines()
+                    if path.strip()
+                )
+            paths.discard(ledger_path)
+            return paths
+
+        def validate_commit(
+            commit: str,
+            parent: str,
+            expected_paths: set[str],
+            expected_subject: str,
+            label: str,
+        ) -> tuple[str, str] | None:
+            identity = git_identity(commit, label)
+            if identity is None:
+                return None
+            parents, subject, tree = identity
+            actual_paths = changed_paths(parent, commit, f"{label}.paths")
+            validate_c0007_bounded_commit_shape(
+                parents,
+                actual_paths,
+                subject,
+                parent,
+                expected_paths,
+                expected_subject,
+                local,
+                context=label,
+            )
+            commit_entries = tree_rows(commit, expected_paths, f"{label}.tree")
+            local.require(
+                set(commit_entries) == expected_paths,
+                f"{label}.tree",
+                "commit tree must contain every exact lifecycle path as a blob",
+            )
+            for path in sorted(expected_paths):
+                mode, oid = commit_entries.get(path, (None, None))
+                if path == C0007_BOUNDED_PLANNED_CONTROL_PATH:
+                    local.require(
+                        mode == "100644" and SHA1_RE.fullmatch(str(oid or "")) is not None,
+                        f"{label}.tree[{path}]",
+                        "contract must be committed as an exact 100644 blob",
+                    )
+                elif path in artifacts:
+                    local.require(
+                        mode == artifacts[path].get("post_mode")
+                        and oid == artifacts[path].get("post_blob_oid"),
+                        f"{label}.tree[{path}]",
+                        "planned commit mode/blob must equal the reviewed artifact inventory",
+                    )
+            blob = self.git_blob(commit, C0007_BOUNDED_PLANNED_CONTROL_PATH)
+            return tree, blob or ""
+
+        def validate_historical_contract(
+            commit: str,
+            expected_state: str,
+            expected_blob: str,
+            label: str,
+        ) -> dict[str, Any] | None:
+            actual_blob = self.git_blob(commit, C0007_BOUNDED_PLANNED_CONTROL_PATH)
+            local.require(
+                actual_blob == expected_blob,
+                f"{label}.blob",
+                f"historical contract blob is {actual_blob!r}, expected {expected_blob!r}",
+            )
+            historical = self.git_json(
+                commit,
+                Path(C0007_BOUNDED_PLANNED_CONTROL_PATH),
+                label,
+            )
+            if historical is None:
+                return None
+            historical_problems = Problems()
+            validate_c0007_bounded_planned_control_payload(
+                historical,
+                manifest_header,
+                manifest_rows,
+                historical_problems,
+                context=label,
+            )
+            local.messages.extend(historical_problems.messages)
+            historical_identity = git_identity(commit, f"{label}.parent_relation")
+            validate_c0007_transition_projection(
+                historical,
+                contract,
+                expected_state,
+                historical_identity[0] if historical_identity is not None else (),
+                local,
+                context=label,
+            )
+            return historical
+
+        def require_recorded_identity(
+            commit_key: str,
+            tree_key: str,
+            blob_key: str,
+            actual_tree: str,
+            actual_blob: str,
+            label: str,
+        ) -> None:
+            if not isinstance(lifecycle, dict):
+                return
+            local.require(
+                lifecycle.get(tree_key) == actual_tree
+                and lifecycle.get(blob_key) == actual_blob,
+                label,
+                f"{commit_key} must bind its exact tree and contract blob",
+            )
+
+        head_result = self.git("rev-parse", "HEAD", check=False)
+        head = head_result.stdout.strip() if head_result.returncode == 0 else ""
+        local.require(
+            SHA1_RE.fullmatch(head) is not None,
+            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.HEAD",
+            "cannot resolve live HEAD",
+        )
+        symbolic_branch_result = self.git(
+            "symbolic-ref", "--quiet", "--short", "HEAD", check=False
+        )
+        symbolic_branch = (
+            symbolic_branch_result.stdout.strip()
+            if symbolic_branch_result.returncode == 0
+            else None
+        )
+        def config_values(key: str) -> list[str]:
+            result = self.git("config", "--get-all", key, check=False)
+            if result.returncode not in {0, 1}:
+                local.add(
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote.config[{key}]",
+                    "cannot enumerate Git configuration: "
+                    + (result.stderr.strip() or result.stdout.strip()),
+                )
+                return []
+            return result.stdout.splitlines() if result.returncode == 0 else []
+
+        def resolved_urls(*args: str) -> list[str]:
+            result = self.git("remote", "get-url", *args, check=False)
+            if result.returncode:
+                local.add(
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote.urls",
+                    "cannot enumerate resolved remote URLs: "
+                    + (result.stderr.strip() or result.stdout.strip()),
+                )
+                return []
+            return result.stdout.splitlines()
+
+        remote_names_result = self.git("remote", check=False)
+        if remote_names_result.returncode:
+            local.add(
+                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote.names",
+                "cannot enumerate Git remotes: "
+                + (
+                    remote_names_result.stderr.strip()
+                    or remote_names_result.stdout.strip()
+                ),
+            )
+            configured_remote_names: list[str] = []
+        else:
+            configured_remote_names = remote_names_result.stdout.splitlines()
+        configured_remote_urls = config_values(
+            f"remote.{C0007_BOUNDED_REMOTE}.url"
+        )
+        configured_push_urls = config_values(
+            f"remote.{C0007_BOUNDED_REMOTE}.pushurl"
+        )
+        configured_fetch_refspecs = config_values(
+            f"remote.{C0007_BOUNDED_REMOTE}.fetch"
+        )
+        configured_push_refspecs = config_values(
+            f"remote.{C0007_BOUNDED_REMOTE}.push"
+        )
+        configured_mirror_values = config_values(
+            f"remote.{C0007_BOUNDED_REMOTE}.mirror"
+        )
+        configured_push_default_values = config_values("remote.pushDefault")
+        configured_branch_remote_values = config_values(
+            f"branch.{C0007_BOUNDED_BRANCH}.remote"
+        )
+        configured_branch_push_remote_values = config_values(
+            f"branch.{C0007_BOUNDED_BRANCH}.pushRemote"
+        )
+        resolved_fetch_urls = resolved_urls("--all", C0007_BOUNDED_REMOTE)
+        resolved_push_urls = resolved_urls(
+            "--push", "--all", C0007_BOUNDED_REMOTE
+        )
+        remote_result = self.git(
+            "ls-remote",
+            "--refs",
+            C0007_BOUNDED_REMOTE,
+            C0007_BOUNDED_REMOTE_MAIN_REF,
+            C0007_BOUNDED_REMOTE_BRANCH_REF,
+            check=False,
+        )
+        remote_tips: dict[str, str] = {}
+        if remote_result.returncode:
+            local.add(
+                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote",
+                "cannot observe exact remote refs: "
+                + (remote_result.stderr.strip() or remote_result.stdout.strip()),
+            )
+        else:
+            for row in remote_result.stdout.splitlines():
+                try:
+                    oid, ref = row.split("\t", 1)
+                except ValueError:
+                    local.add(
+                        f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote",
+                        f"cannot parse ls-remote row {row!r}",
+                    )
+                    continue
+                remote_tips[ref] = oid
+        remote_main_tip = remote_tips.get(C0007_BOUNDED_REMOTE_MAIN_REF)
+        remote_branch_tip = remote_tips.get(C0007_BOUNDED_REMOTE_BRANCH_REF)
+        contract_only = {C0007_BOUNDED_PLANNED_CONTROL_PATH}
+        active_position = False
+        implementation_present = False
+        implementation_overlay = False
+        implementation_committed = False
+        active_commit_sha: str | None = None
+        if isinstance(lifecycle, dict) and state == "planned":
+            if head == C0007_BOUNDED_CONTROL_HEAD_SHA:
+                live_paths = self.git_live_change_paths(
+                    C0007_BOUNDED_CONTROL_HEAD_SHA,
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.planned_precommit",
+                )
+                live_paths.discard(ledger_path)
+                local.require(
+                    live_paths == planned_paths,
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.planned_precommit.paths",
+                    "P overlay must equal all 42 planned-control paths exactly",
+                )
+            else:
+                validate_commit(
+                    head,
+                    C0007_BOUNDED_CONTROL_HEAD_SHA,
+                    planned_paths,
+                    C0007_BOUNDED_COMMIT_SUBJECTS["planned"],
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.P",
+                )
+                local.require(
+                    not overlay_paths(head, f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.P"),
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.P.worktree",
+                    "committed P must have no overlay other than the local ledger",
+                )
+        elif isinstance(lifecycle, dict) and state in {
+            "activation_pending",
+            "active",
+            "verified",
+        }:
+            planned_commit = str(lifecycle.get("planned_commit_sha") or "")
+            planned_identity = validate_commit(
+                planned_commit,
+                C0007_BOUNDED_CONTROL_HEAD_SHA,
+                planned_paths,
+                C0007_BOUNDED_COMMIT_SUBJECTS["planned"],
+                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.P",
+            )
+            if planned_identity is not None:
+                planned_tree, planned_blob = planned_identity
+                require_recorded_identity(
+                    "planned_commit_sha",
+                    "planned_tree_sha",
+                    "planned_contract_blob_oid",
+                    planned_tree,
+                    planned_blob,
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.P.identity",
+                )
+                validate_historical_contract(
+                    planned_commit,
+                    "planned",
+                    planned_blob,
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.P.contract",
+                )
+
+            if state == "activation_pending":
+                if head == planned_commit:
+                    local.require(
+                        overlay_paths(head, f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.A")
+                        == contract_only,
+                        f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.A.precommit",
+                        "A precommit may change only the contract",
+                    )
+                else:
+                    validate_commit(
+                        head,
+                        planned_commit,
+                        contract_only,
+                        C0007_BOUNDED_COMMIT_SUBJECTS["activation_pending"],
+                        f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.A",
+                    )
+                    local.require(
+                        not overlay_paths(head, f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.A"),
+                        f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.A.worktree",
+                        "committed A must have a clean overlay",
+                    )
+            else:
+                activation_commit = str(
+                    lifecycle.get("activation_candidate_commit_sha") or ""
+                )
+                activation_identity = validate_commit(
+                    activation_commit,
+                    planned_commit,
+                    contract_only,
+                    C0007_BOUNDED_COMMIT_SUBJECTS["activation_pending"],
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.A",
+                )
+                if activation_identity is not None:
+                    activation_tree, activation_blob = activation_identity
+                    require_recorded_identity(
+                        "activation_candidate_commit_sha",
+                        "activation_candidate_tree_sha",
+                        "activation_candidate_contract_blob_oid",
+                        activation_tree,
+                        activation_blob,
+                        f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.A.identity",
+                    )
+                    validate_historical_contract(
+                        activation_commit,
+                        "activation_pending",
+                        activation_blob,
+                        f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.A.contract",
+                    )
+
+                if state == "active":
+                    if head == activation_commit:
+                        local.require(
+                            overlay_paths(head, f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.T")
+                            == contract_only,
+                            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.T.precommit",
+                            "T precommit may change only the contract",
+                        )
+                    else:
+                        head_identity = git_identity(
+                            head, f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.active_HEAD"
+                        )
+                        head_parents = head_identity[0] if head_identity is not None else []
+                        if head_parents == [activation_commit]:
+                            validate_commit(
+                                head,
+                                activation_commit,
+                                contract_only,
+                                C0007_BOUNDED_COMMIT_SUBJECTS["active"],
+                                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.T",
+                            )
+                            active_commit_sha = head
+                            active_position = True
+                            active_overlay = overlay_paths(
+                                head, f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.T"
+                            )
+                            local.require(
+                                not active_overlay
+                                or active_overlay == implementation_paths,
+                                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.T.worktree",
+                                "T may have no implementation or the complete 14-path union",
+                            )
+                            implementation_overlay = active_overlay == implementation_paths
+                            implementation_present = implementation_overlay
+                        elif len(head_parents) == 1:
+                            active_commit = head_parents[0]
+                            active_commit_sha = active_commit
+                            active_identity = validate_commit(
+                                active_commit,
+                                activation_commit,
+                                contract_only,
+                                C0007_BOUNDED_COMMIT_SUBJECTS["active"],
+                                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.T",
+                            )
+                            if active_identity is not None:
+                                _active_tree, active_blob = active_identity
+                                historical_active = validate_historical_contract(
+                                    active_commit,
+                                    "active",
+                                    active_blob,
+                                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.T.contract",
+                                )
+                                local.require(
+                                    historical_active == contract,
+                                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.I.contract",
+                                    "I must keep the T contract byte-identical",
+                                )
+                            validate_commit(
+                                head,
+                                active_commit,
+                                implementation_paths,
+                                C0007_BOUNDED_COMMIT_SUBJECTS["implementation"],
+                                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.I",
+                            )
+                            local.require(
+                                not overlay_paths(head, f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.I"),
+                                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.I.worktree",
+                                "committed I must have a clean overlay",
+                            )
+                            active_position = True
+                            implementation_present = True
+                            implementation_committed = True
+                        else:
+                            local.add(
+                                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.active_HEAD",
+                                "active state requires T or its exact I child",
+                            )
+                elif state == "verified":
+                    active_commit = str(
+                        lifecycle.get("active_attestation_commit_sha") or ""
+                    )
+                    active_commit_sha = active_commit
+                    active_identity = validate_commit(
+                        active_commit,
+                        activation_commit,
+                        contract_only,
+                        C0007_BOUNDED_COMMIT_SUBJECTS["active"],
+                        f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.T",
+                    )
+                    if active_identity is not None:
+                        active_tree, active_blob = active_identity
+                        require_recorded_identity(
+                            "active_attestation_commit_sha",
+                            "active_attestation_tree_sha",
+                            "active_attestation_contract_blob_oid",
+                            active_tree,
+                            active_blob,
+                            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.T.identity",
+                        )
+                        validate_historical_contract(
+                            active_commit,
+                            "active",
+                            active_blob,
+                            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.T.contract",
+                        )
+                    implementation_commit = str(
+                        lifecycle.get("implementation_commit_sha") or ""
+                    )
+                    implementation_identity = validate_commit(
+                        implementation_commit,
+                        active_commit,
+                        implementation_paths,
+                        C0007_BOUNDED_COMMIT_SUBJECTS["implementation"],
+                        f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.I",
+                    )
+                    if implementation_identity is not None:
+                        implementation_tree, implementation_blob = implementation_identity
+                        require_recorded_identity(
+                            "implementation_commit_sha",
+                            "implementation_tree_sha",
+                            "implementation_contract_blob_oid",
+                            implementation_tree,
+                            implementation_blob,
+                            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.I.identity",
+                        )
+                        local.require(
+                            implementation_blob
+                            == lifecycle.get("active_attestation_contract_blob_oid"),
+                            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.I.contract",
+                            "I must preserve the exact T contract blob",
+                        )
+                    implementation_present = True
+                    implementation_committed = True
+                    active_position = True
+                    if head == implementation_commit:
+                        local.require(
+                            overlay_paths(head, f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.V")
+                            == contract_only,
+                            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.V.precommit",
+                            "V precommit may change only the contract",
+                        )
+                    else:
+                        validate_commit(
+                            head,
+                            implementation_commit,
+                            contract_only,
+                            C0007_BOUNDED_COMMIT_SUBJECTS["verified"],
+                            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.V",
+                        )
+                        local.require(
+                            not overlay_paths(head, f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.V"),
+                            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.V.worktree",
+                            "committed V must have a clean overlay",
+                        )
+
+        remote_write_allowed = validate_c0007_remote_observation(
+            state=str(state) if state is not None else None,
+            head=head,
+            planned_commit=(
+                str(lifecycle.get("planned_commit_sha") or "")
+                if isinstance(lifecycle, dict)
+                else None
+            ),
+            activation_commit=(
+                str(lifecycle.get("activation_candidate_commit_sha") or "")
+                if isinstance(lifecycle, dict)
+                else None
+            ),
+            active_commit=active_commit_sha,
+            implementation_commit=(
+                str(lifecycle.get("implementation_commit_sha") or "")
+                if isinstance(lifecycle, dict)
+                else None
+            ),
+            symbolic_branch=symbolic_branch,
+            configured_remote_names=configured_remote_names,
+            configured_remote_urls=configured_remote_urls,
+            configured_push_urls=configured_push_urls,
+            configured_fetch_refspecs=configured_fetch_refspecs,
+            configured_push_refspecs=configured_push_refspecs,
+            configured_mirror_values=configured_mirror_values,
+            configured_push_default_values=configured_push_default_values,
+            configured_branch_remote_values=configured_branch_remote_values,
+            configured_branch_push_remote_values=configured_branch_push_remote_values,
+            resolved_fetch_urls=resolved_fetch_urls,
+            resolved_push_urls=resolved_push_urls,
+            remote_main_tip=remote_main_tip,
+            remote_branch_tip=remote_branch_tip,
+            implementation_overlay=implementation_overlay,
+            problems=local,
+            context=f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote",
+        )
+
+        if implementation_present:
+            postimage_hashes: dict[str, str] = {}
+            for request_id in ("R0014", "R0015"):
+                post_path = self.phase_dir / f"requests/{request_id}-postimages.tsv"
+                _header, rows = self.read_tsv(
+                    post_path,
+                    self.relative(post_path),
+                    (
+                        "path",
+                        "preimage_blob_oid",
+                        "preimage_sha256",
+                        "postimage_sha256",
+                    ),
+                )
+                postimage_hashes.update(
+                    {
+                        row.get("path", ""): row.get("postimage_sha256", "")
+                        for row in rows
+                    }
+                )
+            local.require(
+                set(postimage_hashes) == implementation_paths,
+                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.implementation.postimages",
+                "postimage ledgers must cover the complete 14-path union",
+            )
+            actual_postimages = {
+                path: (
+                    sha256_path(self.root / path)
+                    if (self.root / path).is_file()
+                    else None
+                )
+                for path in implementation_paths
+            }
+            validate_c0007_live_postimages(
+                actual_postimages,
+                postimage_hashes,
+                local,
+                context=(
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.implementation"
+                ),
+            )
+            base_modes: dict[str, str] = {}
+            base_mode_result = self.git(
+                "ls-tree",
+                "-z",
+                C0007_BOUNDED_CONTROL_HEAD_SHA,
+                "--",
+                *sorted(implementation_paths),
+                check=False,
+            )
+            if base_mode_result.returncode:
+                local.add(
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.implementation.modes",
+                    "cannot read control-head modes: "
+                    + (base_mode_result.stderr.strip() or base_mode_result.stdout.strip()),
+                )
+            else:
+                for record in base_mode_result.stdout.split("\0"):
+                    if not record:
+                        continue
+                    try:
+                        metadata, path = record.split("\t", 1)
+                        mode, kind, _oid = metadata.split()
+                    except ValueError:
+                        local.add(
+                            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.implementation.modes",
+                            f"cannot parse base tree row {record!r}",
+                        )
+                        continue
+                    if kind == "blob":
+                        base_modes[normalize_path(path)] = mode
+            index_result = self.git(
+                "ls-files",
+                "--stage",
+                "-z",
+                "--",
+                *sorted(implementation_paths),
+                check=False,
+            )
+            index_rows: dict[str, tuple[str, str, str]] = {}
+            if index_result.returncode:
+                local.add(
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.implementation.index",
+                    "cannot read implementation index: "
+                    + (index_result.stderr.strip() or index_result.stdout.strip()),
+                )
+            else:
+                for record in index_result.stdout.split("\0"):
+                    if not record:
+                        continue
+                    try:
+                        metadata, path = record.split("\t", 1)
+                        mode, oid, stage = metadata.split()
+                    except ValueError:
+                        local.add(
+                            f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.implementation.index",
+                            f"cannot parse index row {record!r}",
+                        )
+                        continue
+                    index_rows[normalize_path(path)] = (mode, oid, stage)
+            local.require(
+                set(index_rows) == implementation_paths,
+                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.implementation.index",
+                "all 14 implementation paths must be staged as one atomic union",
+            )
+            index_payloads = self.git_blob_payloads(
+                (oid for _mode, oid, _stage in index_rows.values()),
+                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.implementation.index",
+            )
+            for path in sorted(implementation_paths):
+                mode, oid, stage = index_rows.get(path, ("", "", ""))
+                expected_mode = base_modes.get(path, "100644")
+                local.require(
+                    mode == expected_mode and stage == "0",
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.implementation.index[{path}]",
+                    f"expected stage-0 mode {expected_mode}, found {(mode, stage)!r}",
+                )
+                payload = index_payloads.get(oid)
+                index_digest = (
+                    hashlib.sha256(payload).hexdigest().upper()
+                    if payload is not None
+                    else None
+                )
+                local.require(
+                    index_digest == postimage_hashes.get(path),
+                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.implementation.index[{path}]",
+                    "staged blob must equal the exact request postimage",
+                )
+
+        self.problems.messages.extend(local.messages)
+        no_contract_problems = (
+            start_problem_count == 0
+            and len(self.problems.messages) == 0
+            and not local.messages
+        )
+        self.c0007_implementation_write_allowed = (
+            no_contract_problems
+            and state == "active"
+            and active_position
+            and remote_write_allowed
+        )
+        self.c0007_implementation_epoch_valid = (
+            no_contract_problems
+            and implementation_committed
+            and state in {"active", "verified"}
+            and active_position
+        )
+        self.c0007_implementation_allowed = (
+            self.c0007_implementation_write_allowed
+            or self.c0007_implementation_epoch_valid
+        )
+
+    def validate_c0007_bounded_packets(self) -> None:
+        if not (self.root / C0007_BOUNDED_AUTHORIZATION_PATH).is_file():
+            return
+
+        def validate_artifact_hashes(
+            expected: dict[str, str],
+            context: str,
+        ) -> None:
+            for relative_path, expected_digest in expected.items():
+                path = self.root / relative_path
+                self.problems.require(
+                    path.is_file() and sha256_path(path) == expected_digest,
+                    f"{context}[{relative_path}]",
+                    f"expected exact packet SHA-256 {expected_digest}",
+                )
+
+        def approval_artifacts(
+            approval: dict[str, Any],
+            expected: dict[str, str],
+            context: str,
+        ) -> None:
+            artifacts = approval.get("artifacts")
+            parsed: dict[str, str] = {}
+            valid = isinstance(artifacts, list)
+            for index, item in enumerate(artifacts if isinstance(artifacts, list) else []):
+                item_context = f"{context}.artifacts[{index}]"
+                if (
+                    not isinstance(item, dict)
+                    or set(item) != {"path", "role", "sha256"}
+                    or not isinstance(item.get("path"), str)
+                    or not isinstance(item.get("role"), str)
+                    or not item.get("role")
+                    or not isinstance(item.get("sha256"), str)
+                ):
+                    self.problems.add(
+                        item_context,
+                        "artifact must contain exactly nonempty path, role, and SHA-256",
+                    )
+                    valid = False
+                    continue
+                path = item["path"]
+                if path in parsed:
+                    self.problems.add(item_context, f"duplicate artifact path {path!r}")
+                    valid = False
+                parsed[path] = item["sha256"]
+            self.problems.require(
+                valid and parsed == expected,
+                f"{context}.artifacts",
+                "approval must pin exactly every immutable packet artifact",
+            )
+
+        packet_specs = (
+            (
+                "R0014",
+                R0014_PATHS,
+                R0014_PREIMAGE_BLOBS,
+                R0014_PACKET_ARTIFACT_SHA256[
+                    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014.patch"
+                ],
+                C0007_MILESTONES,
+                (),
+                R0014_PACKET_ARTIFACT_SHA256,
+            ),
+            (
+                "R0015",
+                R0015_PATHS,
+                R0015_PREIMAGE_BLOBS,
+                R0015_PACKET_ARTIFACT_SHA256[
+                    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.patch"
+                ],
+                (),
+                ("I01",),
+                R0015_PACKET_ARTIFACT_SHA256,
+            ),
+        )
+        for (
+            request_id,
+            paths,
+            preimages,
+            patch_digest,
+            depends_on,
+            blocks,
+            artifact_hashes,
+        ) in packet_specs:
+            context = f"C0007 bounded packet {request_id}"
+            validate_artifact_hashes(artifact_hashes, context)
+            request_path = self.phase_dir / f"requests/{request_id}.json"
+            request = self.read_json(request_path, self.relative(request_path))
+            if request is not None:
+                validate_c0007_bounded_request_payload(
+                    request,
+                    request_id,
+                    paths,
+                    preimages,
+                    patch_digest,
+                    depends_on,
+                    blocks,
+                    self.problems,
+                    context=self.relative(request_path),
+                )
+            postimage_path = self.phase_dir / f"requests/{request_id}-postimages.tsv"
+            header, rows = self.read_tsv(
+                postimage_path,
+                self.relative(postimage_path),
+                (
+                    "path",
+                    "preimage_blob_oid",
+                    "preimage_sha256",
+                    "postimage_sha256",
+                ),
+            )
+            postimages = self.validate_postimage_rows(
+                header,
+                rows,
+                self.relative(postimage_path),
+                set(paths),
+                "postimage_sha256",
+                base_sha=C0007_CODE_SHA,
+                base_label=C0007_CHECKPOINT_ID,
+            )
+            patch_path = self.phase_dir / f"requests/{request_id}.patch"
+            self.materialize_patch_postimages(
+                context,
+                patch_path,
+                set(paths),
+                postimages,
+                base_sha=C0007_CODE_SHA,
+                base_label=C0007_CHECKPOINT_ID,
+                unidiff_zero=request_id == "R0015",
+            )
+
+        i01_approval = self.read_json(
+            self.root / I01_APPROVAL_PATH,
+            I01_APPROVAL_PATH,
+        )
+        if i01_approval is not None:
+            self.problems.require(
+                set(i01_approval)
+                == {
+                    "api_preservation",
+                    "approval_basis",
+                    "approval_id",
+                    "artifacts",
+                    "base",
+                    "decision",
+                    "independent_review",
+                    "phase_id",
+                    "record_kind",
+                    "recorded_at",
+                    "request_id",
+                    "rollback",
+                    "schema_version",
+                    "wave_id",
+                },
+                I01_APPROVAL_PATH,
+                "I01 approval keys must match the exact planned-packet schema",
+            )
+            self.problems.require(
+                i01_approval.get("schema_version") == 1
+                and i01_approval.get("record_kind") == "i01_planned_packet_approval"
+                and i01_approval.get("phase_id") == PHASE_ID
+                and i01_approval.get("approval_id") == "I01-R0014-planned-v1"
+                and i01_approval.get("request_id") == "R0014"
+                and i01_approval.get("wave_id") == "I01"
+                and i01_approval.get("decision") == "approved_for_planned_control_only",
+                I01_APPROVAL_PATH,
+                "I01 planned approval identity or bounded decision drifted",
+            )
+            self.problems.require(
+                i01_approval.get("base")
+                == {
+                    "accepted_checkpoint_id": C0007_CHECKPOINT_ID,
+                    "accepted_checkpoint_sha": C0007_CODE_SHA,
+                    "control_head_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+                },
+                f"{I01_APPROVAL_PATH}.base",
+                "I01 approval must remain rooted at exact C0007/control head",
+            )
+            self.problems.require(
+                i01_approval.get("approval_basis")
+                == {
+                    "authorization_id": C0007_BOUNDED_AUTHORIZATION_ID,
+                    "authority_id": "primary-human",
+                    "operator_id": "codex-local",
+                    "source_instruction": "I authorize you to do whatever you need.",
+                },
+                f"{I01_APPROVAL_PATH}.approval_basis",
+                "I01 planning authority must preserve the exact task-bounded source",
+            )
+            self.problems.require(
+                i01_approval.get("independent_review")
+                == {
+                    "generator_id": "codex-local",
+                    "required_before": "R0014 implementation application",
+                    "reviewer_id": "primary-human",
+                    "status": "pending",
+                    "validation_ci_is_semantic_review": False,
+                },
+                f"{I01_APPROVAL_PATH}.independent_review",
+                "generated packet must honestly remain pending primary-human semantic review",
+            )
+            approval_artifacts(
+                i01_approval,
+                R0014_PACKET_ARTIFACT_SHA256,
+                I01_APPROVAL_PATH,
+            )
+
+        code03_approval = self.read_json(
+            self.root / CODE03_APPROVAL_PATH,
+            CODE03_APPROVAL_PATH,
+        )
+        if code03_approval is not None:
+            self.problems.require(
+                set(code03_approval)
+                == {
+                    "approval_id",
+                    "approval_scope",
+                    "approved_at",
+                    "artifacts",
+                    "authority_id",
+                    "authorization",
+                    "base",
+                    "decision",
+                    "exclusions",
+                    "implementation",
+                    "independent_review",
+                    "operator_id",
+                    "phase_id",
+                    "preserved_contracts",
+                    "record_kind",
+                    "recorded_at",
+                    "schema_version",
+                },
+                CODE03_APPROVAL_PATH,
+                "CODE03 approval keys must match the exact planned-control schema",
+            )
+            self.problems.require(
+                code03_approval.get("schema_version") == 1
+                and code03_approval.get("record_kind")
+                == "code03_planned_control_approval"
+                and code03_approval.get("phase_id") == PHASE_ID
+                and code03_approval.get("approval_id")
+                == "CODE03-C0007-planned-control-v1"
+                and code03_approval.get("authority_id") == "primary-human"
+                and code03_approval.get("operator_id") == "codex-local"
+                and code03_approval.get("decision")
+                == "approved_for_planned_control_only",
+                CODE03_APPROVAL_PATH,
+                "CODE03 planned approval identity or bounded authority drifted",
+            )
+            self.problems.require(
+                code03_approval.get("base")
+                == {
+                    "checkpoint_id": C0007_CHECKPOINT_ID,
+                    "code_sha": C0007_CODE_SHA,
+                    "control_head_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+                },
+                f"{CODE03_APPROVAL_PATH}.base",
+                "CODE03 approval must remain rooted at exact C0007/control head",
+            )
+            self.problems.require(
+                code03_approval.get("authorization")
+                == {
+                    "path": C0007_BOUNDED_AUTHORIZATION_PATH,
+                    "sha256": R0014_PACKET_ARTIFACT_SHA256[
+                        C0007_BOUNDED_AUTHORIZATION_PATH
+                    ],
+                },
+                f"{CODE03_APPROVAL_PATH}.authorization",
+                "CODE03 approval must hash-pin the exact bounded grant",
+            )
+            self.problems.require(
+                code03_approval.get("independent_review")
+                == {
+                    "decision": None,
+                    "review_artifact": None,
+                    "reviewer_id": None,
+                    "status": "pending",
+                    "required_separation": (
+                        "reviewer did not author or generate this exact packet and did "
+                        "not perform the exact application action"
+                    ),
+                },
+                f"{CODE03_APPROVAL_PATH}.independent_review",
+                "generated packet must honestly remain pending an eligible reviewer",
+            )
+            implementation = code03_approval.get("implementation")
+            self.problems.require(
+                isinstance(implementation, dict)
+                and implementation.get("consumer_count") == 61
+                and implementation.get("request_id") == "R0015"
+                and implementation.get("rollback_policy")
+                == "the exact two-path postimage set is one indivisible rollback unit",
+                f"{CODE03_APPROVAL_PATH}.implementation",
+                "CODE03 must retain its two-path/61-consumer indivisible contract",
+            )
+            approval_artifacts(
+                code03_approval,
+                R0015_PACKET_ARTIFACT_SHA256,
+                CODE03_APPROVAL_PATH,
+            )
+
+        self.validate_code03_consumers()
+
+        live_changes = self.git_live_change_paths(
+            C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "C0007 bounded implementation census",
+        )
+        implementation_paths = set(R0014_PATHS) | set(R0015_PATHS)
+        touched = live_changes & implementation_paths
+        validate_c0007_implementation_path_set(
+            touched,
+            implementation_paths,
+            self.c0007_implementation_allowed,
+            self.problems,
+            context="C0007 bounded implementation census",
+        )
+
+    def validate_code03_consumers(self) -> None:
+        path = self.root / CODE03_CONSUMERS_PATH
+        header, rows = self.read_tsv(
+            path,
+            CODE03_CONSUMERS_PATH,
+            CODE03_CONSUMERS_HEADER,
+        )
+        row_pairs = [
+            (row.get("module", ""), row.get("path", "")) for row in rows
+        ]
+        self.problems.require(
+            len(rows) == 61 and row_pairs == sorted(set(row_pairs)),
+            CODE03_CONSUMERS_PATH,
+            "consumer freeze must contain exactly 61 sorted unique module/path rows",
+        )
+
+        base_blobs = self.git_tree_blobs(C0007_CODE_SHA)
+        production_blobs = {
+            production_path: oid
+            for production_path, oid in base_blobs.items()
+            if production_path.startswith("NumStability/")
+            and production_path.endswith(".lean")
+        }
+        production_payloads = self.git_blob_payloads(
+            production_blobs.values(),
+            f"{CODE03_CONSUMERS_PATH} production import census",
+        )
+        target_module = "NumStability.Source.Higham.Chapter19.Core"
+        derived_pairs: list[tuple[str, str]] = []
+        for production_path, oid in production_blobs.items():
+            payload = production_payloads.get(oid)
+            if payload is None:
+                continue
+            source = payload.decode("utf-8-sig", errors="replace")
+            imports = IMPORT_RE.findall(remove_lean_comments(source))
+            if target_module in imports:
+                derived_pairs.append((module_from_path(production_path), production_path))
+        derived_pairs.sort()
+        self.problems.require(
+            row_pairs == derived_pairs,
+            CODE03_CONSUMERS_PATH,
+            "rows must equal the independently re-derived exact C0007 direct consumers",
+        )
+
+        row_oids = {
+            row.get("blob_oid", "")
+            for row in rows
+            if SHA1_RE.fullmatch(row.get("blob_oid", "")) is not None
+        }
+        row_payloads = self.git_blob_payloads(
+            row_oids,
+            f"{CODE03_CONSUMERS_PATH} row blobs",
+        )
+        test_paths = {
+            row.get("downstream_test", "") for row in rows if row.get("downstream_test")
+        }
+        test_oids = {base_blobs[test] for test in test_paths if test in base_blobs}
+        test_payloads = self.git_blob_payloads(
+            test_oids,
+            f"{CODE03_CONSUMERS_PATH} downstream tests",
+        )
+        for index, row in enumerate(rows):
+            context = f"{CODE03_CONSUMERS_PATH}[{index}]"
+            module = row.get("module", "")
+            production_path = row.get("path", "")
+            oid = row.get("blob_oid", "")
+            digest = row.get("sha256", "")
+            test_path = row.get("downstream_test", "")
+            self.problems.require(
+                module_from_path(production_path) == module,
+                f"{context}.module",
+                "module must be derived exactly from the production path",
+            )
+            self.problems.require(
+                base_blobs.get(production_path) == oid,
+                f"{context}.blob_oid",
+                "consumer blob must equal the exact C0007 Git blob",
+            )
+            payload = row_payloads.get(oid)
+            actual_digest = (
+                hashlib.sha256(payload).hexdigest().upper()
+                if payload is not None
+                else None
+            )
+            self.problems.require(
+                actual_digest == digest
+                and SHA256_RE.fullmatch(digest) is not None
+                and digest == digest.upper(),
+                f"{context}.sha256",
+                "consumer SHA-256 must match its exact C0007 blob bytes",
+            )
+            test_oid = base_blobs.get(test_path)
+            test_payload = test_payloads.get(test_oid or "")
+            test_imports = (
+                IMPORT_RE.findall(
+                    remove_lean_comments(
+                        test_payload.decode("utf-8-sig", errors="replace")
+                    )
+                )
+                if test_payload is not None
+                else []
+            )
+            self.problems.require(
+                test_path.startswith("NumStabilityTest/")
+                and test_path.endswith(".lean")
+                and test_oid is not None
+                and module in test_imports,
+                f"{context}.downstream_test",
+                "downstream test must exist at C0007 and directly import the consumer",
+            )
+
+    def validate_c0007_full_tests_correction(self) -> None:
+        path = self.root / C0007_FULL_TESTS_CORRECTION_PATH
+        if not path.is_file():
+            if (self.root / C0007_BOUNDED_AUTHORIZATION_PATH).is_file():
+                self.problems.add(
+                    C0007_FULL_TESTS_CORRECTION_PATH,
+                    "bounded successor controls require the C0007 test-evidence correction",
+                )
+            return
+        correction = self.read_json(path, C0007_FULL_TESTS_CORRECTION_PATH)
+        workflow_path = self.root / ".github/workflows/lean_action_ci.yml"
+        try:
+            workflow = workflow_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as error:
+            self.problems.add(
+                ".github/workflows/lean_action_ci.yml",
+                f"cannot read current workflow: {error}",
+            )
+            workflow = ""
+        authority = self.phase.get("authority")
+        principals = authority.get("principals") if isinstance(authority, dict) else []
+        principal_kinds = {
+            row.get("principal_id"): row.get("kind")
+            for row in principals
+            if isinstance(row, dict)
+        }
+        if correction is not None:
+            validate_c0007_full_tests_correction_payload(
+                correction,
+                workflow,
+                principal_kinds,
+                self.problems,
+            )
+        accepted_artifacts = (
+            (
+                self.phase_dir / "checkpoints/C0007.json",
+                C0007_CHECKPOINT_SHA256,
+            ),
+            (
+                self.phase_dir / "checkpoints/C0007-gates.md",
+                C0007_GATES_SHA256,
+            ),
+        )
+        for accepted_path, expected in accepted_artifacts:
+            self.problems.require(
+                accepted_path.is_file() and sha256_path(accepted_path) == expected,
+                self.relative(accepted_path),
+                "immutable C0007 evidence changed after the semantic correction",
+            )
 
     def load_r07_planned_contract(self) -> None:
         """Enable R07 only when the exact reviewed contract bytes are present."""
@@ -8136,6 +12831,15 @@ class CompletionValidator:
                     expected = row[3].upper()
                     if row[0] == R09_R10_AMENDED_UNION_PATH:
                         expected = R09_R10_AMENDED_UNION_SHA256
+                    if (
+                        row[0] == "docs/architecture/COMPATIBILITY.md"
+                        and (self.root / C0007_BOUNDED_AUTHORIZATION_PATH).is_file()
+                    ):
+                        # GOV-04 moves the removal rule after the unchanged
+                        # 712-row table. The exact postimage supersedes only
+                        # this mutable-document byte ratchet; mappings and
+                        # targets remain governed by check_compatibility.py.
+                        expected = C0007_GOV04_COMPATIBILITY_SHA256
                     union_path = self.root / Path(*PurePosixPath(row[0]).parts)
                     try:
                         payload = union_path.read_bytes()
@@ -10401,15 +15105,25 @@ class CompletionValidator:
                                     ("exact", path)
                                     for path in R09_R10_PLANNED_SHARED_RESERVATIONS
                                 }
+                                bounded_keys = {
+                                    ("exact", path)
+                                    for path in C0007_BOUNDED_SHARED_RESERVATIONS
+                                }
                                 self.problems.require(
                                     len(accepted_rules) == 160
-                                    and live_keys in (accepted_keys, planned_keys),
+                                    and live_keys
+                                    in (
+                                        accepted_keys,
+                                        planned_keys,
+                                        accepted_keys | bounded_keys,
+                                        planned_keys | bounded_keys,
+                                    ),
                                     "phase.json.shared_paths",
                                     "accepted C0006 must release the 36 R0011 "
                                     "reservations and restore C0005's exact 160 "
                                     "rules, optionally plus the reviewed R09/R10 "
-                                    "planned reservations; unexpected="
-                                    f"{sorted(live_keys - planned_keys)}, missing="
+                                    "or C0007 bounded reservations; unexpected="
+                                    f"{sorted(live_keys - planned_keys - bounded_keys)}, missing="
                                     f"{sorted(accepted_keys - live_keys)}",
                                 )
                             else:
@@ -10516,6 +15230,23 @@ class CompletionValidator:
         if len(keys) != len(set(keys)):
             self.problems.add(context, "duplicate case-insensitive path rule")
         return result
+
+    def historical_shared_rules(self) -> list[PathRule]:
+        """Return the checkpoint-era controls used by terminal old epochs.
+
+        The four M13/CODE03 reservations are live only from the authorized
+        C0007 bounded packet onward. Applying them retroactively would create
+        false overlaps with immutable B0003/B0005 ownership and R0005 history.
+        """
+
+        return [
+            rule
+            for rule in self.shared_rules
+            if not (
+                rule.match == "exact"
+                and rule.path in C0007_BOUNDED_SHARED_RESERVATIONS
+            )
+        ]
 
     def validate_checkpoint_and_scope(self) -> None:
         checkpoint_path = self.phase_dir / "checkpoints/C0000.json"
@@ -12979,7 +17710,7 @@ class CompletionValidator:
                 "selector must contain exact sorted module/path rows",
             )
             for own in owned:
-                for shared in self.shared_rules:
+                for shared in self.historical_shared_rules():
                     if own.intersects(shared):
                         self.problems.add(
                             f"{branch_id} owner/shared collision",
@@ -12995,7 +17726,7 @@ class CompletionValidator:
                         f"{branch_id}.destination_prefixes",
                         f"destination {dest.path} is not casefold-vacant at C0000: {occupied[:5]}",
                     )
-                for rule in scope_rules + self.shared_rules + forbidden:
+                for rule in scope_rules + self.historical_shared_rules() + forbidden:
                     if dest.intersects(rule):
                         self.problems.add(
                             f"{branch_id}.destination_prefixes",
@@ -14497,7 +19228,7 @@ class CompletionValidator:
                 "forbidden rule count drifted",
             )
             for rule in owned + destinations:
-                for shared in self.shared_rules:
+                for shared in self.historical_shared_rules():
                     if rule.intersects(shared):
                         self.problems.add(
                             f"{branch_id} authority",
@@ -17549,7 +22280,7 @@ class CompletionValidator:
                     {
                         f"{rule.path} -> {shared.path}"
                         for rule in worker_rules
-                        for shared in self.shared_rules
+                        for shared in self.historical_shared_rules()
                         if rule.intersects(shared)
                     }
                 )
@@ -18126,7 +22857,7 @@ class CompletionValidator:
         )
         worker_rules = owned + destinations
         for rule in worker_rules:
-            for shared in self.shared_rules:
+            for shared in self.historical_shared_rules():
                 if rule.intersects(shared):
                     self.problems.add(
                         f"{R03_BRANCH_ID} authority",
@@ -18992,7 +23723,9 @@ class CompletionValidator:
                 f"expected exact {R03_REQUEST_PATH_COUNT}-path set at {R03_REQUEST_PATH_SHA256}",
             )
         shared_exact = {
-            rule.path for rule in self.shared_rules if rule.match == "exact"
+            rule.path
+            for rule in self.historical_shared_rules()
+            if rule.match == "exact"
         }
         unreserved = set(paths) - shared_exact
         if self.current_checkpoint_id in {
@@ -19724,6 +24457,1988 @@ def allowed_codex_lane_operator_sets(
 
 def run_self_test() -> int:
     problems = Problems()
+    problems.require(
+        strict_json_loads('{"safe":[1,2,3]}') == {"safe": [1, 2, 3]},
+        "self-test strict JSON positive",
+        "valid strict JSON was rejected",
+    )
+    deeply_nested_json = "[" * 65 + "0" + "]" * 65
+    for label, payload in (
+        ("duplicate key", '{"key":1,"key":2}'),
+        ("NaN", '{"value":NaN}'),
+        ("Infinity", '{"value":Infinity}'),
+        ("deep nesting", deeply_nested_json),
+    ):
+        rejected = False
+        try:
+            strict_json_loads(payload)
+        except (json.JSONDecodeError, ValueError, RecursionError):
+            rejected = True
+        problems.require(
+            rejected,
+            f"self-test strict JSON {label}",
+            "unsafe JSON was accepted",
+        )
+    command_safety_validator = CompletionValidator(Path.cwd(), DEFAULT_PHASE_DIR)
+    nul_git = command_safety_validator.git("rev-parse", "\0", check=False)
+    nul_git_bytes = command_safety_validator.git_bytes(
+        "rev-parse", "\0", check=False
+    )
+    check_mode_wrapped = False
+    try:
+        command_safety_validator.git("rev-parse", "\0")
+    except RuntimeError:
+        check_mode_wrapped = True
+    problems.require(
+        nul_git.returncode != 0
+        and nul_git_bytes.returncode != 0
+        and check_mode_wrapped,
+        "self-test subprocess embedded NUL",
+        "malformed command arguments must fail closed without an uncaught ValueError",
+    )
+    bounded_manifest_rows = [
+        {
+            "path": path,
+            "packet_id": "R0014" if "Counterexample" in path else "AUTH",
+            "stage": "implementation"
+            if path in C0007_BOUNDED_SHARED_RESERVATIONS
+            else "planned_control",
+            "operation": "modify",
+        }
+        for path in sorted(
+            C0007_BOUNDED_SHARED_RESERVATIONS
+            | {f"self-test/bounded-path-{index:02d}" for index in range(46)}
+        )
+    ]
+    bounded_authorization_fixture: dict[str, Any] = {
+        "activation_conditions": [f"condition {index}" for index in range(6)],
+        "authorization_id": C0007_BOUNDED_AUTHORIZATION_ID,
+        "authority_id": "primary-human",
+        "authorized_actions": [f"action {index}" for index in range(5)],
+        "base": {
+            "active_phase_pointer_sha256": (
+                "C99061ACCE56AF121B1ACF0FBE2C757B53602A5A8599DC93193871095D3AB360"
+            ),
+            "control_head_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "control_tree_sha": C0007_BOUNDED_CONTROL_TREE_SHA,
+            "current_checkpoint_id": C0007_CHECKPOINT_ID,
+            "current_checkpoint_sha": C0007_CODE_SHA,
+            "phase_sha256": (
+                "7DCF4E6B47F3EDEC92D1F6945426F0AB13215A5AC3C362D9356A58C413288AAC"
+            ),
+            "remote_main_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+        },
+        "decision": "approved",
+        "expiry": {
+            "events": [
+                "C0008 acceptance",
+                "explicit cancellation or supersession",
+                "base, path-manifest, request-patch, or postimage drift",
+                "an exact-lease mismatch",
+                "primary-human revocation",
+            ],
+            "valid_through_checkpoint_id": "C0008",
+        },
+        "operator_id": "codex-local",
+        "phase_id": PHASE_ID,
+        "preserved_exclusions": [
+            "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md remains local",
+            "no public declaration drift",
+            "no path absent from the authorized path manifest",
+            "no partial application",
+            "no identity other than primary-human",
+            "requires a separate exact acceptance control",
+            "no repository-wide completion",
+            "no force push",
+        ],
+        "record_kind": "primary_human_bounded_epoch_authorization",
+        "recorded_at": "2026-08-25T15:14:31Z",
+        "schema_version": 1,
+        "scope": {
+            "authorized_path_manifest": {
+                "path": C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+                "row_count": 56,
+                "sha256": C0007_BOUNDED_AUTHORIZED_PATHS_SHA256,
+            },
+            "milestone_id": "M13",
+            "request_ids": ["R0014", "R0015"],
+            "target_checkpoint_id": "C0008",
+            "task_ids": list(C0007_BOUNDED_TASK_IDS),
+            "wave_id": "I01",
+        },
+        "source": {
+            "channel": "current Codex desktop task",
+            "instruction": "I authorize you to do whatever you need.",
+            "received_at": "2026-08-25T15:14:31Z",
+            "received_at_source": "task user-message timestamp",
+            "user_principal_id": "primary-human",
+        },
+    }
+    bounded_positive = Problems()
+    validate_c0007_bounded_authorization_payload(
+        bounded_authorization_fixture,
+        ("path", "packet_id", "stage", "operation"),
+        bounded_manifest_rows,
+        bounded_positive,
+        context="self-test bounded authorization positive",
+    )
+    problems.require(
+        not bounded_positive.messages,
+        "self-test bounded authorization positive",
+        f"valid bounded authorization rejected: {bounded_positive.messages}",
+    )
+    bounded_negative_cases = (
+        (
+            "wrong authority",
+            lambda value: value.__setitem__("authority_id", "codex-local"),
+            ".authority_id:",
+        ),
+        (
+            "wrong base",
+            lambda value: value["base"].__setitem__("control_head_sha", "0" * 40),
+            ".base:",
+        ),
+        (
+            "missing public API exclusion",
+            lambda value: value["preserved_exclusions"].__setitem__(
+                1, "unrelated exclusion"
+            ),
+            ".preserved_exclusions:",
+        ),
+        (
+            "wrong request pair",
+            lambda value: value["scope"].__setitem__("request_ids", ["R0014"]),
+            ".scope:",
+        ),
+        (
+            "wrong instruction",
+            lambda value: value["source"].__setitem__("instruction", "continue"),
+            ".source:",
+        ),
+    )
+    for label, mutate, diagnostic in bounded_negative_cases:
+        mutated = json.loads(canonical_json(bounded_authorization_fixture))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_bounded_authorization_payload(
+            mutated,
+            ("path", "packet_id", "stage", "operation"),
+            bounded_manifest_rows,
+            negative,
+            context=f"self-test bounded authorization {label}",
+        )
+        problems.require(
+            any(diagnostic in message for message in negative.messages),
+            f"self-test bounded authorization {label}",
+            f"mutation was not rejected with {diagnostic}: {negative.messages}",
+        )
+    missing_reservation_rows = [
+        row
+        for row in bounded_manifest_rows
+        if row["path"]
+        != "NumStability/Source/Higham/Chapter19/Core.lean"
+    ]
+    missing_reservation_rows.append(
+        {
+            "path": "self-test/replacement-path",
+            "packet_id": "AUTH",
+            "stage": "planned_control",
+            "operation": "add",
+        }
+    )
+    missing_reservation_rows.sort(key=lambda row: row["path"])
+    missing_reservation = Problems()
+    validate_c0007_bounded_authorization_payload(
+        bounded_authorization_fixture,
+        ("path", "packet_id", "stage", "operation"),
+        missing_reservation_rows,
+        missing_reservation,
+        context="self-test bounded authorization missing reservation",
+    )
+    problems.require(
+        any("all ten C0007 shared reservations" in message for message in missing_reservation.messages),
+        "self-test bounded authorization missing reservation",
+        f"missing implementation reservation was accepted: {missing_reservation.messages}",
+    )
+    i01_selector_fixture: list[dict[str, str]] = []
+    for index, (module, path, blob_oid, digest, tier) in enumerate(
+        I01_PREIMAGE_FACTS,
+        start=1,
+    ):
+        split = index == 6
+        i01_selector_fixture.append(
+            {
+                "row_id": f"I01-{index:02d}",
+                "module": module,
+                "path": path,
+                "preimage_blob_oid": blob_oid,
+                "preimage_sha256": digest,
+                "current_tier": tier,
+                "decision": (
+                    "indivisible_three_path_split"
+                    if split
+                    else "retain_wrapper_byte_identical_no_op"
+                    if index == 4
+                    else "byte_identical_no_op"
+                ),
+                "production_write": "true" if split else "false",
+                "postimage_paths": (
+                    ";".join(item[0] for item in I01_SPLIT_POSTIMAGES)
+                    if split
+                    else path
+                ),
+                "postimage_sha256s": (
+                    ";".join(item[1] for item in I01_SPLIT_POSTIMAGES)
+                    if split
+                    else digest
+                ),
+                "supported_signature_witnesses": "self-test-witness",
+                "test_modules": "SelfTest.I01",
+                "reviewer_id": "primary-human",
+                "status": "awaiting_independent_review",
+            }
+        )
+    i01_positive = Problems()
+    validate_i01_selector_payload(
+        I01_SELECTOR_HEADER,
+        i01_selector_fixture,
+        i01_positive,
+        context="self-test I01 selector positive",
+    )
+    problems.require(
+        not i01_positive.messages,
+        "self-test I01 selector positive",
+        f"valid exact selector rejected: {i01_positive.messages}",
+    )
+    i01_negative_cases = (
+        (
+            "wrong I01-03 blob",
+            "preimage_blob_oid",
+            "0" * 40,
+            ".preimage_blob_oid:",
+        ),
+        (
+            "wrong I01-03 SHA-256",
+            "preimage_sha256",
+            "0" * 64,
+            ".preimage_sha256:",
+        ),
+    )
+    for label, column, value, diagnostic in i01_negative_cases:
+        mutated = json.loads(canonical_json(i01_selector_fixture))
+        mutated[2][column] = value
+        negative = Problems()
+        validate_i01_selector_payload(
+            I01_SELECTOR_HEADER,
+            mutated,
+            negative,
+            context=f"self-test I01 selector {label}",
+        )
+        problems.require(
+            any(diagnostic in message for message in negative.messages),
+            f"self-test I01 selector {label}",
+            f"mutation was not rejected with {diagnostic}: {negative.messages}",
+        )
+    request_fixture: dict[str, Any] = {
+        "blocks": ["I01"],
+        "created_at": "2026-08-25T15:42:49Z",
+        "depends_on": [],
+        "lane_id": "integration-lane",
+        "patch": {
+            "path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.patch",
+            "sha256": R0015_PACKET_ARTIFACT_SHA256[
+                f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.patch"
+            ],
+        },
+        "paths": list(R0015_PATHS),
+        "phase_id": PHASE_ID,
+        "preimage_blobs": [
+            {"blob_oid": blob, "path": path}
+            for path, blob in zip(R0015_PATHS, R0015_PREIMAGE_BLOBS)
+        ],
+        "rationale": "CODE03 is one indivisible two-path cleanup.",
+        "record_kind": "shared_file_request",
+        "request_id": "R0015",
+        "requester_id": "primary-human",
+        "resolution": {
+            "checkpoint_id": None,
+            "commit_sha": None,
+            "reason": None,
+            "resolved_at": None,
+            "resolved_by": None,
+            "validation_evidence": [],
+        },
+        "schema_version": 1,
+        "status": "active",
+        "superseded_by": None,
+        "supersedes": None,
+        "target_base_sha": C0007_CODE_SHA,
+        "target_checkpoint_id": C0007_CHECKPOINT_ID,
+        "valid_through_checkpoint_id": C0007_CHECKPOINT_ID,
+        "wave_id": "I01",
+    }
+    request_positive = Problems()
+    validate_c0007_bounded_request_payload(
+        request_fixture,
+        "R0015",
+        R0015_PATHS,
+        R0015_PREIMAGE_BLOBS,
+        R0015_PACKET_ARTIFACT_SHA256[
+            f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.patch"
+        ],
+        (),
+        ("I01",),
+        request_positive,
+        context="self-test R0015 request positive",
+    )
+    problems.require(
+        not request_positive.messages,
+        "self-test R0015 request positive",
+        f"valid bounded request rejected: {request_positive.messages}",
+    )
+    request_negative_cases = (
+        (
+            "wrong base",
+            lambda value: value.__setitem__("target_base_sha", "0" * 40),
+            ".target_base_sha:",
+        ),
+        (
+            "partial path boundary",
+            lambda value: value.__setitem__("paths", list(R0015_PATHS[:1])),
+            ".paths:",
+        ),
+        (
+            "premature resolution",
+            lambda value: value["resolution"].__setitem__(
+                "commit_sha", "1" * 40
+            ),
+            ".resolution:",
+        ),
+    )
+    for label, mutate, diagnostic in request_negative_cases:
+        mutated = json.loads(canonical_json(request_fixture))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_bounded_request_payload(
+            mutated,
+            "R0015",
+            R0015_PATHS,
+            R0015_PREIMAGE_BLOBS,
+            R0015_PACKET_ARTIFACT_SHA256[
+                f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.patch"
+            ],
+            (),
+            ("I01",),
+            negative,
+            context=f"self-test R0015 request {label}",
+        )
+        problems.require(
+            any(diagnostic in message for message in negative.messages),
+            f"self-test R0015 request {label}",
+            f"mutation was not rejected with {diagnostic}: {negative.messages}",
+        )
+
+    manifest_file = Path(C0007_BOUNDED_AUTHORIZED_PATHS_PATH)
+    try:
+        manifest_text = manifest_file.read_text(encoding="utf-8")
+        manifest_reader = csv.DictReader(manifest_text.splitlines(), delimiter="\t")
+        contract_manifest_header = tuple(manifest_reader.fieldnames or ())
+        contract_manifest_rows = [dict(row) for row in manifest_reader]
+    except (OSError, UnicodeError, csv.Error) as error:
+        problems.add(
+            "self-test bounded contract manifest",
+            f"cannot read fixture manifest: {error}",
+        )
+        contract_manifest_header = ()
+        contract_manifest_rows = []
+    planned_fixture_rows = [
+        row for row in contract_manifest_rows if row.get("stage") == "planned_control"
+    ]
+    contract_artifact_fixture = [
+        {
+            "base_blob_oid": None if row["operation"] == "add" else "a" * 40,
+            "base_mode": None if row["operation"] == "add" else "100644",
+            "operation": row["operation"],
+            "packet_id": row["packet_id"],
+            "path": row["path"],
+            "post_blob_oid": "b" * 40,
+            "post_mode": "100644",
+            "sha256": "A" * 64,
+        }
+        for row in planned_fixture_rows
+        if row.get("path") != C0007_BOUNDED_PLANNED_CONTROL_PATH
+    ]
+    for artifact in contract_artifact_fixture:
+        if artifact["path"] == C0007_BOUNDED_WORKFLOW_PATH:
+            artifact["sha256"] = C0007_BOUNDED_WORKFLOW_SHA256
+
+    def pending_ci(status: str) -> dict[str, Any]:
+        return {
+            "branch": C0007_BOUNDED_BRANCH,
+            "candidate_sha": None,
+            "candidate_tree": None,
+            "check_suite_id": None,
+            "completed_at": None,
+            "conclusion": None,
+            "event": None,
+            "full_build": None,
+            "full_tests": None,
+            "job_id": None,
+            "job_completed_at": None,
+            "job_log_byte_count": None,
+            "job_log_sha256": None,
+            "job_name": None,
+            "job_started_at": None,
+            "repository": C0007_BOUNDED_REPOSITORY,
+            "runner_name": None,
+            "run_attempt": None,
+            "run_id": None,
+            "started_at": None,
+            "status": status,
+            "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
+        }
+
+    def pending_review(
+        status: str,
+        scope: dict[str, Any],
+        supersedes: Sequence[str],
+    ) -> dict[str, Any]:
+        return {
+            "action_performer_id": "codex-local",
+            "attestation_kind": "github_repository_owner_issue_comment_v1",
+            "ci_is_semantic_review": False,
+            "decision": None,
+            "generator_id": "codex-local",
+            "reviewed_at": None,
+            "reviewed_commit_sha": None,
+            "reviewed_contract_blob_oid": None,
+            "reviewed_tree_sha": None,
+            "reviewer_id": "primary-human",
+            "reviewer_kind": "human",
+            "scope": scope,
+            "source": {
+                "author_association": "OWNER",
+                "author_database_id": C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID,
+                "author_login": C0007_BOUNDED_REPOSITORY_OWNER_LOGIN,
+                "author_node_id": C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID,
+                "author_type": "User",
+                "comment_api_url": None,
+                "comment_database_id": None,
+                "comment_html_url": None,
+                "comment_node_id": None,
+                "created_at": None,
+                "issue_api_url": None,
+                "issue_database_id": None,
+                "issue_html_url": None,
+                "issue_node_id": None,
+                "issue_number": None,
+                "message": None,
+                "message_sha256": None,
+                "performed_via_github_app": None,
+                "provider": "github_issue_comment",
+                "repository_api_url": C0007_BOUNDED_REPOSITORY_API_URL,
+                "repository_database_id": C0007_BOUNDED_REPOSITORY_DATABASE_ID,
+                "repository_full_name": C0007_BOUNDED_REPOSITORY,
+                "repository_node_id": C0007_BOUNDED_REPOSITORY_ID,
+                "updated_at": None,
+            },
+            "status": status,
+            "supersedes_pending_reviews": list(supersedes),
+        }
+
+    contract_fixture: dict[str, Any] = {
+        "application_mode": "single_atomic_14_path_union",
+        "artifacts": contract_artifact_fixture,
+        "authority": {
+            "authority_id": "primary-human",
+            "authorization_id": C0007_BOUNDED_AUTHORIZATION_ID,
+            "authorization_path": C0007_BOUNDED_AUTHORIZATION_PATH,
+            "authorization_sha256": R0014_PACKET_ARTIFACT_SHA256[
+                C0007_BOUNDED_AUTHORIZATION_PATH
+            ],
+            "authorized_manifest_path": C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            "authorized_manifest_rows": 56,
+            "authorized_manifest_sha256": C0007_BOUNDED_AUTHORIZED_PATHS_SHA256,
+            "global_human_only_authority_unchanged": True,
+            "operator_id": "codex-local",
+        },
+        "base": {
+            "planned_control_parent_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "planned_control_parent_tree": C0007_BOUNDED_CONTROL_TREE_SHA,
+            "remote_main_sha_at_authorization": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "request_replay_checkpoint_id": C0007_CHECKPOINT_ID,
+            "request_replay_code_sha": C0007_CODE_SHA,
+        },
+        "branch": {
+            "base_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "local_branch": C0007_BOUNDED_BRANCH,
+            "operator_id": "codex-local",
+            "owner_id": "primary-human",
+            "push_policy": "fast_forward_only_with_exact_observed_lease",
+            "remote": C0007_BOUNDED_REMOTE,
+            "remote_url": C0007_BOUNDED_REMOTE_URL,
+            "remote_main_ref": C0007_BOUNDED_REMOTE_MAIN_REF,
+            "remote_ref": C0007_BOUNDED_REMOTE_BRANCH_REF,
+            "repository": C0007_BOUNDED_REPOSITORY,
+            "repository_id": C0007_BOUNDED_REPOSITORY_ID,
+            "retirement_authorized": False,
+        },
+        "ci": {
+            "activation_candidate": pending_ci("not_due"),
+            "implementation": pending_ci("not_due"),
+            "planned_control": pending_ci("pending"),
+        },
+        "control_id": "C0007-M13-I01-CODE03-planned-v1",
+        "exclusions": [
+            "keep REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md local",
+            "no public declaration or supported API drift",
+            "no partial implementation epoch",
+            "no premature request resolution",
+            "no C0008 acceptance under this grant",
+            "no repository-wide completion",
+            "no force push or history rewrite",
+            "no branch retirement or ref deletion",
+        ],
+        "expiry": {
+            "acceptance_requires_new_authority": True,
+            "disabled_after_c0008_acceptance": True,
+            "events": [
+                "C0008 acceptance",
+                "explicit cancellation or supersession",
+                "base, path-manifest, request-patch, postimage, or artifact drift",
+                "an exact-lease mismatch or remote-main drift",
+                "primary-human revocation",
+            ],
+            "implementation_requires_current_checkpoint_id": C0007_CHECKPOINT_ID,
+            "valid_through_checkpoint_id": "C0008",
+        },
+        "lifecycle": {
+            "activation_candidate_commit_sha": None,
+            "activation_candidate_contract_blob_oid": None,
+            "activation_candidate_tree_sha": None,
+            "active_attestation_commit_sha": None,
+            "active_attestation_contract_blob_oid": None,
+            "active_attestation_tree_sha": None,
+            "implementation_allowed": False,
+            "implementation_commit_sha": None,
+            "implementation_contract_blob_oid": None,
+            "implementation_tree_sha": None,
+            "planned_commit_sha": None,
+            "planned_contract_blob_oid": None,
+            "planned_tree_sha": None,
+            "state": "planned",
+        },
+        "milestone_id": "M13",
+        "packets": [
+            {
+                "approval": {"path": I01_APPROVAL_PATH, "sha256": "A" * 64},
+                "indivisible": True,
+                "patch": {
+                    "path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014.patch",
+                    "sha256": R0014_PACKET_ARTIFACT_SHA256[
+                        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014.patch"
+                    ],
+                },
+                "path_count": 12,
+                "path_set_sha256": C0007_BOUNDED_R0014_PATHS_SHA256,
+                "postimages": {
+                    "path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014-postimages.tsv",
+                    "sha256": R0014_PACKET_ARTIFACT_SHA256[
+                        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014-postimages.tsv"
+                    ],
+                },
+                "request": {
+                    "path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014.json",
+                    "sha256": R0014_PACKET_ARTIFACT_SHA256[
+                        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014.json"
+                    ],
+                },
+                "request_id": "R0014",
+                "review": {
+                    "path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014-review.md",
+                    "sha256": R0014_PACKET_ARTIFACT_SHA256[
+                        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014-review.md"
+                    ],
+                },
+                "target_code_sha": C0007_CODE_SHA,
+            },
+            {
+                "approval": {"path": CODE03_APPROVAL_PATH, "sha256": "A" * 64},
+                "indivisible": True,
+                "patch": {
+                    "path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.patch",
+                    "sha256": R0015_PACKET_ARTIFACT_SHA256[
+                        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.patch"
+                    ],
+                },
+                "path_count": 2,
+                "path_set_sha256": C0007_BOUNDED_R0015_PATHS_SHA256,
+                "postimages": {
+                    "path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015-postimages.tsv",
+                    "sha256": R0015_PACKET_ARTIFACT_SHA256[
+                        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015-postimages.tsv"
+                    ],
+                },
+                "request": {
+                    "path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.json",
+                    "sha256": R0015_PACKET_ARTIFACT_SHA256[
+                        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015.json"
+                    ],
+                },
+                "request_id": "R0015",
+                "review": {
+                    "path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015-review.md",
+                    "sha256": R0015_PACKET_ARTIFACT_SHA256[
+                        f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015-review.md"
+                    ],
+                },
+                "target_code_sha": C0007_CODE_SHA,
+            },
+        ],
+        "path_census": {
+            "R0014": {
+                "path_count": 12,
+                "path_set_sha256": C0007_BOUNDED_R0014_PATHS_SHA256,
+            },
+            "R0015": {
+                "path_count": 2,
+                "path_set_sha256": C0007_BOUNDED_R0015_PATHS_SHA256,
+            },
+            "artifact_snapshot": {
+                "path_count": 41,
+                "path_set_sha256": C0007_BOUNDED_ARTIFACT_PATHS_SHA256,
+            },
+            "contract_path": C0007_BOUNDED_PLANNED_CONTROL_PATH,
+            "implementation": {
+                "add_count": 7,
+                "modify_count": 7,
+                "path_count": 14,
+                "path_set_sha256": C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256,
+            },
+            "local_ledger_exclusion": "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+            "planned_control": {
+                "add_count": 25,
+                "modify_count": 17,
+                "path_count": 42,
+                "path_set_sha256": C0007_BOUNDED_PLANNED_PATHS_SHA256,
+            },
+            "self_hash_policy": "excluded_from_artifact_hashes_but_bound_by_commit",
+        },
+        "phase_id": PHASE_ID,
+        "record_kind": "c0007_bounded_planned_control",
+        "reviews": {},
+        "schema_version": 2,
+        "wave_id": "I01",
+        "workflow": {
+            "build_step_name": C0007_BOUNDED_BUILD_STEP,
+            "checkout_action": PINNED_CHECKOUT_ACTION,
+            "full_build_command": "lake build NumStability NumStabilityTest",
+            "github_actions_read_permission": True,
+            "github_issues_read_permission": True,
+            "job_name": C0007_BOUNDED_JOB_NAME,
+            "lean_action": PINNED_LEAN_ACTION,
+            "path": C0007_BOUNDED_WORKFLOW_PATH,
+            "sha256": C0007_BOUNDED_WORKFLOW_SHA256,
+            "supported_api_commands": [
+                "python tools/architecture/check_supported_api.py --self-test",
+                "python tools/architecture/check_supported_api.py --baseline docs/architecture/supported-api.json --mode lifecycle",
+            ],
+            "supported_api_step_name": C0007_BOUNDED_SUPPORTED_API_STEP,
+            "test_step_name": C0007_BOUNDED_TEST_STEP,
+            "test_command": "lake test",
+            "toolchain": C0007_BOUNDED_TOOLCHAIN,
+            "workflow_name": C0007_BOUNDED_WORKFLOW_NAME,
+            "workflow_id": C0007_BOUNDED_WORKFLOW_ID,
+        },
+    }
+    fixture_scope_common = {
+        "artifact_inventory_sha256": canonical_json_sha256(
+            contract_fixture["artifacts"]
+        ),
+        "authorization_sha256": R0014_PACKET_ARTIFACT_SHA256[
+            C0007_BOUNDED_AUTHORIZATION_PATH
+        ],
+        "completion_checker_sha256": "A" * 64,
+        "full_tests_correction_sha256": "A" * 64,
+        "implementation_path_set_sha256": C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256,
+        "packet_snapshot_sha256": canonical_json_sha256(contract_fixture["packets"]),
+        "planned_path_set_sha256": C0007_BOUNDED_PLANNED_PATHS_SHA256,
+        "supported_api_baseline_sha256": "A" * 64,
+        "supported_api_checker_sha256": "A" * 64,
+        "supported_api_review_sha256": "A" * 64,
+        "workflow_sha256": C0007_BOUNDED_WORKFLOW_SHA256,
+    }
+    contract_fixture["reviews"] = {
+        "activation": pending_review(
+            "pending",
+            {
+                **fixture_scope_common,
+                "review_purpose": "P activation for atomic R0014/R0015 implementation",
+            },
+            (
+                I01_APPROVAL_PATH,
+                CODE03_APPROVAL_PATH,
+                C0007_FULL_TESTS_CORRECTION_PATH,
+                C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH,
+            ),
+        ),
+        "implementation": pending_review(
+            "not_due",
+            {
+                **fixture_scope_common,
+                "review_purpose": "I verification for atomic R0014/R0015 implementation",
+            },
+            (),
+        ),
+    }
+    contract_positive = Problems()
+    validate_c0007_bounded_planned_control_payload(
+        contract_fixture,
+        contract_manifest_header,
+        contract_manifest_rows,
+        contract_positive,
+        context="self-test bounded contract positive",
+    )
+    problems.require(
+        not contract_positive.messages,
+        "self-test bounded contract positive",
+        f"valid planned contract rejected: {contract_positive.messages}",
+    )
+    unhashable_ci_identity = json.loads(canonical_json(contract_fixture))
+    unhashable_ci_identity["ci"]["planned_control"].update(
+        {"run_id": [], "status": "success"}
+    )
+    unhashable_ci_problems = Problems()
+    validate_c0007_bounded_planned_control_payload(
+        unhashable_ci_identity,
+        contract_manifest_header,
+        contract_manifest_rows,
+        unhashable_ci_problems,
+        context="self-test bounded contract unhashable CI identity",
+    )
+    problems.require(
+        any("positive integer, distinct authenticated" in message for message in unhashable_ci_problems.messages),
+        "self-test bounded contract unhashable CI identity",
+        f"unhashable CI identity was accepted or did not fail closed: {unhashable_ci_problems.messages}",
+    )
+    forged_active = json.loads(canonical_json(contract_fixture))
+    forged_active["lifecycle"]["state"] = "active"
+    forged_active["lifecycle"]["implementation_allowed"] = True
+    forged_problems = Problems()
+    validate_c0007_bounded_planned_control_payload(
+        forged_active,
+        contract_manifest_header,
+        contract_manifest_rows,
+        forged_problems,
+        context="self-test bounded contract forged active",
+    )
+    problems.require(
+        any("required historical" in message for message in forged_problems.messages)
+        and any("successful CI" in message for message in forged_problems.messages)
+        and any("approved review" in message for message in forged_problems.messages),
+        "self-test bounded contract forged active",
+        f"two-field activation forgery was not rejected: {forged_problems.messages}",
+    )
+    missing_artifact = json.loads(canonical_json(contract_fixture))
+    missing_artifact["artifacts"].pop()
+    missing_artifact_problems = Problems()
+    validate_c0007_bounded_planned_control_payload(
+        missing_artifact,
+        contract_manifest_header,
+        contract_manifest_rows,
+        missing_artifact_problems,
+        context="self-test bounded contract missing artifact",
+    )
+    problems.require(
+        any("41 sorted" in message for message in missing_artifact_problems.messages),
+        "self-test bounded contract missing artifact",
+        f"missing planned artifact was accepted: {missing_artifact_problems.messages}",
+    )
+    wrong_planned_mode = json.loads(canonical_json(contract_fixture))
+    wrong_planned_mode["artifacts"][0]["post_mode"] = "120000"
+    wrong_planned_mode_problems = Problems()
+    validate_c0007_bounded_planned_control_payload(
+        wrong_planned_mode,
+        contract_manifest_header,
+        contract_manifest_rows,
+        wrong_planned_mode_problems,
+        context="self-test bounded contract symlink mode",
+    )
+    problems.require(
+        any("regular-file Git blob" in message for message in wrong_planned_mode_problems.messages),
+        "self-test bounded contract symlink mode",
+        f"planned symlink mode was accepted: {wrong_planned_mode_problems.messages}",
+    )
+    historical_a = json.loads(canonical_json(contract_fixture))
+    historical_a["lifecycle"].update(
+        {
+            "planned_commit_sha": "1" * 40,
+            "planned_tree_sha": "2" * 40,
+            "planned_contract_blob_oid": "3" * 40,
+            "state": "activation_pending",
+        }
+    )
+    historical_a["ci"]["planned_control"] = {"immutable": "P CI"}
+    historical_a["reviews"]["activation"] = {"immutable": "P review"}
+    current_t = json.loads(canonical_json(historical_a))
+    current_t["lifecycle"].update(
+        {
+            "activation_candidate_commit_sha": "4" * 40,
+            "activation_candidate_tree_sha": "5" * 40,
+            "activation_candidate_contract_blob_oid": "6" * 40,
+            "state": "active",
+        }
+    )
+    transition_positive = Problems()
+    validate_c0007_transition_projection(
+        historical_a,
+        current_t,
+        "activation_pending",
+        ["1" * 40],
+        transition_positive,
+        context="self-test bounded append-only A to T",
+    )
+    problems.require(
+        not transition_positive.messages,
+        "self-test bounded append-only A to T",
+        f"valid append-only transition rejected: {transition_positive.messages}",
+    )
+    for label, mutate, parents, diagnostic in (
+        (
+            "retroactive CI rewrite",
+            lambda value: value["ci"].__setitem__("planned_control", {"forged": True}),
+            ["1" * 40],
+            ".ci.prefix:",
+        ),
+        (
+            "retroactive review rewrite",
+            lambda value: value["reviews"].__setitem__("activation", {"forged": True}),
+            ["1" * 40],
+            ".reviews.prefix:",
+        ),
+        (
+            "retroactive identity rewrite",
+            lambda value: value["lifecycle"].__setitem__("planned_tree_sha", "9" * 40),
+            ["1" * 40],
+            ".lifecycle.prefix:",
+        ),
+        (
+            "wrong historical parent",
+            lambda value: None,
+            ["8" * 40],
+            ".parent_relation:",
+        ),
+    ):
+        mutated = json.loads(canonical_json(current_t))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_transition_projection(
+            historical_a,
+            mutated,
+            "activation_pending",
+            parents,
+            negative,
+            context=f"self-test bounded append-only {label}",
+        )
+        problems.require(
+            any(diagnostic in message for message in negative.messages),
+            f"self-test bounded append-only {label}",
+            f"historical rewrite was accepted: {negative.messages}",
+        )
+    self_review = json.loads(canonical_json(contract_fixture))
+    self_review["reviews"]["activation"]["reviewer_id"] = "codex-local"
+    self_review_problems = Problems()
+    validate_c0007_bounded_planned_control_payload(
+        self_review,
+        contract_manifest_header,
+        contract_manifest_rows,
+        self_review_problems,
+        context="self-test bounded contract self review",
+    )
+    problems.require(
+        any("human/agent separation" in message for message in self_review_problems.messages),
+        "self-test bounded contract self review",
+        f"self review was accepted: {self_review_problems.messages}",
+    )
+    attestation_scope = contract_fixture["reviews"]["activation"]["scope"]
+    attestation_commit = "1" * 40
+    attestation_tree = "2" * 40
+    attestation_blob = "3" * 40
+    attestation_scope_sha256 = canonical_json_sha256(attestation_scope)
+    attestation_message = (
+        "I, primary-human, independently reviewed and approve "
+        f"{attestation_scope['review_purpose']} at commit {attestation_commit}, "
+        f"tree {attestation_tree}, contract blob {attestation_blob}, and scope "
+        f"SHA-256 {attestation_scope_sha256}. I confirm that CI is evidence, not "
+        "semantic review, and authorize only the exact bounded next transition."
+    )
+    approved_review_fixture = pending_review(
+        "approved",
+        attestation_scope,
+        (
+            I01_APPROVAL_PATH,
+            CODE03_APPROVAL_PATH,
+            C0007_FULL_TESTS_CORRECTION_PATH,
+            C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH,
+        ),
+    )
+    attestation_issue_number = 17
+    attestation_issue_id = 987654321
+    attestation_comment_id = 1234567890
+    attestation_created_at = "2026-08-25T16:10:00Z"
+    approved_review_fixture.update(
+        {
+            "decision": "approved",
+            "reviewed_at": attestation_created_at,
+            "reviewed_commit_sha": attestation_commit,
+            "reviewed_contract_blob_oid": attestation_blob,
+            "reviewed_tree_sha": attestation_tree,
+        }
+    )
+    approved_review_fixture["source"].update(
+        {
+            "comment_api_url": (
+                f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/comments/"
+                f"{attestation_comment_id}"
+            ),
+            "comment_database_id": attestation_comment_id,
+            "comment_html_url": (
+                f"https://github.com/{C0007_BOUNDED_REPOSITORY}/issues/"
+                f"{attestation_issue_number}#issuecomment-{attestation_comment_id}"
+            ),
+            "comment_node_id": "IC_kwDOFixture",
+            "created_at": attestation_created_at,
+            "issue_api_url": (
+                f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/"
+                f"{attestation_issue_number}"
+            ),
+            "issue_database_id": attestation_issue_id,
+            "issue_html_url": (
+                f"https://github.com/{C0007_BOUNDED_REPOSITORY}/issues/"
+                f"{attestation_issue_number}"
+            ),
+            "issue_node_id": "I_kwDOFixture",
+            "issue_number": attestation_issue_number,
+            "message": attestation_message,
+            "message_sha256": hashlib.sha256(
+                attestation_message.encode("utf-8")
+            ).hexdigest().upper(),
+            "updated_at": attestation_created_at,
+        }
+    )
+    approved_review_positive = Problems()
+    validate_c0007_bounded_review(
+        approved_review_fixture,
+        "approved",
+        attestation_commit,
+        attestation_tree,
+        attestation_blob,
+        attestation_scope,
+        (
+            I01_APPROVAL_PATH,
+            CODE03_APPROVAL_PATH,
+            C0007_FULL_TESTS_CORRECTION_PATH,
+            C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH,
+        ),
+        approved_review_positive,
+        context="self-test bounded exact human attestation positive",
+    )
+    problems.require(
+        not approved_review_positive.messages,
+        "self-test bounded exact human attestation positive",
+        f"exact human attestation rejected: {approved_review_positive.messages}",
+    )
+    for label, field, value, nested, diagnostic in (
+        (
+            "invented prose",
+            "message",
+            "approved",
+            True,
+            "exact unedited GitHub owner attestation",
+        ),
+        (
+            "edited source time",
+            "updated_at",
+            "2026-08-25T16:10:01Z",
+            True,
+            "exact unedited GitHub owner attestation",
+        ),
+        (
+            "self reviewer",
+            "reviewer_id",
+            "codex-local",
+            False,
+            "human/agent separation",
+        ),
+    ):
+        mutated = json.loads(canonical_json(approved_review_fixture))
+        (mutated["source"] if nested else mutated)[field] = value
+        negative = Problems()
+        validate_c0007_bounded_review(
+            mutated,
+            "approved",
+            attestation_commit,
+            attestation_tree,
+            attestation_blob,
+            attestation_scope,
+            (
+                I01_APPROVAL_PATH,
+                CODE03_APPROVAL_PATH,
+                C0007_FULL_TESTS_CORRECTION_PATH,
+                C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH,
+            ),
+            negative,
+            context=f"self-test bounded human attestation {label}",
+        )
+        problems.require(
+            any(diagnostic in message for message in negative.messages),
+            f"self-test bounded human attestation {label}",
+            f"forged human attestation was accepted: {negative.messages}",
+        )
+    repository_observation = {
+        "fork": False,
+        "full_name": C0007_BOUNDED_REPOSITORY,
+        "id": C0007_BOUNDED_REPOSITORY_DATABASE_ID,
+        "node_id": C0007_BOUNDED_REPOSITORY_ID,
+        "owner": {
+            "id": C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID,
+            "login": C0007_BOUNDED_REPOSITORY_OWNER_LOGIN,
+            "node_id": C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID,
+            "type": "User",
+        },
+        "url": C0007_BOUNDED_REPOSITORY_API_URL,
+    }
+    issue_observation = {
+        "comments_url": approved_review_fixture["source"]["issue_api_url"]
+        + "/comments",
+        "html_url": approved_review_fixture["source"]["issue_html_url"],
+        "id": attestation_issue_id,
+        "node_id": approved_review_fixture["source"]["issue_node_id"],
+        "number": attestation_issue_number,
+        "repository_url": C0007_BOUNDED_REPOSITORY_API_URL,
+        "url": approved_review_fixture["source"]["issue_api_url"],
+    }
+    comment_observation = {
+        "author_association": "OWNER",
+        "body": attestation_message,
+        "created_at": attestation_created_at,
+        "html_url": approved_review_fixture["source"]["comment_html_url"],
+        "id": attestation_comment_id,
+        "issue_url": approved_review_fixture["source"]["issue_api_url"],
+        "node_id": approved_review_fixture["source"]["comment_node_id"],
+        "performed_via_github_app": None,
+        "updated_at": attestation_created_at,
+        "url": approved_review_fixture["source"]["comment_api_url"],
+        "user": {
+            "id": C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID,
+            "login": C0007_BOUNDED_REPOSITORY_OWNER_LOGIN,
+            "node_id": C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID,
+            "type": "User",
+        },
+    }
+    live_review_positive = Problems()
+    validate_c0007_github_review_observation(
+        approved_review_fixture,
+        repository_observation,
+        issue_observation,
+        comment_observation,
+        live_review_positive,
+        context="self-test bounded live GitHub owner review positive",
+    )
+    problems.require(
+        not live_review_positive.messages,
+        "self-test bounded live GitHub owner review positive",
+        f"exact live owner comment rejected: {live_review_positive.messages}",
+    )
+    for label, target, field, value, diagnostic in (
+        (
+            "wrong repository owner",
+            "repository_owner",
+            "id",
+            1,
+            ".repository:",
+        ),
+        ("pull request", "issue", "pull_request", {}, ".issue:"),
+        ("edited body", "comment", "body", "approved", ".comment:"),
+        (
+            "non-owner association",
+            "comment",
+            "author_association",
+            "COLLABORATOR",
+            ".comment:",
+        ),
+        (
+            "app-mediated comment",
+            "comment",
+            "performed_via_github_app",
+            {"id": 1},
+            ".comment:",
+        ),
+        (
+            "edited timestamp",
+            "comment",
+            "updated_at",
+            "2026-08-25T16:10:01Z",
+            ".comment:",
+        ),
+    ):
+        mutated_repository = json.loads(canonical_json(repository_observation))
+        mutated_issue = json.loads(canonical_json(issue_observation))
+        mutated_comment = json.loads(canonical_json(comment_observation))
+        if target == "repository_owner":
+            mutated_repository["owner"][field] = value
+        elif target == "issue":
+            mutated_issue[field] = value
+        else:
+            mutated_comment[field] = value
+        negative = Problems()
+        validate_c0007_github_review_observation(
+            approved_review_fixture,
+            mutated_repository,
+            mutated_issue,
+            mutated_comment,
+            negative,
+            context=f"self-test bounded live GitHub owner review {label}",
+        )
+        problems.require(
+            any(diagnostic in message for message in negative.messages),
+            f"self-test bounded live GitHub owner review {label}",
+            f"unauthenticated owner review was accepted: {negative.messages}",
+        )
+    shape_positive = Problems()
+    validate_c0007_bounded_commit_shape(
+        ["a" * 40],
+        {"contract"},
+        "subject",
+        "a" * 40,
+        {"contract"},
+        "subject",
+        shape_positive,
+        context="self-test bounded commit positive",
+    )
+    problems.require(
+        not shape_positive.messages,
+        "self-test bounded commit positive",
+        f"valid direct child rejected: {shape_positive.messages}",
+    )
+    shape_negative = Problems()
+    validate_c0007_bounded_commit_shape(
+        ["b" * 40, "c" * 40],
+        {"contract", "intruder"},
+        "wrong",
+        "a" * 40,
+        {"contract"},
+        "subject",
+        shape_negative,
+        context="self-test bounded commit negative",
+    )
+    problems.require(
+        len(shape_negative.messages) == 3,
+        "self-test bounded commit negative",
+        f"parent/path/subject mutations not all rejected: {shape_negative.messages}",
+    )
+    partial_paths = Problems()
+    validate_c0007_implementation_path_set(
+        {next(iter(R0014_PATHS))},
+        set(R0014_PATHS) | set(R0015_PATHS),
+        True,
+        partial_paths,
+        context="self-test bounded partial implementation",
+    )
+    problems.require(
+        any("complete 14-path union" in message for message in partial_paths.messages),
+        "self-test bounded partial implementation",
+        f"partial implementation was accepted: {partial_paths.messages}",
+    )
+    exact_t = "7" * 40
+    def remote_config_fixture(
+        remote_url: str = C0007_BOUNDED_REMOTE_URL,
+        *,
+        push_urls: Sequence[str] = (),
+        remote_names: Sequence[str] = (C0007_BOUNDED_REMOTE,),
+    ) -> dict[str, Sequence[str]]:
+        return {
+            "configured_remote_names": list(remote_names),
+            "configured_remote_urls": [remote_url],
+            "configured_push_urls": list(push_urls),
+            "configured_fetch_refspecs": [
+                "+refs/heads/*:refs/remotes/origin/*"
+            ],
+            "configured_push_refspecs": [],
+            "configured_mirror_values": [],
+            "configured_push_default_values": [],
+            "configured_branch_remote_values": [],
+            "configured_branch_push_remote_values": [],
+            "resolved_fetch_urls": [remote_url],
+            "resolved_push_urls": [remote_url],
+        }
+
+    remote_positive = Problems()
+    remote_write = validate_c0007_remote_observation(
+        state="active",
+        head=exact_t,
+        planned_commit="1" * 40,
+        activation_commit="4" * 40,
+        active_commit=exact_t,
+        implementation_commit=None,
+        symbolic_branch=C0007_BOUNDED_BRANCH,
+        **remote_config_fixture(),
+        remote_main_tip=C0007_BOUNDED_CONTROL_HEAD_SHA,
+        remote_branch_tip=exact_t,
+        implementation_overlay=True,
+        problems=remote_positive,
+        context="self-test bounded exact remote write",
+    )
+    problems.require(
+        remote_write and not remote_positive.messages,
+        "self-test bounded exact remote write",
+        f"exact T ref/branch write gate rejected: {remote_positive.messages}",
+    )
+    detached_ci = Problems()
+    detached_write = validate_c0007_remote_observation(
+        state="active",
+        head="8" * 40,
+        planned_commit="1" * 40,
+        activation_commit="4" * 40,
+        active_commit=exact_t,
+        implementation_commit="8" * 40,
+        symbolic_branch=None,
+        **remote_config_fixture(),
+        remote_main_tip=C0007_BOUNDED_CONTROL_HEAD_SHA,
+        remote_branch_tip="8" * 40,
+        implementation_overlay=False,
+        problems=detached_ci,
+        context="self-test bounded detached I validation",
+    )
+    problems.require(
+        not detached_write and not detached_ci.messages,
+        "self-test bounded detached I validation",
+        f"detached historical I should validate without granting writes: {detached_ci.messages}",
+    )
+    for label, remote_url, main_tip, branch_tip, symbolic, diagnostic in (
+        (
+            "remote main drift",
+            C0007_BOUNDED_REMOTE_URL,
+            "9" * 40,
+            exact_t,
+            C0007_BOUNDED_BRANCH,
+            ".main:",
+        ),
+        (
+            "wrong bounded tip",
+            C0007_BOUNDED_REMOTE_URL,
+            C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "9" * 40,
+            C0007_BOUNDED_BRANCH,
+            ".branch:",
+        ),
+        (
+            "detached write",
+            C0007_BOUNDED_REMOTE_URL,
+            C0007_BOUNDED_CONTROL_HEAD_SHA,
+            exact_t,
+            None,
+            ".write_permission:",
+        ),
+        (
+            "wrong origin",
+            "https://github.com/attacker/mirror.git",
+            C0007_BOUNDED_CONTROL_HEAD_SHA,
+            exact_t,
+            C0007_BOUNDED_BRANCH,
+            ".identity:",
+        ),
+    ):
+        negative = Problems()
+        write = validate_c0007_remote_observation(
+            state="active",
+            head=exact_t,
+            planned_commit="1" * 40,
+            activation_commit="4" * 40,
+            active_commit=exact_t,
+            implementation_commit=None,
+            symbolic_branch=symbolic,
+            **remote_config_fixture(remote_url),
+            remote_main_tip=main_tip,
+            remote_branch_tip=branch_tip,
+            implementation_overlay=True,
+            problems=negative,
+            context=f"self-test bounded remote {label}",
+        )
+        problems.require(
+            not write and any(diagnostic in message for message in negative.messages),
+            f"self-test bounded remote {label}",
+            f"unsafe remote/branch write was accepted: {negative.messages}",
+        )
+    multi_push_problems = Problems()
+    multi_push_config = remote_config_fixture(
+        push_urls=(
+            C0007_BOUNDED_REMOTE_URL,
+            "https://github.com/attacker/mirror.git",
+        )
+    )
+    multi_push_config["resolved_push_urls"] = [
+        C0007_BOUNDED_REMOTE_URL,
+        "https://github.com/attacker/mirror.git",
+    ]
+    multi_push_write = validate_c0007_remote_observation(
+        state="active",
+        head=exact_t,
+        planned_commit="1" * 40,
+        activation_commit="4" * 40,
+        active_commit=exact_t,
+        implementation_commit=None,
+        symbolic_branch=C0007_BOUNDED_BRANCH,
+        **multi_push_config,
+        remote_main_tip=C0007_BOUNDED_CONTROL_HEAD_SHA,
+        remote_branch_tip=exact_t,
+        implementation_overlay=True,
+        problems=multi_push_problems,
+        context="self-test bounded remote multiple push URLs",
+    )
+    problems.require(
+        not multi_push_write
+        and any(".identity:" in message for message in multi_push_problems.messages),
+        "self-test bounded remote multiple push URLs",
+        f"secondary push URL was accepted: {multi_push_problems.messages}",
+    )
+    extra_remote_problems = Problems()
+    extra_remote_write = validate_c0007_remote_observation(
+        state="active",
+        head=exact_t,
+        planned_commit="1" * 40,
+        activation_commit="4" * 40,
+        active_commit=exact_t,
+        implementation_commit=None,
+        symbolic_branch=C0007_BOUNDED_BRANCH,
+        **remote_config_fixture(remote_names=(C0007_BOUNDED_REMOTE, "evil")),
+        remote_main_tip=C0007_BOUNDED_CONTROL_HEAD_SHA,
+        remote_branch_tip=exact_t,
+        implementation_overlay=True,
+        problems=extra_remote_problems,
+        context="self-test bounded remote extra remote name",
+    )
+    problems.require(
+        not extra_remote_write
+        and any(".identity:" in message for message in extra_remote_problems.messages),
+        "self-test bounded remote extra remote name",
+        f"additional configured remote was accepted: {extra_remote_problems.messages}",
+    )
+    contract_payload_fixture = b"{}\n"
+    contract_index_positive = Problems()
+    validate_c0007_contract_index_binding(
+        ("100644", git_blob_oid(contract_payload_fixture), "0"),
+        contract_payload_fixture,
+        contract_index_positive,
+        context="self-test bounded contract index positive",
+    )
+    problems.require(
+        not contract_index_positive.messages,
+        "self-test bounded contract index positive",
+        f"matching contract worktree/index blob rejected: {contract_index_positive.messages}",
+    )
+    for lifecycle_state in ("planned", "activation_pending", "active", "verified"):
+        split_index_problems = Problems()
+        validate_c0007_contract_index_binding(
+            ("100644", "0" * 40, "0"),
+            contract_payload_fixture,
+            split_index_problems,
+            context=f"self-test bounded contract split index {lifecycle_state}",
+        )
+        problems.require(
+            any("parsed worktree bytes" in message for message in split_index_problems.messages),
+            f"self-test bounded contract split index {lifecycle_state}",
+            f"split worktree/index contract accepted: {split_index_problems.messages}",
+        )
+    wrong_postimage = Problems()
+    validate_c0007_live_postimages(
+        {"path": "A" * 64},
+        {"path": "B" * 64},
+        wrong_postimage,
+        context="self-test bounded postimage",
+    )
+    problems.require(
+        any("live SHA-256" in message for message in wrong_postimage.messages),
+        "self-test bounded postimage",
+        f"wrong postimage byte digest was accepted: {wrong_postimage.messages}",
+    )
+    correction_fixture: dict[str, Any] = {
+        "accepted_history": {
+            "checkpoint": {
+                "path": f"{DEFAULT_PHASE_DIR.as_posix()}/checkpoints/C0007.json",
+                "sha256": C0007_CHECKPOINT_SHA256,
+            },
+            "code_sha": C0007_CODE_SHA,
+            "gates": {
+                "path": f"{DEFAULT_PHASE_DIR.as_posix()}/checkpoints/C0007-gates.md",
+                "sha256": C0007_GATES_SHA256,
+            },
+            "mutation_policy": "preserve both accepted artifacts byte-for-byte",
+        },
+        "authorization": {
+            "authority_id": "primary-human",
+            "bounded_authorization_id": C0007_BOUNDED_AUTHORIZATION_ID,
+            "decision": "approved",
+        },
+        "correction": {
+            "corrected_semantic_label": "test-library compilation",
+            "observed_build_command": "lake build NumStability NumStabilityTest",
+            "observed_test_driver_command": None,
+            "original_gate_id": "full_tests",
+            "prohibition": "MUST NOT be reused as lake test proof",
+            "reason": "build-only workflow",
+            "required_successor_evidence": [
+                "a distinct full_build gate for literal command lake build NumStability NumStabilityTest",
+                "a distinct full_tests gate for literal command lake test",
+                "one authenticated complete GitHub job log with exact byte count and SHA-256, plus distinct build/test step numbers, names, timestamps, and GitHub success conclusions",
+            ],
+        },
+        "correction_id": "C0007-full-tests-evidence-semantics-v1",
+        "phase_id": PHASE_ID,
+        "record_kind": "checkpoint_gate_semantic_correction",
+        "review": {
+            "approved_by": None,
+            "reviewed_at": None,
+            "reviewer_id": None,
+            "status": "pending_independent_review",
+        },
+        "schema_version": 1,
+        "source_ci": {
+            "event": "push",
+            "head_branch": "main",
+            "head_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "job": {
+                "completed_at": "2026-08-25T12:20:50Z",
+                "conclusion": "success",
+                "id": C0007_BUILD_ONLY_JOB_ID,
+                "name": "build",
+                "started_at": "2026-08-25T12:12:22Z",
+            },
+            "run": {
+                "completed_at": "2026-08-25T12:20:51Z",
+                "conclusion": "success",
+                "id": C0007_BUILD_ONLY_RUN_ID,
+                "started_at": "2026-08-25T12:12:17Z",
+            },
+            "workflow": {
+                "build_args": "NumStability NumStabilityTest",
+                "build_input": True,
+                "lint_input": False,
+                "path": ".github/workflows/lean_action_ci.yml",
+                "sha256": C0007_BUILD_ONLY_WORKFLOW_SHA256,
+                "test_input": False,
+            },
+        },
+    }
+    workflow_fixture = f"""jobs:
+  build:
+    steps:
+      - uses: {PINNED_CHECKOUT_ACTION}
+      - uses: {PINNED_LEAN_ACTION}
+      - name: Run Lake test driver
+        run: lake test
+"""
+    correction_positive = Problems()
+    validate_c0007_full_tests_correction_payload(
+        correction_fixture,
+        workflow_fixture,
+        {"primary-human": "human", "claude-local": "agent", "codex-local": "agent"},
+        correction_positive,
+        context="self-test C0007 full-tests correction positive",
+    )
+    problems.require(
+        not correction_positive.messages,
+        "self-test C0007 full-tests correction positive",
+        f"valid correction rejected: {correction_positive.messages}",
+    )
+    correction_negative_cases = (
+        (
+            "test true",
+            lambda value: value["source_ci"]["workflow"].__setitem__("test_input", True),
+            ".source_ci.workflow:",
+        ),
+        (
+            "wrong workflow hash",
+            lambda value: value["source_ci"]["workflow"].__setitem__("sha256", "0" * 64),
+            ".source_ci.workflow:",
+        ),
+        (
+            "self review",
+            lambda value: value["review"].__setitem__("reviewer_id", "codex-local"),
+            ".review:",
+        ),
+    )
+    for label, mutate, diagnostic in correction_negative_cases:
+        mutated = json.loads(canonical_json(correction_fixture))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_full_tests_correction_payload(
+            mutated,
+            workflow_fixture,
+            {"primary-human": "human", "claude-local": "agent", "codex-local": "agent"},
+            negative,
+            context=f"self-test C0007 full-tests correction {label}",
+        )
+        problems.require(
+            any(diagnostic in message for message in negative.messages),
+            f"self-test C0007 full-tests correction {label}",
+            f"mutation was not rejected with {diagnostic}: {negative.messages}",
+        )
+    missing_test_step = Problems()
+    validate_c0007_full_tests_correction_payload(
+        correction_fixture,
+        workflow_fixture.replace("      - name: Run Lake test driver\n        run: lake test\n", ""),
+        {"primary-human": "human", "claude-local": "agent", "codex-local": "agent"},
+        missing_test_step,
+        context="self-test C0007 full-tests correction missing test step",
+    )
+    problems.require(
+        any("literal lake test" in message for message in missing_test_step.messages),
+        "self-test C0007 full-tests correction missing test step",
+        f"missing test step was accepted: {missing_test_step.messages}",
+    )
+
+    try:
+        bounded_workflow_fixture = Path(C0007_BOUNDED_WORKFLOW_PATH).read_text(
+            encoding="utf-8"
+        )
+    except (OSError, UnicodeError) as error:
+        problems.add("self-test bounded workflow fixture", f"cannot read workflow: {error}")
+        bounded_workflow_fixture = ""
+    bounded_workflow_positive = Problems()
+    validate_c0007_bounded_workflow_text(
+        bounded_workflow_fixture,
+        bounded_workflow_positive,
+        context="self-test bounded workflow positive",
+    )
+    problems.require(
+        not bounded_workflow_positive.messages,
+        "self-test bounded workflow positive",
+        f"valid executable workflow rejected: {bounded_workflow_positive.messages}",
+    )
+    weakened_workflow = bounded_workflow_fixture.replace(
+        "      - name: Run Lake test driver\n        run: lake test\n",
+        "      - name: Run Lake test driver\n        continue-on-error: true\n        run: lake test\n",
+    )
+    weakened_workflow_problems = Problems()
+    validate_c0007_bounded_workflow_text(
+        weakened_workflow,
+        weakened_workflow_problems,
+        context="self-test bounded workflow weakened test",
+    )
+    problems.require(
+        any("continue-on-error" in message for message in weakened_workflow_problems.messages)
+        and any("full_tests" in message for message in weakened_workflow_problems.messages),
+        "self-test bounded workflow weakened test",
+        f"conditional/continue-on-error test was accepted: {weakened_workflow_problems.messages}",
+    )
+    supported_api_block_fixture = (
+        f"      - name: {C0007_BOUNDED_SUPPORTED_API_STEP}\n"
+        "        run: |\n"
+        "          python tools/architecture/check_supported_api.py --self-test\n"
+        "          python tools/architecture/check_supported_api.py --baseline docs/architecture/supported-api.json --mode lifecycle\n"
+    )
+    missing_supported_workflow = bounded_workflow_fixture.replace(
+        supported_api_block_fixture, ""
+    )
+    missing_supported_problems = Problems()
+    validate_c0007_bounded_workflow_text(
+        missing_supported_workflow,
+        missing_supported_problems,
+        context="self-test bounded workflow missing supported API",
+    )
+    problems.require(
+        missing_supported_workflow != bounded_workflow_fixture
+        and any("supported_api" in message for message in missing_supported_problems.messages)
+        and any("steps" in message for message in missing_supported_problems.messages),
+        "self-test bounded workflow missing supported API",
+        f"removed supported-API gate was accepted: {missing_supported_problems.messages}",
+    )
+    inert_architecture_workflow = re.sub(
+        rf"(?m)(^      - name: {re.escape(C0007_BOUNDED_ARCHITECTURE_STEP)}\n"
+        r"        env:\n          GH_TOKEN: \$\{\{ github\.token \}\}\n"
+        r"        run: \|\n)(?:          [^\n]+\n)+"
+        rf"(?=^      - name: {re.escape(C0007_BOUNDED_BUILD_STEP)}\n)",
+        r"\1          true\n",
+        bounded_workflow_fixture,
+    )
+    inert_architecture_problems = Problems()
+    validate_c0007_bounded_workflow_text(
+        inert_architecture_workflow,
+        inert_architecture_problems,
+        context="self-test bounded workflow inert architecture",
+    )
+    problems.require(
+        inert_architecture_workflow != bounded_workflow_fixture
+        and any("architecture_gate" in message for message in inert_architecture_problems.messages),
+        "self-test bounded workflow inert architecture",
+        f"inert architecture command block was accepted: {inert_architecture_problems.messages}",
+    )
+
+    gate_fixture = {
+        "candidate_sha": "a" * 40,
+        "command": "lake build NumStability NumStabilityTest",
+        "completed_at": "2026-08-25T16:05:00Z",
+        "conclusion": "success",
+        "job_id": 2,
+        "run_id": 1,
+        "runner": "GitHub Actions 1",
+        "started_at": "2026-08-25T16:00:00Z",
+        "step_name": C0007_BOUNDED_BUILD_STEP,
+        "step_number": 3,
+        "toolchain": C0007_BOUNDED_TOOLCHAIN,
+    }
+    test_gate_fixture = {
+        **gate_fixture,
+        "command": "lake test",
+        "completed_at": "2026-08-25T16:05:20Z",
+        "started_at": "2026-08-25T16:05:15Z",
+        "step_name": C0007_BOUNDED_TEST_STEP,
+        "step_number": 5,
+    }
+    distinct_positive = Problems()
+    validate_distinct_build_test_evidence(
+        gate_fixture,
+        test_gate_fixture,
+        distinct_positive,
+        context="self-test distinct build/test positive",
+    )
+    problems.require(
+        not distinct_positive.messages,
+        "self-test distinct build/test positive",
+        f"valid build/test pair rejected: {distinct_positive.messages}",
+    )
+    gate_negative_cases = (
+        (
+            "reused build evidence",
+            {
+                **test_gate_fixture,
+                "step_name": C0007_BOUNDED_BUILD_STEP,
+                "step_number": 3,
+            },
+            "may not alias",
+        ),
+        (
+            "wrong candidate SHA",
+            {**test_gate_fixture, "candidate_sha": "b" * 40},
+            "same candidate SHA",
+        ),
+        (
+            "failed conclusion",
+            {**test_gate_fixture, "conclusion": "failure"},
+            "authenticated GitHub success",
+        ),
+        (
+            "wrong toolchain",
+            {**test_gate_fixture, "toolchain": "leanprover/lean4:v4.24.0"},
+            "exact command, step name, and toolchain",
+        ),
+        (
+            "boolean step number",
+            {**test_gate_fixture, "step_number": True},
+            "authenticated GitHub success",
+        ),
+        (
+            "reversed step order",
+            {**test_gate_fixture, "step_number": 2},
+            "full build must complete before",
+        ),
+        (
+            "overlapping gate timing",
+            {**test_gate_fixture, "started_at": "2026-08-25T16:04:59Z"},
+            "full build must complete before",
+        ),
+    )
+    for label, mutated_test, diagnostic in gate_negative_cases:
+        negative = Problems()
+        validate_distinct_build_test_evidence(
+            gate_fixture,
+            mutated_test,
+            negative,
+            context=f"self-test distinct build/test {label}",
+        )
+        problems.require(
+            any(diagnostic in message for message in negative.messages),
+            f"self-test distinct build/test {label}",
+            f"mutation was not rejected with {diagnostic}: {negative.messages}",
+        )
+    github_evidence_fixture = {
+        "branch": C0007_BOUNDED_BRANCH,
+        "candidate_sha": "a" * 40,
+        "candidate_tree": "b" * 40,
+        "check_suite_id": 30,
+        "completed_at": "2026-08-25T16:06:00Z",
+        "conclusion": "success",
+        "event": "workflow_dispatch",
+        "full_build": gate_fixture,
+        "full_tests": test_gate_fixture,
+        "job_id": 2,
+        "job_completed_at": "2026-08-25T16:05:30Z",
+        "job_log_byte_count": 123,
+        "job_log_sha256": "C" * 64,
+        "job_name": C0007_BOUNDED_JOB_NAME,
+        "job_started_at": "2026-08-25T15:59:30Z",
+        "repository": C0007_BOUNDED_REPOSITORY,
+        "runner_name": "GitHub Actions 1",
+        "run_attempt": 1,
+        "run_id": 1,
+        "started_at": "2026-08-25T15:59:00Z",
+        "status": "success",
+        "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
+    }
+    github_run_fixture = {
+        "check_suite_id": 30,
+        "conclusion": "success",
+        "event": "workflow_dispatch",
+        "head_branch": C0007_BOUNDED_BRANCH,
+        "head_repository": {
+            "fork": False,
+            "full_name": C0007_BOUNDED_REPOSITORY,
+            "node_id": C0007_BOUNDED_REPOSITORY_ID,
+        },
+        "head_sha": "a" * 40,
+        "id": 1,
+        "name": C0007_BOUNDED_WORKFLOW_NAME,
+        "path": C0007_BOUNDED_WORKFLOW_PATH,
+        "repository": {
+            "full_name": C0007_BOUNDED_REPOSITORY,
+            "node_id": C0007_BOUNDED_REPOSITORY_ID,
+        },
+        "referenced_workflows": [],
+        "run_attempt": 1,
+        "run_started_at": "2026-08-25T15:59:00Z",
+        "status": "completed",
+        "updated_at": "2026-08-25T16:06:00Z",
+        "workflow_id": C0007_BOUNDED_WORKFLOW_ID,
+    }
+    github_jobs_fixture = {
+        "total_count": 1,
+        "jobs": [
+            {
+                "conclusion": "success",
+                "head_sha": "a" * 40,
+                "head_branch": C0007_BOUNDED_BRANCH,
+                "id": 2,
+                "name": C0007_BOUNDED_JOB_NAME,
+                "run_id": 1,
+                "run_attempt": 1,
+                "runner_name": "GitHub Actions 1",
+                "started_at": "2026-08-25T15:59:30Z",
+                "completed_at": "2026-08-25T16:05:30Z",
+                "status": "completed",
+                "workflow_name": C0007_BOUNDED_WORKFLOW_NAME,
+                "steps": [
+                    {
+                        "completed_at": "2026-08-25T15:59:50Z",
+                        "conclusion": "success",
+                        "name": C0007_BOUNDED_ARCHITECTURE_STEP,
+                        "number": 2,
+                        "started_at": "2026-08-25T15:59:40Z",
+                        "status": "completed",
+                    },
+                    {
+                        "completed_at": gate_fixture["completed_at"],
+                        "conclusion": "success",
+                        "name": C0007_BOUNDED_BUILD_STEP,
+                        "number": gate_fixture["step_number"],
+                        "started_at": gate_fixture["started_at"],
+                        "status": "completed",
+                    },
+                    {
+                        "completed_at": "2026-08-25T16:05:10Z",
+                        "conclusion": "success",
+                        "name": C0007_BOUNDED_SUPPORTED_API_STEP,
+                        "number": 4,
+                        "started_at": "2026-08-25T16:05:05Z",
+                        "status": "completed",
+                    },
+                    {
+                        "completed_at": test_gate_fixture["completed_at"],
+                        "conclusion": "success",
+                        "name": C0007_BOUNDED_TEST_STEP,
+                        "number": test_gate_fixture["step_number"],
+                        "started_at": test_gate_fixture["started_at"],
+                        "status": "completed",
+                    },
+                ],
+            }
+        ]
+    }
+    boolean_id_evidence = json.loads(canonical_json(github_evidence_fixture))
+    boolean_id_evidence["run_id"] = True
+    boolean_id_problems = Problems()
+    validate_c0007_bounded_ci_evidence(
+        boolean_id_evidence,
+        "success",
+        "a" * 40,
+        "b" * 40,
+        boolean_id_problems,
+        context="self-test bounded CI boolean ID",
+    )
+    problems.require(
+        any("run/job/suite/log identity" in message for message in boolean_id_problems.messages),
+        "self-test bounded CI boolean ID",
+        f"JSON boolean was accepted as numeric CI identity: {boolean_id_problems.messages}",
+    )
+    github_observation_positive = Problems()
+    validate_c0007_github_ci_observation(
+        github_evidence_fixture,
+        github_run_fixture,
+        github_jobs_fixture,
+        "C" * 64,
+        123,
+        github_observation_positive,
+        context="self-test bounded GitHub evidence positive",
+    )
+    problems.require(
+        not github_observation_positive.messages,
+        "self-test bounded GitHub evidence positive",
+        f"valid authenticated observation rejected: {github_observation_positive.messages}",
+    )
+    reversed_evidence = json.loads(canonical_json(github_evidence_fixture))
+    reversed_evidence["full_build"].update(
+        {
+            "completed_at": "2026-08-25T16:05:00Z",
+            "started_at": "2026-08-25T16:03:00Z",
+            "step_number": 5,
+        }
+    )
+    reversed_evidence["full_tests"].update(
+        {
+            "completed_at": "2026-08-25T16:02:00Z",
+            "started_at": "2026-08-25T16:00:00Z",
+            "step_number": 3,
+        }
+    )
+    reversed_jobs = json.loads(canonical_json(github_jobs_fixture))
+    for step in reversed_jobs["jobs"][0]["steps"]:
+        if step["name"] == C0007_BOUNDED_BUILD_STEP:
+            step.update(
+                {
+                    "completed_at": "2026-08-25T16:05:00Z",
+                    "number": 5,
+                    "started_at": "2026-08-25T16:03:00Z",
+                }
+            )
+        elif step["name"] == C0007_BOUNDED_SUPPORTED_API_STEP:
+            step.update(
+                {
+                    "completed_at": "2026-08-25T16:03:00Z",
+                    "number": 4,
+                    "started_at": "2026-08-25T16:02:00Z",
+                }
+            )
+        elif step["name"] == C0007_BOUNDED_TEST_STEP:
+            step.update(
+                {
+                    "completed_at": "2026-08-25T16:02:00Z",
+                    "number": 3,
+                    "started_at": "2026-08-25T16:00:00Z",
+                }
+            )
+    reversed_record_problems = Problems()
+    validate_c0007_bounded_ci_evidence(
+        reversed_evidence,
+        "success",
+        "a" * 40,
+        "b" * 40,
+        reversed_record_problems,
+        context="self-test bounded CI reversed step order",
+    )
+    reversed_observation_problems = Problems()
+    validate_c0007_github_ci_observation(
+        reversed_evidence,
+        github_run_fixture,
+        reversed_jobs,
+        "C" * 64,
+        123,
+        reversed_observation_problems,
+        context="self-test bounded GitHub evidence reversed step order",
+    )
+    problems.require(
+        any("gate_order" in message for message in reversed_record_problems.messages)
+        and any("step_order" in message for message in reversed_observation_problems.messages),
+        "self-test bounded GitHub evidence reversed step order",
+        "reversed authenticated build/test order was accepted: "
+        f"record={reversed_record_problems.messages}; observation={reversed_observation_problems.messages}",
+    )
+    missing_supported_jobs = json.loads(canonical_json(github_jobs_fixture))
+    missing_supported_jobs["jobs"][0]["steps"] = [
+        step
+        for step in missing_supported_jobs["jobs"][0]["steps"]
+        if step["name"] != C0007_BOUNDED_SUPPORTED_API_STEP
+    ]
+    missing_supported_observation = Problems()
+    validate_c0007_github_ci_observation(
+        github_evidence_fixture,
+        github_run_fixture,
+        missing_supported_jobs,
+        "C" * 64,
+        123,
+        missing_supported_observation,
+        context="self-test bounded GitHub evidence missing supported API",
+    )
+    problems.require(
+        any("supported_api" in message for message in missing_supported_observation.messages)
+        and any("step_order" in message for message in missing_supported_observation.messages),
+        "self-test bounded GitHub evidence missing supported API",
+        f"missing observed supported-API step was accepted: {missing_supported_observation.messages}",
+    )
+    for label, run_mutation, jobs_mutation, log_digest, log_byte_count, diagnostic in (
+        (
+            "wrong head",
+            {**github_run_fixture, "head_sha": "d" * 40},
+            github_jobs_fixture,
+            "C" * 64,
+            123,
+            ".run:",
+        ),
+        (
+            "wrong repository",
+            {
+                **github_run_fixture,
+                "repository": {
+                    "full_name": "attacker/fork",
+                    "node_id": C0007_BOUNDED_REPOSITORY_ID,
+                },
+            },
+            github_jobs_fixture,
+            "C" * 64,
+            123,
+            ".run:",
+        ),
+        (
+            "reusable workflow indirection",
+            {**github_run_fixture, "referenced_workflows": [{"path": "attacker/reuse.yml"}]},
+            github_jobs_fixture,
+            "C" * 64,
+            123,
+            ".run:",
+        ),
+        (
+            "forged log hash",
+            github_run_fixture,
+            github_jobs_fixture,
+            "D" * 64,
+            123,
+            ".job_log_sha256:",
+        ),
+    ):
+        negative = Problems()
+        validate_c0007_github_ci_observation(
+            github_evidence_fixture,
+            run_mutation,
+            jobs_mutation,
+            log_digest,
+            log_byte_count,
+            negative,
+            context=f"self-test bounded GitHub evidence {label}",
+        )
+        problems.require(
+            any(diagnostic in message for message in negative.messages),
+            f"self-test bounded GitHub evidence {label}",
+            f"forged GitHub observation was accepted: {negative.messages}",
+        )
     r07_prefix = DEFAULT_PHASE_DIR.as_posix()
     r07_contract_fixture: dict[str, Any] = {
         "accepted_control_sha": R07_ACCEPTED_CONTROL_SHA,

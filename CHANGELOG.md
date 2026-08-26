@@ -32,6 +32,13 @@ follows semantic versioning for its public module paths and declaration API.
 
 ### Changed
 
+- The C0007 semantic/source layout classifies all 2,927 production modules:
+  577 reusable, 1,224 source, 404 aggregate, 712 compatibility, 5 internal,
+  and 5 upstream, with zero mixed or unclassified modules. The 712 historical
+  forwarding modules remain supported and map to 2,364 canonical targets.
+- M09/R09 and M10/R10 are accepted at C0007. M13/I01 remains planned with
+  twelve modules; bounded-phase and repository-wide completion remain
+  incomplete.
 - Historical source and triangular-system paths are now import-only forwarding
   modules. They remain supported until a declared breaking release.
 - `NumStability.Analysis.Summation` is now an import-only complete aggregate;
@@ -42,9 +49,10 @@ follows semantic versioning for its public module paths and declaration API.
 - `Summation.Insertion` is now a declaration-free complete family aggregate;
   production consumers import its narrow reusable layers, while the historical
   `InsertionSum` path retains the complete reusable and source surface.
-- The Algorithms aggregate imports the Sylvester family through one umbrella,
-  reducing its direct imports from 490 to 463, and its imports are sorted and
-  deduplicated by a repository-owned formatter.
+- A historical migration step reduced the Algorithms aggregate's direct
+  imports from 490 to 463. Its current executable ceilings are 446 total, 44
+  from `NumStability.Analysis`, and 73 from `NumStability.Source`; imports are
+  sorted and deduplicated by a repository-owned formatter.
 - `NumStability.Higham` now forwards to the canonical
   `NumStability.Source.Higham` surface.
 - Mathlib is pinned to an exact revision and `lake test` has an explicit test

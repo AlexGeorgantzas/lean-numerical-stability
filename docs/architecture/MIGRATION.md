@@ -1,5 +1,30 @@
 # Book-formalization migration gates
 
+## Current migration authority
+
+The active contract is
+[`phases/2026-08-repository-reorganization-completion/`](phases/2026-08-repository-reorganization-completion/README.md).
+C0007 is the current accepted checkpoint at code
+`4e26820d1f4989ec4ec77b7113085f593570e11b`. Its executable inventory covers
+2,927 of 2,927 production modules, with zero unclassified, mixed, or
+noncanonical modules. M09 and M10 are accepted; B0011/R09 and B0012/R10 are
+accepted with retirement due; P0011/P0012 are retired; and R0012/R0013 are
+applied. M13/I01 is the next planned bounded wave and contains exactly twelve
+modules.
+
+Classification closure is not completion. Bounded-phase completion remains
+incomplete until the M13/I01 and bounded gate packet is independently
+accepted. Repository-wide completion remains incomplete until the remaining
+compatibility, naming, entry-point, public-documentation, outlier, warning,
+profile, provenance, acceptance, and lifecycle gates close or receive valid
+reviewed deferrals.
+
+## Archived migration chronology and superseded planning
+
+The material below preserves earlier gate snapshots and plans. Any
+present-tense checkpoint or completion statement in this archived section is a
+historical record and does not override the current migration authority above.
+
 This is the executable migration sequence for NumStability.  A gate is complete
 only when its stated evidence is checked into the repository or recorded by CI.
 
@@ -111,7 +136,7 @@ delivery branches remain preserved at
 [`R05/R06 retirement review`](phases/2026-08-repository-reorganization-completion/reviews/R05-R06-retirement.md)
 records the exact leases, archive, cleanup, and preserved refs.
 
-## Planned Chapter 14 matrix-inversion compatibility completion
+## Archived Chapter 14 matrix-inversion compatibility plan
 
 R08 preserves 42 historical Algorithm import paths as declaration-free compatibility
 modules, relocates their remaining C0004 declarations whole-owner into 21 new Source

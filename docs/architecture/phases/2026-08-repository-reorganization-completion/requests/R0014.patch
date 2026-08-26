@@ -1,0 +1,794 @@
+diff --git a/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean b/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean
+index 4590bda01de2f052cd7208966beb19ff7e026b5b..307498d335e64367f7c55507354d8bb2cc53197f 100644
+--- a/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean
++++ b/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean
+@@ -1,584 +1,9 @@
+-import NumStability.Analysis.FloatingPointArithmetic.Format
+-import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
+-
+--- Analysis/DoubleRounding.lean
+---
+--- Concrete finite double-rounding example for Higham Chapter 2, §2.3 and
+--- Problem 2.9.
+-
+-
+-
+-namespace NumStability
+-
+-noncomputable section
+-
+-namespace FloatingPointFormat
++import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs
++import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Results
+ 
+ /-!
+-# Double Rounding
+-
+-Higham Chapter 2, §2.3 notes that computing first in an extended format and
+-then rounding again to the destination format can differ from rounding directly
+-to the destination format.  This file records a small binary round-to-even
+-counterexample over finite normal values:
+-
+-* the extended `t = 3` format rounds `21/16` to `5/4`;
+-* the destination `t = 2` format rounds that midpoint `5/4` to the even
+-  mantissa endpoint `1`;
+-* direct destination rounding of `21/16` gives `3/2`.
++# Higham Problem 2.9 double-rounding counterexample
+ 
+-The example is intentionally finite-format only: it does not claim the full
+-IEEE double/64-bit-extended arithmetic trace requested in Problem 2.9.
++Import-only semantic entry point for the inputs and proved results of the
++Problem 2.9 double-rounding counterexample.
+ -/
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-/-! ## Higham Problem 2.9: `sqrt (1 - 2^-53)` -/
+-
+-/-- A local binary extended format with a 64-bit mantissa.  The exponent range
+-is restricted to the neighborhood of `1`, which is the only range used by
+-Problem 2.9's `sqrt (1 - 2^-53)` example. -/
+-def binary64MantissaExtendedLocalFormat : FloatingPointFormat where
+-  beta := 2
+-  t := 64
+-  emin := 0
+-  emax := 1
+-  beta_ge_two := by norm_num
+-  t_pos := by norm_num
+-  emin_le_emax := by norm_num
+-
+-/-- The exact real value in Higham Problem 2.9. -/
+-noncomputable def problem2_9Source : ℝ :=
+-  Real.sqrt (1 - (2 : ℝ) ^ (-53 : ℤ))
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-end FloatingPointFormat
+-
+-end
+-
+-end NumStability
+diff --git a/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Inputs.lean b/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Inputs.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..e038e6f51db228ef0ee86856ea38ec19eba0bb3c
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Inputs.lean
+@@ -0,0 +1,39 @@
++import NumStability.Analysis.FloatingPointArithmetic.Format
++import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
++
++/-!
++# Higham Problem 2.9 double-rounding inputs
++
++The local extended format and exact source value used by the Problem 2.9
++double-rounding results.
++-/
++
++namespace NumStability
++
++noncomputable section
++
++namespace FloatingPointFormat
++
++/-! ## Higham Problem 2.9: `sqrt (1 - 2^-53)` -/
++
++/-- A local binary extended format with a 64-bit mantissa. The exponent range
++is restricted to the neighborhood of `1`, which is the only range used by
++Problem 2.9's `sqrt (1 - 2^-53)` example. -/
++def binary64MantissaExtendedLocalFormat : FloatingPointFormat where
++  beta := 2
++  t := 64
++  emin := 0
++  emax := 1
++  beta_ge_two := by norm_num
++  t_pos := by norm_num
++  emin_le_emax := by norm_num
++
++/-- The exact real value in Higham Problem 2.9. -/
++noncomputable def problem2_9Source : ℝ :=
++  Real.sqrt (1 - (2 : ℝ) ^ (-53 : ℤ))
++
++end FloatingPointFormat
++
++end
++
++end NumStability
+diff --git a/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Results.lean b/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Results.lean
+index 27ac0065b39048678b2af0d023f457b63350e3b6..082d46a4ad3bc76d37baa33ed8a3fc0b635d42d7 100644
+--- a/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Results.lean
++++ b/NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Results.lean
+@@ -11,7 +11,7 @@
+ import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
+ import NumStability.Analysis.FloatingPointArithmetic.DoubleRounding.FiniteNormalRange
+ import NumStability.Analysis.FloatingPointArithmetic.DoubleRounding.ToyBinary
+-import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample
++import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs
+ import NumStability.Source.Higham.Chapter02.Section03.DoubleRounding.Counterexample
+ 
+ /-!
+diff --git a/NumStabilityTest.lean b/NumStabilityTest.lean
+index 0a1561cf3d1fb30808f9d74b12388d942daa9dc1..8fd0fb86250a4f25a0741bee3e3230f10594e425 100644
+--- a/NumStabilityTest.lean
++++ b/NumStabilityTest.lean
+@@ -520,6 +520,7 @@ import NumStabilityTest.Import.Sylvester
+ import NumStabilityTest.Import.TriangularCanonical
+ import NumStabilityTest.Import.TriangularMigration
+ import NumStabilityTest.Import.TridiagonalCondCanonical
++import NumStabilityTest.Reorganization.I01.All
+ import NumStabilityTest.Reorganization.R01
+ import NumStabilityTest.Reorganization.R02
+ import NumStabilityTest.Reorganization.R03.All
+diff --git a/NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Algorithms_NormEstimation_PNorm_All.lean b/NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Algorithms_NormEstimation_PNorm_All.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..a77986a538abb1fe1b08909f5d6eb925dc0ecbcb
+--- /dev/null
++++ b/NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Algorithms_NormEstimation_PNorm_All.lean
+@@ -0,0 +1,9 @@
++import NumStability.Algorithms.NormEstimation.PNorm.All
++
++/-!
++# I01 aggregate test: PNorm.All
++
++Imports only the aggregate and checks a representative supported declaration.
++-/
++
++#check @NumStability.RectPNormPair.oneColumnValueRect
+diff --git a/NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample.lean b/NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..af8045baa8485eeb70298017d32ccc71d4b669b5
+--- /dev/null
++++ b/NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample.lean
+@@ -0,0 +1,12 @@
++import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample
++
++/-!
++# I01 aggregate test: Counterexample
++
++Imports only the semantic parent and checks the two input declarations plus a
++representative result declaration.
++-/
++
++#check @NumStability.FloatingPointFormat.binary64MantissaExtendedLocalFormat
++#check @NumStability.FloatingPointFormat.problem2_9Source
++#check @NumStability.FloatingPointFormat.problem2_9_direct_double_ne_double_rounded_extended64
+diff --git a/NumStabilityTest/Reorganization/I01/All.lean b/NumStabilityTest/Reorganization/I01/All.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..4812c293baaa49c0ac94c3a576b8a89d1581c329
+--- /dev/null
++++ b/NumStabilityTest/Reorganization/I01/All.lean
+@@ -0,0 +1,12 @@
++import NumStabilityTest.Reorganization.I01.Aggregate.NumStability_Algorithms_NormEstimation_PNorm_All
++import NumStabilityTest.Reorganization.I01.Aggregate.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample
++import NumStabilityTest.Reorganization.I01.Canonical.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs
++import NumStabilityTest.Reorganization.I01.Canonical.NumStability_Source_Higham_Chapter17_Results_Series
++import NumStabilityTest.Reorganization.I01.OldOnly.NumStability_Analysis_DoubleRounding
++
++/-!
++# I01 reorganization tests
++
++Focused canonical, aggregate, and historical-import witnesses for the final
++integration wave.
++-/
+diff --git a/NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs.lean b/NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..85ead26a8f78c7bfab12aa958f096728d0ae1d6d
+--- /dev/null
++++ b/NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs.lean
+@@ -0,0 +1,11 @@
++import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs
++
++/-!
++# I01 canonical-only test: Counterexample.Inputs
++
++Imports only the new canonical input module and checks both preserved public
++declaration types.
++-/
++
++#check @NumStability.FloatingPointFormat.binary64MantissaExtendedLocalFormat
++#check @NumStability.FloatingPointFormat.problem2_9Source
+diff --git a/NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter17_Results_Series.lean b/NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter17_Results_Series.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..bfa14eedefece17dc55ec4162c735e127500b3c0
+--- /dev/null
++++ b/NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter17_Results_Series.lean
+@@ -0,0 +1,10 @@
++import NumStability.Source.Higham.Chapter17.Results.Series
++
++/-!
++# I01 canonical-only test: Chapter17.Results.Series
++
++Imports only the canonical module and checks a representative supported
++declaration.
++-/
++
++#check @NumStability.summable_infNorm_matPow
+diff --git a/NumStabilityTest/Reorganization/I01/OldOnly/NumStability_Analysis_DoubleRounding.lean b/NumStabilityTest/Reorganization/I01/OldOnly/NumStability_Analysis_DoubleRounding.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..bb70f3d420e5d381f631df16e1845d316d40e5ed
+--- /dev/null
++++ b/NumStabilityTest/Reorganization/I01/OldOnly/NumStability_Analysis_DoubleRounding.lean
+@@ -0,0 +1,11 @@
++import NumStability.Analysis.DoubleRounding
++
++/-!
++# I01 historical-only test: Analysis.DoubleRounding
++
++Imports only the retained historical wrapper and checks both declarations
++moved to `Counterexample.Inputs`.
++-/
++
++#check @NumStability.FloatingPointFormat.binary64MantissaExtendedLocalFormat
++#check @NumStability.FloatingPointFormat.problem2_9Source
+diff --git a/docs/architecture/layout-exceptions.json b/docs/architecture/layout-exceptions.json
+index d78c09e39364a9ebdc883194e1afbe9b480099cc..5bc6d56e6e1801678a55a1e69e579a174805e2cc 100644
+--- a/docs/architecture/layout-exceptions.json
++++ b/docs/architecture/layout-exceptions.json
+@@ -279,9 +279,7 @@
+   }
+  },
+  "legacy": {
+-  "declaration_bearing_umbrellas": [
+-   "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample"
+-  ],
++  "declaration_bearing_umbrellas": [],
+   "missing_module_docstrings": [],
+   "mixed_modules": [],
+   "noncanonical_modules": [],
+diff --git a/docs/architecture/tiers.json b/docs/architecture/tiers.json
+index 4aa692fcd2e0af04e4feabd701c118fb6ac62ad3..4e910adbffe5ceb2796fef68a121494d096cc210 100644
+--- a/docs/architecture/tiers.json
++++ b/docs/architecture/tiers.json
+@@ -1356,6 +1356,8 @@
+   "NumStability.Source.Higham.Chapter01.Section17": "aggregate",
+   "NumStability.Source.Higham.Chapter02": "aggregate",
+   "NumStability.Source.Higham.Chapter02.Problem03.AdjacentPrecisionValues.Results.Theorems": "source",
++  "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample": "aggregate",
++  "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs": "source",
+   "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Results": "source",
+   "NumStability.Source.Higham.Chapter02.Problem10.DivisionRoundTrip.ExhaustiveBinary64.Results": "source",
+   "NumStability.Source.Higham.Chapter02.Problem11": "source",
+

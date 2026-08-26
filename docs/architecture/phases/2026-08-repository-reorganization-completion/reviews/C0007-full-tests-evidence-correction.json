@@ -1,0 +1,68 @@
+{
+ "accepted_history": {
+  "checkpoint": {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0007.json",
+   "sha256": "D1C9C3AEBAA00077D118790E730C5DEFCD1925AE69E866776105A38CCE3F3EF8"
+  },
+  "code_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+  "gates": {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0007-gates.md",
+   "sha256": "75A838606398B2D166250FF9CF522D639A7B3AABBBE2BC3D12A9D6C76D791EBA"
+  },
+  "mutation_policy": "preserve both accepted artifacts byte-for-byte"
+ },
+ "authorization": {
+  "authority_id": "primary-human",
+  "bounded_authorization_id": "C0007-M13-I01-CODE03-bounded-v1",
+  "decision": "approved"
+ },
+ "correction": {
+  "corrected_semantic_label": "test-library compilation",
+  "observed_build_command": "lake build NumStability NumStabilityTest",
+  "observed_test_driver_command": null,
+  "original_gate_id": "full_tests",
+  "prohibition": "C0007 full_tests evidence MUST NOT be reused or cited as proof that lake test or any Lake test-driver command executed",
+  "reason": "The exact workflow compiled NumStability and NumStabilityTest with lean-action test=false and contained no separate lake test step.",
+  "required_successor_evidence": [
+   "a distinct full_build gate for literal command lake build NumStability NumStabilityTest",
+   "a distinct full_tests gate for literal command lake test",
+   "one authenticated complete GitHub job log with exact byte count and SHA-256, plus distinct build/test step numbers, names, timestamps, and GitHub success conclusions"
+  ]
+ },
+ "correction_id": "C0007-full-tests-evidence-semantics-v1",
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "record_kind": "checkpoint_gate_semantic_correction",
+ "review": {
+  "approved_by": null,
+  "reviewed_at": null,
+  "reviewer_id": null,
+  "status": "pending_independent_review"
+ },
+ "schema_version": 1,
+ "source_ci": {
+  "event": "push",
+  "head_branch": "main",
+  "head_sha": "8960f2a980be22166f321c4ba452eb547529b1fd",
+  "job": {
+   "completed_at": "2026-08-25T12:20:50Z",
+   "conclusion": "success",
+   "id": 97796705380,
+   "name": "build",
+   "started_at": "2026-08-25T12:12:22Z"
+  },
+  "run": {
+   "completed_at": "2026-08-25T12:20:51Z",
+   "conclusion": "success",
+   "id": 32846311774,
+   "started_at": "2026-08-25T12:12:17Z"
+  },
+  "workflow": {
+   "build_args": "NumStability NumStabilityTest",
+   "build_input": true,
+   "lint_input": false,
+   "path": ".github/workflows/lean_action_ci.yml",
+   "sha256": "0A9E8B535D7A780623557A107E00D02B44513E650A4F6C5A259FC0323A435FD7",
+   "test_input": false
+  }
+ }
+}
