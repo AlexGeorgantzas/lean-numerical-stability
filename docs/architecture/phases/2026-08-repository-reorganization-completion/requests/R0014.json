@@ -1,0 +1,108 @@
+{
+  "blocks": [],
+  "created_at": "2026-08-25T15:51:58Z",
+  "depends_on": [
+    "M01",
+    "M02",
+    "M03",
+    "M04",
+    "M05",
+    "M06",
+    "M07",
+    "M08",
+    "M09",
+    "M10",
+    "M11",
+    "M12"
+  ],
+  "lane_id": "integration-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014.patch",
+    "sha256": "3AC31AFC44B697FF830E0CF393FF1725F18B49022ABCF81D83742220FCCB3A88"
+  },
+  "paths": [
+    "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean",
+    "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Inputs.lean",
+    "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Results.lean",
+    "NumStabilityTest.lean",
+    "NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Algorithms_NormEstimation_PNorm_All.lean",
+    "NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample.lean",
+    "NumStabilityTest/Reorganization/I01/All.lean",
+    "NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs.lean",
+    "NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter17_Results_Series.lean",
+    "NumStabilityTest/Reorganization/I01/OldOnly/NumStability_Analysis_DoubleRounding.lean",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json"
+  ],
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "4590bda01de2f052cd7208966beb19ff7e026b5b",
+      "path": "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Inputs.lean"
+    },
+    {
+      "blob_oid": "27ac0065b39048678b2af0d023f457b63350e3b6",
+      "path": "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Results.lean"
+    },
+    {
+      "blob_oid": "0a1561cf3d1fb30808f9d74b12388d942daa9dc1",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Algorithms_NormEstimation_PNorm_All.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/I01/Aggregate/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/I01/All.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/I01/Canonical/NumStability_Source_Higham_Chapter17_Results_Series.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/I01/OldOnly/NumStability_Analysis_DoubleRounding.lean"
+    },
+    {
+      "blob_oid": "d78c09e39364a9ebdc883194e1afbe9b480099cc",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "blob_oid": "4aa692fcd2e0af04e4feabd701c118fb6ac62ad3",
+      "path": "docs/architecture/tiers.json"
+    }
+  ],
+  "rationale": "Authorized M13/I01 integration request rooted at accepted checkpoint C0007. Eleven reserved inventory rows remain byte-identical no-ops; the only production change is the indivisible three-path Counterexample split, accompanied by six focused test files, test-root registration, the aggregate tier override, and removal of the resolved declaration-bearing-umbrella exception. Public names, namespaces, normalized types, visibility, historical imports, and supported entrypoint reachability are preserved.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0014",
+  "requester_id": "primary-human",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+  "target_checkpoint_id": "C0007",
+  "valid_through_checkpoint_id": "C0007",
+  "wave_id": "I01"
+}

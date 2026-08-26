@@ -1,0 +1,114 @@
+{
+  "activation_conditions": [
+    "the control parent, control tree, remote main, active phase pointer, phase, authorized-path manifest, workflow, checker, packet, postimage, supported-API, and artifact identities remain exact",
+    "every dirty P, A, T, I, or V precommit is on the exact symbolic codex/reorg-closeout-2026-08-m13-i01 branch; every clean symbolic lifecycle checkout is on that branch; only a clean detached checkout used for validation is permitted",
+    "P is the exact 42-path direct child of 8960f2a980be22166f321c4ba452eb547529b1fd, the bounded remote ref is absent immediately before its exact absence-lease push and equals P afterward, and exact-head P Lean CI succeeds before the activation review is solicited",
+    "the first exact live repository-owner comment is created after P CI and remains live and unedited; A is the contract-only direct child of P; the bounded remote ref equals P immediately before its P-to-A exact-lease push and equals A afterward; and exact-head A Lean CI succeeds before T",
+    "T is the contract-only direct child of A; the bounded remote ref equals A immediately before its A-to-T exact-lease push and equals T afterward; and T has an authenticated successful exact-head workflow_dispatch observation before any R0014 or R0015 implementation postimage is applied or staged",
+    "R0014 and R0015 replay from exact C0007 code 4e26820d1f4989ec4ec77b7113085f593570e11b, reproduce every hash-pinned postimage, and I is their exact indivisible 14-path direct child of T; the bounded remote ref equals T immediately before its T-to-I exact-lease push and equals I afterward",
+    "exact-head I Lean CI succeeds and the second distinct live repository-owner comment is created afterward and remains live and unedited before V",
+    "V is the contract-only direct child of I; the bounded remote ref equals I immediately before its I-to-V exact-lease push and equals V afterward; exact-head V post-assurance CI is then dispatched and authenticated read-only and its canonical evidence is recorded only in the untracked local ledger, which terminates this grant; that evidence may be hash-pinned only by a separately authorized C8-PROPOSE epoch"
+  ],
+  "authority_id": "primary-human",
+  "authorization_id": "C0007-M13-I01-CODE03-terminal-v2",
+  "authorized_actions": [
+    "prepare and validate P using exactly the 42 planned_control rows of the authorized path manifest; commit P and exact-absence-lease create the bounded remote ref at P; after P CI and the activation owner comment, commit contract-only A and exact-lease push the bounded ref from P to A; after A CI, commit contract-only T and exact-lease push the bounded ref from A to T",
+    "generate, reproducibly verify, and freeze docs/architecture/supported-api.json and the pending-only C0008-supported-api.json machine-evidence record without assigning any human decision or checkpoint authority",
+    "dispatch and monitor exact-head Lean CI for P, A, T, I, and post-assurance V; create the ordinary review issue; and solicit the two exact live GitHub repository-owner comments",
+    "after P CI, the activation owner comment, A, A CI, T, and the authenticated live T remote-tip observation, apply R0014 and R0015 only as their complete indivisible 14-path union, commit I, and exact-lease push the bounded ref from T to I",
+    "after I CI and the distinct implementation owner comment, commit V and exact-lease push the bounded ref from I to V, dispatch and authenticate exact-head V CI read-only, and record its canonical evidence only in the untracked local ledger"
+  ],
+  "base": {
+    "active_phase_pointer_sha256": "C99061ACCE56AF121B1ACF0FBE2C757B53602A5A8599DC93193871095D3AB360",
+    "control_head_sha": "8960f2a980be22166f321c4ba452eb547529b1fd",
+    "control_tree_sha": "70cee1e77e1311129b00aeb0945770483d1aa5db",
+    "current_checkpoint_id": "C0007",
+    "current_checkpoint_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+    "phase_sha256": "7DCF4E6B47F3EDEC92D1F6945426F0AB13215A5AC3C362D9356A58C413288AAC",
+    "remote_main_sha": "8960f2a980be22166f321c4ba452eb547529b1fd"
+  },
+  "decision": "approved",
+  "expiry": {
+    "events": [
+      "after the verified V commit is exact-lease pushed from I to refs/heads/codex/reorg-closeout-2026-08-m13-i01 at V, its exact-head workflow_dispatch post-assurance run succeeds, is authenticated with stable remote-main and bounded-ref observations, and its canonical evidence is recorded only in the untracked local ledger",
+      "explicit cancellation or supersession",
+      "base, authorized-path-manifest, workflow, checker, request-patch, postimage, supported-API, or artifact drift",
+      "an exact-lease mismatch, bounded-ref drift, or remote-main drift",
+      "primary-human revocation"
+    ],
+    "terminal_control_state": "verified",
+    "valid_only_while_current_checkpoint_id": "C0007"
+  },
+  "operator_id": "codex-local",
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "preserved_exclusions": [
+    "tracking, committing, or pushing REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+    "any public declaration name, namespace, normalized type, visibility, or supported-entrypoint reachability change",
+    "any tracked path absent from the authorized path manifest or any authorized manifest stage or operation drift",
+    "partial application or partial rollback of R0014, R0015, or their complete 14-path union",
+    "semantic review by codex-local, any exact artifact generator or action performer, CI, or any service principal",
+    "any R0014 or R0015 request resolution, I01 selector finalization, or M13, I01, R0014, R0015, or C0008 status mutation",
+    "any C8-PROPOSE or C8-ACCEPT commit, or any C0008 proposal, checkpoint or status acceptance, or finalization action",
+    "any non-null decision, reviewer, or reviewed_at_utc in reviews/C0008-supported-api.json, or any interpretation of that record as human review, checkpoint acceptance, request resolution, or authority",
+    "any push, merge, force-update, deletion, or other mutation of origin refs/heads/main",
+    "repository-wide completion or final release acceptance",
+    "bounded-branch retirement, bounded remote-ref deletion, any force push, or any history rewrite"
+  ],
+  "record_kind": "primary_human_bounded_epoch_authorization",
+  "recorded_at": "2026-08-26T01:15:53Z",
+  "schema_version": 2,
+  "scope": {
+    "authorized_path_manifest": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-authorized-paths.tsv",
+      "row_count": 56,
+      "sha256": "121D11A73AF2CD23885FB7A6B38D14B0D8A5440940D913A83F3A5D6941511ECE"
+    },
+    "checkpoint_acceptance_authorized": false,
+    "milestone_id": "M13",
+    "remote_main_mutation_authorized": false,
+    "request_ids": [
+      "R0014",
+      "R0015"
+    ],
+    "request_resolution_authorized": false,
+    "supported_api_record": {
+      "authority_effect": "none",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0008-supported-api.json",
+      "required_null_fields": [
+        "decision",
+        "reviewer",
+        "reviewed_at_utc"
+      ],
+      "status": "pending_machine_evidence"
+    },
+    "task_ids": [
+      "API-01",
+      "CODE-01",
+      "CODE-02",
+      "CODE-03",
+      "EPOCH-01",
+      "GOV-01",
+      "GOV-02",
+      "GOV-03",
+      "GOV-04",
+      "I01-01",
+      "I01-02",
+      "VERIFY-01",
+      "VERIFY-02",
+      "VERIFY-03"
+    ],
+    "terminal_control_state": "verified",
+    "wave_id": "I01"
+  },
+  "source": {
+    "channel": "current Codex desktop task",
+    "instruction": "I authorize you to do whatever you need.",
+    "received_at": "2026-08-25T15:14:31Z",
+    "received_at_source": "task user-message timestamp",
+    "user_principal_id": "primary-human"
+  },
+  "supersedes_draft": {
+    "authorization_id": "C0007-M13-I01-CODE03-bounded-v1",
+    "sha256": "7AD0DD3ACD880CDDB1D89C1DD28824F8EF6116415462A9466C95E4F593D02439"
+  }
+}
