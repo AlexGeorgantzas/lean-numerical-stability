@@ -20,6 +20,10 @@ book-formalization migration. The generator has two layers:
 - `check_layout.py` enforces the naming, classification, aggregate, generated-
   artifact, and documentation ratchet recorded in
   `docs/architecture/layout-exceptions.json`.
+- `check_phase.py --all-phases` resolves retained phase records through a
+  hash-pinned supersession record. It requires exactly one effective active
+  phase, requires `active-phase.json` to select it, validates successor
+  existence and an acyclic chain, and rejects a changed preserved predecessor.
 - `check_norms_phase11b_ownership.py` enforces the immutable Phase 11B1
   declaration-ownership manifest, owner DAG, direct-import allowlist, and
   normalized declaration/signature/body graph preservation contract.
@@ -184,6 +188,35 @@ The raw TSV is kept below the ignored `benchmark-results/` tree by default. It
 can contain hundreds of thousands of edges and is an intermediate
 representation, not a stable data format.
 
+## Authenticated completion evidence
+
+After a bounded reorganization contract records successful GitHub Actions
+evidence, `check_completion_phase.py` deliberately fails closed unless the
+GitHub CLI (`gh`) is installed and authenticated against `github.com`. Local
+runs may authenticate with `GH_TOKEN` or an existing `gh auth login` session;
+the credential must be able to read Actions metadata, job logs, issues, and
+issue comments for `AlexGeorgantzas/lean-numerical-stability`. The CI workflow
+supplies `${{ github.token }}` as `GH_TOKEN` under exact `actions: read`,
+`contents: read`, and `issues: read` permissions.
+
+The checker authenticates the recorded run, attempt, job, individual gate
+steps, and complete job-log byte count/SHA-256. A missing credential,
+unavailable API response, expired log, or identity mismatch is an error rather
+than a reason to skip evidence validation. GitHub Actions retention for public
+repositories is configurable from 1 to 90 days (90 days by default), so
+retained lifecycle validation must occur while the authenticated job log is
+available. See GitHub's [artifact and log retention settings](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository)
+and the [`gh api` reference](https://cli.github.com/manual/gh_api).
+
+Semantic activation and implementation review are separate from CI. Each
+approved lifecycle state must identify an exact GitHub issue comment posted
+manually by the pinned individual repository owner. The checker re-queries the
+repository, issue, and comment; requires the exact owner login, numeric and node
+IDs, `OWNER` association, an unedited timestamp, no GitHub App mediation, and
+the exact commit/tree/contract/scope-bound message. A locally written review
+record, a CI success, an edited or deleted comment, or a comment from any other
+identity cannot authorize the next transition.
+
 Check mode compares the production-source SHA-256, source/import metrics,
 compiled declaration metrics, Lean toolchain, and Mathlib revision. The digest
 normalizes UTF-8 BOMs and CRLF/CR line endings so Windows and Linux checkouts
@@ -227,7 +260,10 @@ The generator also reads
 [`docs/architecture/tiers.json`](../../docs/architecture/tiers.json). It reports
 classification coverage, a tier-to-tier import matrix, and direct/transitive
 `reusable -> source` / `reusable -> mixed` violations. The manifest is
-deliberately partial while mixed historical modules are being split. A zero
-violation count does not satisfy the physical-target gate until coverage
-reaches 100% and no mixed modules remain; see
+complete at C0007: 2,927 of 2,927 production modules are classified, with zero
+unclassified or mixed modules. CI rejects a coverage regression, a new mixed
+classification, or a forbidden reusable edge. Complete tier coverage is only
+one physical-target and repository-completion condition; it does not close the
+remaining compatibility, entry-point, naming, documentation, outlier, profile,
+or acceptance gates. See
 [`docs/architecture/TIERS.md`](../../docs/architecture/TIERS.md).

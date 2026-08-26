@@ -8,15 +8,21 @@ changes its license, copyright holder, or authorship.
 
 ## Audited state
 
-The organization audit on 2026-07-22 found 148 production Lean files with
-Apache-2.0 notices. Five of those are evidenced Mathlib adaptations or
-backports under `NumStability/Upstream/Lindemann`; their exact pull requests,
-commit hashes, authors, and copyright holders are recorded in
+The current executable provenance check reports 137 production Lean files with
+Apache-2.0 notices. Five are evidenced Mathlib adaptations or backports under
+`NumStability/Upstream/Lindemann`; their exact pull requests, commit hashes,
+authors, and copyright holders are recorded in
 [`THIRD_PARTY_NOTICES.md`](../../THIRD_PARTY_NOTICES.md).
 
 The other Apache-marked files are repository files with explicit per-file
 notices. Their notices are authoritative; they must not be converted to MIT as
 a side effect of naming or architecture work.
+
+### Archived 2026-07-22 count
+
+The 2026-07-22 organization audit recorded 148 Apache-marked production Lean
+files. That historical snapshot is retained for audit chronology; it is not the
+current file-count authority.
 
 ## Required form
 

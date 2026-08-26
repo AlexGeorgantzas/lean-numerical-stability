@@ -8,7 +8,9 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
+  issues: read
 
 concurrency:
   group: lean-ci-${{ github.workflow }}-${{ github.ref }}
@@ -17,15 +19,17 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 360
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
           fetch-depth: 0
       - name: Check architecture source graph and Python tooling
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          python -m py_compile tools/architecture/generate_baseline.py tools/architecture/check_compatibility.py tools/architecture/check_layout.py tools/architecture/check_phase.py tools/architecture/check_phase_projection.py tools/architecture/check_completion_phase_projection.py tools/architecture/check_completion_phase.py tools/architecture/check_provenance.py tools/architecture/normalize_apache_notices.py tools/architecture/sort_aggregate_imports.py tools/benchmark/run.py
+          python -m py_compile tools/architecture/generate_baseline.py tools/architecture/check_compatibility.py tools/architecture/check_layout.py tools/architecture/check_phase.py tools/architecture/check_phase_projection.py tools/architecture/check_completion_phase_projection.py tools/architecture/check_completion_phase.py tools/architecture/check_provenance.py tools/architecture/check_supported_api.py tools/architecture/normalize_apache_notices.py tools/architecture/sort_aggregate_imports.py tools/benchmark/run.py
           python tools/architecture/check_phase.py --self-test
           python tools/architecture/check_phase_projection.py --self-test
           python tools/architecture/check_completion_phase_projection.py --self-test
@@ -37,9 +41,16 @@ jobs:
           python tools/architecture/check_provenance.py
           python tools/architecture/generate_baseline.py --skip-declarations --strict-source --output-dir benchmark-results/ci-architecture --name source
       - name: Build library and smoke tests
-        uses: leanprover/lean-action@v1
+        uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596
         with:
           build: true
           build-args: NumStability NumStabilityTest
+          use-github-cache: true
           test: false
           lint: false
+      - name: Verify supported API from the built environment
+        run: |
+          python tools/architecture/check_supported_api.py --self-test
+          python tools/architecture/check_supported_api.py --baseline docs/architecture/supported-api.json --mode lifecycle
+      - name: Run Lake test driver
+        run: lake test
