@@ -1,5 +1,28 @@
 # Repository reorganization completion (2026-08)
 
+## Current authoritative state
+
+The active-phase pointer selects `repository-reorganization-completion-2026-08`.
+The current accepted checkpoint is C0007 at code
+`4e26820d1f4989ec4ec77b7113085f593570e11b`; the current audited repository
+revision is `8960f2a980be22166f321c4ba452eb547529b1fd`, whose production and toolchain
+content is unchanged from that accepted code. C0007 accepts M09 and M10.
+B0011/R09 and B0012/R10 are accepted with branch retirement due; P0011 and
+P0012 are retired; and R0012 and R0013 are applied as the reviewed 25-path
+union.
+
+The executable inventory classifies 2,927 of 2,927 production modules, with
+zero unclassified, mixed, or noncanonical modules. M13/I01 is planned and
+contains exactly twelve reserved modules. Bounded-phase completion and
+repository-wide completion are both incomplete. No earlier checkpoint or
+worker-state paragraph below overrides this summary.
+
+## Archived checkpoint and worker chronology
+
+The following chronology preserves superseded checkpoint snapshots and
+then-current worker descriptions as historical evidence. Present-tense wording
+inside this section is quoted historical state, not current operating policy.
+
 This active successor is rooted at predecessor C0008 code `b1b18772d80185ec08f49c818919558645c330a1` while preserving `docs/architecture/phases/2026-08-repository-reorganization/` as immutable history. C0000 remains the immutable origin; C0005 is the current checkpoint at exact integrated code commit `ad92bbfae62d538f3e52829a269a846688a8e213`.
 
 C0005 accepts M04/R04 and M08/R08. Its generated evidence records 2,818

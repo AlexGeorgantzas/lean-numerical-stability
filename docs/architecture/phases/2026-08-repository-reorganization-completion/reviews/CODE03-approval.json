@@ -1,0 +1,108 @@
+{
+  "approval_id": "CODE03-C0007-planned-control-v1",
+  "approval_scope": "R0015 packet preparation, exact planned-control registration, later indivisible application only after every terminal-v2 activation gate passes, and implementation verification through V only; no request resolution, C8 authority, origin/main mutation, or checkpoint acceptance",
+  "approved_at": "2026-08-25T15:14:31Z",
+  "artifacts": [
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015.json",
+      "role": "active_shared_file_request",
+      "sha256": "A021AD7AC5303C0CEE3546030B4633E3FD78C38C1B03CC978FCBEBC4BB8B1391"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015.patch",
+      "role": "indivisible_implementation_patch",
+      "sha256": "A6EAA922363136C5B15351849260632094C1A707D7134E7084CBA6556415E820"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015-postimages.tsv",
+      "role": "preimage_postimage_contract",
+      "sha256": "F92A484CAFBB2F8885A14CE5A7A0A9DB4A774888757797BB836254D4600BED8D"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015-review.md",
+      "role": "planned_control_review",
+      "sha256": "1E3C8382E4185B5543D754EA35F7CA23A1426D01525C47A9A44CFE6BB5621376"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/CODE03-consumers.tsv",
+      "role": "c0007_direct_consumer_freeze",
+      "sha256": "98AEAB52682F02B631B4A6D3F5D62D6739C553D622C561FBA512BFF0E482AA69"
+    }
+  ],
+  "authority_id": "primary-human",
+  "authorization": {
+    "authorization_id": "C0007-M13-I01-CODE03-terminal-v2",
+    "checkpoint_acceptance_authorized": false,
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-operator-authorization.json",
+    "remote_main_mutation_authorized": false,
+    "request_resolution_authorized": false,
+    "sha256": "9BD67B6336BA9D2943552AA09D19F580EC4A8A9298E85BC846854A201CB15129",
+    "terminal_control_state": "verified"
+  },
+  "base": {
+    "checkpoint_id": "C0007",
+    "code_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+    "control_head_sha": "8960f2a980be22166f321c4ba452eb547529b1fd"
+  },
+  "decision": "approved_for_planned_control_only",
+  "exclusions": [
+    "partial application or partial rollback of R0015",
+    "any declaration, namespace, normalized type, visibility, wrapper, tier, compatibility mapping, aggregate, or supported-entrypoint change",
+    "any Chapter19 Core split or naming move",
+    "any reassignment or consumption of the accepted R11 outlier ownership record",
+    "self-review by the packet generator or action performer",
+    "treating GitHub Actions as the semantic reviewer",
+    "any R0015 request resolution",
+    "tracking, committing, or pushing REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+    "any public declaration name, namespace, normalized type, visibility, or supported-entrypoint reachability change",
+    "any tracked path absent from the authorized path manifest or any authorized manifest stage or operation drift",
+    "partial application or partial rollback of R0014, R0015, or their complete 14-path union",
+    "semantic review by codex-local, any exact artifact generator or action performer, CI, or any service principal",
+    "any R0014 or R0015 request resolution, I01 selector finalization, or M13, I01, R0014, R0015, or C0008 status mutation",
+    "any C8-PROPOSE or C8-ACCEPT commit, or any C0008 proposal, checkpoint or status acceptance, or finalization action",
+    "any non-null decision, reviewer, or reviewed_at_utc in reviews/C0008-supported-api.json, or any interpretation of that record as human review, checkpoint acceptance, request resolution, or authority",
+    "any push, merge, force-update, deletion, or other mutation of origin refs/heads/main",
+    "repository-wide completion or final release acceptance",
+    "bounded-branch retirement, bounded remote-ref deletion, any force push, or any history rewrite"
+  ],
+  "implementation": {
+    "consumer_count": 61,
+    "paths": [
+      {
+        "path": "NumStability/Source/Higham/Chapter19/Core.lean",
+        "postimage_sha256": "F7CA8E4C2D8F50702DA3A0B0E217153990A4BF8DAD8031B5CC970BCF7A2F56A6",
+        "preimage_blob_oid": "9d753fc27d6ce54cce21283b45158022e667e3bc",
+        "preimage_sha256": "8599A1F13F1A241EFE90BB1059D98C09A4419BE4C2202B97F45DEC69189B3FE3"
+      },
+      {
+        "path": "tools/architecture/check_compatibility.py",
+        "postimage_sha256": "C2B3E460A3E2706548E52BD7E04447641539A90479CB154F8001BB60B19FF8D5",
+        "preimage_blob_oid": "2786591fe5ca54ecc8a024279b28e664414dab6d",
+        "preimage_sha256": "F44794AC5411847FF7FC12856850162A5EBC61DDEC646D8D40C23903298F7057"
+      }
+    ],
+    "request_id": "R0015",
+    "rollback_policy": "the exact two-path postimage set is one indivisible rollback unit"
+  },
+  "independent_review": {
+    "decision": null,
+    "required_separation": "reviewer did not author or generate this exact packet and did not perform the exact application action",
+    "review_artifact": null,
+    "reviewer_id": null,
+    "status": "pending"
+  },
+  "operator_id": "codex-local",
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "preserved_contracts": [
+    "Chapter19.Core declaration text and public signatures are byte-preserved after the six import lines",
+    "HouseholderQRSupport and HouseholderSpecSupport wrappers remain tracked and unchanged",
+    "compatibility mappings and tiers remain unchanged",
+    "R11 canonical StoredQR and TrailingPanels tests remain required",
+    "R11 old-only support-wrapper tests remain required",
+    "NumStabilityTest/Worker/QrCh19/Canonical/Core.lean remains required",
+    "the supported-API freeze must pass on the exact implementation head"
+  ],
+  "record_kind": "code03_planned_control_approval",
+  "recorded_at": "2026-08-26T01:22:34Z",
+  "schema_version": 1
+}

@@ -1,0 +1,113 @@
+{
+  "api_preservation": {
+    "declarations": [
+      {
+        "canonical_owner_after": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs",
+        "declaration": "NumStability.FloatingPointFormat.binary64MantissaExtendedLocalFormat",
+        "normalized_type": "NumStability.FloatingPointFormat"
+      },
+      {
+        "canonical_owner_after": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs",
+        "declaration": "NumStability.FloatingPointFormat.problem2_9Source",
+        "normalized_type": "Real"
+      }
+    ],
+    "historical_import": "NumStability.Analysis.DoubleRounding",
+    "namespaces_renamed": [],
+    "public_declarations_removed": [],
+    "supported_entrypoints_preserved": [
+      "NumStability.Analysis.DoubleRounding",
+      "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.All",
+      "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample",
+      "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs",
+      "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Results"
+    ],
+    "visibility_changes": []
+  },
+  "approval_basis": {
+    "authority_id": "primary-human",
+    "authorization_id": "C0007-M13-I01-CODE03-terminal-v2",
+    "checkpoint_acceptance_authorized": false,
+    "operator_id": "codex-local",
+    "remote_main_mutation_authorized": false,
+    "request_resolution_authorized": false,
+    "source_instruction": "I authorize you to do whatever you need.",
+    "terminal_control_state": "verified"
+  },
+  "approval_id": "I01-R0014-planned-v1",
+  "artifacts": [
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014-postimages.tsv",
+      "role": "postimages",
+      "sha256": "42F4ED7EFE7C611DE214A0E6FE4ABADA11034632A9086952EADCD1A8AA33A1C9"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014-review.md",
+      "role": "packet_review",
+      "sha256": "69BFB58422DBEA48EF29DB39B74A70ED063453C7250F7E0A9F90ED9FF9400EB1"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014.json",
+      "role": "request",
+      "sha256": "CDF9CD8B9E5D8A06F60CB769801A5AC891F4468E1435207060F77B50BE1C67CE"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014.patch",
+      "role": "patch",
+      "sha256": "3AC31AFC44B697FF830E0CF393FF1725F18B49022ABCF81D83742220FCCB3A88"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-operator-authorization.json",
+      "role": "authorization",
+      "sha256": "9BD67B6336BA9D2943552AA09D19F580EC4A8A9298E85BC846854A201CB15129"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-changed-paths.tsv",
+      "role": "changed_paths",
+      "sha256": "32D0E95A1F3AC0230647B86C94E3AFF869546BDDEA62678657C93EF22233AFC4"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-selection-overlap.md",
+      "role": "selection_overlap",
+      "sha256": "5A0A4852AD84095CFBFC973ACF37E45C8C0AA5FB09D8E8728356CC30C1AF43A9"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-test-plan.tsv",
+      "role": "test_plan",
+      "sha256": "6A4FDD8A6D467896A32BB9FDB1B3AF6CFFCEEB6DC5E9D33E95D59C70C60B2879"
+    },
+    {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/selectors/I01.tsv",
+      "role": "selector",
+      "sha256": "4F669961538A406AF235C8E02B038D039A072F510C60F3863EFD7E93D417536F"
+    }
+  ],
+  "base": {
+    "accepted_checkpoint_id": "C0007",
+    "accepted_checkpoint_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+    "control_head_sha": "8960f2a980be22166f321c4ba452eb547529b1fd"
+  },
+  "decision": "approved_for_planned_control_only",
+  "independent_review": {
+    "generator_id": "codex-local",
+    "required_before": "R0014 implementation application",
+    "reviewer_id": "primary-human",
+    "status": "pending",
+    "validation_ci_is_semantic_review": false
+  },
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "record_kind": "i01_planned_packet_approval",
+  "recorded_at": "2026-08-26T01:22:34Z",
+  "request_id": "R0014",
+  "rollback": {
+    "counterexample_split_paths": [
+      "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean",
+      "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Inputs.lean",
+      "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample/Results.lean"
+    ],
+    "partial_application_allowed": false,
+    "request_is_indivisible": true
+  },
+  "schema_version": 1,
+  "wave_id": "I01"
+}

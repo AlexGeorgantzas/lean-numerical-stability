@@ -630,14 +630,6 @@ the table remains an import-only forwarding module.
 | `NumStability.Source.Higham.Chapter17.Equation17` | `NumStability.Source.Higham.Chapter17.Results.Equation17.SORForwardBound` |
 | `NumStability.Source.Higham.Chapter17.Equation20` | `NumStability.Source.Higham.Chapter17.Results.Equation20.ResidualSigmaEnvelope` |
 | `NumStability.Source.Higham.Chapter21.Corrections.Problem19_12.RoundedReplay` | `NumStability.Source.Higham.Chapter21.Corrections.CorrectedMGS.RoundedReplay` |
-
-## Removal rule
-
-No forwarding module is removed in this migration. A future removal requires a
-declared breaking release, release-note and migration-guide entries, a search
-showing production consumers use canonical paths, and an explicit update to
-the old-path smoke tests. Until then, CI compiles both curated entry points and
-representative historical imports.
 | `NumStability.Algorithms.TestMatrices.Higham28` | `Mathlib.Algebra.BigOperators.Intervals`; `Mathlib.Analysis.SpecialFunctions.Pow.Real`; `Mathlib.Data.Nat.Choose.Cast`; `Mathlib.Data.Nat.Choose.Sum`; `Mathlib.Data.Nat.Choose.Vandermonde`; `Mathlib.LinearAlgebra.Matrix.Block`; `NumStability.Analysis.MatrixAlgebra`; `NumStability.Analysis.TestMatrices.Cauchy.Basic`; `NumStability.Analysis.TestMatrices.Companion.Basic`; `NumStability.Analysis.TestMatrices.Hilbert.Basic`; `NumStability.Analysis.TestMatrices.Orthogonal.Basic`; `NumStability.Analysis.TestMatrices.Pascal.Basic`; `NumStability.Analysis.TestMatrices.RandomSVD.Basic`; `NumStability.Analysis.TestMatrices.Toeplitz.Basic`; `NumStability.Source.Higham.Chapter28.Equation01.HilbertInverse.Basic`; `NumStability.Source.Higham.Chapter28.Equation02.ExactHilbertDeterminant.Basic`; `NumStability.Source.Higham.Chapter28.Equation03.HilbertCholeskyFactor.Basic`; `NumStability.Source.Higham.Chapter28.Equation04.HilbertCholeskyInverse.Basic` |
 | `NumStability.Algorithms.TestMatrices.Higham28Asymptotics` | `Mathlib.Analysis.SpecialFunctions.Stirling`; `NumStability.Algorithms.TestMatrices.Higham28Exact`; `NumStability.Analysis.TestMatrices.Hilbert.Asymptotics`; `NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Asymptotics.Asymptotics` |
 | `NumStability.Algorithms.TestMatrices.Higham28Cauchy` | `Mathlib.Algebra.Polynomial.BigOperators`; `Mathlib.LinearAlgebra.Lagrange`; `Mathlib.LinearAlgebra.Matrix.SchurComplement`; `NumStability.Algorithms.TestMatrices.Higham28Contracts`; `NumStability.Analysis.TestMatrices.Cauchy.Cauchy`; `NumStability.Source.Higham.Chapter28.Section01.Cauchy.Cauchy`; `NumStability.Source.Higham.Chapter28.Section01.HilbertConditioning.Cauchy` |
@@ -728,3 +720,11 @@ representative historical imports.
 | `NumStability.Algorithms.RandNLA.UniformRowSamplingComposition` | `NumStability.Algorithms.RandNLA.Preconditioning`; `NumStability.Algorithms.RandNLA.UniformRowSamplingMGF`; `NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.ExactTransforms.UniformRowComposition`; `NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.ExactTransforms.UniformRowEmbedding`; `NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.UniformRowComposition` |
 | `NumStability.Algorithms.RandNLA.UniformRowSamplingFP` | `Mathlib.Data.Real.Sqrt`; `Mathlib.Tactic.FieldSimp`; `Mathlib.Tactic.Linarith`; `Mathlib.Tactic.Ring`; `NumStability.Algorithms.RandNLA.UniformRowSamplingComposition`; `NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.ExactTransforms.UniformRowEmbedding`; `NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.UniformRows.FloatingPoint`; `NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.UniformRows.GramDotFloatingPoint`; `NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.FloatingPoint`; `NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.SparsePreconditionedEmbeddings`; `NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.SparsePreconditionedGramBounds`; `NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.SparsePreconditionedGramGrids` |
 | `NumStability.Algorithms.RandNLA.UniformRowSamplingMGF` | `NumStability.Algorithms.RandNLA.UniformRowSampling`; `NumStability.Algorithms.RandomizedLinearAlgebra.Concentration.TraceMGF.UniformRows`; `NumStability.Analysis.MatrixConcentration`; `NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity` |
+
+## Removal rule
+
+No forwarding module is removed in this migration. A future removal requires a
+declared breaking release, release-note and migration-guide entries, a search
+showing production consumers use canonical paths, and an explicit update to
+the old-path smoke tests. Until then, CI compiles both curated entry points and
+representative historical imports.

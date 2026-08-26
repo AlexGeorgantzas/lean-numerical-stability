@@ -1,5 +1,25 @@
 # Reorganization phases
 
+## Current authoritative phase
+
+The active-phase pointer selects
+[`2026-08 repository reorganization completion`](2026-08-repository-reorganization-completion/README.md).
+Its current accepted checkpoint is C0007 at code
+`4e26820d1f4989ec4ec77b7113085f593570e11b`; the audited repository revision
+`8960f2a980be22166f321c4ba452eb547529b1fd` has identical production and
+toolchain content. M09 and M10 are accepted. B0011/R09 and B0012/R10 are
+accepted with retirement due, P0011 and P0012 are retired, and R0012 and R0013
+are applied. The inventory classifies 2,927 of 2,927 production modules with
+zero unclassified, mixed, or noncanonical modules. M13/I01 is planned with
+exactly twelve modules. Bounded-phase completion and repository-wide
+completion are both incomplete.
+
+## Archived phase chronology
+
+The chronology below preserves superseded checkpoint and worker snapshots.
+Present-tense wording in this archived section is historical evidence and does
+not override the current authoritative phase above.
+
 The active operating contract is the
 [`2026-08 repository reorganization completion`](2026-08-repository-reorganization-completion/README.md),
 selected by [`active-phase.json`](active-phase.json). It is rooted at C0000 on
