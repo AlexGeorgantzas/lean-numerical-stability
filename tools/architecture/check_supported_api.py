@@ -70,32 +70,171 @@ BOUNDED_AUTHORIZATION_RELATIVE = (
     "docs/architecture/phases/2026-08-repository-reorganization-completion/"
     "reviews/C0007-bounded-epoch-operator-authorization.json"
 )
+BOUNDED_MANIFEST_RELATIVE = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/C0007-bounded-epoch-authorized-paths.tsv"
+)
 SUPPORTED_API_BASELINE_RELATIVE = "docs/architecture/supported-api.json"
 COMPLETION_CHECKER_RELATIVE = "tools/architecture/check_completion_phase.py"
 SUPPORTED_API_CHECKER_RELATIVE = "tools/architecture/check_supported_api.py"
 WORKFLOW_RELATIVE = ".github/workflows/lean_action_ci.yml"
-PLANNED_PATH_SET_SHA256 = (
-    "F27C9B79FD8F365F28EDE87FA3F2689678F929E1EE74BAB4820EDCB9A7A39BFC"
+CI_ONLY_RECOVERY_AUTHORIZATION_ID = "C0007-P-CI-recovery-only-v1"
+CI_ONLY_RECOVERY_AUTHORIZATION_SHA256 = (
+    "CC73A05B3B78D1C2E40C8EA18A5690F697F17FB30960D099BC1E88BCF49B8A76"
 )
-EXACT_ACTIVATION_SUPERSEDES_PACKET_REVIEWS = (
-    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
-    "reviews/I01-approval.json",
-    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
-    "reviews/CODE03-approval.json",
-    FULL_TESTS_CORRECTION_RELATIVE,
+CI_ONLY_RECOVERY_MANIFEST_SHA256 = (
+    "E0892856B09B6B0E3A44E6FE49A303918D1BCF88743F5328E6A8E996C689E6C0"
 )
-EXACT_ACTIVATION_MACHINE_EVIDENCE = (
+CI_ONLY_RECOVERY_PATH_SET_SHA256 = (
+    "3CF30300730F9BD37AB532D1C99E387EC32ECB5B98B51F33C0ED04DE4953089A"
+)
+CI_ONLY_RECOVERY_PREIMAGE_FREEZE_SHA256 = (
+    "A7C7DBB77711DCDA7BA31AC720D1710E05E48F007523A0EACD583AA213BB49FC"
+)
+CI_ONLY_RECOVERY_MANIFEST_ROW_COUNT = 8
+CI_ONLY_RECOVERY_PATHS = (
+    WORKFLOW_RELATIVE,
+    BOUNDED_MANIFEST_RELATIVE,
+    BOUNDED_AUTHORIZATION_RELATIVE,
+    DEFAULT_ACTIVATION_REVIEW.relative_to(ROOT).as_posix(),
     SUPPORTED_API_REVIEW_RELATIVE,
+    SUPPORTED_API_BASELINE_RELATIVE,
+    COMPLETION_CHECKER_RELATIVE,
+    SUPPORTED_API_CHECKER_RELATIVE,
 )
-FINAL_PACKET_REVIEW_SHA256 = {
-    EXACT_ACTIVATION_SUPERSEDES_PACKET_REVIEWS[0]: (
-        "8B3CC920221E9786785D1D56DB2105964063CB50929DBFAAAD49B1E29A4070B8"
-    ),
-    EXACT_ACTIVATION_SUPERSEDES_PACKET_REVIEWS[1]: (
-        "CF4EF2EA8E00562D61F706033E757359D8440E55804498BE34BD7CFA86DA5488"
-    ),
+CI_ONLY_RECOVERY_MANIFEST_BYTES = (
+    "path\tpacket_id\tstage\toperation\n"
+    ".github/workflows/lean_action_ci.yml\tCI01R1\tci_recovery_control\tmodify\n"
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/C0007-bounded-epoch-authorized-paths.tsv\tCI01R1\t"
+    "ci_recovery_control\tmodify\n"
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/C0007-bounded-epoch-operator-authorization.json\tCI01R1\t"
+    "ci_recovery_control\tmodify\n"
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/C0007-bounded-planned-control.json\tCI01R1\t"
+    "ci_recovery_control\tmodify\n"
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/C0008-supported-api.json\tCI01R1\tci_recovery_control\tmodify\n"
+    "docs/architecture/supported-api.json\tCI01R1\tci_recovery_control\tmodify\n"
+    "tools/architecture/check_completion_phase.py\tCI01R1\t"
+    "ci_recovery_control\tmodify\n"
+    "tools/architecture/check_supported_api.py\tCI01R1\t"
+    "ci_recovery_control\tmodify\n"
+).encode("utf-8")
+CI_ONLY_RECOVERY_CONTRACT_SCHEMA_VERSION = 4
+CI_ONLY_RECOVERY_CONTRACT_KIND = "c0007_bounded_ci_only_recovery_control"
+CI_ONLY_RECOVERY_CONTROL_ID = "C0007-P-CI-recovery-control-v1"
+CI_ONLY_RECOVERY_STATE = "ci_recovery_pending"
+CI_ONLY_RECOVERY_WORKFLOW_SHA256 = (
+    "7FCCF4C8B274A9C8DC919ADC271F4D48B3416863192872706CF444DF3E419158"
+)
+CI_ONLY_RECOVERY_ARTIFACT_PATH_SET_SHA256 = (
+    "F01D66DD09B3F2E59DCC4012A58338CB5BC2F26E2B88E7BBF8BC605BA82947BB"
+)
+CI_ONLY_RECOVERY_HISTORICAL_PACKET_PATH_SET_SHA256 = (
+    "39534A6720B99C39263A261CC71E5DD262AD3F71ED40B875AB28B52BE0D1B674"
+)
+CI_ONLY_RECOVERY_ARTIFACT_PATHS = tuple(
+    path
+    for path in CI_ONLY_RECOVERY_PATHS
+    if path != DEFAULT_ACTIVATION_REVIEW.relative_to(ROOT).as_posix()
+)
+CI_ONLY_RECOVERY_ARTIFACT_BASE_BLOB_OIDS = {
+    WORKFLOW_RELATIVE: "5f00c1b987ca16f9cfebb6b1c65d9c71b8349107",
+    BOUNDED_MANIFEST_RELATIVE: "201c9e3a26bb10721041ac660e0c9f112163b98c",
+    BOUNDED_AUTHORIZATION_RELATIVE: "4957e833be3f7243bc47f69f14d05a7043642147",
+    SUPPORTED_API_REVIEW_RELATIVE: "41935ddd2eefe1602003eb663c7d3befd4cca0c4",
+    SUPPORTED_API_BASELINE_RELATIVE: "c26fe1fadc0468b9f53975cc198320481a975a6b",
+    COMPLETION_CHECKER_RELATIVE: "35fbb23ac3666ecb2dfc432b08165233978a7271",
+    SUPPORTED_API_CHECKER_RELATIVE: "37b3f76c35a3c5662b73668ad799901be15f6368",
 }
-EXACT_TERMINAL_V2_AUTHORIZATION = json.loads(r'''
+CI_ONLY_RECOVERY_CONTROL_HEAD_SHA = "8960f2a980be22166f321c4ba452eb547529b1fd"
+CI_ONLY_RECOVERY_CONTROL_TREE_SHA = "70cee1e77e1311129b00aeb0945770483d1aa5db"
+FAILED_P_COMMIT_SHA = "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9"
+FAILED_P_TREE_SHA = "ce9760fc7a49e69e98551e992c27fd11f9b247b1"
+FAILED_P_CONTRACT_BLOB_OID = "6c1f59211399c626c7727952c16ea63e504270c8"
+FAILED_P_CONTRACT_SHA256 = (
+    "D8C0E5ED51C075A93A16376967E501B670B16B06C91E96D1D1600351CFAA141D"
+)
+FAILED_P_AUTHORIZATION_BLOB_OID = "4957e833be3f7243bc47f69f14d05a7043642147"
+FAILED_P_MANIFEST_BLOB_OID = "201c9e3a26bb10721041ac660e0c9f112163b98c"
+FAILED_P_WORKFLOW_BLOB_OID = "5f00c1b987ca16f9cfebb6b1c65d9c71b8349107"
+FAILED_P_COMPLETION_CHECKER_BLOB_OID = (
+    "35fbb23ac3666ecb2dfc432b08165233978a7271"
+)
+FAILED_P_COMPLETION_CHECKER_SHA256 = (
+    "9D82E21737C783923F6A02954703E499B01697970834AF054E08A5B63C511552"
+)
+FAILED_P_RUN_ID = 32966438799
+FAILED_P_RUN_NUMBER = 8950
+FAILED_P_JOB_ID = 98169864308
+FAILED_P_CHECK_SUITE_ID = 89298169052
+FAILED_P_JOB_LOG_BYTE_COUNT = 20201
+FAILED_P_JOB_LOG_SHA256 = (
+    "8383047A0845BAA625BCC3ACA3AE5FCD744F80AD9D7A4647B0371B23EB41D16D"
+)
+FAILED_P_FAILURE_REASON = (
+    "actions checkout created a no-.git origin URL and a branch remote override "
+    "rejected by remote.identity"
+)
+# Exact frozen digest of the companion completion-phase checker. Lifecycle
+# validation fails closed on either a malformed constant or live checker drift.
+CI_RECOVERY_COMPLETION_CHECKER_SHA256 = (
+    "7C149108C32A728D50A23441FD49B446CEDE1D87EA5CA7F8051476F09F734BBC"
+)
+
+# These records remain immutable evidence from failed P.  They are not current
+# CI-recovery authority and must never be folded into the seven-artifact current
+# recovery scope merely because their historical bytes are still present.
+HISTORICAL_TERMINAL_V2_AUTHORIZATION_ID = (
+    "C0007-M13-I01-CODE03-terminal-v2"
+)
+HISTORICAL_TERMINAL_V2_AUTHORIZATION_SHA256 = (
+    "9BD67B6336BA9D2943552AA09D19F580EC4A8A9298E85BC846854A201CB15129"
+)
+HISTORICAL_P_PACKET_ARTIFACTS = {
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "requests/R0014-review.md": {
+        "blob_oid": "54927c2c2937583da407cb5fa5eb8db69bdebe03",
+        "byte_count": 6256,
+        "sha256": "69BFB58422DBEA48EF29DB39B74A70ED063453C7250F7E0A9F90ED9FF9400EB1",
+    },
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "requests/R0015-review.md": {
+        "blob_oid": "3a1b2543c8e54f4e8bba0febcb6b1526ace68553",
+        "byte_count": 7572,
+        "sha256": "1E3C8382E4185B5543D754EA35F7CA23A1426D01525C47A9A44CFE6BB5621376",
+    },
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/CODE03-approval.json": {
+        "blob_oid": "a96907ce457cea2de02cb45a70485b3129f8c9af",
+        "byte_count": 6101,
+        "sha256": "CF4EF2EA8E00562D61F706033E757359D8440E55804498BE34BD7CFA86DA5488",
+    },
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/I01-approval.json": {
+        "blob_oid": "cdd37abb449d9a800015792c6ac59891f0036168",
+        "byte_count": 4964,
+        "sha256": "8B3CC920221E9786785D1D56DB2105964063CB50929DBFAAAD49B1E29A4070B8",
+    },
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/I01-selection-overlap.md": {
+        "blob_oid": "90abd450b609c91f4b6f773ac3db0df6ba484398",
+        "byte_count": 4211,
+        "sha256": "5A0A4852AD84095CFBFC973ACF37E45C8C0AA5FB09D8E8728356CC30C1AF43A9",
+    },
+}
+HISTORICAL_P_PACKET_PATH_SET_SHA256 = (
+    "39534A6720B99C39263A261CC71E5DD262AD3F71ED40B875AB28B52BE0D1B674"
+)
+HISTORICAL_FULL_TESTS_CORRECTION_SHA256 = (
+    "FD35FC88D44230585B200FFEA021C5C53C56A004D03E8DC284F2F5B0EE6803EF"
+)
+# Historical source only: this exact terminal-v2 document is retained to make
+# the P provenance boundary reviewable, but is no longer accepted as live
+# authority by validate_bounded_authorization_document().
+HISTORICAL_TERMINAL_V2_AUTHORIZATION = json.loads(r'''
 {
   "activation_conditions": [
     "the control parent, control tree, remote main, active phase pointer, phase, authorized-path manifest, workflow, checker, packet, postimage, supported-API, and artifact identities remain exact",
@@ -247,7 +386,7 @@ C0007_TEST_SOURCE_TREE_SHA256 = (
 R0014_TIER_MANIFEST_SHA256 = (
     "96D8329E018769925658FD7BC8392F8005210C83665333B333EB03EFD2B0F6F6"
 )
-PLANNED_CONTROL_WORKFLOW_SHA256 = (
+HISTORICAL_P_WORKFLOW_SHA256 = (
     "AF4D9C4471F5D9AA140D8741D2B15AF453168C7B6BBD9970ADE1A479B1CE174C"
 )
 GITHUB_REVIEW_SOURCE_IDENTITY = {
@@ -4301,503 +4440,643 @@ def validate_review_schema(
     return failures
 
 
+def require_exact_ci_recovery_completion_checker_sha(actual_sha256: str) -> None:
+    """Reject placeholders and drift while accepting the frozen checker itself."""
+
+    if not re.fullmatch(r"[0-9A-F]{64}", CI_RECOVERY_COMPLETION_CHECKER_SHA256):
+        raise ContractError(
+            "completion checker final SHA-256 placeholder has not been replaced"
+        )
+    if actual_sha256 != CI_RECOVERY_COMPLETION_CHECKER_SHA256:
+        raise ContractError(
+            "current completion checker drift: expected exact "
+            f"{CI_RECOVERY_COMPLETION_CHECKER_SHA256}, got {actual_sha256}"
+        )
+
+
 def capture_lifecycle_file_hashes(
     *,
     baseline: JsonDocument,
     review: JsonDocument,
     authorization: JsonDocument,
     inputs: GenerationInputs,
-) -> tuple[dict[str, str], tuple[CapturedFile, ...]]:
-    """Capture every file whose bytes are bound by the activation scope."""
+) -> tuple[
+    dict[str, str], dict[str, CapturedFile], tuple[CapturedFile, ...]
+]:
+    """Capture the seven current recovery artifacts and separate P history."""
 
     completion = capture_file(ROOT / COMPLETION_CHECKER_RELATIVE)
+    manifest = capture_file(ROOT / BOUNDED_MANIFEST_RELATIVE)
     correction = capture_file(ROOT / FULL_TESTS_CORRECTION_RELATIVE)
     workflow = capture_file(ROOT / WORKFLOW_RELATIVE)
-    packet_reviews = tuple(
+    historical_packet_artifacts = tuple(
         capture_file(ROOT / relative)
-        for relative in FINAL_PACKET_REVIEW_SHA256
+        for relative in HISTORICAL_P_PACKET_ARTIFACTS
     )
-    for capture in packet_reviews:
+    manifest_failures = validate_ci_only_recovery_manifest(manifest)
+    if manifest_failures:
+        raise ContractError("invalid CI-only recovery manifest:\n" + "\n".join(manifest_failures))
+    require_exact_ci_recovery_completion_checker_sha(completion.identity.sha256)
+    if workflow.identity.sha256 != CI_ONLY_RECOVERY_WORKFLOW_SHA256:
+        raise ContractError(
+            "current CI-only recovery workflow drift: expected exact "
+            f"{CI_ONLY_RECOVERY_WORKFLOW_SHA256}, got {workflow.identity.sha256}"
+        )
+    if authorization.capture.identity.sha256 != CI_ONLY_RECOVERY_AUTHORIZATION_SHA256:
+        raise ContractError(
+            "current CI-only recovery authorization drift: expected exact "
+            f"{CI_ONLY_RECOVERY_AUTHORIZATION_SHA256}, got "
+            f"{authorization.capture.identity.sha256}"
+        )
+    for capture in historical_packet_artifacts:
         relative = capture.path.relative_to(ROOT).as_posix()
-        expected = FINAL_PACKET_REVIEW_SHA256[relative]
-        if capture.identity.sha256 != expected:
+        expected = HISTORICAL_P_PACKET_ARTIFACTS[relative]
+        if (
+            capture.identity.sha256 != expected["sha256"]
+            or capture.identity.size != expected["byte_count"]
+        ):
             raise ContractError(
-                f"final packet review drift: {relative}: expected {expected}, "
-                f"got {capture.identity.sha256}"
+                f"historical P packet artifact drift: {relative}: expected "
+                f"{expected['byte_count']}/{expected['sha256']}, got "
+                f"{capture.identity.size}/{capture.identity.sha256}"
             )
+    if correction.identity.sha256 != HISTORICAL_FULL_TESTS_CORRECTION_SHA256:
+        raise ContractError(
+            "historical P full-tests correction drift: expected exact "
+            f"{HISTORICAL_FULL_TESTS_CORRECTION_SHA256}, got "
+            f"{correction.identity.sha256}"
+        )
     captures = (
         baseline.capture,
         review.capture,
         authorization.capture,
+        manifest,
         inputs.checker,
         completion,
         correction,
         workflow,
-        *packet_reviews,
+        *historical_packet_artifacts,
     )
     hashes = {
         COMPLETION_CHECKER_RELATIVE: completion.identity.sha256,
         SUPPORTED_API_CHECKER_RELATIVE: inputs.checker.identity.sha256,
         SUPPORTED_API_BASELINE_RELATIVE: baseline.capture.identity.sha256,
         SUPPORTED_API_REVIEW_RELATIVE: review.capture.identity.sha256,
-        FULL_TESTS_CORRECTION_RELATIVE: correction.identity.sha256,
+        BOUNDED_MANIFEST_RELATIVE: manifest.identity.sha256,
         BOUNDED_AUTHORIZATION_RELATIVE: authorization.capture.identity.sha256,
         WORKFLOW_RELATIVE: workflow.identity.sha256,
     }
-    hashes.update(
+    current_captures = {
+        COMPLETION_CHECKER_RELATIVE: completion,
+        SUPPORTED_API_CHECKER_RELATIVE: inputs.checker,
+        SUPPORTED_API_BASELINE_RELATIVE: baseline.capture,
+        SUPPORTED_API_REVIEW_RELATIVE: review.capture,
+        BOUNDED_MANIFEST_RELATIVE: manifest,
+        BOUNDED_AUTHORIZATION_RELATIVE: authorization.capture,
+        WORKFLOW_RELATIVE: workflow,
+    }
+    return hashes, current_captures, captures
+
+
+def git_blob_oid(data: bytes) -> str:
+    header = f"blob {len(data)}\0".encode("ascii")
+    return hashlib.sha1(header + data).hexdigest()
+
+
+def ci_only_recovery_constraints(
+    authorization: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        field: json.loads(json.dumps(authorization.get(field)))
+        for field in (
+            "scope",
+            "authorized_actions",
+            "activation_conditions",
+            "preserved_exclusions",
+            "expiry",
+            "run_policy",
+        )
+    }
+
+
+def ci_only_recovery_pending_ci() -> dict[str, Any]:
+    fields = {
+        "branch",
+        "candidate_sha",
+        "candidate_tree",
+        "check_suite_id",
+        "completed_at",
+        "conclusion",
+        "event",
+        "full_build",
+        "full_tests",
+        "job_completed_at",
+        "job_id",
+        "job_log_byte_count",
+        "job_log_sha256",
+        "job_name",
+        "job_started_at",
+        "repository",
+        "run_attempt",
+        "run_id",
+        "runner_name",
+        "started_at",
+        "status",
+        "workflow_path",
+    }
+    result = {field: None for field in fields}
+    result.update(
         {
-            capture.path.relative_to(ROOT).as_posix(): capture.identity.sha256
-            for capture in packet_reviews
+            "branch": "codex/reorg-closeout-2026-08-m13-i01",
+            "repository": "AlexGeorgantzas/lean-numerical-stability",
+            "status": "pending",
+            "workflow_path": WORKFLOW_RELATIVE,
         }
     )
-    return hashes, captures
+    return result
 
 
-def validate_activation_attestation(
+def failed_p_control_record() -> dict[str, Any]:
+    return {
+        "authorization_blob_oid": FAILED_P_AUTHORIZATION_BLOB_OID,
+        "authorization_path": BOUNDED_AUTHORIZATION_RELATIVE,
+        "authorization_sha256": HISTORICAL_TERMINAL_V2_AUTHORIZATION_SHA256,
+        "ci": {
+            "branch": "codex/reorg-closeout-2026-08-m13-i01",
+            "check_suite_conclusion": "failure",
+            "check_suite_id": FAILED_P_CHECK_SUITE_ID,
+            "completed_at": "2026-08-26T12:03:44Z",
+            "conclusion": "failure",
+            "event": "workflow_dispatch",
+            "failed_step": "Check architecture source graph and Python tooling",
+            "head_sha": FAILED_P_COMMIT_SHA,
+            "job_completed_at": "2026-08-26T12:03:43Z",
+            "job_conclusion": "failure",
+            "job_id": FAILED_P_JOB_ID,
+            "job_log_byte_count": FAILED_P_JOB_LOG_BYTE_COUNT,
+            "job_log_sha256": FAILED_P_JOB_LOG_SHA256,
+            "job_name": "build",
+            "job_started_at": "2026-08-26T12:02:32Z",
+            "run_attempt": 1,
+            "run_id": FAILED_P_RUN_ID,
+            "run_number": FAILED_P_RUN_NUMBER,
+            "runner_name": "GitHub Actions 1000008996",
+            "skipped_steps": [
+                "Build library and smoke tests",
+                "Verify supported API from the built environment",
+                "Run Lake test driver",
+            ],
+            "started_at": "2026-08-26T12:02:27Z",
+            "status": "failure",
+            "workflow_path": WORKFLOW_RELATIVE,
+        },
+        "commit_sha": FAILED_P_COMMIT_SHA,
+        "completion_checker_blob_oid": FAILED_P_COMPLETION_CHECKER_BLOB_OID,
+        "completion_checker_path": COMPLETION_CHECKER_RELATIVE,
+        "completion_checker_sha256": FAILED_P_COMPLETION_CHECKER_SHA256,
+        "contract_blob_oid": FAILED_P_CONTRACT_BLOB_OID,
+        "contract_path": DEFAULT_ACTIVATION_REVIEW.relative_to(ROOT).as_posix(),
+        "contract_sha256": FAILED_P_CONTRACT_SHA256,
+        "failure_reason": FAILED_P_FAILURE_REASON,
+        "manifest_blob_oid": FAILED_P_MANIFEST_BLOB_OID,
+        "manifest_path": BOUNDED_MANIFEST_RELATIVE,
+        "manifest_sha256": "121D11A73AF2CD23885FB7A6B38D14B0D8A5440940D913A83F3A5D6941511ECE",
+        "parent_sha": CI_ONLY_RECOVERY_CONTROL_HEAD_SHA,
+        "subject": "chore(reorganization): plan M13 I01 and CODE03",
+        "tree_sha": FAILED_P_TREE_SHA,
+        "workflow_blob_oid": FAILED_P_WORKFLOW_BLOB_OID,
+        "workflow_path": WORKFLOW_RELATIVE,
+        "workflow_sha256": HISTORICAL_P_WORKFLOW_SHA256,
+    }
+
+
+def expected_ci_only_recovery_contract(
+    artifacts: Sequence[Mapping[str, Any]],
+    authorization: Mapping[str, Any],
+) -> dict[str, Any]:
+    clone = lambda value: json.loads(json.dumps(value))
+    constraints = ci_only_recovery_constraints(authorization)
+    historical = [
+        {
+            "blob_oid": facts["blob_oid"],
+            "byte_count": facts["byte_count"],
+            "mode": "100644",
+            "path": path,
+            "sha256": facts["sha256"],
+            "source_commit_sha": FAILED_P_COMMIT_SHA,
+        }
+        for path, facts in sorted(HISTORICAL_P_PACKET_ARTIFACTS.items())
+    ]
+    return {
+        "activation_conditions": clone(authorization.get("activation_conditions")),
+        "application_mode": "ci_recovery_control_only",
+        "artifacts": [clone(item) for item in artifacts],
+        "authority": {
+            "authority_id": "primary-human",
+            "authorization_id": CI_ONLY_RECOVERY_AUTHORIZATION_ID,
+            "authorization_path": BOUNDED_AUTHORIZATION_RELATIVE,
+            "authorization_sha256": CI_ONLY_RECOVERY_AUTHORIZATION_SHA256,
+            "authorized_manifest_path": BOUNDED_MANIFEST_RELATIVE,
+            "authorized_manifest_rows": CI_ONLY_RECOVERY_MANIFEST_ROW_COUNT,
+            "authorized_manifest_sha256": CI_ONLY_RECOVERY_MANIFEST_SHA256,
+            "authorized_path_list_sha256": CI_ONLY_RECOVERY_PATH_SET_SHA256,
+            "operator_id": "codex-local",
+        },
+        "authorized_actions": clone(authorization.get("authorized_actions")),
+        "base": {
+            "control_head_sha": CI_ONLY_RECOVERY_CONTROL_HEAD_SHA,
+            "control_tree_sha": CI_ONLY_RECOVERY_CONTROL_TREE_SHA,
+            "failed_planned_control_commit_sha": FAILED_P_COMMIT_SHA,
+            "failed_planned_control_tree_sha": FAILED_P_TREE_SHA,
+            "recovery_parent_sha": FAILED_P_COMMIT_SHA,
+            "remote_main_sha_at_authorization": CI_ONLY_RECOVERY_CONTROL_HEAD_SHA,
+            "request_replay_checkpoint_id": "C0007",
+            "request_replay_code_sha": C0007_CODE_SHA,
+        },
+        "branch": {
+            "base_sha": FAILED_P_COMMIT_SHA,
+            "local_branch": "codex/reorg-closeout-2026-08-m13-i01",
+            "operator_id": "codex-local",
+            "push_policy": "fast_forward_only_with_exact_observed_lease",
+            "remote": "origin",
+            "remote_main_ref": "refs/heads/main",
+            "remote_ref": "refs/heads/codex/reorg-closeout-2026-08-m13-i01",
+            "remote_url": (
+                "https://github.com/AlexGeorgantzas/"
+                "lean-numerical-stability.git"
+            ),
+            "repository": "AlexGeorgantzas/lean-numerical-stability",
+            "repository_id": "R_kgDORdQhag",
+            "retirement_authorized": False,
+        },
+        "ci": {"planned_recovery": ci_only_recovery_pending_ci()},
+        "constraints_sha256": canonical_json_sha256(constraints),
+        "control_id": CI_ONLY_RECOVERY_CONTROL_ID,
+        "expiry": clone(authorization.get("expiry")),
+        "failed_planned_control": failed_p_control_record(),
+        "graph": ["B->P_failed", "P_failed->PR"],
+        "historical_packet_artifacts": historical,
+        "lifecycle": {
+            "continuation_authorized": False,
+            "failed_planned_control_commit_sha": FAILED_P_COMMIT_SHA,
+            "failed_planned_control_contract_blob_oid": FAILED_P_CONTRACT_BLOB_OID,
+            "failed_planned_control_tree_sha": FAILED_P_TREE_SHA,
+            "planned_recovery_commit_sha": None,
+            "planned_recovery_contract_blob_oid": None,
+            "planned_recovery_tree_sha": None,
+            "state": CI_ONLY_RECOVERY_STATE,
+        },
+        "path_census": {
+            "artifact_snapshot": {
+                "path_count": 7,
+                "path_set_sha256": CI_ONLY_RECOVERY_ARTIFACT_PATH_SET_SHA256,
+            },
+            "ci_recovery_control": {
+                "modify_count": 8,
+                "path_count": 8,
+                "path_set_sha256": CI_ONLY_RECOVERY_PATH_SET_SHA256,
+            },
+            "contract_path": DEFAULT_ACTIVATION_REVIEW.relative_to(ROOT).as_posix(),
+            "historical_packet_artifacts": {
+                "path_count": 5,
+                "path_set_sha256": (
+                    CI_ONLY_RECOVERY_HISTORICAL_PACKET_PATH_SET_SHA256
+                ),
+            },
+            "local_ledger_exclusion": "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+            "self_hash_policy": (
+                "excluded_from_artifacts_but_bound_by_direct_child_commit"
+            ),
+        },
+        "permissions": {
+            "activation_authorized": False,
+            "implementation_authorized": False,
+            "owner_solicitation_authorized": False,
+            "post_assurance_transition_authorized": False,
+            "remote_main_mutation_authorized": False,
+            "request_resolution_authorized": False,
+            "rerun_authorized": False,
+        },
+        "phase_id": "repository-reorganization-completion-2026-08",
+        "preserved_exclusions": clone(authorization.get("preserved_exclusions")),
+        "record_kind": CI_ONLY_RECOVERY_CONTRACT_KIND,
+        "run_policy": clone(authorization.get("run_policy")),
+        "schema_version": CI_ONLY_RECOVERY_CONTRACT_SCHEMA_VERSION,
+        "scope": clone(authorization.get("scope")),
+        "workflow": {
+            "build_step_name": "Build library and smoke tests",
+            "checkout_action": (
+                "actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09"
+            ),
+            "checkout_ref_expression": "$" "{{ github.sha }}",
+            "full_build_command": "lake build NumStability NumStabilityTest",
+            "github_actions_read_permission": True,
+            "github_issues_read_permission": True,
+            "job_name": "build",
+            "job_timeout_minutes": 360,
+            "lean_action": (
+                "leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596"
+            ),
+            "lean_action_use_github_cache": True,
+            "origin_normalization_command": (
+                "git remote set-url origin "
+                "https://github.com/AlexGeorgantzas/"
+                "lean-numerical-stability.git"
+            ),
+            "path": WORKFLOW_RELATIVE,
+            "sha256": CI_ONLY_RECOVERY_WORKFLOW_SHA256,
+            "supported_api_commands": [
+                "python tools/architecture/check_supported_api.py --self-test",
+                (
+                    "python tools/architecture/check_supported_api.py "
+                    "--baseline docs/architecture/supported-api.json "
+                    "--mode lifecycle"
+                ),
+            ],
+            "supported_api_step_name": (
+                "Verify supported API from the built environment"
+            ),
+            "test_command": "lake test",
+            "test_step_name": "Run Lake test driver",
+            "toolchain": "leanprover/lean4:v4.29.0-rc3",
+            "workflow_id": 240911818,
+            "workflow_name": "Lean CI",
+        },
+    }
+
+
+def validate_ci_only_recovery_contract(
     contract: Mapping[str, Any],
+    authorization: Mapping[str, Any],
     *,
     current_file_hashes: Mapping[str, str],
+    current_file_captures: Mapping[str, CapturedFile],
     mode: str,
 ) -> list[str]:
     failures: list[str] = []
-    reviews = contract.get("reviews")
-    if not isinstance(reviews, dict):
-        return ["activation contract reviews: expected object"]
-    activation = reviews.get("activation")
-    if not isinstance(activation, dict):
-        return ["activation contract reviews.activation: expected object"]
-    expected_keys = {
-        "action_performer_id",
-        "attestation_kind",
-        "ci_is_semantic_review",
-        "decision",
-        "generator_id",
-        "reviewed_at",
-        "reviewed_commit_sha",
-        "reviewed_contract_blob_oid",
-        "reviewed_tree_sha",
-        "reviewer_id",
-        "reviewer_kind",
-        "scope",
-        "source",
-        "status",
-        "supersedes_pending_packet_reviews",
-        "binds_pending_machine_evidence",
-    }
-    if set(activation) != expected_keys:
-        failures.append("activation contract reviews.activation: unexpected or missing keys")
-    exact_values = {
-        "action_performer_id": "codex-local",
-        "attestation_kind": "github_repository_owner_issue_comment_v1",
-        "ci_is_semantic_review": False,
-        "generator_id": "codex-local",
-        "reviewer_id": "primary-human",
-        "reviewer_kind": "human",
-    }
-    for field, expected in exact_values.items():
-        if not json_exact_equal(activation.get(field), expected):
-            failures.append(
-                f"activation contract {field}: expected {expected!r}, "
-                f"got {activation.get(field)!r}"
-            )
-    if activation.get("generator_id") == activation.get("reviewer_id"):
-        failures.append("activation contract generator cannot equal primary-human reviewer")
-
-    status = activation.get("status")
-    pending = status == "pending"
-    approved = status == "approved"
-    if mode == "staging":
-        if not (pending or approved):
-            failures.append(
-                "staging activation contract status must be exact pending or approved"
-            )
-    elif mode == "completion":
-        if not approved:
-            failures.append(
-                "completion activation contract requires exact primary-human approval"
-            )
-    else:
-        failures.append(f"unsupported activation validation mode: {mode!r}")
-
-    reviewed_fields = (
-        "decision",
-        "reviewed_at",
-        "reviewed_commit_sha",
-        "reviewed_contract_blob_oid",
-        "reviewed_tree_sha",
-    )
-
-    supersedes = activation.get("supersedes_pending_packet_reviews")
-    if not json_exact_equal(
-        supersedes, list(EXACT_ACTIVATION_SUPERSEDES_PACKET_REVIEWS)
-    ):
+    try:
+        validate_strict_json_tree(contract)
+    except ContractError as error:
+        return [f"CI-only recovery contract is not strict type-exact JSON: {error}"]
+    if mode != "staging":
         failures.append(
-            "activation contract must use the exact ordered packet-review supersession set"
+            "CI-only recovery authority permits only the pre-implementation staging state"
         )
-    machine_evidence = activation.get("binds_pending_machine_evidence")
-    if not json_exact_equal(
-        machine_evidence, list(EXACT_ACTIVATION_MACHINE_EVIDENCE)
-    ):
-        failures.append(
-            "activation contract must separately bind only pending supported-API machine evidence"
-        )
+    expected_paths = set(CI_ONLY_RECOVERY_ARTIFACT_PATHS)
+    if set(current_file_hashes) != expected_paths:
+        failures.append("CI-only recovery current-file hash set must be exactly seven paths")
+    if set(current_file_captures) != expected_paths:
+        failures.append("CI-only recovery capture set must be exactly seven paths")
 
-    scope = activation.get("scope")
-    expected_scope_keys = {
-        "artifact_inventory_sha256",
-        "authorization_sha256",
-        "completion_checker_sha256",
-        "full_tests_correction_sha256",
-        "implementation_path_set_sha256",
-        "packet_snapshot_sha256",
-        "planned_path_set_sha256",
-        "review_purpose",
-        "supported_api_baseline_sha256",
-        "supported_api_checker_sha256",
-        "supported_api_review_sha256",
-        "workflow_sha256",
+    artifacts_value = contract.get("artifacts")
+    artifacts = artifacts_value if isinstance(artifacts_value, list) else []
+    if not isinstance(artifacts_value, list):
+        failures.append("CI-only recovery contract artifacts must be an array")
+    artifact_paths = [
+        row.get("path") if isinstance(row, dict) else None for row in artifacts
+    ]
+    if artifact_paths != list(CI_ONLY_RECOVERY_ARTIFACT_PATHS):
+        failures.append(
+            "CI-only recovery artifacts must be the seven sorted non-contract paths"
+        )
+    artifact_keys = {
+        "base_blob_oid",
+        "base_mode",
+        "operation",
+        "packet_id",
+        "path",
+        "post_blob_oid",
+        "post_mode",
+        "sha256",
     }
-    if not isinstance(scope, dict):
-        failures.append("activation contract scope: expected object")
-        scope = {}
-    elif set(scope) != expected_scope_keys:
-        failures.append("activation contract scope: unexpected or missing keys")
-    if scope.get("review_purpose") != "P activation for atomic R0014/R0015 implementation":
-        failures.append("activation contract scope.review_purpose: wrong purpose")
-    for field in expected_scope_keys - {"review_purpose"}:
-        value = scope.get(field)
-        if not isinstance(value, str) or not re.fullmatch(r"[0-9A-F]{64}", value):
-            failures.append(f"activation contract scope.{field}: expected uppercase SHA-256")
-    artifacts = contract.get("artifacts")
-    artifact_sha_by_path: dict[str, str] = {}
-    if not isinstance(artifacts, list) or not all(
-        isinstance(row, dict)
-        and isinstance(row.get("path"), str)
-        and isinstance(row.get("sha256"), str)
-        for row in artifacts
-    ):
-        failures.append("activation contract artifacts: expected artifact inventory")
-        artifacts = []
-    else:
-        artifact_paths = [str(row["path"]) for row in artifacts]
-        if len(artifact_paths) != len(set(artifact_paths)):
-            failures.append("activation contract artifacts: duplicate paths")
-        artifact_sha_by_path = {
-            str(row["path"]): str(row["sha256"]) for row in artifacts
+    for index, row in enumerate(artifacts):
+        label = f"CI-only recovery artifacts[{index}]"
+        if not isinstance(row, dict):
+            failures.append(f"{label}: expected object")
+            continue
+        path = row.get("path")
+        capture = current_file_captures.get(path) if isinstance(path, str) else None
+        if set(row) != artifact_keys:
+            failures.append(f"{label}: unexpected or missing keys")
+        if path not in CI_ONLY_RECOVERY_ARTIFACT_BASE_BLOB_OIDS:
+            failures.append(f"{label}: path is outside the recovery artifact boundary")
+            continue
+        exact_fields = {
+            "base_blob_oid": CI_ONLY_RECOVERY_ARTIFACT_BASE_BLOB_OIDS[path],
+            "base_mode": "100644",
+            "operation": "modify",
+            "packet_id": "CI01R1",
+            "post_mode": "100644",
         }
+        for field, expected in exact_fields.items():
+            if not json_exact_equal(row.get(field), expected):
+                failures.append(f"{label}.{field}: exact recovery binding drift")
+        if capture is None:
+            failures.append(f"{label}: missing independently captured current bytes")
+            continue
+        if row.get("sha256") != current_file_hashes.get(path):
+            failures.append(f"{label}.sha256: does not bind current captured bytes")
+        if row.get("post_blob_oid") != git_blob_oid(capture.raw):
+            failures.append(f"{label}.post_blob_oid: does not bind current captured bytes")
+        if row.get("post_blob_oid") == row.get("base_blob_oid"):
+            failures.append(f"{label}.post_blob_oid: recovery postimage equals P preimage")
 
-    packets = contract.get("packets")
-    if not isinstance(packets, list):
-        failures.append("activation contract packets: expected array")
-        packets = []
-    authority = contract.get("authority")
-    if not isinstance(authority, dict):
-        failures.append("activation contract authority: expected object")
-        authority = {}
-    path_census = contract.get("path_census")
-    if not isinstance(path_census, dict):
-        failures.append("activation contract path_census: expected object")
-        path_census = {}
-    implementation_census = path_census.get("implementation")
-    if not isinstance(implementation_census, dict):
-        failures.append("activation contract path_census.implementation: expected object")
-        implementation_census = {}
-    planned_census = path_census.get("planned_control")
-    if not isinstance(planned_census, dict):
-        failures.append("activation contract path_census.planned_control: expected object")
-        planned_census = {}
-    workflow = contract.get("workflow")
-    if not isinstance(workflow, dict):
-        failures.append("activation contract workflow: expected object")
-        workflow = {}
-    if workflow.get("github_issues_read_permission") is not True:
-        failures.append("activation contract workflow must grant exact GitHub issues read access")
-
-    current_workflow_sha256 = current_file_hashes.get(WORKFLOW_RELATIVE)
-    if current_workflow_sha256 != PLANNED_CONTROL_WORKFLOW_SHA256:
+    expected = expected_ci_only_recovery_contract(artifacts, authorization)
+    if not json_exact_equal(contract, expected):
         failures.append(
-            "current planned-control workflow drift: expected exact "
-            f"{PLANNED_CONTROL_WORKFLOW_SHA256}, got {current_workflow_sha256}"
+            "CI-only recovery contract identity, authority snapshot, failed-P "
+            "evidence, historical packet boundary, or pending PR fields drifted"
         )
-    expected_current_paths = {
-        COMPLETION_CHECKER_RELATIVE,
-        SUPPORTED_API_CHECKER_RELATIVE,
-        SUPPORTED_API_BASELINE_RELATIVE,
-        SUPPORTED_API_REVIEW_RELATIVE,
-        FULL_TESTS_CORRECTION_RELATIVE,
-        BOUNDED_AUTHORIZATION_RELATIVE,
-        WORKFLOW_RELATIVE,
-        *FINAL_PACKET_REVIEW_SHA256,
-    }
-    if set(current_file_hashes) != expected_current_paths:
-        failures.append(
-            "activation validation current-file hash set is incomplete or overbroad"
-        )
-    for relative in sorted(expected_current_paths):
-        expected = current_file_hashes.get(relative)
-        if artifact_sha_by_path.get(relative) != expected:
-            failures.append(
-                f"activation contract artifact {relative}: expected current {expected}, "
-                f"got {artifact_sha_by_path.get(relative)!r}"
-            )
-    exact_scope_hashes = {
-        "artifact_inventory_sha256": canonical_json_sha256(artifacts),
-        "authorization_sha256": authority.get("authorization_sha256"),
-        "completion_checker_sha256": current_file_hashes.get(
-            COMPLETION_CHECKER_RELATIVE
-        ),
-        "full_tests_correction_sha256": current_file_hashes.get(
-            FULL_TESTS_CORRECTION_RELATIVE
-        ),
-        "implementation_path_set_sha256": implementation_path_set_sha256(),
-        "packet_snapshot_sha256": canonical_json_sha256(packets),
-        "planned_path_set_sha256": PLANNED_PATH_SET_SHA256,
-        "supported_api_baseline_sha256": current_file_hashes.get(
-            SUPPORTED_API_BASELINE_RELATIVE
-        ),
-        "supported_api_checker_sha256": current_file_hashes.get(
-            SUPPORTED_API_CHECKER_RELATIVE
-        ),
-        "supported_api_review_sha256": current_file_hashes.get(
-            SUPPORTED_API_REVIEW_RELATIVE
-        ),
-        "workflow_sha256": PLANNED_CONTROL_WORKFLOW_SHA256,
-    }
-    if authority.get("authorization_sha256") != current_file_hashes.get(
-        BOUNDED_AUTHORIZATION_RELATIVE
-    ):
-        failures.append(
-            "activation contract authority.authorization_sha256 must match current authorization"
-        )
-    if implementation_census.get("path_set_sha256") != implementation_path_set_sha256():
-        failures.append(
-            "activation contract implementation census path set must match exact 14-path set"
-        )
-    if planned_census.get("path_set_sha256") != PLANNED_PATH_SET_SHA256:
-        failures.append("activation contract planned-control path set drift")
-    if workflow.get("sha256") != PLANNED_CONTROL_WORKFLOW_SHA256:
-        failures.append("activation contract workflow.sha256 drift")
-    for field, expected in exact_scope_hashes.items():
-        if scope.get(field) != expected:
-            failures.append(
-                f"activation contract scope.{field}: expected exact {expected}, "
-                f"got {scope.get(field)!r}"
-            )
-
-    source = activation.get("source")
-    source_keys = {
-        "author_association",
-        "author_database_id",
-        "author_login",
-        "author_node_id",
-        "author_type",
-        "comment_api_url",
-        "comment_database_id",
-        "comment_html_url",
-        "comment_node_id",
-        "created_at",
-        "issue_api_url",
-        "issue_database_id",
-        "issue_html_url",
-        "issue_node_id",
-        "issue_number",
-        "message",
-        "message_sha256",
-        "performed_via_github_app",
-        "provider",
-        "repository_api_url",
-        "repository_database_id",
-        "repository_full_name",
-        "repository_node_id",
-        "updated_at",
-    }
-    if not isinstance(source, dict):
-        failures.append("activation contract source: expected object")
-        source = {}
-    elif set(source) != source_keys:
-        failures.append("activation contract source: unexpected or missing keys")
-    for field, expected in GITHUB_REVIEW_SOURCE_IDENTITY.items():
-        if source.get(field) != expected:
-            failures.append(
-                f"activation contract source.{field}: expected {expected!r}, "
-                f"got {source.get(field)!r}"
-            )
-
-    event_fields = (
-        "comment_api_url",
-        "comment_database_id",
-        "comment_html_url",
-        "comment_node_id",
-        "created_at",
-        "issue_api_url",
-        "issue_database_id",
-        "issue_html_url",
-        "issue_node_id",
-        "issue_number",
-        "message",
-        "message_sha256",
-        "updated_at",
-    )
-    if pending:
-        for field in reviewed_fields:
-            if activation.get(field) is not None:
-                failures.append(f"pending activation contract {field} must be null")
-        for field in event_fields:
-            if source.get(field) is not None:
-                failures.append(f"pending activation contract source.{field} must be null")
-    elif approved:
-        if activation.get("decision") != "approved":
-            failures.append("approved activation contract decision must be 'approved'")
-        lifecycle = contract.get("lifecycle")
-        if not isinstance(lifecycle, dict):
-            failures.append("approved activation contract requires lifecycle object")
-            lifecycle = {}
-        lifecycle_bindings = {
-            "reviewed_commit_sha": "planned_commit_sha",
-            "reviewed_tree_sha": "planned_tree_sha",
-            "reviewed_contract_blob_oid": "planned_contract_blob_oid",
-        }
-        for reviewed_field, lifecycle_field in lifecycle_bindings.items():
-            if activation.get(reviewed_field) != lifecycle.get(lifecycle_field):
-                failures.append(
-                    f"activation contract {reviewed_field} must exact-bind "
-                    f"lifecycle.{lifecycle_field}"
-                )
-        for field in (
-            "reviewed_commit_sha",
-            "reviewed_contract_blob_oid",
-            "reviewed_tree_sha",
-        ):
-            value = activation.get(field)
-            if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value):
-                failures.append(
-                    f"activation contract {field}: expected lowercase Git object id"
-                )
-        rfc3339 = re.compile(
-            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z"
-        )
-        reviewed_at = activation.get("reviewed_at")
-        created_at = source.get("created_at")
-        updated_at = source.get("updated_at")
-        for field, value in (
-            ("reviewed_at", reviewed_at),
-            ("source.created_at", created_at),
-            ("source.updated_at", updated_at),
-        ):
-            if not isinstance(value, str) or not rfc3339.fullmatch(value):
-                failures.append(
-                    f"activation contract {field}: expected UTC RFC3339 timestamp"
-                )
-        if not (reviewed_at == created_at == updated_at):
-            failures.append(
-                "activation contract approved review/comment timestamps must be exact and unedited"
-            )
-
-        issue_number = source.get("issue_number")
-        issue_database_id = source.get("issue_database_id")
-        comment_database_id = source.get("comment_database_id")
-        for field, value in (
-            ("issue_number", issue_number),
-            ("issue_database_id", issue_database_id),
-            ("comment_database_id", comment_database_id),
-        ):
-            if type(value) is not int or value <= 0:
-                failures.append(
-                    f"activation contract source.{field}: expected positive integer"
-                )
-        for field in ("issue_node_id", "comment_node_id"):
-            value = source.get(field)
-            if not isinstance(value, str) or not value:
-                failures.append(
-                    f"activation contract source.{field}: expected nonempty string"
-                )
-        repository_api_url = GITHUB_REVIEW_SOURCE_IDENTITY["repository_api_url"]
-        repository_full_name = GITHUB_REVIEW_SOURCE_IDENTITY["repository_full_name"]
-        if type(issue_number) is int and issue_number > 0:
-            expected_issue_api_url = f"{repository_api_url}/issues/{issue_number}"
-            expected_issue_html_url = (
-                f"https://github.com/{repository_full_name}/issues/{issue_number}"
-            )
-            if source.get("issue_api_url") != expected_issue_api_url:
-                failures.append("activation contract source.issue_api_url: relation mismatch")
-            if source.get("issue_html_url") != expected_issue_html_url:
-                failures.append("activation contract source.issue_html_url: relation mismatch")
-            if type(comment_database_id) is int and comment_database_id > 0:
-                expected_comment_api_url = (
-                    f"{repository_api_url}/issues/comments/{comment_database_id}"
-                )
-                expected_comment_html_url = (
-                    f"{expected_issue_html_url}#issuecomment-{comment_database_id}"
-                )
-                if source.get("comment_api_url") != expected_comment_api_url:
-                    failures.append(
-                        "activation contract source.comment_api_url: relation mismatch"
-                    )
-                if source.get("comment_html_url") != expected_comment_html_url:
-                    failures.append(
-                        "activation contract source.comment_html_url: relation mismatch"
-                    )
-
-        scope_sha256 = canonical_json_sha256(scope)
-        expected_message = (
-            "I, primary-human, independently reviewed and approve "
-            f"{scope.get('review_purpose')} at commit "
-            f"{activation.get('reviewed_commit_sha')}, tree "
-            f"{activation.get('reviewed_tree_sha')}, contract blob "
-            f"{activation.get('reviewed_contract_blob_oid')}, and scope SHA-256 "
-            f"{scope_sha256}. I confirm that CI is evidence, not semantic review, "
-            "and authorize only the exact bounded next transition."
-        )
-        if source.get("message") != expected_message:
-            failures.append("activation contract source.message: exact attestation mismatch")
-        if source.get("message_sha256") != sha256_bytes(
-            expected_message.encode("utf-8")
-        ):
-            failures.append("activation contract source.message_sha256: content mismatch")
     return failures
 
 
 def validate_bounded_authorization_document(
     authorization: Mapping[str, Any],
+    *,
+    authorization_sha256: str,
 ) -> list[str]:
-    """Require the entire terminal-v2 grant, including ordered trust boundaries."""
+    """Require the exact CI-only recovery grant and its narrow trust boundary."""
 
+    failures: list[str] = []
     try:
         validate_strict_json_tree(authorization)
     except ContractError as error:
         return [f"bounded authorization is not strict type-exact JSON: {error}"]
-    difference = json_exact_difference(
-        authorization, EXACT_TERMINAL_V2_AUTHORIZATION
-    )
-    if difference is None:
-        return []
-    return [f"bounded authorization terminal-v2 exact mismatch: {difference}"]
+    if authorization_sha256 != CI_ONLY_RECOVERY_AUTHORIZATION_SHA256:
+        failures.append(
+            "CI-only recovery authorization raw SHA-256 mismatch: expected "
+            f"{CI_ONLY_RECOVERY_AUTHORIZATION_SHA256}, got {authorization_sha256}"
+        )
+    canonical_sha256 = sha256_bytes(canonical_json_bytes(authorization))
+    if canonical_sha256 != CI_ONLY_RECOVERY_AUTHORIZATION_SHA256:
+        failures.append(
+            "CI-only recovery authorization canonical bytes do not match the exact grant"
+        )
+    expected_top_keys = {
+        "activation_conditions",
+        "authority_id",
+        "authorization_id",
+        "authorized_actions",
+        "base",
+        "decision",
+        "expiry",
+        "operator_id",
+        "phase_id",
+        "preserved_exclusions",
+        "record_kind",
+        "recorded_at",
+        "run_policy",
+        "schema_version",
+        "scope",
+        "source",
+        "supersedes",
+    }
+    if set(authorization) != expected_top_keys:
+        failures.append("CI-only recovery authorization has unexpected or missing keys")
+    exact_scalars = {
+        "authority_id": "primary-human",
+        "authorization_id": CI_ONLY_RECOVERY_AUTHORIZATION_ID,
+        "decision": "approved_for_ci_recovery_only",
+        "operator_id": "codex-local",
+        "phase_id": "repository-reorganization-completion-2026-08",
+        "record_kind": "primary_human_ci_only_recovery_authorization",
+        "schema_version": 3,
+    }
+    for field, expected in exact_scalars.items():
+        if not json_exact_equal(authorization.get(field), expected):
+            failures.append(
+                f"CI-only recovery authorization {field}: expected {expected!r}, "
+                f"got {authorization.get(field)!r}"
+            )
+
+    scope = authorization.get("scope")
+    expected_scope_keys = {
+        "activation_authorized",
+        "authorized_path_manifest",
+        "bounded_ref",
+        "checkpoint_acceptance_authorized",
+        "implementation_authorized",
+        "owner_solicitation_authorized",
+        "post_assurance_transition_authorized",
+        "recovery_parent_sha",
+        "recovery_subject",
+        "remote_main_mutation_authorized",
+        "request_resolution_authorized",
+        "supported_api_record",
+        "target_state",
+        "task_ids",
+    }
+    if not isinstance(scope, dict) or set(scope) != expected_scope_keys:
+        failures.append("CI-only recovery authorization scope has wrong shape")
+        scope = {}
+    for field in (
+        "activation_authorized",
+        "checkpoint_acceptance_authorized",
+        "implementation_authorized",
+        "owner_solicitation_authorized",
+        "post_assurance_transition_authorized",
+        "remote_main_mutation_authorized",
+        "request_resolution_authorized",
+    ):
+        if scope.get(field) is not False:
+            failures.append(f"CI-only recovery authorization scope.{field} must be false")
+    exact_scope_values = {
+        "bounded_ref": "refs/heads/codex/reorg-closeout-2026-08-m13-i01",
+        "recovery_parent_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
+        "recovery_subject": "fix(reorganization): recover M13 planned-control CI",
+        "target_state": CI_ONLY_RECOVERY_STATE,
+        "task_ids": ["CI-01", "EPOCH-01", "VERIFY-01", "VERIFY-02", "VERIFY-03"],
+    }
+    for field, expected in exact_scope_values.items():
+        if not json_exact_equal(scope.get(field), expected):
+            failures.append(f"CI-only recovery authorization scope.{field} drift")
+    expected_manifest = {
+        "path": BOUNDED_MANIFEST_RELATIVE,
+        "path_list_sha256": CI_ONLY_RECOVERY_PATH_SET_SHA256,
+        "preimage_freeze_sha256": CI_ONLY_RECOVERY_PREIMAGE_FREEZE_SHA256,
+        "row_count": CI_ONLY_RECOVERY_MANIFEST_ROW_COUNT,
+        "sha256": CI_ONLY_RECOVERY_MANIFEST_SHA256,
+    }
+    if not json_exact_equal(scope.get("authorized_path_manifest"), expected_manifest):
+        failures.append("CI-only recovery authorization manifest binding drift")
+    expected_supported_api_record = {
+        "authority_effect": "none",
+        "path": SUPPORTED_API_REVIEW_RELATIVE,
+        "required_null_fields": ["decision", "reviewer", "reviewed_at_utc"],
+        "status": "pending_machine_evidence",
+    }
+    if not json_exact_equal(
+        scope.get("supported_api_record"), expected_supported_api_record
+    ):
+        failures.append("CI-only recovery authorization supported-API boundary drift")
+
+    run_policy = authorization.get("run_policy")
+    expected_run_policy = {
+        "attempt": 1,
+        "event": "workflow_dispatch",
+        "matching_run_ids": 1,
+        "rerun_authorized": False,
+        "terminal_evidence_location": "untracked local ledger only",
+    }
+    if not json_exact_equal(run_policy, expected_run_policy):
+        failures.append("CI-only recovery authorization run policy drift")
+    supersedes = authorization.get("supersedes")
+    expected_supersedes = {
+        "authorization_id": HISTORICAL_TERMINAL_V2_AUTHORIZATION_ID,
+        "effect": "historical P evidence only; no action remains authorized",
+        "sha256": HISTORICAL_TERMINAL_V2_AUTHORIZATION_SHA256,
+    }
+    if not json_exact_equal(supersedes, expected_supersedes):
+        failures.append("CI-only recovery authorization terminal-v2 boundary drift")
+    actions = authorization.get("authorized_actions")
+    if not isinstance(actions, list) or not all(isinstance(item, str) for item in actions):
+        failures.append("CI-only recovery authorization actions must be strings")
+    elif any(
+        marker in item.lower()
+        for item in actions
+        for marker in ("activate m13", "apply r0014", "apply r0015", "commit i", "commit v")
+    ):
+        failures.append("CI-only recovery authorization contains an implementation action")
+    return failures
 
 
-def activation_authorization_state(
+def validate_ci_only_recovery_manifest(capture: CapturedFile) -> list[str]:
+    failures: list[str] = []
+    if capture.path.relative_to(ROOT).as_posix() != BOUNDED_MANIFEST_RELATIVE:
+        failures.append("CI-only recovery manifest path mismatch")
+    if capture.identity.sha256 != CI_ONLY_RECOVERY_MANIFEST_SHA256:
+        failures.append(
+            "CI-only recovery manifest SHA-256 mismatch: expected "
+            f"{CI_ONLY_RECOVERY_MANIFEST_SHA256}, got {capture.identity.sha256}"
+        )
+    if capture.raw != CI_ONLY_RECOVERY_MANIFEST_BYTES:
+        failures.append("CI-only recovery manifest is not the exact eight-row contract")
+    expected_path_payload = ("\n".join(CI_ONLY_RECOVERY_PATHS) + "\n").encode("utf-8")
+    if sha256_bytes(expected_path_payload) != CI_ONLY_RECOVERY_PATH_SET_SHA256:
+        failures.append("CI-only recovery checker path-set constant is internally inconsistent")
+    return failures
+
+
+def ci_only_recovery_contract_state(
     contract: Mapping[str, Any] | None,
     *,
+    authorization: Mapping[str, Any],
     current_file_hashes: Mapping[str, str],
+    current_file_captures: Mapping[str, CapturedFile],
     mode: str,
     contract_path: Path,
 ) -> tuple[list[str], bool]:
-    """Validate the lifecycle activation record and return exact approval state."""
+    """Validate the pending recovery record; it never activates implementation."""
     if contract is None:
-        return ([f"missing lifecycle activation contract: {contract_path}"], False)
-    failures = validate_activation_attestation(
+        return ([f"missing CI-only recovery contract: {contract_path}"], False)
+    failures = validate_ci_only_recovery_contract(
         contract,
+        authorization,
         current_file_hashes=current_file_hashes,
+        current_file_captures=current_file_captures,
         mode=mode,
     )
-    reviews = contract.get("reviews")
-    activation = reviews.get("activation") if isinstance(reviews, dict) else None
-    approved = (
-        not failures
-        and isinstance(activation, dict)
-        and activation.get("status") == "approved"
-        and activation.get("decision") == "approved"
-    )
-    return failures, approved
+    return failures, False
 
 
 def merged_expected_declarations(
@@ -6324,55 +6603,99 @@ def self_test_atomic_json_writer() -> None:
 
 
 def self_test_bounded_authorization() -> None:
-    exact = json.loads(json.dumps(EXACT_TERMINAL_V2_AUTHORIZATION))
-    assert not validate_bounded_authorization_document(exact)
-    mutations: list[Callable[[dict[str, Any]], None]] = [
-        lambda value: value["base"].__setitem__("control_head_sha", "0" * 40),
-        lambda value: value.__setitem__("phase_id", "another-phase"),
-        lambda value: value["source"].__setitem__("instruction", "broader grant"),
-        lambda value: value.__setitem__("recorded_at", "2026-08-26T01:15:54Z"),
-        lambda value: value["supersedes_draft"].__setitem__("sha256", "0" * 64),
-        lambda value: value.__setitem__("authorized_actions", []),
-        lambda value: value["authorized_actions"].append("extra grant"),
-        lambda value: value["authorized_actions"].reverse(),
-        lambda value: value.__setitem__("activation_conditions", []),
-        lambda value: value["activation_conditions"].append("empty conditions bypass"),
-        lambda value: value["activation_conditions"].reverse(),
-        lambda value: value["preserved_exclusions"].reverse(),
-        lambda value: value["preserved_exclusions"].pop(),
-        lambda value: value["preserved_exclusions"].append("extra exclusion alias"),
-        lambda value: value["expiry"].__setitem__("terminal_control_state", "accepted"),
-        lambda value: value["scope"].__setitem__("remote_main_mutation_authorized", 0),
-        lambda value: value["scope"]["supported_api_record"].__setitem__(
-            "authority_effect", "human_review"
-        ),
-        lambda value: value["scope"]["supported_api_record"].__setitem__(
-            "required_null_fields", ["decision"]
-        ),
-        lambda value: value.__setitem__("decision", "rejected"),
-        lambda value: value.__setitem__("authorization_id", "terminal-v3"),
-        lambda value: value.__setitem__("authority_id", "service-principal"),
-        lambda value: value.__setitem__("operator_id", "another-operator"),
-        lambda value: value.__setitem__("schema_version", 2.0),
-        lambda value: value.__setitem__("extra_grant", True),
-        lambda value: value["scope"].__setitem__("extra_grant", True),
-    ]
-    for mutate in mutations:
-        changed = json.loads(json.dumps(exact))
-        mutate(changed)
-        assert validate_bounded_authorization_document(changed)
     authorization_document = capture_json_document(
         ROOT / BOUNDED_AUTHORIZATION_RELATIVE,
         require_canonical=True,
     )
-    failures = validate_bounded_authorization_document(authorization_document.value)
+    exact = authorization_document.value
+    exact_sha256 = authorization_document.capture.identity.sha256
+    assert exact_sha256 == CI_ONLY_RECOVERY_AUTHORIZATION_SHA256
+    failures = validate_bounded_authorization_document(
+        exact, authorization_sha256=exact_sha256
+    )
     assert not failures, failures
+
+    mutations: list[Callable[[dict[str, Any]], None]] = [
+        lambda value: value["base"].__setitem__("control_head_sha", "0" * 40),
+        lambda value: value.__setitem__("phase_id", "another-phase"),
+        lambda value: value["source"].__setitem__("instruction", "broader grant"),
+        lambda value: value.__setitem__("recorded_at", "2026-08-26T12:56:22Z"),
+        lambda value: value["supersedes"].__setitem__("sha256", "0" * 64),
+        lambda value: value.__setitem__("authorized_actions", []),
+        lambda value: value["authorized_actions"].append("activate M13 implementation"),
+        lambda value: value.__setitem__("activation_conditions", []),
+        lambda value: value["preserved_exclusions"].reverse(),
+        lambda value: value["expiry"].__setitem__("terminal_control_state", "verified"),
+        lambda value: value["run_policy"].__setitem__("rerun_authorized", True),
+        lambda value: value["scope"].__setitem__("implementation_authorized", True),
+        lambda value: value["scope"].__setitem__("remote_main_mutation_authorized", 0),
+        lambda value: value["scope"]["authorized_path_manifest"].__setitem__(
+            "row_count", 9
+        ),
+        lambda value: value["scope"]["supported_api_record"].__setitem__(
+            "required_null_fields", ["decision"]
+        ),
+        lambda value: value.__setitem__("decision", "approved"),
+        lambda value: value.__setitem__("authorization_id", "terminal-v3"),
+        lambda value: value.__setitem__("schema_version", 3.0),
+        lambda value: value.__setitem__("extra_grant", True),
+    ]
+    for mutate in mutations:
+        changed = json.loads(json.dumps(exact))
+        mutate(changed)
+        assert validate_bounded_authorization_document(
+            changed, authorization_sha256=CI_ONLY_RECOVERY_AUTHORIZATION_SHA256
+        )
+
+    historical = json.loads(json.dumps(HISTORICAL_TERMINAL_V2_AUTHORIZATION))
+    assert validate_bounded_authorization_document(
+        historical,
+        authorization_sha256=HISTORICAL_TERMINAL_V2_AUTHORIZATION_SHA256,
+    )
+
+    manifest = capture_file(ROOT / BOUNDED_MANIFEST_RELATIVE)
+    assert not validate_ci_only_recovery_manifest(manifest)
+    assert manifest.raw == CI_ONLY_RECOVERY_MANIFEST_BYTES
+    assert (
+        sha256_bytes(("\n".join(CI_ONLY_RECOVERY_PATHS) + "\n").encode("utf-8"))
+        == CI_ONLY_RECOVERY_PATH_SET_SHA256
+    )
+    assert (
+        sha256_bytes(
+            ("\n".join(CI_ONLY_RECOVERY_ARTIFACT_PATHS) + "\n").encode("utf-8")
+        )
+        == CI_ONLY_RECOVERY_ARTIFACT_PATH_SET_SHA256
+    )
     assert (
         capture_file(ROOT / WORKFLOW_RELATIVE).identity.sha256
-        == PLANNED_CONTROL_WORKFLOW_SHA256
+        == CI_ONLY_RECOVERY_WORKFLOW_SHA256
     )
-    for relative, expected in FINAL_PACKET_REVIEW_SHA256.items():
-        assert capture_file(ROOT / relative).identity.sha256 == expected
+    for relative, expected in HISTORICAL_P_PACKET_ARTIFACTS.items():
+        capture = capture_file(ROOT / relative)
+        assert capture.identity.sha256 == expected["sha256"]
+        assert capture.identity.size == expected["byte_count"]
+    assert (
+        sha256_bytes(
+            (
+                "\n".join(sorted(HISTORICAL_P_PACKET_ARTIFACTS)) + "\n"
+            ).encode("utf-8")
+        )
+        == HISTORICAL_P_PACKET_PATH_SET_SHA256
+        == CI_ONLY_RECOVERY_HISTORICAL_PACKET_PATH_SET_SHA256
+    )
+    assert (
+        capture_file(ROOT / FULL_TESTS_CORRECTION_RELATIVE).identity.sha256
+        == HISTORICAL_FULL_TESTS_CORRECTION_SHA256
+    )
+    assert re.fullmatch(
+        r"[0-9A-F]{64}", CI_RECOVERY_COMPLETION_CHECKER_SHA256
+    )
+    completion_sha256 = capture_file(ROOT / COMPLETION_CHECKER_RELATIVE).identity.sha256
+    require_exact_ci_recovery_completion_checker_sha(completion_sha256)
+    _expect_contract_error(
+        lambda: require_exact_ci_recovery_completion_checker_sha("0" * 64),
+        contains="current completion checker drift",
+    )
 
 
 def self_test() -> None:
@@ -6493,322 +6816,133 @@ def self_test() -> None:
         'String "a  b"'.encode("utf-8")
     )
 
-    # Lifecycle activation is state-aware but always fail-closed: P accepts the
-    # exact pending record, A/T accepts an exact human approval while the code is
-    # still at its preimage, and I requires that same exact approval.
-    with tempfile.TemporaryDirectory(prefix="supported-api-lifecycle-test-") as temp_name:
+    # Recovery is a terminal, CI-only successor to immutable failed P.  Its
+    # contract has no activation/review/implementation state and always returns
+    # a false implementation-approval bit even when every recovery binding is exact.
+    with tempfile.TemporaryDirectory(prefix="supported-api-recovery-test-") as temp_name:
         temp = Path(temp_name)
-        baseline_path = temp / "baseline.json"
-        review_path = temp / "review.json"
-        contract_path = temp / "contract.json"
-        baseline_path.write_bytes(b"baseline fixture\n")
-        review_path.write_bytes(b"review fixture\n")
-        artifact_hashes = {
-            COMPLETION_CHECKER_RELATIVE: capture_file(
-                ROOT / COMPLETION_CHECKER_RELATIVE
-            ).identity.sha256,
-            SUPPORTED_API_CHECKER_RELATIVE: capture_file(
-                Path(__file__).resolve()
-            ).identity.sha256,
-            SUPPORTED_API_BASELINE_RELATIVE: capture_file(
-                baseline_path
-            ).identity.sha256,
-            SUPPORTED_API_REVIEW_RELATIVE: capture_file(
-                review_path
-            ).identity.sha256,
-            FULL_TESTS_CORRECTION_RELATIVE: capture_file(
-                ROOT / FULL_TESTS_CORRECTION_RELATIVE
-            ).identity.sha256,
-            BOUNDED_AUTHORIZATION_RELATIVE: capture_file(
-                ROOT / BOUNDED_AUTHORIZATION_RELATIVE
-            ).identity.sha256,
-            WORKFLOW_RELATIVE: PLANNED_CONTROL_WORKFLOW_SHA256,
+        authorization = capture_json_document(
+            ROOT / BOUNDED_AUTHORIZATION_RELATIVE,
+            require_canonical=True,
+        ).value
+        current_captures: dict[str, CapturedFile] = {}
+        for index, relative in enumerate(CI_ONLY_RECOVERY_ARTIFACT_PATHS):
+            fixture = temp / f"artifact-{index}.bin"
+            fixture.write_bytes(f"recovery artifact {index}\n".encode("ascii"))
+            current_captures[relative] = capture_file(fixture)
+        current_hashes = {
+            relative: capture.identity.sha256
+            for relative, capture in current_captures.items()
         }
-        artifact_hashes.update(FINAL_PACKET_REVIEW_SHA256)
         artifacts = [
-            {"path": path, "sha256": digest}
-            for path, digest in sorted(artifact_hashes.items())
+            {
+                "base_blob_oid": CI_ONLY_RECOVERY_ARTIFACT_BASE_BLOB_OIDS[relative],
+                "base_mode": "100644",
+                "operation": "modify",
+                "packet_id": "CI01R1",
+                "path": relative,
+                "post_blob_oid": git_blob_oid(current_captures[relative].raw),
+                "post_mode": "100644",
+                "sha256": current_hashes[relative],
+            }
+            for relative in CI_ONLY_RECOVERY_ARTIFACT_PATHS
         ]
-        packets = [{"fixture": "exact packet snapshot"}]
-        scope = {
-            "artifact_inventory_sha256": canonical_json_sha256(artifacts),
-            "authorization_sha256": artifact_hashes[BOUNDED_AUTHORIZATION_RELATIVE],
-            "completion_checker_sha256": artifact_hashes[
-                COMPLETION_CHECKER_RELATIVE
-            ],
-            "full_tests_correction_sha256": artifact_hashes[
-                FULL_TESTS_CORRECTION_RELATIVE
-            ],
-            "implementation_path_set_sha256": implementation_path_set_sha256(),
-            "packet_snapshot_sha256": canonical_json_sha256(packets),
-            "planned_path_set_sha256": PLANNED_PATH_SET_SHA256,
-            "review_purpose": "P activation for atomic R0014/R0015 implementation",
-            "supported_api_baseline_sha256": artifact_hashes[
-                SUPPORTED_API_BASELINE_RELATIVE
-            ],
-            "supported_api_checker_sha256": artifact_hashes[
-                SUPPORTED_API_CHECKER_RELATIVE
-            ],
-            "supported_api_review_sha256": artifact_hashes[
-                SUPPORTED_API_REVIEW_RELATIVE
-            ],
-            "workflow_sha256": PLANNED_CONTROL_WORKFLOW_SHA256,
-        }
-        pending_source = {
-            **GITHUB_REVIEW_SOURCE_IDENTITY,
-            "comment_api_url": None,
-            "comment_database_id": None,
-            "comment_html_url": None,
-            "comment_node_id": None,
-            "created_at": None,
-            "issue_api_url": None,
-            "issue_database_id": None,
-            "issue_html_url": None,
-            "issue_node_id": None,
-            "issue_number": None,
-            "message": None,
-            "message_sha256": None,
-            "updated_at": None,
-        }
-        pending_activation = {
-            "action_performer_id": "codex-local",
-            "attestation_kind": "github_repository_owner_issue_comment_v1",
-            "ci_is_semantic_review": False,
-            "decision": None,
-            "generator_id": "codex-local",
-            "reviewed_at": None,
-            "reviewed_commit_sha": None,
-            "reviewed_contract_blob_oid": None,
-            "reviewed_tree_sha": None,
-            "reviewer_id": "primary-human",
-            "reviewer_kind": "human",
-            "scope": scope,
-            "source": pending_source,
-            "status": "pending",
-            "supersedes_pending_packet_reviews": list(
-                EXACT_ACTIVATION_SUPERSEDES_PACKET_REVIEWS
-            ),
-            "binds_pending_machine_evidence": list(
-                EXACT_ACTIVATION_MACHINE_EVIDENCE
-            ),
-        }
-        pending_contract = {
-            "artifacts": artifacts,
-            "authority": {
-                "authorization_sha256": artifact_hashes[
-                    BOUNDED_AUTHORIZATION_RELATIVE
-                ]
-            },
-            "lifecycle": {
-                "planned_commit_sha": None,
-                "planned_contract_blob_oid": None,
-                "planned_tree_sha": None,
-            },
-            "packets": packets,
-            "path_census": {
-                "implementation": {
-                    "path_set_sha256": implementation_path_set_sha256()
-                },
-                "planned_control": {"path_set_sha256": PLANNED_PATH_SET_SHA256},
-            },
-            "reviews": {"activation": pending_activation},
-            "workflow": {
-                "github_issues_read_permission": True,
-                "sha256": PLANNED_CONTROL_WORKFLOW_SHA256,
-            },
-        }
-        pending_failures, pending_approved = activation_authorization_state(
-            pending_contract,
-            current_file_hashes=artifact_hashes,
+        contract = expected_ci_only_recovery_contract(artifacts, authorization)
+        contract_path = temp / "contract.json"
+        exact_failures, implementation_approved = ci_only_recovery_contract_state(
+            contract,
+            authorization=authorization,
+            current_file_hashes=current_hashes,
+            current_file_captures=current_captures,
             mode="staging",
             contract_path=contract_path,
         )
-        assert not pending_failures and not pending_approved
-        completion_pending_failures, completion_pending_approved = (
-            activation_authorization_state(
-                pending_contract,
-                current_file_hashes=artifact_hashes,
-                mode="completion",
-                contract_path=contract_path,
-            )
-        )
-        assert completion_pending_failures and not completion_pending_approved
+        assert not exact_failures and not implementation_approved
 
-        approved_contract = json.loads(json.dumps(pending_contract))
-        approved = approved_contract["reviews"]["activation"]
-        approved_contract["lifecycle"].update(
-            {
-                "planned_commit_sha": "a" * 40,
-                "planned_contract_blob_oid": "b" * 40,
-                "planned_tree_sha": "c" * 40,
-            }
+        completion_failures, completion_approved = ci_only_recovery_contract_state(
+            contract,
+            authorization=authorization,
+            current_file_hashes=current_hashes,
+            current_file_captures=current_captures,
+            mode="completion",
+            contract_path=contract_path,
         )
-        approved.update(
-            {
-                "decision": "approved",
-                "reviewed_at": "2026-08-25T12:00:01Z",
-                "reviewed_commit_sha": "a" * 40,
-                "reviewed_contract_blob_oid": "b" * 40,
-                "reviewed_tree_sha": "c" * 40,
-                "status": "approved",
-            }
-        )
-        approved_message = (
-            "I, primary-human, independently reviewed and approve "
-            f"{scope['review_purpose']} at commit {'a' * 40}, tree {'c' * 40}, "
-            f"contract blob {'b' * 40}, and scope SHA-256 "
-            f"{canonical_json_sha256(scope)}. I confirm that CI is evidence, not "
-            "semantic review, and authorize only the exact bounded next transition."
-        )
-        approved["source"].update(
-            {
-                "comment_api_url": (
-                    f"{GITHUB_REVIEW_SOURCE_IDENTITY['repository_api_url']}"
-                    "/issues/comments/2002"
-                ),
-                "comment_database_id": 2002,
-                "comment_html_url": (
-                    "https://github.com/"
-                    f"{GITHUB_REVIEW_SOURCE_IDENTITY['repository_full_name']}"
-                    "/issues/17#issuecomment-2002"
-                ),
-                "comment_node_id": "IC_fixture",
-                "created_at": "2026-08-25T12:00:01Z",
-                "issue_api_url": (
-                    f"{GITHUB_REVIEW_SOURCE_IDENTITY['repository_api_url']}/issues/17"
-                ),
-                "issue_database_id": 1001,
-                "issue_html_url": (
-                    "https://github.com/"
-                    f"{GITHUB_REVIEW_SOURCE_IDENTITY['repository_full_name']}/issues/17"
-                ),
-                "issue_node_id": "I_fixture",
-                "issue_number": 17,
-                "message": approved_message,
-                "message_sha256": sha256_bytes(approved_message.encode("utf-8")),
-                "updated_at": "2026-08-25T12:00:01Z",
-            }
-        )
-        for lifecycle_mode in ("staging", "completion"):
-            approved_failures, approved_state = activation_authorization_state(
-                approved_contract,
-                current_file_hashes=artifact_hashes,
-                mode=lifecycle_mode,
-                contract_path=contract_path,
-            )
-            assert not approved_failures and approved_state
+        assert completion_failures and not completion_approved
 
-        tampered_source_contract = json.loads(json.dumps(approved_contract))
-        tampered_source_contract["reviews"]["activation"]["source"][
-            "author_login"
-        ] = "not-the-repository-owner"
-        tampered_source_failures, tampered_source_approved = (
-            activation_authorization_state(
-                tampered_source_contract,
-                current_file_hashes=artifact_hashes,
-                mode="completion",
-                contract_path=contract_path,
-            )
-        )
-        assert tampered_source_failures and not tampered_source_approved
-        edited_comment_contract = json.loads(json.dumps(approved_contract))
-        edited_source = edited_comment_contract["reviews"]["activation"]["source"]
-        edited_source["message"] += " edited"
-        edited_source["message_sha256"] = sha256_bytes(
-            edited_source["message"].encode("utf-8")
-        )
-        edited_comment_failures, edited_comment_approved = (
-            activation_authorization_state(
-                edited_comment_contract,
-                current_file_hashes=artifact_hashes,
-                mode="completion",
-                contract_path=contract_path,
-            )
-        )
-        assert edited_comment_failures and not edited_comment_approved
-        wrong_lifecycle_contract = json.loads(json.dumps(approved_contract))
-        wrong_lifecycle_contract["lifecycle"]["planned_tree_sha"] = "d" * 40
-        wrong_lifecycle_failures, wrong_lifecycle_approved = (
-            activation_authorization_state(
-                wrong_lifecycle_contract,
-                current_file_hashes=artifact_hashes,
-                mode="completion",
-                contract_path=contract_path,
-            )
-        )
-        assert wrong_lifecycle_failures and not wrong_lifecycle_approved
-        wrong_supersedes_contract = json.loads(json.dumps(pending_contract))
-        wrong_supersedes_contract["reviews"]["activation"][
-            "supersedes_pending_packet_reviews"
-        ] = [SUPPORTED_API_REVIEW_RELATIVE]
-        wrong_supersedes_failures, wrong_supersedes_approved = (
-            activation_authorization_state(
-                wrong_supersedes_contract,
-                current_file_hashes=artifact_hashes,
+        mutations: list[Callable[[dict[str, Any]], None]] = [
+            lambda value: value.__setitem__("schema_version", 4.0),
+            lambda value: value.__setitem__("record_kind", "c0007_bounded_planned_control"),
+            lambda value: value.__setitem__("graph", ["B->P", "P->A"]),
+            lambda value: value["permissions"].__setitem__(
+                "implementation_authorized", True
+            ),
+            lambda value: value["lifecycle"].__setitem__(
+                "continuation_authorized", True
+            ),
+            lambda value: value["lifecycle"].__setitem__("state", "active"),
+            lambda value: value["failed_planned_control"]["ci"].__setitem__(
+                "conclusion", "success"
+            ),
+            lambda value: value["historical_packet_artifacts"].pop(),
+            lambda value: value["artifacts"][0].__setitem__(
+                "packet_id", "R0014"
+            ),
+            lambda value: value["artifacts"][0].__setitem__(
+                "post_blob_oid", "0" * 40
+            ),
+            lambda value: value["artifacts"][0].__setitem__("sha256", "0" * 64),
+            lambda value: value["workflow"].__setitem__(
+                "sha256", HISTORICAL_P_WORKFLOW_SHA256
+            ),
+            lambda value: value["workflow"].__setitem__(
+                "checkout_ref_expression",
+                "refs/heads/codex/reorg-closeout-2026-08-m13-i01",
+            ),
+            lambda value: value.__setitem__("constraints_sha256", "0" * 64),
+            lambda value: value.__setitem__("reviews", {"activation": "forbidden"}),
+        ]
+        for mutate in mutations:
+            changed = json.loads(json.dumps(contract))
+            mutate(changed)
+            mutation_failures, mutation_approved = ci_only_recovery_contract_state(
+                changed,
+                authorization=authorization,
+                current_file_hashes=current_hashes,
+                current_file_captures=current_captures,
                 mode="staging",
                 contract_path=contract_path,
             )
-        )
-        assert wrong_supersedes_failures and not wrong_supersedes_approved
-        wrong_machine_evidence_contract = json.loads(json.dumps(pending_contract))
-        wrong_machine_evidence_contract["reviews"]["activation"][
-            "binds_pending_machine_evidence"
-        ] = list(EXACT_ACTIVATION_SUPERSEDES_PACKET_REVIEWS)
-        wrong_machine_failures, wrong_machine_approved = activation_authorization_state(
-            wrong_machine_evidence_contract,
-            current_file_hashes=artifact_hashes,
-            mode="staging",
-            contract_path=contract_path,
-        )
-        assert wrong_machine_failures and not wrong_machine_approved
-        boolean_alias_contract = json.loads(json.dumps(pending_contract))
-        boolean_alias_contract["reviews"]["activation"]["ci_is_semantic_review"] = 0
-        boolean_alias_failures, boolean_alias_approved = activation_authorization_state(
-            boolean_alias_contract,
-            current_file_hashes=artifact_hashes,
-            mode="staging",
-            contract_path=contract_path,
-        )
-        assert boolean_alias_failures and not boolean_alias_approved
-        detached_artifact_contract = json.loads(json.dumps(pending_contract))
-        detached_artifact_contract["artifacts"][0]["sha256"] = "0" * 64
-        detached_artifact_failures, detached_artifact_approved = (
-            activation_authorization_state(
-                detached_artifact_contract,
-                current_file_hashes=artifact_hashes,
-                mode="staging",
-                contract_path=contract_path,
-            )
-        )
-        assert detached_artifact_failures and not detached_artifact_approved
-        weak_workflow_contract = json.loads(json.dumps(pending_contract))
-        weak_workflow_contract["workflow"]["github_issues_read_permission"] = False
-        weak_workflow_failures, weak_workflow_approved = activation_authorization_state(
-            weak_workflow_contract,
-            current_file_hashes=artifact_hashes,
-            mode="staging",
-            contract_path=contract_path,
-        )
-        assert weak_workflow_failures and not weak_workflow_approved
+            assert mutation_failures and not mutation_approved
 
-        missing_failures, missing_approved = activation_authorization_state(
+        missing_failures, missing_approved = ci_only_recovery_contract_state(
             None,
-            current_file_hashes=artifact_hashes,
+            authorization=authorization,
+            current_file_hashes=current_hashes,
+            current_file_captures=current_captures,
             mode="staging",
             contract_path=contract_path,
         )
         assert missing_failures and not missing_approved
-        malformed_contract = json.loads(json.dumps(pending_contract))
-        malformed_contract["reviews"]["activation"]["scope"][
-            "supported_api_checker_sha256"
-        ] = "0" * 64
-        malformed_failures, malformed_approved = activation_authorization_state(
-            malformed_contract,
-            current_file_hashes=artifact_hashes,
+
+        incomplete_hashes = dict(current_hashes)
+        incomplete_hashes.pop(SUPPORTED_API_REVIEW_RELATIVE)
+        incomplete_failures, incomplete_approved = ci_only_recovery_contract_state(
+            contract,
+            authorization=authorization,
+            current_file_hashes=incomplete_hashes,
+            current_file_captures=current_captures,
             mode="staging",
             contract_path=contract_path,
         )
-        assert malformed_failures and not malformed_approved
+        assert incomplete_failures and not incomplete_approved
+
+    nonnull_review = json.loads(json.dumps(review))
+    nonnull_review["decision"] = "approved"
+    nonnull_review["reviewer"] = "primary-human"
+    nonnull_review["reviewed_at_utc"] = "2026-08-26T12:56:21Z"
+    nonnull_failures = validate_review_schema(nonnull_review, baseline)
+    assert any("must remain null/pending" in item for item in nonnull_failures)
+    assert any("must not claim a reviewer" in item for item in nonnull_failures)
 
     tokenized = explicit_api_names(
         "\n".join(
@@ -7151,7 +7285,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "supported-API checker self-test passed: strict/canonical captured JSON, "
                 "exact leading Module.header and literal/quotation masking, Lean module-mode "
                 "export semantics, bounded streaming TSV/type hashing, five independent C0007 "
-                "ratchets, exact pending review, narrowed authorization, activation lifecycle, "
+                "ratchets, exact pending review, CI-only recovery authority/lifecycle, "
                 "and supported declaration/visibility drift rejection"
             )
             return 0
@@ -7172,11 +7306,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             require_canonical=True,
         )
         authorization_failures = validate_bounded_authorization_document(
-            authorization_document.value
+            authorization_document.value,
+            authorization_sha256=authorization_document.capture.identity.sha256,
         )
         if authorization_failures:
             raise ContractError(
                 "invalid bounded authorization:\n" + "\n".join(authorization_failures)
+            )
+        manifest_capture = capture_file(ROOT / BOUNDED_MANIFEST_RELATIVE)
+        manifest_failures = validate_ci_only_recovery_manifest(manifest_capture)
+        if manifest_failures:
+            raise ContractError(
+                "invalid CI-only recovery manifest:\n" + "\n".join(manifest_failures)
             )
 
         if args.write_baseline:
@@ -7193,7 +7334,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
             def verify_baseline_write_epoch() -> None:
                 verify_generation_inputs(inputs)
-                verify_captured_files((authorization_document.capture,))
+                verify_captured_files(
+                    (authorization_document.capture, manifest_capture)
+                )
 
             write_json(
                 baseline_path,
@@ -7201,7 +7344,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 pre_replace_check=verify_baseline_write_epoch,
             )
             verify_generation_inputs(inputs)
-            verify_captured_files((authorization_document.capture,))
+            verify_captured_files((authorization_document.capture, manifest_capture))
             print(
                 f"wrote supported-API baseline: {len(value['declarations'])} declarations, "
                 f"{len(value['visibility_guard'])} entrypoints, {baseline_path}"
@@ -7231,7 +7374,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             def verify_review_write_epoch() -> None:
                 verify_generation_inputs(inputs)
                 verify_captured_files(
-                    (baseline_document.capture, authorization_document.capture)
+                    (
+                        baseline_document.capture,
+                        authorization_document.capture,
+                        manifest_capture,
+                    )
                 )
                 require_exact_candidate_staging_state(inputs)
 
@@ -7242,7 +7389,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             verify_generation_inputs(inputs)
             verify_captured_files(
-                (baseline_document.capture, authorization_document.capture)
+                (
+                    baseline_document.capture,
+                    authorization_document.capture,
+                    manifest_capture,
+                )
             )
             print(
                 "wrote pending supported-API review facts: 5 modules, 9 assertions, "
@@ -7282,22 +7433,28 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
 
         activation_document = (
-            capture_json_document(activation_path)
+            capture_json_document(activation_path, require_canonical=True)
             if activation_path.is_file()
             else None
         )
         activation_contract = (
             activation_document.value if activation_document is not None else None
         )
-        current_file_hashes, lifecycle_captures = capture_lifecycle_file_hashes(
+        (
+            current_file_hashes,
+            current_file_captures,
+            lifecycle_captures,
+        ) = capture_lifecycle_file_hashes(
             baseline=baseline_document,
             review=review_document,
             authorization=authorization_document,
             inputs=inputs,
         )
-        activation_failures, activation_approved = activation_authorization_state(
+        activation_failures, activation_approved = ci_only_recovery_contract_state(
             activation_contract,
+            authorization=authorization_document.value,
             current_file_hashes=current_file_hashes,
+            current_file_captures=current_file_captures,
             mode=effective_mode,
             contract_path=activation_path,
         )

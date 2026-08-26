@@ -1,457 +1,118 @@
 {
   "activation_conditions": [
-    "the control parent, control tree, remote main, active phase pointer, phase, authorized-path manifest, workflow, checker, packet, postimage, supported-API, and artifact identities remain exact",
-    "every dirty P, A, T, I, or V precommit is on the exact symbolic codex/reorg-closeout-2026-08-m13-i01 branch; every clean symbolic lifecycle checkout is on that branch; only a clean detached checkout used for validation is permitted",
-    "P is the exact 42-path direct child of 8960f2a980be22166f321c4ba452eb547529b1fd, the bounded remote ref is absent immediately before its exact absence-lease push and equals P afterward, and exact-head P Lean CI succeeds before the activation review is solicited",
-    "the first exact live repository-owner comment is created after P CI and remains live and unedited; A is the contract-only direct child of P; the bounded remote ref equals P immediately before its P-to-A exact-lease push and equals A afterward; and exact-head A Lean CI succeeds before T",
-    "T is the contract-only direct child of A; the bounded remote ref equals A immediately before its A-to-T exact-lease push and equals T afterward; and T has an authenticated successful exact-head workflow_dispatch observation before any R0014 or R0015 implementation postimage is applied or staged",
-    "R0014 and R0015 replay from exact C0007 code 4e26820d1f4989ec4ec77b7113085f593570e11b, reproduce every hash-pinned postimage, and I is their exact indivisible 14-path direct child of T; the bounded remote ref equals T immediately before its T-to-I exact-lease push and equals I afterward",
-    "exact-head I Lean CI succeeds and the second distinct live repository-owner comment is created afterward and remains live and unedited before V",
-    "V is the contract-only direct child of I; the bounded remote ref equals I immediately before its I-to-V exact-lease push and equals V afterward; exact-head V post-assurance CI is then dispatched and authenticated read-only and its canonical evidence is recorded only in the untracked local ledger, which terminates this grant; that evidence may be hash-pinned only by a separately authorized C8-PROPOSE epoch"
+    "immutable failed P 1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9, its parent/tree/contract, failed run 32966438799 attempt 1, and remote main 8960f2a980be22166f321c4ba452eb547529b1fd remain exact",
+    "the authorization manifest has exactly eight sorted ci_recovery_control modify rows and every packet, implementation, local-ledger, and unmanifested path is excluded",
+    "the workflow checks out exact github.sha detached, canonicalizes origin to the exact .git URL as the first architecture command, and otherwise preserves the pinned workflow behavior",
+    "PR is the exact eight-path direct child of failed P with subject fix(reorganization): recover M13 planned-control CI and no public declaration, namespace, normalized type, visibility, or supported-entrypoint reachability change",
+    "the dirty PR precommit is on exact symbolic branch codex/reorg-closeout-2026-08-m13-i01; a clean detached checkout is permitted only for validation and exact-head CI",
+    "the bounded remote ref equals P before the exact P-to-PR lease push and PR afterward while remote main remains exact",
+    "exactly one new workflow_dispatch run ID is created at exact PR, only attempt 1 is observed, and the grant expires at its first terminal conclusion"
   ],
-  "application_mode": "single_atomic_14_path_union",
+  "application_mode": "ci_recovery_control_only",
   "artifacts": [
     {
-      "base_blob_oid": "00e7ec449e46353f181eca7c9c8dfb538f1a4c47",
+      "base_blob_oid": "5f00c1b987ca16f9cfebb6b1c65d9c71b8349107",
       "base_mode": "100644",
       "operation": "modify",
-      "packet_id": "CI01",
+      "packet_id": "CI01R1",
       "path": ".github/workflows/lean_action_ci.yml",
-      "post_blob_oid": "5f00c1b987ca16f9cfebb6b1c65d9c71b8349107",
+      "post_blob_oid": "88249bd10e4c55fd4f52e6fd1e4c2275e24ff6ae",
       "post_mode": "100644",
-      "sha256": "AF4D9C4471F5D9AA140D8741D2B15AF453168C7B6BBD9970ADE1A479B1CE174C"
+      "sha256": "7FCCF4C8B274A9C8DC919ADC271F4D48B3416863192872706CF444DF3E419158"
     },
     {
-      "base_blob_oid": "b7d44fb0e12c92ef9a28fb8aeaf573d611d4c76e",
+      "base_blob_oid": "201c9e3a26bb10721041ac660e0c9f112163b98c",
       "base_mode": "100644",
       "operation": "modify",
-      "packet_id": "GOV02",
-      "path": "ARCHITECTURE.md",
-      "post_blob_oid": "832880ddbd185d9690b432725acecff12047591d",
-      "post_mode": "100644",
-      "sha256": "EF5F36850EFEDD1E2ACC5715ABC6595A9040BE2ED3B18B25F21DB3C2B4A77107"
-    },
-    {
-      "base_blob_oid": "90d4ce3d34014c8dfd8b75d196555515b84fe9e2",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "GOV02",
-      "path": "CHANGELOG.md",
-      "post_blob_oid": "803a90bc6927432b0405115e7241f6c05df9791c",
-      "post_mode": "100644",
-      "sha256": "0A68752FB61A0791AA445AC21D503D65ACBA88C545843F66C3145A9AC6AE1820"
-    },
-    {
-      "base_blob_oid": "aba56f8033afeb014c7fc2483adfb1e4382c82e7",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "GOV02",
-      "path": "CONTRIBUTING.md",
-      "post_blob_oid": "c04521c8936d72b6bb3ccfc335288f08321ddf8d",
-      "post_mode": "100644",
-      "sha256": "2F26D0A31C7624E3E0CB81CB9F5594AD93E12D47CB6EC47AE23F31EFFA483E9C"
-    },
-    {
-      "base_blob_oid": "af52c262ec68817c68e3b9af395440cf91e2c6b4",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "GOV02",
-      "path": "README.md",
-      "post_blob_oid": "9d350d773ec4881a785e9eae9d47428abfb66d54",
-      "post_mode": "100644",
-      "sha256": "DF857112E5E775843955275486AD69B13C04A0CF3DBF0336141F354C3F57F08F"
-    },
-    {
-      "base_blob_oid": "6ab10b1980ffa09609f2ca949d86e28b1b8fa2b0",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "GOV02",
-      "path": "docs/README.md",
-      "post_blob_oid": "0ae4befa2dcfe95e6abf01cbb55587e83b91c0e3",
-      "post_mode": "100644",
-      "sha256": "C2DA937B9CC9E6AD840037D4BDA73C3C292328A6C1B59158756F6C1553DDE642"
-    },
-    {
-      "base_blob_oid": "ba9c5a5c33d2c60c8324604d3e2449804f1af32e",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "GOV04",
-      "path": "docs/architecture/COMPATIBILITY.md",
-      "post_blob_oid": "fe2e6b18e54ada342b9f7c05df8ae5e8e94b39fd",
-      "post_mode": "100644",
-      "sha256": "BE965647B4799D85A6A3397A6B99DC45676A57C7B83FEF31DB6EA75D6AB02939"
-    },
-    {
-      "base_blob_oid": "3831e24bbd637f545305e51e79544cb8210cf3ee",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "GOV02",
-      "path": "docs/architecture/MIGRATION.md",
-      "post_blob_oid": "a4f5087a8f39308a18a19f7b7c7995872b49caa5",
-      "post_mode": "100644",
-      "sha256": "337BB5BD66398375C4E447DEC9D8A12FD43925024104CDD5531949915B5D8AE0"
-    },
-    {
-      "base_blob_oid": "9f9814792068dc5c85adf123c8e1f722edbd8e57",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "GOV02",
-      "path": "docs/architecture/PROVENANCE.md",
-      "post_blob_oid": "8acc698dd590de7e0615b3982f5659679291be52",
-      "post_mode": "100644",
-      "sha256": "C8E202E6C6B2D468304495F960551F8AB406E58F76C2457E90F5C2395C484AE8"
-    },
-    {
-      "base_blob_oid": "4880aa9787eb9dd31ce742f3176d417b54653981",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "GOV02",
-      "path": "docs/architecture/TIERS.md",
-      "post_blob_oid": "8be168f9d0b4ecb63b3c410381a8c9f7de8b3e6c",
-      "post_mode": "100644",
-      "sha256": "3CC9DB66D149E7204F2E00B60F718CDB423957EB675D7F2DABD168AF33832562"
-    },
-    {
-      "base_blob_oid": "febfa0c6fcdf1bbe575d0cb51638d7b2f49ee1eb",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "GOV01",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/README.md",
-      "post_blob_oid": "ed7c41523caacf16ffddd8368309c487bb335795",
-      "post_mode": "100644",
-      "sha256": "4D65C6DDEA1267907446DD9DE06E655FEB60C61CC80358CF4F791A433733B20E"
-    },
-    {
-      "base_blob_oid": "9d53788a37db7a03848bb3d51342df27adc8f846",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "AUTH",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/phase.json",
-      "post_blob_oid": "cafe09fde518cc0fcb8d3209d4858924cc6eb304",
-      "post_mode": "100644",
-      "sha256": "3EE8F0B30EDAC3CEB891C941EB26D680166D82FAAC20BF2B4F6A3E85E83CCF8E"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0014",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014-postimages.tsv",
-      "post_blob_oid": "14f7ecc40821767b2f6c67db5cb95051b9805d29",
-      "post_mode": "100644",
-      "sha256": "42F4ED7EFE7C611DE214A0E6FE4ABADA11034632A9086952EADCD1A8AA33A1C9"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0014",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014-review.md",
-      "post_blob_oid": "54927c2c2937583da407cb5fa5eb8db69bdebe03",
-      "post_mode": "100644",
-      "sha256": "69BFB58422DBEA48EF29DB39B74A70ED063453C7250F7E0A9F90ED9FF9400EB1"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0014",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014.json",
-      "post_blob_oid": "9197a0f09b6fdce1a332ec7ee1c330a62526293e",
-      "post_mode": "100644",
-      "sha256": "CDF9CD8B9E5D8A06F60CB769801A5AC891F4468E1435207060F77B50BE1C67CE"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0014",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014.patch",
-      "post_blob_oid": "f15d25cf06de3ed88fd3f1dc5da4103d24837543",
-      "post_mode": "100644",
-      "sha256": "3AC31AFC44B697FF830E0CF393FF1725F18B49022ABCF81D83742220FCCB3A88"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0015",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015-postimages.tsv",
-      "post_blob_oid": "1f98243762ff70514107f9b3d3a2620c24740139",
-      "post_mode": "100644",
-      "sha256": "F92A484CAFBB2F8885A14CE5A7A0A9DB4A774888757797BB836254D4600BED8D"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0015",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015-review.md",
-      "post_blob_oid": "3a1b2543c8e54f4e8bba0febcb6b1526ace68553",
-      "post_mode": "100644",
-      "sha256": "1E3C8382E4185B5543D754EA35F7CA23A1426D01525C47A9A44CFE6BB5621376"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0015",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015.json",
-      "post_blob_oid": "0934e79bb38081e979bacc38acdb2b47cf35ef28",
-      "post_mode": "100644",
-      "sha256": "A021AD7AC5303C0CEE3546030B4633E3FD78C38C1B03CC978FCBEBC4BB8B1391"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0015",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015.patch",
-      "post_blob_oid": "0390e906252e8ba8c667ea889dfaa18182120e20",
-      "post_mode": "100644",
-      "sha256": "A6EAA922363136C5B15351849260632094C1A707D7134E7084CBA6556415E820"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "AUTH",
+      "packet_id": "CI01R1",
       "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-authorized-paths.tsv",
-      "post_blob_oid": "201c9e3a26bb10721041ac660e0c9f112163b98c",
+      "post_blob_oid": "2143ee01b0074c60be192736a47f9c0d11a58393",
       "post_mode": "100644",
-      "sha256": "121D11A73AF2CD23885FB7A6B38D14B0D8A5440940D913A83F3A5D6941511ECE"
+      "sha256": "E0892856B09B6B0E3A44E6FE49A303918D1BCF88743F5328E6A8E996C689E6C0"
     },
     {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "AUTH",
+      "base_blob_oid": "4957e833be3f7243bc47f69f14d05a7043642147",
+      "base_mode": "100644",
+      "operation": "modify",
+      "packet_id": "CI01R1",
       "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-operator-authorization.json",
-      "post_blob_oid": "4957e833be3f7243bc47f69f14d05a7043642147",
+      "post_blob_oid": "ea3971ee450ab256168b4179ee2fbc2d2cfb4cfe",
       "post_mode": "100644",
-      "sha256": "9BD67B6336BA9D2943552AA09D19F580EC4A8A9298E85BC846854A201CB15129"
+      "sha256": "CC73A05B3B78D1C2E40C8EA18A5690F697F17FB30960D099BC1E88BCF49B8A76"
     },
     {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "CI01",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-full-tests-evidence-correction.json",
-      "post_blob_oid": "a30193300adaf5140637b754f87834d9b1e9f906",
-      "post_mode": "100644",
-      "sha256": "FD35FC88D44230585B200FFEA021C5C53C56A004D03E8DC284F2F5B0EE6803EF"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "GOV",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-governance-reconciliation.md",
-      "post_blob_oid": "adb03126e7cc09bcf90b1c25a77ea407e6c4aa6c",
-      "post_mode": "100644",
-      "sha256": "3CEABDA8D044622AB9C47AE92EC82ECC3BCEC82142C1D0BD76738595D0A74586"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "GOV03",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-predecessor-supersession.md",
-      "post_blob_oid": "ee7db0deeac670000ea8dd8ec2cfb7667e8dc7e0",
-      "post_mode": "100644",
-      "sha256": "8487CCEF284728B62A3937F71E174515CCB6E9B30277F5918D755803F90330E5"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "API",
+      "base_blob_oid": "41935ddd2eefe1602003eb663c7d3befd4cca0c4",
+      "base_mode": "100644",
+      "operation": "modify",
+      "packet_id": "CI01R1",
       "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0008-supported-api.json",
-      "post_blob_oid": "41935ddd2eefe1602003eb663c7d3befd4cca0c4",
+      "post_blob_oid": "3f77f4613da5a92b55b52abd7fae26f00fcf7b2b",
       "post_mode": "100644",
-      "sha256": "BA00D14C553CD8F8699B0A52261123EA85C70FF763E666E70437348306A2BD46"
+      "sha256": "4E00B4E39325AB14E880C198CB78A58DD9199778C6AD8A24643CC6B6ECB72A73"
     },
     {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0015",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/CODE03-approval.json",
-      "post_blob_oid": "a96907ce457cea2de02cb45a70485b3129f8c9af",
-      "post_mode": "100644",
-      "sha256": "CF4EF2EA8E00562D61F706033E757359D8440E55804498BE34BD7CFA86DA5488"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0015",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/CODE03-consumers.tsv",
-      "post_blob_oid": "74d4b0a9c6868cc1b5861c60ac521745476b6c3f",
-      "post_mode": "100644",
-      "sha256": "98AEAB52682F02B631B4A6D3F5D62D6739C553D622C561FBA512BFF0E482AA69"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0014",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-approval.json",
-      "post_blob_oid": "cdd37abb449d9a800015792c6ac59891f0036168",
-      "post_mode": "100644",
-      "sha256": "8B3CC920221E9786785D1D56DB2105964063CB50929DBFAAAD49B1E29A4070B8"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0014",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-changed-paths.tsv",
-      "post_blob_oid": "7eb72365530eec73b377270e7cd21e0097f5a3a6",
-      "post_mode": "100644",
-      "sha256": "32D0E95A1F3AC0230647B86C94E3AFF869546BDDEA62678657C93EF22233AFC4"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0014",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-selection-overlap.md",
-      "post_blob_oid": "90abd450b609c91f4b6f773ac3db0df6ba484398",
-      "post_mode": "100644",
-      "sha256": "5A0A4852AD84095CFBFC973ACF37E45C8C0AA5FB09D8E8728356CC30C1AF43A9"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0014",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-test-plan.tsv",
-      "post_blob_oid": "51f5e606179814d3c5a45bbb1b626a3810086889",
-      "post_mode": "100644",
-      "sha256": "6A4FDD8A6D467896A32BB9FDB1B3AF6CFFCEEB6DC5E9D33E95D59C70C60B2879"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "R0014",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/selectors/I01.tsv",
-      "post_blob_oid": "9012b619aaea21dfbeb81abc0275ed1c8a5d0826",
-      "post_mode": "100644",
-      "sha256": "4F669961538A406AF235C8E02B038D039A072F510C60F3863EFD7E93D417536F"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "GOV03",
-      "path": "docs/architecture/phases/2026-08-repository-reorganization/supersession.json",
-      "post_blob_oid": "69bf9c791a305b082021fb0eb40ec079272fa6cb",
-      "post_mode": "100644",
-      "sha256": "1ED2ABCE3835B9CD0C0B1AE8F476977322FE7D85D08A519312EDA8A35ED1A5B5"
-    },
-    {
-      "base_blob_oid": "1a91ae292dd959d5f5ca341616cf92ceb382d95b",
+      "base_blob_oid": "c26fe1fadc0468b9f53975cc198320481a975a6b",
       "base_mode": "100644",
       "operation": "modify",
-      "packet_id": "GOV01",
-      "path": "docs/architecture/phases/README.md",
-      "post_blob_oid": "00800d9c32c41e0ff13ba34879d92bdaf0d5e4eb",
-      "post_mode": "100644",
-      "sha256": "917B7171B70E427FAB7F4BD766F5C190CCCE8BF201DDEADA3BD2ADE8AEB87DC3"
-    },
-    {
-      "base_blob_oid": "d14fc7bf7a2c9e1a7439d77865338072a00a25e9",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "GOV02",
-      "path": "docs/architecture/reviews/OUTLIERS.md",
-      "post_blob_oid": "6dee0f1060118b5125fb2845d383aad1e2c63a58",
-      "post_mode": "100644",
-      "sha256": "5E3E25DE7B2E67419D54CD5733B38532CCEF81E3468F7969F2B4AD5CE24E6808"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "API",
+      "packet_id": "CI01R1",
       "path": "docs/architecture/supported-api.json",
-      "post_blob_oid": "c26fe1fadc0468b9f53975cc198320481a975a6b",
+      "post_blob_oid": "df2a6f7a0438a620c059183c9a289ad372bbcbaf",
       "post_mode": "100644",
-      "sha256": "F7C5A8112D3B513F801C6EDB4FA04FB306C6BCAAA4B21F3968267D2335CA111E"
+      "sha256": "420F5028A9E7BD99EC1243B94933E98207B79B732071B35A2F9E6757663A143F"
     },
     {
-      "base_blob_oid": "0bc4afb0ea5edc96cd8a918153350f59f419d59f",
+      "base_blob_oid": "35fbb23ac3666ecb2dfc432b08165233978a7271",
       "base_mode": "100644",
       "operation": "modify",
-      "packet_id": "GOV02",
-      "path": "tools/architecture/README.md",
-      "post_blob_oid": "ae78cd411931e0a4740d68602743f33155ffb3f6",
-      "post_mode": "100644",
-      "sha256": "1387B9121F17878FEC37540B2CE82AC412E8084C8D723B8C38054918AC3262C3"
-    },
-    {
-      "base_blob_oid": "5dcbfd4b0675ef976d1e1fc0f4e0a97a3378b8e2",
-      "base_mode": "100644",
-      "operation": "modify",
-      "packet_id": "AUTH",
+      "packet_id": "CI01R1",
       "path": "tools/architecture/check_completion_phase.py",
-      "post_blob_oid": "35fbb23ac3666ecb2dfc432b08165233978a7271",
+      "post_blob_oid": "a6a17693125b4bdc4bf14d6d71ad0984cbe45b35",
       "post_mode": "100644",
-      "sha256": "9D82E21737C783923F6A02954703E499B01697970834AF054E08A5B63C511552"
+      "sha256": "7C149108C32A728D50A23441FD49B446CEDE1D87EA5CA7F8051476F09F734BBC"
     },
     {
-      "base_blob_oid": "de47203921b2c16f8b54fdba9bbc300ed899c4e2",
+      "base_blob_oid": "37b3f76c35a3c5662b73668ad799901be15f6368",
       "base_mode": "100644",
       "operation": "modify",
-      "packet_id": "GOV03",
-      "path": "tools/architecture/check_phase.py",
-      "post_blob_oid": "27021662466925992099ab2ba4ba69f915e62ab9",
-      "post_mode": "100644",
-      "sha256": "169B35EB7394922730529C7974B226F7C5F1941A8AB018419E3C67808424A157"
-    },
-    {
-      "base_blob_oid": null,
-      "base_mode": null,
-      "operation": "add",
-      "packet_id": "API",
+      "packet_id": "CI01R1",
       "path": "tools/architecture/check_supported_api.py",
-      "post_blob_oid": "37b3f76c35a3c5662b73668ad799901be15f6368",
+      "post_blob_oid": "83549982294329df8c57bfe21bbeb28cc06d8fa4",
       "post_mode": "100644",
-      "sha256": "2568B8221132E57BBBA215E35ADF6266FBD40352FB9133BC1F55C2F22923947B"
+      "sha256": "F098677E56CBF0EBC7077B378DD707387B3224A4A3090022A149280A77E047D3"
     }
   ],
   "authority": {
     "authority_id": "primary-human",
-    "authorization_id": "C0007-M13-I01-CODE03-terminal-v2",
+    "authorization_id": "C0007-P-CI-recovery-only-v1",
     "authorization_path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-operator-authorization.json",
-    "authorization_sha256": "9BD67B6336BA9D2943552AA09D19F580EC4A8A9298E85BC846854A201CB15129",
+    "authorization_sha256": "CC73A05B3B78D1C2E40C8EA18A5690F697F17FB30960D099BC1E88BCF49B8A76",
     "authorized_manifest_path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-authorized-paths.tsv",
-    "authorized_manifest_rows": 56,
-    "authorized_manifest_sha256": "121D11A73AF2CD23885FB7A6B38D14B0D8A5440940D913A83F3A5D6941511ECE",
-    "global_human_only_authority_unchanged": true,
+    "authorized_manifest_rows": 8,
+    "authorized_manifest_sha256": "E0892856B09B6B0E3A44E6FE49A303918D1BCF88743F5328E6A8E996C689E6C0",
+    "authorized_path_list_sha256": "3CF30300730F9BD37AB532D1C99E387EC32ECB5B98B51F33C0ED04DE4953089A",
     "operator_id": "codex-local"
   },
   "authorized_actions": [
-    "prepare and validate P using exactly the 42 planned_control rows of the authorized path manifest; commit P and exact-absence-lease create the bounded remote ref at P; after P CI and the activation owner comment, commit contract-only A and exact-lease push the bounded ref from P to A; after A CI, commit contract-only T and exact-lease push the bounded ref from A to T",
-    "generate, reproducibly verify, and freeze docs/architecture/supported-api.json and the pending-only C0008-supported-api.json machine-evidence record without assigning any human decision or checkpoint authority",
-    "dispatch and monitor exact-head Lean CI for P, A, T, I, and post-assurance V; create the ordinary review issue; and solicit the two exact live GitHub repository-owner comments",
-    "after P CI, the activation owner comment, A, A CI, T, and the authenticated live T remote-tip observation, apply R0014 and R0015 only as their complete indivisible 14-path union, commit I, and exact-lease push the bounded ref from T to I",
-    "after I CI and the distinct implementation owner comment, commit V and exact-lease push the bounded ref from I to V, dispatch and authenticate exact-head V CI read-only, and record its canonical evidence only in the untracked local ledger"
+    "prepare and independently validate exactly the eight ci_recovery_control postimages in an isolated external overlay and atomically materialize only those paths",
+    "generate and independently reproduce docs/architecture/supported-api.json and the null-decision C0008-supported-api.json machine-evidence record without granting checkpoint authority",
+    "commit PR as the exact direct child of immutable P and exact-lease push refs/heads/codex/reorg-closeout-2026-08-m13-i01 from P to PR without mutating main",
+    "dispatch exactly one new exact-head workflow_dispatch run ID at PR and do not rerun it",
+    "monitor and authenticate that run through its first terminal conclusion and record its evidence only in the untracked local ledger"
   ],
   "base": {
-    "planned_control_parent_sha": "8960f2a980be22166f321c4ba452eb547529b1fd",
-    "planned_control_parent_tree": "70cee1e77e1311129b00aeb0945770483d1aa5db",
+    "control_head_sha": "8960f2a980be22166f321c4ba452eb547529b1fd",
+    "control_tree_sha": "70cee1e77e1311129b00aeb0945770483d1aa5db",
+    "failed_planned_control_commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
+    "failed_planned_control_tree_sha": "ce9760fc7a49e69e98551e992c27fd11f9b247b1",
+    "recovery_parent_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
     "remote_main_sha_at_authorization": "8960f2a980be22166f321c4ba452eb547529b1fd",
     "request_replay_checkpoint_id": "C0007",
     "request_replay_code_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b"
   },
   "branch": {
-    "base_sha": "8960f2a980be22166f321c4ba452eb547529b1fd",
+    "base_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
     "local_branch": "codex/reorg-closeout-2026-08-m13-i01",
     "operator_id": "codex-local",
-    "owner_id": "primary-human",
     "push_policy": "fast_forward_only_with_exact_observed_lease",
     "remote": "origin",
     "remote_main_ref": "refs/heads/main",
@@ -462,79 +123,7 @@
     "retirement_authorized": false
   },
   "ci": {
-    "activation_candidate": {
-      "branch": "codex/reorg-closeout-2026-08-m13-i01",
-      "candidate_sha": null,
-      "candidate_tree": null,
-      "check_suite_id": null,
-      "completed_at": null,
-      "conclusion": null,
-      "event": null,
-      "full_build": null,
-      "full_tests": null,
-      "job_completed_at": null,
-      "job_id": null,
-      "job_log_byte_count": null,
-      "job_log_sha256": null,
-      "job_name": null,
-      "job_started_at": null,
-      "repository": "AlexGeorgantzas/lean-numerical-stability",
-      "run_attempt": null,
-      "run_id": null,
-      "runner_name": null,
-      "started_at": null,
-      "status": "not_due",
-      "workflow_path": ".github/workflows/lean_action_ci.yml"
-    },
-    "active_attestation": {
-      "branch": "codex/reorg-closeout-2026-08-m13-i01",
-      "candidate_sha": null,
-      "candidate_tree": null,
-      "check_suite_id": null,
-      "completed_at": null,
-      "conclusion": null,
-      "event": null,
-      "full_build": null,
-      "full_tests": null,
-      "job_completed_at": null,
-      "job_id": null,
-      "job_log_byte_count": null,
-      "job_log_sha256": null,
-      "job_name": null,
-      "job_started_at": null,
-      "repository": "AlexGeorgantzas/lean-numerical-stability",
-      "run_attempt": null,
-      "run_id": null,
-      "runner_name": null,
-      "started_at": null,
-      "status": "not_due",
-      "workflow_path": ".github/workflows/lean_action_ci.yml"
-    },
-    "implementation": {
-      "branch": "codex/reorg-closeout-2026-08-m13-i01",
-      "candidate_sha": null,
-      "candidate_tree": null,
-      "check_suite_id": null,
-      "completed_at": null,
-      "conclusion": null,
-      "event": null,
-      "full_build": null,
-      "full_tests": null,
-      "job_completed_at": null,
-      "job_id": null,
-      "job_log_byte_count": null,
-      "job_log_sha256": null,
-      "job_name": null,
-      "job_started_at": null,
-      "repository": "AlexGeorgantzas/lean-numerical-stability",
-      "run_attempt": null,
-      "run_id": null,
-      "runner_name": null,
-      "started_at": null,
-      "status": "not_due",
-      "workflow_path": ".github/workflows/lean_action_ci.yml"
-    },
-    "planned_control": {
+    "planned_recovery": {
       "branch": "codex/reorg-closeout-2026-08-m13-i01",
       "candidate_sha": null,
       "candidate_tree": null,
@@ -559,270 +148,191 @@
       "workflow_path": ".github/workflows/lean_action_ci.yml"
     }
   },
-  "constraints_sha256": "C67E0556F73074693E25B411F8BF2C8E1CC2F89C3190EE280B6A376D36306DB9",
-  "control_id": "C0007-M13-I01-CODE03-planned-terminal-v2",
+  "constraints_sha256": "C8F75408607B316EB52A5D982538FA167A63A65006174FE2E4DD1194EA12BE19",
+  "control_id": "C0007-P-CI-recovery-control-v1",
   "expiry": {
     "events": [
-      "after the verified V commit is exact-lease pushed from I to refs/heads/codex/reorg-closeout-2026-08-m13-i01 at V, its exact-head workflow_dispatch post-assurance run succeeds, is authenticated with stable remote-main and bounded-ref observations, and its canonical evidence is recorded only in the untracked local ledger",
-      "explicit cancellation or supersession",
-      "base, authorized-path-manifest, workflow, checker, request-patch, postimage, supported-API, or artifact drift",
-      "an exact-lease mismatch, bounded-ref drift, or remote-main drift",
-      "primary-human revocation"
+      "the first terminal conclusion of the one authorized exact-head PR workflow_dispatch run, whether success, failure, cancellation, or timeout",
+      "explicit cancellation, revocation, or supersession",
+      "authority, manifest, workflow, checker, supported-API, contract, base, P, or artifact drift",
+      "an exact-lease mismatch, bounded-ref drift, remote-main drift, a rerun attempt, or a second matching run ID"
     ],
-    "terminal_control_state": "verified",
+    "terminal_control_state": "ci_recovery_terminal",
     "valid_only_while_current_checkpoint_id": "C0007"
   },
-  "lifecycle": {
-    "activation_candidate_commit_sha": null,
-    "activation_candidate_contract_blob_oid": null,
-    "activation_candidate_tree_sha": null,
-    "active_attestation_commit_sha": null,
-    "active_attestation_contract_blob_oid": null,
-    "active_attestation_tree_sha": null,
-    "implementation_allowed": false,
-    "implementation_commit_sha": null,
-    "implementation_contract_blob_oid": null,
-    "implementation_tree_sha": null,
-    "planned_commit_sha": null,
-    "planned_contract_blob_oid": null,
-    "planned_tree_sha": null,
-    "state": "planned"
+  "failed_planned_control": {
+    "authorization_blob_oid": "4957e833be3f7243bc47f69f14d05a7043642147",
+    "authorization_path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-operator-authorization.json",
+    "authorization_sha256": "9BD67B6336BA9D2943552AA09D19F580EC4A8A9298E85BC846854A201CB15129",
+    "ci": {
+      "branch": "codex/reorg-closeout-2026-08-m13-i01",
+      "check_suite_conclusion": "failure",
+      "check_suite_id": 89298169052,
+      "completed_at": "2026-08-26T12:03:44Z",
+      "conclusion": "failure",
+      "event": "workflow_dispatch",
+      "failed_step": "Check architecture source graph and Python tooling",
+      "head_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
+      "job_completed_at": "2026-08-26T12:03:43Z",
+      "job_conclusion": "failure",
+      "job_id": 98169864308,
+      "job_log_byte_count": 20201,
+      "job_log_sha256": "8383047A0845BAA625BCC3ACA3AE5FCD744F80AD9D7A4647B0371B23EB41D16D",
+      "job_name": "build",
+      "job_started_at": "2026-08-26T12:02:32Z",
+      "run_attempt": 1,
+      "run_id": 32966438799,
+      "run_number": 8950,
+      "runner_name": "GitHub Actions 1000008996",
+      "skipped_steps": [
+        "Build library and smoke tests",
+        "Verify supported API from the built environment",
+        "Run Lake test driver"
+      ],
+      "started_at": "2026-08-26T12:02:27Z",
+      "status": "failure",
+      "workflow_path": ".github/workflows/lean_action_ci.yml"
+    },
+    "commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
+    "completion_checker_blob_oid": "35fbb23ac3666ecb2dfc432b08165233978a7271",
+    "completion_checker_path": "tools/architecture/check_completion_phase.py",
+    "completion_checker_sha256": "9D82E21737C783923F6A02954703E499B01697970834AF054E08A5B63C511552",
+    "contract_blob_oid": "6c1f59211399c626c7727952c16ea63e504270c8",
+    "contract_path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-planned-control.json",
+    "contract_sha256": "D8C0E5ED51C075A93A16376967E501B670B16B06C91E96D1D1600351CFAA141D",
+    "failure_reason": "actions checkout created a no-.git origin URL and a branch remote override rejected by remote.identity",
+    "manifest_blob_oid": "201c9e3a26bb10721041ac660e0c9f112163b98c",
+    "manifest_path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-authorized-paths.tsv",
+    "manifest_sha256": "121D11A73AF2CD23885FB7A6B38D14B0D8A5440940D913A83F3A5D6941511ECE",
+    "parent_sha": "8960f2a980be22166f321c4ba452eb547529b1fd",
+    "subject": "chore(reorganization): plan M13 I01 and CODE03",
+    "tree_sha": "ce9760fc7a49e69e98551e992c27fd11f9b247b1",
+    "workflow_blob_oid": "5f00c1b987ca16f9cfebb6b1c65d9c71b8349107",
+    "workflow_path": ".github/workflows/lean_action_ci.yml",
+    "workflow_sha256": "AF4D9C4471F5D9AA140D8741D2B15AF453168C7B6BBD9970ADE1A479B1CE174C"
   },
-  "milestone_id": "M13",
-  "packets": [
+  "graph": [
+    "B->P_failed",
+    "P_failed->PR"
+  ],
+  "historical_packet_artifacts": [
     {
-      "approval": {
-        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-approval.json",
-        "sha256": "8B3CC920221E9786785D1D56DB2105964063CB50929DBFAAAD49B1E29A4070B8"
-      },
-      "indivisible": true,
-      "patch": {
-        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014.patch",
-        "sha256": "3AC31AFC44B697FF830E0CF393FF1725F18B49022ABCF81D83742220FCCB3A88"
-      },
-      "path_count": 12,
-      "path_set_sha256": "8112252AD70DB64DDB3A53F477DAD267CB7CC5DFEBC34FF24D4577058173A25E",
-      "postimages": {
-        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014-postimages.tsv",
-        "sha256": "42F4ED7EFE7C611DE214A0E6FE4ABADA11034632A9086952EADCD1A8AA33A1C9"
-      },
-      "request": {
-        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014.json",
-        "sha256": "CDF9CD8B9E5D8A06F60CB769801A5AC891F4468E1435207060F77B50BE1C67CE"
-      },
-      "request_id": "R0014",
-      "review": {
-        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014-review.md",
-        "sha256": "69BFB58422DBEA48EF29DB39B74A70ED063453C7250F7E0A9F90ED9FF9400EB1"
-      },
-      "target_code_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b"
+      "blob_oid": "54927c2c2937583da407cb5fa5eb8db69bdebe03",
+      "byte_count": 6256,
+      "mode": "100644",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014-review.md",
+      "sha256": "69BFB58422DBEA48EF29DB39B74A70ED063453C7250F7E0A9F90ED9FF9400EB1",
+      "source_commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9"
     },
     {
-      "approval": {
-        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/CODE03-approval.json",
-        "sha256": "CF4EF2EA8E00562D61F706033E757359D8440E55804498BE34BD7CFA86DA5488"
-      },
-      "indivisible": true,
-      "patch": {
-        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015.patch",
-        "sha256": "A6EAA922363136C5B15351849260632094C1A707D7134E7084CBA6556415E820"
-      },
-      "path_count": 2,
-      "path_set_sha256": "87340E567079B7C6B52CC23A1F6A5BC20390AD8CC8A0F161250320C8940F1CE9",
-      "postimages": {
-        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015-postimages.tsv",
-        "sha256": "F92A484CAFBB2F8885A14CE5A7A0A9DB4A774888757797BB836254D4600BED8D"
-      },
-      "request": {
-        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015.json",
-        "sha256": "A021AD7AC5303C0CEE3546030B4633E3FD78C38C1B03CC978FCBEBC4BB8B1391"
-      },
-      "request_id": "R0015",
-      "review": {
-        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015-review.md",
-        "sha256": "1E3C8382E4185B5543D754EA35F7CA23A1426D01525C47A9A44CFE6BB5621376"
-      },
-      "target_code_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b"
+      "blob_oid": "3a1b2543c8e54f4e8bba0febcb6b1526ace68553",
+      "byte_count": 7572,
+      "mode": "100644",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015-review.md",
+      "sha256": "1E3C8382E4185B5543D754EA35F7CA23A1426D01525C47A9A44CFE6BB5621376",
+      "source_commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9"
+    },
+    {
+      "blob_oid": "a96907ce457cea2de02cb45a70485b3129f8c9af",
+      "byte_count": 6101,
+      "mode": "100644",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/CODE03-approval.json",
+      "sha256": "CF4EF2EA8E00562D61F706033E757359D8440E55804498BE34BD7CFA86DA5488",
+      "source_commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9"
+    },
+    {
+      "blob_oid": "cdd37abb449d9a800015792c6ac59891f0036168",
+      "byte_count": 4964,
+      "mode": "100644",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-approval.json",
+      "sha256": "8B3CC920221E9786785D1D56DB2105964063CB50929DBFAAAD49B1E29A4070B8",
+      "source_commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9"
+    },
+    {
+      "blob_oid": "90abd450b609c91f4b6f773ac3db0df6ba484398",
+      "byte_count": 4211,
+      "mode": "100644",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-selection-overlap.md",
+      "sha256": "5A0A4852AD84095CFBFC973ACF37E45C8C0AA5FB09D8E8728356CC30C1AF43A9",
+      "source_commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9"
     }
   ],
+  "lifecycle": {
+    "continuation_authorized": false,
+    "failed_planned_control_commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
+    "failed_planned_control_contract_blob_oid": "6c1f59211399c626c7727952c16ea63e504270c8",
+    "failed_planned_control_tree_sha": "ce9760fc7a49e69e98551e992c27fd11f9b247b1",
+    "planned_recovery_commit_sha": null,
+    "planned_recovery_contract_blob_oid": null,
+    "planned_recovery_tree_sha": null,
+    "state": "ci_recovery_pending"
+  },
   "path_census": {
-    "R0014": {
-      "path_count": 12,
-      "path_set_sha256": "8112252AD70DB64DDB3A53F477DAD267CB7CC5DFEBC34FF24D4577058173A25E"
-    },
-    "R0015": {
-      "path_count": 2,
-      "path_set_sha256": "87340E567079B7C6B52CC23A1F6A5BC20390AD8CC8A0F161250320C8940F1CE9"
-    },
     "artifact_snapshot": {
-      "path_count": 41,
-      "path_set_sha256": "040808277F8BBBA4B0C88F7B134D38BE4CB2DF57A8E90D000603941C4433BD2F"
+      "path_count": 7,
+      "path_set_sha256": "F01D66DD09B3F2E59DCC4012A58338CB5BC2F26E2B88E7BBF8BC605BA82947BB"
+    },
+    "ci_recovery_control": {
+      "modify_count": 8,
+      "path_count": 8,
+      "path_set_sha256": "3CF30300730F9BD37AB532D1C99E387EC32ECB5B98B51F33C0ED04DE4953089A"
     },
     "contract_path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-planned-control.json",
-    "implementation": {
-      "add_count": 7,
-      "modify_count": 7,
-      "path_count": 14,
-      "path_set_sha256": "29BD21B735E94B3B8670E03A766FCF20F2E5762D9472C62028332A871403E189"
+    "historical_packet_artifacts": {
+      "path_count": 5,
+      "path_set_sha256": "39534A6720B99C39263A261CC71E5DD262AD3F71ED40B875AB28B52BE0D1B674"
     },
     "local_ledger_exclusion": "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
-    "planned_control": {
-      "add_count": 25,
-      "modify_count": 17,
-      "path_count": 42,
-      "path_set_sha256": "F27C9B79FD8F365F28EDE87FA3F2689678F929E1EE74BAB4820EDCB9A7A39BFC"
-    },
-    "self_hash_policy": "excluded_from_artifact_hashes_but_bound_by_commit"
+    "self_hash_policy": "excluded_from_artifacts_but_bound_by_direct_child_commit"
+  },
+  "permissions": {
+    "activation_authorized": false,
+    "implementation_authorized": false,
+    "owner_solicitation_authorized": false,
+    "post_assurance_transition_authorized": false,
+    "remote_main_mutation_authorized": false,
+    "request_resolution_authorized": false,
+    "rerun_authorized": false
   },
   "phase_id": "repository-reorganization-completion-2026-08",
   "preserved_exclusions": [
     "tracking, committing, or pushing REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
     "any public declaration name, namespace, normalized type, visibility, or supported-entrypoint reachability change",
-    "any tracked path absent from the authorized path manifest or any authorized manifest stage or operation drift",
-    "partial application or partial rollback of R0014, R0015, or their complete 14-path union",
-    "semantic review by codex-local, any exact artifact generator or action performer, CI, or any service principal",
-    "any R0014 or R0015 request resolution, I01 selector finalization, or M13, I01, R0014, R0015, or C0008 status mutation",
-    "any C8-PROPOSE or C8-ACCEPT commit, or any C0008 proposal, checkpoint or status acceptance, or finalization action",
-    "any non-null decision, reviewer, or reviewed_at_utc in reviews/C0008-supported-api.json, or any interpretation of that record as human review, checkpoint acceptance, request resolution, or authority",
-    "any push, merge, force-update, deletion, or other mutation of origin refs/heads/main",
-    "repository-wide completion or final release acceptance",
-    "bounded-branch retirement, bounded remote-ref deletion, any force push, or any history rewrite"
+    "any tracked path absent from the exact eight-row manifest or any stage or operation drift",
+    "any packet, request, selector, approval, implementation, compatibility, tier, production, test, or ordinary documentation write",
+    "any issue creation, owner solicitation, owner comment, semantic review claim, activation, implementation, post-assurance, A, T, I, or V action",
+    "any R0014 or R0015 resolution, I01 finalization, M13 status mutation, C0008 proposal or acceptance, or repository-wide completion claim",
+    "any non-null decision, reviewer, or reviewed_at_utc in C0008-supported-api.json or any interpretation of that record as human authority",
+    "any push, merge, force-update, deletion, or other mutation of refs/heads/main",
+    "any mutation or relabelling of immutable failed P or its failed CI evidence",
+    "any bounded-ref deletion, force push, history rewrite, rerun attempt, second matching run ID, or transition after PR"
   ],
-  "record_kind": "c0007_bounded_planned_control",
-  "reviews": {
-    "activation": {
-      "action_performer_id": "codex-local",
-      "attestation_kind": "github_repository_owner_issue_comment_v1",
-      "binds_pending_machine_evidence": [
-        "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0008-supported-api.json"
-      ],
-      "ci_is_semantic_review": false,
-      "decision": null,
-      "generator_id": "codex-local",
-      "reviewed_at": null,
-      "reviewed_commit_sha": null,
-      "reviewed_contract_blob_oid": null,
-      "reviewed_tree_sha": null,
-      "reviewer_id": "primary-human",
-      "reviewer_kind": "human",
-      "scope": {
-        "artifact_inventory_sha256": "C76060317C47507C11DE1B083618F535B7C13A5E06EF80840649DF492E799D8C",
-        "authorization_sha256": "9BD67B6336BA9D2943552AA09D19F580EC4A8A9298E85BC846854A201CB15129",
-        "completion_checker_sha256": "9D82E21737C783923F6A02954703E499B01697970834AF054E08A5B63C511552",
-        "full_tests_correction_sha256": "FD35FC88D44230585B200FFEA021C5C53C56A004D03E8DC284F2F5B0EE6803EF",
-        "implementation_path_set_sha256": "29BD21B735E94B3B8670E03A766FCF20F2E5762D9472C62028332A871403E189",
-        "packet_snapshot_sha256": "ACB72915C2FF9383A2129A50D995C5B59B1C223148B18FC66FED222E04C000A3",
-        "planned_path_set_sha256": "F27C9B79FD8F365F28EDE87FA3F2689678F929E1EE74BAB4820EDCB9A7A39BFC",
-        "review_purpose": "P activation for atomic R0014/R0015 implementation",
-        "supported_api_baseline_sha256": "F7C5A8112D3B513F801C6EDB4FA04FB306C6BCAAA4B21F3968267D2335CA111E",
-        "supported_api_checker_sha256": "2568B8221132E57BBBA215E35ADF6266FBD40352FB9133BC1F55C2F22923947B",
-        "supported_api_review_sha256": "BA00D14C553CD8F8699B0A52261123EA85C70FF763E666E70437348306A2BD46",
-        "workflow_sha256": "AF4D9C4471F5D9AA140D8741D2B15AF453168C7B6BBD9970ADE1A479B1CE174C"
-      },
-      "source": {
-        "author_association": "OWNER",
-        "author_database_id": 144732584,
-        "author_login": "AlexGeorgantzas",
-        "author_node_id": "U_kgDOCKBxqA",
-        "author_type": "User",
-        "comment_api_url": null,
-        "comment_database_id": null,
-        "comment_html_url": null,
-        "comment_node_id": null,
-        "created_at": null,
-        "issue_api_url": null,
-        "issue_database_id": null,
-        "issue_html_url": null,
-        "issue_node_id": null,
-        "issue_number": null,
-        "message": null,
-        "message_sha256": null,
-        "performed_via_github_app": null,
-        "provider": "github_issue_comment",
-        "repository_api_url": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability",
-        "repository_database_id": 1171530090,
-        "repository_full_name": "AlexGeorgantzas/lean-numerical-stability",
-        "repository_node_id": "R_kgDORdQhag",
-        "updated_at": null
-      },
-      "status": "pending",
-      "supersedes_pending_packet_reviews": [
-        "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-approval.json",
-        "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/CODE03-approval.json",
-        "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-full-tests-evidence-correction.json"
-      ]
-    },
-    "implementation": {
-      "action_performer_id": "codex-local",
-      "attestation_kind": "github_repository_owner_issue_comment_v1",
-      "binds_pending_machine_evidence": [],
-      "ci_is_semantic_review": false,
-      "decision": null,
-      "generator_id": "codex-local",
-      "reviewed_at": null,
-      "reviewed_commit_sha": null,
-      "reviewed_contract_blob_oid": null,
-      "reviewed_tree_sha": null,
-      "reviewer_id": "primary-human",
-      "reviewer_kind": "human",
-      "scope": {
-        "artifact_inventory_sha256": "C76060317C47507C11DE1B083618F535B7C13A5E06EF80840649DF492E799D8C",
-        "authorization_sha256": "9BD67B6336BA9D2943552AA09D19F580EC4A8A9298E85BC846854A201CB15129",
-        "completion_checker_sha256": "9D82E21737C783923F6A02954703E499B01697970834AF054E08A5B63C511552",
-        "full_tests_correction_sha256": "FD35FC88D44230585B200FFEA021C5C53C56A004D03E8DC284F2F5B0EE6803EF",
-        "implementation_path_set_sha256": "29BD21B735E94B3B8670E03A766FCF20F2E5762D9472C62028332A871403E189",
-        "packet_snapshot_sha256": "ACB72915C2FF9383A2129A50D995C5B59B1C223148B18FC66FED222E04C000A3",
-        "planned_path_set_sha256": "F27C9B79FD8F365F28EDE87FA3F2689678F929E1EE74BAB4820EDCB9A7A39BFC",
-        "review_purpose": "I verification for atomic R0014/R0015 implementation",
-        "supported_api_baseline_sha256": "F7C5A8112D3B513F801C6EDB4FA04FB306C6BCAAA4B21F3968267D2335CA111E",
-        "supported_api_checker_sha256": "2568B8221132E57BBBA215E35ADF6266FBD40352FB9133BC1F55C2F22923947B",
-        "supported_api_review_sha256": "BA00D14C553CD8F8699B0A52261123EA85C70FF763E666E70437348306A2BD46",
-        "workflow_sha256": "AF4D9C4471F5D9AA140D8741D2B15AF453168C7B6BBD9970ADE1A479B1CE174C"
-      },
-      "source": {
-        "author_association": "OWNER",
-        "author_database_id": 144732584,
-        "author_login": "AlexGeorgantzas",
-        "author_node_id": "U_kgDOCKBxqA",
-        "author_type": "User",
-        "comment_api_url": null,
-        "comment_database_id": null,
-        "comment_html_url": null,
-        "comment_node_id": null,
-        "created_at": null,
-        "issue_api_url": null,
-        "issue_database_id": null,
-        "issue_html_url": null,
-        "issue_node_id": null,
-        "issue_number": null,
-        "message": null,
-        "message_sha256": null,
-        "performed_via_github_app": null,
-        "provider": "github_issue_comment",
-        "repository_api_url": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability",
-        "repository_database_id": 1171530090,
-        "repository_full_name": "AlexGeorgantzas/lean-numerical-stability",
-        "repository_node_id": "R_kgDORdQhag",
-        "updated_at": null
-      },
-      "status": "not_due",
-      "supersedes_pending_packet_reviews": []
-    }
+  "record_kind": "c0007_bounded_ci_only_recovery_control",
+  "run_policy": {
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "matching_run_ids": 1,
+    "rerun_authorized": false,
+    "terminal_evidence_location": "untracked local ledger only"
   },
-  "schema_version": 3,
+  "schema_version": 4,
   "scope": {
+    "activation_authorized": false,
     "authorized_path_manifest": {
       "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-authorized-paths.tsv",
-      "row_count": 56,
-      "sha256": "121D11A73AF2CD23885FB7A6B38D14B0D8A5440940D913A83F3A5D6941511ECE"
+      "path_list_sha256": "3CF30300730F9BD37AB532D1C99E387EC32ECB5B98B51F33C0ED04DE4953089A",
+      "preimage_freeze_sha256": "A7C7DBB77711DCDA7BA31AC720D1710E05E48F007523A0EACD583AA213BB49FC",
+      "row_count": 8,
+      "sha256": "E0892856B09B6B0E3A44E6FE49A303918D1BCF88743F5328E6A8E996C689E6C0"
     },
+    "bounded_ref": "refs/heads/codex/reorg-closeout-2026-08-m13-i01",
     "checkpoint_acceptance_authorized": false,
-    "milestone_id": "M13",
+    "implementation_authorized": false,
+    "owner_solicitation_authorized": false,
+    "post_assurance_transition_authorized": false,
+    "recovery_parent_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
+    "recovery_subject": "fix(reorganization): recover M13 planned-control CI",
     "remote_main_mutation_authorized": false,
-    "request_ids": [
-      "R0014",
-      "R0015"
-    ],
     "request_resolution_authorized": false,
     "supported_api_record": {
       "authority_effect": "none",
@@ -834,29 +344,19 @@
       ],
       "status": "pending_machine_evidence"
     },
+    "target_state": "ci_recovery_pending",
     "task_ids": [
-      "API-01",
-      "CODE-01",
-      "CODE-02",
-      "CODE-03",
+      "CI-01",
       "EPOCH-01",
-      "GOV-01",
-      "GOV-02",
-      "GOV-03",
-      "GOV-04",
-      "I01-01",
-      "I01-02",
       "VERIFY-01",
       "VERIFY-02",
       "VERIFY-03"
-    ],
-    "terminal_control_state": "verified",
-    "wave_id": "I01"
+    ]
   },
-  "wave_id": "I01",
   "workflow": {
     "build_step_name": "Build library and smoke tests",
     "checkout_action": "actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09",
+    "checkout_ref_expression": "${{ github.sha }}",
     "full_build_command": "lake build NumStability NumStabilityTest",
     "github_actions_read_permission": true,
     "github_issues_read_permission": true,
@@ -864,8 +364,9 @@
     "job_timeout_minutes": 360,
     "lean_action": "leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596",
     "lean_action_use_github_cache": true,
+    "origin_normalization_command": "git remote set-url origin https://github.com/AlexGeorgantzas/lean-numerical-stability.git",
     "path": ".github/workflows/lean_action_ci.yml",
-    "sha256": "AF4D9C4471F5D9AA140D8741D2B15AF453168C7B6BBD9970ADE1A479B1CE174C",
+    "sha256": "7FCCF4C8B274A9C8DC919ADC271F4D48B3416863192872706CF444DF3E419158",
     "supported_api_commands": [
       "python tools/architecture/check_supported_api.py --self-test",
       "python tools/architecture/check_supported_api.py --baseline docs/architecture/supported-api.json --mode lifecycle"

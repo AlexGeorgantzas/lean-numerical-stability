@@ -25,10 +25,12 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
           fetch-depth: 0
+          ref: ${{ github.sha }}
       - name: Check architecture source graph and Python tooling
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          git remote set-url origin https://github.com/AlexGeorgantzas/lean-numerical-stability.git
           python -m py_compile tools/architecture/generate_baseline.py tools/architecture/check_compatibility.py tools/architecture/check_layout.py tools/architecture/check_phase.py tools/architecture/check_phase_projection.py tools/architecture/check_completion_phase_projection.py tools/architecture/check_completion_phase.py tools/architecture/check_provenance.py tools/architecture/check_supported_api.py tools/architecture/normalize_apache_notices.py tools/architecture/sort_aggregate_imports.py tools/benchmark/run.py
           python tools/architecture/check_phase.py --self-test
           python tools/architecture/check_phase_projection.py --self-test

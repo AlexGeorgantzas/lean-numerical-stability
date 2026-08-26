@@ -738,6 +738,175 @@ C0007_BOUNDED_COMMIT_SUBJECTS = {
     "implementation": "refactor(reorganization): implement M13 I01 and CODE03",
     "verified": "docs(reorganization): attest M13 implementation",
 }
+
+# CI-only recovery is a distinct, deliberately terminal successor epoch.  The
+# terminal-v2 constants above remain the exact interpretation of immutable P;
+# none of them is repurposed to make the recovery look like a successful P/A/T
+# transition.
+C0007_FAILED_PLANNED_CONTROL_SHA = "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9"
+C0007_FAILED_PLANNED_CONTROL_TREE_SHA = "ce9760fc7a49e69e98551e992c27fd11f9b247b1"
+C0007_FAILED_PLANNED_CONTROL_SUBJECT = C0007_BOUNDED_COMMIT_SUBJECTS["planned"]
+C0007_FAILED_PLANNED_CONTROL_CONTRACT_BLOB_OID = (
+    "6c1f59211399c626c7727952c16ea63e504270c8"
+)
+C0007_FAILED_PLANNED_CONTROL_CONTRACT_SHA256 = (
+    "D8C0E5ED51C075A93A16376967E501B670B16B06C91E96D1D1600351CFAA141D"
+)
+C0007_FAILED_PLANNED_CONTROL_AUTHORIZATION_BLOB_OID = (
+    "4957e833be3f7243bc47f69f14d05a7043642147"
+)
+C0007_FAILED_PLANNED_CONTROL_MANIFEST_BLOB_OID = (
+    "201c9e3a26bb10721041ac660e0c9f112163b98c"
+)
+C0007_FAILED_PLANNED_CONTROL_WORKFLOW_BLOB_OID = (
+    "5f00c1b987ca16f9cfebb6b1c65d9c71b8349107"
+)
+C0007_FAILED_PLANNED_CONTROL_CHECKER_BLOB_OID = (
+    "35fbb23ac3666ecb2dfc432b08165233978a7271"
+)
+C0007_FAILED_PLANNED_CONTROL_CHECKER_SHA256 = (
+    "9D82E21737C783923F6A02954703E499B01697970834AF054E08A5B63C511552"
+)
+C0007_FAILED_PLANNED_CONTROL_PHASE_SHA256 = (
+    "3EE8F0B30EDAC3CEB891C941EB26D680166D82FAAC20BF2B4F6A3E85E83CCF8E"
+)
+C0007_FAILED_PLANNED_CONTROL_RUN_ID = 32966438799
+C0007_FAILED_PLANNED_CONTROL_RUN_NUMBER = 8950
+C0007_FAILED_PLANNED_CONTROL_JOB_ID = 98169864308
+C0007_FAILED_PLANNED_CONTROL_CHECK_SUITE_ID = 89298169052
+C0007_FAILED_PLANNED_CONTROL_JOB_LOG_BYTE_COUNT = 20201
+C0007_FAILED_PLANNED_CONTROL_JOB_LOG_SHA256 = (
+    "8383047A0845BAA625BCC3ACA3AE5FCD744F80AD9D7A4647B0371B23EB41D16D"
+)
+C0007_FAILED_PLANNED_CONTROL_FAILURE_REASON = (
+    "actions checkout created a no-.git origin URL and a branch remote override "
+    "rejected by remote.identity"
+)
+
+C0007_CI_RECOVERY_AUTHORIZATION_ID = "C0007-P-CI-recovery-only-v1"
+C0007_CI_RECOVERY_CONTROL_ID = "C0007-P-CI-recovery-control-v1"
+C0007_CI_RECOVERY_STATE = "ci_recovery_pending"
+C0007_CI_RECOVERY_SUBJECT = "fix(reorganization): recover M13 planned-control CI"
+C0007_CI_RECOVERY_MANIFEST_SHA256 = (
+    "E0892856B09B6B0E3A44E6FE49A303918D1BCF88743F5328E6A8E996C689E6C0"
+)
+C0007_CI_RECOVERY_AUTHORIZATION_SHA256 = (
+    "CC73A05B3B78D1C2E40C8EA18A5690F697F17FB30960D099BC1E88BCF49B8A76"
+)
+C0007_CI_RECOVERY_PATH_SET_SHA256 = (
+    "3CF30300730F9BD37AB532D1C99E387EC32ECB5B98B51F33C0ED04DE4953089A"
+)
+C0007_CI_RECOVERY_ARTIFACT_PATH_SET_SHA256 = (
+    "F01D66DD09B3F2E59DCC4012A58338CB5BC2F26E2B88E7BBF8BC605BA82947BB"
+)
+C0007_CI_RECOVERY_HISTORICAL_PACKET_PATH_SET_SHA256 = (
+    "39534A6720B99C39263A261CC71E5DD262AD3F71ED40B875AB28B52BE0D1B674"
+)
+C0007_CI_RECOVERY_PREIMAGE_FREEZE_SHA256 = (
+    "A7C7DBB77711DCDA7BA31AC720D1710E05E48F007523A0EACD583AA213BB49FC"
+)
+C0007_CI_RECOVERY_WORKFLOW_SHA256 = (
+    "7FCCF4C8B274A9C8DC919ADC271F4D48B3416863192872706CF444DF3E419158"
+)
+C0007_CI_RECOVERY_WORKFLOW_BLOB_OID = (
+    "88249bd10e4c55fd4f52e6fd1e4c2275e24ff6ae"
+)
+C0007_CI_RECOVERY_ORIGIN_COMMAND = (
+    "git remote set-url origin "
+    "https://github.com/AlexGeorgantzas/lean-numerical-stability.git"
+)
+C0007_CI_RECOVERY_CHECKOUT_REF = "${{ github.sha }}"
+C0007_CI_RECOVERY_PACKET_ID = "CI01R1"
+C0007_CI_RECOVERY_CONTRACT_PATH = C0007_BOUNDED_PLANNED_CONTROL_PATH
+C0007_CI_RECOVERY_PATHS = (
+    ".github/workflows/lean_action_ci.yml",
+    C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+    C0007_BOUNDED_AUTHORIZATION_PATH,
+    C0007_CI_RECOVERY_CONTRACT_PATH,
+    C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH,
+    C0007_BOUNDED_SUPPORTED_API_PATH,
+    "tools/architecture/check_completion_phase.py",
+    "tools/architecture/check_supported_api.py",
+)
+C0007_CI_RECOVERY_ARTIFACT_PATHS = tuple(
+    path for path in C0007_CI_RECOVERY_PATHS if path != C0007_CI_RECOVERY_CONTRACT_PATH
+)
+
+# Exact P preimages for the eight authorized recovery paths.  The recovery
+# contract inventories the seven non-self postimages; its own blob is bound by
+# the direct-child commit shape.
+C0007_CI_RECOVERY_PREIMAGES: dict[str, tuple[str, int, str]] = {
+    ".github/workflows/lean_action_ci.yml": (
+        "5f00c1b987ca16f9cfebb6b1c65d9c71b8349107",
+        2498,
+        "AF4D9C4471F5D9AA140D8741D2B15AF453168C7B6BBD9970ADE1A479B1CE174C",
+    ),
+    C0007_BOUNDED_AUTHORIZED_PATHS_PATH: (
+        "201c9e3a26bb10721041ac660e0c9f112163b98c",
+        5538,
+        "121D11A73AF2CD23885FB7A6B38D14B0D8A5440940D913A83F3A5D6941511ECE",
+    ),
+    C0007_BOUNDED_AUTHORIZATION_PATH: (
+        "4957e833be3f7243bc47f69f14d05a7043642147",
+        8002,
+        "9BD67B6336BA9D2943552AA09D19F580EC4A8A9298E85BC846854A201CB15129",
+    ),
+    C0007_CI_RECOVERY_CONTRACT_PATH: (
+        "6c1f59211399c626c7727952c16ea63e504270c8",
+        40168,
+        "D8C0E5ED51C075A93A16376967E501B670B16B06C91E96D1D1600351CFAA141D",
+    ),
+    C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH: (
+        "41935ddd2eefe1602003eb663c7d3befd4cca0c4",
+        10763,
+        "BA00D14C553CD8F8699B0A52261123EA85C70FF763E666E70437348306A2BD46",
+    ),
+    C0007_BOUNDED_SUPPORTED_API_PATH: (
+        "c26fe1fadc0468b9f53975cc198320481a975a6b",
+        33196596,
+        "F7C5A8112D3B513F801C6EDB4FA04FB306C6BCAAA4B21F3968267D2335CA111E",
+    ),
+    "tools/architecture/check_completion_phase.py": (
+        "35fbb23ac3666ecb2dfc432b08165233978a7271",
+        1420197,
+        C0007_FAILED_PLANNED_CONTROL_CHECKER_SHA256,
+    ),
+    "tools/architecture/check_supported_api.py": (
+        "37b3f76c35a3c5662b73668ad799901be15f6368",
+        290717,
+        "2568B8221132E57BBBA215E35ADF6266FBD40352FB9133BC1F55C2F22923947B",
+    ),
+}
+
+C0007_CI_RECOVERY_HISTORICAL_PACKET_ARTIFACTS: dict[
+    str, tuple[str, int, str]
+] = {
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014-review.md": (
+        "54927c2c2937583da407cb5fa5eb8db69bdebe03",
+        6256,
+        "69BFB58422DBEA48EF29DB39B74A70ED063453C7250F7E0A9F90ED9FF9400EB1",
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015-review.md": (
+        "3a1b2543c8e54f4e8bba0febcb6b1526ace68553",
+        7572,
+        "1E3C8382E4185B5543D754EA35F7CA23A1426D01525C47A9A44CFE6BB5621376",
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/CODE03-approval.json": (
+        "a96907ce457cea2de02cb45a70485b3129f8c9af",
+        6101,
+        "CF4EF2EA8E00562D61F706033E757359D8440E55804498BE34BD7CFA86DA5488",
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/I01-approval.json": (
+        "cdd37abb449d9a800015792c6ac59891f0036168",
+        4964,
+        "8B3CC920221E9786785D1D56DB2105964063CB50929DBFAAAD49B1E29A4070B8",
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/reviews/I01-selection-overlap.md": (
+        "90abd450b609c91f4b6f773ac3db0df6ba484398",
+        4211,
+        "5A0A4852AD84095CFBFC973ACF37E45C8C0AA5FB09D8E8728356CC30C1AF43A9",
+    ),
+}
 C0007_BOUNDED_SHARED_RESERVATIONS = frozenset(
     {
         "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean",
@@ -2727,6 +2896,582 @@ def validate_c0007_bounded_authorization_payload(
         "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md" not in manifest_paths,
         C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
         "the local completion ledger must not enter tracked authority scope",
+    )
+
+
+def c0007_ci_recovery_expected_constraints() -> dict[str, Any]:
+    """Return the exact type-preserving CI-only authority constraints."""
+
+    return {
+        "scope": {
+            "activation_authorized": False,
+            "authorized_path_manifest": {
+                "path": C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+                "path_list_sha256": C0007_CI_RECOVERY_PATH_SET_SHA256,
+                "preimage_freeze_sha256": C0007_CI_RECOVERY_PREIMAGE_FREEZE_SHA256,
+                "row_count": 8,
+                "sha256": C0007_CI_RECOVERY_MANIFEST_SHA256,
+            },
+            "bounded_ref": C0007_BOUNDED_REMOTE_BRANCH_REF,
+            "checkpoint_acceptance_authorized": False,
+            "implementation_authorized": False,
+            "owner_solicitation_authorized": False,
+            "post_assurance_transition_authorized": False,
+            "recovery_parent_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+            "recovery_subject": C0007_CI_RECOVERY_SUBJECT,
+            "remote_main_mutation_authorized": False,
+            "request_resolution_authorized": False,
+            "supported_api_record": {
+                "authority_effect": "none",
+                "path": C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH,
+                "required_null_fields": ["decision", "reviewer", "reviewed_at_utc"],
+                "status": "pending_machine_evidence",
+            },
+            "target_state": C0007_CI_RECOVERY_STATE,
+            "task_ids": ["CI-01", "EPOCH-01", "VERIFY-01", "VERIFY-02", "VERIFY-03"],
+        },
+        "authorized_actions": [
+            "prepare and independently validate exactly the eight ci_recovery_control postimages in an isolated external overlay and atomically materialize only those paths",
+            "generate and independently reproduce docs/architecture/supported-api.json and the null-decision C0008-supported-api.json machine-evidence record without granting checkpoint authority",
+            "commit PR as the exact direct child of immutable P and exact-lease push refs/heads/codex/reorg-closeout-2026-08-m13-i01 from P to PR without mutating main",
+            "dispatch exactly one new exact-head workflow_dispatch run ID at PR and do not rerun it",
+            "monitor and authenticate that run through its first terminal conclusion and record its evidence only in the untracked local ledger",
+        ],
+        "activation_conditions": [
+            "immutable failed P 1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9, its parent/tree/contract, failed run 32966438799 attempt 1, and remote main 8960f2a980be22166f321c4ba452eb547529b1fd remain exact",
+            "the authorization manifest has exactly eight sorted ci_recovery_control modify rows and every packet, implementation, local-ledger, and unmanifested path is excluded",
+            "the workflow checks out exact github.sha detached, canonicalizes origin to the exact .git URL as the first architecture command, and otherwise preserves the pinned workflow behavior",
+            "PR is the exact eight-path direct child of failed P with subject fix(reorganization): recover M13 planned-control CI and no public declaration, namespace, normalized type, visibility, or supported-entrypoint reachability change",
+            "the dirty PR precommit is on exact symbolic branch codex/reorg-closeout-2026-08-m13-i01; a clean detached checkout is permitted only for validation and exact-head CI",
+            "the bounded remote ref equals P before the exact P-to-PR lease push and PR afterward while remote main remains exact",
+            "exactly one new workflow_dispatch run ID is created at exact PR, only attempt 1 is observed, and the grant expires at its first terminal conclusion",
+        ],
+        "preserved_exclusions": [
+            "tracking, committing, or pushing REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+            "any public declaration name, namespace, normalized type, visibility, or supported-entrypoint reachability change",
+            "any tracked path absent from the exact eight-row manifest or any stage or operation drift",
+            "any packet, request, selector, approval, implementation, compatibility, tier, production, test, or ordinary documentation write",
+            "any issue creation, owner solicitation, owner comment, semantic review claim, activation, implementation, post-assurance, A, T, I, or V action",
+            "any R0014 or R0015 resolution, I01 finalization, M13 status mutation, C0008 proposal or acceptance, or repository-wide completion claim",
+            "any non-null decision, reviewer, or reviewed_at_utc in C0008-supported-api.json or any interpretation of that record as human authority",
+            "any push, merge, force-update, deletion, or other mutation of refs/heads/main",
+            "any mutation or relabelling of immutable failed P or its failed CI evidence",
+            "any bounded-ref deletion, force push, history rewrite, rerun attempt, second matching run ID, or transition after PR",
+        ],
+        "expiry": {
+            "events": [
+                "the first terminal conclusion of the one authorized exact-head PR workflow_dispatch run, whether success, failure, cancellation, or timeout",
+                "explicit cancellation, revocation, or supersession",
+                "authority, manifest, workflow, checker, supported-API, contract, base, P, or artifact drift",
+                "an exact-lease mismatch, bounded-ref drift, remote-main drift, a rerun attempt, or a second matching run ID",
+            ],
+            "terminal_control_state": "ci_recovery_terminal",
+            "valid_only_while_current_checkpoint_id": C0007_CHECKPOINT_ID,
+        },
+        "run_policy": {
+            "attempt": 1,
+            "event": "workflow_dispatch",
+            "matching_run_ids": 1,
+            "rerun_authorized": False,
+            "terminal_evidence_location": "untracked local ledger only",
+        },
+    }
+
+
+def validate_c0007_ci_recovery_authorization_payload(
+    authorization: dict[str, Any],
+    manifest_header: Sequence[str],
+    manifest_rows: Sequence[dict[str, str]],
+    problems: Problems,
+    *,
+    context: str = C0007_BOUNDED_AUTHORIZATION_PATH,
+) -> None:
+    """Validate the exact eight-path, one-run, no-successor recovery grant."""
+
+    expected_keys = {
+        "activation_conditions",
+        "authority_id",
+        "authorization_id",
+        "authorized_actions",
+        "base",
+        "decision",
+        "expiry",
+        "operator_id",
+        "phase_id",
+        "preserved_exclusions",
+        "record_kind",
+        "recorded_at",
+        "run_policy",
+        "schema_version",
+        "scope",
+        "source",
+        "supersedes",
+    }
+    problems.require(
+        set(authorization) == expected_keys,
+        context,
+        "CI-recovery authorization keys must match schema-v3 exactly",
+    )
+    exact_fields = {
+        "schema_version": 3,
+        "record_kind": "primary_human_ci_only_recovery_authorization",
+        "authorization_id": C0007_CI_RECOVERY_AUTHORIZATION_ID,
+        "decision": "approved_for_ci_recovery_only",
+        "authority_id": "primary-human",
+        "operator_id": "codex-local",
+        "phase_id": PHASE_ID,
+        "recorded_at": "2026-08-26T12:56:21Z",
+    }
+    problems.require(
+        all(exact_json_equal(authorization.get(key), value) for key, value in exact_fields.items()),
+        context,
+        "CI-recovery identity/decision/recorded-at fields drifted",
+    )
+    problems.require(
+        exact_json_equal(
+            authorization.get("base"),
+            {
+                "active_phase_pointer_sha256": "C99061ACCE56AF121B1ACF0FBE2C757B53602A5A8599DC93193871095D3AB360",
+                "control_head_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+                "control_tree_sha": C0007_BOUNDED_CONTROL_TREE_SHA,
+                "current_checkpoint_id": C0007_CHECKPOINT_ID,
+                "current_checkpoint_sha": C0007_CODE_SHA,
+                "failed_planned_control": {
+                    "commit_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+                    "contract_blob_oid": C0007_FAILED_PLANNED_CONTROL_CONTRACT_BLOB_OID,
+                    "contract_sha256": C0007_FAILED_PLANNED_CONTROL_CONTRACT_SHA256,
+                    "job_id": C0007_FAILED_PLANNED_CONTROL_JOB_ID,
+                    "job_log_byte_count": C0007_FAILED_PLANNED_CONTROL_JOB_LOG_BYTE_COUNT,
+                    "job_log_sha256": C0007_FAILED_PLANNED_CONTROL_JOB_LOG_SHA256,
+                    "parent_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+                    "run_attempt": 1,
+                    "run_conclusion": "failure",
+                    "run_id": C0007_FAILED_PLANNED_CONTROL_RUN_ID,
+                    "tree_sha": C0007_FAILED_PLANNED_CONTROL_TREE_SHA,
+                },
+                "phase_sha256": "7DCF4E6B47F3EDEC92D1F6945426F0AB13215A5AC3C362D9356A58C413288AAC",
+                "remote_main_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            },
+        ),
+        f"{context}.base",
+        "CI recovery must bind exact B and immutable failed P evidence",
+    )
+    expected_constraints = c0007_ci_recovery_expected_constraints()
+    for key, value in expected_constraints.items():
+        problems.require(
+            exact_json_equal(authorization.get(key), value),
+            f"{context}.{key}",
+            "CI-only recovery constraint drifted",
+        )
+    problems.require(
+        exact_json_equal(
+            authorization.get("source"),
+            {
+                "channel": "current Codex desktop task",
+                "instruction": 'I got an email with "Lean CI: All jobs have failed", fix this.',
+                "instruction_byte_count": 62,
+                "instruction_sha256": "7BAB1BB0B4C915CE7A00B0A678AA5634EFF687DF2342B12BF53C07ACD767DF14",
+                "received_at": None,
+                "received_at_source": "not exposed by the Codex desktop task transport; intentionally not fabricated",
+                "user_principal_id": "primary-human",
+            },
+        ),
+        f"{context}.source",
+        "source instruction must remain exact and its unavailable timestamp must not be fabricated",
+    )
+    problems.require(
+        exact_json_equal(
+            authorization.get("supersedes"),
+            {
+                "authorization_id": C0007_BOUNDED_AUTHORIZATION_ID,
+                "effect": "historical P evidence only; no action remains authorized",
+                "sha256": C0007_CURRENT_AUTHORIZATION_SHA256,
+            },
+        ),
+        f"{context}.supersedes",
+        "CI recovery must supersede terminal-v2 only as immutable P evidence",
+    )
+
+    expected_header = ("path", "packet_id", "stage", "operation")
+    expected_rows = [
+        {
+            "path": path,
+            "packet_id": C0007_CI_RECOVERY_PACKET_ID,
+            "stage": "ci_recovery_control",
+            "operation": "modify",
+        }
+        for path in C0007_CI_RECOVERY_PATHS
+    ]
+    problems.require(
+        tuple(manifest_header) == expected_header
+        and list(manifest_rows) == expected_rows
+        and path_list_sha256(row["path"] for row in manifest_rows)
+        == C0007_CI_RECOVERY_PATH_SET_SHA256,
+        C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+        "manifest must be exactly eight sorted CI01R1/ci_recovery_control/modify rows",
+    )
+
+
+def c0007_ci_recovery_pending_ci() -> dict[str, Any]:
+    keys = {
+        "branch",
+        "candidate_sha",
+        "candidate_tree",
+        "check_suite_id",
+        "completed_at",
+        "conclusion",
+        "event",
+        "full_build",
+        "full_tests",
+        "job_id",
+        "job_completed_at",
+        "job_log_byte_count",
+        "job_log_sha256",
+        "job_name",
+        "job_started_at",
+        "repository",
+        "runner_name",
+        "run_attempt",
+        "run_id",
+        "started_at",
+        "status",
+        "workflow_path",
+    }
+    record = {key: None for key in keys}
+    record.update(
+        {
+            "branch": C0007_BOUNDED_BRANCH,
+            "repository": C0007_BOUNDED_REPOSITORY,
+            "status": "pending",
+            "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
+        }
+    )
+    return record
+
+
+def c0007_failed_planned_control_record() -> dict[str, Any]:
+    return {
+        "authorization_blob_oid": C0007_FAILED_PLANNED_CONTROL_AUTHORIZATION_BLOB_OID,
+        "authorization_path": C0007_BOUNDED_AUTHORIZATION_PATH,
+        "authorization_sha256": C0007_CURRENT_AUTHORIZATION_SHA256,
+        "ci": {
+            "branch": C0007_BOUNDED_BRANCH,
+            "check_suite_conclusion": "failure",
+            "check_suite_id": C0007_FAILED_PLANNED_CONTROL_CHECK_SUITE_ID,
+            "completed_at": "2026-08-26T12:03:44Z",
+            "conclusion": "failure",
+            "event": "workflow_dispatch",
+            "failed_step": C0007_BOUNDED_ARCHITECTURE_STEP,
+            "head_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+            "job_completed_at": "2026-08-26T12:03:43Z",
+            "job_conclusion": "failure",
+            "job_id": C0007_FAILED_PLANNED_CONTROL_JOB_ID,
+            "job_log_byte_count": C0007_FAILED_PLANNED_CONTROL_JOB_LOG_BYTE_COUNT,
+            "job_log_sha256": C0007_FAILED_PLANNED_CONTROL_JOB_LOG_SHA256,
+            "job_name": C0007_BOUNDED_JOB_NAME,
+            "job_started_at": "2026-08-26T12:02:32Z",
+            "run_attempt": 1,
+            "run_id": C0007_FAILED_PLANNED_CONTROL_RUN_ID,
+            "run_number": C0007_FAILED_PLANNED_CONTROL_RUN_NUMBER,
+            "runner_name": "GitHub Actions 1000008996",
+            "skipped_steps": [
+                C0007_BOUNDED_BUILD_STEP,
+                C0007_BOUNDED_SUPPORTED_API_STEP,
+                C0007_BOUNDED_TEST_STEP,
+            ],
+            "started_at": "2026-08-26T12:02:27Z",
+            "status": "failure",
+            "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
+        },
+        "commit_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+        "completion_checker_blob_oid": C0007_FAILED_PLANNED_CONTROL_CHECKER_BLOB_OID,
+        "completion_checker_path": "tools/architecture/check_completion_phase.py",
+        "completion_checker_sha256": C0007_FAILED_PLANNED_CONTROL_CHECKER_SHA256,
+        "contract_blob_oid": C0007_FAILED_PLANNED_CONTROL_CONTRACT_BLOB_OID,
+        "contract_path": C0007_BOUNDED_PLANNED_CONTROL_PATH,
+        "contract_sha256": C0007_FAILED_PLANNED_CONTROL_CONTRACT_SHA256,
+        "failure_reason": C0007_FAILED_PLANNED_CONTROL_FAILURE_REASON,
+        "manifest_blob_oid": C0007_FAILED_PLANNED_CONTROL_MANIFEST_BLOB_OID,
+        "manifest_path": C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+        "manifest_sha256": C0007_BOUNDED_AUTHORIZED_PATHS_SHA256,
+        "parent_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+        "subject": C0007_FAILED_PLANNED_CONTROL_SUBJECT,
+        "tree_sha": C0007_FAILED_PLANNED_CONTROL_TREE_SHA,
+        "workflow_blob_oid": C0007_FAILED_PLANNED_CONTROL_WORKFLOW_BLOB_OID,
+        "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
+        "workflow_sha256": C0007_BOUNDED_WORKFLOW_SHA256,
+    }
+
+
+def build_c0007_ci_recovery_contract(
+    artifacts: Sequence[dict[str, Any]],
+    authorization: dict[str, Any],
+    *,
+    authorization_sha256: str,
+    manifest_sha256: str,
+) -> dict[str, Any]:
+    """Deterministically render the self-hash-free CI-only recovery contract."""
+
+    clone = lambda value: json.loads(canonical_json(value))
+    constraints = c0007_ci_recovery_expected_constraints()
+    historical_packet_artifacts = [
+        {
+            "blob_oid": blob_oid,
+            "byte_count": byte_count,
+            "mode": "100644",
+            "path": path,
+            "sha256": digest,
+            "source_commit_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+        }
+        for path, (blob_oid, byte_count, digest) in sorted(
+            C0007_CI_RECOVERY_HISTORICAL_PACKET_ARTIFACTS.items()
+        )
+    ]
+    permissions = {
+        "activation_authorized": False,
+        "implementation_authorized": False,
+        "owner_solicitation_authorized": False,
+        "post_assurance_transition_authorized": False,
+        "remote_main_mutation_authorized": False,
+        "request_resolution_authorized": False,
+        "rerun_authorized": False,
+    }
+    workflow = {
+        "build_step_name": C0007_BOUNDED_BUILD_STEP,
+        "checkout_action": PINNED_CHECKOUT_ACTION,
+        "checkout_ref_expression": C0007_CI_RECOVERY_CHECKOUT_REF,
+        "full_build_command": "lake build NumStability NumStabilityTest",
+        "github_actions_read_permission": True,
+        "github_issues_read_permission": True,
+        "job_name": C0007_BOUNDED_JOB_NAME,
+        "job_timeout_minutes": 360,
+        "lean_action": PINNED_LEAN_ACTION,
+        "lean_action_use_github_cache": True,
+        "origin_normalization_command": C0007_CI_RECOVERY_ORIGIN_COMMAND,
+        "path": C0007_BOUNDED_WORKFLOW_PATH,
+        "sha256": C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        "supported_api_commands": [
+            "python tools/architecture/check_supported_api.py --self-test",
+            "python tools/architecture/check_supported_api.py --baseline docs/architecture/supported-api.json --mode lifecycle",
+        ],
+        "supported_api_step_name": C0007_BOUNDED_SUPPORTED_API_STEP,
+        "test_command": "lake test",
+        "test_step_name": C0007_BOUNDED_TEST_STEP,
+        "toolchain": C0007_BOUNDED_TOOLCHAIN,
+        "workflow_id": C0007_BOUNDED_WORKFLOW_ID,
+        "workflow_name": C0007_BOUNDED_WORKFLOW_NAME,
+    }
+    return {
+        "activation_conditions": clone(constraints["activation_conditions"]),
+        "application_mode": "ci_recovery_control_only",
+        "artifacts": sorted((clone(item) for item in artifacts), key=lambda item: item["path"]),
+        "authority": {
+            "authority_id": "primary-human",
+            "authorization_id": C0007_CI_RECOVERY_AUTHORIZATION_ID,
+            "authorization_path": C0007_BOUNDED_AUTHORIZATION_PATH,
+            "authorization_sha256": authorization_sha256,
+            "authorized_manifest_path": C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            "authorized_manifest_rows": 8,
+            "authorized_manifest_sha256": manifest_sha256,
+            "authorized_path_list_sha256": C0007_CI_RECOVERY_PATH_SET_SHA256,
+            "operator_id": "codex-local",
+        },
+        "authorized_actions": clone(constraints["authorized_actions"]),
+        "base": {
+            "control_head_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "control_tree_sha": C0007_BOUNDED_CONTROL_TREE_SHA,
+            "failed_planned_control_commit_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+            "failed_planned_control_tree_sha": C0007_FAILED_PLANNED_CONTROL_TREE_SHA,
+            "recovery_parent_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+            "remote_main_sha_at_authorization": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "request_replay_checkpoint_id": C0007_CHECKPOINT_ID,
+            "request_replay_code_sha": C0007_CODE_SHA,
+        },
+        "branch": {
+            "base_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+            "local_branch": C0007_BOUNDED_BRANCH,
+            "operator_id": "codex-local",
+            "push_policy": "fast_forward_only_with_exact_observed_lease",
+            "remote": C0007_BOUNDED_REMOTE,
+            "remote_main_ref": C0007_BOUNDED_REMOTE_MAIN_REF,
+            "remote_ref": C0007_BOUNDED_REMOTE_BRANCH_REF,
+            "remote_url": C0007_BOUNDED_REMOTE_URL,
+            "repository": C0007_BOUNDED_REPOSITORY,
+            "repository_id": C0007_BOUNDED_REPOSITORY_ID,
+            "retirement_authorized": False,
+        },
+        "ci": {"planned_recovery": c0007_ci_recovery_pending_ci()},
+        "constraints_sha256": canonical_json_sha256(constraints),
+        "control_id": C0007_CI_RECOVERY_CONTROL_ID,
+        "expiry": clone(constraints["expiry"]),
+        "failed_planned_control": c0007_failed_planned_control_record(),
+        "graph": ["B->P_failed", "P_failed->PR"],
+        "historical_packet_artifacts": historical_packet_artifacts,
+        "lifecycle": {
+            "continuation_authorized": False,
+            "failed_planned_control_commit_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+            "failed_planned_control_contract_blob_oid": C0007_FAILED_PLANNED_CONTROL_CONTRACT_BLOB_OID,
+            "failed_planned_control_tree_sha": C0007_FAILED_PLANNED_CONTROL_TREE_SHA,
+            "planned_recovery_commit_sha": None,
+            "planned_recovery_contract_blob_oid": None,
+            "planned_recovery_tree_sha": None,
+            "state": C0007_CI_RECOVERY_STATE,
+        },
+        "path_census": {
+            "artifact_snapshot": {
+                "path_count": 7,
+                "path_set_sha256": C0007_CI_RECOVERY_ARTIFACT_PATH_SET_SHA256,
+            },
+            "ci_recovery_control": {
+                "modify_count": 8,
+                "path_count": 8,
+                "path_set_sha256": C0007_CI_RECOVERY_PATH_SET_SHA256,
+            },
+            "contract_path": C0007_CI_RECOVERY_CONTRACT_PATH,
+            "historical_packet_artifacts": {
+                "path_count": 5,
+                "path_set_sha256": C0007_CI_RECOVERY_HISTORICAL_PACKET_PATH_SET_SHA256,
+            },
+            "local_ledger_exclusion": "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+            "self_hash_policy": "excluded_from_artifacts_but_bound_by_direct_child_commit",
+        },
+        "permissions": permissions,
+        "phase_id": PHASE_ID,
+        "preserved_exclusions": clone(constraints["preserved_exclusions"]),
+        "record_kind": "c0007_bounded_ci_only_recovery_control",
+        "run_policy": clone(constraints["run_policy"]),
+        "schema_version": 4,
+        "scope": clone(constraints["scope"]),
+        "workflow": workflow,
+    }
+
+
+def validate_c0007_ci_recovery_contract_payload(
+    contract: dict[str, Any],
+    authorization: dict[str, Any],
+    problems: Problems,
+    *,
+    authorization_sha256: str,
+    manifest_sha256: str,
+    context: str = C0007_CI_RECOVERY_CONTRACT_PATH,
+) -> None:
+    """Validate the narrow pending PR contract without inventing its self identity."""
+
+    expected_keys = {
+        "activation_conditions",
+        "application_mode",
+        "artifacts",
+        "authority",
+        "authorized_actions",
+        "base",
+        "branch",
+        "ci",
+        "constraints_sha256",
+        "control_id",
+        "expiry",
+        "failed_planned_control",
+        "graph",
+        "historical_packet_artifacts",
+        "lifecycle",
+        "path_census",
+        "permissions",
+        "phase_id",
+        "preserved_exclusions",
+        "record_kind",
+        "run_policy",
+        "schema_version",
+        "scope",
+        "workflow",
+    }
+    problems.require(
+        set(contract) == expected_keys,
+        context,
+        "CI-recovery contract keys must match schema-v4 exactly",
+    )
+    try:
+        captured_authorization_sha256 = hashlib.sha256(
+            canonical_tracked_json_bytes(authorization)
+        ).hexdigest().upper()
+    except (TypeError, ValueError, RecursionError):
+        captured_authorization_sha256 = None
+    problems.require(
+        authorization_sha256 == C0007_CI_RECOVERY_AUTHORIZATION_SHA256
+        and captured_authorization_sha256
+        == C0007_CI_RECOVERY_AUTHORIZATION_SHA256
+        and manifest_sha256 == C0007_CI_RECOVERY_MANIFEST_SHA256,
+        f"{context}.authority",
+        "contract validation requires the exact canonical recovery authorization and manifest identities",
+    )
+    artifacts = contract.get("artifacts")
+    if not isinstance(artifacts, list):
+        problems.add(f"{context}.artifacts", "recovery artifacts must be an array")
+        return
+    artifact_paths = [
+        item.get("path") for item in artifacts if isinstance(item, dict)
+    ]
+    artifact_inventory_ok = (
+        len(artifacts) == 7
+        and all(isinstance(item, dict) for item in artifacts)
+        and artifact_paths == list(C0007_CI_RECOVERY_ARTIFACT_PATHS)
+        and path_list_sha256(str(path) for path in artifact_paths)
+        == C0007_CI_RECOVERY_ARTIFACT_PATH_SET_SHA256
+    )
+    problems.require(
+        artifact_inventory_ok,
+        f"{context}.artifacts",
+        "artifact inventory must be the seven sorted non-contract recovery paths",
+    )
+    if not artifact_inventory_ok:
+        return
+    artifact_keys = {
+        "base_blob_oid",
+        "base_mode",
+        "operation",
+        "packet_id",
+        "path",
+        "post_blob_oid",
+        "post_mode",
+        "sha256",
+    }
+    artifact_records_ok = True
+    for index, item in enumerate(artifacts):
+        item_context = f"{context}.artifacts[{index}]"
+        assert isinstance(item, dict)
+        path = item.get("path")
+        preimage = C0007_CI_RECOVERY_PREIMAGES.get(str(path))
+        item_ok = (
+            set(item) == artifact_keys
+            and preimage is not None
+            and item.get("base_blob_oid") == (preimage[0] if preimage else None)
+            and item.get("base_mode") == "100644"
+            and item.get("operation") == "modify"
+            and item.get("packet_id") == C0007_CI_RECOVERY_PACKET_ID
+            and isinstance(item.get("post_blob_oid"), str)
+            and SHA1_RE.fullmatch(str(item.get("post_blob_oid"))) is not None
+            and item.get("post_blob_oid") != item.get("base_blob_oid")
+            and item.get("post_mode") == "100644"
+            and isinstance(item.get("sha256"), str)
+            and SHA256_RE.fullmatch(str(item.get("sha256"))) is not None
+            and item.get("sha256") == str(item.get("sha256")).upper()
+        )
+        artifact_records_ok = artifact_records_ok and item_ok
+        problems.require(
+            item_ok,
+            item_context,
+            "recovery artifact must bind exact P preimage and one distinct regular-file postimage",
+        )
+    if not artifact_records_ok:
+        return
+    expected = build_c0007_ci_recovery_contract(
+        artifacts,
+        authorization,
+        authorization_sha256=authorization_sha256,
+        manifest_sha256=manifest_sha256,
+    )
+    problems.require(
+        exact_json_equal(contract, expected),
+        context,
+        "CI-only contract identity, failed P evidence, null PR self-fields, or authority snapshot drifted",
     )
 
 
@@ -5232,7 +5977,7 @@ def validate_c0007_remote_observation(
     problems: Problems,
     context: str,
 ) -> bool:
-    """Validate one exact P/A/T/I/V ref position and derive I-overlay permission."""
+    """Validate one exact terminal-v2 or CI-recovery ref position."""
 
     remote_identity_ok = (
         list(configured_remote_names) == [C0007_BOUNDED_REMOTE]
@@ -5262,6 +6007,16 @@ def validate_c0007_remote_observation(
     positions: dict[str, tuple[str | None, set[str | None], bool]] = {
         "P-precommit": (C0007_BOUNDED_CONTROL_HEAD_SHA, {None}, True),
         "P-committed": (head, {None, head}, False),
+        "PR-precommit": (
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            {C0007_FAILED_PLANNED_CONTROL_SHA},
+            True,
+        ),
+        "PR-committed": (
+            head,
+            {C0007_FAILED_PLANNED_CONTROL_SHA, head},
+            False,
+        ),
         "A-precommit": (planned_commit, {planned_commit}, True),
         "A-committed": (head, {planned_commit, head}, False),
         "T-precommit": (activation_commit, {activation_commit}, True),
@@ -5307,7 +6062,7 @@ def validate_c0007_remote_observation(
         and head != C0007_CRASH_BACKUP_SHA
         and remote_branch_tip != C0007_CRASH_BACKUP_SHA,
         f"{context}.recovery_custody",
-        "the crash-backup recovery ref/commit is outside the lifecycle and may never stand in for P/A/T/I/V",
+        "the crash-backup recovery ref/commit is outside the lifecycle and may never stand in for P/PR/A/T/I/V",
     )
     write_allowed = (
         remote_identity_ok
@@ -5785,6 +6540,64 @@ def validate_c0007_bounded_workflow_text(
         ),
         f"{context}.steps",
         "workflow must contain exactly the reviewed five-step sequence with lake test as the final step",
+    )
+
+
+def validate_c0007_ci_recovery_workflow_text(
+    workflow_text: str,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Require the exact two-line normalization of immutable P's workflow."""
+
+    normalized = workflow_text.replace("\r\n", "\n")
+    problems.require(
+        "\r" not in workflow_text
+        and hashlib.sha256(normalized.encode("utf-8")).hexdigest().upper()
+        == C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        f"{context}.sha256",
+        "recovery workflow must be exact UTF-8/LF reviewed bytes",
+    )
+    checkout_old = "          fetch-depth: 0\n"
+    checkout_new = (
+        checkout_old + f"          ref: {C0007_CI_RECOVERY_CHECKOUT_REF}\n"
+    )
+    command_line = f"          {C0007_CI_RECOVERY_ORIGIN_COMMAND}\n"
+    architecture_prefix = (
+        f"      - name: {C0007_BOUNDED_ARCHITECTURE_STEP}\n"
+        "        env:\n"
+        "          GH_TOKEN: ${{ github.token }}\n"
+        "        run: |\n"
+    )
+    problems.require(
+        normalized.count(checkout_new) == 1
+        and normalized.count(f"ref: {C0007_CI_RECOVERY_CHECKOUT_REF}") == 1,
+        f"{context}.checkout_ref",
+        "pinned checkout must fetch full history and detach at exact github.sha exactly once",
+    )
+    problems.require(
+        normalized.count(architecture_prefix + command_line) == 1
+        and normalized.count(C0007_CI_RECOVERY_ORIGIN_COMMAND) == 1,
+        f"{context}.origin_normalization",
+        "canonical origin command must be the unique first architecture command",
+    )
+    historical = normalized.replace(checkout_new, checkout_old, 1).replace(
+        architecture_prefix + command_line,
+        architecture_prefix,
+        1,
+    )
+    historical_problems = Problems()
+    validate_c0007_bounded_workflow_text(
+        historical,
+        historical_problems,
+        context=f"{context}.historical_projection",
+    )
+    problems.require(
+        not historical_problems.messages,
+        f"{context}.historical_projection",
+        "removing only the two recovery lines must reproduce exact terminal-v2 workflow; "
+        + "; ".join(historical_problems.messages),
     )
 
 
@@ -7840,6 +8653,12 @@ def canonical_tracked_json_bytes(value: Any) -> bytes:
         )
         + "\n"
     ).encode("utf-8")
+
+
+def render_c0007_ci_recovery_contract_bytes(value: Any) -> bytes:
+    """Render the generated recovery contract in tracked-JSON canonical form."""
+
+    return canonical_tracked_json_bytes(value)
 
 
 def exact_json_equal(left: Any, right: Any) -> bool:
@@ -9914,6 +10733,8 @@ class CompletionValidator:
         self.r07_state = "absent"
         self.c0007_bounded_contract: dict[str, Any] | None = None
         self.c0007_bounded_state = "absent"
+        self.c0007_ci_recovery_authorization: dict[str, Any] | None = None
+        self.c0007_ci_recovery_active = False
         self.c0007_authorization_capture: CapturedJson | None = None
         self.c0007_contract_capture: CapturedJson | None = None
         self.c0007_correction_capture: CapturedJson | None = None
@@ -10748,7 +11569,13 @@ class CompletionValidator:
         }
         return evidence, problems
 
-    def git_live_change_paths(self, base: str, context: str) -> set[str]:
+    def git_live_change_paths(
+        self,
+        base: str,
+        context: str,
+        *,
+        env: dict[str, str] | None = None,
+    ) -> set[str]:
         """Return every tracked/index/worktree and nonignored untracked path."""
 
         paths: set[str] = set()
@@ -10759,7 +11586,7 @@ class CompletionValidator:
             ("ls-files", "--others", "--exclude-standard"),
         )
         for command in commands:
-            result = self.git(*command, check=False)
+            result = self.git(*command, check=False, env=env)
             if result.returncode:
                 self.problems.add(
                     context,
@@ -10944,6 +11771,637 @@ class CompletionValidator:
         self.validate_c0007_full_tests_correction()
         return self.problems
 
+    def write_c0007_ci_recovery_contract(self) -> Problems:
+        """Atomically render only the CI-recovery contract from seven postimages."""
+
+        self.load_r07_planned_contract()
+        self.validate_pointer()
+        self.load_phase()
+        context = "C0007 CI-recovery contract generation"
+        authorization_capture = self.read_captured_json(
+            self.root / C0007_BOUNDED_AUTHORIZATION_PATH,
+            C0007_BOUNDED_AUTHORIZATION_PATH,
+            require_canonical=True,
+        )
+        authorization = (
+            authorization_capture.value
+            if authorization_capture is not None
+            else None
+        )
+        manifest_path = self.root / C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+        manifest_header, manifest_rows = self.read_tsv(
+            manifest_path,
+            C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            ("path", "packet_id", "stage", "operation"),
+        )
+        self.problems.require(
+            authorization_capture is not None
+            and authorization_capture.sha256
+            == C0007_CI_RECOVERY_AUTHORIZATION_SHA256
+            and isinstance(authorization, dict),
+            C0007_BOUNDED_AUTHORIZATION_PATH,
+            "generation requires the exact canonical CI-recovery authorization",
+        )
+        self.problems.require(
+            manifest_path.is_file()
+            and sha256_path(manifest_path) == C0007_CI_RECOVERY_MANIFEST_SHA256,
+            C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            "generation requires the exact eight-row CI-recovery manifest",
+        )
+        if isinstance(authorization, dict):
+            validate_c0007_ci_recovery_authorization_payload(
+                authorization,
+                manifest_header,
+                manifest_rows,
+                self.problems,
+            )
+        try:
+            pointer_digest = sha256_path(self.root / ACTIVE_POINTER)
+        except OSError:
+            pointer_digest = None
+        try:
+            phase_digest = sha256_path(self.phase_dir / "phase.json")
+        except OSError:
+            phase_digest = None
+        self.problems.require(
+            pointer_digest
+            == "C99061ACCE56AF121B1ACF0FBE2C757B53602A5A8599DC93193871095D3AB360",
+            ACTIVE_POINTER.as_posix(),
+            "generation requires the exact active phase pointer bytes",
+        )
+        self.problems.require(
+            phase_digest
+            == C0007_FAILED_PLANNED_CONTROL_PHASE_SHA256,
+            self.relative(self.phase_dir / "phase.json"),
+            "generation requires the exact immutable-P C0007 phase bytes",
+        )
+        self.c0007_authorization_capture = authorization_capture
+        self.c0007_ci_recovery_authorization = (
+            authorization if isinstance(authorization, dict) else None
+        )
+        self.c0007_ci_recovery_active = isinstance(authorization, dict)
+        if self.problems.messages or not self.c0007_ci_recovery_active:
+            self.problems.add(context, "exact recovery construction inputs did not validate")
+            return self.problems
+
+        readonly_env = {
+            **os.environ,
+            "GIT_OPTIONAL_LOCKS": "0",
+            "GIT_NO_LAZY_FETCH": "1",
+        }
+        global_index_before = self.validate_c0007_global_index_flags(
+            self.problems,
+            context=f"{context}.index_flags.before",
+            env=readonly_env,
+        )
+        head = self.git("rev-parse", "HEAD", check=False, env=readonly_env)
+        branch = self.git(
+            "symbolic-ref",
+            "--quiet",
+            "--short",
+            "HEAD",
+            check=False,
+            env=readonly_env,
+        )
+        symbolic_branch = branch.stdout.strip() if branch.returncode == 0 else None
+        self.problems.require(
+            head.returncode == 0
+            and head.stdout.strip() == C0007_FAILED_PLANNED_CONTROL_SHA,
+            f"{context}.HEAD",
+            "generation must run at exact immutable P",
+        )
+        self.problems.require(
+            symbolic_branch in {None, C0007_BOUNDED_BRANCH},
+            f"{context}.branch",
+            "construction may be detached at P or use only the exact bounded branch",
+        )
+        identity = self.git(
+            "rev-parse",
+            "--path-format=absolute",
+            "--show-toplevel",
+            "--git-dir",
+            "--git-common-dir",
+            check=False,
+            env=readonly_env,
+        )
+        identity_lines = identity.stdout.splitlines()
+        identity_ok = False
+        if identity.returncode == 0 and len(identity_lines) == 3:
+            try:
+                top_level = Path(identity_lines[0]).resolve()
+                git_dir = Path(identity_lines[1]).resolve()
+                common_dir = Path(identity_lines[2]).resolve()
+                lexical_git = self.root / ".git"
+                lexical_stat = lexical_git.lstat()
+                lexical_ok = not c0007_metadata_path_is_indirection(lexical_git)
+                if stat.S_ISDIR(lexical_stat.st_mode):
+                    pointer_ok = git_dir == lexical_git.resolve()
+                elif stat.S_ISREG(lexical_stat.st_mode):
+                    pointer_text = lexical_git.read_text(encoding="utf-8").strip()
+                    pointer_prefix = "gitdir: "
+                    pointer_target = (
+                        Path(pointer_text[len(pointer_prefix) :])
+                        if pointer_text.startswith(pointer_prefix)
+                        else Path("")
+                    )
+                    if not pointer_target.is_absolute():
+                        pointer_target = lexical_git.parent / pointer_target
+                    pointer_ok = (
+                        pointer_text.startswith(pointer_prefix)
+                        and pointer_target.resolve() == git_dir
+                    )
+                else:
+                    pointer_ok = False
+                identity_ok = (
+                    top_level == self.root.resolve()
+                    and lexical_ok
+                    and pointer_ok
+                    and git_dir.is_dir()
+                    and common_dir.is_dir()
+                    and not c0007_metadata_path_is_indirection(git_dir)
+                    and not c0007_metadata_path_is_indirection(common_dir)
+                )
+            except (OSError, UnicodeError, ValueError):
+                identity_ok = False
+        self.problems.require(
+            identity_ok,
+            f"{context}.overlay.identity",
+            "generation requires one canonical non-redirected Git checkout/worktree identity",
+        )
+
+        contract_path = self.root / C0007_CI_RECOVERY_CONTRACT_PATH
+        try:
+            old_contract_payload = contract_path.read_bytes()
+        except OSError as error:
+            self.problems.add(context, f"cannot read P contract preimage: {error}")
+            old_contract_payload = b""
+        preimage_oid, preimage_size, preimage_digest = C0007_CI_RECOVERY_PREIMAGES[
+            C0007_CI_RECOVERY_CONTRACT_PATH
+        ]
+        self.problems.require(
+            len(old_contract_payload) == preimage_size
+            and hashlib.sha256(old_contract_payload).hexdigest().upper() == preimage_digest
+            and git_blob_oid(old_contract_payload) == preimage_oid,
+            f"{context}.contract_preimage",
+            "contract destination must still contain exact immutable-P bytes",
+        )
+        changed_before = self.git_live_change_paths(
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            f"{context}.overlay.before",
+            env=readonly_env,
+        )
+        changed_before.discard("REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md")
+        self.problems.require(
+            changed_before == set(C0007_CI_RECOVERY_ARTIFACT_PATHS),
+            f"{context}.overlay.before",
+            "before contract generation the overlay must be exactly the seven non-contract postimages",
+        )
+        cached_paths_result = self.git(
+            "diff",
+            "--cached",
+            "--name-only",
+            "--no-renames",
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            "--",
+            check=False,
+            env=readonly_env,
+        )
+        unstaged_paths_result = self.git(
+            "diff",
+            "--name-only",
+            "--no-renames",
+            "--",
+            check=False,
+            env=readonly_env,
+        )
+        untracked_paths_result = self.git(
+            "ls-files",
+            "--others",
+            "--exclude-standard",
+            check=False,
+            env=readonly_env,
+        )
+        tracked_ledger_result = self.git(
+            "ls-files",
+            "--stage",
+            "--",
+            "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+            check=False,
+            env=readonly_env,
+        )
+        cached_paths = {
+            normalize_path(path)
+            for path in cached_paths_result.stdout.splitlines()
+            if path.strip()
+        }
+        unstaged_paths = {
+            normalize_path(path)
+            for path in unstaged_paths_result.stdout.splitlines()
+            if path.strip()
+        }
+        untracked_paths = {
+            normalize_path(path)
+            for path in untracked_paths_result.stdout.splitlines()
+            if path.strip()
+        }
+        self.problems.require(
+            cached_paths_result.returncode == 0
+            and cached_paths == set(C0007_CI_RECOVERY_ARTIFACT_PATHS)
+            and unstaged_paths_result.returncode == 0
+            and not unstaged_paths
+            and untracked_paths_result.returncode == 0
+            and untracked_paths <= {"REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md"}
+            and tracked_ledger_result.returncode == 0
+            and not tracked_ledger_result.stdout.strip(),
+            f"{context}.overlay.staged_snapshot",
+            "generation requires exactly seven staged non-contract postimages, no unstaged drift, and only the untracked local ledger outside Git",
+        )
+
+        def config_values(key: str) -> list[str]:
+            result = self.git("config", "--get-all", key, check=False, env=readonly_env)
+            return result.stdout.splitlines() if result.returncode == 0 else []
+
+        remote_names = self.git("remote", check=False, env=readonly_env)
+        fetch_urls = self.git(
+            "remote", "get-url", "--all", C0007_BOUNDED_REMOTE, check=False, env=readonly_env
+        )
+        push_urls = self.git(
+            "remote",
+            "get-url",
+            "--push",
+            "--all",
+            C0007_BOUNDED_REMOTE,
+            check=False,
+            env=readonly_env,
+        )
+        remote_identity_ok = (
+            remote_names.returncode == 0
+            and remote_names.stdout.splitlines() == [C0007_BOUNDED_REMOTE]
+            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.url")
+            == [C0007_BOUNDED_REMOTE_URL]
+            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.pushurl") == []
+            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.fetch")
+            == ["+refs/heads/*:refs/remotes/origin/*"]
+            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.push") == []
+            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.mirror") == []
+            and config_values("remote.pushDefault") == []
+            and config_values(f"branch.{C0007_BOUNDED_BRANCH}.remote") == []
+            and config_values(f"branch.{C0007_BOUNDED_BRANCH}.pushRemote") == []
+            and fetch_urls.returncode == 0
+            and fetch_urls.stdout.splitlines() == [C0007_BOUNDED_REMOTE_URL]
+            and push_urls.returncode == 0
+            and push_urls.stdout.splitlines() == [C0007_BOUNDED_REMOTE_URL]
+        )
+        self.problems.require(
+            remote_identity_ok,
+            f"{context}.remote.identity",
+            "generation requires the exact singleton canonical origin and no routing overrides",
+        )
+        remote_refs = self.git(
+            "ls-remote",
+            "--refs",
+            C0007_BOUNDED_REMOTE,
+            C0007_BOUNDED_REMOTE_MAIN_REF,
+            C0007_BOUNDED_REMOTE_BRANCH_REF,
+            check=False,
+            env=readonly_env,
+        )
+        tips: dict[str, str] = {}
+        if remote_refs.returncode == 0:
+            for row in remote_refs.stdout.splitlines():
+                try:
+                    oid, ref = row.split("\t", 1)
+                except ValueError:
+                    self.problems.add(f"{context}.remote", f"malformed ref row {row!r}")
+                    continue
+                tips[ref] = oid
+        self.problems.require(
+            remote_refs.returncode == 0
+            and tips.get(C0007_BOUNDED_REMOTE_MAIN_REF)
+            == C0007_BOUNDED_CONTROL_HEAD_SHA
+            and tips.get(C0007_BOUNDED_REMOTE_BRANCH_REF)
+            == C0007_FAILED_PLANNED_CONTROL_SHA,
+            f"{context}.remote.refs",
+            "generation requires remote main at B and the bounded ref at immutable P",
+        )
+
+        artifacts: list[dict[str, Any]] = []
+        for path in C0007_CI_RECOVERY_ARTIFACT_PATHS:
+            live_path = self.root / path
+            try:
+                file_stat = live_path.lstat()
+                payload = live_path.read_bytes()
+            except OSError as error:
+                self.problems.add(f"{context}.artifacts[{path}]", f"cannot read postimage: {error}")
+                continue
+            preimage = C0007_CI_RECOVERY_PREIMAGES[path]
+            post_oid = git_blob_oid(payload)
+            post_digest = hashlib.sha256(payload).hexdigest().upper()
+            index_result = self.git_bytes(
+                "ls-files",
+                "--stage",
+                "-z",
+                "--",
+                path,
+                check=False,
+                env=readonly_env,
+            )
+            indexed_identity: tuple[str, str, str] | None = None
+            if index_result.returncode == 0:
+                index_records = [
+                    record for record in index_result.stdout.split(b"\0") if record
+                ]
+                if len(index_records) == 1:
+                    try:
+                        metadata, indexed_path = index_records[0].split(b"\t", 1)
+                        index_mode, index_oid, index_stage = metadata.decode("ascii").split()
+                        if indexed_path.decode("utf-8") == path:
+                            indexed_identity = (index_mode, index_oid, index_stage)
+                    except (UnicodeError, ValueError):
+                        pass
+            self.problems.require(
+                stat.S_ISREG(file_stat.st_mode)
+                and not live_path.is_symlink()
+                and post_oid != preimage[0],
+                f"{context}.artifacts[{path}]",
+                "every postimage must be a distinct ordinary regular file relative to P",
+            )
+            self.problems.require(
+                indexed_identity == ("100644", post_oid, "0"),
+                f"{context}.artifacts[{path}].index",
+                "the stage-0 index must freeze the exact regular-file postimage",
+            )
+            artifacts.append(
+                {
+                    "base_blob_oid": preimage[0],
+                    "base_mode": "100644",
+                    "operation": "modify",
+                    "packet_id": C0007_CI_RECOVERY_PACKET_ID,
+                    "path": path,
+                    "post_blob_oid": post_oid,
+                    "post_mode": "100644",
+                    "sha256": post_digest,
+                }
+            )
+
+        if self.problems.messages:
+            return self.problems
+        authorization = self.c0007_ci_recovery_authorization
+        if not isinstance(authorization, dict):
+            self.problems.add(context, "recovery authorization disappeared before render")
+            return self.problems
+        contract = build_c0007_ci_recovery_contract(
+            artifacts,
+            authorization,
+            authorization_sha256=C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_CI_RECOVERY_MANIFEST_SHA256,
+        )
+        validation = Problems()
+        validate_c0007_ci_recovery_contract_payload(
+            contract,
+            authorization,
+            validation,
+            authorization_sha256=C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_CI_RECOVERY_MANIFEST_SHA256,
+            context=f"{context}.render",
+        )
+        if validation.messages:
+            self.problems.messages.extend(validation.messages)
+            return self.problems
+        payload = render_c0007_ci_recovery_contract_bytes(contract)
+        temporary: Path | None = None
+        try:
+            descriptor, raw_temporary = tempfile.mkstemp(
+                prefix=f".{contract_path.name}.ci-recovery-",
+                suffix=".tmp",
+                dir=contract_path.parent,
+            )
+            temporary = Path(raw_temporary)
+            with os.fdopen(descriptor, "wb") as stream:
+                stream.write(payload)
+                stream.flush()
+                os.fsync(stream.fileno())
+            if read_stable_file_bytes(contract_path) != old_contract_payload:
+                raise OSError(
+                    "contract destination changed after its exact P preimage capture"
+                )
+            os.replace(temporary, contract_path)
+            temporary = None
+        except OSError as error:
+            self.problems.add(context, f"atomic contract write failed: {error}")
+        finally:
+            if temporary is not None:
+                try:
+                    temporary.unlink()
+                except OSError:
+                    pass
+        if self.problems.messages:
+            return self.problems
+
+        try:
+            written = contract_path.read_bytes()
+            reparsed = strict_json_loads(written.decode("utf-8"))
+        except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as error:
+            self.problems.add(context, f"cannot reparse written contract: {error}")
+            return self.problems
+        final_validation = Problems()
+        validate_c0007_ci_recovery_contract_payload(
+            reparsed,
+            authorization,
+            final_validation,
+            authorization_sha256=C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_CI_RECOVERY_MANIFEST_SHA256,
+            context=f"{context}.written",
+        )
+        rendered_artifacts = {
+            item["path"]: item
+            for item in artifacts
+            if isinstance(item, dict) and isinstance(item.get("path"), str)
+        }
+        for path in C0007_CI_RECOVERY_ARTIFACT_PATHS:
+            item = rendered_artifacts.get(path, {})
+            try:
+                current_payload = read_stable_file_bytes(self.root / path)
+            except (OSError, ValueError) as error:
+                self.problems.add(
+                    f"{context}.postwrite_artifacts[{path}]",
+                    f"cannot recapture frozen postimage: {error}",
+                )
+                continue
+            current_oid = git_blob_oid(current_payload)
+            current_digest = hashlib.sha256(current_payload).hexdigest().upper()
+            current_index = self.git_bytes(
+                "ls-files",
+                "--stage",
+                "-z",
+                "--",
+                path,
+                check=False,
+                env=readonly_env,
+            )
+            current_index_identity: tuple[str, str, str] | None = None
+            if current_index.returncode == 0:
+                records = [record for record in current_index.stdout.split(b"\0") if record]
+                if len(records) == 1:
+                    try:
+                        metadata, indexed_path = records[0].split(b"\t", 1)
+                        mode, oid, stage = metadata.decode("ascii").split()
+                        if indexed_path.decode("utf-8") == path:
+                            current_index_identity = (mode, oid, stage)
+                    except (UnicodeError, ValueError):
+                        pass
+            self.problems.require(
+                item.get("post_blob_oid") == current_oid
+                and item.get("sha256") == current_digest
+                and current_index_identity == ("100644", current_oid, "0"),
+                f"{context}.postwrite_artifacts[{path}]",
+                "postimage bytes or frozen stage-0 index changed across contract materialization",
+            )
+        changed_after = self.git_live_change_paths(
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            f"{context}.overlay.after",
+            env=readonly_env,
+        )
+        changed_after.discard("REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md")
+        cached_after_result = self.git(
+            "diff",
+            "--cached",
+            "--name-only",
+            "--no-renames",
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            "--",
+            check=False,
+            env=readonly_env,
+        )
+        unstaged_after_result = self.git(
+            "diff",
+            "--name-only",
+            "--no-renames",
+            "--",
+            check=False,
+            env=readonly_env,
+        )
+        cached_after = {
+            normalize_path(path)
+            for path in cached_after_result.stdout.splitlines()
+            if path.strip()
+        }
+        unstaged_after = {
+            normalize_path(path)
+            for path in unstaged_after_result.stdout.splitlines()
+            if path.strip()
+        }
+        self.problems.require(
+            written == payload
+            and written.endswith(b"\n")
+            and b"\r" not in written
+            and changed_after == set(C0007_CI_RECOVERY_PATHS)
+            and cached_after_result.returncode == 0
+            and cached_after == set(C0007_CI_RECOVERY_ARTIFACT_PATHS)
+            and unstaged_after_result.returncode == 0
+            and unstaged_after == {C0007_CI_RECOVERY_CONTRACT_PATH},
+            f"{context}.written",
+            "written canonical bytes, seven-path staged snapshot, and contract-only unstaged delta must remain exact",
+        )
+        head_after = self.git(
+            "rev-parse", "HEAD", check=False, env=readonly_env
+        )
+        branch_after = self.git(
+            "symbolic-ref",
+            "--quiet",
+            "--short",
+            "HEAD",
+            check=False,
+            env=readonly_env,
+        )
+        symbolic_branch_after = (
+            branch_after.stdout.strip() if branch_after.returncode == 0 else None
+        )
+        remote_refs_after = self.git(
+            "ls-remote",
+            "--refs",
+            C0007_BOUNDED_REMOTE,
+            C0007_BOUNDED_REMOTE_MAIN_REF,
+            C0007_BOUNDED_REMOTE_BRANCH_REF,
+            check=False,
+            env=readonly_env,
+        )
+        remote_names_after = self.git("remote", check=False, env=readonly_env)
+        fetch_urls_after = self.git(
+            "remote",
+            "get-url",
+            "--all",
+            C0007_BOUNDED_REMOTE,
+            check=False,
+            env=readonly_env,
+        )
+        push_urls_after = self.git(
+            "remote",
+            "get-url",
+            "--push",
+            "--all",
+            C0007_BOUNDED_REMOTE,
+            check=False,
+            env=readonly_env,
+        )
+        remote_identity_after_ok = (
+            remote_names_after.returncode == 0
+            and remote_names_after.stdout.splitlines() == [C0007_BOUNDED_REMOTE]
+            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.url")
+            == [C0007_BOUNDED_REMOTE_URL]
+            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.pushurl") == []
+            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.fetch")
+            == ["+refs/heads/*:refs/remotes/origin/*"]
+            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.push") == []
+            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.mirror") == []
+            and config_values("remote.pushDefault") == []
+            and config_values(f"branch.{C0007_BOUNDED_BRANCH}.remote") == []
+            and config_values(f"branch.{C0007_BOUNDED_BRANCH}.pushRemote") == []
+            and fetch_urls_after.returncode == 0
+            and fetch_urls_after.stdout.splitlines() == [C0007_BOUNDED_REMOTE_URL]
+            and push_urls_after.returncode == 0
+            and push_urls_after.stdout.splitlines() == [C0007_BOUNDED_REMOTE_URL]
+        )
+        tips_after: dict[str, str] = {}
+        if remote_refs_after.returncode == 0:
+            for row in remote_refs_after.stdout.splitlines():
+                try:
+                    oid, ref = row.split("\t", 1)
+                except ValueError:
+                    self.problems.add(
+                        f"{context}.quiescence.remote",
+                        f"malformed final ref row {row!r}",
+                    )
+                    continue
+                tips_after[ref] = oid
+        self.problems.require(
+            head_after.returncode == 0
+            and head_after.stdout.strip() == C0007_FAILED_PLANNED_CONTROL_SHA
+            and symbolic_branch_after == symbolic_branch
+            and remote_refs_after.returncode == 0
+            and tips_after.get(C0007_BOUNDED_REMOTE_MAIN_REF)
+            == C0007_BOUNDED_CONTROL_HEAD_SHA
+            and tips_after.get(C0007_BOUNDED_REMOTE_BRANCH_REF)
+            == C0007_FAILED_PLANNED_CONTROL_SHA
+            and remote_identity_after_ok,
+            f"{context}.quiescence.refs",
+            "HEAD, branch mode, remote main, or bounded P ref changed during generation",
+        )
+        global_index_after = self.validate_c0007_global_index_flags(
+            self.problems,
+            context=f"{context}.index_flags.after",
+            env=readonly_env,
+        )
+        self.problems.require(
+            global_index_before is not None
+            and global_index_after is not None
+            and global_index_before == global_index_after,
+            f"{context}.index_flags.quiescence",
+            "global index mode/OID/stage/assume-unchanged/fsmonitor state changed during generation",
+        )
+        self.problems.messages.extend(final_validation.messages)
+        return self.problems
+
     def validate_c0007_bounded_authorization(self) -> None:
         """Authenticate the live task-bounded grant and preserve old epochs."""
 
@@ -10976,14 +12434,40 @@ class CompletionValidator:
             C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
             ("path", "packet_id", "stage", "operation"),
         )
+        recovery_authorization = (
+            isinstance(authorization, dict)
+            and authorization.get("schema_version") == 3
+            and authorization.get("authorization_id")
+            == C0007_CI_RECOVERY_AUTHORIZATION_ID
+        )
+        expected_manifest_sha256 = (
+            C0007_CI_RECOVERY_MANIFEST_SHA256
+            if recovery_authorization
+            else C0007_BOUNDED_AUTHORIZED_PATHS_SHA256
+        )
         if manifest_path.is_file():
             self.problems.require(
-                sha256_path(manifest_path)
-                == C0007_BOUNDED_AUTHORIZED_PATHS_SHA256,
+                sha256_path(manifest_path) == expected_manifest_sha256,
                 C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
                 "authorized-path manifest SHA-256 drifted",
             )
-        if authorization is not None:
+        if authorization is not None and recovery_authorization:
+            self.problems.require(
+                authorization_capture is not None
+                and authorization_capture.sha256
+                == C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+                C0007_BOUNDED_AUTHORIZATION_PATH,
+                "CI-recovery authorization canonical bytes drifted",
+            )
+            validate_c0007_ci_recovery_authorization_payload(
+                authorization,
+                manifest_header,
+                manifest_rows,
+                self.problems,
+            )
+            self.c0007_ci_recovery_authorization = authorization
+            self.c0007_ci_recovery_active = True
+        elif authorization is not None:
             validate_c0007_bounded_authorization_payload(
                 authorization,
                 manifest_header,
@@ -11128,9 +12612,433 @@ class CompletionValidator:
                 f"exact C0007 content SHA-256 is {actual_digest!r}, expected {expected_digest!r}",
             )
 
+    def validate_c0007_ci_recovery_control(self) -> None:
+        """Validate current PR preparation/commit while preserving P byte-for-byte."""
+
+        context = C0007_CI_RECOVERY_CONTRACT_PATH
+        local = Problems()
+        readonly_env = {
+            **os.environ,
+            "GIT_OPTIONAL_LOCKS": "0",
+            "GIT_NO_LAZY_FETCH": "1",
+        }
+        global_index_before = self.validate_c0007_global_index_flags(
+            local,
+            context=f"{context}.index_flags.before",
+            env=readonly_env,
+        )
+        contract_path = self.root / C0007_CI_RECOVERY_CONTRACT_PATH
+        contract_capture = self.read_captured_json(
+            contract_path,
+            C0007_CI_RECOVERY_CONTRACT_PATH,
+            require_canonical=True,
+        )
+        self.c0007_contract_capture = contract_capture
+        contract = contract_capture.value if contract_capture is not None else None
+        manifest_header, manifest_rows = self.read_tsv(
+            self.root / C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            ("path", "packet_id", "stage", "operation"),
+        )
+        authorization = self.c0007_ci_recovery_authorization
+        if not isinstance(contract, dict) or not isinstance(authorization, dict):
+            local.add(context, "CI recovery requires canonical schema-v4 contract and schema-v3 authorization")
+            self.problems.messages.extend(local.messages)
+            self.c0007_bounded_state = "invalid"
+            return
+        validate_c0007_ci_recovery_contract_payload(
+            contract,
+            authorization,
+            local,
+            authorization_sha256=C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_CI_RECOVERY_MANIFEST_SHA256,
+        )
+
+        try:
+            workflow_text = (self.root / C0007_BOUNDED_WORKFLOW_PATH).read_text(
+                encoding="utf-8"
+            )
+        except (OSError, UnicodeError) as error:
+            local.add(C0007_BOUNDED_WORKFLOW_PATH, f"cannot read recovery workflow: {error}")
+        else:
+            validate_c0007_ci_recovery_workflow_text(
+                workflow_text,
+                local,
+                context=C0007_BOUNDED_WORKFLOW_PATH,
+            )
+
+        # Resolve every historical identity from immutable P, never from the
+        # replacement current-path authorization or manifest.
+        historical_paths = set(C0007_CI_RECOVERY_PREIMAGES) | set(
+            C0007_CI_RECOVERY_HISTORICAL_PACKET_ARTIFACTS
+        )
+        tree_result = self.git_bytes(
+            "ls-tree",
+            "-r",
+            "-z",
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            "--",
+            *sorted(historical_paths),
+            check=False,
+            env=readonly_env,
+        )
+        p_rows: dict[str, tuple[str, str]] = {}
+        if tree_result.returncode:
+            local.add(f"{context}.failed_P.tree", "cannot enumerate immutable P blobs")
+        else:
+            for raw in tree_result.stdout.split(b"\0"):
+                if not raw:
+                    continue
+                try:
+                    metadata, raw_path = raw.split(b"\t", 1)
+                    mode, kind, oid = metadata.decode("ascii").split()
+                    path = raw_path.decode("utf-8")
+                except (UnicodeError, ValueError):
+                    local.add(f"{context}.failed_P.tree", f"malformed ls-tree row {raw!r}")
+                    continue
+                if kind != "blob":
+                    local.add(f"{context}.failed_P.tree[{path}]", "historical row is not a blob")
+                    continue
+                p_rows[path] = (mode, oid)
+        expected_p = {
+            **C0007_CI_RECOVERY_PREIMAGES,
+            **C0007_CI_RECOVERY_HISTORICAL_PACKET_ARTIFACTS,
+        }
+        payloads = self.git_blob_payloads(
+            (identity[0] for identity in expected_p.values()),
+            f"{context}.failed_P.blobs",
+            env={**os.environ, "GIT_OPTIONAL_LOCKS": "0", "GIT_NO_LAZY_FETCH": "1"},
+        )
+        for path, (expected_oid, expected_size, expected_digest) in sorted(expected_p.items()):
+            payload = payloads.get(expected_oid)
+            actual_digest = (
+                hashlib.sha256(payload).hexdigest().upper()
+                if payload is not None
+                else None
+            )
+            local.require(
+                p_rows.get(path) == ("100644", expected_oid)
+                and payload is not None
+                and len(payload) == expected_size
+                and actual_digest == expected_digest,
+                f"{context}.failed_P.blobs[{path}]",
+                "immutable P mode/blob/byte-count/SHA-256 drifted",
+            )
+
+        # Re-run the preserved terminal-v2 validators over P's own blobs.  This
+        # proves that recovery does not reinterpret old packet approvals against
+        # the replacement authorization.
+        old_auth_payload = payloads.get(C0007_FAILED_PLANNED_CONTROL_AUTHORIZATION_BLOB_OID)
+        old_manifest_payload = payloads.get(C0007_FAILED_PLANNED_CONTROL_MANIFEST_BLOB_OID)
+        old_contract_payload = payloads.get(C0007_FAILED_PLANNED_CONTROL_CONTRACT_BLOB_OID)
+        try:
+            old_auth = strict_json_loads(old_auth_payload.decode("utf-8")) if old_auth_payload else None
+            old_contract = strict_json_loads(old_contract_payload.decode("utf-8")) if old_contract_payload else None
+            old_manifest_text = old_manifest_payload.decode("utf-8") if old_manifest_payload else ""
+            old_reader = csv.DictReader(io.StringIO(old_manifest_text), delimiter="\t")
+            old_header = tuple(old_reader.fieldnames or ())
+            old_rows = [dict(row) for row in old_reader]
+        except (UnicodeError, ValueError, json.JSONDecodeError, csv.Error) as error:
+            local.add(f"{context}.failed_P.payloads", f"cannot parse exact P payloads: {error}")
+            old_auth = None
+            old_contract = None
+            old_header = ()
+            old_rows = []
+        if isinstance(old_auth, dict):
+            validate_c0007_bounded_authorization_payload(
+                old_auth,
+                old_header,
+                old_rows,
+                local,
+                context=f"{context}.failed_P.authorization",
+            )
+        else:
+            local.add(f"{context}.failed_P.authorization", "historical authorization is unavailable")
+        if isinstance(old_contract, dict):
+            validate_c0007_bounded_planned_control_payload(
+                old_contract,
+                old_header,
+                old_rows,
+                local,
+                authorization_sha256=C0007_CURRENT_AUTHORIZATION_SHA256,
+                context=f"{context}.failed_P.contract",
+            )
+        else:
+            local.add(f"{context}.failed_P.contract", "historical contract is unavailable")
+
+        identity = self.git(
+            "show",
+            "-s",
+            "--format=%P%n%s%n%T",
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            check=False,
+            env=readonly_env,
+        )
+        identity_lines = identity.stdout.splitlines()
+        local.require(
+            identity.returncode == 0
+            and identity_lines
+            == [
+                C0007_BOUNDED_CONTROL_HEAD_SHA,
+                C0007_FAILED_PLANNED_CONTROL_SUBJECT,
+                C0007_FAILED_PLANNED_CONTROL_TREE_SHA,
+            ],
+            f"{context}.failed_P.commit",
+            "failed P parent/subject/tree identity drifted",
+        )
+
+        # Authenticate the seven live postimages against the contract and the
+        # stage-0 index.  Contract bytes are checked separately because their
+        # own postimage cannot occur inside the contract.
+        artifact_rows = contract.get("artifacts")
+        artifacts = {
+            item.get("path"): item
+            for item in artifact_rows
+            if isinstance(item, dict) and isinstance(item.get("path"), str)
+        } if isinstance(artifact_rows, list) else {}
+        for path in C0007_CI_RECOVERY_ARTIFACT_PATHS:
+            item = artifacts.get(path, {})
+            live_path = self.root / path
+            try:
+                payload = live_path.read_bytes()
+            except OSError as error:
+                local.add(f"{context}.artifacts[{path}]", f"cannot read postimage: {error}")
+                continue
+            index = self.git_bytes(
+                "ls-files",
+                "--stage",
+                "-z",
+                "--",
+                path,
+                check=False,
+                env=readonly_env,
+            )
+            index_mode = index_oid = index_stage = None
+            if index.returncode == 0:
+                records = [record for record in index.stdout.split(b"\0") if record]
+                if len(records) == 1:
+                    try:
+                        metadata, indexed_path = records[0].split(b"\t", 1)
+                        index_mode, index_oid, index_stage = metadata.decode("ascii").split()
+                        if indexed_path.decode("utf-8") != path:
+                            raise ValueError("wrong index path")
+                    except (UnicodeError, ValueError):
+                        index_mode = index_oid = index_stage = None
+            digest = hashlib.sha256(payload).hexdigest().upper()
+            oid = git_blob_oid(payload)
+            local.require(
+                item.get("sha256") == digest
+                and item.get("post_blob_oid") == oid
+                and (index_mode, index_oid, index_stage) == ("100644", oid, "0"),
+                f"{context}.artifacts[{path}]",
+                "live bytes and stage-0 index must equal the exact recovery postimage",
+            )
+        contract_payload = contract_capture.payload if contract_capture is not None else None
+        contract_index = self.git_bytes(
+            "ls-files",
+            "--stage",
+            "-z",
+            "--",
+            C0007_CI_RECOVERY_CONTRACT_PATH,
+            check=False,
+            env=readonly_env,
+        )
+        parsed_contract_index: tuple[str, str, str] | None = None
+        if contract_index.returncode == 0:
+            records = [record for record in contract_index.stdout.split(b"\0") if record]
+            if len(records) == 1:
+                try:
+                    metadata, indexed_path = records[0].split(b"\t", 1)
+                    mode, oid, stage = metadata.decode("ascii").split()
+                    if indexed_path.decode("utf-8") == C0007_CI_RECOVERY_CONTRACT_PATH:
+                        parsed_contract_index = (mode, oid, stage)
+                except (UnicodeError, ValueError):
+                    pass
+        validate_c0007_contract_index_binding(
+            parsed_contract_index,
+            contract_payload,
+            local,
+            context=f"{context}.mode",
+        )
+
+        head_result = self.git("rev-parse", "HEAD", check=False, env=readonly_env)
+        head = head_result.stdout.strip() if head_result.returncode == 0 else ""
+        branch_result = self.git(
+            "symbolic-ref",
+            "--quiet",
+            "--short",
+            "HEAD",
+            check=False,
+            env=readonly_env,
+        )
+        symbolic_branch = branch_result.stdout.strip() if branch_result.returncode == 0 else None
+        ledger_path = "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md"
+        ledger_index = self.git_bytes(
+            "ls-files",
+            "--stage",
+            "-z",
+            "--",
+            ledger_path,
+            check=False,
+            env=readonly_env,
+        )
+        local.require(
+            ledger_index.returncode == 0 and not ledger_index.stdout,
+            f"{context}.local_ledger_exclusion",
+            "the local completion ledger must remain wholly outside the Git index",
+        )
+        lifecycle_position: str | None = None
+        if head == C0007_FAILED_PLANNED_CONTROL_SHA:
+            lifecycle_position = "PR-precommit"
+            live_paths = self.git_live_change_paths(
+                C0007_FAILED_PLANNED_CONTROL_SHA,
+                context,
+                env=readonly_env,
+            )
+            live_paths.discard(ledger_path)
+            local.require(
+                live_paths == set(C0007_CI_RECOVERY_PATHS),
+                f"{context}.PR.precommit.paths",
+                "PR overlay must equal exactly the eight CI-recovery paths",
+            )
+        else:
+            lifecycle_position = "PR-committed"
+            commit = self.git(
+                "show",
+                "-s",
+                "--format=%P%n%s",
+                head,
+                check=False,
+                env=readonly_env,
+            )
+            lines = commit.stdout.splitlines()
+            delta = self.git(
+                "diff",
+                "--name-only",
+                "--no-renames",
+                C0007_FAILED_PLANNED_CONTROL_SHA,
+                head,
+                "--",
+                check=False,
+                env=readonly_env,
+            )
+            changed = {
+                normalize_path(path) for path in delta.stdout.splitlines() if path.strip()
+            } if delta.returncode == 0 else set()
+            validate_c0007_bounded_commit_shape(
+                lines[0].split() if len(lines) == 2 else (),
+                changed,
+                lines[1] if len(lines) == 2 else "",
+                C0007_FAILED_PLANNED_CONTROL_SHA,
+                set(C0007_CI_RECOVERY_PATHS),
+                C0007_CI_RECOVERY_SUBJECT,
+                local,
+                context=f"{context}.PR",
+            )
+            overlay = self.git_live_change_paths(head, context, env=readonly_env)
+            overlay.discard(ledger_path)
+            local.require(
+                not overlay,
+                f"{context}.PR.worktree",
+                "committed PR must be clean except the untracked local ledger",
+            )
+
+        def config_values(key: str) -> list[str]:
+            result = self.git(
+                "config", "--get-all", key, check=False, env=readonly_env
+            )
+            return result.stdout.splitlines() if result.returncode == 0 else []
+
+        remote_names = self.git("remote", check=False, env=readonly_env)
+        fetch_urls = self.git(
+            "remote",
+            "get-url",
+            "--all",
+            C0007_BOUNDED_REMOTE,
+            check=False,
+            env=readonly_env,
+        )
+        push_urls = self.git(
+            "remote",
+            "get-url",
+            "--push",
+            "--all",
+            C0007_BOUNDED_REMOTE,
+            check=False,
+            env=readonly_env,
+        )
+        remote_refs = self.git(
+            "ls-remote",
+            "--refs",
+            C0007_BOUNDED_REMOTE,
+            C0007_BOUNDED_REMOTE_MAIN_REF,
+            C0007_BOUNDED_REMOTE_BRANCH_REF,
+            check=False,
+            env=readonly_env,
+        )
+        tips: dict[str, str] = {}
+        if remote_refs.returncode == 0:
+            for row in remote_refs.stdout.splitlines():
+                try:
+                    oid, ref = row.split("\t", 1)
+                except ValueError:
+                    local.add(f"{context}.remote", f"malformed ls-remote row {row!r}")
+                    continue
+                tips[ref] = oid
+        else:
+            local.add(f"{context}.remote", "cannot observe exact remote refs")
+        validate_c0007_remote_observation(
+            lifecycle_position=lifecycle_position,
+            state=C0007_CI_RECOVERY_STATE,
+            head=head,
+            planned_commit=C0007_FAILED_PLANNED_CONTROL_SHA,
+            activation_commit=None,
+            active_commit=None,
+            implementation_commit=None,
+            symbolic_branch=symbolic_branch,
+            configured_remote_names=remote_names.stdout.splitlines() if remote_names.returncode == 0 else [],
+            configured_remote_urls=config_values(f"remote.{C0007_BOUNDED_REMOTE}.url"),
+            configured_push_urls=config_values(f"remote.{C0007_BOUNDED_REMOTE}.pushurl"),
+            configured_fetch_refspecs=config_values(f"remote.{C0007_BOUNDED_REMOTE}.fetch"),
+            configured_push_refspecs=config_values(f"remote.{C0007_BOUNDED_REMOTE}.push"),
+            configured_mirror_values=config_values(f"remote.{C0007_BOUNDED_REMOTE}.mirror"),
+            configured_push_default_values=config_values("remote.pushDefault"),
+            configured_branch_remote_values=config_values(f"branch.{C0007_BOUNDED_BRANCH}.remote"),
+            configured_branch_push_remote_values=config_values(f"branch.{C0007_BOUNDED_BRANCH}.pushRemote"),
+            resolved_fetch_urls=fetch_urls.stdout.splitlines() if fetch_urls.returncode == 0 else [],
+            resolved_push_urls=push_urls.stdout.splitlines() if push_urls.returncode == 0 else [],
+            remote_main_tip=tips.get(C0007_BOUNDED_REMOTE_MAIN_REF),
+            remote_branch_tip=tips.get(C0007_BOUNDED_REMOTE_BRANCH_REF),
+            implementation_overlay=False,
+            problems=local,
+            context=f"{context}.remote",
+        )
+
+        self.c0007_bounded_contract = contract
+        self.c0007_bounded_state = C0007_CI_RECOVERY_STATE
+        self.c0007_implementation_epoch_valid = False
+        self.c0007_implementation_write_allowed = False
+        self.c0007_implementation_allowed = False
+        global_index_after = self.validate_c0007_global_index_flags(
+            local,
+            context=f"{context}.index_flags.after",
+            env=readonly_env,
+        )
+        local.require(
+            global_index_before is not None
+            and global_index_after is not None
+            and global_index_before == global_index_after,
+            f"{context}.index_flags.quiescence",
+            "global index mode/OID/stage/assume-unchanged/fsmonitor state changed during recovery validation",
+        )
+        self.problems.messages.extend(local.messages)
+
     def validate_c0007_bounded_planned_control(self) -> None:
         authorization_path = self.root / C0007_BOUNDED_AUTHORIZATION_PATH
         if not authorization_path.is_file():
+            return
+        if self.c0007_ci_recovery_active:
+            self.validate_c0007_ci_recovery_control()
             return
         contract_path = self.root / C0007_BOUNDED_PLANNED_CONTROL_PATH
         if not contract_path.is_file():
@@ -12369,6 +14277,12 @@ class CompletionValidator:
 
     def validate_c0007_bounded_packets(self, *, replay_postimages: bool = True) -> None:
         if not (self.root / C0007_BOUNDED_AUTHORIZATION_PATH).is_file():
+            return
+        if self.c0007_ci_recovery_active:
+            # The recovery-control validator has already authenticated the
+            # terminal-v2 packet references from P's immutable blobs.  Do not
+            # reinterpret those historical approval records against the new
+            # current-path authorization.
             return
 
         def validate_artifact_hashes(
@@ -26576,6 +28490,8 @@ def run_self_test() -> int:
             reordered_rejected.append(False)
     problems.require(
         sorted_top == sorted_top_reordered
+        and render_c0007_ci_recovery_contract_bytes({"z": 1, "a": 2})
+        == sorted_top
         and sorted_nested
         == b'{\n  "alpha": 0,\n  "outer": {\n    "a": 2,\n    "z": 1\n  }\n}\n'
         and reordered_rejected == [True, True],
@@ -26818,38 +28734,45 @@ def run_self_test() -> int:
         "self-test effective Git TLS",
         "default verified TLS was rejected or a global/GitHub TLS weakening was accepted",
     )
-    repository_identity_positive = Problems()
-    validate_c0007_repository_identity_values(
-        Path.cwd(),
-        str(Path.cwd()),
-        str(Path.cwd() / ".git"),
-        str(Path.cwd() / ".git"),
-        repository_identity_positive,
-        context="self-test Git repository identity positive",
-    )
-    repository_identity_negative = Problems()
-    validate_c0007_repository_identity_values(
-        Path.cwd(),
-        str(Path.cwd() / "attacker-worktree"),
-        str(Path.cwd() / ".git"),
-        str(Path.cwd() / ".git"),
-        repository_identity_negative,
-        context="self-test Git repository identity rerouted worktree",
-    )
-    repository_identity_indirection = Problems()
-    original_indirection_probe = c0007_metadata_path_is_indirection
-    try:
-        globals()["c0007_metadata_path_is_indirection"] = lambda _path: True
+    with tempfile.TemporaryDirectory(
+        prefix="completion-c0007-repository-identity-positive-"
+    ) as repository_identity_directory:
+        repository_identity_root = Path(repository_identity_directory) / "repository"
+        repository_identity_root.mkdir()
+        repository_identity_git = repository_identity_root / ".git"
+        repository_identity_git.mkdir()
+        repository_identity_positive = Problems()
         validate_c0007_repository_identity_values(
-            Path.cwd(),
-            str(Path.cwd()),
-            str(Path.cwd() / ".git"),
-            str(Path.cwd() / ".git"),
-            repository_identity_indirection,
-            context="self-test Git repository identity mocked reparse point",
+            repository_identity_root,
+            str(repository_identity_root),
+            str(repository_identity_git),
+            str(repository_identity_git),
+            repository_identity_positive,
+            context="self-test Git repository identity positive",
         )
-    finally:
-        globals()["c0007_metadata_path_is_indirection"] = original_indirection_probe
+        repository_identity_negative = Problems()
+        validate_c0007_repository_identity_values(
+            repository_identity_root,
+            str(repository_identity_root / "attacker-worktree"),
+            str(repository_identity_git),
+            str(repository_identity_git),
+            repository_identity_negative,
+            context="self-test Git repository identity rerouted worktree",
+        )
+        repository_identity_indirection = Problems()
+        original_indirection_probe = c0007_metadata_path_is_indirection
+        try:
+            globals()["c0007_metadata_path_is_indirection"] = lambda _path: True
+            validate_c0007_repository_identity_values(
+                repository_identity_root,
+                str(repository_identity_root),
+                str(repository_identity_git),
+                str(repository_identity_git),
+                repository_identity_indirection,
+                context="self-test Git repository identity mocked reparse point",
+            )
+        finally:
+            globals()["c0007_metadata_path_is_indirection"] = original_indirection_probe
 
     lexical_link_failures: list[str] = []
     with tempfile.TemporaryDirectory(
@@ -27311,9 +29234,31 @@ def run_self_test() -> int:
             f"mutation was not rejected with {diagnostic}: {negative.messages}",
         )
 
-    manifest_file = Path(C0007_BOUNDED_AUTHORIZED_PATHS_PATH)
     try:
-        manifest_text = manifest_file.read_text(encoding="utf-8")
+        manifest_result = subprocess.run(
+            (
+                "git",
+                "show",
+                f"{C0007_FAILED_PLANNED_CONTROL_SHA}:"
+                f"{C0007_BOUNDED_AUTHORIZED_PATHS_PATH}",
+            ),
+            check=False,
+            capture_output=True,
+            cwd=Path.cwd(),
+        )
+        if manifest_result.returncode != 0:
+            raise OSError(
+                "git show failed for the immutable failed-P manifest: "
+                + manifest_result.stderr.decode("utf-8", errors="replace").strip()
+            )
+        manifest_payload = manifest_result.stdout
+        if hashlib.sha256(manifest_payload).hexdigest().upper() != (
+            C0007_CI_RECOVERY_PREIMAGES[
+                C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+            ][2]
+        ):
+            raise OSError("immutable failed-P manifest SHA-256 mismatch")
+        manifest_text = manifest_payload.decode("utf-8")
         manifest_reader = csv.DictReader(manifest_text.splitlines(), delimiter="\t")
         contract_manifest_header = tuple(manifest_reader.fieldnames or ())
         contract_manifest_rows = [dict(row) for row in manifest_reader]
@@ -28504,6 +30449,73 @@ def run_self_test() -> int:
         "self-test bounded remote extra remote name",
         f"additional configured remote was accepted: {extra_remote_problems.messages}",
     )
+    recovery_remote_positive_messages: list[str] = []
+    for label, position, head_value, branch_tip, symbolic in (
+        (
+            "precommit",
+            "PR-precommit",
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            C0007_BOUNDED_BRANCH,
+        ),
+        (
+            "committed before push",
+            "PR-committed",
+            "7" * 40,
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            None,
+        ),
+        (
+            "committed after push",
+            "PR-committed",
+            "7" * 40,
+            "7" * 40,
+            None,
+        ),
+    ):
+        recovery_remote = Problems()
+        recovery_write = validate_c0007_remote_observation(
+            lifecycle_position=position,
+            state=C0007_CI_RECOVERY_STATE,
+            head=head_value,
+            planned_commit=C0007_FAILED_PLANNED_CONTROL_SHA,
+            activation_commit=None,
+            active_commit=None,
+            implementation_commit=None,
+            symbolic_branch=symbolic,
+            **remote_config_fixture(),
+            remote_main_tip=C0007_BOUNDED_CONTROL_HEAD_SHA,
+            remote_branch_tip=branch_tip,
+            implementation_overlay=False,
+            problems=recovery_remote,
+            context=f"self-test CI recovery remote {label}",
+        )
+        if recovery_write or recovery_remote.messages:
+            recovery_remote_positive_messages.extend(recovery_remote.messages or ["write granted"])
+    recovery_remote_bad_tip = Problems()
+    validate_c0007_remote_observation(
+        lifecycle_position="PR-committed",
+        state=C0007_CI_RECOVERY_STATE,
+        head="7" * 40,
+        planned_commit=C0007_FAILED_PLANNED_CONTROL_SHA,
+        activation_commit=None,
+        active_commit=None,
+        implementation_commit=None,
+        symbolic_branch=None,
+        **remote_config_fixture(),
+        remote_main_tip=C0007_BOUNDED_CONTROL_HEAD_SHA,
+        remote_branch_tip="8" * 40,
+        implementation_overlay=False,
+        problems=recovery_remote_bad_tip,
+        context="self-test CI recovery wrong remote tip",
+    )
+    problems.require(
+        not recovery_remote_positive_messages
+        and any(".branch:" in message for message in recovery_remote_bad_tip.messages),
+        "self-test CI recovery remote positions",
+        "valid P->PR position was rejected, granted writes, or wrong lease tip was accepted",
+    )
+
     contract_payload_fixture = b"{}\n"
     contract_index_positive = Problems()
     validate_c0007_contract_index_binding(
@@ -28678,6 +30690,236 @@ def run_self_test() -> int:
         f"missing test step was accepted: {missing_test_step.messages}",
     )
 
+    # CI-only recovery schema, historical-P separation, and deterministic
+    # self-hash-free contract rendering.
+    try:
+        recovery_authorization_payload = Path(
+            C0007_BOUNDED_AUTHORIZATION_PATH
+        ).read_bytes()
+        recovery_authorization_fixture = strict_json_loads(
+            recovery_authorization_payload.decode("utf-8")
+        )
+        recovery_manifest_text = Path(
+            C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+        ).read_text(encoding="utf-8")
+        recovery_manifest_reader = csv.DictReader(
+            io.StringIO(recovery_manifest_text), delimiter="\t"
+        )
+        recovery_manifest_header = tuple(recovery_manifest_reader.fieldnames or ())
+        recovery_manifest_rows = [dict(row) for row in recovery_manifest_reader]
+    except (OSError, UnicodeError, ValueError, json.JSONDecodeError, csv.Error) as error:
+        problems.add("self-test CI recovery fixtures", f"cannot read fixtures: {error}")
+        recovery_authorization_fixture = {}
+        recovery_authorization_payload = b""
+        recovery_manifest_header = ()
+        recovery_manifest_rows = []
+    recovery_authorization_positive = Problems()
+    validate_c0007_ci_recovery_authorization_payload(
+        recovery_authorization_fixture,
+        recovery_manifest_header,
+        recovery_manifest_rows,
+        recovery_authorization_positive,
+        context="self-test CI recovery authorization positive",
+    )
+    problems.require(
+        hashlib.sha256(recovery_authorization_payload).hexdigest().upper()
+        == C0007_CI_RECOVERY_AUTHORIZATION_SHA256
+        and not recovery_authorization_positive.messages,
+        "self-test CI recovery authorization positive",
+        f"exact recovery authorization rejected: {recovery_authorization_positive.messages}",
+    )
+    recovery_authorization_rerun = json.loads(
+        canonical_json(recovery_authorization_fixture)
+    )
+    recovery_authorization_rerun.setdefault("run_policy", {})[
+        "rerun_authorized"
+    ] = True
+    recovery_authorization_rerun_problems = Problems()
+    validate_c0007_ci_recovery_authorization_payload(
+        recovery_authorization_rerun,
+        recovery_manifest_header,
+        recovery_manifest_rows,
+        recovery_authorization_rerun_problems,
+        context="self-test CI recovery authorization rerun",
+    )
+    recovery_manifest_extra = list(recovery_manifest_rows) + [
+        {
+            "path": "NumStability/Forbidden.lean",
+            "packet_id": C0007_CI_RECOVERY_PACKET_ID,
+            "stage": "implementation",
+            "operation": "modify",
+        }
+    ]
+    recovery_manifest_extra_problems = Problems()
+    validate_c0007_ci_recovery_authorization_payload(
+        recovery_authorization_fixture,
+        recovery_manifest_header,
+        recovery_manifest_extra,
+        recovery_manifest_extra_problems,
+        context="self-test CI recovery manifest extra path",
+    )
+    problems.require(
+        bool(recovery_authorization_rerun_problems.messages)
+        and bool(recovery_manifest_extra_problems.messages),
+        "self-test CI recovery authority negatives",
+        "a rerun or ninth/implementation manifest row was accepted",
+    )
+
+    recovery_artifact_fixture = [
+        {
+            "base_blob_oid": C0007_CI_RECOVERY_PREIMAGES[path][0],
+            "base_mode": "100644",
+            "operation": "modify",
+            "packet_id": C0007_CI_RECOVERY_PACKET_ID,
+            "path": path,
+            "post_blob_oid": f"{index + 1:x}" * 40,
+            "post_mode": "100644",
+            "sha256": f"{index + 1:X}" * 64,
+        }
+        for index, path in enumerate(C0007_CI_RECOVERY_ARTIFACT_PATHS)
+    ]
+    recovery_contract_fixture = build_c0007_ci_recovery_contract(
+        recovery_artifact_fixture,
+        recovery_authorization_fixture,
+        authorization_sha256=C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+        manifest_sha256=C0007_CI_RECOVERY_MANIFEST_SHA256,
+    )
+    recovery_contract_positive = Problems()
+    validate_c0007_ci_recovery_contract_payload(
+        recovery_contract_fixture,
+        recovery_authorization_fixture,
+        recovery_contract_positive,
+        authorization_sha256=C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+        manifest_sha256=C0007_CI_RECOVERY_MANIFEST_SHA256,
+        context="self-test CI recovery contract positive",
+    )
+    rerendered_recovery_contract = build_c0007_ci_recovery_contract(
+        list(reversed(recovery_artifact_fixture)),
+        recovery_authorization_fixture,
+        authorization_sha256=C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+        manifest_sha256=C0007_CI_RECOVERY_MANIFEST_SHA256,
+    )
+    problems.require(
+        not recovery_contract_positive.messages
+        and canonical_json(recovery_contract_fixture)
+        == canonical_json(rerendered_recovery_contract),
+        "self-test CI recovery deterministic contract",
+        f"valid deterministic recovery contract rejected: {recovery_contract_positive.messages}",
+    )
+    recovery_contract_wrong_authority = Problems()
+    validate_c0007_ci_recovery_contract_payload(
+        recovery_contract_fixture,
+        {**recovery_authorization_fixture, "decision": "approved_for_anything"},
+        recovery_contract_wrong_authority,
+        authorization_sha256=C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+        manifest_sha256=C0007_CI_RECOVERY_MANIFEST_SHA256,
+        context="self-test CI recovery contract wrong authority bytes",
+    )
+    recovery_contract_wrong_manifest = Problems()
+    validate_c0007_ci_recovery_contract_payload(
+        recovery_contract_fixture,
+        recovery_authorization_fixture,
+        recovery_contract_wrong_manifest,
+        authorization_sha256=C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+        manifest_sha256="0" * 64,
+        context="self-test CI recovery contract wrong manifest identity",
+    )
+    problems.require(
+        any(".authority:" in message for message in recovery_contract_wrong_authority.messages)
+        and any(".authority:" in message for message in recovery_contract_wrong_manifest.messages),
+        "self-test CI recovery contract authority bindings",
+        "wrong authorization bytes or manifest identity were accepted",
+    )
+    recovery_contract_negative_cases = (
+        (
+            "malformed artifact record",
+            lambda value: value["artifacts"].__setitem__(0, None),
+        ),
+        (
+            "self identity",
+            lambda value: value["lifecycle"].__setitem__(
+                "planned_recovery_commit_sha", "a" * 40
+            ),
+        ),
+        (
+            "failed P relabelled success",
+            lambda value: value["failed_planned_control"]["ci"].__setitem__(
+                "status", "success"
+            ),
+        ),
+        (
+            "future activation field",
+            lambda value: value.__setitem__("activation_candidate", {}),
+        ),
+        (
+            "forbidden owner field",
+            lambda value: value["branch"].__setitem__(
+                "owner_id", "primary-human"
+            ),
+        ),
+        (
+            "premature PR run identity",
+            lambda value: value["ci"]["planned_recovery"].__setitem__(
+                "run_attempt", 1
+            ),
+        ),
+        (
+            "forbidden A successor",
+            lambda value: value["graph"].append("PR->A"),
+        ),
+        (
+            "implementation permission",
+            lambda value: value["permissions"].__setitem__(
+                "implementation_authorized", True
+            ),
+        ),
+    )
+    for label, mutate in recovery_contract_negative_cases:
+        mutated = json.loads(canonical_json(recovery_contract_fixture))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_ci_recovery_contract_payload(
+            mutated,
+            recovery_authorization_fixture,
+            negative,
+            authorization_sha256=C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_CI_RECOVERY_MANIFEST_SHA256,
+            context=f"self-test CI recovery contract {label}",
+        )
+        problems.require(
+            bool(negative.messages),
+            f"self-test CI recovery contract {label}",
+            "forbidden recovery-contract mutation was accepted",
+        )
+
+    recovery_commit_positive = Problems()
+    validate_c0007_bounded_commit_shape(
+        [C0007_FAILED_PLANNED_CONTROL_SHA],
+        set(C0007_CI_RECOVERY_PATHS),
+        C0007_CI_RECOVERY_SUBJECT,
+        C0007_FAILED_PLANNED_CONTROL_SHA,
+        set(C0007_CI_RECOVERY_PATHS),
+        C0007_CI_RECOVERY_SUBJECT,
+        recovery_commit_positive,
+        context="self-test CI recovery commit positive",
+    )
+    recovery_commit_extra = Problems()
+    validate_c0007_bounded_commit_shape(
+        [C0007_BOUNDED_CONTROL_HEAD_SHA],
+        set(C0007_CI_RECOVERY_PATHS) | {"NumStability/Forbidden.lean"},
+        C0007_FAILED_PLANNED_CONTROL_SUBJECT,
+        C0007_FAILED_PLANNED_CONTROL_SHA,
+        set(C0007_CI_RECOVERY_PATHS),
+        C0007_CI_RECOVERY_SUBJECT,
+        recovery_commit_extra,
+        context="self-test CI recovery commit mutation",
+    )
+    problems.require(
+        not recovery_commit_positive.messages and len(recovery_commit_extra.messages) == 3,
+        "self-test CI recovery commit shape",
+        "exact PR was rejected or wrong parent/path/subject was accepted",
+    )
+
     try:
         bounded_workflow_fixture = Path(C0007_BOUNDED_WORKFLOW_PATH).read_text(
             encoding="utf-8"
@@ -28686,7 +30928,7 @@ def run_self_test() -> int:
         problems.add("self-test bounded workflow fixture", f"cannot read workflow: {error}")
         bounded_workflow_fixture = ""
     bounded_workflow_positive = Problems()
-    validate_c0007_bounded_workflow_text(
+    validate_c0007_ci_recovery_workflow_text(
         bounded_workflow_fixture,
         bounded_workflow_positive,
         context="self-test bounded workflow positive",
@@ -28712,9 +30954,42 @@ def run_self_test() -> int:
             ),
             ".full_build:",
         ),
+        (
+            "missing exact-SHA checkout",
+            bounded_workflow_fixture.replace(
+                f"          ref: {C0007_CI_RECOVERY_CHECKOUT_REF}\n", ""
+            ),
+            ".checkout_ref:",
+        ),
+        (
+            "wrong checkout ref",
+            bounded_workflow_fixture.replace(
+                C0007_CI_RECOVERY_CHECKOUT_REF,
+                "refs/heads/codex/reorg-closeout-2026-08-m13-i01",
+            ),
+            ".checkout_ref:",
+        ),
+        (
+            "missing dot-git normalization",
+            bounded_workflow_fixture.replace(
+                C0007_CI_RECOVERY_ORIGIN_COMMAND,
+                C0007_CI_RECOVERY_ORIGIN_COMMAND.removesuffix(".git"),
+            ),
+            ".origin_normalization:",
+        ),
+        (
+            "late normalization",
+            bounded_workflow_fixture.replace(
+                f"          {C0007_CI_RECOVERY_ORIGIN_COMMAND}\n"
+                "          python -m py_compile",
+                "          python -m py_compile"
+                f"\n          {C0007_CI_RECOVERY_ORIGIN_COMMAND}",
+            ),
+            ".origin_normalization:",
+        ),
     ):
         workflow_negative = Problems()
-        validate_c0007_bounded_workflow_text(
+        validate_c0007_ci_recovery_workflow_text(
             mutated_workflow,
             workflow_negative,
             context=f"self-test bounded workflow {label}",
@@ -28729,7 +31004,7 @@ def run_self_test() -> int:
         "      - name: Run Lake test driver\n        continue-on-error: true\n        run: lake test\n",
     )
     weakened_workflow_problems = Problems()
-    validate_c0007_bounded_workflow_text(
+    validate_c0007_ci_recovery_workflow_text(
         weakened_workflow,
         weakened_workflow_problems,
         context="self-test bounded workflow weakened test",
@@ -28750,7 +31025,7 @@ def run_self_test() -> int:
         supported_api_block_fixture, ""
     )
     missing_supported_problems = Problems()
-    validate_c0007_bounded_workflow_text(
+    validate_c0007_ci_recovery_workflow_text(
         missing_supported_workflow,
         missing_supported_problems,
         context="self-test bounded workflow missing supported API",
@@ -28771,7 +31046,7 @@ def run_self_test() -> int:
         bounded_workflow_fixture,
     )
     inert_architecture_problems = Problems()
-    validate_c0007_bounded_workflow_text(
+    validate_c0007_ci_recovery_workflow_text(
         inert_architecture_workflow,
         inert_architecture_problems,
         context="self-test bounded workflow inert architecture",
@@ -33580,7 +35855,9 @@ No implementation began before activation-control CI. The worker remains frozen 
         "and integration-control-CI evidence, plus planned/activation/integration/closeout "
         "precommit/direct-child commit-shape adversarial tests; plus terminal-v2/schema-v3 "
         "captured-JSON, exact P/A/T/I/V ref-position, owner-review split, workflow timeout/cache, "
-        "and paginated current-attempt T/V live-evidence adversarial tests"
+        "and paginated current-attempt T/V live-evidence adversarial tests; plus exact "
+        "eight-path schema-v4 CI-only recovery authority/contract/workflow, immutable-P "
+        "evidence, direct-child shape, and no-rerun/no-implementation adversarial tests"
     )
     return 0
 
@@ -33609,6 +35886,11 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
         action="store_true",
         help="authenticate clean pushed V post-assurance and emit one canonical local-only record",
     )
+    modes.add_argument(
+        "--write-ci-recovery-contract",
+        action="store_true",
+        help="atomically render only the pending eight-path CI-recovery contract from exact P",
+    )
     return parser.parse_args(argv)
 
 
@@ -33634,7 +35916,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.require_t_implementation_ready
         or args.require_terminal_v_post_assurance
     )
-    if live_mode:
+    if live_mode or args.write_ci_recovery_contract:
         phase_dir_problems = Problems()
         validate_c0007_live_phase_dir(
             ROOT,
@@ -33648,12 +35930,31 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 1
     if args.self_test:
         return run_self_test()
-    if live_mode:
+    if live_mode or args.write_ci_recovery_contract:
         # Prevent implicit object hydration and even Git's optional index-stat refresh
         # while producing read-only local-ledger evidence. Every subprocess inherits it.
         os.environ["GIT_OPTIONAL_LOCKS"] = "0"
         os.environ["GIT_NO_LAZY_FETCH"] = "1"
     validator = CompletionValidator(ROOT, args.phase_dir)
+    if args.write_ci_recovery_contract:
+        problems = validator.write_c0007_ci_recovery_contract()
+        if problems.messages:
+            for message in problems.messages:
+                print(f"completion phase violation: {message}", file=sys.stderr)
+            print(
+                "completion phase CI-recovery contract generation failed with "
+                f"{len(problems.messages)} violation(s)",
+                file=sys.stderr,
+            )
+            return 1
+        contract_path = ROOT / C0007_CI_RECOVERY_CONTRACT_PATH
+        print(
+            "completion phase wrote exact CI-recovery contract: "
+            f"{contract_path.relative_to(ROOT).as_posix()} "
+            f"{contract_path.stat().st_size} bytes "
+            f"SHA-256 {sha256_path(contract_path)}"
+        )
+        return 0
     problems = (
         validator.run_c0007_live_readonly()
         if live_mode

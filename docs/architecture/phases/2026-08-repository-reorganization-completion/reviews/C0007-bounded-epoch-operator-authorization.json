@@ -1,22 +1,21 @@
 {
   "activation_conditions": [
-    "the control parent, control tree, remote main, active phase pointer, phase, authorized-path manifest, workflow, checker, packet, postimage, supported-API, and artifact identities remain exact",
-    "every dirty P, A, T, I, or V precommit is on the exact symbolic codex/reorg-closeout-2026-08-m13-i01 branch; every clean symbolic lifecycle checkout is on that branch; only a clean detached checkout used for validation is permitted",
-    "P is the exact 42-path direct child of 8960f2a980be22166f321c4ba452eb547529b1fd, the bounded remote ref is absent immediately before its exact absence-lease push and equals P afterward, and exact-head P Lean CI succeeds before the activation review is solicited",
-    "the first exact live repository-owner comment is created after P CI and remains live and unedited; A is the contract-only direct child of P; the bounded remote ref equals P immediately before its P-to-A exact-lease push and equals A afterward; and exact-head A Lean CI succeeds before T",
-    "T is the contract-only direct child of A; the bounded remote ref equals A immediately before its A-to-T exact-lease push and equals T afterward; and T has an authenticated successful exact-head workflow_dispatch observation before any R0014 or R0015 implementation postimage is applied or staged",
-    "R0014 and R0015 replay from exact C0007 code 4e26820d1f4989ec4ec77b7113085f593570e11b, reproduce every hash-pinned postimage, and I is their exact indivisible 14-path direct child of T; the bounded remote ref equals T immediately before its T-to-I exact-lease push and equals I afterward",
-    "exact-head I Lean CI succeeds and the second distinct live repository-owner comment is created afterward and remains live and unedited before V",
-    "V is the contract-only direct child of I; the bounded remote ref equals I immediately before its I-to-V exact-lease push and equals V afterward; exact-head V post-assurance CI is then dispatched and authenticated read-only and its canonical evidence is recorded only in the untracked local ledger, which terminates this grant; that evidence may be hash-pinned only by a separately authorized C8-PROPOSE epoch"
+    "immutable failed P 1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9, its parent/tree/contract, failed run 32966438799 attempt 1, and remote main 8960f2a980be22166f321c4ba452eb547529b1fd remain exact",
+    "the authorization manifest has exactly eight sorted ci_recovery_control modify rows and every packet, implementation, local-ledger, and unmanifested path is excluded",
+    "the workflow checks out exact github.sha detached, canonicalizes origin to the exact .git URL as the first architecture command, and otherwise preserves the pinned workflow behavior",
+    "PR is the exact eight-path direct child of failed P with subject fix(reorganization): recover M13 planned-control CI and no public declaration, namespace, normalized type, visibility, or supported-entrypoint reachability change",
+    "the dirty PR precommit is on exact symbolic branch codex/reorg-closeout-2026-08-m13-i01; a clean detached checkout is permitted only for validation and exact-head CI",
+    "the bounded remote ref equals P before the exact P-to-PR lease push and PR afterward while remote main remains exact",
+    "exactly one new workflow_dispatch run ID is created at exact PR, only attempt 1 is observed, and the grant expires at its first terminal conclusion"
   ],
   "authority_id": "primary-human",
-  "authorization_id": "C0007-M13-I01-CODE03-terminal-v2",
+  "authorization_id": "C0007-P-CI-recovery-only-v1",
   "authorized_actions": [
-    "prepare and validate P using exactly the 42 planned_control rows of the authorized path manifest; commit P and exact-absence-lease create the bounded remote ref at P; after P CI and the activation owner comment, commit contract-only A and exact-lease push the bounded ref from P to A; after A CI, commit contract-only T and exact-lease push the bounded ref from A to T",
-    "generate, reproducibly verify, and freeze docs/architecture/supported-api.json and the pending-only C0008-supported-api.json machine-evidence record without assigning any human decision or checkpoint authority",
-    "dispatch and monitor exact-head Lean CI for P, A, T, I, and post-assurance V; create the ordinary review issue; and solicit the two exact live GitHub repository-owner comments",
-    "after P CI, the activation owner comment, A, A CI, T, and the authenticated live T remote-tip observation, apply R0014 and R0015 only as their complete indivisible 14-path union, commit I, and exact-lease push the bounded ref from T to I",
-    "after I CI and the distinct implementation owner comment, commit V and exact-lease push the bounded ref from I to V, dispatch and authenticate exact-head V CI read-only, and record its canonical evidence only in the untracked local ledger"
+    "prepare and independently validate exactly the eight ci_recovery_control postimages in an isolated external overlay and atomically materialize only those paths",
+    "generate and independently reproduce docs/architecture/supported-api.json and the null-decision C0008-supported-api.json machine-evidence record without granting checkpoint authority",
+    "commit PR as the exact direct child of immutable P and exact-lease push refs/heads/codex/reorg-closeout-2026-08-m13-i01 from P to PR without mutating main",
+    "dispatch exactly one new exact-head workflow_dispatch run ID at PR and do not rerun it",
+    "monitor and authenticate that run through its first terminal conclusion and record its evidence only in the untracked local ledger"
   ],
   "base": {
     "active_phase_pointer_sha256": "C99061ACCE56AF121B1ACF0FBE2C757B53602A5A8599DC93193871095D3AB360",
@@ -24,19 +23,31 @@
     "control_tree_sha": "70cee1e77e1311129b00aeb0945770483d1aa5db",
     "current_checkpoint_id": "C0007",
     "current_checkpoint_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+    "failed_planned_control": {
+      "commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
+      "contract_blob_oid": "6c1f59211399c626c7727952c16ea63e504270c8",
+      "contract_sha256": "D8C0E5ED51C075A93A16376967E501B670B16B06C91E96D1D1600351CFAA141D",
+      "job_id": 98169864308,
+      "job_log_byte_count": 20201,
+      "job_log_sha256": "8383047A0845BAA625BCC3ACA3AE5FCD744F80AD9D7A4647B0371B23EB41D16D",
+      "parent_sha": "8960f2a980be22166f321c4ba452eb547529b1fd",
+      "run_attempt": 1,
+      "run_conclusion": "failure",
+      "run_id": 32966438799,
+      "tree_sha": "ce9760fc7a49e69e98551e992c27fd11f9b247b1"
+    },
     "phase_sha256": "7DCF4E6B47F3EDEC92D1F6945426F0AB13215A5AC3C362D9356A58C413288AAC",
     "remote_main_sha": "8960f2a980be22166f321c4ba452eb547529b1fd"
   },
-  "decision": "approved",
+  "decision": "approved_for_ci_recovery_only",
   "expiry": {
     "events": [
-      "after the verified V commit is exact-lease pushed from I to refs/heads/codex/reorg-closeout-2026-08-m13-i01 at V, its exact-head workflow_dispatch post-assurance run succeeds, is authenticated with stable remote-main and bounded-ref observations, and its canonical evidence is recorded only in the untracked local ledger",
-      "explicit cancellation or supersession",
-      "base, authorized-path-manifest, workflow, checker, request-patch, postimage, supported-API, or artifact drift",
-      "an exact-lease mismatch, bounded-ref drift, or remote-main drift",
-      "primary-human revocation"
+      "the first terminal conclusion of the one authorized exact-head PR workflow_dispatch run, whether success, failure, cancellation, or timeout",
+      "explicit cancellation, revocation, or supersession",
+      "authority, manifest, workflow, checker, supported-API, contract, base, P, or artifact drift",
+      "an exact-lease mismatch, bounded-ref drift, remote-main drift, a rerun attempt, or a second matching run ID"
     ],
-    "terminal_control_state": "verified",
+    "terminal_control_state": "ci_recovery_terminal",
     "valid_only_while_current_checkpoint_id": "C0007"
   },
   "operator_id": "codex-local",
@@ -44,32 +55,42 @@
   "preserved_exclusions": [
     "tracking, committing, or pushing REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
     "any public declaration name, namespace, normalized type, visibility, or supported-entrypoint reachability change",
-    "any tracked path absent from the authorized path manifest or any authorized manifest stage or operation drift",
-    "partial application or partial rollback of R0014, R0015, or their complete 14-path union",
-    "semantic review by codex-local, any exact artifact generator or action performer, CI, or any service principal",
-    "any R0014 or R0015 request resolution, I01 selector finalization, or M13, I01, R0014, R0015, or C0008 status mutation",
-    "any C8-PROPOSE or C8-ACCEPT commit, or any C0008 proposal, checkpoint or status acceptance, or finalization action",
-    "any non-null decision, reviewer, or reviewed_at_utc in reviews/C0008-supported-api.json, or any interpretation of that record as human review, checkpoint acceptance, request resolution, or authority",
-    "any push, merge, force-update, deletion, or other mutation of origin refs/heads/main",
-    "repository-wide completion or final release acceptance",
-    "bounded-branch retirement, bounded remote-ref deletion, any force push, or any history rewrite"
+    "any tracked path absent from the exact eight-row manifest or any stage or operation drift",
+    "any packet, request, selector, approval, implementation, compatibility, tier, production, test, or ordinary documentation write",
+    "any issue creation, owner solicitation, owner comment, semantic review claim, activation, implementation, post-assurance, A, T, I, or V action",
+    "any R0014 or R0015 resolution, I01 finalization, M13 status mutation, C0008 proposal or acceptance, or repository-wide completion claim",
+    "any non-null decision, reviewer, or reviewed_at_utc in C0008-supported-api.json or any interpretation of that record as human authority",
+    "any push, merge, force-update, deletion, or other mutation of refs/heads/main",
+    "any mutation or relabelling of immutable failed P or its failed CI evidence",
+    "any bounded-ref deletion, force push, history rewrite, rerun attempt, second matching run ID, or transition after PR"
   ],
-  "record_kind": "primary_human_bounded_epoch_authorization",
-  "recorded_at": "2026-08-26T01:15:53Z",
-  "schema_version": 2,
+  "record_kind": "primary_human_ci_only_recovery_authorization",
+  "recorded_at": "2026-08-26T12:56:21Z",
+  "run_policy": {
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "matching_run_ids": 1,
+    "rerun_authorized": false,
+    "terminal_evidence_location": "untracked local ledger only"
+  },
+  "schema_version": 3,
   "scope": {
+    "activation_authorized": false,
     "authorized_path_manifest": {
       "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-authorized-paths.tsv",
-      "row_count": 56,
-      "sha256": "121D11A73AF2CD23885FB7A6B38D14B0D8A5440940D913A83F3A5D6941511ECE"
+      "path_list_sha256": "3CF30300730F9BD37AB532D1C99E387EC32ECB5B98B51F33C0ED04DE4953089A",
+      "preimage_freeze_sha256": "A7C7DBB77711DCDA7BA31AC720D1710E05E48F007523A0EACD583AA213BB49FC",
+      "row_count": 8,
+      "sha256": "E0892856B09B6B0E3A44E6FE49A303918D1BCF88743F5328E6A8E996C689E6C0"
     },
+    "bounded_ref": "refs/heads/codex/reorg-closeout-2026-08-m13-i01",
     "checkpoint_acceptance_authorized": false,
-    "milestone_id": "M13",
+    "implementation_authorized": false,
+    "owner_solicitation_authorized": false,
+    "post_assurance_transition_authorized": false,
+    "recovery_parent_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
+    "recovery_subject": "fix(reorganization): recover M13 planned-control CI",
     "remote_main_mutation_authorized": false,
-    "request_ids": [
-      "R0014",
-      "R0015"
-    ],
     "request_resolution_authorized": false,
     "supported_api_record": {
       "authority_effect": "none",
@@ -81,34 +102,27 @@
       ],
       "status": "pending_machine_evidence"
     },
+    "target_state": "ci_recovery_pending",
     "task_ids": [
-      "API-01",
-      "CODE-01",
-      "CODE-02",
-      "CODE-03",
+      "CI-01",
       "EPOCH-01",
-      "GOV-01",
-      "GOV-02",
-      "GOV-03",
-      "GOV-04",
-      "I01-01",
-      "I01-02",
       "VERIFY-01",
       "VERIFY-02",
       "VERIFY-03"
-    ],
-    "terminal_control_state": "verified",
-    "wave_id": "I01"
+    ]
   },
   "source": {
     "channel": "current Codex desktop task",
-    "instruction": "I authorize you to do whatever you need.",
-    "received_at": "2026-08-25T15:14:31Z",
-    "received_at_source": "task user-message timestamp",
+    "instruction": "I got an email with \"Lean CI: All jobs have failed\", fix this.",
+    "instruction_byte_count": 62,
+    "instruction_sha256": "7BAB1BB0B4C915CE7A00B0A678AA5634EFF687DF2342B12BF53C07ACD767DF14",
+    "received_at": null,
+    "received_at_source": "not exposed by the Codex desktop task transport; intentionally not fabricated",
     "user_principal_id": "primary-human"
   },
-  "supersedes_draft": {
-    "authorization_id": "C0007-M13-I01-CODE03-bounded-v1",
-    "sha256": "7AD0DD3ACD880CDDB1D89C1DD28824F8EF6116415462A9466C95E4F593D02439"
+  "supersedes": {
+    "authorization_id": "C0007-M13-I01-CODE03-terminal-v2",
+    "effect": "historical P evidence only; no action remains authorized",
+    "sha256": "9BD67B6336BA9D2943552AA09D19F580EC4A8A9298E85BC846854A201CB15129"
   }
 }
