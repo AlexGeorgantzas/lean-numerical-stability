@@ -1,0 +1,205 @@
+{
+  "activation_policy": "atomic_when_any_approved_test_module_is_reachable",
+  "activation_scope": {
+    "approved_additive_declarations_sha256": "304D2AC026B9B2419C7B2B8B4BA12EACBF94D77BFDE19C18FC03198D7F2C65F5",
+    "approved_additive_test_evidence_sha256": "86080D3FF64AAAFE8550753C2678215D1F1D2AA2455A23B4686FF821ABDC830D",
+    "approved_assertion_occurrence_count": 9,
+    "approved_new_selected_declaration_count": 1,
+    "approved_one_import_module_count": 5,
+    "approved_owner_move_count": 2,
+    "approved_owner_moves_sha256": "6CB13208685C9347600E06150654B647045149B1AE6D13644E71B2B8C6ECC16B",
+    "approved_tier_manifest_sha256": "96D8329E018769925658FD7BC8392F8005210C83665333B333EB03EFD2B0F6F6",
+    "implementation_commit_sha": null,
+    "implementation_id": "I01",
+    "implementation_path_count": 14,
+    "implementation_path_set_sha256": "29BD21B735E94B3B8670E03A766FCF20F2E5762D9472C62028332A871403E189",
+    "implementation_postimage_ledgers": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014-postimages.tsv",
+        "sha256": "42F4ED7EFE7C611DE214A0E6FE4ABADA11034632A9086952EADCD1A8AA33A1C9"
+      },
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0015-postimages.tsv",
+        "sha256": "F92A484CAFBB2F8885A14CE5A7A0A9DB4A774888757797BB836254D4600BED8D"
+      }
+    ],
+    "planned_control_commit_sha": null,
+    "request_artifacts": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014-postimages.tsv",
+        "sha256": "42F4ED7EFE7C611DE214A0E6FE4ABADA11034632A9086952EADCD1A8AA33A1C9"
+      },
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014.json",
+        "sha256": "CDF9CD8B9E5D8A06F60CB769801A5AC891F4468E1435207060F77B50BE1C67CE"
+      },
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0014.patch",
+        "sha256": "3AC31AFC44B697FF830E0CF393FF1725F18B49022ABCF81D83742220FCCB3A88"
+      },
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/I01-changed-paths.tsv",
+        "sha256": "32D0E95A1F3AC0230647B86C94E3AFF869546BDDEA62678657C93EF22233AFC4"
+      }
+    ],
+    "request_id": "R0014"
+  },
+  "approved_additive_declarations": [
+    {
+      "canonical_surfaces": [
+        "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample",
+        "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs"
+      ],
+      "expected_entrypoint_reachability": [
+        "NumStability",
+        "NumStability.Algorithms",
+        "NumStability.All",
+        "NumStability.Analysis",
+        "NumStability.Higham",
+        "NumStability.Source",
+        "NumStability.Source.Higham"
+      ],
+      "fqn": "NumStability.FloatingPointFormat.problem2_9Source",
+      "historical_surfaces": [
+        "NumStability.Analysis.DoubleRounding"
+      ],
+      "kind": "definition",
+      "namespace": "NumStability.FloatingPointFormat",
+      "owner_module": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample",
+      "protected": false,
+      "test_evidence": [
+        {
+          "assertion_occurrences": 1,
+          "surface": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample",
+          "surface_kind": "canonical",
+          "test_module": "NumStabilityTest.Reorganization.I01.Aggregate.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample"
+        },
+        {
+          "assertion_occurrences": 1,
+          "surface": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs",
+          "surface_kind": "canonical",
+          "test_module": "NumStabilityTest.Reorganization.I01.Canonical.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs"
+        },
+        {
+          "assertion_occurrences": 1,
+          "surface": "NumStability.Analysis.DoubleRounding",
+          "surface_kind": "historical",
+          "test_module": "NumStabilityTest.Reorganization.I01.OldOnly.NumStability_Analysis_DoubleRounding"
+        }
+      ],
+      "test_modules": [
+        "NumStabilityTest.Reorganization.I01.Aggregate.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample",
+        "NumStabilityTest.Reorganization.I01.Canonical.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs",
+        "NumStabilityTest.Reorganization.I01.OldOnly.NumStability_Analysis_DoubleRounding"
+      ],
+      "type_evidence": {
+        "normalization": "lean-expr-repr-exact-percent-escaped-v1",
+        "sha256": "6D911F09835182653774830143FD8A4A6359E6B86C758307666BD46ACF67B496"
+      },
+      "visibility": "public"
+    }
+  ],
+  "approved_additive_test_evidence": [
+    {
+      "assertion_occurrences": 1,
+      "declaration": "NumStability.FloatingPointFormat.binary64MantissaExtendedLocalFormat",
+      "surface": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample",
+      "surface_kind": "canonical",
+      "test_module": "NumStabilityTest.Reorganization.I01.Aggregate.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample"
+    },
+    {
+      "assertion_occurrences": 1,
+      "declaration": "NumStability.FloatingPointFormat.binary64MantissaExtendedLocalFormat",
+      "surface": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs",
+      "surface_kind": "canonical",
+      "test_module": "NumStabilityTest.Reorganization.I01.Canonical.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs"
+    },
+    {
+      "assertion_occurrences": 1,
+      "declaration": "NumStability.FloatingPointFormat.binary64MantissaExtendedLocalFormat",
+      "surface": "NumStability.Analysis.DoubleRounding",
+      "surface_kind": "historical",
+      "test_module": "NumStabilityTest.Reorganization.I01.OldOnly.NumStability_Analysis_DoubleRounding"
+    },
+    {
+      "assertion_occurrences": 1,
+      "declaration": "NumStability.FloatingPointFormat.problem2_9Source",
+      "surface": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample",
+      "surface_kind": "canonical",
+      "test_module": "NumStabilityTest.Reorganization.I01.Aggregate.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample"
+    },
+    {
+      "assertion_occurrences": 1,
+      "declaration": "NumStability.FloatingPointFormat.problem2_9Source",
+      "surface": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs",
+      "surface_kind": "canonical",
+      "test_module": "NumStabilityTest.Reorganization.I01.Canonical.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs"
+    },
+    {
+      "assertion_occurrences": 1,
+      "declaration": "NumStability.FloatingPointFormat.problem2_9Source",
+      "surface": "NumStability.Analysis.DoubleRounding",
+      "surface_kind": "historical",
+      "test_module": "NumStabilityTest.Reorganization.I01.OldOnly.NumStability_Analysis_DoubleRounding"
+    },
+    {
+      "assertion_occurrences": 1,
+      "declaration": "NumStability.FloatingPointFormat.problem2_9_direct_double_ne_double_rounded_extended64",
+      "surface": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample",
+      "surface_kind": "canonical",
+      "test_module": "NumStabilityTest.Reorganization.I01.Aggregate.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample"
+    },
+    {
+      "assertion_occurrences": 1,
+      "declaration": "NumStability.RectPNormPair.oneColumnValueRect",
+      "surface": "NumStability.Algorithms.NormEstimation.PNorm.All",
+      "surface_kind": "canonical",
+      "test_module": "NumStabilityTest.Reorganization.I01.Aggregate.NumStability_Algorithms_NormEstimation_PNorm_All"
+    },
+    {
+      "assertion_occurrences": 1,
+      "declaration": "NumStability.summable_infNorm_matPow",
+      "surface": "NumStability.Source.Higham.Chapter17.Results.Series",
+      "surface_kind": "canonical",
+      "test_module": "NumStabilityTest.Reorganization.I01.Canonical.NumStability_Source_Higham_Chapter17_Results_Series"
+    }
+  ],
+  "approved_owner_moves": [
+    {
+      "fqn": "NumStability.FloatingPointFormat.binary64MantissaExtendedLocalFormat",
+      "from_owner_module": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample",
+      "to_owner_module": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs"
+    },
+    {
+      "fqn": "NumStability.FloatingPointFormat.problem2_9Source",
+      "from_owner_module": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample",
+      "to_owner_module": "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs"
+    }
+  ],
+  "baseline_checkpoint_id": "C0007",
+  "baseline_inputs": {
+    "baseline_manifest_sha256": "8862E323C9DC2ED5F89AD63886F28560C0802325D9D51677830DB961426C3925",
+    "checker_sha256": "2568B8221132E57BBBA215E35ADF6266FBD40352FB9133BC1F55C2F22923947B",
+    "checkpoint_code_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+    "environment_extractor_sha256": "0BE95F18C27156FB108DACAB0A5A43A0A6385300466A8CD355632D132FCE61E2",
+    "production_source_tree_sha256": "C3EAA8D96E6F51C59EB371E43FE87A7E3D93516EE47EFEF3B989972ABE1F1631",
+    "test_source_tree_sha256": "BBBF60B1D329DA8C35B8C1F5B5BC51329F507BF8E794CA5B87BFA91561DFDE6F",
+    "tier_manifest_sha256": "3695B84D0644E447765FD5CF30FDD9FF65FBEC794276F494EC3FC2D3709C4C1E",
+    "toolchain_inputs": {
+      "lake-manifest.json": "CCFE8A72D6D227AEBFE4E58575DDF2A2AEF03B795052F97B770C36F684CC5774",
+      "lakefile.toml": "9F2CF5039B95F83CD9969F033A2862378D0B80931FCA277AD9DD227A5408D1A4",
+      "lean-toolchain": "FDF7CCFE204CAFF50FAB1913B9F13A763BE5384E87D14555C9FDCB2BE2B9F7F8"
+    }
+  },
+  "baseline_manifest_sha256": "8862E323C9DC2ED5F89AD63886F28560C0802325D9D51677830DB961426C3925",
+  "checkpoint_id": "C0008",
+  "decision": null,
+  "machine_generated_by": "tools/architecture/check_supported_api.py",
+  "primary_human_review_required": true,
+  "rationale": "Machine-derived candidate facts for freezing C0007 and, only after independent primary-human approval, authorizing the atomic R0014/I01 addition: five one-import modules, nine #check occurrences, and one newly selected existing declaration.",
+  "record_kind": "supported_api_freeze_review",
+  "requested_reviewer_role": "primary-human",
+  "reviewed_at_utc": null,
+  "reviewer": null,
+  "schema_version": 1
+}

@@ -21,6 +21,11 @@ Import-only forwarding modules and aggregate entry points have the structural
 roles `compatibility` and `aggregate` in the executable tier inventory. They
 are not destinations for new mathematical declarations.
 
+At C0007 the executable inventory classifies all 2,927 production modules:
+404 aggregate, 712 compatibility, 5 internal, 0 mixed, 577 reusable, 1,224
+source, and 5 upstream. Complete classification is an enforced baseline, not a
+claim that bounded-phase or repository-wide reorganization is complete.
+
 Lean visibility is not an API promise.  A declaration is supported public API
 only when its module and module documentation place it in tier 1 or tier 2.
 
@@ -148,22 +153,18 @@ split from the reusable library.
   discrepancy witness, and the declaration-free `Section05` aggregate for its
   Schulz-iteration leaves. Generic Weyl--Mirsky support lives in reusable
   `Analysis.SingularValues.WeylMirsky`; the former combined Algorithms path is
-  a compatibility wrapper. The currently canonicalized Chapter 21 subset is
-  the declaration-free `Chapter21` aggregate over `RowScalingInvariance`, the
-  declaration-free `Theorem03` aggregate, and the declaration-free `Theorem04`
-  aggregate. `Theorem03.Attainment` owns the exact/closure attainment and
-  scalar nonattainment refinements; `Theorem04.RowwiseBackwardError` owns the
-  printed row-wise measure and quantitative gamma criterion. The comprehensive
-  historical Chapter 21 discovery surface remains
-  `Algorithms.Underdetermined.Higham21` during migration. Chapter 28 now has a
-  declaration-free canonical source aggregate. Its declaration-free
-  `Equation02` aggregate exposes the source-specific `RatioDiscrepancy` leaf;
-  that leaf deliberately retains its historical `Higham28HilbertAsymptotic`
-  dependency until the wider Hilbert family moves. The migrated homogeneous-
-  space uniqueness support remains reusable `Analysis.Probability.Haar`, while
-  the other source-specific Stewart and test-matrix modules remain historical.
-  These Chapter 14, 21, and 28 frontiers do not claim that the broader chapter
-  families are fully migrated.
+  a compatibility wrapper. At C0007, the declaration-free Chapter 21 source
+  entry point has 35 reviewed direct imports spanning attainability,
+  corrections, equation families, method comparison, and Theorems 1, 3, and 4.
+  Historical `Algorithms.Underdetermined.Higham21*` paths are compatibility
+  wrappers listed in the executable map. The declaration-free Chapter 28
+  source entry point has 58 reviewed direct imports spanning its Hilbert,
+  Cauchy, Ginibre, random-SVD, Stewart--Haar, Pascal, Toeplitz, and companion-
+  matrix families. Historical `Algorithms.TestMatrices.Higham28*` paths are
+  compatibility wrappers. Reusable test-matrix and Haar support remains under
+  `Analysis`; numbered/source-specific results remain under `Source.Higham`.
+  These entry points describe the tracked correspondence surface and do not
+  claim that every statement in either book chapter is formalized.
   Chapter 12 uses the declaration-free
   `NumStability.Source.Higham.Chapter12` aggregate over the source leaves
   `IterativeRefinement`, `OmegaDiscontinuity`, and `Problem02`. Chapter 13's
@@ -195,8 +196,8 @@ split from the reusable library.
 - `NumStability.All` is the explicit complete-tree entry point.
 - `NumStability.Algorithms` preserves its historical complete algorithm-layer
   surface, including source correspondence; it is not the pure reusable entry
-  point. Its checked direct-import ceilings are 435 total imports, including 43
-  below `NumStability.Analysis` and 15 below `NumStability.Source`.
+  point. Its checked direct-import ceilings are 446 total imports, including 44
+  below `NumStability.Analysis` and 73 below `NumStability.Source`.
 - `NumStability` retains its historical complete-tree behavior through the
   compatibility window.
 
@@ -285,7 +286,7 @@ when all of the following hold:
 - [`docs/architecture/COMPATIBILITY.md`](docs/architecture/COMPATIBILITY.md)
   records forwarding paths and their removal policy.
 - [`docs/architecture/TIERS.md`](docs/architecture/TIERS.md) explains the
-  executable, deliberately partial tier inventory and forbidden-edge gate.
+  complete executable tier inventory and forbidden-edge gate.
 - [`docs/architecture/reviews/`](docs/architecture/reviews/) contains the
   endpoint, performance, family, outlier, and physical-target decisions.
 - [`docs/architecture/baselines/`](docs/architecture/baselines/) contains the

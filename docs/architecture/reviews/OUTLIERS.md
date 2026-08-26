@@ -1,5 +1,55 @@
 # Compilation-outlier review
 
+## Current C0007 review queue
+
+At audited revision `8960f2a980be22166f321c4ba452eb547529b1fd`, the
+current review threshold finds 22 modules above 10,000 nonblank lines and nine
+directories above the direct-child fanout threshold. Seventeen modules have a
+planned semantic split or source extraction; five require comparable isolated
+clean/warm profiles and human review before any retain or split decision. No
+retain exception is approved. The family names below are provisional routing
+owners, not substitutes for an accountable principal and distinct reviewer.
+
+| Module or group | Current disposition | Provisional mathematical owner |
+| --- | --- | --- |
+| `Source.Higham.Chapter11.Section01.Tridiagonal` | Split by pivot, step, update, execution, and error seams | Chapter 11 symmetric-indefinite factorization |
+| `Analysis.Perturbation.LeastSquares.Equality.RowwiseBackwardError` | Split and move numbered source claims | Chapter 20 Theorem 07; Analysis wrapper retained |
+| `Source.Higham.Chapter11.Section02.Aasen` | Split specification, recurrences, execution, growth, solve, and error | Chapter 11 symmetric-indefinite factorization |
+| `Source.Higham.Chapter09.Section11` | Split numbered results and generic/source boundary | Chapter 9 Section 11 |
+| `Source.Higham.Chapter19.Core` | Split after the two retained compatibility imports are removed | Chapter 19 QR |
+| `Source.Higham.Chapter11.Section01.PartialPivoting` | Split pivot, update, factorization, rounded-error, and backward-error seams | Chapter 11 symmetric-indefinite factorization |
+| `Source.Higham.Chapter09.Problems` | Split by numbered problem | Chapter 9 problems |
+| `Source.Higham.Chapter20.Theorem03.QRSolve` | Split normal equations, inverse action, QR execution/error, and residual quality | Chapter 20 Theorem 03 |
+| `Analysis.Perturbation.LeastSquares.Equality.Perturbation` | Split reusable definitions from numbered source claims | Least-squares analysis and Chapter 20 |
+| `Analysis.Perturbation.LeastSquares.Basic` | Split definitions, normal equations, augmented system, conditioning, and refinement | Reusable least-squares analysis |
+| `Algorithms.RandomizedLinearAlgebra.Preconditioning.ExactTransforms.Core` | Split exact certificates, vector/matrix embeddings, and composition | Reusable randomized linear algebra |
+| `Source.Higham.Chapter01.FloatingPointArithmetic.InstabilityWithoutCancellation` | Split by the four existing case studies | Chapter 1 floating-point arithmetic |
+| `Source.Higham.Chapter09.Section06` | Split numbered theorem, growth, and special-matrix material | Chapter 9 Section 06 |
+| `Analysis.Perturbation.LeastSquares.Equality.MixedStability` | Move numbered claims and retain an Analysis wrapper | Chapter 20 Theorem 10 |
+| `Source.DrineasMahoney.RandNLA2016.Equation09.LowRankApproximation.Endpoints` | Split norm API, SVD-tail certificates, and residual results | RandNLA Equation 09 |
+| `Source.DrineasMahoney.RandNLA2016.Equation02.SpectralApproximation.ElementwiseSpectral` | Split prerequisites, transfer, and final probability results | RandNLA Equation 02 |
+| `Algorithms.LinearSystems.LeastSquares.Equality.Basic` | Extract generic primitives and move Chapter 20/21 claims | Reusable least squares plus Chapters 20/21 |
+| `Source.Higham.Chapter02.Problem10.DivisionRoundTrip.ExhaustiveBinary64.Results` | Profile and human review; no retain decision | Chapter 2 Problem 10 |
+| `Analysis.Perturbation.LeastSquares.BackwardError` | Profile and human review; no retain decision | Reusable least-squares analysis |
+| `Analysis.FloatingPointArithmetic.RoundToEvenLocalError` | Profile and human review; no retain decision | Reusable floating-point analysis |
+| `Source.DrineasMahoney.RandNLA2016.Equation08.LeastSquaresSketch.Endpoints` | Profile and human review; no retain decision | RandNLA Equation 08 |
+| `Analysis.MatrixAlgebra` | Profile and human review; no retain decision | Reusable analysis foundations |
+
+The current fanout queue is `Algorithms` (183 direct files/23
+declaration-bearing), `Analysis` (147/26), `Algorithms/Cholesky` (82/4),
+`Algorithms/TestMatrices` (76/1), `Source/Higham/Chapter11` (60/27),
+`Algorithms/QR` (59/0), `Algorithms/LeastSquares` (42/0),
+`Source/Higham/Chapter13` (36/23), and `Algorithms/Underdetermined` (32/0).
+Compatibility graveyards are provisionally retained to a declared breaking
+release at those exact ceilings; Chapter 11 requires owner routing; and the
+Algorithms, Analysis, and Chapter 13 fanouts require profile-backed human
+dispositions. Any increase reopens review.
+
+## Archived pre-C0007 outlier review
+
+The table and dependency order below are retained as superseded design
+evidence. In particular, its LSQR/LSE “next” language is not a current queue.
+
 The older report's timing queue was reviewed together with current import
 fan-in and semantic headings. This is an ordered extraction backlog, not a
 line-count ranking.

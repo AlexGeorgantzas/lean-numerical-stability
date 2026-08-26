@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "record_kind": "phase_supersession",
+  "predecessor_phase_id": "repository-reorganization-2026-08",
+  "preserved_phase_sha256": "7E19F798C3B14E44F8765CF72E31CE8C47BC6D4862A528305FA7D61E9FB2ECA2",
+  "effective_status": "superseded",
+  "successor_phase_id": "repository-reorganization-completion-2026-08",
+  "successor_path": "docs/architecture/phases/2026-08-repository-reorganization-completion",
+  "decision_review": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-predecessor-supersession.md",
+    "sha256": "8487CCEF284728B62A3937F71E174515CCB6E9B30277F5918D755803F90330E5"
+  },
+  "reviewer_id": "primary-human",
+  "decided_at": "2026-08-25T15:18:24Z"
+}

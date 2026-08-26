@@ -1,5 +1,35 @@
 # Executable tier inventory
 
+## Current executable inventory
+
+[`tiers.json`](tiers.json) classifies all 2,927 production modules. The current
+role counts are:
+
+| Role | Modules |
+| --- | ---: |
+| Aggregate | 404 |
+| Compatibility | 712 |
+| Internal | 5 |
+| Mixed | 0 |
+| Reusable | 577 |
+| Source | 1,224 |
+| Upstream | 5 |
+| **Total** | **2,927** |
+
+Coverage is 2,927/2,927 (100%), with zero unclassified or mixed modules. The
+layout and baseline checks reject a coverage regression, a new mixed module,
+or a forbidden reusable-to-source edge. This complete classification inventory
+does not by itself establish bounded-phase or repository-wide completion: the
+current schema still requires reviewed rationale/status hardening and the
+remaining compatibility, entry-point, naming, documentation, outlier, profile,
+and acceptance work recorded by the active phase.
+
+## Archived partial-inventory policy
+
+The text below records the earlier Phase 12 partial-inventory policy and its
+then-current figures. It is retained as historical evidence and is not the
+current quantitative authority.
+
 [`tiers.json`](tiers.json) is the machine-readable classification used by the
 architecture generator. Exact module rules take precedence over prefix rules.
 The source audit reports classified import edges and treats every direct or
