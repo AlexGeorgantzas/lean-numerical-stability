@@ -2,22 +2,12 @@ import HighamBench.P03Definitions
 
 namespace HighamBench
 
-/-- P03-T2: the exact scalar coefficient assembly in Theorem 4.1. -/
+/-- P03-T2: the exact normwise residual recurrence in Theorem 4.1. -/
 theorem p03_t2_normwise_residual_contraction
-    (u us gammaR c1 c2 kappa R D Y eRes eSolve eUpdate Rnext : ℝ)
-    (_hden : c1 * kappa * us < 1)
-    (hid : Rnext ≤ eRes + eSolve + eUpdate)
-    (hres : eRes ≤ us * R + (1 + us) * gammaR * D)
-    (hsolve : eSolve ≤
-      us * ((c1 * kappa + c2) / (1 - c1 * kappa * us)) *
-        ((1 + us) * R + (1 + us) * gammaR * D))
-    (hupdate : eUpdate ≤ u * Y) :
-    Rnext ≤
-      us * (1 + (1 + us) * ((c1 * kappa + c2) /
-        (1 - c1 * kappa * us))) * R +
-      (1 + us * ((c1 * kappa + c2) /
-        (1 - c1 * kappa * us))) * (1 + us) * gammaR * D +
-      u * Y := by
+    {n : ℕ} (run : P03NormwiseIRRun n) (i : ℕ) :
+    p03VecInfNorm (p03ExactResidual run (i + 1)) ≤
+      p03Alpha run i * p03VecInfNorm (p03ExactResidual run i) +
+        p03Beta run i := by
   -- PROOF_START
   sorry
 

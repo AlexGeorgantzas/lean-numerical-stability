@@ -1,31 +1,34 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and exact finite-probability assembly from Theorem 4.3",
+    "kind": "faithful reconstruction of the complete SR_(p,r) recursive-summation probability bound in Theorem 4.3",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The variance budget and failure parameter lambda are strictly positive.",
-    "The summation condition factor is nonnegative.",
-    "The centered random component has second moment at most the variance budget.",
-    "The deterministic limited-precision remainder is bounded by the bias radius."
+    "The exact sum is nonzero, so the relative forward error and kappa(a) are defined.",
+    "The failure parameter satisfies 0 < lambda < 1.",
+    "The output precision p and random-bit count r are positive.",
+    "The m rounded additions form the paper's left-to-right SR_(p,r) execution, with delta and beta linked to each actual pre-rounding value and satisfying the local error, history, conditional-mean, and zero-result requirements.",
+    "The errors alpha_k=delta_k-beta_k are mean independent and bounded by u_p, as proved in Lemma 3.10.",
+    "Each path-dependent coefficient remainder B_i satisfies the uniform equation (4.10) radius inherited from Lemma 3.10.",
+    "The centered suffix-product covariances satisfy the uniform gamma_m(u_p^2) consequence of reference [11, Lemma 3.1], which Theorem 4.3 explicitly invokes."
   ],
   "author_label": "Theorem 4.3",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P17 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P17 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P17/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p17_t3_variance_plus_bias_probability_bound {Omega} [Fintype Omega] (P : P17FiniteProbability Omega) (centered : Omega -> Real) (bias varianceBudget biasRadius kappa lambda : Real) ... : 1-lambda <= p17EventProb P {omega | abs (kappa*(centered omega+bias)) <= kappa*(sqrt (varianceBudget/lambda)+biasRadius)}",
+    "lean_header": "theorem p17_t3_variance_plus_bias_probability_bound {m : Nat} {Omega : Type} [Fintype Omega] (run : P17VarianceRecursiveSumRun m Omega) (hsum : p17ExactSum run.a != 0) (lambda : Real) (hlambda_pos : 0 < lambda) (hlambda_lt_one : lambda < 1) : 1-lambda <= p17EventProb run.probability {omega | abs (p17RecursiveSum run.a (fun k => run.delta k omega) - p17ExactSum run.a) / abs (p17ExactSum run.a) <= p17SummationCondition run.a * (sqrt (p17Gamma m ((p17UnitRoundoff run.p)^2) / lambda) + p17Gamma m (p17UnitRoundoff run.p + p17UnitRoundoff (run.p+run.r)) - p17Gamma m (p17UnitRoundoff run.p))}",
     "namespace": "HighamBench",
-    "plain_language": "With probability at least one minus lambda, a condition-scaled centered error plus bounded deterministic bias lies within the Chebyshev radius plus the bias radius.",
+    "plain_language": "With probability at least one minus lambda, the relative forward error of the computed SR_(p,r) recursive sum is bounded by kappa(a) times the exact variance radius plus the exact limited-precision remainder radius from Theorem 4.3.",
     "target_file": "paper_bencmark/highambench/tasks/P17/T3/Target.lean",
     "theorem_name": "p17_t3_variance_plus_bias_probability_bound"
   },
-  "informal_proof": "Apply finite Chebyshev to the centered term at radius sqrt(varianceBudget/lambda), use the second-moment hypothesis to bound the tail by lambda, then use event monotonicity, triangle inequality, the bias bound, and nonnegative scaling by kappa.",
-  "informal_statement": "Exact reusable finite-probability core of Theorem 4.3's variance-based recursive-summation bound.",
+  "informal_proof": "Expand the generated recursive sum into its input suffix coefficients and split its exact error into M+A as in (4.8). Sum the source-derived suffix-product covariance bounds to prove E[M^2] <= (sum_i |a_i|)^2 gamma_m(u_p^2), then apply finite Chebyshev at radius (sum_i |a_i|) sqrt(gamma_m(u_p^2)/lambda). Sum Lemma 3.10's pathwise B_i bounds to obtain (4.10), combine both terms pointwise, and divide by the nonzero exact sum to obtain kappa(a) and equation (4.11).",
+  "informal_statement": "Theorem 4.3 in full, with m=n-1: the SR_(p,r)-computed recursive sum satisfies the exact variance-based relative forward-error bound in equation (4.11) with probability at least 1-lambda.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -42,17 +45,49 @@
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
       "NumStability.FiniteProbability.eventProb_abs_sub_le_ge_one_sub_of_second_moment",
-      "NumStability.FiniteProbability.eventProb_mono"
+      "NumStability.FiniteProbability.eventProb_mono",
+      "NumStability.foldl_add_mul_one_add_suffix_expansion",
+      "NumStability.summationComponentwisePerturbation_rel_error_le_condition"
     ],
-    "note": "The frozen library supplies finite Chebyshev and event monotonicity, but not P17's limited-precision bias remainder or condition-scaled probability event."
+    "note": "The frozen library supplies generic finite Chebyshev, event monotonicity, recursive-fold expansion, and a deterministic summation-condition reduction. It does not supply the limited-precision SR execution, alpha/beta decomposition, suffix covariance assembly, random remainder, or complete Theorem 4.3 event."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "P17FiniteProbability",
-    "p17EventProb",
-    "p17Expectation"
+    "p17UnitRoundoff",
+    "p17Gamma",
+    "p17ExactSum",
+    "p17SummationCondition",
+    "p17RecursiveSum",
+    "p17RecursiveCoefficient",
+    "p17Alpha",
+    "p17CoefficientRemainder",
+    "p17CenteredSummationError",
+    "p17LimitedPrecisionRemainder",
+    "P17VarianceRecursiveSumRun",
+    "p17EventProb"
   ],
   "source_locations": [
+    {
+      "anchor": "Lemma 3.10 equations (3.8)-(3.9)",
+      "pdf_page": 11,
+      "printed_page": "B1237",
+      "role": "mean-independent alpha errors, exact path-dependent B_i decomposition, and remainder radius",
+      "section": "3. Analysis of limited-precision SR"
+    },
+    {
+      "anchor": "recursive sum, condition number, gamma function, and computed product representation (4.1)-(4.4)",
+      "pdf_page": 13,
+      "printed_page": "B1239",
+      "role": "algorithm, exact and computed sums, and constants",
+      "section": "4.1 Recursive summation"
+    },
+    {
+      "anchor": "exact M+A error decomposition (4.8)",
+      "pdf_page": 14,
+      "printed_page": "B1240",
+      "role": "path-dependent centered and limited-precision error components",
+      "section": "4.1 Recursive summation"
+    },
     {
       "anchor": "Theorem 4.3 equation (4.11), centered bound (4.12), and deterministic remainder bound (4.10)",
       "pdf_page": 15,
@@ -67,7 +102,7 @@
   "task_id": "P17-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "The L proof uses the frozen finite Chebyshev theorem and event monotonicity, then adds P17's centered-plus-bias decomposition, exact square-root radius calculation, deterministic remainder, and condition-number scaling absent from the mounted library.",
+  "tier_rationale": "The L proof uses the frozen finite Chebyshev theorem, but must add the complete paper-specific SR_(p,r) execution semantics, exact recursive coefficient expansion, weighted covariance-to-second-moment derivation, random M+A decomposition, Lemma 3.10 remainder assembly, exact gamma constants, and relative condition-number reduction. No frozen declaration states or nearly completes Theorem 4.3.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P17/T3/Target.lean",
     "mode": "shared automatic validator",

@@ -15,7 +15,7 @@
     "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P03-T1",
@@ -63,13 +63,13 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use Theorem 4.1's exact \u03b1\u1d62/\u03b2\u1d62 coefficient assembly, which combines several one-step library shapes with the paper-specific four-precision solver factor.",
+      "decision": "Use the full indexed Algorithm 1.1 recurrence in Theorem 4.1, deriving its exact alpha_i/beta_i bound from equations (2.4), (3.3), (3.6), and (4.1) rather than assuming preassembled scalar estimates.",
       "task_id": "P03-T2",
       "theorem_name": "p03_t2_normwise_residual_contraction"
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 5.1's componentwise recurrence, which requires the paper-specific Z\u2081/M\u2081 resolvent model and a nonnegative inverse-action argument absent from the frozen library.",
+      "decision": "Use the full indexed Algorithm 1.1 recurrence in Theorem 5.1, retaining equations (2.5), (3.3), (3.6), the uniform condition (5.6), and the exact iteration-dependent Z_i, M_i, W_i, and y_i formulas rather than assuming abstract preassembled residual and correction inequalities.",
       "task_id": "P03-T3",
       "theorem_name": "p03_t3_componentwise_residual_recurrence"
     }

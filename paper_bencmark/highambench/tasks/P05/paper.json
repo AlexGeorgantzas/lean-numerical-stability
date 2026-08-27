@@ -15,7 +15,7 @@
     "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P05-T1",
@@ -36,7 +36,7 @@
   "rejected_candidates": [
     {
       "candidate": "Theorem 3.1",
-      "reason": "It is the paper's main summation framework, but formalizing arbitrary floating-point evaluation trees and underflow exclusions would dominate the benchmark setting; its coefficient consequence is retained in P05-T1."
+      "reason": "It is the paper's general summation framework rather than the selected quotient application. P05-T1 reconstructs its needed protected-tree instance from rounded merge steps and equation (2.4), then targets Lemma 4.1's protected-input coefficient conclusion."
     },
     {
       "candidate": "Corollary 3.2",
@@ -66,19 +66,19 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use Lemma 4.1's exact sign-aligned conversion from a scalar residual bound to uniform per-source coefficients.",
+      "decision": "Use Lemma 4.1's complete protected-c coefficient result for the computed quotient, including the general k*u bound and the division-free (k-1)*u case.",
       "task_id": "P05-T1",
       "theorem_name": "p05_t1_uniform_backward_coefficients"
     },
     "T2": {
       "available": true,
-      "decision": "Use Theorem 4.2's sharp square-LU rowwise and uniform (n-1)u backward-error bounds.",
+      "decision": "Use all of Theorem 4.2: the rectangular n*u LU backward-error result, the local Doolittle estimates (4.3), and the sharp square rowwise and uniform (n-1)u bounds.",
       "task_id": "P05-T2",
-      "theorem_name": "p05_t2_square_lu_backward_error"
+      "theorem_name": "p05_t2_lu_backward_error"
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 4.4's symmetry bridge from local upper-triangle Cholesky estimates to the full diag((i+1)u) and (n+1)u bounds.",
+      "decision": "Use all of Theorem 4.4: the conventional Cholesky execution, local estimates (4.5), exact backward relation, and full diag((i+1)u) and (n+1)u bounds.",
       "task_id": "P05-T3",
       "theorem_name": "p05_t3_cholesky_backward_error"
     }

@@ -14,7 +14,7 @@
     "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P08-T1",
@@ -51,11 +51,11 @@
     },
     {
       "candidate": "Lemma 4.1",
-      "reason": "Its printed constants depend on the externally supplied Gaussian-elimination estimate and several anonymous dimension-dependent matrices. T3 isolates the exact recurrence and induction step that Lemma 4.1 feeds."
+      "reason": "It is not selected as a separate target. P08-T3 instead exposes its lower-level residual and correction errors and reconstructs the complete componentwise estimate needed for Lemma 4.3's q_1 base case and recurrence."
     },
     {
       "candidate": "Theorem 4.4",
-      "reason": "The theorem is a direct substitution of Lemma 4.3 into Lemma 4.2 and contains many anonymous constants; T2 and T3 preserve those two mathematically distinct ingredients exactly."
+      "reason": "The theorem is a direct substitution of Lemma 4.3 into Lemma 4.2 and introduces further anonymous constants; T2 and the full Lemma 4.3 target preserve those two mathematically distinct ingredients."
     },
     {
       "candidate": "the limiting bounds following Theorem 4.4",
@@ -93,9 +93,9 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Lemma 4.3's signed affine recurrence and induction as an exact finite matrix-geometric bound.",
+      "decision": "Use the complete algorithm-linked Lemma 4.3 componentwise bound, preserving q_(m+1), exponent m, the precision-sensitive four terms, source constants, conditioning threshold, recurrence, and q_1 base case.",
       "task_id": "P08-T3",
-      "theorem_name": "p08_t3_componentwise_affine_recurrence"
+      "theorem_name": "p08_t3_lemma_4_3_exact_residual_bound"
     }
   },
   "schema_version": "highambench-paper-0.2",

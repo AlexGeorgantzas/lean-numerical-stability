@@ -1,30 +1,31 @@
 {
   "annotation": {
-    "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and finite column-to-Frobenius formalization",
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "owner-approved source reselection to the explicit columnwise-to-Frobenius implication preceding equation (4.20), with genuine asymptotic remainder aggregation",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The common relative column coefficient eta is nonnegative.",
-    "Every backward-error column satisfies the same Euclidean relative bound against the corresponding input column.",
-    "Only the exact leading-order implication in (4.20) is selected; the paper's separate O(u^2) term is not represented."
+    "A is a real m-by-n matrix and DeltaA(u) is a real m-by-n perturbation family indexed by unit roundoff u.",
+    "The paper constant c6 is a positive natural number and lambda is positive.",
+    "Every scalar column remainder is O(u^2) as positive u tends to zero.",
+    "Eventually on the physical domain 0 < u < 1, all columns simultaneously satisfy equation (4.17) with the exact coefficient c6*lambda*sqrt(n)*gammaTilde_m(lambda,u)."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P06 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P06 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P06/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p06_t1_columnwise_to_frobenius {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real) (eta : Real) ... : p06FrobNorm DeltaA <= eta * p06FrobNorm A",
+    "lean_header": "theorem p06_t1_columnwise_to_frobenius {m n : Nat} (A : Fin m -> Fin n -> Real) (DeltaA : Real -> Fin m -> Fin n -> Real) (columnRemainder : Fin n -> Real -> Real) (c6 : Nat) (lambda : Real) ... : exists normwiseRemainder, p06SecondOrderAtZeroRight normwiseRemainder and eventually ||DeltaA(u)||_F <= p06QRLeadingCoefficient c6 lambda m n u * ||A||_F + |normwiseRemainder(u)|",
     "namespace": "HighamBench",
-    "plain_language": "A common relative Euclidean bound for all error columns implies the same relative Frobenius bound for the complete error matrix.",
+    "plain_language": "If every backward-error column satisfies (4.17) simultaneously with its own O(u^2) remainder, then the whole perturbation satisfies the Frobenius-norm bound (4.20) with the same leading coefficient and one O(u^2) remainder.",
     "target_file": "paper_bencmark/highambench/tasks/P06/T1/Target.lean",
     "theorem_name": "p06_t1_columnwise_to_frobenius"
   },
-  "informal_proof": "Square each nonnegative column bound, sum over columns, identify the two sums with squared Frobenius norms, and take square roots using eta >= 0.",
-  "informal_statement": "The deterministic columnwise-to-normwise implication displayed as equation (4.20).",
+  "informal_proof": "View the column Euclidean norms as a finite Euclidean vector. Pointwise monotonicity applies the simultaneous column bounds, the Euclidean triangle inequality separates the leading and remainder vectors, and homogeneity identifies the leading vector norm with the same coefficient times ||A||_F. Bound the remainder vector's Euclidean norm by the sum of its absolute entries. That finite sum is O(u^2) because every column remainder is O(u^2).",
+  "informal_statement": "The sentence preceding equation (4.20): the simultaneous columnwise backward-error bounds (4.17) imply the Frobenius-norm bound (4.20), including the additive O(u^2) term.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -37,24 +38,54 @@
   "paper_version": "published journal version; volume 44, issue 3, 2023, printed pages 1146-1163",
   "result_form_tag": "BND",
   "review_record_not_for_run_prompt": {
+    "absence_search": {
+      "patterns": [
+        "columnwise",
+        "Frobenius",
+        "frobNormRect_le_of_col_vecNorm2_le",
+        "vecNorm2_add_le"
+      ],
+      "result": "The frozen library contains generic column-to-Frobenius and Euclidean triangle inequalities, but no theorem carrying P06's exact gammaTilde coefficient together with finite O(u^2) remainder aggregation.",
+      "scope": "all Lean source files corresponding to the frozen NumStability modules"
+    },
     "exact_target_found_in_mathlib": false,
-    "exact_target_found_in_numstability_baseline": true,
+    "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
+      "NumStability.vecNorm2_add_le",
+      "NumStability.vecNorm2_le_of_abs_le",
+      "NumStability.vecNorm2Sq_le_sum_abs_sq",
       "NumStability.frobNormRect_le_of_col_vecNorm2_le"
     ],
-    "note": "The frozen declaration is the exact generic columnwise-to-Frobenius implication. The L proof only adapts P06's paper-scoped norm notation."
+    "note": "The condition-L proof directly reuses NumStability.vecNorm2_add_le for the vector of column budgets. It still constructs and proves the asymptotic normwise remainder required by the selected P06 implication."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "p06VecNorm2",
-    "p06FrobNorm"
+    "p06FrobNorm",
+    "p06GammaTilde",
+    "p06QRLeadingCoefficient",
+    "p06SecondOrderAtZeroRight"
   ],
   "source_locations": [
     {
-      "anchor": "equation (4.20) and its preceding implication sentence",
+      "anchor": "equation (1.6)",
+      "pdf_page": 2,
+      "printed_page": "1147",
+      "role": "definition of gammaTilde and the lambda parameter",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "Theorem 4.4, equation (4.17)",
+      "pdf_page": 9,
+      "printed_page": "1154",
+      "role": "simultaneous columnwise premise, exact coefficient, and column O(u^2) terms",
+      "section": "4. Application of a sequence of Householder matrices"
+    },
+    {
+      "anchor": "the implication sentence preceding equation (4.20) and equation (4.20)",
       "pdf_page": 10,
       "printed_page": "1155",
-      "role": "Frobenius backward-error bound implied by the columnwise estimate",
+      "role": "selected columnwise-to-Frobenius implication and normwise conclusion",
       "section": "4. Application of a sequence of Householder matrices"
     }
   ],
@@ -64,7 +95,7 @@
   "task_id": "P06-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "NumStability.frobNormRect_le_of_col_vecNorm2_le in NumStability/Analysis/MatrixAlgebra.lean states the generic result directly; only unfolding the paper-scoped Euclidean and Frobenius wrappers is required.",
+  "tier_rationale": "The condition-L proof directly applies NumStability.vecNorm2_add_le to the finite vector of column budgets. The remaining steps identify Frobenius and column Euclidean norms, prove coefficient nonnegativity on 0 < u < 1, bound l2 by l1, and show that a finite sum of O(u^2) remainders remains O(u^2).",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P06/T1/Target.lean",
     "mode": "shared automatic validator",

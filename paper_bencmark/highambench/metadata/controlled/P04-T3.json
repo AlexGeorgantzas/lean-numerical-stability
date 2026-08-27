@@ -11,19 +11,19 @@
       "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
     },
     {
-      "bytes": 1086,
+      "bytes": 13797,
       "path": "shared/HighamBench/P04Definitions.lean",
-      "sha256": "646a34423a78acdd51a626a6a78611c4ccb557188f7b25c1d324f0722c6c5ad9"
+      "sha256": "cbf88a9826eef35e7f1972ddc402fe31a95e7add5b1e305c8e6e32da2e9ef61a"
     },
     {
-      "bytes": 1172,
+      "bytes": 779,
       "path": "tasks/P04/T3/Target.lean",
-      "sha256": "8d92998de2588ca675b513db902c36f7ca1d8689c81ad8d8b886c9b5371b4b7e"
+      "sha256": "0e18f38681cc3b6f670c6dffe237b8b91b85bbd17f9212a2ca845ee8becc20e1"
     },
     {
-      "bytes": 840,
+      "bytes": 2798,
       "path": "tasks/P04/T3/context.md",
-      "sha256": "131b85f2c4b608a868a82af77857dd53ba71fd6c801ddeafafc97ba394280a4f"
+      "sha256": "282bff9f16b1ec0a7b37cbec8090a3666f0d8a65cf85afff031ae753438e5c5c"
     }
   ],
   "kind": "highambench-controlled-files",

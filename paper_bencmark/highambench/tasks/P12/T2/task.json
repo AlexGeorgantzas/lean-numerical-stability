@@ -1,30 +1,34 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and finite-certificate form of Theorem 2",
+    "kind": "source selection, tier label, equation-(1) radix model, and exact Theorem 2 FastTwoSum proof",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "x is representable and s is a nearest representable value to x+y.",
-    "The two exact subtraction results s-x and y-t are representable.",
-    "t and e are nearest representable values to those exact subtraction results."
+    "The format has an arbitrary integer radix beta >= 2, positive precision p, and an inclusive finite exponent interval [emin, emax].",
+    "Representability is exactly equation (1): x=m*beta^e for integer m and e with -beta^p<m<beta^p and emin<=e<=emax; representations need not be normalized or unique.",
+    "Both ordered inputs x and y belong to the same floating-point set F.",
+    "Some permitted representation of x satisfies condition (7), |y| <= ceil(beta^p-beta/2)*beta^e(x); the ceiling is evaluated exactly as beta^p-floor(beta/2).",
+    "FastTwoSum executes one nearest addition followed by two faithful subtractions, with no fixed tie rule.",
+    "The execution has no separate overflow premise. The proof handles finite-endpoint saturation of the nearest addition and derives representability and exactness of both subtraction results from condition (7).",
+    "The real-valued set model has no infinities, NaNs, exception flags, or signed-zero distinction, and Theorem 2 states no separate underflow exclusion."
   ],
   "author_label": "Theorem 2",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P12 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P12 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P12/T2/context.md",
   "formal_statement": {
-    "lean_header": "theorem p12_t2_fast_two_sum_exact (representable : Real -> Prop) (x y : Real) (tr : P12FastTwoSumTrace) ... : tr.s + tr.e = x+y and abs (tr.s-(x+y)) <= abs y",
+    "lean_header": "theorem p12_t2_fast_two_sum_exact (fmt : P12RadixFormat) (x y : Real) (tr : P12FastTwoSumTrace) (hx : p12Representable fmt x) (hy : p12Representable fmt y) (hcondition7 : exists rx : P12Representation fmt x, abs y <= fmt.condition7Ceiling*fmt.scale rx.exponent) (run : P12FastTwoSumExecution fmt x y tr) : tr.t=tr.s-x and tr.e=y-tr.t and tr.s+tr.e=x+y and abs(tr.s-(x+y))<=abs y",
     "namespace": "HighamBench",
-    "plain_language": "A nearest-addition FastTwoSum trace whose two exact subtraction results are representable returns an exact two-term transform and satisfies the local sum-error bound.",
+    "plain_language": "For equation-(1) floating-point inputs satisfying condition (7), original FastTwoSum with nearest addition and faithful subtraction computes both subtractions exactly and returns an exact two-term transform.",
     "target_file": "paper_bencmark/highambench/tasks/P12/T2/Target.lean",
     "theorem_name": "p12_t2_fast_two_sum_exact"
   },
-  "informal_proof": "Nearest rounding fixes each representable subtraction result, so t=s-x and e=y-t. Substitute both equalities, simplify s+e, and choose x in the nearest-addition relation for the error bound.",
-  "informal_statement": "Theorem 2's error-free identity (3), with the two representability obligations used in its proof made explicit, together with equation (10).",
+  "informal_proof": "Choose the condition-(7) representation of x and rebase y so e(y)<=e(x). Use ceil(beta^p-beta/2)+floor(beta/2)=beta^p in the equal-exponent case, and follow Theorem 2's exact-addition and complementary large-sum cases to prove representability of s-x. At the finite top exponent, nearest saturation is handled directly from the signed maximal endpoint. Faithful rounding then gives t=s-x. Nearest addition gives |s-(x+y)|<=|y|; the derived exponent of t gives strict representability of y-t, so e=y-t. Exact algebra yields s+e=x+y.",
+  "informal_statement": "Theorem 2 for arbitrary radix: equation-(1) inputs satisfying the existential threshold (7) make the original nearest-addition/faithful-subtraction FastTwoSum transform error-free, with both subtraction identities and equation (10)'s local error bound exposed.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -41,16 +45,40 @@
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
       "NumStability.FloatingPointFormat.nearestRoundingIn_eq_self_of_mem",
-      "NumStability.FloatingPointFormat.nearestRoundingIn_minimal"
+      "NumStability.FloatingPointFormat.nearestRoundingIn_minimal",
+      "NumStability.FloatingPointFormat.fergusonMagnitudeExponentConditionLe_sub_finiteSystem"
     ],
-    "note": "The mounted object gives the two local nearest-rounding adapters but no completed FastTwoSum trace theorem. The closer NumStability/Algorithms/Summation/Compensated/FastTwoSum source is absent from metadata/library_olean.json and is not part of the baseline."
+    "note": "The mounted floating-point object supplies nearest-rounding adapters and nearby finite exact-subtraction machinery, but no declaration states Lange-Oishi condition (7), its arbitrary-base three-case argument, or the completed FastTwoSum theorem. The closer NumStability/Algorithms/Summation/Compensated/FastTwoSum source is absent from metadata/library_olean.json and is not part of the baseline."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "p12Nearest",
-    "P12FastTwoSumTrace"
+    "P12RadixFormat",
+    "P12RadixFormat.condition7Ceiling",
+    "P12Representation",
+    "p12Representable",
+    "p12NearestInFormat",
+    "p12FaithfulInFormat",
+    "P12RadixGeometry",
+    "p12RadixGeometry",
+    "P12FastTwoSumTrace",
+    "P12FastTwoSumExecution"
   ],
   "source_locations": [
+    {
+      "anchor": "equation (1), rounding definitions, and original FastTwoSum algorithm",
+      "pdf_page": 2,
+      "printed_page": "384",
+      "role": "radix set, nearest and faithful operation semantics, and three-step execution",
+      "section": "1. Introduction and notation"
+    },
+    {
+      "anchor": "multiple representations and exponent convention",
+      "pdf_page": 3,
+      "printed_page": "385",
+      "role": "nonunique representation witness e(x)",
+      "section": "2. Multiple representations"
+    },
     {
       "anchor": "Theorem 2, equations (3), (7), and (8)",
       "pdf_page": 5,
@@ -72,7 +100,7 @@
   "task_id": "P12-T2",
   "tier": "T2",
   "tier_label": "combine",
-  "tier_rationale": "The L proof combines two uses of NumStability.FloatingPointFormat.nearestRoundingIn_eq_self_of_mem with nearestRoundingIn_minimal and paper-specific trace algebra. No mounted declaration states the completed error-free transform.",
+  "tier_rationale": "The L proof supplies NumStability.FloatingPointFormat.nearestRoundingIn_minimal and nearestRoundingIn_eq_self_of_mem as two distinct adapters to the same paper-scoped proof, then combines them with equation-(1)/(8) radix geometry, the exact condition-(7) ceiling, the source's three cases, and a finite-endpoint saturation case. No mounted declaration states condition (7), its arbitrary-base case split, or the completed error-free transform. The task therefore remains a combine task rather than a direct invocation.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P12/T2/Target.lean",
     "mode": "shared automatic validator",

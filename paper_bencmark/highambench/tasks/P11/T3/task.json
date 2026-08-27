@@ -1,36 +1,40 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, and exact finite-budget completion of Theorem 1(7)",
+    "kind": "faithfulness rebuild of equation (7) with an operational CGS-P family and a uniform second-order remainder",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The computed factors satisfy QR=A+DeltaA and Rinv is a right inverse of R.",
-    "The normal-equation residual, A, DeltaA, and Rinv obey the four stated nonnegative Frobenius budgets."
+    "The dimensions m and n are positive, n <= m, and one fixed real m-by-n input A has full column rank.",
+    "For every positive machine unit, an operation-linked successful normalized-range execution of Algorithm 2 (CGS-P) computes Q and upper-triangular R from the same A, including the pythagorean diagonal formula.",
+    "The arithmetic interface supplies normalized-range relative-error laws for norm, division, addition, subtraction, multiplication, square root, and dot-product operations; exceptional IEEE values and breakdown are outside the represented executions.",
+    "Every computed leading R_k has a certified two-sided inverse. The strict condition c4(m,k)*epsilonM*kappa2(R_k)^2 < 1 holds for all prefixes on one fixed positive right-neighborhood of zero.",
+    "The computed R_k norms and inverse norms are uniformly bounded on one fixed positive right-neighborhood of zero, as required to propagate a uniform second-order remainder through inverse multiplication.",
+    "Equations (4)-(5) and the reversed norm comparison from (6), which precede the selected equation (7), hold uniformly with nonnegative prefix coefficients and one radius fixed before epsilonM is selected."
   ],
-  "author_label": "Theorem 1",
-  "classification_frozen_before_runs": true,
+  "author_label": null,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P11 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P11 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P11/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p11_t3_orthogonality_defect_bound {n : Nat} (A dA Q R Rinv : P11Matrix n) (e a d rho : Real) ... : p11FrobNorm (p11OrthogonalityDefect Q) <= rho^2 * (e + 2*a*d + d^2)",
+    "lean_header": "theorem p11_t3_orthogonality_defect_bound {m n : Nat} (family : P11CGSPTheorem1Family m n) (analysis : P11Theorem1ResidualAsymptotics family) : forall epsilonM : P11PositiveEpsilon, epsilonM.1 <= p11Theorem1OrthogonalityRadius family analysis -> forall k : Fin n, p11OpNorm2 (p11RectOrthogonalityDefect (p11ColumnPrefix (family.run epsilonM).Q k)) <= p11C4 m (k.val+1) * p11Kappa2 (p11LeadingBlock (family.run epsilonM).R k) ((family.run epsilonM).leadingInverse k)^2 * epsilonM.1 + p11Theorem1OrthogonalityRemainderCoeff family analysis k * epsilonM.1^2",
     "namespace": "HighamBench",
-    "plain_language": "The loss of orthogonality is bounded by the squared inverse-factor budget times the normal-equation residual and the two first-order plus one quadratic factorization-error contributions.",
+    "plain_language": "On one common small-precision neighborhood, every positive prefix of a fixed-input operational CGS-P execution family satisfies equation (7)'s spectral loss-of-orthogonality bound with the exact first-order coefficient and one second-order coefficient fixed independently of the selected machine unit.",
     "target_file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
     "theorem_name": "p11_t3_orthogonality_defect_bound"
   },
-  "informal_proof": "First derive the exact inverse-conjugated identity from QR=A+DeltaA. Bound each of A-transpose DeltaA, DeltaA-transpose A, and DeltaA-transpose DeltaA by Frobenius submultiplicativity, collect the four inner terms by repeated triangle inequalities, and apply two more product bounds for Rinv-transpose and Rinv.",
-  "informal_statement": "Theorem 1(7)'s orthogonality estimate with its first- and second-order contributions represented by explicit finite budgets.",
+  "informal_proof": "For each precision and prefix, define DeltaA_k as the actual factorization residual and E_k as the actual normal-equation residual. Derive the exact page-312 inverse-conjugated defect identity, then apply spectral transpose invariance, triangle inequalities, and submultiplicativity. Substitute the uniform forms of (4)-(5), use epsilonM<=1 and the reversed form of (6) to replace ||A_k||_2^2 by ||R_k||_2^2 to first order, and use the family-wide R_k and inverse bounds to obtain a second-order coefficient independent of epsilonM. The first-order term simplifies to c4(m,k)*kappa2(R_k)^2*epsilonM.",
+  "informal_statement": "Numbered equation (7) for every prefix of a fixed-input operational CGS-P family, retaining the rectangular dimensions, condition (3), spectral norm, corrected source constants, computed R_k condition number, and a uniform interpretation of O(epsilonM squared).",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
   },
   "paper_id": "P11",
   "paper_source": {
-    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf",
+    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram–Schmidt.pdf",
     "sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5"
   },
   "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
@@ -39,47 +43,75 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.frobNorm_matMul_le",
-      "NumStability.frobNorm_sub_le",
-      "NumStability.frobNorm_transpose",
-      "NumStability.matMul_assoc",
-      "NumStability.matTranspose_matMul"
+      "NumStability.rectOpNorm2_nonneg",
+      "NumStability.rectOpNorm2_finiteTranspose",
+      "NumStability.opNorm2_sub_le",
+      "NumStability.opNorm2_matMul_le",
+      "NumStability.rectMatMul_assoc"
     ],
-    "note": "All 24 modules in metadata/library_olean.json were searched. The mounted MatrixAlgebra object has the required local norm and algebra adapters, but no Gram-Schmidt model, no theorem deriving the exact defect identity, and no completed finite-budget version of Theorem 1(7). The broader source-only GramSchmidt modules are absent from the frozen object manifest and were not counted."
+    "note": "All 24 modules in metadata/library_olean.json were searched. The mounted MatrixAlgebra object supplies square spectral-norm submultiplicativity used directly by the L proof, but no CGS-P arithmetic model, operation-linked execution family, uniform residual asymptotics, page-312 defect identity, or equation-(7) remainder propagation. Broader source-only GramSchmidt modules are absent from the frozen object manifest and were not counted."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "P11Matrix",
-    "p11MatMul",
-    "p11Transpose",
-    "p11FrobNorm",
-    "p11OrthogonalityDefect",
-    "p11NormalEquationResidual",
-    "p11DefectCore"
+    "P11RectMatrix",
+    "p11ColumnPrefix",
+    "p11LeadingBlock",
+    "p11OpNorm2",
+    "p11RectOpNorm2",
+    "p11C1",
+    "p11C2",
+    "p11C3",
+    "p11C4",
+    "p11Kappa2",
+    "p11RectOrthogonalityDefect",
+    "P11CGSPNormalizedArithmetic",
+    "P11CGSPColumnTrace",
+    "P11CGSPTheorem1Run",
+    "P11PositiveEpsilon",
+    "P11CGSPTheorem1Family",
+    "p11Theorem1FactorizationResidual",
+    "P11Theorem1ResidualAsymptotics",
+    "p11Theorem1OrthogonalityRadius",
+    "p11Theorem1OrthogonalityRemainderCoeff"
   ],
   "source_locations": [
     {
-      "anchor": "Theorem 1, inequality (7)",
+      "anchor": "standing rectangular full-rank setup and Algorithm 2 (CGS-P)",
+      "pdf_page": 2,
+      "printed_page": "300",
+      "role": "inherited dimensions, rank assumption, and distinction from standard CGS",
+      "section": "Algorithm setup"
+    },
+    {
+      "anchor": "Algorithm 2 and floating-point model",
+      "pdf_page": 3,
+      "printed_page": "301",
+      "role": "pythagorean diagonal, normalized-range arithmetic, and first-order convention",
+      "section": "Algorithm 2"
+    },
+    {
+      "anchor": "Theorem 1, numbered equation (7)",
       "pdf_page": 4,
       "printed_page": "302",
-      "role": "stated loss-of-orthogonality bound",
+      "role": "selected stated loss-of-orthogonality bound",
       "section": "Theorem 1"
     },
     {
-      "anchor": "unnumbered exact identity and following norm estimate deriving (7)",
+      "anchor": "exact identity and following norm estimates deriving equation (7)",
       "pdf_page": 14,
       "printed_page": "312",
-      "role": "proof decomposition into normal-equation and factorization-error terms",
+      "role": "proof decomposition and propagation of equations (4)-(6)",
       "section": "Appendix: Proof of Theorem 1"
     }
   ],
   "source_tags": [
-    "THM"
+    "EQN"
   ],
   "task_id": "P11-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "NumStability.frobNorm_matMul_le, NumStability.frobNorm_sub_le, NumStability.frobNorm_transpose, NumStability.matMul_assoc, and NumStability.matTranspose_matMul in NumStability/Analysis/MatrixAlgebra.lean supply only local adapters. The proof must newly derive the residual-to-defect identity and propagate four budgets through a double inverse conjugation; no such result exists in any of the 24 mounted modules recorded by metadata/library_olean.json.",
+  "tier_rationale": "The L proof directly reuses NumStability.opNorm2_matMul_le for square spectral-norm submultiplicativity. It must still derive the rectangular inverse-conjugated identity, control all four residual terms, propagate three uniform second-order coefficients through family-wide norm bounds, use the reversed equation-(6) comparison, and assemble the all-prefix c4*kappa2(R_k)^2 result. No mounted declaration models the CGS-P family or states equation (7).",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
     "mode": "shared automatic validator",

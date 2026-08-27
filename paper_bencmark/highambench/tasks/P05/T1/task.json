@@ -1,30 +1,32 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, residual-source indexing adapter, and exact coefficient formalization",
+    "kind": "source selection, protected arbitrary-tree execution trace, and exact coefficient formalization",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The unit roundoff u is nonnegative.",
-    "With Lean's k equal to the number of product terms, the preceding summation analysis bounds the scalar residual by (k+1)*u times the absolute-value sum of the computed result, c, and those terms.",
-    "The nested Option index is only a finite disjoint union of those three source families."
+    "Lean's m is the number of product terms, so the paper's positive index is k=m+1.",
+    "The inputs belong to a finite, symmetric radix-beta, precision-p format with round-to-nearest, unit roundoff u=(1/2)*beta^(1-p) <= 1/2, and a nonzero denominator.",
+    "The products, arbitrary permuted binary-tree subtraction sum, and final division are linked to the computed yHat, with explicit range certificates excluding underflow and overflow.",
+    "The protected-sum trace decomposes the arbitrary tree along c's root path; every sibling subtree carries only the earlier equation (2.4) estimate, while every path merge is an actual safe rounded addition satisfying equations (2.1b) and (2.2).",
+    "When bK=1, yHat is the computed numerator without division; otherwise yHat is the safe rounded quotient. No final residual bound or target coefficient is an input field."
   ],
   "author_label": "Lemma 4.1",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P05 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P05 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P05/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p05_t1_uniform_backward_coefficients {k : Nat} (u computed c : Real) (products : Fin k -> Real) ... : exists theta0 thetaC thetaP, uniform (k+1)*u bounds and computed*(1+theta0)=c*(1+thetaC)-sum products_i*(1+thetaP_i)",
+    "lean_header": "theorem p05_t1_uniform_backward_coefficients {m : Nat} (run : P05Lemma41Run m) : general protected-c coefficient identity with (m+1)*u bounds, and if bK=1 the division-free protected-c identity with m*u bounds",
     "namespace": "HighamBench",
-    "plain_language": "A residual bounded by (k+1)*u times the magnitudes of all sources can be distributed among exact sign-aligned source coefficients, each bounded by (k+1)*u.",
+    "plain_language": "Every certified round-to-nearest evaluation of the paper's quotient has the exact protected-c backward identity with coefficients bounded by (m+1)u, plus the sharper m*u identity when the denominator is one and no division is performed.",
     "target_file": "paper_bencmark/highambench/tasks/P05/T1/Target.lean",
     "theorem_name": "p05_t1_uniform_backward_coefficients"
   },
-  "informal_proof": "Distribute the scalar residual over the sources in proportion to their magnitudes, using their signs. If their absolute-value sum is zero, the residual is zero and all coefficients can be zero.",
-  "informal_statement": "The exact uniform-coefficient conversion used in Lemma 4.1 after its scalar residual estimate.",
+  "informal_proof": "Prove Theorem 3.1 by induction over the protected path of the arbitrary summation tree. At each merge combine the outer induction estimate, equation (2.4) for the sibling subtree, and both branches of equation (2.2); the paper's cases following (3.5)-(3.6) remove the quadratic term without a dimension guard. For bK != 1, equation (2.1b) gives Corollary 3.2's one-step quotient residual; for bK=1 use the trace directly. Finally distribute each residual over bK*yHat (or yHat) and the exact products by magnitude and sign, leaving c unchanged.",
+  "informal_statement": "Lemma 4.1's complete general and unit-denominator protected-c backward-error conclusions for a certified floating-point execution.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -42,15 +44,23 @@
     "nearby_numstability_declarations": [
       "NumStability.exists_summation_source_coefficients_of_abs_le_mul_sum_abs"
     ],
-    "note": "The frozen declaration directly supplies the generic sign-aligned residual distribution. A small paper-specific adapter assigns its coefficients to the computed result, c, and the signed product terms in Lemma 4.1."
+    "note": "The frozen declaration directly supplies the generic sign-aligned residual distribution. A paper-specific adapter assigns its coefficients to bK*yHat and the product terms, deliberately excluding the protected input c."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "p05CoefficientSource"
+    "P05FiniteRoundToNearestFormat",
+    "P05SumTree",
+    "p05SumTreeEval",
+    "p05SumTreeSafe",
+    "P05ProtectedSumTrace",
+    "p05RoundedProducts",
+    "p05Lemma41Summands",
+    "p05BackwardSource",
+    "P05Lemma41Run"
   ],
   "source_locations": [
     {
-      "anchor": "Lemma 4.1 and its sign-aligned coefficient construction",
+      "anchor": "Lemma 4.1, including its general and b_k=1 conclusions and sign-aligned coefficient construction",
       "pdf_page": 10,
       "printed_page": "693",
       "role": "uniform componentwise coefficients for the computed subtraction/division expression",
@@ -63,7 +73,7 @@
   "task_id": "P05-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "NumStability.exists_summation_source_coefficients_of_abs_le_mul_sum_abs in NumStability/Analysis/Summation/ErrorBounds.lean closes the mathematical core directly after the finite disjoint-union and sign adapters.",
+  "tier_rationale": "NumStability.exists_summation_source_coefficients_of_abs_le_mul_sum_abs in NumStability/Analysis/Summation/ErrorBounds.lean directly constructs each coefficient family once the paper-specific protected-tree induction has produced the residual bound. The remaining adapter assigns those coefficients to bK*yHat and the exact products while leaving c fixed.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P05/T1/Target.lean",
     "mode": "shared automatic validator",

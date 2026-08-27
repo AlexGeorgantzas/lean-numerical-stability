@@ -1,29 +1,35 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, and exact finite-vector realization of the four-source xi aggregate in equation (3.8)",
+    "kind": "static reconstruction of Theorem 3.1 with derived MGS dimension selection, source-level Algorithm 2 modules, raw Appendix-A sensitivity gains, explicit Frobenius-condition-number interpretation, and qualitative first-order semantics",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The weights alpha, beta, and lambda are nonnegative.",
-    "Each of the four error-vector norms is bounded by its corresponding source magnitude."
+    "The dimension n is positive, A and the left preconditioner ML have certified inverses, b is nonzero, and xExact solves A*xExact=b.",
+    "The search spaces form an increasing full-column-rank basis family, and the raw equations and data for Algorithm 2's four modules are supplied at every positive dimension k<=n.",
+    "At the dimension selected by the MGS argument, the forward bound is conditional on equations (3.2)-(3.4), the MGS/Givens least-squares perturbation model, numerical nonsingularity, and the qualitative conditions (3.5)-(3.6).",
+    "The cited MGS law states only that dimension one is well conditioned and loss at k+1 forces the input-near-dependence condition (A.1) at k; it supplies no selected dimension.",
+    "The reusable Appendix-A interface is uniform in k and MR and supplies a contribution expansion with raw gains in the actual module-relative errors, not the collected bound (3.8).",
+    "The unspecified c(n,k) is represented at each fixed dimension by a nonnegative scalar at least one; no coefficients or polynomial degree are invented.",
+    "The qualitative meanings of much-less-than-one and omitted second-order terms are parameterized because the paper gives no threshold or asymptotic variable.",
+    "All matrix and vector quantities are real, so exceptional floating-point values and range failures are outside the model."
   ],
-  "author_label": null,
-  "classification_frozen_before_runs": true,
+  "author_label": "Theorem 3.1",
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P19 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P19 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P19/T2/context.md",
   "formal_statement": {
-    "lean_header": "theorem p19_t2_modular_four_source_error_bound {n : Nat} (alpha beta lambda epsilonC epsilonB ug epsilonX : Real) (computationError rhsError gmresError solutionError : Fin n -> Real) (halpha : 0 <= alpha) (hbeta : 0 <= beta) (hlambda : 0 <= lambda) (hcomputation : p19VecNorm2 computationError <= epsilonC) (hrhs : p19VecNorm2 rhsError <= epsilonB) (hgmres : p19VecNorm2 gmresError <= ug) (hsolution : p19VecNorm2 solutionError <= epsilonX) : p19VecNorm2 (p19ModularError alpha beta lambda computationError rhsError gmresError solutionError) <= p19ModularEnvelope alpha beta lambda epsilonC epsilonB ug epsilonX",
+    "lean_header": "theorem p19_t2_modular_gmres_forward_error {n : Nat} (semantics : P19FirstOrderSemantics) (family : P19Theorem31Family n semantics) (mgs : P19MGSSelectionLaw family) (appendix : P19StaticAppendixATheory family) : exists k : P19Theorem31Dimension n, p19IterationWellConditioned (family.iteration k) and (P19Algorithm2Conditions (family.iteration k) -> forall MR MRinv (hMR : p19InversePair MR MRinv), let q := appendix.rightQuantities k MR MRinv hMR; p19FirstOrderLe semantics (p19ForwardError family.system.xExact (family.iteration k).xHat) ((family.iteration k).dimensionFactor * p19StaticXi MR MRinv q * p19ConditionNumberF (p19StaticSplitOperator family.system MRinv) (p19StaticSplitInverse family.system MR)))",
     "namespace": "HighamBench",
-    "plain_language": "A four-source modular error vector has norm bounded by the exact weighted xi envelope from equation (3.8).",
+    "plain_language": "There exists a dimension k no larger than n at which the computed MGS basis satisfies both 4/3 conditioning bounds; when Algorithm 2's stated error and smallness conditions hold at that dimension, every nonsingular analytical right preconditioner gives the normalized first-order forward-error bound with the exact alpha, beta, lambda, and xi formulas.",
     "target_file": "paper_bencmark/highambench/tasks/P19/T2/Target.lean",
-    "theorem_name": "p19_t2_modular_four_source_error_bound"
+    "theorem_name": "p19_t2_modular_gmres_forward_error"
   },
-  "informal_proof": "Apply Euclidean homogeneity to each weighted source, use its supplied norm bound, and combine the four contributions with three applications of the triangle inequality.",
-  "informal_statement": "An exact finite-vector certificate for the four weighted terms collected in xi in the modular forward-error bound (3.8).",
+  "informal_proof": "If dimension n is well conditioned, select it. Otherwise choose the first dimension whose computed MGS basis is not well conditioned; dimension one is good, so its predecessor is positive, remains good by minimality, and satisfies (A.1) by the cited loss-of-orthogonality law. Assuming Algorithm 2's stated conditions at that selected dimension, for arbitrary MR obtain the uniform Appendix-A raw expansion, derive each safe relative module error from (3.2)-(3.4), apply the four raw sensitivity gains and the Euclidean triangle inequality, collect exactly alpha*epsilonC + beta*epsilonB + beta*ug + lambda*epsilonX, and retain the source-classified second-order remainder.",
+  "informal_statement": "The complete static modular attainable-forward-error result of Theorem 3.1, including a derived existential MGS dimension and explicit qualitative first-order semantics.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -40,40 +46,95 @@
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
       "NumStability.vecNorm2_add_le",
-      "NumStability.vecNorm2_smul"
+      "NumStability.vecNorm2_nonneg"
     ],
-    "note": "The frozen MatrixAlgebra module supplies triangle inequality and homogeneity. It does not contain the paper's alpha/beta/lambda four-source model or its xi aggregation."
+    "note": "The frozen library supplies reusable Euclidean norm facts for combining the four Appendix-A contributions. It contains no preconditioned GMRES execution model, first-loss MGS selection argument, coefficient formulas, qualitative first-order interface, or complete Theorem 3.1 result."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "p19VecNorm2Sq",
+    "P19Matrix",
+    "P19RectMatrix",
+    "P19Vector",
     "p19VecNorm2",
-    "p19Add",
-    "p19Scale",
-    "p19ModularError",
-    "p19ModularEnvelope"
+    "p19FrobNorm",
+    "p19InversePair",
+    "P19SingularValueData",
+    "p19ConditionNumberF",
+    "p19ForwardError",
+    "P19FirstOrderSemantics",
+    "p19FirstOrderLe",
+    "p19SafeRelativeMagnitude",
+    "P19Theorem31Dimension",
+    "P19Theorem31System",
+    "P19Theorem31BasisFamily",
+    "p19StaticExactC",
+    "p19StaticExactB",
+    "P19Algorithm2Iteration",
+    "P19Algorithm2Conditions",
+    "p19IterationWellConditioned",
+    "p19NearRankDeficient",
+    "p19MGSNearDependence",
+    "P19Theorem31Family",
+    "P19MGSSelectionLaw",
+    "p19StaticSplitOperator",
+    "p19StaticSplitInverse",
+    "P19StaticRightQuantities",
+    "p19StaticAlpha",
+    "p19StaticBeta",
+    "p19StaticLambda",
+    "p19StaticXi",
+    "P19StaticAppendixAExpansion",
+    "P19StaticAppendixATheory"
   ],
   "source_locations": [
     {
-      "anchor": "equation (3.8), definition xi = alpha epsilon_c + beta epsilon_b + beta u_g + lambda epsilon_x",
+      "anchor": "Algorithm 2, Modular GMRES",
+      "pdf_page": 7,
+      "printed_page": "6",
+      "role": "four-module algorithm and increasing search-space basis",
+      "section": "3.1. Modular error bound"
+    },
+    {
+      "anchor": "equations (3.2)-(3.6) and the MGS/Givens least-squares model",
+      "pdf_page": 8,
+      "printed_page": "7",
+      "role": "heterogeneous rounding-error models and smallness conditions",
+      "section": "3.1. Modular error bound"
+    },
+    {
+      "anchor": "Theorem 3.1 and equations (3.7)-(3.8)",
       "pdf_page": 9,
       "printed_page": "8",
-      "role": "four-source modular attainable-error aggregate",
-      "section": "3.1. Improved modular framework"
+      "role": "selected basis-conditioning and normalized forward-error result",
+      "section": "3.1. Modular error bound"
+    },
+    {
+      "anchor": "equation (A.1) and the cited first-loss MGS dimension argument",
+      "pdf_page": 36,
+      "printed_page": "35",
+      "role": "derivation of the existential key dimension and its near-dependence alternative",
+      "section": "Appendix A. Proof of Theorem 3.1"
+    },
+    {
+      "anchor": "equation (A.11) and the closing recovery of (3.8)",
+      "pdf_page": 39,
+      "printed_page": "38",
+      "role": "first-order propagation and omitted second-order terms",
+      "section": "Appendix A. Proof of Theorem 3.1"
     }
   ],
   "source_tags": [
-    "EQN"
+    "THM"
   ],
   "task_id": "P19-T2",
   "tier": "T2",
   "tier_label": "combine",
-  "tier_rationale": "The L proof combines NumStability.vecNorm2_add_le and NumStability.vecNorm2_smul from frozen NumStability/Analysis/MatrixAlgebra.lean, then supplies the P19-specific four-source association, nonnegative coefficient normalization, individual source bounds, and xi assembly.",
+  "tier_rationale": "The target combines a paper-scoped finite first-loss search, the cited MGS loss law, Algorithm 2's four modular bounds, safe relative-error normalization, the raw Appendix-A sensitivity expansion, coefficient algebra, and several Euclidean norm steps. The L construction materially uses NumStability.vecNorm2_add_le and NumStability.vecNorm2_nonneg, while the frozen library provides none of the P19-specific selection or propagation framework.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P19/T2/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p19_t2_modular_four_source_error_bound"
+    "required_declaration": "HighamBench.p19_t2_modular_gmres_forward_error"
   }
 }

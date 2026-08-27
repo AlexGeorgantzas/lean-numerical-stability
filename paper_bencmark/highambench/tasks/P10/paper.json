@@ -16,7 +16,7 @@
     "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P10-T1",
@@ -40,12 +40,12 @@
       "reason": "Equation (1) is an assumed interface inherited from prior work, while the headline conclusions are asymptotic complexity and stability claims rather than compact exact finite targets."
     },
     {
-      "candidate": "Theorem 3.3 and equations (6)-(7)",
-      "reason": "The theorem is a bit-complexity conversion whose proof depends on asymptotic O notation, condition-number growth, and a precision-cost model; it is not a concise finite numerical bound."
+      "candidate": "Theorem 3.3's asymptotic conclusions and equations (6)-(7)",
+      "reason": "The theorem's main statement is a bit-complexity conversion depending on asymptotic O notation, condition-number growth, and a precision-cost model. T3 selects only the exact finite block-inverse identity in its converse proof."
     },
     {
       "candidate": "the recursive triangular and dense matrix-inversion conclusions after equation (8)",
-      "reason": "Their displayed solutions are asymptotic and invoke an external recurrence theorem. T1 and T2 instead preserve equation (8)'s exact reusable error-propagation content."
+      "reason": "Their displayed solutions are asymptotic and invoke an external recurrence theorem. T2 instead preserves equation (8)'s complete reusable first-order error-propagation content."
     },
     {
       "candidate": "Lemma 4.1 on recursive QR and Lemma 4.2 on LU decomposition",
@@ -60,8 +60,8 @@
       "reason": "Several stability conclusions are delegated to earlier references or given as high-level algorithm reductions and asymptotic recurrences rather than self-contained finite estimates."
     },
     {
-      "candidate": "the generalized Sylvester extension after equation (20)",
-      "reason": "The paper explicitly says the analogous approach is only sketched; the ordinary Sylvester recurrence is fully displayed and supplies the more faithful finite target."
+      "candidate": "the SylR recurrence, equation (20), and the generalized Sylvester extension",
+      "reason": "The generalized extension is explicitly only sketched. The printed ordinary SylR recurrence also omits first-order forcing terms needed by its claimed bound, so the previous T3 formalization could not faithfully derive equation (20) and was replaced by the valid exact block-inverse reduction."
     },
     {
       "candidate": "equation (21) and the recursive eigenvector algorithm",
@@ -71,28 +71,28 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the inherited-right-input Frobenius product estimate appearing as one term of equation (8); the frozen library supplies it directly.",
+      "decision": "Use equation (8)'s inherited-right first-order contribution with the prior-computation error linked to the right operand, a derived three-source decomposition of the realized first-order product error, and the source's unspecified consistent norm.",
       "task_id": "P10-T1",
       "theorem_name": "p10_t1_inherited_right_product_error"
     },
     "T2": {
       "available": true,
-      "decision": "Use an exact finite completion of equation (8), combining local, inherited-left, inherited-right, and explicit cross-term budgets.",
+      "decision": "Use equation (8)'s complete three-term first-order bound for the actual output of one fixed stable multiplication algorithm under its otherwise unspecified consistent matrix norm; quantify uniformly over positive epsilon and absorb the inherited cross product and local higher-order effects into one explicit O(epsilon^2) term.",
       "task_id": "P10-T2",
-      "theorem_name": "p10_t2_product_error_with_cross_term"
+      "theorem_name": "p10_t2_first_order_product_error"
     },
     "T3": {
       "available": true,
-      "decision": "Use a new exact finite unrolling of the recursive Sylvester error recurrence whose asymptotic solution is equation (20).",
+      "decision": "Use the exact unnumbered block-inverse identity in the converse proof of Theorem 3.3 and prove both inverse directions together with extraction of A*B from the upper-right block.",
       "task_id": "P10-T3",
-      "theorem_name": "p10_t3_recursive_sylvester_error_unroll"
+      "theorem_name": "p10_t3_multiplication_via_block_inverse"
     }
   },
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
     "Use exact finite claims made or algebraically completed from displayed arguments in this paper.",
     "Reject definitions, experiments, complexity-only statements, delegated results, sketches, and claims whose literal content is vague asymptotics.",
-    "Expose the second-order inherited-error product explicitly when exactifying the first-order product rule.",
+    "Represent every omitted higher-order term explicitly in the computation model while keeping equation (8)'s selected first-order bound free of those terms.",
     "Keep the fixed Lean setting condition-neutral and paper-scoped.",
     "Assign tiers only after checking the mounted frozen object baseline, not merely the broader source tree."
   ],

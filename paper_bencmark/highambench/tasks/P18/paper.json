@@ -14,7 +14,7 @@
     "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P18-T1",
@@ -39,8 +39,8 @@
       "reason": "These introduce standard Runge--Kutta notation and motivate the mixed-precision midpoint method; the convergence plot is empirical. The selected targets use the paper's derived error framework."
     },
     {
-      "candidate": "the full consistency and perturbation condition lists (3.4) and (3.5)",
-      "reason": "These long B-series coefficient catalogs require a substantial rooted-tree and differentiability interface. T1 captures their common exact error-composition consequence, and T3 captures the key smooth versus nonsmooth distinction."
+      "candidate": "the full consistency and perturbation condition lists (3.4) and (3.5) beyond order two",
+      "reason": "The higher-order catalogs require a substantial rooted-tree and differentiability interface. T2 uses only the exact order-two subset instantiated by the corrected midpoint arrays, while T3 addresses the higher-order Method 4s3pC construction."
     },
     {
       "candidate": "low-precision and naive mixed-precision midpoint error forms in Section 3.2",
@@ -66,27 +66,27 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the exact finite Euclidean triangle inequality underlying E = E_sch + E_per after equation (3.3).",
+      "decision": "Use the exact unnumbered E = E_sch + E_per statement after equation (3.3) over an arbitrary real state module. Link it to the original additive outputs (3.1), avoiding the inconsistent sign rewrite in (3.2), expose the exact output difference, and retain Euclidean triangle inequality only after an arbitrary additive observation into finite coordinates.",
       "task_id": "P18-T1",
       "theorem_name": "p18_t1_scheme_perturbation_error_split"
     },
     "T2": {
       "available": true,
-      "decision": "Use an exact finite-vector realization of the corrected midpoint O(\u0394t\u00b2)+O(\u03b5\u0394t\u00b2) envelope following equation (4.1).",
+      "decision": "Use the exact corrected-midpoint Butcher arrays after equation (4.1), together with their order-two consistency conditions and the smooth and nonsmooth perturbation cancellations from (3.4)-(3.5). Do not assign exact norm or hidden-constant semantics to the following conditional global big-O expectation.",
       "task_id": "P18-T2",
       "theorem_name": "p18_t2_corrected_midpoint_order_bound"
     },
     "T3": {
       "available": true,
-      "decision": "Use exact smooth and nonsmooth Method 4s3pC envelopes and prove their normalized small-step ordering.",
+      "decision": "Use Method 4s3pC's two stability-conditional global error regimes on page 18. Represent the unprinted exact tableau presupposed by the paper's exact order conditions without claiming that the rounded displayed decimals are exact, retain every third-order and smooth perturbation condition, link local errors to executions of algorithm (3.1), state the required finite-time stability property explicitly, and derive the smooth O(h^3)+O(epsilon*h^3) and nonsmooth O(h^3)+O(epsilon*h^2) bounds with existential hidden constants.",
       "task_id": "P18-T3",
-      "theorem_name": "p18_t3_smooth_nonsmooth_method_error_bounds"
+      "theorem_name": "p18_t3_method4s3pc_global_error_regimes"
     }
   },
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
     "Use accuracy results derived in this paper rather than standard Runge--Kutta definitions, numerical plots, or future-work claims.",
-    "Replace asymptotic big-O statements with explicit finite-dimensional error representatives and exact norm inequalities.",
+    "Do not replace underspecified asymptotic big-O statements with exact norm inequalities; select exact source content or formalize all asymptotic semantics explicitly.",
     "Preserve the paper's distinction between scheme error, smooth perturbation error, and nonsmooth perturbation error.",
     "Keep every public definition free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."

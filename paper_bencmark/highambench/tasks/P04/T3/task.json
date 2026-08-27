@@ -1,30 +1,34 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, exact LU-solve perturbation assembly, and finite-matrix formalization",
+    "kind": "source selection, tier label, complete Algorithm 4.1 execution certificate, and finite componentwise formalization of Theorem 4.4",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The computed factors satisfy L*U = A+\u0394F.",
-    "The two computed triangular solves are represented by (L+\u0394L)y=rhs and (U+\u0394U)x=y.",
-    "The factorization, two linear solve terms, and quadratic solve term satisfy the componentwise majorants used in equation (4.7)."
+    "The dimensions n, b, and q are positive and n=q*b, so A and its computed factors are square n-by-n matrices partitioned into b-by-b blocks.",
+    "A successful finite-real execution of Algorithm 4.1 produces the computed unit lower-triangular factor LHat and nonsingular upper-triangular factor UHat.",
+    "The precision parameters uLow, uBar, uFma, and uWork are nonnegative, uBar<=uFma, and every gamma expression used in Theorems 4.3 and 4.4 satisfies its strict validity condition.",
+    "The computed factors satisfy LHat*UHat=A+factorError and the factorError obeys Theorem 4.3's exact componentwise cFact*(|A|+|LHat||UHat|) bound.",
+    "Forward and backward substitution produce yHat and xHat with (LHat+deltaL)yHat=rhs and (UHat+deltaU)xHat=yHat.",
+    "The triangular-solve perturbations satisfy |deltaL|<=gamma(uWork,n)|LHat| and |deltaU|<=gamma(uWork,n)|UHat| componentwise.",
+    "All represented quantities are finite reals; underflow, overflow, exceptional IEEE values, and the double-rounding effect omitted by the paper are outside the model."
   ],
   "author_label": "Theorem 4.4",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P04 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P04 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P04/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p04_t3_block_lu_solve_backward_error {N : \u2115} ... : \u2203 \u0394A, p04MatVec (A+\u0394A) x = rhs \u2227 \u2200 i j, |\u0394A i j| \u2264 (p04FactorizationCoeff ... + 2*gamma u n + (gamma u n)^2)*M i j",
+    "lean_header": "theorem p04_t3_block_lu_solve_backward_error {n b q : \u2115} (run : P04BlockLUSolveRun n b q) : \u2203 deltaA, p04MatVec (run.A+deltaA) run.xHat = run.rhs \u2227 \u2200 i j, |deltaA i j| \u2264 (p04FactorizationCoeff run.uLow run.uBar run.uFma run.uWork q n b + 2*gamma run.uWork n + (gamma run.uWork n)^2) * p04LUSolveScale run.A run.LHat run.UHat i j",
     "namespace": "HighamBench",
-    "plain_language": "The block-FMA LU perturbation and the two triangular-solve perturbations assemble into one backward error with the exact extra 2*gamma_n+gamma_n^2 coefficient.",
+    "plain_language": "For every certified Algorithm 4.1 factorization followed by forward and backward substitution, construct the single nearby matrix from Theorem 4.4 and prove equation (4.7) with the exact factorization coefficient, both linear solve terms, the quadratic solve term, and the mandatory |A|+|LHat||UHat| scale.",
     "target_file": "paper_bencmark/highambench/tasks/P04/T3/Target.lean",
     "theorem_name": "p04_t3_block_lu_solve_backward_error"
   },
-  "informal_proof": "Expand (L+\u0394L)(U+\u0394U), replace L*U by A+\u0394F, use associativity on the two perturbed triangular solves, and sum the four componentwise perturbation bounds.",
-  "informal_statement": "The exact algebraic and componentwise assembly in Theorem 4.4 and equation (4.7).",
+  "informal_proof": "Define deltaA=factorError+LHat*deltaU+deltaL*UHat+deltaL*deltaU. Expand (LHat+deltaL)(UHat+deltaU), replace LHat*UHat by A+factorError, and use matrix-vector associativity with the two substitution equations. Bound the three solve terms by gamma_n|LHat||UHat|, gamma_n|LHat||UHat|, and gamma_n^2|LHat||UHat|, enlarge them to the required |A|+|LHat||UHat| scale, and add the factorization bound.",
+  "informal_statement": "The complete nearby-system equation and componentwise bound of Theorem 4.4 and equation (4.7) for a successful block-FMA LU solve.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -42,24 +46,52 @@
     "nearby_numstability_declarations": [
       "NumStability.matMulVec_matMul",
       "NumStability.matMul_add_left",
-      "NumStability.matMul_add_right",
-      "NumStability.triangularSolve_backward_error",
-      "NumStability.diagDom_lu_solve_backward_stable"
+      "NumStability.matMul_add_right"
     ],
-    "note": "The library has finite matrix associativity and conventional LU/triangular backward-error components, but no P04 block-FMA factorization coefficient or theorem assembling it with both solve perturbations."
+    "note": "The frozen library supplies exact finite matrix distributivity and matrix-vector associativity. It has no theorem for P04's Algorithm 4.1 block-FMA factorization coefficient, its mandatory componentwise scale, or the complete Theorem 4.4 perturbation assembly."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
+    "GammaValid",
+    "gamma",
+    "p04BlockFmaCoeff",
+    "p04EffectiveFmaRoundoff",
     "p04FactorizationCoeff",
     "p04MatMul",
-    "p04MatVec"
+    "p04MatVec",
+    "p04AbsMatMul",
+    "p04LUSolveScale",
+    "p04IsLowerTriangular",
+    "p04IsUpperTriangular",
+    "P04BlockLUSolveRun"
   ],
   "source_locations": [
+    {
+      "anchor": "equations (2.3)-(2.6) and gamma notation",
+      "pdf_page": 4,
+      "printed_page": "C127",
+      "role": "standard relative-error model, precision roles, and gamma validity",
+      "section": "2.1. General framework for mixed precision block FMA"
+    },
+    {
+      "anchor": "Algorithm 4.1",
+      "pdf_page": 11,
+      "printed_page": "C134",
+      "role": "square dimensions, block partition, precision roles, and computed block LU factors",
+      "section": "4. Solution of linear systems with block FMA"
+    },
+    {
+      "anchor": "Lemma 4.2, Theorem 4.3, and equation (4.4)",
+      "pdf_page": 12,
+      "printed_page": "C135",
+      "role": "triangular-solve model and exact factorization-stage componentwise coefficient",
+      "section": "4.1. Rounding error analysis"
+    },
     {
       "anchor": "Theorem 4.4 and equation (4.7)",
       "pdf_page": 13,
       "printed_page": "C136",
-      "role": "backward-error equation and exact factorization-plus-solve coefficient",
+      "role": "nearby-system equation, mandatory scale, and complete factorization-plus-solve coefficient",
       "section": "4.1. Rounding error analysis"
     }
   ],
@@ -69,7 +101,7 @@
   "task_id": "P04-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "The searched NumStability matrix algebra, LU growth-factor, triangular-solve, and matrix-multiplication modules provide separate conventional pieces only. No declaration models P04's mixed-precision block-FMA LU stage or proves the exact \u0394F+L\u0394U+\u0394LU+\u0394L\u0394U bridge and equation (4.7) coefficient, so a new connection theorem is required.",
+  "tier_rationale": "The L construction proof uses the frozen library only for exact matrix distributivity and matrix-vector associativity. No library declaration models Algorithm 4.1's mixed-precision block-FMA LU stage, proves Theorem 4.3's exact cFact bound, or constructs Theorem 4.4's factorization-plus-two-solves perturbation with equation (4.7), so material source-specific reasoning remains necessary.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P04/T3/Target.lean",
     "mode": "shared automatic validator",

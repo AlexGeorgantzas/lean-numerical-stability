@@ -14,7 +14,7 @@
     "The target is the absolute-error result, so no nonzero-dot-product assumption is needed."
   ],
   "author_label": "Proposition 5.11",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and shared files are present; no NumStability artifact is present."

@@ -1,28 +1,31 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and finite-sum form of Lemma 2.2's lower bound",
+    "kind": "source selection, tier label, exact Lagrange problem, Definition 2.1 perturbation semantics, and both conclusions of Lemma 2.2",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The interpolation value at the fixed evaluation point is nonzero."
+    "The interpolation problem has degree n, exactly n+1 pairwise distinct real nodes, real data, and a fixed real evaluation point.",
+    "Only the data values are perturbed; the nodes and evaluation point remain fixed.",
+    "The exact interpolated value p_f(x) is nonzero.",
+    "Definition 2.1's epsilon tending to zero is interpreted through positive perturbation radii, nhdsWithin 0 (Set.Ioi 0)."
   ],
   "author_label": "Lemma 2.2",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P13 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P13 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P13/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p13_t1_condition_ge_one {n : Nat} (ell f : Fin n -> Real) (hvalue : p13InterpolationValue ell f != 0) : 1 <= p13Condition ell f",
+    "lean_header": "theorem p13_t1_condition_ge_one {n : Nat} (problem : P13LagrangeProblem n) (hvalue : p13LagrangeValue problem != 0) : p13IsComponentwiseConditionNumber (p13LagrangeBasisValues problem) problem.data (p13Condition (p13LagrangeBasisValues problem) problem.data) /\\ 1 <= p13Condition (p13LagrangeBasisValues problem) problem.data",
     "namespace": "HighamBench",
-    "plain_language": "Higham's componentwise interpolation condition number is at least one whenever the interpolated value is nonzero.",
+    "plain_language": "For a fixed degree-n Lagrange interpolation problem with nonzero exact value, Definition 2.1's componentwise data-perturbation condition number equals the quotient in Lemma 2.2, and that quotient is at least one.",
     "target_file": "paper_bencmark/highambench/tasks/P13/T1/Target.lean",
     "theorem_name": "p13_t1_condition_ge_one"
   },
-  "informal_proof": "Apply the triangle inequality to the finite interpolation sum and divide by the positive magnitude of its nonzero value.",
-  "informal_statement": "The lower-bound clause of Lemma 2.2, equation (2.2).",
+  "informal_proof": "For each positive epsilon, map a data perturbation through the fixed Lagrange coefficients and apply the componentwise finite-sum upper bound. The sign-aligned choice deltaF_j=epsilon*sign(ell_j(x))*|f_j| attains the quotient, so the supremum equals it at every positive radius and therefore tends to it as epsilon approaches zero from above. The triangle inequality gives the final lower bound by one.",
+  "informal_statement": "Definition 2.1 and the full conclusion of Lemma 2.2: the perturbation-defined condition number is exactly the quotient in equation (2.2), which is at least one.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -33,26 +36,45 @@
     "sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520"
   },
   "paper_version": "published journal version; IMA Journal of Numerical Analysis 24(4), October 2004, printed pages 547-556",
-  "result_form_tag": "BND",
+  "result_form_tag": "EQ",
   "review_record_not_for_run_prompt": {
     "exact_target_found_in_mathlib": false,
-    "exact_target_found_in_numstability_baseline": true,
+    "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
+      "NumStability.SummationComponentwisePerturbation",
+      "NumStability.summationComponentwisePerturbation_rel_error_le_condition",
+      "NumStability.summationConditionNumber_attained",
       "NumStability.one_le_summationConditionNumber"
     ],
-    "note": "The mounted Summation/ErrorBounds object states the same finite-sum condition-number lower bound; the L proof only unfolds the paper-scoped interpolation terms."
+    "note": "The frozen summation module supplies the generic finite-sum perturbation upper bound, sharpness theorem, and lower bound. It has no exact theorem packaging the paper's Lagrange-data perturbation supremum as a positive-radius limit; the L proof specializes the generic results and supplies that paper-scoped order/topology adapter."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "p13InterpolationValue",
-    "p13Condition"
+    "p13Condition",
+    "P13LagrangeProblem",
+    "p13LagrangeBasis",
+    "p13LagrangeBasisValues",
+    "p13LagrangeValue",
+    "p13DataPerturbation",
+    "p13RelativeInterpolationChange",
+    "p13ScaledPerturbationSet",
+    "p13PerturbationSupremum",
+    "p13IsComponentwiseConditionNumber"
   ],
   "source_locations": [
+    {
+      "anchor": "equation (2.1) and Definition 2.1",
+      "pdf_page": 2,
+      "printed_page": "548",
+      "role": "exact Lagrange representation and limiting supremum definition under componentwise data perturbations",
+      "section": "2. Condition number"
+    },
     {
       "anchor": "Lemma 2.2 and equation (2.2)",
       "pdf_page": 2,
       "printed_page": "548",
-      "role": "closed-form condition number and lower bound",
+      "role": "exact closed-form condition-number identity, sign-aligned attainment, and lower bound",
       "section": "2. Condition number"
     }
   ],
@@ -62,7 +84,7 @@
   "task_id": "P13-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "NumStability.one_le_summationConditionNumber in the mounted Summation/ErrorBounds object directly proves the result after unfolding the interpolation summands.",
+  "tier_rationale": "The frozen summation module already proves the generic componentwise perturbation upper bound, sharpness of its closed-form condition number, and the lower bound by one. The L proof directly specializes those finite-sum facts to v_j=ell_j(x)f_j and packages their exact positive-radius behavior as Definition 2.1's limit; it introduces no new numerical-analysis estimate.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P13/T1/Target.lean",
     "mode": "shared automatic validator",

@@ -6,13 +6,12 @@ A fixed proof means that the theorem statement is chosen before a run and the
 agent may change only the proof.
 
 The current corpus contains 60 tasks drawn from papers P01--P20, with three
-fixed tasks per paper. The current snapshot is measurement-ready: its complete
-private construction check passed all 120 N/L proofs, and two fresh-context
-Codex review records cover all 60 tasks. Exact-target novelty rejections are
-retained and are ignored only under the recorded private-measurement exception;
-they still block public release. Paper titles, source hashes, exact task
-locations, and the ordered task catalog are recorded in
-`metadata/manifest.json`.
+fixed tasks per paper. The final post-review task set has been integrated, but
+the derived snapshot metadata and construction evidence from the preceding task
+versions are stale and must not authorize measurements. A new construction
+snapshot and complete N/L validation are required before the corpus can be
+marked measurement-ready. Paper titles, source hashes, exact task locations,
+and the ordered task catalog are recorded in `metadata/manifest.json`.
 
 ## Task types
 
@@ -64,19 +63,19 @@ No paper ID is special-cased by an operational script.
 
 The Lean setting is also uniform without making all papers share all
 definitions. `shared/HighamBench/Core.lean` contains only definitions used by
-more than one paper. `P01Definitions.lean` and `P02Definitions.lean` contain
-only their own paper's extra models and algorithms. Each controlled task
-contains the core plus its own paper file. Each trusted compiled bundle follows
-the same rule, so a P01 run cannot import the P02 module and a P02 run cannot
-import the P01 module.
+more than one paper. Paper-scoped modules contain only that paper's extra models,
+algorithms, and supporting results. Each controlled task contains the core plus
+the exact modules in its paper scope. Each trusted compiled bundle follows the
+same rule, so a P01 run cannot import the P02 modules and a P02 run cannot import
+the P01 modules.
 
-Every paper and task in the measurement snapshot has
-`classification_frozen_before_runs` set to `true`. The selected results, task
-statements, contexts, and Lean targets are fixed and must not change during the
-experiment. Any controlled change requires a new snapshot and a complete rerun.
+During construction, every paper and task has
+`classification_frozen_before_runs` set to `false`. The measurement-ready
+refresh changes it to `true` only after the selected results, task statements,
+contexts, Lean targets, proofs, and reviews have been fixed. Any later controlled
+change requires a new snapshot and a complete rerun.
 
-After any controlled benchmark, metadata, or tool edit, refresh all derived
-metadata with:
+After all task writers have finished, refresh all derived metadata once with:
 
 ```text
 python3 paper_bencmark/highambench/tools/refresh_snapshot.py \

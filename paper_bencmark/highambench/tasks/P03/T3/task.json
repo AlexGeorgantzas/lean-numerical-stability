@@ -1,30 +1,36 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, paper-scoped resolvent model, and exact componentwise synthesis",
+    "kind": "source selection, tier label, full Algorithm 1.1 execution model, and exact Theorem 5.1 componentwise recurrence",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "Equation (5.2)'s componentwise base residual bound holds.",
-    "The correction magnitude satisfies the Neumann inequality derived before equation (5.4).",
-    "Under equation (5.6), M\u2081 is an entrywise nonnegative inverse action for I-P."
+    "The dimension is positive and A is a nonsingular real square matrix, represented with a two-sided inverse action Ainv.",
+    "The stored iterates, computed residuals, and computed corrections form the unscaled Algorithm 1.1 refinement loop; x_0 is arbitrary because Theorem 5.1 imposes no initial-solve accuracy model.",
+    "The precisions satisfy uR <= u <= uS <= uF, uR is nonnegative, and gamma_p^r is valid for p equal to the maximum row nonzero count of [A b].",
+    "The residual computation and residual rounding satisfy the exact componentwise model (3.3).",
+    "The correction solver satisfies the exact componentwise defect model (2.5) for an iteration-dependent entrywise nonnegative G_i.",
+    "The rounded update satisfies the exact componentwise model (3.6).",
+    "Condition (5.6) holds for every iteration with cond(A^{-1}) represented as |||A||Ainv|||_infinity.",
+    "The run carries the M-matrix inverse M_i=(I-Z_i|Ainv|)^{-1}, its entrywise nonnegativity, and its infinity-norm bound by 2, exactly as derived from (5.6) immediately before Theorem 5.1.",
+    "The standard floating-point model excludes underflow and overflow, as stated in section 6."
   ],
   "author_label": "Theorem 5.1",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P03 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P03 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P03/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p03_t3_componentwise_residual_recurrence {n : \u2115} (us u gammaR : \u211d) (M1 P : Fin n \u2192 Fin n \u2192 \u211d) ... : \u2200 i, |newResidual i| \u2264 us * |oldResidual i| + (1+us) * (M1 |oldResidual|)_i + ...",
+    "lean_header": "theorem p03_t3_componentwise_residual_recurrence {n : Nat} (run : P03ComponentwiseIRRun n) (i : Nat) : forall j : Fin n, |p03ComponentwiseExactResidual run (i+1) j| <= p03MatVec (p03W run i) (p03VecAbs (p03ComponentwiseExactResidual run i)) j + p03Y run i j",
     "namespace": "HighamBench",
-    "plain_language": "A nonnegative M-matrix inverse resolves the correction inequality and yields Theorem 5.1's componentwise residual recurrence.",
+    "plain_language": "Every computed Algorithm 1.1 iterate satisfies Theorem 5.1's exact componentwise residual recurrence with the paper's iteration-dependent Z_i, M_i, W_i, and y_i.",
     "target_file": "paper_bencmark/highambench/tasks/P03/T3/Target.lean",
     "theorem_name": "p03_t3_componentwise_residual_recurrence"
   },
-  "informal_proof": "Subtract the P-action from the correction inequality, premultiply by the nonnegative inverse M\u2081, use its inverse-action identity, distribute M\u2081 over the old residual and data terms, and substitute the result into equation (5.2).",
-  "informal_statement": "The exact W\u1d62 and y\u1d62 componentwise recurrence of Theorem 5.1 with the matrix products packaged as P and M\u2081.",
+  "informal_proof": "Derive (5.1) from the rounded update. Combine the residual model (3.3), solver model (2.5), and update model (3.6) to obtain (5.2) and the exact correction inequality c_i <= P_i*c_i + P_i*q_i, where c_i=Z_i|dHat_i| and P_i=Z_i|Ainv|. Apply the entrywise nonnegative inverse M_i to obtain c_i <= M_i*P_i*q_i, substitute this into (5.2), and distribute exactly to obtain W_i and y_i.",
+  "informal_statement": "For every iteration of unscaled three-precision iterative refinement satisfying (2.5), (3.3), (3.6), and the uniform one-half condition (5.6), the next exact residual is bounded componentwise by W_i times the previous exact residual magnitude plus y_i, with the exact formulas printed in Theorem 5.1.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -40,38 +46,87 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
+      "NumStability.abs_matMulVec_le",
+      "NumStability.problem7_1_resolvent_componentwise_inequality_bound",
       "NumStability.correction_neumann_inequality",
-      "NumStability.nonneg_resolvent_infNormVec_bound",
-      "NumStability.refinement_backward_error_sigma"
+      "NumStability.nonneg_resolvent_infNormVec_bound"
     ],
-    "note": "No frozen declaration states the three-precision componentwise Theorem 5.1 recurrence or connects its Z\u2081, M\u2081, W\u1d62, and y\u1d62 quantities.",
+    "note": "The frozen library supplies a matrix-vector absolute-value bound and generic resolvent/iterative-refinement ingredients, but no declaration models this paper's three-precision Algorithm 1.1 execution or assembles the exact iteration-dependent Z_i, M_i, W_i, and y_i recurrence.",
     "searched_locations": [
+      "NumStability/Analysis/MatrixAlgebra.lean",
+      "NumStability/Analysis/HighamChapter7.lean",
       "NumStability/Algorithms/IterativeRefinement.lean",
-      "NumStability/Analysis/PerturbationTheory.lean",
       "Mathlib/LinearAlgebra/Matrix",
-      "Mathlib/Analysis"
+      "Mathlib/Analysis/Matrix"
     ]
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "p03MatVec",
+    "p03MatMul",
     "p03VecAbs",
-    "P03ResolventInverse"
+    "p03MatAbs",
+    "p03MatInfNorm",
+    "p03MaxAugmentedRowNnz",
+    "P03ComponentwiseIRRun",
+    "p03ComponentwiseExactResidual",
+    "p03ComponentwiseData",
+    "p03Z",
+    "p03P",
+    "p03CorrectionSource",
+    "p03CorrectionMagnitude",
+    "p03W",
+    "p03Y"
   ],
   "source_locations": [
     {
-      "anchor": "equations (5.2)-(5.6) and Theorem 5.1",
+      "anchor": "equation (1.1) and precision definitions",
+      "pdf_page": 1,
+      "printed_page": "A817",
+      "role": "working, residual, factorization, and solver precision ordering",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "Algorithm 1.1",
+      "pdf_page": 2,
+      "printed_page": "A818",
+      "role": "unscaled iterative-refinement execution and computed quantities",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "equations (2.2) and (2.5)",
+      "pdf_page": 5,
+      "printed_page": "A821",
+      "role": "componentwise condition number convention and correction-solver defect model",
+      "section": "2. Preliminaries"
+    },
+    {
+      "anchor": "equations (3.3) and (3.6)",
+      "pdf_page": 7,
+      "printed_page": "A823",
+      "role": "computed residual and rounded-update models",
+      "section": "3. Forward error analysis"
+    },
+    {
+      "anchor": "equations (5.1)-(5.6) and opening of Theorem 5.1",
       "pdf_page": 10,
       "printed_page": "A826",
-      "role": "componentwise base inequality, M-matrix resolvent, and theorem assumptions",
+      "role": "base inequality, Z_i, correction inequality, M_i, M-matrix facts, and uniform hypothesis",
       "section": "5. Componentwise backward error analysis"
     },
     {
-      "anchor": "continuation of Theorem 5.1 and equation (5.7)",
+      "anchor": "continuation of Theorem 5.1",
       "pdf_page": 11,
       "printed_page": "A827",
-      "role": "W\u1d62 and y\u1d62 conclusion and norm interpretation",
+      "role": "exact W_i and y_i componentwise recurrence",
       "section": "5. Componentwise backward error analysis"
+    },
+    {
+      "anchor": "opening of section 6",
+      "pdf_page": 12,
+      "printed_page": "A828",
+      "role": "explicit exclusion of underflow and overflow from the unscaled analysis",
+      "section": "6. Scaling"
     }
   ],
   "source_tags": [
@@ -80,7 +135,7 @@
   "task_id": "P03-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "The closest reusable results are NumStability.correction_neumann_inequality, NumStability.nonneg_resolvent_infNormVec_bound, and NumStability.refinement_backward_error_sigma in NumStability/Algorithms/IterativeRefinement.lean. The frozen library has no P03 three-precision Z\u2081/M\u2081 model, no exact componentwise inverse-action bridge, and no theorem assembling W\u1d62 and y\u1d62. The searched NumStability iterative-refinement and perturbation modules plus mathlib matrix/norm directories therefore leave a new paper-specific model and connection proof.",
+  "tier_rationale": "The L proof can reuse NumStability.abs_matMulVec_le, and the frozen library also contains generic componentwise resolvent and iterative-refinement ingredients. It does not contain the three-precision Algorithm 1.1 execution model, the iteration-dependent Z_i/M_i construction, or the exact W_i/y_i theorem. Completing the task still requires deriving the paper-specific correction inequality and assembling the noncommutative componentwise recurrence, so the selected result remains an extension task.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P03/T3/Target.lean",
     "mode": "shared automatic validator",

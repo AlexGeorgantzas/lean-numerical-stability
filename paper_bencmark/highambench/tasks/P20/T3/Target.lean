@@ -2,31 +2,62 @@ import HighamBench.P20Definitions
 
 namespace HighamBench
 
-/-- P20-T3: exact comparison of the narrow-range multiword envelope (4.32)
-with the range-unrestricted envelope (4.33), including equality and strictness
-certificates for the two added underflow terms. -/
-theorem p20_t3_multiword_narrow_range_gap {m n q p : ℕ}
-    (u U theta gmin Gmin : ℝ)
-    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin q → ℝ)
-    (hu : 0 ≤ u) (hgmin : 0 ≤ gmin) (hGmin : 0 ≤ Gmin)
-    (htheta : 0 < theta) :
-    let rangeFree :=
-      p20NormwiseEnvelope (p20MultiRangeFreeCoefficient n p u U) A B
-    let inputUnderflow :=
-      p20NormwiseEnvelope
-        (p20MultiInputUnderflowCoefficient n p u theta gmin) A B
-    let accumUnderflow :=
-      p20NormwiseEnvelope
-        (p20MultiAccumUnderflowCoefficient n p theta Gmin) A B
-    let narrowRange :=
-      p20NormwiseEnvelope
-        (p20MultiNarrowCoefficient n p u U theta gmin Gmin) A B
-    rangeFree ≤ narrowRange ∧
-      narrowRange = rangeFree + inputUnderflow + accumUnderflow ∧
-      (narrowRange = rangeFree ↔
-        inputUnderflow = 0 ∧ accumUnderflow = 0) ∧
-      ((0 < inputUnderflow ∨ 0 < accumUnderflow) →
-        rangeFree < narrowRange) := by
+/-- P20-T3: Theorem 4.1 and equations (4.32)--(4.33). For a fixed Model-1
+round-to-nearest execution of the scaled p-word algorithm (4.29)--(4.31), the
+Section 4 estimates through (4.27) imply the four-term normwise forward-error
+bound (4.32), with `lesssim` represented by an explicit second-order term.
+The remaining conclusions compare (4.32) with the range-free coefficient
+(4.33) and make the order-`u^(p-1)` reduction discussed after (4.33) exact. -/
+theorem p20_t3_multiword_forward_error
+    {m n q p : ℕ} (semantics : P20FirstOrderSemantics) :
+    (∀ (run : P20StaticMultiwordRun m n q p),
+      P20StaticSection4Derivation semantics run →
+        p20FirstOrderLe semantics
+          (p20StaticMultiwordForwardError run)
+          (p20NormwiseEnvelope
+            (p20MultiNarrowCoefficient n p
+              (p20StaticInputUnitRoundoff run.model)
+              (p20StaticAccumUnitRoundoff run.model)
+              (p20StaticScalingThreshold n run.model)
+              (p20StaticInputUnderflowEnvelope run.model)
+              (p20StaticAccumUnderflowEnvelope run.model))
+            run.A run.B)) ∧
+      (∀ (run : P20StaticMultiwordRun m n q p),
+        P20StaticSection4Derivation semantics run →
+          p20FirstOrderLe semantics
+            (p20StaticMultiwordForwardError run)
+            (p20NormwiseEnvelope
+              (p20MultiRangeFreeCoefficient n p
+                (p20StaticInputUnitRoundoff run.model)
+                (p20StaticAccumUnitRoundoff run.model))
+              run.A run.B +
+            p20NormwiseEnvelope
+              (p20MultiInputUnderflowCoefficient n p
+                (p20StaticInputUnitRoundoff run.model)
+                (p20StaticScalingThreshold n run.model)
+                (p20StaticInputUnderflowEnvelope run.model))
+              run.A run.B +
+            p20NormwiseEnvelope
+              (p20MultiAccumUnderflowCoefficient n p
+                (p20StaticScalingThreshold n run.model)
+                (p20StaticAccumUnderflowEnvelope run.model))
+              run.A run.B)) ∧
+      (∀ run : P20StaticMultiwordRun m n q p,
+        p20MultiInputRoundingCoefficient p
+              (p20StaticInputUnitRoundoff run.model) =
+            ((((p : ℝ) + 1) / 2) *
+                p20StaticInputUnitRoundoff run.model ^ (p - 1)) *
+              p20SingleInputRoundingCoefficient
+                (p20StaticInputUnitRoundoff run.model) ∧
+          (n : ℝ) *
+              p20MultiInputUnderflowCoefficient n p
+                (p20StaticInputUnitRoundoff run.model)
+                (p20StaticScalingThreshold n run.model)
+                (p20StaticInputUnderflowEnvelope run.model) =
+            p20StaticInputUnitRoundoff run.model ^ (p - 1) *
+              p20SingleInputUnderflowCoefficient n
+                (p20StaticScalingThreshold n run.model)
+                (p20StaticInputUnderflowEnvelope run.model)) := by
   -- PROOF_START
   sorry
 

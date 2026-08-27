@@ -1,30 +1,32 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, zero-based coefficient adapter, and Cholesky symmetry formalization",
+    "kind": "source selection, conventional Cholesky execution certificate, square-root trace, symmetry completion, and zero-based index adapter",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The unit roundoff u is nonnegative.",
-    "A is symmetric.",
-    "The local estimates obtained from Lemmas 4.1 and 4.3 hold on the computed upper triangle."
+    "The dimension n is positive.",
+    "A is symmetric and belongs to one finite symmetric radix format whose values have bounded radix expansions at the recorded precision and exponent range; rounding is to nearest with unit roundoff u, and membership of the computed upper-triangular factor RHat is a conclusion, not an input premise.",
+    "Conventional column-wise Cholesky runs to completion: every off-diagonal entry is linked to its rounded subtraction and pivot-division execution, and every diagonal entry is linked to its rounded subtraction and square-root execution.",
+    "Every scalar execution records rounded products, an arbitrary permuted binary summation tree, the protected input's path through actual rounded merges, and range checks excluding underflow and overflow; square-root radicands are nonnegative.",
+    "The arithmetic interface exposes the paper's standalone square-root rounding estimate (3.7), while the protected trace assumes only the earlier equation (2.4) sibling estimates. Lemmas 4.1 and 4.3 and all Cholesky bounds must be derived."
   ],
   "author_label": "Theorem 4.4",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P05 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P05 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P05/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p05_t3_cholesky_backward_error {n : Nat} ... : exists DeltaA, R^T R=A+DeltaA and |DeltaA_ij| <= (i+1)*u*(|R^T||R|)_ij and |DeltaA_ij| <= (n+1)*u*(|R^T||R|)_ij",
+    "lean_header": "theorem p05_t3_cholesky_backward_error {n : Nat} (run : P05CholeskyRun n) : RHat is representable, the local (4.5a)-(4.5b) bounds, and exists DeltaA, transpose(RHat)*RHat=A+DeltaA with rowwise (i+2)u and uniform (n+1)u componentwise bounds",
     "namespace": "HighamBench",
-    "plain_language": "The upper-triangle Cholesky residual estimates extend by symmetry to the full displayed rowwise bound and its uniform (n+1)u consequence.",
+    "plain_language": "Every completed range-safe conventional Cholesky execution produces a floating-point factor and has the two distinct local residual estimates and the exact rowwise and uniform componentwise backward-error bounds of Theorem 4.4.",
     "target_file": "paper_bencmark/highambench/tasks/P05/T3/Target.lean",
     "theorem_name": "p05_t3_cholesky_backward_error"
   },
-  "informal_proof": "Show that R^T R and |R^T||R| are symmetric. Use the upper-triangle estimate directly when i<=j and its transposed copy otherwise, loosen the smaller row factor, then use i+1<=n+1.",
-  "informal_statement": "The symmetry completion and two componentwise estimates in Theorem 4.4 and equation (4.4).",
+  "informal_proof": "First derive representability of every RHat entry from its rounded quotient or square-root output, using representability of zero below the diagonal. Prove Lemma 4.1 from each off-diagonal protected trace. For each diagonal trace, combine the square-root estimate (3.7) with the protected-tree form of Theorem 3.1 to prove Lemma 4.3. This yields (4.5a) and (4.5b). Upper-triangular support identifies the local sums with entries of transpose(RHat)*RHat. Use symmetry of A, the Gram product, and its absolute majorant to cover the lower triangle; then compare each zero-based row coefficient i+2 with n+1.",
+  "informal_statement": "Theorem 4.4 in full: the computed floating-point Cholesky factor, its two local estimates, the exact backward relation, and the rowwise and uniform bounds in equation (4.4).",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -40,31 +42,43 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.matTranspose_matMul",
-      "NumStability.matTranspose_involutive",
-      "NumStability.matSeqProd_componentwise_perturbation_bound"
+      "NumStability.rectMatMul_transpose_self_symmetric",
+      "NumStability.rectMatMul",
+      "NumStability.finiteTranspose"
     ],
-    "note": "The frozen matrix algebra proves generic transpose/product identities, but it has no Cholesky execution theorem or result extending P05's local upper-triangle coefficients to the exact diag((i+1)u) and (n+1)u bounds."
+    "note": "The frozen library directly supplies symmetry of a generic transpose-self Gram product, which the L proof instantiates for RHat and |RHat|. It has no theorem for P05's scalar Cholesky executions, local coefficients, or full backward-error conclusion."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
+    "P05FiniteRoundToNearestFormat",
+    "P05ProtectedSumTrace",
+    "P05Lemma41Run",
+    "P05Lemma43Run",
+    "P05CholeskyOffDiagonalEntry",
+    "P05CholeskyDiagonalEntry",
+    "P05CholeskyRun",
     "p05MatMul",
     "p05Transpose",
-    "p05AbsMatMul"
+    "p05AbsMatMul",
+    "p05PrefixIndex",
+    "p05CholeskyPrefixDot",
+    "p05CholeskyPrefixAbsDot",
+    "p05CholeskyThroughDot",
+    "p05CholeskyThroughAbsDot"
   ],
   "source_locations": [
     {
       "anchor": "Theorem 4.4 statement",
       "pdf_page": 11,
       "printed_page": "694",
-      "role": "Cholesky backward-error theorem setup",
+      "role": "symmetric floating input, successful Cholesky execution, range assumptions, and computed factor",
       "section": "4.3. An improved backward error bound for Cholesky factorization"
     },
     {
-      "anchor": "equation (4.4), equations (4.5a)-(4.5b), and the closing symmetry sentence",
+      "anchor": "equation (4.4), conventional update formulas, equations (4.5a)-(4.5b), and the closing symmetry sentence",
       "pdf_page": 12,
       "printed_page": "695",
-      "role": "full componentwise bounds and their symmetry proof",
+      "role": "exact backward relation, all componentwise constants, local execution estimates, and symmetry completion",
       "section": "4.3. An improved backward error bound for Cholesky factorization"
     }
   ],
@@ -74,7 +88,7 @@
   "task_id": "P05-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "The frozen library supplies transpose-of-product algebra only. The target still requires a new paper-specific bridge from Cholesky's upper-triangle local estimates to a full symmetric perturbation with the exact rowwise and global coefficients.",
+  "tier_rationale": "NumStability directly proves symmetry of a generic transpose-self Gram product. The L proof extends that declaration with P05-specific rounded division and square-root traces, two distinct local residual families, triangular truncation, exact perturbation assembly, row-dependent coefficient transport, and the uniform comparison.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P05/T3/Target.lean",
     "mode": "shared automatic validator",

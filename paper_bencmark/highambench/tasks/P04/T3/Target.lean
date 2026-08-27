@@ -3,29 +3,18 @@ import HighamBench.P04Definitions
 namespace HighamBench
 
 /-- P04-T3: Theorem 4.4's exact perturbation assembly for a block-FMA LU
-factorization followed by two triangular solves, together with its displayed
-`cFact + 2*gamma_n + gamma_n^2` componentwise coefficient. -/
+factorization from Algorithm 4.1 followed by two triangular solves, with the
+mandatory `|A| + |Lhat||Uhat|` scale and every term of equation (4.7). -/
 theorem p04_t3_block_lu_solve_backward_error
-    {N : ℕ} (uLow uFma u : ℝ) (q n bdim : ℕ)
-    (A L U ΔF ΔL ΔU M : Fin N → Fin N → ℝ)
-    (x y rhs : Fin N → ℝ)
-    (hfact : p04MatMul L U = A + ΔF)
-    (hforward : p04MatVec (L + ΔL) y = rhs)
-    (hbackward : p04MatVec (U + ΔU) x = y)
-    (hΔF : ∀ i j,
-      |ΔF i j| ≤ p04FactorizationCoeff uLow uFma u q n bdim * M i j)
-    (hLΔU : ∀ i j,
-      |p04MatMul L ΔU i j| ≤ gamma u n * M i j)
-    (hΔLU : ∀ i j,
-      |p04MatMul ΔL U i j| ≤ gamma u n * M i j)
-    (hΔLΔU : ∀ i j,
-      |p04MatMul ΔL ΔU i j| ≤ (gamma u n) ^ 2 * M i j) :
-    ∃ ΔA : Fin N → Fin N → ℝ,
-      p04MatVec (A + ΔA) x = rhs ∧
+    {n b q : ℕ} (run : P04BlockLUSolveRun n b q) :
+    ∃ deltaA : Fin n → Fin n → ℝ,
+      p04MatVec (run.A + deltaA) run.xHat = run.rhs ∧
       ∀ i j,
-        |ΔA i j| ≤
-          (p04FactorizationCoeff uLow uFma u q n bdim +
-              2 * gamma u n + (gamma u n) ^ 2) * M i j := by
+        |deltaA i j| ≤
+          (p04FactorizationCoeff
+              run.uLow run.uBar run.uFma run.uWork q n b +
+              2 * gamma run.uWork n + (gamma run.uWork n) ^ 2) *
+            p04LUSolveScale run.A run.LHat run.UHat i j := by
   -- PROOF_START
   sorry
 

@@ -2,18 +2,21 @@ import HighamBench.P09Definitions
 
 namespace HighamBench
 
-open scoped BigOperators
-
-/-- P09-T3: an exact finite-remainder form of Theorem 2(a). The vectors
-`term i` are the propagated local errors in the paper's telescoping identity. -/
-theorem p09_t3_multidimensional_rms_error_budget
-    {m n : ℕ}
-    (term : Fin m → Fin n → ℝ) (total : Fin n → ℝ)
-    (ε yRms : ℝ) (K remainder : Fin m → ℝ)
-    (hdecomp : total = p09VectorSum term)
-    (hlocal : ∀ i, p09Rms (term i) ≤ ε * K i * yRms + remainder i) :
-    p09Rms total ≤
-      ε * (∑ i : Fin m, K i) * yRms + ∑ i : Fin m, remainder i := by
+/-- P09-T3: Theorem 2(a) for a linked family of nested complex FFT
+executions. The source's `O(ε²)` means that one coefficient and one positive
+radius work uniformly as `epsilon` tends to zero. -/
+theorem p09_t3_multidimensional_rms_error_bound
+    {m : ℕ} [NeZero m]
+    (plan : P09MultidimensionalFftPlan m) (γ : ℝ)
+    (family : P09AsymptoticMultidimensionalFftFamily plan γ)
+    (hexactOutput : 0 < p09MultiRms (p09FamilyMultiExactOutput family)) :
+    ∃ secondOrderCoeff : ℝ, 0 ≤ secondOrderCoeff ∧
+      ∃ radius : ℝ, 0 < radius ∧
+        ∀ ε : P09PositiveEpsilon, ε.1 ≤ radius →
+          p09MultiRms (p09FamilyMultiFftRoundoffError family ε) /
+              p09MultiRms (p09FamilyMultiExactOutput family) ≤
+            ε.1 * (∑ i : Fin m, p09AxisK (plan.axis i) γ) +
+              secondOrderCoeff * ε.1 ^ 2 := by
   -- PROOF_START
   sorry
 

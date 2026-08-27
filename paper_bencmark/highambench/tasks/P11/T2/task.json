@@ -1,29 +1,32 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and finite matrix formalization of the exact displayed identity used to derive Theorem 1(7)",
+    "kind": "faithfulness rebuild of the exact rectangular orthogonality-defect identity used in Theorem 1(7)",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The computed factors satisfy QR=A+DeltaA.",
-    "Rinv is a certified right inverse of R."
+    "The paper fixes positive dimensions m and n with n at most m; the Lean binder k : Fin n represents the paper's one-based leading index k+1.",
+    "A, DeltaA, and Q are m-by-(k+1) real leading factors, while R and Rinv are (k+1)-by-(k+1).",
+    "The exact factorization residual relation Q*R=A+DeltaA holds.",
+    "Rinv is a certified right inverse of R; for finite square real matrices this is the inverse used in the paper.",
+    "The target is an exact post-analysis identity; the surrounding floating-point model, condition (3), norm estimate, and O(epsilonM^2) terms are outside the selected display."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P11 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P11 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P11/T2/context.md",
   "formal_statement": {
-    "lean_header": "theorem p11_t2_orthogonality_defect_identity {n : Nat} (A dA Q R Rinv : P11Matrix n) (hQR : p11MatMul n Q R = A + dA) (hInv : p11MatMul n R Rinv = p11Identity n) : p11OrthogonalityDefect Q = p11MatMul n (p11MatMul n (p11Transpose Rinv) (p11DefectCore A dA R)) Rinv",
+    "lean_header": "theorem p11_t2_orthogonality_defect_identity {m n : Nat} (hmn : n <= m) (k : Fin n) (A dA Q : P11RectMatrix m (k.val + 1)) (R Rinv : P11Matrix (k.val + 1)) (hQR : p11RectMatMul Q R = A + dA) (hInv : p11MatMul (k.val + 1) R Rinv = p11Identity (k.val + 1)) : p11RectOrthogonalityDefect Q = p11MatMul (k.val + 1) (p11MatMul (k.val + 1) (p11Transpose Rinv) (p11RectDefectCore A dA R)) Rinv",
     "namespace": "HighamBench",
-    "plain_language": "The loss-of-orthogonality matrix is exactly the inverse-transpose conjugation of the normal-equation residual minus the three perturbation-product terms.",
+    "plain_language": "For every positive leading index of the rectangular CGS-P geometry, the exact loss-of-orthogonality matrix equals the inverse-transpose conjugation of the normal-equations residual minus both cross terms and the quadratic factorization-residual term.",
     "target_file": "paper_bencmark/highambench/tasks/P11/T2/Target.lean",
     "theorem_name": "p11_t2_orthogonality_defect_identity"
   },
-  "informal_proof": "Use the right inverse to rewrite Q as (A+DeltaA)Rinv and the identity as Rinv-transpose times R-transpose R times Rinv. Expand the two transposes and collect the normal-equation and perturbation terms in the paper's displayed order.",
-  "informal_statement": "The exact inverse-conjugated orthogonality-defect identity displayed in the proof of Theorem 1(7).",
+  "informal_proof": "Use R*Rinv=I to rewrite Q as (A+DeltaA)*Rinv. Transpose this product, reassociate the dimension-compatible rectangular products, expand (A+DeltaA)^T(A+DeltaA), and collect the normal-equations residual, two cross terms, and quadratic residual term inside the inverse sandwich.",
+  "informal_statement": "The exact rectangular inverse-conjugated orthogonality-defect identity displayed in the proof of Theorem 1(7).",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -39,29 +42,52 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.matMul_assoc",
-      "NumStability.matMul_id_right",
+      "NumStability.rectMatMul_assoc",
       "NumStability.matTranspose_matMul",
-      "NumStability.matTranspose_id"
+      "NumStability.matMul_id_right"
     ],
-    "note": "The frozen MatrixAlgebra object supplies multiplication, identity, associativity, and transpose adapters, but no declaration derives the paper's residual-to-orthogonality identity from QR=A+DeltaA and an inverse certificate."
+    "note": "The frozen MatrixAlgebra module supplies compatible-product associativity and square transpose/identity adapters but no declaration states the complete rectangular residual-to-orthogonality identity. The private L proof uses NumStability.rectMatMul_assoc for the dimension-changing reassociations and performs the source-specific transpose and four-term expansion explicitly."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "P11Matrix",
+    "P11RectMatrix",
     "p11MatMul",
     "p11Transpose",
     "p11Identity",
-    "p11OrthogonalityDefect",
-    "p11NormalEquationResidual",
-    "p11DefectCore"
+    "p11RectMatMul",
+    "p11RectTranspose",
+    "p11RectOrthogonalityDefect",
+    "p11RectNormalEquationResidual",
+    "p11RectDefectCore"
   ],
   "source_locations": [
+    {
+      "anchor": "opening rectangular matrix setting and column notation",
+      "pdf_page": 2,
+      "printed_page": "300",
+      "role": "m-by-n dimensions, n at most m, full column rank, and leading A/Q/R notation",
+      "section": "Introduction and Algorithm 1 setup"
+    },
+    {
+      "anchor": "Algorithm 2 and following floating-point model",
+      "pdf_page": 3,
+      "printed_page": "301",
+      "role": "CGS-P provenance and surrounding normalized-range arithmetic context",
+      "section": "Algorithm 2 (CGS-P)"
+    },
+    {
+      "anchor": "Theorem 1 and equations (3)-(7)",
+      "pdf_page": 4,
+      "printed_page": "302",
+      "role": "leading index k=1,...,n, factor dimensions, residual definitions, and inverse availability",
+      "section": "Theorem 1"
+    },
     {
       "anchor": "unnumbered two-line displayed identity beginning I-Q_k^T Q_k",
       "pdf_page": 14,
       "printed_page": "312",
-      "role": "exact residual-to-orthogonality-defect identity",
+      "role": "exact rectangular residual-to-orthogonality-defect identity",
       "section": "Appendix: Proof of Theorem 1"
     }
   ],
@@ -71,7 +97,7 @@
   "task_id": "P11-T2",
   "tier": "T2",
   "tier_label": "combine",
-  "tier_rationale": "The L proof combines NumStability.matMul_assoc, NumStability.matMul_id_right, NumStability.matTranspose_matMul, and NumStability.matTranspose_id from NumStability/Analysis/MatrixAlgebra.lean with the paper-specific substitution QR=A+DeltaA and noncommutative expansion. No one frozen declaration states the completed identity.",
+  "tier_rationale": "The frozen library's NumStability.rectMatMul_assoc supplies the reusable dimension-changing product reassociation, while the proof must combine it with transpose identities, the certified inverse, the paper-specific Q*R=A+DeltaA substitution, and an exact four-term rectangular Gram expansion. No frozen declaration states the completed identity, so the faithful rebuild remains T2 rather than a direct-use task.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P11/T2/Target.lean",
     "mode": "shared automatic validator",
