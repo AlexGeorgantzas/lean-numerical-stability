@@ -1,4 +1,3 @@
-import HighamBench.Core
 import Mathlib.Analysis.Matrix.Normed
 
 /-!

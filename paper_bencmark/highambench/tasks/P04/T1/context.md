@@ -15,6 +15,6 @@ The selected result is the chained rounding-factor estimate used in equation
 
 The paper writes each scalar product term with two accumulated factors,
 `(1+α)(1+β)`. In the same-precision specialization discussed by the paper,
-Higham's gamma arithmetic collapses this product to one factor whose error is
-bounded by `gamma u (q+n)`. The Lean theorem states the equivalent bound on
-`α + β + αβ` under the explicit gamma-validity guard.
+Higham's p04Gamma arithmetic collapses this product to one factor whose error is
+bounded by `p04Gamma u (q+n)`. The Lean theorem states the equivalent bound on
+`α + β + αβ` under the explicit p04Gamma-validity guard.

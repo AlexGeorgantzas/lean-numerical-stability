@@ -18,7 +18,7 @@
     "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P04-T1",
@@ -65,7 +65,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the same-precision chained factor bound behind equation (3.4), which is closed directly by the frozen gamma multiplication rule after a notation adapter.",
+      "decision": "Use the same-precision chained factor bound behind equation (3.4), which is closed directly by the frozen p04Gamma multiplication rule after a notation adapter.",
       "task_id": "P04-T1",
       "theorem_name": "p04_t1_chained_rounding_factor"
     },

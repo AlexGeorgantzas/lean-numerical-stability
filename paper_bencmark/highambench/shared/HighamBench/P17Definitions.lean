@@ -1,4 +1,4 @@
-import HighamBench.Core
+import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-!

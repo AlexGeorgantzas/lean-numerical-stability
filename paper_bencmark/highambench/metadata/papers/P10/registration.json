@@ -1,0 +1,230 @@
+{
+  "definition_imports": [
+    "Mathlib.Analysis.Matrix.Normed"
+  ],
+  "definition_source": {
+    "bytes": 1614,
+    "path": "shared/HighamBench/P10Definitions.lean",
+    "sha256": "f98e95dce751de7dce96c78438615fbeb3e8fb48140cf2d9367b4f877513b592"
+  },
+  "kind": "highambench-paper-registration",
+  "ownership": {
+    "core_or_semantic_core_imports_allowed": false,
+    "cross_paper_imports_allowed": false,
+    "custom_import_closure": [
+      "HighamBench.P10Definitions"
+    ],
+    "definition_module": "HighamBench.P10Definitions",
+    "definition_source": "shared/HighamBench/P10Definitions.lean",
+    "task_root": "tasks/P10"
+  },
+  "paper_id": "P10",
+  "paper_owned_files": [
+    {
+      "bytes": 1614,
+      "path": "shared/HighamBench/P10Definitions.lean",
+      "sha256": "f98e95dce751de7dce96c78438615fbeb3e8fb48140cf2d9367b4f877513b592"
+    },
+    {
+      "bytes": 337,
+      "path": "tasks/P10/T1/Target.lean",
+      "sha256": "eb19fb0413ba12647774872f38496b584d03d5fa21d063d3b38a508c9f8dcdf0"
+    },
+    {
+      "bytes": 662,
+      "path": "tasks/P10/T1/context.md",
+      "sha256": "e91d83f919ca98177b81554e8eae258eea0e5a0d6378d2acb486ac1ec1670c07"
+    },
+    {
+      "bytes": 3504,
+      "path": "tasks/P10/T1/task.json",
+      "sha256": "aa80b63a752d2680a3df6599c1ae177e46985eebc986be0eed4f5222ca0355ac"
+    },
+    {
+      "bytes": 482,
+      "path": "tasks/P10/T2/Target.lean",
+      "sha256": "90fdf84b3b59fe01d3c2e850d61d4c50cf9d5c47195270fb1d7cea2379e37518"
+    },
+    {
+      "bytes": 735,
+      "path": "tasks/P10/T2/context.md",
+      "sha256": "4f07bb1525f7cd074a725c936013639f5662ea460d811ba644928ea556fcb96b"
+    },
+    {
+      "bytes": 3801,
+      "path": "tasks/P10/T2/task.json",
+      "sha256": "3bd78665c612ec3be148014a7ea852b382d69d619cbba27339e2f361ad2fdbb5"
+    },
+    {
+      "bytes": 734,
+      "path": "tasks/P10/T3/Target.lean",
+      "sha256": "678e0d48115267a7b9ba48c8d8b0a31ca85c421c08147fa0377eb1d70612ae61"
+    },
+    {
+      "bytes": 776,
+      "path": "tasks/P10/T3/context.md",
+      "sha256": "34d3f0409ec99171c80654a3eece9dfb499c45eb15a60afe744e08f728b26f8e"
+    },
+    {
+      "bytes": 4464,
+      "path": "tasks/P10/T3/task.json",
+      "sha256": "b068258511f781f6cc83c019ae49ca7644fec159accc278f57d32664bcf2b705"
+    },
+    {
+      "bytes": 6150,
+      "path": "tasks/P10/paper.json",
+      "sha256": "a115f8f32ae322e8abf9dbef549f76226df7eefe2f0fb05fe78482a2f9e31beb"
+    }
+  ],
+  "paper_record": {
+    "bytes": 6150,
+    "path": "tasks/P10/paper.json",
+    "sha256": "a115f8f32ae322e8abf9dbef549f76226df7eefe2f0fb05fe78482a2f9e31beb"
+  },
+  "paper_snapshot_sha256": "ef9e9a18830b2323b78c6762c87a468a29719587541b04cad46045ec9dcac612",
+  "phase": "construction",
+  "publication_contract": {
+    "corpus_aggregate_required": false,
+    "registration_replaced_last": true,
+    "scope": "paper-local"
+  },
+  "readiness_artifacts": {
+    "bundle": {
+      "bundle_sha256": "7ccde9b1fb8ceb7932f480a616be9b524b27a3c4b9308a06a7d4f9859717d4a3",
+      "definition_source": {
+        "bytes": 1614,
+        "path": "shared/HighamBench/P10Definitions.lean",
+        "sha256": "f98e95dce751de7dce96c78438615fbeb3e8fb48140cf2d9367b4f877513b592"
+      },
+      "olean_files": [
+        {
+          "bytes": 22936,
+          "path": "HighamBench/P10Definitions.olean",
+          "sha256": "e4e80bc2c4730e6f8e86061d76045d3474c86d3fd5a06eec219db68d61cd65b6"
+        }
+      ],
+      "receipt": {
+        "bytes": 592,
+        "path": "metadata/papers/P10/bundle.json",
+        "sha256": "a4c84d34c2d4dfa0bb9c46b9e69b64dd8c8983fbd36488a744a4a0df2a0b551e"
+      },
+      "status": "authenticated"
+    },
+    "construction": {
+      "path": "metadata/papers/P10/construction.json",
+      "status": "pending"
+    },
+    "review": {
+      "reason": "faithfulness review evidence is required only for T4",
+      "status": "not-applicable",
+      "task_ids": []
+    }
+  },
+  "readiness_policy": {
+    "required_artifacts": [
+      "bundle",
+      "construction"
+    ],
+    "review_required_for_tiers": [
+      "T4"
+    ],
+    "review_task_ids": []
+  },
+  "registration_path": "metadata/papers/P10/registration.json",
+  "schema_version": "highambench-paper-registration-0.1",
+  "shared_inputs": [
+    {
+      "bytes": 3253,
+      "path": "agent_prompt.md",
+      "sha256": "fc1fe48de1e1b6eaa0a869d37df680d70a2271179624738fd2f26b5f3cff1236"
+    }
+  ],
+  "task_ids": [
+    "P10-T1",
+    "P10-T2",
+    "P10-T3"
+  ],
+  "tasks": [
+    {
+      "context": {
+        "bytes": 662,
+        "path": "tasks/P10/T1/context.md",
+        "sha256": "e91d83f919ca98177b81554e8eae258eea0e5a0d6378d2acb486ac1ec1670c07"
+      },
+      "controlled_manifest": {
+        "bytes": 755,
+        "path": "metadata/papers/P10/controlled/T1.json",
+        "sha256": "a46e031710466a13ac597b8fc132a11840248cf22902bca11c347638504ca6bc"
+      },
+      "target": {
+        "bytes": 337,
+        "path": "tasks/P10/T1/Target.lean",
+        "sha256": "eb19fb0413ba12647774872f38496b584d03d5fa21d063d3b38a508c9f8dcdf0"
+      },
+      "target_imports": [
+        "HighamBench.P10Definitions"
+      ],
+      "task_id": "P10-T1",
+      "task_record": {
+        "bytes": 3504,
+        "path": "tasks/P10/T1/task.json",
+        "sha256": "aa80b63a752d2680a3df6599c1ae177e46985eebc986be0eed4f5222ca0355ac"
+      },
+      "tier": "T1"
+    },
+    {
+      "context": {
+        "bytes": 735,
+        "path": "tasks/P10/T2/context.md",
+        "sha256": "4f07bb1525f7cd074a725c936013639f5662ea460d811ba644928ea556fcb96b"
+      },
+      "controlled_manifest": {
+        "bytes": 755,
+        "path": "metadata/papers/P10/controlled/T2.json",
+        "sha256": "c0fe25ad7e243cf1dbc249588a6fd423e60d04977b370edecddc7c3059300d1f"
+      },
+      "target": {
+        "bytes": 482,
+        "path": "tasks/P10/T2/Target.lean",
+        "sha256": "90fdf84b3b59fe01d3c2e850d61d4c50cf9d5c47195270fb1d7cea2379e37518"
+      },
+      "target_imports": [
+        "HighamBench.P10Definitions"
+      ],
+      "task_id": "P10-T2",
+      "task_record": {
+        "bytes": 3801,
+        "path": "tasks/P10/T2/task.json",
+        "sha256": "3bd78665c612ec3be148014a7ea852b382d69d619cbba27339e2f361ad2fdbb5"
+      },
+      "tier": "T2"
+    },
+    {
+      "context": {
+        "bytes": 776,
+        "path": "tasks/P10/T3/context.md",
+        "sha256": "34d3f0409ec99171c80654a3eece9dfb499c45eb15a60afe744e08f728b26f8e"
+      },
+      "controlled_manifest": {
+        "bytes": 755,
+        "path": "metadata/papers/P10/controlled/T3.json",
+        "sha256": "022a6d11a0461353fc24318c43b6a6d41817d65fe1fe8e2607de03e6af74bff2"
+      },
+      "target": {
+        "bytes": 734,
+        "path": "tasks/P10/T3/Target.lean",
+        "sha256": "678e0d48115267a7b9ba48c8d8b0a31ca85c421c08147fa0377eb1d70612ae61"
+      },
+      "target_imports": [
+        "HighamBench.P10Definitions"
+      ],
+      "task_id": "P10-T3",
+      "task_record": {
+        "bytes": 4464,
+        "path": "tasks/P10/T3/task.json",
+        "sha256": "b068258511f781f6cc83c019ae49ca7644fec159accc278f57d32664bcf2b705"
+      },
+      "tier": "T3"
+    }
+  ]
+}

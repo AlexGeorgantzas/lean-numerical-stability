@@ -15,5 +15,5 @@ page 7 (printed page 2317), immediately before equations (3.2)--(3.3).
 The paper sums nonnegative approximations to exponential terms and gives a
 first-order recursive-summation estimate.  The target isolates that summation
 stage and states its standard exact finite form with coefficient
-`gamma fp.u (n-1)`.  The nonzero exact sum is the domain condition for relative
+`p14Gamma fp.u (n-1)`.  The nonzero exact sum is the domain condition for relative
 error.

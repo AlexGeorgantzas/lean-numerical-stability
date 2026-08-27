@@ -29,6 +29,7 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 import codex_isolated  # noqa: E402
+import lean_isolated  # noqa: E402
 import provider_token_gate  # noqa: E402
 import runner as benchmark_runner  # noqa: E402
 from codex_isolated import (  # noqa: E402
@@ -307,6 +308,69 @@ def fork_policy_hook_event(
 
 
 class AttemptUsageLedgerTests(unittest.TestCase):
+    def test_token_crossing_exactness_waits_for_immediate_adapter_teardown(
+        self,
+    ) -> None:
+        """Do not publish the sealed crossing as exact before process teardown."""
+
+        with tempfile.TemporaryDirectory() as directory:
+            terminal = {
+                "close_reason": codex_isolated.PROVIDER_GATE_CLOSE_TOKEN_LIMIT,
+                "crossing_closed": True,
+                "completed_tokens": 101,
+                "crossing": {"response_id": "crossing-response"},
+            }
+            gate = mock.Mock()
+            gate.snapshot.return_value = terminal
+            output = Path(directory) / "usage.json"
+            ledger = AttemptUsageLedger(
+                output,
+                100,
+                "root-thread",
+                provider_gate=gate,
+                provider_gate_artifact_path=(
+                    Path(directory) / "provider-token-gate.json"
+                ),
+            )
+            ledger.first_crossing = {
+                "response_id": "crossing-response",
+                "notification_sequence": 1,
+                "observed_at_unix_ns": 10_000,
+                "tokens": 101,
+                "active_thread_ids": ["root-thread"],
+            }
+            ledger.stop_reason = "token_limit"
+            ledger.provider_gate_final = {"record_sha256": "a" * 64}
+            ledger.provider_gate_terminal_snapshot = terminal
+            ledger.provider_gate_exact_for_usage = True
+            ledger.provider_usage_reconciliation = {
+                "provider_usage": {"total_tokens": 101}
+            }
+
+            ledger.publish(drain_complete=False)
+            transient = json.loads(output.read_text(encoding="utf-8"))
+            self.assertFalse(transient["measurement_exact"], transient)
+            self.assertNotIn("adapter_teardown", transient)
+
+            ledger.attach_adapter_teardown(
+                {
+                    "process_group_isolated": True,
+                    "immediate": True,
+                    "stdin_closed": True,
+                    "signal": "SIGTERM",
+                    "returncode": -15,
+                    "completed": True,
+                    "started_at_unix_ns": 11_000,
+                    "started_at_monotonic_ns": 1_000,
+                    "completed_at_unix_ns": 12_000,
+                    "completed_at_monotonic_ns": 2_000,
+                }
+            )
+            ledger.publish(drain_complete=False)
+            final = json.loads(output.read_text(encoding="utf-8"))
+            self.assertTrue(final["measurement_exact"], final)
+            self.assertTrue(final["adapter_teardown"]["immediate"])
+
     def test_terminal_turn_history_survives_child_reactivation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             ledger = AttemptUsageLedger(
@@ -1299,7 +1363,7 @@ class AttemptUsageLedgerTests(unittest.TestCase):
             successor_id = (
                 f"resp-superseded-{index + 1}"
                 if index + 1 < len(shapes)
-                else "resp-direct"
+                else "resp-suppressed-wait"
             )
             calls.append(
                 {
@@ -1341,14 +1405,62 @@ class AttemptUsageLedgerTests(unittest.TestCase):
                     },
                 }
             )
+        suppressed_items = [
+            manifest_item(0, "reasoning"),
+            {
+                **manifest_item(
+                    1,
+                    "function_call",
+                    name="wait_agent",
+                    namespace="collaboration",
+                ),
+                "wait_timeout_ms": 10_000,
+            },
+        ]
+        calls.append(
+            {
+                "sequence": 4,
+                "call_id": "provider-call-4",
+                "response_id": "resp-suppressed-wait",
+                "admitted_monotonic_ns": 70,
+                "admitted_unix_ns": 70_000_000,
+                "commit_monotonic_ns": 80,
+                "commit_unix_ns": 80_000_000,
+                "normalized_usage": dict(usage),
+                "error": None,
+                "client_release_complete": True,
+                "crossed_cap": False,
+                "release_kind": "byte_identity",
+                "released_body_sha256": "b" * 64,
+                "upstream_body_sha256": "b" * 64,
+                "released_body_bytes": 100,
+                "upstream_body_bytes": 100,
+                "request_metadata": dict(metadata),
+                "response_output_manifest": {
+                    "schema_version": 1,
+                    "response_id": "resp-suppressed-wait",
+                    "output_item_count": len(suppressed_items),
+                    "action_capable_item_count": 1,
+                    "items": suppressed_items,
+                },
+                "appserver_crossbind": None,
+                "appserver_delivery": {
+                    "kind": "suppressed_collaboration_wait",
+                    "successor_call_id": "provider-call-5",
+                    "successor_response_id": "resp-direct",
+                    "bind_unix_ns": 105_000_000,
+                    "bind_monotonic_ns": 105,
+                },
+            }
+        )
         direct = {
-            "sequence": 4,
-            "call_id": "provider-call-4",
+            "sequence": 5,
+            "call_id": "provider-call-5",
             "response_id": "resp-direct",
-            "admitted_monotonic_ns": 70,
-            "admitted_unix_ns": 70_000_000,
-            "commit_monotonic_ns": 80,
-            "commit_unix_ns": 80_000_000,
+            "admitted_monotonic_ns": 90,
+            "admitted_unix_ns": 90_000_000,
+            "commit_monotonic_ns": 100,
+            "commit_unix_ns": 100_000_000,
             "normalized_usage": dict(usage),
             "error": None,
             "client_release_complete": True,
@@ -1358,22 +1470,22 @@ class AttemptUsageLedgerTests(unittest.TestCase):
                 "turn_id": "root-turn",
                 "event_sequence": 1,
                 "normalized_usage": dict(usage),
-                "bind_unix_ns": 85_000_000,
-                "bind_monotonic_ns": 85,
+                "bind_unix_ns": 105_000_000,
+                "bind_monotonic_ns": 105,
             },
             "appserver_delivery": {
                 "kind": "direct_raw_response",
                 "successor_call_id": None,
                 "successor_response_id": None,
-                "bind_unix_ns": 85_000_000,
-                "bind_monotonic_ns": 85,
+                "bind_unix_ns": 105_000_000,
+                "bind_monotonic_ns": 105,
             },
         }
         calls.append(direct)
         state = {
             "phase": "CLOSED",
             "close_reason": "accepted_submission",
-            "completed_tokens": 44,
+            "completed_tokens": 55,
             "crossing": None,
             "crossing_closed": False,
             "open_request_ids": [],
@@ -1398,8 +1510,8 @@ class AttemptUsageLedgerTests(unittest.TestCase):
                     "thread_id": "root-thread",
                     "turn_id": "root-turn",
                     "sequence": 1,
-                    "observed_at_unix_ns": 86_000_000,
-                    "observed_at_monotonic_ns": 86,
+                    "observed_at_unix_ns": 106_000_000,
+                    "observed_at_monotonic_ns": 106,
                     "usage": dict(usage),
                 }
             }
@@ -1413,7 +1525,7 @@ class AttemptUsageLedgerTests(unittest.TestCase):
                     "successor_response_id": (
                         f"resp-superseded-{index + 1}"
                         if index + 1 < len(shapes)
-                        else "resp-direct"
+                        else "resp-suppressed-wait"
                     ),
                     "successor_call_id": f"provider-call-{index + 2}",
                     "collaboration_messages": [
@@ -1431,6 +1543,22 @@ class AttemptUsageLedgerTests(unittest.TestCase):
                 }
                 for index in range(len(shapes))
             }
+            ledger.suppressed_collaboration_wait_evidence = {
+                "resp-suppressed-wait": {
+                    "response_id": "resp-suppressed-wait",
+                    "provider_call_id": "provider-call-4",
+                    "thread_id": "root-thread",
+                    "turn_id": "root-turn",
+                    "successor_response_id": "resp-direct",
+                    "successor_call_id": "provider-call-5",
+                    "agent_message_item_id": "message-suppressed-final",
+                    "agent_message_sha256": "d" * 64,
+                    "agent_message_author": "/root/worker",
+                    "agent_message_recipient": "/root",
+                    "agent_message_observed_at_unix_ns": 85_000_000,
+                    "agent_message_observed_at_monotonic_ns": 85,
+                }
+            }
             reconciliation = codex_isolated._provider_gate_matches_ledger(
                 record,
                 state,
@@ -1440,7 +1568,7 @@ class AttemptUsageLedgerTests(unittest.TestCase):
 
         self.assertIsNotNone(reconciliation)
         assert reconciliation is not None
-        self.assertEqual(reconciliation["provider_response_count"], 4)
+        self.assertEqual(reconciliation["provider_response_count"], 5)
         self.assertEqual(reconciliation["appserver_response_count"], 1)
         self.assertEqual(
             reconciliation[
@@ -1448,7 +1576,11 @@ class AttemptUsageLedgerTests(unittest.TestCase):
             ],
             3,
         )
-        self.assertEqual(reconciliation["provider_usage"]["total_tokens"], 44)
+        self.assertEqual(
+            reconciliation["suppressed_collaboration_wait_response_count"],
+            1,
+        )
+        self.assertEqual(reconciliation["provider_usage"]["total_tokens"], 55)
 
     def test_job_1510008_final_reconciliation_accepts_message_superseded_wait(
         self,
@@ -2185,6 +2317,462 @@ class AttemptUsageLedgerTests(unittest.TestCase):
                     successor_response_id=successor_response_id,
                 )
             self.assertEqual(gate.suppressed_bindings, [])
+
+    def test_job_1510473_wait_does_not_consume_next_replacement_final(
+        self,
+    ) -> None:
+        """Partition MESSAGE then FINAL across the immediate response chain."""
+
+        wait_response_id = (
+            "resp_09eeebc11547534c016a7e78b1821881958f0084e64d885cd8"
+        )
+        middle_response_id = (
+            "resp_09eeebc11547534c016a7e78b5830881958161b8fe8efda6ba"
+        )
+        direct_response_id = (
+            "resp_09eeebc11547534c016a7e78b8dce48195a9f7d7c1fedc8b21"
+        )
+        wait_commit_unix_ns = 1_786_673_332_836_970_762
+        wait_commit_monotonic_ns = 18_944_807_626_448
+        middle_admitted_unix_ns = 1_786_673_333_087_108_848
+        middle_admitted_monotonic_ns = 18_945_057_764_324
+        middle_commit_unix_ns = 1_786_673_336_167_504_346
+        middle_commit_monotonic_ns = 18_948_138_160_000
+        direct_admitted_unix_ns = 1_786_673_336_405_469_179
+        direct_admitted_monotonic_ns = 18_948_376_124_552
+
+        common = {
+            "thread_id": "root-thread",
+            "turn_id": "root-turn",
+            "normalized_usage": {
+                "input_tokens": 25_000,
+                "cached_input_tokens": 24_000,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 100,
+                "reasoning_output_tokens": 10,
+                "total_tokens": 25_100,
+            },
+            "action_capable_item_count": 1,
+            "response_output_manifest_sha256": "a" * 64,
+        }
+        wait_candidate = {
+            **common,
+            "response_id": wait_response_id,
+            "call_id": "provider-call-00000160",
+            "commit_unix_ns": wait_commit_unix_ns,
+            "commit_monotonic_ns": wait_commit_monotonic_ns,
+            "wait_call_id": "call_1aeurtelYSWn1P0Xeixry9Kg",
+            "wait_timeout_ms": 30_000,
+            # Suppressed-wait candidates intentionally name the earliest
+            # later directly delivered response, skipping the middle link.
+            "successor_response_id": direct_response_id,
+            "successor_call_id": "provider-call-00000167",
+            "successor_admitted_unix_ns": direct_admitted_unix_ns,
+            "successor_admitted_monotonic_ns": direct_admitted_monotonic_ns,
+        }
+        general_candidates = [
+            {
+                **common,
+                "response_id": wait_response_id,
+                "call_id": "provider-call-00000160",
+                "commit_unix_ns": wait_commit_unix_ns,
+                "commit_monotonic_ns": wait_commit_monotonic_ns,
+                "successor_response_id": middle_response_id,
+                "successor_call_id": "provider-call-00000164",
+                "successor_admitted_unix_ns": middle_admitted_unix_ns,
+                "successor_admitted_monotonic_ns": middle_admitted_monotonic_ns,
+            },
+            {
+                **common,
+                "response_id": middle_response_id,
+                "call_id": "provider-call-00000164",
+                "commit_unix_ns": middle_commit_unix_ns,
+                "commit_monotonic_ns": middle_commit_monotonic_ns,
+                "successor_response_id": direct_response_id,
+                "successor_call_id": "provider-call-00000167",
+                "successor_admitted_unix_ns": direct_admitted_unix_ns,
+                "successor_admitted_monotonic_ns": direct_admitted_monotonic_ns,
+            },
+        ]
+
+        class FakeGate:
+            def __init__(self) -> None:
+                self.suppressed_bindings: list[tuple[str, str]] = []
+                self.superseded_bindings: list[tuple[str, str]] = []
+
+            def suppressed_collaboration_wait_candidates(
+                self, thread_id: str, turn_id: str
+            ) -> list[dict[str, object]]:
+                return [copy.deepcopy(wait_candidate)]
+
+            def crossbind_suppressed_collaboration_wait(
+                self,
+                response_id: str,
+                thread_id: str,
+                turn_id: str,
+                successor_response_id: str,
+            ) -> None:
+                self.suppressed_bindings.append(
+                    (response_id, successor_response_id)
+                )
+
+            def superseded_by_collaboration_message_candidates(
+                self, thread_id: str, turn_id: str
+            ) -> list[dict[str, object]]:
+                return copy.deepcopy(general_candidates)
+
+            def crossbind_superseded_by_collaboration_message(
+                self,
+                response_id: str,
+                thread_id: str,
+                turn_id: str,
+                successor_response_id: str,
+            ) -> None:
+                self.superseded_bindings.append(
+                    (response_id, successor_response_id)
+                )
+
+        with tempfile.TemporaryDirectory() as directory:
+            gate = FakeGate()
+            ledger = codex_isolated.AttemptUsageLedger(
+                Path(directory) / "usage.json",
+                5_000_000,
+                "root-thread",
+                provider_gate=gate,  # type: ignore[arg-type]
+                provider_gate_artifact_path=Path(directory) / "gate.json",
+            )
+            ledger.root_turn_id = "root-turn"
+            ledger._link_child(
+                "root-thread", "child-thread", "/root/alternative_proof"
+            )
+            ledger.threads["child-thread"].update(
+                {
+                    "provisional": False,
+                    "spawn_binding_status": "resolved",
+                    "turn_status": "completed",
+                    "active_turn_id": None,
+                    "terminal_turn_id": "child-turn",
+                    "turn_completed_at_unix_ns": middle_commit_unix_ns + 1,
+                    "turn_completed_at_monotonic_ns": (
+                        middle_commit_monotonic_ns + 1
+                    ),
+                }
+            )
+
+            def message(item_id: str, kind: str) -> dict[str, object]:
+                return {
+                    "type": "agent_message",
+                    "id": item_id,
+                    "author": "/root/alternative_proof",
+                    "recipient": "/root",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": (
+                                f"Message Type: {kind}\n"
+                                "Task name: /root\n"
+                                "Sender: /root/alternative_proof\n"
+                                "Payload:\nresult"
+                            ),
+                        }
+                    ],
+                    "internal_chat_message_metadata_passthrough": {
+                        "turn_id": "root-turn"
+                    },
+                }
+
+            interim = message("amsg-job-1510473-interim", "MESSAGE")
+            final = message("amsg-job-1510473-final", "FINAL_ANSWER")
+            ledger._capture_collaboration_message(
+                thread_id="root-thread",
+                turn_id="root-turn",
+                item=interim,
+                observed_at_unix_ns=1_786_673_332_988_000_000,
+                observed_at_monotonic_ns=18_944_950_000_000,
+            )
+            ledger._capture_final_answer_agent_message(
+                thread_id="root-thread",
+                turn_id="root-turn",
+                item=final,
+                observed_at_unix_ns=1_786_673_336_328_000_000,
+                observed_at_monotonic_ns=18_948_250_000_000,
+            )
+            ledger._capture_collaboration_message(
+                thread_id="root-thread",
+                turn_id="root-turn",
+                item=final,
+                observed_at_unix_ns=1_786_673_336_328_000_000,
+                observed_at_monotonic_ns=18_948_250_000_000,
+            )
+
+            ledger._reconcile_suppressed_waits_for_successor(
+                thread_id="root-thread",
+                turn_id="root-turn",
+                successor_response_id=direct_response_id,
+            )
+            self.assertEqual(gate.suppressed_bindings, [])
+            ledger._reconcile_superseded_responses_for_successor(
+                thread_id="root-thread",
+                turn_id="root-turn",
+                successor_response_id=direct_response_id,
+            )
+            self.assertEqual(
+                gate.superseded_bindings,
+                [
+                    (middle_response_id, direct_response_id),
+                    (wait_response_id, middle_response_id),
+                ],
+            )
+            self.assertEqual(
+                ledger.superseded_by_collaboration_message_evidence[
+                    middle_response_id
+                ]["collaboration_messages"][0]["item_id"],
+                "amsg-job-1510473-final",
+            )
+            self.assertEqual(
+                ledger.superseded_by_collaboration_message_evidence[
+                    wait_response_id
+                ]["collaboration_messages"][0]["item_id"],
+                "amsg-job-1510473-interim",
+            )
+
+    def test_job_1510529_supersession_reaches_direct_through_suppressed_wait(
+        self,
+    ) -> None:
+        """Reconcile the exact P11 FINAL/MESSAGE -> suppressed-wait chain."""
+
+        replaced_response_id = (
+            "resp_08fede297b3b4750016a7e91a8261881959361bffb34e1d7a5"
+        )
+        wait_response_id = (
+            "resp_08fede297b3b4750016a7e91b4d4808195b27e82e94cb0e583"
+        )
+        direct_response_id = (
+            "resp_08fede297b3b4750016a7e91b90c6c8195a35b1b270599753f"
+        )
+        replaced_commit_unix_ns = 1_786_679_731_748_264_415
+        replaced_commit_monotonic_ns = 25_343_718_919_842
+        wait_admitted_unix_ns = 1_786_679_731_977_086_511
+        wait_admitted_monotonic_ns = 25_343_947_741_790
+        wait_commit_unix_ns = 1_786_679_736_304_217_222
+        wait_commit_monotonic_ns = 25_348_274_872_647
+        direct_admitted_unix_ns = 1_786_679_736_541_976_384
+        direct_admitted_monotonic_ns = 25_348_512_631_647
+
+        common = {
+            "thread_id": "root-thread",
+            "turn_id": "root-turn",
+            "normalized_usage": {
+                "input_tokens": 45_778,
+                "cached_input_tokens": 44_800,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 532,
+                "reasoning_output_tokens": 358,
+                "total_tokens": 46_310,
+            },
+            "response_output_manifest_sha256": "a" * 64,
+        }
+        wait_candidate = {
+            **common,
+            "response_id": wait_response_id,
+            "call_id": "provider-call-00000143",
+            "commit_unix_ns": wait_commit_unix_ns,
+            "commit_monotonic_ns": wait_commit_monotonic_ns,
+            "wait_call_id": "call_gI61aEad3Jei4SsTBBhwv0ey",
+            "wait_timeout_ms": 10_000,
+            "successor_response_id": direct_response_id,
+            "successor_call_id": "provider-call-00000146",
+            "successor_admitted_unix_ns": direct_admitted_unix_ns,
+            "successor_admitted_monotonic_ns": direct_admitted_monotonic_ns,
+        }
+        replaced_candidate = {
+            **common,
+            "response_id": replaced_response_id,
+            "call_id": "provider-call-00000136",
+            "commit_unix_ns": replaced_commit_unix_ns,
+            "commit_monotonic_ns": replaced_commit_monotonic_ns,
+            "action_capable_item_count": 1,
+            "successor_response_id": wait_response_id,
+            "successor_call_id": "provider-call-00000143",
+            "successor_admitted_unix_ns": wait_admitted_unix_ns,
+            "successor_admitted_monotonic_ns": wait_admitted_monotonic_ns,
+        }
+
+        class FakeGate:
+            def __init__(self) -> None:
+                self.suppressed_bindings: list[tuple[str, str]] = []
+                self.superseded_bindings: list[tuple[str, str]] = []
+
+            def suppressed_collaboration_wait_candidates(
+                self, thread_id: str, turn_id: str
+            ) -> list[dict[str, object]]:
+                return [copy.deepcopy(wait_candidate)]
+
+            def crossbind_suppressed_collaboration_wait(
+                self,
+                response_id: str,
+                thread_id: str,
+                turn_id: str,
+                successor_response_id: str,
+            ) -> None:
+                self.suppressed_bindings.append(
+                    (response_id, successor_response_id)
+                )
+
+            def superseded_by_collaboration_message_candidates(
+                self, thread_id: str, turn_id: str
+            ) -> list[dict[str, object]]:
+                return [copy.deepcopy(replaced_candidate)]
+
+            def crossbind_superseded_by_collaboration_message(
+                self,
+                response_id: str,
+                thread_id: str,
+                turn_id: str,
+                successor_response_id: str,
+            ) -> None:
+                self.superseded_bindings.append(
+                    (response_id, successor_response_id)
+                )
+
+        def message(
+            item_id: str, author: str, kind: str
+        ) -> dict[str, object]:
+            return {
+                "type": "agent_message",
+                "id": item_id,
+                "author": author,
+                "recipient": "/root",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": (
+                            f"Message Type: {kind}\n"
+                            "Task name: /root\n"
+                            f"Sender: {author}\n"
+                            "Payload:\nresult"
+                        ),
+                    }
+                ],
+                "internal_chat_message_metadata_passthrough": {
+                    "turn_id": "root-turn"
+                },
+            }
+
+        with tempfile.TemporaryDirectory() as directory:
+            gate = FakeGate()
+            ledger = codex_isolated.AttemptUsageLedger(
+                Path(directory) / "usage.json",
+                5_000_000,
+                "root-thread",
+                provider_gate=gate,  # type: ignore[arg-type]
+                provider_gate_artifact_path=Path(directory) / "gate.json",
+            )
+            ledger.root_turn_id = "root-turn"
+            for child_thread, agent_path in (
+                ("mathlib-thread", "/root/mathlib_search"),
+                ("direct-thread", "/root/direct_proof"),
+            ):
+                ledger._link_child("root-thread", child_thread, agent_path)
+                ledger.threads[child_thread].update(
+                    {
+                        "provisional": False,
+                        "spawn_binding_status": "resolved",
+                        "turn_status": "completed",
+                        "active_turn_id": None,
+                        "terminal_turn_id": f"{child_thread}-turn",
+                        "turn_completed_at_unix_ns": (
+                            replaced_commit_unix_ns - 1
+                        ),
+                        "turn_completed_at_monotonic_ns": (
+                            replaced_commit_monotonic_ns - 1
+                        ),
+                    }
+                )
+
+            mathlib_final = message(
+                "amsg_019ffe69-26b9-7423-b5b7-ccc6b1f06bc9",
+                "/root/mathlib_search",
+                "FINAL_ANSWER",
+            )
+            direct_interim = message(
+                "amsg_019ffe69-26b9-7423-b5b7-ccdb6b3a9b20",
+                "/root/direct_proof",
+                "MESSAGE",
+            )
+            direct_final = message(
+                "amsg_019ffe69-388e-7a62-a747-59e09e54916c",
+                "/root/direct_proof",
+                "FINAL_ANSWER",
+            )
+            for item, observed_unix_ns, observed_monotonic_ns in (
+                (
+                    mathlib_final,
+                    1_786_679_731_897_000_000,
+                    25_343_870_000_000,
+                ),
+                (
+                    direct_interim,
+                    1_786_679_731_899_000_000,
+                    25_343_872_000_000,
+                ),
+                (
+                    direct_final,
+                    1_786_679_736_464_000_000,
+                    25_348_465_000_000,
+                ),
+            ):
+                ledger._capture_final_answer_agent_message(
+                    thread_id="root-thread",
+                    turn_id="root-turn",
+                    item=item,
+                    observed_at_unix_ns=observed_unix_ns,
+                    observed_at_monotonic_ns=observed_monotonic_ns,
+                )
+                ledger._capture_collaboration_message(
+                    thread_id="root-thread",
+                    turn_id="root-turn",
+                    item=item,
+                    observed_at_unix_ns=observed_unix_ns,
+                    observed_at_monotonic_ns=observed_monotonic_ns,
+                )
+
+            ledger._reconcile_suppressed_waits_for_successor(
+                thread_id="root-thread",
+                turn_id="root-turn",
+                successor_response_id=direct_response_id,
+            )
+            self.assertEqual(
+                gate.suppressed_bindings,
+                [(wait_response_id, direct_response_id)],
+            )
+            ledger._reconcile_superseded_responses_for_successor(
+                thread_id="root-thread",
+                turn_id="root-turn",
+                successor_response_id=direct_response_id,
+            )
+            self.assertEqual(
+                gate.superseded_bindings,
+                [(replaced_response_id, wait_response_id)],
+            )
+            self.assertEqual(
+                [
+                    item["item_id"]
+                    for item in ledger.superseded_by_collaboration_message_evidence[
+                        replaced_response_id
+                    ]["collaboration_messages"]
+                ],
+                [
+                    "amsg_019ffe69-26b9-7423-b5b7-ccc6b1f06bc9",
+                    "amsg_019ffe69-26b9-7423-b5b7-ccdb6b3a9b20",
+                ],
+            )
+            self.assertEqual(
+                ledger.suppressed_collaboration_wait_evidence[
+                    wait_response_id
+                ]["agent_message_item_id"],
+                "amsg_019ffe69-388e-7a62-a747-59e09e54916c",
+            )
 
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
@@ -4132,10 +4720,10 @@ class SubmissionBarrierTests(unittest.TestCase):
             codex_isolated.NESTED_SUBMISSION_WIRE_FORMAT,
         )
         self.assertEqual(request["outer_exec_program"], source)
-        self.assertEqual(len(source.encode("utf-8")), 98)
+        self.assertEqual(len(source.encode("utf-8")), 104)
         self.assertEqual(
             hashlib.sha256(source.encode("utf-8")).hexdigest(),
-            "bb4995a4eaad6d9128cb1b0d177f8ba882be176fbd0db589bb861182d3020edd",
+            "d8f1e2e53f379a5e1a0cd273127af52f71c150c9fa7c7a50dc177d40e6c12d14",
         )
         self.assertEqual(
             request["outer_exec_program_sha256"],
@@ -4521,6 +5109,7 @@ class SubmissionBarrierTests(unittest.TestCase):
             '// @exec: {"yield_time_ms": 2399999}\nawait tools.submit_proof({candidate_path:"Candidate.lean"});\n',
             '// @exec: {"yield_time_ms": 2400001}\nawait tools.submit_proof({candidate_path:"Candidate.lean"});\n',
             '// @exec:{"yield_time_ms":2400000}\nawait tools.submit_proof({candidate_path:"Candidate.lean"});\n',
+            '// @exec: {"yield_time_ms": 2400000}\nawait tools.submit_proof({candidate_path:"Candidate.lean"});\n',
             'await tools["submit_proof"]({candidate_path:"Candidate.lean"});',
             'await Promise.all([tools.submit_proof({candidate_path:"Candidate.lean"})]);',
             'await tools.submit_proof({candidate_path:"Other.lean"});',
@@ -4728,6 +5317,57 @@ class SubmissionBarrierTests(unittest.TestCase):
         self.assertFalse(later_barrier.advance())
         self.assertIsNone(later_barrier.pending)
         self.assertIn("sole tool call", later_output.getvalue())
+
+    def test_noncanonical_response_first_exec_reports_exact_retry_before_projection(
+        self,
+    ) -> None:
+        """A malformed outer wire must not masquerade as accounting failure."""
+
+        (self.workspace / "Candidate.lean").write_text(
+            "theorem candidate : True := by trivial\n", encoding="utf-8"
+        )
+        # Leave an earlier root cumulative projection stale, matching the live
+        # response-first shape that used to win over the malformed-wire error.
+        self.ledger.observe(self.reasoning_raw_item("prior-reasoning"))
+        self.ledger.observe(
+            raw_response_event(
+                "prior-response",
+                "root",
+                "root-turn",
+                input_tokens=3,
+                cached_input_tokens=0,
+                output_tokens=1,
+            )
+        )
+        malformed_source = codex_isolated.NESTED_SUBMISSION_EXEC_SOURCE[:-1]
+        self.assertEqual(len(malformed_source.encode("utf-8")), 103)
+        self.ledger.observe(
+            self.nested_raw_item("malformed-response-first-outer", malformed_source)
+        )
+        self.ledger.observe(
+            raw_response_event(
+                "malformed-response-first-submit",
+                "root",
+                "root-turn",
+                input_tokens=5,
+                cached_input_tokens=1,
+                output_tokens=2,
+            )
+        )
+        self.ledger.observe(self.dynamic_start("malformed-response-first-inner"))
+
+        self.assertTrue(
+            self.barrier.capture(self.request("malformed-response-first-inner"))
+        )
+        self.assertIsNone(self.barrier.pending)
+        response = json.loads(self.protocol_input.getvalue().splitlines()[-1])
+        self.assertFalse(response["result"]["success"])
+        note = response["result"]["contentItems"][0]["text"]
+        self.assertIn("Retry in a new final response", note)
+        self.assertIn("104-byte program", note)
+        self.assertIn("including its final newline", note)
+        self.assertIn(repr(codex_isolated.NESTED_SUBMISSION_EXEC_SOURCE), note)
+        self.assertNotIn("root token projection", note)
 
     def test_nested_exec_requires_preceding_matching_dynamic_start(self) -> None:
         self.ledger.observe(self.nested_raw_item("outer-call"))
@@ -4967,6 +5607,100 @@ class SubmissionBarrierTests(unittest.TestCase):
             "submission_boundary"
         ]
         self.assertEqual(boundary["sequence"], 2)
+
+    def test_noncanonical_wire_rejection_is_visible_and_canonical_retry_accepts(
+        self,
+    ) -> None:
+        """A wire-format rejection must leave the submission barrier retryable."""
+
+        (self.workspace / "Candidate.lean").write_text(
+            "theorem candidate : True := by trivial\n", encoding="utf-8"
+        )
+        malformed_source = codex_isolated.NESTED_SUBMISSION_EXEC_SOURCE[:-1]
+
+        # Reproduce the live response-first order: the one-byte-short outer
+        # exec is already part of a completed provider response when the inner
+        # dynamic call reaches the adapter.
+        self.assertEqual(
+            malformed_source + "\n", codex_isolated.NESTED_SUBMISSION_EXEC_SOURCE
+        )
+        self.ledger.observe(self.nested_raw_item("malformed-outer", malformed_source))
+        self.ledger.observe(
+            raw_response_event(
+                "malformed-response",
+                "root",
+                "root-turn",
+                input_tokens=5,
+                cached_input_tokens=1,
+                output_tokens=2,
+            )
+        )
+        self.ledger.observe(self.dynamic_start("malformed-inner"))
+        malformed_request = self.request("malformed-inner")
+        self.assertTrue(self.barrier.capture(malformed_request))
+        self.assertIsNone(self.barrier.pending)
+
+        rejection = json.loads(self.protocol_input.getvalue().splitlines()[-1])
+        self.assertEqual(rejection["id"], malformed_request["id"])
+        self.assertFalse(rejection["result"]["success"])
+        rejection_items = rejection["result"]["contentItems"]
+        self.assertEqual(len(rejection_items), 1)
+        self.assertEqual(rejection_items[0]["type"], "inputText")
+        self.assertIn("Retry in a new final response", rejection_items[0]["text"])
+        self.assertEqual(self.barrier.sequence, 0)
+
+        # The canonical wrapper prints the nested result, so this rejection is
+        # also present in the completed outer exec output that becomes model
+        # context.  After its usage is reconciled, the model can retry using
+        # the exact canonical source.
+        self.assertIn(
+            "text(await tools.submit_proof",
+            codex_isolated.NESTED_SUBMISSION_EXEC_SOURCE,
+        )
+        rejected_outer_output = self.delayed_exec_output(
+            call_id="malformed-outer", item_id="malformed-outer-output"
+        )
+        rejected_outer_output["params"]["item"]["output"] = (
+            "Script completed\nOutput:\n" + rejection_items[0]["text"] + "\n"
+        )
+        self.assertIn(
+            rejection_items[0]["text"],
+            rejected_outer_output["params"]["item"]["output"],
+        )
+        self.ledger.observe(rejected_outer_output)
+        self.ledger.observe(
+            cumulative_usage_event(
+                "root",
+                "root-turn",
+                input_tokens=5,
+                cached_input_tokens=1,
+                output_tokens=2,
+            )
+        )
+        canonical_request = self.request("canonical-inner")
+        canonical_request["id"] = 45
+        self.ledger.observe(self.nested_raw_item("canonical-outer"))
+        self.ledger.observe(self.dynamic_start("canonical-inner"))
+        self.assertTrue(self.barrier.capture(canonical_request))
+        self.assertIsNotNone(self.barrier.pending)
+        self.complete_raw("canonical-response", "canonical-inner")
+
+        ack_thread = self.write_ack_when_requested("accept")
+        with self.assertRaises(codex_isolated._SubmissionAccepted):
+            self.barrier.advance()
+        ack_thread.join(timeout=2)
+        boundary = json.loads(self.usage.read_text(encoding="utf-8"))[
+            "submission_boundary"
+        ]
+        self.assertEqual(boundary["sequence"], 1)
+        self.assertEqual(
+            boundary["outer_exec_program"],
+            codex_isolated.NESTED_SUBMISSION_EXEC_SOURCE,
+        )
+        self.assertEqual(
+            boundary["outer_exec_program_bytes"],
+            codex_isolated.NESTED_SUBMISSION_EXEC_SOURCE_BYTES,
+        )
 
     def test_child_nonquiescent_cap_path_and_symlink_reject_fail_closed(self) -> None:
         (self.workspace / "Candidate.lean").write_text("candidate\n", encoding="utf-8")
@@ -5784,6 +6518,52 @@ class IsolationAdapterTests(unittest.TestCase):
         self.assertNotIn("--share-net", n_command)
         self.assertNotIn("--share-net", l_command)
 
+    def test_lean_plural_audit_routes_trusted_pairs_file(self) -> None:
+        source = self.workspace / "Submission.lean"
+        source.write_text("theorem first : True := by trivial\n", encoding="utf-8")
+        source.with_suffix(".olean").write_bytes(b"checked")
+        audit_helper = self.root / "audit.lean"
+        audit_helper.write_text("def main : IO Unit := pure ()\n", encoding="utf-8")
+        pairs = self.workspace / "audit-pairs.tsv"
+        pairs.write_text("proof\tHighamBench.first\tHighamBench.expected\n", encoding="utf-8")
+        local_modules = self.workspace / "local-modules.txt"
+        local_modules.write_text("Submission\n", encoding="utf-8")
+        args = self.lean_args("N")
+        args.action = "audit"
+        args.source = source
+        args.audit_helper = audit_helper
+        args.submission_module = "Submission"
+        args.target_theorem = None
+        args.audit_pairs_file = pairs
+        args.expected_module = "Expected"
+        args.expected_theorem = None
+        args.local_modules_file = local_modules
+        with (
+            mock.patch.object(lean_isolated, "namespace_prefix", return_value=["bwrap"]),
+            mock.patch.object(lean_isolated, "run_command", return_value=0) as run_command,
+        ):
+            self.assertEqual(lean_isolated.run(args), 0)
+        command = run_command.call_args.args[0]
+        self.assertEqual(
+            command[-8:],
+            [
+                "/lean/bin/lean",
+                "--run",
+                "/audit.lean",
+                "Submission",
+                "--pairs-file",
+                "/workspace/audit-pairs.tsv",
+                "Expected",
+                "/workspace/local-modules.txt",
+            ],
+        )
+        args.target_theorem = "HighamBench.first"
+        with (
+            mock.patch.object(lean_isolated, "namespace_prefix", return_value=["bwrap"]),
+            self.assertRaisesRegex(RuntimeError, "exactly one"),
+        ):
+            lean_isolated.run(args)
+
     def test_live_cap_and_advisory_rollout_budget_are_separate_options(self) -> None:
         self.assertEqual(positive_int("7"), 7)
         for raw in ("0", "-1", "not-an-int"):
@@ -6084,6 +6864,424 @@ class IsolationAdapterTests(unittest.TestCase):
         helper.chmod(0o644)
         with self.assertRaisesRegex(RuntimeError, "wrong mode"):
             bubblewrap_command(args, self.state_home)
+
+    def test_pinned_app_server_v3_wrapper_surfaces_rejected_nested_result(
+        self,
+    ) -> None:
+        """The printed nested rejection must enter the next model request."""
+
+        frozen_codex = (
+            TOOLS.parent.parent
+            / "scratch_pad"
+            / "highambench_environment"
+            / "codex-0.146.0-alpha.9.2"
+        )
+        if not frozen_codex.is_file():
+            self.skipTest("pinned Codex binary is unavailable")
+
+        upstream_requests: list[dict[str, object]] = []
+        outer_call_id = "call_submission_visibility_outer"
+        rejection_note = (
+            "submission wire rejected; retry in a new final response with the exact "
+            "canonical source including its final newline"
+        )
+
+        def usage(input_tokens: int, output_tokens: int) -> dict[str, object]:
+            return {
+                "input_tokens": input_tokens,
+                "input_tokens_details": {"cached_tokens": 0},
+                "output_tokens": output_tokens,
+                "output_tokens_details": {"reasoning_tokens": 0},
+                "total_tokens": input_tokens + output_tokens,
+            }
+
+        def sse(events: list[dict[str, object]]) -> bytes:
+            completed = [
+                event
+                for event in events
+                if event.get("type") == "response.output_item.done"
+            ]
+            for output_index, event in enumerate(completed):
+                event.setdefault("output_index", output_index)
+            completed_output = [event["item"] for event in completed]
+            for event in events:
+                if event.get("type") == "response.completed":
+                    response = event.get("response")
+                    assert isinstance(response, dict)
+                    response["output"] = completed_output
+            return "".join(
+                f"event: {event['type']}\ndata: "
+                + json.dumps(event, separators=(",", ":"))
+                + "\n\n"
+                for event in events
+            ).encode("utf-8")
+
+        first_response = sse(
+            [
+                {
+                    "type": "response.created",
+                    "response": {"id": "resp_submission_visibility_call"},
+                },
+                {
+                    "type": "response.output_item.done",
+                    "item": {
+                        "type": "custom_tool_call",
+                        "id": "ctc_submission_visibility_outer",
+                        "status": "completed",
+                        "call_id": outer_call_id,
+                        "name": "exec",
+                        "input": codex_isolated.NESTED_SUBMISSION_EXEC_SOURCE,
+                    },
+                },
+                {
+                    "type": "response.completed",
+                    "response": {
+                        "id": "resp_submission_visibility_call",
+                        "usage": usage(10, 2),
+                    },
+                },
+            ]
+        )
+        final_response = sse(
+            [
+                {
+                    "type": "response.created",
+                    "response": {"id": "resp_submission_visibility_final"},
+                },
+                {
+                    "type": "response.output_item.done",
+                    "item": {
+                        "type": "message",
+                        "id": "msg_submission_visibility_final",
+                        "status": "completed",
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": "retry evidence observed",
+                                "annotations": [],
+                            }
+                        ],
+                    },
+                },
+                {
+                    "type": "response.completed",
+                    "response": {
+                        "id": "resp_submission_visibility_final",
+                        "usage": usage(14, 1),
+                    },
+                },
+            ]
+        )
+        served_bodies = [first_response, final_response]
+
+        class Handler(BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
+
+            def do_POST(self) -> None:  # noqa: N802
+                length = int(self.headers.get("Content-Length", "0"))
+                request = json.loads(self.rfile.read(length))
+                if not isinstance(request, dict):
+                    raise AssertionError("mock provider request is not an object")
+                upstream_requests.append(request)
+                index = len(upstream_requests) - 1
+                if index >= len(served_bodies):
+                    raise AssertionError("unexpected post-final provider request")
+                body = served_bodies[index]
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Connection", "close")
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, _format: str, *_args: object) -> None:
+                return
+
+        try:
+            server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        except PermissionError:
+            self.skipTest("loopback sockets are unavailable in this sandbox")
+        server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+        server_thread.start()
+        process: subprocess.Popen[str] | None = None
+        try:
+            home = self.root / "pinned-submission-visibility-home"
+            codex_home = home / ".codex"
+            codex_home.mkdir(parents=True)
+            workspace = self.root / "pinned-submission-visibility-workspace"
+            workspace.mkdir()
+            model_catalog = self.root / "pinned-submission-visibility-models.json"
+            model_catalog.write_text(
+                json.dumps(
+                    {
+                        "models": [
+                            {
+                                "slug": "gpt-5.6-sol",
+                                "display_name": "GPT-5.6-Sol (submission fixture)",
+                                "description": "Pinned submission visibility fixture.",
+                                "default_reasoning_level": "ultra",
+                                "supported_reasoning_levels": [
+                                    {
+                                        "effort": "ultra",
+                                        "description": "Offline submission visibility",
+                                    }
+                                ],
+                                "shell_type": "shell_command",
+                                "visibility": "list",
+                                "supported_in_api": True,
+                                "priority": 1,
+                                "additional_speed_tiers": [],
+                                "service_tiers": [],
+                                "availability_nux": None,
+                                "upgrade": None,
+                                "base_instructions": "Offline submission visibility test.",
+                                "include_skills_usage_instructions": False,
+                                "include_plugin_usage_instructions": False,
+                                "default_reasoning_summary": "none",
+                                "support_verbosity": False,
+                                "default_verbosity": None,
+                                "apply_patch_tool_type": None,
+                                "web_search_tool_type": "text",
+                                "truncation_policy": {"mode": "tokens", "limit": 10_000},
+                                "supports_parallel_tool_calls": True,
+                                "supports_image_detail_original": False,
+                                "context_window": 272_000,
+                                "max_context_window": 272_000,
+                                "comp_hash": "offline-submission-visibility",
+                                "effective_context_window_percent": 95,
+                                "experimental_supported_tools": [],
+                                "input_modalities": ["text"],
+                                "supports_search_tool": False,
+                                "use_responses_lite": False,
+                                "tool_mode": "code_mode_only",
+                                "multi_agent_version": "v2",
+                            }
+                        ]
+                    },
+                    separators=(",", ":"),
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            port = int(server.server_address[1])
+            provider = (
+                '{name="offline_mock",base_url="http://127.0.0.1:'
+                f'{port}/v1",env_key="HIGHAMBENCH_MOCK_API_KEY",'
+                'wire_api="responses"}'
+            )
+            command = [
+                str(frozen_codex),
+                "app-server",
+                "--stdio",
+                "--strict-config",
+                "--config",
+                'model_provider="offline_mock"',
+                "--config",
+                "model_catalog_json=" + json.dumps(str(model_catalog)),
+                "--config",
+                f"model_providers.offline_mock={provider}",
+                "--config",
+                'model="gpt-5.6-sol"',
+                "--config",
+                'model_reasoning_effort="ultra"',
+                "--config",
+                'approval_policy="never"',
+                "--config",
+                'sandbox_mode="danger-full-access"',
+                "--config",
+                'history.persistence="none"',
+            ]
+            environment = {
+                "CODEX_HOME": str(codex_home),
+                "HOME": str(home),
+                "HIGHAMBENCH_MOCK_API_KEY": "offline-test-key",
+                "PATH": "/usr/bin:/bin",
+            }
+            process = subprocess.Popen(
+                command,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+                cwd=workspace,
+                env=environment,
+            )
+            assert process.stdin is not None and process.stdout is not None
+            messages: queue.Queue[dict[str, object] | BaseException] = queue.Queue()
+
+            def read_protocol() -> None:
+                try:
+                    for line in process.stdout:
+                        parsed = json.loads(line)
+                        if isinstance(parsed, dict):
+                            messages.put(parsed)
+                except BaseException as error:
+                    messages.put(error)
+
+            reader = threading.Thread(target=read_protocol, daemon=True)
+            reader.start()
+            notifications: list[dict[str, object]] = []
+
+            def send(message: dict[str, object]) -> None:
+                assert process is not None and process.stdin is not None
+                process.stdin.write(json.dumps(message, separators=(",", ":")) + "\n")
+                process.stdin.flush()
+
+            def await_response(request_id: int) -> dict[str, object]:
+                deadline = time.monotonic() + 20.0
+                while True:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise AssertionError(
+                            f"timed out waiting for app-server response {request_id}"
+                        )
+                    item = messages.get(timeout=remaining)
+                    if isinstance(item, BaseException):
+                        raise item
+                    if item.get("id") == request_id and "method" not in item:
+                        if "error" in item:
+                            raise AssertionError(item["error"])
+                        return item
+                    notifications.append(item)
+
+            send(
+                {
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "clientInfo": {
+                            "name": "offline-submission-visibility-test",
+                            "version": "1",
+                        },
+                        "capabilities": {"experimentalApi": True},
+                    },
+                }
+            )
+            await_response(1)
+            send({"method": "initialized"})
+            send(
+                {
+                    "id": 2,
+                    "method": "thread/start",
+                    "params": {
+                        "approvalPolicy": "never",
+                        "cwd": str(workspace),
+                        "dynamicTools": [
+                            codex_isolated.SubmissionBarrier.dynamic_tool_spec()
+                        ],
+                        "ephemeral": False,
+                        "experimentalRawEvents": True,
+                        "historyMode": "legacy",
+                        "model": "gpt-5.6-sol",
+                        "sandbox": "danger-full-access",
+                    },
+                }
+            )
+            thread_response = await_response(2)
+            thread_id = str(thread_response["result"]["thread"]["id"])
+            send(
+                {
+                    "id": 3,
+                    "method": "turn/start",
+                    "params": {
+                        "approvalPolicy": "never",
+                        "cwd": str(workspace),
+                        "effort": "ultra",
+                        "input": [
+                            {
+                                "type": "text",
+                                "text": "exercise the exact submission wrapper",
+                            }
+                        ],
+                        "model": "gpt-5.6-sol",
+                        "sandboxPolicy": {"type": "dangerFullAccess"},
+                        "threadId": thread_id,
+                    },
+                }
+            )
+            await_response(3)
+
+            dynamic_requests: list[dict[str, object]] = []
+            deadline = time.monotonic() + 20.0
+            while not any(
+                item.get("method") == "turn/completed"
+                and item.get("params", {}).get("threadId") == thread_id
+                for item in notifications
+            ):
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise AssertionError(
+                        "timed out waiting for submission-visibility turn completion"
+                    )
+                item = messages.get(timeout=remaining)
+                if isinstance(item, BaseException):
+                    raise item
+                notifications.append(item)
+                if item.get("method") == "item/tool/call":
+                    dynamic_requests.append(item)
+                    send(
+                        {
+                            "id": item["id"],
+                            "result": {
+                                "contentItems": [
+                                    {"type": "inputText", "text": rejection_note}
+                                ],
+                                "success": False,
+                            },
+                        }
+                    )
+
+            self.assertEqual(len(dynamic_requests), 1, dynamic_requests)
+            dynamic_params = dynamic_requests[0]["params"]
+            self.assertEqual(dynamic_params["tool"], "submit_proof")
+            self.assertEqual(
+                dynamic_params["arguments"], {"candidate_path": "Candidate.lean"}
+            )
+            self.assertEqual(len(upstream_requests), 2, upstream_requests)
+            model_visible_outputs = [
+                item
+                for item in upstream_requests[1]["input"]
+                if item.get("type") == "custom_tool_call_output"
+                and item.get("call_id") == outer_call_id
+            ]
+            self.assertEqual(len(model_visible_outputs), 1, upstream_requests[1])
+            model_visible_output = model_visible_outputs[0]["output"]
+            self.assertIsInstance(model_visible_output, list)
+            self.assertIn(
+                rejection_note,
+                [
+                    content.get("text")
+                    for content in model_visible_output
+                    if isinstance(content, dict)
+                ],
+            )
+
+            raw_outer_outputs = [
+                item["params"]["item"]
+                for item in notifications
+                if item.get("method") == "rawResponseItem/completed"
+                and item.get("params", {}).get("item", {}).get("type")
+                == "custom_tool_call_output"
+                and item.get("params", {}).get("item", {}).get("call_id")
+                == outer_call_id
+            ]
+            self.assertEqual(len(raw_outer_outputs), 1, notifications)
+            self.assertIn(
+                rejection_note,
+                json.dumps(raw_outer_outputs[0]["output"], ensure_ascii=False),
+            )
+        finally:
+            if process is not None:
+                codex_isolated._stop_child(process)
+                if process.stdout is not None:
+                    process.stdout.close()
+                if process.stderr is not None:
+                    process.stderr.close()
+            server.shutdown()
+            server.server_close()
+            server_thread.join(timeout=2)
 
     def test_pinned_app_server_dispatches_real_fork_policy_hook_offline(self) -> None:
         frozen_codex = (
@@ -6620,6 +7818,19 @@ class IsolationAdapterTests(unittest.TestCase):
             }
 
         def sse(events: list[dict[str, object]]) -> bytes:
+            completed_events = [
+                event
+                for event in events
+                if event.get("type") == "response.output_item.done"
+            ]
+            for output_index, event in enumerate(completed_events):
+                event.setdefault("output_index", output_index)
+            completed_output = [event["item"] for event in completed_events]
+            for event in events:
+                if event.get("type") == "response.completed":
+                    response = event.get("response")
+                    assert isinstance(response, dict)
+                    response["output"] = completed_output
             return "".join(
                 f"event: {event['type']}\ndata: "
                 + json.dumps(event, separators=(",", ":"))
@@ -7141,6 +8352,9 @@ class IsolationAdapterTests(unittest.TestCase):
                 verified,
                 terminal,
                 exact_for_usage=True,
+                provider_usage_reconciliation=(
+                    ledger.live_provider_usage_reconciliation()
+                ),
             )
 
             teardown = codex_isolated._stop_child(
@@ -7303,6 +8517,19 @@ class IsolationAdapterTests(unittest.TestCase):
             }
 
         def sse(events: list[dict[str, object]]) -> bytes:
+            completed_events = [
+                event
+                for event in events
+                if event.get("type") == "response.output_item.done"
+            ]
+            for output_index, event in enumerate(completed_events):
+                event.setdefault("output_index", output_index)
+            completed_output = [event["item"] for event in completed_events]
+            for event in events:
+                if event.get("type") == "response.completed":
+                    response = event.get("response")
+                    assert isinstance(response, dict)
+                    response["output"] = completed_output
             return "".join(
                 f"event: {event['type']}\ndata: "
                 + json.dumps(event, separators=(",", ":"))
@@ -7722,7 +8949,14 @@ class IsolationAdapterTests(unittest.TestCase):
             if process.stderr is not None:
                 process.stderr.close()
             process = None
-            ledger.attach_provider_gate_final(verified, terminal, exact_for_usage=True)
+            ledger.attach_provider_gate_final(
+                verified,
+                terminal,
+                exact_for_usage=True,
+                provider_usage_reconciliation=(
+                    ledger.live_provider_usage_reconciliation()
+                ),
+            )
             ledger.attach_adapter_teardown(teardown)
             ledger.publish(drain_complete=False)
             usage_snapshot = ledger.snapshot(drain_complete=False)
@@ -8111,6 +9345,7 @@ class IsolationAdapterTests(unittest.TestCase):
             def __init__(self, *_args: object, token_limit: int, **_kwargs: object) -> None:
                 self.token_limit = token_limit
                 self.completed_tokens = 0
+                self.completed_responses: list[dict[str, object]] = []
                 self.close_reason: str | None = None
                 self.bound_root: tuple[str, str, str, str] | None = None
                 self.prompt_release: dict[str, object] | None = None
@@ -8142,11 +9377,35 @@ class IsolationAdapterTests(unittest.TestCase):
 
             def crossbind_appserver_response(
                 self,
-                _response_id: str,
+                response_id: str,
                 usage: Mapping[str, object],
                 **_identity: object,
             ) -> None:
                 self.completed_tokens += int(usage["total_tokens"])
+                self.completed_responses.append(
+                    {
+                        "response_id": response_id,
+                        "normalized_usage": dict(usage),
+                        "appserver_delivery_kind": "direct_raw_response",
+                    }
+                )
+
+            def completed_response_usage_snapshot(self) -> list[dict[str, object]]:
+                return copy.deepcopy(self.completed_responses)
+
+            def suppressed_collaboration_wait_candidates(
+                self,
+                _thread_id: str,
+                _turn_id: str,
+            ) -> list[dict[str, object]]:
+                return []
+
+            def superseded_by_collaboration_message_candidates(
+                self,
+                _thread_id: str,
+                _turn_id: str,
+            ) -> list[dict[str, object]]:
+                return []
 
             def close(self, reason: str) -> dict[str, object]:
                 self.close_reason = reason
@@ -8173,6 +9432,9 @@ class IsolationAdapterTests(unittest.TestCase):
                     "sequence": 1,
                 }
 
+            def stop(self) -> None:
+                return None
+
         def fake_finalize_gate(
             gate: FakeProviderTokenGate,
             ledger: codex_isolated.AttemptUsageLedger,
@@ -8188,10 +9450,14 @@ class IsolationAdapterTests(unittest.TestCase):
                 "calls": [],
                 "state": terminal,
             }
+            reconciliation = ledger.live_provider_usage_reconciliation()
+            if reconciliation is None:
+                raise AssertionError("fake provider usage did not reconcile")
             ledger.attach_provider_gate_final(
                 record,
                 terminal,
                 exact_for_usage=True,
+                provider_usage_reconciliation=reconciliation,
             )
             ledger.publish(drain_complete=drain_complete)
             return record

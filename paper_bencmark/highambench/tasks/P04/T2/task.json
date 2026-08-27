@@ -7,10 +7,10 @@
   "assumptions": [
     "Both input conversion errors are componentwise bounded by uLow times the corresponding input magnitude.",
     "The block-FMA product error is bounded by the equation (3.5) coefficient applied to the converted inputs.",
-    "The two gamma denominators are positive and all three unit roundoffs are nonnegative."
+    "The two p04Gamma denominators are positive and all three unit roundoffs are nonnegative."
   ],
   "author_label": "Theorem 3.2",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P04 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P04 shared files are present; no NumStability artifact is present."
@@ -44,7 +44,7 @@
       "NumStability.matMul_error_bound",
       "NumStability.abs_subtract_perturbed_error_le_eps"
     ],
-    "note": "The library has standard matrix-product and gamma/error ingredients, but no block-FMA model with two input-conversion errors or Theorem 3.2's mixed coefficient."
+    "note": "The library has standard matrix-product and p04Gamma/error ingredients, but no block-FMA model with two input-conversion errors or Theorem 3.2's mixed coefficient."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [

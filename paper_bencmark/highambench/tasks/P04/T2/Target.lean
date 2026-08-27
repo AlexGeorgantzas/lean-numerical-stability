@@ -8,7 +8,7 @@ theorem p04_t2_mixed_input_product_bound
     (uLow uFma u : ℝ) (q n : ℕ)
     (a b Δa Δb e computed : ℝ)
     (huLow : 0 ≤ uLow) (huFma : 0 ≤ uFma) (hu : 0 ≤ u)
-    (hq : GammaValid uFma q) (hn : GammaValid u n)
+    (hq : P04GammaValid uFma q) (hn : P04GammaValid u n)
     (hΔa : |Δa| ≤ uLow * |a|)
     (hΔb : |Δb| ≤ uLow * |b|)
     (he : |e| ≤ p04BlockFmaCoeff uFma u q n * |a + Δa| * |b + Δb|)

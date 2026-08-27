@@ -1,0 +1,3703 @@
+{
+  "classification_frozen_before_runs": false,
+  "construction_inputs": {
+    "paper_definitions_sha256": "420d6221f7c014e6c9cf83857915db4a311f90d25b97d42925259c4ebc3e6ee6",
+    "review_campaign_status": "not_started",
+    "source_inventory_sha256": "fb3fd3c73d3b682ef3a29f482e16e8cd4ff75097b01e35580a0d6da48fb5724b",
+    "target_sha256": "d9fa68be3ede5aadb4f459337fbf77fff515264431d921c213ae139362fb7368"
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P06/T4/context.md",
+  "declarations": [
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 52,
+      "declaration_id": "P06-T4-D001",
+      "declaration_kind": "definition",
+      "declaration_order": 1,
+      "lean_name": "HighamBench.p06FiniteLoewnerLe",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I020"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 57,
+      "declaration_id": "P06-T4-D002",
+      "declaration_kind": "definition",
+      "declaration_order": 2,
+      "lean_name": "HighamBench.p06SelfAdjointDilation",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I022"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 105,
+      "declaration_id": "P06-T4-D003",
+      "declaration_kind": "definition",
+      "declaration_order": 3,
+      "lean_name": "HighamBench.p06Gamma",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I004"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 109,
+      "declaration_id": "P06-T4-D004",
+      "declaration_kind": "definition",
+      "declaration_order": 4,
+      "lean_name": "HighamBench.p06ProbGamma",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I010"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 114,
+      "declaration_id": "P06-T4-D005",
+      "declaration_kind": "definition",
+      "declaration_order": 5,
+      "lean_name": "HighamBench.p06ProductSuccessProbability",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I010"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 172,
+      "declaration_id": "P06-T4-D006",
+      "declaration_kind": "definition",
+      "declaration_order": 6,
+      "lean_name": "HighamBench.p06WeightedQRError",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I053"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 180,
+      "declaration_id": "P06-T4-D007",
+      "declaration_kind": "definition",
+      "declaration_order": 7,
+      "lean_name": "HighamBench.p06IsWeightedQRMinimum",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I053"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 193,
+      "declaration_id": "P06-T4-D008",
+      "declaration_kind": "definition",
+      "declaration_order": 8,
+      "lean_name": "HighamBench.p06RoundingHistory",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I011"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 202,
+      "declaration_id": "P06-T4-D009",
+      "declaration_kind": "definition",
+      "declaration_order": 9,
+      "lean_name": "HighamBench.p06MeanIndependent",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I011"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 211,
+      "declaration_id": "P06-T4-D010",
+      "declaration_kind": "definition",
+      "declaration_order": 10,
+      "lean_name": "HighamBench.p06RoundingErrorModel",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I013"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 224,
+      "declaration_id": "P06-T4-D011",
+      "declaration_kind": "definition",
+      "declaration_order": 11,
+      "lean_name": "HighamBench.p06LambdaMaxGe",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I020"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": "Lemma 2.2",
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 258,
+      "declaration_id": "P06-T4-D012",
+      "declaration_kind": "definition",
+      "declaration_order": 12,
+      "lean_name": "HighamBench.p06HouseholderConstruction",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I018a"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 266,
+      "declaration_id": "P06-T4-D013",
+      "declaration_kind": "definition",
+      "declaration_order": 13,
+      "lean_name": "HighamBench.p06HouseholderMatrixState",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I003"
+      ],
+      "source_kind": "algorithm",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 273,
+      "declaration_id": "P06-T4-D014",
+      "declaration_kind": "definition",
+      "declaration_order": 14,
+      "lean_name": "HighamBench.p06WYUpdate",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I043"
+      ],
+      "source_kind": "algorithm",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 293,
+      "declaration_id": "P06-T4-D015",
+      "declaration_kind": "definition",
+      "declaration_order": 15,
+      "lean_name": "HighamBench.p06MatrixHistory",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I029"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 304,
+      "declaration_id": "P06-T4-D016",
+      "declaration_kind": "definition",
+      "declaration_order": 16,
+      "lean_name": "HighamBench.p06MatrixConditionalMeanZero",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I029"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": "Theorem 6.1",
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 313,
+      "declaration_id": "P06-T4-D017",
+      "declaration_kind": "definition",
+      "declaration_order": 17,
+      "lean_name": "HighamBench.p06IsPolarFactor",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I054"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 328,
+      "declaration_id": "P06-T4-D018",
+      "declaration_kind": "definition",
+      "declaration_order": 18,
+      "lean_name": "HighamBench.p06QRFactorization",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I001"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 335,
+      "declaration_id": "P06-T4-D019",
+      "declaration_kind": "definition",
+      "declaration_order": 19,
+      "lean_name": "HighamBench.p06GeneralHouseholder",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I002"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 341,
+      "declaration_id": "P06-T4-D020",
+      "declaration_kind": "definition",
+      "declaration_order": 20,
+      "lean_name": "HighamBench.p06ElementaryRoundoff",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I008"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 345,
+      "declaration_id": "P06-T4-D021",
+      "declaration_kind": "definition",
+      "declaration_order": 21,
+      "lean_name": "HighamBench.p06WYColumnStep",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I043"
+      ],
+      "source_kind": "algorithm",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 362,
+      "declaration_id": "P06-T4-D022",
+      "declaration_kind": "definition",
+      "declaration_order": 22,
+      "lean_name": "HighamBench.p06Section7Controls",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I057"
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 371,
+      "declaration_id": "P06-T4-D023",
+      "declaration_kind": "definition",
+      "declaration_order": 23,
+      "lean_name": "HighamBench.p06SuiteSparseCounts",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I060"
+      ],
+      "source_kind": "empirical_claim",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 375,
+      "declaration_id": "P06-T4-D024",
+      "declaration_kind": "definition",
+      "declaration_order": 24,
+      "lean_name": "HighamBench.p06SquareRootScalingHeuristic",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I044",
+        "P06-I063"
+      ],
+      "source_kind": "heuristic",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 380,
+      "declaration_id": "P06-T4-D025",
+      "declaration_kind": "definition",
+      "declaration_order": 25,
+      "lean_name": "HighamBench.p06TwoSidedState",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I046"
+      ],
+      "source_kind": "algorithm",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": "Theorem 6.1",
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
+      "controlled_source_line": 389,
+      "declaration_id": "P06-T4-D026",
+      "declaration_kind": "definition",
+      "declaration_order": 26,
+      "lean_name": "HighamBench.p06IsSingularValueDecomposition",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I055"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "author_label": "Lemma 1.2",
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 12,
+      "declaration_id": "P06-T4-D027",
+      "declaration_kind": "theorem",
+      "declaration_order": 27,
+      "lean_name": "HighamBench.p06_t4_signed_product_bound",
+      "placeholder_id": "P06-T4-H001",
+      "result_form_tag": "BND",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I009"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "author_label": "Lemma 1.4",
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 26,
+      "declaration_id": "P06-T4-D028",
+      "declaration_kind": "theorem",
+      "declaration_order": 28,
+      "lean_name": "HighamBench.p06_t4_probabilistic_signed_product_bound",
+      "placeholder_id": "P06-T4-H002",
+      "result_form_tag": "BND",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I012"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 48,
+      "declaration_id": "P06-T4-D029",
+      "declaration_kind": "theorem",
+      "declaration_order": 29,
+      "lean_name": "HighamBench.p06_t4_columnwise_to_frobenius",
+      "placeholder_id": "P06-T4-H003",
+      "result_form_tag": "BND",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I006",
+        "P06-I038"
+      ],
+      "source_kind": "numbered_equation",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 59,
+      "declaration_id": "P06-T4-D030",
+      "declaration_kind": "theorem",
+      "declaration_order": 30,
+      "lean_name": "HighamBench.p06_t4_self_adjoint_dilation_norm_bridge",
+      "placeholder_id": "P06-T4-H004",
+      "result_form_tag": "EQ",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I022"
+      ],
+      "source_kind": "definition",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 70,
+      "declaration_id": "P06-T4-D031",
+      "declaration_kind": "theorem",
+      "declaration_order": 31,
+      "lean_name": "HighamBench.p06_t4_householder_product_first_order_expansion",
+      "placeholder_id": "P06-T4-H005",
+      "result_form_tag": "EQ",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I028"
+      ],
+      "source_kind": "numbered_equation",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 84,
+      "declaration_id": "P06-T4-D032",
+      "declaration_kind": "theorem",
+      "declaration_order": 32,
+      "lean_name": "HighamBench.p06_t4_higher_order_scale_comparison",
+      "placeholder_id": "P06-T4-H006",
+      "result_form_tag": "CMP",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I035",
+        "P06-I036",
+        "P06-I039",
+        "P06-I063"
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": null,
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 93,
+      "declaration_id": "P06-T4-D033",
+      "declaration_kind": "theorem",
+      "declaration_order": 33,
+      "lean_name": "HighamBench.p06_t4_two_sided_backward_error_composition",
+      "placeholder_id": "P06-T4-H007",
+      "result_form_tag": "EQ",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I047"
+      ],
+      "source_kind": "algorithm",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "author_label": "Theorem 3.1",
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 110,
+      "declaration_id": "P06-T4-D034",
+      "declaration_kind": "theorem",
+      "declaration_order": 34,
+      "lean_name": "HighamBench.p06_t4_matrix_azuma_hoeffding",
+      "placeholder_id": "P06-T4-H008",
+      "result_form_tag": "BND",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I021"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "author_label": "Theorem 3.2",
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 141,
+      "declaration_id": "P06-T4-D035",
+      "declaration_kind": "definition",
+      "declaration_order": 35,
+      "lean_name": "HighamBench.p06_t4_rectangular_matrix_concentration_source_report",
+      "placeholder_id": null,
+      "result_form_tag": null,
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I023"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "author_label": "Theorem 6.1",
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 180,
+      "declaration_id": "P06-T4-D036",
+      "declaration_kind": "theorem",
+      "declaration_order": 36,
+      "lean_name": "HighamBench.p06_t4_weighted_procrustes_polar_minimizer",
+      "placeholder_id": "P06-T4-H010",
+      "result_form_tag": "CMP",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I054"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "author_label": "Theorem 4.4",
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 200,
+      "declaration_id": "P06-T4-D037",
+      "declaration_kind": "theorem",
+      "declaration_order": 37,
+      "lean_name": "HighamBench.p06_t4_zeroed_rows_do_not_increase_operator_bound",
+      "placeholder_id": "P06-T4-H011",
+      "result_form_tag": "BND",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I033"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "author_label": "Theorem 6.1",
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 211,
+      "declaration_id": "P06-T4-D038",
+      "declaration_kind": "theorem",
+      "declaration_order": 38,
+      "lean_name": "HighamBench.p06_t4_svd_gives_polar_factor",
+      "placeholder_id": "P06-T4-H012",
+      "result_form_tag": "EX",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I055"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "author_label": "Theorem 6.1",
+      "controlled_source_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+      "controlled_source_line": 220,
+      "declaration_id": "P06-T4-D039",
+      "declaration_kind": "theorem",
+      "declaration_order": 39,
+      "lean_name": "HighamBench.p06_t4_weighted_qr_error_singular_value_formula",
+      "placeholder_id": "P06-T4-H013",
+      "result_form_tag": "EQ",
+      "semantic_dependency_hashes": [],
+      "source_item_ids": [
+        "P06-I055"
+      ],
+      "source_kind": "named_result",
+      "source_tags": [
+        "THM"
+      ]
+    }
+  ],
+  "faithfulness_reviews": [],
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P06",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P06_PROBABILISTIC ROUNDING ERROR ANALYSIS OFHOUSEHOLDER QR FACTORIZATION.pdf",
+    "sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79"
+  },
+  "review_units": [
+    {
+      "declaration_ids": [
+        "P06-T4-D018"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R001",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U001",
+      "review_unit_order": 1,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I001"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D019"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R002",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U002",
+      "review_unit_order": 2,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I002"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D013"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R003",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U003",
+      "review_unit_order": 3,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I003"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D003"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R004",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U004",
+      "review_unit_order": 4,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I004"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D029"
+      ],
+      "reused_declaration_ids": [
+        "P06-T4-D029"
+      ],
+      "review_id": "P06-T4-R005",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U006",
+      "review_unit_order": 5,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I006"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D020"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R006",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U008",
+      "review_unit_order": 6,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I008"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D027"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R007",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U009",
+      "review_unit_order": 7,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I009"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D004",
+        "P06-T4-D005"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R008",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U010",
+      "review_unit_order": 8,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I010"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D008",
+        "P06-T4-D009"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R009",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U012",
+      "review_unit_order": 9,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I011"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D028"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R010",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U013",
+      "review_unit_order": 10,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I012"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D010"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R011",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U014",
+      "review_unit_order": 11,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I013"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D012"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R012",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U019",
+      "review_unit_order": 12,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I018a"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D001",
+        "P06-T4-D011"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R013",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U022",
+      "review_unit_order": 13,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I020"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D034"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R014",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U023",
+      "review_unit_order": 14,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I021"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D002",
+        "P06-T4-D030"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R015",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U024",
+      "review_unit_order": 15,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I022"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D035"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R016",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U025",
+      "review_unit_order": 16,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I023"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D031"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R017",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U030",
+      "review_unit_order": 17,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I028"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D015",
+        "P06-T4-D016"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R018",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U031",
+      "review_unit_order": 18,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I029"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D037"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R019",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U035",
+      "review_unit_order": 19,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I033"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D032"
+      ],
+      "reused_declaration_ids": [
+        "P06-T4-D032"
+      ],
+      "review_id": "P06-T4-R020",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U037",
+      "review_unit_order": 20,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I035"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D032"
+      ],
+      "reused_declaration_ids": [
+        "P06-T4-D032"
+      ],
+      "review_id": "P06-T4-R021",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U038",
+      "review_unit_order": 21,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I036"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D029"
+      ],
+      "reused_declaration_ids": [
+        "P06-T4-D029"
+      ],
+      "review_id": "P06-T4-R022",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U040",
+      "review_unit_order": 22,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I038"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D032"
+      ],
+      "reused_declaration_ids": [
+        "P06-T4-D032"
+      ],
+      "review_id": "P06-T4-R023",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U041",
+      "review_unit_order": 23,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I039"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D014",
+        "P06-T4-D021"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R024",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U045",
+      "review_unit_order": 24,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I043"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D024"
+      ],
+      "reused_declaration_ids": [
+        "P06-T4-D024"
+      ],
+      "review_id": "P06-T4-R025",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U046",
+      "review_unit_order": 25,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I044"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D025"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R026",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U048",
+      "review_unit_order": 26,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I046"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D033"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R027",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U049",
+      "review_unit_order": 27,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I047"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D006",
+        "P06-T4-D007"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R028",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U055",
+      "review_unit_order": 28,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I053"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D017",
+        "P06-T4-D036"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R029",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U056",
+      "review_unit_order": 29,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I054"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D026",
+        "P06-T4-D038",
+        "P06-T4-D039"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R030",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U057",
+      "review_unit_order": 30,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I055"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D022"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R031",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U059",
+      "review_unit_order": 31,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I057"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D023"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "P06-T4-R032",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U062",
+      "review_unit_order": 32,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I060"
+      ]
+    },
+    {
+      "declaration_ids": [
+        "P06-T4-D024",
+        "P06-T4-D032"
+      ],
+      "reused_declaration_ids": [
+        "P06-T4-D024",
+        "P06-T4-D032"
+      ],
+      "review_id": "P06-T4-R033",
+      "review_status": "pending",
+      "review_unit_id": "P06-T4-U065",
+      "review_unit_order": 33,
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_item_ids": [
+        "P06-I063"
+      ]
+    }
+  ],
+  "schema_version": "highambench-task-0.4",
+  "source_inventory": [
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D018"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D018",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I001",
+      "review_unit_id": "P06-T4-U001",
+      "scope": "QR factorization, orthogonal and upper-trapezoidal factors",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "introduction before (1.1)",
+          "pdf_page": 1,
+          "printed_page": 1146,
+          "section": "introduction before (1.1)"
+        }
+      ],
+      "source_order": 1,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D019"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D019",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I002",
+      "review_unit_id": "P06-T4-U002",
+      "scope": "Householder matrix and annihilation property",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "introduction before (1.1)",
+          "pdf_page": 1,
+          "printed_page": 1146,
+          "section": "introduction before (1.1)"
+        }
+      ],
+      "source_order": 2,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D013"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D013",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I003",
+      "review_unit_id": "P06-T4-U003",
+      "scope": "sequential Householder reduction and reconstruction of Q",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "algorithm",
+      "source_locations": [
+        {
+          "anchor": "introduction before (1.1)",
+          "pdf_page": 1,
+          "printed_page": 1146,
+          "section": "introduction before (1.1)"
+        }
+      ],
+      "source_order": 3,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D003"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D003",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I004",
+      "review_unit_id": "P06-T4-U004",
+      "scope": "worst-case product constant gamma_n",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "equation (1.1)",
+          "pdf_page": 2,
+          "printed_page": 1147,
+          "section": "equation (1.1)"
+        }
+      ],
+      "source_order": 4,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Theorem 1.1",
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The quoted worst-case theorem leaves c0 and c1 as unspecified modest integers and does not fix one operational Householder QR implementation; assigning values would invent source data.",
+      "inventory_id": "P06-I005",
+      "review_unit_id": null,
+      "scope": "worst-case QR factorization and columnwise backward errors",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The quoted worst-case theorem leaves c0 and c1 as unspecified modest integers and does not fix one operational Householder QR implementation; assigning values would invent source data."
+      ],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Theorem 1.1 and (1.2)",
+          "pdf_page": 2,
+          "printed_page": 1147,
+          "section": "Theorem 1.1"
+        }
+      ],
+      "source_order": 5,
+      "source_status": "assertive",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D029"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D029",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I006",
+      "review_unit_id": "P06-T4-U006",
+      "scope": "columnwise-to-Frobenius normwise bound",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "numbered_equation",
+      "source_locations": [
+        {
+          "anchor": "equation (1.3)",
+          "pdf_page": 2,
+          "printed_page": 1147,
+          "section": "equation (1.3)"
+        }
+      ],
+      "source_order": 6,
+      "source_status": "assertive",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The source uses an unspecified constant and an O(u^2) remainder, so it does not determine a finite proposition without additional remainder semantics.",
+      "inventory_id": "P06-I007",
+      "review_unit_id": null,
+      "scope": "square-root replacement of the worst-case constant",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The source uses an unspecified constant and an O(u^2) remainder, so it does not determine a finite proposition without additional remainder semantics."
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "prose after (1.3)",
+          "pdf_page": 2,
+          "printed_page": 1147,
+          "section": "prose after (1.3)"
+        }
+      ],
+      "source_order": 7,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D020"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D020",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I008",
+      "review_unit_id": "P06-T4-U008",
+      "scope": "standard floating-point elementary-operation model",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "equation (1.4)",
+          "pdf_page": 2,
+          "printed_page": 1147,
+          "section": "equation (1.4)"
+        }
+      ],
+      "source_order": 8,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Lemma 1.2",
+      "declaration_ids": [
+        "P06-T4-D027"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D027",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I009",
+      "review_unit_id": "P06-T4-U009",
+      "scope": "signed product representation and gamma_n bound",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Lemma 1.2 and (1.5)",
+          "pdf_page": 2,
+          "printed_page": 1147,
+          "section": "Lemma 1.2"
+        }
+      ],
+      "source_order": 9,
+      "source_status": "assertive",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D004",
+        "P06-T4-D005"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D004",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D005",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I010",
+      "review_unit_id": "P06-T4-U010",
+      "scope": "definition of the probabilistic product constant in equation (1.6)",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "equation (1.6)",
+          "pdf_page": 2,
+          "printed_page": 1147,
+          "section": "equation (1.6)"
+        }
+      ],
+      "source_order": 10,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The source statement uses an unspecified constant, asymptotic remainder, qualitative threshold, or unreproduced operational/empirical data and therefore does not determine a proposition without invention.",
+      "inventory_id": "P06-I010b",
+      "review_unit_id": null,
+      "scope": "first-order asymptotic expansion in equation (1.6)",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The source statement uses an unspecified constant, asymptotic remainder, qualitative threshold, or unreproduced operational/empirical data and therefore does not determine a proposition without invention."
+      ],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "equation (1.6)",
+          "pdf_page": 2,
+          "printed_page": 1147,
+          "section": "equation (1.6)"
+        }
+      ],
+      "source_order": 11,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D008",
+        "P06-T4-D009"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D008",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D009",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I011",
+      "review_unit_id": "P06-T4-U012",
+      "scope": "mean independence via conditional expectation",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "Definition 1.3",
+          "pdf_page": 2,
+          "printed_page": 1147,
+          "section": "Definition 1.3"
+        }
+      ],
+      "source_order": 12,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Lemma 1.4",
+      "declaration_ids": [
+        "P06-T4-D028"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D028",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I012",
+      "review_unit_id": "P06-T4-U013",
+      "scope": "high-probability signed-product bound",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Lemma 1.4 and (1.7)",
+          "pdf_page": 3,
+          "printed_page": 1148,
+          "section": "Lemma 1.4"
+        }
+      ],
+      "source_order": 13,
+      "source_status": "assertive",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D010"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D010",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I013",
+      "review_unit_id": "P06-T4-U014",
+      "scope": "ordered, mean-independent, mean-zero rounding errors",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "Model 1.5",
+          "pdf_page": 3,
+          "printed_page": 1148,
+          "section": "Model 1.5"
+        }
+      ],
+      "source_order": 14,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The paper gives an applicability discussion but no paper-local stochastic-rounding algorithm or quantitative failure criterion to determine a proposition.",
+      "inventory_id": "P06-I014",
+      "review_unit_id": null,
+      "scope": "round-to-nearest model can fail; stochastic rounding satisfies it",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The paper gives an applicability discussion but no paper-local stochastic-rounding algorithm or quantitative failure criterion to determine a proposition."
+      ],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "prose after Model 1.5",
+          "pdf_page": 3,
+          "printed_page": 1148,
+          "section": "prose after Model 1.5"
+        }
+      ],
+      "source_order": 15,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The phrases first order, modest constant, high probability, and non-exponential worsening are not supplied with one finite quantified threshold.",
+      "inventory_id": "P06-I015",
+      "review_unit_id": null,
+      "scope": "first-order presentation and explicit non-exponential probabilities",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The phrases first order, modest constant, high probability, and non-exponential worsening are not supplied with one finite quantified threshold."
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "analysis-policy prose",
+          "pdf_page": 3,
+          "printed_page": 1148,
+          "section": "analysis-policy prose"
+        }
+      ],
+      "source_order": 16,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Lemma 2.1",
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Lemma 2.1 uses unspecified c1 and an informal first-order error convention.",
+      "inventory_id": "P06-I016",
+      "review_unit_id": null,
+      "scope": "computed vector 2-norm probabilistic relative-error bound",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Lemma 2.1 uses unspecified c1 and an informal first-order error convention."
+      ],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Lemma 2.1 and (2.1)",
+          "pdf_page": 3,
+          "printed_page": 1148,
+          "section": "Lemma 2.1"
+        }
+      ],
+      "source_order": 17,
+      "source_status": "assertive",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Equation (2.2) delegates the computed inner-product semantics to cited analyses and does not specify the operational summation trace locally.",
+      "inventory_id": "P06-I017",
+      "review_unit_id": null,
+      "scope": "computed inner-product relative-error representation",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Equation (2.2) delegates the computed inner-product semantics to cited analyses and does not specify the operational summation trace locally."
+      ],
+      "source_kind": "numbered_equation",
+      "source_locations": [
+        {
+          "anchor": "equation (2.2)",
+          "pdf_page": 4,
+          "printed_page": 1149,
+          "section": "equation (2.2)"
+        }
+      ],
+      "source_order": 18,
+      "source_status": "assertive",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Lemma 2.2",
+      "declaration_ids": [
+        "P06-T4-D012"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D012",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I018a",
+      "review_unit_id": "P06-T4-U019",
+      "scope": "Householder scalar and vector construction assignments in Lemma 2.2",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Lemma 2.2 and (2.3)",
+          "pdf_page": 4,
+          "printed_page": 1149,
+          "section": "Lemma 2.2"
+        }
+      ],
+      "source_order": 19,
+      "source_status": "assertive",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Lemma 2.2",
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The perturbation conclusions use unspecified c2 and c3 and O(u^2) remainders.",
+      "inventory_id": "P06-I018b",
+      "review_unit_id": null,
+      "scope": "computed Householder component perturbation bounds in Lemma 2.2",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The perturbation conclusions use unspecified c2 and c3 and O(u^2) remainders."
+      ],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Lemma 2.2 and (2.3)",
+          "pdf_page": 4,
+          "printed_page": 1149,
+          "section": "Lemma 2.2"
+        }
+      ],
+      "source_order": 20,
+      "source_status": "assertive",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Equation (2.4) uses unspecified c4 and an O(u^2) remainder.",
+      "inventory_id": "P06-I019",
+      "review_unit_id": null,
+      "scope": "normalized Householder-vector perturbation bound",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Equation (2.4) uses unspecified c4 and an O(u^2) remainder."
+      ],
+      "source_kind": "numbered_equation",
+      "source_locations": [
+        {
+          "anchor": "equation (2.4)",
+          "pdf_page": 4,
+          "printed_page": 1149,
+          "section": "equation (2.4)"
+        }
+      ],
+      "source_order": 21,
+      "source_status": "assertive",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D001",
+        "P06-T4-D011"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D001",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D011",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I020",
+      "review_unit_id": "P06-T4-U022",
+      "scope": "Loewner order, matrix expectation, largest eigenvalue",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "section 3 notation",
+          "pdf_page": 5,
+          "printed_page": 1150,
+          "section": "section 3 notation"
+        }
+      ],
+      "source_order": 22,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Theorem 3.1",
+      "declaration_ids": [
+        "P06-T4-D034"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D034",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I021",
+      "review_unit_id": "P06-T4-U023",
+      "scope": "matrix Azuma--Hoeffding concentration inequality",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Theorem 3.1 and (3.1)--(3.2)",
+          "pdf_page": 5,
+          "printed_page": 1150,
+          "section": "Theorem 3.1"
+        }
+      ],
+      "source_order": 23,
+      "source_status": "assertive",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D002",
+        "P06-T4-D030"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D002",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D030",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I022",
+      "review_unit_id": "P06-T4-U024",
+      "scope": "symmetric dilation and largest-eigenvalue/operator-norm bridge",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "equations (3.3)--(3.4)",
+          "pdf_page": 5,
+          "printed_page": 1150,
+          "section": "equations (3.3)--(3.4)"
+        }
+      ],
+      "source_order": 24,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Theorem 3.2",
+      "declaration_ids": [
+        "P06-T4-D035"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D035",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I023",
+      "review_unit_id": "P06-T4-U025",
+      "scope": "rectangular matrix concentration inequality and variance proxy; the literal rescaled statement is false at zero variance and is retained as a non-proof-bearing report",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [
+        "The literal sigma = 0 edge is false: with r = 0, d1 = d2 = 1, and sufficiently large lambda, the event is certain while 2*exp(-lambda^2) is below one. The source assertion is preserved as a transparent non-proof-bearing report rather than repaired."
+      ],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Theorem 3.2 and (3.5)--(3.6)",
+          "pdf_page": 5,
+          "printed_page": 1150,
+          "section": "Theorem 3.2"
+        }
+      ],
+      "source_order": 25,
+      "source_status": "assertive",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Lemma 4.1",
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Lemma 4.1 combines an operational floating-point trace not fully specified locally with an unspecified c5 bound.",
+      "inventory_id": "P06-I024",
+      "review_unit_id": null,
+      "scope": "perturbed product representation for Householder applications",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Lemma 4.1 combines an operational floating-point trace not fully specified locally with an unspecified c5 bound."
+      ],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Lemma 4.1 and (4.1)--(4.2)",
+          "pdf_page": 6,
+          "printed_page": 1151,
+          "section": "Lemma 4.1"
+        }
+      ],
+      "source_order": 26,
+      "source_status": "assertive",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The exact local perturbation formula depends on proof-local diagonal rounding-error arrays whose operational generation is not fully specified as a paper algorithm.",
+      "inventory_id": "P06-I025",
+      "review_unit_id": null,
+      "scope": "exact local perturbation matrix formula",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The exact local perturbation formula depends on proof-local diagonal rounding-error arrays whose operational generation is not fully specified as a paper algorithm."
+      ],
+      "source_kind": "numbered_equation",
+      "source_locations": [
+        {
+          "anchor": "equations (4.3)--(4.4)",
+          "pdf_page": 6,
+          "printed_page": 1151,
+          "section": "equations (4.3)--(4.4)"
+        },
+        {
+          "anchor": "equations (4.3)--(4.4)",
+          "pdf_page": 7,
+          "printed_page": 1152,
+          "section": "equations (4.3)--(4.4)"
+        }
+      ],
+      "source_order": 27,
+      "source_status": "assertive",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Equations (4.5)--(4.6) use unspecified c5 and a probability union bound tied to the underspecified local trace.",
+      "inventory_id": "P06-I026",
+      "review_unit_id": null,
+      "scope": "simultaneous diagonal-product and perturbation norm bounds",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Equations (4.5)--(4.6) use unspecified c5 and a probability union bound tied to the underspecified local trace."
+      ],
+      "source_kind": "numbered_equation",
+      "source_locations": [
+        {
+          "anchor": "equations (4.5)--(4.6)",
+          "pdf_page": 7,
+          "printed_page": 1152,
+          "section": "equations (4.5)--(4.6)"
+        }
+      ],
+      "source_order": 28,
+      "source_status": "assertive",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Lemma 4.2",
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Lemma 4.2 uses unspecified c6 and O(u^2).",
+      "inventory_id": "P06-I027",
+      "review_unit_id": null,
+      "scope": "vector backward error for a Householder sequence",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Lemma 4.2 uses unspecified c6 and O(u^2)."
+      ],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Lemma 4.2 and (4.7)",
+          "pdf_page": 7,
+          "printed_page": 1152,
+          "section": "Lemma 4.2"
+        }
+      ],
+      "source_order": 29,
+      "source_status": "assertive",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D031"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D031",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I028",
+      "review_unit_id": "P06-T4-U030",
+      "scope": "first-order insertion expansion",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "numbered_equation",
+      "source_locations": [
+        {
+          "anchor": "equations (4.8)--(4.9)",
+          "pdf_page": 7,
+          "printed_page": 1152,
+          "section": "equations (4.8)--(4.9)"
+        }
+      ],
+      "source_order": 30,
+      "source_status": "assertive",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D015",
+        "P06-T4-D016"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D015",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D016",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I029",
+      "review_unit_id": "P06-T4-U031",
+      "scope": "conditional-expectation zero step and conditioning set",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "equations (4.10)--(4.11)",
+          "pdf_page": 8,
+          "printed_page": 1153,
+          "section": "equations (4.10)--(4.11)"
+        }
+      ],
+      "source_order": 31,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Equations (4.12)--(4.14) use unspecified c5/c6 and O(u^2).",
+      "inventory_id": "P06-I030",
+      "review_unit_id": null,
+      "scope": "matrix-concentration and vector-error bounds",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Equations (4.12)--(4.14) use unspecified c5/c6 and O(u^2)."
+      ],
+      "source_kind": "numbered_equation",
+      "source_locations": [
+        {
+          "anchor": "equations (4.12)--(4.14)",
+          "pdf_page": 8,
+          "printed_page": 1153,
+          "section": "equations (4.12)--(4.14)"
+        }
+      ],
+      "source_order": 32,
+      "source_status": "assertive",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Lemma 4.3",
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Lemma 4.3 uses unspecified c6 and O(u^2).",
+      "inventory_id": "P06-I031",
+      "review_unit_id": null,
+      "scope": "columnwise matrix backward error under a transformation sequence",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Lemma 4.3 uses unspecified c6 and O(u^2)."
+      ],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Lemma 4.3 and (4.15)",
+          "pdf_page": 9,
+          "printed_page": 1154,
+          "section": "Lemma 4.3"
+        }
+      ],
+      "source_order": 33,
+      "source_status": "assertive",
+      "source_tags": [
+        "LEM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Theorem 4.4",
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Theorem 4.4 uses unspecified c6 and O(u^2).",
+      "inventory_id": "P06-I032",
+      "review_unit_id": null,
+      "scope": "probabilistic Householder QR backward error",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Theorem 4.4 uses unspecified c6 and O(u^2)."
+      ],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Theorem 4.4 and (4.16)--(4.17)",
+          "pdf_page": 9,
+          "printed_page": 1154,
+          "section": "Theorem 4.4"
+        }
+      ],
+      "source_order": 34,
+      "source_status": "assertive",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Theorem 4.4",
+      "declaration_ids": [
+        "P06-T4-D037"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D037",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I033",
+      "review_unit_id": "P06-T4-U035",
+      "scope": "explicitly zeroed components do not increase the perturbation norm",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "first subtlety in proof of Theorem 4.4",
+          "pdf_page": 9,
+          "printed_page": 1154,
+          "section": "first subtlety in proof of Theorem 4.4"
+        }
+      ],
+      "source_order": 35,
+      "source_status": "assertive",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Theorem 4.4",
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The second-order perturbation statement uses unspecified constants and O(u^2).",
+      "inventory_id": "P06-I034",
+      "review_unit_id": null,
+      "scope": "computed Householder vectors add only second-order perturbations",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The second-order perturbation statement uses unspecified constants and O(u^2)."
+      ],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "second subtlety in proof of Theorem 4.4",
+          "pdf_page": 9,
+          "printed_page": 1154,
+          "section": "second subtlety in proof of Theorem 4.4"
+        }
+      ],
+      "source_order": 36,
+      "source_status": "assertive",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D032"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D032",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I035",
+      "review_unit_id": "P06-T4-U037",
+      "scope": "omitted second-order term has n^2 m u^2 scale",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "higher-order paragraph",
+          "pdf_page": 9,
+          "printed_page": 1154,
+          "section": "higher-order paragraph"
+        },
+        {
+          "anchor": "higher-order paragraph",
+          "pdf_page": 10,
+          "printed_page": 1155,
+          "section": "higher-order paragraph"
+        }
+      ],
+      "source_order": 37,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D032"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D032",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I036",
+      "review_unit_id": "P06-T4-U038",
+      "scope": "probabilistic higher-order condition and comparison with worst case",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "numbered_equation",
+      "source_locations": [
+        {
+          "anchor": "equations (4.18)--(4.19) and ratio display",
+          "pdf_page": 10,
+          "printed_page": 1155,
+          "section": "equations (4.18)--(4.19)"
+        }
+      ],
+      "source_order": 38,
+      "source_status": "assertive",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The paper explicitly identifies this concentration extension as unavailable and leaves it as future research.",
+      "inventory_id": "P06-I037",
+      "review_unit_id": null,
+      "scope": "probability-one assumption and unavailable concentration extension",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The paper explicitly identifies this concentration extension as unavailable and leaves it as future research."
+      ],
+      "source_kind": "question",
+      "source_locations": [
+        {
+          "anchor": "paragraph before (4.20)",
+          "pdf_page": 10,
+          "printed_page": 1155,
+          "section": "paragraph before (4.20)"
+        }
+      ],
+      "source_order": 39,
+      "source_status": "explicitly_unresolved",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D029"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D029",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I038",
+      "review_unit_id": "P06-T4-U040",
+      "scope": "Frobenius normwise probabilistic backward-error bound",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "numbered_equation",
+      "source_locations": [
+        {
+          "anchor": "equation (4.20)",
+          "pdf_page": 10,
+          "printed_page": 1155,
+          "section": "equation (4.20)"
+        }
+      ],
+      "source_order": 40,
+      "source_status": "assertive",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D032"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D032",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I039",
+      "review_unit_id": "P06-T4-U041",
+      "scope": "m n u reduces to its square root in the probabilistic bound",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "prose after (4.20)",
+          "pdf_page": 10,
+          "printed_page": 1155,
+          "section": "prose after (4.20)"
+        }
+      ],
+      "source_order": 41,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Theorem 4.5",
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Theorem 4.5's columnwise clause uses unspecified c6 and O(u^2).",
+      "inventory_id": "P06-I040",
+      "review_unit_id": null,
+      "scope": "columnwise error in explicitly formed Q",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Theorem 4.5's columnwise clause uses unspecified c6 and O(u^2)."
+      ],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Theorem 4.5 and (4.21)",
+          "pdf_page": 10,
+          "printed_page": 1155,
+          "section": "Theorem 4.5"
+        },
+        {
+          "anchor": "Theorem 4.5 and (4.21)",
+          "pdf_page": 11,
+          "printed_page": 1156,
+          "section": "Theorem 4.5"
+        }
+      ],
+      "source_order": 42,
+      "source_status": "assertive",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Theorem 4.5's orthogonality clause uses unspecified c7 and O(u^2).",
+      "inventory_id": "P06-I041",
+      "review_unit_id": null,
+      "scope": "loss-of-orthogonality Frobenius bound",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Theorem 4.5's orthogonality clause uses unspecified c7 and O(u^2)."
+      ],
+      "source_kind": "numbered_equation",
+      "source_locations": [
+        {
+          "anchor": "equation (4.22)",
+          "pdf_page": 11,
+          "printed_page": 1156,
+          "section": "equation (4.22)"
+        }
+      ],
+      "source_order": 43,
+      "source_status": "assertive",
+      "source_tags": [
+        "EQN"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Table 5.1 contains rounded decimal evaluations and even negative upper-bound approximations, not exact symbolic values.",
+      "inventory_id": "P06-I042",
+      "review_unit_id": null,
+      "scope": "combined failure-probability upper bound and tabulated values",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Table 5.1 contains rounded decimal evaluations and even negative upper-bound approximations, not exact symbolic values."
+      ],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "section 5.1 and Table 5.1",
+          "pdf_page": 11,
+          "printed_page": 1156,
+          "section": "section 5.1"
+        }
+      ],
+      "source_order": 44,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D014",
+        "P06-T4-D021"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D014",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D021",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I043",
+      "review_unit_id": "P06-T4-U045",
+      "scope": "compact WY recurrence and blocked update",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "algorithm",
+      "source_locations": [
+        {
+          "anchor": "section 5.2 WY displays",
+          "pdf_page": 11,
+          "printed_page": 1156,
+          "section": "section 5.2 WY displays"
+        },
+        {
+          "anchor": "section 5.2 WY displays",
+          "pdf_page": 12,
+          "printed_page": 1157,
+          "section": "section 5.2 WY displays"
+        }
+      ],
+      "source_order": 45,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D024"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D024",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I044",
+      "review_unit_id": "P06-T4-U046",
+      "scope": "square-root constants expected for aggregated Householder QR",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "heuristic",
+      "source_locations": [
+        {
+          "anchor": "end of section 5.2",
+          "pdf_page": 12,
+          "printed_page": 1157,
+          "section": "end of section 5.2"
+        }
+      ],
+      "source_order": 46,
+      "source_status": "stated_expectation",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The mixed-precision discussion states orders with unspecified constants and O(u_low).",
+      "inventory_id": "P06-I045",
+      "review_unit_id": null,
+      "scope": "mixed-precision worst-case and adapted probabilistic orders",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The mixed-precision discussion states orders with unspecified constants and O(u_low)."
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "section 5.3",
+          "pdf_page": 12,
+          "printed_page": 1157,
+          "section": "section 5.3"
+        }
+      ],
+      "source_order": 47,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D025"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D025",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I046",
+      "review_unit_id": "P06-T4-U048",
+      "scope": "actual two-sided Hessenberg reduction order",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "algorithm",
+      "source_locations": [
+        {
+          "anchor": "equation (5.1)",
+          "pdf_page": 12,
+          "printed_page": 1157,
+          "section": "equation (5.1)"
+        }
+      ],
+      "source_order": 48,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D033"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D033",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I047",
+      "review_unit_id": "P06-T4-U049",
+      "scope": "reordered two-sided transformation and combined backward error",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "algorithm",
+      "source_locations": [
+        {
+          "anchor": "equation (5.2) and following display",
+          "pdf_page": 12,
+          "printed_page": 1157,
+          "section": "equation (5.2)"
+        }
+      ],
+      "source_order": 49,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Same or smaller order of magnitude and lies somewhere between have no numerical threshold in the paper.",
+      "inventory_id": "P06-I048",
+      "review_unit_id": null,
+      "scope": "reordered error is indicative; aggregation interpolates the orders",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Same or smaller order of magnitude and lies somewhere between have no numerical threshold in the paper."
+      ],
+      "source_kind": "empirical_claim",
+      "source_locations": [
+        {
+          "anchor": "first two paragraphs",
+          "pdf_page": 13,
+          "printed_page": 1158,
+          "section": "first two paragraphs"
+        }
+      ],
+      "source_order": 50,
+      "source_status": "reported_observation",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Sufficiently large and small bulges are not assigned a threshold.",
+      "inventory_id": "P06-I049",
+      "review_unit_id": null,
+      "scope": "Lemma 4.3 for large bulges and worst-case bounds for small bulges",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Sufficiently large and small bulges are not assigned a threshold."
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "multishift paragraph",
+          "pdf_page": 13,
+          "printed_page": 1158,
+          "section": "multishift paragraph"
+        }
+      ],
+      "source_order": 51,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The equivalence and extra backward-error work are delegated to cited algorithm specifications not reproduced locally.",
+      "inventory_id": "P06-I050",
+      "review_unit_id": null,
+      "scope": "modified Gram--Schmidt via augmented Householder QR",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The equivalence and extra backward-error work are delegated to cited algorithm specifications not reproduced locally."
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "section 5.5 first paragraph",
+          "pdf_page": 13,
+          "printed_page": 1158,
+          "section": "section 5.5 first paragraph"
+        }
+      ],
+      "source_order": 52,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The cited randomized Gram--Schmidt result uses an unspecified constant c.",
+      "inventory_id": "P06-I051",
+      "review_unit_id": null,
+      "scope": "randomized Gram--Schmidt mixed-precision backward bound",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The cited randomized Gram--Schmidt result uses an unspecified constant c."
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "section 5.5 second paragraph",
+          "pdf_page": 13,
+          "printed_page": 1158,
+          "section": "section 5.5 second paragraph"
+        }
+      ],
+      "source_order": 53,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Both Givens bounds use unspecified constants c7/c8 and O(u^2).",
+      "inventory_id": "P06-I052",
+      "review_unit_id": null,
+      "scope": "deterministic and probabilistic Givens QR columnwise bounds",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Both Givens bounds use unspecified constants c7/c8 and O(u^2)."
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "section 5.5 Givens paragraphs",
+          "pdf_page": 13,
+          "printed_page": 1158,
+          "section": "section 5.5 Givens paragraphs"
+        }
+      ],
+      "source_order": 54,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D006",
+        "P06-T4-D007"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D006",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D007",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I053",
+      "review_unit_id": "P06-T4-U055",
+      "scope": "weighted QR backward-error minimization measure",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "definition",
+      "source_locations": [
+        {
+          "anchor": "equation (6.1)",
+          "pdf_page": 14,
+          "printed_page": 1159,
+          "section": "equation (6.1)"
+        }
+      ],
+      "source_order": 55,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Theorem 6.1",
+      "declaration_ids": [
+        "P06-T4-D017",
+        "P06-T4-D036"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D017",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D036",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I054",
+      "review_unit_id": "P06-T4-U056",
+      "scope": "weighted orthogonal Procrustes minimizer via polar factor",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "Theorem 6.1",
+          "pdf_page": 14,
+          "printed_page": 1159,
+          "section": "Theorem 6.1"
+        }
+      ],
+      "source_order": 56,
+      "source_status": "assertive",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": "Theorem 6.1",
+      "declaration_ids": [
+        "P06-T4-D026",
+        "P06-T4-D038",
+        "P06-T4-D039"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D026",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D038",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D039",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I055",
+      "review_unit_id": "P06-T4-U057",
+      "scope": "SVD construction of Q and singular-value formula for the measure",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "named_result",
+      "source_locations": [
+        {
+          "anchor": "paragraphs after Theorem 6.1",
+          "pdf_page": 14,
+          "printed_page": 1159,
+          "section": "paragraphs after Theorem 6.1"
+        }
+      ],
+      "source_order": 57,
+      "source_status": "assertive",
+      "source_tags": [
+        "THM"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Severe cancellation and correct order of magnitude are qualitative numerical assessments without a threshold.",
+      "inventory_id": "P06-I056",
+      "review_unit_id": null,
+      "scope": "cancellation risk and twice-working-precision recommendation",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Severe cancellation and correct order of magnitude are qualitative numerical assessments without a threshold."
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "cancellation paragraph",
+          "pdf_page": 14,
+          "printed_page": 1159,
+          "section": "cancellation paragraph"
+        }
+      ],
+      "source_order": 58,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D022"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D022",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I057",
+      "review_unit_id": "P06-T4-U059",
+      "scope": "lambda, constants, precision, rounding, sampling, and error measure",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "section 7 setup",
+          "pdf_page": 14,
+          "printed_page": 1159,
+          "section": "section 7 setup"
+        }
+      ],
+      "source_order": 59,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Virtually identical is an empirical qualitative comparison without raw values or a tolerance.",
+      "inventory_id": "P06-I058",
+      "review_unit_id": null,
+      "scope": "tested stochastic results are virtually identical to round-to-nearest",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Virtually identical is an empirical qualitative comparison without raw values or a tolerance."
+      ],
+      "source_kind": "empirical_claim",
+      "source_locations": [
+        {
+          "anchor": "stochastic-rounding paragraph",
+          "pdf_page": 14,
+          "printed_page": 1159,
+          "section": "stochastic-rounding paragraph"
+        }
+      ],
+      "source_order": 60,
+      "source_status": "reported_observation",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Better indicator is qualitative and the plotted raw observations are not tabulated.",
+      "inventory_id": "P06-I059",
+      "review_unit_id": null,
+      "scope": "random-matrix Householder QR comparison and observed growth",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Better indicator is qualitative and the plotted raw observations are not tabulated."
+      ],
+      "source_kind": "empirical_claim",
+      "source_locations": [
+        {
+          "anchor": "section 7.1 and Figures 7.1--7.2",
+          "pdf_page": 15,
+          "printed_page": 1160,
+          "section": "section 7.1"
+        }
+      ],
+      "source_order": 61,
+      "source_status": "reported_observation",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D023"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D023",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I060",
+      "review_unit_id": "P06-T4-U062",
+      "scope": "SuiteSparse selection/filtering and observed comparison",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "empirical_claim",
+      "source_locations": [
+        {
+          "anchor": "section 7.2 and Figure 7.3",
+          "pdf_page": 15,
+          "printed_page": 1160,
+          "section": "section 7.2"
+        },
+        {
+          "anchor": "section 7.2 and Figure 7.3",
+          "pdf_page": 16,
+          "printed_page": 1161,
+          "section": "section 7.2"
+        }
+      ],
+      "source_order": 62,
+      "source_status": "reported_observation",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Very similar rate is qualitative and the plotted raw observations are not tabulated.",
+      "inventory_id": "P06-I061",
+      "review_unit_id": null,
+      "scope": "Givens QR observed growth tracks the probabilistic bound",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Very similar rate is qualitative and the plotted raw observations are not tabulated."
+      ],
+      "source_kind": "empirical_claim",
+      "source_locations": [
+        {
+          "anchor": "section 7.3 and Figure 7.4",
+          "pdf_page": 16,
+          "printed_page": 1161,
+          "section": "section 7.3"
+        }
+      ],
+      "source_order": 63,
+      "source_status": "reported_observation",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "Better indicator is qualitative and the plotted raw observations are not tabulated.",
+      "inventory_id": "P06-I062",
+      "review_unit_id": null,
+      "scope": "Hessenberg observed error and growth comparison",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "Better indicator is qualitative and the plotted raw observations are not tabulated."
+      ],
+      "source_kind": "empirical_claim",
+      "source_locations": [
+        {
+          "anchor": "section 7.4 and Figure 7.5",
+          "pdf_page": 16,
+          "printed_page": 1161,
+          "section": "section 7.4"
+        },
+        {
+          "anchor": "section 7.4 and Figure 7.5",
+          "pdf_page": 17,
+          "printed_page": 1162,
+          "section": "section 7.4"
+        }
+      ],
+      "source_order": 64,
+      "source_status": "reported_observation",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [
+        "P06-T4-D024",
+        "P06-T4-D032"
+      ],
+      "declaration_mappings": [
+        {
+          "declaration_id": "P06-T4-D024",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P06-T4-D032",
+          "notes": "This controlled declaration directly carries the determinate mathematical content of this source item.",
+          "role": "primary_carrier"
+        }
+      ],
+      "disposition": "included",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": null,
+      "inventory_id": "P06-I063",
+      "review_unit_id": "P06-T4-U065",
+      "scope": "square-root effect for Householder/Givens under Lemma 4.2 assumption",
+      "smallest_group_reason": "The listed declaration group is the smallest controlled carrier of this atomic source item.",
+      "source_issue_notes": [],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "section 8 first paragraph",
+          "pdf_page": 17,
+          "printed_page": 1162,
+          "section": "section 8 first paragraph"
+        }
+      ],
+      "source_order": 65,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    },
+    {
+      "assumptions": [],
+      "author_label": null,
+      "declaration_ids": [],
+      "declaration_mappings": [],
+      "disposition": "excluded",
+      "duplicate_of_source_item_ids": [],
+      "exclusion_reason": "The significance discussion is qualitative and supplies no single falsifiable numerical threshold.",
+      "inventory_id": "P06-I064",
+      "review_unit_id": null,
+      "scope": "probabilistic bounds characterize likely dimension-growth rate",
+      "smallest_group_reason": null,
+      "source_issue_notes": [
+        "The significance discussion is qualitative and supplies no single falsifiable numerical threshold."
+      ],
+      "source_kind": "precise_unnumbered_claim",
+      "source_locations": [
+        {
+          "anchor": "section 8 second paragraph",
+          "pdf_page": 17,
+          "printed_page": 1162,
+          "section": "section 8 second paragraph"
+        }
+      ],
+      "source_order": 66,
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ]
+    }
+  ],
+  "source_inventory_file": "paper_bencmark/highambench/tasks/P06/T4/source_inventory.json",
+  "task_id": "P06-T4",
+  "tier": "T4",
+  "validation": {
+    "controlled_sorries": [
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D027",
+        "lean_name": "HighamBench.p06_t4_signed_product_bound",
+        "line": 21,
+        "marker": "-- PROOF_START P06-T4-H001",
+        "placeholder_id": "P06-T4-H001",
+        "placeholder_order": 1
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D028",
+        "lean_name": "HighamBench.p06_t4_probabilistic_signed_product_bound",
+        "line": 41,
+        "marker": "-- PROOF_START P06-T4-H002",
+        "placeholder_id": "P06-T4-H002",
+        "placeholder_order": 2
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D029",
+        "lean_name": "HighamBench.p06_t4_columnwise_to_frobenius",
+        "line": 54,
+        "marker": "-- PROOF_START P06-T4-H003",
+        "placeholder_id": "P06-T4-H003",
+        "placeholder_order": 3
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D030",
+        "lean_name": "HighamBench.p06_t4_self_adjoint_dilation_norm_bridge",
+        "line": 65,
+        "marker": "-- PROOF_START P06-T4-H004",
+        "placeholder_id": "P06-T4-H004",
+        "placeholder_order": 4
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D031",
+        "lean_name": "HighamBench.p06_t4_householder_product_first_order_expansion",
+        "line": 79,
+        "marker": "-- PROOF_START P06-T4-H005",
+        "placeholder_id": "P06-T4-H005",
+        "placeholder_order": 5
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D032",
+        "lean_name": "HighamBench.p06_t4_higher_order_scale_comparison",
+        "line": 88,
+        "marker": "-- PROOF_START P06-T4-H006",
+        "placeholder_id": "P06-T4-H006",
+        "placeholder_order": 6
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D033",
+        "lean_name": "HighamBench.p06_t4_two_sided_backward_error_composition",
+        "line": 106,
+        "marker": "-- PROOF_START P06-T4-H007",
+        "placeholder_id": "P06-T4-H007",
+        "placeholder_order": 7
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D034",
+        "lean_name": "HighamBench.p06_t4_matrix_azuma_hoeffding",
+        "line": 135,
+        "marker": "-- PROOF_START P06-T4-H008",
+        "placeholder_id": "P06-T4-H008",
+        "placeholder_order": 8
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D036",
+        "lean_name": "HighamBench.p06_t4_weighted_procrustes_polar_minimizer",
+        "line": 195,
+        "marker": "-- PROOF_START P06-T4-H010",
+        "placeholder_id": "P06-T4-H010",
+        "placeholder_order": 9
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D037",
+        "lean_name": "HighamBench.p06_t4_zeroed_rows_do_not_increase_operator_bound",
+        "line": 207,
+        "marker": "-- PROOF_START P06-T4-H011",
+        "placeholder_id": "P06-T4-H011",
+        "placeholder_order": 10
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D038",
+        "lean_name": "HighamBench.p06_t4_svd_gives_polar_factor",
+        "line": 217,
+        "marker": "-- PROOF_START P06-T4-H012",
+        "placeholder_id": "P06-T4-H012",
+        "placeholder_order": 11
+      },
+      {
+        "column": 3,
+        "declaration_id": "P06-T4-D039",
+        "lean_name": "HighamBench.p06_t4_weighted_qr_error_singular_value_formula",
+        "line": 236,
+        "marker": "-- PROOF_START P06-T4-H013",
+        "placeholder_id": "P06-T4-H013",
+        "placeholder_order": 12
+      }
+    ],
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P06/T4/Target.lean",
+    "mode": "shared automatic plural T4 skeleton validator",
+    "reject_noncontrolled_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declarations": [
+      "HighamBench.p06FiniteLoewnerLe",
+      "HighamBench.p06SelfAdjointDilation",
+      "HighamBench.p06Gamma",
+      "HighamBench.p06ProbGamma",
+      "HighamBench.p06ProductSuccessProbability",
+      "HighamBench.p06WeightedQRError",
+      "HighamBench.p06IsWeightedQRMinimum",
+      "HighamBench.p06RoundingHistory",
+      "HighamBench.p06MeanIndependent",
+      "HighamBench.p06RoundingErrorModel",
+      "HighamBench.p06LambdaMaxGe",
+      "HighamBench.p06HouseholderConstruction",
+      "HighamBench.p06HouseholderMatrixState",
+      "HighamBench.p06WYUpdate",
+      "HighamBench.p06MatrixHistory",
+      "HighamBench.p06MatrixConditionalMeanZero",
+      "HighamBench.p06IsPolarFactor",
+      "HighamBench.p06QRFactorization",
+      "HighamBench.p06GeneralHouseholder",
+      "HighamBench.p06ElementaryRoundoff",
+      "HighamBench.p06WYColumnStep",
+      "HighamBench.p06Section7Controls",
+      "HighamBench.p06SuiteSparseCounts",
+      "HighamBench.p06SquareRootScalingHeuristic",
+      "HighamBench.p06TwoSidedState",
+      "HighamBench.p06IsSingularValueDecomposition",
+      "HighamBench.p06_t4_signed_product_bound",
+      "HighamBench.p06_t4_probabilistic_signed_product_bound",
+      "HighamBench.p06_t4_columnwise_to_frobenius",
+      "HighamBench.p06_t4_self_adjoint_dilation_norm_bridge",
+      "HighamBench.p06_t4_householder_product_first_order_expansion",
+      "HighamBench.p06_t4_higher_order_scale_comparison",
+      "HighamBench.p06_t4_two_sided_backward_error_composition",
+      "HighamBench.p06_t4_matrix_azuma_hoeffding",
+      "HighamBench.p06_t4_rectangular_matrix_concentration_source_report",
+      "HighamBench.p06_t4_weighted_procrustes_polar_minimizer",
+      "HighamBench.p06_t4_zeroed_rows_do_not_increase_operator_bound",
+      "HighamBench.p06_t4_svd_gives_polar_factor",
+      "HighamBench.p06_t4_weighted_qr_error_singular_value_formula"
+    ]
+  }
+}

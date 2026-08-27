@@ -1,30 +1,30 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, same-precision specialization, tier label, and finite gamma-arithmetic formalization",
+    "kind": "source selection, same-precision specialization, tier label, and finite p04Gamma-arithmetic formalization",
     "performed_by": "Codex"
   },
   "assumptions": [
     "The unit roundoff u is nonnegative.",
-    "The accumulated gamma denominator is positive through q+n operations.",
+    "The accumulated p04Gamma denominator is positive through q+n operations.",
     "The two chained relative-error factors are bounded by gamma_q and gamma_n."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P04 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P04 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P04/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p04_t1_chained_rounding_factor (u : \u211d) (q n : \u2115) (\u03b1 \u03b2 : \u211d) (hu : 0 \u2264 u) (hvalid : GammaValid u (q+n)) (h\u03b1 : |\u03b1| \u2264 gamma u q) (h\u03b2 : |\u03b2| \u2264 gamma u n) : |\u03b1+\u03b2+\u03b1*\u03b2| \u2264 gamma u (q+n)",
+    "lean_header": "theorem p04_t1_chained_rounding_factor (u : \u211d) (q n : \u2115) (\u03b1 \u03b2 : \u211d) (hu : 0 \u2264 u) (hvalid : P04GammaValid u (q+n)) (h\u03b1 : |\u03b1| \u2264 p04Gamma u q) (h\u03b2 : |\u03b2| \u2264 p04Gamma u n) : |\u03b1+\u03b2+\u03b1*\u03b2| \u2264 p04Gamma u (q+n)",
     "namespace": "HighamBench",
-    "plain_language": "Two same-precision accumulated rounding factors collapse to one factor bounded by gamma at the sum of the operation counts.",
+    "plain_language": "Two same-precision accumulated rounding factors collapse to one factor bounded by p04Gamma at the sum of the operation counts.",
     "target_file": "paper_bencmark/highambench/tasks/P04/T1/Target.lean",
     "theorem_name": "p04_t1_chained_rounding_factor"
   },
-  "informal_proof": "Apply the triangle and product bounds to \u03b1+\u03b2+\u03b1\u03b2, then use the gamma addition identity under the positive-denominator guard.",
-  "informal_statement": "The same-precision gamma-factor core used to derive equation (3.4).",
+  "informal_proof": "Apply the triangle and product bounds to \u03b1+\u03b2+\u03b1\u03b2, then use the p04Gamma addition identity under the positive-denominator guard.",
+  "informal_statement": "The same-precision p04Gamma-factor core used to derive equation (3.4).",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -42,19 +42,19 @@
     "nearby_numstability_declarations": [
       "NumStability.gamma_mul"
     ],
-    "note": "NumStability.gamma_mul in NumStability/Analysis/Rounding.lean directly supplies the stronger existential factor form; a small adapter exposes P04's polynomial error term and condition-neutral gamma notation."
+    "note": "NumStability.gamma_mul in NumStability/Analysis/Rounding.lean directly supplies the stronger existential factor form; a small adapter exposes P04's polynomial error term and condition-neutral p04Gamma notation."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "gamma",
-    "GammaValid"
+    "p04Gamma",
+    "P04GammaValid"
   ],
   "source_locations": [
     {
       "anchor": "displayed factorization immediately before equation (3.4), equation (3.4), and its same-precision specialization",
       "pdf_page": 6,
       "printed_page": "C129",
-      "role": "chained rounding factors and their gamma bound",
+      "role": "chained rounding factors and their p04Gamma bound",
       "section": "3.2. Rounding error analysis"
     }
   ],
@@ -65,7 +65,7 @@
   "task_id": "P04-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "The closest frozen result is NumStability.gamma_mul in NumStability/Analysis/Rounding.lean. It closes the mathematical core directly after identifying HighamBench.gamma with NumStability.gamma for an exact model carrying the same unit roundoff.",
+  "tier_rationale": "The closest frozen result is NumStability.gamma_mul in NumStability/Analysis/Rounding.lean. It closes the mathematical core directly after identifying HighamBench.p04Gamma with NumStability.gamma for an exact model carrying the same unit roundoff.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P04/T1/Target.lean",
     "mode": "shared automatic validator",

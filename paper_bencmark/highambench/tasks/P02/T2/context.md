@@ -31,26 +31,26 @@ The error-free `TwoSum` contract additionally gives exact preservation and
 bounds each emitted low component by `u` times its high component. The usual
 accumulated factor is
 
-`gamma(u,k) = k*u / (1-k*u)`.
+`p02Gamma(u,k) = k*u / (1-k*u)`.
 
-The assumption `N*u < 1` is written `GammaValid u (n+1)`.
+The assumption `N*u < 1` is written `P02GammaValid u (n+1)`.
 
 ## Informal theorem statement
 
 The result of `Sum2` satisfies
 
-`|res - s| <= u*|s| + gamma(u,N-1)^2*S`.
+`|res - s| <= u*|s| + p02Gamma(u,N-1)^2*S`.
 
 In the Lean indexing, `N-1 = n`, so the second coefficient is
-`(gamma fp.u n)^2`. This is an exact finite bound; no informal big-O term is
+`(p02Gamma fp.u n)^2`. This is an exact finite bound; no informal big-O term is
 used.
 
 ## Informal proof from the paper
 
 Lemma 4.2 bounds the total magnitude of the low components by
-`gamma(u,N-1)*S`. Ordinary recursive-summation analysis then bounds the error
+`p02Gamma(u,N-1)*S`. Ordinary recursive-summation analysis then bounds the error
 made while accumulating those lows by
-`gamma(u,N-2)*gamma(u,N-1)*S`.
+`p02Gamma(u,N-2)*p02Gamma(u,N-1)*S`.
 
 Equation (4.7)(i) identifies the final high component plus the exact low sum
 with `s`. Expand the last rounded addition as multiplication by `1+delta`.
@@ -58,12 +58,12 @@ The exact-preservation identity cancels the otherwise large high-component
 term, leaving the final rounding contribution `u*|s|` plus at most `1+u`
 times the low-accumulation error. Finally,
 
-`(1+u)*gamma(u,N-2) <= gamma(u,N-1)`
+`(1+u)*p02Gamma(u,N-2) <= p02Gamma(u,N-1)`
 
 in the valid range, giving equation (4.8).
 
 ## Fixed Lean target
 
 The exact checked statement is `p02_t2_sum2_error_bound` in `Target.lean`.
-It uses only the neutral shared `ErrorFreeAddModel`, `GammaValid`, `gamma`, and
+It uses only the neutral shared `ErrorFreeAddModel`, `P02GammaValid`, `p02Gamma`, and
 `sum2`. The same file compiles without the evaluated library.

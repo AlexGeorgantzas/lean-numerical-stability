@@ -124,11 +124,11 @@
     },
     "version": "0.146.0-alpha.9.2"
   },
-  "artifact_root": "paper_bencmark/scratch_pad/highambench_token_control_canary_slurm-1510018",
+  "artifact_root": "paper_bencmark/scratch_pad/highambench_canary_bootstrap_slurm-1510552/token",
   "artifacts": {
     "agent_log": {
       "path": "logs/TOKEN-CONTROL-SYNTHETIC-PROVIDER-GATE-V8.agent.log",
-      "sha256": "29c9541864bafe2599e74f279d79ec36faa312baf0126a4c97b33e7d84cf6f43"
+      "sha256": "a9e89c10c5cfa71d7b55ea7230cd918ce945c5e91c61df63856f4edac25102e1"
     },
     "benchmark_source_audit": {
       "path": "logs/benchmark_source_audit.json",
@@ -148,27 +148,27 @@
     },
     "freeze_check": {
       "path": "logs/freeze_check.json",
-      "sha256": "58f74d8827a79eddaa3c0fa9ef6a3bcfec272466fcb225f18e5dd7778eb3c96a"
+      "sha256": "3cdc776fa5b3eca5ac787192bc8f74bc29426b497b0c213864917e1fcc774620"
     },
     "invocation": {
       "path": "logs/invocation.json",
-      "sha256": "3e0090c441ca05968764cdf02b4a980d0c2c9751a6eea57594697da095a0787b"
+      "sha256": "7760b6b4ed48034a794d0ee151ee73bebf44a33091ae844fd08a1f2e08a16f52"
     },
     "provider_gate": {
       "path": "logs/synthetic_token_control.provider-token-gate.json",
-      "sha256": "c60949c59ffe8200fc958db4a594fcbb1c4cf57576e19ae1da2ca992a1bce94e"
+      "sha256": "fab900fdbaa59482f7acab85f865cdc793894074540647945119b96d8b9ab5d8"
     },
     "raw_jsonl": {
       "path": "attempts/synthetic_token_control.record.jsonl",
-      "sha256": "7cdaebe3592c3acf87b8a93c6973b81ea6dfaff75e180c6b65754dfeb7403f70"
+      "sha256": "ef97273c336c0301a973610390646f435e9f0a30c6f6f9d8de2a1c8fecfaca7d"
     },
     "record": {
       "path": "attempts/synthetic_token_control.record.json",
-      "sha256": "f79364472aa83fe94a5e0e59dda7add53b85b0e45781215ae2b879d7994e9daa"
+      "sha256": "66bb8ef05abbe50e45a2e3f0e02fdfca90680e9124b5e003e7d4fa80e417dedb"
     },
     "runner_freeze_check": {
       "path": "logs/runner_freeze_check.json",
-      "sha256": "56299a1ac5c3ffabb22561d45275a7ca240c14a9547fe73374e0d660b0b91352"
+      "sha256": "4bb41cf9304c275a43a7a4d30dc59957fcafc2ff48e3bbd446466cdbee8ac4bd"
     },
     "synthetic_prompt_provenance": {
       "path": "logs/synthetic_prompt_provenance.json",
@@ -180,7 +180,7 @@
     },
     "usage": {
       "path": "logs/synthetic_token_control.usage.json",
-      "sha256": "9f5e56a76e66cc071d9106d23cf9e5c21a54456b8dd25e703c21b156171d21a7"
+      "sha256": "6fd0ef9ce0abe797543a27d9411177e0f7c559d21f5525334f104a43449721f0"
     }
   },
   "assignment": {
@@ -248,7 +248,7 @@
     "upstream_compaction_requested": true,
     "usage_scope": "rooted_attempt_thread_tree_completed_responses"
   },
-  "freeze_check_sha256": "ef0e502379aa106cc068ce867f236621032f527b98407b782f2df7229532911b",
+  "freeze_check_sha256": "b55413073aafa9037b3cbf71818837d1ad960b1b16b26512e75960f23b46c9cf",
   "kind": "highambench-live-token-control-canary",
   "matrix_assignment": false,
   "outcome": {
@@ -301,30 +301,30 @@
       "hook_observed_spawn_call_ids": [],
       "inference_child_thread_ids": [],
       "policy_blocked_spawn_call_ids": [],
-      "projection_payload_sha256": "6d051fd61513b7d2afcdcae5934eefc0dbad1838e6d9b0d005ed0b228e4fedbe",
+      "projection_payload_sha256": "f47096803164bd7647327eb973deb726f6f71b3ce1792fb1cfce149139212373",
       "provider_gate_close_reason": "token_limit",
       "provider_gate_deliveries_reconciled": true,
       "provider_gate_protocol": "highambench-provider-token-gate-v6",
-      "provider_gate_record_sha256": "c2cec41c95bbd8e0d2fc291e40ac577b871909d1aaacdb248004fb759d0557b2",
+      "provider_gate_record_sha256": "623d3df02ef9431e87e4836770bca4252af482c4595527ab2a37c16370e2104a",
       "provider_gate_response_ids": [
-        "resp_05be6d9b3f8f629d016a7dac053cbc8197b9f918577d846a31",
-        "resp_05be6d9b3f8f629d016a7dac08dba08197ae9a0039ec769baf"
+        "resp_04366c6e3cebab5b016a7ea52e8a508194aac55839ae0c1f7f",
+        "resp_04366c6e3cebab5b016a7ea53325388194868e0abb115fe18d"
       ],
       "provider_gate_setup_requests_empty": true,
       "provider_requests_quiescent": true,
       "provider_usage_reconciliation": {
         "appserver_response_count": 2,
         "appserver_response_ids": [
-          "resp_05be6d9b3f8f629d016a7dac053cbc8197b9f918577d846a31",
-          "resp_05be6d9b3f8f629d016a7dac08dba08197ae9a0039ec769baf"
+          "resp_04366c6e3cebab5b016a7ea52e8a508194aac55839ae0c1f7f",
+          "resp_04366c6e3cebab5b016a7ea53325388194868e0abb115fe18d"
         ],
         "appserver_usage": {
           "cache_write_input_tokens": 0,
-          "cached_input_tokens": 325120,
+          "cached_input_tokens": 162560,
           "input_tokens": 325397,
-          "output_tokens": 70,
+          "output_tokens": 63,
           "reasoning_output_tokens": 0,
-          "total_tokens": 325467
+          "total_tokens": 325460
         },
         "discarded_after_explicit_child_interrupt_evidence": [],
         "discarded_after_explicit_child_interrupt_response_count": 0,
@@ -339,16 +339,16 @@
         },
         "provider_response_count": 2,
         "provider_response_ids": [
-          "resp_05be6d9b3f8f629d016a7dac053cbc8197b9f918577d846a31",
-          "resp_05be6d9b3f8f629d016a7dac08dba08197ae9a0039ec769baf"
+          "resp_04366c6e3cebab5b016a7ea52e8a508194aac55839ae0c1f7f",
+          "resp_04366c6e3cebab5b016a7ea53325388194868e0abb115fe18d"
         ],
         "provider_usage": {
           "cache_write_input_tokens": 0,
-          "cached_input_tokens": 325120,
+          "cached_input_tokens": 162560,
           "input_tokens": 325397,
-          "output_tokens": 70,
+          "output_tokens": 63,
           "reasoning_output_tokens": 0,
-          "total_tokens": 325467
+          "total_tokens": 325460
         },
         "schema_version": 3,
         "superseded_by_collaboration_message_evidence": [],
@@ -386,80 +386,80 @@
         "total_tokens": 0
       },
       "root_only": true,
-      "root_thread_id": "019ffae7-f0b4-78e0-a91f-4087580ee5ea",
+      "root_thread_id": "019ffeb5-3043-7b50-b43b-da75584c56c6",
       "spawn_binding_source": "raw_function_call.call_id=subAgentActivity.id",
       "spawn_linkage_complete": true,
       "unresolved_spawn_call_ids": [],
       "unsupported_spawn_call_ids": []
     },
-    "actual_stop_seconds": 6.843135,
+    "actual_stop_seconds": 9.847771,
     "appserver_response_count": 2,
     "benchmark_task_bytes_used": false,
-    "cached_input_tokens": 325120,
+    "cached_input_tokens": 162560,
     "discarded_after_explicit_child_interrupt_response_count": 0,
     "drain_complete": false,
     "event_order": {
       "below_cap_raw_response_completed_index": 29,
       "compaction_item_count": 1,
-      "compaction_turn_completed_index": null,
+      "compaction_turn_completed_index": 43,
       "crossing_raw_response_completed_index": 38,
-      "crossing_response_id": "resp_05be6d9b3f8f629d016a7dac08dba08197ae9a0039ec769baf",
+      "crossing_response_id": "resp_04366c6e3cebab5b016a7ea53325388194868e0abb115fe18d",
       "observed_order": "below_cap_direct_final_then_compaction_item_then_crossing_rawResponse_completed_then_no_model_activity",
       "provider_answer_content_released": false,
       "sanitized_compaction_completion_required": true,
       "tool_call_count": 0
     },
-    "final_endpoint_tokens": 325467,
-    "final_overshoot_tokens": 145467,
-    "first_crossing_overshoot_tokens": 145467,
-    "first_crossing_tokens": 325467,
+    "final_endpoint_tokens": 325460,
+    "final_overshoot_tokens": 145460,
+    "first_crossing_overshoot_tokens": 145460,
+    "first_crossing_tokens": 325460,
     "input_tokens_including_cached": 325397,
     "measurement_exact": true,
     "natural_completion": false,
     "notification_count_in_audit_log": 2,
     "notification_sequence": 2,
     "observed_child_thread_count": 0,
-    "output_tokens": 70,
-    "overshoot_tokens": 145467,
+    "output_tokens": 63,
+    "overshoot_tokens": 145460,
     "prompt_release": {
-      "actual_stop_seconds": 6.843135,
+      "actual_stop_seconds": 9.847771,
       "artifact_content_verified": true,
       "artifact_count": 3,
       "artifacts": {
         "go": {
-          "file_sha256": "0bcf012372ea0958cd5fa64c557b123cd8bafec7cd10fc6e336c4bff23b3378c",
-          "path": "/u501/m2fetrat/MyCodes/lean-fp-analysis-main/paper_bencmark/scratch_pad/highambench_token_control_canary_slurm-1510018/logs/synthetic_token_control.prompt-go.json",
-          "record_sha256": "3fac25fe87a7073f7af421dbdfb2644f666bc739df36d8247ae687150aaae2d0"
+          "file_sha256": "19752d29a174803a9e87f2c99bc3d75e023ef08fa66becad87a23d582ef9fa17",
+          "path": "/u501/m2fetrat/MyCodes/lean-fp-analysis-main/paper_bencmark/scratch_pad/highambench_canary_bootstrap_slurm-1510552/token/logs/synthetic_token_control.prompt-go.json",
+          "record_sha256": "6075fe71e699e6743458650b053586374a9d2562ebc4ce74b06ca038b98ae0aa"
         },
         "ready": {
-          "file_sha256": "755b68d9863f01d87f9973ce8a44715695b6176d18752834bfebe86da8677624",
-          "path": "/u501/m2fetrat/MyCodes/lean-fp-analysis-main/paper_bencmark/scratch_pad/highambench_token_control_canary_slurm-1510018/logs/synthetic_token_control.prompt-ready.json",
-          "record_sha256": "c53ee18795d6566b81620eaf59183990feafb4f86789016882a62e4be6063d22"
+          "file_sha256": "1b54ef8a2f5c316759ab2a2f006cabeac16b8e06bec319bcfe47cf98ab7714d4",
+          "path": "/u501/m2fetrat/MyCodes/lean-fp-analysis-main/paper_bencmark/scratch_pad/highambench_canary_bootstrap_slurm-1510552/token/logs/synthetic_token_control.prompt-ready.json",
+          "record_sha256": "b029f66662045448a3c4d0d2c56a4b01cc5c59728bffd581262d6e4dfa2b256c"
         },
         "release": {
-          "file_sha256": "f1206705f70855d57702089660ac8366ea6b8f8fdb91cda7208b6a0d09d8e526",
-          "path": "/u501/m2fetrat/MyCodes/lean-fp-analysis-main/paper_bencmark/scratch_pad/highambench_token_control_canary_slurm-1510018/logs/synthetic_token_control.prompt-release.json",
-          "record_sha256": "fc3fab01fbd5f47dcf7a175e027e83fb6841790ba19d25339b8cda00329c00ab"
+          "file_sha256": "07acb519e93016a8fb5080b9ecc6963073d5ac83a14284f93f74f827d354b040",
+          "path": "/u501/m2fetrat/MyCodes/lean-fp-analysis-main/paper_bencmark/scratch_pad/highambench_canary_bootstrap_slurm-1510552/token/logs/synthetic_token_control.prompt-release.json",
+          "record_sha256": "6b2bf2ca48ff7c8cebf3ae1e68042b41a49446672b3ac9ffbb3f13eca6ac695d"
         }
       },
       "authenticated": true,
       "canonical_encoding": "compact_sorted_key_utf8_json_newline",
       "command_binding_verified": true,
       "deadline_derivation": "released_at_monotonic_ns + wall_time_seconds*1000000000",
-      "deadline_monotonic_ns": 659320212012664,
+      "deadline_monotonic_ns": 30627103301622,
       "effective_prompt_bytes": 283444,
       "effective_prompt_sha256": "ff29ffe49abff9ac7fadcc0db86167bac0c04dc52310cfb665a82051f410baeb",
       "first_valid_seconds": null,
       "go_minimum_release_window_seconds": 5.0,
-      "go_sha256": "3fac25fe87a7073f7af421dbdfb2644f666bc739df36d8247ae687150aaae2d0",
-      "handshake_nonce": "4f9ec544490e848c19d2e949ede6eab271458bdb9f983c33cbdb347104c1c6a2",
+      "go_sha256": "6075fe71e699e6743458650b053586374a9d2562ebc4ce74b06ca038b98ae0aa",
+      "handshake_nonce": "e6a056bf59476ed1e3b98f97d64c1fe352e203301b38d6e1c75c1aeef91cfdf0",
       "measurement_time_origin": "RELEASED.released_at_monotonic_ns",
       "protocol_version": "highambench-prompt-release-v1",
-      "ready_sha256": "c53ee18795d6566b81620eaf59183990feafb4f86789016882a62e4be6063d22",
-      "release_sha256": "fc3fab01fbd5f47dcf7a175e027e83fb6841790ba19d25339b8cda00329c00ab",
-      "released_at_monotonic_ns": 659020212012664,
+      "ready_sha256": "b029f66662045448a3c4d0d2c56a4b01cc5c59728bffd581262d6e4dfa2b256c",
+      "release_sha256": "6b2bf2ca48ff7c8cebf3ae1e68042b41a49446672b3ac9ffbb3f13eca6ac695d",
+      "released_at_monotonic_ns": 30327103301622,
       "root_identity_verified": true,
-      "root_thread_id": "019ffae7-f0b4-78e0-a91f-4087580ee5ea",
+      "root_thread_id": "019ffeb5-3043-7b50-b43b-da75584c56c6",
       "sanitized_provider_gate_crossing": true,
       "schema_version": 1,
       "sealed_mode": "0444",
@@ -470,13 +470,13 @@
       "timing_exact": true,
       "token_crossing_within_deadline": true,
       "top_level_artifact_count_unchanged": 14,
-      "turn_start_request_sha256": "502d2e4ab9ac91085e9abc7132cf30b51b9cc87fbdc82948f84779ec0d4c5d93",
+      "turn_start_request_sha256": "f27674cc85475f648b69e8d99edf0d4de7a7656d1898e46cd404c312c393faa3",
       "turn_start_wire_verified": true,
       "useful_work_basis": "authenticated_release",
       "wall_time_seconds": 300
     },
     "provider_answer_content_released": false,
-    "provider_gate_record_sha256": "c2cec41c95bbd8e0d2fc291e40ac577b871909d1aaacdb248004fb759d0557b2",
+    "provider_gate_record_sha256": "623d3df02ef9431e87e4836770bca4252af482c4595527ab2a37c16370e2104a",
     "provider_response_count": 2,
     "response_count": 2,
     "root_terminal_status": "completed_before_compaction_crossing",
@@ -485,12 +485,12 @@
     "suppressed_collaboration_wait_response_count": 0,
     "thread_count": 1,
     "token_limit_triggered": true,
-    "total_model_tokens": 325467,
+    "total_model_tokens": 325460,
     "tree_quiescent": false,
     "upstream_request_kind": "compaction"
   },
-  "pre_canary_environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-129aabcfc8ede50a",
-  "pre_canary_freeze_check_sha256": "71f2466dbbb7242a956286cef155f1c9b0f5c33082ea06049d299cd1d4e07136",
+  "pre_canary_environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-5ad6b4b5667f1669",
+  "pre_canary_freeze_check_sha256": "8007f3df4740baddc57617428d6e6c3c08b557062bf11a14d97d1f0a45410600",
   "prompt": {
     "benchmark_task_bytes_used": false,
     "common_prompt_bytes": 401,
@@ -511,7 +511,7 @@
     "synthetic_target_sha256": "bc274d3dc674a754379cf112a4d44d5133716c2eeeddfc2b5bae8eda9adf7fde"
   },
   "public_release": false,
-  "runner_freeze_check_sha256": "ef0e502379aa106cc068ce867f236621032f527b98407b782f2df7229532911b",
+  "runner_freeze_check_sha256": "b55413073aafa9037b3cbf71818837d1ad960b1b16b26512e75960f23b46c9cf",
   "schema_version": 3,
   "scored": false,
   "source_separation": {

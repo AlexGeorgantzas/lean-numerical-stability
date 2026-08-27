@@ -19,9 +19,9 @@
     "prompt_protocol": {
       "N_receives_condition_supplement": false,
       "common_prompt": {
-        "bytes": 2668,
+        "bytes": 3253,
         "path": "agent_prompt.md",
-        "sha256": "3024ed126d13331029add14475ed64e37802c6bd3d42abf9ee97c286603514da"
+        "sha256": "fc1fe48de1e1b6eaa0a869d37df680d70a2271179624738fd2f26b5f3cff1236"
       },
       "composition_order": [
         "common_prompt",
@@ -39,7 +39,7 @@
       "relevant_theorem_or_module_hints_supplied": false,
       "version": "signposted-library-v1"
     },
-    "prompt_sha256": "3024ed126d13331029add14475ed64e37802c6bd3d42abf9ee97c286603514da",
+    "prompt_sha256": "fc1fe48de1e1b6eaa0a869d37df680d70a2271179624738fd2f26b5f3cff1236",
     "reasoning_effort": "ultra",
     "ultra_orchestration": {
       "accounting_projection_schema_version": 6,
@@ -124,9 +124,9 @@
         "outer_exec_final_raw_item": true,
         "outer_exec_name": "exec",
         "outer_exec_output_emitted": false,
-        "outer_exec_program": "// @exec: {\"yield_time_ms\": 2400000}\nawait tools.submit_proof({candidate_path:\"Candidate.lean\"});\n",
-        "outer_exec_program_bytes": 98,
-        "outer_exec_program_sha256": "bb4995a4eaad6d9128cb1b0d177f8ba882be176fbd0db589bb861182d3020edd",
+        "outer_exec_program": "// @exec: {\"yield_time_ms\": 2400000}\ntext(await tools.submit_proof({candidate_path:\"Candidate.lean\"}));\n",
+        "outer_exec_program_bytes": 104,
+        "outer_exec_program_sha256": "d8f1e2e53f379a5e1a0cd273127af52f71c150c9fa7c7a50dc177d40e6c12d14",
         "outer_exec_timer_starts_at_or_after_prompt_release": true,
         "outer_exec_yield_attempt_wall_seconds": 1800,
         "outer_exec_yield_envelope_basis": "prompt_release_wall_clock_plus_post_submission_validation_reserve",
@@ -154,7 +154,7 @@
           "inner_dynamic_call_before_raw_response_completed",
           "raw_response_completed_before_inner_dynamic_call"
         ],
-        "submission_transport": "functions_exec_dynamic_submit_proof_v2",
+        "submission_transport": "functions_exec_dynamic_submit_proof_v3",
         "tool_name": "submit_proof",
         "workspace_local_module_imports_rejected": true
       }
@@ -163,8 +163,63 @@
   },
   "benchmark_id": "highambench-0.2-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20",
   "environment_bundle_definition": "SHA-256 of UTF-8 canonical JSON with sorted keys and compact separators over an object containing the complete config and environment records, after removing environment_id and environment_bundle_sha256 from their top-level/frozen locations.",
-  "environment_bundle_sha256": "c9580d9ce26ffa5f01c41f04cb7aa4423d4a37d4439af69bc0a7f4c7ce215070",
-  "environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-c9580d9ce26ffa5f",
+  "environment_bundle_sha256": "b9dfbcd45f219d839270ae81a929661a5560be3a95a8860469f56a411731bd55",
+  "environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-b9dfbcd45f219d83",
+  "hardware_matching_policy": {
+    "cross_pair": {
+      "allocation_may_differ": true,
+      "host_class_may_differ": true
+    },
+    "frozen_host_class": {
+      "exact_fields": [
+        "allocated_physical_cores",
+        "allocated_sockets",
+        "allocated_threads_per_core",
+        "allocation_memory_limit_bytes",
+        "kernel",
+        "online_logical_cpus",
+        "slurm_allocated_memory_bytes",
+        "slurm_cpus_per_task",
+        "slurm_num_cpus",
+        "slurm_num_nodes",
+        "slurm_num_tasks",
+        "virtualization"
+      ],
+      "role": "reference_and_required_invariants",
+      "variable_fields": [
+        "cpu_family",
+        "cpu_model",
+        "cpu_stepping",
+        "cpu_vendor",
+        "processor",
+        "visible_memory_bytes"
+      ]
+    },
+    "kind": "highambench-paired-hardware-policy",
+    "pair_identity": {
+      "checkpoint_unit": "complete_pair",
+      "required_conditions": [
+        "N",
+        "L"
+      ],
+      "same_authenticated_allocation_descriptor": true,
+      "same_slurm_job_id": true
+    },
+    "provider_transport": {
+      "allowed_variable_paths": [
+        "transport_provenance.resolver.hosts_file"
+      ],
+      "baseline_comparison": "exact_except_allowed_paths",
+      "exact_within_pair": true
+    },
+    "schema_version": 1,
+    "scope": "within_pair",
+    "vetted_nodes": [
+      "watgpu108",
+      "watgpu508",
+      "watgpu808"
+    ]
+  },
   "host_class": {
     "allocated_physical_cores": 2,
     "allocated_sockets": 1,
@@ -194,14 +249,14 @@
     "condition_l": "Only the frozen NumStability source tree and exact pruned compiled Lean tree are added as read-only mounts.",
     "condition_n": "NumStability source, compiled files, names, documentation, indexes, and caches are absent. Each complete staged task is scanned and a real import probe must fail before the agent starts.",
     "container_image_digest": null,
-    "dependency_audit_sha256": "0f19d8c9e1a2e6c17f22f0ab38425d0351e4d6cf65c0b03165e06ecb9d718be7",
+    "dependency_audit_sha256": "4fb038e1781444d68cb9674060c21b7547b3f6fc24398fbbd1ecc4f01068abf1",
     "ephemeral_thread_start_per_run": false,
-    "filesystem_adapter_sha256": "2344a77a19efea09efb7d42ee4da1c371d171870cca88852a5038ce58bb5f359",
+    "filesystem_adapter_sha256": "1dc1ec923278452ef38e1de5b0fe189ec73decbfe46951d50ece9ef0d788a6ee",
     "fresh_codex_state_directory_per_run": true,
     "gold_proof_policy": "The private construction proofs and source PDFs are never mounted in an evaluated attempt.",
     "history_persistence": "none",
     "kind": "bubblewrap namespace; not an OCI container",
-    "lean_adapter_sha256": "aae24febc4bf42802919c027bf6edb1c409903376ae0c37d9d0294d855d895ca",
+    "lean_adapter_sha256": "e3dcbd1192047dfe02af7a9d15d809336fa37f5360895ccfc4e6aec9dfca90c5",
     "memories_feature_disabled": true,
     "network_boundary": "Model-generated shell commands inherit a kernel rule that rejects socket operations and records every denied request. The Codex control process keeps only the provider connection needed for the model. Model web, app, plugin, and search capabilities are disabled.",
     "normal_exit_state_cleanup": true,
@@ -218,11 +273,11 @@
       "pinned_codex_disable_control_available": false,
       "semantic_history_transfer": false
     },
-    "provider_token_gate_sha256": "18fc40069a408224be6bea6e1eaeabcd01572cb361c465cb4fa842010b60bad3",
-    "runner_sha256": "e26fec6dd63c7caba88fc9053310315eadb5874c41d151ff8f3a8b6e4c27946e",
+    "provider_token_gate_sha256": "8012c1c72c10bb388a2be69760cf2dd4dc51dce5c6abceadda0c9e086d650bcd",
+    "runner_sha256": "5c51edf65458dac594759445ea9cd580c84b7cfa113a7170c7d6c667b21bab12",
     "state_directory_reused_across_runs": false,
     "thread_resume_or_fork_used": false,
-    "validator_sha256": "f8d4b4df009594078e9d49646932ed3e43cb2812c8a04403eb72ccb28832ac0a"
+    "validator_sha256": "1c13efb2d33b88b68cbc8e7d0a1f0d3e8bfe43c82540f2ca67dc7fab06b25b9c"
   },
   "kind": "highambench-environment-record",
   "known_reference_protocol_deviations": [
@@ -233,6 +288,7 @@
     "Accepted proofs stop at an authenticated exact first-valid-proof submission boundary, with the root submit call blocked, descendants quiescent, and no later model response. A wall-clock interruption of an active tree can remain measurement-inexact; the matrix aborts and preserves that incident without scoring or retrying it.",
     "The current user-authorized 5,000,000-token cap replaces the earlier 2,000,000-token project freeze and is applied identically to N and L.",
     "The external highambench-provider-token-gate-v6 buffering/reservation layer and its sole-inflight, call-atomic token endpoint are a HighamBench execution-protocol amendment applied identically to N and L for exact accounting. Gate v6 accepts an absent upstream Content-Type only after strict complete byte-level SSE authentication and records the header bases, parser receipt, body hash/size, response identity, event counts, downstream synthesized-content-type flag, response-output manifest, and app-server delivery reconciliation. Provider totals are authoritative; the raw app-server ledger remains a structural subset. Suppressed collaboration waits, collaboration-message supersessions, and completed child responses discarded after an explicit parent interrupt each require narrowly authenticated evidence. This compatibility rule does not alter the N/L symmetry of the amendment. The frozen Codex binary is unchanged and does not itself enforce this gate; results must not be labeled strict reference-PDF HighamBench 0.2 results.",
+    "The private P01 completion campaign applies exact hardware matching within each N/L pair rather than across the whole campaign. Both conditions must share one authenticated Slurm allocation on watgpu108, watgpu508, or watgpu808 with the exact frozen resource envelope; different complete pairs may use different vetted nodes. The frozen host class is a reference whose invariant fields remain exact, while CPU identity and host-visible memory may vary across pairs. The complete node-local hosts-file provenance may vary across nodes but remains strictly authenticated and exact within a pair. Pair attempts are path-stable atomic units: unsuccessful attempts and incidents are retained, and a later attempt reruns both N and L. This temporary private policy is not strict reference-PDF HighamBench 0.2.",
     "The model control process needs its provider connection even though model-accessible shell and web networking are disabled."
   ],
   "lean": {
@@ -248,108 +304,87 @@
     "numstability_source_manifest_sha256": "8b52061f0fafc283acd2363267ebbee2f9c6eb97360c596723b95b27515c7828",
     "shared_olean_bundles": {
       "P01": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P01Definitions.olean": "3d7c8e8630d10c51aeb13ba8b7e132013d3002f38dd9aa51bc69beb2ac81b887"
+        "HighamBench/P01Definitions.olean": "bab1a19ee5ababa03fd07cec69f9723b32bff2d47d8875989082d89795c121a3"
       },
       "P02": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P02Definitions.olean": "14c6ea7fa9187a1f9b52cd0562239fb723aa2ad2a7ee269ee764800ed84524b8"
+        "HighamBench/P02Definitions.olean": "60212d44e67c84da21fd754eb40f58b05130d6a03e1396d7bc2fa6e877b20485"
       },
       "P03": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P03Definitions.olean": "8acedbe1b03e20496ff91bfde29d10c676ce48dc56f7884eaf7494be2332d98d"
+        "HighamBench/P03Definitions.olean": "5b1b20383e992f06754f7bb7227f11aef88c3ef1daf27b44b51a48f72c22c4d3"
       },
       "P04": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P04Definitions.olean": "1af88bdb44b34f638fc30def61b95ef2aeb126b292d4b4226ea9440296343bcc"
+        "HighamBench/P04Definitions.olean": "b2fab63836a4a436ca93b8d980da9d0f6d1742f848bc210c93d5380c105967eb"
       },
       "P05": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P05Definitions.olean": "c1dc3f0999165fdd32b8d4f3ed80bbe30932eefa5823617e2f8a48db5872e49b"
+        "HighamBench/P05Definitions.olean": "fdc0cbe6355d2c1c9fe137bfcb2f024a99d9a6a7a4b0e10731909bae7b4e78f5"
       },
       "P06": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P06Definitions.olean": "918b6d9bc2612747cc078fe9d3c6165002e7e540bdc7f709341e5f0b59c2bf03"
+        "HighamBench/P06Definitions.olean": "ef7ca51e22d8797c59e8e862daff9e893bb3ea44fbebcba1a5e241b481cd57ad"
       },
       "P07": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P07Definitions.olean": "3811b36eccddae23ce9553466d85b4193271d926dc4e00bf5a0a7c1df944fd11"
+        "HighamBench/P07Definitions.olean": "ab9c6c95994ba53db55d60971d9065b7402a2ed6dc1d3fae20c380cf53960a53"
       },
       "P08": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P08Definitions.olean": "a6d828a428f644e96c540b8ea67c106c958cf9575ac49ae514c7658e59a985ad"
+        "HighamBench/P08Definitions.olean": "40217a9cc87533ccc5108a27a80d1a88760ba6b4ea0c795c249dada57f2fe09b"
       },
       "P09": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P09Definitions.olean": "ece9140516dfb9433218391eaf9d5d6a576bd6402d31c4b07a94af603e2a47bc"
+        "HighamBench/P09Definitions.olean": "3da64abd31e201bb22ae7fa4ca2718de631f8f4bb8f6b9cf600871abf584682e"
       },
       "P10": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P10Definitions.olean": "73d5cf28955739a9834c60b8ce038f403c58a1812d84106e35c4b5866ca666b7"
+        "HighamBench/P10Definitions.olean": "e4e80bc2c4730e6f8e86061d76045d3474c86d3fd5a06eec219db68d61cd65b6"
       },
       "P11": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P11Definitions.olean": "5de066bed247f20ed1fe27587b3894d0abd6e822c64cf28f44b7da2d0c6ae657"
+        "HighamBench/P11Definitions.olean": "c7771af26a66187cdb7e76d7afc1fd50202ad40b103193ba0bd3d970d6451113"
       },
       "P12": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P12Definitions.olean": "9f6c3874e97cb6811464848ea1c81c14c363ecc811caa9720f54b781d504f3f2"
+        "HighamBench/P12Definitions.olean": "8628fdd1549d845a8ab4cf2b7c489fd82e71bb234d43618f97fa60e1107f499b"
       },
       "P13": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P13Definitions.olean": "32b3bd32ce13b19ab7bc966da39228625c83736ff6a51c726249354520d8369d"
+        "HighamBench/P13Definitions.olean": "601bca21a9025960740d3f84ecac68f0ddcccb819097adcd5875405df36695f1"
       },
       "P14": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P14Definitions.olean": "7aec87942b8458f3cc5547c46583aef435a3b1fd3c67b2f0e7576ca9901fc287"
+        "HighamBench/P14Definitions.olean": "75d9fc778981c4cec98a00019d2e43bed214e027de9c95b65275e0e3530ea5ad"
       },
       "P15": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P15Definitions.olean": "681d7131fbccc990bd24844602306cabc2bc2cef5d4afc30d7f98144317549a7"
+        "HighamBench/P15Definitions.olean": "f0cb6ff68470df1e8e061f8f071f0e0b0fc3169b41e2ff3dcde373d96a9a5d42"
       },
       "P16": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P16Definitions.olean": "4a0edcc13d1f9c12391a55194816486979f1af09a60bfa28fdf927caa369eadf"
+        "HighamBench/P16Definitions.olean": "34625834790aae5a6f28268673e8e58ea2eb258ba5ad45ea971578dc9b561419"
       },
       "P17": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P17Definitions.olean": "8a46939097fbd0b202d4ba504e392713e6a5d4f784f501ada6766b26903465be"
+        "HighamBench/P17Definitions.olean": "28247a5ebeb0a7827f1c11c12deb461331e606435df9918191842b0ca82d2210"
       },
       "P18": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P18Definitions.olean": "7607573147c84c0719a63f09c27ee39e98ee94d9b2a88aa32e5fd6e3c2e7f435"
+        "HighamBench/P18Definitions.olean": "a4d65d3bd4be8aebd6a58df281575e3d59ad0894ee3856e51a8c32ec6c454053"
       },
       "P19": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P19Definitions.olean": "6082935328ac0a7b900324e2f70483d25db4d9788834585af0be0f136f67687d"
+        "HighamBench/P19Definitions.olean": "0ad57a05f8ae3bf72ab2ec9ea555426189ef0c614c5fcd14051bbb92a6a6aa0a"
       },
       "P20": {
-        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P20Definitions.olean": "3cbe4e0faa8b4ea61bc99788fe08afd59020117539a7b3c4dabc0c2a4d6b7514"
+        "HighamBench/P20Definitions.olean": "3d6fdef5b2a066fdb48e5bdf30438af1ade6bc3e2853707929e0c60b56c3187f"
       }
     },
     "shared_sources": {
-      "HighamBench/Core.lean": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a",
-      "HighamBench/P01Definitions.lean": "f84e0fcd73a73392e539081c1ab832e76c71902085eaae4614d305d138ca7a29",
-      "HighamBench/P02Definitions.lean": "803efe47eb37140c04ed8dad9fcdfe8470d0527aaedf9c60ff9333441ad5136b",
-      "HighamBench/P03Definitions.lean": "25e5b0fc93004b684254c879d71dd789e3a2153c4517d5cfabdc617d84ead38a",
-      "HighamBench/P04Definitions.lean": "646a34423a78acdd51a626a6a78611c4ccb557188f7b25c1d324f0722c6c5ad9",
-      "HighamBench/P05Definitions.lean": "8e8bb59f7812723c6db2adb54ee7c79a133ed8463c2c76b8a3fff363c77d12b7",
-      "HighamBench/P06Definitions.lean": "80ab87e3785b274488c63c1e88e3895907493e271a0e0963907f8d8538bd6ae5",
-      "HighamBench/P07Definitions.lean": "456801a246d914d7d5bd4fdb8c43f735ab409ae3d697f68cc9220f80637de59c",
-      "HighamBench/P08Definitions.lean": "00378095eeb77b9b2386b0319478cf06e31ed9fe90b7dd554ce1a7a5749f7cc5",
-      "HighamBench/P09Definitions.lean": "28fd535f9728fdd6d98dac6045ee7922d4ec547751d099e73a7ade8e7ed5da6d",
-      "HighamBench/P10Definitions.lean": "fe10c0868a161a26b4cd39e18b9dd21121fff955cca9888d7b854960cae02671",
-      "HighamBench/P11Definitions.lean": "d30af6550e76d4083f8958fd38563533a67d33dbfaf20349679d355a37a5e8f1",
-      "HighamBench/P12Definitions.lean": "d6677c1c7ca6220986f35a297ea87792323e45c21d808d3c9206e0a70502cad3",
-      "HighamBench/P13Definitions.lean": "40860706d1e57483371a24c086ae83428c7201c855efae5dbe20ad76d95f4913",
-      "HighamBench/P14Definitions.lean": "43b0cbc4a33c3556b173455522d5436a89cad4f3e98e66dcd072f22bcdc779f2",
-      "HighamBench/P15Definitions.lean": "831dce905ad8a08bb52f5b55ebad349c09ac26a06168d6ca22eb022d2cf91792",
-      "HighamBench/P16Definitions.lean": "7f2630cf2406121b98d74782c2533349ff41d913e9e16dac3c230974b7f572ec",
-      "HighamBench/P17Definitions.lean": "90ea1cc4af8101d1e345960950d5c2c97a04fcadac1147c75edfbe1e7e7ad9a0",
-      "HighamBench/P18Definitions.lean": "e8076948865057c148e1531349eca646c2cbb158637d394c47a28ec84a12cfb2",
-      "HighamBench/P19Definitions.lean": "5f2109bae7fa37ed222b56d3bd9ba97eadcf30ffe7f073d6f8dc75f36c896e13",
-      "HighamBench/P20Definitions.lean": "5b94f6f4eac02fe552a60504a7d4c1efb1d8dbe27826e3c608c83a495fbb8c2b"
+      "HighamBench/P01Definitions.lean": "4fbbb9a0991cbee35e998737959df9a927108450fcef6d881a3a91a64cc0c57f",
+      "HighamBench/P02Definitions.lean": "76850189c7b69975ad712a33e87a498b293a961a7c7561a20502acf4575b5164",
+      "HighamBench/P03Definitions.lean": "95967673ab4eea3d888a26f99a0b8965f95acf5575990bf6b4b908d1a55aac8e",
+      "HighamBench/P04Definitions.lean": "01d34f27aa7ec8f00adb6da96de5797c2260fdba26246f72cf8688d6a6645db7",
+      "HighamBench/P05Definitions.lean": "b85344d4ff75238a660c6f67056de38235f97b11fa543ff5f3e9193677ce77d8",
+      "HighamBench/P06Definitions.lean": "bd3aa0c305a403e65132f3f0facb45fcf9a6fa889c8efbd2bb2d429f5877dce7",
+      "HighamBench/P07Definitions.lean": "96f3ada155dacab758269879eb806ba264a90fadea8718eeeba76c83e0f406f2",
+      "HighamBench/P08Definitions.lean": "1374b67939f861745919a5733d3e5c8a665a504b267ac80b6ca587bb75af958c",
+      "HighamBench/P09Definitions.lean": "e4d233649af21b3ef7e3187873b5bf996d7d2e9fec6db106d68a29f541843426",
+      "HighamBench/P10Definitions.lean": "f98e95dce751de7dce96c78438615fbeb3e8fb48140cf2d9367b4f877513b592",
+      "HighamBench/P11Definitions.lean": "e15d921cad647886f8ed6b31c2489587d7bc4e33c166654619010c8eb8cd55bd",
+      "HighamBench/P12Definitions.lean": "76be8fc5a2335c3e998947940b7c7ac516cf873109aacd104d38e53a4369a1e1",
+      "HighamBench/P13Definitions.lean": "dfaa68b42b612b48742d2245ea389bec1edca761ddd6e73d64e29a26be2b4cc3",
+      "HighamBench/P14Definitions.lean": "25ed8e26a94544e1e69c5196f9da47434d62a8d159859556574a91bdf9b4cb89",
+      "HighamBench/P15Definitions.lean": "f42857677f9872b25da1b3ba0d8c0e6966b84f19f926d4d5e8ff60b777a0268c",
+      "HighamBench/P16Definitions.lean": "8b505ddb44cebe35b87bbbfc3e7c40c50b1350832645c8f88f6f4ce3c1a0fb10",
+      "HighamBench/P17Definitions.lean": "689d423a238854b1e9864eae2125c18e5db459fa6255a61e3770ae0eb07cc40c",
+      "HighamBench/P18Definitions.lean": "6fb0a990a561e6dd544f0a0e95d8e845caf601b29be39305cd4f7addae66386c",
+      "HighamBench/P19Definitions.lean": "2998b7217abc04d814dd4fd7bfbfa4943408ea53538ccbc33f7954d8baa46755",
+      "HighamBench/P20Definitions.lean": "5e21c0a446fa0953ac71cbbaeef9f3958851372152ad0cb4e64ba4fc6bf8cc48"
     },
     "version": "4.29.0-rc3"
   },
@@ -357,7 +392,7 @@
     "implementation": {
       "name": "provider_token_gate.py",
       "path": "tools/provider_token_gate.py",
-      "source_sha256": "18fc40069a408224be6bea6e1eaeabcd01572cb361c465cb4fa842010b60bad3",
+      "source_sha256": "8012c1c72c10bb388a2be69760cf2dd4dc51dce5c6abceadda0c9e086d650bcd",
       "version": "6"
     },
     "kind": "highambench-provider-token-gate-freeze",
@@ -643,7 +678,7 @@
           "logical_path": "/etc/hosts",
           "mode": "0644",
           "resolved_path": "/etc/hosts",
-          "sha256": "362a6fd7a4586829f8f0e8ef9ffa717df9176afc0e012a88cfe94598daf74055",
+          "sha256": "eb4b0118aed7d7ff1e7d68af5a32135346950f17bc3dbabf879088920e29f0f5",
           "symlink_target": null
         },
         "libc": {
@@ -726,7 +761,7 @@
     }
   },
   "release_manifest": "paper_bencmark/highambench/metadata/release_files.json",
-  "release_manifest_sha256": "583675aeee9cb03b733d4553052d2e1d1cfa4f0f49a03d70d0276a64aadbd734",
+  "release_manifest_sha256": "fab464b2c098eb3650f706f09cc31f4edc3b22af6d1b61b85408ca443a53ed14",
   "runtime": {
     "packages_runtime_manifest": "paper_bencmark/highambench/metadata/packages_runtime.json",
     "packages_runtime_manifest_sha256": "a2ee0563bc731aa3dba22ed7af0e9bd1322c8c06b51cd9d01bd573282d9c8c31",
@@ -817,12 +852,12 @@
   },
   "token_control_canary": {
     "path": "paper_bencmark/highambench/metadata/evidence/token_control_live_canary.json",
-    "sha256": "b2fb3ae15ed94d4d79f2978b6d8de45f901e24ae6dbeafb9adde6048c381dc2a",
-    "status": "passed"
+    "sha256": "3d2d77385df470f340a41f7fc66276beebb5bb99bc2f3b310e2858c4b5049e1d",
+    "status": "replacement_required"
   },
   "ultra_orchestration_canary": {
     "path": "paper_bencmark/highambench/metadata/evidence/ultra_orchestration_live_canary.json",
-    "sha256": "381e3c35753610a54626cfbcad4798777a8179653a522969bd4822935a1fd909",
-    "status": "passed"
+    "sha256": "766800386aa424c48a83567d9b9b49cc6265b5e70a34e14beb7b28c38e17acb1",
+    "status": "replacement_required"
   }
 }

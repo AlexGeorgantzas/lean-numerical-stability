@@ -15,17 +15,17 @@ theorem p04_t3_block_lu_solve_backward_error
     (hΔF : ∀ i j,
       |ΔF i j| ≤ p04FactorizationCoeff uLow uFma u q n bdim * M i j)
     (hLΔU : ∀ i j,
-      |p04MatMul L ΔU i j| ≤ gamma u n * M i j)
+      |p04MatMul L ΔU i j| ≤ p04Gamma u n * M i j)
     (hΔLU : ∀ i j,
-      |p04MatMul ΔL U i j| ≤ gamma u n * M i j)
+      |p04MatMul ΔL U i j| ≤ p04Gamma u n * M i j)
     (hΔLΔU : ∀ i j,
-      |p04MatMul ΔL ΔU i j| ≤ (gamma u n) ^ 2 * M i j) :
+      |p04MatMul ΔL ΔU i j| ≤ (p04Gamma u n) ^ 2 * M i j) :
     ∃ ΔA : Fin N → Fin N → ℝ,
       p04MatVec (A + ΔA) x = rhs ∧
       ∀ i j,
         |ΔA i j| ≤
           (p04FactorizationCoeff uLow uFma u q n bdim +
-              2 * gamma u n + (gamma u n) ^ 2) * M i j := by
+              2 * p04Gamma u n + (p04Gamma u n) ^ 2) * M i j := by
   -- PROOF_START
   sorry
 

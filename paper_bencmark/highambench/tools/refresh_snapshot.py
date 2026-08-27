@@ -36,7 +36,7 @@ try:
         provider_token_gate_environment_record,
         ultra_orchestration_record,
     )
-    from .task_tags import validate_task_catalog
+    from .task_tags import validate_task_catalog, validate_task_source_tags
 except ImportError:  # Direct script execution.
     from common import BenchmarkToolError, read_json, sha256_file, write_json  # type: ignore
     from hashes import create_manifest  # type: ignore
@@ -55,7 +55,10 @@ except ImportError:  # Direct script execution.
         provider_token_gate_environment_record,
         ultra_orchestration_record,
     )
-    from task_tags import validate_task_catalog  # type: ignore
+    from task_tags import (  # type: ignore
+        validate_task_catalog,
+        validate_task_source_tags,
+    )
 
 
 PHASE_CONSTRUCTION = "construction"
@@ -291,29 +294,205 @@ def _set_task_phase(
         write_json(path, record)
 
 
-def _measurement_readiness(
+def _construction_t4_summary(
+    task: Mapping[str, Any], *, label: str
+) -> dict[str, Any]:
+    """Validate construction-safe plural T4 shape without requiring final reviews."""
+
+    if (
+        task.get("schema_version") != "highambench-task-0.4"
+        or task.get("tier") != "T4"
+        or not isinstance(task.get("task_id"), str)
+        or not str(task["task_id"]).endswith("-T4")
+    ):
+        raise BenchmarkToolError(f"{label} is not a schema-0.4 T4 task")
+    for field in (
+        "source_inventory",
+        "declarations",
+        "review_units",
+        "faithfulness_reviews",
+    ):
+        if not isinstance(task.get(field), list):
+            raise BenchmarkToolError(f"{label}.{field} must be a JSON array")
+    if not task["source_inventory"] or not task["declarations"]:
+        raise BenchmarkToolError(
+            f"{label} must have nonempty source inventory and declarations"
+        )
+    validation = task.get("validation")
+    if not isinstance(validation, Mapping):
+        raise BenchmarkToolError(f"{label}.validation must be a JSON object")
+    required = validation.get("required_declarations")
+    sorries = validation.get("controlled_sorries")
+    if (
+        not isinstance(required, list)
+        or not required
+        or not all(isinstance(value, str) and value for value in required)
+        or len(required) != len(set(required))
+        or not isinstance(sorries, list)
+        or not sorries
+        or not all(isinstance(value, Mapping) for value in sorries)
+    ):
+        raise BenchmarkToolError(
+            f"{label} needs plural required declarations and controlled sorries"
+        )
+    declaration_names = [
+        value.get("lean_name") if isinstance(value, Mapping) else None
+        for value in task["declarations"]
+    ]
+    if declaration_names != required:
+        raise BenchmarkToolError(
+            f"{label} required declarations must exactly match declaration order"
+        )
+    placeholder_ids: set[str] = set()
+    for index, raw in enumerate(sorries, start=1):
+        assert isinstance(raw, Mapping)
+        placeholder = raw.get("placeholder_id")
+        if (
+            raw.get("placeholder_order") != index
+            or not isinstance(placeholder, str)
+            or not placeholder
+            or placeholder in placeholder_ids
+            or raw.get("marker") != f"-- PROOF_START {placeholder}"
+            or type(raw.get("line")) is not int
+            or raw["line"] <= 0
+            or type(raw.get("column")) is not int
+            or raw["column"] <= 0
+        ):
+            raise BenchmarkToolError(
+                f"{label}.validation.controlled_sorries[{index - 1}] is invalid"
+            )
+        placeholder_ids.add(placeholder)
+    dispositions = [
+        value.get("disposition") if isinstance(value, Mapping) else None
+        for value in task["source_inventory"]
+    ]
+    if any(value not in ("included", "excluded") for value in dispositions):
+        raise BenchmarkToolError(f"{label} has an invalid inventory disposition")
+    return {
+        "task_id": task["task_id"],
+        "tier": "T4",
+        "schema_version": "highambench-task-0.4",
+        "source_inventory_count": len(task["source_inventory"]),
+        "included_source_count": sum(value == "included" for value in dispositions),
+        "excluded_source_count": sum(value == "excluded" for value in dispositions),
+        "declaration_count": len(required),
+        "review_unit_count": len(task["review_units"]),
+        "controlled_sorry_count": len(sorries),
+        "review_count": len(task["faithfulness_reviews"]),
+        "measurement_ready": False,
+    }
+
+
+def _task_catalog_for_phase(
     root: Path,
     targets: Sequence[tuple[str, str, str, Mapping[str, Any]]],
     *,
+    measurement_ready: bool,
+) -> dict[str, Any]:
+    """Use strict final validation at freeze time and pending-safe T4 shape in construction."""
+
+    if measurement_ready:
+        return validate_task_catalog(root)
+    expected_paths = {
+        (root / "tasks" / paper_id / tier / "task.json").resolve()
+        for paper_id, tier, _task_id, _target in targets
+    }
+    actual_paths = {
+        path.resolve() for path in (root / "tasks").glob("P*/T*/task.json")
+    }
+    if actual_paths != expected_paths:
+        raise BenchmarkToolError(
+            "task directories must exactly match available manifest tasks"
+        )
+    summaries: list[dict[str, Any]] = []
+    for paper_id, tier, task_id, _target in targets:
+        task_path = root / "tasks" / paper_id / tier / "task.json"
+        task = _object(read_json(task_path), f"{task_id} task record")
+        if (
+            task.get("task_id") != task_id
+            or task.get("paper_id") != paper_id
+            or task.get("tier") != tier
+        ):
+            raise BenchmarkToolError(f"{task_id} task identity disagrees with its path")
+        summaries.append(
+            _construction_t4_summary(task, label=task_id)
+            if tier == "T4"
+            else validate_task_source_tags(task, label=task_id)
+        )
+    return {"tasks": summaries}
+
+
+def _readiness_profile(
+    task_summaries: Sequence[Mapping[str, Any]],
+) -> dict[str, int]:
+    t4 = [item for item in task_summaries if item.get("tier") == "T4"]
+    selected_count = len(task_summaries) - len(t4)
+    return {
+        "task_count": len(task_summaries),
+        "required_declaration_count": selected_count
+        + sum(int(item["declaration_count"]) for item in t4),
+        "t4_controlled_sorry_count": sum(
+            int(item["controlled_sorry_count"]) for item in t4
+        ),
+        "private_proof_task_count": len(task_summaries),
+        "t4_private_proof_task_count": len(t4),
+        "t4_skeleton_task_count": len(t4),
+        "private_proof_result_count": len(task_summaries) * 2,
+        "t4_private_proof_result_count": len(t4) * 2,
+        "t4_skeleton_result_count": len(t4) * 2,
+    }
+
+
+def _measurement_readiness(
+    root: Path,
+    targets: Sequence[tuple[str, str, str, Mapping[str, Any]]],
+    task_summaries: Sequence[Mapping[str, Any]],
+    *,
     ignore_exact_target_novelty_rejections: bool = False,
 ) -> dict[str, Any]:
-    """Require complete construction and two current reviews for every task."""
+    """Require schema-aware construction plus applicable accepted review gates."""
 
     task_ids = [task_id for _paper_id, _tier, task_id, _target in targets]
+    summaries_by_id = {
+        str(summary.get("task_id")): summary for summary in task_summaries
+    }
+    if list(summaries_by_id) != task_ids:
+        raise BenchmarkToolError(
+            "measurement-ready task summaries disagree with manifest order"
+        )
+    t4_task_ids = {
+        task_id
+        for task_id, summary in summaries_by_id.items()
+        if summary.get("tier") == "T4"
+    }
+    selected_task_ids = [
+        task_id for task_id in task_ids if task_id not in t4_task_ids
+    ]
+    profile = _readiness_profile(task_summaries)
+    result_count = len(task_ids) * 2
+
     evidence_dir = root / "metadata" / "evidence"
     construction_records: list[Mapping[str, Any]] = []
     if evidence_dir.is_dir():
         for path in sorted(evidence_dir.glob("*.json")):
             value = read_json(path)
-            if isinstance(value, Mapping) and value.get("kind") == "highambench-private-construction-check":
+            if (
+                isinstance(value, Mapping)
+                and value.get("kind") == "highambench-private-construction-check"
+            ):
                 construction_records.append(value)
-    complete = []
+    complete: list[Mapping[str, Any]] = []
     current_manifest_sha256 = sha256_file(root / "metadata" / "manifest.json")
+    expected_pairs = [
+        (task_id, condition)
+        for task_id in task_ids
+        for condition in ("N", "L")
+    ]
     for record in construction_records:
         scope = record.get("scope")
         summary = record.get("summary")
-        proof_count = len(task_ids) * 2
-        if (
+        results = record.get("results")
+        base_ok = (
             record.get("pass") is True
             and record.get("record_status") == "current_final"
             and isinstance(scope, Mapping)
@@ -321,17 +500,102 @@ def _measurement_readiness(
             and scope.get("selected_task_ids") == task_ids
             and scope.get("central_manifest_sha256") == current_manifest_sha256
             and isinstance(summary, Mapping)
-            and summary.get("expected") == proof_count
-            and summary.get("checked") == proof_count
-            and summary.get("passed") == proof_count
-        ):
-            complete.append(record)
+            and summary.get("expected") == result_count
+            and summary.get("checked") == result_count
+            and summary.get("passed") == result_count
+            and summary.get("condition_n_passed") == len(task_ids)
+            and summary.get("condition_l_passed") == len(task_ids)
+            and isinstance(results, list)
+            and len(results) == result_count
+            and all(isinstance(item, Mapping) for item in results)
+            and [
+                (item.get("task_id"), item.get("condition"))
+                for item in results
+                if isinstance(item, Mapping)
+            ]
+            == expected_pairs
+        )
+        if not base_ok:
+            continue
+        if t4_task_ids:
+            if (
+                record.get("schema_version") != 3
+                or any(summary.get(field) != value for field, value in profile.items())
+            ):
+                continue
+            t4_results_ok = all(
+                (
+                    item.get("construction_kind") == "t4-private-proof"
+                    and item.get("pass") is True
+                    and isinstance(item.get("gold_source_sha256"), str)
+                    and len(item["gold_source_sha256"]) == 64
+                    and all(
+                        character in "0123456789abcdef"
+                        for character in item["gold_source_sha256"]
+                    )
+                    and isinstance(item.get("validation"), Mapping)
+                    and item["validation"].get("pass") is True
+                    and item["validation"].get("proof_holes_discharged") is True
+                    and item["validation"].get("required_declaration_count")
+                    == summaries_by_id[str(item.get("task_id"))].get(
+                        "declaration_count"
+                    )
+                    and item["validation"].get("required_declarations_checked")
+                    == summaries_by_id[str(item.get("task_id"))].get(
+                        "declaration_count"
+                    )
+                    and item["validation"].get("controlled_sorry_count")
+                    == summaries_by_id[str(item.get("task_id"))].get(
+                        "controlled_sorry_count"
+                    )
+                    and item["validation"].get("controlled_sorries_checked")
+                    == summaries_by_id[str(item.get("task_id"))].get(
+                        "controlled_sorry_count"
+                    )
+                    and item["validation"].get("proof_declaration_count")
+                    == summaries_by_id[str(item.get("task_id"))].get(
+                        "controlled_sorry_count"
+                    )
+                    and item["validation"].get("proof_declarations_audited")
+                    == summaries_by_id[str(item.get("task_id"))].get(
+                        "controlled_sorry_count"
+                    )
+                    and isinstance(item.get("controlled_skeleton"), Mapping)
+                    and item["controlled_skeleton"].get("pass") is True
+                    and item["controlled_skeleton"].get("construction_kind")
+                    == "designated-hole-skeleton"
+                    and isinstance(
+                        item["controlled_skeleton"].get("validation"), Mapping
+                    )
+                    and item["controlled_skeleton"]["validation"].get("pass") is True
+                    and item["controlled_skeleton"]["validation"].get(
+                        "required_declarations_checked"
+                    )
+                    == summaries_by_id[str(item.get("task_id"))].get(
+                        "declaration_count"
+                    )
+                    and item["controlled_skeleton"]["validation"].get(
+                        "controlled_sorries_checked"
+                    )
+                    == summaries_by_id[str(item.get("task_id"))].get(
+                        "controlled_sorry_count"
+                    )
+                )
+                if item.get("task_id") in t4_task_ids
+                else item.get("construction_kind") != "designated-hole-skeleton"
+                for item in results
+                if isinstance(item, Mapping)
+            )
+            if not t4_results_ok:
+                continue
+        complete.append(record)
     if not complete:
         raise BenchmarkToolError(
-            "measurement-ready phase requires one passing full-corpus private construction record"
+            "measurement-ready phase requires one passing full-corpus "
+            "schema-aware construction record"
         )
 
-    coverage = {task_id: 0 for task_id in task_ids}
+    coverage = {task_id: 0 for task_id in selected_task_ids}
     review_records: list[dict[str, Any]] = []
     ignored_rejections: set[str] = set()
     reviews_dir = root / "metadata" / "reviews"
@@ -342,12 +606,20 @@ def _measurement_readiness(
                 continue
             status = review.get("record_status")
             if ignore_exact_target_novelty_rejections:
-                if status not in ("current_final", "final", "current_with_blocking_defects"):
+                if status not in (
+                    "current_final",
+                    "final",
+                    "current_with_blocking_defects",
+                ):
                     continue
                 reviewer = review.get("reviewer")
-                if not isinstance(reviewer, Mapping) or reviewer.get("fresh_context") is not True:
+                if (
+                    not isinstance(reviewer, Mapping)
+                    or reviewer.get("fresh_context") is not True
+                ):
                     raise BenchmarkToolError(
-                        f"novelty override review {path.name} is not a fresh-context Codex review"
+                        f"novelty override review {path.name} is not a "
+                        "fresh-context Codex review"
                     )
                 identifiers = review.get("identifiers")
                 snapshot = review.get("snapshot")
@@ -366,7 +638,8 @@ def _measurement_readiness(
                 )
                 if review_manifest_sha256 != current_manifest_sha256:
                     raise BenchmarkToolError(
-                        f"novelty override review {path.name} cites a stale benchmark manifest"
+                        f"novelty override review {path.name} cites a stale "
+                        "benchmark manifest"
                     )
             elif status != "current_final":
                 continue
@@ -380,27 +653,47 @@ def _measurement_readiness(
                 task_id = raw_task_review.get("task_id")
                 outcome = raw_task_review.get(
                     "review_outcome",
-                    raw_task_review.get("outcome", raw_task_review.get("decision")),
+                    raw_task_review.get(
+                        "outcome", raw_task_review.get("decision")
+                    ),
                 )
                 if task_id not in coverage or task_id in covered_in_record:
                     continue
-                accepted = isinstance(outcome, str) and outcome.lower().startswith("pass")
+                accepted = (
+                    isinstance(outcome, str)
+                    and outcome.lower().startswith("pass")
+                )
                 if ignore_exact_target_novelty_rejections and not accepted:
-                    normalized = outcome.lower() if isinstance(outcome, str) else ""
+                    normalized = (
+                        outcome.lower() if isinstance(outcome, str) else ""
+                    )
                     exact_target_collision = (
-                        raw_task_review.get("exact_target_absent_from_mathlib") is False
-                        or raw_task_review.get("exact_target_absent_from_numstability") is False
+                        raw_task_review.get(
+                            "exact_target_absent_from_mathlib"
+                        )
+                        is False
+                        or raw_task_review.get(
+                            "exact_target_absent_from_numstability"
+                        )
+                        is False
                     )
                     accepted = (
                         raw_task_review.get("source_faithful") is True
-                        and ("exact_target" in normalized or exact_target_collision)
-                        and ("fail" in normalized or "collision" in normalized)
+                        and (
+                            "exact_target" in normalized
+                            or exact_target_collision
+                        )
+                        and (
+                            "fail" in normalized
+                            or "collision" in normalized
+                        )
                     )
                     if accepted:
                         ignored_rejections.add(str(task_id))
-                if ignore_exact_target_novelty_rejections and raw_task_review.get(
-                    "source_faithful"
-                ) is not True:
+                if (
+                    ignore_exact_target_novelty_rejections
+                    and raw_task_review.get("source_faithful") is not True
+                ):
                     accepted = False
                 if accepted:
                     coverage[str(task_id)] += 1
@@ -417,22 +710,58 @@ def _measurement_readiness(
     missing = [task_id for task_id, count in coverage.items() if count < 2]
     if missing:
         raise BenchmarkToolError(
-            "measurement-ready phase requires two current final reviews for every task; missing: "
+            "measurement-ready phase requires two current final reviews for "
+            "every T1--T3 task; missing: "
             + ", ".join(missing)
         )
+
+    t4_review_coverage = [
+        {
+            "task_id": task_id,
+            "source_inventory_count": summaries_by_id[task_id][
+                "source_inventory_count"
+            ],
+            "included_source_count": summaries_by_id[task_id][
+                "included_source_count"
+            ],
+            "excluded_source_count": summaries_by_id[task_id][
+                "excluded_source_count"
+            ],
+            "declaration_count": summaries_by_id[task_id][
+                "declaration_count"
+            ],
+            "review_unit_count": summaries_by_id[task_id][
+                "review_unit_count"
+            ],
+            "accepted_review_count": summaries_by_id[task_id]["review_count"],
+            "controlled_sorry_count": summaries_by_id[task_id][
+                "controlled_sorry_count"
+            ],
+        }
+        for task_id in task_ids
+        if task_id in t4_task_ids
+    ]
     return {
         "enabled": ignore_exact_target_novelty_rejections,
         "scope": "exact-target novelty rejections only",
         "source_fidelity_required": True,
-        "fresh_context_reviews_required": ignore_exact_target_novelty_rejections,
+        "fresh_context_reviews_required": (
+            ignore_exact_target_novelty_rejections or bool(t4_task_ids)
+        ),
         "review_records": review_records,
+        "t4_claim_review_coverage": t4_review_coverage,
         "ignored_rejection_task_ids": sorted(ignored_rejections),
         "note": (
-            "The project owner directed that the fresh-context reviews be retained "
-            "but their exact-target novelty rejections be ignored for this private, "
-            "pre-publication measurement."
+            "The project owner directed that the fresh-context reviews be "
+            "retained but their exact-target novelty rejections be ignored for "
+            "this private, pre-publication measurement."
             if ignore_exact_target_novelty_rejections
-            else "No review override was applied."
+            else (
+                "T1--T3 task-level reviews and T4 claim-scoped reviews passed "
+                "their applicable gates."
+                if t4_task_ids
+                else "No review override was applied."
+            )
         ),
     }
 
@@ -969,7 +1298,9 @@ def refresh_snapshot(
             "the exact-target novelty override is valid only for measurement-ready snapshots"
         )
 
-    tag_catalog = validate_task_catalog(benchmark_root)
+    tag_catalog = _task_catalog_for_phase(
+        benchmark_root, targets, measurement_ready=measurement_ready
+    )
     manifest_task_ids = [task_id for _paper_id, _tier, task_id, _target in targets]
     catalog_task_ids = [str(task["task_id"]) for task in tag_catalog["tasks"]]
     if catalog_task_ids != manifest_task_ids:
@@ -989,6 +1320,7 @@ def refresh_snapshot(
         review_policy = _measurement_readiness(
             benchmark_root,
             targets,
+            tag_catalog["tasks"],
             ignore_exact_target_novelty_rejections=(
                 ignore_exact_target_novelty_rejections
             ),
@@ -1001,7 +1333,9 @@ def refresh_snapshot(
         measurement_ready=measurement_ready,
         limits=_object(config.get("limits"), "config limits"),
     )
-    validate_task_catalog(benchmark_root)
+    _task_catalog_for_phase(
+        benchmark_root, targets, measurement_ready=measurement_ready
+    )
     _sync_manifest(
         benchmark_root,
         manifest,

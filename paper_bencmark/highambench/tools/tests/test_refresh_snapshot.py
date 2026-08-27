@@ -21,6 +21,10 @@ from refresh_snapshot import (  # noqa: E402
     refresh_snapshot,
 )
 from codex_isolated import nested_submission_exec_yield_record  # noqa: E402
+from task_tags import validate_t4_task_metadata  # noqa: E402
+from paper_bencmark.highambench.tools.tests.test_task_tags import (  # noqa: E402
+    base_t4_task,
+)
 from runner import PROVIDER_GATE_UPSTREAM_RESPONSE_CONTRACT  # noqa: E402
 from run_matrix import (  # noqa: E402
     canonical_document_digest,
@@ -166,6 +170,140 @@ class RefreshSnapshotTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    def test_construction_accepts_pending_safe_t4_plural_shape(self) -> None:
+        task = base_t4_task()
+        task["faithfulness_reviews"] = []
+        for unit in task["review_units"]:
+            unit["review_status"] = "pending"
+        summary = refresh_snapshot_module._construction_t4_summary(
+            task, label="P01-T4"
+        )
+        self.assertEqual(summary["declaration_count"], 3)
+        self.assertEqual(summary["controlled_sorry_count"], 1)
+        self.assertEqual(summary["review_count"], 0)
+        self.assertFalse(summary["measurement_ready"])
+
+    def test_measurement_readiness_rejects_skeleton_only_then_accepts_private_t4_proofs(self) -> None:
+        task = base_t4_task()
+        task["classification_frozen_before_runs"] = True
+        summary = validate_t4_task_metadata(task, label="P01-T4")
+        manifest_path = self.root / "metadata" / "manifest.json"
+        task_ids = ["P01-T4"]
+        profile = refresh_snapshot_module._readiness_profile([summary])
+        skeleton_results = [
+            {
+                "task_id": "P01-T4",
+                "condition": condition,
+                "construction_kind": "designated-hole-skeleton",
+                "pass": True,
+                "validation": {
+                    "pass": True,
+                    "required_declaration_count": 3,
+                    "required_declarations_checked": 3,
+                    "controlled_sorry_count": 1,
+                    "controlled_sorries_checked": 1,
+                },
+            }
+            for condition in ("N", "L")
+        ]
+        evidence_path = (
+            self.root / "metadata" / "evidence" / "construction_t4.json"
+        )
+        write_json(
+            evidence_path,
+            {
+                "schema_version": 2,
+                "kind": "highambench-private-construction-check",
+                "record_status": "current_final",
+                "pass": True,
+                "scope": {
+                    "complete_manifest_scope": True,
+                    "selected_task_ids": task_ids,
+                    "central_manifest_sha256": sha256_file(manifest_path),
+                },
+                "summary": {
+                    "expected": 2,
+                    "checked": 2,
+                    "passed": 2,
+                    "condition_n_passed": 1,
+                    "condition_l_passed": 1,
+                    **profile,
+                },
+                "results": skeleton_results,
+            },
+        )
+        with self.assertRaisesRegex(
+            BenchmarkToolError, "schema-aware construction record"
+        ):
+            refresh_snapshot_module._measurement_readiness(
+                self.root,
+                [("P01", "T4", "P01-T4", {})],
+                [summary],
+            )
+
+        results = [
+            {
+                "task_id": "P01-T4",
+                "condition": condition,
+                "construction_kind": "t4-private-proof",
+                "gold_source_sha256": "a" * 64,
+                "pass": True,
+                "validation": {
+                    "pass": True,
+                    "proof_holes_discharged": True,
+                    "required_declaration_count": 3,
+                    "required_declarations_checked": 3,
+                    "controlled_sorry_count": 1,
+                    "controlled_sorries_checked": 1,
+                    "proof_declaration_count": 1,
+                    "proof_declarations_audited": 1,
+                },
+                "controlled_skeleton": {
+                    "construction_kind": "designated-hole-skeleton",
+                    "pass": True,
+                    "validation": {
+                        "pass": True,
+                        "required_declarations_checked": 3,
+                        "controlled_sorries_checked": 1,
+                    },
+                },
+            }
+            for condition in ("N", "L")
+        ]
+        write_json(
+            evidence_path,
+            {
+                "schema_version": 3,
+                "kind": "highambench-private-construction-check",
+                "record_status": "current_final",
+                "pass": True,
+                "scope": {
+                    "complete_manifest_scope": True,
+                    "selected_task_ids": task_ids,
+                    "central_manifest_sha256": sha256_file(manifest_path),
+                },
+                "summary": {
+                    "expected": 2,
+                    "checked": 2,
+                    "passed": 2,
+                    "condition_n_passed": 1,
+                    "condition_l_passed": 1,
+                    **profile,
+                },
+                "results": results,
+            },
+        )
+        policy = refresh_snapshot_module._measurement_readiness(
+            self.root,
+            [("P01", "T4", "P01-T4", {})],
+            [summary],
+        )
+        self.assertEqual(policy["review_records"], [])
+        self.assertEqual(
+            policy["t4_claim_review_coverage"][0]["accepted_review_count"],
+            2,
+        )
+
     def test_provider_gate_refresh_rejects_legacy_freeze_protocols(self) -> None:
         legacy = {
             "schema_version": 1,
@@ -250,7 +388,7 @@ class RefreshSnapshotTests(unittest.TestCase):
         self.assertEqual(barrier["schema_version"], 5)
         self.assertEqual(
             barrier["submission_transport"],
-            "functions_exec_dynamic_submit_proof_v2",
+            "functions_exec_dynamic_submit_proof_v3",
         )
         yield_record = nested_submission_exec_yield_record()
         self.assertEqual(len(yield_record), 8)
@@ -271,6 +409,7 @@ class RefreshSnapshotTests(unittest.TestCase):
             sort_keys=True,
         )
         self.assertNotIn("functions_exec_dynamic_submit_proof_v1", frozen_text)
+        self.assertNotIn("functions_exec_dynamic_submit_proof_v2", frozen_text)
         self.assertNotIn("ULTRA-ORCHESTRATION-SUBMISSION-CANARY-V5", frozen_text)
 
         for key in ("ultra_orchestration_canary", "token_control_canary"):
@@ -411,7 +550,7 @@ class RefreshSnapshotTests(unittest.TestCase):
         )
         self.assertEqual(provider_gate["schema_version"], 2)
         self.assertEqual(provider_gate["protocol"], "highambench-provider-token-gate-v6")
-        self.assertEqual(provider_gate["implementation"]["version"], "5")
+        self.assertEqual(provider_gate["implementation"]["version"], "6")
         self.assertEqual(
             provider_gate["static_configuration"]["upstream_response_contract"],
             PROVIDER_GATE_UPSTREAM_RESPONSE_CONTRACT,
@@ -557,7 +696,18 @@ class RefreshSnapshotTests(unittest.TestCase):
                         self.root / "metadata" / "manifest.json"
                     ),
                 },
-                "summary": {"expected": 4, "checked": 4, "passed": 4},
+                "summary": {
+                    "expected": 4,
+                    "checked": 4,
+                    "passed": 4,
+                    "condition_n_passed": 2,
+                    "condition_l_passed": 2,
+                },
+                "results": [
+                    {"task_id": task_id, "condition": condition}
+                    for task_id in task_ids
+                    for condition in ("N", "L")
+                ],
             },
         )
         for number in (1, 2):

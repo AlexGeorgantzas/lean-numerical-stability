@@ -138,6 +138,48 @@
     },
     {
       "condition_order": [
+        "L",
+        "N"
+      ],
+      "pair_id": "P01-T4-rep-01",
+      "repetition_id": "rep-01",
+      "run_ids": [
+        "P01-T4-rep-01-L",
+        "P01-T4-rep-01-N"
+      ],
+      "sha256": "3993e7233857584b959c1749e6a974d179b97b044fc302c50f9abd0c994b4313",
+      "task_id": "P01-T4"
+    },
+    {
+      "condition_order": [
+        "L",
+        "N"
+      ],
+      "pair_id": "P01-T4-rep-02",
+      "repetition_id": "rep-02",
+      "run_ids": [
+        "P01-T4-rep-02-L",
+        "P01-T4-rep-02-N"
+      ],
+      "sha256": "e91e1c262c51eed436b6c5df2b6ca61ac65ff4397d73244f5cee9d9a8952a65c",
+      "task_id": "P01-T4"
+    },
+    {
+      "condition_order": [
+        "L",
+        "N"
+      ],
+      "pair_id": "P01-T4-rep-03",
+      "repetition_id": "rep-03",
+      "run_ids": [
+        "P01-T4-rep-03-L",
+        "P01-T4-rep-03-N"
+      ],
+      "sha256": "d3cb708dc9c57998bcb84e38dd8da9556b414c91e2bbd460e09a3d38daa5e18a",
+      "task_id": "P01-T4"
+    },
+    {
+      "condition_order": [
         "N",
         "L"
       ],

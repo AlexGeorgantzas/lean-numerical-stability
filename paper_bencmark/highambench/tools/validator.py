@@ -11,7 +11,7 @@ from pathlib import Path
 import re
 import shutil
 import tempfile
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 import uuid
 
 try:
@@ -56,6 +56,15 @@ FORBIDDEN_TOKEN_PATTERNS = (
     ("opaque declaration", re.compile(r"\bopaque\b")),
 )
 LOCAL_MODULES_FILENAME = ".highambench-validator-local-modules"
+AUDIT_PAIRS_FILENAME = ".highambench-validator-audit-pairs"
+TOP_LEVEL_DECL_RE = re.compile(
+    r"(?m)^(?P<indent>[ \t]*)(?:(?:noncomputable|private|protected)\s+)*"
+    r"(?P<kind>theorem|lemma|def|abbrev|structure|inductive)\s+"
+    r"(?P<name>[A-Za-z_][A-Za-z0-9_']*(?:\.[A-Za-z_][A-Za-z0-9_']*)*)\b"
+)
+PROOF_MARKER_RE = re.compile(
+    r"(?m)^[ \t]*--[ \t]*PROOF_START(?:[ \t]+[^\r\n]*?)?[ \t]*$"
+)
 
 
 def sanitize_lean(text: str, *, erase_strings: bool = False) -> str:
@@ -475,6 +484,442 @@ def renamed_canonical_source(
     return text[: match.start("name")] + expected_simple_name + text[match.end("name") :]
 
 
+
+def _declaration_bounds(text: str, lean_name: str) -> tuple[re.Match[str], int, int]:
+    """Locate one required top-level declaration while preserving source offsets."""
+
+    simple_name = _simple_target_name(lean_name)
+    sanitized = sanitize_lean(text, erase_strings=False)
+    matches = [
+        match for match in TOP_LEVEL_DECL_RE.finditer(sanitized)
+        if match.group("name").rsplit(".", 1)[-1] == simple_name
+    ]
+    if len(matches) != 1:
+        raise BenchmarkToolError(
+            f"expected exactly one declaration named {simple_name!r}; found {len(matches)}"
+        )
+    match = matches[0]
+    indent = len(match.group("indent"))
+    end = len(text)
+    for later in TOP_LEVEL_DECL_RE.finditer(sanitized, match.end()):
+        if len(later.group("indent")) <= indent:
+            end = later.start()
+            break
+    end_pattern = re.compile(r"(?m)^(?P<indent>[ \t]*)end(?:\s+[A-Za-z0-9_'.]+)?\s*$")
+    for namespace_end in end_pattern.finditer(sanitized, match.end()):
+        if len(namespace_end.group("indent")) <= indent:
+            end = min(end, namespace_end.start())
+            break
+    return match, match.start(), end
+
+
+def _declaration_bounds_at_line(
+    text: str, lean_name: str, source_line: int
+) -> tuple[re.Match[str], int, int]:
+    """Locate one declaration by its authenticated owner line and leaf name."""
+
+    if source_line <= 0:
+        raise BenchmarkToolError("controlled declaration source line must be positive")
+    simple_name = _simple_target_name(lean_name)
+    sanitized = sanitize_lean(text, erase_strings=False)
+    matches = [
+        match
+        for match in TOP_LEVEL_DECL_RE.finditer(sanitized)
+        if match.group("name").rsplit(".", 1)[-1] == simple_name
+        and _line_column(sanitized, match.start())[0] == source_line
+    ]
+    if len(matches) != 1:
+        raise BenchmarkToolError(
+            f"expected declaration {simple_name!r} at controlled source line "
+            f"{source_line}; found {len(matches)}"
+        )
+    match = matches[0]
+    indent = len(match.group("indent"))
+    end = len(text)
+    for later in TOP_LEVEL_DECL_RE.finditer(sanitized, match.end()):
+        if len(later.group("indent")) <= indent:
+            end = later.start()
+            break
+    end_pattern = re.compile(
+        r"(?m)^(?P<indent>[ \t]*)end(?:\s+[A-Za-z0-9_'.]+)?\s*$"
+    )
+    for namespace_end in end_pattern.finditer(sanitized, match.end()):
+        if len(namespace_end.group("indent")) <= indent:
+            end = min(end, namespace_end.start())
+            break
+    return match, match.start(), end
+
+
+def _normalized_declaration(text: str, lean_name: str) -> str:
+    _, start, end = _declaration_bounds(text, lean_name)
+    return re.sub(
+        r"\s+", " ", sanitize_lean(text[start:end], erase_strings=False)
+    ).strip()
+
+
+def _normalized_declaration_at_line(
+    text: str, lean_name: str, source_line: int
+) -> str:
+    _, start, end = _declaration_bounds_at_line(text, lean_name, source_line)
+    return re.sub(
+        r"\s+", " ", sanitize_lean(text[start:end], erase_strings=False)
+    ).strip()
+
+
+def compare_required_surfaces(
+    submission_text: str,
+    canonical_text: str,
+    required_declarations: Sequence[str],
+    proof_declarations: Sequence[str],
+    required_declaration_sources: Sequence[str],
+    required_declaration_source_lines: Sequence[int],
+    controlled_source_texts: Mapping[str, str],
+    canonical_source_relative: str,
+) -> list[dict[str, Any]]:
+    """Bind required declarations to their authenticated controlled owners."""
+
+    proof_set = set(proof_declarations)
+    checks: list[dict[str, Any]] = []
+    for lean_name, source_relative, source_line in zip(
+        required_declarations,
+        required_declaration_sources,
+        required_declaration_source_lines,
+        strict=True,
+    ):
+        try:
+            source_text = controlled_source_texts[source_relative]
+            if lean_name in proof_set:
+                submitted = extract_theorem_signature(submission_text, lean_name)
+                canonical = extract_theorem_signature(source_text, lean_name)
+                kind = "proof_signature"
+                ok = submitted == canonical
+            elif source_relative == canonical_source_relative:
+                submitted = _normalized_declaration(submission_text, lean_name)
+                canonical = _normalized_declaration_at_line(
+                    canonical_text, lean_name, source_line
+                )
+                kind = "target_declaration"
+                ok = submitted == canonical
+            else:
+                canonical = _normalized_declaration_at_line(
+                    source_text, lean_name, source_line
+                )
+                sanitized_submission = sanitize_lean(
+                    submission_text, erase_strings=False
+                )
+                simple_name = _simple_target_name(lean_name)
+                candidate_matches = [
+                    match
+                    for match in TOP_LEVEL_DECL_RE.finditer(sanitized_submission)
+                    if match.group("name").rsplit(".", 1)[-1] == simple_name
+                ]
+                submitted = None
+                kind = "controlled_imported_declaration"
+                ok = not candidate_matches
+            checks.append(
+                {
+                    "lean_name": lean_name,
+                    "controlled_source_file": source_relative,
+                    "controlled_source_line": source_line,
+                    "kind": kind,
+                    "ok": ok,
+                    "submitted": submitted,
+                    "canonical": canonical,
+                }
+            )
+        except BenchmarkToolError as error:
+            checks.append(
+                {
+                    "lean_name": lean_name,
+                    "controlled_source_file": source_relative,
+                    "controlled_source_line": source_line,
+                    "kind": "declaration",
+                    "ok": False,
+                    "error": str(error),
+                }
+            )
+    return checks
+
+
+def _line_column(text: str, offset: int) -> tuple[int, int]:
+    line = text.count("\n", 0, offset) + 1
+    previous_newline = text.rfind("\n", 0, offset)
+    return line, offset - previous_newline
+
+
+def _validation_surface(
+    target_theorem: str,
+    required_declarations: Sequence[str],
+    controlled_sorries: Sequence[Mapping[str, Any]],
+) -> tuple[list[str], list[dict[str, Any]], list[str]]:
+    """Normalize the singular/T4 declaration identity without weakening singular tasks."""
+
+    required = list(required_declarations)
+    holes = [dict(value) for value in controlled_sorries]
+    if not required and not holes:
+        return [], [], [target_theorem]
+    if not required:
+        raise BenchmarkToolError("T4 validation requires ordered required_declarations")
+    if len(required) != len(set(required)):
+        raise BenchmarkToolError("T4 required_declarations must be unique")
+    for lean_name in required:
+        if not isinstance(lean_name, str) or not LEAN_NAME_RE.fullmatch(lean_name):
+            raise BenchmarkToolError(f"invalid T4 required declaration: {lean_name!r}")
+    expected_fields = {
+        "placeholder_order",
+        "placeholder_id",
+        "declaration_id",
+        "lean_name",
+        "marker",
+        "line",
+        "column",
+    }
+    proof_declarations: list[str] = []
+    previous_required_index = -1
+    locations: set[tuple[int, int]] = set()
+    placeholder_ids: set[str] = set()
+    for index, hole in enumerate(holes, start=1):
+        if set(hole) != expected_fields:
+            raise BenchmarkToolError(
+                f"controlled_sorries[{index - 1}] has the wrong fields"
+            )
+        if hole.get("placeholder_order") != index:
+            raise BenchmarkToolError(
+                f"controlled_sorries[{index - 1}].placeholder_order must be {index}"
+            )
+        for field_name in ("placeholder_id", "declaration_id"):
+            value = hole.get(field_name)
+            if not isinstance(value, str) or not value:
+                raise BenchmarkToolError(
+                    f"controlled_sorries[{index - 1}].{field_name} is invalid"
+                )
+        placeholder_id = str(hole["placeholder_id"])
+        if placeholder_id in placeholder_ids:
+            raise BenchmarkToolError("controlled_sorries repeats a placeholder_id")
+        placeholder_ids.add(placeholder_id)
+        lean_name = hole.get("lean_name")
+        if not isinstance(lean_name, str) or not LEAN_NAME_RE.fullmatch(lean_name):
+            raise BenchmarkToolError(
+                f"controlled_sorries[{index - 1}].lean_name is invalid"
+            )
+        if lean_name in proof_declarations:
+            raise BenchmarkToolError("controlled_sorries repeats a proof declaration")
+        try:
+            required_index = required.index(lean_name)
+        except ValueError as error:
+            raise BenchmarkToolError(
+                "controlled_sorries names a declaration outside required_declarations"
+            ) from error
+        if required_index <= previous_required_index:
+            raise BenchmarkToolError(
+                "controlled_sorries must follow required_declarations order"
+            )
+        previous_required_index = required_index
+        proof_declarations.append(lean_name)
+        marker = hole.get("marker")
+        if marker != f"-- PROOF_START {placeholder_id}":
+            raise BenchmarkToolError(
+                f"controlled_sorries[{index - 1}].marker does not match placeholder_id"
+            )
+        line = hole.get("line")
+        column = hole.get("column")
+        if (
+            not isinstance(line, int)
+            or isinstance(line, bool)
+            or line <= 0
+            or not isinstance(column, int)
+            or isinstance(column, bool)
+            or column <= 0
+        ):
+            raise BenchmarkToolError(
+                f"controlled_sorries[{index - 1}] has an invalid line/column"
+            )
+        location = (line, column)
+        if location in locations:
+            raise BenchmarkToolError("controlled_sorries repeats a source location")
+        locations.add(location)
+    if not proof_declarations:
+        raise BenchmarkToolError("T4 execution requires at least one controlled proof hole")
+    if target_theorem != proof_declarations[0]:
+        raise BenchmarkToolError(
+            "T4 target_theorem compatibility value must be the first controlled proof declaration"
+        )
+    return required, holes, proof_declarations
+
+
+def check_controlled_proof_holes(
+    submission_text: str,
+    canonical_text: str,
+    controlled_sorries: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Authenticate the canonical holes and require the candidate to discharge exactly them."""
+
+    expected_markers = [str(hole["marker"]) for hole in controlled_sorries]
+    canonical_markers = [
+        match.group(0).strip() for match in PROOF_MARKER_RE.finditer(canonical_text)
+    ]
+    submitted_markers = [
+        match.group(0).strip() for match in PROOF_MARKER_RE.finditer(submission_text)
+    ]
+    errors: list[str] = []
+    if canonical_markers != expected_markers:
+        errors.append("canonical PROOF_START markers do not match controlled_sorries")
+    if submitted_markers != expected_markers:
+        errors.append("submission PROOF_START markers are missing, reordered, or extra")
+
+    canonical_sanitized = sanitize_lean(canonical_text, erase_strings=True)
+    submitted_sanitized = sanitize_lean(submission_text, erase_strings=True)
+    canonical_sorry_offsets = [
+        match.start() for match in re.finditer(r"\bsorry\b", canonical_sanitized)
+    ]
+    submitted_sorry_offsets = [
+        match.start() for match in re.finditer(r"\bsorry\b", submitted_sanitized)
+    ]
+    if len(canonical_sorry_offsets) != len(controlled_sorries):
+        errors.append("canonical sorry count does not match controlled_sorries")
+    if submitted_sorry_offsets:
+        errors.append("submission retains or adds a sorry hole")
+
+    hole_checks: list[dict[str, Any]] = []
+    for hole in controlled_sorries:
+        lean_name = str(hole["lean_name"])
+        marker = str(hole["marker"])
+        check: dict[str, Any] = {"lean_name": lean_name, "marker": marker, "ok": False}
+        try:
+            _, canonical_start, canonical_end = _declaration_bounds(canonical_text, lean_name)
+            _, submitted_start, submitted_end = _declaration_bounds(submission_text, lean_name)
+            canonical_positions = [
+                match.start()
+                for match in re.finditer(re.escape(marker), canonical_text)
+                if canonical_start <= match.start() < canonical_end
+            ]
+            submitted_positions = [
+                match.start()
+                for match in re.finditer(re.escape(marker), submission_text)
+                if submitted_start <= match.start() < submitted_end
+            ]
+            if len(canonical_positions) != 1 or len(submitted_positions) != 1:
+                raise BenchmarkToolError(
+                    "marker must occur exactly once inside its controlled declaration"
+                )
+            canonical_marker = canonical_positions[0]
+            submitted_marker = submitted_positions[0]
+            canonical_holes = [
+                offset
+                for offset in canonical_sorry_offsets
+                if canonical_start <= offset < canonical_end
+            ]
+            if len(canonical_holes) != 1 or canonical_holes[0] <= canonical_marker:
+                raise BenchmarkToolError(
+                    "canonical declaration must contain exactly one sorry after its marker"
+                )
+            marker_location = _line_column(canonical_text, canonical_marker)
+            sorry_location = _line_column(canonical_text, canonical_holes[0])
+            recorded_location = (int(hole["line"]), int(hole["column"]))
+            if recorded_location not in (marker_location, sorry_location):
+                raise BenchmarkToolError(
+                    "controlled_sorries line/column does not locate its marker or sorry"
+                )
+            canonical_prefix = re.sub(
+                r"\s+",
+                " ",
+                sanitize_lean(
+                    canonical_text[canonical_start:canonical_marker], erase_strings=True
+                ),
+            ).strip()
+            submitted_prefix = re.sub(
+                r"\s+",
+                " ",
+                sanitize_lean(
+                    submission_text[submitted_start:submitted_marker], erase_strings=True
+                ),
+            ).strip()
+            if submitted_prefix != canonical_prefix:
+                raise BenchmarkToolError(
+                    "submission changed controlled declaration text before PROOF_START"
+                )
+            check.update(
+                ok=True,
+                marker_location={"line": marker_location[0], "column": marker_location[1]},
+                sorry_location={"line": sorry_location[0], "column": sorry_location[1]},
+            )
+        except BenchmarkToolError as error:
+            check["error"] = str(error)
+            errors.append(f"{lean_name}: {error}")
+        hole_checks.append(check)
+    return {
+        "ok": not errors,
+        "expected_markers": expected_markers,
+        "canonical_markers": canonical_markers,
+        "submitted_markers": submitted_markers,
+        "canonical_sorry_count": len(canonical_sorry_offsets),
+        "submitted_sorry_count": len(submitted_sorry_offsets),
+        "holes": hole_checks,
+        "errors": errors,
+    }
+
+
+def trusted_expected_source(
+    canonical_text: str,
+    checked_module: str,
+    required_declarations: Sequence[str],
+    proof_declarations: Sequence[str],
+    expected_names: Mapping[str, str],
+) -> str:
+    """Rename the complete frozen corpus without importing candidate syntax."""
+
+    del checked_module, required_declarations
+    sanitized = sanitize_lean(canonical_text, erase_strings=True)
+    edits: list[tuple[int, int, str]] = []
+    occupied: set[tuple[int, int]] = set()
+    for lean_name in proof_declarations:
+        match, _, _ = _declaration_bounds(canonical_text, lean_name)
+        expected_name = expected_names[lean_name]
+        original_leaf = lean_name.rsplit(".", 1)[-1]
+        replacement_leaf = expected_name.rsplit(".", 1)[-1]
+        pattern = re.compile(
+            rf"(?<![A-Za-z0-9_']){re.escape(original_leaf)}(?![A-Za-z0-9_'])"
+        )
+        occurrences = list(pattern.finditer(sanitized))
+        if not any(
+            occurrence.start() == match.start("name")
+            and occurrence.end() == match.end("name")
+            for occurrence in occurrences
+        ):
+            raise BenchmarkToolError(
+                f"cannot rename trusted declaration {lean_name} independently"
+            )
+        for occurrence in occurrences:
+            span = (occurrence.start(), occurrence.end())
+            if span in occupied:
+                raise BenchmarkToolError("overlapping trusted declaration renames")
+            occupied.add(span)
+            edits.append((span[0], span[1], replacement_leaf))
+    rendered = canonical_text
+    for start_offset, end_offset, replacement in sorted(edits, reverse=True):
+        rendered = (
+            rendered[:start_offset] + replacement + rendered[end_offset:]
+        )
+    return rendered
+
+
+def parse_dependency_audits(output: str) -> list[dict[str, Any]]:
+    """Parse the repeated format-2 blocks emitted by a plural trusted audit."""
+
+    lines = output.splitlines()
+    starts = [index for index, line in enumerate(lines) if line == "format\t2"]
+    if not starts:
+        return [parse_dependency_audit(output)]
+    audits: list[dict[str, Any]] = []
+    prefix = lines[: starts[0]]
+    for position, start in enumerate(starts):
+        end = starts[position + 1] if position + 1 < len(starts) else len(lines)
+        block_lines = lines[start:end]
+        if position == 0 and any(line.strip() for line in prefix):
+            block_lines = prefix + block_lines
+        audits.append(parse_dependency_audit("\n".join(block_lines)))
+    return audits
+
 def classify_lean_failure(output: str) -> str:
     lowered = output.lower()
     syntax_or_elab_markers = (
@@ -584,6 +1029,10 @@ class ValidationConfig:
     target_theorem: str
     compile_command: Sequence[str]
     condition: str
+    required_declarations: Sequence[str] = field(default_factory=tuple)
+    required_declaration_sources: Sequence[str] = field(default_factory=tuple)
+    required_declaration_source_lines: Sequence[int] = field(default_factory=tuple)
+    controlled_sorries: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
     controlled_manifest: Path | None = None
     controlled_root_relative: str = "."
     local_source_relatives: Sequence[str] = field(default_factory=tuple)
@@ -603,6 +1052,40 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
     if config.condition not in ("N", "L"):
         raise BenchmarkToolError("condition must be N or L")
     _simple_target_name(config.target_theorem)
+    required_declarations, controlled_sorries, proof_declarations = _validation_surface(
+        config.target_theorem,
+        config.required_declarations,
+        config.controlled_sorries,
+    )
+    plural = bool(required_declarations)
+    required_declaration_sources = list(config.required_declaration_sources)
+    required_declaration_source_lines = list(
+        config.required_declaration_source_lines
+    )
+    if plural:
+        if len(required_declaration_sources) != len(required_declarations):
+            raise BenchmarkToolError(
+                "T4 validation requires one controlled source file per required declaration"
+            )
+        for source_relative in required_declaration_sources:
+            if (
+                not isinstance(source_relative, str)
+                or not source_relative
+                or Path(source_relative).is_absolute()
+                or Path(source_relative).as_posix() != source_relative
+            ):
+                raise BenchmarkToolError(
+                    f"invalid T4 controlled declaration source: {source_relative!r}"
+                )
+        if len(required_declaration_source_lines) != len(required_declarations):
+            raise BenchmarkToolError(
+                "T4 validation requires one controlled source line per required declaration"
+            )
+        if any(
+            type(source_line) is not int or source_line <= 0
+            for source_line in required_declaration_source_lines
+        ):
+            raise BenchmarkToolError("invalid T4 controlled declaration source line")
     submission = resolve_below(workspace, config.submission_relative)
     canonical = resolve_below(workspace, config.canonical_relative)
     controlled_root = (
@@ -637,6 +1120,19 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
         "library_declarations": [],
         "library_audit_complete": config.condition == "N",
     }
+    if plural:
+        result.update(
+            required_declarations=required_declarations,
+            required_declaration_sources=required_declaration_sources,
+            required_declaration_source_lines=required_declaration_source_lines,
+            controlled_sorries=controlled_sorries,
+            proof_declarations=proof_declarations,
+            statement_checks=None,
+            proof_hole_check=None,
+            semantic_statement_checks=None,
+            dependency_audits=None,
+            audit_pairs_side_channel=None,
+        )
 
     if not submission.is_file():
         result.update(failure_code="NO_SUBMISSION", note="submission file is absent")
@@ -660,6 +1156,77 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
                 note="controlled files changed before validation",
             )
             return result
+
+    controlled_source_texts: dict[str, str] = {}
+    canonical_source_relative = ""
+    if plural:
+        if manifest is None:
+            result.update(
+                failure_code="SYSTEM_ERROR",
+                note="T4 declaration ownership requires a controlled manifest",
+            )
+            return result
+        try:
+            canonical_source_relative = canonical.relative_to(controlled_root).as_posix()
+        except ValueError:
+            result.update(
+                failure_code="SYSTEM_ERROR",
+                note="T4 canonical target is outside the controlled root",
+            )
+            return result
+        manifest_paths = {
+            str(record.get("path"))
+            for record in manifest.get("files", [])
+            if isinstance(record, Mapping) and isinstance(record.get("path"), str)
+        }
+        source_bindings: list[dict[str, Any]] = []
+        proof_set = set(proof_declarations)
+        for lean_name, source_relative, source_line in zip(
+            required_declarations,
+            required_declaration_sources,
+            required_declaration_source_lines,
+            strict=True,
+        ):
+            if lean_name in proof_set and source_relative != canonical_source_relative:
+                result.update(
+                    failure_code="SYSTEM_ERROR",
+                    note=(
+                        f"T4 proof declaration {lean_name} is not owned by the "
+                        "canonical target"
+                    ),
+                )
+                return result
+            if source_relative not in manifest_paths:
+                result.update(
+                    failure_code="SYSTEM_ERROR",
+                    note=(
+                        f"T4 controlled source {source_relative} is absent from the "
+                        "controlled manifest"
+                    ),
+                )
+                return result
+            try:
+                source_path = resolve_below(controlled_root, source_relative)
+                if not source_path.is_file() or source_path.is_symlink():
+                    raise BenchmarkToolError("source is not a regular file")
+                if source_relative not in controlled_source_texts:
+                    controlled_source_texts[source_relative] = source_path.read_text(
+                        encoding="utf-8"
+                    )
+            except (BenchmarkToolError, OSError, UnicodeDecodeError) as error:
+                result.update(
+                    failure_code="SYSTEM_ERROR",
+                    note=f"cannot authenticate T4 controlled source {source_relative}: {error}",
+                )
+                return result
+            source_bindings.append(
+                {
+                    "lean_name": lean_name,
+                    "controlled_source_file": source_relative,
+                    "controlled_source_line": source_line,
+                }
+            )
+        result["controlled_source_bindings"] = source_bindings
 
     protected_modules = controlled_module_identities(controlled_root, manifest)
     candidate_inventory = inventory_candidate_lean(workspace, controlled_root, manifest)
@@ -744,11 +1311,54 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
         )
         return result
 
-    statement_check = compare_target_signature(submission, canonical, config.target_theorem)
-    result["statement_check"] = statement_check
-    if not statement_check["ok"]:
-        result.update(failure_code="RULE_VIOLATION", note="target theorem statement changed")
-        return result
+    if plural:
+        try:
+            submission_text = submission.read_text(encoding="utf-8")
+            canonical_text = canonical.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as error:
+            result.update(
+                failure_code="SYSTEM_ERROR",
+                note=f"cannot read T4 controlled declaration surface: {error}",
+            )
+            return result
+        statement_checks = compare_required_surfaces(
+            submission_text,
+            canonical_text,
+            required_declarations,
+            proof_declarations,
+            required_declaration_sources,
+            required_declaration_source_lines,
+            controlled_source_texts,
+            canonical_source_relative,
+        )
+        result["statement_checks"] = statement_checks
+        result["statement_check"] = statement_checks[0] if statement_checks else None
+        if any(check.get("ok") is not True for check in statement_checks):
+            result.update(
+                failure_code="RULE_VIOLATION",
+                note="a controlled T4 declaration changed",
+            )
+            return result
+        proof_hole_check = check_controlled_proof_holes(
+            submission_text, canonical_text, controlled_sorries
+        )
+        result["proof_hole_check"] = proof_hole_check
+        if proof_hole_check["ok"] is not True:
+            result.update(
+                failure_code="RULE_VIOLATION",
+                note="T4 controlled proof holes are missing, changed, or not discharged",
+            )
+            return result
+    else:
+        statement_check = compare_target_signature(
+            submission, canonical, config.target_theorem
+        )
+        result["statement_check"] = statement_check
+        if not statement_check["ok"]:
+            result.update(
+                failure_code="RULE_VIOLATION", note="target theorem statement changed"
+            )
+            return result
 
     hidden_parent = config.hidden_parent.resolve() if config.hidden_parent else None
     if hidden_parent:
@@ -765,12 +1375,25 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
     if checked_module is None:
         raise BenchmarkToolError("generated checked module name is invalid")
     expected_simple = f"highamBenchExpected_{generated_id}"
-    target_prefix = config.target_theorem.rsplit(".", 1)
-    expected_theorem = (
-        f"{target_prefix[0]}.{expected_simple}"
-        if len(target_prefix) == 2
-        else expected_simple
-    )
+    if plural:
+        expected_names: dict[str, str] = {}
+        for index, lean_name in enumerate(proof_declarations, start=1):
+            target_prefix = lean_name.rsplit(".", 1)
+            expected_leaf = f"{expected_simple}_{index}"
+            expected_names[lean_name] = (
+                f"{target_prefix[0]}.{expected_leaf}"
+                if len(target_prefix) == 2
+                else expected_leaf
+            )
+        expected_theorem = expected_names[proof_declarations[0]]
+    else:
+        target_prefix = config.target_theorem.rsplit(".", 1)
+        expected_theorem = (
+            f"{target_prefix[0]}.{expected_simple}"
+            if len(target_prefix) == 2
+            else expected_simple
+        )
+        expected_names = {config.target_theorem: expected_theorem}
     expected_relative = str(
         Path(config.submission_relative).with_name(
             f"HighamBenchExpected_{generated_id}.lean"
@@ -813,15 +1436,17 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
         local_modules_file = (
             hidden_workspace / f"{LOCAL_MODULES_FILENAME}-{generated_id}"
         )
+        audit_pairs_file = (
+            hidden_workspace / f"{AUDIT_PAIRS_FILENAME}-{generated_id}"
+        )
         local_modules_payload = "".join(
             f"{module}\n" for module in sorted(local_modules)
         ).encode("utf-8")
         source_bytes = hidden_submission.read_bytes()
-        checks = (
-            f"\n\n-- Added only in the hidden validator copy.\n"
-            f"#check {config.target_theorem}\n"
-            f"#print axioms {config.target_theorem}\n"
-        ).encode("utf-8")
+        check_lines = ["", "", "-- Added only in the hidden validator copy."]
+        for lean_name in proof_declarations:
+            check_lines.extend((f"#check {lean_name}", f"#print axioms {lean_name}"))
+        checks = ("\n".join(check_lines) + "\n").encode("utf-8")
         checked_submission.write_bytes(source_bytes + checks)
 
         values: dict[str, str | Path | int] = {
@@ -892,12 +1517,20 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
         if expected_submission.exists():
             raise BenchmarkToolError("generated expected statement path already exists")
         canonical_text = hidden_canonical.read_text(encoding="utf-8")
-        expected_submission.write_text(
-            renamed_canonical_source(
+        expected_source = (
+            trusted_expected_source(
+                canonical_text,
+                checked_module,
+                required_declarations,
+                proof_declarations,
+                expected_names,
+            )
+            if plural
+            else renamed_canonical_source(
                 canonical_text, config.target_theorem, expected_simple
-            ),
-            encoding="utf-8",
+            )
         )
+        expected_submission.write_text(expected_source, encoding="utf-8")
         expected_olean = expected_submission.with_suffix(".olean")
         expected_values = dict(values)
         expected_values.update(
@@ -951,17 +1584,31 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
             )
             return result
 
-        # This trusted side channel is created after all candidate elaboration.
-        # The audit imports the compiler-produced olean and never recompiles the
-        # candidate source, so candidate stdout or `run_cmd` code cannot forge
-        # helper-module ownership rows.
+        # These trusted side channels are created after all candidate elaboration.
+        # The audit imports compiler-produced oleans and never recompiles candidate
+        # source, so candidate stdout or `run_cmd` code cannot forge ownership rows
+        # or the ordered candidate/expected declaration pairs.
         local_modules_file.write_bytes(local_modules_payload)
+        audit_pairs_payload = b""
+        if plural:
+            audit_pairs_payload = (
+                "".join(
+                    f"map\t{lean_name}\t{expected_names[lean_name]}\n"
+                    for lean_name in proof_declarations
+                )
+                + "".join(
+                    f"proof\t{lean_name}\t{expected_names[lean_name]}\n"
+                    for lean_name in proof_declarations
+                )
+            ).encode("utf-8")
+            audit_pairs_file.write_bytes(audit_pairs_payload)
         values.update(
             {
                 "expected_submission": expected_submission,
                 "expected_olean": expected_olean,
                 "expected_module": expected_module,
                 "expected_theorem": expected_theorem,
+                "audit_pairs_file": audit_pairs_file,
             }
         )
         audit_command = render_command(config.audit_command, values)
@@ -974,19 +1621,35 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
         audit_result["output"] = audit_output
         audit_result["output_truncated"] = audit_truncated
         audit_result["display"] = command_display(audit_command)
-        side_channel_unchanged = (
+        local_side_channel_unchanged = (
             local_modules_file.is_file()
             and local_modules_file.read_bytes() == local_modules_payload
         )
         result["local_modules_side_channel"] = {
             "created_after_candidate_compilation": True,
             "candidate_recompiled_during_audit": False,
-            "unchanged_after_audit": side_channel_unchanged,
+            "unchanged_after_audit": local_side_channel_unchanged,
         }
-        if not side_channel_unchanged:
+        pairs_side_channel_unchanged = (
+            not plural
+            or (
+                audit_pairs_file.is_file()
+                and audit_pairs_file.read_bytes() == audit_pairs_payload
+            )
+        )
+        if plural:
+            result["audit_pairs_side_channel"] = {
+                "created_after_candidate_compilation": True,
+                "candidate_recompiled_during_audit": False,
+                "unchanged_after_audit": pairs_side_channel_unchanged,
+                "pair_count": len(proof_declarations),
+                "mapping_count": len(proof_declarations),
+                "controlled_source_binding_count": len(required_declarations),
+            }
+        if not local_side_channel_unchanged or not pairs_side_channel_unchanged:
             result.update(
                 failure_code="RULE_VIOLATION",
-                note="trusted local-module audit input changed during validation",
+                note="trusted semantic/dependency audit input changed during validation",
             )
             return result
 
@@ -1000,58 +1663,103 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
                 )
                 return result
 
-        parsed = parse_dependency_audit(audit_result["output"])
+        parsed_audits = (
+            parse_dependency_audits(audit_result["output"])
+            if plural
+            else [parse_dependency_audit(audit_result["output"])]
+        )
         expected_helper_modules = sorted(
             local_modules - ({submission_module} if submission_module else set())
         )
-        missing_helper_modules = sorted(
-            set(expected_helper_modules) - set(parsed["local_modules"])
-        )
-        parsed["expected_helper_modules"] = expected_helper_modules
-        parsed["missing_helper_modules"] = missing_helper_modules
-        audit_result["parsed"] = parsed
+        for parsed in parsed_audits:
+            missing_helper_modules = sorted(
+                set(expected_helper_modules) - set(parsed["local_modules"])
+            )
+            parsed["expected_helper_modules"] = expected_helper_modules
+            parsed["missing_helper_modules"] = missing_helper_modules
+
+        if plural:
+            audit_result["parsed"] = {"audits": parsed_audits}
+            result["dependency_audits"] = parsed_audits
+            result["semantic_statement_checks"] = [
+                parsed.get("type_check") for parsed in parsed_audits
+            ]
+            result["semantic_statement_check"] = (
+                result["semantic_statement_checks"][0]
+                if result["semantic_statement_checks"]
+                else None
+            )
+        else:
+            parsed = parsed_audits[0]
+            audit_result["parsed"] = parsed
+            result["semantic_statement_check"] = parsed.get("type_check")
         result["dependency_audit"] = audit_result
-        semantic = parsed.get("type_check")
-        result["semantic_statement_check"] = semantic
-        if isinstance(semantic, dict) and semantic.get("equal") is False:
-            result.update(
-                failure_code="RULE_VIOLATION",
-                note="target theorem text elaborated to a different Lean type",
-            )
-            return result
-        if (
-            not isinstance(semantic, dict)
-            or semantic.get("candidate") != config.target_theorem
-            or semantic.get("expected") != expected_theorem
-            or semantic.get("equal") is not True
-        ):
+
+        if plural and len(parsed_audits) != len(proof_declarations):
             result["library_audit_complete"] = False
             result.update(
                 failure_code="SYSTEM_ERROR",
-                note="trusted audit did not prove semantic equality with the frozen target",
+                note="trusted audit did not return one record per T4 proof declaration",
             )
             return result
-        if parsed["forbidden_dependencies"]:
-            result["library_audit_complete"] = False
-            result.update(
-                failure_code="RULE_VIOLATION",
-                note="dependency audit found a forbidden proof dependency",
+
+        expected_pairs = list(
+            zip(
+                proof_declarations,
+                [expected_names[name] for name in proof_declarations],
+                strict=True,
             )
-            return result
-        if expected_helper_modules and (
-            parsed["format_version"] != 2 or missing_helper_modules
+        )
+        if not plural:
+            expected_pairs = [(config.target_theorem, expected_theorem)]
+        for parsed, (candidate_name, expected_name) in zip(
+            parsed_audits, expected_pairs, strict=True
         ):
-            result["library_audit_complete"] = False
-            result.update(
-                failure_code="SYSTEM_ERROR",
-                note="dependency audit did not cover every candidate helper module",
-            )
-            return result
+            semantic = parsed.get("type_check")
+            if isinstance(semantic, dict) and semantic.get("equal") is False:
+                result.update(
+                    failure_code="RULE_VIOLATION",
+                    note=(
+                        "a T4 theorem text elaborated to a different Lean type"
+                        if plural
+                        else "target theorem text elaborated to a different Lean type"
+                    ),
+                )
+                return result
+            if (
+                not isinstance(semantic, dict)
+                or semantic.get("candidate") != candidate_name
+                or semantic.get("expected") != expected_name
+                or semantic.get("equal") is not True
+            ):
+                result["library_audit_complete"] = False
+                result.update(
+                    failure_code="SYSTEM_ERROR",
+                    note="trusted audit did not prove semantic equality with the frozen target",
+                )
+                return result
+            if parsed["forbidden_dependencies"]:
+                result["library_audit_complete"] = False
+                result.update(
+                    failure_code="RULE_VIOLATION",
+                    note="dependency audit found a forbidden proof dependency",
+                )
+                return result
+            if expected_helper_modules and (
+                parsed["format_version"] != 2 or parsed["missing_helper_modules"]
+            ):
+                result["library_audit_complete"] = False
+                result.update(
+                    failure_code="SYSTEM_ERROR",
+                    note="dependency audit did not cover every candidate helper module",
+                )
+                return result
+
         if (
             audit_result["system_error"]
             or audit_result["timed_out"]
             or audit_result["exit_code"] != 0
-            or not parsed["ok"]
+            or any(parsed["ok"] is not True for parsed in parsed_audits)
         ):
             result["library_audit_complete"] = False
             result.update(
@@ -1059,9 +1767,20 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
                 note="trusted semantic/dependency audit was incomplete",
             )
             return result
+
+        library_by_identity: dict[tuple[str, str], dict[str, Any]] = {}
+        for parsed in parsed_audits:
+            for declaration in parsed["library_declarations"]:
+                identity = (declaration["name"], declaration["module"])
+                previous = library_by_identity.get(identity)
+                if previous is None or declaration["distance"] < previous["distance"]:
+                    library_by_identity[identity] = declaration
         result["library_audit_complete"] = True
-        result["library_declarations"] = parsed["library_declarations"]
-        result["library_use"] = bool(parsed["library_declarations"])
+        result["library_declarations"] = sorted(
+            library_by_identity.values(),
+            key=lambda item: (item["distance"], item["name"], item["module"]),
+        )
+        result["library_use"] = bool(result["library_declarations"])
 
         if config.condition == "N" and result["library_declarations"]:
             result.update(
@@ -1091,6 +1810,13 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--submission-relative", required=True)
     parser.add_argument("--canonical-relative", required=True)
     parser.add_argument("--target-theorem", required=True)
+    parser.add_argument("--required-declaration", action="append", default=[])
+    parser.add_argument(
+        "--controlled-sorry-json",
+        action="append",
+        default=[],
+        help="one canonical JSON controlled_sorries object; repeat in placeholder order",
+    )
     parser.add_argument(
         "--compile-command-json",
         required=True,
@@ -1132,6 +1858,19 @@ def main() -> int:
         audit_command = parse_command_json(
             args.audit_command_json, option="--audit-command-json"
         )
+        controlled_sorries: list[Mapping[str, Any]] = []
+        for index, encoded in enumerate(args.controlled_sorry_json):
+            try:
+                value = json.loads(encoded)
+            except json.JSONDecodeError as error:
+                raise BenchmarkToolError(
+                    f"--controlled-sorry-json entry {index + 1} is invalid JSON: {error}"
+                ) from error
+            if not isinstance(value, dict):
+                raise BenchmarkToolError(
+                    f"--controlled-sorry-json entry {index + 1} must be an object"
+                )
+            controlled_sorries.append(value)
         result = validate(
             ValidationConfig(
                 workspace=args.workspace,
@@ -1140,6 +1879,8 @@ def main() -> int:
                 target_theorem=args.target_theorem,
                 compile_command=compile_command,
                 condition=args.condition,
+                required_declarations=args.required_declaration,
+                controlled_sorries=controlled_sorries,
                 controlled_manifest=args.controlled_manifest,
                 controlled_root_relative=args.controlled_root_relative,
                 local_source_relatives=args.local_source_relative,

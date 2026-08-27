@@ -5,14 +5,14 @@ access to the NumStability Lean library helps an agent finish fixed Lean proofs.
 A fixed proof means that the theorem statement is chosen before a run and the
 agent may change only the proof.
 
-The current corpus contains 60 tasks drawn from papers P01--P20, with three
-fixed tasks per paper. The current snapshot is measurement-ready: its complete
-private construction check passed all 120 N/L proofs, and two fresh-context
-Codex review records cover all 60 tasks. Exact-target novelty rejections are
-retained and are ignored only under the recorded private-measurement exception;
-they still block public release. Paper titles, source hashes, exact task
-locations, and the ordered task catalog are recorded in
-`metadata/manifest.json`.
+The working corpus contains 61 task packages drawn from papers P01--P20: the
+legacy T1--T3 selection contributes 60, and P01 additionally contains one T4
+whole-paper task. The current paper/task records are in construction phase, not
+measurement-ready. Earlier 60-task construction/review evidence belongs to the
+legacy T1--T3 snapshot and does not attest the current 61-task paper-local
+architecture. Current readiness is established independently by authenticated
+bundle, construction, and, where T4 applies, review receipts under
+`metadata/papers/P0X/`.
 
 ## Task types
 
@@ -23,6 +23,10 @@ specification:
 - T2, combine: join multiple existing results with additional reasoning.
 - T3, extend: prove a result requiring material not already supplied as a
   complete NumStability theorem.
+- T4, whole paper: represent the paper's complete precise-claim inventory with
+  designated proof holes, private N/L solvability, and faithfulness review.
+
+Every paper has T1--T3; P01 currently also has T4.
 
 The manifest and per-task records contain each selected result, source tag,
 paper location, fixed Lean statement, and task-specific rationale.
@@ -56,36 +60,62 @@ The local paper PDFs are recorded source copies and remain subject to their
 publishers' terms. The benchmark metadata records source locators and hashes and
 uses short paraphrases instead of copying long passages from the papers.
 
-## One construction workflow for every paper
+## Independent construction workflow for every paper
 
-P01 through P20 use the same task schema, source-tag rules,
-construction checker, run-order rule, report builder, and hash refresh command.
-No paper ID is special-cased by an operational script.
+Each paper is a complete construction shard. Its only custom Lean dependency is
+`shared/HighamBench/P0XDefinitions.lean`, which imports frozen upstream
+`Std`/`Mathlib` modules directly and contains every custom semantic declaration
+needed by that paper. Targets import exactly their own definition module. They
+do not import `Core`, `SemanticCore`, or another paper, and each trusted bundle
+contains only its own compiled definition module.
 
-The Lean setting is also uniform without making all papers share all
-definitions. `shared/HighamBench/Core.lean` contains only definitions used by
-more than one paper. `P01Definitions.lean` and `P02Definitions.lean` contain
-only their own paper's extra models and algorithms. Each controlled task
-contains the core plus its own paper file. Each trusted compiled bundle follows
-the same rule, so a P01 run cannot import the P02 module and a P02 run cannot
-import the P01 module.
+Distinct paper IDs can therefore be extracted, proved, reviewed, bundled, and
+registered concurrently. A paper session validates only its own task records
+and finishes by atomically publishing
+`metadata/papers/P0X/registration.json`; it never rewrites the central manifest,
+environment, run order, release list, or another paper's controlled manifest.
+Consumers discover valid receipts in paper-ID order and compose a deterministic
+catalog in memory, so no later merge or serialized refresh is required.
 
-Every paper and task in the measurement snapshot has
-`classification_frozen_before_runs` set to `true`. The selected results, task
-statements, contexts, and Lean targets are fixed and must not change during the
-experiment. Any controlled change requires a new snapshot and a complete rerun.
-
-After any controlled benchmark, metadata, or tool edit, refresh all derived
-metadata with:
+For T4, initialize the generic paper-local workspace before the first write.
+Its descriptor hash-binds the source PDF and the shared read-only schemas and
+pending templates under `schemas/` and `templates/T4/`:
 
 ```text
-python3 paper_bencmark/highambench/tools/refresh_snapshot.py \
-  --benchmark-root paper_bencmark/highambench --phase construction
+python3 paper_bencmark/highambench/tools/t4_workspace.py init \
+  --benchmark-root paper_bencmark/highambench \
+  --reference-root paper_bencmark/reference_papers --paper-id P0X
 ```
 
-Only after the complete corpus, proofs, and reviews are ready should the same
-command be run with `--phase measurement-ready`. The benchmark runner rejects
-construction-state tasks, so a partial corpus cannot be measured accidentally.
+After synchronizing the canonical external inventory with the embedded task
+view, freeze and check only that paper's T4 metadata:
+
+```text
+python3 paper_bencmark/highambench/tools/t4_metadata.py write-set \
+  --benchmark-root paper_bencmark/highambench --paper-id P0X
+python3 paper_bencmark/highambench/tools/t4_metadata.py freeze \
+  --benchmark-root paper_bencmark/highambench --paper-id P0X
+python3 paper_bencmark/highambench/tools/t4_metadata.py check \
+  --benchmark-root paper_bencmark/highambench --paper-id P0X
+```
+
+During construction, validate the paper shard and preview the finalizer's exact
+paper-local write set:
+
+```text
+python3 paper_bencmark/highambench/tools/task_tags.py \
+  --benchmark-root paper_bencmark/highambench --paper-id P0X
+python3 paper_bencmark/highambench/tools/finalize_paper.py \
+  --benchmark-root paper_bencmark/highambench \
+  --paper-id P0X --phase construction --dry-run
+```
+
+A construction-phase finalizer receipt is a draft until the paper-local
+construction checker authenticates the private N/L proofs. T4 additionally
+requires authenticated faithfulness-review evidence. Only then may the same
+paper be switched to measurement-ready; `classification_frozen_before_runs`
+remains `false` before that point. Corpus-wide JSON files are legacy
+compatibility views, not construction-session write targets.
 
 ## Two conditions
 
@@ -229,10 +259,11 @@ The adapter atomically writes the live cumulative ledger to a trusted result-log
 path outside the model's workspace. For an Ultra pass, the coordinator first
 waits until every descendant is quiescent, develops and checks the fixed
 `Candidate.lean`, and then emits one sole/final outer custom `exec` item with the
-exact 98-byte program
+exact 104-byte program
 `// @exec: {"yield_time_ms": 2400000}` followed by a newline and
-`await tools.submit_proof({candidate_path:"Candidate.lean"});` followed by a
-newline. App-server starts
+`text(await tools.submit_proof({candidate_path:"Candidate.lean"}));` followed by
+a newline. The `text` wrapper exposes a rejected inner call to the model so it
+can repair and retry. App-server starts
 the nested root-only `submit_proof` dynamic call while that outer exec remains
 unresolved. The adapter snapshots the candidate bytes at the inner call and
 authenticates both the outer and inner identities, their ordering, the run nonce,
@@ -280,6 +311,43 @@ windows and the 1,800-second measured interval, an untouched N/L pair requires
 5,418 seconds including the separate 600-second general-overhead guard. The
 matrix stops before starting the pair when the enclosing Slurm allocation has
 less time remaining.
+
+The private P01 completion campaign temporarily uses
+`same-authenticated-slurm-allocation-within-pair-v1`. Its launcher requests one
+node from the exact vetted set `watgpu108`, `watgpu508`, and `watgpu808`, then
+authenticates that the actual grant is a singleton allocation with one task,
+four CPUs, 32 GiB, and no GPU. Both conditions of a task/repetition pair must
+carry the same authenticated Slurm allocation descriptor; a half-finished pair
+cannot continue in a later allocation. Complete pairs may use different vetted
+nodes. Thus the within-pair L-minus-N contrasts are the principal timing
+estimand, while absolute and cross-pair elapsed times are descriptive under
+heterogeneous hardware. This is a private protocol deviation and is not a
+strict reference-PDF HighamBench 0.2 score.
+
+Campaign execution treats a whole N/L pair as the transactional sampling unit.
+Every attempt is created at a permanent path before provider work and is never
+moved. Only an attempt with both authenticated finals and one immutable pair
+commit enters the measured set. Deadline, terminal, setup-error, and interrupted
+attempts remain self-hashed and indexed for audit; an incomplete or failed pair
+is never completed piecemeal, and a later attempt reruns both N and L freshly.
+The final private report lists and authenticates every retained failed attempt,
+making this pair-level resampling amendment explicit rather than silently
+selecting successful conditions.
+
+The generic batch script intentionally has no `#SBATCH --nodelist` directive.
+Choose one currently available vetted node and pass exactly that singleton at
+submission time, for example:
+
+```text
+sbatch --nodelist=watgpu108 \
+  paper_bencmark/scratch_pad/run_highambench_p01_actual_ultra.sh
+```
+
+`watgpu508` or `watgpu808` may replace `watgpu108`; never pass all three names
+in one `--nodelist`, because Slurm may interpret the list as required hosts for
+the one-node job. If the four-hour allocation ends before all nine pair commits,
+submit the same command again on any one vetted node. The stable campaign index
+retains completed pairs and resumes only at an authenticated pair boundary.
 
 Every counted `POST /responses` request passes through the frozen loopback
 provider gate under `highambench-provider-token-gate-v6`. The gate authenticates
@@ -382,12 +450,13 @@ measurement exact. Its attestation states `scored=false`,
 `matrix_assignment=false`, `synthetic_input=true`, and
 `benchmark_task_bytes_used=false`. Both frozen
 canaries must independently reauthenticate the same READY/GO/RELEASED protocol
-and derive their timing deadlines from RELEASED. Both frozen
-descriptors currently remain `replacement_required`, so matrix startup fails
-closed.
+and derive their timing deadlines from RELEASED. Matrix startup fails closed
+unless both frozen descriptors have status `passed` and their evidence
+reauthenticates.
 
-Run `tools/run_ultra_orchestration_canary.py` first with the same frozen host,
-binary, authentication, toolchain, and mount arguments used by `run_matrix.py`.
+Run `tools/run_ultra_orchestration_canary.py` first with a host admitted by the
+frozen hardware policy and the same binary, authentication, toolchain, and mount
+arguments used by `run_matrix.py`.
 Explicitly promote its generated `ultra_orchestration_canary_attestation.json`
 with `tools/promote_live_canary.py --ultra-orchestration-attestation ...`; mere
 file presence never changes a descriptor to `passed`. Next run
@@ -398,6 +467,15 @@ artifact, updates only the named evidence/descriptors and frozen hashes, and
 does not rewrite task, target, context, or shared files. This repository and all
 resulting measurements remain private pre-publication work; nothing is
 authorized for public release yet.
+
+The canaries attest the frozen orchestration, accounting, and token-control
+protocol rather than benchmark performance, so the P01 launcher does not keep a
+per-node canary cache. A passed promoted descriptor is reauthenticated on every
+allocation. Each scored run separately records and authenticates its actual
+provider-transport evidence, and the pair-local allocation binding prevents an
+N/L pair from crossing hardware or node-local transport fingerprints. A frozen
+software/protocol change still marks the descriptors `replacement_required` and
+requires new live canaries before any scored pair.
 
 ## Protocol-governance disclosure
 
@@ -413,6 +491,13 @@ gate, configuration, and verification rules are applied to N and L, so the
 paired comparison remains symmetric, but results must be described as produced
 by this explicitly amended HighamBench-derived protocol.
 
+For the private P01 completion campaign, hardware equality is also relaxed from
+one host class for the whole result root to one exact authenticated allocation
+per N/L pair. Different complete pairs may run on different members of the
+three-node vetted set. Reports must expose the allocation and host provenance,
+must not pool absolute elapsed times as if the hardware were homogeneous, and
+must identify paired L-minus-N measurements as the primary timing comparison.
+
 ## Repetitions and run order
 
 Each task-condition pair is repeated three times. The IDs `rep-01`, `rep-02`,
@@ -421,9 +506,13 @@ claimed because this repository does not currently have proof that the selected
 agent backend accepts and obeys a seed. If a backend with real seed support is
 used later, its seed values must be added to the raw run record before evaluation.
 
-There are 360 planned runs:
+The legacy T1--T3 matrix records 360 planned runs:
 
-`60 tasks x 3 repetitions x 2 conditions = 360 runs`.
+`60 T1--T3 tasks x 3 repetitions x 2 conditions = 360 runs`.
+
+That historical run order does not include T4 and is not a readiness record for
+the current 61-package construction corpus. Any future measurement freeze must
+derive its matrix from authenticated paper registrations.
 
 The first condition in each pair was selected by the fixed SHA-256 rule recorded
 in `metadata/run_order.json`. SHA-256 is a repeatable text-to-number calculation.
@@ -445,16 +534,17 @@ report; the task statements and task contexts stay unchanged.
 - `../TASK_SOURCE_TAGS.md` defines the mandatory source-presentation tags for
   every task. `../AGENTS.md` makes that policy persistent across Codex
   sessions, and `tools/task_tags.py` checks every current task record.
-- `tools/refresh_snapshot.py` validates the corpus and regenerates its derived
-  metadata: each task's controlled files and hashes, condition order, corpus
-  counts, and snapshot and environment identifiers.
-- `shared/HighamBench/Core.lean` is the small cross-paper core.
-  `shared/HighamBench/P*Definitions.lean` files add only one paper's models and
-  algorithms. Manifest scopes and separate compiled bundles keep them isolated.
+- `tools/finalize_paper.py` validates and atomically registers one independent
+  paper; `tools/paper_registry.py --discover` composes receipts in memory.
+  `tools/refresh_snapshot.py` is retained only as a legacy corpus-view exporter.
+- `shared/HighamBench/P*Definitions.lean` files are self-contained custom
+  semantic surfaces with direct upstream imports. `Core.lean` and
+  `SemanticCore.lean` are not controlled dependencies of any paper.
 - `IMPLEMENTATION_PLAN.md` explains the construction decisions and the checks
   required before measured runs.
-- `metadata/manifest.json` records all 20 papers, their source hashes, the
-  specification hash, all 60 tasks, and their exact source locations.
+- `metadata/manifest.json` is the legacy compatibility view of all 20 papers,
+  their source hashes, the specification hash, the current 61 task packages,
+  and their exact source locations. Paper extraction does not write it.
 - `metadata/config.json` freezes the environment and run limits.
 - `metadata/run_order.json` fixes the order of N and L for every paired
   repetition.
@@ -463,15 +553,12 @@ report; the task statements and task contexts stay unchanged.
   records must be regenerated for every task before measurement.
 
 The review files distinguish completed checks from pending or rejected checks;
-pending and rejected checks are not rewritten as passes. All 60 public target
-skeletons have paper-scoped source and compiled bundles, and
-`metadata/evidence/construction_validation_full_current.json` records 120/120
-successful private N/L construction checks, including construction proofs for
-P02. Two fresh-context Codex reviews remain part of the frozen evidence. Their
-exact-target novelty rejections for the union of thirteen T1 tasks are ignored
-only by `private_measurement_review_override` for this private, pre-publication
-measurement. Source-fidelity defects are not ignored. The complete 360-run
-measured matrix is still required before the final report can be built.
+pending and rejected checks are not rewritten as passes. The former 60-task
+T1--T3 snapshot recorded 120/120 private N/L checks and two fresh-context review
+passes, but those shared-core-era hashes do not attest the current paper-local
+files or P01 T4. Preserve that evidence as historical. Current construction and
+T4 review acceptance must be regenerated per paper and authenticated by its
+registration receipt before any new measurement freeze.
 
 ## Frozen source versions
 
@@ -486,10 +573,11 @@ measured matrix is still required before the final report can be built.
 
 ## What a result may say
 
-Once all internal freeze and measurement gates pass, this experiment may show
-whether library access
-changed proof success, time, token use, or actual library use for these sixty
-fixed tasks and one fixed agent setup. It does not test translation from
-English into Lean or human proof development. Uncertainty intervals resample
-the twenty whole papers as clusters; they must not be presented as certainty
-beyond this corpus and setup.
+For a future authenticated measurement-ready freeze, the experiment may show
+whether library access changed proof success, time, token use, or actual library
+use for its precisely registered tasks and one fixed agent setup. The historical
+360-run statement applies only to the 60 T1--T3 tasks. It does not test human
+proof development, and T4 construction additionally includes a separately
+reviewed paper-to-Lean translation stage. Uncertainty intervals must respect the
+registered paper clusters and must not be presented as certainty beyond that
+corpus and setup.

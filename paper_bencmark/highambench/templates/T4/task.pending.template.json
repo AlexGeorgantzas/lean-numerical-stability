@@ -1,0 +1,231 @@
+{
+  "schema_version": "highambench-task-0.4",
+  "task_id": "__PAPER_ID__-T4",
+  "paper_id": "__PAPER_ID__",
+  "tier": "T4",
+  "classification_frozen_before_runs": false,
+  "paper_source": {
+    "local_path": "__SOURCE_PDF_PATH__",
+    "sha256": "__SOURCE_PDF_SHA256__"
+  },
+  "context_file": "paper_bencmark/highambench/tasks/__PAPER_ID__/T4/context.md",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "source_inventory_file": "paper_bencmark/highambench/tasks/__PAPER_ID__/T4/source_inventory.json",
+  "construction_inputs": {
+    "paper_definitions_sha256": "__PAPER_DEFINITIONS_SHA256__",
+    "target_sha256": "__TARGET_SHA256__",
+    "source_inventory_sha256": "__SOURCE_INVENTORY_SHA256__",
+    "review_campaign_status": "not_started"
+  },
+  "source_inventory": [
+    {
+      "source_order": 1,
+      "inventory_id": "__PAPER_ID__-I001",
+      "source_kind": "named_result",
+      "scope": "__PRIMARY_CLAIM_SCOPE__",
+      "source_locations": [
+        {
+          "pdf_page": "__PRIMARY_PDF_PAGE_INTEGER__",
+          "printed_page": "__PRIMARY_PRINTED_PAGE__",
+          "section": "__PRIMARY_SECTION__",
+          "anchor": "__PRIMARY_ANCHOR__"
+        }
+      ],
+      "disposition": "included",
+      "declaration_ids": [
+        "__PAPER_ID__-T4-D001"
+      ],
+      "exclusion_reason": null,
+      "assumptions": [
+        "__PRIMARY_ASSUMPTION__"
+      ],
+      "source_status": "assertive",
+      "source_tags": [
+        "THM"
+      ],
+      "author_label": "__AUTHOR_LABEL__",
+      "source_issue_notes": [],
+      "declaration_mappings": [
+        {
+          "declaration_id": "__PAPER_ID__-T4-D001",
+          "role": "primary_carrier",
+          "notes": "This declaration directly states the atomic source claim."
+        },
+        {
+          "declaration_id": "__PAPER_ID__-T4-D002",
+          "role": "semantic_context",
+          "notes": "This transparent definition is needed to interpret the carrier."
+        }
+      ],
+      "duplicate_of_source_item_ids": [],
+      "review_unit_id": "__PAPER_ID__-T4-U001",
+      "smallest_group_reason": "The single proof declaration is the smallest primary carrier."
+    },
+    {
+      "source_order": 2,
+      "inventory_id": "__PAPER_ID__-I002",
+      "source_kind": "algorithm",
+      "scope": "__ALGORITHM_SCOPE__",
+      "source_locations": [
+        {
+          "pdf_page": "__ALGORITHM_PDF_PAGE_INTEGER__",
+          "printed_page": "__ALGORITHM_PRINTED_PAGE__",
+          "section": "__ALGORITHM_SECTION__",
+          "anchor": "__ALGORITHM_ANCHOR__"
+        }
+      ],
+      "disposition": "included",
+      "declaration_ids": [
+        "__PAPER_ID__-T4-D002"
+      ],
+      "exclusion_reason": null,
+      "assumptions": [],
+      "source_status": "assertive",
+      "source_tags": [
+        "TXT"
+      ],
+      "author_label": null,
+      "source_issue_notes": [],
+      "declaration_mappings": [
+        {
+          "declaration_id": "__PAPER_ID__-T4-D002",
+          "role": "primary_carrier",
+          "notes": "This transparent declaration directly specifies the source algorithm."
+        }
+      ],
+      "duplicate_of_source_item_ids": [],
+      "review_unit_id": "__PAPER_ID__-T4-U002",
+      "smallest_group_reason": "The transparent algorithm declaration is the smallest primary carrier."
+    },
+    {
+      "source_order": 3,
+      "inventory_id": "__PAPER_ID__-I003",
+      "source_kind": "question",
+      "scope": "__EXCLUDED_SOURCE_SCOPE__",
+      "source_locations": [
+        {
+          "pdf_page": "__EXCLUDED_PDF_PAGE_INTEGER__",
+          "printed_page": "__EXCLUDED_PRINTED_PAGE__",
+          "section": "__EXCLUDED_SECTION__",
+          "anchor": "__EXCLUDED_ANCHOR__"
+        }
+      ],
+      "disposition": "excluded",
+      "declaration_ids": [],
+      "exclusion_reason": "__EXCLUSION_REASON__",
+      "assumptions": [],
+      "source_status": "explicitly_unresolved",
+      "source_tags": [
+        "TXT"
+      ],
+      "author_label": null,
+      "source_issue_notes": [
+        "__EXCLUSION_REASON__"
+      ],
+      "declaration_mappings": [],
+      "duplicate_of_source_item_ids": [],
+      "review_unit_id": null,
+      "smallest_group_reason": null
+    }
+  ],
+  "declarations": [
+    {
+      "declaration_order": 1,
+      "declaration_id": "__PAPER_ID__-T4-D001",
+      "lean_name": "HighamBench.__PAPER_ID_LOWER__.t4_primary_claim",
+      "controlled_source_file": "paper_bencmark/highambench/tasks/__PAPER_ID__/T4/Target.lean",
+      "controlled_source_line": "__PRIMARY_DECLARATION_LINE_INTEGER__",
+      "declaration_kind": "theorem",
+      "source_kind": "named_result",
+      "source_tags": [
+        "THM"
+      ],
+      "author_label": "__AUTHOR_LABEL__",
+      "result_form_tag": "__RESULT_FORM_TAG__",
+      "source_item_ids": [
+        "__PAPER_ID__-I001"
+      ],
+      "semantic_dependency_hashes": [
+        {
+          "declaration": "HighamBench.__PAPER_ID_LOWER__.t4_algorithm",
+          "sha256": "__ALGORITHM_DECLARATION_SHA256__"
+        }
+      ],
+      "placeholder_id": "__PAPER_ID__-T4-H001"
+    },
+    {
+      "declaration_order": 2,
+      "declaration_id": "__PAPER_ID__-T4-D002",
+      "lean_name": "HighamBench.__PAPER_ID_LOWER__.t4_algorithm",
+      "controlled_source_file": "paper_bencmark/highambench/shared/HighamBench/__PAPER_ID__Definitions.lean",
+      "controlled_source_line": "__ALGORITHM_DECLARATION_LINE_INTEGER__",
+      "declaration_kind": "definition",
+      "source_kind": "algorithm",
+      "source_tags": [
+        "TXT"
+      ],
+      "author_label": null,
+      "result_form_tag": null,
+      "source_item_ids": [
+        "__PAPER_ID__-I002"
+      ],
+      "semantic_dependency_hashes": [],
+      "placeholder_id": null
+    }
+  ],
+  "review_units": [
+    {
+      "review_unit_order": 1,
+      "review_unit_id": "__PAPER_ID__-T4-U001",
+      "source_item_ids": [
+        "__PAPER_ID__-I001"
+      ],
+      "smallest_group_reason": "The single proof declaration is the smallest primary carrier.",
+      "declaration_ids": [
+        "__PAPER_ID__-T4-D001"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "__PAPER_ID__-T4-R001",
+      "review_status": "pending"
+    },
+    {
+      "review_unit_order": 2,
+      "review_unit_id": "__PAPER_ID__-T4-U002",
+      "source_item_ids": [
+        "__PAPER_ID__-I002"
+      ],
+      "smallest_group_reason": "The transparent algorithm declaration is the smallest primary carrier.",
+      "declaration_ids": [
+        "__PAPER_ID__-T4-D002"
+      ],
+      "reused_declaration_ids": [],
+      "review_id": "__PAPER_ID__-T4-R002",
+      "review_status": "pending"
+    }
+  ],
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/__PAPER_ID__/T4/Target.lean",
+    "required_declarations": [
+      "HighamBench.__PAPER_ID_LOWER__.t4_primary_claim",
+      "HighamBench.__PAPER_ID_LOWER__.t4_algorithm"
+    ],
+    "controlled_sorries": [
+      {
+        "placeholder_order": 1,
+        "placeholder_id": "__PAPER_ID__-T4-H001",
+        "declaration_id": "__PAPER_ID__-T4-D001",
+        "lean_name": "HighamBench.__PAPER_ID_LOWER__.t4_primary_claim",
+        "marker": "-- PROOF_START __PAPER_ID__-T4-H001",
+        "line": "__PLACEHOLDER_LINE_INTEGER__",
+        "column": "__PLACEHOLDER_COLUMN_INTEGER__"
+      }
+    ],
+    "mode": "shared automatic plural T4 skeleton validator",
+    "reject_noncontrolled_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true
+  },
+  "faithfulness_reviews": []
+}

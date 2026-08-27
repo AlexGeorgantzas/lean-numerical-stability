@@ -85,6 +85,34 @@ class AnalysisTests(unittest.TestCase):
         self.assertFalse(overall_pair["bootstrap"]["informative"])
         self.assertIn("degenerate", overall_pair["bootstrap"]["note"])
 
+    def test_t4_is_a_separate_whole_paper_stratum(self) -> None:
+        records = self.records() + [
+            run("T4", "N", False, 900, 900),
+            run("T4", "L", True, 1, 1),
+        ]
+        result = analyze(
+            records,
+            include_unscored=False,
+            bootstrap_resamples=5,
+            bootstrap_seed=4,
+        )
+        overall_n = next(
+            row
+            for row in result["condition_summaries"]
+            if row["scope"] == "overall" and row["condition"] == "N"
+        )
+        whole_n = next(
+            row
+            for row in result["condition_summaries"]
+            if row["scope"] == "whole-paper" and row["condition"] == "N"
+        )
+        self.assertEqual(overall_n["scored_runs"], 3)
+        self.assertEqual(whole_n["scored_runs"], 1)
+        self.assertEqual(whole_n["passes"], 0)
+        scopes = {row["scope"] for row in result["paired_comparisons"]}
+        self.assertIn("whole-paper", scopes)
+        self.assertEqual(result["whole_paper_t4_coverage"], [])
+
     def test_writes_machine_and_latex_tables(self) -> None:
         result = analyze(
             self.records(),
@@ -101,6 +129,7 @@ class AnalysisTests(unittest.TestCase):
                 paired_rows = list(csv.DictReader(stream))
             self.assertTrue(condition_rows)
             self.assertTrue(paired_rows)
+            self.assertTrue((output / "t4_whole_paper_coverage.csv").is_file())
             latex = render_latex(result)
             self.assertIn("HighamBench result tables", latex)
             self.assertIn("Paired changes", latex)

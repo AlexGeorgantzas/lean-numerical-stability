@@ -4192,17 +4192,32 @@ def _safe_candidate_relative(value: Any) -> str:
     return candidate.as_posix()
 
 
+
+def _plural_validation_surface(
+    args: argparse.Namespace,
+) -> tuple[list[str], list[dict[str, Any]]]:
+    required = list(getattr(args, "required_declarations", ()) or ())
+    raw_holes = list(getattr(args, "controlled_sorries", ()) or ())
+    holes: list[dict[str, Any]] = []
+    for index, raw_hole in enumerate(raw_holes):
+        if not isinstance(raw_hole, Mapping):
+            raise BenchmarkToolError(
+                f"controlled_sorries[{index}] must be an object"
+            )
+        holes.append(dict(raw_hole))
+    return required, holes
+
 def _validator_contract(
     args: argparse.Namespace,
     *,
     compile_command: Sequence[str],
     audit_command: Sequence[str] | None,
 ) -> dict[str, Any]:
-    return {
+    required_declarations, controlled_sorries = _plural_validation_surface(args)
+    contract: dict[str, Any] = {
         "condition": args.condition,
         "submission_relative": args.submission_relative,
         "canonical_relative": args.canonical_relative,
-        "target_theorem": args.target_theorem,
         "compile_command": list(compile_command),
         "audit_command": list(audit_command) if audit_command is not None else None,
         "controlled_manifest_sha256": sha256_file(args.controlled_manifest),
@@ -4210,6 +4225,14 @@ def _validator_contract(
             args.reject_workspace_local_module_imports
         ),
     }
+    if required_declarations or controlled_sorries:
+        contract.update(
+            required_declarations=required_declarations,
+            controlled_sorries=controlled_sorries,
+        )
+    else:
+        contract["target_theorem"] = args.target_theorem
+    return contract
 
 
 def _validator_contract_sha256(
@@ -4268,6 +4291,8 @@ def _authenticate_validation_result(
     validator_contract_sha256: str,
     submission_request_sha256: str | None,
     submission_sequence: int | None,
+    required_declarations: Sequence[str] = (),
+    controlled_sorries: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     """Bind one accepted or rejected validation to the exact candidate bytes."""
 
@@ -4297,17 +4322,44 @@ def _authenticate_validation_result(
         )
     authenticated = dict(result)
     authenticated.pop("record_sha256", None)
-    authenticated["authentication"] = {
-        "schema_version": 1,
-        "run_id": run_id,
-        "task_id": task_id,
-        "candidate_sha256": candidate_sha256,
-        "target_theorem": target_theorem,
-        "controlled_manifest_sha256": controlled_manifest_sha256,
-        "validator_contract_sha256": validator_contract_sha256,
-        "submission_request_sha256": submission_request_sha256,
-        "submission_sequence": submission_sequence,
-    }
+    required = list(required_declarations)
+    holes = [dict(value) for value in controlled_sorries]
+    if required or holes:
+        if not required or not holes:
+            raise BenchmarkToolError(
+                "plural validation authentication requires declarations and controlled holes"
+            )
+        if (
+            authenticated.get("required_declarations") != required
+            or authenticated.get("controlled_sorries") != holes
+        ):
+            raise BenchmarkToolError(
+                "validator result does not match the plural controlled surface"
+            )
+        authenticated["authentication"] = {
+            "schema_version": 2,
+            "run_id": run_id,
+            "task_id": task_id,
+            "candidate_sha256": candidate_sha256,
+            "required_declarations": required,
+            "controlled_sorries": holes,
+            "controlled_manifest_sha256": controlled_manifest_sha256,
+            "validator_contract_sha256": validator_contract_sha256,
+            "submission_request_sha256": submission_request_sha256,
+            "submission_sequence": submission_sequence,
+        }
+    else:
+        authenticated["authentication"] = {
+            "schema_version": 1,
+            "run_id": run_id,
+            "task_id": task_id,
+            "candidate_sha256": candidate_sha256,
+            "target_theorem": target_theorem,
+            "controlled_manifest_sha256": controlled_manifest_sha256,
+            "validator_contract_sha256": validator_contract_sha256,
+            "submission_request_sha256": submission_request_sha256,
+            "submission_sequence": submission_sequence,
+        }
     payload = json.dumps(
         authenticated, sort_keys=True, separators=(",", ":"), ensure_ascii=False
     ).encode("utf-8")
@@ -6562,7 +6614,11 @@ def authenticate_provider_gate_artifact(
             or successor["request_metadata"] != metadata
             or successor["request_metadata"]["request_kind"] != "turn"
             or successor["appserver_delivery"]["kind"]
-            not in ("direct_raw_response", "superseded_by_collaboration_message")
+            not in (
+                "direct_raw_response",
+                "superseded_by_collaboration_message",
+                "suppressed_collaboration_wait",
+            )
             or successor["admitted_unix_ns"] <= call["commit_unix_ns"]
             or not eligible_successors
             or min(
@@ -6580,8 +6636,9 @@ def authenticate_provider_gate_artifact(
     for origin in superseded_calls:
         cursor = origin
         seen: set[str] = set()
-        while cursor["appserver_delivery"]["kind"] == (
-            "superseded_by_collaboration_message"
+        while cursor["appserver_delivery"]["kind"] in (
+            "superseded_by_collaboration_message",
+            "suppressed_collaboration_wait",
         ):
             if cursor["response_id"] in seen:
                 raise BenchmarkToolError("superseded provider chain has a cycle")
@@ -8963,6 +9020,8 @@ def make_validation_config(
         target_theorem=args.target_theorem,
         compile_command=compile_command,
         condition=args.condition,
+        required_declarations=_plural_validation_surface(args)[0],
+        controlled_sorries=_plural_validation_surface(args)[1],
         controlled_manifest=args.controlled_manifest,
         controlled_root_relative=args.task_dest,
         local_source_relatives=args.local_source_relative,
@@ -9143,9 +9202,9 @@ def classify_final_outcome(
     """Apply the specification's failure precedence to simultaneous evidence.
 
     A validated Ultra request counts as a submission even when Lean rejects it;
-    only an attempt with no such request and no final submission receives
-    ``NO_SUBMISSION``.  Failures before any useful work remain infrastructure
-    incidents rather than model outcomes.
+    only a cleanly ended attempt with no such request and no final submission
+    receives ``NO_SUBMISSION``.  Adapter/system failures remain
+    ``SYSTEM_ERROR`` incidents rather than agent omissions.
     """
 
     if timed_out:
@@ -9167,8 +9226,16 @@ def classify_final_outcome(
     validated_request_exists = bool(
         ultra_submission_attempted and validation_result is not None
     )
-    if not submission_present and not validated_request_exists:
-        return False, "NO_SUBMISSION", "agent ended without a proof submission"
+    if (
+        not submission_present
+        and not validated_request_exists
+        and agent_system_error is None
+    ):
+        return (
+            False,
+            "NO_SUBMISSION",
+            "agent ended cleanly without an authenticated proof submission",
+        )
 
     validation_failed = bool(
         validation_result is not None and validation_result.get("pass") is not True
@@ -10372,6 +10439,8 @@ def run_one(args: argparse.Namespace) -> dict[str, Any]:
                             validator_contract_sha256=validator_contract_sha256,
                             submission_request_sha256=request["request_sha256"],
                             submission_sequence=request["sequence"],
+                            required_declarations=_plural_validation_surface(args)[0],
+                            controlled_sorries=_plural_validation_surface(args)[1],
                         )
                         validator_finished_elapsed = _elapsed_from_prompt_release(
                             measurement_origin_monotonic_ns
@@ -10552,6 +10621,8 @@ def run_one(args: argparse.Namespace) -> dict[str, Any]:
                         validator_contract_sha256=validator_contract_sha256,
                         submission_request_sha256=None,
                         submission_sequence=None,
+                        required_declarations=_plural_validation_surface(args)[0],
+                        controlled_sorries=_plural_validation_surface(args)[1],
                     )
                     accepted_at = _elapsed_from_prompt_release(
                         measurement_origin_monotonic_ns
@@ -10871,6 +10942,8 @@ def run_one(args: argparse.Namespace) -> dict[str, Any]:
                 validator_contract_sha256=validator_contract_sha256,
                 submission_request_sha256=None,
                 submission_sequence=None,
+                required_declarations=_plural_validation_surface(args)[0],
+                controlled_sorries=_plural_validation_surface(args)[1],
             )
             if measurement_origin_monotonic_ns is None:
                 raise BenchmarkToolError(
@@ -11493,13 +11566,25 @@ def run_one(args: argparse.Namespace) -> dict[str, Any]:
                     path.unlink()
 
 
+
+def _controlled_sorry_argument(value: str) -> dict[str, Any]:
+    try:
+        decoded = json.loads(value)
+    except json.JSONDecodeError as error:
+        raise argparse.ArgumentTypeError(
+            f"controlled sorry is not valid JSON: {error}"
+        ) from error
+    if not isinstance(decoded, dict):
+        raise argparse.ArgumentTypeError("controlled sorry must be a JSON object")
+    return decoded
+
 def make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--condition", choices=("N", "L"), required=True)
     parser.add_argument("--task-id", required=True)
     parser.add_argument("--paper-id", required=True)
     parser.add_argument("--paper-sha256", required=True)
-    parser.add_argument("--tier", choices=("T1", "T2", "T3"), required=True)
+    parser.add_argument("--tier", choices=("T1", "T2", "T3", "T4"), required=True)
     parser.add_argument("--repetition-id", required=True)
     parser.add_argument(
         "--seed",
@@ -11529,6 +11614,19 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--submission-relative", required=True)
     parser.add_argument("--canonical-relative", required=True)
     parser.add_argument("--target-theorem", required=True)
+    parser.add_argument(
+        "--required-declaration",
+        dest="required_declarations",
+        action="append",
+        default=[],
+    )
+    parser.add_argument(
+        "--controlled-sorry-json",
+        dest="controlled_sorries",
+        type=_controlled_sorry_argument,
+        action="append",
+        default=[],
+    )
     parser.add_argument("--local-source-relative", action="append", default=[])
     parser.add_argument("--forbidden-import-prefix", action="append", default=[])
     parser.add_argument("--submission-module")
@@ -11603,6 +11701,24 @@ def _validate_args(args: argparse.Namespace) -> None:
             f"usage grace must be between 0 and {MAX_USAGE_GRACE_SECONDS:g} seconds"
         )
     trusted_usage_output(args, args.logs_dir.resolve())
+    required_declarations, controlled_sorries = _plural_validation_surface(args)
+    if args.tier == "T4":
+        if not required_declarations or not controlled_sorries:
+            raise BenchmarkToolError(
+                "T4 requires ordered required declarations and controlled proof holes"
+            )
+        proof_declarations = [hole.get("lean_name") for hole in controlled_sorries]
+        if (
+            any(not isinstance(name, str) or not name for name in proof_declarations)
+            or args.target_theorem != proof_declarations[0]
+        ):
+            raise BenchmarkToolError(
+                "T4 target theorem must be the first controlled proof declaration"
+            )
+    elif required_declarations or controlled_sorries:
+        raise BenchmarkToolError(
+            "required declarations and controlled proof holes are only valid for T4"
+        )
     if len(args.paper_sha256) != 64 or any(
         char not in "0123456789abcdef" for char in args.paper_sha256
     ):

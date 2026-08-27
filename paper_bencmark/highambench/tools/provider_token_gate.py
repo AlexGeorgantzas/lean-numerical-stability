@@ -3508,6 +3508,7 @@ class ProviderTokenGate:
                     not in (
                         PROVIDER_GATE_DELIVERY_DIRECT,
                         PROVIDER_GATE_DELIVERY_SUPERSEDED_COLLABORATION_MESSAGE,
+                        PROVIDER_GATE_DELIVERY_SUPPRESSED_WAIT,
                     )
                 )
             )
@@ -5324,6 +5325,7 @@ def _validate_provider_gate_record(record: Mapping[str, Any]) -> None:
                     not in (
                         PROVIDER_GATE_DELIVERY_DIRECT,
                         PROVIDER_GATE_DELIVERY_SUPERSEDED_COLLABORATION_MESSAGE,
+                        PROVIDER_GATE_DELIVERY_SUPPRESSED_WAIT,
                     )
                 )
             )
@@ -5388,11 +5390,12 @@ def _validate_provider_gate_record(record: Mapping[str, Any]) -> None:
                 raise ProviderGateValidationError(
                     "collaboration-message successor chain is incomplete"
                 )
-            if cursor_delivery.get("kind") == PROVIDER_GATE_DELIVERY_DIRECT:
+            delivery_kind = cursor_delivery.get("kind")
+            if delivery_kind == PROVIDER_GATE_DELIVERY_DIRECT:
                 break
-            if (
-                cursor_delivery.get("kind")
-                != PROVIDER_GATE_DELIVERY_SUPERSEDED_COLLABORATION_MESSAGE
+            if delivery_kind not in (
+                PROVIDER_GATE_DELIVERY_SUPERSEDED_COLLABORATION_MESSAGE,
+                PROVIDER_GATE_DELIVERY_SUPPRESSED_WAIT,
             ):
                 raise ProviderGateValidationError(
                     "collaboration-message successor chain did not end directly"

@@ -1,4 +1,5 @@
-import HighamBench.Core
+import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Data.Real.Basic
 
 /-!
 # HighamBench P02 definitions
@@ -10,6 +11,37 @@ for P02, the Ogita--Rump--Oishi paper on accurate sums and dot products.
 namespace HighamBench
 
 open scoped BigOperators
+
+/-- The P02-local rounded-addition model used by its error-free transforms. -/
+structure P02StandardAddModel where
+  u : ℝ
+  u_nonneg : 0 ≤ u
+  fl_add : ℝ → ℝ → ℝ
+  fl_add_zero : ∀ x : ℝ, fl_add 0 x = x
+  model_add :
+    ∀ x y : ℝ, ∃ δ : ℝ,
+      |δ| ≤ u ∧
+      fl_add x y = (x + y) * (1 + δ)
+
+/-- P02's accumulated-error number `γₙ = n*u/(1-n*u)`. -/
+noncomputable def p02Gamma (u : ℝ) (n : ℕ) : ℝ :=
+  ((n : ℝ) * u) / (1 - (n : ℝ) * u)
+
+/-- Positivity condition for the denominator of `p02Gamma`. -/
+def P02GammaValid (u : ℝ) (n : ℕ) : Prop :=
+  (n : ℝ) * u < 1
+
+/-- P02-local left-to-right recursive summation. -/
+noncomputable def p02RecursiveSum (flAdd : ℝ → ℝ → ℝ) :
+    (n : ℕ) → (Fin n → ℝ) → ℝ
+  | 0, _ => 0
+  | n + 1, v =>
+      if h : n = 0 then
+        v ⟨0, by simp⟩
+      else
+        flAdd
+          (p02RecursiveSum flAdd n (fun i => v i.castSucc))
+          (v (Fin.last n))
 
 /-! ## Ogita--Rump--Oishi error-free transformations
 
@@ -24,7 +56,7 @@ into the fixed statements and gives conditions N and L the same small model.
 The first component is the rounded sum. The two components add to the exact
 real sum, and the low component obeys the residual estimate used in Lemma 4.2
 of Ogita--Rump--Oishi (2005). -/
-structure ErrorFreeAddModel extends StandardAddModel where
+structure ErrorFreeAddModel extends P02StandardAddModel where
   twoSum : ℝ → ℝ → ℝ × ℝ
   twoSum_high :
     ∀ a b : ℝ, (twoSum a b).1 = fl_add a b
@@ -70,7 +102,7 @@ noncomputable def iteratedVecSum (fp : ErrorFreeAddModel) {n : ℕ}
 result in working precision. -/
 noncomputable def sumK (fp : ErrorFreeAddModel) {n : ℕ}
     (K : ℕ) (v : Fin (n + 1) → ℝ) : ℝ :=
-  recursiveSum fp.fl_add (n + 1) (iteratedVecSum fp (K - 1) v)
+  p02RecursiveSum fp.fl_add (n + 1) (iteratedVecSum fp (K - 1) v)
 
 /-- Algorithm 4.4 (`Sum2`), the `K = 2` instance of `SumK`. -/
 noncomputable def sum2 (fp : ErrorFreeAddModel) {n : ℕ}

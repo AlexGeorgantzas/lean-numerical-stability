@@ -71,6 +71,7 @@ REQUIRED_RUNTIME_RELEASE_FILES = {
     "tools/dependency_audit.lean",
     "tools/hashes.py",
     "tools/lean_isolated.py",
+    "tools/manage_p01_campaign.py",
     "tools/offline_shell.c",
     "tools/preflight.py",
     "tools/provider_token_gate.py",
@@ -90,6 +91,7 @@ REQUIRED_RUNTIME_RELEASE_FILES = {
     "tools/tests/test_check_construction.py",
     "tools/tests/test_hashes.py",
     "tools/tests/test_isolation_adapters.py",
+    "tools/tests/test_manage_p01_campaign.py",
     "tools/tests/test_preflight.py",
     "tools/tests/test_provider_token_gate.py",
     "tools/tests/test_promote_live_canary.py",
@@ -145,6 +147,21 @@ ACTIVE_RUN_MARKER = "active_run.json"
 ACTIVE_RUN_MARKER_SCHEMA_VERSION = 2
 ALLOCATION_HARDWARE_DIRECTORY = "allocation_hardware"
 ALLOCATION_HARDWARE_KIND = "highambench-allocation-hardware-record"
+PAIR_COMMIT_PATH = "pair_commit.json"
+PAIR_COMMIT_KIND = "highambench-pair-commit"
+PAIR_COMMIT_SHA256_FIELD = "pair_commit_sha256"
+PAIR_COMMIT_FIELDS = {
+    "schema_version",
+    "kind",
+    "pair_id",
+    "condition_order",
+    "run_ids",
+    "final_records",
+    "allocation_hardware",
+    "freeze_check_sha256",
+    "hardware_matching_policy_sha256",
+    PAIR_COMMIT_SHA256_FIELD,
+}
 GPU_ENVIRONMENT_VARIABLES = (
     "SLURM_GPUS_ON_NODE",
     "SLURM_JOB_GPUS",
@@ -1279,7 +1296,12 @@ def verify_provider_usage_reconciliation(
         superseded_by_response = {
             str(item["response_id"]): item for item in superseded_evidence
         }
-        allowed_successors = set(appserver_ids) | set(superseded_ids)
+        suppressed_by_response = {
+            str(item["response_id"]): item for item in evidence
+        }
+        allowed_successors = (
+            set(appserver_ids) | set(superseded_ids) | set(suppressed_ids)
+        )
         for item in superseded_evidence:
             response_id = str(item["response_id"])
             successor_response_id = str(item["successor_response_id"])
@@ -1306,18 +1328,55 @@ def verify_provider_usage_reconciliation(
                     "immediate same-route successor"
                 )
 
+        # Suppressed waits are independently classified against a later
+        # direct app-server response.  When one is used as the bridge in a
+        # supersession chain, reauthenticate that edge from the same route
+        # ledger instead of trusting only its response ID.
+        for item in evidence:
+            response_id = str(item["response_id"])
+            successor_response_id = str(item["successor_response_id"])
+            origin = bindings[response_id]
+            successor = bindings.get(successor_response_id)
+            origin_index = provider_positions[response_id]
+            successor_index = provider_positions.get(successor_response_id, -1)
+            if (
+                successor is None
+                or successor_response_id not in set(appserver_ids)
+                or successor_index <= origin_index
+                or successor[0] != item.get("successor_call_id")
+                or successor[1:] != origin[1:]
+                or successor[3] != "turn"
+                or any(
+                    intervening in set(appserver_ids)
+                    and bindings[intervening][1:3] == origin[1:3]
+                    for intervening in provider_ids[
+                        origin_index + 1 : successor_index
+                    ]
+                )
+            ):
+                raise BenchmarkToolError(
+                    "suppressed collaboration wait does not name its "
+                    "earliest direct same-route successor"
+                )
+
         for origin_id in superseded_ids:
             cursor_id = origin_id
             seen_chain: set[str] = set()
-            while cursor_id in superseded_by_response:
+            while (
+                cursor_id in superseded_by_response
+                or cursor_id in suppressed_by_response
+            ):
                 if cursor_id in seen_chain:
                     raise BenchmarkToolError(
                         "superseded collaboration response chain is cyclic"
                     )
                 seen_chain.add(cursor_id)
-                cursor_id = str(
-                    superseded_by_response[cursor_id]["successor_response_id"]
+                edge = (
+                    superseded_by_response[cursor_id]
+                    if cursor_id in superseded_by_response
+                    else suppressed_by_response[cursor_id]
                 )
+                cursor_id = str(edge["successor_response_id"])
             if cursor_id not in set(appserver_ids):
                 raise BenchmarkToolError(
                     "superseded collaboration response chain has no direct end"
@@ -2744,6 +2803,107 @@ def canonical_document_digest(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def _validate_hardware_matching_policy(value: Any, label: str) -> dict[str, Any]:
+    policy = _mapping(value, label)
+    if dict(policy) != HARDWARE_MATCHING_POLICY:
+        raise BenchmarkToolError(
+            f"{label} does not exactly match the implemented paired-hardware policy"
+        )
+    return _json_copy(policy)
+
+
+def _provider_gate_without_node_local_hosts(
+    value: Mapping[str, Any], *, label: str
+) -> dict[str, Any]:
+    """Normalize only the policy-authorized node-local ``/etc/hosts`` record."""
+
+    gate = _json_copy(value)
+    try:
+        transport = gate["transport_provenance"]
+        ultra_canary.runner._validate_provider_transport_provenance(
+            transport, field=f"{label}.transport_provenance"
+        )
+        resolver = transport["resolver"]
+        hosts_file = resolver["hosts_file"]
+    except (KeyError, TypeError) as error:
+        raise BenchmarkToolError(
+            f"{label} has no provider transport resolver hosts-file provenance"
+        ) from error
+    if not isinstance(hosts_file, dict) or hosts_file.get("logical_path") != "/etc/hosts":
+        raise BenchmarkToolError(
+            f"{label} provider transport hosts-file provenance is invalid"
+        )
+    resolver["hosts_file"] = {"policy_normalized_path": "/etc/hosts"}
+    return gate
+
+
+def _verify_host_against_pair_policy(
+    reference: Mapping[str, Any], actual: Mapping[str, Any], *, label: str
+) -> None:
+    if set(reference) != _HOST_CLASS_FIELDS or set(actual) != _HOST_CLASS_FIELDS:
+        raise BenchmarkToolError(
+            f"{label} host-class fields do not exactly match the paired-hardware schema"
+        )
+    for field in _PAIR_POLICY_EXACT_HOST_FIELDS:
+        if actual.get(field) != reference.get(field):
+            raise BenchmarkToolError(
+                f"{label} invariant host field {field}={actual.get(field)!r} "
+                f"does not match frozen {reference.get(field)!r}"
+            )
+
+
+def verify_pair_policy_compatible_freeze_checks(
+    reference: Mapping[str, Any], candidate: Mapping[str, Any]
+) -> None:
+    """Authenticate a historical allocation freeze under the pair-local policy.
+
+    Everything remains byte-for-byte frozen except the explicitly enumerated
+    CPU identity/visible-memory fields and the node-local ``/etc/hosts`` file
+    descriptor.  Both values stay fully recorded in the candidate freeze.
+    """
+
+    for value, label in ((reference, "reference freeze"), (candidate, "candidate freeze")):
+        if (
+            value.get("schema_version") != 1
+            or value.get("kind") != "highambench-frozen-run-verification"
+            or value.get("ok") is not True
+        ):
+            raise BenchmarkToolError(f"{label} is not a successful frozen-run verification")
+        _validate_hardware_matching_policy(
+            value.get("hardware_matching_policy"),
+            f"{label}.hardware_matching_policy",
+        )
+    reference_host = _mapping(reference.get("host_class"), "reference freeze host_class")
+    candidate_host = _mapping(candidate.get("host_class"), "candidate freeze host_class")
+    _verify_host_against_pair_policy(
+        reference_host, candidate_host, label="candidate freeze"
+    )
+    reference_gate = _mapping(
+        reference.get("provider_token_gate"), "reference freeze provider_token_gate"
+    )
+    candidate_gate = _mapping(
+        candidate.get("provider_token_gate"), "candidate freeze provider_token_gate"
+    )
+    reference_copy = _json_copy(reference)
+    candidate_copy = _json_copy(candidate)
+    reference_copy["host_class"] = {
+        field: reference_host[field] for field in sorted(_PAIR_POLICY_EXACT_HOST_FIELDS)
+    }
+    candidate_copy["host_class"] = {
+        field: candidate_host[field] for field in sorted(_PAIR_POLICY_EXACT_HOST_FIELDS)
+    }
+    reference_copy["provider_token_gate"] = _provider_gate_without_node_local_hosts(
+        reference_gate, label="reference freeze"
+    )
+    candidate_copy["provider_token_gate"] = _provider_gate_without_node_local_hosts(
+        candidate_gate, label="candidate freeze"
+    )
+    if candidate_copy != reference_copy:
+        raise BenchmarkToolError(
+            "candidate freeze differs outside the paired-hardware policy allowlist"
+        )
+
+
 def _nonempty_string(value: Any, label: str) -> str:
     if not isinstance(value, str) or not value:
         raise BenchmarkToolError(f"{label} must be a nonempty string")
@@ -2783,13 +2943,60 @@ _HOST_CLASS_FIELDS = {
     "slurm_cpus_per_task",
     "slurm_allocated_memory_bytes",
 }
+_PAIR_POLICY_EXACT_HOST_FIELDS = {
+    "kernel",
+    "virtualization",
+    "online_logical_cpus",
+    "allocated_physical_cores",
+    "allocated_sockets",
+    "allocated_threads_per_core",
+    "allocation_memory_limit_bytes",
+    "slurm_num_nodes",
+    "slurm_num_cpus",
+    "slurm_num_tasks",
+    "slurm_cpus_per_task",
+    "slurm_allocated_memory_bytes",
+}
+_PAIR_POLICY_VARIABLE_HOST_FIELDS = _HOST_CLASS_FIELDS - _PAIR_POLICY_EXACT_HOST_FIELDS
+HARDWARE_MATCHING_POLICY: dict[str, Any] = {
+    "schema_version": 1,
+    "kind": "highambench-paired-hardware-policy",
+    "scope": "within_pair",
+    "vetted_nodes": ["watgpu108", "watgpu508", "watgpu808"],
+    "pair_identity": {
+        "required_conditions": ["N", "L"],
+        "same_authenticated_allocation_descriptor": True,
+        "same_slurm_job_id": True,
+        "checkpoint_unit": "complete_pair",
+    },
+    "cross_pair": {
+        "allocation_may_differ": True,
+        "host_class_may_differ": True,
+    },
+    "frozen_host_class": {
+        "role": "reference_and_required_invariants",
+        "exact_fields": sorted(_PAIR_POLICY_EXACT_HOST_FIELDS),
+        "variable_fields": sorted(_PAIR_POLICY_VARIABLE_HOST_FIELDS),
+    },
+    "provider_transport": {
+        "baseline_comparison": "exact_except_allowed_paths",
+        "allowed_variable_paths": [
+            "transport_provenance.resolver.hosts_file",
+        ],
+        "exact_within_pair": True,
+    },
+}
 _ALLOCATION_HARDWARE_RECORD_FIELDS = {
     "schema_version",
     "kind",
     "job_id",
     "hostname",
     "measurement_environment",
+    "hardware_matching_policy",
     "host_class",
+    "host_class_sha256",
+    "provider_transport_provenance",
+    "provider_transport_provenance_sha256",
     "host",
     "allocation",
     "slurm",
@@ -2824,6 +3031,10 @@ def _allocation_hardware_record_payload(
     if re.fullmatch(r"[0-9]+", job_id) is None:
         raise BenchmarkToolError(f"invalid {SLURM_JOB_ID_ENV}: {job_id!r}")
     hostname = _nonempty_string(hostname, "allocation hostname")
+    if hostname not in HARDWARE_MATCHING_POLICY["vetted_nodes"]:
+        raise BenchmarkToolError(
+            f"allocation hostname {hostname!r} is not a vetted benchmark node"
+        )
     if freeze_check.get("kind") != "highambench-frozen-run-verification":
         raise BenchmarkToolError("allocation hardware record requires a frozen run verification")
     if freeze_check.get("ok") is not True:
@@ -2849,6 +3060,22 @@ def _allocation_hardware_record_payload(
             f"missing={sorted(_HOST_CLASS_FIELDS - set(host_class))}"
         )
     host_class_copy = _json_copy(host_class)
+    policy = _validate_hardware_matching_policy(
+        freeze_check.get("hardware_matching_policy"),
+        "freeze-check hardware_matching_policy",
+    )
+    provider_gate = _mapping(
+        freeze_check.get("provider_token_gate"), "freeze-check provider_token_gate"
+    )
+    transport_provenance = _mapping(
+        provider_gate.get("transport_provenance"),
+        "freeze-check provider_token_gate.transport_provenance",
+    )
+    # This also requires an exact, factual /etc/hosts descriptor while retaining
+    # the complete node-local value in the allocation record.
+    _provider_gate_without_node_local_hosts(
+        provider_gate, label="freeze-check provider-token-gate"
+    )
     try:
         raw_cpu_affinity = list(cpu_affinity_logical_cpus)
     except TypeError as error:
@@ -2891,7 +3118,7 @@ def _allocation_hardware_record_payload(
         )
     gpu_provenance = _validated_slurm_gpu_provenance(slurm_gpu_provenance)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "kind": ALLOCATION_HARDWARE_KIND,
         "job_id": job_id,
         "hostname": hostname,
@@ -2901,10 +3128,16 @@ def _allocation_hardware_record_payload(
             "release_manifest_sha256": release_manifest_sha256,
             "freeze_check_sha256": canonical_document_digest(freeze_check),
         },
+        "hardware_matching_policy": policy,
         # Retaining the exact verified structure makes future schema changes
         # fail closed.  The three normalized views below make the host,
         # process allocation, and scheduler evidence explicit to renderers.
         "host_class": host_class_copy,
+        "host_class_sha256": canonical_document_digest(host_class_copy),
+        "provider_transport_provenance": _json_copy(transport_provenance),
+        "provider_transport_provenance_sha256": canonical_document_digest(
+            transport_provenance
+        ),
         "host": {
             "hostname": hostname,
             "kernel": host_class_copy["kernel"],
@@ -2978,6 +3211,10 @@ def _validate_allocation_hardware_record(
         )
     job_id = _nonempty_string(record.get("job_id"), "hardware record job_id")
     hostname = _nonempty_string(record.get("hostname"), "hardware record hostname")
+    if hostname not in HARDWARE_MATCHING_POLICY["vetted_nodes"]:
+        raise BenchmarkToolError(
+            f"hardware record hostname {hostname!r} is not a vetted benchmark node"
+        )
     if expected_job_id is not None and job_id != expected_job_id:
         raise BenchmarkToolError(
             f"hardware record job_id {job_id!r} does not match current {expected_job_id!r}"
@@ -3378,14 +3615,14 @@ def _declared_benchmark_path(value: Any, expected: str, label: str) -> str:
 
 def load_task_catalog(
     root: Path, manifest: Mapping[str, Any] | None = None
-) -> dict[str, dict[str, str]]:
+) -> dict[str, dict[str, Any]]:
     """Load execution identities from mutually checked manifest and task records."""
 
     root = root.resolve()
     manifest = manifest or _mapping(
         read_json(root / "metadata" / "manifest.json"), "benchmark manifest"
     )
-    catalog: dict[str, dict[str, str]] = {}
+    catalog: dict[str, dict[str, Any]] = {}
     for paper, target in _available_manifest_targets(manifest):
         paper_id = str(paper["paper_id"])
         tier = str(target["tier"])
@@ -3435,17 +3672,9 @@ def load_task_catalog(
             raise BenchmarkToolError(f"{task_id} paper SHA-256 disagrees across metadata")
         _declared_benchmark_path(task.get("context_file"), context_file, f"{task_id} context_file")
 
-        formal = _mapping(task.get("formal_statement"), f"{task_id}.formal_statement")
-        namespace = _nonempty_string(formal.get("namespace"), f"{task_id} namespace")
-        theorem_name = _nonempty_string(
-            formal.get("theorem_name"), f"{task_id} theorem_name"
+        lean_target = _mapping(
+            target.get("lean_target"), f"manifest target {task_id}.lean_target"
         )
-        _declared_benchmark_path(
-            formal.get("target_file"), target_file, f"{task_id} formal target_file"
-        )
-        lean_target = _mapping(target.get("lean_target"), f"manifest target {task_id}.lean_target")
-        if lean_target.get("declaration") != theorem_name:
-            raise BenchmarkToolError(f"{task_id} theorem name disagrees across metadata")
         _declared_benchmark_path(
             lean_target.get("file"), target_file, f"manifest target {task_id} file"
         )
@@ -3461,33 +3690,117 @@ def load_task_catalog(
             raise BenchmarkToolError(
                 f"manifest target {task_id} shared_files disagrees with its paper scope"
             )
-        required_declaration = f"{namespace}.{theorem_name}"
         validation = _mapping(task.get("validation"), f"{task_id}.validation")
-        if validation.get("required_declaration") != required_declaration:
-            raise BenchmarkToolError(f"{task_id} validation declaration disagrees")
         _declared_benchmark_path(
             validation.get("controlled_target_file"),
             target_file,
             f"{task_id} controlled target_file",
         )
 
-        for relative, label in (
-            (target_file, f"{task_id} target"),
-            (context_file, f"{task_id} context"),
-            (f"metadata/controlled/{task_id}.json", f"{task_id} controlled manifest"),
-        ):
-            _require_file(root / relative, label)
-        catalog[task_id] = {
-            "task_id": task_id,
-            "paper_id": paper_id,
-            "paper_sha256": paper_sha256,
-            "tier": tier,
-            "theorem_name": theorem_name,
-            "required_declaration": required_declaration,
-            "target_dir": target_dir,
-            "target_file": target_file,
-            "context_file": context_file,
-        }
+        if tier == "T4":
+            raw_required = validation.get("required_declarations")
+            if not isinstance(raw_required, list) or not raw_required or any(
+                not isinstance(value, str) or not value for value in raw_required
+            ):
+                raise BenchmarkToolError(
+                    f"{task_id}.validation.required_declarations is invalid"
+                )
+            required_declarations = list(raw_required)
+            declaration_records = task.get("declarations")
+            declaration_names = (
+                [
+                    declaration.get("lean_name")
+                    for declaration in declaration_records
+                    if isinstance(declaration, Mapping)
+                ]
+                if isinstance(declaration_records, list)
+                else []
+            )
+            if declaration_names != required_declarations:
+                raise BenchmarkToolError(
+                    f"{task_id} required_declarations disagrees with declaration records"
+                )
+            if lean_target.get("required_declarations") != required_declarations:
+                raise BenchmarkToolError(
+                    f"manifest target {task_id} required_declarations disagrees"
+                )
+            if "declaration" in lean_target:
+                raise BenchmarkToolError(
+                    f"manifest target {task_id} must use plural required_declarations"
+                )
+            raw_holes = validation.get("controlled_sorries")
+            if not isinstance(raw_holes, list) or not raw_holes or any(
+                not isinstance(value, Mapping) for value in raw_holes
+            ):
+                raise BenchmarkToolError(
+                    f"{task_id}.validation.controlled_sorries is invalid"
+                )
+            controlled_sorries = [dict(value) for value in raw_holes]
+            proof_declarations = [
+                value.get("lean_name") for value in controlled_sorries
+            ]
+            if any(
+                not isinstance(value, str) or value not in required_declarations
+                for value in proof_declarations
+            ):
+                raise BenchmarkToolError(
+                    f"{task_id} controlled proof declarations are invalid"
+                )
+            required_declaration = str(proof_declarations[0])
+            theorem_name = required_declaration.rsplit(".", 1)[-1]
+            catalog[task_id] = {
+                "task_id": task_id,
+                "paper_id": paper_id,
+                "paper_sha256": paper_sha256,
+                "tier": tier,
+                "theorem_name": theorem_name,
+                "required_declaration": required_declaration,
+                "required_declarations": required_declarations,
+                "proof_declarations": proof_declarations,
+                "controlled_sorries": controlled_sorries,
+                "target_dir": target_dir,
+                "target_file": target_file,
+                "context_file": context_file,
+            }
+        else:
+            formal = _mapping(
+                task.get("formal_statement"), f"{task_id}.formal_statement"
+            )
+            namespace = _nonempty_string(
+                formal.get("namespace"), f"{task_id} namespace"
+            )
+            theorem_name = _nonempty_string(
+                formal.get("theorem_name"), f"{task_id} theorem_name"
+            )
+            _declared_benchmark_path(
+                formal.get("target_file"),
+                target_file,
+                f"{task_id} formal target_file",
+            )
+            if lean_target.get("declaration") != theorem_name:
+                raise BenchmarkToolError(
+                    f"{task_id} theorem name disagrees across metadata"
+                )
+            if "required_declarations" in lean_target:
+                raise BenchmarkToolError(
+                    f"manifest target {task_id} plural declarations are only valid for T4"
+                )
+            required_declaration = f"{namespace}.{theorem_name}"
+            if validation.get("required_declaration") != required_declaration:
+                raise BenchmarkToolError(
+                    f"{task_id} validation declaration disagrees"
+                )
+            catalog[task_id] = {
+                "task_id": task_id,
+                "paper_id": paper_id,
+                "paper_sha256": paper_sha256,
+                "tier": tier,
+                "theorem_name": theorem_name,
+                "required_declaration": required_declaration,
+                "target_dir": target_dir,
+                "target_file": target_file,
+                "context_file": context_file,
+            }
 
     for paper in _manifest_papers(manifest):
         paper_id = str(paper["paper_id"])
@@ -4362,6 +4675,10 @@ def _slurm_scheduler_sharing(
 
 def _verify_host_class(environment: Mapping[str, Any], frozen: Mapping[str, Any]) -> dict[str, Any]:
     host = _mapping(environment.get("host_class"), "environment.host_class")
+    _validate_hardware_matching_policy(
+        environment.get("hardware_matching_policy"),
+        "environment.hardware_matching_policy",
+    )
     actual_kernel = f"{platform.system()} {platform.release()} {platform.machine()}"
     actual_virtualization = _command_output(
         ["systemd-detect-virt", "--container"], "container virtualization"
@@ -4379,22 +4696,17 @@ def _verify_host_class(environment: Mapping[str, Any], frozen: Mapping[str, Any]
         raise BenchmarkToolError(
             "Slurm allocated memory disagrees with the effective cgroup memory limit"
         )
-    if set(host) != set(actual):
-        raise BenchmarkToolError(
-            "environment.host_class fields do not exactly match measured host fields: "
-            f"extra={sorted(set(host) - set(actual))}, "
-            f"missing={sorted(set(actual) - set(host))}"
-        )
-    for field, value in actual.items():
-        if host.get(field) != value:
-            raise BenchmarkToolError(
-                f"host field {field}={value!r} does not match frozen {host.get(field)!r}"
-            )
+    _verify_host_against_pair_policy(host, actual, label="current allocation")
     if frozen.get("operating_system") != actual_kernel:
         raise BenchmarkToolError("config operating_system does not match the current host")
     hardware = frozen.get("hardware_class")
     if not isinstance(hardware, str) or not hardware:
         raise BenchmarkToolError("config has no frozen hardware class")
+    hostname = _nonempty_string(platform.node().strip(), "allocation hostname")
+    if hostname not in HARDWARE_MATCHING_POLICY["vetted_nodes"]:
+        raise BenchmarkToolError(
+            f"allocation host {hostname!r} is not in the paired-hardware vetted-node set"
+        )
     return actual
 
 
@@ -4464,10 +4776,27 @@ def verify_frozen_run_environment(
         raise BenchmarkToolError(
             "provider-token-gate environment-record SHA-256 is invalid"
         )
-    actual_provider_gate = provider_token_gate_environment_record(root)
-    if dict(configured_provider_gate) != actual_provider_gate:
+    policy = _validate_hardware_matching_policy(
+        environment.get("hardware_matching_policy"),
+        "environment.hardware_matching_policy",
+    )
+    frozen_policy = _validate_hardware_matching_policy(
+        frozen.get("hardware_matching_policy"),
+        "config.frozen_environment.hardware_matching_policy",
+    )
+    if frozen_policy != policy:
         raise BenchmarkToolError(
-            "actual provider-token-gate source/catalog/transport differs from the freeze"
+            "paired-hardware policy disagrees across frozen metadata"
+        )
+    actual_provider_gate = provider_token_gate_environment_record(root)
+    if _provider_gate_without_node_local_hosts(
+        configured_provider_gate, label="frozen provider-token-gate"
+    ) != _provider_gate_without_node_local_hosts(
+        actual_provider_gate, label="actual provider-token-gate"
+    ):
+        raise BenchmarkToolError(
+            "actual provider-token-gate source/catalog/transport differs from the "
+            "freeze outside the node-local hosts-file allowance"
         )
     configured_gate_implementation = _mapping(
         configured_provider_gate.get("implementation"),
@@ -5150,6 +5479,7 @@ def verify_frozen_run_environment(
         "provider_token_gate": json.loads(
             json.dumps(actual_provider_gate, sort_keys=True)
         ),
+        "hardware_matching_policy": policy,
         "lean": {
             "version": lean_match.group(1),
             "commit": lean_match.group(2),
@@ -5692,6 +6022,31 @@ def _freeze_incident_source_attempt_logs(
     return frozen
 
 
+def _authenticate_embedded_freeze_check(
+    value: Mapping[str, Any],
+    reference_freeze: Mapping[str, Any],
+    *,
+    label: str,
+) -> dict[str, Any]:
+    wrapper = _mapping(
+        value.get("frozen_run_verification"), f"{label} frozen-run verification"
+    )
+    if set(wrapper) != {"freeze_check_sha256", "freeze_check"}:
+        raise BenchmarkToolError(
+            f"{label} has stale release/environment/freeze provenance (malformed wrapper)"
+        )
+    owning_freeze = _mapping(wrapper.get("freeze_check"), f"{label} embedded freeze")
+    digest = _sha256_value(
+        wrapper.get("freeze_check_sha256"), f"{label} embedded freeze SHA-256"
+    )
+    if digest != canonical_document_digest(owning_freeze):
+        raise BenchmarkToolError(
+            f"{label} has stale release/environment/freeze provenance"
+        )
+    verify_pair_policy_compatible_freeze_checks(reference_freeze, owning_freeze)
+    return dict(owning_freeze)
+
+
 def _authenticate_matrix_record_provenance(
     results_root: Path,
     value: Mapping[str, Any],
@@ -5725,11 +6080,7 @@ def _authenticate_matrix_record_provenance(
         raise BenchmarkToolError(f"{label} has stale agent provenance")
     if value.get("environment_id") != freeze_check.get("environment_id"):
         raise BenchmarkToolError(f"{label} has a stale environment identity")
-    if value.get("frozen_run_verification") != {
-        "freeze_check_sha256": canonical_document_digest(freeze_check),
-        "freeze_check": _json_copy(freeze_check),
-    }:
-        raise BenchmarkToolError(f"{label} has stale release/environment/freeze provenance")
+    owning_freeze = _authenticate_embedded_freeze_check(value, freeze_check, label=label)
     frozen_limits = _mapping(freeze_check.get("limits"), "freeze-check limits")
     record_limits = _mapping(value.get("limits"), f"{label} limits")
     if (
@@ -5742,7 +6093,7 @@ def _authenticate_matrix_record_provenance(
     allocation = value.get("allocation_hardware")
     if not isinstance(allocation, Mapping):
         raise BenchmarkToolError(f"{label} has no allocation hardware descriptor")
-    verify_allocation_hardware_descriptor(results_root, allocation, freeze_check)
+    verify_allocation_hardware_descriptor(results_root, allocation, owning_freeze)
 
 
 def _preserve_matrix_incident(
@@ -6137,7 +6488,7 @@ def assignments_from_order(
                 raise BenchmarkToolError(f"unknown task in run order: {task_id}")
             task_identity = dict(task)
         else:
-            match = re.fullmatch(r"(P[0-9]+)-(T[123])", task_id)
+            match = re.fullmatch(r"(P[0-9]+)-(T[1234])", task_id)
             if match is None:
                 raise BenchmarkToolError(f"malformed task in run order: {task_id}")
             task_identity = {
@@ -6219,6 +6570,70 @@ def _paper_boundary_index(
         index
         for index, assignment in enumerate(assignments)
         if assignment["paper_id"] == stop_after_paper
+    )
+
+
+def _assignments_for_only_pair(
+    assignments: list[dict[str, Any]], only_pair_id: str | None
+) -> list[dict[str, Any]]:
+    if only_pair_id is None:
+        return assignments
+    pair_id = _nonempty_string(only_pair_id, "--only-pair-id")
+    selected = [item for item in assignments if item.get("pair_id") == pair_id]
+    if len(selected) != 2:
+        known = sorted({str(item.get("pair_id")) for item in assignments})
+        raise BenchmarkToolError(
+            f"--only-pair-id names no exact canonical N/L pair: {pair_id!r}; "
+            f"known={known}"
+        )
+    if {item.get("condition") for item in selected} != {"N", "L"}:
+        raise BenchmarkToolError(
+            f"canonical pair {pair_id!r} does not contain exactly N and L"
+        )
+    if any(item.get("pair_id") != pair_id for item in selected):
+        raise BenchmarkToolError("pair selector produced a foreign assignment")
+    return selected
+
+
+def _reject_foreign_pair_records(
+    results_root: Path, assignments: Sequence[Mapping[str, Any]]
+) -> None:
+    expected = {f"{item['run_id']}.json" for item in assignments}
+    for directory_name in ("records", "incidents"):
+        directory = results_root / directory_name
+        if not directory.exists():
+            continue
+        if directory.is_symlink() or not directory.is_dir():
+            raise BenchmarkToolError(
+                f"pair-root {directory_name} is not a regular non-symlink directory"
+            )
+        for path in directory.glob("*.json"):
+            if directory_name == "records":
+                allowed = path.name in expected
+            else:
+                allowed = any(path.name.startswith(f"{item['run_id']}.attempt-") for item in assignments)
+            if not allowed:
+                raise BenchmarkToolError(
+                    f"--only-pair-id root contains a foreign {directory_name} record: {path.name}"
+                )
+
+
+def _write_pair_complete_status(
+    results_root: Path,
+    pair_id: str,
+    commit: Mapping[str, Any],
+) -> None:
+    write_json(
+        results_root / "last_chunk_status.json",
+        {
+            "schema_version": 1,
+            "kind": "highambench-matrix-chunk-status",
+            "status": "stopped_after_requested_pair",
+            "pair_id": pair_id,
+            "completed_runs": 2,
+            "planned_runs": 2,
+            "pair_commit": pair_commit_descriptor(results_root, commit),
+        },
     )
 
 
@@ -6712,14 +7127,9 @@ def _authenticate_final_assignment_record_payload(
         raise BenchmarkToolError(
             f"matrix final record has a stale environment identity: {record_label}"
         )
-    expected_frozen_wrapper = {
-        "freeze_check_sha256": canonical_document_digest(freeze_check),
-        "freeze_check": _json_copy(freeze_check),
-    }
-    if value.get("frozen_run_verification") != expected_frozen_wrapper:
-        raise BenchmarkToolError(
-            f"matrix final record has stale release/environment/freeze provenance: {record_label}"
-        )
+    owning_freeze = _authenticate_embedded_freeze_check(
+        value, freeze_check, label=f"matrix final record {record_label}"
+    )
 
     frozen_limits = _mapping(freeze_check.get("limits"), "freeze-check limits")
     record_limits = _mapping(value.get("limits"), f"matrix final record {record_label} limits")
@@ -6736,7 +7146,7 @@ def _authenticate_final_assignment_record_payload(
         raise BenchmarkToolError(
             f"matrix final record has no allocation hardware descriptor: {record_label}"
         )
-    verify_allocation_hardware_descriptor(results_root, allocation, freeze_check)
+    verify_allocation_hardware_descriptor(results_root, allocation, owning_freeze)
 
     if value.get("useful_work_started") is not True or value.get("scored") is not True:
         raise BenchmarkToolError(
@@ -6781,7 +7191,185 @@ def _authenticate_existing_final_records(
             authenticated[run_id] = _authenticate_final_assignment_record(
                 results_root, path, assignment, freeze_check
             )
+    grouped: dict[str, list[tuple[Mapping[str, Any], Mapping[str, Any]]]] = {}
+    for assignment in assignments:
+        final = authenticated.get(str(assignment.get("run_id")))
+        if final is not None:
+            grouped.setdefault(str(assignment.get("pair_id")), []).append(
+                (assignment, final)
+            )
+    for pair_id, present in grouped.items():
+        if len(present) == 2:
+            conditions = {str(assignment.get("condition")) for assignment, _ in present}
+            if conditions != {"N", "L"}:
+                raise BenchmarkToolError(
+                    f"completed pair {pair_id!r} does not contain exact N/L conditions"
+                )
+            descriptors = [final.get("allocation_hardware") for _, final in present]
+            if descriptors[0] != descriptors[1]:
+                raise BenchmarkToolError(
+                    f"completed pair {pair_id!r} does not share one exact allocation descriptor"
+                )
     return authenticated
+
+
+def _verify_partial_pairs_use_current_allocation(
+    assignments: Iterable[Mapping[str, Any]],
+    authenticated_finals: Mapping[str, Mapping[str, Any]],
+    current_allocation: Mapping[str, Any],
+) -> None:
+    """Reject a half pair before any provider use on another allocation."""
+
+    grouped: dict[str, list[Mapping[str, Any]]] = {}
+    for assignment in assignments:
+        final = authenticated_finals.get(str(assignment.get("run_id")))
+        if final is not None:
+            grouped.setdefault(str(assignment.get("pair_id")), []).append(final)
+    for pair_id, finals in grouped.items():
+        if len(finals) == 1 and finals[0].get("allocation_hardware") != dict(
+            current_allocation
+        ):
+            raise BenchmarkToolError(
+                f"half-finished pair {pair_id!r} is bound to another allocation; "
+                "archive the uncommitted pair root and rerun both conditions"
+            )
+
+
+def pair_commit_digest(value: Mapping[str, Any]) -> str:
+    payload = dict(value)
+    payload.pop(PAIR_COMMIT_SHA256_FIELD, None)
+    return canonical_document_digest(payload)
+
+
+def _pair_commit_payload(
+    results_root: Path,
+    assignments: Sequence[Mapping[str, Any]],
+    reference_freeze: Mapping[str, Any],
+) -> dict[str, Any]:
+    if len(assignments) != 2:
+        raise BenchmarkToolError("pair commit requires exactly two assignments")
+    pair_ids = {str(item.get("pair_id")) for item in assignments}
+    if len(pair_ids) != 1 or {item.get("condition") for item in assignments} != {"N", "L"}:
+        raise BenchmarkToolError("pair commit assignments are not one exact N/L pair")
+    pair_id = next(iter(pair_ids))
+    by_condition = {str(item.get("condition")): item for item in assignments}
+    condition_order = list(assignments[0].get("condition_order", []))
+    if condition_order not in (["N", "L"], ["L", "N"]):
+        raise BenchmarkToolError("pair commit has an invalid canonical condition order")
+    finals: dict[str, dict[str, Any]] = {}
+    allocation_descriptor: dict[str, Any] | None = None
+    freeze_digest: str | None = None
+    for condition in ("N", "L"):
+        assignment = by_condition[condition]
+        run_id = _nonempty_string(assignment.get("run_id"), "pair assignment run_id")
+        path = results_root / "records" / f"{run_id}.json"
+        final = _authenticate_final_assignment_record(
+            results_root, path, assignment, reference_freeze
+        )
+        descriptor = _mapping(
+            final.get("allocation_hardware"), f"pair final {run_id} allocation"
+        )
+        if allocation_descriptor is None:
+            allocation_descriptor = dict(descriptor)
+        elif descriptor != allocation_descriptor:
+            raise BenchmarkToolError(
+                f"pair {pair_id!r} finals do not share one exact allocation descriptor"
+            )
+        wrapper = _mapping(
+            final.get("frozen_run_verification"), f"pair final {run_id} freeze wrapper"
+        )
+        owning_digest = _sha256_value(
+            wrapper.get("freeze_check_sha256"), f"pair final {run_id} freeze SHA-256"
+        )
+        if freeze_digest is None:
+            freeze_digest = owning_digest
+        elif owning_digest != freeze_digest:
+            raise BenchmarkToolError(
+                f"pair {pair_id!r} finals do not share one exact allocation freeze"
+            )
+        finals[condition] = {
+            "run_id": run_id,
+            "path": f"records/{run_id}.json",
+            "sha256": sha256_file(path),
+            "matrix_record_sha256": _sha256_value(
+                final.get(MATRIX_RECORD_SHA256_FIELD),
+                f"pair final {run_id} matrix self-hash",
+            ),
+        }
+    assert allocation_descriptor is not None and freeze_digest is not None
+    return {
+        "schema_version": 1,
+        "kind": PAIR_COMMIT_KIND,
+        "pair_id": pair_id,
+        "condition_order": condition_order,
+        "run_ids": [
+            _nonempty_string(by_condition[condition].get("run_id"), "pair run_id")
+            for condition in condition_order
+        ],
+        "final_records": finals,
+        "allocation_hardware": allocation_descriptor,
+        "freeze_check_sha256": freeze_digest,
+        "hardware_matching_policy_sha256": canonical_document_digest(
+            HARDWARE_MATCHING_POLICY
+        ),
+    }
+
+
+def create_or_verify_pair_commit(
+    results_root: Path,
+    assignments: Sequence[Mapping[str, Any]],
+    reference_freeze: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Atomically authenticate and commit one complete pair root."""
+
+    expected = _pair_commit_payload(results_root, assignments, reference_freeze)
+    expected[PAIR_COMMIT_SHA256_FIELD] = pair_commit_digest(expected)
+    path = results_root / PAIR_COMMIT_PATH
+    if path.is_symlink():
+        raise BenchmarkToolError("pair commit must not be a symlink")
+    if path.exists():
+        if not path.is_file():
+            raise BenchmarkToolError("pair commit is not a regular file")
+        existing = _mapping(read_json(path), "pair commit")
+        if set(existing) != PAIR_COMMIT_FIELDS:
+            raise BenchmarkToolError("pair commit fields are not exact")
+        stored = _sha256_value(
+            existing.get(PAIR_COMMIT_SHA256_FIELD), "pair commit self-hash"
+        )
+        if stored != pair_commit_digest(existing):
+            raise BenchmarkToolError("pair commit self-hash is invalid")
+        if dict(existing) != expected:
+            raise BenchmarkToolError("pair commit is stale or differs from exact finals")
+        if stat.S_IMODE(path.stat().st_mode) != 0o444:
+            raise BenchmarkToolError("pair commit mode is not immutable 0444")
+        return dict(existing)
+    write_json(path, expected)
+    path.chmod(0o444)
+    return create_or_verify_pair_commit(results_root, assignments, reference_freeze)
+
+
+def pair_commit_descriptor(results_root: Path, commit: Mapping[str, Any]) -> dict[str, str]:
+    path = results_root / PAIR_COMMIT_PATH
+    if not path.is_file() or path.is_symlink():
+        raise BenchmarkToolError("authenticated pair commit file is missing")
+    return {
+        "path": PAIR_COMMIT_PATH,
+        "sha256": sha256_file(path),
+        PAIR_COMMIT_SHA256_FIELD: _sha256_value(
+            commit.get(PAIR_COMMIT_SHA256_FIELD), "pair commit self-hash"
+        ),
+    }
+
+
+def verify_pair_commit(
+    results_root: Path,
+    assignments: Sequence[Mapping[str, Any]],
+    reference_freeze: Mapping[str, Any],
+) -> dict[str, Any]:
+    path = results_root / PAIR_COMMIT_PATH
+    if not path.exists() and not path.is_symlink():
+        raise BenchmarkToolError("pair root has no pair_commit.json")
+    return create_or_verify_pair_commit(results_root, assignments, reference_freeze)
 
 
 def _authenticate_existing_incidents(
@@ -6856,20 +7444,48 @@ def _authenticate_existing_incidents(
 
 def _assignment_task_identity(
     root: Path, assignment: Mapping[str, Any]
-) -> Mapping[str, str]:
-    required = {
+) -> Mapping[str, Any]:
+    common = {
         "task_id",
         "paper_id",
         "paper_sha256",
         "tier",
-        "theorem_name",
-        "required_declaration",
         "target_dir",
         "target_file",
         "context_file",
     }
-    if required.issubset(assignment):
-        return {field: str(assignment[field]) for field in required}
+    if common.issubset(assignment):
+        identity: dict[str, Any] = {
+            field: str(assignment[field]) for field in common
+        }
+        if identity["tier"] == "T4":
+            for field in (
+                "required_declarations",
+                "proof_declarations",
+                "controlled_sorries",
+            ):
+                value = assignment.get(field)
+                if not isinstance(value, list) or not value:
+                    raise BenchmarkToolError(
+                        f"T4 assignment lacks ordered {field}"
+                    )
+                identity[field] = [
+                    dict(item) if isinstance(item, Mapping) else item for item in value
+                ]
+            identity["required_declaration"] = str(
+                identity["proof_declarations"][0]
+            )
+            identity["theorem_name"] = identity["required_declaration"].rsplit(
+                ".", 1
+            )[-1]
+        else:
+            for field in ("theorem_name", "required_declaration"):
+                if field not in assignment:
+                    raise BenchmarkToolError(
+                        f"singular assignment lacks {field}"
+                    )
+                identity[field] = str(assignment[field])
+        return identity
     task_id = _nonempty_string(assignment.get("task_id"), "assignment task_id")
     task = load_task_catalog(root).get(task_id)
     if task is None:
@@ -7071,6 +7687,27 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
     tier = task["tier"]
     condition = assignment["condition"]
     target_declaration = task["required_declaration"]
+    plural = tier == "T4"
+    required_declarations = list(task.get("required_declarations", ()))
+    controlled_sorries = list(task.get("controlled_sorries", ()))
+    if plural and (not required_declarations or not controlled_sorries):
+        raise BenchmarkToolError("T4 runner command lacks its plural controlled surface")
+    plural_runner_arguments: list[str] = []
+    if plural:
+        for lean_name in required_declarations:
+            plural_runner_arguments.extend(("--required-declaration", lean_name))
+        for hole in controlled_sorries:
+            plural_runner_arguments.extend(
+                (
+                    "--controlled-sorry-json",
+                    json.dumps(
+                        hole,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                        ensure_ascii=False,
+                    ),
+                )
+            )
     task_shared_olean_root = args.shared_olean_root.resolve() / paper_id
     usage_output = _attempt_usage_output(args, attempt_output)
     library_arguments = (
@@ -7194,14 +7831,32 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
     probe_command = lean_base[:2] + ["probe"] + lean_base[2:] + [
         "--source", "{probe}"
     ]
+    audit_identity_arguments = (
+        [
+            "--audit-pairs-file",
+            "{audit_pairs_file}",
+            "--expected-module",
+            "{expected_module}",
+            "--local-modules-file",
+            "{local_modules_file}",
+        ]
+        if plural
+        else [
+            "--target-theorem",
+            target_declaration,
+            "--expected-module",
+            "{expected_module}",
+            "--expected-theorem",
+            "{expected_theorem}",
+            "--local-modules-file",
+            "{local_modules_file}",
+        ]
+    )
     audit_command = lean_base[:2] + ["audit"] + lean_base[2:] + [
         "--source", "{checked_submission}",
         "--audit-helper", str((root / "tools" / "dependency_audit.lean").resolve()),
         "--submission-module", "{submission_module}",
-        "--target-theorem", target_declaration,
-        "--expected-module", "{expected_module}",
-        "--expected-theorem", "{expected_theorem}",
-        "--local-modules-file", "{local_modules_file}",
+        *audit_identity_arguments,
     ]
 
     pair_order = "N-first" if assignment["condition_order"][0] == "N" else "L-first"
@@ -7234,6 +7889,7 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
         "--submission-relative", "Submission.lean",
         "--canonical-relative", f"task/{task['target_file']}",
         "--target-theorem", target_declaration,
+        *plural_runner_arguments,
         "--submission-module", "Submission",
         "--audit-helper", str((root / "tools" / "dependency_audit.lean").resolve()),
         "--reject-workspace-local-module-imports",
@@ -7323,6 +7979,17 @@ def run(args: argparse.Namespace) -> int:
             f"expected {expected_runs} assignments from frozen metadata, "
             f"found {len(assignments)}"
         )
+    only_pair_id = getattr(args, "only_pair_id", None)
+    if only_pair_id is not None:
+        if getattr(args, "stop_after_paper", None) is not None:
+            raise BenchmarkToolError(
+                "--only-pair-id and --stop-after-paper are mutually exclusive"
+            )
+        if getattr(args, "force", False):
+            raise BenchmarkToolError(
+                "--force is forbidden for an atomic pair root; archive it and rerun both conditions"
+            )
+        assignments = _assignments_for_only_pair(assignments, only_pair_id)
     stop_after_paper = getattr(args, "stop_after_paper", None)
     paper_boundary_index = _paper_boundary_index(assignments, stop_after_paper)
 
@@ -7332,6 +7999,8 @@ def run(args: argparse.Namespace) -> int:
     incidents = results / "incidents"
     for directory in (records, attempts, incidents, results / "logs", results / "workspaces"):
         directory.mkdir(parents=True, exist_ok=True)
+    if only_pair_id is not None:
+        _reject_foreign_pair_records(results, assignments)
     active_marker = results / ACTIVE_RUN_MARKER
     _clear_or_reject_interrupted_run(
         active_marker, records, results, assignments, freeze_check
@@ -7353,10 +8022,30 @@ def run(args: argparse.Namespace) -> int:
         freeze_check,
         authenticated_finals,
     )
-    write_json(results / "freeze_check.json", freeze_check)
+    if only_pair_id is not None and len(authenticated_finals) == 2:
+        commit = create_or_verify_pair_commit(results, assignments, freeze_check)
+        _rebuild_jsonl(
+            records,
+            incidents,
+            assignments,
+            results / "runs.jsonl",
+            results_root=results,
+            freeze_check=freeze_check,
+        )
+        _write_pair_complete_status(results, str(only_pair_id), commit)
+        print(f"HighamBench pair complete: {only_pair_id} (2/2 assignments)")
+        return 0
+    if only_pair_id is not None and (results / PAIR_COMMIT_PATH).exists():
+        raise BenchmarkToolError(
+            "pair_commit.json exists without two authenticated final records"
+        )
     allocation_hardware = create_or_verify_allocation_hardware_record(
         results, freeze_check
     )
+    _verify_partial_pairs_use_current_allocation(
+        assignments, authenticated_finals, allocation_hardware
+    )
+    write_json(results / "freeze_check.json", freeze_check)
     args.freeze_check_json = json.dumps(
         freeze_check, sort_keys=True, separators=(",", ":"), ensure_ascii=False
     )
@@ -7395,6 +8084,12 @@ def run(args: argparse.Namespace) -> int:
         base = Path(raw_base)
         stopped_for_allocation_deadline: dict[str, Any] | None = None
         stopped_after_requested_paper: dict[str, Any] | None = None
+        # An atomic pair is admitted against the complete two-run envelope once.
+        # Rechecking after its first final could clean-stop with a half pair even
+        # though the original reservation included both run envelopes and the
+        # cleanup guard.  Once admitted, finish both conditions or fail closed;
+        # never manufacture an allocation checkpoint between N and L.
+        atomic_pair_deadline_admitted = False
         for assignment_index, assignment in enumerate(assignments):
             if (
                 paper_boundary_index is not None
@@ -7439,7 +8134,9 @@ def run(args: argparse.Namespace) -> int:
                     results, final_record, assignment, freeze_check
                 )
                 continue
-            if allocation_end_epoch is not None:
+            if allocation_end_epoch is not None and (
+                only_pair_id is None or not atomic_pair_deadline_admitted
+            ):
                 unfinished_pair_runs = _unfinished_runs_in_pair(
                     assignments,
                     assignment_index,
@@ -7480,6 +8177,8 @@ def run(args: argparse.Namespace) -> int:
                     }
                     write_json(results / "last_chunk_status.json", stopped_for_allocation_deadline)
                     break
+                if only_pair_id is not None:
+                    atomic_pair_deadline_admitted = True
             if args.force:
                 for old_incident in _incident_record_paths(incidents, assignment["run_id"]):
                     old_incident.unlink()
@@ -7648,6 +8347,15 @@ def run(args: argparse.Namespace) -> int:
             f"next {stopped_after_requested_paper['next_run_id']}"
         )
         return CHUNK_INCOMPLETE_EXIT_CODE
+    if only_pair_id is not None:
+        if complete != 2:
+            raise BenchmarkToolError(
+                f"atomic pair {only_pair_id!r} ended without exactly two final records"
+            )
+        commit = create_or_verify_pair_commit(results, assignments, freeze_check)
+        _write_pair_complete_status(results, str(only_pair_id), commit)
+        print(f"HighamBench pair complete: {only_pair_id} (2/2 assignments)")
+        return 0
     write_json(
         results / "last_chunk_status.json",
         {
@@ -7724,6 +8432,14 @@ def make_parser() -> argparse.ArgumentParser:
         help=(
             "stop cleanly with exit 75 after every assignment through this paper "
             "has a final record, before starting the next paper"
+        ),
+    )
+    parser.add_argument(
+        "--only-pair-id",
+        metavar="PAIR_ID",
+        help=(
+            "run exactly one canonical N/L pair as an atomic pair root; a complete "
+            "pair writes pair_commit.json and no half pair may move allocations"
         ),
     )
     parser.add_argument(

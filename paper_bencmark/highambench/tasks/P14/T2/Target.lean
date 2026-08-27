@@ -8,7 +8,7 @@ open scoped BigOperators
 operation radii equal `u`, the numerator and denominator radii have
 first-order sum `(n+3)u`, as in the paper. -/
 theorem p14_t2_basic_softmax_component_error {n : ℕ}
-    (fp : StandardAddModel) (x wHat : Fin n → ℝ) (j : Fin n)
+    (fp : P14StandardAddModel) (x wHat : Fin n → ℝ) (j : Fin n)
     (epsilonExp epsilonDiv deltaDiv : ℝ)
     (hepsilonExp : 0 ≤ epsilonExp)
     (hepsilonDiv : 0 ≤ epsilonDiv)
@@ -16,7 +16,7 @@ theorem p14_t2_basic_softmax_component_error {n : ℕ}
     (hwHat : ∀ i, 0 ≤ wHat i)
     (hexp : ∀ i,
       |wHat i - Real.exp (x i)| ≤ epsilonExp * Real.exp (x i))
-    (hvalid : GammaValid fp.u n)
+    (hvalid : P14GammaValid fp.u n)
     (hsmall : p14DenominatorRadius fp.u n epsilonExp < 1) :
     |p14ComputedSoftmax fp wHat deltaDiv j - p14Softmax x j| /
         |p14Softmax x j| ≤

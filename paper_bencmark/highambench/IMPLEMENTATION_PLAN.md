@@ -54,8 +54,9 @@ and the larger underflow/error-estimator branches were also not selected.
 
 ## 2. Record the meaning of each statement
 
-The shared definitions must be usable without importing NumStability. They must
-provide only the small setting required by the targets:
+Each paper-owned definitions module must be usable without importing
+NumStability or another HighamBench module. It contains only the small semantic
+setting required by that paper's targets:
 
 - a standard rounded-addition model;
 - a no-guard-digit rounded-addition model, where the left and right inputs may
@@ -83,16 +84,18 @@ The fixed target declarations are:
 - `p02_t2_sum2_error_bound`;
 - `p02_t3_dotK_error_bound`.
 
-Their current files are under `tasks/P01/` and `tasks/P02/`, with one `Target.lean`
-per tier. Definitions used by both papers are in `shared/HighamBench/Core.lean`.
-The extra definitions for each paper are in `P01Definitions.lean` and
-`P02Definitions.lean`. A staged task receives the core and only its own paper's
-definition file. Trusted compiled objects use the same split: the runner mounts
-`shared_olean/P0X/` for paper `P0X`, never the parent directory that contains
-other papers' bundles.
-Every target must compile in clean N and L before the expanded package is
-resnapshotted; target and controlled-file hashes are then regenerated from the
-manifest for the whole corpus.
+Their current files are under `tasks/P01/` and `tasks/P02/`, with one
+`Target.lean` per tier. Every custom semantic declaration required by P01 is in
+`P01Definitions.lean`; P02 independently owns its analogous declarations in
+`P02Definitions.lean`. Similar mathematics is deliberately duplicated under
+paper-specific names. Neither module imports `Core`, `SemanticCore`, or the
+other paper. A staged task and `shared_olean/P0X/` bundle receive only that
+paper's definitions.
+
+Every target must compile in clean N and L before its paper is registered. The
+paper finalizer regenerates only its controlled manifests and atomically writes
+`metadata/papers/P0X/registration.json`; no corpus-wide resnapshot or later
+serialized merge is part of paper extraction.
 
 ## 3. Keep the statement neutral between conditions
 
@@ -116,8 +119,8 @@ It must never name or recommend a target-relevant theorem, module, declaration,
 search term, adapter, or private-proof fact.
 
 This supplement is an evaluation treatment, not task content. It must not
-change any `context.md`, `Target.lean`, task statement, paper-scoped definition,
-or shared definition. The adapter composes L input as common prompt, L-only
+change any `context.md`, `Target.lean`, task statement, or paper-owned
+definition. The adapter composes L input as common prompt, L-only
 supplement, context, then target; N composes common prompt, context, then target.
 
 Before release, build every fixed statement in both clean environments. Hash the
@@ -205,10 +208,11 @@ For each task and repetition:
    bubblewrap namespace and new conversation.
 2. Require all descendants to be quiescent. The root coordinator writes and
    locally checks `Candidate.lean`, then emits one sole/final outer custom `exec`
-   item whose exact 98-byte program is
+   item whose exact 104-byte program is
    `// @exec: {"yield_time_ms": 2400000}` followed by a newline and
-   `await tools.submit_proof({candidate_path:"Candidate.lean"});` followed by a
-   newline. App-server
+   `text(await tools.submit_proof({candidate_path:"Candidate.lean"}));` followed
+   by a newline. The `text` wrapper exposes a rejection for repair and retry.
+   App-server
    starts the nested root-only `submit_proof` dynamic call. Direct creation of
    the runner-owned `Submission.lean` is forbidden.
 3. At the authenticated inner call, snapshot `Candidate.lean` and bind its hash
@@ -291,6 +295,40 @@ allocation requirement is
 requires 5,418 seconds. The 600-second term remains general overhead rather
 than absorbing known validation work.
 
+For the current private P01 completion campaign, apply the temporary
+`same-authenticated-slurm-allocation-within-pair-v1` hardware policy. Request a
+singleton allocation on exactly one of `watgpu108`, `watgpu508`, or `watgpu808`
+with one task, four CPUs, 32 GiB, and no GPU. Bind both N and L for a
+task/repetition pair to the exact same authenticated Slurm job/allocation
+descriptor. A later allocation may resume only at a complete pair boundary;
+never finish the second member of a pair under a different allocation. Complete
+pairs may use different vetted nodes, so paired L-minus-N timing differences are
+the principal estimand and absolute/cross-pair times remain descriptive. Record
+this relaxation as a private protocol deviation rather than a strict
+reference-PDF HighamBench 0.2 measurement.
+
+Implement each N/L pair as one path-stable transaction. Create each attempt at
+its permanent campaign path before invoking the provider; never rename it.
+Commit it only after both finals and the immutable pair commit authenticate.
+Index every deadline, setup-error, terminal, and interrupted attempt as retained
+audit evidence. Any later attempt at an uncommitted pair starts both N and L
+fresh; never reuse only the successful condition from an incomplete attempt.
+The final report must authenticate and disclose all failed pair attempts. This
+pair-level resampling rule is an additional private protocol amendment.
+
+Keep the batch script node-agnostic and select exactly one vetted host in the
+submission command, for example:
+
+```text
+sbatch --nodelist=watgpu108 \
+  paper_bencmark/scratch_pad/run_highambench_p01_actual_ultra.sh
+```
+
+Substitute `watgpu508` or `watgpu808` only as a singleton. Do not supply a
+three-host `--nodelist` to a one-node job. A later four-hour job may use another
+vetted node because the campaign resumes only after a complete authenticated
+pair.
+
 Authenticate all saved retry incidents before any later provider subprocess.
 Each incident carries a canonical `matrix_incident_sha256` plus exact source
 attempt, transcript, assignment, attempt number, freeze, agent, environment,
@@ -356,7 +394,8 @@ incomplete. Because admission becomes exclusive before the cap crossing, no
 concurrent tail is possible and overshoot is bounded by one 272,000-token
 provider response. Missing or inconsistent endpoint evidence produces an
 unscored `unscorable_useful_work` incident with no retry. A real Ultra
-boundary canary must pass on the frozen matching host before any scored run.
+boundary canary must pass under the frozen compatible-host policy before any
+scored run.
 That synthetic canary completes a root response, proves that a root
 `fork_turns="3"` call is denied with no child, then performs one allowed
 `fork_turns="all"` delegation. The allowed child must prove a second
@@ -380,6 +419,13 @@ completion are intentionally false. Its attestation fixes
 `scored=false`, `matrix_assignment=false`, `synthetic_input=true`, and
 `benchmark_task_bytes_used=false`; neither canary may expose a benchmark task,
 context, target, or proof prefix.
+
+Canaries authenticate the frozen control protocol, not benchmark performance.
+Do not build a per-node result cache: reauthenticate the promoted evidence on
+every allocation, require fresh live canaries after any frozen software or
+protocol change, and authenticate the actual transport evidence for every
+scored run. The exact within-pair allocation binding then also binds N and L to
+one node-local transport fingerprint.
 
 This is private pre-publication measurement work. Passing construction,
 canary, and measurement gates does not authorize publishing or releasing any

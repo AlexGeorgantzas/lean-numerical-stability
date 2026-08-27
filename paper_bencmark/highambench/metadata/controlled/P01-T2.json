@@ -1,29 +1,24 @@
 {
   "files": [
     {
-      "bytes": 2668,
+      "bytes": 3253,
       "path": "agent_prompt.md",
-      "sha256": "3024ed126d13331029add14475ed64e37802c6bd3d42abf9ee97c286603514da"
+      "sha256": "fc1fe48de1e1b6eaa0a869d37df680d70a2271179624738fd2f26b5f3cff1236"
     },
     {
-      "bytes": 1328,
-      "path": "shared/HighamBench/Core.lean",
-      "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
-    },
-    {
-      "bytes": 2031,
+      "bytes": 153873,
       "path": "shared/HighamBench/P01Definitions.lean",
-      "sha256": "f84e0fcd73a73392e539081c1ab832e76c71902085eaae4614d305d138ca7a29"
+      "sha256": "4fbbb9a0991cbee35e998737959df9a927108450fcef6d881a3a91a64cc0c57f"
     },
     {
-      "bytes": 664,
+      "bytes": 685,
       "path": "tasks/P01/T2/Target.lean",
-      "sha256": "8707d7e8b3965c9c6d5c1354116c7cf04471bc0c5b0635b4287729455f79e49f"
+      "sha256": "78e8bac72a099eefb3c414185ec379bc585d5b844f68f2e6579962e608f1e18f"
     },
     {
-      "bytes": 3339,
+      "bytes": 3384,
       "path": "tasks/P01/T2/context.md",
-      "sha256": "70be8e2240f46b4904bb07047d889efd98adc75be9549be6e31095f4cef54619"
+      "sha256": "8d3aa572ba178449fea81b22fde9ee994cc1ffa62a7a12c495e540acdb950843"
     }
   ],
   "kind": "highambench-controlled-files",

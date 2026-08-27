@@ -1,4 +1,7 @@
-import HighamBench.Core
+import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Analysis.Normed.Group.Constructions
+import Mathlib.Analysis.Normed.Group.Real
+import Mathlib.Data.Real.Sqrt
 
 namespace HighamBench
 

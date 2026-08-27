@@ -1,0 +1,19 @@
+{
+  "bundle_sha256": "fbf3c24bfd0ef5b0d78879fd775aa49cd827dfa2343a3e238dfc244fe3057c65",
+  "definition_source": {
+    "bytes": 5821,
+    "path": "shared/HighamBench/P02Definitions.lean",
+    "sha256": "76850189c7b69975ad712a33e87a498b293a961a7c7561a20502acf4575b5164"
+  },
+  "kind": "highambench-paper-bundle",
+  "olean_files": [
+    {
+      "bytes": 188752,
+      "path": "HighamBench/P02Definitions.olean",
+      "sha256": "60212d44e67c84da21fd754eb40f58b05130d6a03e1396d7bc2fa6e877b20485"
+    }
+  ],
+  "paper_id": "P02",
+  "pass": true,
+  "schema_version": "highambench-paper-bundle-0.1"
+}

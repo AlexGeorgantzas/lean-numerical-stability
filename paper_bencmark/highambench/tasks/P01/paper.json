@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete local paper, checked every numbered displayed result relevant to summation error, fixed the three labels before proof testing, and recorded exact PDF-page, printed-page, section, and equation anchors.",
+    "method": "Codex read the complete local paper sequentially, retained the reviewed T1--T3 selections, and built the T4 source-order coverage ledger for determinate claims, definitions, algorithms, examples, and problem specifications with exact PDF-page, printed-page, section, and source anchors.",
     "performed_by": "Codex",
     "reason": "The benchmark specification calls for human review. The project owner asked Codex to perform that review for this entry."
   },
@@ -13,12 +13,13 @@
     "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P01-T1",
     "P01-T2",
-    "P01-T3"
+    "P01-T3",
+    "P01-T4"
   ],
   "paper_id": "P01",
   "paper_version": "journal version; volume 14, issue 4, July 1993, printed pages 783-799",
@@ -48,6 +49,11 @@
       "decision": "Formalize the no-guard recursive-summation running-error bound in equations (5.2) and (5.3), using the addition model in (5.1). The right side uses actual computed prefix sums and is not supplied by an accumulated theorem in NumStability.",
       "task_id": "P01-T3",
       "theorem_name": "p01_t3_noGuard_recursive_running_error_bound"
+    },
+    "T4": {
+      "available": true,
+      "decision": "Use a whole-paper corpus rather than selecting one result: inventory all 330 source items, formalize the 317 included items through 315 controlled declarations and 313 claim-scoped review units, and retain explicit narrowly justified dispositions for the 13 excluded items.",
+      "task_id": "P01-T4"
     }
   },
   "schema_version": "highambench-paper-0.2",

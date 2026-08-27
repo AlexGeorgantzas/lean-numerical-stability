@@ -10,8 +10,8 @@ theorem p02_t3_dotK_error_bound
     (hK : 3 ≤ K)
     (hsmall : (8 : ℝ) * ((n + 1 : ℕ) : ℝ) * fp.u ≤ 1) :
     |dotK fp K x y - exactDot x y| ≤
-      (fp.u + 2 * (gamma fp.u (4 * (n + 1) - 2)) ^ 2) * |exactDot x y| +
-        (gamma fp.u (4 * (n + 1) - 2)) ^ K * dotMagnitude x y := by
+      (fp.u + 2 * (p02Gamma fp.u (4 * (n + 1) - 2)) ^ 2) * |exactDot x y| +
+        (p02Gamma fp.u (4 * (n + 1) - 2)) ^ K * dotMagnitude x y := by
   -- PROOF_START
   sorry
 

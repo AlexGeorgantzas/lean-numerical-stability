@@ -12,6 +12,7 @@ from unittest import mock
 
 from paper_bencmark.highambench.tools.common import BenchmarkToolError
 from paper_bencmark.highambench.tools import codex_isolated
+from paper_bencmark.highambench.tools import manage_p01_campaign as campaign_manager
 from paper_bencmark.highambench.tools import render_report as construction_report
 from paper_bencmark.highambench.tools import render_p01_report as report
 from paper_bencmark.highambench.tools import run_token_control_canary as token_canary
@@ -1159,6 +1160,85 @@ def nested_submission_wire_fixture(
     }
 
 
+class HistoricalT4FilteringTests(unittest.TestCase):
+    def test_manifest_and_run_order_keep_historical_p01_t1_t3_only(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            project = Path(raw)
+            benchmark = project / "paper_bencmark" / "highambench"
+            targets: list[dict[str, object]] = []
+            for tier in ("T1", "T2", "T3"):
+                task_id = f"P01-{tier}"
+                target_path = benchmark / "tasks" / "P01" / tier / "Target.lean"
+                write_text(target_path, f"theorem synthetic_{tier.lower()} : True := by trivial\n")
+                targets.append(
+                    {
+                        "task_id": task_id,
+                        "tier": tier,
+                        "lean_target": {
+                            "file": target_path.relative_to(project).as_posix(),
+                            "controlled_file_sha256": report.file_sha256(target_path),
+                            "declaration": f"synthetic_{tier.lower()}",
+                        },
+                    }
+                )
+            targets.append(
+                {
+                    "task_id": "P01-T4",
+                    "tier": "T4",
+                    "lean_target": {
+                        "file": "paper_bencmark/highambench/tasks/P01/T4/Target.lean",
+                        "declarations": ["p01WholePaper"],
+                    },
+                }
+            )
+            manifest = {
+                "papers": [
+                    {
+                        "paper_id": "P01",
+                        "source": {"sha256": "a" * 64},
+                        "targets": targets,
+                    }
+                ]
+            }
+            tasks = report._manifest_tasks(benchmark, manifest)
+            self.assertEqual(tuple(tasks), report.EXPECTED_TASKS)
+
+            repetitions = [f"rep-0{number}" for number in range(1, 4)]
+            config = {
+                "repetitions": [
+                    {"id": repetition, "backend_seed": None}
+                    for repetition in repetitions
+                ]
+            }
+            salt = "historical-filter-test"
+            pairs: list[dict[str, object]] = []
+            for task_id in (*report.EXPECTED_TASKS, "P01-T4"):
+                for repetition in repetitions:
+                    digest = hashlib.sha256(
+                        f"{salt}|{task_id}|{repetition}".encode()
+                    ).hexdigest()
+                    order = ["N", "L"] if int(digest[:2], 16) % 2 == 0 else ["L", "N"]
+                    pair_id = f"{task_id}-{repetition}"
+                    pairs.append(
+                        {
+                            "pair_id": pair_id,
+                            "task_id": task_id,
+                            "repetition_id": repetition,
+                            "condition_order": order,
+                            "run_ids": [f"{pair_id}-{condition}" for condition in order],
+                            "sha256": digest,
+                        }
+                    )
+            all_expected, p01_expected = report._expected_assignments(
+                config,
+                {"method": {"name": "sha256_first_byte_parity", "salt": salt}, "pairs": pairs},
+                tasks,
+            )
+            self.assertEqual(len(all_expected), 18)
+            self.assertEqual(len(p01_expected), 18)
+            self.assertNotIn("P01-T4", {item["task_id"] for item in all_expected})
+
+
 class SyntheticP01Fixture:
     def __init__(self, root: Path) -> None:
         self.project = root
@@ -1214,7 +1294,6 @@ class SyntheticP01Fixture:
             self.packages_runtime_root / "mathlib" / "Mathlib.lean",
             "import Mathlib\n",
         )
-        write_text(self.shared_olean_root / "HighamBench" / "Core.olean", "core\n")
         write_text(
             self.shared_olean_root / "HighamBench" / "P01Definitions.olean",
             "p01 definitions\n",
@@ -1749,9 +1828,6 @@ class SyntheticP01Fixture:
                 )
         shared = {
             paper_id: {
-                "HighamBench/Core.olean": hashlib.sha256(
-                    f"core-{paper_id}".encode()
-                ).hexdigest(),
                 f"HighamBench/{paper_id}Definitions.olean": hashlib.sha256(
                     f"definitions-{paper_id}".encode()
                 ).hexdigest(),
@@ -1893,12 +1969,12 @@ class SyntheticP01Fixture:
                 **descriptor_data,
                 "shared_olean": {
                     "bundles": shared,
-                    "exact_file_count": 40,
+                    "exact_file_count": 20,
                     "condition_n_absence_scan": {
                         "ok": True,
                         "complete": True,
                         "matches": [],
-                        "files_scanned": 40,
+                        "files_scanned": 20,
                     },
                 },
                 "executables": {
@@ -4140,11 +4216,48 @@ class RenderP01ReportTests(unittest.TestCase):
         self.token_canary_verifier.start()
         self.ultra_canary_verifier.start()
         self.fixture = SyntheticP01Fixture(Path(self.temporary.name))
+        # The report fixture intentionally predates the execution-only task.json
+        # catalog. Rebuild the same authenticated pair identities from its
+        # manifest/run-order data while exercising the real campaign verifiers.
+        self.campaign_assignment_patch = mock.patch.object(
+            campaign_manager,
+            "planned_pair_assignments",
+            side_effect=self._fixture_pair_assignments,
+        )
+        self.campaign_assignment_patch.start()
 
     def tearDown(self) -> None:
+        self.campaign_assignment_patch.stop()
         self.ultra_canary_verifier.stop()
         self.token_canary_verifier.stop()
         self.temporary.cleanup()
+
+    def _fixture_pair_assignments(
+        self, benchmark_root: Path, pair_id: str
+    ) -> list[dict[str, object]]:
+        if benchmark_root.resolve() != self.fixture.benchmark.resolve():
+            raise AssertionError("campaign assignment fixture received another benchmark")
+        config = report.read_json(self.fixture.metadata / "config.json")
+        manifest = report.read_json(self.fixture.metadata / "manifest.json")
+        run_order = report.read_json(self.fixture.metadata / "run_order.json")
+        tasks = report._manifest_tasks(self.fixture.benchmark, manifest)
+        _, expected_p01 = report._expected_assignments(config, run_order, tasks)
+        selected: list[dict[str, object]] = []
+        for planned in expected_p01:
+            if planned["pair_id"] != pair_id:
+                continue
+            task = tasks[str(planned["task_id"])]
+            selected.append(
+                {
+                    **planned,
+                    "paper_id": task["paper_id"],
+                    "paper_sha256": task["paper_sha256"],
+                    "tier": task["tier"],
+                }
+            )
+        if len(selected) != 2:
+            raise AssertionError(f"fixture cannot rebuild pair {pair_id}")
+        return selected
 
     @staticmethod
     def _verified_fixture_artifacts(
@@ -4351,6 +4464,235 @@ class RenderP01ReportTests(unittest.TestCase):
             Path(self.temporary.name) / suffix,
             compile_pdf=False,
         )
+
+    @staticmethod
+    def _canonical_utc(value: dt.datetime) -> str:
+        return value.astimezone(dt.timezone.utc).isoformat().replace("+00:00", "Z")
+
+    def _build_authenticated_pair_campaign(
+        self,
+        *,
+        overlap_second_pair: bool = False,
+        with_incident_artifact: bool = False,
+    ) -> Path:
+        """Convert the synthetic corpus into nine immutable pair transactions."""
+
+        config_path = self.fixture.metadata / "config.json"
+        environment_path = self.fixture.metadata / "environment.json"
+        manifest_path = self.fixture.metadata / "manifest.json"
+        order_path = self.fixture.metadata / "run_order.json"
+        config = report.read_json(config_path)
+        environment = report.read_json(environment_path)
+        manifest = report.read_json(manifest_path)
+        run_order = report.read_json(order_path)
+        legacy_freeze = report.read_json(self.fixture.results / "freeze_check.json")
+        policy = json.loads(json.dumps(run_matrix.HARDWARE_MATCHING_POLICY))
+        production_root = Path(run_matrix.__file__).resolve().parents[1]
+        provider_gate = run_matrix.provider_token_gate_environment_record(
+            production_root
+        )
+        config["frozen_environment"]["hardware_matching_policy"] = policy
+        config["frozen_environment"]["provider_token_gate_sha256"] = (
+            report.document_sha256(provider_gate)
+        )
+        environment["hardware_matching_policy"] = policy
+        environment["provider_token_gate"] = provider_gate
+        bundle = report.environment_bundle_sha256(config, environment)
+        environment_id = f"synthetic-pair-campaign-{bundle[:16]}"
+        config["frozen_environment"]["environment_id"] = environment_id
+        config["frozen_environment"]["environment_bundle_sha256"] = bundle
+        environment["environment_id"] = environment_id
+        environment["environment_bundle_sha256"] = bundle
+        write_json(config_path, config)
+        write_json(environment_path, environment)
+
+        base_freeze = json.loads(json.dumps(legacy_freeze))
+        base_freeze.update(
+            {
+                "environment_id": environment_id,
+                "environment_bundle_sha256": bundle,
+                "hardware_matching_policy": policy,
+                "provider_token_gate": provider_gate,
+                "metadata_document_sha256": {
+                    "config": report.document_sha256(config),
+                    "environment": report.document_sha256(environment),
+                    "manifest": report.document_sha256(manifest),
+                    "run_order": report.document_sha256(run_order),
+                },
+            }
+        )
+
+        tasks = report._manifest_tasks(self.fixture.benchmark, manifest)
+        _, expected_p01 = report._expected_assignments(config, run_order, tasks)
+        planned_by_pair: dict[str, list[dict[str, object]]] = {}
+        for planned in expected_p01:
+            planned_by_pair.setdefault(str(planned["pair_id"]), []).append(planned)
+
+        campaign_root = self.fixture.benchmark / "scratch_pad" / "p01-campaign"
+        index = campaign_manager.initialize(campaign_root, self.fixture.benchmark)
+        base_time = dt.datetime(2026, 8, 20, tzinfo=dt.timezone.utc)
+        for pair_index, canonical_pair in enumerate(index["canonical_pairs"]):
+            pair_id = str(canonical_pair["pair_id"])
+            job_id = str(910_001 + pair_index)
+            node = run_matrix.HARDWARE_MATCHING_POLICY["vetted_nodes"][
+                pair_index % len(run_matrix.HARDWARE_MATCHING_POLICY["vetted_nodes"])
+            ]
+            index, pair_root = campaign_manager.begin_attempt(
+                campaign_root, index, pair_id, job_id, str(node)
+            )
+            for relative in ("records", "attempts", "incidents", "allocation_hardware"):
+                (pair_root / relative).mkdir(parents=True, exist_ok=True)
+
+            pair_freeze = json.loads(json.dumps(base_freeze))
+            # Exercise the intended cross-pair heterogeneity while retaining the
+            # exact 4-logical-CPU/2-core/1-socket/32-GiB allocation invariants.
+            pair_freeze["host_class"]["processor"] = f"Synthetic vetted CPU {pair_index}"
+            pair_freeze["host_class"]["cpu_model"] = 143 + pair_index
+            pair_freeze["host_class"]["visible_memory_bytes"] += pair_index * 4096
+            write_json(pair_root / "freeze_check.json", pair_freeze)
+
+            scheduler = {
+                "partition": "KFOUNTOU",
+                "job_oversubscribe": "OK",
+                "partition_oversubscribe": "FORCE:1",
+                "node_list": node,
+                "exclusive": False,
+                "sharing_policy": "partition_forced_oversubscription",
+                "dynamic_co_tenant_count_recorded": False,
+            }
+            hardware = run_matrix._allocation_hardware_record_payload(
+                pair_freeze,
+                job_id=job_id,
+                hostname=str(node),
+                cpu_affinity_logical_cpus=[0, 1, 2, 3],
+                scheduler_sharing=scheduler,
+                slurm_gpu_provenance={
+                    "alloc_tres": "billing=4,cpu=4,mem=32G,node=1",
+                    "allocated_gpu_count": 0,
+                    "gpu_environment": {
+                        "SLURM_GPUS_ON_NODE": "0",
+                        "SLURM_JOB_GPUS": None,
+                        "CUDA_VISIBLE_DEVICES": "",
+                    },
+                },
+            )
+            hardware["record_sha256"] = report.document_sha256(hardware)
+            hardware_path = pair_root / "allocation_hardware" / f"slurm-{job_id}.json"
+            write_json(hardware_path, hardware)
+            self.fixture.hardware_descriptor = {
+                "path": hardware_path.relative_to(pair_root).as_posix(),
+                "sha256": report.file_sha256(hardware_path),
+                "record_sha256": hardware["record_sha256"],
+                "job_id": job_id,
+            }
+            self.fixture.results = pair_root
+
+            pair_records: list[dict[str, object]] = []
+            planned_items = planned_by_pair[pair_id]
+            for planned in planned_items:
+                global_index = expected_p01.index(planned)
+                record_base = base_time
+                if overlap_second_pair and pair_index == 1:
+                    record_base -= dt.timedelta(minutes=4)
+                record = self.fixture._run_record(
+                    config,
+                    pair_freeze,
+                    tasks[str(planned["task_id"])],
+                    planned,
+                    global_index,
+                    record_base,
+                )
+                record["protocol"]["verified"].update(
+                    {
+                        "authenticated_provider_token_gate": True,
+                        "provider_gate_appserver_deliveries_reconciled": True,
+                        "provider_gate_terminal_endpoint": True,
+                    }
+                )
+                record.pop("matrix_record_sha256")
+                record["matrix_record_sha256"] = report.document_sha256(record)
+                pair_records.append(record)
+                write_json(pair_root / "records" / f"{record['run_id']}.json", record)
+                write_json(
+                    pair_root / "attempts" / f"{record['run_id']}.attempt-1.json",
+                    record,
+                )
+                write_text(
+                    pair_root / "attempts" / f"{record['run_id']}.attempt-1.jsonl",
+                    json.dumps(
+                        {"method": "rawResponse/completed", "run_id": record["run_id"]}
+                    )
+                    + "\n",
+                )
+            write_text(
+                pair_root / "runs.jsonl",
+                "".join(json.dumps(item, sort_keys=True) + "\n" for item in pair_records),
+            )
+            if with_incident_artifact and pair_index == 0:
+                self.fixture.add_qualifying_startup_retry()
+                pair_records = [
+                    report.read_json(
+                        pair_root / "records" / f"{planned['run_id']}.json"
+                    )
+                    for planned in planned_items
+                ]
+            runner_assignments = campaign_manager.planned_pair_assignments(
+                self.fixture.benchmark, pair_id
+            )
+            commit = run_matrix.create_or_verify_pair_commit(
+                pair_root, runner_assignments, pair_freeze
+            )
+            write_json(
+                pair_root / "last_chunk_status.json",
+                {
+                    "schema_version": 1,
+                    "kind": "highambench-matrix-chunk-status",
+                    "status": "stopped_after_requested_pair",
+                    "pair_id": pair_id,
+                    "completed_runs": 2,
+                    "planned_runs": 2,
+                    "pair_commit": run_matrix.pair_commit_descriptor(pair_root, commit),
+                },
+            )
+            campaign_manager.write_matrix_exit_marker(pair_root, pair_id, job_id, 0)
+
+            first_start = dt.datetime.fromisoformat(
+                str(pair_records[0]["started_at_utc"])
+            )
+            last_finish = dt.datetime.fromisoformat(
+                str(pair_records[-1]["finished_at_utc"])
+            )
+            active = dict(index["active_pair_attempt"])
+            active["started_at_utc"] = self._canonical_utc(
+                first_start - dt.timedelta(seconds=1)
+            )
+            index = dict(index)
+            index["active_pair_attempt"] = active
+            index = campaign_manager.write_index(campaign_root, index)
+            committed = campaign_manager.committed_descriptor(
+                campaign_root,
+                self.fixture.benchmark,
+                index,
+                active,
+                committed_at_utc=self._canonical_utc(
+                    last_finish + dt.timedelta(seconds=1)
+                ),
+            )
+            committed_pairs = dict(index["committed_pairs"])
+            committed_pairs[pair_id] = committed
+            index = dict(index)
+            index["committed_pairs"] = committed_pairs
+            index["active_pair_attempt"] = None
+            index = campaign_manager.write_index(campaign_root, index)
+
+        if not overlap_second_pair:
+            self.assertEqual(
+                campaign_manager.load_and_verify_index(
+                    campaign_root, self.fixture.benchmark
+                ),
+                index,
+            )
+        return campaign_root
 
     def _canary_binding_kwargs(self) -> dict[str, object]:
         config = report.read_json(self.fixture.metadata / "config.json")
@@ -5664,6 +6006,224 @@ class RenderP01ReportTests(unittest.TestCase):
         write_json(self.fixture.results / "active_run.json", {"kind": "unfinished"})
         with self.assertRaisesRegex(report.ReportError, "active-run marker"):
             self.render("active-run-marker")
+
+    def test_pair_hardware_may_vary_across_pairs_but_not_within_pair(self) -> None:
+        rows: list[dict[str, object]] = []
+        for tier in range(1, 4):
+            for repetition in range(1, 4):
+                pair_id = f"P01-T{tier}-rep-0{repetition}"
+                descriptor = {
+                    "path": f"allocation_hardware/slurm-{tier}{repetition}.json",
+                    "sha256": f"{tier}" * 64,
+                    "record_sha256": f"{repetition}" * 64,
+                    "job_id": f"{tier}{repetition}",
+                }
+                common = {
+                    "pair_id": pair_id,
+                    "task_id": f"P01-T{tier}",
+                    "tier": f"T{tier}",
+                    "repetition_id": f"rep-0{repetition}",
+                    "allocation_hardware": descriptor,
+                    "allocation_job_id": descriptor["job_id"],
+                    "allocation_hostname": f"node-{tier}",
+                    "allocation_host_class_sha256": f"{tier + 3}" * 64,
+                    "allocation_record_sha256": descriptor["record_sha256"],
+                }
+                for condition in ("N", "L"):
+                    rows.append(
+                        {
+                            **common,
+                            "condition": condition,
+                            "pass": condition == "L",
+                            "scored_elapsed_seconds": 10.0 + (condition == "L"),
+                            "model_tokens": 100 + (condition == "L"),
+                        }
+                    )
+        pairs = report._pairs(rows)
+        self.assertEqual(len(pairs), 9)
+        self.assertEqual(len({pair["allocation_job_id"] for pair in pairs}), 9)
+        self.assertTrue(all(pair["same_authenticated_allocation"] for pair in pairs))
+
+        rows[1]["allocation_hardware"] = {
+            **rows[1]["allocation_hardware"],  # type: ignore[arg-type]
+            "job_id": "999999",
+        }
+        with self.assertRaisesRegex(
+            report.ReportError, "same authenticated allocation"
+        ):
+            report._pairs(rows)
+
+    def test_campaign_recursive_manifest_rejects_symlinks(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            write_text(root / "regular.json", "{}\n")
+            count, total, digest = report._recursive_file_manifest(root)
+            self.assertEqual(count, 1)
+            self.assertEqual(total, 3)
+            self.assertRegex(digest, r"^[0-9a-f]{64}$")
+            (root / "linked.json").symlink_to(root / "regular.json")
+            with self.assertRaisesRegex(report.ReportError, "contains a symlink"):
+                report._recursive_file_manifest(root)
+
+    def test_report_reopens_only_digest_bound_incident_artifacts(self) -> None:
+        root = Path(self.temporary.name) / "reported-incident-artifacts"
+        artifact = root / "incidents" / "retained.agent_log.artifact"
+        write_text(artifact, "authenticated retained log\n")
+        incident = {
+            "agent_log": artifact.relative_to(root).as_posix(),
+            "agent_log_sha256": report.file_sha256(artifact),
+            "validation_log": None,
+            "validation_log_sha256": None,
+        }
+        self.assertEqual(
+            report._authenticated_incident_artifact_descriptors(
+                root, incident, label="fixture incident"
+            ),
+            [
+                {
+                    "field": "agent_log",
+                    "path": artifact.relative_to(root).as_posix(),
+                    "sha256": report.file_sha256(artifact),
+                }
+            ],
+        )
+        incident["agent_log_sha256"] = "0" * 64
+        with self.assertRaisesRegex(report.ReportError, "authentication failed"):
+            report._authenticated_incident_artifact_descriptors(
+                root, incident, label="fixture incident"
+            )
+
+    def test_failed_partial_pair_cause_is_disclosed_without_schema_expansion(
+        self,
+    ) -> None:
+        descriptor = {
+            "outcome": "matrix_error",
+            "final_record_count": 1,
+        }
+        self.assertEqual(
+            report._failed_attempt_cause_summary(
+                descriptor,
+                [],
+                active_marker_present=False,
+                boundary_cause=None,
+            ),
+            "partial_pair_matrix_error",
+        )
+        self.assertEqual(
+            report._failed_attempt_cause_summary(
+                descriptor,
+                [
+                    {
+                        "status": "terminal_pre_prompt_system_error",
+                        "failure_code": "SYSTEM_ERROR",
+                    }
+                ],
+                active_marker_present=False,
+                boundary_cause=None,
+            ),
+            "terminal_pre_prompt_system_error/SYSTEM_ERROR",
+        )
+
+    def test_authenticated_nine_pair_campaign_renders_and_rejects_commit_tamper(
+        self,
+    ) -> None:
+        campaign_root = self._build_authenticated_pair_campaign()
+        value = report.build_report(
+            self.fixture.benchmark,
+            campaign_root,
+            Path(self.temporary.name) / "campaign-report",
+            compile_pdf=False,
+        )
+        self.assertEqual(value["final_scored_record_count"], 18)
+        campaign = value["provenance"]["pair_campaign"]
+        self.assertEqual(campaign["committed_pair_count"], 9)
+        self.assertEqual(campaign["failed_pair_attempt_count"], 0)
+        self.assertEqual(
+            value["analysis"]["distinct_authenticated_allocation_count"], 9
+        )
+        self.assertEqual(value["analysis"]["distinct_slurm_job_count"], 9)
+        self.assertEqual(value["analysis"]["distinct_hostname_count"], 3)
+        self.assertEqual(value["analysis"]["distinct_host_class_count"], 9)
+        self.assertTrue(
+            all(
+                pair["same_authenticated_allocation"]
+                for pair in value["pairs"]
+            )
+        )
+
+        first_pair = campaign["commits"][0]
+        commit_path = campaign_root / first_pair["path"] / "pair_commit.json"
+        commit_path.chmod(0o600)
+        commit = report.read_json(commit_path)
+        commit["pair_id"] = "P01-T1-rep-03"
+        write_json(commit_path, commit)
+        commit_path.chmod(0o444)
+        with self.assertRaisesRegex(
+            report.ReportError, "authentication failed|recursive tree"
+        ):
+            report.build_report(
+                self.fixture.benchmark,
+                campaign_root,
+                Path(self.temporary.name) / "campaign-tampered-report",
+                compile_pdf=False,
+            )
+
+    def test_campaign_report_authenticates_retained_incident_artifact(self) -> None:
+        campaign_root = self._build_authenticated_pair_campaign(
+            with_incident_artifact=True
+        )
+        value = report.build_report(
+            self.fixture.benchmark,
+            campaign_root,
+            Path(self.temporary.name) / "campaign-incident-artifact-report",
+            compile_pdf=False,
+        )
+        incidents = value["provenance"]["matrix_incident_authentication"]
+        self.assertEqual(incidents["resolved_pre_prompt_retry_count"], 1)
+        self.assertEqual(len(incidents["incidents"]), 1)
+        retained = incidents["incidents"][0]["retained_artifacts"]
+        self.assertEqual(len(retained), 1)
+        self.assertEqual(retained[0]["field"], "agent_log")
+        self.assertRegex(retained[0]["sha256"], r"^[0-9a-f]{64}$")
+        self.assertTrue(retained[0]["path"].startswith("incidents/"))
+
+    def test_campaign_rejects_adjacent_pair_run_overlap_end_to_end(self) -> None:
+        campaign_root = self._build_authenticated_pair_campaign(
+            overlap_second_pair=True
+        )
+        with self.assertRaisesRegex(
+            report.ReportError, "overlap|precedes|chronology|temporal order"
+        ):
+            report.build_report(
+                self.fixture.benchmark,
+                campaign_root,
+                Path(self.temporary.name) / "campaign-overlap-report",
+                compile_pdf=False,
+            )
+
+    def test_canonical_temporal_order_rejects_cross_pair_overlap(self) -> None:
+        expected = [
+            {"run_id": f"run-{index}", "pair_id": f"pair-{(index - 1) // 2}"}
+            for index in range(1, 19)
+        ]
+        base = dt.datetime(2026, 8, 13, tzinfo=dt.timezone.utc)
+        records = [
+            {
+                "run_id": item["run_id"],
+                "started_at_utc": (base + dt.timedelta(seconds=2 * index)).isoformat(),
+                "finished_at_utc": (
+                    base + dt.timedelta(seconds=2 * index + 1)
+                ).isoformat(),
+            }
+            for index, item in enumerate(expected)
+        ]
+        report._validate_canonical_temporal_order(records, expected)
+        # The first run of pair 2 now starts before pair 1's last run finishes.
+        records[2]["started_at_utc"] = records[1]["started_at_utc"]
+        with self.assertRaisesRegex(
+            report.ReportError, "frozen canonical temporal order"
+        ):
+            report._validate_canonical_temporal_order(records, expected)
 
     @unittest.skipUnless(
         shutil.which("pdflatex") and shutil.which("gs"),

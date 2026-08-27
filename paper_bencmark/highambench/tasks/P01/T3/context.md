@@ -34,7 +34,7 @@ For any finite list of real inputs, the absolute error of recursive summation un
 
 The shared definition `noGuardRecursiveRunningBudget` is exactly the sum after the leading `u`. It is zero for zero or one input. At every later step it adds the size of the computed previous sum and the size of the new input.
 
-No `gamma` condition is needed. A `gamma` condition is a restriction such as `k*u < 1`; it is needed for product bounds, but equation (5.3) is a direct sum of local errors.
+No `p01Gamma` condition is needed. A `p01Gamma` condition is a restriction such as `k*u < 1`; it is needed for product bounds, but equation (5.3) is a direct sum of local errors.
 
 ## Informal proof from the paper
 
@@ -48,4 +48,4 @@ This is exactly `u` times the updated running budget. This proof is a concise fo
 
 ## Fixed Lean target
 
-The exact checked statement is the theorem `p01_t3_noGuard_recursive_running_error_bound` in `Target.lean`. It uses only the shared `HighamBench` definitions: `NoGuardAddModel`, `recursiveSum`, and `noGuardRecursiveRunningBudget`. The same statement and shared definitions are used in both benchmark conditions.
+The exact checked statement is the theorem `p01_t3_noGuard_recursive_running_error_bound` in `Target.lean`. It uses only the shared `HighamBench` definitions: `NoGuardAddModel`, `p01RecursiveSum`, and `noGuardRecursiveRunningBudget`. The same statement and shared definitions are used in both benchmark conditions.

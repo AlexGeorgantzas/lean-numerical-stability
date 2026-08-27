@@ -14,20 +14,20 @@
     "The target is the absolute-error result, so no nonzero-dot-product assumption is needed."
   ],
   "author_label": "Proposition 5.11",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P02/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p02_t3_dotK_error_bound\n    (fp : ErrorFreeDotModel) (n K : \u2115) (x y : Fin (n + 1) \u2192 \u211d)\n    (hK : 3 \u2264 K)\n    (hsmall : (8 : \u211d) * ((n + 1 : \u2115) : \u211d) * fp.u \u2264 1) :\n    |dotK fp K x y - exactDot x y| \u2264\n      (fp.u + 2 * (gamma fp.u (4 * (n + 1) - 2)) ^ 2) * |exactDot x y| +\n        (gamma fp.u (4 * (n + 1) - 2)) ^ K * dotMagnitude x y",
+    "lean_header": "theorem p02_t3_dotK_error_bound\n    (fp : ErrorFreeDotModel) (n K : \u2115) (x y : Fin (n + 1) \u2192 \u211d)\n    (hK : 3 \u2264 K)\n    (hsmall : (8 : \u211d) * ((n + 1 : \u2115) : \u211d) * fp.u \u2264 1) :\n    |dotK fp K x y - exactDot x y| \u2264\n      (fp.u + 2 * (p02Gamma fp.u (4 * (n + 1) - 2)) ^ 2) * |exactDot x y| +\n        (p02Gamma fp.u (4 * (n + 1) - 2)) ^ K * dotMagnitude x y",
     "namespace": "HighamBench",
     "plain_language": "Without multiplication underflow, optimized DotK has the absolute K-fold error bound in Proposition 5.11.",
     "target_file": "paper_bencmark/highambench/tasks/P02/T3/Target.lean",
     "theorem_name": "p02_t3_dotK_error_bound"
   },
-  "informal_proof": "Show that the length-2N transform sums exactly to the dot product and has absolute mass at most |x^T y|+gamma_(2N)|x|^T|y|. For K>=4 apply Proposition 4.10 with parameter K-1; for K=3 use Proposition 4.5 because SumK(_,2)=Sum2. Then discharge the gamma comparisons leading to equation (5.10).",
+  "informal_proof": "Show that the length-2N transform sums exactly to the dot product and has absolute mass at most |x^T y|+gamma_(2N)|x|^T|y|. For K>=4 apply Proposition 4.10 with parameter K-1; for K=3 use Proposition 4.5 because SumK(_,2)=Sum2. Then discharge the p02Gamma comparisons leading to equation (5.10).",
   "informal_statement": "In the no-multiplication-underflow case, DotK error is bounded by (u+2 gamma_(4N-2)^2)|x^T y| + gamma_(4N-2)^K |x|^T|y|.",
   "limits": {
     "total_model_tokens": 5000000,
@@ -56,7 +56,7 @@
     "dotK",
     "exactDot",
     "dotMagnitude",
-    "gamma"
+    "p02Gamma"
   ],
   "source_locations": [
     {
@@ -87,7 +87,7 @@
   "task_id": "P02-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "NumStability has no VecSum, SumK, TwoProduct-transform, or DotK theorem. A proof must build iterated error-free-transform invariants, the transformed-vector mass estimate, and several gamma comparisons, going materially beyond the available ordinary and one-level extended dot-product results.",
+  "tier_rationale": "NumStability has no VecSum, SumK, TwoProduct-transform, or DotK theorem. A proof must build iterated error-free-transform invariants, the transformed-vector mass estimate, and several p02Gamma comparisons, going materially beyond the available ordinary and one-level extended dot-product results.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P02/T3/Target.lean",
     "mode": "shared automatic validator",

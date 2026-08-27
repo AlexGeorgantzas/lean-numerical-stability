@@ -1,4 +1,4 @@
-import HighamBench.Core
+import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Analysis.CStarAlgebra.Matrix
 
 namespace HighamBench

@@ -219,6 +219,27 @@ VALIDATION_AUTHENTICATION_FIELDS = {
     "submission_request_sha256",
     "submission_sequence",
 }
+PLURAL_VALIDATION_AUTHENTICATION_FIELDS = {
+    "schema_version",
+    "run_id",
+    "task_id",
+    "candidate_sha256",
+    "required_declarations",
+    "controlled_sorries",
+    "controlled_manifest_sha256",
+    "validator_contract_sha256",
+    "submission_request_sha256",
+    "submission_sequence",
+}
+CONTROLLED_SORRY_FIELDS = {
+    "placeholder_order",
+    "placeholder_id",
+    "declaration_id",
+    "lean_name",
+    "marker",
+    "line",
+    "column",
+}
 
 
 def _valid_nested_submission_wire(value: Any) -> bool:
@@ -1416,7 +1437,7 @@ def _metadata_tasks(manifest: Mapping[str, Any], errors: list[str]) -> dict[str,
                 continue
             task_id = target.get("task_id")
             tier = target.get("tier")
-            if not isinstance(task_id, str) or tier not in ("T1", "T2", "T3"):
+            if not isinstance(task_id, str) or tier not in ("T1", "T2", "T3", "T4"):
                 errors.append(f"manifest contains invalid task id or tier: {task_id!r}/{tier!r}")
                 continue
             if task_id in tasks:
@@ -1442,19 +1463,38 @@ def _metadata_tasks(manifest: Mapping[str, Any], errors: list[str]) -> dict[str,
                     context_relative = (
                         declared_path.parent / "context.md"
                     ).as_posix()
-            tasks[task_id] = {
+            required_declarations: list[str] | None = None
+            target_theorem: str | None = None
+            if isinstance(lean_target, Mapping):
+                if tier == "T4":
+                    raw_required = lean_target.get("required_declarations")
+                    if (
+                        not isinstance(raw_required, list)
+                        or not raw_required
+                        or any(
+                            not isinstance(value, str) or not value
+                            for value in raw_required
+                        )
+                        or "declaration" in lean_target
+                    ):
+                        errors.append(
+                            f"manifest task {task_id} has invalid plural Lean identity"
+                        )
+                    else:
+                        required_declarations = list(raw_required)
+                elif isinstance(lean_target.get("declaration"), str):
+                    target_theorem = lean_target.get("declaration")
+            task_identity = {
                 "paper_id": paper_id,
                 "paper_sha256": paper_digest,
                 "tier": tier,
                 "target_file": target_relative,
                 "context_file": context_relative,
-                "target_theorem": (
-                    lean_target.get("declaration")
-                    if isinstance(lean_target, Mapping)
-                    and isinstance(lean_target.get("declaration"), str)
-                    else None
-                ),
+                "target_theorem": target_theorem,
             }
+            if tier == "T4":
+                task_identity["required_declarations"] = required_declarations
+            tasks[task_id] = task_identity
     return tasks
 
 
@@ -2196,6 +2236,7 @@ def _check_frozen_run_evidence(
         "run_order": _document_digest(run_order),
     }
     configured_prompt_protocol = frozen.get("prompt_protocol")
+    hardware_matching_policy = frozen.get("hardware_matching_policy")
     environment: Mapping[str, Any] | None = None
     expected_release_file_count: int | None = None
     expected_source_file_count: int | None = None
@@ -2228,6 +2269,15 @@ def _check_frozen_run_evidence(
             else:
                 environment = raw_environment
                 expected_metadata["environment"] = _document_digest(environment)
+                if hardware_matching_policy is not None and (
+                    hardware_matching_policy
+                    != getattr(run_matrix, "HARDWARE_MATCHING_POLICY", None)
+                    or environment.get("hardware_matching_policy")
+                    != hardware_matching_policy
+                ):
+                    errors.append(
+                        "paired-hardware policy disagrees across frozen metadata"
+                    )
                 if environment.get("environment_bundle_definition") != ENVIRONMENT_BUNDLE_DEFINITION:
                     errors.append("environment record names the wrong canonical bundle algorithm")
                 bundle = _environment_bundle_digest(config, environment)
@@ -2431,6 +2481,7 @@ def _check_frozen_run_evidence(
         )
 
     evidence_digests: set[str] = set()
+    reference_policy_freeze: Mapping[str, Any] | None = None
     for index, run in enumerate(runs):
         label = str(run.get("run_id") or f"input record {index}")
         wrapper = run.get("frozen_run_verification")
@@ -2453,6 +2504,36 @@ def _check_frozen_run_evidence(
             or check.get("ok") is not True
         ):
             errors.append(f"run {label} does not cite a successful supported freeze check")
+        elif hardware_matching_policy is not None:
+            if environment is not None:
+                metadata_reference = json.loads(json.dumps(check))
+                metadata_reference["host_class"] = json.loads(
+                    json.dumps(environment.get("host_class"))
+                )
+                metadata_reference["provider_token_gate"] = json.loads(
+                    json.dumps(environment.get("provider_token_gate"))
+                )
+                try:
+                    run_matrix.verify_pair_policy_compatible_freeze_checks(
+                        metadata_reference, check
+                    )
+                except BenchmarkToolError as error:
+                    errors.append(
+                        f"run {label} freeze check violates current paired-hardware "
+                        f"metadata: {error}"
+                    )
+            if reference_policy_freeze is None:
+                reference_policy_freeze = check
+            else:
+                try:
+                    run_matrix.verify_pair_policy_compatible_freeze_checks(
+                        reference_policy_freeze, check
+                    )
+                except BenchmarkToolError as error:
+                    errors.append(
+                        f"run {label} freeze check differs outside the paired-hardware "
+                        f"allowlist: {error}"
+                    )
         for field, wanted in (
             ("benchmark_id", config.get("benchmark_id")),
             ("environment_id", frozen.get("environment_id")),
@@ -2710,12 +2791,41 @@ def _check_frozen_run_evidence(
             or any(host.get(field) in (None, "") for field in required_host_fields)
         ):
             errors.append(f"run {label} freeze check has incomplete host evidence")
+        elif hardware_matching_policy is not None and check.get(
+            "hardware_matching_policy"
+        ) != hardware_matching_policy:
+            errors.append(f"run {label} freeze check has a stale paired-hardware policy")
         elif environment is not None:
             recorded_host = environment.get("host_class")
-            if not isinstance(recorded_host, Mapping) or any(
-                host.get(field) != recorded_host.get(field) for field in required_host_fields
-            ):
+            if not isinstance(recorded_host, Mapping):
                 errors.append(f"run {label} freeze check host disagrees with environment.json")
+            elif hardware_matching_policy is None:
+                if any(
+                    host.get(field) != recorded_host.get(field)
+                    for field in required_host_fields
+                ):
+                    errors.append(
+                        f"run {label} freeze check host disagrees with environment.json"
+                    )
+            else:
+                policy_host = hardware_matching_policy.get("frozen_host_class")
+                exact_fields = (
+                    policy_host.get("exact_fields")
+                    if isinstance(policy_host, Mapping)
+                    else None
+                )
+                if (
+                    check.get("hardware_matching_policy")
+                    != hardware_matching_policy
+                    or not isinstance(exact_fields, list)
+                    or any(
+                        host.get(field) != recorded_host.get(field)
+                        for field in exact_fields
+                    )
+                ):
+                    errors.append(
+                        f"run {label} freeze check violates paired-hardware invariants"
+                    )
         metadata_digests = check.get("metadata_document_sha256")
         if not isinstance(metadata_digests, Mapping):
             errors.append(f"run {label} freeze check has no metadata document digests")
@@ -2723,9 +2833,15 @@ def _check_frozen_run_evidence(
             for name, wanted in expected_metadata.items():
                 if metadata_digests.get(name) != wanted:
                     errors.append(f"run {label} freeze check is stale for {name}")
-    if len(evidence_digests) > 1:
+    if len(evidence_digests) > 1 and hardware_matching_policy is None:
         errors.append("runs cite more than one frozen-run verification artifact")
-    freeze_digest = next(iter(evidence_digests)) if len(evidence_digests) == 1 else None
+    freeze_digest = (
+        next(iter(evidence_digests))
+        if len(evidence_digests) == 1
+        else _document_digest({"freeze_check_sha256s": sorted(evidence_digests)})
+        if evidence_digests and hardware_matching_policy is not None
+        else None
+    )
     both_canaries_bound = bool(
         repository_root is not None
         and production_prompt_protocol is not None
@@ -4165,29 +4281,89 @@ def _check_validation_authentication(
     ):
         errors.append(f"final run {label} validation record self-hash is invalid")
     authentication = validation.get("authentication")
-    if not isinstance(authentication, Mapping) or set(authentication) != (
-        VALIDATION_AUTHENTICATION_FIELDS
-    ):
+    plural = task.get("tier") == "T4"
+    expected_fields = (
+        PLURAL_VALIDATION_AUTHENTICATION_FIELDS
+        if plural
+        else VALIDATION_AUTHENTICATION_FIELDS
+    )
+    if not isinstance(authentication, Mapping) or set(authentication) != expected_fields:
         errors.append(f"final run {label} validation authentication schema is invalid")
         return
-    expected_target = task.get("target_theorem")
-    if (
-        authentication.get("schema_version") != 1
-        or authentication.get("run_id") != run.get("run_id")
+    common_identity_invalid = (
+        authentication.get("run_id") != run.get("run_id")
         or authentication.get("task_id") != run.get("task_id")
         or not _hex_digest(authentication.get("candidate_sha256"))
-        or not isinstance(authentication.get("target_theorem"), str)
-        or not authentication.get("target_theorem")
-        or (
-            isinstance(expected_target, str)
-            and expected_target
-            and authentication.get("target_theorem") != expected_target
-        )
         or authentication.get("controlled_manifest_sha256")
         != controlled_manifest_sha256
         or not _hex_digest(authentication.get("validator_contract_sha256"))
-    ):
-        errors.append(f"final run {label} validation authentication identity is invalid")
+    )
+    if plural:
+        expected_required = task.get("required_declarations")
+        required = authentication.get("required_declarations")
+        holes = authentication.get("controlled_sorries")
+        proof_declarations: list[str] = []
+        holes_valid = isinstance(holes, list) and bool(holes)
+        if holes_valid:
+            previous_required_index = -1
+            for index, hole in enumerate(holes, start=1):
+                if not isinstance(hole, Mapping) or set(hole) != CONTROLLED_SORRY_FIELDS:
+                    holes_valid = False
+                    break
+                lean_name = hole.get("lean_name")
+                placeholder_id = hole.get("placeholder_id")
+                if (
+                    hole.get("placeholder_order") != index
+                    or not isinstance(lean_name, str)
+                    or not isinstance(placeholder_id, str)
+                    or hole.get("marker") != f"-- PROOF_START {placeholder_id}"
+                    or not isinstance(required, list)
+                    or lean_name not in required
+                ):
+                    holes_valid = False
+                    break
+                required_index = required.index(lean_name)
+                if required_index <= previous_required_index:
+                    holes_valid = False
+                    break
+                previous_required_index = required_index
+                proof_declarations.append(lean_name)
+        expected_holes = task.get("controlled_sorries")
+        if (
+            authentication.get("schema_version") != 2
+            or common_identity_invalid
+            or not isinstance(required, list)
+            or not required
+            or required != expected_required
+            or not holes_valid
+            or (
+                expected_holes is not None
+                and holes != expected_holes
+            )
+            or validation.get("required_declarations") != required
+            or validation.get("controlled_sorries") != holes
+            or validation.get("proof_declarations") != proof_declarations
+            or validation.get("target_theorem") != proof_declarations[0]
+        ):
+            errors.append(
+                f"final run {label} validation authentication identity is invalid"
+            )
+    else:
+        expected_target = task.get("target_theorem")
+        if (
+            authentication.get("schema_version") != 1
+            or common_identity_invalid
+            or not isinstance(authentication.get("target_theorem"), str)
+            or not authentication.get("target_theorem")
+            or (
+                isinstance(expected_target, str)
+                and expected_target
+                and authentication.get("target_theorem") != expected_target
+            )
+        ):
+            errors.append(
+                f"final run {label} validation authentication identity is invalid"
+            )
 
     request_sha = authentication.get("submission_request_sha256")
     sequence = authentication.get("submission_sequence")
@@ -6084,6 +6260,45 @@ def check_result_set(
                 errors.append(f"controlled manifest is missing for {task_id}: {path}")
             else:
                 controlled_manifest_hashes[task_id] = sha256_file(path)
+            task = tasks[task_id]
+            if task.get("tier") == "T4":
+                target_file = task.get("target_file")
+                if not isinstance(target_file, str) or not target_file:
+                    errors.append(f"T4 task {task_id} has no target path")
+                    continue
+                task_path = (
+                    repository_root.resolve()
+                    / "paper_bencmark"
+                    / "highambench"
+                    / PurePosixPath(target_file).parent
+                    / "task.json"
+                )
+                try:
+                    task_record = read_json(task_path)
+                except (OSError, BenchmarkToolError, json.JSONDecodeError) as error:
+                    errors.append(f"cannot read T4 task record {task_id}: {error}")
+                    continue
+                validation = (
+                    task_record.get("validation")
+                    if isinstance(task_record, Mapping)
+                    else None
+                )
+                if not isinstance(validation, Mapping):
+                    errors.append(f"T4 task {task_id} has no validation object")
+                    continue
+                raw_required = validation.get("required_declarations")
+                raw_holes = validation.get("controlled_sorries")
+                if raw_required != task.get("required_declarations"):
+                    errors.append(
+                        f"T4 task {task_id} required_declarations disagrees with manifest"
+                    )
+                if not isinstance(raw_holes, list) or not raw_holes or any(
+                    not isinstance(hole, Mapping) or set(hole) != CONTROLLED_SORRY_FIELDS
+                    for hole in raw_holes
+                ):
+                    errors.append(f"T4 task {task_id} controlled_sorries is invalid")
+                else:
+                    task["controlled_sorries"] = [dict(hole) for hole in raw_holes]
     (
         configured_prompt_protocol,
         expected_prompt_provenance,
@@ -6225,6 +6440,7 @@ def check_result_set(
     ultra_accounting_audits: list[dict[str, Any]] = []
     matrix_record_audits: list[dict[str, Any]] = []
     prompt_release_audits: list[dict[str, Any]] = []
+    paired_hardware_audits: list[dict[str, Any]] = []
     expected_agent_version = frozen.get("agent_version")
     expected_model_version = frozen.get("model_version")
     for agent in sorted(agent_keys):
@@ -6443,6 +6659,80 @@ def check_result_set(
         for pair_id, seeds in seeds_by_pair.items():
             if len(seeds) != 1:
                 errors.append(f"pair {pair_id} for agent {agent} does not use one matching seed")
+
+        hardware_policy = frozen.get("hardware_matching_policy")
+        if hardware_policy is not None:
+            if hardware_policy != getattr(run_matrix, "HARDWARE_MATCHING_POLICY", None):
+                errors.append("config has an unsupported paired-hardware policy")
+            for pair_id in sorted(planned_pairs):
+                pair_finals = [
+                    record
+                    for record in final_records
+                    if _agent_key(record) == agent
+                    and record.get("pair_id") == pair_id
+                ]
+                by_condition = {
+                    str(record.get("condition")): record for record in pair_finals
+                }
+                valid = True
+                if set(by_condition) != {"N", "L"} or len(pair_finals) != 2:
+                    errors.append(
+                        f"pair {pair_id} for agent {agent} lacks exactly one N/L final"
+                    )
+                    continue
+                n, l = by_condition["N"], by_condition["L"]
+                n_hardware = n.get("allocation_hardware")
+                l_hardware = l.get("allocation_hardware")
+                descriptor_fields = {"path", "sha256", "record_sha256", "job_id"}
+                if (
+                    not isinstance(n_hardware, Mapping)
+                    or set(n_hardware) != descriptor_fields
+                    or not isinstance(l_hardware, Mapping)
+                    or set(l_hardware) != descriptor_fields
+                    or dict(n_hardware) != dict(l_hardware)
+                    or not _hex_digest(n_hardware.get("sha256"))
+                    or not _hex_digest(n_hardware.get("record_sha256"))
+                    or not isinstance(n_hardware.get("path"), str)
+                    or not n_hardware.get("path")
+                    or not isinstance(n_hardware.get("job_id"), str)
+                    or not n_hardware.get("job_id")
+                ):
+                    errors.append(
+                        f"pair {pair_id} for agent {agent} does not use one exact "
+                        "authenticated allocation descriptor"
+                    )
+                    valid = False
+                n_wrapper = n.get("frozen_run_verification")
+                l_wrapper = l.get("frozen_run_verification")
+                if (
+                    not isinstance(n_wrapper, Mapping)
+                    or not isinstance(l_wrapper, Mapping)
+                    or n_wrapper.get("freeze_check_sha256")
+                    != l_wrapper.get("freeze_check_sha256")
+                    or n_wrapper.get("freeze_check") != l_wrapper.get("freeze_check")
+                ):
+                    errors.append(
+                        f"pair {pair_id} for agent {agent} does not share one exact "
+                        "allocation freeze"
+                    )
+                    valid = False
+                paired_hardware_audits.append(
+                    {
+                        "pair_id": pair_id,
+                        "agent_id": agent[0],
+                        "allocation_hardware": (
+                            dict(n_hardware)
+                            if isinstance(n_hardware, Mapping)
+                            else None
+                        ),
+                        "freeze_check_sha256": (
+                            n_wrapper.get("freeze_check_sha256")
+                            if isinstance(n_wrapper, Mapping)
+                            else None
+                        ),
+                        "same_authenticated_allocation": valid,
+                    }
+                )
 
     expected_final_count = len(expected) * len(agent_keys)
     if len(final_records) != expected_final_count:
@@ -6663,6 +6953,24 @@ def check_result_set(
         "ultra_submission_boundaries": submission_boundary_summary,
         "ultra_accounting_projections": accounting_projection_summary,
         "matrix_record_authentication": matrix_record_summary,
+        "paired_hardware_authentication": {
+            "schema_version": 1,
+            "policy": "exact_same_authenticated_slurm_allocation_per_pair",
+            "selected_pair_count": len(paired_hardware_audits),
+            "authenticated_pair_count": sum(
+                audit.get("same_authenticated_allocation") is True
+                for audit in paired_hardware_audits
+            ),
+            "cross_pair_hardware_variation_allowed": True,
+            "all_selected_pairs_authenticated": bool(
+                paired_hardware_audits
+                and all(
+                    audit.get("same_authenticated_allocation") is True
+                    for audit in paired_hardware_audits
+                )
+            ),
+            "pair_evidence": paired_hardware_audits,
+        },
         "expected_agents": len(agent_keys),
         "expected_pairs_per_agent": len(expected) // 2,
         "expected_final_runs_per_agent": len(expected),

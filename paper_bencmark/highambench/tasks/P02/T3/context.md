@@ -34,8 +34,8 @@ Algorithm 5.10 passes that vector to `SumK` with parameter `K-1`. The shared
 For a vector `w` of length `M`, exact sum `s`, absolute mass `S`, and summation
 parameter `q >= 3`, Proposition 4.10 gives, under `4*M*u <= 1`,
 
-`|SumK(w,q)-s| <= (u+3*gamma(u,M-1)^2)*|s|
-                   + gamma(u,2*M-2)^q*S`.
+`|SumK(w,q)-s| <= (u+3*p02Gamma(u,M-1)^2)*|s|
+                   + p02Gamma(u,2*M-2)^q*S`.
 
 The `q = 2` case is the `Sum2` estimate of Proposition 4.5.
 
@@ -45,8 +45,8 @@ The paper assumes `K >= 3` and `8*N*u <= 1`.
 
 In the absence of multiplication underflow, `DotK` satisfies
 
-`|res-d| <= (u + 2*gamma(u,4*N-2)^2)*|d|
-             + gamma(u,4*N-2)^K*A`.
+`|res-d| <= (u + 2*p02Gamma(u,4*N-2)^2)*|d|
+             + p02Gamma(u,4*N-2)^K*A`.
 
 The theorem does not select the paper's relative-error corollary, which would
 need the additional assumption `d != 0`. It also does not select the underflow
@@ -59,15 +59,15 @@ Exactness of `TwoProduct` and `TwoSum` first shows that the transformed
 length-`2*N` vector sums to `d`. The estimates leading to equation (5.3) bound
 its total absolute magnitude by
 
-`|d| + gamma(u,2*N)*A`.
+`|d| + p02Gamma(u,2*N)*A`.
 
 For `K >= 4`, apply the `SumK` estimate of Proposition 4.10 to that transformed
 vector with parameter `K-1`. At the boundary `K = 3`, the called summation is
 `SumK(_,2) = Sum2`, so use Proposition 4.5 instead; this is the boundary case
 implicit in the paper's derivation, since Proposition 4.10 itself is stated for
 parameters at least three. Substitute the exact-sum and absolute-magnitude
-facts, then use the paper's gamma comparisons to replace the intermediate
-factors by `gamma(u,4*N-2)`. The smallness assumption implies this gamma factor
+facts, then use the paper's p02Gamma comparisons to replace the intermediate
+factors by `p02Gamma(u,4*N-2)`. The smallness assumption implies this p02Gamma factor
 is at most one, yielding equation (5.10) and the absolute-error statement of
 Proposition 5.11.
 
@@ -75,6 +75,6 @@ Proposition 5.11.
 
 The exact checked statement is `p02_t3_dotK_error_bound` in `Target.lean`.
 It uses only mathlib and the neutral shared `ErrorFreeDotModel`, `dotK`,
-`exactDot`, `dotMagnitude`, and `gamma`. The exact-product contract records the
+`exactDot`, `dotMagnitude`, and `p02Gamma`. The exact-product contract records the
 chosen no-multiplication-underflow case without exposing an evaluated-library
 name in the target.

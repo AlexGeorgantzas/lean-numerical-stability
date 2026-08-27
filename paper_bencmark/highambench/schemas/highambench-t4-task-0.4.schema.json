@@ -1,0 +1,778 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "highambench-t4-task-0.4.schema.json",
+  "title": "HighamBench T4 task metadata 0.4",
+  "description": "Paper-neutral metadata for one multi-declaration T4 corpus. Cross-record ordering, mapping, file-byte, and review consistency is additionally enforced by the generic validators.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "paper_id",
+    "tier",
+    "classification_frozen_before_runs",
+    "paper_source",
+    "context_file",
+    "limits",
+    "source_inventory_file",
+    "construction_inputs",
+    "source_inventory",
+    "declarations",
+    "review_units",
+    "validation",
+    "faithfulness_reviews"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "highambench-task-0.4"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^P[0-9]{2}-T4$"
+    },
+    "paper_id": {
+      "$ref": "highambench-t4-source-inventory-0.3.schema.json#/$defs/paperId"
+    },
+    "tier": {
+      "const": "T4"
+    },
+    "classification_frozen_before_runs": {
+      "type": "boolean"
+    },
+    "paper_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "local_path",
+        "sha256"
+      ],
+      "properties": {
+        "local_path": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "context_file": {
+      "$ref": "#/$defs/nonemptyString"
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_model_tokens",
+        "wall_clock_seconds"
+      ],
+      "properties": {
+        "total_model_tokens": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "wall_clock_seconds": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "source_inventory_file": {
+      "$ref": "#/$defs/nonemptyString"
+    },
+    "construction_inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "paper_definitions_sha256",
+        "target_sha256",
+        "source_inventory_sha256",
+        "review_campaign_status"
+      ],
+      "properties": {
+        "paper_definitions_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "target_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_inventory_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "review_campaign_status": {
+          "enum": [
+            "not_started",
+            "in_progress",
+            "replacement_required",
+            "accepted"
+          ]
+        }
+      }
+    },
+    "source_inventory": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "highambench-t4-source-inventory-0.3.schema.json#/$defs/sourceItem"
+      }
+    },
+    "declarations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/declaration"
+      }
+    },
+    "review_units": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/reviewUnit"
+      }
+    },
+    "validation": {
+      "$ref": "#/$defs/validation"
+    },
+    "faithfulness_reviews": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/faithfulnessReview"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "construction_inputs": {
+            "properties": {
+              "review_campaign_status": {
+                "const": "accepted"
+              }
+            },
+            "required": [
+              "review_campaign_status"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "review_units": {
+            "items": {
+              "properties": {
+                "review_status": {
+                  "const": "accepted"
+                }
+              },
+              "required": [
+                "review_status"
+              ]
+            }
+          },
+          "faithfulness_reviews": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "review_units": {
+            "items": {
+              "properties": {
+                "review_status": {
+                  "const": "pending"
+                }
+              },
+              "required": [
+                "review_status"
+              ]
+            }
+          },
+          "faithfulness_reviews": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification_frozen_before_runs": {
+            "const": true
+          }
+        },
+        "required": [
+          "classification_frozen_before_runs"
+        ]
+      },
+      "then": {
+        "properties": {
+          "construction_inputs": {
+            "properties": {
+              "review_campaign_status": {
+                "const": "accepted"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonemptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stableId": {
+      "$ref": "highambench-t4-source-inventory-0.3.schema.json#/$defs/stableId"
+    },
+    "sha256": {
+      "$ref": "highambench-t4-source-inventory-0.3.schema.json#/$defs/sha256"
+    },
+    "leanName": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_']*(\\.[A-Za-z_][A-Za-z0-9_']*)+$"
+    },
+    "declarationKind": {
+      "enum": [
+        "theorem",
+        "lemma",
+        "definition",
+        "abbrev",
+        "structure",
+        "inductive"
+      ]
+    },
+    "resultFormTag": {
+      "enum": [
+        "BND",
+        "EQ",
+        "CMP",
+        "EX"
+      ]
+    },
+    "semanticDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declaration",
+        "sha256"
+      ],
+      "properties": {
+        "declaration": {
+          "$ref": "#/$defs/leanName"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "declaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declaration_order",
+        "declaration_id",
+        "lean_name",
+        "controlled_source_file",
+        "controlled_source_line",
+        "declaration_kind",
+        "source_kind",
+        "source_tags",
+        "author_label",
+        "result_form_tag",
+        "source_item_ids",
+        "semantic_dependency_hashes",
+        "placeholder_id"
+      ],
+      "properties": {
+        "declaration_order": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "declaration_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "lean_name": {
+          "$ref": "#/$defs/leanName"
+        },
+        "controlled_source_file": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "controlled_source_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "declaration_kind": {
+          "$ref": "#/$defs/declarationKind"
+        },
+        "source_kind": {
+          "$ref": "highambench-t4-source-inventory-0.3.schema.json#/$defs/sourceKind"
+        },
+        "source_tags": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "highambench-t4-source-inventory-0.3.schema.json#/$defs/sourceTag"
+          }
+        },
+        "author_label": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/nonemptyString"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result_form_tag": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/resultFormTag"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_item_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "semantic_dependency_hashes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/semanticDependency"
+          }
+        },
+        "placeholder_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/stableId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "declaration_kind": {
+                "enum": [
+                  "theorem",
+                  "lemma"
+                ]
+              }
+            },
+            "required": [
+              "declaration_kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "placeholder_id": {
+                "$ref": "#/$defs/stableId"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "placeholder_id": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "reviewUnit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_unit_order",
+        "review_unit_id",
+        "source_item_ids",
+        "smallest_group_reason",
+        "declaration_ids",
+        "reused_declaration_ids",
+        "review_id",
+        "review_status"
+      ],
+      "properties": {
+        "review_unit_order": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "review_unit_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "source_item_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "smallest_group_reason": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "declaration_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "reused_declaration_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "review_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "review_status": {
+          "enum": [
+            "pending",
+            "accepted"
+          ]
+        }
+      }
+    },
+    "controlledSorry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "placeholder_order",
+        "placeholder_id",
+        "declaration_id",
+        "lean_name",
+        "marker",
+        "line",
+        "column"
+      ],
+      "properties": {
+        "placeholder_order": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "placeholder_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "declaration_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "lean_name": {
+          "$ref": "#/$defs/leanName"
+        },
+        "marker": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "controlled_target_file",
+        "required_declarations",
+        "controlled_sorries"
+      ],
+      "properties": {
+        "controlled_target_file": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "required_declarations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/leanName"
+          }
+        },
+        "controlled_sorries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/controlledSorry"
+          }
+        },
+        "mode": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "reject_noncontrolled_sorry_admit_new_axiom_unsafe_or_forbidden_import": {
+          "type": "boolean"
+        },
+        "reject_statement_changes": {
+          "type": "boolean"
+        }
+      }
+    },
+    "roleExecution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agent_id",
+        "model_identifier"
+      ],
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "model_identifier": {
+          "$ref": "#/$defs/nonemptyString"
+        }
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "score",
+        "tag",
+        "passed",
+        "evidence",
+        "discrepancies"
+      ],
+      "properties": {
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "tag": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "evidence": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "discrepancies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonemptyString"
+          }
+        }
+      }
+    },
+    "faithfulnessReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_order",
+        "review_id",
+        "review_unit_id",
+        "source_item_ids",
+        "declaration_ids",
+        "lean_names",
+        "revision",
+        "status",
+        "role_prompt_version",
+        "role_executions",
+        "source_packet_sha256",
+        "lean_packet_sha256",
+        "locked_translation_sha256",
+        "direct_judge_output_sha256",
+        "round_trip_judge_output_sha256",
+        "adjudicator_output_sha256",
+        "fresh_context",
+        "blindness",
+        "direct_judge",
+        "round_trip_judge",
+        "adjudicator",
+        "final_verdict"
+      ],
+      "properties": {
+        "review_order": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "review_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "review_unit_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "source_item_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "declaration_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "lean_names": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/leanName"
+          }
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "const": "accepted"
+        },
+        "role_prompt_version": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "role_executions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "direct_judge",
+            "blind_translator",
+            "round_trip_judge",
+            "adjudicator"
+          ],
+          "properties": {
+            "direct_judge": {
+              "$ref": "#/$defs/roleExecution"
+            },
+            "blind_translator": {
+              "$ref": "#/$defs/roleExecution"
+            },
+            "round_trip_judge": {
+              "$ref": "#/$defs/roleExecution"
+            },
+            "adjudicator": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/roleExecution"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "source_packet_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "lean_packet_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "locked_translation_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "direct_judge_output_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "round_trip_judge_output_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "adjudicator_output_sha256": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fresh_context": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "direct_judge",
+            "blind_translator",
+            "round_trip_judge",
+            "adjudicator"
+          ],
+          "properties": {
+            "direct_judge": {
+              "const": true
+            },
+            "blind_translator": {
+              "const": true
+            },
+            "round_trip_judge": {
+              "const": true
+            },
+            "adjudicator": {
+              "type": "boolean"
+            }
+          }
+        },
+        "blindness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "direct_judge_received_only_packets",
+            "translator_did_not_see_source",
+            "round_trip_judge_did_not_see_lean",
+            "roles_used_distinct_agents"
+          ],
+          "properties": {
+            "direct_judge_received_only_packets": {
+              "const": true
+            },
+            "translator_did_not_see_source": {
+              "const": true
+            },
+            "round_trip_judge_did_not_see_lean": {
+              "const": true
+            },
+            "roles_used_distinct_agents": {
+              "const": true
+            }
+          }
+        },
+        "direct_judge": {
+          "$ref": "#/$defs/verdict"
+        },
+        "round_trip_judge": {
+          "$ref": "#/$defs/verdict"
+        },
+        "adjudicator": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/verdict"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "final_verdict": {
+          "$ref": "#/$defs/verdict"
+        }
+      }
+    }
+  }
+}

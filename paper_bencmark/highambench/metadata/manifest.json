@@ -1,43 +1,15 @@
 {
   "benchmark_id": "highambench-0.2-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20",
-  "benchmark_status": "measurement-ready corpus snapshot; measurements pending",
+  "benchmark_status": "corpus under construction; measurements prohibited",
   "controlled_shared_files": [
-    {
-      "paper_ids": [
-        "P01",
-        "P02",
-        "P03",
-        "P04",
-        "P05",
-        "P06",
-        "P07",
-        "P08",
-        "P09",
-        "P10",
-        "P11",
-        "P12",
-        "P13",
-        "P14",
-        "P15",
-        "P16",
-        "P17",
-        "P18",
-        "P19",
-        "P20"
-      ],
-      "path": "paper_bencmark/highambench/shared/HighamBench/Core.lean",
-      "role": "definitions used by more than one paper",
-      "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a",
-      "status": "measurement-ready shared setting for its declared paper scope"
-    },
     {
       "paper_ids": [
         "P01"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P01Definitions.lean",
       "role": "P01-only models and algorithms",
-      "sha256": "f84e0fcd73a73392e539081c1ab832e76c71902085eaae4614d305d138ca7a29",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "4fbbb9a0991cbee35e998737959df9a927108450fcef6d881a3a91a64cc0c57f",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -45,8 +17,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P02Definitions.lean",
       "role": "P02-only models and algorithms",
-      "sha256": "803efe47eb37140c04ed8dad9fcdfe8470d0527aaedf9c60ff9333441ad5136b",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "76850189c7b69975ad712a33e87a498b293a961a7c7561a20502acf4575b5164",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -54,8 +26,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P03Definitions.lean",
       "role": "P03-only models and finite matrix notation",
-      "sha256": "25e5b0fc93004b684254c879d71dd789e3a2153c4517d5cfabdc617d84ead38a",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "95967673ab4eea3d888a26f99a0b8965f95acf5575990bf6b4b908d1a55aac8e",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -63,8 +35,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean",
       "role": "P04-only block-FMA coefficients and finite matrix notation",
-      "sha256": "646a34423a78acdd51a626a6a78611c4ccb557188f7b25c1d324f0722c6c5ad9",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "01d34f27aa7ec8f00adb6da96de5797c2260fdba26246f72cf8688d6a6645db7",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -72,8 +44,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P05Definitions.lean",
       "role": "P05-only coefficient-source and finite matrix notation",
-      "sha256": "8e8bb59f7812723c6db2adb54ee7c79a133ed8463c2c76b8a3fff363c77d12b7",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "b85344d4ff75238a660c6f67056de38235f97b11fa543ff5f3e9193677ce77d8",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -81,8 +53,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
       "role": "P06-only finite norms, symmetric dilation, and transformation-sequence expansion",
-      "sha256": "80ab87e3785b274488c63c1e88e3895907493e271a0e0963907f8d8538bd6ae5",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "bd3aa0c305a403e65132f3f0facb45fcf9a6fa889c8efbd2bb2d429f5877dce7",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -90,8 +62,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P07Definitions.lean",
       "role": "P07-only finite norms, operator certificates, matrix products, and backward-error expansion",
-      "sha256": "456801a246d914d7d5bd4fdb8c43f735ab409ae3d697f68cc9220f80637de59c",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "96f3ada155dacab758269879eb806ba264a90fadea8718eeeba76c83e0f406f2",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -99,8 +71,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P08Definitions.lean",
       "role": "P08-only finite matrix actions, absolute-action budgets, matrix powers, and affine envelopes",
-      "sha256": "00378095eeb77b9b2386b0319478cf06e31ed9fe90b7dd554ce1a7a5749f7cc5",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "1374b67939f861745919a5733d3e5c8a665a504b267ac80b6ca587bb75af958c",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -108,8 +80,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean",
       "role": "P09-only real FFT-equivalent norms, orthogonality, matrix action, and finite error sums",
-      "sha256": "28fd535f9728fdd6d98dac6045ee7922d4ec547751d099e73a7ade8e7ed5da6d",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "e4d233649af21b3ef7e3187873b5bf996d7d2e9fec6db106d68a29f541843426",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -117,8 +89,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean",
       "role": "P10-only finite matrix products, explicit Frobenius norms, product-error expansions, and Sylvester recurrence budgets",
-      "sha256": "fe10c0868a161a26b4cd39e18b9dd21121fff955cca9888d7b854960cae02671",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "f98e95dce751de7dce96c78438615fbeb3e8fb48140cf2d9367b4f877513b592",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -126,8 +98,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean",
       "role": "P11-only finite matrix products, vector and Frobenius norms, normal-equation residuals, and orthogonality defects",
-      "sha256": "d30af6550e76d4083f8958fd38563533a67d33dbfaf20349679d355a37a5e8f1",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "e15d921cad647886f8ed6b31c2489587d7bc4e33c166654619010c8eb8cd55bd",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -135,8 +107,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean",
       "role": "P12-only nearest-rounding relations and FastTwoSum/ThreeProduct trace records",
-      "sha256": "d6677c1c7ca6220986f35a297ea87792323e45c21d808d3c9206e0a70502cad3",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "76be8fc5a2335c3e998947940b7c7ac516cf873109aacd104d38e53a4369a1e1",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -144,8 +116,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P13Definitions.lean",
       "role": "P13-only interpolation values, condition numbers, barycentric quotients, and finite term-perturbation certificates",
-      "sha256": "40860706d1e57483371a24c086ae83428c7201c855efae5dbe20ad76d95f4913",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "dfaa68b42b612b48742d2245ea389bec1edca761ddd6e73d64e29a26be2b4cc3",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -153,8 +125,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P14Definitions.lean",
       "role": "P14-only exponential sums, exact and computed softmax components, and finite error radii",
-      "sha256": "43b0cbc4a33c3556b173455522d5436a89cad4f3e98e66dcd072f22bcdc779f2",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "25ed8e26a94544e1e69c5196f9da47434d62a8d159859556574a91bdf9b4cb89",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -162,8 +134,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean",
       "role": "P15-only finite matrix norms, products, actions, and composed BLR solve perturbations",
-      "sha256": "831dce905ad8a08bb52f5b55ebad349c09ac26a06168d6ca22eb022d2cf91792",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "f42857677f9872b25da1b3ba0d8c0e6966b84f19f926d4d5e8ff60b777a0268c",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -171,8 +143,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean",
       "role": "P16-only finite matrix and vector norms, residuals, condition factors, mixed-precision contractions, and attainable floors",
-      "sha256": "7f2630cf2406121b98d74782c2533349ff41d913e9e16dac3c230974b7f572ec",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "8b505ddb44cebe35b87bbbfc3e7c40c50b1350832645c8f88f6f4ce3c1a0fb10",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -180,8 +152,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P17Definitions.lean",
       "role": "P17-only product-growth, summation-conditioning, and finite-probability notation",
-      "sha256": "90ea1cc4af8101d1e345960950d5c2c97a04fcadac1147c75edfbe1e7e7ad9a0",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "689d423a238854b1e9864eae2125c18e5db459fa6255a61e3770ae0eb07cc40c",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -189,8 +161,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean",
       "role": "P18-only finite Euclidean error vectors and corrected, smooth, and nonsmooth Runge--Kutta error representatives",
-      "sha256": "e8076948865057c148e1531349eca646c2cbb158637d394c47a28ec84a12cfb2",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "6fb0a990a561e6dd544f0a0e95d8e845caf601b29be39305cd4f7addae66386c",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -198,8 +170,8 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P19Definitions.lean",
       "role": "P19-only finite error vectors, modular aggregates, exact operator-2 condition products, and right/flexible GMRES error envelopes",
-      "sha256": "5f2109bae7fa37ed222b56d3bd9ba97eadcf30ffe7f073d6f8dc75f36c896e13",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "2998b7217abc04d814dd4fd7bfbfa4943408ea53538ccbc33f7954d8baa46755",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
       "paper_ids": [
@@ -207,12 +179,12 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P20Definitions.lean",
       "role": "P20-only finite infinity norms, scaled vectors, and single- and multiword narrow-range error envelopes",
-      "sha256": "5b94f6f4eac02fe552a60504a7d4c1efb1d8dbe27826e3c608c83a495fbb8c2b",
-      "status": "measurement-ready shared setting for its declared paper scope"
+      "sha256": "5e21c0a446fa0953ac71cbbaeef9f3958851372152ad0cb4e64ba4fc6bf8cc48",
+      "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     }
   ],
   "corpus": {
-    "exclusion_note": "These ordered paper IDs are the complete corpus for this measurement snapshot.",
+    "exclusion_note": "These ordered paper IDs are the current construction corpus. The corpus may grow until a measurement-ready snapshot is created.",
     "paper_count": 20,
     "paper_ids": [
       "P01",
@@ -273,13 +245,12 @@
           "informal_proof_paraphrase": "Every input passes through exactly r rounded additions, so the general pairwise bound uses gamma at r. Nonnegative inputs satisfy absolute value x_i equals x_i, which removes the absolute values from the exact sum.",
           "informal_statement_paraphrase": "For a power-of-two list of nonnegative real inputs, the absolute error of pairwise rounded summation is at most gamma at the tree depth times the exact sum.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
-            "controlled_file_sha256": "ee6bd516f8c592936e1f9b0b9d54049579ba7aee7714cdb871b230332e0f1d19",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "5ce35dd76e489d65660e58845d1f7eb22b6f0a0a35cefbae960e606c662fb3d8",
             "declaration": "p01_t1_pairwise_nonnegative",
             "file": "paper_bencmark/highambench/tasks/P01/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P01Definitions.lean"
             ],
             "statement_summary": "The shared pairwise result is bounded by gamma u r times the ordinary sum when every input is nonnegative."
@@ -319,13 +290,12 @@
           "informal_proof_paraphrase": "Apply the pairwise and recursive bounds. Then use r at most 2^r minus 1, validity at the larger index, and monotonicity of gamma to compare the two coefficients. The claim compares proven bounds, not the two actual errors on every input.",
           "informal_statement_paraphrase": "For n = 2^r inputs, both standard forward-error bounds hold, and the pairwise coefficient gamma at r is no larger than the recursive coefficient gamma at 2^r minus 1.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
-            "controlled_file_sha256": "8707d7e8b3965c9c6d5c1354116c7cf04471bc0c5b0635b4287729455f79e49f",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "78e8bac72a099eefb3c414185ec379bc585d5b844f68f2e6579962e608f1e18f",
             "declaration": "p01_t2_pairwise_vs_recursive_bounds",
             "file": "paper_bencmark/highambench/tasks/P01/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P01Definitions.lean"
             ],
             "statement_summary": "A conjunction of the pairwise bound, the recursive bound, and gamma u r <= gamma u (2^r - 1)."
@@ -366,15 +336,14 @@
           "informal_proof_paraphrase": "At each step, equation (5.1) makes the new error equal to the old error plus the computed prefix times alpha and the new input times beta. Sum these local errors as in (5.2), then use their u bounds and the triangle inequality to obtain (5.3).",
           "informal_statement_paraphrase": "Under the no-guard addition model, recursive-summation error is at most u times the sum, from the second input onward, of the computed previous-sum size plus the new-input size.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
-            "controlled_file_sha256": "e5badc1d71efe1d99f4d211edb7eff96ceb893628641ed140494f380de284cda",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "a34ca37960f4ea945f5cf47b6c57274d61659a8d3dfb3c82dbd9ef0fee945511",
             "declaration": "p01_t3_noGuard_recursive_running_error_bound",
             "file": "paper_bencmark/highambench/tasks/P01/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_algorithm": "recursiveSum",
             "shared_budget": "noGuardRecursiveRunningBudget",
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P01Definitions.lean"
             ],
             "shared_model": "NoGuardAddModel",
@@ -408,6 +377,35 @@
           "tier_name": "extend",
           "tier_reason": "Equation (5.3) depends on actual computed prefix sums. NumStability has no accumulated no-guard recursive running-budget theorem. Condition L has useful pieces, including a one-step no-guard identity and a generic local-error recurrence scaffold, but it still needs new no-guard state, indexing, witness, and budget bridges or a fresh full induction.",
           "title": "Recursive-summation running error in the no-guard-digit model"
+        },
+        {
+          "availability": "available",
+          "copyright_note": "Public metadata paraphrases the paper; source-faithfulness packets remain private and contain only the excerpts needed to review each atomic claim.",
+          "gold_proof_policy": "Separate proof-complete private N and L sources validate every designated obligation on the exact controlled semantic bytes. They remain outside controlled bundles, reviewer packets, agent prompts, and public metadata.",
+          "informal_statement_paraphrase": "A whole-paper corpus covering every determinate mathematical claim, definition, algorithm, example, and problem specification in source order, with an explicit disposition for every inventoried item.",
+          "lean_target": {
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "1f2311b575feaef5140809e4f9897f5c2495389d74e7d94c646c42cd0fca4b52",
+            "file": "paper_bencmark/highambench/tasks/P01/T4/Target.lean",
+            "must_compile_without_numstability": true,
+            "shared_files": [
+              "paper_bencmark/highambench/shared/HighamBench/P01Definitions.lean"
+            ],
+            "statement_summary": "The placeholder-bearing P01 whole-paper declaration corpus recorded by the claim-scoped coverage ledger."
+          },
+          "source_locations": [
+            {
+              "anchor": "complete source-order coverage ledger",
+              "journal_page": 783,
+              "pdf_page": 1,
+              "role": "whole-paper inventory spanning printed pages 783--799",
+              "section": "whole paper"
+            }
+          ],
+          "task_id": "P01-T4",
+          "tier": "T4",
+          "tier_name": "whole-paper corpus",
+          "title": "Whole-paper claim corpus"
         }
       ],
       "topic": "floating-point summation"
@@ -456,13 +454,12 @@
           "informal_proof_paraphrase": "Each TwoSum step replaces two values by a high and low pair with the same exact sum; iterating this local identity proves the vector invariant.",
           "informal_statement_paraphrase": "One pass of the error-free vector transformation leaves the exact total unchanged.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "6ae5ba2b7579c90c03fadb3ef191a155a78eb84f008d7736fedfeec489ef9e0e",
             "declaration": "p02_t1_vecSum_preserves_sum",
             "file": "paper_bencmark/highambench/tasks/P02/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P02Definitions.lean"
             ],
             "statement_summary": "The Fin-sum of the shared VecSum output equals the Fin-sum of its nonempty input."
@@ -502,13 +499,12 @@
           "informal_proof_paraphrase": "Combine the low-component budget, ordinary summation of those lows, exact preservation, final rounding, and the paper's gamma inequality.",
           "informal_statement_paraphrase": "Sum2 error is at most unit roundoff times the exact-sum magnitude plus gamma at N minus one squared times the input absolute mass.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
-            "controlled_file_sha256": "6869f7e5200080eb138266e3d9671b6c6f323b987996c748a25f497564fe4903",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "a868ed1dba723978e3a10150b60d9c5ff28956894fa7944a5dfe1a39e246e47d",
             "declaration": "p02_t2_sum2_error_bound",
             "file": "paper_bencmark/highambench/tasks/P02/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P02Definitions.lean"
             ],
             "statement_summary": "The shared Sum2 result satisfies the exact finite bound in Proposition 4.5 for N=n+1."
@@ -547,14 +543,13 @@
           "informal_proof_paraphrase": "Build the exact length-2N transform and its absolute-mass bound, apply SumK at K minus one, and prove the gamma comparisons leading to equation (5.10).",
           "informal_statement_paraphrase": "Without multiplication underflow, DotK has an absolute error bounded by the final-rounding term plus a Kth-order transformed-dot-product term.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
-            "controlled_file_sha256": "4da16107e718b289c13ed7398a2af4b9f4b5fca48c09eaa6ec7aa5a9563e3452",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "77742529107a9654e94a5a98a9e9a608d86b7cb042de12308ce60489cdf7b40c",
             "declaration": "p02_t3_dotK_error_bound",
             "file": "paper_bencmark/highambench/tasks/P02/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_algorithm": "dotK",
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P02Definitions.lean"
             ],
             "shared_model": "ErrorFreeDotModel",
@@ -634,13 +629,12 @@
           "informal_proof_paraphrase": "Expand the updated iterate inside A, then replace the computed residual by the exact residual plus its computation error and collect terms.",
           "informal_statement_paraphrase": "The new residual equals the residual-computation term plus the correction-solve term plus the rounded-update term.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "6de2787b760937b2e0b20ef82c6dbb221a7be6f8683b9a963070abee2439e717",
             "declaration": "p03_t1_one_step_residual_identity",
             "file": "paper_bencmark/highambench/tasks/P03/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P03Definitions.lean"
             ],
             "statement_summary": "A componentwise exact form of P03 equation (4.1)."
@@ -672,13 +666,12 @@
           "informal_proof_paraphrase": "Bound the three terms in equation (4.1), substitute the solver-residual estimate, and collect the old-residual coefficient and remaining floor terms.",
           "informal_statement_paraphrase": "The next residual is bounded by alpha_i times the old residual plus beta_i with the exact coefficients in Theorem 4.1.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "66d46e86e70b37c6e4436debab03f0701acef350c440deeace177e718b6433a9",
             "declaration": "p03_t2_normwise_residual_contraction",
             "file": "paper_bencmark/highambench/tasks/P03/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P03Definitions.lean"
             ],
             "statement_summary": "The exact alpha_i/beta_i coefficient assembly of Theorem 4.1."
@@ -717,13 +710,12 @@
           "informal_proof_paraphrase": "Subtract the P-action from the correction inequality, premultiply by the nonnegative inverse M\u2081, use its inverse-action identity, distribute M\u2081 over the old residual and data terms, and substitute the result into equation (5.2).",
           "informal_statement_paraphrase": "The componentwise next residual is bounded by W_i times the previous residual plus y_i as in Theorem 5.1.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "93c283a03101e253e657795229736e82264cbf585f42aabc9a69d40bbcc58d96",
             "declaration": "p03_t3_componentwise_residual_recurrence",
             "file": "paper_bencmark/highambench/tasks/P03/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P03Definitions.lean"
             ],
             "shared_model": "P03ResolventInverse",
@@ -799,13 +791,12 @@
           "informal_proof_paraphrase": "Use the triangle and product bounds on the two accumulated error factors, then apply the gamma addition identity.",
           "informal_statement_paraphrase": "Two same-precision chained rounding factors collapse to one gamma factor at the sum of the operation counts.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
-            "controlled_file_sha256": "05344d296907334bf9b974a52dfef6181f0c237ab808462d2f0ebc2ad1dd9887",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "16c98a1a7b04b7a82b3559848730329eed8e2e3e40e50744bbc31405f9189c7d",
             "declaration": "p04_t1_chained_rounding_factor",
             "file": "paper_bencmark/highambench/tasks/P04/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean"
             ],
             "statement_summary": "The same-precision gamma-factor core in P04 equation (3.4)."
@@ -837,13 +828,12 @@
           "informal_proof_paraphrase": "Expand both converted inputs, bound their three product perturbations and the block-FMA error, and collect the exact coefficient.",
           "informal_statement_paraphrase": "The low-precision input conversions and block-FMA error yield Theorem 3.2's exact componentwise coefficient.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
-            "controlled_file_sha256": "98e82d8b57ec9dc9d93b67c12f18a3c1eb2940b4a9550a0f8e1d342c98341da7",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "01102e262247530be757949fdbfda1edde842fd1c0e76471a584b105bb50667c",
             "declaration": "p04_t2_mixed_input_product_bound",
             "file": "paper_bencmark/highambench/tasks/P04/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean"
             ],
             "statement_summary": "The scalar entrywise core of P04 Theorem 3.2 and equation (3.6)."
@@ -877,13 +867,12 @@
           "informal_proof_paraphrase": "Expand the perturbed factors, use matrix-vector associativity and both triangular-solve equations, then add the four componentwise perturbation bounds.",
           "informal_statement_paraphrase": "The factorization and two triangular solves assemble into one backward error with the exact additional two-linear-plus-quadratic gamma term.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
-            "controlled_file_sha256": "8d92998de2588ca675b513db902c36f7ca1d8689c81ad8d8b886c9b5371b4b7e",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "dcef887711174d403c747cbc306eaca398cf731044284a226eb7d95021bbda9b",
             "declaration": "p04_t3_block_lu_solve_backward_error",
             "file": "paper_bencmark/highambench/tasks/P04/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean"
             ],
             "statement_summary": "The exact perturbation equation and coefficient assembly of P04 Theorem 4.4."
@@ -948,13 +937,12 @@
           "informal_proof_paraphrase": "Distribute the scalar residual over the sources in proportion to their magnitudes, using their signs. If their absolute-value sum is zero, the residual is zero and all coefficients can be zero.",
           "informal_statement_paraphrase": "The exact uniform-coefficient conversion used in Lemma 4.1 after its scalar residual estimate.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "23f5b3761aa4c7b0641e34d71b832225d8e91893117d04a7bf97cca512307408",
             "declaration": "p05_t1_uniform_backward_coefficients",
             "file": "paper_bencmark/highambench/tasks/P05/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P05Definitions.lean"
             ],
             "statement_summary": "A residual bounded by k*u times the magnitudes of all sources can be distributed among exact sign-aligned source coefficients, each bounded by k*u."
@@ -986,13 +974,12 @@
           "informal_proof_paraphrase": "Set DeltaA=LU-A, retain the local rowwise bounds, and use i<=n-1 together with nonnegativity of |L||U| to obtain the uniform estimate.",
           "informal_statement_paraphrase": "The square-case sharpening of Theorem 4.2 and equation (4.2).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "2ad0285ce2bb990d3d8fe2709531887d27677205d670f26be9b509532d9e9fe2",
             "declaration": "p05_t2_square_lu_backward_error",
             "file": "paper_bencmark/highambench/tasks/P05/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P05Definitions.lean"
             ],
             "statement_summary": "The square Doolittle residuals assemble into the exact LU backward error with both the sharp rowwise and uniform (n-1)u bounds."
@@ -1031,13 +1018,12 @@
           "informal_proof_paraphrase": "Show that R^T R and |R^T||R| are symmetric. Use the upper-triangle estimate directly when i<=j and its transposed copy otherwise, loosen the smaller row factor, then use i+1<=n+1.",
           "informal_statement_paraphrase": "The symmetry completion and two componentwise estimates in Theorem 4.4 and equation (4.4).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "c7f9b7ce7d229dbc4ad8209d2a2f863c20aab142c8417b57ca3c4c7392b1a760",
             "declaration": "p05_t3_cholesky_backward_error",
             "file": "paper_bencmark/highambench/tasks/P05/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P05Definitions.lean"
             ],
             "statement_summary": "The upper-triangle Cholesky residual estimates extend by symmetry to the full displayed rowwise bound and its uniform (n+1)u consequence."
@@ -1109,13 +1095,12 @@
           "informal_proof_paraphrase": "Square each nonnegative column bound, sum over columns, identify the two sums with squared Frobenius norms, and take square roots using eta >= 0.",
           "informal_statement_paraphrase": "The deterministic columnwise-to-normwise implication displayed as equation (4.20).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "2527b886559c2b572f9d6f1939cec64202ffcbc6b4e32b59015e41e5fedeed34",
             "declaration": "p06_t1_columnwise_to_frobenius",
             "file": "paper_bencmark/highambench/tasks/P06/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean"
             ],
             "statement_summary": "A common relative Euclidean bound for all error columns implies the same relative Frobenius bound for the complete error matrix."
@@ -1147,13 +1132,12 @@
           "informal_proof_paraphrase": "For the forward implication, write a dilation vector as (y,x), use Cauchy-Schwarz and 2ab <= a^2+b^2. For the reverse implication, test the quadratic-form bound on a scaled pair aligned with Mx and optimize the scale.",
           "informal_statement_paraphrase": "The all-threshold quadratic-form version of the symmetric-dilation norm identity in equation (3.4).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "f92d55c304f3ea2d46dafcd9ff71f3d0e1160bd4660f48b15b2526ee5a99af6e",
             "declaration": "p06_t2_self_adjoint_dilation_norm_bridge",
             "file": "paper_bencmark/highambench/tasks/P06/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean"
             ],
             "statement_summary": "A rectangular matrix has operator norm at most L exactly when its symmetric dilation is at most L times the identity in quadratic-form order."
@@ -1186,13 +1170,12 @@
           "informal_proof_paraphrase": "Induct on the sequence length. Distribute the newest factor P_r+tE_r over the induction hypothesis, collect the terms with zero and one E factors, and identify the remaining terms with the recursive higher-order state.",
           "informal_statement_paraphrase": "An exact finite version of the first-order product expansion and O(u^2) remainder in equations (4.8)-(4.9).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "7ab9b1c444e5abf221bf343eb310b90ddc12d47745085cc62f3448bc11603ca2",
             "declaration": "p06_t3_householder_product_first_order_expansion",
             "file": "paper_bencmark/highambench/tasks/P06/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean"
             ],
             "statement_summary": "A product of transformations P_j+tE_j is exactly its unperturbed state plus t times all single-error insertions plus t squared times an explicit higher-order remainder."
@@ -1259,13 +1242,12 @@
           "informal_proof_paraphrase": "Apply the exact frozen strict-perturbation injectivity theorem. Independently, subtract two equal outputs, split the perturbed action, and contradict eta < mu unless the input difference has zero Euclidean norm.",
           "informal_statement_paraphrase": "The full-rank conclusion of Lemma 3.2 in lower/upper vector-action form.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "a2c42582fa017f4bc27749ec721ce360de2774ec999b15e3c18f9c54dd10b3a4",
             "declaration": "p07_t1_perturbed_preconditioned_map_injective",
             "file": "paper_bencmark/highambench/tasks/P07/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P07Definitions.lean"
             ],
             "statement_summary": "An additive perturbation strictly smaller than a matrix's Euclidean lower margin preserves full column rank."
@@ -1297,13 +1279,12 @@
           "informal_proof_paraphrase": "Compose the supplied operator certificates for DeltaY*R, Y*DeltaR, and DeltaY*DeltaR, then apply the Euclidean triangle inequality three times to the exact four-term expansion.",
           "informal_statement_paraphrase": "The exact backward-error decomposition in Theorem 3.5's proof with its uncollapsed operator-norm budget.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "66cf9586215f93594421bb978c14317dd27fdc49556a45c3d13be036d45045ee",
             "declaration": "p07_t2_backward_error_product_budget",
             "file": "paper_bencmark/highambench/tasks/P07/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P07Definitions.lean"
             ],
             "statement_summary": "The four-term final backward-error matrix has operator norm bounded by the sum of the base residual and three product budgets."
@@ -1333,13 +1314,12 @@
           "informal_proof_paraphrase": "Use QA's isometry to identify the norm of QA*T*x with that of T*x. Write every vector as T*x, use C*T=Q and Q's isometry, and multiply the two certificate inequalities by the positive reciprocals. Reverse the argument and simplify the ratio algebra.",
           "informal_statement_paraphrase": "A finite all-threshold certificate version of the condition-number identity kappa_2(AP)=kappa_2(SQ_A) in Lemma 2.1.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "9b7abd46008c2ebc9620c036bd3c8c5c79bc34a01f09ea42b8179b88f517614a",
             "declaration": "p07_t3_sketch_precondition_condition_certificate",
             "file": "paper_bencmark/highambench/tasks/P07/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P07Definitions.lean"
             ],
             "statement_summary": "The preconditioned matrix and the sketched orthonormal basis have reciprocal singular-value intervals and therefore the same condition ratio."
@@ -1401,13 +1381,12 @@
           "informal_proof_paraphrase": "Rewrite xNext-x as Ainv*q+h, apply the frozen componentwise absolute matrix-action theorem to Ainv*q, and combine it with the update-rounding hypothesis and the scalar triangle inequality.",
           "informal_statement_paraphrase": "The forward-error conclusion of Lemma 4.2, with the absolute inverse action expanded as a finite sum.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "afb1f605f02d7de39c0db8ec195b90575040d44055a0fba4db9bef4563038bbb",
             "declaration": "p08_t1_lemma_4_2_forward_error_bound",
             "file": "paper_bencmark/highambench/tasks/P08/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P08Definitions.lean"
             ],
             "statement_summary": "The rounded refined iterate satisfies the componentwise forward-error bound in the second conclusion of Lemma 4.2."
@@ -1438,13 +1417,12 @@
           "informal_proof_paraphrase": "Rewrite xNext-x as Ainv*q+h, distribute A over the two terms, substitute A*(Ainv*q)=q, bound A*h componentwise, and use the update-rounding hypothesis plus the absolute action bound for Ainv*q.",
           "informal_statement_paraphrase": "The residual-image conclusion of Lemma 4.2, with the product of absolute matrices expanded as finite sums.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "2326a842839c910d167baf6efe557e185c684e97189ca2d0f7b92c00bbeee761",
             "declaration": "p08_t2_lemma_4_2_residual_bound",
             "file": "paper_bencmark/highambench/tasks/P08/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P08Definitions.lean"
             ],
             "statement_summary": "The rounded refined iterate satisfies the componentwise residual-image bound in the first conclusion of Lemma 4.2."
@@ -1474,13 +1452,12 @@
           "informal_proof_paraphrase": "First turn the signed recurrence into an absolute componentwise inequality. Build its nonnegative affine envelope, prove domination by induction, and separately unroll the envelope into the displayed matrix-power sum.",
           "informal_statement_paraphrase": "The finite induction certificate at the core of Lemma 4.3's all-iteration residual bound.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "1af1bf1c6a340c6b5b01e2b2b060fdb129105cc115e7865a9ba0d9634fab3d20",
             "declaration": "p08_t3_componentwise_affine_recurrence",
             "file": "paper_bencmark/highambench/tasks/P08/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P08Definitions.lean"
             ],
             "statement_summary": "A nonnegative componentwise affine residual recurrence is bounded by the exact finite matrix-geometric propagation of its initial value and source budget."
@@ -1542,13 +1519,12 @@
           "informal_proof_paraphrase": "Apply the frozen finite-vector infinity-versus-Euclidean norm theorem, then unfold RMS and cancel the positive square root of the dimension.",
           "informal_statement_paraphrase": "The exact maximum-versus-RMS inequality used to prove Theorem 1(b).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "b03593f5fdfd9c0eedb5ab88bfc5c86b371d2b941ea63942e6e1511fff220bea",
             "declaration": "p09_t1_max_error_le_sqrt_card_mul_rms",
             "file": "paper_bencmark/highambench/tasks/P09/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean"
             ],
             "statement_summary": "The maximum coordinate error is at most square-root-of-dimension times the RMS error."
@@ -1581,13 +1557,12 @@
           "informal_proof_paraphrase": "Choose delta as one over the scale times the transpose action on the output error. Orthogonality gives exact recovery and preserves the Euclidean norm; scalar homogeneity and the infinity-versus-Euclidean bound give the two certificates.",
           "informal_statement_paraphrase": "The exact fictional-input backward-error certificate stated in the paper's conclusion, for the normalized real-equivalent Fourier action.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "aa4cb42146660670f9e5c335e3bc2f335aaffb801ddf9a14e0b47bbcbf997540",
             "declaration": "p09_t2_scaled_orthogonal_backward_error",
             "file": "paper_bencmark/highambench/tasks/P09/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean"
             ],
             "statement_summary": "Every output error of a positively scaled orthogonal transform is exactly the transform of a fictional input perturbation with norm scale one over the transform scale."
@@ -1617,13 +1592,12 @@
           "informal_proof_paraphrase": "Prove a new finite-family Euclidean triangle inequality by induction, divide by the RMS normalization, sum the supplied local bounds, and collect the first-order constants and explicit remainders.",
           "informal_statement_paraphrase": "Theorem 2(a)'s multidimensional RMS estimate with every O(epsilon squared) term represented by an explicit finite remainder.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "455ee98894b739fbf2d0308f1aff3047d03d0c92bfe544980247882db102cbb8",
             "declaration": "p09_t3_multidimensional_rms_error_budget",
             "file": "paper_bencmark/highambench/tasks/P09/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean"
             ],
             "statement_summary": "A finite telescoping decomposition of multidimensional FFT error has the sum of its first-order RMS budgets plus the sum of explicit remainders."
@@ -1685,13 +1659,12 @@
           "informal_proof_paraphrase": "Identify the paper-scoped explicit norm with the matrix Frobenius norm and apply Frobenius submultiplicativity.",
           "informal_statement_paraphrase": "The inherited-right-input amplification term from equation (8), specialized to the Frobenius norm.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "eb19fb0413ba12647774872f38496b584d03d5fa21d063d3b38a508c9f8dcdf0",
             "declaration": "p10_t1_inherited_right_product_error",
             "file": "paper_bencmark/highambench/tasks/P10/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean"
             ],
             "statement_summary": "The Frobenius norm of the right-input error propagated through a matrix product is at most the product of the left-matrix and right-error norms."
@@ -1722,13 +1695,12 @@
           "informal_proof_paraphrase": "Expand the exact four-term error expression, apply the Frobenius triangle inequality three times, and apply Frobenius submultiplicativity to each matrix product.",
           "informal_statement_paraphrase": "Equation (8)'s local and inherited product-error terms with the suppressed second-order cross term made explicit in an exact finite bound.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "90fdf84b3b59fe01d3c2e850d61d4c50cf9d5c47195270fb1d7cea2379e37518",
             "declaration": "p10_t2_product_error_with_cross_term",
             "file": "paper_bencmark/highambench/tasks/P10/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean"
             ],
             "statement_summary": "The exact product-error expansion is bounded by the local error, the two inherited first-order terms, and the explicit inherited-error cross term."
@@ -1758,13 +1730,12 @@
           "informal_proof_paraphrase": "Use nonnegativity of the Frobenius norms and positivity of sep to prove that the recurrence multiplier is nonnegative. Induct on the depth, multiply the induction hypothesis by that multiplier, apply the next recurrence step, and prove the finite geometric-sum identity by a second induction.",
           "informal_statement_paraphrase": "The exact finite geometric unrolling of the Sylvester error recurrence displayed immediately before equation (20).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "678e0d48115267a7b9ba48c8d8b0a31ca85c421c08147fa0377eb1d70612ae61",
             "declaration": "p10_t3_recursive_sylvester_error_unroll",
             "file": "paper_bencmark/highambench/tasks/P10/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean"
             ],
             "statement_summary": "The recursive Sylvester error after any finite depth is bounded by the amplified initial error plus the forcing budget times a finite geometric sum."
@@ -1826,13 +1797,12 @@
           "informal_proof_paraphrase": "Apply the frozen rectangular matrix-vector Frobenius estimate and multiply the supplied norm bound for G by the nonnegative vector norm.",
           "informal_statement_paraphrase": "Equation (16)'s first-column factorization-residual action bound, with the perturbation certified in Frobenius norm.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "ce563f7e0fd0548b6c559904eba5a7710896861762c06917f37de966cecf59f8",
             "declaration": "p11_t1_first_column_residual_action",
             "file": "paper_bencmark/highambench/tasks/P11/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean"
             ],
             "statement_summary": "A first-column residual represented as a small matrix acting on the input is bounded by epsilon times the input Euclidean norm."
@@ -1865,13 +1835,12 @@
           "informal_proof_paraphrase": "Use the right inverse to rewrite Q as (A+DeltaA)Rinv and the identity as Rinv-transpose times R-transpose R times Rinv. Expand the two transposes and collect the normal-equation and perturbation terms in the paper's displayed order.",
           "informal_statement_paraphrase": "The exact inverse-conjugated orthogonality-defect identity displayed in the proof of Theorem 1(7).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "0841de2615bd65b411edf5fd3aef97f97877d931fe8963f505b2f668abea4c2e",
             "declaration": "p11_t2_orthogonality_defect_identity",
             "file": "paper_bencmark/highambench/tasks/P11/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean"
             ],
             "statement_summary": "The loss-of-orthogonality matrix is exactly the inverse-transpose conjugation of the normal-equation residual minus the three perturbation-product terms."
@@ -1905,13 +1874,12 @@
           "informal_proof_paraphrase": "First derive the exact inverse-conjugated identity from QR=A+DeltaA. Bound each of A-transpose DeltaA, DeltaA-transpose A, and DeltaA-transpose DeltaA by Frobenius submultiplicativity, collect the four inner terms by repeated triangle inequalities, and apply two more product bounds for Rinv-transpose and Rinv.",
           "informal_statement_paraphrase": "Theorem 1(7)'s orthogonality estimate with its first- and second-order contributions represented by explicit finite budgets.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "4dff54d443d74f80beb55e2a83baae6aa601d4d6d0be9b0e16c5c4914d692205",
             "declaration": "p11_t3_orthogonality_defect_bound",
             "file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean"
             ],
             "statement_summary": "The loss of orthogonality is bounded by the squared inverse-factor budget times the normal-equation residual and the two first-order plus one quadratic factorization-error contributions."
@@ -1980,13 +1948,12 @@
           "informal_proof_paraphrase": "Use x as a representable competitor in the nearest-rounding relation and simplify the competitor distance to |y|.",
           "informal_statement_paraphrase": "Equation (10), the only nearest-addition property used in the proof of Theorem 2.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "8789c920e124f1456e39446d0e7dddd922e630a41130ddae87b341c6dfc8f3dd",
             "declaration": "p12_t1_nearest_add_error_le_right",
             "file": "paper_bencmark/highambench/tasks/P12/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean"
             ],
             "statement_summary": "A nearest representable approximation to x+y has absolute error no larger than the right summand whenever x itself is representable."
@@ -2017,13 +1984,12 @@
           "informal_proof_paraphrase": "Nearest rounding fixes each representable subtraction result, so t=s-x and e=y-t. Substitute both equalities, simplify s+e, and choose x in the nearest-addition relation for the error bound.",
           "informal_statement_paraphrase": "Theorem 2's error-free identity (3), with the two representability obligations used in its proof made explicit, together with equation (10).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "c0e659193763c9d16fdfdcae671afddf5748751c77ec10d7e2e78e0946a6e13a",
             "declaration": "p12_t2_fast_two_sum_exact",
             "file": "paper_bencmark/highambench/tasks/P12/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean"
             ],
             "statement_summary": "A nearest-addition FastTwoSum trace whose two exact subtraction results are representable returns an exact two-term transform and satisfies the local sum-error bound."
@@ -2061,13 +2027,12 @@
           "informal_proof_paraphrase": "Prove both FastTwoSum subtractions and the final addition exact by nearest-rounding representability. Derive s2+r=a2+a3, regroup the three returned terms into the four exact product terms, and collapse the three TwoProduct identities.",
           "informal_statement_paraphrase": "Lemma 4, equation (18), in exact certificate form.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "4cf6b27b7ad2ce817d773be1391a2714d83969c1200c661695b84267fa94efd2",
             "declaration": "p12_t3_three_product_exact",
             "file": "paper_bencmark/highambench/tasks/P12/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean"
             ],
             "statement_summary": "The certified FourSumThreeProduct expansion, FastTwoSum middle-term merge, and exact final addition produce three values summing exactly to the product of the three inputs."
@@ -2136,13 +2101,12 @@
           "informal_proof_paraphrase": "Apply the triangle inequality to the finite interpolation sum and divide by the positive magnitude of its nonzero value.",
           "informal_statement_paraphrase": "The lower-bound clause of Lemma 2.2, equation (2.2).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "9c331535dfca807cb7a0aae7523f78ebad9de6564b9a9e66d0762cf08fd12892",
             "declaration": "p13_t1_condition_ge_one",
             "file": "paper_bencmark/highambench/tasks/P13/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P13Definitions.lean"
             ],
             "statement_summary": "Higham's componentwise interpolation condition number is at least one whenever the interpolated value is nonzero."
@@ -2172,13 +2136,12 @@
           "informal_proof_paraphrase": "Multiply each data perturbation bound by the magnitude of its Lagrange coefficient, invoke the generic finite-sum componentwise perturbation theorem, and identify its condition number with equation (2.2).",
           "informal_statement_paraphrase": "The componentwise perturbation inequality in Lemma 2.2.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "6e8f701d5a9c6f43185460c0cee389d922fa54f47f33a382a91929c56398ee6d",
             "declaration": "p13_t2_data_perturbation_bound",
             "file": "paper_bencmark/highambench/tasks/P13/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P13Definitions.lean"
             ],
             "statement_summary": "A componentwise relative perturbation of the interpolation data changes the fixed-point interpolation value by at most epsilon times Higham's condition number in relative terms."
@@ -2208,13 +2171,12 @@
           "informal_proof_paraphrase": "Apply the generic summation perturbation theorem to the numerator and denominator, use reverse triangle inequality to lower-bound the computed denominator, expand the quotient difference exactly, and combine the two cancellation terms.",
           "informal_statement_paraphrase": "Exact finite-certificate counterpart of Theorem 4.1, equations (4.2)-(4.3), based on the perturbed quotient displayed immediately before the theorem.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "8db574b332d0dc56d66172e9ae059af46ee2f0cb349590ad0491284501241cf4",
             "declaration": "p13_t3_barycentric_forward_bound",
             "file": "paper_bencmark/highambench/tasks/P13/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P13Definitions.lean"
             ],
             "statement_summary": "Separately bounded componentwise errors in the barycentric numerator and denominator give an exact forward-error bound with Higham's two condition-number terms and a finite denominator-safety correction."
@@ -2284,13 +2246,12 @@
           "informal_proof_paraphrase": "Use the exact backward-error representation for recursive summation, take absolute values, and use nonnegativity to identify the sum of magnitudes with the exact sum.",
           "informal_statement_paraphrase": "Exact finite-gamma form of the positive exponential-summation stage used to derive equation (3.3).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
-            "controlled_file_sha256": "0a667aa6e36e01717511c96133b6fd38517644187bc09a7eeb2bb6f9248fb484",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "b7ff78402d18288d18485537763feb9fc05cd9f8e37184239c4e259278fd13e8",
             "declaration": "p14_t1_positive_recursive_sum_relative_error",
             "file": "paper_bencmark/highambench/tasks/P14/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P14Definitions.lean"
             ],
             "statement_summary": "Recursive summation of a nonnegative nonzero family has relative error at most gamma for n-1 rounded additions."
@@ -2321,13 +2282,12 @@
           "informal_proof_paraphrase": "Bound the perturbed numerator, combine the componentwise exponential errors with the recursive-summation error for the denominator, prove the computed denominator remains nonzero, and apply an exact quotient perturbation inequality.",
           "informal_statement_paraphrase": "Exact finite componentwise counterpart of Theorem 3.3; setting both operation radii to u recovers the first-order coefficient n+3.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
-            "controlled_file_sha256": "da7d602967646f6cc6512c666c64f2d64c3051c712686478d686fe1c8bd13b85",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
+            "controlled_file_sha256": "53e20217433d6a596dbe6f12cabd1a0773580b4ac47340856715eabe04dbda72",
             "declaration": "p14_t2_basic_softmax_component_error",
             "file": "paper_bencmark/highambench/tasks/P14/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P14Definitions.lean"
             ],
             "statement_summary": "Componentwise exponential and division errors, combined with recursive summation, give an exact finite relative-error bound for every basic softmax component."
@@ -2364,13 +2324,12 @@
           "informal_proof_paraphrase": "Factor exp(-a) from the numerator and denominator, cancel it using positivity of exponential sums, sum the exact quotient components, and use one-signed absolute-sum equality.",
           "informal_statement_paraphrase": "Exact invariant package connecting the shifted softmax formula (1.4) with the normalization value 1 used in the experiments.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "d56cba514113097d7cc74ac3e6d4ca04edf9e98792823bf8bc0248a53e9e9595",
             "declaration": "p14_t3_softmax_shift_and_normalization",
             "file": "paper_bencmark/highambench/tasks/P14/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P14Definitions.lean"
             ],
             "statement_summary": "Softmax is unchanged by a common shift, and its nonnegative components have ordinary and absolute sums equal to one."
@@ -2439,13 +2398,12 @@
           "informal_proof_paraphrase": "Identify the paper-scoped finite product and Frobenius norm with the native matrix product and Frobenius norm, then apply Frobenius submultiplicativity.",
           "informal_statement_paraphrase": "The first Frobenius-norm property listed in Section 2.1 and used throughout the paper's normwise analysis.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "317350b3e17134b5663fd4b741ed6029642a3d73e3073e13c08bbe97dd1664b9",
             "declaration": "p15_t1_frobenius_submultiplicative",
             "file": "paper_bencmark/highambench/tasks/P15/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean"
             ],
             "statement_summary": "The Frobenius norm of a finite matrix product is at most the product of the two Frobenius norms."
@@ -2476,13 +2434,12 @@
           "informal_proof_paraphrase": "Choose totalError as truncError plus roundingError. Reassociate the computed matrix action, use the Frobenius triangle inequality twice, bound the norm of Atilde by the norms of A and truncError, and collect the epsilon-gamma cross term.",
           "informal_statement_paraphrase": "The exact finite backward-error conclusion of Lemma 3.1, equation (3.2), before replacing the epsilon-gamma product by O(u epsilon).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "6e8c3e8528e7e3c053ffa3234471c492a454ea2bbce319bec82e414fb3feb565",
             "declaration": "p15_t2_low_rank_matvec_backward_error",
             "file": "paper_bencmark/highambench/tasks/P15/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean"
             ],
             "statement_summary": "A low-rank truncation perturbation and the rounded low-rank matrix-vector backward perturbation combine into one perturbation of A with the exact finite radius in equation (3.2)."
@@ -2518,13 +2475,12 @@
           "informal_proof_paraphrase": "Expand (L+dL)(U+dU), use the factorization equation, and compose the two solve equations to obtain the exact perturbed system. Apply Frobenius triangle and submultiplicativity to the four matrix-error terms. For the right-hand side, bound y from (U+dU)x = y+dy, solve the finite feedback inequality using gammaP < 1, and substitute it into the two action bounds.",
           "informal_statement_paraphrase": "An exact finite-remainder certificate for Theorem 4.5 equations (4.23)-(4.25), retaining the coefficient products suppressed by O(u epsilon) and O(u^2).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "d06423c64abe1cb4ef65e8c0bf304ef9e8e1515d8a4cd618208540e606245415",
             "declaration": "p15_t3_blr_lu_solve_backward_error",
             "file": "paper_bencmark/highambench/tasks/P15/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean"
             ],
             "statement_summary": "The BLR LU factorization perturbation and the two BLR triangular-solve perturbations compose into the exact matrix and right-hand-side backward errors of Theorem 4.5, with all finite cross terms retained."
@@ -2602,13 +2558,12 @@
           "informal_proof_paraphrase": "Rearrange the perturbed solve into b-Ax = deltaA*x-deltaB, apply Euclidean triangle inequality, and bound the matrix action by the Frobenius norm.",
           "informal_statement_paraphrase": "The exact residual implication behind the perturbation and normalized-residual forms of the normwise backward error in Section 2.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "d58289b7ce54ba1c17daaa783978d4464bc9542f0b92fe95938a77337a3cf5a5",
             "declaration": "p16_t1_perturbed_solve_residual_bound",
             "file": "paper_bencmark/highambench/tasks/P16/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean"
             ],
             "statement_summary": "An exact solve of a system perturbed in its matrix and right-hand side has residual bounded by the Frobenius matrix perturbation acting on the solution plus the right-hand-side perturbation."
@@ -2642,13 +2597,12 @@
           "informal_proof_paraphrase": "Use the exact identity b-A*xNext = (rhat-A*correction)-deltaR-A*deltaX, apply Euclidean triangle inequality twice and the Frobenius action bound, replace ||x|| by ||xNext||, and collect coefficients exactly.",
           "informal_statement_paraphrase": "Exact finite version of Lemma 4.2's backward residual recurrence before the paper drops second-order terms.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "34afa46e62ca706b5e59c8868da30b3304cda19e8b10da2f2b8fd99c5fa67af0",
             "declaration": "p16_t2_restarted_residual_recurrence",
             "file": "paper_bencmark/highambench/tasks/P16/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean"
             ],
             "statement_summary": "The correction residual, residual-computation error, and update error combine into the exact finite next-residual recurrence underlying Lemma 4.2."
@@ -2685,13 +2639,12 @@
           "informal_proof_paraphrase": "Prove the Frobenius condition factor, contraction factor, and attainable floors are nonnegative. Use Lambda < 1 to bound every power by one, then induct on the restart count and apply the conditional contraction at the final step.",
           "informal_statement_paraphrase": "Exact finite interpretation of Theorem 6.3's claim that mixed-precision restarted GMRES contracts by Lambda until it reaches the high-precision attainable floors.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "7d68f2f6bd8b7870908b0de59c1df3f9053ae50a510fbc796c8448b7beb84168",
             "declaration": "p16_t3_mixed_precision_geometric_convergence",
             "file": "paper_bencmark/highambench/tasks/P16/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean"
             ],
             "statement_summary": "Every finite sequence of above-floor mixed-precision restarts reduces backward and forward errors by the corresponding power of the contraction factor."
@@ -2753,13 +2706,12 @@
           "informal_proof_paraphrase": "Each factor lies between 1-B and 1+B. Since B is at most one, the lower factors are nonnegative, so monotonicity of finite products gives both bounds.",
           "informal_statement_paraphrase": "The deterministic one-atom specialization of Theorem 3.6's expectation envelope for accumulated limited-precision stochastic-rounding errors.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "003a394c8a361bdbad3c41d5ee8971d4be789afd1f7d64aa1044c7055cb1e28e",
             "declaration": "p17_t1_product_bias_envelope",
             "file": "paper_bencmark/highambench/tasks/P17/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P17Definitions.lean"
             ],
             "statement_summary": "A finite product of bounded relative-error factors lies between the lower and upper binomial envelopes from Theorem 3.6."
@@ -2798,13 +2750,12 @@
           "informal_proof_paraphrase": "Rewrite each effective term as the original input plus a componentwise perturbation a_i(factor_i-1), bound that perturbation by gamma times |a_i|, apply the summation condition-number theorem, and divide by the nonzero exact sum.",
           "informal_statement_paraphrase": "Exact coefficientwise condition-number step in the proof of Theorem 4.1, before instantiating gamma with gamma_{n-1}(u_{p+r}).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "361691c5f22f9529aca157de13f54a97ea32535889829e0f13877470d39da880",
             "declaration": "p17_t2_recursive_sum_bias_condition_bound",
             "file": "paper_bencmark/highambench/tasks/P17/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P17Definitions.lean"
             ],
             "statement_summary": "Bounds on effective expected suffix-product factors imply the Theorem 4.1 summation-bias bound through the componentwise summation condition number."
@@ -2842,13 +2793,12 @@
           "informal_proof_paraphrase": "Apply finite Chebyshev to the centered term at radius sqrt(varianceBudget/lambda), use the second-moment hypothesis to bound the tail by lambda, then use event monotonicity, triangle inequality, the bias bound, and nonnegative scaling by kappa.",
           "informal_statement_paraphrase": "Exact reusable finite-probability core of Theorem 4.3's variance-based recursive-summation bound.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "7a2ec9477871b1e7c116f704e15f44dc6da12bb5eb768dd51fc69c8b427a5dd1",
             "declaration": "p17_t3_variance_plus_bias_probability_bound",
             "file": "paper_bencmark/highambench/tasks/P17/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P17Definitions.lean"
             ],
             "statement_summary": "A finite Chebyshev radius and bounded limited-precision remainder combine into the condition-scaled high-probability event underlying Theorem 4.3."
@@ -2909,13 +2859,12 @@
           "informal_proof_paraphrase": "Expand the paper-scoped Euclidean norm and apply the finite-dimensional triangle inequality.",
           "informal_statement_paraphrase": "An exact finite-vector bound for the paper's one-step decomposition E = E_sch + E_per.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "3858ce5ab8240d8eb5d773798c857db776fbed475a5cfbddb7f4e68b059cb6d9",
             "declaration": "p18_t1_scheme_perturbation_error_split",
             "file": "paper_bencmark/highambench/tasks/P18/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean"
             ],
             "statement_summary": "The norm of the sum of the scheme and perturbation error vectors is bounded by the sum of their norms."
@@ -2946,13 +2895,12 @@
           "informal_proof_paraphrase": "Use vector triangle inequality and norm homogeneity on the two scaled components, then factor out the common h-squared term.",
           "informal_statement_paraphrase": "An exact finite-vector version of the corrected implicit midpoint estimate O(\u0394t\u00b2) + O(\u03b5 \u0394t\u00b2).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "85c598e55eecc695203ffa1b9b6aabe2b1b261c4a93f13a5c142128a917160b1",
             "declaration": "p18_t2_corrected_midpoint_order_bound",
             "file": "paper_bencmark/highambench/tasks/P18/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean"
             ],
             "statement_summary": "The corrected midpoint's scheme and precision components have the exact common h-squared Euclidean envelope."
@@ -2991,13 +2939,12 @@
           "informal_proof_paraphrase": "Apply triangle inequality and homogeneity to both regime representatives; use h cubed at most h squared for h in [0,1] to compare their nonnegative perturbation terms.",
           "informal_statement_paraphrase": "Exact finite-vector bounds for the smooth and nonsmooth Method 4s3pC error regimes, plus their small-step ordering.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "19c676db2955c73a38faa19bd0b61c955f08938f1434ac37844445c26a3ebbaf",
             "declaration": "p18_t3_smooth_nonsmooth_method_error_bounds",
             "file": "paper_bencmark/highambench/tasks/P18/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean"
             ],
             "statement_summary": "Exact smooth and nonsmooth Method 4s3pC error envelopes are proved together with their small-step ordering."
@@ -3065,13 +3012,12 @@
           "informal_proof_paraphrase": "Apply the finite-dimensional Euclidean triangle inequality to the stored product and its correction.",
           "informal_statement_paraphrase": "The exact upper half of the perturbation-norm bracket in equation (C.8).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "2eca9e6678e91b0213d8c9604aaaef94fc97ccccd35e7d4bc3d0a97804a8ce66",
             "declaration": "p19_t1_perturbed_basis_product_upper",
             "file": "paper_bencmark/highambench/tasks/P19/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P19Definitions.lean"
             ],
             "statement_summary": "The norm of the additively corrected basis product is at most the sum of the stored-product and correction norms."
@@ -3102,13 +3048,12 @@
           "informal_proof_paraphrase": "Apply Euclidean homogeneity to each weighted source, use its supplied norm bound, and combine the four contributions with three applications of the triangle inequality.",
           "informal_statement_paraphrase": "An exact finite-vector certificate for the four weighted terms collected in xi in the modular forward-error bound (3.8).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "3e5946431b5d9cfd06265bf2930b39daff5aab91e8c6ab5ba56c2e2f48b70129",
             "declaration": "p19_t2_modular_four_source_error_bound",
             "file": "paper_bencmark/highambench/tasks/P19/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P19Definitions.lean"
             ],
             "statement_summary": "Four weighted modular error vectors have norm at most the exact xi envelope from (3.8)."
@@ -3138,13 +3083,12 @@
           "informal_proof_paraphrase": "Show exact operator-2 condition-number products are nonnegative. Expand the two paper-scoped envelopes to identify their difference as um times etaR times kappa(MR). Nonnegativity yields the weak comparison, the zero-product property gives the equality characterization, and positivity of all three factors gives strict comparison.",
           "informal_statement_paraphrase": "An exact strengthened version of Remark 4's comparison between right- and flexible-preconditioned error envelopes (3.17) and (3.20).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "f929a2fb2ece11947c9ebced0e01ea12cbca832152d92b035133e5aea4c35ae3",
             "declaration": "p19_t3_right_flexible_envelope_comparison",
             "file": "paper_bencmark/highambench/tasks/P19/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P19Definitions.lean"
             ],
             "statement_summary": "The flexible envelope equals the right envelope with the preconditioner-reapplication term removed, with exact weak, equality, and strict comparisons."
@@ -3213,13 +3157,12 @@
           "informal_proof_paraphrase": "Bound every coordinate by the finite infinity norm, choose a coordinate attaining that norm, and apply the two scaling inequalities.",
           "informal_statement_paraphrase": "The exact maximum-coefficient consequence of the row-scaling interval (3.4a).",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "1d58f9917ffc13cc95c701370253f1f644dc4559d1f93e37ea9081bfa2bba0a7",
             "declaration": "p20_t1_scaled_row_range",
             "file": "paper_bencmark/highambench/tasks/P20/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P20Definitions.lean"
             ],
             "statement_summary": "The scaled-row maximum lies in the exact interval (theta/2, theta]."
@@ -3249,13 +3192,12 @@
           "informal_proof_paraphrase": "Compare the theta-inverse scalar terms and multiply by the common nonnegative matrix-norm factor.",
           "informal_statement_paraphrase": "The accumulation-underflow contribution in (3.26) is bounded by the input-underflow contribution in the paper's theta-at-least-one regime.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "2a604cf4f4cd6b18f577e1a745ab2cd8d552d71ed6079b5b7b99bd36b6a37acc",
             "declaration": "p20_t2_accumulation_underflow_le_input",
             "file": "paper_bencmark/highambench/tasks/P20/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P20Definitions.lean"
             ],
             "statement_summary": "The accumulation-underflow term is no larger than the input-underflow term under the paper's stated regime."
@@ -3285,13 +3227,12 @@
           "informal_proof_paraphrase": "Expand (4.32) and (4.33), identify their exact two-term underflow gap, and use nonnegativity for weak, equality, and strict comparisons.",
           "informal_statement_paraphrase": "An exact strengthened certificate for the comparison of the multiword narrow-range and range-free envelopes.",
           "lean_target": {
-            "binding_status": "measurement-ready path, declaration, content hash, and N/L target builds",
+            "binding_status": "current construction snapshot; editable and rehashed before measurement",
             "controlled_file_sha256": "05bc9bca28d9ea01d058bdcce95013cf05f56f374563f3214ddfd12c71f042ad",
             "declaration": "p20_t3_multiword_narrow_range_gap",
             "file": "paper_bencmark/highambench/tasks/P20/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
-              "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P20Definitions.lean"
             ],
             "statement_summary": "The narrow-range multiword envelope is the range-free envelope plus exactly two nonnegative underflow terms, with equality and strictness criteria."
@@ -3315,7 +3256,7 @@
       "topic": "narrow-range mixed-precision matrix multiplication and underflow-aware multiword error bounds"
     }
   ],
-  "release_rule": "Do not report measurements unless all 60 task packages, their construction proofs, reviews, and the complete run matrix verify against this snapshot.",
+  "release_rule": "The benchmark remains editable during construction. Before measured runs, create one measurement-ready snapshot and verify every task, proof, review, controlled manifest, and planned run against that snapshot.",
   "schema_version": "0.1.0",
   "specification": {
     "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",

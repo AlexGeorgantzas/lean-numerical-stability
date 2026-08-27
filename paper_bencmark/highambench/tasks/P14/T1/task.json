@@ -1,30 +1,30 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, and exact finite-gamma strengthening of the paper's first-order summation passage",
+    "kind": "source selection, tier label, and exact finite-p14Gamma strengthening of the paper's first-order summation passage",
     "performed_by": "Codex"
   },
   "assumptions": [
     "The summation model satisfies the standard relative-error rule for addition and exact addition to zero.",
-    "The exact gamma denominator for n-1 additions is positive.",
+    "The exact p14Gamma denominator for n-1 additions is positive.",
     "All terms are nonnegative and their exact sum is nonzero."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P14 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P14 shared files are present; no NumStability artifact is present."
   },
   "context_file": "paper_bencmark/highambench/tasks/P14/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p14_t1_positive_recursive_sum_relative_error (fp : StandardAddModel) (n : Nat) (w : Fin n -> Real) ... : |recursiveSum ... - sum w| / |sum w| <= gamma fp.u (n-1)",
+    "lean_header": "theorem p14_t1_positive_recursive_sum_relative_error (fp : P14StandardAddModel) (n : Nat) (w : Fin n -> Real) ... : |p14RecursiveSum ... - sum w| / |sum w| <= p14Gamma fp.u (n-1)",
     "namespace": "HighamBench",
-    "plain_language": "Recursive summation of a nonnegative nonzero family has relative error at most gamma for n-1 rounded additions.",
+    "plain_language": "Recursive summation of a nonnegative nonzero family has relative error at most p14Gamma for n-1 rounded additions.",
     "target_file": "paper_bencmark/highambench/tasks/P14/T1/Target.lean",
     "theorem_name": "p14_t1_positive_recursive_sum_relative_error"
   },
   "informal_proof": "Use the exact backward-error representation for recursive summation, take absolute values, and use nonnegativity to identify the sum of magnitudes with the exact sum.",
-  "informal_statement": "Exact finite-gamma form of the positive exponential-summation stage used to derive equation (3.3).",
+  "informal_statement": "Exact finite-p14Gamma form of the positive exponential-summation stage used to derive equation (3.3).",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -40,17 +40,17 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": true,
     "nearby_numstability_declarations": [
-      "NumStability.recursiveSum_relError_le_gamma_of_oneSigned",
-      "NumStability.recursiveSum_forward_error_bound_oneSigned"
+      "NumStability.p14RecursiveSum_relError_le_gamma_of_oneSigned",
+      "NumStability.p14RecursiveSum_forward_error_bound_oneSigned"
     ],
     "note": "The mounted one-signed recursive-summation theorem reaches the target after the paper-scoped model adapter and the nonnegative-to-one-signed identification."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "StandardAddModel",
-    "GammaValid",
-    "gamma",
-    "recursiveSum"
+    "P14StandardAddModel",
+    "P14GammaValid",
+    "p14Gamma",
+    "p14RecursiveSum"
   ],
   "source_locations": [
     {

@@ -235,6 +235,20 @@ PROVIDER_GATE_CLOSE_TOKEN_LIMIT = CLOSE_REASON_TOKEN_LIMIT
 PROVIDER_GATE_CLOSE_ACCEPTED_SUBMISSION = CLOSE_REASON_ACCEPTED_SUBMISSION
 PROVIDER_GATE_CLOSE_NATURAL_END = CLOSE_REASON_NATURAL_END
 PROVIDER_GATE_CLOSE_SYSTEM_ERROR = CLOSE_REASON_SYSTEM_ERROR
+ULTRA_ADAPTER_TEARDOWN_KEYS = frozenset(
+    {
+        "process_group_isolated",
+        "immediate",
+        "stdin_closed",
+        "signal",
+        "returncode",
+        "completed",
+        "started_at_unix_ns",
+        "started_at_monotonic_ns",
+        "completed_at_unix_ns",
+        "completed_at_monotonic_ns",
+    }
+)
 ULTRA_FORK_POLICY_SCHEMA_VERSION = 1
 ULTRA_FORK_POLICY_ENFORCEMENT = "codex_pre_tool_use_command_hook_v1"
 ULTRA_FORK_POLICY_HOOK_NOTIFICATION = "hook/completed"
@@ -340,7 +354,7 @@ SUBMISSION_SNAPSHOT_SUFFIX = ".submission-{sequence}.lean"
 MAX_SUBMISSION_BYTES = 4 * 1024 * 1024
 MAX_REJECTION_NOTE_BYTES = 2048
 SUBMISSION_ACK_POLL_SECONDS = 0.02
-NESTED_SUBMISSION_WIRE_FORMAT = "functions_exec_dynamic_submit_proof_v2"
+NESTED_SUBMISSION_WIRE_FORMAT = "functions_exec_dynamic_submit_proof_v3"
 NESTED_SUBMISSION_EXEC_YIELD_TIME_MS = 2_400_000
 NESTED_SUBMISSION_EXEC_YIELD_ENVELOPE_BASIS = (
     "prompt_release_wall_clock_plus_post_submission_validation_reserve"
@@ -357,11 +371,11 @@ NESTED_SUBMISSION_EXEC_YIELD_MARGIN_MS = (
 )
 NESTED_SUBMISSION_EXEC_SOURCE = (
     '// @exec: {"yield_time_ms": 2400000}\n'
-    'await tools.submit_proof({candidate_path:"Candidate.lean"});\n'
+    'text(await tools.submit_proof({candidate_path:"Candidate.lean"}));\n'
 )
-NESTED_SUBMISSION_EXEC_SOURCE_BYTES = 98
+NESTED_SUBMISSION_EXEC_SOURCE_BYTES = 104
 NESTED_SUBMISSION_EXEC_SOURCE_SHA256 = (
-    "bb4995a4eaad6d9128cb1b0d177f8ba882be176fbd0db589bb861182d3020edd"
+    "d8f1e2e53f379a5e1a0cd273127af52f71c150c9fa7c7a50dc177d40e6c12d14"
 )
 SUBMISSION_EVENT_ORDER_INNER_THEN_RESPONSE = (
     "inner_dynamic_call_before_raw_response_completed"
@@ -1053,6 +1067,29 @@ class SubmissionBarrier:
             )
             if completed_match is not None:
                 wire = completed_match[2]
+        # Diagnose a positively identified noncanonical outer/inner attempt
+        # before consulting token projections.  In response-first app-server
+        # order, an omitted final newline can otherwise masquerade as a missing
+        # root cumulative update.  An entirely unstaged submit still follows
+        # the ordinary descendant/accounting precedence below.
+        noncanonical_wire_attempt = (
+            wire is None
+            and self.ledger.noncanonical_submission_wire_attempt(
+                turn_id=turn_id,
+                call_id=call_id,
+                candidate_path=candidate_path,
+            )
+        )
+        if noncanonical_wire_attempt:
+            self._reject(
+                message,
+                "submit_proof outer exec wire is noncanonical. Retry in a new "
+                "final response; the source must exactly match this "
+                f"{NESTED_SUBMISSION_EXEC_SOURCE_BYTES}-byte program, including "
+                f"its final newline, as the sole outer exec item: "
+                f"{NESTED_SUBMISSION_EXEC_SOURCE!r}",
+            )
+            return True
         eligibility = self.ledger.boundary_eligible(
             turn_id=turn_id,
             submit_response_id=(
@@ -3388,7 +3425,29 @@ class AttemptUsageLedger:
             # following general collaboration-message reconciler can bind it.
             # Ambiguous (>1) FINAL results still fail closed in the strict
             # helper below.
-            if not self._completed_child_results_for_suppressed_wait(candidate):
+            completed_results = self._completed_child_results_for_suppressed_wait(
+                candidate
+            )
+            if not completed_results:
+                continue
+            # The direct successor can sit beyond a chain of ordinary
+            # collaboration-message replacements.  In that shape the broad
+            # wait window may contain both an interim MESSAGE for this wait
+            # and a later FINAL_ANSWER for the next response.  Do not consume
+            # that later final here: leave the wait for the immediate-successor
+            # reconciler, which partitions the chain into exact windows.
+            completed_result_ids = {
+                result["item_id"] for result in completed_results
+            }
+            collaboration_messages = (
+                self._collaboration_messages_in_superseded_response_window(
+                    candidate
+                )
+            )
+            if any(
+                message["item_id"] not in completed_result_ids
+                for message in collaboration_messages
+            ):
                 continue
             evidence = self._child_result_for_suppressed_wait(candidate)
             self.provider_gate.crossbind_suppressed_collaboration_wait(
@@ -3399,10 +3458,10 @@ class AttemptUsageLedger:
             )
             self.suppressed_collaboration_wait_evidence[response_id] = evidence
 
-    def _collaboration_messages_for_superseded_response(
+    def _collaboration_messages_in_superseded_response_window(
         self, candidate: Mapping[str, Any]
-    ) -> dict[str, Any]:
-        """Authenticate the nonempty rooted-message batch in one replacement window."""
+    ) -> list[dict[str, Any]]:
+        """Return unused rooted messages wholly inside one replacement window."""
 
         commit_unix_ns = candidate.get("commit_unix_ns")
         commit_monotonic_ns = candidate.get("commit_monotonic_ns")
@@ -3444,7 +3503,7 @@ class AttemptUsageLedger:
             raise RuntimeError(
                 "superseded response thread lacks a resolved agent route"
             )
-        messages = sorted(
+        return sorted(
             (
                 dict(observation)
                 for observation in self.collaboration_message_observations.values()
@@ -3460,6 +3519,15 @@ class AttemptUsageLedger:
                 item["item_id"],
                 item["observed_at_monotonic_ns"],
             ),
+        )
+
+    def _collaboration_messages_for_superseded_response(
+        self, candidate: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        """Authenticate the nonempty rooted-message batch in one replacement window."""
+
+        messages = self._collaboration_messages_in_superseded_response_window(
+            candidate
         )
         if not messages:
             raise RuntimeError(
@@ -3493,7 +3561,7 @@ class AttemptUsageLedger:
     def _reconcile_superseded_responses_for_successor(
         self, *, thread_id: str, turn_id: str, successor_response_id: str
     ) -> None:
-        """Bind every message-superseded predecessor chain ending at a direct reply."""
+        """Bind each message-superseded chain reaching an authenticated delivery."""
 
         if self.provider_gate is None:
             return
@@ -3514,6 +3582,22 @@ class AttemptUsageLedger:
             not in self.superseded_by_collaboration_message_evidence
         ]
         frontier = {successor_response_id}
+        # A response immediately preceding an exact suppressed wait does not
+        # itself point at the later direct raw response.  Once that wait has
+        # been independently authenticated above, its response ID is a safe
+        # terminal frontier for partitioning the earlier, tighter MESSAGE
+        # window.  Match the complete thread/turn/direct-successor identity;
+        # unrelated or malformed evidence remains unusable and therefore
+        # fails closed during final reconciliation.
+        frontier.update(
+            str(evidence["response_id"])
+            for evidence in self.suppressed_collaboration_wait_evidence.values()
+            if evidence.get("thread_id") == thread_id
+            and evidence.get("turn_id") == turn_id
+            and evidence.get("successor_response_id") == successor_response_id
+            and isinstance(evidence.get("response_id"), str)
+            and bool(evidence["response_id"])
+        )
         selected: list[Mapping[str, Any]] = []
         while True:
             layer = [
@@ -4642,9 +4726,44 @@ class AttemptUsageLedger:
         if self.adapter_teardown is not None:
             raise RuntimeError("adapter teardown was attached twice")
         copied = json.loads(json.dumps(teardown, ensure_ascii=False))
-        if not isinstance(copied, dict):
+        if not self._authenticated_adapter_teardown(copied):
             raise RuntimeError("adapter teardown evidence is malformed")
         self.adapter_teardown = copied
+
+    @staticmethod
+    def _authenticated_adapter_teardown(
+        teardown: Any,
+        *,
+        required_immediate: bool | None = None,
+    ) -> bool:
+        """Validate the complete local process-group teardown contract."""
+
+        if (
+            not isinstance(teardown, Mapping)
+            or set(teardown) != ULTRA_ADAPTER_TEARDOWN_KEYS
+            or teardown.get("process_group_isolated") is not True
+            or teardown.get("stdin_closed") is not True
+            or teardown.get("completed") is not True
+            or type(teardown.get("immediate")) is not bool
+            or (
+                required_immediate is not None
+                and teardown.get("immediate") is not required_immediate
+            )
+            or type(teardown.get("returncode")) is not int
+            or teardown.get("signal") not in (None, "SIGTERM", "SIGKILL")
+        ):
+            return False
+        for clock in ("unix", "monotonic"):
+            started = teardown.get(f"started_at_{clock}_ns")
+            completed = teardown.get(f"completed_at_{clock}_ns")
+            if (
+                type(started) is not int
+                or started <= 0
+                or type(completed) is not int
+                or completed < started
+            ):
+                return False
+        return True
 
     def _provider_gate_call(self, response_id: str) -> dict[str, Any] | None:
         record = self.provider_gate_final
@@ -4905,6 +5024,10 @@ class AttemptUsageLedger:
                 and not self.invalid_reasons
                 and not self.interrupt_requested
                 and not self.interrupt_request_ids
+                and self._authenticated_adapter_teardown(
+                    self.adapter_teardown,
+                    required_immediate=True,
+                )
             )
         accounting = self._accounting_state()
         return (
@@ -5185,10 +5308,15 @@ class AttemptUsageLedger:
                 return False
         return True
 
-    def pending_submission_wire(
-        self, *, turn_id: str, call_id: str, candidate_path: str
+    def _pending_submission_outer_exec(
+        self,
+        *,
+        turn_id: str,
+        call_id: str,
+        candidate_path: str,
+        canonical: bool,
     ) -> dict[str, Any] | None:
-        """Bind the already-observed outer exec and inner dynamic-tool start."""
+        """Bind one structurally exact outer/inner attempt by source class."""
 
         raw_items = self.raw_items_pending.get((self.root_thread_id, turn_id))
         if not isinstance(raw_items, list):
@@ -5219,9 +5347,11 @@ class AttemptUsageLedger:
             or not isinstance(outer_call_id, str)
             or not outer_call_id
             or len({outer_raw_item_id, outer_call_id, call_id}) != 3
-            or not is_canonical_nested_submit_exec_input(
+            or not isinstance(outer_input, str)
+            or is_canonical_nested_submit_exec_input(
                 outer_input, candidate_path=candidate_path
             )
+            != canonical
         ):
             return None
         outer_observation = self.raw_item_observations.get(outer_raw_item_id)
@@ -5254,23 +5384,92 @@ class AttemptUsageLedger:
             or outer_observed_ns > inner_started_ns
         ):
             return None
+        return {
+            "outer_raw_item_id": outer_raw_item_id,
+            "outer_exec_call_id": outer_call_id,
+            "outer_exec_program": outer_input,
+            "outer_raw_item_observed_at_monotonic_ns": outer_observed_ns,
+            "inner_dynamic_item_started_at_monotonic_ns": inner_started_ns,
+        }
+
+    def pending_submission_wire(
+        self, *, turn_id: str, call_id: str, candidate_path: str
+    ) -> dict[str, Any] | None:
+        """Bind the already-observed outer exec and inner dynamic-tool start."""
+
+        outer = self._pending_submission_outer_exec(
+            turn_id=turn_id,
+            call_id=call_id,
+            candidate_path=candidate_path,
+            canonical=True,
+        )
+        if outer is None:
+            return None
+        outer_input = outer["outer_exec_program"]
         assert isinstance(outer_input, str)
         return {
             "submission_transport": NESTED_SUBMISSION_WIRE_FORMAT,
-            "outer_raw_item_id": outer_raw_item_id,
+            "outer_raw_item_id": outer["outer_raw_item_id"],
             "outer_raw_item_type": "custom_tool_call",
             "outer_exec_name": "exec",
-            "outer_exec_call_id": outer_call_id,
+            "outer_exec_call_id": outer["outer_exec_call_id"],
             "outer_exec_program": outer_input,
             "outer_exec_program_bytes": len(outer_input.encode("utf-8")),
             "outer_exec_program_sha256": hashlib.sha256(
                 outer_input.encode("utf-8")
             ).hexdigest(),
             **nested_submission_exec_yield_record(),
-            "outer_raw_item_observed_at_monotonic_ns": outer_observed_ns,
-            "inner_dynamic_item_started_at_monotonic_ns": inner_started_ns,
+            "outer_raw_item_observed_at_monotonic_ns": outer[
+                "outer_raw_item_observed_at_monotonic_ns"
+            ],
+            "inner_dynamic_item_started_at_monotonic_ns": outer[
+                "inner_dynamic_item_started_at_monotonic_ns"
+            ],
             "outer_raw_item_observed_before_inner_dynamic_call": True,
         }
+
+    def noncanonical_submission_wire_attempt(
+        self, *, turn_id: str, call_id: str, candidate_path: str
+    ) -> bool:
+        """Whether the current exact outer/inner shape has the wrong source bytes."""
+
+        pending_key = (self.root_thread_id, turn_id)
+        if isinstance(self.raw_items_pending.get(pending_key), list):
+            return self._pending_submission_outer_exec(
+                turn_id=turn_id,
+                call_id=call_id,
+                candidate_path=candidate_path,
+                canonical=False,
+            ) is not None
+        if not self.responses:
+            return False
+        _response_id, response = max(
+            self.responses.items(), key=lambda entry: int(entry[1].get("sequence", 0))
+        )
+        if (
+            response.get("sequence") != self.notification_sequence
+            or response.get("thread_id") != self.root_thread_id
+            or response.get("turn_id") != turn_id
+            or any(
+                pending
+                for (thread_id, _pending_turn_id), pending in self.raw_items_pending.items()
+                if thread_id == self.root_thread_id
+            )
+        ):
+            return False
+        raw_items = response.get("raw_items")
+        if not isinstance(raw_items, list):
+            return False
+        self.raw_items_pending[pending_key] = raw_items
+        try:
+            return self._pending_submission_outer_exec(
+                turn_id=turn_id,
+                call_id=call_id,
+                candidate_path=candidate_path,
+                canonical=False,
+            ) is not None
+        finally:
+            self.raw_items_pending.pop(pending_key, None)
 
     def matching_submit_response(
         self,
@@ -6297,7 +6496,11 @@ def _provider_gate_matches_ledger(
             is not successor
             or not isinstance(successor.get("appserver_delivery"), Mapping)
             or successor["appserver_delivery"].get("kind")
-            not in ("direct_raw_response", "superseded_by_collaboration_message")
+            not in (
+                "direct_raw_response",
+                "superseded_by_collaboration_message",
+                "suppressed_collaboration_wait",
+            )
         ):
             return None
         normalized_messages: list[dict[str, Any]] = []
@@ -6497,8 +6700,9 @@ def _provider_gate_matches_ledger(
     for origin in superseded_calls:
         seen: set[str] = set()
         cursor: Mapping[str, Any] = origin
-        while cursor["appserver_delivery"]["kind"] == (
-            "superseded_by_collaboration_message"
+        while cursor["appserver_delivery"]["kind"] in (
+            "superseded_by_collaboration_message",
+            "suppressed_collaboration_wait",
         ):
             cursor_id = str(cursor["response_id"])
             if cursor_id in seen:

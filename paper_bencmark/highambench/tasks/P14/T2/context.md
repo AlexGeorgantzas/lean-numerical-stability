@@ -14,6 +14,6 @@ page 2318) and Theorem 3.3, equation (3.6), on PDF page 9 (printed page 2319).
 
 The target records separate finite radii for exponential evaluation and the
 final division.  Recursive summation contributes the denominator radius
-`epsilonExp + gamma(u,n)*(1+epsilonExp)`.  Quotient composition supplies the
+`epsilonExp + p14Gamma(u,n)*(1+epsilonExp)`.  Quotient composition supplies the
 denominator-safety factor.  If both operation radii are `u`, the first-order
 sum of radii is `(n+3)u`, exactly the constant displayed in Theorem 3.3.

@@ -15,12 +15,16 @@ from typing import Any, Iterable, Mapping, Sequence
 try:
     from .common import BenchmarkToolError, FAILURE_CODES, SCHEMA_VERSION, read_json, write_json
     from .result_set import check_result_set, require_complete_result_set
+    from .task_tags import validate_t4_task_metadata
 except ImportError:  # Direct script execution.
     from common import BenchmarkToolError, FAILURE_CODES, SCHEMA_VERSION, read_json, write_json  # type: ignore
     from result_set import check_result_set, require_complete_result_set  # type: ignore
+    from task_tags import validate_t4_task_metadata  # type: ignore
 
 
-TIER_ORDER = {"overall": 0, "T1": 1, "T2": 2, "T3": 3}
+SELECTED_TIERS = ("T1", "T2", "T3")
+WHOLE_PAPER_SCOPE = "whole-paper"
+TIER_ORDER = {"overall": 0, "T1": 1, "T2": 2, "T3": 3, WHOLE_PAPER_SCOPE: 4}
 
 
 def load_runs(paths: Sequence[Path]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -363,6 +367,97 @@ def summarize_pairs(
     }
 
 
+def _stratified_runs(
+    runs: Sequence[dict[str, Any]],
+) -> list[tuple[str, list[dict[str, Any]]]]:
+    """Keep T4 whole-paper results outside the T1--T3 overall score."""
+
+    selected = [run for run in runs if run.get("tier") in SELECTED_TIERS]
+    rows: list[tuple[str, list[dict[str, Any]]]] = [("overall", selected)]
+    rows.extend(
+        (tier, [run for run in runs if run.get("tier") == tier])
+        for tier in SELECTED_TIERS
+    )
+    rows.append(
+        (WHOLE_PAPER_SCOPE, [run for run in runs if run.get("tier") == "T4"])
+    )
+    return rows
+
+
+def _t4_coverage_rows(
+    manifest: Mapping[str, Any] | None,
+    repository_root: Path | None,
+) -> list[dict[str, Any]]:
+    """Authenticate and summarize final claim-scoped T4 coverage."""
+
+    if manifest is None:
+        return []
+    papers = manifest.get("papers")
+    if not isinstance(papers, list):
+        raise BenchmarkToolError("manifest papers must be a JSON array")
+    t4_targets: list[tuple[str, str]] = []
+    for paper in papers:
+        if not isinstance(paper, Mapping):
+            raise BenchmarkToolError("manifest paper entries must be JSON objects")
+        paper_id = paper.get("paper_id")
+        targets = paper.get("targets")
+        if not isinstance(paper_id, str) or not isinstance(targets, list):
+            raise BenchmarkToolError("manifest paper identity/targets are invalid")
+        for target in targets:
+            if (
+                isinstance(target, Mapping)
+                and target.get("availability") == "available"
+                and target.get("tier") == "T4"
+            ):
+                task_id = target.get("task_id")
+                if task_id != f"{paper_id}-T4":
+                    raise BenchmarkToolError("manifest T4 task identity disagrees")
+                t4_targets.append((paper_id, str(task_id)))
+    if not t4_targets:
+        return []
+    if repository_root is None:
+        raise BenchmarkToolError(
+            "T4 coverage reporting requires repository_root for task authentication"
+        )
+    project_root = repository_root.resolve()
+    benchmark_root = project_root / "paper_bencmark" / "highambench"
+    if not benchmark_root.is_dir() and (project_root / "tasks").is_dir():
+        benchmark_root = project_root
+    rows: list[dict[str, Any]] = []
+    for paper_id, task_id in t4_targets:
+        task_path = benchmark_root / "tasks" / paper_id / "T4" / "task.json"
+        task = read_json(task_path)
+        if not isinstance(task, Mapping):
+            raise BenchmarkToolError(f"{task_path} must contain a JSON object")
+        summary = validate_t4_task_metadata(task, label=task_id)
+        if summary.get("task_id") != task_id:
+            raise BenchmarkToolError(f"{task_id} metadata identity disagrees")
+        review_units = int(summary["review_unit_count"])
+        accepted_reviews = int(summary["review_count"])
+        rows.append(
+            {
+                "paper_id": paper_id,
+                "task_id": task_id,
+                "tier": "T4",
+                "stratum": WHOLE_PAPER_SCOPE,
+                "source_inventory_count": int(summary["source_inventory_count"]),
+                "included_source_count": int(summary["included_source_count"]),
+                "excluded_source_count": int(summary["excluded_source_count"]),
+                "reviewed_included_source_count": int(summary["included_source_count"]),
+                "declaration_count": int(summary["declaration_count"]),
+                "reviewed_declaration_count": int(summary["declaration_count"]),
+                "review_unit_count": review_units,
+                "accepted_review_count": accepted_reviews,
+                "accepted_review_unit_coverage_rate": (
+                    accepted_reviews / review_units if review_units else None
+                ),
+                "controlled_sorry_count": int(summary["controlled_sorry_count"]),
+                "measurement_ready": summary.get("measurement_ready") is True,
+            }
+        )
+    return rows
+
+
 def analyze(
     all_runs: Sequence[dict[str, Any]],
     *,
@@ -426,10 +521,7 @@ def analyze(
     keys = sorted({agent_key(run) for run in runs})
     for key in keys:
         agent_runs = [run for run in runs if agent_key(run) == key]
-        for scope in ("overall", "T1", "T2", "T3"):
-            scoped = agent_runs if scope == "overall" else [
-                run for run in agent_runs if run.get("tier") == scope
-            ]
+        for scope, scoped in _stratified_runs(agent_runs):
             if not scoped:
                 continue
             for condition in ("N", "L"):
@@ -460,10 +552,7 @@ def analyze(
     task_comparison_rows: list[dict[str, Any]] = []
     for key in keys:
         agent_pairs = [pair for pair in pairs if pair["agent"] == key]
-        for scope in ("overall", "T1", "T2", "T3"):
-            scoped_pairs = agent_pairs if scope == "overall" else [
-                pair for pair in agent_pairs if pair["tier"] == scope
-            ]
+        for scope, scoped_pairs in _stratified_runs(agent_pairs):
             if scoped_pairs:
                 comparison_rows.append(
                     summarize_pairs(
@@ -545,6 +634,7 @@ def analyze(
         "per_task_summaries": task_rows,
         "paired_comparisons": comparison_rows,
         "per_task_paired_comparisons": task_comparison_rows,
+        "whole_paper_t4_coverage": _t4_coverage_rows(manifest, repository_root),
         "pair_problems": pair_problems,
         "paired_change_definition": "median of per-pair (L minus N) changes",
         "combined_score": None,
@@ -725,6 +815,32 @@ def write_csv_tables(output_dir: Path, analysis: Mapping[str, Any]) -> None:
         writer = csv.DictWriter(stream, fieldnames=run_fields, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(analysis["per_run_results"])
+
+    t4_coverage_fields = [
+        "paper_id",
+        "task_id",
+        "tier",
+        "stratum",
+        "source_inventory_count",
+        "included_source_count",
+        "excluded_source_count",
+        "reviewed_included_source_count",
+        "declaration_count",
+        "reviewed_declaration_count",
+        "review_unit_count",
+        "accepted_review_count",
+        "accepted_review_unit_coverage_rate",
+        "controlled_sorry_count",
+        "measurement_ready",
+    ]
+    with (output_dir / "t4_whole_paper_coverage.csv").open(
+        "w", encoding="utf-8", newline=""
+    ) as stream:
+        writer = csv.DictWriter(
+            stream, fieldnames=t4_coverage_fields, extrasaction="ignore"
+        )
+        writer.writeheader()
+        writer.writerows(analysis.get("whole_paper_t4_coverage", []))
 
     observational = analysis.get("observational_pilot_results")
     if isinstance(observational, Mapping):
@@ -1088,6 +1204,47 @@ def render_latex(analysis: Mapping[str, Any]) -> str:
                 + r" \\"
             )
         lines.extend([r"\bottomrule", r"\end{longtable}"])
+    t4_coverage = analysis.get("whole_paper_t4_coverage")
+    if isinstance(t4_coverage, list) and t4_coverage:
+        lines.extend(
+            [
+                r"\section*{T4 whole-paper formalization coverage}",
+                (
+                    "T4 is reported as a separate whole-paper stratum, not as a "
+                    "fourth difficulty tier and not inside the T1--T3 overall score."
+                ),
+                r"\small",
+                r"\begin{longtable}{lrrrrrrrr}",
+                r"\toprule",
+                r"Task & Inventory & Included & Excluded & Decls. & Review units & Accepted & Holes & Ready \\",
+                r"\midrule",
+                r"\endfirsthead",
+                r"\toprule",
+                r"Task & Inventory & Included & Excluded & Decls. & Review units & Accepted & Holes & Ready \\",
+                r"\midrule",
+                r"\endhead",
+            ]
+        )
+        for row in t4_coverage:
+            lines.append(
+                " & ".join(
+                    latex_escape(value)
+                    for value in (
+                        row["task_id"],
+                        row["source_inventory_count"],
+                        row["included_source_count"],
+                        row["excluded_source_count"],
+                        row["declaration_count"],
+                        row["review_unit_count"],
+                        row["accepted_review_count"],
+                        row["controlled_sorry_count"],
+                        row["measurement_ready"],
+                    )
+                )
+                + r" \\"
+            )
+        lines.extend([r"\bottomrule", r"\end{longtable}"])
+
     lines.extend(
         [
         r"\section*{Official reference scores}",
@@ -1383,6 +1540,9 @@ def main() -> int:
             "task_csv": str(args.output_dir / "task_summary.csv"),
             "task_paired_csv": str(args.output_dir / "task_paired_summary.csv"),
             "run_csv": str(args.output_dir / "run_results.csv"),
+            "t4_coverage_csv": str(
+                args.output_dir / "t4_whole_paper_coverage.csv"
+            ),
             "observational_condition_csv": (
                 str(args.output_dir / "observational_condition_summary.csv")
                 if analysis["observational_pilot_results"] is not None

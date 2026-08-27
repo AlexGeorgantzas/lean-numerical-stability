@@ -16,10 +16,15 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from check_construction import (  # noqa: E402
+    ConstructionSpec,
+    _paper_module_isolation_probe,
+    _validate_paper_module_isolation_record,
+    _validate_t4_promoted_result,
     check_one,
     construction_specs,
     local_helper_sources,
     make_parser,
+    paper_construction_specs,
     promote_current_evidence,
     resolve_environment,
     run_checks,
@@ -314,7 +319,7 @@ class ConstructionCheckTests(unittest.TestCase):
         helper_modules = [
             Path(relative).stem for relative in config.local_source_relatives
         ]
-        return {
+        result = {
             "pass": True,
             "failure_code": None,
             "note": "accepted",
@@ -356,6 +361,65 @@ class ConstructionCheckTests(unittest.TestCase):
             "library_use": uses_library,
             "library_declarations": declarations,
         }
+        required = list(config.required_declarations)
+        holes = [dict(item) for item in config.controlled_sorries]
+        if required:
+            proof_declarations = [str(item["lean_name"]) for item in holes]
+            audits = [
+                {
+                    "ok": True,
+                    "format_version": 2,
+                    "type_check": {
+                        "candidate": lean_name,
+                        "expected": f"HighamBench.generatedExpected{index}",
+                        "equal": True,
+                    },
+                    "forbidden_dependencies": [],
+                    "local_modules": helper_modules + ["Submission"],
+                    "missing_helper_modules": [],
+                }
+                for index, lean_name in enumerate(proof_declarations, start=1)
+            ]
+            result.update(
+                required_declarations=required,
+                controlled_source_bindings=[
+                    {
+                        "lean_name": name,
+                        "controlled_source_file": source,
+                        "controlled_source_line": line,
+                    }
+                    for name, source, line in zip(
+                        required,
+                        config.required_declaration_sources,
+                        config.required_declaration_source_lines,
+                        strict=True,
+                    )
+                ],
+                controlled_sorries=holes,
+                proof_declarations=proof_declarations,
+                statement_checks=[{"lean_name": name, "ok": True} for name in required],
+                proof_hole_check={
+                    "ok": True,
+                    "submitted_sorry_count": 0,
+                    "holes": [
+                        {"lean_name": name, "ok": True}
+                        for name in proof_declarations
+                    ],
+                },
+                semantic_statement_checks=[
+                    item["type_check"] for item in audits
+                ],
+                semantic_statement_check=audits[0]["type_check"],
+                statement_check={"lean_name": required[0], "ok": True},
+                dependency_audits=audits,
+                dependency_audit={
+                    "exit_code": 0,
+                    "timed_out": False,
+                    "system_error": None,
+                    "parsed": {"audits": audits},
+                },
+            )
+        return result
 
     @staticmethod
     def successful_preflight(root, **kwargs):
@@ -379,6 +443,8 @@ class ConstructionCheckTests(unittest.TestCase):
                 "attempted": True,
                 "reliable": True,
                 "importable": False,
+                "timed_out": False,
+                "system_error": None,
             },
         }
 
@@ -683,6 +749,442 @@ class ConstructionCheckTests(unittest.TestCase):
                 f"tasks/{spec.paper_id}/{spec.tier}/Target.lean",
             )
 
+    def test_t4_requires_private_n_l_proofs_and_separate_skeleton_gate(self) -> None:
+        manifest_path = self.benchmark / "metadata" / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        definition_name = "HighamBench.p01_t4_shared"
+        lean_name = "HighamBench.p01_t4_claim"
+        p01_definitions = (
+            self.benchmark
+            / "shared"
+            / "HighamBench"
+            / "P01Definitions.lean"
+        )
+        p01_definitions.write_text(
+            "import HighamBench.Core\n"
+            "namespace HighamBench\n"
+            "def p01_t4_shared : Nat := 1\n"
+            "end HighamBench\n",
+            encoding="utf-8",
+        )
+        for shared_record in manifest["controlled_shared_files"]:
+            if str(shared_record["path"]).endswith("P01Definitions.lean"):
+                shared_record["sha256"] = sha256_file(p01_definitions)
+        manifest["papers"][0]["targets"].append(
+            {
+                "task_id": "P01-T4",
+                "tier": "T4",
+                "availability": "available",
+                "lean_target": {
+                    "file": "paper_bencmark/highambench/tasks/P01/T4/Target.lean",
+                    "declarations": [definition_name, lean_name],
+                },
+            }
+        )
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        task_root = self.benchmark / "tasks" / "P01" / "T4"
+        task_root.mkdir(parents=True)
+        target = (
+            "namespace HighamBench\n"
+            "theorem p01_t4_claim : True := by\n"
+            "  -- PROOF_START P01-T4-H001\n"
+            "  sorry\n"
+            "end HighamBench\n"
+        )
+        (task_root / "Target.lean").write_text(target, encoding="utf-8")
+        (task_root / "context.md").write_text("whole-paper context\n", encoding="utf-8")
+        (task_root / "task.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "highambench-task-0.4",
+                    "task_id": "P01-T4",
+                    "paper_id": "P01",
+                    "tier": "T4",
+                    "declarations": [
+                        {
+                            "declaration_id": "P01-T4-D001",
+                            "lean_name": definition_name,
+                            "controlled_source_file": (
+                                "paper_bencmark/highambench/shared/HighamBench/"
+                                "P01Definitions.lean"
+                            ),
+                            "controlled_source_line": 3,
+                        },
+                        {
+                            "declaration_id": "P01-T4-D002",
+                            "lean_name": lean_name,
+                            "controlled_source_file": (
+                                "paper_bencmark/highambench/tasks/P01/T4/Target.lean"
+                            ),
+                            "controlled_source_line": 2,
+                        }
+                    ],
+                    "faithfulness_reviews": [],
+                    "validation": {
+                        "controlled_target_file": "tasks/P01/T4/Target.lean",
+                        "required_declarations": [definition_name, lean_name],
+                        "controlled_sorries": [
+                            {
+                                "placeholder_order": 1,
+                                "placeholder_id": "P01-T4-H001",
+                                "declaration_id": "P01-T4-D002",
+                                "lean_name": lean_name,
+                                "marker": "-- PROOF_START P01-T4-H001",
+                                "line": 4,
+                                "column": 3,
+                            }
+                        ],
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        controlled = create_manifest(
+            self.benchmark,
+            requested=[
+                "agent_prompt.md",
+                "shared/HighamBench/Core.lean",
+                "shared/HighamBench/P01Definitions.lean",
+                "tasks/P01/T4/Target.lean",
+                "tasks/P01/T4/context.md",
+                "tasks/P01/T4/task.json",
+            ],
+            label="P01-T4-controlled",
+        )
+        (self.benchmark / "metadata" / "controlled" / "P01-T4.json").write_text(
+            json.dumps(controlled), encoding="utf-8"
+        )
+
+        specs = [
+            spec
+            for spec in construction_specs(self.benchmark, paper_ids=["P01"])
+            if spec.task_id == "P01-T4"
+        ]
+        self.assertEqual([spec.condition for spec in specs], ["N", "L"])
+        self.assertTrue(all(spec.target_theorem == lean_name for spec in specs))
+        self.assertEqual(
+            [spec.gold_filename for spec in specs], ["T4_N.lean", "T4_L.lean"]
+        )
+        self.assertTrue(
+            all(spec.construction_kind == "t4-private-proof" for spec in specs)
+        )
+
+        validation_configs = []
+
+        def plural_validator(config):
+            validation_configs.append(config)
+            self.assertEqual(
+                list(config.required_declarations), [definition_name, lean_name]
+            )
+            self.assertEqual(
+                list(config.required_declaration_sources),
+                [
+                    "shared/HighamBench/P01Definitions.lean",
+                    "tasks/P01/T4/Target.lean",
+                ],
+            )
+            self.assertEqual(
+                list(config.required_declaration_source_lines), [3, 2]
+            )
+            self.assertEqual(len(config.controlled_sorries), 1)
+            self.assertIsNotNone(config.audit_command)
+            audit_command = list(config.audit_command or ())
+            self.assertIn("--audit-pairs-file", audit_command)
+            self.assertEqual(
+                audit_command[audit_command.index("--audit-pairs-file") + 1],
+                "{audit_pairs_file}",
+            )
+            self.assertIn("--expected-module", audit_command)
+            self.assertIn("--local-modules-file", audit_command)
+            self.assertNotIn("--target-theorem", audit_command)
+            self.assertNotIn("--expected-theorem", audit_command)
+            return self.successful_validation(config)
+
+        def fake_runner(command, *, cwd, timeout_seconds):
+            self.assertEqual(cwd, self.project)
+            self.assertGreater(timeout_seconds, 0)
+            source = Path(command[command.index("--source") + 1])
+            if source.name.startswith("HighamBenchPaperModuleProbe_"):
+                module = source.read_text(encoding="utf-8").splitlines()[0].split()[1]
+                if module == "HighamBench.P01Definitions":
+                    return {
+                        "exit_code": 0,
+                        "timed_out": False,
+                        "system_error": None,
+                        "seconds": 0.01,
+                        "output": "",
+                    }
+                return {
+                    "exit_code": 1,
+                    "timed_out": False,
+                    "system_error": None,
+                    "seconds": 0.01,
+                    "output": f"error: unknown module '{module}'\n",
+                }
+            staged_source = source.read_text(encoding="utf-8")
+            self.assertIn(f"#check {definition_name}", staged_source)
+            self.assertIn(f"#check {lean_name}", staged_source)
+            source.with_suffix(".olean").write_bytes(b"synthetic T4 olean")
+            return {
+                "exit_code": 0,
+                "timed_out": False,
+                "system_error": None,
+                "seconds": 0.01,
+                "output": "",
+            }
+
+        environment = replace(self.environment, specs=tuple(specs))
+        missing_evidence = run_checks(
+            environment,
+            command_runner=fake_runner,
+            validator_fn=plural_validator,
+            preflight_fn=self.successful_preflight,
+        )
+        self.assertFalse(missing_evidence["pass"])
+        self.assertEqual(validation_configs, [])
+        self.assertTrue(
+            all(
+                "T4_N.lean" in reason or "T4_L.lean" in reason
+                for result in missing_evidence["results"]
+                for reason in result["reasons"]
+            )
+        )
+
+        private_paper = self.private_gold / "P01"
+        proof = target.replace("sorry", "trivial")
+        for condition in ("N", "L"):
+            (private_paper / f"T4_{condition}.lean").write_text(
+                proof, encoding="utf-8"
+            )
+        evidence = run_checks(
+            environment,
+            command_runner=fake_runner,
+            validator_fn=plural_validator,
+            preflight_fn=self.successful_preflight,
+        )
+        results = evidence["results"]
+        self.assertEqual(len(validation_configs), 2)
+        self.assertEqual(evidence["schema_version"], 3)
+        self.assertTrue(evidence["isolation"]["t4_private_gold_required"])
+        self.assertTrue(
+            evidence["isolation"]["t4_private_proofs_plural_validated"]
+        )
+        self.assertEqual(evidence["summary"]["private_proof_task_count"], 1)
+        self.assertEqual(evidence["summary"]["t4_private_proof_task_count"], 1)
+        self.assertTrue(all(result["pass"] for result in results), results)
+        self.assertTrue(
+            all(result["construction_kind"] == "t4-private-proof" for result in results)
+        )
+        self.assertTrue(
+            all(result["validation"]["required_declarations_checked"] == 2 for result in results)
+        )
+        self.assertTrue(
+            all(result["validation"]["controlled_sorries_checked"] == 1 for result in results)
+        )
+        for result, spec in zip(results, specs, strict=True):
+            self.assertTrue(result["validation"]["proof_holes_discharged"])
+            skeleton = result["controlled_skeleton"]
+            self.assertEqual(skeleton["construction_kind"], "designated-hole-skeleton")
+            self.assertEqual(
+                skeleton["validation"]["required_declarations_checked"], 2
+            )
+            self.assertEqual(
+                skeleton["validation"]["controlled_sorries_checked"], 1
+            )
+            isolation = skeleton["paper_module_isolation"]
+            self.assertTrue(isolation["pass"])
+            self.assertEqual(
+                isolation["allowed_modules"],
+                ["HighamBench.P01Definitions"],
+            )
+            self.assertEqual(
+                isolation["unavailable_modules"],
+                [
+                    "HighamBench.Core",
+                    "HighamBench.SemanticCore",
+                    "HighamBench.P02Definitions",
+                ],
+            )
+            self.assertEqual(
+                isolation["foreign_paper_modules"],
+                ["HighamBench.P02Definitions"],
+            )
+            self.assertEqual(
+                _validate_t4_promoted_result(environment, result, spec),
+                (
+                    spec.condition == "N",
+                    spec.condition == "L",
+                    True,
+                ),
+            )
+        self.assertTrue(all("gold_source_sha256" in result for result in results))
+
+    def test_p01_t4_n_and_l_probe_exact_scoped_and_foreign_modules(self) -> None:
+        paper_ids = tuple(f"P{index:02d}" for index in range(1, 21))
+        environment = replace(self.environment, manifest_paper_ids=paper_ids)
+        observed: list[tuple[str, str]] = []
+
+        def fake_runner(command, *, cwd, timeout_seconds):
+            self.assertEqual(cwd, self.project)
+            self.assertGreater(timeout_seconds, 0)
+            condition = command[command.index("--condition") + 1]
+            self.assertEqual(
+                command[command.index("--shared-olean-root") + 1],
+                str(self.shared_olean / "P01"),
+            )
+            if condition == "N":
+                self.assertNotIn("--library-source", command)
+                self.assertNotIn("--library-root-file", command)
+                self.assertNotIn("--library-olean", command)
+            else:
+                self.assertIn("--library-source", command)
+                self.assertIn("--library-root-file", command)
+                self.assertIn("--library-olean", command)
+            source = Path(command[command.index("--source") + 1])
+            source_lines = source.read_text(encoding="utf-8").splitlines()
+            self.assertEqual(source_lines[1], "#check True")
+            module = source_lines[0].split()[1]
+            observed.append((condition, module))
+            if module == "HighamBench.P01Definitions":
+                return {
+                    "exit_code": 0,
+                    "timed_out": False,
+                    "system_error": None,
+                    "seconds": 0.01,
+                    "output": "",
+                }
+            return {
+                "exit_code": 1,
+                "timed_out": False,
+                "system_error": None,
+                "seconds": 0.01,
+                "output": (
+                    "error: object file '/shared-olean/"
+                    f"{module.replace('.', '/')}.olean' of module {module} "
+                    "does not exist\n"
+                ),
+            }
+
+        records = []
+        for condition in ("N", "L"):
+            workspace = self.root / f"module-probe-{condition}"
+            workspace.mkdir()
+            spec = ConstructionSpec(
+                task_id="P01-T4",
+                paper_id="P01",
+                tier="T4",
+                condition=condition,
+                target_theorem=None,
+                canonical_relative="tasks/P01/T4/Target.lean",
+                gold_filename=None,
+                construction_kind="designated-hole-skeleton",
+            )
+            record = _paper_module_isolation_probe(
+                environment,
+                spec,
+                workspace,
+                command_runner=fake_runner,
+            )
+            _validate_paper_module_isolation_record(environment, spec, record)
+            records.append(record)
+
+        foreign = [
+            f"HighamBench.P{index:02d}Definitions" for index in range(2, 21)
+        ]
+        expected_unavailable = [
+            "HighamBench.Core", "HighamBench.SemanticCore", *foreign
+        ]
+        for condition, record in zip(("N", "L"), records, strict=True):
+            self.assertTrue(record["pass"], record)
+            self.assertEqual(record["condition"], condition)
+            self.assertEqual(
+                record["allowed_modules"],
+                ["HighamBench.P01Definitions"],
+            )
+            self.assertEqual(record["foreign_paper_modules"], foreign)
+            self.assertEqual(record["unavailable_modules"], expected_unavailable)
+            self.assertEqual(record["attempt_count"], 22)
+            self.assertEqual(record["allowed_imports_passed"], 1)
+            self.assertEqual(record["unavailable_imports_rejected"], 21)
+            self.assertEqual(
+                [attempt["module"] for attempt in record["attempts"]],
+                [*record["allowed_modules"], *expected_unavailable],
+            )
+            self.assertTrue(
+                all(attempt["reliable"] is True for attempt in record["attempts"])
+            )
+        self.assertEqual(len(observed), 44)
+
+    def test_p01_t4_probe_rejects_generic_failure_and_importable_foreign_module(self) -> None:
+        paper_ids = tuple(f"P{index:02d}" for index in range(1, 21))
+        environment = replace(self.environment, manifest_paper_ids=paper_ids)
+        spec = ConstructionSpec(
+            task_id="P01-T4",
+            paper_id="P01",
+            tier="T4",
+            condition="N",
+            target_theorem=None,
+            canonical_relative="tasks/P01/T4/Target.lean",
+            gold_filename=None,
+            construction_kind="designated-hole-skeleton",
+        )
+        workspace = self.root / "module-probe-generic-failure"
+        workspace.mkdir()
+
+        def fake_runner(command, *, cwd, timeout_seconds):
+            source = Path(command[command.index("--source") + 1])
+            module = source.read_text(encoding="utf-8").splitlines()[0].split()[1]
+            if module == "HighamBench.P01Definitions":
+                return {
+                    "exit_code": 0,
+                    "timed_out": False,
+                    "system_error": None,
+                    "output": "",
+                }
+            if module == "HighamBench.P08Definitions":
+                return {
+                    "exit_code": 0,
+                    "timed_out": False,
+                    "system_error": None,
+                    "output": "",
+                }
+            output = (
+                "error: toolchain failed before import resolution\n"
+                if module == "HighamBench.P07Definitions"
+                else f"error: unknown module '{module}'\n"
+            )
+            return {
+                "exit_code": 1,
+                "timed_out": False,
+                "system_error": None,
+                "output": output,
+            }
+
+        record = _paper_module_isolation_probe(
+            environment,
+            spec,
+            workspace,
+            command_runner=fake_runner,
+        )
+        self.assertFalse(record["pass"])
+        failed = next(
+            attempt
+            for attempt in record["attempts"]
+            if attempt["module"] == "HighamBench.P07Definitions"
+        )
+        self.assertFalse(failed["reliable"])
+        self.assertIsNone(failed["importable"])
+        self.assertFalse(failed["missing_import_diagnostic"])
+        leaked = next(
+            attempt
+            for attempt in record["attempts"]
+            if attempt["module"] == "HighamBench.P08Definitions"
+        )
+        self.assertTrue(leaked["reliable"])
+        self.assertTrue(leaked["importable"])
+        self.assertFalse(leaked["missing_import_diagnostic"])
+
     def test_p02_spec_drives_validator_paths_with_synthetic_unit_source(self) -> None:
         spec = next(
             item
@@ -854,10 +1356,10 @@ class ConstructionCheckTests(unittest.TestCase):
         )
         self.assertTrue(basis["shared_olean"]["condition_n_absence_scan"]["ok"])
         self.assertRegex(basis["executables"]["python"]["version"], r"^\d+\.\d+\.\d+$")
-        self.assertEqual(basis["shared_olean"]["exact_file_count"], 4)
+        self.assertEqual(basis["shared_olean"]["exact_file_count"], 2)
         self.assertEqual(
             set(basis["shared_olean"]["bundles"]),
-            {"P01", "P02"},
+            {"P01"},
         )
         self.assertEqual(
             set(basis["shared_olean"]["bundles"]["P01"]),
@@ -1299,6 +1801,69 @@ class ConstructionCheckTests(unittest.TestCase):
                 self.assertGreaterEqual(
                     result["validation"]["static_finding_count"], 1
                 )
+
+
+class PaperLocalDiscoveryTests(unittest.TestCase):
+    def test_discovers_only_paper_owned_records_without_central_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw) / "benchmark"
+            paper_id = "P06"
+            paper_root = root / "tasks" / paper_id
+            task_ids = [f"{paper_id}-T1", f"{paper_id}-T2"]
+            for tier in ("T1", "T2"):
+                task_root = paper_root / tier
+                task_root.mkdir(parents=True)
+                (task_root / "Target.lean").write_text(
+                    f"theorem p06_{tier.lower()} : True := by sorry\n",
+                    encoding="utf-8",
+                )
+                (task_root / "task.json").write_text(
+                    json.dumps(
+                        {
+                            "task_id": f"{paper_id}-{tier}",
+                            "paper_id": paper_id,
+                            "tier": tier,
+                            "classification_frozen_before_runs": False,
+                            "validation": {
+                                "controlled_target_file": (
+                                    "paper_bencmark/highambench/tasks/"
+                                    f"{paper_id}/{tier}/Target.lean"
+                                ),
+                                "required_declaration": f"HighamBench.p06_{tier.lower()}",
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+            (paper_root / "paper.json").write_text(
+                json.dumps(
+                    {
+                        "paper_id": paper_id,
+                        "classification_frozen_before_runs": False,
+                        "included_tasks": task_ids,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            central = root / "metadata" / "manifest.json"
+            central.parent.mkdir(parents=True)
+            central.write_text("not valid JSON and deliberately unrelated\n", encoding="utf-8")
+
+            specs = paper_construction_specs(root, paper_id)
+
+            self.assertEqual(
+                [(item.task_id, item.condition) for item in specs],
+                [
+                    ("P06-T1", "N"),
+                    ("P06-T1", "L"),
+                    ("P06-T2", "N"),
+                    ("P06-T2", "L"),
+                ],
+            )
+            self.assertEqual(
+                {item.target_theorem for item in specs},
+                {"HighamBench.p06_t1", "HighamBench.p06_t2"},
+            )
 
 
 if __name__ == "__main__":
