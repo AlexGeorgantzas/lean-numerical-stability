@@ -1,3 +1,0 @@
-import NumStability.Algorithms.HighamChapter9Theorem99ComplexClosure
-
-#check NumStability.Higham9Theorem99ComplexDirect.complexLUFirstStepU_rowDiagDominant

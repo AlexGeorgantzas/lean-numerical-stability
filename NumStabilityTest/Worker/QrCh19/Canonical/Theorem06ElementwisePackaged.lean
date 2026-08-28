@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter19.Theorem06.ElementwisePackaged
-
-#check NumStability.Wave18C.orthogonal_row_sum_abs_le_sqrt_card

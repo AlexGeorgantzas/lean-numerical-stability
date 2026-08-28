@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter21.Equation11.RemainderBounds
-
-#check NumStability.higham21_eq21_11_finite_remainder_vecNorm2_le_radius

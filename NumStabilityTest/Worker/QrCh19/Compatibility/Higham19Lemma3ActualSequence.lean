@@ -1,3 +1,0 @@
-import NumStability.Algorithms.QR.Higham19Lemma3ActualSequence
-
-#check NumStability.higham19_lemma19_3_actual_stored_sequence_backward_error

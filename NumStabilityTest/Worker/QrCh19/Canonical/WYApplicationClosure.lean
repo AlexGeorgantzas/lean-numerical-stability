@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter19.WYApplicationClosure
-
-#check NumStability.Ch19Op2AdditionFamilySpec

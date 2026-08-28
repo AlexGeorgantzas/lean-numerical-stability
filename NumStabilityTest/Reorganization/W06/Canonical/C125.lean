@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.AttainedMinima.Equations15And21
-
-#check NumStability.H16_eq16_15_sylvester_eta_xi_bounds_of_svdOptimalPerturbations

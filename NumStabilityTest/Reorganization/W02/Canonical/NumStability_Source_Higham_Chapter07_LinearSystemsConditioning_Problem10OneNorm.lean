@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem10OneNorm
-
-#check NumStability.ch7TwoSidedScaledOneCond_eq_transpose_infCond

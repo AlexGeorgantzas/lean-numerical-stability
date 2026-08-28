@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Underdetermined.Higham21Perturbation
-
-#check NumStability.higham21Eq21_7_exactRemainder_absoluteNorm_isBigO

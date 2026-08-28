@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreiss
-
-#check NumStability.higham18_kreiss_two_sided_of_spijker

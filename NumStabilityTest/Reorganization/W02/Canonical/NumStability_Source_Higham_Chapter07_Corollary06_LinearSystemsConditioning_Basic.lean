@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.Corollary06.LinearSystemsConditioning.Basic
-
-#check NumStability.ch7SymmetricDiagEquilibratingInvScale2

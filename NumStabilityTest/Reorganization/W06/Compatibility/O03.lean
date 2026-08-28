@@ -1,3 +1,0 @@
-import NumStability.Algorithms.MatrixPowersJordan
-
-#check NumStability.JordanFormSpec.ofRealJordan

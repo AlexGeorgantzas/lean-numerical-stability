@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter06.Theorem05.DistanceToSingularity.Chapter07Equation26
-
-#check NumStability.eq_7_26_relative_distance_to_singularity_eq_inv_condition_number

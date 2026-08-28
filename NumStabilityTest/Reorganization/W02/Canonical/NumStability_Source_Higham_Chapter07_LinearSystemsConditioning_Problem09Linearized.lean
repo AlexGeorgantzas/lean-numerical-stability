@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem09Linearized
-
-#check NumStability.Ch7Problem79ComponentwiseLinearizedRadiusSet

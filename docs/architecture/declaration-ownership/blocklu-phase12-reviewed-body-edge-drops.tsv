@@ -1,5 +1,0 @@
-format	1
-drop	body	NumStability.BlockLUFactSpec.firstColumnBelow_eq_of_right_inverse	_private.<module>.NumStability.sum_ite_eq_val_right	private-helper-proof-inlined
-drop	body	NumStability.BlockLUFactSpec.firstRow_eq	_private.<module>.NumStability.sum_ite_eq_val	private-helper-proof-inlined
-drop	body	NumStability.block_lu_one_step_explicit	_private.<module>.NumStability.sum_ite_eq_val	private-helper-proof-inlined
-drop	body	NumStability.block_lu_one_step_explicit	_private.<module>.NumStability.sum_ite_eq_val_right	private-helper-proof-inlined

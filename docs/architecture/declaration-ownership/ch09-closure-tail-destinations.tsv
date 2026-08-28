@@ -1,8 +1,0 @@
-format	1
-destination	NumStability.Source.Higham.Chapter09.CompletePivotSharpClosure	D1	10	25	14	0	NumStability.Algorithms.HighamChapter9CompletePivotSharpClosure
-destination	NumStability.Source.Higham.Chapter09.ComplexClosure	D1	10	100	74	0	NumStability.Algorithms.HighamChapter9ComplexClosure
-destination	NumStability.Source.Higham.Chapter09.Theorem914Actual	D2	10	127	127	11	NumStability.Algorithms.HighamChapter9Theorem914Actual
-destination	NumStability.Source.Higham.Chapter09.Theorem97Classification	D1	10	38	27	0	NumStability.Algorithms.HighamChapter9Theorem97Classification
-destination	NumStability.Source.Higham.Chapter09.Theorem99Closure	D1	10	26	26	0	NumStability.Algorithms.HighamChapter9Theorem99Closure
-destination	NumStability.Source.Higham.Chapter09.Theorem914DiagDominant	E	11	2	2	0	NumStability.Algorithms.HighamChapter9Theorem914DiagDominant
-destination	NumStability.Source.Higham.Chapter09.Theorem99ComplexClosure	E	11	40	40	1	NumStability.Algorithms.HighamChapter9Theorem99ComplexClosure

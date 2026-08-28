@@ -1,3 +1,0 @@
-import NumStability.Analysis.LinearOperators.NumericalRadius.Core.Basic
-
-#check NumStability.bddAbove_numericalRadiusCLM

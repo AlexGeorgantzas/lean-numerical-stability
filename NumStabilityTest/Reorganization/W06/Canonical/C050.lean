@@ -1,3 +1,0 @@
-import NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition
-
-#check NumStability.IsNilpotentJordanForm

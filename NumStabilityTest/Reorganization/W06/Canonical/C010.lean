@@ -1,3 +1,0 @@
-import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds.StructuredSylvester
-
-#check NumStability.sylvesterPsi_of_sigmaMin_isPsiFirstOrderBound

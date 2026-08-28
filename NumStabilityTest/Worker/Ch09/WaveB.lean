@@ -1,2 +1,0 @@
-import NumStabilityTest.Worker.Ch09.Canonical.Section11
-import NumStabilityTest.Worker.Ch09.Compatibility.HighamChapter9

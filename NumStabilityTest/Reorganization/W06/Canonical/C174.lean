@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.RealCases
-
-#check NumStability.higham_18_1_real_diagonalizable_fl_tendsto

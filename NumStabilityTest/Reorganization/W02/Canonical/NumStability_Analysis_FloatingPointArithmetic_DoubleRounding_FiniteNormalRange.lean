@@ -1,3 +1,0 @@
-import NumStability.Analysis.FloatingPointArithmetic.DoubleRounding.FiniteNormalRange
-
-#check NumStability.FloatingPointFormat.binaryT2DoubleRounding_21_16_finiteNormalRange

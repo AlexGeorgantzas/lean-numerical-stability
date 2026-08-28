@@ -1,4 +1,0 @@
-import NumStability.Analysis.Midpoint
-
-#check NumStability.FloatingPointFormat.decimalOneDigitThreeExponentFormat_finiteSystem_one_half
-#check NumStability.FloatingPointFormat.problem2_8_decimal_midpoint_strict_between_violated

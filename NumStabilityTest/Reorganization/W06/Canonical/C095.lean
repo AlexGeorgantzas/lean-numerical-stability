@@ -1,3 +1,0 @@
-import NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds.Contour
-
-#check NumStability.isBounded_resolventPseudospectrum

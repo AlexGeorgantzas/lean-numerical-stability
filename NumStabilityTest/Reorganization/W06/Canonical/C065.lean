@@ -1,3 +1,0 @@
-import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.ImprovedConstant
-
-#check NumStability.henriciSharpConst

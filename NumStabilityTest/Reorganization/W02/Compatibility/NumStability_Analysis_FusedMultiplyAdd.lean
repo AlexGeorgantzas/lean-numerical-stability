@@ -1,6 +1,0 @@
-import NumStability.Analysis.FusedMultiplyAdd
-
-#check NumStability.FloatingPointFormat.finiteRoundToEvenFMA
-#check NumStability.FloatingPointFormat.finiteConventionalDotProductListTailLoop
-#check NumStability.FloatingPointFormat.higham2_twoFMA_productExpansion_corrected
-#check NumStability.FloatingPointFormat.higham2_fma_dotProduct_rounding_count_savings

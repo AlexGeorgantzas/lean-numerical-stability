@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.ComputedIteration
-
-#check NumStability.matPow_componentwise_bound

@@ -1,3 +1,0 @@
-import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.FirstOrder
-
-#check NumStability.LyapunovConditionFirstOrderBound

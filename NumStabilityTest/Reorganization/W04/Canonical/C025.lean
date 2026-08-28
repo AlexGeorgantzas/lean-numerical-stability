@@ -1,3 +1,0 @@
-import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.HouseholderClosure.Closure
-
-#check NumStability.higham21SNEHouseholderEconomyQ

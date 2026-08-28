@@ -1,3 +1,0 @@
-import NumStability.Algorithms.QR.Higham19TurnbullAitken
-
-#check NumStability.higham19TurnbullAitkenAlpha

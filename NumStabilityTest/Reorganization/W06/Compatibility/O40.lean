@@ -1,3 +1,0 @@
-import NumStability.Analysis.HenriciSharpConstantExact
-
-#check NumStability.centered_sq_eq_exactSharp

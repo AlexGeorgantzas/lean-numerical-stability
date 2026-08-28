@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem02
-
-#check NumStability.theorem7_2_subordinate_forward_error_bound

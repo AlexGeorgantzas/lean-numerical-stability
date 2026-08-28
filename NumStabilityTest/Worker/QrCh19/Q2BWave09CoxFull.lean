@@ -1,2 +1,0 @@
-import NumStabilityTest.Worker.QrCh19.Canonical.Theorem06CoxHighamFull
-import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Thm6CoxHighamFull

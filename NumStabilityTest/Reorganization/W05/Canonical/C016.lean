@@ -1,3 +1,0 @@
-import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Rectangular
-
-#check NumStability.IsSylvesterSolutionRect

@@ -1,3 +1,0 @@
-import NumStability.Analysis.MatrixPowersSpijkerClosure
-
-#check NumStability.higham18_kreiss_two_sided_proved

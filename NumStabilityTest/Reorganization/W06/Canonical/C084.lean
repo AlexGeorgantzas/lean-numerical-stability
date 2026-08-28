@@ -1,3 +1,0 @@
-import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.Rational
-
-#check NumStability.RationalOrderCertificate

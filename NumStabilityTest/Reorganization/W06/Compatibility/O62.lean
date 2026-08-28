@@ -1,3 +1,0 @@
-import NumStability.Analysis.PseudospectralPowerBound
-
-#check NumStability.higham18_eq18_8

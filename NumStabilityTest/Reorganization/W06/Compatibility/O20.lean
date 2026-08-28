@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Sylvester.Higham16PsiSigmaMin
-
-#check NumStability.H16_eq16_23_sylvester_first_order_bound_of_sigmaMin

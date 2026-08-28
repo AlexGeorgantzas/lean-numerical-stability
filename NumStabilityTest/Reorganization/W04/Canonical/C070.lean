@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter21.Theorem04.GivensQMethod.Closure
-
-#check NumStability.Higham21GivensActualRoundedRowwiseCoefficient

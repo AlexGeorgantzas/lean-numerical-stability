@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.ComplexSolvability.SpectralCriterion
-
-#check NumStability.H16_eq16_3_no_common_real_eigenpair_of_det_ne_zero

@@ -1,3 +1,0 @@
-import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge
-
-#check NumStability.SpijkerArcLengthBound

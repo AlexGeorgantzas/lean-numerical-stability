@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Underdetermined.Higham21Equation21_11
-
-#check NumStability.higham21Eq21_11QuadraticCoefficient

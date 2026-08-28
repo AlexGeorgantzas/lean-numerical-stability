@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.Gautschi
-
-#check NumStability.higham18_eq18_6_gautschi_complexJordan

@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Underdetermined.Higham21Theorem214SourceClosure
-
-#check NumStability.Higham21GivensActualReplayEtaQ_lt_one_of_operational_gammaValid

@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter21.Equation07.UnderdeterminedSolve
-
-#check NumStability.higham21Eq21_7BaseSolution

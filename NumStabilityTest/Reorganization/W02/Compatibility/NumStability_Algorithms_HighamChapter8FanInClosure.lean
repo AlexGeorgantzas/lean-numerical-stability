@@ -1,3 +1,0 @@
-import NumStability.Algorithms.HighamChapter8FanInClosure
-
-#check NumStability.higham8_15_rawCubeCounterAbsFan

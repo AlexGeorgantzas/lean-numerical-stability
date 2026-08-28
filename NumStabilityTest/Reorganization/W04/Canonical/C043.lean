@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter21.Equation06.Perturbation
-
-#check NumStability.higham21Theorem21_1DataMajorant

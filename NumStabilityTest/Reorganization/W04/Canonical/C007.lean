@@ -1,3 +1,0 @@
-import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSpec
-
-#check NumStability.RectMinNormSolution.exists_transpose_witness

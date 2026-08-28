@@ -1,3 +1,0 @@
-import NumStability.Analysis.BergerInequality
-
-#check NumStability.l2_norm_matrix_pow_le

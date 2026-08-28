@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter09.Theorem914Actual
-
-#check NumStability.higham9_12_exists_LUFactSpec_absLU_eq_of_positive_pivots

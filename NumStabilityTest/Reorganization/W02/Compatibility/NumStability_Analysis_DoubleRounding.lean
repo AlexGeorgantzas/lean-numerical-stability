@@ -1,7 +1,0 @@
-import NumStability.Analysis.DoubleRounding
-
-#check NumStability.FloatingPointFormat.problem2_9_direct_double_ne_double_rounded_extended64
-#check NumStability.FloatingPointFormat.binaryT2DoubleRounding_21_16_finiteNormalRange
-#check NumStability.FloatingPointFormat.binaryT2DoubleRoundingDestinationFormat
-#check NumStability.FloatingPointFormat.binary64MantissaExtendedLocalFormat
-#check NumStability.FloatingPointFormat.binaryDoubleRounding_counterexample

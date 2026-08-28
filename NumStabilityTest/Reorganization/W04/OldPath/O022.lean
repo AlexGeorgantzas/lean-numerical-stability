@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Underdetermined.Higham21SNEForward
-
-#check NumStability.Higham21SNEBackwardCoefficient

@@ -1,3 +1,0 @@
-import NumStability.Analysis.FunctionalCalculus.OperatorLog.Monotonicity
-
-#check NumStability.complex_realContinuousFunctionalCalculus

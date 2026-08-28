@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.Vectorized
-
-#check NumStability.H16_eq16_4_8_sylvester_realQuasiSchur_factors_twoBlockSpectral_block_and_det_ne_zero_of_operator_sigmaMin

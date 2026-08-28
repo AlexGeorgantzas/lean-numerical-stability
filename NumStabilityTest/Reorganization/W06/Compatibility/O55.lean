@@ -1,3 +1,0 @@
-import NumStability.Analysis.MatrixPowersSpijkerPlanar
-
-#check NumStability.RationalOrderCertificate.arcLength_le_of_planar_analyticBridge

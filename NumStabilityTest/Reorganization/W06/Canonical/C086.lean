@@ -1,3 +1,0 @@
-import NumStability.Analysis.LinearOperators.NumericalRadius.Berger.Hermitian
-
-#check NumStability.l2_norm_matrix_pow_le

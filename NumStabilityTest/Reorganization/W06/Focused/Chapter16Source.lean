@@ -1,7 +1,0 @@
-import NumStability.Source.Higham.Chapter16.Problem02.LyapunovIntegral.All
-import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.All
-import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.Equation29Extensions.All
-
-#check NumStability.Higham16CMatrix
-#check NumStability.H16_eq16_4_5_sylvester_realQuasiSchur_transform_solution_iff
-#check NumStability.H16_eq16_28_lyapunov_aposteriori_bound_diagonal_of_vecCoeff_entrywise_abs_ge

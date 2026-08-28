@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem15Hadamard
-
-#check NumStability.ch7HadamardProduct

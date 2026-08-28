@@ -1,2 +1,0 @@
-import NumStabilityTest.Worker.QrCh19.Canonical.Theorem06ActualSource
-import NumStabilityTest.Worker.QrCh19.Compatibility.Higham19Theorem6ActualSource

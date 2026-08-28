@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem10Bauer.Part03
-
-#check NumStability.ch7TwoSidedScale_isInverse
