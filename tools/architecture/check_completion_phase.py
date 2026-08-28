@@ -704,6 +704,14 @@ C0007_BOUNDED_REPOSITORY_API_URL = (
 C0007_BOUNDED_REPOSITORY_OWNER_LOGIN = "AlexGeorgantzas"
 C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID = 144732584
 C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID = "U_kgDOCKBxqA"
+# The activation/implementation semantic reviewer. Re-pinned from the
+# repository-owner account to the authenticated co-owner collaborator by the
+# 2026-08-27 primary-human superseding instruction; the repository-owner
+# constants above continue to pin the repository identity itself.
+C0007_ACTIVATION_REVIEWER_LOGIN = "kfoynt"
+C0007_ACTIVATION_REVIEWER_DATABASE_ID = 11722713
+C0007_ACTIVATION_REVIEWER_NODE_ID = "MDQ6VXNlcjExNzIyNzEz"
+C0007_ACTIVATION_REVIEWER_ASSOCIATION = "COLLABORATOR"
 C0007_BOUNDED_REMOTE = "origin"
 C0007_BOUNDED_REMOTE_URL = (
     "https://github.com/AlexGeorgantzas/lean-numerical-stability.git"
@@ -811,6 +819,7 @@ C0007_CI_RECOVERY_WORKFLOW_SHA256 = (
 C0007_CI_RECOVERY_WORKFLOW_BLOB_OID = (
     "88249bd10e4c55fd4f52e6fd1e4c2275e24ff6ae"
 )
+C0007_CI_RECOVERY_WORKFLOW_BYTE_COUNT = 2631
 C0007_CI_RECOVERY_ORIGIN_COMMAND = (
     "git remote set-url origin "
     "https://github.com/AlexGeorgantzas/lean-numerical-stability.git"
@@ -831,6 +840,148 @@ C0007_CI_RECOVERY_PATHS = (
 C0007_CI_RECOVERY_ARTIFACT_PATHS = tuple(
     path for path in C0007_CI_RECOVERY_PATHS if path != C0007_CI_RECOVERY_CONTRACT_PATH
 )
+
+# The successful CI-only recovery is immutable history.  Continuation uses a
+# distinct schema/identity and a deliberately different seven-path control
+# surface.  The contract is excluded from the review-ready basis so that the
+# repository owner can review six finalized postimages before the owner comment
+# is embedded in the seventh, self-binding contract postimage.
+C0007_PLANNED_RECOVERY_SHA = "825b972bc2f9f132d4cd1863c4ef06aee3673f5c"
+C0007_PLANNED_RECOVERY_TREE_SHA = "490cd98af6ac1b0955b692c844dfada68d797e8a"
+C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID = (
+    "a8b2f39407603540b7c130376c7308d6d08e1efe"
+)
+C0007_PLANNED_RECOVERY_CONTRACT_SHA256 = (
+    "6E3F15DECA9E47347570E378C0637C979218DA155EFD52B9F1B095D3E37F712B"
+)
+C0007_PLANNED_RECOVERY_RUN_ID = 33016546729
+C0007_PLANNED_RECOVERY_RUN_NUMBER = 8951
+C0007_PLANNED_RECOVERY_JOB_ID = 98336144783
+C0007_PLANNED_RECOVERY_CHECK_SUITE_ID = 89447381703
+C0007_PLANNED_RECOVERY_JOB_LOG_BYTE_COUNT = 157334541
+C0007_PLANNED_RECOVERY_JOB_LOG_SHA256 = (
+    "61A2E25D04A88BA595D576F05A5710FE7D5043ED50C2899A18DFF917A46B7D74"
+)
+C0007_POST_RECOVERY_ISSUE_CREATOR_LOGIN = "kfoynt"
+C0007_POST_RECOVERY_ISSUE_CREATOR_DATABASE_ID = 11722713
+C0007_POST_RECOVERY_ISSUE_CREATOR_NODE_ID = "MDQ6VXNlcjExNzIyNzEz"
+C0007_POST_RECOVERY_ISSUE_TITLE = (
+    "C0007 post-recovery activation review — " + C0007_PLANNED_RECOVERY_SHA
+)
+C0007_POST_RECOVERY_AUTHORIZATION_ID = (
+    "C0007-M13-I01-CODE03-post-recovery-terminal-v6"
+)
+# The exact superseded v4 grant, retained for supersedes validation.
+C0007_SUPERSEDED_TERMINAL_V4_AUTHORIZATION_ID = (
+    "C0007-M13-I01-CODE03-post-recovery-terminal-v4"
+)
+C0007_SUPERSEDED_TERMINAL_V4_AUTHORIZATION_SHA256 = (
+    "DA9A9BC4834A28B43494D87810F64BEC3C8003C46F24F98B54025EC32E72BF43"
+)
+C0007_POST_RECOVERY_CONTROL_ID = (
+    "C0007-M13-I01-CODE03-post-recovery-terminal-v5"
+)
+C0007_POST_RECOVERY_AUTHORIZATION_SHA256 = (
+    "1BFE364FF33DD89E75C183BF88028F690E599BF3FAA29D29EC402D5706B68906"
+)
+C0007_POST_RECOVERY_AUTHORIZED_ACTIONS_SHA256 = (
+    "EDAA45BFE69E047A7307B6E86FEADF216C606802826023C1A012B6B63448FA07"
+)
+C0007_POST_RECOVERY_ACTIVATION_CONDITIONS_SHA256 = (
+    "4DA422CF9BAC9FE7F2C43E8A052AF129C244FF214990386B760265A07A93A93E"
+)
+C0007_POST_RECOVERY_PRESERVED_EXCLUSIONS_SHA256 = (
+    "FD43740F500EE47F85B002292394E171BB7A4912B8828F06C344E773942F88A8"
+)
+C0007_POST_RECOVERY_EXPIRY_SHA256 = (
+    "056976D37621C7355FF0A64D53112E511E52BF74EAE03AD346B4E99DB82E4188"
+)
+C0007_POST_RECOVERY_RUN_POLICY_SHA256 = (
+    "60252D1D4EDD616E1553888E8087C8D6B69135C440C479739FE9E471B662A45B"
+)
+C0007_POST_RECOVERY_SCOPE_SHA256 = (
+    "6A9EB1BB7C3785D319EE32791445AB6C9D1F1A306F9405ED716BF82B21BA482C"
+)
+C0007_POST_RECOVERY_MANIFEST_SHA256 = (
+    "DEF42E27D780A91362FB39A9B6078D41F39B4145CFF5D82AA272D10F46C65C0D"
+)
+C0007_POST_RECOVERY_CONTINUATION_PATH_SET_SHA256 = (
+    "389200435A9225DAA16EBA33351BE5D14F0C827C8C98699EADE9DC50A7E553DA"
+)
+C0007_POST_RECOVERY_NON_SELF_PATH_SET_SHA256 = (
+    "41ED69F4AF94438E9B5E9AABA7FE50DBDCAF5323CD912389BBCE2C0921FFD839"
+)
+C0007_POST_RECOVERY_ALL_PATH_SET_SHA256 = (
+    "F15AE108A9B1F9D80C0E5AEEC032B00E7A8D1473D55DE6F117A9F9F2719E55F5"
+)
+C0007_POST_RECOVERY_PREIMAGE_FREEZE_SHA256 = (
+    "4E4FAAF3B9E21573FBF3BB590B30B452D1C65552CB078177F47224E4A1F5013C"
+)
+C0007_POST_RECOVERY_PREIMAGE_FREEZE_BYTE_COUNT = 1040
+C0007_POST_RECOVERY_PACKET_ID = "CONT01"
+C0007_POST_RECOVERY_STATE = "activation_pending"
+C0007_POST_RECOVERY_COMMIT_SUBJECTS = {
+    "activation_pending": "docs(reorganization): record M13 recovery review",
+    "active": C0007_BOUNDED_COMMIT_SUBJECTS["active"],
+    "implementation": C0007_BOUNDED_COMMIT_SUBJECTS["implementation"],
+    "verified": C0007_BOUNDED_COMMIT_SUBJECTS["verified"],
+}
+C0007_POST_RECOVERY_PATHS = (
+    C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+    C0007_BOUNDED_AUTHORIZATION_PATH,
+    C0007_BOUNDED_PLANNED_CONTROL_PATH,
+    C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH,
+    C0007_BOUNDED_SUPPORTED_API_PATH,
+    "tools/architecture/check_completion_phase.py",
+    "tools/architecture/check_supported_api.py",
+)
+C0007_POST_RECOVERY_NON_SELF_PATHS = tuple(
+    path
+    for path in C0007_POST_RECOVERY_PATHS
+    if path != C0007_BOUNDED_PLANNED_CONTROL_PATH
+)
+C0007_POST_RECOVERY_PREIMAGES: dict[str, tuple[str, int, str]] = {
+    C0007_BOUNDED_AUTHORIZED_PATHS_PATH: (
+        "2143ee01b0074c60be192736a47f9c0d11a58393",
+        925,
+        C0007_CI_RECOVERY_MANIFEST_SHA256,
+    ),
+    C0007_BOUNDED_AUTHORIZATION_PATH: (
+        "ea3971ee450ab256168b4179ee2fbc2d2cfb4cfe",
+        7758,
+        C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+    ),
+    C0007_BOUNDED_PLANNED_CONTROL_PATH: (
+        C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID,
+        19635,
+        C0007_PLANNED_RECOVERY_CONTRACT_SHA256,
+    ),
+    C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH: (
+        "3f77f4613da5a92b55b52abd7fae26f00fcf7b2b",
+        10763,
+        "4E00B4E39325AB14E880C198CB78A58DD9199778C6AD8A24643CC6B6ECB72A73",
+    ),
+    C0007_BOUNDED_SUPPORTED_API_PATH: (
+        "df2a6f7a0438a620c059183c9a289ad372bbcbaf",
+        33196596,
+        "420F5028A9E7BD99EC1243B94933E98207B79B732071B35A2F9E6757663A143F",
+    ),
+    "tools/architecture/check_completion_phase.py": (
+        "a6a17693125b4bdc4bf14d6d71ad0984cbe45b35",
+        1517805,
+        "7C149108C32A728D50A23441FD49B446CEDE1D87EA5CA7F8051476F09F734BBC",
+    ),
+    "tools/architecture/check_supported_api.py": (
+        "83549982294329df8c57bfe21bbeb28cc06d8fa4",
+        298030,
+        "F098677E56CBF0EBC7077B378DD707387B3224A4A3090022A149280A77E047D3",
+    ),
+}
+# Compatibility aliases used by the read-only staged-candidate observer.
+C0007_CI_RECOVERY_COMMIT_SHA = C0007_PLANNED_RECOVERY_SHA
+C0007_CI_RECOVERY_TREE_SHA = C0007_PLANNED_RECOVERY_TREE_SHA
+C0007_CI_RECOVERY_CONTRACT_BLOB_OID = C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID
+C0007_POST_RECOVERY_STAGED_BASIS_PATHS = C0007_POST_RECOVERY_NON_SELF_PATHS
 
 # Exact P preimages for the eight authorized recovery paths.  The recovery
 # contract inventories the seven non-self postimages; its own blob is bound by
@@ -905,6 +1056,20 @@ C0007_CI_RECOVERY_HISTORICAL_PACKET_ARTIFACTS: dict[
         "90abd450b609c91f4b6f773ac3db0df6ba484398",
         4211,
         "5A0A4852AD84095CFBFC973ACF37E45C8C0AA5FB09D8E8728356CC30C1AF43A9",
+    ),
+}
+C0007_POST_RECOVERY_IMPLEMENTATION_POSTIMAGE_ARTIFACTS: dict[
+    str, tuple[str, int, str]
+] = {
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014-postimages.tsv": (
+        "14f7ecc40821767b2f6c67db5cb95051b9805d29",
+        2344,
+        "42F4ED7EFE7C611DE214A0E6FE4ABADA11034632A9086952EADCD1A8AA33A1C9",
+    ),
+    f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015-postimages.tsv": (
+        "1f98243762ff70514107f9b3d3a2620c24740139",
+        487,
+        "F92A484CAFBB2F8885A14CE5A7A0A9DB4A774888757797BB836254D4600BED8D",
     ),
 }
 C0007_BOUNDED_SHARED_RESERVATIONS = frozenset(
@@ -3475,6 +3640,2065 @@ def validate_c0007_ci_recovery_contract_payload(
     )
 
 
+def c0007_post_recovery_expected_manifest_rows() -> list[dict[str, str]]:
+    rows = [
+        {
+            "path": path,
+            "packet_id": C0007_POST_RECOVERY_PACKET_ID,
+            "stage": "continuation_control",
+            "operation": "modify",
+        }
+        for path in C0007_POST_RECOVERY_PATHS
+    ]
+    rows.extend(
+        {
+            "path": path,
+            "packet_id": "R0014",
+            "stage": "implementation",
+            "operation": "add" if preimage is None else "modify",
+        }
+        for path, preimage in zip(R0014_PATHS, R0014_PREIMAGE_BLOBS, strict=True)
+    )
+    rows.extend(
+        {
+            "path": path,
+            "packet_id": "R0015",
+            "stage": "implementation",
+            "operation": "modify",
+        }
+        for path in R0015_PATHS
+    )
+    return sorted(rows, key=lambda row: row["path"])
+
+
+def render_c0007_post_recovery_manifest_bytes() -> bytes:
+    header = ("path", "packet_id", "stage", "operation")
+    rows = c0007_post_recovery_expected_manifest_rows()
+    text = "\t".join(header) + "\n"
+    text += "".join("\t".join(row[key] for key in header) + "\n" for row in rows)
+    return text.encode("utf-8")
+
+
+def render_c0007_post_recovery_preimage_freeze_bytes() -> bytes:
+    """Render the audited R path-to-SHA ratchet without filesystem input."""
+
+    return "".join(
+        f"{path}\t{C0007_POST_RECOVERY_PREIMAGES[path][2]}\n"
+        for path in sorted(C0007_POST_RECOVERY_PREIMAGES)
+    ).encode("utf-8")
+
+
+def validate_c0007_post_recovery_manifest(
+    manifest_header: Sequence[str],
+    manifest_rows: Sequence[dict[str, str]],
+    problems: Problems,
+    *,
+    context: str = C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+) -> None:
+    expected = c0007_post_recovery_expected_manifest_rows()
+    control = [row["path"] for row in expected if row["stage"] == "continuation_control"]
+    non_self = [path for path in control if path != C0007_BOUNDED_PLANNED_CONTROL_PATH]
+    implementation = [row["path"] for row in expected if row["stage"] == "implementation"]
+    all_paths = [row["path"] for row in expected]
+    problems.require(
+        tuple(manifest_header) == ("path", "packet_id", "stage", "operation")
+        and list(manifest_rows) == expected
+        and len(control) == 7
+        and path_list_sha256(control) == C0007_POST_RECOVERY_CONTINUATION_PATH_SET_SHA256
+        and len(non_self) == 6
+        and path_list_sha256(non_self) == C0007_POST_RECOVERY_NON_SELF_PATH_SET_SHA256
+        and len(implementation) == 14
+        and path_list_sha256(implementation) == C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256
+        and len(all_paths) == 21
+        and path_list_sha256(all_paths) == C0007_POST_RECOVERY_ALL_PATH_SET_SHA256
+        and len(render_c0007_post_recovery_manifest_bytes()) == 2271
+        and hashlib.sha256(render_c0007_post_recovery_manifest_bytes()).hexdigest().upper()
+        == C0007_POST_RECOVERY_MANIFEST_SHA256,
+        context,
+        "manifest must be the exact 2,271-byte seven-CONT01 plus fourteen-packet contract",
+    )
+
+
+def validate_c0007_post_recovery_authorization_payload(
+    authorization: dict[str, Any],
+    manifest_header: Sequence[str],
+    manifest_rows: Sequence[dict[str, str]],
+    problems: Problems,
+    *,
+    context: str = C0007_BOUNDED_AUTHORIZATION_PATH,
+) -> None:
+    """Validate the distinct schema-4 continuation grant, never an old epoch."""
+
+    expected_keys = {
+        "activation_conditions", "authority_id", "authorization_id",
+        "authorized_actions", "base", "decision", "expiry", "operator_id",
+        "phase_id", "preserved_exclusions", "record_kind", "recorded_at",
+        "run_policy", "schema_version", "scope", "source", "supersedes",
+    }
+    problems.require(
+        set(authorization) == expected_keys,
+        context,
+        "post-recovery authorization keys must match schema-4 exactly",
+    )
+    exact_fields = {
+        "schema_version": 4,
+        "record_kind": "primary_human_post_recovery_continuation_authorization",
+        "authorization_id": C0007_POST_RECOVERY_AUTHORIZATION_ID,
+        "decision": "approved_for_bounded_continuation_through_v",
+        "authority_id": "primary-human",
+        "operator_id": "claude-local",
+        "phase_id": PHASE_ID,
+        "recorded_at": "2026-08-27T19:47:02Z",
+    }
+    problems.require(
+        all(exact_json_equal(authorization.get(key), value) for key, value in exact_fields.items()),
+        context,
+        "post-recovery authorization identity, decision, or materialization time drifted",
+    )
+    problems.require(
+        exact_json_equal(
+            authorization.get("source"),
+            {
+                "channel": "current Claude Code session",
+                "instruction": (
+                    "can we just not wait for Alex, and move with whatever we "
+                    "have to do. I am also a co-owner of the repo, just move "
+                    "on without approval."
+                ),
+                "instruction_byte_count": 133,
+                "instruction_sha256": "4FB187305118370866DCA162A360FA6D752CC1B4EEDFFF02D23777654985F316",
+                "received_at": None,
+                "received_at_source": "not exposed by the Claude Code session transport; intentionally not fabricated",
+                "user_principal_id": "primary-human",
+            },
+        ),
+        f"{context}.source",
+        "post-recovery source text/bytes/hash/null transport timestamp drifted",
+    )
+    base = authorization.get("base")
+    problems.require(
+        isinstance(base, dict)
+        and set(base)
+        == {
+            "active_phase_pointer_sha256", "control_head_sha", "control_tree_sha",
+            "current_checkpoint_id", "current_checkpoint_sha",
+            "failed_planned_control", "phase_sha256", "planned_recovery",
+            "remote_main_sha",
+        }
+        and base.get("control_head_sha") == C0007_BOUNDED_CONTROL_HEAD_SHA
+        and base.get("control_tree_sha") == C0007_BOUNDED_CONTROL_TREE_SHA
+        and base.get("current_checkpoint_id") == C0007_CHECKPOINT_ID
+        and base.get("current_checkpoint_sha") == C0007_CODE_SHA
+        and base.get("remote_main_sha") == C0007_BOUNDED_CONTROL_HEAD_SHA
+        and exact_json_equal(
+            base.get("failed_planned_control"),
+            {
+                "commit_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+                "contract_blob_oid": C0007_FAILED_PLANNED_CONTROL_CONTRACT_BLOB_OID,
+                "contract_sha256": C0007_FAILED_PLANNED_CONTROL_CONTRACT_SHA256,
+                "job_id": C0007_FAILED_PLANNED_CONTROL_JOB_ID,
+                "job_log_byte_count": C0007_FAILED_PLANNED_CONTROL_JOB_LOG_BYTE_COUNT,
+                "job_log_sha256": C0007_FAILED_PLANNED_CONTROL_JOB_LOG_SHA256,
+                "parent_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+                "run_attempt": 1,
+                "run_conclusion": "failure",
+                "run_id": C0007_FAILED_PLANNED_CONTROL_RUN_ID,
+                "tree_sha": C0007_FAILED_PLANNED_CONTROL_TREE_SHA,
+            },
+        )
+        and exact_json_equal(
+            base.get("planned_recovery"),
+            {
+                "commit_sha": C0007_PLANNED_RECOVERY_SHA,
+                "contract_blob_oid": C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID,
+                "contract_sha256": C0007_PLANNED_RECOVERY_CONTRACT_SHA256,
+                "job_id": C0007_PLANNED_RECOVERY_JOB_ID,
+                "job_log_byte_count": C0007_PLANNED_RECOVERY_JOB_LOG_BYTE_COUNT,
+                "job_log_sha256": C0007_PLANNED_RECOVERY_JOB_LOG_SHA256,
+                "parent_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+                "run_attempt": 1,
+                "run_conclusion": "success",
+                "run_id": C0007_PLANNED_RECOVERY_RUN_ID,
+                "tree_sha": C0007_PLANNED_RECOVERY_TREE_SHA,
+                "workflow_blob_oid": C0007_CI_RECOVERY_WORKFLOW_BLOB_OID,
+                "workflow_sha256": C0007_CI_RECOVERY_WORKFLOW_SHA256,
+            },
+        ),
+        f"{context}.base",
+        "schema-4 authority must preserve exact B, failed P, successful PR, workflow, and CI identities",
+    )
+    scope = authorization.get("scope")
+    manifest_binding = scope.get("authorized_path_manifest") if isinstance(scope, dict) else None
+    problems.require(
+        isinstance(scope, dict)
+        and scope.get("activation_authorized") is True
+        and scope.get("implementation_authorized") is True
+        and scope.get("owner_solicitation_authorized") is True
+        and scope.get("post_assurance_transition_authorized") is True
+        and scope.get("checkpoint_acceptance_authorized") is False
+        and scope.get("remote_main_mutation_authorized") is False
+        and scope.get("request_resolution_authorized") is False
+        and scope.get("bounded_ref") == C0007_BOUNDED_REMOTE_BRANCH_REF
+        and scope.get("lifecycle_graph") == "B -> P_failed -> PR -> A -> T -> I -> V"
+        and exact_json_equal(
+            manifest_binding,
+            {
+                "continuation_control_path_count": 7,
+                "continuation_control_path_set_sha256": C0007_POST_RECOVERY_CONTINUATION_PATH_SET_SHA256,
+                "implementation_path_count": 14,
+                "implementation_path_set_sha256": C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256,
+                "path": C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+                "path_list_sha256": C0007_POST_RECOVERY_ALL_PATH_SET_SHA256,
+                "preimage_freeze_sha256": C0007_POST_RECOVERY_PREIMAGE_FREEZE_SHA256,
+                "row_count": 21,
+                "sha256": C0007_POST_RECOVERY_MANIFEST_SHA256,
+                "successor_non_self_path_count": 6,
+                "successor_non_self_path_set_sha256": C0007_POST_RECOVERY_NON_SELF_PATH_SET_SHA256,
+            },
+        ),
+        f"{context}.scope",
+        "schema-4 authority scope or exact 7+14 manifest boundary drifted",
+    )
+    problems.require(
+        canonical_json_sha256(scope) == C0007_POST_RECOVERY_SCOPE_SHA256,
+        f"{context}.scope",
+        "schema-4 scope must retain the exact task/request/support-record boundary",
+    )
+    problems.require(
+        exact_json_equal(
+            authorization.get("supersedes"),
+            {
+                "authorization_id": C0007_SUPERSEDED_TERMINAL_V4_AUTHORIZATION_ID,
+                "effect": "superseded by the 2026-08-27 primary-human reviewer re-pin instruction before any A commit; no continuation action remains authorized by it",
+                "sha256": C0007_SUPERSEDED_TERMINAL_V4_AUTHORIZATION_SHA256,
+            },
+        ),
+        f"{context}.supersedes",
+        "schema-4 authority must mark the exact CI-only grant spent at successful PR CI",
+    )
+    problems.require(
+        tuple(manifest_header) == ("path", "packet_id", "stage", "operation")
+        and list(manifest_rows) == c0007_post_recovery_expected_manifest_rows()
+        and path_list_sha256(row["path"] for row in manifest_rows)
+        == C0007_POST_RECOVERY_ALL_PATH_SET_SHA256,
+        C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+        "manifest must be exactly twenty-one sorted CONT01/R0014/R0015 rows",
+    )
+    problems.require(
+        isinstance(authorization.get("authorized_actions"), list)
+        and len(authorization["authorized_actions"]) == 6
+        and all(isinstance(item, str) and item for item in authorization["authorized_actions"])
+        and canonical_json_sha256(authorization["authorized_actions"])
+        == C0007_POST_RECOVERY_AUTHORIZED_ACTIONS_SHA256
+        and isinstance(authorization.get("activation_conditions"), list)
+        and len(authorization["activation_conditions"]) == 9
+        and all(isinstance(item, str) and item for item in authorization["activation_conditions"])
+        and canonical_json_sha256(authorization["activation_conditions"])
+        == C0007_POST_RECOVERY_ACTIVATION_CONDITIONS_SHA256
+        and isinstance(authorization.get("preserved_exclusions"), list)
+        and len(authorization["preserved_exclusions"]) == 12
+        and all(isinstance(item, str) and item for item in authorization["preserved_exclusions"])
+        and canonical_json_sha256(authorization["preserved_exclusions"])
+        == C0007_POST_RECOVERY_PRESERVED_EXCLUSIONS_SHA256,
+        context,
+        "ordered authority actions, conditions, and exclusions must retain their exact canonical digests",
+    )
+    problems.require(
+        isinstance(authorization.get("expiry"), dict)
+        and canonical_json_sha256(authorization["expiry"])
+        == C0007_POST_RECOVERY_EXPIRY_SHA256
+        and isinstance(authorization.get("run_policy"), dict)
+        and canonical_json_sha256(authorization["run_policy"])
+        == C0007_POST_RECOVERY_RUN_POLICY_SHA256,
+        context,
+        "expiry and run policy must retain the exact bounded attempt/event semantics",
+    )
+
+
+def c0007_pending_ci_record(status: str) -> dict[str, Any]:
+    return {
+        "branch": C0007_BOUNDED_BRANCH,
+        "candidate_sha": None,
+        "candidate_tree": None,
+        "check_suite_id": None,
+        "completed_at": None,
+        "conclusion": None,
+        "event": None,
+        "job_id": None,
+        "job_log_byte_count": None,
+        "job_log_sha256": None,
+        "job_name": None,
+        "repository": C0007_BOUNDED_REPOSITORY,
+        "run_attempt": None,
+        "run_id": None,
+        "started_at": None,
+        "status": status,
+        "steps": None,
+        "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
+    }
+
+
+def c0007_planned_recovery_ci_record() -> dict[str, Any]:
+    return {
+        "branch": C0007_BOUNDED_BRANCH,
+        "candidate_sha": C0007_PLANNED_RECOVERY_SHA,
+        "candidate_tree": C0007_PLANNED_RECOVERY_TREE_SHA,
+        "check_suite_id": C0007_PLANNED_RECOVERY_CHECK_SUITE_ID,
+        "completed_at": "2026-08-26T22:20:07Z",
+        "conclusion": "success",
+        "event": "workflow_dispatch",
+        "job_id": C0007_PLANNED_RECOVERY_JOB_ID,
+        "job_log_byte_count": C0007_PLANNED_RECOVERY_JOB_LOG_BYTE_COUNT,
+        "job_log_sha256": C0007_PLANNED_RECOVERY_JOB_LOG_SHA256,
+        "job_name": C0007_BOUNDED_JOB_NAME,
+        "repository": C0007_BOUNDED_REPOSITORY,
+        "run_attempt": 1,
+        "run_id": C0007_PLANNED_RECOVERY_RUN_ID,
+        "started_at": "2026-08-26T21:41:45Z",
+        "status": "success",
+        "steps": [
+            {"completed_at": "2026-08-26T21:46:18Z", "conclusion": "success", "name": C0007_BOUNDED_ARCHITECTURE_STEP, "number": 3, "started_at": "2026-08-26T21:42:16Z", "status": "completed"},
+            {"completed_at": "2026-08-26T21:50:20Z", "conclusion": "success", "name": C0007_BOUNDED_BUILD_STEP, "number": 4, "started_at": "2026-08-26T21:46:18Z", "status": "completed"},
+            {"completed_at": "2026-08-26T22:19:33Z", "conclusion": "success", "name": C0007_BOUNDED_SUPPORTED_API_STEP, "number": 5, "started_at": "2026-08-26T21:50:20Z", "status": "completed"},
+            {"completed_at": "2026-08-26T22:19:57Z", "conclusion": "success", "name": C0007_BOUNDED_TEST_STEP, "number": 6, "started_at": "2026-08-26T22:19:33Z", "status": "completed"},
+        ],
+        "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
+    }
+
+
+def c0007_planned_recovery_live_ci_record() -> dict[str, Any]:
+    """Return the exact authenticated PR CI record used by readiness E."""
+
+    persisted = c0007_planned_recovery_ci_record()
+    return {
+        "branch": C0007_BOUNDED_BRANCH,
+        "check_suite_conclusion": "success",
+        "check_suite_id": C0007_PLANNED_RECOVERY_CHECK_SUITE_ID,
+        "event": "workflow_dispatch",
+        "head_sha": C0007_PLANNED_RECOVERY_SHA,
+        "job_completed_at": "2026-08-26T22:20:06Z",
+        "job_conclusion": "success",
+        "job_id": C0007_PLANNED_RECOVERY_JOB_ID,
+        "job_log_byte_count": C0007_PLANNED_RECOVERY_JOB_LOG_BYTE_COUNT,
+        "job_log_sha256": C0007_PLANNED_RECOVERY_JOB_LOG_SHA256,
+        "job_name": C0007_BOUNDED_JOB_NAME,
+        "job_started_at": "2026-08-26T21:41:49Z",
+        "run_attempt": 1,
+        "run_completed_at": "2026-08-26T22:20:07Z",
+        "run_conclusion": "success",
+        "run_id": C0007_PLANNED_RECOVERY_RUN_ID,
+        "run_started_at": "2026-08-26T21:41:45Z",
+        "run_status": "completed",
+        "runner_name": "GitHub Actions 1000008997",
+        "steps": persisted["steps"],
+        "toolchain": C0007_BOUNDED_TOOLCHAIN,
+        "workflow_id": C0007_BOUNDED_WORKFLOW_ID,
+        "workflow_name": C0007_BOUNDED_WORKFLOW_NAME,
+        "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
+        "workflow_sha256": C0007_CI_RECOVERY_WORKFLOW_SHA256,
+    }
+
+
+def c0007_expected_remote_configuration_census() -> dict[str, list[str]]:
+    return {
+        "configured_branch_push_remote_values": [],
+        "configured_branch_remote_values": [],
+        "configured_fetch_refspecs": ["+refs/heads/*:refs/remotes/origin/*"],
+        "configured_mirror_values": [],
+        "configured_push_default_values": [],
+        "configured_push_refspecs": [],
+        "configured_push_urls": [],
+        "configured_remote_names": [C0007_BOUNDED_REMOTE],
+        "configured_remote_urls": [C0007_BOUNDED_REMOTE_URL],
+        "effective_remote_namespace_rows": [
+            "remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*",
+            "remote.origin.tagopt=--no-tags",
+            f"remote.origin.url={C0007_BOUNDED_REMOTE_URL}",
+        ],
+        "resolved_fetch_urls": [C0007_BOUNDED_REMOTE_URL],
+        "resolved_push_urls": [C0007_BOUNDED_REMOTE_URL],
+    }
+
+
+def c0007_post_recovery_workflow_record() -> dict[str, Any]:
+    return {
+        "architecture_step_name": C0007_BOUNDED_ARCHITECTURE_STEP,
+        "build_step_name": C0007_BOUNDED_BUILD_STEP,
+        "checkout_action": PINNED_CHECKOUT_ACTION,
+        "checkout_ref_expression": C0007_CI_RECOVERY_CHECKOUT_REF,
+        "full_build_command": "lake build NumStability NumStabilityTest",
+        "job_name": C0007_BOUNDED_JOB_NAME,
+        "job_timeout_minutes": 360,
+        "lean_action": PINNED_LEAN_ACTION,
+        "origin_normalization_command": C0007_CI_RECOVERY_ORIGIN_COMMAND,
+        "path": C0007_BOUNDED_WORKFLOW_PATH,
+        "sha256": C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        "supported_api_commands": [
+            "python tools/architecture/check_supported_api.py --self-test",
+            "python tools/architecture/check_supported_api.py --baseline docs/architecture/supported-api.json --mode lifecycle",
+        ],
+        "supported_api_step_name": C0007_BOUNDED_SUPPORTED_API_STEP,
+        "test_command": "lake test",
+        "test_step_name": C0007_BOUNDED_TEST_STEP,
+        "toolchain": C0007_BOUNDED_TOOLCHAIN,
+        "workflow_blob_oid": C0007_CI_RECOVERY_WORKFLOW_BLOB_OID,
+        "workflow_id": C0007_BOUNDED_WORKFLOW_ID,
+        "workflow_name": C0007_BOUNDED_WORKFLOW_NAME,
+    }
+
+
+def c0007_post_recovery_packets() -> list[dict[str, Any]]:
+    return [
+        {
+            "approval_path": I01_APPROVAL_PATH,
+            "approval_sha256": C0007_I01_APPROVAL_SHA256,
+            "indivisible": True,
+            "path_count": 12,
+            "path_set_sha256": C0007_BOUNDED_R0014_PATHS_SHA256,
+            "postimages_path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014-postimages.tsv",
+            "postimages_sha256": R0014_PACKET_ARTIFACT_SHA256[f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0014-postimages.tsv"],
+            "request_id": "R0014",
+            "target_code_sha": C0007_CODE_SHA,
+        },
+        {
+            "approval_path": CODE03_APPROVAL_PATH,
+            "approval_sha256": C0007_CODE03_APPROVAL_SHA256,
+            "indivisible": True,
+            "path_count": 2,
+            "path_set_sha256": C0007_BOUNDED_R0015_PATHS_SHA256,
+            "postimages_path": f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015-postimages.tsv",
+            "postimages_sha256": R0015_PACKET_ARTIFACT_SHA256[f"{DEFAULT_PHASE_DIR.as_posix()}/requests/R0015-postimages.tsv"],
+            "request_id": "R0015",
+            "target_code_sha": C0007_CODE_SHA,
+        },
+    ]
+
+
+def canonicalize_c0007_post_recovery_artifacts(
+    artifacts: Sequence[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Return the exact six-record review basis in canonical path order."""
+
+    if isinstance(artifacts, (str, bytes, bytearray)) or not isinstance(
+        artifacts, Sequence
+    ):
+        raise ValueError("post-recovery successor artifacts must be an array")
+    if not all(isinstance(artifact, Mapping) for artifact in artifacts):
+        raise ValueError("every post-recovery successor artifact must be an object")
+    rows = [dict(artifact) for artifact in artifacts]
+    if not all(isinstance(artifact.get("path"), str) for artifact in rows):
+        raise ValueError("every post-recovery successor artifact path must be a string")
+    rows.sort(key=lambda artifact: artifact["path"])
+    expected_paths = sorted(C0007_POST_RECOVERY_NON_SELF_PATHS)
+    actual_paths = [artifact.get("path") for artifact in rows]
+    if actual_paths != expected_paths or len(set(actual_paths)) != len(actual_paths):
+        raise ValueError(
+            "post-recovery successor artifacts must contain each exact non-self path once"
+        )
+    expected_keys = {
+        "base_blob_oid", "base_mode", "byte_count", "operation", "packet_id",
+        "path", "post_blob_oid", "post_mode", "sha256",
+    }
+    for artifact in rows:
+        path = str(artifact["path"])
+        preimage = C0007_POST_RECOVERY_PREIMAGES[path]
+        if not (
+            set(artifact) == expected_keys
+            and artifact.get("base_blob_oid") == preimage[0]
+            and artifact.get("base_mode") == "100644"
+            and type(artifact.get("byte_count")) is int
+            and artifact.get("byte_count", -1) >= 0
+            and artifact.get("operation") == "modify"
+            and artifact.get("packet_id") == C0007_POST_RECOVERY_PACKET_ID
+            and isinstance(artifact.get("post_blob_oid"), str)
+            and SHA1_RE.fullmatch(str(artifact.get("post_blob_oid"))) is not None
+            and artifact.get("post_blob_oid") != artifact.get("base_blob_oid")
+            and artifact.get("post_mode") == "100644"
+            and isinstance(artifact.get("sha256"), str)
+            and SHA256_RE.fullmatch(str(artifact.get("sha256"))) is not None
+            and artifact.get("sha256") == str(artifact.get("sha256")).upper()
+        ):
+            raise ValueError(f"invalid post-recovery successor artifact for {path}")
+    return rows
+
+
+def c0007_post_recovery_review_request(
+    artifacts: Sequence[dict[str, Any]],
+    *,
+    workflow_sha256: str,
+) -> dict[str, Any]:
+    """Render the exact OWNER request from the six finalized non-self blobs."""
+
+    canonical_artifacts = canonicalize_c0007_post_recovery_artifacts(artifacts)
+    if workflow_sha256 != C0007_CI_RECOVERY_WORKFLOW_SHA256:
+        raise ValueError("post-recovery review requires the authenticated PR workflow SHA-256")
+    successor_basis_sha256 = canonical_json_sha256(canonical_artifacts)
+    body = (
+        "I, kfoynt, as authorized co-owner independently reviewed and approve the C0007 "
+        "M13/I01/CODE03 post-recovery activation basis at recovery commit "
+        f"{C0007_PLANNED_RECOVERY_SHA}, tree {C0007_PLANNED_RECOVERY_TREE_SHA}, "
+        f"recovery contract blob {C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID}, "
+        f"and six-artifact successor basis SHA-256 {successor_basis_sha256}. "
+        "I confirm that CI and machine evidence are not semantic review and "
+        "authorize only the exact bounded PR-to-A transition."
+    )
+    encoded = body.encode("utf-8")
+    return {
+        "bindings": {
+            "implementation": {
+                "path_count": 14,
+                "path_set_sha256": C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256,
+            },
+            "packets_sha256": canonical_json_sha256(c0007_post_recovery_packets()),
+            "planned_recovery": {
+                "ci_run_attempt": 1,
+                "ci_run_id": C0007_PLANNED_RECOVERY_RUN_ID,
+                "ci_status": "success",
+                "commit_sha": C0007_PLANNED_RECOVERY_SHA,
+                "contract_blob_oid": C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID,
+                "contract_sha256": C0007_PLANNED_RECOVERY_CONTRACT_SHA256,
+                "tree_sha": C0007_PLANNED_RECOVERY_TREE_SHA,
+            },
+            "successor_basis": {
+                "artifacts": canonical_artifacts,
+                "artifact_count": 6,
+                "artifact_inventory_sha256": successor_basis_sha256,
+                "path_set_sha256": C0007_POST_RECOVERY_NON_SELF_PATH_SET_SHA256,
+                "preimage_freeze_sha256": C0007_POST_RECOVERY_PREIMAGE_FREEZE_SHA256,
+            },
+            "workflow": {
+                "blob_oid": C0007_CI_RECOVERY_WORKFLOW_BLOB_OID,
+                "path": C0007_BOUNDED_WORKFLOW_PATH,
+                "sha256": workflow_sha256,
+            },
+        },
+        "body": body,
+        "body_byte_count": len(encoded),
+        "body_sha256": hashlib.sha256(encoded).hexdigest().upper(),
+        "required_author": {
+            "author_association": C0007_ACTIVATION_REVIEWER_ASSOCIATION,
+            "database_id": C0007_ACTIVATION_REVIEWER_DATABASE_ID,
+            "login": C0007_ACTIVATION_REVIEWER_LOGIN,
+            "node_id": C0007_ACTIVATION_REVIEWER_NODE_ID,
+            "performed_via_github_app": None,
+            "type": "User",
+        },
+        "review_kind": "github_repository_owner_issue_comment_v1",
+    }
+
+
+def c0007_post_recovery_issue_request(
+    readiness_evidence: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Render the exact readiness-bound issue solicitation, without mutation."""
+
+    expected_keys = {
+        "candidate_sha", "candidate_tree", "ci", "evidence_kind", "observed_at",
+        "refs", "repository", "review_request", "schema_version",
+    }
+    if set(readiness_evidence) != expected_keys:
+        raise ValueError("PR readiness evidence must have the exact nine-key envelope")
+    if not (
+        readiness_evidence.get("candidate_sha") == C0007_PLANNED_RECOVERY_SHA
+        and readiness_evidence.get("candidate_tree") == C0007_PLANNED_RECOVERY_TREE_SHA
+        and readiness_evidence.get("evidence_kind")
+        == "c0007_pr_recovery_review_ready_v1"
+        and readiness_evidence.get("repository") == C0007_BOUNDED_REPOSITORY
+        and readiness_evidence.get("schema_version") == 1
+        and parse_rfc3339(readiness_evidence.get("observed_at")) is not None
+    ):
+        raise ValueError("PR readiness evidence identity is invalid")
+    ci = readiness_evidence.get("ci")
+    refs = readiness_evidence.get("refs")
+    review_request = readiness_evidence.get("review_request")
+    successor_basis = mapping_path(review_request, "bindings", "successor_basis")
+    artifacts = (
+        successor_basis.get("artifacts")
+        if isinstance(successor_basis, Mapping)
+        else None
+    )
+    if not isinstance(ci, Mapping) or not isinstance(artifacts, list):
+        raise ValueError("PR readiness evidence lacks authenticated CI or successor artifacts")
+    expected_ref_snapshot = {
+        "local_head": C0007_PLANNED_RECOVERY_SHA,
+        "origin_bounded_ref": C0007_PLANNED_RECOVERY_SHA,
+        "origin_main": C0007_BOUNDED_CONTROL_HEAD_SHA,
+        "remote_configuration": c0007_expected_remote_configuration_census(),
+        "symbolic_branch": C0007_BOUNDED_BRANCH,
+    }
+    observed_at = parse_rfc3339(readiness_evidence.get("observed_at"))
+    pr_completed_at = parse_rfc3339("2026-08-26T22:20:07Z")
+    if not (
+        exact_json_equal(ci, c0007_planned_recovery_live_ci_record())
+        and isinstance(refs, Mapping)
+        and set(refs) == {"after", "before"}
+        and exact_json_equal(refs.get("before"), expected_ref_snapshot)
+        and exact_json_equal(refs.get("after"), expected_ref_snapshot)
+        and observed_at is not None
+        and pr_completed_at is not None
+        and pr_completed_at <= observed_at
+    ):
+        raise ValueError("PR readiness CI/ref/config evidence is not the exact stable record")
+    expected_review_request = c0007_post_recovery_review_request(
+        artifacts,
+        workflow_sha256=str(ci.get("workflow_sha256")),
+    )
+    if not exact_json_equal(review_request, expected_review_request):
+        raise ValueError("PR readiness review request does not match its six-artifact basis")
+    canonical_evidence = canonical_json(dict(readiness_evidence))
+    canonical_evidence_bytes = canonical_evidence.encode("utf-8")
+    readiness_sha256 = hashlib.sha256(canonical_evidence_bytes).hexdigest().upper()
+    body = (
+        "# C0007 post-recovery activation review\n\n"
+        "The non-mutating readiness gate succeeded. Canonical readiness evidence "
+        f"SHA-256: `{readiness_sha256}`.\n\n"
+        "```json\n"
+        f"{canonical_evidence}\n"
+        "```\n\n"
+        "Authorized co-owner reviewer @kfoynt: independently review the recovery "
+        "commit, tree, recovery contract, and six-artifact successor basis bound "
+        "above. If you approve only the exact bounded PR-to-A transition, post "
+        "exactly the value of `review_request.body` from the evidence as one "
+        "unedited issue comment. CI and machine evidence are not semantic review.\n"
+    )
+    body_bytes = body.encode("utf-8")
+    title_bytes = C0007_POST_RECOVERY_ISSUE_TITLE.encode("utf-8")
+    return {
+        "body": body,
+        "body_byte_count": len(body_bytes),
+        "body_sha256": hashlib.sha256(body_bytes).hexdigest().upper(),
+        "readiness_byte_count": len(canonical_evidence_bytes),
+        "readiness_evidence": dict(readiness_evidence),
+        "readiness_sha256": readiness_sha256,
+        "title": C0007_POST_RECOVERY_ISSUE_TITLE,
+        "title_byte_count": len(title_bytes),
+        "title_sha256": hashlib.sha256(title_bytes).hexdigest().upper(),
+    }
+
+
+def c0007_post_recovery_review_graphql_command(
+    issue_number: int,
+    comment_node_id: str,
+) -> list[str]:
+    """Build the exact host/header-pinned GraphQL edit-custody query."""
+
+    if type(issue_number) is not int or issue_number <= 0:
+        raise ValueError("GraphQL review issue number must be a positive integer")
+    if not isinstance(comment_node_id, str) or not comment_node_id:
+        raise ValueError("GraphQL review comment node ID must be nonempty")
+    query = (
+        "query($owner:String!,$name:String!,$number:Int!,$comment:ID!){"
+        "repository(owner:$owner,name:$name){issue(number:$number){"
+        "id title body lastEditedAt userContentEdits(first:1){totalCount}"
+        "author{login ... on User{id databaseId}}}}"
+        "node(id:$comment){... on IssueComment{"
+        "id body lastEditedAt userContentEdits(first:1){totalCount}"
+        "author{login ... on User{id databaseId}}}}}"
+    )
+    return [
+        "gh",
+        "api",
+        "--hostname",
+        "github.com",
+        "-H",
+        "Accept: application/vnd.github+json",
+        "-H",
+        "X-GitHub-Api-Version: 2022-11-28",
+        "graphql",
+        "-f",
+        f"query={query}",
+        "-f",
+        "owner=AlexGeorgantzas",
+        "-f",
+        "name=lean-numerical-stability",
+        "-F",
+        f"number={issue_number}",
+        "-f",
+        f"comment={comment_node_id}",
+    ]
+
+
+def c0007_post_recovery_review_graphql_command_is_pinned(
+    command: Sequence[str],
+) -> bool:
+    """Ratchet the GitHub host and media/API headers before execution."""
+
+    return (
+        list(command[:9])
+        == [
+            "gh",
+            "api",
+            "--hostname",
+            "github.com",
+            "-H",
+            "Accept: application/vnd.github+json",
+            "-H",
+            "X-GitHub-Api-Version: 2022-11-28",
+            "graphql",
+        ]
+        and list(command).count("--hostname") == 1
+        and len(command) == 19
+    )
+
+
+def parse_c0007_post_recovery_issue_request(
+    issue: Mapping[str, Any],
+    problems: Problems,
+    *,
+    context: str,
+) -> tuple[dict[str, Any], dict[str, Any]] | None:
+    """Recover and re-render the exact readiness evidence in an issue body."""
+
+    body = issue.get("body")
+    if not isinstance(body, str):
+        problems.add(context, "review issue body must be a string")
+        return None
+    match = re.search(r"```json\n([^\n]+)\n```", body)
+    if match is None:
+        problems.add(context, "review issue must contain one compact canonical JSON fence")
+        return None
+    encoded = match.group(1)
+    try:
+        evidence = strict_json_loads(encoded)
+    except (json.JSONDecodeError, ValueError, RecursionError) as error:
+        problems.add(context, f"review issue readiness JSON is invalid: {error}")
+        return None
+    if not isinstance(evidence, dict) or canonical_json(evidence) != encoded:
+        problems.add(context, "review issue readiness JSON must be canonical and object-valued")
+        return None
+    try:
+        request = c0007_post_recovery_issue_request(evidence)
+    except (TypeError, ValueError) as error:
+        problems.add(context, f"review issue readiness evidence is invalid: {error}")
+        return None
+    problems.require(
+        issue.get("title") == request["title"]
+        and body == request["body"]
+        and "\r" not in body
+        and body.endswith("\n")
+        and not body.endswith("\n\n"),
+        context,
+        "review issue title/body must equal the exact LF-only readiness solicitation",
+    )
+    return evidence, request
+
+
+def c0007_post_recovery_pending_review(
+    artifacts: Sequence[dict[str, Any]],
+    *,
+    workflow_sha256: str,
+) -> dict[str, Any]:
+    return {
+        "decision": None,
+        "review_request": c0007_post_recovery_review_request(
+            artifacts, workflow_sha256=workflow_sha256
+        ),
+        "reviewed_at": None,
+        "reviewed_commit_sha": None,
+        "reviewed_contract_blob_oid": None,
+        "reviewed_tree_sha": None,
+        "reviewer_id": "primary-human",
+        "reviewer_kind": "human",
+        "source": None,
+        "status": "pending",
+    }
+
+
+def c0007_post_recovery_approved_review(
+    artifacts: Sequence[dict[str, Any]],
+    readiness_evidence: Mapping[str, Any],
+    repository: Mapping[str, Any],
+    issue: Mapping[str, Any],
+    comment: Mapping[str, Any],
+    problems: Problems,
+    *,
+    workflow_sha256: str,
+    context: str,
+) -> dict[str, Any] | None:
+    request = c0007_post_recovery_review_request(
+        artifacts, workflow_sha256=workflow_sha256
+    )
+    try:
+        issue_request = c0007_post_recovery_issue_request(readiness_evidence)
+    except (TypeError, ValueError) as error:
+        problems.add(f"{context}.readiness_evidence", str(error))
+        return None
+    problems.require(
+        exact_json_equal(readiness_evidence.get("review_request"), request),
+        f"{context}.readiness_evidence.review_request",
+        "issue-embedded readiness request must equal the current six-artifact request",
+    )
+    repository_owner = repository.get("owner")
+    issue_user = issue.get("user")
+    user = comment.get("user") if isinstance(comment, Mapping) else None
+    created = comment.get("created_at")
+    updated = comment.get("updated_at")
+    issue_number = issue.get("number")
+    created_at = parse_rfc3339(created)
+    issue_created_at = parse_rfc3339(issue.get("created_at"))
+    readiness_observed_at = parse_rfc3339(readiness_evidence.get("observed_at"))
+    authorization_recorded_at = parse_rfc3339("2026-08-27T19:47:02Z")
+    pr_ci_completed = parse_rfc3339("2026-08-26T22:20:07Z")
+    problems.require(
+        repository.get("full_name") == C0007_BOUNDED_REPOSITORY
+        and repository.get("id") == C0007_BOUNDED_REPOSITORY_DATABASE_ID
+        and repository.get("node_id") == C0007_BOUNDED_REPOSITORY_ID
+        and repository.get("url") == C0007_BOUNDED_REPOSITORY_API_URL
+        and repository.get("fork") is False
+        and isinstance(repository_owner, Mapping)
+        and repository_owner.get("login") == C0007_BOUNDED_REPOSITORY_OWNER_LOGIN
+        and repository_owner.get("id") == C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID
+        and repository_owner.get("node_id") == C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID
+        and repository_owner.get("type") == "User",
+        f"{context}.repository",
+        "owner review must come from the exact non-fork repository",
+    )
+    problems.require(
+        comment.get("body") == request["body"]
+        and comment.get("author_association") == C0007_ACTIVATION_REVIEWER_ASSOCIATION
+        and "performed_via_github_app" in comment
+        and comment.get("performed_via_github_app") is None
+        and isinstance(user, Mapping)
+        and user.get("login") == C0007_ACTIVATION_REVIEWER_LOGIN
+        and user.get("id") == C0007_ACTIVATION_REVIEWER_DATABASE_ID
+        and user.get("node_id") == C0007_ACTIVATION_REVIEWER_NODE_ID
+        and user.get("type") == "User"
+        and created_at is not None
+        and created == updated
+        and type(comment.get("id")) is int
+        and comment.get("id", 0) > 0
+        and isinstance(comment.get("node_id"), str)
+        and bool(comment.get("node_id")),
+        f"{context}.comment",
+        "activation review must be the exact live unedited non-app OWNER comment after PR CI",
+    )
+    problems.require(
+        type(issue_number) is int
+        and issue_number > 0
+        and type(issue.get("id")) is int
+        and issue.get("id", 0) > 0
+        and isinstance(issue.get("node_id"), str)
+        and bool(issue.get("node_id"))
+        and issue.get("repository_url") == C0007_BOUNDED_REPOSITORY_API_URL
+        and issue.get("url")
+        == f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/{issue_number}"
+        and issue.get("html_url")
+        == f"https://github.com/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}"
+        and issue.get("comments_url") == f"{issue.get('url')}/comments"
+        and issue.get("title") == issue_request["title"]
+        and issue.get("body") == issue_request["body"]
+        and isinstance(issue_user, Mapping)
+        and issue_user.get("login") == C0007_POST_RECOVERY_ISSUE_CREATOR_LOGIN
+        and issue_user.get("id") == C0007_POST_RECOVERY_ISSUE_CREATOR_DATABASE_ID
+        and issue_user.get("node_id") == C0007_POST_RECOVERY_ISSUE_CREATOR_NODE_ID
+        and issue_user.get("type") == "User"
+        and "pull_request" not in issue
+        and comment.get("issue_url") == issue.get("url"),
+        f"{context}.issue",
+        "activation review source must be an ordinary issue with exact comment linkage",
+    )
+    problems.require(
+        pr_ci_completed is not None
+        and authorization_recorded_at is not None
+        and readiness_observed_at is not None
+        and issue_created_at is not None
+        and created_at is not None
+        and pr_ci_completed < authorization_recorded_at
+        <= readiness_observed_at
+        <= issue_created_at
+        <= created_at,
+        f"{context}.chronology",
+        "chronology must be PR CI < authorization <= readiness <= issue <= owner comment",
+    )
+    if problems.messages:
+        return None
+    assert isinstance(user, Mapping)
+    assert isinstance(issue_user, Mapping)
+    review = {
+        "decision": "approved",
+        "readiness_evidence": {
+            "canonical_byte_count": issue_request["readiness_byte_count"],
+            "canonical_sha256": issue_request["readiness_sha256"],
+            "evidence": dict(readiness_evidence),
+        },
+        "review_request": request,
+        "reviewed_at": created,
+        "reviewed_commit_sha": C0007_PLANNED_RECOVERY_SHA,
+        "reviewed_contract_blob_oid": C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID,
+        "reviewed_tree_sha": C0007_PLANNED_RECOVERY_TREE_SHA,
+        "reviewer_id": "primary-human",
+        "reviewer_kind": "human",
+        "source": {
+            "author_association": comment.get("author_association"),
+            "author_database_id": user.get("id"),
+            "author_login": user.get("login"),
+            "author_node_id": user.get("node_id"),
+            "author_type": user.get("type"),
+            "comment_api_url": comment.get("url"),
+            "comment_database_id": comment.get("id"),
+            "comment_html_url": comment.get("html_url"),
+            "comment_node_id": comment.get("node_id"),
+            "created_at": created,
+            "issue_api_url": issue.get("url"),
+            "issue_body": issue.get("body"),
+            "issue_body_byte_count": issue_request["body_byte_count"],
+            "issue_body_sha256": issue_request["body_sha256"],
+            "issue_created_at": issue.get("created_at"),
+            "issue_creator_database_id": issue_user.get("id"),
+            "issue_creator_login": issue_user.get("login"),
+            "issue_creator_node_id": issue_user.get("node_id"),
+            "issue_creator_type": issue_user.get("type"),
+            "issue_database_id": issue.get("id"),
+            "issue_html_url": issue.get("html_url"),
+            "issue_node_id": issue.get("node_id"),
+            "issue_number": issue_number,
+            "issue_title": issue.get("title"),
+            "issue_title_byte_count": issue_request["title_byte_count"],
+            "issue_title_sha256": issue_request["title_sha256"],
+            "issue_updated_at": issue.get("updated_at"),
+            "message": request["body"],
+            "message_sha256": request["body_sha256"],
+            "performed_via_github_app": None,
+            "provider": "github_issue_comment",
+            "repository_api_url": C0007_BOUNDED_REPOSITORY_API_URL,
+            "repository_database_id": C0007_BOUNDED_REPOSITORY_DATABASE_ID,
+            "repository_full_name": C0007_BOUNDED_REPOSITORY,
+            "repository_node_id": C0007_BOUNDED_REPOSITORY_ID,
+            "updated_at": updated,
+        },
+        "status": "approved",
+    }
+    validate_c0007_github_review_observation(
+        review,
+        repository,
+        issue,
+        comment,
+        problems,
+        context=f"{context}.github",
+    )
+    return review if not problems.messages else None
+
+
+def validate_c0007_post_recovery_activation_review(
+    review: Mapping[str, Any],
+    artifacts: Sequence[dict[str, Any]],
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Validate the durable readiness-bound OWNER review record."""
+
+    expected_review_keys = {
+        "decision", "readiness_evidence", "review_request", "reviewed_at",
+        "reviewed_commit_sha", "reviewed_contract_blob_oid", "reviewed_tree_sha",
+        "reviewer_id", "reviewer_kind", "source", "status",
+    }
+    source_keys = {
+        "author_association", "author_database_id", "author_login",
+        "author_node_id", "author_type", "comment_api_url",
+        "comment_database_id", "comment_html_url", "comment_node_id",
+        "created_at", "issue_api_url", "issue_body", "issue_body_byte_count",
+        "issue_body_sha256", "issue_created_at", "issue_creator_database_id",
+        "issue_creator_login", "issue_creator_node_id", "issue_creator_type",
+        "issue_database_id", "issue_html_url", "issue_node_id", "issue_number",
+        "issue_title", "issue_title_byte_count", "issue_title_sha256",
+        "issue_updated_at", "message", "message_sha256",
+        "performed_via_github_app", "provider", "repository_api_url",
+        "repository_database_id", "repository_full_name", "repository_node_id",
+        "updated_at",
+    }
+    problems.require(
+        set(review) == expected_review_keys,
+        context,
+        "post-recovery activation review keys must match exactly",
+    )
+    readiness = review.get("readiness_evidence")
+    evidence = readiness.get("evidence") if isinstance(readiness, Mapping) else None
+    try:
+        issue_request = (
+            c0007_post_recovery_issue_request(evidence)
+            if isinstance(evidence, Mapping)
+            else None
+        )
+    except (TypeError, ValueError) as error:
+        problems.add(f"{context}.readiness_evidence", str(error))
+        issue_request = None
+    try:
+        expected_request = c0007_post_recovery_review_request(
+            artifacts,
+            workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        )
+    except (TypeError, ValueError) as error:
+        problems.add(f"{context}.review_request", str(error))
+        return
+    problems.require(
+        isinstance(readiness, Mapping)
+        and set(readiness) == {"canonical_byte_count", "canonical_sha256", "evidence"}
+        and issue_request is not None
+        and readiness.get("canonical_byte_count") == issue_request["readiness_byte_count"]
+        and readiness.get("canonical_sha256") == issue_request["readiness_sha256"]
+        and isinstance(evidence, Mapping)
+        and exact_json_equal(evidence.get("review_request"), expected_request)
+        and exact_json_equal(review.get("review_request"), expected_request),
+        f"{context}.readiness_evidence",
+        "activation review must bind the exact canonical readiness evidence and request",
+    )
+    source = review.get("source")
+    if not isinstance(source, Mapping) or issue_request is None:
+        problems.add(f"{context}.source", "activation review source is unavailable")
+        return
+    issue_number = source.get("issue_number")
+    issue_id = source.get("issue_database_id")
+    comment_id = source.get("comment_database_id")
+    comment_created = parse_rfc3339(source.get("created_at"))
+    issue_created = parse_rfc3339(source.get("issue_created_at"))
+    issue_updated = parse_rfc3339(source.get("issue_updated_at"))
+    observed = parse_rfc3339(evidence.get("observed_at")) if isinstance(evidence, Mapping) else None
+    authorized = parse_rfc3339("2026-08-27T19:47:02Z")
+    pr_ci_completed = parse_rfc3339("2026-08-26T22:20:07Z")
+    issue_api_url = f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/{issue_number}"
+    issue_html_url = f"https://github.com/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}"
+    comment_api_url = f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/comments/{comment_id}"
+    comment_html_url = f"{issue_html_url}#issuecomment-{comment_id}"
+    problems.require(
+        set(source) == source_keys
+        and review.get("decision") == "approved"
+        and review.get("status") == "approved"
+        and review.get("reviewer_id") == "primary-human"
+        and review.get("reviewer_kind") == "human"
+        and review.get("reviewed_at") == source.get("created_at")
+        and review.get("reviewed_commit_sha") == C0007_PLANNED_RECOVERY_SHA
+        and review.get("reviewed_tree_sha") == C0007_PLANNED_RECOVERY_TREE_SHA
+        and review.get("reviewed_contract_blob_oid")
+        == C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID
+        and source.get("provider") == "github_issue_comment"
+        and source.get("repository_full_name") == C0007_BOUNDED_REPOSITORY
+        and source.get("repository_database_id") == C0007_BOUNDED_REPOSITORY_DATABASE_ID
+        and source.get("repository_node_id") == C0007_BOUNDED_REPOSITORY_ID
+        and source.get("repository_api_url") == C0007_BOUNDED_REPOSITORY_API_URL
+        and source.get("author_login") == C0007_ACTIVATION_REVIEWER_LOGIN
+        and source.get("author_database_id") == C0007_ACTIVATION_REVIEWER_DATABASE_ID
+        and source.get("author_node_id") == C0007_ACTIVATION_REVIEWER_NODE_ID
+        and source.get("author_type") == "User"
+        and source.get("author_association") == C0007_ACTIVATION_REVIEWER_ASSOCIATION
+        and source.get("performed_via_github_app") is None
+        and source.get("issue_creator_login") == C0007_POST_RECOVERY_ISSUE_CREATOR_LOGIN
+        and source.get("issue_creator_database_id")
+        == C0007_POST_RECOVERY_ISSUE_CREATOR_DATABASE_ID
+        and source.get("issue_creator_node_id") == C0007_POST_RECOVERY_ISSUE_CREATOR_NODE_ID
+        and source.get("issue_creator_type") == "User"
+        and type(issue_number) is int and issue_number > 0
+        and type(issue_id) is int and issue_id > 0
+        and type(comment_id) is int and comment_id > 0
+        and source.get("issue_api_url") == issue_api_url
+        and source.get("issue_html_url") == issue_html_url
+        and source.get("comment_api_url") == comment_api_url
+        and source.get("comment_html_url") == comment_html_url
+        and source.get("issue_title") == issue_request["title"]
+        and source.get("issue_title_byte_count") == issue_request["title_byte_count"]
+        and source.get("issue_title_sha256") == issue_request["title_sha256"]
+        and source.get("issue_body") == issue_request["body"]
+        and source.get("issue_body_byte_count") == issue_request["body_byte_count"]
+        and source.get("issue_body_sha256") == issue_request["body_sha256"]
+        and source.get("message") == expected_request["body"]
+        and source.get("message_sha256") == expected_request["body_sha256"]
+        and source.get("created_at") == source.get("updated_at")
+        and pr_ci_completed is not None
+        and authorized is not None
+        and observed is not None
+        and issue_created is not None
+        and comment_created is not None
+        and issue_updated is not None
+        and pr_ci_completed < authorized <= observed <= issue_created <= comment_created
+        and issue_created <= issue_updated,
+        context,
+        "activation review identity, issue solicitation, OWNER comment, or chronology drifted",
+    )
+
+
+def c0007_post_recovery_implementation_review_request(
+    implementation_commit_sha: str,
+    implementation_tree_sha: str,
+    implementation_contract_blob_oid: str,
+    implementation_ci: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Render the one exact post-I OWNER decision requested before V."""
+
+    if not all(
+        SHA1_RE.fullmatch(value)
+        for value in (
+            implementation_commit_sha,
+            implementation_tree_sha,
+            implementation_contract_blob_oid,
+        )
+    ):
+        raise ValueError("implementation review identities must be lowercase SHA-1 values")
+    ci_problems = Problems()
+    validate_c0007_post_recovery_ci_record(
+        implementation_ci,
+        "success",
+        implementation_commit_sha,
+        implementation_tree_sha,
+        ci_problems,
+        context="C0007 implementation review CI",
+    )
+    if ci_problems.messages:
+        raise ValueError("implementation review requires exact successful I CI")
+    ci_sha256 = canonical_json_sha256(implementation_ci)
+    body = (
+        "I, kfoynt, as authorized co-owner independently reviewed and approve the exact bounded "
+        "M13/I01/CODE03 implementation at commit "
+        f"{implementation_commit_sha}, tree {implementation_tree_sha}, preserved active "
+        f"contract blob {implementation_contract_blob_oid}, and authenticated "
+        f"implementation CI SHA-256 {ci_sha256}. I confirm that CI is evidence, not "
+        "semantic review, and authorize only the exact I-to-V transition."
+    )
+    return {
+        "bindings": {
+            "implementation_ci_sha256": ci_sha256,
+            "implementation_commit_sha": implementation_commit_sha,
+            "implementation_contract_blob_oid": implementation_contract_blob_oid,
+            "implementation_tree_sha": implementation_tree_sha,
+            "transition": "I -> V",
+        },
+        "body": body,
+        "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest().upper(),
+    }
+
+
+def c0007_post_recovery_approved_implementation_review(
+    activation_review: Mapping[str, Any],
+    implementation_commit_sha: str,
+    implementation_tree_sha: str,
+    implementation_contract_blob_oid: str,
+    implementation_ci: Mapping[str, Any],
+    repository: Mapping[str, Any],
+    issue: Mapping[str, Any],
+    comment: Mapping[str, Any],
+    problems: Problems,
+    *,
+    context: str,
+) -> dict[str, Any] | None:
+    """Capture the distinct, unedited post-I OWNER comment on the A issue."""
+
+    try:
+        request = c0007_post_recovery_implementation_review_request(
+            implementation_commit_sha,
+            implementation_tree_sha,
+            implementation_contract_blob_oid,
+            implementation_ci,
+        )
+    except ValueError as error:
+        problems.add(context, str(error))
+        return None
+    activation_source = activation_review.get("source")
+    issue_user = issue.get("user") if isinstance(issue, Mapping) else None
+    user = comment.get("user") if isinstance(comment, Mapping) else None
+    issue_number = issue.get("number") if isinstance(issue, Mapping) else None
+    comment_created = parse_rfc3339(comment.get("created_at"))
+    implementation_completed = parse_rfc3339(implementation_ci.get("completed_at"))
+    activation_created = parse_rfc3339(
+        activation_source.get("created_at")
+        if isinstance(activation_source, Mapping)
+        else None
+    )
+    repository_owner = repository.get("owner")
+    problems.require(
+        repository.get("full_name") == C0007_BOUNDED_REPOSITORY
+        and repository.get("id") == C0007_BOUNDED_REPOSITORY_DATABASE_ID
+        and repository.get("node_id") == C0007_BOUNDED_REPOSITORY_ID
+        and repository.get("url") == C0007_BOUNDED_REPOSITORY_API_URL
+        and repository.get("fork") is False
+        and isinstance(repository_owner, Mapping)
+        and repository_owner.get("login") == C0007_BOUNDED_REPOSITORY_OWNER_LOGIN
+        and repository_owner.get("id") == C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID
+        and repository_owner.get("node_id") == C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID
+        and repository_owner.get("type") == "User",
+        f"{context}.repository",
+        "implementation review requires the exact non-fork owner repository",
+    )
+    problems.require(
+        isinstance(activation_source, Mapping)
+        and type(issue_number) is int
+        and issue_number == activation_source.get("issue_number")
+        and issue.get("id") == activation_source.get("issue_database_id")
+        and issue.get("node_id") == activation_source.get("issue_node_id")
+        and issue.get("url") == activation_source.get("issue_api_url")
+        and issue.get("html_url") == activation_source.get("issue_html_url")
+        and issue.get("repository_url") == C0007_BOUNDED_REPOSITORY_API_URL
+        and issue.get("comments_url") == f"{issue.get('url')}/comments"
+        and issue.get("title") == activation_source.get("issue_title")
+        and issue.get("body") == activation_source.get("issue_body")
+        and "pull_request" not in issue
+        and isinstance(issue_user, Mapping)
+        and issue_user.get("login") == C0007_POST_RECOVERY_ISSUE_CREATOR_LOGIN
+        and issue_user.get("id") == C0007_POST_RECOVERY_ISSUE_CREATOR_DATABASE_ID
+        and issue_user.get("node_id") == C0007_POST_RECOVERY_ISSUE_CREATOR_NODE_ID
+        and issue_user.get("type") == "User",
+        f"{context}.issue",
+        "implementation review must remain on the exact unedited activation issue",
+    )
+    problems.require(
+        comment.get("body") == request["body"]
+        and comment.get("issue_url") == issue.get("url")
+        and comment.get("author_association") == C0007_ACTIVATION_REVIEWER_ASSOCIATION
+        and "performed_via_github_app" in comment
+        and comment.get("performed_via_github_app") is None
+        and comment.get("created_at") == comment.get("updated_at")
+        and type(comment.get("id")) is int
+        and comment.get("id", 0) > 0
+        and comment.get("id") != activation_source.get("comment_database_id")
+        and isinstance(comment.get("node_id"), str)
+        and bool(comment.get("node_id"))
+        and comment.get("node_id") != activation_source.get("comment_node_id")
+        and isinstance(user, Mapping)
+        and user.get("login") == C0007_ACTIVATION_REVIEWER_LOGIN
+        and user.get("id") == C0007_ACTIVATION_REVIEWER_DATABASE_ID
+        and user.get("node_id") == C0007_ACTIVATION_REVIEWER_NODE_ID
+        and user.get("type") == "User"
+        and implementation_completed is not None
+        and activation_created is not None
+        and comment_created is not None
+        and activation_created <= implementation_completed <= comment_created,
+        f"{context}.comment",
+        "implementation decision must be a later distinct unedited non-app OWNER comment after exact I CI",
+    )
+    if problems.messages:
+        return None
+    assert isinstance(activation_source, Mapping)
+    assert isinstance(issue_user, Mapping)
+    assert isinstance(user, Mapping)
+    review = {
+        "decision": "approved",
+        "reviewed_at": comment.get("created_at"),
+        "reviewed_commit_sha": implementation_commit_sha,
+        "reviewed_contract_blob_oid": implementation_contract_blob_oid,
+        "reviewed_tree_sha": implementation_tree_sha,
+        "reviewer_id": "primary-human",
+        "reviewer_kind": "human",
+        "source": {
+            "author_association": comment.get("author_association"),
+            "author_database_id": user.get("id"),
+            "author_login": user.get("login"),
+            "author_node_id": user.get("node_id"),
+            "author_type": user.get("type"),
+            "comment_api_url": comment.get("url"),
+            "comment_database_id": comment.get("id"),
+            "comment_html_url": comment.get("html_url"),
+            "comment_node_id": comment.get("node_id"),
+            "created_at": comment.get("created_at"),
+            "issue_api_url": issue.get("url"),
+            "issue_body": issue.get("body"),
+            "issue_body_byte_count": len(str(issue.get("body")).encode("utf-8")),
+            "issue_body_sha256": hashlib.sha256(
+                str(issue.get("body")).encode("utf-8")
+            ).hexdigest().upper(),
+            "issue_created_at": issue.get("created_at"),
+            "issue_creator_database_id": issue_user.get("id"),
+            "issue_creator_login": issue_user.get("login"),
+            "issue_creator_node_id": issue_user.get("node_id"),
+            "issue_creator_type": issue_user.get("type"),
+            "issue_database_id": issue.get("id"),
+            "issue_html_url": issue.get("html_url"),
+            "issue_node_id": issue.get("node_id"),
+            "issue_number": issue_number,
+            "issue_title": issue.get("title"),
+            "issue_title_byte_count": len(str(issue.get("title")).encode("utf-8")),
+            "issue_title_sha256": hashlib.sha256(
+                str(issue.get("title")).encode("utf-8")
+            ).hexdigest().upper(),
+            "issue_updated_at": issue.get("updated_at"),
+            "message": request["body"],
+            "message_sha256": request["body_sha256"],
+            "performed_via_github_app": None,
+            "provider": "github_issue_comment",
+            "repository_api_url": C0007_BOUNDED_REPOSITORY_API_URL,
+            "repository_database_id": C0007_BOUNDED_REPOSITORY_DATABASE_ID,
+            "repository_full_name": C0007_BOUNDED_REPOSITORY,
+            "repository_node_id": C0007_BOUNDED_REPOSITORY_ID,
+            "updated_at": comment.get("updated_at"),
+        },
+        "status": "approved",
+    }
+    validate_c0007_github_review_observation(
+        review,
+        repository,
+        issue,
+        comment,
+        problems,
+        context=f"{context}.github",
+    )
+    return review if not problems.messages else None
+
+
+def validate_c0007_post_recovery_implementation_review(
+    review: Mapping[str, Any],
+    activation_review: Mapping[str, Any],
+    implementation_ci: Mapping[str, Any],
+    implementation_commit_sha: str,
+    implementation_tree_sha: str,
+    implementation_contract_blob_oid: str,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Validate the persisted post-I decision independently of live GitHub."""
+
+    expected_keys = {
+        "decision", "reviewed_at", "reviewed_commit_sha",
+        "reviewed_contract_blob_oid", "reviewed_tree_sha", "reviewer_id",
+        "reviewer_kind", "source", "status",
+    }
+    activation_source = activation_review.get("source")
+    source = review.get("source")
+    expected_source_keys = {
+        "author_association", "author_database_id", "author_login",
+        "author_node_id", "author_type", "comment_api_url",
+        "comment_database_id", "comment_html_url", "comment_node_id",
+        "created_at", "issue_api_url", "issue_body", "issue_body_byte_count",
+        "issue_body_sha256", "issue_created_at", "issue_creator_database_id",
+        "issue_creator_login", "issue_creator_node_id", "issue_creator_type",
+        "issue_database_id", "issue_html_url", "issue_node_id", "issue_number",
+        "issue_title", "issue_title_byte_count", "issue_title_sha256",
+        "issue_updated_at", "message", "message_sha256",
+        "performed_via_github_app", "provider", "repository_api_url",
+        "repository_database_id", "repository_full_name", "repository_node_id",
+        "updated_at",
+    }
+    try:
+        request = c0007_post_recovery_implementation_review_request(
+            implementation_commit_sha,
+            implementation_tree_sha,
+            implementation_contract_blob_oid,
+            implementation_ci,
+        )
+    except ValueError as error:
+        problems.add(context, str(error))
+        return
+    activation_created = parse_rfc3339(
+        activation_source.get("created_at")
+        if isinstance(activation_source, Mapping)
+        else None
+    )
+    implementation_completed = parse_rfc3339(implementation_ci.get("completed_at"))
+    reviewed_at = parse_rfc3339(review.get("reviewed_at"))
+    issue_number = source.get("issue_number") if isinstance(source, Mapping) else None
+    comment_id = source.get("comment_database_id") if isinstance(source, Mapping) else None
+    issue_api_url = f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/{issue_number}"
+    issue_html_url = f"https://github.com/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}"
+    problems.require(
+        set(review) == expected_keys
+        and review.get("decision") == "approved"
+        and review.get("status") == "approved"
+        and review.get("reviewed_commit_sha") == implementation_commit_sha
+        and review.get("reviewed_tree_sha") == implementation_tree_sha
+        and review.get("reviewed_contract_blob_oid") == implementation_contract_blob_oid
+        and review.get("reviewer_id") == "primary-human"
+        and review.get("reviewer_kind") == "human"
+        and isinstance(source, Mapping)
+        and set(source) == expected_source_keys
+        and isinstance(activation_source, Mapping)
+        and source.get("provider") == "github_issue_comment"
+        and source.get("repository_full_name") == C0007_BOUNDED_REPOSITORY
+        and source.get("repository_database_id") == C0007_BOUNDED_REPOSITORY_DATABASE_ID
+        and source.get("repository_node_id") == C0007_BOUNDED_REPOSITORY_ID
+        and source.get("repository_api_url") == C0007_BOUNDED_REPOSITORY_API_URL
+        and source.get("author_login") == C0007_ACTIVATION_REVIEWER_LOGIN
+        and source.get("author_database_id") == C0007_ACTIVATION_REVIEWER_DATABASE_ID
+        and source.get("author_node_id") == C0007_ACTIVATION_REVIEWER_NODE_ID
+        and source.get("author_type") == "User"
+        and source.get("author_association") == C0007_ACTIVATION_REVIEWER_ASSOCIATION
+        and source.get("performed_via_github_app") is None
+        and source.get("issue_creator_login") == C0007_POST_RECOVERY_ISSUE_CREATOR_LOGIN
+        and source.get("issue_creator_database_id")
+        == C0007_POST_RECOVERY_ISSUE_CREATOR_DATABASE_ID
+        and source.get("issue_creator_node_id")
+        == C0007_POST_RECOVERY_ISSUE_CREATOR_NODE_ID
+        and source.get("issue_creator_type") == "User"
+        and type(issue_number) is int and issue_number > 0
+        and type(source.get("issue_database_id")) is int
+        and source.get("issue_database_id", 0) > 0
+        and isinstance(source.get("issue_node_id"), str)
+        and bool(source.get("issue_node_id"))
+        and type(comment_id) is int and comment_id > 0
+        and isinstance(source.get("comment_node_id"), str)
+        and bool(source.get("comment_node_id"))
+        and source.get("issue_api_url") == issue_api_url
+        and source.get("issue_html_url") == issue_html_url
+        and source.get("comment_api_url")
+        == f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/comments/{comment_id}"
+        and source.get("comment_html_url")
+        == f"{issue_html_url}#issuecomment-{comment_id}"
+        and source.get("issue_title_byte_count")
+        == len(str(source.get("issue_title")).encode("utf-8"))
+        and source.get("issue_title_sha256")
+        == hashlib.sha256(str(source.get("issue_title")).encode("utf-8")).hexdigest().upper()
+        and source.get("issue_body_byte_count")
+        == len(str(source.get("issue_body")).encode("utf-8"))
+        and source.get("issue_body_sha256")
+        == hashlib.sha256(str(source.get("issue_body")).encode("utf-8")).hexdigest().upper()
+        and source.get("created_at") == source.get("updated_at") == review.get("reviewed_at")
+        and source.get("message") == request["body"]
+        and source.get("message_sha256") == request["body_sha256"]
+        and source.get("issue_number") == activation_source.get("issue_number")
+        and source.get("issue_database_id") == activation_source.get("issue_database_id")
+        and source.get("issue_node_id") == activation_source.get("issue_node_id")
+        and source.get("issue_api_url") == activation_source.get("issue_api_url")
+        and source.get("issue_html_url") == activation_source.get("issue_html_url")
+        and source.get("issue_title") == activation_source.get("issue_title")
+        and source.get("issue_body") == activation_source.get("issue_body")
+        and source.get("comment_database_id") != activation_source.get("comment_database_id")
+        and source.get("comment_node_id") != activation_source.get("comment_node_id")
+        and activation_created is not None
+        and implementation_completed is not None
+        and reviewed_at is not None
+        and activation_created <= implementation_completed <= reviewed_at,
+        context,
+        "V requires the exact later distinct unedited post-I OWNER decision on the activation issue",
+    )
+
+
+def build_c0007_post_recovery_contract(
+    artifacts: Sequence[dict[str, Any]],
+    authorization: Mapping[str, Any],
+    activation_review: Mapping[str, Any],
+    *,
+    authorization_sha256: str,
+    manifest_sha256: str,
+) -> dict[str, Any]:
+    """Render the self-hash-free schema-5 A contract from six postimages."""
+
+    # ``byte_count`` is live-readiness evidence, not part of the persisted
+    # schema-5 artifact rows.  The blob OID and SHA-256 bind the exact bytes.
+    canonical_artifacts = canonicalize_c0007_post_recovery_artifacts(artifacts)
+    contract_artifacts = [
+        {key: value for key, value in artifact.items() if key != "byte_count"}
+        for artifact in canonical_artifacts
+    ]
+    constraints = {
+        key: json.loads(canonical_json(authorization.get(key)))
+        for key in (
+            "scope", "authorized_actions", "activation_conditions",
+            "preserved_exclusions", "expiry",
+        )
+    }
+    historical_packet_artifacts = [
+        {
+            "blob_oid": oid,
+            "byte_count": byte_count,
+            "path": path,
+            "sha256": digest,
+            "source_commit_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+        }
+        for path, (oid, byte_count, digest) in sorted(
+            C0007_CI_RECOVERY_HISTORICAL_PACKET_ARTIFACTS.items()
+        )
+    ]
+    return {
+        "activation_conditions": constraints["activation_conditions"],
+        "application_mode": "single_atomic_14_path_union",
+        "artifacts": contract_artifacts,
+        "authority": {
+            "authority_id": "primary-human",
+            "authorization_id": C0007_POST_RECOVERY_AUTHORIZATION_ID,
+            "authorization_path": C0007_BOUNDED_AUTHORIZATION_PATH,
+            "authorization_sha256": authorization_sha256,
+            "authorized_manifest_path": C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+            "authorized_manifest_rows": 21,
+            "authorized_manifest_sha256": manifest_sha256,
+            "operator_id": "codex-local",
+        },
+        "authorized_actions": constraints["authorized_actions"],
+        "base": {
+            "control_head_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "failed_planned_control_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+            "planned_recovery_sha": C0007_PLANNED_RECOVERY_SHA,
+            "remote_main_sha_at_authorization": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "request_replay_checkpoint_id": C0007_CHECKPOINT_ID,
+            "request_replay_code_sha": C0007_CODE_SHA,
+        },
+        "branch": {
+            "base_sha": C0007_PLANNED_RECOVERY_SHA,
+            "local_branch": C0007_BOUNDED_BRANCH,
+            "operator_id": "codex-local",
+            "owner_id": "primary-human",
+            "push_policy": "fast_forward_only_with_exact_observed_lease",
+            "remote": C0007_BOUNDED_REMOTE,
+            "remote_main_ref": C0007_BOUNDED_REMOTE_MAIN_REF,
+            "remote_ref": C0007_BOUNDED_REMOTE_BRANCH_REF,
+            "remote_url": C0007_BOUNDED_REMOTE_URL,
+            "repository": C0007_BOUNDED_REPOSITORY,
+            "retirement_authorized": False,
+        },
+        "ci": {
+            "activation_candidate": c0007_pending_ci_record("pending"),
+            "active_attestation": c0007_pending_ci_record("not_due"),
+            "failed_planned_control": c0007_failed_planned_control_record()["ci"],
+            "implementation": c0007_pending_ci_record("not_due"),
+            "planned_recovery": c0007_planned_recovery_ci_record(),
+        },
+        "constraints_sha256": canonical_json_sha256(constraints),
+        "control_id": C0007_POST_RECOVERY_CONTROL_ID,
+        "expiry": constraints["expiry"],
+        "failed_planned_control": c0007_failed_planned_control_record(),
+        "graph": {
+            "actual_prefix": [
+                C0007_BOUNDED_CONTROL_HEAD_SHA,
+                C0007_FAILED_PLANNED_CONTROL_SHA,
+                C0007_PLANNED_RECOVERY_SHA,
+            ],
+            "lifecycle": "B -> P_failed -> PR -> A -> T -> I -> V",
+            "required_changed_path_counts": [42, 8, 7, 1, 14, 1],
+            "stale_thirteen_path_recovery_forbidden": True,
+        },
+        "historical_packet_artifacts": historical_packet_artifacts,
+        "lifecycle": {
+            "activation_candidate_commit_sha": None,
+            "activation_candidate_contract_blob_oid": None,
+            "activation_candidate_tree_sha": None,
+            "active_attestation_commit_sha": None,
+            "active_attestation_contract_blob_oid": None,
+            "active_attestation_tree_sha": None,
+            "failed_planned_control_commit_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+            "failed_planned_control_contract_blob_oid": C0007_FAILED_PLANNED_CONTROL_CONTRACT_BLOB_OID,
+            "failed_planned_control_tree_sha": C0007_FAILED_PLANNED_CONTROL_TREE_SHA,
+            "implementation_allowed": False,
+            "implementation_commit_sha": None,
+            "implementation_contract_blob_oid": None,
+            "implementation_tree_sha": None,
+            "planned_recovery_commit_sha": C0007_PLANNED_RECOVERY_SHA,
+            "planned_recovery_contract_blob_oid": C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID,
+            "planned_recovery_tree_sha": C0007_PLANNED_RECOVERY_TREE_SHA,
+            "state": C0007_POST_RECOVERY_STATE,
+        },
+        "milestone_id": "M13",
+        "packets": c0007_post_recovery_packets(),
+        "path_census": {
+            "R0014": {"path_count": 12, "path_set_sha256": C0007_BOUNDED_R0014_PATHS_SHA256},
+            "R0015": {"path_count": 2, "path_set_sha256": C0007_BOUNDED_R0015_PATHS_SHA256},
+            "continuation_control": {
+                "modify_count": 7,
+                "path_count": 7,
+                "path_set_sha256": C0007_POST_RECOVERY_CONTINUATION_PATH_SET_SHA256,
+            },
+            "implementation": {
+                "add_count": 7,
+                "modify_count": 7,
+                "path_count": 14,
+                "path_set_sha256": C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256,
+            },
+            "local_ledger_exclusion": "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+            "artifact_snapshot": {
+                "path_count": 6,
+                "path_set_sha256": C0007_POST_RECOVERY_NON_SELF_PATH_SET_SHA256,
+            },
+            "contract_path": C0007_BOUNDED_PLANNED_CONTROL_PATH,
+            "self_hash_policy": "excluded_from_artifacts_but_bound_by_direct_child_commit",
+        },
+        "permissions": {
+            "activation_authorized": True,
+            "checkpoint_acceptance_authorized": False,
+            "implementation_authorized": True,
+            "owner_solicitation_authorized": True,
+            "post_assurance_transition_authorized": True,
+            "remote_main_mutation_authorized": False,
+            "request_resolution_authorized": False,
+        },
+        "phase_id": PHASE_ID,
+        "planned_recovery": {
+            "ci": c0007_planned_recovery_ci_record(),
+            "commit_sha": C0007_PLANNED_RECOVERY_SHA,
+            "contract_blob_oid": C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID,
+            "contract_path": C0007_BOUNDED_PLANNED_CONTROL_PATH,
+            "contract_sha256": C0007_PLANNED_RECOVERY_CONTRACT_SHA256,
+            "parent_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
+            "subject": C0007_CI_RECOVERY_SUBJECT,
+            "tree_sha": C0007_PLANNED_RECOVERY_TREE_SHA,
+        },
+        "preserved_exclusions": constraints["preserved_exclusions"],
+        "record_kind": "c0007_bounded_post_recovery_continuation_control",
+        "reviews": {
+            "activation": dict(activation_review),
+            "implementation": {
+                "decision": None,
+                "reviewed_at": None,
+                "reviewed_commit_sha": None,
+                "reviewed_contract_blob_oid": None,
+                "reviewed_tree_sha": None,
+                "reviewer_id": "primary-human",
+                "reviewer_kind": "human",
+                "source": None,
+                "status": "not_due",
+            },
+        },
+        "run_policy": json.loads(canonical_json(authorization.get("run_policy"))),
+        "schema_version": 5,
+        "scope": constraints["scope"],
+        "wave_id": "I01",
+        "workflow": c0007_post_recovery_workflow_record(),
+    }
+
+
+def validate_c0007_post_recovery_ci_record(
+    evidence: Any,
+    expected_status: str,
+    expected_sha: str | None,
+    expected_tree: str | None,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Validate the compact persisted A/T/I CI record."""
+
+    expected_keys = set(c0007_pending_ci_record(expected_status))
+    if not isinstance(evidence, Mapping):
+        problems.add(context, "post-recovery CI evidence must be an object")
+        return
+    problems.require(
+        set(evidence) == expected_keys,
+        context,
+        "post-recovery CI keys must match the exact compact schema",
+    )
+    if expected_status in {"pending", "not_due"}:
+        problems.require(
+            exact_json_equal(evidence, c0007_pending_ci_record(expected_status)),
+            context,
+            f"{expected_status} CI must retain the exact null record",
+        )
+        return
+    steps = evidence.get("steps")
+    expected_step_names = [
+        C0007_BOUNDED_ARCHITECTURE_STEP,
+        C0007_BOUNDED_BUILD_STEP,
+        C0007_BOUNDED_SUPPORTED_API_STEP,
+        C0007_BOUNDED_TEST_STEP,
+    ]
+    parsed_steps = [step for step in steps if isinstance(step, Mapping)] if isinstance(steps, list) else []
+    step_numbers = [step.get("number") for step in parsed_steps]
+    step_started = [parse_rfc3339(step.get("started_at")) for step in parsed_steps]
+    step_completed = [parse_rfc3339(step.get("completed_at")) for step in parsed_steps]
+    run_started = parse_rfc3339(evidence.get("started_at"))
+    run_completed = parse_rfc3339(evidence.get("completed_at"))
+    problems.require(
+        expected_status == "success"
+        and evidence.get("status") == "success"
+        and evidence.get("conclusion") == "success"
+        and evidence.get("candidate_sha") == expected_sha
+        and evidence.get("candidate_tree") == expected_tree
+        and SHA1_RE.fullmatch(str(expected_sha or "")) is not None
+        and SHA1_RE.fullmatch(str(expected_tree or "")) is not None
+        and evidence.get("branch") == C0007_BOUNDED_BRANCH
+        and evidence.get("repository") == C0007_BOUNDED_REPOSITORY
+        and evidence.get("workflow_path") == C0007_BOUNDED_WORKFLOW_PATH
+        and evidence.get("event") == "workflow_dispatch"
+        and evidence.get("run_attempt") == 1
+        and type(evidence.get("run_id")) is int and evidence.get("run_id", 0) > 0
+        and type(evidence.get("job_id")) is int and evidence.get("job_id", 0) > 0
+        and type(evidence.get("check_suite_id")) is int and evidence.get("check_suite_id", 0) > 0
+        and evidence.get("job_name") == C0007_BOUNDED_JOB_NAME
+        and type(evidence.get("job_log_byte_count")) is int
+        and evidence.get("job_log_byte_count", 0) > 0
+        and isinstance(evidence.get("job_log_sha256"), str)
+        and SHA256_RE.fullmatch(str(evidence.get("job_log_sha256"))) is not None
+        and str(evidence.get("job_log_sha256")) == str(evidence.get("job_log_sha256")).upper()
+        and run_started is not None
+        and run_completed is not None
+        and run_started <= run_completed
+        and isinstance(steps, list)
+        and len(steps) == len(parsed_steps) == 4
+        and [step.get("name") for step in parsed_steps] == expected_step_names
+        and all(
+            set(step) == {"completed_at", "conclusion", "name", "number", "started_at", "status"}
+            and type(step.get("number")) is int
+            and step.get("number", 0) > 0
+            and step.get("status") == "completed"
+            and step.get("conclusion") == "success"
+            and parse_rfc3339(step.get("started_at")) is not None
+            and parse_rfc3339(step.get("completed_at")) is not None
+            and parse_rfc3339(step.get("started_at")) <= parse_rfc3339(step.get("completed_at"))
+            for step in parsed_steps
+        )
+        and all(type(number) is int for number in step_numbers)
+        and step_numbers == sorted(set(step_numbers))
+        and all(value is not None for value in step_started + step_completed)
+        and all(
+            step_completed[index] <= step_started[index + 1]
+            for index in range(len(parsed_steps) - 1)
+        )
+        and run_started <= step_started[0]
+        and step_completed[-1] <= run_completed,
+        context,
+        "successful post-recovery CI must bind exact attempt-1 commit/tree/run/job/log and four ordered gates",
+    )
+
+
+def persist_c0007_live_ci_record(
+    evidence: Mapping[str, Any],
+    candidate_tree: str,
+) -> dict[str, Any]:
+    """Project authenticated local-only CI evidence into schema-5."""
+
+    required = {
+        "branch", "check_suite_conclusion", "check_suite_id", "event", "head_sha",
+        "job_completed_at", "job_conclusion", "job_id", "job_log_byte_count",
+        "job_log_sha256", "job_name", "job_started_at", "run_attempt",
+        "run_completed_at", "run_conclusion", "run_id", "run_started_at",
+        "run_status", "runner_name", "steps", "toolchain", "workflow_id",
+        "workflow_name", "workflow_path", "workflow_sha256",
+    }
+    if set(evidence) != required or SHA1_RE.fullmatch(candidate_tree) is None:
+        raise ValueError("live CI evidence or candidate tree has the wrong exact schema")
+    if not (
+        evidence.get("workflow_sha256") == C0007_CI_RECOVERY_WORKFLOW_SHA256
+        and evidence.get("run_attempt") == 1
+        and evidence.get("run_status") == "completed"
+        and evidence.get("run_conclusion") == "success"
+        and evidence.get("job_conclusion") == "success"
+        and evidence.get("check_suite_conclusion") == "success"
+    ):
+        raise ValueError("live CI evidence is not exact successful attempt-1 evidence")
+    return {
+        "branch": evidence.get("branch"),
+        "candidate_sha": evidence.get("head_sha"),
+        "candidate_tree": candidate_tree,
+        "check_suite_id": evidence.get("check_suite_id"),
+        "completed_at": evidence.get("run_completed_at"),
+        "conclusion": evidence.get("run_conclusion"),
+        "event": evidence.get("event"),
+        "job_id": evidence.get("job_id"),
+        "job_log_byte_count": evidence.get("job_log_byte_count"),
+        "job_log_sha256": evidence.get("job_log_sha256"),
+        "job_name": evidence.get("job_name"),
+        "repository": C0007_BOUNDED_REPOSITORY,
+        "run_attempt": evidence.get("run_attempt"),
+        "run_id": evidence.get("run_id"),
+        "started_at": evidence.get("run_started_at"),
+        "status": "success",
+        "steps": json.loads(canonical_json(evidence.get("steps"))),
+        "workflow_path": evidence.get("workflow_path"),
+    }
+
+
+def build_c0007_post_recovery_active_contract(
+    activation_contract: Mapping[str, Any],
+    *,
+    activation_commit_sha: str,
+    activation_tree_sha: str,
+    activation_contract_blob_oid: str,
+    activation_ci: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Render T from exact A plus authenticated successful A CI."""
+
+    contract = json.loads(canonical_json(activation_contract))
+    lifecycle = contract.get("lifecycle")
+    ci = contract.get("ci")
+    reviews = contract.get("reviews")
+    if not (
+        isinstance(lifecycle, dict)
+        and lifecycle.get("state") == "activation_pending"
+        and isinstance(ci, dict)
+        and isinstance(reviews, dict)
+        and SHA1_RE.fullmatch(activation_commit_sha)
+        and SHA1_RE.fullmatch(activation_tree_sha)
+        and SHA1_RE.fullmatch(activation_contract_blob_oid)
+    ):
+        raise ValueError("T requires an exact activation_pending A contract and identities")
+    ci_problems = Problems()
+    validate_c0007_post_recovery_ci_record(
+        activation_ci,
+        "success",
+        activation_commit_sha,
+        activation_tree_sha,
+        ci_problems,
+        context="C0007 A-to-T activation CI",
+    )
+    if ci_problems.messages:
+        raise ValueError("T requires exact successful A CI")
+    lifecycle.update({
+        "activation_candidate_commit_sha": activation_commit_sha,
+        "activation_candidate_contract_blob_oid": activation_contract_blob_oid,
+        "activation_candidate_tree_sha": activation_tree_sha,
+        "state": "active",
+    })
+    ci["activation_candidate"] = json.loads(canonical_json(activation_ci))
+    ci["active_attestation"] = c0007_pending_ci_record("pending")
+    ci["implementation"] = c0007_pending_ci_record("pending")
+    reviews["implementation"]["status"] = "pending"
+    return contract
+
+
+def build_c0007_post_recovery_verified_contract(
+    active_contract: Mapping[str, Any],
+    *,
+    active_commit_sha: str,
+    active_tree_sha: str,
+    active_contract_blob_oid: str,
+    implementation_commit_sha: str,
+    implementation_tree_sha: str,
+    implementation_contract_blob_oid: str,
+    active_ci: Mapping[str, Any],
+    implementation_ci: Mapping[str, Any],
+    implementation_review: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Render V from byte-preserved T/I plus authenticated T/I evidence."""
+
+    contract = json.loads(canonical_json(active_contract))
+    lifecycle = contract.get("lifecycle")
+    ci = contract.get("ci")
+    reviews = contract.get("reviews")
+    identities = (
+        active_commit_sha, active_tree_sha, active_contract_blob_oid,
+        implementation_commit_sha, implementation_tree_sha,
+        implementation_contract_blob_oid,
+    )
+    if not (
+        isinstance(lifecycle, dict)
+        and lifecycle.get("state") == "active"
+        and isinstance(ci, dict)
+        and isinstance(reviews, dict)
+        and all(SHA1_RE.fullmatch(value) for value in identities)
+        and active_contract_blob_oid == implementation_contract_blob_oid
+    ):
+        raise ValueError("V requires exact active T and byte-preserving I identities")
+    evidence_problems = Problems()
+    validate_c0007_post_recovery_ci_record(
+        active_ci,
+        "success",
+        active_commit_sha,
+        active_tree_sha,
+        evidence_problems,
+        context="C0007 T-to-V active CI",
+    )
+    validate_c0007_post_recovery_ci_record(
+        implementation_ci,
+        "success",
+        implementation_commit_sha,
+        implementation_tree_sha,
+        evidence_problems,
+        context="C0007 T-to-V implementation CI",
+    )
+    activation_review = reviews.get("activation")
+    if isinstance(activation_review, Mapping):
+        validate_c0007_post_recovery_implementation_review(
+            implementation_review,
+            activation_review,
+            implementation_ci,
+            implementation_commit_sha,
+            implementation_tree_sha,
+            implementation_contract_blob_oid,
+            evidence_problems,
+            context="C0007 T-to-V implementation review",
+        )
+    else:
+        evidence_problems.add("C0007 T-to-V activation review", "activation review missing")
+    if evidence_problems.messages:
+        raise ValueError("V requires exact successful T/I CI and implementation OWNER review")
+    lifecycle.update({
+        "active_attestation_commit_sha": active_commit_sha,
+        "active_attestation_contract_blob_oid": active_contract_blob_oid,
+        "active_attestation_tree_sha": active_tree_sha,
+        "implementation_commit_sha": implementation_commit_sha,
+        "implementation_contract_blob_oid": implementation_contract_blob_oid,
+        "implementation_tree_sha": implementation_tree_sha,
+        "state": "verified",
+    })
+    ci["active_attestation"] = json.loads(canonical_json(active_ci))
+    ci["implementation"] = json.loads(canonical_json(implementation_ci))
+    reviews["implementation"] = json.loads(canonical_json(implementation_review))
+    return contract
+
+
+def validate_c0007_post_recovery_contract_payload(
+    contract: Mapping[str, Any],
+    artifacts: Sequence[dict[str, Any]],
+    authorization: Mapping[str, Any],
+    problems: Problems,
+    *,
+    authorization_sha256: str,
+    manifest_sha256: str,
+    context: str = C0007_BOUNDED_PLANNED_CONTROL_PATH,
+) -> None:
+    expected_top_keys = {
+        "activation_conditions", "application_mode", "artifacts", "authority",
+        "authorized_actions", "base", "branch", "ci", "constraints_sha256",
+        "control_id", "expiry", "failed_planned_control", "graph",
+        "historical_packet_artifacts", "lifecycle", "milestone_id", "packets",
+        "path_census", "permissions", "phase_id", "planned_recovery",
+        "preserved_exclusions", "record_kind", "reviews", "run_policy",
+        "schema_version", "scope", "wave_id", "workflow",
+    }
+    problems.require(
+        set(contract) == expected_top_keys,
+        context,
+        "post-recovery contract top-level keys must match schema-5 exactly",
+    )
+    review = mapping_path(contract, "reviews", "activation")
+    problems.require(
+        isinstance(review, Mapping) and review.get("status") == "approved",
+        f"{context}.reviews.activation",
+        "the persisted A contract requires an approved live owner review",
+    )
+    if not isinstance(review, Mapping):
+        return
+    validate_c0007_post_recovery_activation_review(
+        review,
+        artifacts,
+        problems,
+        context=f"{context}.reviews.activation",
+    )
+    try:
+        expected = build_c0007_post_recovery_contract(
+            artifacts,
+            authorization,
+            review,
+            authorization_sha256=authorization_sha256,
+            manifest_sha256=manifest_sha256,
+        )
+    except (TypeError, ValueError) as error:
+        problems.add(f"{context}.artifacts", str(error))
+        return
+    lifecycle = contract.get("lifecycle")
+    ci = contract.get("ci")
+    reviews = contract.get("reviews")
+    state = lifecycle.get("state") if isinstance(lifecycle, Mapping) else None
+    problems.require(
+        state in {"activation_pending", "active", "verified"},
+        f"{context}.lifecycle.state",
+        "post-recovery state must be activation_pending, active, or verified",
+    )
+    immutable_keys = expected_top_keys - {"ci", "lifecycle", "reviews"}
+    problems.require(
+        all(exact_json_equal(contract.get(key), expected.get(key)) for key in immutable_keys),
+        context,
+        "schema-5 immutable authority/base/artifact/packet/workflow fields drifted",
+    )
+    lifecycle_keys = set(expected["lifecycle"])
+    problems.require(
+        isinstance(lifecycle, Mapping)
+        and set(lifecycle) == lifecycle_keys
+        and lifecycle.get("planned_recovery_commit_sha") == C0007_PLANNED_RECOVERY_SHA
+        and lifecycle.get("planned_recovery_tree_sha") == C0007_PLANNED_RECOVERY_TREE_SHA
+        and lifecycle.get("planned_recovery_contract_blob_oid")
+        == C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID
+        and lifecycle.get("failed_planned_control_commit_sha")
+        == C0007_FAILED_PLANNED_CONTROL_SHA
+        and lifecycle.get("failed_planned_control_tree_sha")
+        == C0007_FAILED_PLANNED_CONTROL_TREE_SHA
+        and lifecycle.get("failed_planned_control_contract_blob_oid")
+        == C0007_FAILED_PLANNED_CONTROL_CONTRACT_BLOB_OID
+        and lifecycle.get("implementation_allowed") is False,
+        f"{context}.lifecycle",
+        "schema-5 lifecycle keys and immutable PR identity must remain exact",
+    )
+    identity_groups = (
+        (
+            "activation_candidate_commit_sha",
+            "activation_candidate_tree_sha",
+            "activation_candidate_contract_blob_oid",
+        ),
+        (
+            "active_attestation_commit_sha",
+            "active_attestation_tree_sha",
+            "active_attestation_contract_blob_oid",
+        ),
+        (
+            "implementation_commit_sha",
+            "implementation_tree_sha",
+            "implementation_contract_blob_oid",
+        ),
+    )
+    required_groups = {"activation_pending": 0, "active": 1, "verified": 3}.get(str(state), 0)
+    if isinstance(lifecycle, Mapping):
+        for index, group in enumerate(identity_groups):
+            values = [lifecycle.get(key) for key in group]
+            problems.require(
+                all(isinstance(value, str) and SHA1_RE.fullmatch(value) for value in values)
+                if index < required_groups
+                else values == [None, None, None],
+                f"{context}.lifecycle.{group[0]}",
+                "historical self identities must be complete SHA-1 triples and future identities null",
+            )
+    problems.require(
+        isinstance(ci, Mapping)
+        and set(ci)
+        == {"activation_candidate", "active_attestation", "failed_planned_control", "implementation", "planned_recovery"}
+        and exact_json_equal(ci.get("failed_planned_control"), expected["ci"]["failed_planned_control"])
+        and exact_json_equal(ci.get("planned_recovery"), expected["ci"]["planned_recovery"]),
+        f"{context}.ci",
+        "schema-5 CI must preserve exact failed-P and successful-PR evidence",
+    )
+    ci_statuses = {
+        "activation_pending": ("pending", "not_due", "not_due"),
+        "active": ("success", "pending", "pending"),
+        "verified": ("success", "success", "success"),
+    }.get(str(state), ("pending", "not_due", "not_due"))
+    if isinstance(ci, Mapping) and isinstance(lifecycle, Mapping):
+        for name, status, sha_key, tree_key in (
+            ("activation_candidate", ci_statuses[0], "activation_candidate_commit_sha", "activation_candidate_tree_sha"),
+            ("active_attestation", ci_statuses[1], "active_attestation_commit_sha", "active_attestation_tree_sha"),
+            ("implementation", ci_statuses[2], "implementation_commit_sha", "implementation_tree_sha"),
+        ):
+            validate_c0007_post_recovery_ci_record(
+                ci.get(name),
+                status,
+                lifecycle.get(sha_key) if status == "success" else None,
+                lifecycle.get(tree_key) if status == "success" else None,
+                problems,
+                context=f"{context}.ci.{name}",
+            )
+    implementation_review = reviews.get("implementation") if isinstance(reviews, Mapping) else None
+    expected_implementation_status = {
+        "activation_pending": "not_due", "active": "pending", "verified": "approved"
+    }.get(str(state))
+    problems.require(
+        isinstance(reviews, Mapping)
+        and set(reviews) == {"activation", "implementation"}
+        and exact_json_equal(reviews.get("activation"), review)
+        and isinstance(implementation_review, Mapping)
+        and implementation_review.get("status") == expected_implementation_status,
+        f"{context}.reviews",
+        "schema-5 reviews must preserve activation and follow the A/T/I/V implementation-review status",
+    )
+    if expected_implementation_status in {"not_due", "pending"}:
+        expected_pending = dict(expected["reviews"]["implementation"])
+        expected_pending["status"] = expected_implementation_status
+        problems.require(
+            exact_json_equal(implementation_review, expected_pending),
+            f"{context}.reviews.implementation",
+            "non-approved implementation review must retain the exact null schema",
+        )
+    elif isinstance(implementation_review, Mapping) and isinstance(lifecycle, Mapping):
+        validate_c0007_post_recovery_implementation_review(
+            implementation_review,
+            review,
+            ci.get("implementation") if isinstance(ci, Mapping) else {},
+            str(lifecycle.get("implementation_commit_sha") or ""),
+            str(lifecycle.get("implementation_tree_sha") or ""),
+            str(lifecycle.get("implementation_contract_blob_oid") or ""),
+            problems,
+            context=f"{context}.reviews.implementation",
+        )
+    problems.require(
+        state != "activation_pending" or exact_json_equal(contract, expected),
+        context,
+        "A contract must equal the deterministic schema-5 construction byte-for-byte",
+    )
+    review_request = review.get("review_request")
+    source = review.get("source")
+    problems.require(
+        isinstance(review_request, Mapping)
+        and isinstance(source, Mapping)
+        and source.get("message") == review_request.get("body")
+        and source.get("message_sha256") == review_request.get("body_sha256")
+        and source.get("created_at") == source.get("updated_at")
+        and source.get("author_login") == C0007_ACTIVATION_REVIEWER_LOGIN
+        and source.get("author_association") == C0007_ACTIVATION_REVIEWER_ASSOCIATION
+        and source.get("performed_via_github_app") is None,
+        f"{context}.reviews.activation",
+        "schema-5 must embed the exact unedited non-app OWNER comment emitted by readiness",
+    )
+
+
 def validate_i01_selector_payload(
     header: Sequence[str],
     rows: Sequence[dict[str, str]],
@@ -4090,6 +6314,10 @@ def validate_c0007_github_review_observation(
     problems: Problems,
     *,
     context: str,
+    expected_author_login: str = C0007_ACTIVATION_REVIEWER_LOGIN,
+    expected_author_database_id: int = C0007_ACTIVATION_REVIEWER_DATABASE_ID,
+    expected_author_node_id: str = C0007_ACTIVATION_REVIEWER_NODE_ID,
+    expected_author_association: str = C0007_ACTIVATION_REVIEWER_ASSOCIATION,
 ) -> None:
     """Authenticate a recorded semantic decision against live GitHub state."""
 
@@ -4140,16 +6368,62 @@ def validate_c0007_github_review_observation(
         and comment.get("body") == source.get("message")
         and comment.get("created_at") == source.get("created_at")
         and comment.get("updated_at") == source.get("updated_at")
-        and comment.get("author_association") == "OWNER"
+        and comment.get("author_association") == expected_author_association
         and "performed_via_github_app" in comment
         and comment.get("performed_via_github_app") is None
         and isinstance(user, dict)
-        and user.get("login") == C0007_BOUNDED_REPOSITORY_OWNER_LOGIN
-        and user.get("id") == C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID
-        and user.get("node_id") == C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID
+        and user.get("login") == expected_author_login
+        and user.get("id") == expected_author_database_id
+        and user.get("node_id") == expected_author_node_id
         and user.get("type") == "User",
         f"{context}.comment",
         "live comment must be the exact unedited, non-app repository-owner attestation",
+    )
+
+
+def validate_c0007_post_recovery_review_edit_observation(
+    review: Mapping[str, Any],
+    observation: Any,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Require GraphQL to prove the issue and comment were never edited."""
+
+    source = review.get("source")
+    data = observation.get("data") if isinstance(observation, Mapping) else None
+    repository = data.get("repository") if isinstance(data, Mapping) else None
+    issue = repository.get("issue") if isinstance(repository, Mapping) else None
+    comment = data.get("node") if isinstance(data, Mapping) else None
+    issue_edits = issue.get("userContentEdits") if isinstance(issue, Mapping) else None
+    comment_edits = comment.get("userContentEdits") if isinstance(comment, Mapping) else None
+    issue_author = issue.get("author") if isinstance(issue, Mapping) else None
+    comment_author = comment.get("author") if isinstance(comment, Mapping) else None
+    problems.require(
+        isinstance(source, Mapping)
+        and isinstance(issue, Mapping)
+        and issue.get("id") == source.get("issue_node_id")
+        and issue.get("title") == source.get("issue_title")
+        and issue.get("body") == source.get("issue_body")
+        and issue.get("lastEditedAt") is None
+        and isinstance(issue_edits, Mapping)
+        and issue_edits.get("totalCount") == 0
+        and isinstance(issue_author, Mapping)
+        and issue_author.get("login") == source.get("issue_creator_login")
+        and issue_author.get("id") == source.get("issue_creator_node_id")
+        and issue_author.get("databaseId") == source.get("issue_creator_database_id")
+        and isinstance(comment, Mapping)
+        and comment.get("id") == source.get("comment_node_id")
+        and comment.get("body") == source.get("message")
+        and comment.get("lastEditedAt") is None
+        and isinstance(comment_edits, Mapping)
+        and comment_edits.get("totalCount") == 0
+        and isinstance(comment_author, Mapping)
+        and comment_author.get("login") == source.get("author_login")
+        and comment_author.get("id") == source.get("author_node_id")
+        and comment_author.get("databaseId") == source.get("author_database_id"),
+        context,
+        "GraphQL must prove exact issue/comment nodes, bodies/authors, null lastEditedAt, and zero content edits",
     )
 
 
@@ -4487,6 +6761,7 @@ def build_c0007_live_ci_evidence(
     problems: Problems,
     *,
     context: str,
+    workflow_sha256: str = C0007_BOUNDED_WORKFLOW_SHA256,
 ) -> dict[str, Any] | None:
     """Authenticate the current attempt and render exact local-only CI evidence."""
 
@@ -4691,7 +6966,7 @@ def build_c0007_live_ci_evidence(
         "workflow_id": C0007_BOUNDED_WORKFLOW_ID,
         "workflow_name": C0007_BOUNDED_WORKFLOW_NAME,
         "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
-        "workflow_sha256": C0007_BOUNDED_WORKFLOW_SHA256,
+        "workflow_sha256": workflow_sha256,
     }
 
 
@@ -4940,6 +7215,27 @@ def validate_c0007_repository_identity_values(
         and lexical_git_is_ordinary,
         context,
         "Git top-level, git-dir, and common-dir must equal the canonical shared root and its lexically ordinary .git directory (not a symlink, junction, or reparse point)",
+    )
+
+
+def validate_c0007_ancestry_metadata_values(
+    grafts_present: Any,
+    shallow_repository_output: Any,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Reject local metadata that can rewrite or truncate commit ancestry."""
+
+    problems.require(
+        grafts_present is False,
+        f"{context}.grafts",
+        "the ordinary .git/info/grafts ancestry override must be absent",
+    )
+    problems.require(
+        shallow_repository_output == b"false\n",
+        f"{context}.shallow",
+        "git rev-parse --is-shallow-repository must return exactly false",
     )
 
 
@@ -5440,7 +7736,9 @@ def validate_c0007_bounded_planned_control_payload(
         "snapshot must contain exactly the 41 sorted non-contract planned artifacts",
     )
     problems.require(
-        parsed_artifacts.get(C0007_BOUNDED_AUTHORIZATION_PATH, {}).get("sha256")
+        mapping_path(
+            parsed_artifacts.get(C0007_BOUNDED_AUTHORIZATION_PATH), "sha256"
+        )
         == authorization_sha256,
         f"{context}.artifacts[{C0007_BOUNDED_AUTHORIZATION_PATH}]",
         "artifact inventory must reuse the exact single-read authorization digest",
@@ -5518,7 +7816,7 @@ def validate_c0007_bounded_planned_control_payload(
                 "packet artifact path or immutable SHA-256 drifted",
             )
         approval = packet.get("approval")
-        approval_digest = parsed_artifacts.get(approval_path, {}).get("sha256")
+        approval_digest = mapping_path(parsed_artifacts.get(approval_path), "sha256")
         problems.require(
             isinstance(approval, dict)
             and approval.get("path") == approval_path
@@ -5528,9 +7826,9 @@ def validate_c0007_bounded_planned_control_payload(
         )
 
     workflow = contract.get("workflow")
-    workflow_digest = parsed_artifacts.get(
-        ".github/workflows/lean_action_ci.yml", {}
-    ).get("sha256")
+    workflow_digest = mapping_path(
+        parsed_artifacts.get(".github/workflows/lean_action_ci.yml"), "sha256"
+    )
     problems.require(
         workflow_digest == C0007_BOUNDED_WORKFLOW_SHA256,
         f"{context}.workflow.sha256",
@@ -5664,24 +7962,27 @@ def validate_c0007_bounded_planned_control_payload(
     review_scope_common = {
         "artifact_inventory_sha256": canonical_json_sha256(artifacts),
         "authorization_sha256": authorization_sha256,
-        "completion_checker_sha256": parsed_artifacts.get(
-            "tools/architecture/check_completion_phase.py", {}
-        ).get("sha256"),
-        "full_tests_correction_sha256": parsed_artifacts.get(
-            C0007_FULL_TESTS_CORRECTION_PATH, {}
-        ).get("sha256"),
+        "completion_checker_sha256": mapping_path(
+            parsed_artifacts.get("tools/architecture/check_completion_phase.py"),
+            "sha256",
+        ),
+        "full_tests_correction_sha256": mapping_path(
+            parsed_artifacts.get(C0007_FULL_TESTS_CORRECTION_PATH), "sha256"
+        ),
         "implementation_path_set_sha256": C0007_BOUNDED_IMPLEMENTATION_PATHS_SHA256,
         "packet_snapshot_sha256": canonical_json_sha256(packets),
         "planned_path_set_sha256": C0007_BOUNDED_PLANNED_PATHS_SHA256,
-        "supported_api_baseline_sha256": parsed_artifacts.get(
-            C0007_BOUNDED_SUPPORTED_API_PATH, {}
-        ).get("sha256"),
-        "supported_api_checker_sha256": parsed_artifacts.get(
-            "tools/architecture/check_supported_api.py", {}
-        ).get("sha256"),
-        "supported_api_review_sha256": parsed_artifacts.get(
-            C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH, {}
-        ).get("sha256"),
+        "supported_api_baseline_sha256": mapping_path(
+            parsed_artifacts.get(C0007_BOUNDED_SUPPORTED_API_PATH), "sha256"
+        ),
+        "supported_api_checker_sha256": mapping_path(
+            parsed_artifacts.get("tools/architecture/check_supported_api.py"),
+            "sha256",
+        ),
+        "supported_api_review_sha256": mapping_path(
+            parsed_artifacts.get(C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH),
+            "sha256",
+        ),
         "workflow_sha256": workflow_digest,
     }
     activation_review_scope = {
@@ -5799,9 +8100,7 @@ def validate_c0007_bounded_planned_control_payload(
         )
     if isinstance(ci, dict) and isinstance(reviews, dict) and state != "planned":
         planned_completed = parse_rfc3339(
-            ci.get("planned_control", {}).get("completed_at")
-            if isinstance(ci.get("planned_control"), dict)
-            else None
+            mapping_path(ci, "planned_control", "completed_at")
         )
         activation_review = reviews.get("activation")
         activation_source = (
@@ -5823,19 +8122,13 @@ def validate_c0007_bounded_planned_control_payload(
         )
     if isinstance(ci, dict) and isinstance(reviews, dict) and state == "verified":
         validate_c0007_t_i_chronology(
-            ci.get("active_attestation", {}).get("completed_at")
-            if isinstance(ci.get("active_attestation"), dict)
-            else None,
-            ci.get("implementation", {}).get("started_at")
-            if isinstance(ci.get("implementation"), dict)
-            else None,
+            mapping_path(ci, "active_attestation", "completed_at"),
+            mapping_path(ci, "implementation", "started_at"),
             problems,
             context=f"{context}.ci.implementation.chronology",
         )
         implementation_completed = parse_rfc3339(
-            ci.get("implementation", {}).get("completed_at")
-            if isinstance(ci.get("implementation"), dict)
-            else None
+            mapping_path(ci, "implementation", "completed_at")
         )
         implementation_review = reviews.get("implementation")
         implementation_source = (
@@ -8626,6 +10919,58 @@ def read_stable_file_bytes(path: Path, *, max_bytes: int = 64 * 1024 * 1024) -> 
     return payload
 
 
+def c0007_compare_and_swap_restore(
+    path: Path,
+    installed_payload: bytes,
+    old_payload: bytes,
+    temp_directory: Path,
+    problems: Problems,
+    *,
+    context: str,
+    replace_fn: Any = os.replace,
+    read_fn: Any = read_stable_file_bytes,
+) -> bool:
+    """Restore old bytes only while this writer still owns the installed value."""
+
+    try:
+        current = read_fn(path)
+    except (OSError, ValueError) as error:
+        problems.add(context, f"rollback stable read failed: {error}")
+        return False
+    if current == old_payload:
+        return True
+    if current != installed_payload:
+        problems.add(context, "rollback refused due concurrent contract mutation")
+        return False
+    temporary: Path | None = None
+    try:
+        descriptor, raw_temporary = tempfile.mkstemp(
+            prefix=f".{path.name}.restore-",
+            suffix=".tmp",
+            dir=temp_directory,
+        )
+        temporary = Path(raw_temporary)
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(old_payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        replace_fn(temporary, path)
+        temporary = None
+        if read_fn(path) != old_payload:
+            problems.add(context, "rollback replacement did not restore exact old bytes")
+            return False
+        return True
+    except (OSError, ValueError) as error:
+        problems.add(context, f"contract rollback failed: {error}")
+        return False
+    finally:
+        if temporary is not None:
+            try:
+                temporary.unlink()
+            except OSError:
+                pass
+
+
 def canonical_json(value: Any) -> str:
     return json.dumps(
         value,
@@ -8676,6 +11021,143 @@ def exact_json_equal(left: Any, right: Any) -> bool:
             for left_item, right_item in zip(left, right)
         )
     return left == right
+
+
+# GitHub serializes the same issue comment differently depending on whether it is
+# read from the paginated list endpoint or refetched as a single object.  Two
+# divergences are deterministic and carry no lifecycle meaning:
+#
+#   * the single-object response adds a top-level ``pin`` key that the list
+#     response omits entirely; and
+#   * ``user.avatar_url`` gains the ``u=<cache-buster>`` query parameter in the
+#     single-object response for any account with an uploaded profile picture,
+#     while the list response emits the bare ``?v=4`` form.
+#
+# Comparing the whole objects with ``exact_json_equal`` therefore fails for every
+# real comment, which made the activation gate unsatisfiable rather than strict.
+# The comparison below keeps the substitution-detection intent — every identity
+# and content field must match exactly — while confining tolerated variance to
+# those two shapes and failing closed on any other difference, including a new
+# field GitHub may add later.
+C0007_ISSUE_COMMENT_IDENTITY_KEYS: tuple[str, ...] = (
+    "author_association",
+    "body",
+    "created_at",
+    "html_url",
+    "id",
+    "issue_url",
+    "node_id",
+    "performed_via_github_app",
+    "updated_at",
+    "url",
+)
+C0007_ISSUE_COMMENT_USER_IDENTITY_KEYS: tuple[str, ...] = (
+    "id",
+    "login",
+    "node_id",
+    "type",
+)
+C0007_ISSUE_COMMENT_ENDPOINT_VARIANT_KEYS: frozenset[str] = frozenset({"pin"})
+_C0007_BARE_AVATAR = re.compile(
+    r"\Ahttps://avatars\.githubusercontent\.com/u/(?P<uid>[1-9][0-9]*)\?v=[0-9]+\Z"
+)
+_C0007_CACHE_BUSTED_AVATAR = re.compile(
+    r"\Ahttps://avatars\.githubusercontent\.com/u/(?P<uid>[1-9][0-9]*)"
+    r"\?u=[0-9a-f]{40}&v=[0-9]+\Z"
+)
+
+
+def c0007_equivalent_avatar_urls(left: Any, right: Any, *, user_id: Any) -> bool:
+    """Accept only the two documented avatar serializations for the same user id."""
+
+    if type(left) is not str or type(right) is not str:
+        return False
+    if left == right:
+        return True
+    if type(user_id) is not int:
+        return False
+    bare, busted = None, None
+    for value in (left, right):
+        if (match := _C0007_BARE_AVATAR.fullmatch(value)) is not None:
+            if bare is not None:
+                return False
+            bare = match
+        elif (match := _C0007_CACHE_BUSTED_AVATAR.fullmatch(value)) is not None:
+            if busted is not None:
+                return False
+            busted = match
+        else:
+            return False
+    if bare is None or busted is None:
+        return False
+    return (
+        bare.group("uid") == busted.group("uid")
+        and bare.group("uid") == str(user_id)
+    )
+
+
+def c0007_equivalent_issue_comment_views(left: Any, right: Any) -> bool:
+    """Compare two serializations of one issue comment for lifecycle identity.
+
+    Returns True only when both objects describe the same comment with identical
+    identity and content, and every structural difference between them lies in
+    the exact documented endpoint-variance set.
+    """
+
+    if not isinstance(left, Mapping) or not isinstance(right, Mapping):
+        return False
+    left_user = left.get("user")
+    right_user = right.get("user")
+    if not isinstance(left_user, Mapping) or not isinstance(right_user, Mapping):
+        return False
+
+    # Every identity and content field must be exactly equal, with no
+    # boolean/integer aliasing and no missing key silently comparing equal.
+    for key in C0007_ISSUE_COMMENT_IDENTITY_KEYS:
+        if key not in left or key not in right:
+            return False
+        if not exact_json_equal(left[key], right[key]):
+            return False
+    for key in C0007_ISSUE_COMMENT_USER_IDENTITY_KEYS:
+        if key not in left_user or key not in right_user:
+            return False
+        if not exact_json_equal(left_user[key], right_user[key]):
+            return False
+
+    # Any remaining top-level difference must be a tolerated endpoint variant.
+    for key in set(left) ^ set(right):
+        if key not in C0007_ISSUE_COMMENT_ENDPOINT_VARIANT_KEYS:
+            return False
+    for key in set(left) & set(right):
+        if key == "user":
+            continue
+        if not exact_json_equal(left[key], right[key]):
+            return False
+
+    # The user object tolerates only the documented avatar serialization split.
+    if set(left_user) != set(right_user):
+        return False
+    for key in left_user:
+        if exact_json_equal(left_user[key], right_user[key]):
+            continue
+        if key != "avatar_url":
+            return False
+        if not c0007_equivalent_avatar_urls(
+            left_user[key], right_user[key], user_id=left_user.get("id")
+        ):
+            return False
+    return True
+
+
+def mapping_path(value: Any, *keys: str) -> Any:
+    """Read a nested mapping path without trusting persisted JSON container types."""
+
+    current = value
+    for key in keys:
+        if not isinstance(current, Mapping):
+            return None
+        current = current.get(key)
+    return current
 
 
 def strict_json_loads(text: str, *, max_depth: int = 64) -> Any:
@@ -10744,6 +13226,10 @@ class CompletionValidator:
         self.c0007_implementation_epoch_valid = False
         self.c0007_implementation_write_allowed = False
         self.c0007_implementation_allowed = False
+        self.c0007_post_recovery_authorization: dict[str, Any] | None = None
+        self.c0007_post_recovery_active = False
+        self.c0007_pr_recovery_candidate_valid = False
+        self.c0007_pr_successor_artifacts: list[dict[str, Any]] = []
 
     def relative(self, path: Path) -> str:
         try:
@@ -11083,7 +13569,7 @@ class CompletionValidator:
         )
 
     def validate_c0007_git_repository_identity(self) -> None:
-        """Bind every Git query to this checkout rather than configured decoy roots."""
+        """Bind Git to this complete checkout with unmodified ancestry metadata."""
 
         context = "C0007 effective Git repository identity"
         result = self.git_bytes(
@@ -11113,6 +13599,55 @@ class CompletionValidator:
             self.problems,
             context=context,
         )
+        shallow_result = self.git_bytes(
+            "rev-parse", "--is-shallow-repository", check=False
+        )
+        shallow_output: bytes | None = None
+        if shallow_result.returncode:
+            self.problems.add(
+                f"{context}.shallow",
+                "cannot determine whether the effective repository is shallow",
+            )
+        else:
+            shallow_output = shallow_result.stdout
+        validate_c0007_ancestry_metadata_values(
+            os.path.lexists(str(self.root / ".git" / "info" / "grafts")),
+            shallow_output,
+            self.problems,
+            context=context,
+        )
+
+    def c0007_atomic_temp_directory(
+        self,
+        problems: Problems,
+        *,
+        context: str,
+    ) -> Path | None:
+        """Return the validated ordinary same-volume Git metadata directory."""
+
+        result = self.git(
+            "rev-parse", "--path-format=absolute", "--git-dir", check=False
+        )
+        expected = (self.root / ".git").resolve()
+        try:
+            observed = Path(result.stdout.strip()).resolve()
+            git_stat = observed.stat()
+            contract_parent_stat = (
+                self.root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+            ).parent.stat()
+            ordinary = observed.is_dir() and not observed.is_symlink()
+        except (OSError, ValueError) as error:
+            problems.add(context, f"cannot validate atomic temp directory: {error}")
+            return None
+        problems.require(
+            result.returncode == 0
+            and observed == expected
+            and ordinary
+            and git_stat.st_dev == contract_parent_stat.st_dev,
+            context,
+            "atomic writer temp files require the checkout's ordinary same-volume .git directory",
+        )
+        return observed if not problems.messages else None
 
     def validate_c0007_git_transport_configuration(self) -> None:
         """Reject effective Git HTTP settings that weaken GitHub TLS verification."""
@@ -11151,11 +13686,140 @@ class CompletionValidator:
             context=context,
         )
 
+    def c0007_remote_configuration_census(
+        self,
+        problems: Problems,
+        *,
+        context: str,
+        env: dict[str, str],
+    ) -> tuple[dict[str, list[str]], bytes] | None:
+        """Capture every effective origin/routing input before remote access."""
+
+        config_keys = {
+            "configured_remote_urls": f"remote.{C0007_BOUNDED_REMOTE}.url",
+            "configured_push_urls": f"remote.{C0007_BOUNDED_REMOTE}.pushurl",
+            "configured_fetch_refspecs": f"remote.{C0007_BOUNDED_REMOTE}.fetch",
+            "configured_push_refspecs": f"remote.{C0007_BOUNDED_REMOTE}.push",
+            "configured_mirror_values": f"remote.{C0007_BOUNDED_REMOTE}.mirror",
+            "configured_push_default_values": "remote.pushDefault",
+            "configured_branch_remote_values": f"branch.{C0007_BOUNDED_BRANCH}.remote",
+            "configured_branch_push_remote_values": f"branch.{C0007_BOUNDED_BRANCH}.pushRemote",
+        }
+        census: dict[str, list[str]] = {}
+        remote_names = self.git("remote", check=False, env=env)
+        if remote_names.returncode:
+            problems.add(context, "cannot enumerate configured remotes")
+            return None
+        census["configured_remote_names"] = remote_names.stdout.splitlines()
+        remote_namespace = self.git(
+            "config", "--null", "--get-regexp", r"^remote\.",
+            check=False, env=env,
+        )
+        if remote_namespace.returncode not in {0, 1}:
+            problems.add(context, "cannot enumerate the full effective remote.* namespace")
+            return None
+        namespace_rows: list[str] = []
+        if remote_namespace.returncode == 0:
+            for record in remote_namespace.stdout.split("\0"):
+                if not record:
+                    continue
+                try:
+                    key, value = record.split("\n", 1)
+                except ValueError:
+                    problems.add(
+                        f"{context}.effective_remote_namespace_rows",
+                        f"cannot parse effective remote configuration row {record!r}",
+                    )
+                    return None
+                namespace_rows.append(f"{key}={value}")
+        census["effective_remote_namespace_rows"] = sorted(namespace_rows)
+        if (
+            census["effective_remote_namespace_rows"]
+            != c0007_expected_remote_configuration_census()[
+                "effective_remote_namespace_rows"
+            ]
+        ):
+            problems.add(
+                f"{context}.effective_remote_namespace_rows",
+                "full effective remote.* namespace must contain only the exact "
+                "origin URL/fetch/tagopt rows; helper/vcs/uploadpack/receivepack/"
+                "proxy or foreign remote overrides are forbidden",
+            )
+            return None
+        for field, key in config_keys.items():
+            result = self.git("config", "--get-all", key, check=False, env=env)
+            if result.returncode not in {0, 1}:
+                problems.add(f"{context}.{field}", f"cannot enumerate effective {key}")
+                return None
+            census[field] = result.stdout.splitlines() if result.returncode == 0 else []
+        resolved_fetch = self.git(
+            "remote", "get-url", "--all", C0007_BOUNDED_REMOTE,
+            check=False, env=env,
+        )
+        resolved_push = self.git(
+            "remote", "get-url", "--push", "--all", C0007_BOUNDED_REMOTE,
+            check=False, env=env,
+        )
+        if resolved_fetch.returncode or resolved_push.returncode:
+            problems.add(context, "cannot resolve effective origin fetch/push URLs")
+            return None
+        census["resolved_fetch_urls"] = resolved_fetch.stdout.splitlines()
+        census["resolved_push_urls"] = resolved_push.stdout.splitlines()
+        return census, canonical_json(census).encode("utf-8")
+
+    def c0007_remote_ref_observation(
+        self,
+        problems: Problems,
+        *,
+        context: str,
+        env: dict[str, str],
+    ) -> tuple[dict[str, list[str]], dict[str, str], bytes] | None:
+        """Census all remote routing before observing the two governed refs."""
+
+        configuration_capture = self.c0007_remote_configuration_census(
+            problems,
+            context=f"{context}.configuration",
+            env=env,
+        )
+        if configuration_capture is None:
+            return None
+        census, configuration_identity = configuration_capture
+        remote_result = self.git(
+            "ls-remote",
+            "--refs",
+            C0007_BOUNDED_REMOTE,
+            C0007_BOUNDED_REMOTE_MAIN_REF,
+            C0007_BOUNDED_REMOTE_BRANCH_REF,
+            check=False,
+            env=env,
+        )
+        if remote_result.returncode:
+            problems.add(context, "cannot observe the exact governed remote refs")
+            return None
+        tips: dict[str, str] = {}
+        for row in remote_result.stdout.splitlines():
+            try:
+                oid, ref = row.split("\t", 1)
+            except ValueError:
+                problems.add(context, f"malformed ls-remote row {row!r}")
+                continue
+            if ref in tips:
+                problems.add(context, f"duplicate ls-remote row for {ref!r}")
+            elif ref not in {
+                C0007_BOUNDED_REMOTE_MAIN_REF,
+                C0007_BOUNDED_REMOTE_BRANCH_REF,
+            }:
+                problems.add(context, f"unexpected ls-remote row for {ref!r}")
+            else:
+                tips[ref] = oid
+        return census, tips, configuration_identity
+
     def c0007_live_ref_snapshot(
         self,
         problems: Problems,
         *,
         context: str,
+        allowed_status_rows: Sequence[str] = (),
     ) -> tuple[dict[str, str | None], bytes] | None:
         """Capture local/remote refs plus exact cleanliness without mutating Git."""
 
@@ -11184,6 +13848,14 @@ class CompletionValidator:
             context=f"{context}.index_flags",
             env=readonly_env,
         )
+        configuration_capture = self.c0007_remote_configuration_census(
+            problems,
+            context=f"{context}.remote_configuration",
+            env=readonly_env,
+        )
+        if configuration_capture is None:
+            return None
+        remote_census, remote_configuration_identity = configuration_capture
         remote_result = self.git(
             "ls-remote",
             "--refs",
@@ -11208,10 +13880,13 @@ class CompletionValidator:
             return None
         status_rows = [row for row in status_text.split("\0") if row]
         allowed_ledger_row = "?? REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md"
+        governed_status_rows = [
+            row for row in status_rows if row != allowed_ledger_row
+        ]
         problems.require(
-            status_rows in ([], [allowed_ledger_row]),
+            governed_status_rows == list(allowed_status_rows),
             f"{context}.worktree",
-            "live readiness/post-assurance requires a clean checkout except the one untracked local ledger",
+            "live readiness/post-assurance status must equal the exact permitted staged overlay plus optional local ledger",
         )
         remote_tips: dict[str, str] = {}
         for raw_row in remote_result.stdout.splitlines():
@@ -11227,6 +13902,7 @@ class CompletionValidator:
             "local_head": head_result.stdout.strip(),
             "origin_bounded_ref": remote_tips.get(C0007_BOUNDED_REMOTE_BRANCH_REF),
             "origin_main": remote_tips.get(C0007_BOUNDED_REMOTE_MAIN_REF),
+            "remote_configuration": remote_census,
             "symbolic_branch": (
                 branch_result.stdout.strip() if branch_result.returncode == 0 else None
             ),
@@ -11247,6 +13923,14 @@ class CompletionValidator:
             "the bounded remote ref must equal the exact local lifecycle head",
         )
         problems.require(
+            exact_json_equal(
+                snapshot["remote_configuration"],
+                c0007_expected_remote_configuration_census(),
+            ),
+            f"{context}.remote_configuration",
+            "live evidence requires the exact singleton origin/routing census",
+        )
+        problems.require(
             snapshot["local_head"] not in {
                 C0007_BOUNDED_CONTROL_HEAD_SHA,
                 C0007_CRASH_BACKUP_SHA,
@@ -11258,8 +13942,369 @@ class CompletionValidator:
             status_result.stdout
             + b"\0"
             + index_identity
+            + b"\0"
+            + remote_configuration_identity
         )
         return snapshot, local_identity
+
+    def c0007_pr_recovery_candidate_snapshot(
+        self,
+        problems: Problems,
+        *,
+        context: str,
+        allow_contract_worktree_overlay: bool = False,
+    ) -> tuple[dict[str, Any], bytes] | None:
+        """Capture immutable PR plus exactly six staged successor-basis paths."""
+
+        readonly_env = {
+            **os.environ,
+            "GIT_OPTIONAL_LOCKS": "0",
+            "GIT_NO_LAZY_FETCH": "1",
+        }
+        head = self.git("rev-parse", "HEAD", check=False, env=readonly_env)
+        tree = self.git("rev-parse", "HEAD^{tree}", check=False, env=readonly_env)
+        branch = self.git(
+            "symbolic-ref", "--quiet", "--short", "HEAD", check=False, env=readonly_env
+        )
+        status = self.git_bytes(
+            "status", "--porcelain=v1", "-z", "--untracked-files=all",
+            check=False, env=readonly_env,
+        )
+        staged = self.git_bytes(
+            "diff", "--cached", "--name-only", "--no-renames", "-z", "--",
+            check=False, env=readonly_env,
+        )
+        unstaged = self.git_bytes(
+            "diff", "--name-only", "--no-renames", "-z", "--",
+            check=False, env=readonly_env,
+        )
+        untracked = self.git_bytes(
+            "ls-files", "--others", "--exclude-standard", "-z",
+            check=False, env=readonly_env,
+        )
+        index_identity = self.validate_c0007_global_index_flags(
+            problems, context=f"{context}.index_flags", env=readonly_env
+        )
+        configuration_capture = self.c0007_remote_configuration_census(
+            problems,
+            context=f"{context}.remote_configuration",
+            env=readonly_env,
+        )
+        if configuration_capture is None:
+            return None
+        remote_census, remote_configuration_identity = configuration_capture
+        remote = self.git(
+            "ls-remote", "--refs", C0007_BOUNDED_REMOTE,
+            C0007_BOUNDED_REMOTE_MAIN_REF, C0007_BOUNDED_REMOTE_BRANCH_REF,
+            check=False, env=readonly_env,
+        )
+        if (
+            any(result.returncode for result in (head, tree, status, staged, unstaged, untracked, remote))
+            or index_identity is None
+        ):
+            problems.add(context, "cannot capture the staged PR successor candidate")
+            return None
+
+        def nul_paths(payload: bytes, label: str) -> list[str]:
+            try:
+                return [
+                    normalize_path(row)
+                    for row in payload.decode("utf-8").split("\0")
+                    if row
+                ]
+            except UnicodeError as error:
+                problems.add(label, f"Git path output is not strict UTF-8: {error}")
+                return []
+
+        expected_paths = list(C0007_POST_RECOVERY_STAGED_BASIS_PATHS)
+        staged_paths = nul_paths(staged.stdout, f"{context}.staged")
+        unstaged_paths = nul_paths(unstaged.stdout, f"{context}.unstaged")
+        untracked_paths = nul_paths(untracked.stdout, f"{context}.untracked")
+        problems.require(
+            staged_paths == expected_paths,
+            f"{context}.staged",
+            "PR readiness requires exactly the six sorted non-contract CONT01 paths staged",
+        )
+        problems.require(
+            unstaged_paths
+            == (
+                [C0007_BOUNDED_PLANNED_CONTROL_PATH]
+                if allow_contract_worktree_overlay else []
+            )
+            and not untracked_paths,
+            f"{context}.worktree",
+            "PR readiness permits only the explicitly requested contract-only worktree overlay and forbids nonignored untracked paths",
+        )
+        try:
+            status_rows = [row for row in status.stdout.decode("utf-8").split("\0") if row]
+        except UnicodeError as error:
+            problems.add(f"{context}.status", f"Git status is not strict UTF-8: {error}")
+            status_rows = []
+        problems.require(
+            status_rows
+            == [
+                (
+                    f" M {path}"
+                    if path == C0007_BOUNDED_PLANNED_CONTROL_PATH
+                    else f"M  {path}"
+                )
+                for path in sorted(
+                    expected_paths
+                    + (
+                        [C0007_BOUNDED_PLANNED_CONTROL_PATH]
+                        if allow_contract_worktree_overlay else []
+                    )
+                )
+            ],
+            f"{context}.status",
+            "all six successor inputs must be ordinary staged modifications with clean copies",
+        )
+        remote_tips: dict[str, str] = {}
+        for row in remote.stdout.splitlines():
+            try:
+                oid, ref = row.split("\t", 1)
+            except ValueError:
+                problems.add(context, f"cannot parse ls-remote row {row!r}")
+                continue
+            problems.require(ref not in remote_tips, context, f"duplicate remote ref {ref!r}")
+            remote_tips[ref] = oid
+        snapshot: dict[str, str | None] = {
+            "local_head": head.stdout.strip(),
+            "origin_bounded_ref": remote_tips.get(C0007_BOUNDED_REMOTE_BRANCH_REF),
+            "origin_main": remote_tips.get(C0007_BOUNDED_REMOTE_MAIN_REF),
+            "remote_configuration": remote_census,
+            "symbolic_branch": branch.stdout.strip() if branch.returncode == 0 else None,
+        }
+        problems.require(
+            snapshot == {
+                "local_head": C0007_PLANNED_RECOVERY_SHA,
+                "origin_bounded_ref": C0007_PLANNED_RECOVERY_SHA,
+                "origin_main": C0007_BOUNDED_CONTROL_HEAD_SHA,
+                "remote_configuration": c0007_expected_remote_configuration_census(),
+                "symbolic_branch": C0007_BOUNDED_BRANCH,
+            }
+            and tree.stdout.strip() == C0007_PLANNED_RECOVERY_TREE_SHA,
+            f"{context}.refs",
+            "PR readiness must run at immutable pushed PR with unchanged remote main",
+        )
+        validate_c0007_remote_observation(
+            lifecycle_position="PR-committed",
+            state=None,
+            head=str(snapshot["local_head"] or ""),
+            planned_commit=C0007_PLANNED_RECOVERY_SHA,
+            activation_commit=None,
+            active_commit=None,
+            implementation_commit=None,
+            symbolic_branch=snapshot["symbolic_branch"],
+            remote_main_tip=snapshot["origin_main"],
+            remote_branch_tip=snapshot["origin_bounded_ref"],
+            implementation_overlay=False,
+            problems=problems,
+            context=f"{context}.remote",
+            **{
+                key: value
+                for key, value in remote_census.items()
+                if key != "effective_remote_namespace_rows"
+            },
+        )
+
+        index_rows_result = self.git_bytes(
+            "ls-files", "--stage", "-z", "--", *expected_paths,
+            check=False, env=readonly_env,
+        )
+        base_rows_result = self.git_bytes(
+            "ls-tree", "-r", "-z", C0007_PLANNED_RECOVERY_SHA, "--",
+            *C0007_POST_RECOVERY_PATHS, C0007_BOUNDED_WORKFLOW_PATH,
+            check=False, env=readonly_env,
+        )
+
+        def parse_index(payload: bytes, label: str) -> dict[str, tuple[str, str]]:
+            rows: dict[str, tuple[str, str]] = {}
+            for record in payload.split(b"\0"):
+                if not record:
+                    continue
+                try:
+                    metadata, raw_path = record.split(b"\t", 1)
+                    mode, oid, stage_number = metadata.decode("ascii").split()
+                    path = raw_path.decode("utf-8")
+                    if stage_number != "0" or path in rows:
+                        raise ValueError("duplicate or non-zero-stage row")
+                except (UnicodeError, ValueError) as error:
+                    problems.add(label, f"cannot parse index row: {error}")
+                    continue
+                rows[path] = (mode, oid)
+            return rows
+
+        def parse_tree(payload: bytes, label: str) -> dict[str, tuple[str, str]]:
+            rows: dict[str, tuple[str, str]] = {}
+            for record in payload.split(b"\0"):
+                if not record:
+                    continue
+                try:
+                    metadata, raw_path = record.split(b"\t", 1)
+                    mode, kind, oid = metadata.decode("ascii").split()
+                    path = raw_path.decode("utf-8")
+                    if kind != "blob" or path in rows:
+                        raise ValueError("duplicate or non-blob row")
+                except (UnicodeError, ValueError) as error:
+                    problems.add(label, f"cannot parse tree row: {error}")
+                    continue
+                rows[path] = (mode, oid)
+            return rows
+
+        index_rows = (
+            parse_index(index_rows_result.stdout, f"{context}.index")
+            if index_rows_result.returncode == 0 else {}
+        )
+        base_rows = (
+            parse_tree(base_rows_result.stdout, f"{context}.base")
+            if base_rows_result.returncode == 0 else {}
+        )
+        problems.require(
+            set(index_rows) == set(expected_paths)
+            and set(base_rows)
+            == set(C0007_POST_RECOVERY_PATHS) | {C0007_BOUNDED_WORKFLOW_PATH},
+            f"{context}.blobs",
+            "each successor path requires one stage-zero postimage and every immutable PR ratchet path requires one base blob",
+        )
+        preimage_freeze = render_c0007_post_recovery_preimage_freeze_bytes()
+        problems.require(
+            set(C0007_POST_RECOVERY_PREIMAGES) == set(C0007_POST_RECOVERY_PATHS)
+            and len(preimage_freeze) == C0007_POST_RECOVERY_PREIMAGE_FREEZE_BYTE_COUNT
+            and hashlib.sha256(preimage_freeze).hexdigest().upper()
+            == C0007_POST_RECOVERY_PREIMAGE_FREEZE_SHA256,
+            f"{context}.preimage_freeze",
+            "R preimage mapping must be the exact 1,040-byte audited path/SHA-256 ratchet",
+        )
+        immutable_preimages = {
+            **C0007_POST_RECOVERY_PREIMAGES,
+            C0007_BOUNDED_WORKFLOW_PATH: (
+                C0007_CI_RECOVERY_WORKFLOW_BLOB_OID,
+                C0007_CI_RECOVERY_WORKFLOW_BYTE_COUNT,
+                C0007_CI_RECOVERY_WORKFLOW_SHA256,
+            ),
+        }
+        for path, (expected_oid, expected_byte_count, expected_sha256) in sorted(
+            immutable_preimages.items()
+        ):
+            mode, oid = base_rows.get(path, (None, None))
+            base_payload_result = self.git_bytes(
+                "cat-file", "blob", str(oid or ""), check=False, env=readonly_env
+            )
+            base_payload = (
+                base_payload_result.stdout if base_payload_result.returncode == 0 else None
+            )
+            problems.require(
+                mode == "100644"
+                and oid == expected_oid
+                and base_payload is not None
+                and len(base_payload) == expected_byte_count
+                and hashlib.sha256(base_payload).hexdigest().upper() == expected_sha256,
+                f"{context}.preimages[{path}]",
+                "immutable R blob OID, byte count, and SHA-256 must match the audited preimage",
+            )
+        artifacts: list[dict[str, Any]] = []
+        payloads: dict[str, bytes] = {}
+        for path in expected_paths:
+            base_mode, base_oid = base_rows.get(path, (None, None))
+            post_mode, post_oid = index_rows.get(path, (None, None))
+            expected_preimage = C0007_POST_RECOVERY_PREIMAGES[path]
+            problems.require(
+                base_mode == post_mode == "100644"
+                and base_oid == expected_preimage[0]
+                and isinstance(post_oid, str)
+                and SHA1_RE.fullmatch(post_oid) is not None
+                and post_oid != base_oid,
+                f"{context}.blobs[{path}]",
+                "each CONT01 input must be a distinct 100644 modification of its exact PR blob",
+            )
+            payload_result = self.git_bytes(
+                "cat-file", "blob", str(post_oid or ""), check=False, env=readonly_env
+            )
+            if payload_result.returncode:
+                problems.add(f"{context}.blobs[{path}]", "cannot read staged blob")
+                continue
+            payloads[path] = payload_result.stdout
+            artifacts.append(
+                {
+                    "base_blob_oid": base_oid,
+                    "base_mode": base_mode,
+                    "byte_count": len(payload_result.stdout),
+                    "operation": "modify",
+                    "packet_id": C0007_POST_RECOVERY_PACKET_ID,
+                    "path": path,
+                    "post_blob_oid": post_oid,
+                    "post_mode": post_mode,
+                    "sha256": hashlib.sha256(payload_result.stdout).hexdigest().upper(),
+                }
+            )
+
+        manifest_payload = payloads.get(C0007_BOUNDED_AUTHORIZED_PATHS_PATH)
+        problems.require(
+            manifest_payload == render_c0007_post_recovery_manifest_bytes(),
+            f"{context}.manifest",
+            "staged manifest must equal the exact 2,271-byte CONT01 renderer",
+        )
+        manifest_header: tuple[str, ...] = ()
+        manifest_rows: list[dict[str, str]] = []
+        if manifest_payload is not None:
+            try:
+                reader = csv.DictReader(
+                    io.StringIO(manifest_payload.decode("utf-8"), newline=""), delimiter="\t"
+                )
+                manifest_header = tuple(reader.fieldnames or ())
+                manifest_rows = [dict(row) for row in reader]
+            except (UnicodeError, csv.Error, ValueError) as error:
+                problems.add(f"{context}.manifest", f"cannot parse staged manifest: {error}")
+        validate_c0007_post_recovery_manifest(
+            manifest_header, manifest_rows, problems, context=f"{context}.manifest"
+        )
+        authorization_payload = payloads.get(C0007_BOUNDED_AUTHORIZATION_PATH)
+        authorization: Any = None
+        if authorization_payload is not None:
+            try:
+                authorization = strict_json_loads(authorization_payload.decode("utf-8"))
+            except (UnicodeError, json.JSONDecodeError, ValueError, RecursionError) as error:
+                problems.add(f"{context}.authorization", f"cannot parse staged authorization: {error}")
+        problems.require(
+            isinstance(authorization, dict)
+            and authorization_payload == canonical_tracked_json_bytes(authorization)
+            and hashlib.sha256(authorization_payload).hexdigest().upper()
+            == C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+            f"{context}.authorization",
+            "staged authorization must equal the exact canonical schema-4 grant",
+        )
+        if isinstance(authorization, dict):
+            validate_c0007_post_recovery_authorization_payload(
+                authorization, manifest_header, manifest_rows, problems,
+                context=f"{context}.authorization",
+            )
+        immutable = self.git_bytes(
+            "ls-files", "--stage", "-z", "--",
+            C0007_BOUNDED_PLANNED_CONTROL_PATH, C0007_BOUNDED_WORKFLOW_PATH,
+            check=False, env=readonly_env,
+        )
+        immutable_rows = parse_index(immutable.stdout, f"{context}.immutable")
+        problems.require(
+            immutable_rows.get(C0007_BOUNDED_PLANNED_CONTROL_PATH)
+            == ("100644", C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID)
+            and immutable_rows.get(C0007_BOUNDED_WORKFLOW_PATH)
+            == ("100644", C0007_CI_RECOVERY_WORKFLOW_BLOB_OID),
+            f"{context}.immutable",
+            "PR contract and recovery workflow must remain at their immutable PR blobs",
+        )
+        self.c0007_pr_successor_artifacts = artifacts
+        self.c0007_pr_recovery_candidate_valid = not problems.messages
+        identity = (
+            status.stdout
+            + b"\0"
+            + index_identity
+            + b"\0"
+            + remote_configuration_identity
+            + b"\0"
+            + canonical_json(artifacts).encode("utf-8")
+        )
+        return snapshot, identity
 
     def c0007_gh_api_bytes(
         self,
@@ -11340,21 +14385,537 @@ class CompletionValidator:
             problems.add(context, f"GitHub API returned invalid strict JSON: {error}")
             return None
 
+    def c0007_post_recovery_review_edit_observation(
+        self,
+        issue_number: int,
+        comment_node_id: str,
+        problems: Problems,
+        *,
+        context: str,
+    ) -> Any | None:
+        """Read immutable issue/comment edit history through pinned GraphQL fields."""
+
+        try:
+            command = c0007_post_recovery_review_graphql_command(
+                issue_number, comment_node_id
+            )
+        except ValueError as error:
+            problems.add(context, str(error))
+            return None
+        if not c0007_post_recovery_review_graphql_command_is_pinned(command):
+            problems.add(context, "GitHub GraphQL command lost its exact host/header pin")
+            return None
+        try:
+            process = subprocess.run(
+                command,
+                cwd=self.root,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=60,
+            )
+        except (OSError, ValueError, UnicodeError, subprocess.TimeoutExpired) as error:
+            problems.add(context, f"cannot execute GitHub GraphQL edit-history query: {error}")
+            return None
+        if process.returncode:
+            problems.add(
+                context,
+                "GitHub GraphQL edit-history query failed: "
+                + (process.stderr or process.stdout).decode("utf-8", errors="replace").strip(),
+            )
+            return None
+        if len(process.stdout) > 64 * 1024 * 1024:
+            problems.add(
+                context,
+                "GitHub GraphQL edit-history response exceeds the 64 MiB safety limit",
+            )
+            return None
+        try:
+            return strict_json_loads(process.stdout.decode("utf-8"))
+        except (UnicodeError, json.JSONDecodeError, ValueError, RecursionError) as error:
+            problems.add(context, f"GitHub GraphQL edit-history JSON is invalid: {error}")
+            return None
+
+    def observe_c0007_review_custody(
+        self,
+        review: Mapping[str, Any],
+        problems: Problems,
+        *,
+        context: str,
+    ) -> dict[str, Any] | None:
+        """Re-fetch one durable OWNER source, full issue census, and edit proof."""
+
+        source = review.get("source")
+        if not isinstance(source, Mapping):
+            problems.add(context, "durable review source is missing")
+            return None
+        issue_number = source.get("issue_number")
+        comment_id = source.get("comment_database_id")
+        repository = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}",
+            problems,
+            context=f"{context}.repository",
+        )
+        issue = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}",
+            problems,
+            context=f"{context}.issue",
+        )
+        pages = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}"
+            "/comments?per_page=100&sort=created&direction=asc",
+            problems,
+            context=f"{context}.comments",
+            paginate=True,
+        )
+
+        def flatten(value: Any) -> list[dict[str, Any]]:
+            if not isinstance(value, list):
+                return []
+            if all(isinstance(item, dict) for item in value):
+                return [dict(item) for item in value]
+            rows: list[dict[str, Any]] = []
+            for item in value:
+                rows.extend(flatten(item))
+            return rows
+
+        matches = [
+            row
+            for row in flatten(pages)
+            if row.get("body") == source.get("message")
+        ]
+        problems.require(
+            len(matches) == 1 and matches[0].get("id") == comment_id,
+            f"{context}.comments",
+            "full issue pagination must contain exactly the recorded OWNER body/comment",
+        )
+        comment = (
+            self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/comments/{comment_id}",
+                problems,
+                context=f"{context}.comment",
+            )
+            if type(comment_id) is int else None
+        )
+        problems.require(
+            len(matches) == 1
+            and isinstance(comment, Mapping)
+            and c0007_equivalent_issue_comment_views(matches[0], comment),
+            f"{context}.comment",
+            "paginated OWNER source and direct comment refetch must be identical",
+        )
+        edits = (
+            self.c0007_post_recovery_review_edit_observation(
+                int(issue_number),
+                str(source.get("comment_node_id")),
+                problems,
+                context=f"{context}.edits",
+            )
+            if type(issue_number) is int
+            and isinstance(source.get("comment_node_id"), str)
+            else None
+        )
+        if all(isinstance(value, Mapping) for value in (repository, issue, comment)):
+            validate_c0007_github_review_observation(
+                dict(review),
+                repository,
+                issue,
+                comment,
+                problems,
+                context=f"{context}.review",
+            )
+        if edits is not None:
+            validate_c0007_post_recovery_review_edit_observation(
+                review,
+                edits,
+                problems,
+                context=f"{context}.edits",
+            )
+        if problems.messages:
+            return None
+        return {
+            "comment": comment,
+            "edit_observation": edits,
+            "issue": issue,
+            "pages": pages,
+            "repository": repository,
+        }
+
+    def reauthenticate_c0007_compact_ci_record(
+        self,
+        candidate_sha: str,
+        candidate_tree: str,
+        record: Mapping[str, Any] | None,
+        problems: Problems,
+        *,
+        context: str,
+    ) -> dict[str, Any] | None:
+        """Re-fetch one historical exact-head run and its immutable log."""
+
+        if not (
+            SHA1_RE.fullmatch(candidate_sha) is not None
+            and SHA1_RE.fullmatch(candidate_tree) is not None
+        ):
+            problems.add(context, "historical CI candidate SHA/tree is invalid")
+            return None
+        encoded_branch = urllib.parse.quote(C0007_BOUNDED_BRANCH, safe="")
+        discovery_endpoint = (
+            f"repos/{C0007_BOUNDED_REPOSITORY}/actions/workflows/"
+            f"{C0007_BOUNDED_WORKFLOW_ID}/runs?branch={encoded_branch}"
+            "&event=workflow_dispatch&per_page=100"
+        )
+        discovery_pages = self.c0007_gh_api_json(
+            discovery_endpoint,
+            problems,
+            context=f"{context}.discovery",
+            paginate=True,
+        )
+        discovery = select_c0007_live_workflow_run(
+            discovery_pages,
+            candidate_sha,
+            problems,
+            context=f"{context}.discovery",
+        )
+        if discovery is None:
+            return None
+        run_id = discovery.get("id")
+        run_attempt = discovery.get("run_attempt")
+        problems.require(
+            run_attempt == 1,
+            f"{context}.run_attempt",
+            "post-recovery historical CI permits exact attempt 1 only",
+        )
+        run = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/actions/runs/"
+            f"{run_id}/attempts/{run_attempt}",
+            problems,
+            context=f"{context}.run",
+        )
+        job_pages = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/actions/runs/"
+            f"{run_id}/attempts/{run_attempt}/jobs?per_page=100",
+            problems,
+            context=f"{context}.jobs",
+            paginate=True,
+        )
+        preview_problems = Problems()
+        job_rows = flatten_c0007_paginated_rows(
+            job_pages,
+            "jobs",
+            preview_problems,
+            context=f"{context}.jobs.preview",
+        )
+        problems.messages.extend(preview_problems.messages)
+        job_id = job_rows[0].get("id") if len(job_rows) == 1 else None
+        log_payload = (
+            self.c0007_gh_api_bytes(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/actions/jobs/{job_id}/logs",
+                problems,
+                context=f"{context}.job_log",
+            )
+            if type(job_id) is int
+            else None
+        )
+        check_suite_id = run.get("check_suite_id") if isinstance(run, Mapping) else None
+        check_suite = (
+            self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/check-suites/{check_suite_id}",
+                problems,
+                context=f"{context}.check_suite",
+            )
+            if type(check_suite_id) is int
+            else None
+        )
+        live = build_c0007_live_ci_evidence(
+            discovery,
+            run,
+            job_pages,
+            check_suite,
+            (
+                hashlib.sha256(log_payload).hexdigest().upper()
+                if log_payload is not None else None
+            ),
+            len(log_payload) if log_payload is not None else None,
+            candidate_sha,
+            problems,
+            context=f"{context}.evidence",
+            workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        )
+        run_after = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/actions/runs/"
+            f"{run_id}/attempts/{run_attempt}",
+            problems,
+            context=f"{context}.run.after",
+        )
+        discovery_pages_after = self.c0007_gh_api_json(
+            discovery_endpoint,
+            problems,
+            context=f"{context}.discovery.after",
+            paginate=True,
+        )
+        discovery_after = select_c0007_live_workflow_run(
+            discovery_pages_after,
+            candidate_sha,
+            problems,
+            context=f"{context}.discovery.after",
+        )
+        validate_c0007_live_github_stability(
+            discovery_pages,
+            discovery,
+            run,
+            discovery_pages_after,
+            discovery_after,
+            run_after,
+            problems,
+            context=f"{context}.stability",
+        )
+        if problems.messages or live is None:
+            return None
+        try:
+            projected = persist_c0007_live_ci_record(live, candidate_tree)
+        except ValueError as error:
+            problems.add(context, str(error))
+            return None
+        if record is not None:
+            validate_c0007_post_recovery_ci_record(
+                record,
+                "success",
+                candidate_sha,
+                candidate_tree,
+                problems,
+                context=f"{context}.persisted",
+            )
+            problems.require(
+                exact_json_equal(record, projected),
+                f"{context}.persisted",
+                "live run/job/suite/log must equal the compact persisted CI record",
+            )
+        return projected if not problems.messages else None
+
+    def reauthenticate_c0007_failed_planned_ci(
+        self,
+        problems: Problems,
+        *,
+        context: str,
+    ) -> None:
+        """Re-fetch the immutable failed-P attempt, suite, sole job, and log."""
+
+        expected = c0007_failed_planned_control_record()["ci"]
+        encoded_branch = urllib.parse.quote(C0007_BOUNDED_BRANCH, safe="")
+        discovery_endpoint = (
+            f"repos/{C0007_BOUNDED_REPOSITORY}/actions/workflows/"
+            f"{C0007_BOUNDED_WORKFLOW_ID}/runs?branch={encoded_branch}"
+            "&event=workflow_dispatch&per_page=100"
+        )
+        discovery_pages = self.c0007_gh_api_json(
+            discovery_endpoint,
+            problems,
+            context=f"{context}.discovery",
+            paginate=True,
+        )
+        discovery = select_c0007_live_workflow_run(
+            discovery_pages,
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            problems,
+            context=f"{context}.discovery",
+        )
+        if discovery is None:
+            return
+        run = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/actions/runs/"
+            f"{C0007_FAILED_PLANNED_CONTROL_RUN_ID}/attempts/1",
+            problems,
+            context=f"{context}.run",
+        )
+        jobs_payload = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/actions/runs/"
+            f"{C0007_FAILED_PLANNED_CONTROL_RUN_ID}/attempts/1/jobs?per_page=100",
+            problems,
+            context=f"{context}.jobs",
+            paginate=True,
+        )
+        jobs = flatten_c0007_paginated_rows(
+            jobs_payload,
+            "jobs",
+            problems,
+            context=f"{context}.jobs",
+        )
+        job = jobs[0] if len(jobs) == 1 else None
+        log_payload = self.c0007_gh_api_bytes(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/actions/jobs/"
+            f"{C0007_FAILED_PLANNED_CONTROL_JOB_ID}/logs",
+            problems,
+            context=f"{context}.job_log",
+        )
+        suite = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/check-suites/"
+            f"{C0007_FAILED_PLANNED_CONTROL_CHECK_SUITE_ID}",
+            problems,
+            context=f"{context}.check_suite",
+        )
+        repository = run.get("repository") if isinstance(run, Mapping) else None
+        head_repository = run.get("head_repository") if isinstance(run, Mapping) else None
+        suite_repository = suite.get("repository") if isinstance(suite, Mapping) else None
+        suite_app = suite.get("app") if isinstance(suite, Mapping) else None
+        problems.require(
+            discovery.get("id") == C0007_FAILED_PLANNED_CONTROL_RUN_ID
+            and discovery.get("run_attempt") == 1
+            and isinstance(run, Mapping)
+            and run.get("id") == C0007_FAILED_PLANNED_CONTROL_RUN_ID
+            and run.get("run_attempt") == 1
+            and run.get("check_suite_id") == C0007_FAILED_PLANNED_CONTROL_CHECK_SUITE_ID
+            and run.get("head_sha") == C0007_FAILED_PLANNED_CONTROL_SHA
+            and run.get("head_branch") == C0007_BOUNDED_BRANCH
+            and run.get("workflow_id") == C0007_BOUNDED_WORKFLOW_ID
+            and run.get("name") == C0007_BOUNDED_WORKFLOW_NAME
+            and run.get("path") == C0007_BOUNDED_WORKFLOW_PATH
+            and run.get("event") == "workflow_dispatch"
+            and run.get("status") == "completed"
+            and run.get("conclusion") == "failure"
+            and run.get("run_started_at") == expected["started_at"]
+            and run.get("updated_at") == expected["completed_at"]
+            and run.get("referenced_workflows") == []
+            and isinstance(repository, Mapping)
+            and repository.get("full_name") == C0007_BOUNDED_REPOSITORY
+            and repository.get("node_id") == C0007_BOUNDED_REPOSITORY_ID
+            and isinstance(head_repository, Mapping)
+            and head_repository.get("full_name") == C0007_BOUNDED_REPOSITORY
+            and head_repository.get("node_id") == C0007_BOUNDED_REPOSITORY_ID
+            and head_repository.get("fork") is False,
+            f"{context}.run",
+            "failed P must remain exact immutable attempt-1 workflow failure",
+        )
+        job_steps = job.get("steps") if isinstance(job, Mapping) else None
+        architecture_steps = [
+            step
+            for step in job_steps
+            if isinstance(step, Mapping)
+            and step.get("name") == C0007_BOUNDED_ARCHITECTURE_STEP
+        ] if isinstance(job_steps, list) else []
+        skipped_names = [
+            name
+            for name in (
+                C0007_BOUNDED_BUILD_STEP,
+                C0007_BOUNDED_SUPPORTED_API_STEP,
+                C0007_BOUNDED_TEST_STEP,
+            )
+            if any(
+                isinstance(step, Mapping)
+                and step.get("name") == name
+                and step.get("conclusion") == "skipped"
+                for step in (job_steps or [])
+            )
+        ]
+        problems.require(
+            len(jobs) == 1
+            and isinstance(job, Mapping)
+            and job.get("id") == C0007_FAILED_PLANNED_CONTROL_JOB_ID
+            and job.get("run_id") == C0007_FAILED_PLANNED_CONTROL_RUN_ID
+            and job.get("run_attempt") == 1
+            and job.get("head_sha") == C0007_FAILED_PLANNED_CONTROL_SHA
+            and job.get("head_branch") == C0007_BOUNDED_BRANCH
+            and job.get("workflow_name") == C0007_BOUNDED_WORKFLOW_NAME
+            and job.get("name") == C0007_BOUNDED_JOB_NAME
+            and job.get("status") == "completed"
+            and job.get("conclusion") == "failure"
+            and job.get("runner_name") == expected["runner_name"]
+            and job.get("started_at") == expected["job_started_at"]
+            and job.get("completed_at") == expected["job_completed_at"]
+            and len(architecture_steps) == 1
+            and architecture_steps[0].get("conclusion") == "failure"
+            and skipped_names == expected["skipped_steps"],
+            f"{context}.job",
+            "failed P must retain its sole exact failed architecture job and skipped later gates",
+        )
+        problems.require(
+            isinstance(suite, Mapping)
+            and suite.get("id") == C0007_FAILED_PLANNED_CONTROL_CHECK_SUITE_ID
+            and suite.get("head_sha") == C0007_FAILED_PLANNED_CONTROL_SHA
+            and suite.get("head_branch") == C0007_BOUNDED_BRANCH
+            and suite.get("status") == "completed"
+            and suite.get("conclusion") == "failure"
+            and isinstance(suite_repository, Mapping)
+            and suite_repository.get("full_name") == C0007_BOUNDED_REPOSITORY
+            and suite_repository.get("id") == C0007_BOUNDED_REPOSITORY_DATABASE_ID
+            and suite_repository.get("node_id") == C0007_BOUNDED_REPOSITORY_ID
+            and isinstance(suite_app, Mapping)
+            and all(
+                exact_json_equal(suite_app.get(key), value)
+                for key, value in C0007_GITHUB_ACTIONS_APP.items()
+            ),
+            f"{context}.check_suite",
+            "failed P check suite identity/repository/app/conclusion drifted",
+        )
+        problems.require(
+            log_payload is not None
+            and len(log_payload) == C0007_FAILED_PLANNED_CONTROL_JOB_LOG_BYTE_COUNT
+            and hashlib.sha256(log_payload).hexdigest().upper()
+            == C0007_FAILED_PLANNED_CONTROL_JOB_LOG_SHA256,
+            f"{context}.job_log",
+            "failed P complete job log byte count/SHA-256 drifted",
+        )
+        run_after = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/actions/runs/"
+            f"{C0007_FAILED_PLANNED_CONTROL_RUN_ID}/attempts/1",
+            problems,
+            context=f"{context}.run.after",
+        )
+        discovery_pages_after = self.c0007_gh_api_json(
+            discovery_endpoint,
+            problems,
+            context=f"{context}.discovery.after",
+            paginate=True,
+        )
+        discovery_after = select_c0007_live_workflow_run(
+            discovery_pages_after,
+            C0007_FAILED_PLANNED_CONTROL_SHA,
+            problems,
+            context=f"{context}.discovery.after",
+        )
+        validate_c0007_live_github_stability(
+            discovery_pages,
+            discovery,
+            run,
+            discovery_pages_after,
+            discovery_after,
+            run_after,
+            problems,
+            context=f"{context}.stability",
+        )
+
     def observe_c0007_live_evidence(
         self,
         evidence_kind: str,
+        *,
+        allow_exact_i_overlay: bool = False,
     ) -> tuple[dict[str, Any] | None, Problems]:
-        """Authenticate clean pushed T/V and return one local-only evidence object."""
+        """Authenticate staged PR or clean pushed T/V and return canonical evidence."""
 
         problems = Problems()
         expected = {
+            "c0007_pr_recovery_review_ready_v1": (
+                None,
+                C0007_CI_RECOVERY_SUBJECT,
+                C0007_CI_RECOVERY_WORKFLOW_SHA256,
+            ),
+            "c0007_a_activation_ready_v1": (
+                "activation_pending",
+                C0007_POST_RECOVERY_COMMIT_SUBJECTS["activation_pending"],
+                C0007_CI_RECOVERY_WORKFLOW_SHA256,
+            ),
             "c0007_t_implementation_ready_v1": (
                 "active",
                 C0007_BOUNDED_COMMIT_SUBJECTS["active"],
+                C0007_CI_RECOVERY_WORKFLOW_SHA256,
+            ),
+            "c0007_i_implementation_review_ready_v1": (
+                "active",
+                C0007_BOUNDED_COMMIT_SUBJECTS["implementation"],
+                C0007_CI_RECOVERY_WORKFLOW_SHA256,
             ),
             "c0007_terminal_v_post_assurance_v1": (
                 "verified",
                 C0007_BOUNDED_COMMIT_SUBJECTS["verified"],
+                C0007_CI_RECOVERY_WORKFLOW_SHA256,
             ),
         }
         expected_state_subject = expected.get(evidence_kind)
@@ -11365,18 +14926,80 @@ class CompletionValidator:
         )
         if expected_state_subject is None:
             return None, problems
-        expected_state, expected_subject = expected_state_subject
-        problems.require(
-            self.c0007_bounded_state == expected_state,
-            "C0007 live evidence state",
-            f"expected exact persisted lifecycle state {expected_state!r}",
-        )
-        before_capture = self.c0007_live_ref_snapshot(
-            problems, context="C0007 live evidence refs.before"
+        expected_state, expected_subject, expected_workflow_sha256 = expected_state_subject
+        pr_readiness = evidence_kind == "c0007_pr_recovery_review_ready_v1"
+        if pr_readiness:
+            problems.require(
+                self.c0007_pr_recovery_candidate_valid,
+                "C0007 live evidence state",
+                "PR readiness requires the exact six-staged-path successor basis",
+            )
+        else:
+            problems.require(
+                self.c0007_bounded_state == expected_state,
+                "C0007 live evidence state",
+                f"expected exact persisted lifecycle state {expected_state!r}",
+            )
+        allowed_snapshot_status: list[str] = []
+        if allow_exact_i_overlay:
+            implementation_operations = {
+                row["path"]: row["operation"]
+                for row in c0007_post_recovery_expected_manifest_rows()
+                if row["stage"] == "implementation"
+            }
+            allowed_snapshot_status = [
+                f"{'A' if implementation_operations[path] == 'add' else 'M'}  {path}"
+                for path in sorted(implementation_operations)
+            ]
+        before_capture = (
+            self.c0007_pr_recovery_candidate_snapshot(
+                problems, context="C0007 live evidence refs.before"
+            )
+            if pr_readiness
+            else self.c0007_live_ref_snapshot(
+                problems,
+                context="C0007 live evidence refs.before",
+                allowed_status_rows=allowed_snapshot_status,
+            )
         )
         if before_capture is None:
             return None, problems
         before, status_before = before_capture
+        if not pr_readiness:
+            status_result = self.git_bytes(
+                "status", "--porcelain=v1", "-z", "--untracked-files=all",
+                check=False, env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"},
+            )
+            try:
+                live_status_rows = [
+                    row for row in status_result.stdout.decode("utf-8").split("\0")
+                    if row and not row.endswith(" REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md")
+                ]
+            except UnicodeError as error:
+                problems.add("C0007 live evidence status", f"status is not UTF-8: {error}")
+                live_status_rows = []
+            expected_live_status: list[str] = []
+            if allow_exact_i_overlay:
+                problems.require(
+                    evidence_kind == "c0007_t_implementation_ready_v1",
+                    "C0007 live evidence status",
+                    "only internal T reauthentication may admit an I overlay",
+                )
+                implementation_operations = {
+                    row["path"]: row["operation"]
+                    for row in c0007_post_recovery_expected_manifest_rows()
+                    if row["stage"] == "implementation"
+                }
+                expected_live_status = [
+                    f"{'A' if implementation_operations[path] == 'add' else 'M'}  {path}"
+                    for path in sorted(implementation_operations)
+                ]
+            problems.require(
+                status_result.returncode == 0
+                and live_status_rows == expected_live_status,
+                "C0007 live evidence status",
+                "public T/V evidence requires a clean checkout; internal T reauthentication permits only the exact staged 14-path I overlay",
+            )
         candidate_sha = str(before.get("local_head") or "")
         identity = self.git(
             "show",
@@ -11403,9 +15026,9 @@ class CompletionValidator:
             problems.add(C0007_BOUNDED_WORKFLOW_PATH, f"cannot hash workflow: {error}")
             workflow_digest = None
         problems.require(
-            workflow_digest == C0007_BOUNDED_WORKFLOW_SHA256,
+            workflow_digest == expected_workflow_sha256,
             C0007_BOUNDED_WORKFLOW_PATH,
-            "live evidence requires the exact terminal-v2 workflow bytes",
+            "live evidence requires the exact recovery workflow bytes",
         )
         encoded_branch = urllib.parse.quote(C0007_BOUNDED_BRANCH, safe="")
         discovery_endpoint = (
@@ -11491,7 +15114,14 @@ class CompletionValidator:
                 candidate_sha,
                 problems,
                 context="C0007 live evidence CI",
+                workflow_sha256=expected_workflow_sha256,
             )
+            if ci is not None:
+                problems.require(
+                    ci.get("run_attempt") == 1,
+                    "C0007 live evidence CI.run_attempt",
+                    "each post-recovery lifecycle head permits attempt 1 only",
+                )
             github_call_order.append("run.recheck")
             run_after = self.c0007_gh_api_json(
                 f"repos/{C0007_BOUNDED_REPOSITORY}/actions/runs/"
@@ -11527,8 +15157,16 @@ class CompletionValidator:
             problems,
             context="C0007 live evidence GitHub call order",
         )
-        after_capture = self.c0007_live_ref_snapshot(
-            problems, context="C0007 live evidence refs.after"
+        after_capture = (
+            self.c0007_pr_recovery_candidate_snapshot(
+                problems, context="C0007 live evidence refs.after"
+            )
+            if pr_readiness
+            else self.c0007_live_ref_snapshot(
+                problems,
+                context="C0007 live evidence refs.after",
+                allowed_status_rows=allowed_snapshot_status,
+            )
         )
         if after_capture is None:
             return None, problems
@@ -11567,6 +15205,33 @@ class CompletionValidator:
             "repository": C0007_BOUNDED_REPOSITORY,
             "schema_version": 1,
         }
+        if pr_readiness:
+            evidence["review_request"] = c0007_post_recovery_review_request(
+                self.c0007_pr_successor_artifacts,
+                workflow_sha256=str(ci.get("workflow_sha256")),
+            )
+        elif evidence_kind == "c0007_i_implementation_review_ready_v1":
+            contract_blob_result = self.git(
+                "rev-parse",
+                f"{candidate_sha}:{C0007_BOUNDED_PLANNED_CONTROL_PATH}",
+                check=False,
+                env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"},
+            )
+            contract_blob_oid = contract_blob_result.stdout.strip()
+            problems.require(
+                contract_blob_result.returncode == 0
+                and SHA1_RE.fullmatch(contract_blob_oid) is not None,
+                "C0007 implementation review contract",
+                "I must preserve one resolvable exact T contract blob",
+            )
+            if problems.messages:
+                return None, problems
+            evidence["review_request"] = c0007_post_recovery_implementation_review_request(
+                candidate_sha,
+                candidate_tree,
+                contract_blob_oid,
+                persist_c0007_live_ci_record(ci, candidate_tree),
+            )
         return evidence, problems
 
     def git_live_change_paths(
@@ -11771,9 +15436,1134 @@ class CompletionValidator:
         self.validate_c0007_full_tests_correction()
         return self.problems
 
+    def run_c0007_pr_recovery_review_ready(self) -> Problems:
+        """Validate only immutable PR and its six staged CONT01 review inputs."""
+
+        self.validate_c0007_git_repository_identity()
+        self.validate_c0007_git_transport_configuration()
+        self.load_r07_planned_contract()
+        self.validate_pointer()
+        self.load_phase()
+        self.c0007_pr_recovery_candidate_snapshot(
+            self.problems,
+            context="C0007 PR recovery review candidate",
+        )
+        return self.problems
+
+    def write_c0007_post_recovery_contract(self) -> Problems:
+        """Render schema-5 only after one exact live OWNER activation comment."""
+
+        context = "C0007 post-recovery contract generation"
+        self.validate_c0007_git_repository_identity()
+        self.validate_c0007_git_transport_configuration()
+        self.load_r07_planned_contract()
+        self.validate_pointer()
+        self.load_phase()
+        before_capture = self.c0007_pr_recovery_candidate_snapshot(
+            self.problems, context=f"{context}.candidate.before"
+        )
+        if before_capture is None or self.problems.messages:
+            return self.problems
+        before, before_identity = before_capture
+        authorization_capture = self.read_captured_json(
+            self.root / C0007_BOUNDED_AUTHORIZATION_PATH,
+            C0007_BOUNDED_AUTHORIZATION_PATH,
+            require_canonical=True,
+        )
+        authorization = authorization_capture.value if authorization_capture is not None else None
+        self.problems.require(
+            authorization_capture is not None
+            and authorization_capture.sha256 == C0007_POST_RECOVERY_AUTHORIZATION_SHA256
+            and isinstance(authorization, dict),
+            C0007_BOUNDED_AUTHORIZATION_PATH,
+            "contract generation requires the exact canonical schema-4 grant",
+        )
+        repository = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}",
+            self.problems,
+            context=f"{context}.repository",
+        )
+        comment_pages = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/issues/comments?per_page=100&sort=created&direction=asc",
+            self.problems,
+            context=f"{context}.comments",
+            paginate=True,
+        )
+
+        def flatten_comment_pages(value: Any) -> list[dict[str, Any]]:
+            if not isinstance(value, list):
+                return []
+            if all(isinstance(item, dict) for item in value):
+                return [dict(item) for item in value]
+            flattened: list[dict[str, Any]] = []
+            for item in value:
+                flattened.extend(flatten_comment_pages(item))
+            return flattened
+
+        workflow_sha256 = C0007_CI_RECOVERY_WORKFLOW_SHA256
+        request = c0007_post_recovery_review_request(
+            self.c0007_pr_successor_artifacts,
+            workflow_sha256=workflow_sha256,
+        )
+        comments = flatten_comment_pages(comment_pages)
+        matching = [comment for comment in comments if comment.get("body") == request["body"]]
+        matching_ids = [comment.get("id") for comment in matching]
+        self.problems.require(
+            len(matching) == 1
+            and len(matching_ids) == len(set(matching_ids)),
+            f"{context}.comments",
+            "exactly one live issue comment may match the canonical activation body",
+        )
+        paginated_comment = matching[0] if len(matching) == 1 else {}
+        comment_id = paginated_comment.get("id") if isinstance(paginated_comment, Mapping) else None
+        comment = (
+            self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/comments/{comment_id}",
+                self.problems,
+                context=f"{context}.comment",
+            )
+            if type(comment_id) is int
+            else None
+        )
+        self.problems.require(
+            isinstance(comment, Mapping)
+            and c0007_equivalent_issue_comment_views(comment, paginated_comment),
+            f"{context}.comment",
+            "paginated discovery and exact comment refetch must be byte-semantically identical",
+        )
+        issue_url = comment.get("issue_url") if isinstance(comment, dict) else None
+        issue_match = (
+            re.fullmatch(
+                re.escape(C0007_BOUNDED_REPOSITORY_API_URL) + r"/issues/([1-9][0-9]*)",
+                issue_url,
+            )
+            if isinstance(issue_url, str)
+            else None
+        )
+        self.problems.require(
+            issue_match is not None,
+            f"{context}.comment.issue_url",
+            "matching comment must link to one ordinary issue in the exact repository",
+        )
+        issue = (
+            self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/{issue_match.group(1)}",
+                self.problems,
+                context=f"{context}.issue",
+            )
+            if issue_match is not None
+            else None
+        )
+        parsed_issue_request = (
+            parse_c0007_post_recovery_issue_request(
+                issue,
+                self.problems,
+                context=f"{context}.issue_request",
+            )
+            if isinstance(issue, Mapping)
+            else None
+        )
+        readiness_evidence = (
+            parsed_issue_request[0] if parsed_issue_request is not None else None
+        )
+        initial_edit_observation = (
+            self.c0007_post_recovery_review_edit_observation(
+                int(issue_match.group(1)),
+                str(comment.get("node_id")),
+                self.problems,
+                context=f"{context}.edits",
+            )
+            if issue_match is not None
+            and isinstance(comment, Mapping)
+            and isinstance(comment.get("node_id"), str)
+            else None
+        )
+        review_problems = Problems()
+        activation_review = (
+            c0007_post_recovery_approved_review(
+                self.c0007_pr_successor_artifacts,
+                readiness_evidence,
+                repository,
+                issue,
+                comment,
+                review_problems,
+                workflow_sha256=workflow_sha256,
+                context=f"{context}.review",
+            )
+            if isinstance(readiness_evidence, Mapping)
+            and isinstance(repository, Mapping)
+            and isinstance(issue, Mapping)
+            else None
+        )
+        self.problems.messages.extend(review_problems.messages)
+        if activation_review is not None and initial_edit_observation is not None:
+            validate_c0007_post_recovery_review_edit_observation(
+                activation_review,
+                initial_edit_observation,
+                self.problems,
+                context=f"{context}.edits",
+            )
+        after_capture = self.c0007_pr_recovery_candidate_snapshot(
+            self.problems, context=f"{context}.candidate.after"
+        )
+        if after_capture is None:
+            return self.problems
+        after, after_identity = after_capture
+        validate_c0007_live_snapshot_stability(
+            before,
+            after,
+            before_identity,
+            after_identity,
+            self.problems,
+            context=f"{context}.candidate.stability",
+        )
+        if self.problems.messages or not isinstance(authorization, Mapping) or activation_review is None:
+            return self.problems
+        contract = build_c0007_post_recovery_contract(
+            self.c0007_pr_successor_artifacts,
+            authorization,
+            activation_review,
+            authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+        )
+        validation = Problems()
+        validate_c0007_post_recovery_contract_payload(
+            contract,
+            self.c0007_pr_successor_artifacts,
+            authorization,
+            validation,
+            authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+            context=f"{context}.render",
+        )
+        self.problems.messages.extend(validation.messages)
+        if self.problems.messages:
+            return self.problems
+
+        def reobserve_review(label: str) -> tuple[Any, Any, Any, Any, Any] | None:
+            observed_repository = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}",
+                self.problems,
+                context=f"{context}.{label}.repository",
+            )
+            observed_pages = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/comments?per_page=100&sort=created&direction=asc",
+                self.problems,
+                context=f"{context}.{label}.comments",
+                paginate=True,
+            )
+            observed_matches = [
+                row
+                for row in flatten_comment_pages(observed_pages)
+                if row.get("body") == request["body"]
+            ]
+            self.problems.require(
+                len(observed_matches) == 1
+                and observed_matches[0].get("id") == comment_id,
+                f"{context}.{label}.comments",
+                "full pagination must still contain exactly the same sole activation body",
+            )
+            observed_comment = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/comments/{comment_id}",
+                self.problems,
+                context=f"{context}.{label}.comment",
+            )
+            observed_issue = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/{issue_match.group(1)}",
+                self.problems,
+                context=f"{context}.{label}.issue",
+            ) if issue_match is not None else None
+            observed_edits = (
+                self.c0007_post_recovery_review_edit_observation(
+                    int(issue_match.group(1)),
+                    str(comment.get("node_id")),
+                    self.problems,
+                    context=f"{context}.{label}.edits",
+                )
+                if issue_match is not None
+                and isinstance(comment, Mapping)
+                and isinstance(comment.get("node_id"), str)
+                else None
+            )
+            self.problems.require(
+                exact_json_equal(observed_repository, repository)
+                and exact_json_equal(observed_pages, comment_pages)
+                and exact_json_equal(observed_issue, issue)
+                and exact_json_equal(observed_comment, comment)
+                and exact_json_equal(observed_edits, initial_edit_observation),
+                f"{context}.{label}.stability",
+                "repository, full comment census, issue, comment, and edit history changed",
+            )
+            if (
+                activation_review is not None
+                and isinstance(observed_repository, Mapping)
+                and isinstance(observed_issue, Mapping)
+                and isinstance(observed_comment, Mapping)
+            ):
+                validate_c0007_github_review_observation(
+                    activation_review,
+                    observed_repository,
+                    observed_issue,
+                    observed_comment,
+                    self.problems,
+                    context=f"{context}.{label}.review",
+                )
+            if activation_review is not None and observed_edits is not None:
+                validate_c0007_post_recovery_review_edit_observation(
+                    activation_review,
+                    observed_edits,
+                    self.problems,
+                    context=f"{context}.{label}.edits",
+                )
+            return (
+                observed_repository,
+                observed_pages,
+                observed_issue,
+                observed_comment,
+                observed_edits,
+            )
+
+        contract_path = self.root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+        try:
+            old_payload = read_stable_file_bytes(contract_path)
+        except (OSError, ValueError) as error:
+            self.problems.add(context, f"cannot capture immutable PR contract: {error}")
+            return self.problems
+        self.problems.require(
+            len(old_payload) == C0007_POST_RECOVERY_PREIMAGES[C0007_BOUNDED_PLANNED_CONTROL_PATH][1]
+            and hashlib.sha256(old_payload).hexdigest().upper()
+            == C0007_PLANNED_RECOVERY_CONTRACT_SHA256,
+            context,
+            "contract destination must remain the exact immutable PR blob before final render",
+        )
+        if self.problems.messages:
+            return self.problems
+        payload = canonical_tracked_json_bytes(contract)
+        temp_directory = self.c0007_atomic_temp_directory(
+            self.problems, context=f"{context}.atomic_temp_directory"
+        )
+        if temp_directory is None:
+            return self.problems
+        expected_artifacts = json.loads(canonical_json(self.c0007_pr_successor_artifacts))
+        index_before_write = self.validate_c0007_global_index_flags(
+            self.problems,
+            context=f"{context}.local.pre_write.index_flags",
+            env={**os.environ, "GIT_OPTIONAL_LOCKS": "0", "GIT_NO_LAZY_FETCH": "1"},
+        )
+        if self.problems.messages or index_before_write is None:
+            return self.problems
+
+        def restore_old_contract() -> bool:
+            return c0007_compare_and_swap_restore(
+                contract_path,
+                payload,
+                old_payload,
+                temp_directory,
+                self.problems,
+                context=context,
+            )
+
+        temporary: Path | None = None
+        try:
+            descriptor, raw_temporary = tempfile.mkstemp(
+                prefix=f".{contract_path.name}.post-recovery-",
+                suffix=".tmp",
+                dir=temp_directory,
+            )
+            temporary = Path(raw_temporary)
+            with os.fdopen(descriptor, "wb") as stream:
+                stream.write(payload)
+                stream.flush()
+                os.fsync(stream.fileno())
+            if read_stable_file_bytes(contract_path) != old_payload:
+                raise OSError("contract destination changed after immutable-PR capture")
+            reobserve_review("pre_replace")
+            pre_replace_ci = self.reauthenticate_c0007_compact_ci_record(
+                C0007_PLANNED_RECOVERY_SHA,
+                C0007_PLANNED_RECOVERY_TREE_SHA,
+                c0007_planned_recovery_ci_record(),
+                self.problems,
+                context=f"{context}.ci.pre_replace",
+            )
+            pre_replace_capture = self.c0007_pr_recovery_candidate_snapshot(
+                self.problems,
+                context=f"{context}.local.pre_replace",
+            )
+            if pre_replace_capture is not None:
+                pre_replace_snapshot, pre_replace_identity = pre_replace_capture
+                validate_c0007_live_snapshot_stability(
+                    after,
+                    pre_replace_snapshot,
+                    after_identity,
+                    pre_replace_identity,
+                    self.problems,
+                    context=f"{context}.local.pre_replace.stability",
+                )
+            self.problems.require(
+                pre_replace_ci is not None,
+                f"{context}.ci.pre_replace",
+                "full R run/job/suite/log custody must remain exact before A replacement",
+            )
+            if self.problems.messages:
+                raise OSError("final review/issue/comment stability recheck failed")
+            os.replace(temporary, contract_path)
+            temporary = None
+            post_replace_problem_count = len(self.problems.messages)
+            reobserve_review("post_replace")
+            post_replace_ci = self.reauthenticate_c0007_compact_ci_record(
+                C0007_PLANNED_RECOVERY_SHA,
+                C0007_PLANNED_RECOVERY_TREE_SHA,
+                c0007_planned_recovery_ci_record(),
+                self.problems,
+                context=f"{context}.ci.post_replace",
+            )
+            post_replace_capture = self.c0007_pr_recovery_candidate_snapshot(
+                self.problems,
+                context=f"{context}.local.post_replace",
+                allow_contract_worktree_overlay=True,
+            )
+            index_after_write = self.validate_c0007_global_index_flags(
+                self.problems,
+                context=f"{context}.local.post_replace.index_flags",
+                env={
+                    **os.environ,
+                    "GIT_OPTIONAL_LOCKS": "0",
+                    "GIT_NO_LAZY_FETCH": "1",
+                },
+            )
+            self.problems.require(
+                post_replace_capture is not None
+                and post_replace_ci is not None
+                and exact_json_equal(post_replace_capture[0], after)
+                and exact_json_equal(
+                    self.c0007_pr_successor_artifacts, expected_artifacts
+                )
+                and index_after_write == index_before_write
+                and read_stable_file_bytes(contract_path) == payload,
+                f"{context}.local.post_replace.stability",
+                "post-write state must be the same six staged artifacts plus only the contract worktree overlay with stable refs/config/index",
+            )
+            if len(self.problems.messages) != post_replace_problem_count:
+                if restore_old_contract():
+                    self.problems.add(
+                        context,
+                        "post-write external/local evidence drifted; exact immutable PR contract was atomically restored",
+                    )
+        except (OSError, ValueError) as error:
+            if temporary is None and contract_path.exists():
+                try:
+                    if read_stable_file_bytes(contract_path) != old_payload:
+                        restore_old_contract()
+                except (OSError, ValueError) as restore_error:
+                    self.problems.add(context, f"contract rollback failed: {restore_error}")
+            self.problems.add(context, f"atomic contract write failed: {error}")
+        finally:
+            if temporary is not None:
+                try:
+                    temporary.unlink()
+                except OSError:
+                    pass
+        return self.problems
+
+    def write_c0007_post_recovery_active_contract(self) -> Problems:
+        """Render contract-only T after exact-head A CI succeeds."""
+
+        context = "C0007 post-recovery active-contract generation"
+        self.validate_c0007_git_repository_identity()
+        self.validate_c0007_git_transport_configuration()
+        self.run_c0007_live_readonly()
+        if self.problems.messages:
+            return self.problems
+        contract = self.c0007_bounded_contract
+        authorization = self.c0007_post_recovery_authorization
+        self.problems.require(
+            isinstance(contract, dict)
+            and isinstance(authorization, dict)
+            and self.c0007_bounded_state == "activation_pending",
+            context,
+            "T generation requires one fully valid committed A contract",
+        )
+        if not isinstance(contract, dict) or not isinstance(authorization, dict):
+            return self.problems
+        readiness, readiness_problems = self.observe_c0007_live_evidence(
+            "c0007_a_activation_ready_v1"
+        )
+        self.problems.messages.extend(readiness_problems.messages)
+        if not isinstance(readiness, Mapping) or self.problems.messages:
+            return self.problems
+        head = self.git("rev-parse", "HEAD", check=False).stdout.strip()
+        tree = self.git("rev-parse", "HEAD^{tree}", check=False).stdout.strip()
+        contract_blob = self.git(
+            "rev-parse", f"HEAD:{C0007_BOUNDED_PLANNED_CONTROL_PATH}", check=False
+        ).stdout.strip()
+        self.problems.require(
+            readiness.get("candidate_sha") == head
+            and readiness.get("candidate_tree") == tree
+            and readiness.get("evidence_kind") == "c0007_a_activation_ready_v1"
+            and SHA1_RE.fullmatch(contract_blob) is not None,
+            context,
+            "authenticated A CI must bind the exact current A SHA/tree/contract",
+        )
+        try:
+            activation_ci = persist_c0007_live_ci_record(
+                readiness.get("ci") if isinstance(readiness.get("ci"), Mapping) else {},
+                tree,
+            )
+            rendered = build_c0007_post_recovery_active_contract(
+                contract,
+                activation_commit_sha=head,
+                activation_tree_sha=tree,
+                activation_contract_blob_oid=contract_blob,
+                activation_ci=activation_ci,
+            )
+        except (TypeError, ValueError) as error:
+            self.problems.add(context, str(error))
+            return self.problems
+        activation_review = mapping_path(contract, "reviews", "activation")
+        activation_custody = (
+            self.observe_c0007_review_custody(
+                activation_review,
+                self.problems,
+                context=f"{context}.activation.initial",
+            )
+            if isinstance(activation_review, Mapping)
+            else None
+        )
+        activation_readiness = (
+            activation_review.get("readiness_evidence")
+            if isinstance(activation_review, Mapping) else None
+        )
+        activation_evidence = (
+            activation_readiness.get("evidence")
+            if isinstance(activation_readiness, Mapping) else None
+        )
+        basis = mapping_path(
+            activation_evidence, "review_request", "bindings", "successor_basis"
+        )
+        artifacts = basis.get("artifacts") if isinstance(basis, Mapping) else None
+        if not isinstance(artifacts, list) or activation_custody is None:
+            self.problems.add(context, "A readiness artifact basis is missing")
+            return self.problems
+        validation = Problems()
+        validate_c0007_post_recovery_contract_payload(
+            rendered,
+            artifacts,
+            authorization,
+            validation,
+            authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+            context=f"{context}.render",
+        )
+        self.problems.messages.extend(validation.messages)
+        if self.problems.messages:
+            return self.problems
+
+        before_capture = self.c0007_live_ref_snapshot(
+            self.problems, context=f"{context}.local.before"
+        )
+        index_before = self.validate_c0007_global_index_flags(
+            self.problems,
+            context=f"{context}.index.before",
+            env={**os.environ, "GIT_OPTIONAL_LOCKS": "0", "GIT_NO_LAZY_FETCH": "1"},
+        )
+        contract_path = self.root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+        try:
+            old_payload = read_stable_file_bytes(contract_path)
+        except (OSError, ValueError) as error:
+            self.problems.add(context, f"cannot capture A contract: {error}")
+            return self.problems
+        self.problems.require(
+            git_blob_oid(old_payload) == contract_blob
+            and before_capture is not None
+            and index_before is not None,
+            context,
+            "T writer must begin from exact clean pushed A with its HEAD/index contract",
+        )
+        if self.problems.messages:
+            return self.problems
+        payload = canonical_tracked_json_bytes(rendered)
+        temp_directory = self.c0007_atomic_temp_directory(
+            self.problems, context=f"{context}.atomic_temp_directory"
+        )
+        if temp_directory is None:
+            return self.problems
+
+        def restore() -> bool:
+            return c0007_compare_and_swap_restore(
+                contract_path,
+                payload,
+                old_payload,
+                temp_directory,
+                self.problems,
+                context=context,
+            )
+
+        temporary: Path | None = None
+        try:
+            descriptor, raw_path = tempfile.mkstemp(
+                prefix=f".{contract_path.name}.active-", suffix=".tmp",
+                dir=temp_directory,
+            )
+            temporary = Path(raw_path)
+            with os.fdopen(descriptor, "wb") as stream:
+                stream.write(payload)
+                stream.flush()
+                os.fsync(stream.fileno())
+            final_ci = self.reauthenticate_c0007_compact_ci_record(
+                head, tree, activation_ci, self.problems,
+                context=f"{context}.ci.pre_replace",
+            )
+            activation_pre = self.observe_c0007_review_custody(
+                activation_review,
+                self.problems,
+                context=f"{context}.activation.pre_replace",
+            )
+            pre_replace = self.c0007_live_ref_snapshot(
+                self.problems, context=f"{context}.local.pre_replace"
+            )
+            self.problems.require(
+                final_ci is not None
+                and activation_pre is not None
+                and exact_json_equal(activation_pre, activation_custody)
+                and pre_replace is not None
+                and before_capture is not None
+                and exact_json_equal(pre_replace[0], before_capture[0])
+                and pre_replace[1] == before_capture[1]
+                and read_stable_file_bytes(contract_path) == old_payload,
+                f"{context}.pre_replace",
+                "A CI, refs/config/index, and A contract must remain exact immediately before replacement",
+            )
+            if self.problems.messages:
+                raise OSError("final A/CI custody check failed")
+            os.replace(temporary, contract_path)
+            temporary = None
+            post_start = len(self.problems.messages)
+            post_ci = self.reauthenticate_c0007_compact_ci_record(
+                head, tree, activation_ci, self.problems,
+                context=f"{context}.ci.post_replace",
+            )
+            activation_post = self.observe_c0007_review_custody(
+                activation_review,
+                self.problems,
+                context=f"{context}.activation.post_replace",
+            )
+            post_capture = self.c0007_live_ref_snapshot(
+                self.problems,
+                context=f"{context}.local.post_replace",
+                allowed_status_rows=[f" M {C0007_BOUNDED_PLANNED_CONTROL_PATH}"],
+            )
+            index_after = self.validate_c0007_global_index_flags(
+                self.problems,
+                context=f"{context}.index.after",
+                env={
+                    **os.environ,
+                    "GIT_OPTIONAL_LOCKS": "0",
+                    "GIT_NO_LAZY_FETCH": "1",
+                },
+            )
+            self.problems.require(
+                post_ci is not None
+                and activation_post is not None
+                and exact_json_equal(activation_post, activation_custody)
+                and post_capture is not None
+                and before_capture is not None
+                and exact_json_equal(post_capture[0], before_capture[0])
+                and index_after == index_before
+                and read_stable_file_bytes(contract_path) == payload,
+                f"{context}.post_replace",
+                "T write must leave only the contract worktree overlay with stable A CI/refs/config/index",
+            )
+            if len(self.problems.messages) != post_start:
+                if restore():
+                    self.problems.add(
+                        context,
+                        "post-write A/CI custody drifted; exact A contract was atomically restored",
+                    )
+        except (OSError, ValueError) as error:
+            try:
+                if read_stable_file_bytes(contract_path) != old_payload:
+                    restore()
+            except (OSError, ValueError) as restore_error:
+                self.problems.add(context, f"T contract rollback failed: {restore_error}")
+            self.problems.add(context, f"atomic T contract write failed: {error}")
+        finally:
+            if temporary is not None:
+                try:
+                    temporary.unlink()
+                except OSError:
+                    pass
+        return self.problems
+
+    def write_c0007_post_recovery_verified_contract(self) -> Problems:
+        """Render contract-only V after exact I CI and a distinct OWNER review."""
+
+        context = "C0007 post-recovery verified-contract generation"
+        self.validate_c0007_git_repository_identity()
+        self.validate_c0007_git_transport_configuration()
+        self.run_c0007_live_readonly()
+        if self.problems.messages:
+            return self.problems
+        contract = self.c0007_bounded_contract
+        authorization = self.c0007_post_recovery_authorization
+        self.problems.require(
+            isinstance(contract, dict)
+            and isinstance(authorization, dict)
+            and self.c0007_bounded_state == "active",
+            context,
+            "V generation requires one fully valid active contract at committed I",
+        )
+        if not isinstance(contract, dict) or not isinstance(authorization, dict):
+            return self.problems
+        readiness, readiness_problems = self.observe_c0007_live_evidence(
+            "c0007_i_implementation_review_ready_v1"
+        )
+        self.problems.messages.extend(readiness_problems.messages)
+        if not isinstance(readiness, Mapping) or self.problems.messages:
+            return self.problems
+        implementation_sha = self.git("rev-parse", "HEAD", check=False).stdout.strip()
+        implementation_tree = self.git(
+            "rev-parse", "HEAD^{tree}", check=False
+        ).stdout.strip()
+        parent_rows = self.git(
+            "show", "-s", "--format=%P", implementation_sha, check=False
+        ).stdout.split()
+        active_sha = parent_rows[0] if len(parent_rows) == 1 else ""
+        active_tree = self.git(
+            "show", "-s", "--format=%T", active_sha, check=False
+        ).stdout.strip()
+        active_contract_blob = self.git(
+            "rev-parse",
+            f"{active_sha}:{C0007_BOUNDED_PLANNED_CONTROL_PATH}",
+            check=False,
+        ).stdout.strip()
+        implementation_contract_blob = self.git(
+            "rev-parse",
+            f"{implementation_sha}:{C0007_BOUNDED_PLANNED_CONTROL_PATH}",
+            check=False,
+        ).stdout.strip()
+        self.problems.require(
+            readiness.get("candidate_sha") == implementation_sha
+            and readiness.get("candidate_tree") == implementation_tree
+            and readiness.get("evidence_kind")
+            == "c0007_i_implementation_review_ready_v1"
+            and len(parent_rows) == 1
+            and all(
+                SHA1_RE.fullmatch(value) is not None
+                for value in (
+                    active_sha,
+                    active_tree,
+                    active_contract_blob,
+                    implementation_contract_blob,
+                )
+            )
+            and active_contract_blob == implementation_contract_blob,
+            context,
+            "V requires exact direct-child I and its byte-preserved T contract",
+        )
+        try:
+            implementation_ci = persist_c0007_live_ci_record(
+                readiness.get("ci") if isinstance(readiness.get("ci"), Mapping) else {},
+                implementation_tree,
+            )
+        except ValueError as error:
+            self.problems.add(context, str(error))
+            return self.problems
+        active_ci = self.reauthenticate_c0007_compact_ci_record(
+            active_sha,
+            active_tree,
+            None,
+            self.problems,
+            context=f"{context}.T_CI.initial",
+        )
+        expected_request = c0007_post_recovery_implementation_review_request(
+            implementation_sha,
+            implementation_tree,
+            implementation_contract_blob,
+            implementation_ci,
+        )
+        self.problems.require(
+            isinstance(active_ci, Mapping)
+            and exact_json_equal(readiness.get("review_request"), expected_request),
+            f"{context}.review_request",
+            "I readiness must emit the exact current I/T/CI-bound OWNER request",
+        )
+        if not isinstance(active_ci, Mapping) or self.problems.messages:
+            return self.problems
+        activation_review = mapping_path(contract, "reviews", "activation")
+        activation_source = (
+            activation_review.get("source")
+            if isinstance(activation_review, Mapping) else None
+        )
+        if not isinstance(activation_review, Mapping) or not isinstance(
+            activation_source, Mapping
+        ):
+            self.problems.add(context, "verified generation requires the durable activation source")
+            return self.problems
+        activation_custody = self.observe_c0007_review_custody(
+            activation_review,
+            self.problems,
+            context=f"{context}.activation.initial",
+        )
+        if activation_custody is None or self.problems.messages:
+            return self.problems
+
+        def flatten_pages(value: Any) -> list[dict[str, Any]]:
+            if not isinstance(value, list):
+                return []
+            if all(isinstance(item, dict) for item in value):
+                return [dict(item) for item in value]
+            rows: list[dict[str, Any]] = []
+            for item in value:
+                rows.extend(flatten_pages(item))
+            return rows
+
+        issue_number = activation_source.get("issue_number")
+        repository = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}",
+            self.problems,
+            context=f"{context}.repository",
+        )
+        issue = self.c0007_gh_api_json(
+            f"repos/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}",
+            self.problems,
+            context=f"{context}.issue",
+        )
+        comment_endpoint = (
+            f"repos/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}"
+            "/comments?per_page=100&sort=created&direction=asc"
+        )
+        comment_pages = self.c0007_gh_api_json(
+            comment_endpoint,
+            self.problems,
+            context=f"{context}.comments",
+            paginate=True,
+        )
+        matches = [
+            row
+            for row in flatten_pages(comment_pages)
+            if row.get("body") == expected_request["body"]
+        ]
+        self.problems.require(
+            len(matches) == 1
+            and matches[0].get("id") != activation_source.get("comment_database_id"),
+            f"{context}.comments",
+            "full pagination must contain exactly one later distinct implementation OWNER body",
+        )
+        paginated_comment = matches[0] if len(matches) == 1 else {}
+        comment_id = paginated_comment.get("id")
+        comment = (
+            self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/comments/{comment_id}",
+                self.problems,
+                context=f"{context}.comment",
+            )
+            if type(comment_id) is int else None
+        )
+        self.problems.require(
+            isinstance(comment, Mapping)
+            and c0007_equivalent_issue_comment_views(comment, paginated_comment),
+            f"{context}.comment",
+            "paginated implementation decision and direct REST refetch must be identical",
+        )
+        edits = (
+            self.c0007_post_recovery_review_edit_observation(
+                int(issue_number),
+                str(comment.get("node_id")),
+                self.problems,
+                context=f"{context}.edits",
+            )
+            if type(issue_number) is int
+            and isinstance(comment, Mapping)
+            and isinstance(comment.get("node_id"), str)
+            else None
+        )
+        review_problems = Problems()
+        implementation_review = (
+            c0007_post_recovery_approved_implementation_review(
+                activation_review,
+                implementation_sha,
+                implementation_tree,
+                implementation_contract_blob,
+                implementation_ci,
+                repository,
+                issue,
+                comment,
+                review_problems,
+                context=f"{context}.review",
+            )
+            if all(isinstance(value, Mapping) for value in (repository, issue, comment))
+            else None
+        )
+        self.problems.messages.extend(review_problems.messages)
+        if implementation_review is not None and edits is not None:
+            validate_c0007_post_recovery_review_edit_observation(
+                implementation_review,
+                edits,
+                self.problems,
+                context=f"{context}.edits",
+            )
+        if implementation_review is None or self.problems.messages:
+            return self.problems
+        try:
+            rendered = build_c0007_post_recovery_verified_contract(
+                contract,
+                active_commit_sha=active_sha,
+                active_tree_sha=active_tree,
+                active_contract_blob_oid=active_contract_blob,
+                implementation_commit_sha=implementation_sha,
+                implementation_tree_sha=implementation_tree,
+                implementation_contract_blob_oid=implementation_contract_blob,
+                active_ci=active_ci,
+                implementation_ci=implementation_ci,
+                implementation_review=implementation_review,
+            )
+        except (TypeError, ValueError) as error:
+            self.problems.add(context, str(error))
+            return self.problems
+        activation_readiness = activation_review.get("readiness_evidence")
+        activation_evidence = (
+            activation_readiness.get("evidence")
+            if isinstance(activation_readiness, Mapping) else None
+        )
+        basis = mapping_path(
+            activation_evidence, "review_request", "bindings", "successor_basis"
+        )
+        artifacts = basis.get("artifacts") if isinstance(basis, Mapping) else None
+        if not isinstance(artifacts, list):
+            self.problems.add(context, "activation artifact basis is missing")
+            return self.problems
+        validation = Problems()
+        validate_c0007_post_recovery_contract_payload(
+            rendered,
+            artifacts,
+            authorization,
+            validation,
+            authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+            context=f"{context}.render",
+        )
+        self.problems.messages.extend(validation.messages)
+        if self.problems.messages:
+            return self.problems
+
+        def reobserve(label: str) -> None:
+            observed_activation = self.observe_c0007_review_custody(
+                activation_review,
+                self.problems,
+                context=f"{context}.{label}.activation",
+            )
+            observed_repository = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}",
+                self.problems,
+                context=f"{context}.{label}.repository",
+            )
+            observed_issue = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}",
+                self.problems,
+                context=f"{context}.{label}.issue",
+            )
+            observed_pages = self.c0007_gh_api_json(
+                comment_endpoint,
+                self.problems,
+                context=f"{context}.{label}.comments",
+                paginate=True,
+            )
+            observed_matches = [
+                row
+                for row in flatten_pages(observed_pages)
+                if row.get("body") == expected_request["body"]
+            ]
+            observed_comment = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/comments/{comment_id}",
+                self.problems,
+                context=f"{context}.{label}.comment",
+            )
+            observed_edits = (
+                self.c0007_post_recovery_review_edit_observation(
+                    int(issue_number),
+                    str(comment.get("node_id")),
+                    self.problems,
+                    context=f"{context}.{label}.edits",
+                )
+                if type(issue_number) is int
+                and isinstance(comment, Mapping)
+                and isinstance(comment.get("node_id"), str)
+                else None
+            )
+            self.problems.require(
+                len(observed_matches) == 1
+                and observed_matches[0].get("id") == comment_id
+                and observed_activation is not None
+                and exact_json_equal(observed_activation, activation_custody)
+                and exact_json_equal(observed_repository, repository)
+                and exact_json_equal(observed_issue, issue)
+                and exact_json_equal(observed_pages, comment_pages)
+                and exact_json_equal(observed_comment, comment)
+                and exact_json_equal(observed_edits, edits),
+                f"{context}.{label}.stability",
+                "repository, issue, full comment census, implementation comment, or edit history changed",
+            )
+            if all(
+                isinstance(value, Mapping)
+                for value in (observed_repository, observed_issue, observed_comment)
+            ):
+                validate_c0007_github_review_observation(
+                    implementation_review,
+                    observed_repository,
+                    observed_issue,
+                    observed_comment,
+                    self.problems,
+                    context=f"{context}.{label}.review",
+                )
+            if observed_edits is not None:
+                validate_c0007_post_recovery_review_edit_observation(
+                    implementation_review,
+                    observed_edits,
+                    self.problems,
+                    context=f"{context}.{label}.edits",
+                )
+
+        before_capture = self.c0007_live_ref_snapshot(
+            self.problems, context=f"{context}.local.before"
+        )
+        index_before = self.validate_c0007_global_index_flags(
+            self.problems,
+            context=f"{context}.index.before",
+            env={**os.environ, "GIT_OPTIONAL_LOCKS": "0", "GIT_NO_LAZY_FETCH": "1"},
+        )
+        contract_path = self.root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+        try:
+            old_payload = read_stable_file_bytes(contract_path)
+        except (OSError, ValueError) as error:
+            self.problems.add(context, f"cannot capture T contract: {error}")
+            return self.problems
+        self.problems.require(
+            git_blob_oid(old_payload) == active_contract_blob
+            and before_capture is not None
+            and index_before is not None,
+            context,
+            "V writer must begin from clean pushed I preserving exact T contract",
+        )
+        if self.problems.messages:
+            return self.problems
+        payload = canonical_tracked_json_bytes(rendered)
+        temp_directory = self.c0007_atomic_temp_directory(
+            self.problems, context=f"{context}.atomic_temp_directory"
+        )
+        if temp_directory is None:
+            return self.problems
+
+        def restore() -> bool:
+            return c0007_compare_and_swap_restore(
+                contract_path,
+                payload,
+                old_payload,
+                temp_directory,
+                self.problems,
+                context=context,
+            )
+
+        temporary: Path | None = None
+        try:
+            descriptor, raw_path = tempfile.mkstemp(
+                prefix=f".{contract_path.name}.verified-", suffix=".tmp",
+                dir=temp_directory,
+            )
+            temporary = Path(raw_path)
+            with os.fdopen(descriptor, "wb") as stream:
+                stream.write(payload)
+                stream.flush()
+                os.fsync(stream.fileno())
+            reobserve("pre_replace")
+            final_t_ci = self.reauthenticate_c0007_compact_ci_record(
+                active_sha, active_tree, active_ci, self.problems,
+                context=f"{context}.T_CI.pre_replace",
+            )
+            final_i_ci = self.reauthenticate_c0007_compact_ci_record(
+                implementation_sha, implementation_tree, implementation_ci,
+                self.problems, context=f"{context}.I_CI.pre_replace",
+            )
+            pre_replace = self.c0007_live_ref_snapshot(
+                self.problems, context=f"{context}.local.pre_replace"
+            )
+            self.problems.require(
+                final_t_ci is not None
+                and final_i_ci is not None
+                and pre_replace is not None
+                and before_capture is not None
+                and exact_json_equal(pre_replace[0], before_capture[0])
+                and pre_replace[1] == before_capture[1]
+                and read_stable_file_bytes(contract_path) == old_payload,
+                f"{context}.pre_replace",
+                "T/I CI, OWNER review, refs/config/index, and T contract must remain exact immediately before V replacement",
+            )
+            if self.problems.messages:
+                raise OSError("final V custody check failed")
+            os.replace(temporary, contract_path)
+            temporary = None
+            post_start = len(self.problems.messages)
+            reobserve("post_replace")
+            post_t_ci = self.reauthenticate_c0007_compact_ci_record(
+                active_sha, active_tree, active_ci, self.problems,
+                context=f"{context}.T_CI.post_replace",
+            )
+            post_i_ci = self.reauthenticate_c0007_compact_ci_record(
+                implementation_sha, implementation_tree, implementation_ci,
+                self.problems, context=f"{context}.I_CI.post_replace",
+            )
+            post_capture = self.c0007_live_ref_snapshot(
+                self.problems,
+                context=f"{context}.local.post_replace",
+                allowed_status_rows=[f" M {C0007_BOUNDED_PLANNED_CONTROL_PATH}"],
+            )
+            index_after = self.validate_c0007_global_index_flags(
+                self.problems,
+                context=f"{context}.index.after",
+                env={
+                    **os.environ,
+                    "GIT_OPTIONAL_LOCKS": "0",
+                    "GIT_NO_LAZY_FETCH": "1",
+                },
+            )
+            self.problems.require(
+                post_t_ci is not None
+                and post_i_ci is not None
+                and post_capture is not None
+                and before_capture is not None
+                and exact_json_equal(post_capture[0], before_capture[0])
+                and index_after == index_before
+                and read_stable_file_bytes(contract_path) == payload,
+                f"{context}.post_replace",
+                "V write must leave only its contract worktree overlay with stable CI/review/refs/config/index",
+            )
+            if len(self.problems.messages) != post_start:
+                if restore():
+                    self.problems.add(
+                        context,
+                        "post-write CI/review/local custody drifted; exact T contract was atomically restored",
+                    )
+        except (OSError, ValueError) as error:
+            try:
+                if read_stable_file_bytes(contract_path) != old_payload:
+                    restore()
+            except (OSError, ValueError) as restore_error:
+                self.problems.add(context, f"V contract rollback failed: {restore_error}")
+            self.problems.add(context, f"atomic V contract write failed: {error}")
+        finally:
+            if temporary is not None:
+                try:
+                    temporary.unlink()
+                except OSError:
+                    pass
+        return self.problems
+
     def write_c0007_ci_recovery_contract(self) -> Problems:
         """Atomically render only the CI-recovery contract from seven postimages."""
 
+        self.validate_c0007_git_repository_identity()
+        self.validate_c0007_git_transport_configuration()
+        if self.problems.messages:
+            return self.problems
         self.load_r07_planned_contract()
         self.validate_pointer()
         self.load_phase()
@@ -12017,66 +16807,27 @@ class CompletionValidator:
             "generation requires exactly seven staged non-contract postimages, no unstaged drift, and only the untracked local ledger outside Git",
         )
 
-        def config_values(key: str) -> list[str]:
-            result = self.git("config", "--get-all", key, check=False, env=readonly_env)
-            return result.stdout.splitlines() if result.returncode == 0 else []
-
-        remote_names = self.git("remote", check=False, env=readonly_env)
-        fetch_urls = self.git(
-            "remote", "get-url", "--all", C0007_BOUNDED_REMOTE, check=False, env=readonly_env
-        )
-        push_urls = self.git(
-            "remote",
-            "get-url",
-            "--push",
-            "--all",
-            C0007_BOUNDED_REMOTE,
-            check=False,
+        remote_before = self.c0007_remote_ref_observation(
+            self.problems,
+            context=f"{context}.remote.before",
             env=readonly_env,
         )
-        remote_identity_ok = (
-            remote_names.returncode == 0
-            and remote_names.stdout.splitlines() == [C0007_BOUNDED_REMOTE]
-            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.url")
-            == [C0007_BOUNDED_REMOTE_URL]
-            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.pushurl") == []
-            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.fetch")
-            == ["+refs/heads/*:refs/remotes/origin/*"]
-            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.push") == []
-            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.mirror") == []
-            and config_values("remote.pushDefault") == []
-            and config_values(f"branch.{C0007_BOUNDED_BRANCH}.remote") == []
-            and config_values(f"branch.{C0007_BOUNDED_BRANCH}.pushRemote") == []
-            and fetch_urls.returncode == 0
-            and fetch_urls.stdout.splitlines() == [C0007_BOUNDED_REMOTE_URL]
-            and push_urls.returncode == 0
-            and push_urls.stdout.splitlines() == [C0007_BOUNDED_REMOTE_URL]
-        )
-        self.problems.require(
-            remote_identity_ok,
-            f"{context}.remote.identity",
-            "generation requires the exact singleton canonical origin and no routing overrides",
-        )
-        remote_refs = self.git(
-            "ls-remote",
-            "--refs",
-            C0007_BOUNDED_REMOTE,
-            C0007_BOUNDED_REMOTE_MAIN_REF,
-            C0007_BOUNDED_REMOTE_BRANCH_REF,
-            check=False,
-            env=readonly_env,
-        )
+        remote_census_before: dict[str, list[str]] = {}
+        remote_identity_before: bytes | None = None
         tips: dict[str, str] = {}
-        if remote_refs.returncode == 0:
-            for row in remote_refs.stdout.splitlines():
-                try:
-                    oid, ref = row.split("\t", 1)
-                except ValueError:
-                    self.problems.add(f"{context}.remote", f"malformed ref row {row!r}")
-                    continue
-                tips[ref] = oid
+        if remote_before is not None:
+            remote_census_before, tips, remote_identity_before = remote_before
         self.problems.require(
-            remote_refs.returncode == 0
+            remote_before is not None
+            and exact_json_equal(
+                remote_census_before,
+                c0007_expected_remote_configuration_census(),
+            ),
+            f"{context}.remote.identity",
+            "generation requires the exact full singleton origin namespace and no routing overrides",
+        )
+        self.problems.require(
+            remote_before is not None
             and tips.get(C0007_BOUNDED_REMOTE_MAIN_REF)
             == C0007_BOUNDED_CONTROL_HEAD_SHA
             and tips.get(C0007_BOUNDED_REMOTE_BRANCH_REF)
@@ -12169,12 +16920,30 @@ class CompletionValidator:
             self.problems.messages.extend(validation.messages)
             return self.problems
         payload = render_c0007_ci_recovery_contract_bytes(contract)
+        temp_directory = self.c0007_atomic_temp_directory(
+            self.problems,
+            context=f"{context}.atomic_temp_directory",
+        )
+        if temp_directory is None:
+            return self.problems
+
+        def restore_old_contract() -> bool:
+            return c0007_compare_and_swap_restore(
+                contract_path,
+                payload,
+                old_contract_payload,
+                temp_directory,
+                self.problems,
+                context=context,
+            )
+
         temporary: Path | None = None
+        installed = False
         try:
             descriptor, raw_temporary = tempfile.mkstemp(
                 prefix=f".{contract_path.name}.ci-recovery-",
                 suffix=".tmp",
-                dir=contract_path.parent,
+                dir=temp_directory,
             )
             temporary = Path(raw_temporary)
             with os.fdopen(descriptor, "wb") as stream:
@@ -12187,7 +16956,10 @@ class CompletionValidator:
                 )
             os.replace(temporary, contract_path)
             temporary = None
-        except OSError as error:
+            installed = True
+        except (OSError, ValueError) as error:
+            if installed:
+                restore_old_contract()
             self.problems.add(context, f"atomic contract write failed: {error}")
         finally:
             if temporary is not None:
@@ -12197,11 +16969,13 @@ class CompletionValidator:
                     pass
         if self.problems.messages:
             return self.problems
+        post_write_problem_count = len(self.problems.messages)
 
         try:
             written = contract_path.read_bytes()
             reparsed = strict_json_loads(written.decode("utf-8"))
         except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as error:
+            restore_old_contract()
             self.problems.add(context, f"cannot reparse written contract: {error}")
             return self.problems
         final_validation = Problems()
@@ -12317,75 +17091,29 @@ class CompletionValidator:
         symbolic_branch_after = (
             branch_after.stdout.strip() if branch_after.returncode == 0 else None
         )
-        remote_refs_after = self.git(
-            "ls-remote",
-            "--refs",
-            C0007_BOUNDED_REMOTE,
-            C0007_BOUNDED_REMOTE_MAIN_REF,
-            C0007_BOUNDED_REMOTE_BRANCH_REF,
-            check=False,
+        remote_after = self.c0007_remote_ref_observation(
+            self.problems,
+            context=f"{context}.remote.after",
             env=readonly_env,
         )
-        remote_names_after = self.git("remote", check=False, env=readonly_env)
-        fetch_urls_after = self.git(
-            "remote",
-            "get-url",
-            "--all",
-            C0007_BOUNDED_REMOTE,
-            check=False,
-            env=readonly_env,
-        )
-        push_urls_after = self.git(
-            "remote",
-            "get-url",
-            "--push",
-            "--all",
-            C0007_BOUNDED_REMOTE,
-            check=False,
-            env=readonly_env,
-        )
-        remote_identity_after_ok = (
-            remote_names_after.returncode == 0
-            and remote_names_after.stdout.splitlines() == [C0007_BOUNDED_REMOTE]
-            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.url")
-            == [C0007_BOUNDED_REMOTE_URL]
-            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.pushurl") == []
-            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.fetch")
-            == ["+refs/heads/*:refs/remotes/origin/*"]
-            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.push") == []
-            and config_values(f"remote.{C0007_BOUNDED_REMOTE}.mirror") == []
-            and config_values("remote.pushDefault") == []
-            and config_values(f"branch.{C0007_BOUNDED_BRANCH}.remote") == []
-            and config_values(f"branch.{C0007_BOUNDED_BRANCH}.pushRemote") == []
-            and fetch_urls_after.returncode == 0
-            and fetch_urls_after.stdout.splitlines() == [C0007_BOUNDED_REMOTE_URL]
-            and push_urls_after.returncode == 0
-            and push_urls_after.stdout.splitlines() == [C0007_BOUNDED_REMOTE_URL]
-        )
+        remote_census_after: dict[str, list[str]] = {}
+        remote_identity_after: bytes | None = None
         tips_after: dict[str, str] = {}
-        if remote_refs_after.returncode == 0:
-            for row in remote_refs_after.stdout.splitlines():
-                try:
-                    oid, ref = row.split("\t", 1)
-                except ValueError:
-                    self.problems.add(
-                        f"{context}.quiescence.remote",
-                        f"malformed final ref row {row!r}",
-                    )
-                    continue
-                tips_after[ref] = oid
+        if remote_after is not None:
+            remote_census_after, tips_after, remote_identity_after = remote_after
         self.problems.require(
             head_after.returncode == 0
             and head_after.stdout.strip() == C0007_FAILED_PLANNED_CONTROL_SHA
             and symbolic_branch_after == symbolic_branch
-            and remote_refs_after.returncode == 0
+            and remote_after is not None
             and tips_after.get(C0007_BOUNDED_REMOTE_MAIN_REF)
             == C0007_BOUNDED_CONTROL_HEAD_SHA
             and tips_after.get(C0007_BOUNDED_REMOTE_BRANCH_REF)
             == C0007_FAILED_PLANNED_CONTROL_SHA
-            and remote_identity_after_ok,
+            and exact_json_equal(remote_census_after, remote_census_before)
+            and remote_identity_after == remote_identity_before,
             f"{context}.quiescence.refs",
-            "HEAD, branch mode, remote main, or bounded P ref changed during generation",
+            "HEAD, branch mode, full remote configuration, remote main, or bounded P ref changed during generation",
         )
         global_index_after = self.validate_c0007_global_index_flags(
             self.problems,
@@ -12400,6 +17128,12 @@ class CompletionValidator:
             "global index mode/OID/stage/assume-unchanged/fsmonitor state changed during generation",
         )
         self.problems.messages.extend(final_validation.messages)
+        if len(self.problems.messages) != post_write_problem_count:
+            if restore_old_contract():
+                self.problems.add(
+                    context,
+                    "post-write local/remote custody drifted; exact immutable P contract was atomically restored",
+                )
         return self.problems
 
     def validate_c0007_bounded_authorization(self) -> None:
@@ -12428,6 +17162,12 @@ class CompletionValidator:
         authorization = (
             authorization_capture.value if authorization_capture is not None else None
         )
+        if authorization_capture is not None and not isinstance(authorization, dict):
+            self.problems.add(
+                C0007_BOUNDED_AUTHORIZATION_PATH,
+                "bounded authorization must be a canonical JSON object",
+            )
+            return
         manifest_path = self.root / C0007_BOUNDED_AUTHORIZED_PATHS_PATH
         manifest_header, manifest_rows = self.read_tsv(
             manifest_path,
@@ -12440,9 +17180,17 @@ class CompletionValidator:
             and authorization.get("authorization_id")
             == C0007_CI_RECOVERY_AUTHORIZATION_ID
         )
+        post_recovery_authorization = (
+            isinstance(authorization, dict)
+            and authorization.get("schema_version") == 4
+            and authorization.get("authorization_id")
+            == C0007_POST_RECOVERY_AUTHORIZATION_ID
+        )
         expected_manifest_sha256 = (
             C0007_CI_RECOVERY_MANIFEST_SHA256
             if recovery_authorization
+            else C0007_POST_RECOVERY_MANIFEST_SHA256
+            if post_recovery_authorization
             else C0007_BOUNDED_AUTHORIZED_PATHS_SHA256
         )
         if manifest_path.is_file():
@@ -12451,7 +17199,28 @@ class CompletionValidator:
                 C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
                 "authorized-path manifest SHA-256 drifted",
             )
-        if authorization is not None and recovery_authorization:
+        if authorization is not None and post_recovery_authorization:
+            self.problems.require(
+                authorization_capture is not None
+                and authorization_capture.sha256
+                == C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+                C0007_BOUNDED_AUTHORIZATION_PATH,
+                "post-recovery authorization canonical bytes drifted",
+            )
+            validate_c0007_post_recovery_manifest(
+                manifest_header,
+                manifest_rows,
+                self.problems,
+            )
+            validate_c0007_post_recovery_authorization_payload(
+                authorization,
+                manifest_header,
+                manifest_rows,
+                self.problems,
+            )
+            self.c0007_post_recovery_authorization = authorization
+            self.c0007_post_recovery_active = True
+        elif authorization is not None and recovery_authorization:
             self.problems.require(
                 authorization_capture is not None
                 and authorization_capture.sha256
@@ -12467,7 +17236,7 @@ class CompletionValidator:
             )
             self.c0007_ci_recovery_authorization = authorization
             self.c0007_ci_recovery_active = True
-        elif authorization is not None:
+        elif isinstance(authorization, dict):
             validate_c0007_bounded_authorization_payload(
                 authorization,
                 manifest_header,
@@ -12943,50 +17712,15 @@ class CompletionValidator:
                 "committed PR must be clean except the untracked local ledger",
             )
 
-        def config_values(key: str) -> list[str]:
-            result = self.git(
-                "config", "--get-all", key, check=False, env=readonly_env
-            )
-            return result.stdout.splitlines() if result.returncode == 0 else []
-
-        remote_names = self.git("remote", check=False, env=readonly_env)
-        fetch_urls = self.git(
-            "remote",
-            "get-url",
-            "--all",
-            C0007_BOUNDED_REMOTE,
-            check=False,
+        remote_capture = self.c0007_remote_ref_observation(
+            local,
+            context=f"{context}.remote",
             env=readonly_env,
         )
-        push_urls = self.git(
-            "remote",
-            "get-url",
-            "--push",
-            "--all",
-            C0007_BOUNDED_REMOTE,
-            check=False,
-            env=readonly_env,
-        )
-        remote_refs = self.git(
-            "ls-remote",
-            "--refs",
-            C0007_BOUNDED_REMOTE,
-            C0007_BOUNDED_REMOTE_MAIN_REF,
-            C0007_BOUNDED_REMOTE_BRANCH_REF,
-            check=False,
-            env=readonly_env,
-        )
+        remote_census: dict[str, list[str]] = {}
         tips: dict[str, str] = {}
-        if remote_refs.returncode == 0:
-            for row in remote_refs.stdout.splitlines():
-                try:
-                    oid, ref = row.split("\t", 1)
-                except ValueError:
-                    local.add(f"{context}.remote", f"malformed ls-remote row {row!r}")
-                    continue
-                tips[ref] = oid
-        else:
-            local.add(f"{context}.remote", "cannot observe exact remote refs")
+        if remote_capture is not None:
+            remote_census, tips, _remote_identity = remote_capture
         validate_c0007_remote_observation(
             lifecycle_position=lifecycle_position,
             state=C0007_CI_RECOVERY_STATE,
@@ -12996,17 +17730,17 @@ class CompletionValidator:
             active_commit=None,
             implementation_commit=None,
             symbolic_branch=symbolic_branch,
-            configured_remote_names=remote_names.stdout.splitlines() if remote_names.returncode == 0 else [],
-            configured_remote_urls=config_values(f"remote.{C0007_BOUNDED_REMOTE}.url"),
-            configured_push_urls=config_values(f"remote.{C0007_BOUNDED_REMOTE}.pushurl"),
-            configured_fetch_refspecs=config_values(f"remote.{C0007_BOUNDED_REMOTE}.fetch"),
-            configured_push_refspecs=config_values(f"remote.{C0007_BOUNDED_REMOTE}.push"),
-            configured_mirror_values=config_values(f"remote.{C0007_BOUNDED_REMOTE}.mirror"),
-            configured_push_default_values=config_values("remote.pushDefault"),
-            configured_branch_remote_values=config_values(f"branch.{C0007_BOUNDED_BRANCH}.remote"),
-            configured_branch_push_remote_values=config_values(f"branch.{C0007_BOUNDED_BRANCH}.pushRemote"),
-            resolved_fetch_urls=fetch_urls.stdout.splitlines() if fetch_urls.returncode == 0 else [],
-            resolved_push_urls=push_urls.stdout.splitlines() if push_urls.returncode == 0 else [],
+            configured_remote_names=remote_census.get("configured_remote_names", []),
+            configured_remote_urls=remote_census.get("configured_remote_urls", []),
+            configured_push_urls=remote_census.get("configured_push_urls", []),
+            configured_fetch_refspecs=remote_census.get("configured_fetch_refspecs", []),
+            configured_push_refspecs=remote_census.get("configured_push_refspecs", []),
+            configured_mirror_values=remote_census.get("configured_mirror_values", []),
+            configured_push_default_values=remote_census.get("configured_push_default_values", []),
+            configured_branch_remote_values=remote_census.get("configured_branch_remote_values", []),
+            configured_branch_push_remote_values=remote_census.get("configured_branch_push_remote_values", []),
+            resolved_fetch_urls=remote_census.get("resolved_fetch_urls", []),
+            resolved_push_urls=remote_census.get("resolved_push_urls", []),
             remote_main_tip=tips.get(C0007_BOUNDED_REMOTE_MAIN_REF),
             remote_branch_tip=tips.get(C0007_BOUNDED_REMOTE_BRANCH_REF),
             implementation_overlay=False,
@@ -13033,12 +17767,1303 @@ class CompletionValidator:
         )
         self.problems.messages.extend(local.messages)
 
+    def validate_c0007_post_recovery_control(self) -> None:
+        """Validate the schema-5 A/T/I/V epoch and its exact Git/live custody."""
+
+        context = C0007_BOUNDED_PLANNED_CONTROL_PATH
+        local = Problems()
+        readonly_env = {
+            **os.environ,
+            "GIT_OPTIONAL_LOCKS": "0",
+            "GIT_NO_LAZY_FETCH": "1",
+        }
+        global_index_before = self.validate_c0007_global_index_flags(
+            local,
+            context=f"{context}.index_flags.before",
+            env=readonly_env,
+        )
+        contract_capture = self.read_captured_json(
+            self.root / context,
+            context,
+            require_canonical=True,
+        )
+        self.c0007_contract_capture = contract_capture
+        contract = contract_capture.value if contract_capture is not None else None
+        authorization = self.c0007_post_recovery_authorization
+        if not isinstance(contract, dict) or not isinstance(authorization, dict):
+            local.add(context, "post-recovery control requires canonical schema-5 and schema-4 records")
+            self.problems.messages.extend(local.messages)
+            self.c0007_bounded_state = "invalid"
+            return
+        contract_index_result = self.git_bytes(
+            "ls-files", "--stage", "-z", "--", context,
+            check=False, env=readonly_env,
+        )
+        contract_index: tuple[str, str, str] | None = None
+        contract_index_rows = [
+            row for row in contract_index_result.stdout.split(b"\0") if row
+        ]
+        if contract_index_result.returncode == 0 and len(contract_index_rows) == 1:
+            try:
+                metadata, raw_path = contract_index_rows[0].split(b"\t", 1)
+                mode, oid, stage = metadata.decode("ascii").split()
+                if raw_path.decode("utf-8") == context:
+                    contract_index = (mode, oid, stage)
+            except (UnicodeError, ValueError):
+                pass
+        validate_c0007_contract_index_binding(
+            contract_index,
+            contract_capture.payload if contract_capture is not None else None,
+            local,
+            context=f"{context}.index_binding",
+        )
+        reviews = contract.get("reviews")
+        activation_review = reviews.get("activation") if isinstance(reviews, Mapping) else None
+        readiness = (
+            activation_review.get("readiness_evidence")
+            if isinstance(activation_review, Mapping)
+            else None
+        )
+        evidence = readiness.get("evidence") if isinstance(readiness, Mapping) else None
+        review_request = evidence.get("review_request") if isinstance(evidence, Mapping) else None
+        basis = mapping_path(review_request, "bindings", "successor_basis")
+        artifacts = basis.get("artifacts") if isinstance(basis, Mapping) else None
+        if not isinstance(artifacts, list):
+            local.add(f"{context}.reviews.activation", "readiness successor artifact inventory is missing")
+            artifacts = []
+        validate_c0007_post_recovery_contract_payload(
+            contract,
+            artifacts,
+            authorization,
+            local,
+            authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+            context=context,
+        )
+        current_lifecycle = contract.get("lifecycle")
+        current_ci = contract.get("ci")
+        current_reviews = contract.get("reviews")
+        current_state = (
+            current_lifecycle.get("state")
+            if isinstance(current_lifecycle, Mapping)
+            else None
+        )
+
+        def read_historical_schema5_blob(
+            oid: Any,
+            expected_state: str,
+            label: str,
+        ) -> dict[str, Any] | None:
+            if not isinstance(oid, str) or SHA1_RE.fullmatch(oid) is None:
+                local.add(label, "historical contract blob OID is not a lowercase SHA-1")
+                return None
+            payload_result = self.git_bytes(
+                "cat-file", "blob", oid, check=False, env=readonly_env
+            )
+            if payload_result.returncode:
+                local.add(label, "cannot read historical schema-5 contract blob")
+                return None
+            try:
+                value = strict_json_loads(payload_result.stdout.decode("utf-8"))
+            except (UnicodeError, json.JSONDecodeError, ValueError, RecursionError) as error:
+                local.add(label, f"historical schema-5 JSON is invalid: {error}")
+                return None
+            local.require(
+                isinstance(value, dict)
+                and payload_result.stdout == canonical_tracked_json_bytes(value)
+                and git_blob_oid(payload_result.stdout) == oid,
+                label,
+                "historical contract must be exact canonical bytes at its recorded blob OID",
+            )
+            if not isinstance(value, dict):
+                return None
+            validate_c0007_post_recovery_contract_payload(
+                value,
+                artifacts,
+                authorization,
+                local,
+                authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+                manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+                context=label,
+            )
+            historical_lifecycle = value.get("lifecycle")
+            local.require(
+                isinstance(historical_lifecycle, Mapping)
+                and historical_lifecycle.get("state") == expected_state,
+                f"{label}.lifecycle.state",
+                f"historical contract must be exact {expected_state}",
+            )
+            return value
+
+        activation_contract: dict[str, Any] | None = None
+        active_contract: dict[str, Any] | None = None
+        if isinstance(current_lifecycle, Mapping) and current_state in {"active", "verified"}:
+            activation_contract = read_historical_schema5_blob(
+                current_lifecycle.get("activation_candidate_contract_blob_oid"),
+                "activation_pending",
+                f"{context}.history.A_contract",
+            )
+        if current_state == "active" and activation_contract is not None:
+            try:
+                expected_active = build_c0007_post_recovery_active_contract(
+                    activation_contract,
+                    activation_commit_sha=str(
+                        current_lifecycle.get("activation_candidate_commit_sha")
+                    ),
+                    activation_tree_sha=str(
+                        current_lifecycle.get("activation_candidate_tree_sha")
+                    ),
+                    activation_contract_blob_oid=str(
+                        current_lifecycle.get("activation_candidate_contract_blob_oid")
+                    ),
+                    activation_ci=(
+                        current_ci.get("activation_candidate")
+                        if isinstance(current_ci, Mapping)
+                        else {}
+                    ),
+                )
+            except (TypeError, ValueError) as error:
+                local.add(f"{context}.history.A_to_T", str(error))
+            else:
+                local.require(
+                    exact_json_equal(contract, expected_active),
+                    f"{context}.history.A_to_T",
+                    "active contract must be the exact append-only A-to-T projection",
+                )
+        if isinstance(current_lifecycle, Mapping) and current_state == "verified":
+            active_contract = read_historical_schema5_blob(
+                current_lifecycle.get("active_attestation_contract_blob_oid"),
+                "active",
+                f"{context}.history.T_contract",
+            )
+            if activation_contract is not None and active_contract is not None:
+                active_lifecycle = active_contract.get("lifecycle")
+                active_ci = active_contract.get("ci")
+                try:
+                    expected_active = build_c0007_post_recovery_active_contract(
+                        activation_contract,
+                        activation_commit_sha=str(
+                            active_lifecycle.get("activation_candidate_commit_sha")
+                            if isinstance(active_lifecycle, Mapping) else ""
+                        ),
+                        activation_tree_sha=str(
+                            active_lifecycle.get("activation_candidate_tree_sha")
+                            if isinstance(active_lifecycle, Mapping) else ""
+                        ),
+                        activation_contract_blob_oid=str(
+                            active_lifecycle.get("activation_candidate_contract_blob_oid")
+                            if isinstance(active_lifecycle, Mapping) else ""
+                        ),
+                        activation_ci=(
+                            active_ci.get("activation_candidate")
+                            if isinstance(active_ci, Mapping) else {}
+                        ),
+                    )
+                    local.require(
+                        exact_json_equal(active_contract, expected_active),
+                        f"{context}.history.A_to_T",
+                        "historical T must be the exact append-only projection of historical A",
+                    )
+                    expected_verified = build_c0007_post_recovery_verified_contract(
+                        active_contract,
+                        active_commit_sha=str(
+                            current_lifecycle.get("active_attestation_commit_sha")
+                        ),
+                        active_tree_sha=str(
+                            current_lifecycle.get("active_attestation_tree_sha")
+                        ),
+                        active_contract_blob_oid=str(
+                            current_lifecycle.get("active_attestation_contract_blob_oid")
+                        ),
+                        implementation_commit_sha=str(
+                            current_lifecycle.get("implementation_commit_sha")
+                        ),
+                        implementation_tree_sha=str(
+                            current_lifecycle.get("implementation_tree_sha")
+                        ),
+                        implementation_contract_blob_oid=str(
+                            current_lifecycle.get("implementation_contract_blob_oid")
+                        ),
+                        active_ci=(
+                            current_ci.get("active_attestation")
+                            if isinstance(current_ci, Mapping) else {}
+                        ),
+                        implementation_ci=(
+                            current_ci.get("implementation")
+                            if isinstance(current_ci, Mapping) else {}
+                        ),
+                        implementation_review=(
+                            current_reviews.get("implementation")
+                            if isinstance(current_reviews, Mapping) else {}
+                        ),
+                    )
+                    local.require(
+                        exact_json_equal(contract, expected_verified),
+                        f"{context}.history.T_to_V",
+                        "verified contract must be the exact append-only T-to-V projection",
+                    )
+                except (TypeError, ValueError) as error:
+                    local.add(f"{context}.history.transition", str(error))
+        local.require(
+            self.current_checkpoint_id == C0007_CHECKPOINT_ID,
+            f"{context}.expiry",
+            "post-recovery continuation expires outside checkpoint C0007",
+        )
+
+        # Revalidate every immutable R preimage independently of current files.
+        immutable_preimages = {
+            **C0007_POST_RECOVERY_PREIMAGES,
+            C0007_BOUNDED_WORKFLOW_PATH: (
+                C0007_CI_RECOVERY_WORKFLOW_BLOB_OID,
+                C0007_CI_RECOVERY_WORKFLOW_BYTE_COUNT,
+                C0007_CI_RECOVERY_WORKFLOW_SHA256,
+            ),
+        }
+        for path, (expected_oid, expected_size, expected_digest) in sorted(
+            immutable_preimages.items()
+        ):
+            oid_result = self.git(
+                "rev-parse", f"{C0007_PLANNED_RECOVERY_SHA}:{path}",
+                check=False, env=readonly_env,
+            )
+            payload_result = self.git_bytes(
+                "cat-file", "blob", expected_oid, check=False, env=readonly_env
+            )
+            local.require(
+                oid_result.returncode == 0
+                and oid_result.stdout.strip() == expected_oid
+                and payload_result.returncode == 0
+                and len(payload_result.stdout) == expected_size
+                and hashlib.sha256(payload_result.stdout).hexdigest().upper() == expected_digest,
+                f"{context}.planned_recovery.preimages[{path}]",
+                "immutable R path/blob/byte-count/SHA-256 drifted",
+            )
+
+        p_expected = {
+            **C0007_CI_RECOVERY_PREIMAGES,
+            **C0007_CI_RECOVERY_HISTORICAL_PACKET_ARTIFACTS,
+            **C0007_POST_RECOVERY_IMPLEMENTATION_POSTIMAGE_ARTIFACTS,
+        }
+        p_payloads: dict[str, bytes] = {}
+        for path, (expected_oid, expected_size, expected_digest) in sorted(p_expected.items()):
+            oid_result = self.git(
+                "rev-parse", f"{C0007_FAILED_PLANNED_CONTROL_SHA}:{path}",
+                check=False, env=readonly_env,
+            )
+            tree_result = self.git(
+                "ls-tree", C0007_FAILED_PLANNED_CONTROL_SHA, "--", path,
+                check=False, env=readonly_env,
+            )
+            payload_result = self.git_bytes(
+                "cat-file", "blob", expected_oid, check=False, env=readonly_env
+            )
+            if payload_result.returncode == 0:
+                p_payloads[path] = payload_result.stdout
+            local.require(
+                oid_result.returncode == 0
+                and oid_result.stdout.strip() == expected_oid
+                and tree_result.returncode == 0
+                and tree_result.stdout.strip()
+                == f"100644 blob {expected_oid}\t{path}"
+                and payload_result.returncode == 0
+                and len(payload_result.stdout) == expected_size
+                and hashlib.sha256(payload_result.stdout).hexdigest().upper() == expected_digest,
+                f"{context}.failed_P.blobs[{path}]",
+                "immutable failed-P mode/blob/byte-count/SHA-256 drifted",
+            )
+        try:
+            old_authorization = strict_json_loads(
+                p_payloads[C0007_BOUNDED_AUTHORIZATION_PATH].decode("utf-8")
+            )
+            old_contract = strict_json_loads(
+                p_payloads[C0007_BOUNDED_PLANNED_CONTROL_PATH].decode("utf-8")
+            )
+            old_manifest_reader = csv.DictReader(
+                io.StringIO(
+                    p_payloads[C0007_BOUNDED_AUTHORIZED_PATHS_PATH].decode("utf-8")
+                ),
+                delimiter="\t",
+            )
+            old_manifest_header = tuple(old_manifest_reader.fieldnames or ())
+            old_manifest_rows = [dict(row) for row in old_manifest_reader]
+        except (KeyError, UnicodeError, ValueError, json.JSONDecodeError, csv.Error) as error:
+            local.add(f"{context}.failed_P.payloads", f"cannot parse immutable P controls: {error}")
+            old_authorization = None
+            old_contract = None
+            old_manifest_header = ()
+            old_manifest_rows = []
+        if isinstance(old_authorization, dict):
+            validate_c0007_bounded_authorization_payload(
+                old_authorization,
+                old_manifest_header,
+                old_manifest_rows,
+                local,
+                context=f"{context}.failed_P.authorization",
+            )
+        if isinstance(old_contract, dict):
+            validate_c0007_bounded_planned_control_payload(
+                old_contract,
+                old_manifest_header,
+                old_manifest_rows,
+                local,
+                authorization_sha256=C0007_CURRENT_AUTHORIZATION_SHA256,
+                context=f"{context}.failed_P.contract",
+            )
+
+        # Bind the six live non-self postimages to both readiness and schema-5.
+        contract_artifacts = {
+            item.get("path"): item
+            for item in contract.get("artifacts", [])
+            if isinstance(item, Mapping) and isinstance(item.get("path"), str)
+        } if isinstance(contract.get("artifacts"), list) else {}
+        full_artifacts = {
+            item.get("path"): item
+            for item in artifacts
+            if isinstance(item, Mapping) and isinstance(item.get("path"), str)
+        }
+        for path in C0007_POST_RECOVERY_NON_SELF_PATHS:
+            full = full_artifacts.get(path)
+            persisted = contract_artifacts.get(path)
+            try:
+                payload = (self.root / path).read_bytes()
+            except OSError as error:
+                local.add(f"{context}.artifacts[{path}]", f"cannot read live postimage: {error}")
+                continue
+            index_result = self.git_bytes(
+                "ls-files", "--stage", "-z", "--", path,
+                check=False, env=readonly_env,
+            )
+            parsed_index: tuple[str, str, str] | None = None
+            rows = [row for row in index_result.stdout.split(b"\0") if row]
+            if index_result.returncode == 0 and len(rows) == 1:
+                try:
+                    metadata, raw_path = rows[0].split(b"\t", 1)
+                    mode, oid, stage = metadata.decode("ascii").split()
+                    if raw_path.decode("utf-8") == path:
+                        parsed_index = (mode, oid, stage)
+                except (UnicodeError, ValueError):
+                    pass
+            expected_persisted = (
+                {key: value for key, value in full.items() if key != "byte_count"}
+                if isinstance(full, Mapping)
+                else None
+            )
+            digest = hashlib.sha256(payload).hexdigest().upper()
+            oid = git_blob_oid(payload)
+            local.require(
+                isinstance(full, Mapping)
+                and exact_json_equal(persisted, expected_persisted)
+                and full.get("byte_count") == len(payload)
+                and full.get("sha256") == digest
+                and full.get("post_blob_oid") == oid
+                and parsed_index == ("100644", oid, "0"),
+                f"{context}.artifacts[{path}]",
+                "live/index bytes must equal the exact readiness and persisted artifact records",
+            )
+        try:
+            workflow_digest = sha256_path(self.root / C0007_BOUNDED_WORKFLOW_PATH)
+        except OSError:
+            workflow_digest = None
+        local.require(
+            workflow_digest == C0007_CI_RECOVERY_WORKFLOW_SHA256,
+            C0007_BOUNDED_WORKFLOW_PATH,
+            "post-recovery lifecycle requires the immutable successful-PR workflow",
+        )
+
+        def commit_identity(commit: str, label: str) -> tuple[list[str], str, str, str] | None:
+            result = self.git(
+                "show", "-s", "--format=%P%n%s%n%T", commit,
+                check=False, env=readonly_env,
+            )
+            lines = result.stdout.splitlines()
+            blob = self.git(
+                "rev-parse", f"{commit}:{C0007_BOUNDED_PLANNED_CONTROL_PATH}",
+                check=False, env=readonly_env,
+            )
+            if result.returncode or len(lines) != 3 or blob.returncode:
+                local.add(label, "cannot resolve commit parent/subject/tree/contract identity")
+                return None
+            return lines[0].split(), lines[1], lines[2], blob.stdout.strip()
+
+        def validate_commit(
+            commit: str,
+            parent: str,
+            paths: set[str],
+            subject: str,
+            label: str,
+        ) -> tuple[str, str] | None:
+            identity = commit_identity(commit, label)
+            delta = self.git(
+                "diff", "--name-only", "--no-renames", parent, commit, "--",
+                check=False, env=readonly_env,
+            )
+            changed = {
+                normalize_path(path) for path in delta.stdout.splitlines() if path.strip()
+            } if delta.returncode == 0 else set()
+            if identity is None:
+                return None
+            parents, actual_subject, tree_sha, contract_blob = identity
+            validate_c0007_bounded_commit_shape(
+                parents, changed, actual_subject, parent, paths, subject,
+                local, context=label,
+            )
+            return tree_sha, contract_blob
+
+        head_result = self.git("rev-parse", "HEAD", check=False, env=readonly_env)
+        head = head_result.stdout.strip() if head_result.returncode == 0 else ""
+        branch_result = self.git(
+            "symbolic-ref", "--quiet", "--short", "HEAD",
+            check=False, env=readonly_env,
+        )
+        symbolic_branch = branch_result.stdout.strip() if branch_result.returncode == 0 else None
+        lifecycle = contract.get("lifecycle")
+        state = lifecycle.get("state") if isinstance(lifecycle, Mapping) else None
+        implementation_paths = {
+            row["path"] for row in c0007_post_recovery_expected_manifest_rows()
+            if row["stage"] == "implementation"
+        }
+        ledger_index = self.git_bytes(
+            "ls-files", "--stage", "-z", "--",
+            "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+            check=False, env=readonly_env,
+        )
+        local.require(
+            ledger_index.returncode == 0 and ledger_index.stdout == b"",
+            f"{context}.local_ledger_exclusion",
+            "the local ledger must remain wholly untracked and outside every index/commit",
+        )
+        control_paths = set(C0007_POST_RECOVERY_PATHS)
+        contract_only = {C0007_BOUNDED_PLANNED_CONTROL_PATH}
+        overlay = self.git_live_change_paths(head, context, env=readonly_env) if head else set()
+        overlay.discard("REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md")
+        lifecycle_position: str | None = None
+        active_commit: str | None = None
+        implementation_overlay = False
+        if isinstance(lifecycle, Mapping) and state == "activation_pending":
+            if head == C0007_PLANNED_RECOVERY_SHA:
+                lifecycle_position = "A-precommit"
+                local.require(
+                    overlay == control_paths and symbolic_branch == C0007_BOUNDED_BRANCH,
+                    f"{context}.A.precommit",
+                    "A precommit requires exactly seven control paths on the symbolic bounded branch",
+                )
+            else:
+                lifecycle_position = "A-committed"
+                validate_commit(
+                    head, C0007_PLANNED_RECOVERY_SHA, control_paths,
+                    C0007_POST_RECOVERY_COMMIT_SUBJECTS["activation_pending"],
+                    f"{context}.A",
+                )
+                local.require(not overlay, f"{context}.A.worktree", "committed A must be clean")
+        elif isinstance(lifecycle, Mapping) and state in {"active", "verified"}:
+            activation_commit = str(lifecycle.get("activation_candidate_commit_sha") or "")
+            activation_identity = validate_commit(
+                activation_commit, C0007_PLANNED_RECOVERY_SHA, control_paths,
+                C0007_POST_RECOVERY_COMMIT_SUBJECTS["activation_pending"],
+                f"{context}.A",
+            )
+            if activation_identity is not None:
+                local.require(
+                    activation_identity
+                    == (
+                        lifecycle.get("activation_candidate_tree_sha"),
+                        lifecycle.get("activation_candidate_contract_blob_oid"),
+                    ),
+                    f"{context}.A.identity",
+                    "recorded A tree/contract blob must equal Git",
+                )
+            if state == "active":
+                if head == activation_commit:
+                    lifecycle_position = "T-precommit"
+                    local.require(overlay == contract_only, f"{context}.T.precommit", "T precommit changes only contract")
+                else:
+                    head_identity = commit_identity(head, f"{context}.active_head")
+                    head_parents = head_identity[0] if head_identity is not None else []
+                    if head_parents == [activation_commit]:
+                        validate_commit(
+                            head, activation_commit, contract_only,
+                            C0007_POST_RECOVERY_COMMIT_SUBJECTS["active"], f"{context}.T",
+                        )
+                        active_commit = head
+                        local.require(
+                            not overlay or overlay == implementation_paths,
+                            f"{context}.T.worktree",
+                            "T permits no overlay or the complete 14-path I union",
+                        )
+                        implementation_overlay = overlay == implementation_paths
+                        lifecycle_position = "I-overlay" if implementation_overlay else "T-committed"
+                    elif len(head_parents) == 1:
+                        active_commit = head_parents[0]
+                        active_identity = validate_commit(
+                            active_commit, activation_commit, contract_only,
+                            C0007_POST_RECOVERY_COMMIT_SUBJECTS["active"], f"{context}.T",
+                        )
+                        implementation_identity = validate_commit(
+                            head, active_commit, implementation_paths,
+                            C0007_POST_RECOVERY_COMMIT_SUBJECTS["implementation"], f"{context}.I",
+                        )
+                        if active_identity is not None and implementation_identity is not None:
+                            local.require(
+                                active_identity[1] == implementation_identity[1],
+                                f"{context}.I.contract",
+                                "I must preserve the T contract blob byte-identically",
+                            )
+                        lifecycle_position = "I-committed"
+                        local.require(not overlay, f"{context}.I.worktree", "committed I must be clean")
+                    else:
+                        local.add(f"{context}.active_head", "active state requires exact T or I")
+            else:
+                active_commit = str(lifecycle.get("active_attestation_commit_sha") or "")
+                active_identity = validate_commit(
+                    active_commit, activation_commit, contract_only,
+                    C0007_POST_RECOVERY_COMMIT_SUBJECTS["active"], f"{context}.T",
+                )
+                implementation_commit = str(lifecycle.get("implementation_commit_sha") or "")
+                implementation_identity = validate_commit(
+                    implementation_commit, active_commit, implementation_paths,
+                    C0007_POST_RECOVERY_COMMIT_SUBJECTS["implementation"], f"{context}.I",
+                )
+                if active_identity is not None and implementation_identity is not None:
+                    local.require(
+                        active_identity
+                        == (
+                            lifecycle.get("active_attestation_tree_sha"),
+                            lifecycle.get("active_attestation_contract_blob_oid"),
+                        )
+                        and implementation_identity
+                        == (
+                            lifecycle.get("implementation_tree_sha"),
+                            lifecycle.get("implementation_contract_blob_oid"),
+                        )
+                        and active_identity[1] == implementation_identity[1],
+                        f"{context}.T_I.identity",
+                        "V must record exact T/I identities and I must preserve T contract",
+                    )
+                if head == implementation_commit:
+                    lifecycle_position = "V-precommit"
+                    local.require(overlay == contract_only, f"{context}.V.precommit", "V precommit changes only contract")
+                else:
+                    lifecycle_position = "V-committed"
+                    validate_commit(
+                        head, implementation_commit, contract_only,
+                        C0007_POST_RECOVERY_COMMIT_SUBJECTS["verified"], f"{context}.V",
+                    )
+                    local.require(not overlay, f"{context}.V.worktree", "committed V must be clean")
+        else:
+            local.add(f"{context}.lifecycle.state", f"unsupported post-recovery state {state!r}")
+
+        status_result = self.git_bytes(
+            "status", "--porcelain=v1", "-z", "--untracked-files=all",
+            check=False, env=readonly_env,
+        )
+        try:
+            status_rows = [
+                row for row in status_result.stdout.decode("utf-8").split("\0")
+                if row and row != "?? REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md"
+            ]
+        except UnicodeError as error:
+            local.add(f"{context}.status", f"status paths are not UTF-8: {error}")
+            status_rows = []
+        expected_status_rows: list[str] = []
+        if lifecycle_position == "A-precommit":
+            expected_status_rows = [f"M  {path}" for path in sorted(control_paths)]
+        elif lifecycle_position in {"T-precommit", "V-precommit"}:
+            expected_status_rows = [f"M  {context}"]
+        elif lifecycle_position == "I-overlay":
+            implementation_operations = {
+                row["path"]: row["operation"]
+                for row in c0007_post_recovery_expected_manifest_rows()
+                if row["stage"] == "implementation"
+            }
+            expected_status_rows = [
+                f"{'A' if implementation_operations[path] == 'add' else 'M'}  {path}"
+                for path in sorted(implementation_paths)
+            ]
+        local.require(
+            status_result.returncode == 0 and status_rows == expected_status_rows,
+            f"{context}.status",
+            "A/T/I/V worktree/index status must equal the exact staged lifecycle overlay",
+        )
+        if lifecycle_position in {"A-committed", "T-committed", "I-committed", "V-committed"}:
+            head_contract = self.git(
+                "rev-parse", f"HEAD:{context}", check=False, env=readonly_env
+            )
+            live_contract_blob = (
+                git_blob_oid(contract_capture.payload)
+                if contract_capture is not None
+                else None
+            )
+            local.require(
+                head_contract.returncode == 0
+                and head_contract.stdout.strip() == live_contract_blob
+                and contract_index == ("100644", live_contract_blob, "0"),
+                f"{context}.head_binding",
+                "committed lifecycle contract must equal both HEAD and the exact stage-0 index blob",
+            )
+
+        # Names are authority; these immutable packet ledgers are the exact I
+        # bytes.  Authenticate index and worktree independently so a complete
+        # but substituted fourteen-path union cannot pass.
+        postimage_hashes: dict[str, str] = {}
+        for request_id in ("R0014", "R0015"):
+            packet_path = (
+                f"{DEFAULT_PHASE_DIR.as_posix()}/requests/"
+                f"{request_id}-postimages.tsv"
+            )
+            payload = p_payloads.get(packet_path)
+            try:
+                reader = csv.DictReader(
+                    io.StringIO((payload or b"").decode("utf-8"), newline=""),
+                    delimiter="\t",
+                )
+                packet_rows = [dict(row) for row in reader]
+                packet_header = tuple(reader.fieldnames or ())
+            except (UnicodeError, csv.Error, ValueError) as error:
+                local.add(
+                    f"{context}.implementation.postimages[{request_id}]",
+                    f"cannot parse immutable P postimages: {error}",
+                )
+                packet_header = ()
+                packet_rows = []
+            local.require(
+                packet_header
+                == (
+                    "path", "preimage_blob_oid", "preimage_sha256",
+                    "postimage_sha256",
+                ),
+                f"{context}.implementation.postimages[{request_id}]",
+                "immutable postimage ledger header drifted",
+            )
+            for row in packet_rows:
+                path = row.get("path")
+                digest = row.get("postimage_sha256")
+                if (
+                    isinstance(path, str)
+                    and isinstance(digest, str)
+                    and path not in postimage_hashes
+                    and SHA256_RE.fullmatch(digest) is not None
+                    and digest == digest.upper()
+                ):
+                    postimage_hashes[path] = digest
+                else:
+                    local.add(
+                        f"{context}.implementation.postimages[{request_id}]",
+                        "postimage rows require unique paths and uppercase SHA-256 values",
+                    )
+        local.require(
+            set(postimage_hashes) == implementation_paths,
+            f"{context}.implementation.postimages",
+            "immutable P postimage ledgers must cover exactly the fourteen-path union",
+        )
+
+        base_tree_result = self.git_bytes(
+            "ls-tree", "-r", "-z", C0007_BOUNDED_CONTROL_HEAD_SHA, "--",
+            *sorted(implementation_paths), check=False, env=readonly_env,
+        )
+        index_result = self.git_bytes(
+            "ls-files", "--stage", "-z", "--", *sorted(implementation_paths),
+            check=False, env=readonly_env,
+        )
+
+        def parse_implementation_tree(payload: bytes) -> dict[str, tuple[str, str]]:
+            parsed: dict[str, tuple[str, str]] = {}
+            for raw in payload.split(b"\0"):
+                if not raw:
+                    continue
+                try:
+                    metadata, raw_path = raw.split(b"\t", 1)
+                    mode, kind, oid = metadata.decode("ascii").split()
+                    path = raw_path.decode("utf-8")
+                    if kind != "blob" or path in parsed:
+                        raise ValueError("duplicate/non-blob tree row")
+                    parsed[path] = (mode, oid)
+                except (UnicodeError, ValueError) as error:
+                    local.add(f"{context}.implementation.base", str(error))
+            return parsed
+
+        def parse_implementation_index(payload: bytes) -> dict[str, tuple[str, str, str]]:
+            parsed: dict[str, tuple[str, str, str]] = {}
+            for raw in payload.split(b"\0"):
+                if not raw:
+                    continue
+                try:
+                    metadata, raw_path = raw.split(b"\t", 1)
+                    mode, oid, stage = metadata.decode("ascii").split()
+                    path = raw_path.decode("utf-8")
+                    if path in parsed:
+                        raise ValueError("duplicate index row")
+                    parsed[path] = (mode, oid, stage)
+                except (UnicodeError, ValueError) as error:
+                    local.add(f"{context}.implementation.index", str(error))
+            return parsed
+
+        base_rows = (
+            parse_implementation_tree(base_tree_result.stdout)
+            if base_tree_result.returncode == 0 else {}
+        )
+        implementation_index = (
+            parse_implementation_index(index_result.stdout)
+            if index_result.returncode == 0 else {}
+        )
+        implementation_present = lifecycle_position in {
+            "I-overlay", "I-committed", "V-precommit", "V-committed",
+        }
+        actual_postimages: dict[str, str | None] = {}
+        for path in sorted(implementation_paths):
+            base_mode, base_oid = base_rows.get(path, (None, None))
+            index_mode, index_oid, index_stage = implementation_index.get(
+                path, (None, None, None)
+            )
+            operation = next(
+                (
+                    row["operation"]
+                    for row in c0007_post_recovery_expected_manifest_rows()
+                    if row["stage"] == "implementation" and row["path"] == path
+                ),
+                None,
+            )
+            if operation == "add":
+                local.require(
+                    base_mode is None and base_oid is None,
+                    f"{context}.implementation.base[{path}]",
+                    "implementation addition must be absent at exact B",
+                )
+            else:
+                local.require(
+                    base_mode == "100644" and SHA1_RE.fullmatch(str(base_oid or "")) is not None,
+                    f"{context}.implementation.base[{path}]",
+                    "implementation modification requires its exact regular-file B preimage",
+                )
+            worktree_path = self.root / path
+            if not implementation_present:
+                if operation == "add":
+                    local.require(
+                        path not in implementation_index and not os.path.lexists(worktree_path),
+                        f"{context}.implementation.preimage[{path}]",
+                        "before I, additions must be absent from index and worktree",
+                    )
+                else:
+                    base_payload_result = self.git_bytes(
+                        "cat-file", "blob", str(base_oid or ""),
+                        check=False, env=readonly_env,
+                    )
+                    try:
+                        worktree_payload = read_stable_file_bytes(worktree_path)
+                    except (OSError, ValueError) as error:
+                        local.add(f"{context}.implementation.preimage[{path}]", str(error))
+                        worktree_payload = None
+                    local.require(
+                        (index_mode, index_oid, index_stage) == (base_mode, base_oid, "0")
+                        and base_payload_result.returncode == 0
+                        and worktree_payload == base_payload_result.stdout,
+                        f"{context}.implementation.preimage[{path}]",
+                        "before I, modified paths must equal exact B in index and worktree",
+                    )
+                continue
+            try:
+                worktree_payload = read_stable_file_bytes(worktree_path)
+            except (OSError, ValueError) as error:
+                local.add(f"{context}.implementation.postimage[{path}]", str(error))
+                actual_postimages[path] = None
+                continue
+            worktree_digest = hashlib.sha256(worktree_payload).hexdigest().upper()
+            worktree_oid = git_blob_oid(worktree_payload)
+            actual_postimages[path] = worktree_digest
+            local.require(
+                index_mode == "100644"
+                and index_stage == "0"
+                and index_oid == worktree_oid
+                and worktree_digest == postimage_hashes.get(path),
+                f"{context}.implementation.postimage[{path}]",
+                "I index/worktree bytes must equal the exact immutable packet postimage",
+            )
+        if implementation_present:
+            validate_c0007_live_postimages(
+                actual_postimages,
+                postimage_hashes,
+                local,
+                context=f"{context}.implementation.postimages",
+            )
+
+        configuration_capture = self.c0007_remote_configuration_census(
+            local, context=f"{context}.remote.configuration", env=readonly_env
+        )
+        if configuration_capture is None:
+            self.problems.messages.extend(local.messages)
+            self.c0007_bounded_state = "invalid"
+            return
+        remote_census = configuration_capture[0]
+        remote = self.git(
+            "ls-remote", "--refs", C0007_BOUNDED_REMOTE,
+            C0007_BOUNDED_REMOTE_MAIN_REF, C0007_BOUNDED_REMOTE_BRANCH_REF,
+            check=False, env=readonly_env,
+        )
+        tips: dict[str, str] = {}
+        if remote.returncode == 0:
+            for row in remote.stdout.splitlines():
+                try:
+                    oid, ref = row.split("\t", 1)
+                except ValueError:
+                    local.add(f"{context}.remote", f"malformed ref row {row!r}")
+                    continue
+                tips[ref] = oid
+        else:
+            local.add(f"{context}.remote", "cannot observe remote refs")
+        validate_c0007_remote_observation(
+            lifecycle_position=lifecycle_position,
+            state=str(state) if state is not None else None,
+            head=head,
+            planned_commit=C0007_PLANNED_RECOVERY_SHA,
+            activation_commit=(
+                str(lifecycle.get("activation_candidate_commit_sha") or "")
+                if isinstance(lifecycle, Mapping) else None
+            ),
+            active_commit=active_commit,
+            implementation_commit=(
+                str(lifecycle.get("implementation_commit_sha") or "")
+                if isinstance(lifecycle, Mapping) else None
+            ),
+            symbolic_branch=symbolic_branch,
+            remote_main_tip=tips.get(C0007_BOUNDED_REMOTE_MAIN_REF),
+            remote_branch_tip=tips.get(C0007_BOUNDED_REMOTE_BRANCH_REF),
+            implementation_overlay=implementation_overlay,
+            problems=local,
+            context=f"{context}.remote",
+            **{
+                key: value
+                for key, value in remote_census.items()
+                if key != "effective_remote_namespace_rows"
+            },
+        )
+
+        # Persisted CI is only a cache: re-fetch each applicable exact-head
+        # run, sole job, check suite, and complete log by candidate SHA.
+        self.reauthenticate_c0007_failed_planned_ci(
+            local,
+            context=f"{context}.ci.live.failed_planned_control",
+        )
+        self.reauthenticate_c0007_compact_ci_record(
+            C0007_PLANNED_RECOVERY_SHA,
+            C0007_PLANNED_RECOVERY_TREE_SHA,
+            c0007_planned_recovery_ci_record(),
+            local,
+            context=f"{context}.ci.live.planned_recovery",
+        )
+        ci_records = contract.get("ci")
+        if isinstance(lifecycle, Mapping) and isinstance(ci_records, Mapping):
+            if state in {"active", "verified"}:
+                self.reauthenticate_c0007_compact_ci_record(
+                    str(lifecycle.get("activation_candidate_commit_sha") or ""),
+                    str(lifecycle.get("activation_candidate_tree_sha") or ""),
+                    (
+                        ci_records.get("activation_candidate")
+                        if isinstance(ci_records.get("activation_candidate"), Mapping)
+                        else None
+                    ),
+                    local,
+                    context=f"{context}.ci.live.activation_candidate",
+                )
+            if state == "verified":
+                self.reauthenticate_c0007_compact_ci_record(
+                    str(lifecycle.get("active_attestation_commit_sha") or ""),
+                    str(lifecycle.get("active_attestation_tree_sha") or ""),
+                    (
+                        ci_records.get("active_attestation")
+                        if isinstance(ci_records.get("active_attestation"), Mapping)
+                        else None
+                    ),
+                    local,
+                    context=f"{context}.ci.live.active_attestation",
+                )
+                self.reauthenticate_c0007_compact_ci_record(
+                    str(lifecycle.get("implementation_commit_sha") or ""),
+                    str(lifecycle.get("implementation_tree_sha") or ""),
+                    (
+                        ci_records.get("implementation")
+                        if isinstance(ci_records.get("implementation"), Mapping)
+                        else None
+                    ),
+                    local,
+                    context=f"{context}.ci.live.implementation",
+                )
+        live_t_ci: dict[str, Any] | None = None
+        if state == "active" and lifecycle_position in {"I-overlay", "I-committed"}:
+            active_tree_result = self.git(
+                "show", "-s", "--format=%T", str(active_commit or ""),
+                check=False, env=readonly_env,
+            )
+            active_tree_sha = active_tree_result.stdout.strip()
+            live_t_ci = self.reauthenticate_c0007_compact_ci_record(
+                str(active_commit or ""),
+                active_tree_sha,
+                None,
+                local,
+                context=f"{context}.ci.live.T_before_I",
+            )
+            if lifecycle_position == "I-committed" and live_t_ci is not None:
+                implementation_times = self.git(
+                    "show", "-s", "--format=%aI%n%cI", head,
+                    check=False, env=readonly_env,
+                )
+                time_rows = implementation_times.stdout.splitlines()
+                t_completed = parse_rfc3339(live_t_ci.get("completed_at"))
+                author_time = parse_rfc3339(time_rows[0] if len(time_rows) == 2 else None)
+                committer_time = parse_rfc3339(time_rows[1] if len(time_rows) == 2 else None)
+                local.require(
+                    implementation_times.returncode == 0
+                    and len(time_rows) == 2
+                    and t_completed is not None
+                    and author_time is not None
+                    and committer_time is not None
+                    and t_completed <= author_time
+                    and t_completed <= committer_time,
+                    f"{context}.I.chronology",
+                    "authenticated T CI must not follow either I author or committer time",
+                )
+
+        def flatten_issue_comment_pages(value: Any) -> list[dict[str, Any]]:
+            if not isinstance(value, list):
+                return []
+            if all(isinstance(item, dict) for item in value):
+                return [dict(item) for item in value]
+            rows: list[dict[str, Any]] = []
+            for item in value:
+                rows.extend(flatten_issue_comment_pages(item))
+            return rows
+
+        # Independently authenticate the durable activation issue/comment.
+        source = activation_review.get("source") if isinstance(activation_review, Mapping) else None
+        if isinstance(source, Mapping):
+            repository = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}", local,
+                context=f"{context}.reviews.activation.github.repository",
+            )
+            issue = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/{source.get('issue_number')}",
+                local, context=f"{context}.reviews.activation.github.issue",
+            )
+            comment = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/comments/{source.get('comment_database_id')}",
+                local, context=f"{context}.reviews.activation.github.comment",
+            )
+            comment_pages = self.c0007_gh_api_json(
+                f"repos/{C0007_BOUNDED_REPOSITORY}/issues/"
+                f"{source.get('issue_number')}/comments?per_page=100&sort=created&direction=asc",
+                local,
+                context=f"{context}.reviews.activation.github.comments",
+                paginate=True,
+            )
+            activation_matches = [
+                row
+                for row in flatten_issue_comment_pages(comment_pages)
+                if row.get("body") == source.get("message")
+            ]
+            local.require(
+                len(activation_matches) == 1
+                and activation_matches[0].get("id")
+                == source.get("comment_database_id")
+                and c0007_equivalent_issue_comment_views(
+                    activation_matches[0], comment
+                ),
+                f"{context}.reviews.activation.github.comments",
+                "full pagination must retain exactly the recorded activation body/comment",
+            )
+            if all(isinstance(value, Mapping) for value in (repository, issue, comment)):
+                parsed = parse_c0007_post_recovery_issue_request(
+                    issue, local, context=f"{context}.reviews.activation.issue_request"
+                )
+                local.require(
+                    parsed is not None
+                    and isinstance(evidence, Mapping)
+                    and exact_json_equal(parsed[0], evidence),
+                    f"{context}.reviews.activation.readiness_evidence",
+                    "live issue must contain the exact persisted readiness evidence",
+                )
+                validate_c0007_github_review_observation(
+                    dict(activation_review), repository, issue, comment, local,
+                    context=f"{context}.reviews.activation.github",
+                )
+                edit_observation = (
+                    self.c0007_post_recovery_review_edit_observation(
+                        source.get("issue_number"),
+                        source.get("comment_node_id"),
+                        local,
+                        context=f"{context}.reviews.activation.github.edits",
+                    )
+                    if type(source.get("issue_number")) is int
+                    and isinstance(source.get("comment_node_id"), str)
+                    else None
+                )
+                if edit_observation is not None:
+                    validate_c0007_post_recovery_review_edit_observation(
+                        activation_review,
+                        edit_observation,
+                        local,
+                        context=f"{context}.reviews.activation.github.edits",
+                    )
+        else:
+            local.add(f"{context}.reviews.activation.source", "approved activation source is missing")
+
+        implementation_review = (
+            reviews.get("implementation") if isinstance(reviews, Mapping) else None
+        )
+        if state == "verified" and isinstance(implementation_review, Mapping):
+            implementation_source = implementation_review.get("source")
+            if isinstance(implementation_source, Mapping):
+                implementation_repository = self.c0007_gh_api_json(
+                    f"repos/{C0007_BOUNDED_REPOSITORY}",
+                    local,
+                    context=f"{context}.reviews.implementation.github.repository",
+                )
+                implementation_issue = self.c0007_gh_api_json(
+                    f"repos/{C0007_BOUNDED_REPOSITORY}/issues/"
+                    f"{implementation_source.get('issue_number')}",
+                    local,
+                    context=f"{context}.reviews.implementation.github.issue",
+                )
+                implementation_comment = self.c0007_gh_api_json(
+                    f"repos/{C0007_BOUNDED_REPOSITORY}/issues/comments/"
+                    f"{implementation_source.get('comment_database_id')}",
+                    local,
+                    context=f"{context}.reviews.implementation.github.comment",
+                )
+                implementation_pages = self.c0007_gh_api_json(
+                    f"repos/{C0007_BOUNDED_REPOSITORY}/issues/"
+                    f"{implementation_source.get('issue_number')}"
+                    "/comments?per_page=100&sort=created&direction=asc",
+                    local,
+                    context=f"{context}.reviews.implementation.github.comments",
+                    paginate=True,
+                )
+                implementation_matches = [
+                    row
+                    for row in flatten_issue_comment_pages(implementation_pages)
+                    if row.get("body") == implementation_source.get("message")
+                ]
+                local.require(
+                    len(implementation_matches) == 1
+                    and implementation_matches[0].get("id")
+                    == implementation_source.get("comment_database_id")
+                    and exact_json_equal(
+                        implementation_matches[0], implementation_comment
+                    ),
+                    f"{context}.reviews.implementation.github.comments",
+                    "full pagination must retain exactly the distinct implementation body/comment",
+                )
+                if all(
+                    isinstance(value, Mapping)
+                    for value in (
+                        implementation_repository,
+                        implementation_issue,
+                        implementation_comment,
+                    )
+                ):
+                    validate_c0007_github_review_observation(
+                        dict(implementation_review),
+                        implementation_repository,
+                        implementation_issue,
+                        implementation_comment,
+                        local,
+                        context=f"{context}.reviews.implementation.github",
+                    )
+                    implementation_edits = (
+                        self.c0007_post_recovery_review_edit_observation(
+                            implementation_source.get("issue_number"),
+                            implementation_source.get("comment_node_id"),
+                            local,
+                            context=f"{context}.reviews.implementation.github.edits",
+                        )
+                        if type(implementation_source.get("issue_number")) is int
+                        and isinstance(
+                            implementation_source.get("comment_node_id"), str
+                        )
+                        else None
+                    )
+                    if implementation_edits is not None:
+                        validate_c0007_post_recovery_review_edit_observation(
+                            implementation_review,
+                            implementation_edits,
+                            local,
+                            context=f"{context}.reviews.implementation.github.edits",
+                        )
+            else:
+                local.add(
+                    f"{context}.reviews.implementation.source",
+                    "verified state requires a durable implementation OWNER source",
+                )
+
+        def lifecycle_commit_times(commit_sha: str, label: str) -> tuple[Any, Any] | None:
+            result = self.git(
+                "show", "-s", "--format=%aI%n%cI", commit_sha,
+                check=False, env=readonly_env,
+            )
+            rows = result.stdout.splitlines()
+            author_time = parse_rfc3339(rows[0] if len(rows) == 2 else None)
+            committer_time = parse_rfc3339(rows[1] if len(rows) == 2 else None)
+            local.require(
+                result.returncode == 0
+                and len(rows) == 2
+                and author_time is not None
+                and committer_time is not None,
+                label,
+                "lifecycle commit author/committer times must be exact RFC3339 instants",
+            )
+            return (
+                (author_time, committer_time)
+                if author_time is not None and committer_time is not None
+                else None
+            )
+
+        activation_commit_sha = (
+            str(lifecycle.get("activation_candidate_commit_sha") or "")
+            if isinstance(lifecycle, Mapping) else ""
+        )
+        if lifecycle_position == "A-committed":
+            activation_commit_sha = head
+        if SHA1_RE.fullmatch(activation_commit_sha) is not None:
+            activation_times = lifecycle_commit_times(
+                activation_commit_sha, f"{context}.A.chronology"
+            )
+            activation_comment_time = parse_rfc3339(
+                source.get("created_at") if isinstance(source, Mapping) else None
+            )
+            local.require(
+                activation_times is not None
+                and activation_comment_time is not None
+                and activation_comment_time <= activation_times[0]
+                and activation_comment_time <= activation_times[1],
+                f"{context}.A.chronology",
+                "activation OWNER comment must not follow either A author or committer time",
+            )
+        if isinstance(ci_records, Mapping) and active_commit:
+            active_times = lifecycle_commit_times(
+                active_commit, f"{context}.T.chronology"
+            )
+            activation_ci_completed = parse_rfc3339(
+                mapping_path(ci_records, "activation_candidate", "completed_at")
+            )
+            local.require(
+                active_times is not None
+                and activation_ci_completed is not None
+                and activation_ci_completed <= active_times[0]
+                and activation_ci_completed <= active_times[1],
+                f"{context}.T.chronology",
+                "A CI completion must not follow either T author or committer time",
+            )
+        implementation_commit_sha = (
+            str(lifecycle.get("implementation_commit_sha") or "")
+            if state == "verified" and isinstance(lifecycle, Mapping)
+            else head if lifecycle_position == "I-committed" else ""
+        )
+        if SHA1_RE.fullmatch(implementation_commit_sha) is not None:
+            implementation_times = lifecycle_commit_times(
+                implementation_commit_sha, f"{context}.I.chronology"
+            )
+            t_record = (
+                ci_records.get("active_attestation")
+                if state == "verified" and isinstance(ci_records, Mapping)
+                else live_t_ci
+            )
+            t_completed = parse_rfc3339(
+                t_record.get("completed_at") if isinstance(t_record, Mapping) else None
+            )
+            i_started = parse_rfc3339(
+                mapping_path(ci_records, "implementation", "started_at")
+                if state == "verified"
+                else None
+            )
+            local.require(
+                implementation_times is not None
+                and t_completed is not None
+                and t_completed <= implementation_times[0]
+                and t_completed <= implementation_times[1]
+                and (
+                    state != "verified"
+                    or (
+                        i_started is not None
+                        and implementation_times[0] <= i_started
+                        and implementation_times[1] <= i_started
+                    )
+                ),
+                f"{context}.I.chronology",
+                "T CI must not follow I author/committer times, which must not follow I CI start",
+            )
+        if lifecycle_position == "V-committed" and isinstance(ci_records, Mapping):
+            verified_times = lifecycle_commit_times(head, f"{context}.V.chronology")
+            implementation_completed = parse_rfc3339(
+                mapping_path(ci_records, "implementation", "completed_at")
+            )
+            implementation_source = (
+                implementation_review.get("source")
+                if isinstance(implementation_review, Mapping) else None
+            )
+            implementation_comment_time = parse_rfc3339(
+                implementation_source.get("created_at")
+                if isinstance(implementation_source, Mapping) else None
+            )
+            local.require(
+                verified_times is not None
+                and implementation_completed is not None
+                and implementation_comment_time is not None
+                and implementation_completed <= implementation_comment_time
+                and implementation_comment_time <= verified_times[0]
+                and implementation_comment_time <= verified_times[1],
+                f"{context}.V.chronology",
+                "I CI must not follow the implementation OWNER comment, which must not follow either V commit time",
+            )
+
+        t_readiness: dict[str, Any] | None = None
+        if implementation_overlay:
+            # T cannot self-embed its own CI result and I must preserve the T
+            # contract.  Re-authenticate exact-head T CI before enabling any
+            # implementation write.
+            self.c0007_bounded_state = "active"
+            t_readiness, t_readiness_problems = self.observe_c0007_live_evidence(
+                "c0007_t_implementation_ready_v1",
+                allow_exact_i_overlay=True,
+            )
+            local.messages.extend(t_readiness_problems.messages)
+            local.require(
+                isinstance(t_readiness, dict)
+                and t_readiness.get("candidate_sha") == active_commit
+                and t_readiness.get("evidence_kind")
+                == "c0007_t_implementation_ready_v1",
+                f"{context}.I.t_readiness",
+                "the complete I overlay is forbidden until exact live T CI/readiness succeeds",
+            )
+
+        global_index_after = self.validate_c0007_global_index_flags(
+            local,
+            context=f"{context}.index_flags.after",
+            env=readonly_env,
+        )
+        local.require(
+            global_index_before is not None
+            and global_index_after is not None
+            and global_index_before == global_index_after,
+            f"{context}.index_flags.quiescence",
+            "global index mode/OID/stage/flags must remain byte-stable during validation",
+        )
+        self.c0007_bounded_contract = contract
+        self.c0007_bounded_state = str(state or "invalid")
+        self.c0007_implementation_allowed = state == "active"
+        self.c0007_implementation_write_allowed = (
+            implementation_overlay
+            and isinstance(t_readiness, dict)
+            and not local.messages
+        )
+        self.c0007_implementation_epoch_valid = state in {"active", "verified"} and not local.messages
+        self.problems.messages.extend(local.messages)
+
     def validate_c0007_bounded_planned_control(self) -> None:
         authorization_path = self.root / C0007_BOUNDED_AUTHORIZATION_PATH
         if not authorization_path.is_file():
             return
         if self.c0007_ci_recovery_active:
             self.validate_c0007_ci_recovery_control()
+            return
+        if self.c0007_post_recovery_active:
+            self.validate_c0007_post_recovery_control()
             return
         contract_path = self.root / C0007_BOUNDED_PLANNED_CONTROL_PATH
         if not contract_path.is_file():
@@ -13687,93 +19712,19 @@ class CompletionValidator:
             if symbolic_branch_result.returncode == 0
             else None
         )
-        def config_values(key: str) -> list[str]:
-            result = self.git("config", "--get-all", key, check=False)
-            if result.returncode not in {0, 1}:
-                local.add(
-                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote.config[{key}]",
-                    "cannot enumerate Git configuration: "
-                    + (result.stderr.strip() or result.stdout.strip()),
-                )
-                return []
-            return result.stdout.splitlines() if result.returncode == 0 else []
-
-        def resolved_urls(*args: str) -> list[str]:
-            result = self.git("remote", "get-url", *args, check=False)
-            if result.returncode:
-                local.add(
-                    f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote.urls",
-                    "cannot enumerate resolved remote URLs: "
-                    + (result.stderr.strip() or result.stdout.strip()),
-                )
-                return []
-            return result.stdout.splitlines()
-
-        remote_names_result = self.git("remote", check=False)
-        if remote_names_result.returncode:
-            local.add(
-                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote.names",
-                "cannot enumerate Git remotes: "
-                + (
-                    remote_names_result.stderr.strip()
-                    or remote_names_result.stdout.strip()
-                ),
-            )
-            configured_remote_names: list[str] = []
-        else:
-            configured_remote_names = remote_names_result.stdout.splitlines()
-        configured_remote_urls = config_values(
-            f"remote.{C0007_BOUNDED_REMOTE}.url"
+        remote_capture = self.c0007_remote_ref_observation(
+            local,
+            context=f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote",
+            env={
+                **os.environ,
+                "GIT_OPTIONAL_LOCKS": "0",
+                "GIT_NO_LAZY_FETCH": "1",
+            },
         )
-        configured_push_urls = config_values(
-            f"remote.{C0007_BOUNDED_REMOTE}.pushurl"
-        )
-        configured_fetch_refspecs = config_values(
-            f"remote.{C0007_BOUNDED_REMOTE}.fetch"
-        )
-        configured_push_refspecs = config_values(
-            f"remote.{C0007_BOUNDED_REMOTE}.push"
-        )
-        configured_mirror_values = config_values(
-            f"remote.{C0007_BOUNDED_REMOTE}.mirror"
-        )
-        configured_push_default_values = config_values("remote.pushDefault")
-        configured_branch_remote_values = config_values(
-            f"branch.{C0007_BOUNDED_BRANCH}.remote"
-        )
-        configured_branch_push_remote_values = config_values(
-            f"branch.{C0007_BOUNDED_BRANCH}.pushRemote"
-        )
-        resolved_fetch_urls = resolved_urls("--all", C0007_BOUNDED_REMOTE)
-        resolved_push_urls = resolved_urls(
-            "--push", "--all", C0007_BOUNDED_REMOTE
-        )
-        remote_result = self.git(
-            "ls-remote",
-            "--refs",
-            C0007_BOUNDED_REMOTE,
-            C0007_BOUNDED_REMOTE_MAIN_REF,
-            C0007_BOUNDED_REMOTE_BRANCH_REF,
-            check=False,
-        )
+        remote_census: dict[str, list[str]] = {}
         remote_tips: dict[str, str] = {}
-        if remote_result.returncode:
-            local.add(
-                f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote",
-                "cannot observe exact remote refs: "
-                + (remote_result.stderr.strip() or remote_result.stdout.strip()),
-            )
-        else:
-            for row in remote_result.stdout.splitlines():
-                try:
-                    oid, ref = row.split("\t", 1)
-                except ValueError:
-                    local.add(
-                        f"{C0007_BOUNDED_PLANNED_CONTROL_PATH}.remote",
-                        f"cannot parse ls-remote row {row!r}",
-                    )
-                    continue
-                remote_tips[ref] = oid
+        if remote_capture is not None:
+            remote_census, remote_tips, _remote_identity = remote_capture
         remote_main_tip = remote_tips.get(C0007_BOUNDED_REMOTE_MAIN_REF)
         remote_branch_tip = remote_tips.get(C0007_BOUNDED_REMOTE_BRANCH_REF)
         contract_only = {C0007_BOUNDED_PLANNED_CONTROL_PATH}
@@ -14109,17 +20060,17 @@ class CompletionValidator:
                 else None
             ),
             symbolic_branch=symbolic_branch,
-            configured_remote_names=configured_remote_names,
-            configured_remote_urls=configured_remote_urls,
-            configured_push_urls=configured_push_urls,
-            configured_fetch_refspecs=configured_fetch_refspecs,
-            configured_push_refspecs=configured_push_refspecs,
-            configured_mirror_values=configured_mirror_values,
-            configured_push_default_values=configured_push_default_values,
-            configured_branch_remote_values=configured_branch_remote_values,
-            configured_branch_push_remote_values=configured_branch_push_remote_values,
-            resolved_fetch_urls=resolved_fetch_urls,
-            resolved_push_urls=resolved_push_urls,
+            configured_remote_names=remote_census.get("configured_remote_names", []),
+            configured_remote_urls=remote_census.get("configured_remote_urls", []),
+            configured_push_urls=remote_census.get("configured_push_urls", []),
+            configured_fetch_refspecs=remote_census.get("configured_fetch_refspecs", []),
+            configured_push_refspecs=remote_census.get("configured_push_refspecs", []),
+            configured_mirror_values=remote_census.get("configured_mirror_values", []),
+            configured_push_default_values=remote_census.get("configured_push_default_values", []),
+            configured_branch_remote_values=remote_census.get("configured_branch_remote_values", []),
+            configured_branch_push_remote_values=remote_census.get("configured_branch_push_remote_values", []),
+            resolved_fetch_urls=remote_census.get("resolved_fetch_urls", []),
+            resolved_push_urls=remote_census.get("resolved_push_urls", []),
             remote_main_tip=remote_main_tip,
             remote_branch_tip=remote_branch_tip,
             implementation_overlay=implementation_overlay,
@@ -14278,11 +20229,10 @@ class CompletionValidator:
     def validate_c0007_bounded_packets(self, *, replay_postimages: bool = True) -> None:
         if not (self.root / C0007_BOUNDED_AUTHORIZATION_PATH).is_file():
             return
-        if self.c0007_ci_recovery_active:
-            # The recovery-control validator has already authenticated the
-            # terminal-v2 packet references from P's immutable blobs.  Do not
-            # reinterpret those historical approval records against the new
-            # current-path authorization.
+        if self.c0007_ci_recovery_active or self.c0007_post_recovery_active:
+            # The recovery/post-recovery validators authenticate terminal-v2
+            # packet references from immutable P blobs.  Never reinterpret
+            # those approvals against a replacement current-path grant.
             return
 
         def validate_artifact_hashes(
@@ -28410,8 +34360,144 @@ def allowed_codex_lane_operator_sets(
         allowed.add(R09R10_OPERATOR_PAIR)
     return allowed
 
+def _c0007_self_test_issue_comment_views(problems: Problems) -> None:
+    """Prove the endpoint-variance comparator is tolerant but still strict.
+
+    The old gate compared whole objects, so it rejected every real comment: the
+    single-object endpoint adds ``pin`` and, for accounts with an uploaded
+    avatar, a ``u=<hash>`` avatar cache-buster that the list endpoint omits.
+    These cases pin the tolerated shapes and prove every substitution is still
+    caught, so the defect cannot regress behind identical fixtures again.
+    """
+
+    owner_id = C0007_ACTIVATION_REVIEWER_DATABASE_ID
+    list_view = {
+        "author_association": C0007_ACTIVATION_REVIEWER_ASSOCIATION,
+        "body": "exact owner decision body",
+        "created_at": "2026-08-27T07:00:00Z",
+        "html_url": f"https://github.com/{C0007_BOUNDED_REPOSITORY}/issues/5#issuecomment-1",
+        "id": 1,
+        "issue_url": f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/5",
+        "node_id": "IC_kwDOEXACT",
+        "performed_via_github_app": None,
+        "updated_at": "2026-08-27T07:00:00Z",
+        "url": f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/comments/1",
+        "user": {
+            "avatar_url": f"https://avatars.githubusercontent.com/u/{owner_id}?v=4",
+            "id": owner_id,
+            "login": C0007_ACTIVATION_REVIEWER_LOGIN,
+            "node_id": C0007_ACTIVATION_REVIEWER_NODE_ID,
+            "type": "User",
+        },
+    }
+    busted = (
+        f"https://avatars.githubusercontent.com/u/{owner_id}"
+        "?u=9f3c1a8906b4c612cc7d019ef318f885618ac722&v=4"
+    )
+    single_view = json.loads(canonical_json(list_view))
+    single_view["pin"] = None
+    single_view["user"]["avatar_url"] = busted
+
+    for label, left, right in (
+        ("identical views", list_view, json.loads(canonical_json(list_view))),
+        ("pin plus avatar cache-buster", list_view, single_view),
+        ("reversed argument order", single_view, list_view),
+    ):
+        problems.require(
+            c0007_equivalent_issue_comment_views(left, right),
+            f"self-test CONT01 comment views positive {label}",
+            "equivalent issue-comment serializations were rejected",
+        )
+
+    rejected = 0
+
+    def reject(label: str, mutate) -> None:
+        nonlocal rejected
+        mutated = json.loads(canonical_json(single_view))
+        mutate(mutated)
+        if c0007_equivalent_issue_comment_views(list_view, mutated):
+            problems.add(
+                f"self-test CONT01 comment views {label}",
+                "a nonequivalent issue-comment view was accepted",
+            )
+        else:
+            rejected += 1
+
+    other_id = owner_id + 1
+    for label, mutate in (
+        ("substituted body", lambda v: v.__setitem__("body", "different body")),
+        ("substituted id", lambda v: v.__setitem__("id", 2)),
+        ("substituted node id", lambda v: v.__setitem__("node_id", "IC_kwDOOTHER")),
+        ("missing id", lambda v: v.pop("id")),
+        ("substituted association", lambda v: v.__setitem__("author_association", "OWNER")),
+        ("substituted created_at", lambda v: v.__setitem__("created_at", "2026-08-27T07:00:01Z")),
+        ("substituted updated_at", lambda v: v.__setitem__("updated_at", "2026-08-27T07:00:01Z")),
+        ("substituted issue url", lambda v: v.__setitem__("issue_url", f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/6")),
+        ("app mediation", lambda v: v.__setitem__("performed_via_github_app", {"id": 1})),
+        ("unexpected extra key", lambda v: v.__setitem__("reactions", {"total_count": 0})),
+        ("substituted user login", lambda v: v["user"].__setitem__("login", "AlexGeorgantzas")),
+        ("substituted user id", lambda v: v["user"].__setitem__("id", other_id)),
+        ("substituted user node id", lambda v: v["user"].__setitem__("node_id", "U_kgDOOTHER")),
+        ("substituted user type", lambda v: v["user"].__setitem__("type", "Bot")),
+        ("missing user", lambda v: v.pop("user")),
+        ("extra user key", lambda v: v["user"].__setitem__("site_admin", False)),
+        (
+            "avatar for a different user",
+            lambda v: v["user"].__setitem__(
+                "avatar_url",
+                f"https://avatars.githubusercontent.com/u/{other_id}"
+                "?u=9f3c1a8906b4c612cc7d019ef318f885618ac722&v=4",
+            ),
+        ),
+        (
+            "avatar on a foreign host",
+            lambda v: v["user"].__setitem__(
+                "avatar_url", "https://evil.example.com/u/1?u=" + "a" * 40 + "&v=4"
+            ),
+        ),
+        (
+            "avatar with a malformed cache-buster",
+            lambda v: v["user"].__setitem__(
+                "avatar_url",
+                f"https://avatars.githubusercontent.com/u/{owner_id}?u=short&v=4",
+            ),
+        ),
+        ("nonstring avatar", lambda v: v["user"].__setitem__("avatar_url", None)),
+    ):
+        reject(label, mutate)
+
+    problems.require(
+        rejected == 20,
+        "self-test CONT01 comment views adversarial count",
+        f"expected 20 named comment-view negatives, observed {rejected}",
+    )
+
+    # ``pin`` is endpoint decoration, not identity: it exists only in the
+    # single-object response and its value may change if someone pins the
+    # comment.  Pinning does not edit the comment, so any value is tolerated.
+    pinned = json.loads(canonical_json(single_view))
+    pinned["pin"] = {"pinned": True}
+    problems.require(
+        c0007_equivalent_issue_comment_views(list_view, pinned),
+        "self-test CONT01 comment views pinned tolerance",
+        "a pinned but otherwise identical comment was rejected",
+    )
+
+    # Both sides carrying different cache-busters is drift, not endpoint variance.
+    divergent = json.loads(canonical_json(single_view))
+    divergent["user"]["avatar_url"] = (
+        f"https://avatars.githubusercontent.com/u/{owner_id}?u=" + "b" * 40 + "&v=4"
+    )
+    problems.require(
+        not c0007_equivalent_issue_comment_views(single_view, divergent),
+        "self-test CONT01 comment views divergent cache-busters",
+        "two different avatar cache-busters were treated as equivalent",
+    )
+
+
 def run_self_test() -> int:
     problems = Problems()
+    _c0007_self_test_issue_comment_views(problems)
     problems.require(
         strict_json_loads('{"safe":[1,2,3]}') == {"safe": [1, 2, 3]},
         "self-test strict JSON positive",
@@ -28842,6 +34928,167 @@ def run_self_test() -> int:
         "self-test Git repository metadata indirection",
         "a mocked reparse point or supported lexical symlink/junction was accepted",
     )
+    ancestry_positive = Problems()
+    validate_c0007_ancestry_metadata_values(
+        False,
+        b"false\n",
+        ancestry_positive,
+        context="self-test Git ancestry metadata positive",
+    )
+    ancestry_graft_negative = Problems()
+    validate_c0007_ancestry_metadata_values(
+        True,
+        b"false\n",
+        ancestry_graft_negative,
+        context="self-test Git ancestry metadata graft",
+    )
+    ancestry_shallow_negative = Problems()
+    validate_c0007_ancestry_metadata_values(
+        False,
+        b"true\n",
+        ancestry_shallow_negative,
+        context="self-test Git ancestry metadata shallow",
+    )
+    problems.require(
+        not ancestry_positive.messages
+        and any("grafts" in message for message in ancestry_graft_negative.messages)
+        and any("--is-shallow-repository" in message for message in ancestry_shallow_negative.messages),
+        "self-test Git ancestry metadata values",
+        "complete ancestry was rejected or a graft/shallow ancestry rewrite was accepted",
+    )
+
+    class AncestryIdentityProbe(CompletionValidator):
+        def __init__(self, root: Path, shallow_output: bytes) -> None:
+            super().__init__(root, root / "phase")
+            self.shallow_output = shallow_output
+
+        def git_bytes(
+            self,
+            *args: str,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> subprocess.CompletedProcess[bytes]:
+            if args == (
+                "rev-parse",
+                "--path-format=absolute",
+                "--show-toplevel",
+                "--git-dir",
+                "--git-common-dir",
+            ):
+                git_dir = self.root / ".git"
+                payload = f"{self.root}\n{git_dir}\n{git_dir}\n".encode("utf-8")
+                return subprocess.CompletedProcess(args, 0, stdout=payload, stderr=b"")
+            if args == ("rev-parse", "--is-shallow-repository"):
+                return subprocess.CompletedProcess(
+                    args, 0, stdout=self.shallow_output, stderr=b""
+                )
+            return subprocess.CompletedProcess(args, 1, stdout=b"", stderr=b"")
+
+    with tempfile.TemporaryDirectory(
+        prefix="completion-c0007-ancestry-runtime-"
+    ) as raw_ancestry_root:
+        ancestry_root = Path(raw_ancestry_root)
+        ancestry_info = ancestry_root / ".git" / "info"
+        ancestry_info.mkdir(parents=True)
+        graft_probe = AncestryIdentityProbe(ancestry_root, b"false\n")
+        (ancestry_info / "grafts").write_bytes(
+            b"0" * 40 + b" " + b"1" * 40 + b"\n"
+        )
+        graft_probe.validate_c0007_git_repository_identity()
+        (ancestry_info / "grafts").unlink()
+        shallow_probe = AncestryIdentityProbe(ancestry_root, b"true\n")
+        shallow_probe.validate_c0007_git_repository_identity()
+        complete_probe = AncestryIdentityProbe(ancestry_root, b"false\n")
+        complete_probe.validate_c0007_git_repository_identity()
+        problems.require(
+            any(".git/info/grafts" in message for message in graft_probe.problems.messages)
+            and any(
+                "--is-shallow-repository" in message
+                for message in shallow_probe.problems.messages
+            )
+            and not complete_probe.problems.messages,
+            "self-test Git ancestry metadata runtime",
+            "runtime identity gate did not reject grafted/shallow history or rejected a complete repository",
+        )
+
+    class CIRecoveryWriterGateProbe(CompletionValidator):
+        def __init__(self, root: Path, scenario: str) -> None:
+            super().__init__(root, root / "phase")
+            self.scenario = scenario
+            self.reached_recovery_inputs = False
+
+        def git_bytes(
+            self,
+            *args: str,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> subprocess.CompletedProcess[bytes]:
+            if args == (
+                "rev-parse",
+                "--path-format=absolute",
+                "--show-toplevel",
+                "--git-dir",
+                "--git-common-dir",
+            ):
+                git_dir = self.root / ".git"
+                payload = f"{self.root}\n{git_dir}\n{git_dir}\n".encode("utf-8")
+                return subprocess.CompletedProcess(args, 0, stdout=payload, stderr=b"")
+            if args == ("rev-parse", "--is-shallow-repository"):
+                shallow = (
+                    b"true\n"
+                    if self.scenario == "shallow"
+                    else b"false"
+                    if self.scenario == "malformed_shallow"
+                    else b"false\n"
+                )
+                return subprocess.CompletedProcess(args, 0, stdout=shallow, stderr=b"")
+            if args == (
+                "config",
+                "--null",
+                "--get-regexp",
+                r"^http\..*(sslverify|sslcainfo|sslcapath)$",
+            ):
+                if self.scenario == "https_override":
+                    return subprocess.CompletedProcess(
+                        args,
+                        0,
+                        stdout=b"http.sslverify\nfalse\0",
+                        stderr=b"",
+                    )
+                return subprocess.CompletedProcess(args, 1, stdout=b"", stderr=b"")
+            return subprocess.CompletedProcess(args, 1, stdout=b"", stderr=b"")
+
+        def load_r07_planned_contract(self) -> None:
+            self.reached_recovery_inputs = True
+
+    writer_gate_diagnostics = {
+        "grafts": ".git/info/grafts",
+        "shallow": "--is-shallow-repository",
+        "malformed_shallow": "--is-shallow-repository",
+        "https_override": "sslVerify must remain explicitly true",
+    }
+    for writer_gate_scenario, writer_gate_diagnostic in writer_gate_diagnostics.items():
+        with tempfile.TemporaryDirectory(
+            prefix="completion-c0007-recovery-writer-gate-"
+        ) as raw_writer_gate_root:
+            writer_gate_root = Path(raw_writer_gate_root)
+            writer_gate_info = writer_gate_root / ".git" / "info"
+            writer_gate_info.mkdir(parents=True)
+            if writer_gate_scenario == "grafts":
+                (writer_gate_info / "grafts").write_bytes(
+                    b"0" * 40 + b" " + b"1" * 40 + b"\n"
+                )
+            writer_gate_probe = CIRecoveryWriterGateProbe(
+                writer_gate_root, writer_gate_scenario
+            )
+            writer_gate_result = writer_gate_probe.write_c0007_ci_recovery_contract()
+            problems.require(
+                writer_gate_diagnostic in "\n".join(writer_gate_result.messages)
+                and not writer_gate_probe.reached_recovery_inputs,
+                f"self-test C0007 CI-recovery writer {writer_gate_scenario}",
+                "CI-recovery writer did not fail before inputs on ancestry/HTTPS drift: "
+                f"{writer_gate_result.messages}",
+            )
     live_phase_positive = Problems()
     validate_c0007_live_phase_dir(
         Path.cwd(),
@@ -30039,6 +36286,10 @@ def run_self_test() -> int:
         comment_observation,
         live_review_positive,
         context="self-test bounded live GitHub owner review positive",
+            expected_author_login=C0007_BOUNDED_REPOSITORY_OWNER_LOGIN,
+        expected_author_database_id=C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID,
+        expected_author_node_id=C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID,
+        expected_author_association="OWNER",
     )
     problems.require(
         not live_review_positive.messages,
@@ -30167,6 +36418,442 @@ def run_self_test() -> int:
             "resolved_fetch_urls": [remote_url],
             "resolved_push_urls": [remote_url],
         }
+
+    class RemoteNamespaceOverrideProbe(CompletionValidator):
+        def __init__(self) -> None:
+            super().__init__(ROOT, DEFAULT_PHASE_DIR)
+            self.calls: list[tuple[str, ...]] = []
+
+        def git(
+            self,
+            *args: str,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> subprocess.CompletedProcess[str]:
+            self.calls.append(tuple(args))
+            if args == ("remote",):
+                return subprocess.CompletedProcess([], 0, "origin\n", "")
+            if args == (
+                "config",
+                "--null",
+                "--get-regexp",
+                r"^remote\.",
+            ):
+                payload = (
+                    "remote.origin.url\n"
+                    f"{C0007_BOUNDED_REMOTE_URL}\0"
+                    "remote.origin.tagopt\n--no-tags\0"
+                    "remote.origin.fetch\n"
+                    "+refs/heads/*:refs/remotes/origin/*\0"
+                    "remote.origin.vcs\nattacker-helper\0"
+                )
+                return subprocess.CompletedProcess([], 0, payload, "")
+            return subprocess.CompletedProcess([], 1, "", "")
+
+    namespace_override_probe = RemoteNamespaceOverrideProbe()
+    namespace_override_problems = Problems()
+    namespace_override_capture = (
+        namespace_override_probe.c0007_remote_configuration_census(
+            namespace_override_problems,
+            context="self-test C0007 remote helper override",
+            env={},
+        )
+    )
+    problems.require(
+        namespace_override_capture is None
+        and any(
+            "helper/vcs/uploadpack/receivepack/proxy" in message
+            for message in namespace_override_problems.messages
+        )
+        and not any(
+            call[:2] == ("remote", "get-url")
+            for call in namespace_override_probe.calls
+        ),
+        "self-test C0007 remote helper override",
+        "remote.origin.vcs was accepted or URL resolution proceeded after namespace drift",
+    )
+
+    class PreservedModeRemoteDispatchProbe(CompletionValidator):
+        def __init__(self, root: Path, contract: Mapping[str, Any]) -> None:
+            super().__init__(root, root / "phase")
+            self.contract = dict(contract)
+            self.calls: list[tuple[str, ...]] = []
+            self.c0007_ci_recovery_authorization = {}
+            self.current_checkpoint_id = C0007_CHECKPOINT_ID
+
+        def git(
+            self,
+            *args: str,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> subprocess.CompletedProcess[str]:
+            self.calls.append(tuple(args))
+            if args == ("remote",):
+                return subprocess.CompletedProcess(args, 0, "origin\n", "")
+            if args == ("config", "--null", "--get-regexp", r"^remote\."):
+                payload = (
+                    "remote.origin.url\n"
+                    f"{C0007_BOUNDED_REMOTE_URL}\0"
+                    "remote.origin.tagopt\n--no-tags\0"
+                    "remote.origin.fetch\n"
+                    "+refs/heads/*:refs/remotes/origin/*\0"
+                    "remote.origin.vcs\nattacker-helper\0"
+                )
+                return subprocess.CompletedProcess(args, 0, payload, "")
+            return subprocess.CompletedProcess(args, 1, "", "")
+
+        def git_bytes(
+            self,
+            *args: str,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> subprocess.CompletedProcess[bytes]:
+            return subprocess.CompletedProcess(args, 1, b"", b"")
+
+        def read_captured_json(
+            self, *_args: Any, **_kwargs: Any
+        ) -> CapturedJson:
+            payload = canonical_tracked_json_bytes(self.contract)
+            return CapturedJson(
+                payload,
+                hashlib.sha256(payload).hexdigest().upper(),
+                git_blob_oid(payload),
+                self.contract,
+            )
+
+        def read_tsv(
+            self, *_args: Any, **_kwargs: Any
+        ) -> tuple[tuple[str, ...], list[dict[str, str]]]:
+            return ("path", "packet_id", "stage", "operation"), []
+
+        def capture_c0007_packet_json(self, _request_id: str) -> None:
+            return None
+
+        def validate_c0007_global_index_flags(
+            self,
+            probe_problems: Problems,
+            *,
+            context: str,
+            env: dict[str, str] | None = None,
+        ) -> bytes | None:
+            return b"stable-index"
+
+        def git_live_change_paths(
+            self,
+            _base: str,
+            _label: str,
+            *,
+            env: dict[str, str] | None = None,
+        ) -> set[str]:
+            return set()
+
+        def git_blob_payloads(
+            self,
+            _oids: Iterable[str],
+            _label: str,
+            *,
+            env: dict[str, str] | None = None,
+        ) -> dict[str, bytes]:
+            return {}
+
+    with tempfile.TemporaryDirectory(
+        prefix="completion-c0007-preserved-remote-dispatch-"
+    ) as raw_preserved_root:
+        preserved_root = Path(raw_preserved_root)
+        for preserved_path in (
+            C0007_BOUNDED_AUTHORIZATION_PATH,
+            C0007_BOUNDED_PLANNED_CONTROL_PATH,
+        ):
+            destination = preserved_root / preserved_path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(b"{}\n")
+
+        recovery_dispatch_probe = PreservedModeRemoteDispatchProbe(
+            preserved_root, {}
+        )
+        recovery_dispatch_probe.validate_c0007_ci_recovery_control()
+        recovery_messages = "\n".join(recovery_dispatch_probe.problems.messages)
+
+        legacy_dispatch_probe = PreservedModeRemoteDispatchProbe(
+            preserved_root, {"lifecycle": {"state": "planned"}}
+        )
+        original_terminal_validator = validate_c0007_bounded_planned_control_payload
+        try:
+            globals()["validate_c0007_bounded_planned_control_payload"] = (
+                lambda *_args, **_kwargs: None
+            )
+            legacy_dispatch_probe.validate_c0007_bounded_planned_control()
+        finally:
+            globals()["validate_c0007_bounded_planned_control_payload"] = (
+                original_terminal_validator
+            )
+        legacy_messages = "\n".join(legacy_dispatch_probe.problems.messages)
+        problems.require(
+            "helper/vcs/uploadpack/receivepack/proxy" in recovery_messages
+            and not any(
+                call and call[0] == "ls-remote"
+                for call in recovery_dispatch_probe.calls
+            ),
+            "self-test C0007 schema3/contract4 remote namespace dispatch",
+            "CI-recovery runtime accepted remote.origin.vcs or observed refs after rejection",
+        )
+        problems.require(
+            "helper/vcs/uploadpack/receivepack/proxy" in legacy_messages
+            and not any(
+                call and call[0] == "ls-remote"
+                for call in legacy_dispatch_probe.calls
+            ),
+            "self-test C0007 terminal-v2 remote namespace dispatch",
+            "legacy terminal-v2 runtime accepted remote.origin.vcs or observed refs after rejection",
+        )
+
+    def c0007_self_test_revision_bytes(revision: str, path: str) -> bytes | None:
+        capture = subprocess.run(
+            ["git", "show", f"{revision}:{path}"],
+            cwd=ROOT,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if capture.returncode:
+            problems.add(
+                "self-test C0007 CI-recovery writer fixture",
+                f"cannot load {revision}:{path}: "
+                + capture.stderr.decode("utf-8", errors="replace").strip(),
+            )
+            return None
+        return capture.stdout
+
+    recovery_writer_fixture_paths = set(C0007_CI_RECOVERY_ARTIFACT_PATHS) | {
+        ACTIVE_POINTER.as_posix(),
+        (DEFAULT_PHASE_DIR / "phase.json").as_posix(),
+    }
+    recovery_writer_fixtures = {
+        path: c0007_self_test_revision_bytes(C0007_PLANNED_RECOVERY_SHA, path)
+        for path in sorted(recovery_writer_fixture_paths)
+    }
+    recovery_writer_old_contract = c0007_self_test_revision_bytes(
+        C0007_FAILED_PLANNED_CONTROL_SHA,
+        C0007_CI_RECOVERY_CONTRACT_PATH,
+    )
+
+    class CIRecoveryWriterRemoteProbe(CompletionValidator):
+        def __init__(self, root: Path, drift_census: int) -> None:
+            super().__init__(root, root / DEFAULT_PHASE_DIR)
+            self.drift_census = drift_census
+            self.namespace_census_count = 0
+            self.ls_remote_count = 0
+
+        def validate_c0007_git_repository_identity(self) -> None:
+            return None
+
+        def validate_c0007_git_transport_configuration(self) -> None:
+            return None
+
+        def load_r07_planned_contract(self) -> None:
+            return None
+
+        def validate_pointer(self) -> None:
+            return None
+
+        def load_phase(self) -> None:
+            return None
+
+        def validate_c0007_global_index_flags(
+            self,
+            probe_problems: Problems,
+            *,
+            context: str,
+            env: dict[str, str] | None = None,
+        ) -> bytes | None:
+            return b"stable-index"
+
+        def git_live_change_paths(
+            self,
+            _base: str,
+            _label: str,
+            *,
+            env: dict[str, str] | None = None,
+        ) -> set[str]:
+            contract_payload = (
+                self.root / C0007_CI_RECOVERY_CONTRACT_PATH
+            ).read_bytes()
+            paths = set(C0007_CI_RECOVERY_ARTIFACT_PATHS)
+            if contract_payload != recovery_writer_old_contract:
+                paths.add(C0007_CI_RECOVERY_CONTRACT_PATH)
+            return paths
+
+        def c0007_atomic_temp_directory(
+            self, probe_problems: Problems, *, context: str
+        ) -> Path | None:
+            return self.root / ".git"
+
+        def git(
+            self,
+            *args: str,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> subprocess.CompletedProcess[str]:
+            if args == ("rev-parse", "HEAD"):
+                return subprocess.CompletedProcess(
+                    args, 0, C0007_FAILED_PLANNED_CONTROL_SHA + "\n", ""
+                )
+            if args == ("symbolic-ref", "--quiet", "--short", "HEAD"):
+                return subprocess.CompletedProcess(
+                    args, 0, C0007_BOUNDED_BRANCH + "\n", ""
+                )
+            if args == (
+                "rev-parse",
+                "--path-format=absolute",
+                "--show-toplevel",
+                "--git-dir",
+                "--git-common-dir",
+            ):
+                git_dir = self.root / ".git"
+                return subprocess.CompletedProcess(
+                    args,
+                    0,
+                    f"{self.root}\n{git_dir}\n{git_dir}\n",
+                    "",
+                )
+            if args[:4] == ("diff", "--cached", "--name-only", "--no-renames"):
+                return subprocess.CompletedProcess(
+                    args,
+                    0,
+                    "\n".join(C0007_CI_RECOVERY_ARTIFACT_PATHS) + "\n",
+                    "",
+                )
+            if args == ("diff", "--name-only", "--no-renames", "--"):
+                contract_payload = (
+                    self.root / C0007_CI_RECOVERY_CONTRACT_PATH
+                ).read_bytes()
+                value = (
+                    C0007_CI_RECOVERY_CONTRACT_PATH + "\n"
+                    if contract_payload != recovery_writer_old_contract
+                    else ""
+                )
+                return subprocess.CompletedProcess(args, 0, value, "")
+            if args == ("ls-files", "--others", "--exclude-standard"):
+                return subprocess.CompletedProcess(args, 0, "", "")
+            if args == (
+                "ls-files",
+                "--stage",
+                "--",
+                "REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md",
+            ):
+                return subprocess.CompletedProcess(args, 0, "", "")
+            if args == ("remote",):
+                return subprocess.CompletedProcess(args, 0, "origin\n", "")
+            if args == ("config", "--null", "--get-regexp", r"^remote\."):
+                self.namespace_census_count += 1
+                malicious = self.namespace_census_count == self.drift_census
+                payload = (
+                    "remote.origin.url\n"
+                    f"{C0007_BOUNDED_REMOTE_URL}\0"
+                    "remote.origin.tagopt\n--no-tags\0"
+                    "remote.origin.fetch\n"
+                    "+refs/heads/*:refs/remotes/origin/*\0"
+                    + (
+                        "remote.origin.vcs\nattacker-helper\0"
+                        if malicious
+                        else ""
+                    )
+                )
+                return subprocess.CompletedProcess(args, 0, payload, "")
+            if args[:3] == ("config", "--get-all", f"remote.{C0007_BOUNDED_REMOTE}.url"):
+                return subprocess.CompletedProcess(
+                    args, 0, C0007_BOUNDED_REMOTE_URL + "\n", ""
+                )
+            if args[:3] == ("config", "--get-all", f"remote.{C0007_BOUNDED_REMOTE}.fetch"):
+                return subprocess.CompletedProcess(
+                    args, 0, "+refs/heads/*:refs/remotes/origin/*\n", ""
+                )
+            if args[:2] == ("config", "--get-all"):
+                return subprocess.CompletedProcess(args, 1, "", "")
+            if args == (
+                "remote",
+                "get-url",
+                "--all",
+                C0007_BOUNDED_REMOTE,
+            ) or args == (
+                "remote",
+                "get-url",
+                "--push",
+                "--all",
+                C0007_BOUNDED_REMOTE,
+            ):
+                return subprocess.CompletedProcess(
+                    args, 0, C0007_BOUNDED_REMOTE_URL + "\n", ""
+                )
+            if args and args[0] == "ls-remote":
+                self.ls_remote_count += 1
+                return subprocess.CompletedProcess(
+                    args,
+                    0,
+                    f"{C0007_BOUNDED_CONTROL_HEAD_SHA}\t{C0007_BOUNDED_REMOTE_MAIN_REF}\n"
+                    f"{C0007_FAILED_PLANNED_CONTROL_SHA}\t{C0007_BOUNDED_REMOTE_BRANCH_REF}\n",
+                    "",
+                )
+            return subprocess.CompletedProcess(args, 1, "", "")
+
+        def git_bytes(
+            self,
+            *args: str,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> subprocess.CompletedProcess[bytes]:
+            if args[:4] == ("ls-files", "--stage", "-z", "--") and len(args) == 5:
+                path = args[4]
+                payload = (self.root / path).read_bytes()
+                oid = git_blob_oid(payload)
+                row = f"100644 {oid} 0\t{path}\0".encode("utf-8")
+                return subprocess.CompletedProcess(args, 0, row, b"")
+            return subprocess.CompletedProcess(args, 1, b"", b"")
+
+    if all(
+        payload is not None for payload in recovery_writer_fixtures.values()
+    ) and recovery_writer_old_contract is not None:
+        for writer_remote_scenario, drift_census in (
+            ("initial_remote_vcs", 1),
+            ("post_census_drift", 2),
+        ):
+            with tempfile.TemporaryDirectory(
+                prefix="completion-c0007-recovery-writer-remote-"
+            ) as raw_writer_remote_root:
+                writer_remote_root = Path(raw_writer_remote_root)
+                (writer_remote_root / ".git").mkdir()
+                for path, fixture_payload in recovery_writer_fixtures.items():
+                    destination = writer_remote_root / path
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    destination.write_bytes(fixture_payload or b"")
+                contract_destination = (
+                    writer_remote_root / C0007_CI_RECOVERY_CONTRACT_PATH
+                )
+                contract_destination.parent.mkdir(parents=True, exist_ok=True)
+                contract_destination.write_bytes(recovery_writer_old_contract)
+                writer_remote_probe = CIRecoveryWriterRemoteProbe(
+                    writer_remote_root, drift_census
+                )
+                writer_remote_result = (
+                    writer_remote_probe.write_c0007_ci_recovery_contract()
+                )
+                writer_remote_messages = "\n".join(writer_remote_result.messages)
+                expected_ls_remote_count = 0 if drift_census == 1 else 1
+                problems.require(
+                    "helper/vcs/uploadpack/receivepack/proxy"
+                    in writer_remote_messages
+                    and contract_destination.read_bytes()
+                    == recovery_writer_old_contract
+                    and writer_remote_probe.ls_remote_count
+                    == expected_ls_remote_count
+                    and (
+                        drift_census == 1
+                        or "exact immutable P contract was atomically restored"
+                        in writer_remote_messages
+                    ),
+                    f"self-test C0007 CI-recovery writer {writer_remote_scenario}",
+                    "CI-recovery writer failed remote namespace no-write/restore sensitivity: "
+                    f"{writer_remote_result.messages}",
+                )
 
     p_sha, a_sha, t_sha, i_sha, v_sha = (
         "1" * 40,
@@ -30693,21 +37380,51 @@ def run_self_test() -> int:
     # CI-only recovery schema, historical-P separation, and deterministic
     # self-hash-free contract rendering.
     try:
-        recovery_authorization_payload = Path(
-            C0007_BOUNDED_AUTHORIZATION_PATH
-        ).read_bytes()
+        recovery_authorization_result = subprocess.run(
+            [
+                "git",
+                "show",
+                f"{C0007_PLANNED_RECOVERY_SHA}:{C0007_BOUNDED_AUTHORIZATION_PATH}",
+            ],
+            cwd=ROOT,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+            timeout=30,
+            env={**os.environ, "GIT_OPTIONAL_LOCKS": "0", "GIT_NO_LAZY_FETCH": "1"},
+        )
+        recovery_authorization_payload = recovery_authorization_result.stdout
         recovery_authorization_fixture = strict_json_loads(
             recovery_authorization_payload.decode("utf-8")
         )
-        recovery_manifest_text = Path(
-            C0007_BOUNDED_AUTHORIZED_PATHS_PATH
-        ).read_text(encoding="utf-8")
+        recovery_manifest_result = subprocess.run(
+            [
+                "git",
+                "show",
+                f"{C0007_PLANNED_RECOVERY_SHA}:{C0007_BOUNDED_AUTHORIZED_PATHS_PATH}",
+            ],
+            cwd=ROOT,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+            timeout=30,
+            env={**os.environ, "GIT_OPTIONAL_LOCKS": "0", "GIT_NO_LAZY_FETCH": "1"},
+        )
+        recovery_manifest_text = recovery_manifest_result.stdout.decode("utf-8")
         recovery_manifest_reader = csv.DictReader(
             io.StringIO(recovery_manifest_text), delimiter="\t"
         )
         recovery_manifest_header = tuple(recovery_manifest_reader.fieldnames or ())
         recovery_manifest_rows = [dict(row) for row in recovery_manifest_reader]
-    except (OSError, UnicodeError, ValueError, json.JSONDecodeError, csv.Error) as error:
+    except (
+        OSError,
+        UnicodeError,
+        ValueError,
+        json.JSONDecodeError,
+        csv.Error,
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+    ) as error:
         problems.add("self-test CI recovery fixtures", f"cannot read fixtures: {error}")
         recovery_authorization_fixture = {}
         recovery_authorization_payload = b""
@@ -31057,6 +37774,1658 @@ def run_self_test() -> int:
         "self-test bounded workflow inert architecture",
         f"inert architecture command block was accepted: {inert_architecture_problems.messages}",
     )
+
+    # CONT01/schema-4/schema-5 readiness, durable OWNER review, and A/T/I/V
+    # state-matrix fixtures.  These are deliberately independent of live API.
+    try:
+        post_authorization_payload = Path(C0007_BOUNDED_AUTHORIZATION_PATH).read_bytes()
+        post_authorization_fixture = strict_json_loads(
+            post_authorization_payload.decode("utf-8")
+        )
+    except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as error:
+        problems.add("self-test CONT01 authorization fixture", str(error))
+        post_authorization_fixture = {}
+        post_authorization_payload = b""
+    post_manifest_payload = render_c0007_post_recovery_manifest_bytes()
+    post_manifest_reader = csv.DictReader(
+        io.StringIO(post_manifest_payload.decode("utf-8")), delimiter="\t"
+    )
+    post_manifest_header = tuple(post_manifest_reader.fieldnames or ())
+    post_manifest_rows = [dict(row) for row in post_manifest_reader]
+    post_authorization_positive = Problems()
+    validate_c0007_post_recovery_manifest(
+        post_manifest_header,
+        post_manifest_rows,
+        post_authorization_positive,
+        context="self-test CONT01 manifest positive",
+    )
+    if isinstance(post_authorization_fixture, dict):
+        validate_c0007_post_recovery_authorization_payload(
+            post_authorization_fixture,
+            post_manifest_header,
+            post_manifest_rows,
+            post_authorization_positive,
+            context="self-test CONT01 authorization positive",
+        )
+    problems.require(
+        len(post_manifest_payload) == 2271
+        and hashlib.sha256(post_manifest_payload).hexdigest().upper()
+        == C0007_POST_RECOVERY_MANIFEST_SHA256
+        and len(render_c0007_post_recovery_preimage_freeze_bytes()) == 1040
+        and hashlib.sha256(render_c0007_post_recovery_preimage_freeze_bytes()).hexdigest().upper()
+        == C0007_POST_RECOVERY_PREIMAGE_FREEZE_SHA256
+        and hashlib.sha256(post_authorization_payload).hexdigest().upper()
+        == C0007_POST_RECOVERY_AUTHORIZATION_SHA256
+        and not post_authorization_positive.messages,
+        "self-test CONT01 exact manifest/authorization/preimage positive",
+        f"exact CONT01 fixtures rejected: {post_authorization_positive.messages}",
+    )
+    post_artifact_fixture = [
+        {
+            "base_blob_oid": C0007_POST_RECOVERY_PREIMAGES[path][0],
+            "base_mode": "100644",
+            "byte_count": 1000 + index,
+            "operation": "modify",
+            "packet_id": C0007_POST_RECOVERY_PACKET_ID,
+            "path": path,
+            "post_blob_oid": f"{index + 8:x}" * 40,
+            "post_mode": "100644",
+            "sha256": f"{index + 8:X}" * 64,
+        }
+        for index, path in enumerate(C0007_POST_RECOVERY_NON_SELF_PATHS)
+    ]
+    post_review_request = c0007_post_recovery_review_request(
+        post_artifact_fixture,
+        workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+    )
+    post_review_request_reversed = c0007_post_recovery_review_request(
+        list(reversed(post_artifact_fixture)),
+        workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+    )
+    expected_pr_snapshot = {
+        "local_head": C0007_PLANNED_RECOVERY_SHA,
+        "origin_bounded_ref": C0007_PLANNED_RECOVERY_SHA,
+        "origin_main": C0007_BOUNDED_CONTROL_HEAD_SHA,
+        "remote_configuration": c0007_expected_remote_configuration_census(),
+        "symbolic_branch": C0007_BOUNDED_BRANCH,
+    }
+    post_readiness_fixture = {
+        "candidate_sha": C0007_PLANNED_RECOVERY_SHA,
+        "candidate_tree": C0007_PLANNED_RECOVERY_TREE_SHA,
+        "ci": c0007_planned_recovery_live_ci_record(),
+        "evidence_kind": "c0007_pr_recovery_review_ready_v1",
+        "observed_at": "2026-08-27T20:00:00Z",
+        "refs": {"after": expected_pr_snapshot, "before": expected_pr_snapshot},
+        "repository": C0007_BOUNDED_REPOSITORY,
+        "review_request": post_review_request,
+        "schema_version": 1,
+    }
+    post_issue_request = c0007_post_recovery_issue_request(post_readiness_fixture)
+    post_repository_fixture = {
+        "fork": False,
+        "full_name": C0007_BOUNDED_REPOSITORY,
+        "id": C0007_BOUNDED_REPOSITORY_DATABASE_ID,
+        "node_id": C0007_BOUNDED_REPOSITORY_ID,
+        "owner": {
+            "id": C0007_BOUNDED_REPOSITORY_OWNER_DATABASE_ID,
+            "login": C0007_BOUNDED_REPOSITORY_OWNER_LOGIN,
+            "node_id": C0007_BOUNDED_REPOSITORY_OWNER_NODE_ID,
+            "type": "User",
+        },
+        "url": C0007_BOUNDED_REPOSITORY_API_URL,
+    }
+    post_issue_number = 101
+    post_issue_id = 1001
+    post_issue_node = "I_kwCONT01"
+    post_comment_id = 2001
+    post_comment_node = "IC_kwCONT01"
+    post_issue_url = f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/{post_issue_number}"
+    post_issue_html = f"https://github.com/{C0007_BOUNDED_REPOSITORY}/issues/{post_issue_number}"
+    post_issue_fixture = {
+        "body": post_issue_request["body"],
+        "comments_url": f"{post_issue_url}/comments",
+        "created_at": "2026-08-27T20:01:00Z",
+        "html_url": post_issue_html,
+        "id": post_issue_id,
+        "node_id": post_issue_node,
+        "number": post_issue_number,
+        "repository_url": C0007_BOUNDED_REPOSITORY_API_URL,
+        "title": post_issue_request["title"],
+        "updated_at": "2026-08-27T20:02:00Z",
+        "url": post_issue_url,
+        "user": {
+            "id": C0007_POST_RECOVERY_ISSUE_CREATOR_DATABASE_ID,
+            "login": C0007_POST_RECOVERY_ISSUE_CREATOR_LOGIN,
+            "node_id": C0007_POST_RECOVERY_ISSUE_CREATOR_NODE_ID,
+            "type": "User",
+        },
+    }
+    post_comment_fixture = {
+        "author_association": C0007_ACTIVATION_REVIEWER_ASSOCIATION,
+        "body": post_review_request["body"],
+        "created_at": "2026-08-27T20:02:00Z",
+        "html_url": f"{post_issue_html}#issuecomment-{post_comment_id}",
+        "id": post_comment_id,
+        "issue_url": post_issue_url,
+        "node_id": post_comment_node,
+        "performed_via_github_app": None,
+        "updated_at": "2026-08-27T20:02:00Z",
+        "url": f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/comments/{post_comment_id}",
+        "user": {
+            "id": C0007_ACTIVATION_REVIEWER_DATABASE_ID,
+            "login": C0007_ACTIVATION_REVIEWER_LOGIN,
+            "node_id": C0007_ACTIVATION_REVIEWER_NODE_ID,
+            "type": "User",
+        },
+    }
+    post_review_problems = Problems()
+    post_activation_review = c0007_post_recovery_approved_review(
+        post_artifact_fixture,
+        post_readiness_fixture,
+        post_repository_fixture,
+        post_issue_fixture,
+        post_comment_fixture,
+        post_review_problems,
+        workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        context="self-test CONT01 activation review positive",
+    )
+    post_contract_fixture = (
+        build_c0007_post_recovery_contract(
+            post_artifact_fixture,
+            post_authorization_fixture,
+            post_activation_review,
+            authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+        )
+        if isinstance(post_activation_review, Mapping)
+        else {}
+    )
+    post_contract_positive = Problems()
+    validate_c0007_post_recovery_contract_payload(
+        post_contract_fixture,
+        post_artifact_fixture,
+        post_authorization_fixture,
+        post_contract_positive,
+        authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+        manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+        context="self-test CONT01 schema5 A positive",
+    )
+    problems.require(
+        exact_json_equal(post_review_request, post_review_request_reversed)
+        and post_issue_request["body"].count("@kfoynt") == 1
+        and post_issue_request["body"].endswith("\n")
+        and isinstance(post_activation_review, Mapping)
+        and not post_review_problems.messages
+        and not post_contract_positive.messages
+        and all("byte_count" not in row for row in post_contract_fixture.get("artifacts", [])),
+        "self-test CONT01 deterministic readiness/review/schema5 positive",
+        f"valid CONT01 fixture rejected: {post_review_problems.messages + post_contract_positive.messages}",
+    )
+
+    cont01_rejected_cases = 0
+    readiness_observed = parse_rfc3339(post_readiness_fixture.get("observed_at"))
+    assert readiness_observed is not None
+    same_second_issue = json.loads(canonical_json(post_issue_fixture))
+    same_second_issue["created_at"] = post_readiness_fixture["observed_at"]
+    same_second_activation_problems = Problems()
+    same_second_activation_review = c0007_post_recovery_approved_review(
+        post_artifact_fixture,
+        post_readiness_fixture,
+        post_repository_fixture,
+        same_second_issue,
+        post_comment_fixture,
+        same_second_activation_problems,
+        workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        context="self-test CONT01 same-second readiness issue",
+    )
+    if isinstance(same_second_activation_review, Mapping):
+        validate_c0007_post_recovery_activation_review(
+            same_second_activation_review,
+            post_artifact_fixture,
+            same_second_activation_problems,
+            context="self-test CONT01 same-second readiness issue persisted",
+        )
+    problems.require(
+        isinstance(same_second_activation_review, Mapping)
+        and not same_second_activation_problems.messages,
+        "self-test CONT01 same-second readiness issue",
+        "second-granular readiness/issue equality was rejected",
+    )
+    pre_readiness_issue = json.loads(canonical_json(post_issue_fixture))
+    pre_readiness_issue["created_at"] = datetime.fromtimestamp(
+        readiness_observed.timestamp() - 1, timezone.utc
+    ).isoformat().replace("+00:00", "Z")
+    pre_readiness_problems = Problems()
+    pre_readiness_review = c0007_post_recovery_approved_review(
+        post_artifact_fixture,
+        post_readiness_fixture,
+        post_repository_fixture,
+        pre_readiness_issue,
+        post_comment_fixture,
+        pre_readiness_problems,
+        workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        context="self-test CONT01 issue before readiness",
+    )
+    if pre_readiness_review is None and pre_readiness_problems.messages:
+        cont01_rejected_cases += 1
+    else:
+        problems.add(
+            "self-test CONT01 issue before readiness",
+            "issue created before readiness observation was accepted",
+        )
+    for label, artifacts_mutation in (
+        ("duplicate artifact", lambda rows: rows.__setitem__(1, dict(rows[0]))),
+        ("wrong artifact path", lambda rows: rows[0].__setitem__("path", "NumStability/Forbidden.lean")),
+    ):
+        mutated = json.loads(canonical_json(post_artifact_fixture))
+        artifacts_mutation(mutated)
+        try:
+            c0007_post_recovery_review_request(
+                mutated, workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256
+            )
+        except ValueError:
+            cont01_rejected_cases += 1
+        else:
+            problems.add(f"self-test CONT01 {label}", "invalid artifact basis was accepted")
+    malformed_artifact_cases: list[tuple[str, Any]] = [
+        (
+            "scalar artifact row",
+            [*post_artifact_fixture[:-1], "not-an-object"],
+        ),
+        (
+            "list artifact path",
+            [
+                {**post_artifact_fixture[0], "path": ["not", "a", "path"]},
+                *post_artifact_fixture[1:],
+            ],
+        ),
+        (
+            "extra artifact key",
+            [
+                {**post_artifact_fixture[0], "unexpected": True},
+                *post_artifact_fixture[1:],
+            ],
+        ),
+    ]
+    for label, malformed in malformed_artifact_cases:
+        try:
+            c0007_post_recovery_review_request(
+                malformed,
+                workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+            )
+        except (TypeError, ValueError):
+            cont01_rejected_cases += 1
+        else:
+            problems.add(f"self-test CONT01 {label}", "malformed artifact input was accepted")
+
+    authorization_mutations = (
+        ("authorization source hash", lambda value: value["source"].__setitem__("instruction_sha256", "0" * 64)),
+        ("authorization timestamp", lambda value: value.__setitem__("recorded_at", "2026-08-26T22:37:40Z")),
+        ("authorization id", lambda value: value.__setitem__("authorization_id", "other")),
+        ("authorization supersedes", lambda value: value["supersedes"].__setitem__("sha256", "0" * 64)),
+        ("authorization base", lambda value: value["base"].__setitem__("planned_recovery", None)),
+        ("authorization scope boolean", lambda value: value["scope"].__setitem__("remote_main_mutation_authorized", True)),
+        ("authorization actions null", lambda value: value.__setitem__("authorized_actions", None)),
+        ("authorization conditions", lambda value: value["activation_conditions"].__setitem__(0, "changed")),
+        ("authorization exclusions", lambda value: value["preserved_exclusions"].__setitem__(0, "changed")),
+        ("authorization expiry", lambda value: value["expiry"].__setitem__("terminal_control_state", "active")),
+        ("authorization run policy", lambda value: value["run_policy"].__setitem__("rerun_authorized", True)),
+    )
+    for label, mutate in authorization_mutations:
+        mutated = json.loads(canonical_json(post_authorization_fixture))
+        mutate(mutated)
+        negative = Problems()
+        try:
+            validate_c0007_post_recovery_authorization_payload(
+                mutated,
+                post_manifest_header,
+                post_manifest_rows,
+                negative,
+                context=f"self-test CONT01 {label}",
+            )
+        except Exception as error:  # pragma: no cover - explicit no-crash ratchet
+            problems.add(f"self-test CONT01 {label}", f"validator crashed: {error}")
+            continue
+        if negative.messages:
+            cont01_rejected_cases += 1
+        else:
+            problems.add(f"self-test CONT01 {label}", "authorization mutation was accepted")
+    for label, mutate in (
+        ("stale PR workflow", lambda value: value["ci"].__setitem__("workflow_sha256", C0007_BOUNDED_WORKFLOW_SHA256)),
+        ("remote push URL", lambda value: value["refs"]["before"]["remote_configuration"]["configured_push_urls"].append("https://evil.invalid/repo.git")),
+        ("wrong PR tree", lambda value: value.__setitem__("candidate_tree", "0" * 40)),
+        ("preimage binding drift", lambda value: value["review_request"]["bindings"]["successor_basis"].__setitem__("preimage_freeze_sha256", "0" * 64)),
+        ("remote helper override", lambda value: value["refs"]["before"]["remote_configuration"]["effective_remote_namespace_rows"].append("remote.origin.vcs=attacker-helper")),
+        ("bindings null", lambda value: value["review_request"].__setitem__("bindings", None)),
+        ("bindings list", lambda value: value["review_request"].__setitem__("bindings", [])),
+        ("bindings string", lambda value: value["review_request"].__setitem__("bindings", "invalid")),
+    ):
+        mutated = json.loads(canonical_json(post_readiness_fixture))
+        mutate(mutated)
+        try:
+            c0007_post_recovery_issue_request(mutated)
+        except ValueError:
+            cont01_rejected_cases += 1
+        else:
+            problems.add(f"self-test CONT01 {label}", "invalid readiness E was accepted")
+    for label, mutate in (
+        ("contract byte_count leak", lambda value: value["artifacts"][0].__setitem__("byte_count", 1)),
+        ("application mode drift", lambda value: value.__setitem__("application_mode", "other")),
+        ("premature A self identity", lambda value: value["lifecycle"].__setitem__("activation_candidate_commit_sha", "a" * 40)),
+        ("permission widening", lambda value: value["permissions"].__setitem__("remote_main_mutation_authorized", True)),
+    ):
+        mutated = json.loads(canonical_json(post_contract_fixture))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_post_recovery_contract_payload(
+            mutated,
+            post_artifact_fixture,
+            post_authorization_fixture,
+            negative,
+            authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+            context=f"self-test CONT01 {label}",
+        )
+        if negative.messages:
+            cont01_rejected_cases += 1
+        else:
+            problems.add(f"self-test CONT01 {label}", "invalid schema5 contract was accepted")
+    substitution_evidence = json.loads(canonical_json(post_readiness_fixture))
+    substitution_artifacts = json.loads(canonical_json(post_artifact_fixture))
+    substitution_artifacts[0]["sha256"] = "F" * 64
+    substitution_artifacts[0]["post_blob_oid"] = "f" * 40
+    substitution_evidence["review_request"] = c0007_post_recovery_review_request(
+        substitution_artifacts,
+        workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+    )
+    substitution_issue_request = c0007_post_recovery_issue_request(substitution_evidence)
+    substitution_issue = {
+        **post_issue_fixture,
+        "body": substitution_issue_request["body"],
+    }
+    substitution_review_problems = Problems()
+    substitution_review = c0007_post_recovery_approved_review(
+        post_artifact_fixture,
+        substitution_evidence,
+        post_repository_fixture,
+        substitution_issue,
+        post_comment_fixture,
+        substitution_review_problems,
+        workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        context="self-test CONT01 basis substitution",
+    )
+    if substitution_review is None and substitution_review_problems.messages:
+        cont01_rejected_cases += 1
+    else:
+        problems.add("self-test CONT01 basis substitution", "issue basis substitution was accepted")
+    wrong_owner_comment = json.loads(canonical_json(post_comment_fixture))
+    wrong_owner_comment["user"]["login"] = "AlexGeorgantzas"
+    wrong_owner_problems = Problems()
+    wrong_owner_review = c0007_post_recovery_approved_review(
+        post_artifact_fixture,
+        post_readiness_fixture,
+        post_repository_fixture,
+        post_issue_fixture,
+        wrong_owner_comment,
+        wrong_owner_problems,
+        workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        context="self-test CONT01 wrong owner",
+    )
+    if wrong_owner_review is None and wrong_owner_problems.messages:
+        cont01_rejected_cases += 1
+    else:
+        problems.add("self-test CONT01 wrong owner", "wrong comment author was accepted")
+    post_edit_observation = {
+        "data": {
+            "node": {
+                "author": {
+                    "databaseId": C0007_ACTIVATION_REVIEWER_DATABASE_ID,
+                    "id": C0007_ACTIVATION_REVIEWER_NODE_ID,
+                    "login": C0007_ACTIVATION_REVIEWER_LOGIN,
+                },
+                "body": post_review_request["body"],
+                "id": post_comment_node,
+                "lastEditedAt": None,
+                "userContentEdits": {"totalCount": 0},
+            },
+            "repository": {
+                "issue": {
+                    "author": {
+                        "databaseId": C0007_POST_RECOVERY_ISSUE_CREATOR_DATABASE_ID,
+                        "id": C0007_POST_RECOVERY_ISSUE_CREATOR_NODE_ID,
+                        "login": C0007_POST_RECOVERY_ISSUE_CREATOR_LOGIN,
+                    },
+                    "body": post_issue_request["body"],
+                    "id": post_issue_node,
+                    "lastEditedAt": None,
+                    "title": post_issue_request["title"],
+                    "userContentEdits": {"totalCount": 0},
+                }
+            },
+        }
+    }
+    graphql_command = c0007_post_recovery_review_graphql_command(
+        post_issue_number, post_comment_node
+    )
+    unhosted_graphql_command = list(graphql_command)
+    del unhosted_graphql_command[2:4]
+    wrong_header_graphql_command = list(graphql_command)
+    wrong_header_graphql_command[5] = "Accept: application/json"
+    problems.require(
+        c0007_post_recovery_review_graphql_command_is_pinned(graphql_command)
+        and not c0007_post_recovery_review_graphql_command_is_pinned(
+            unhosted_graphql_command
+        )
+        and not c0007_post_recovery_review_graphql_command_is_pinned(
+            wrong_header_graphql_command
+        ),
+        "self-test CONT01 GraphQL command custody",
+        "GraphQL edit-history command did not require exact GitHub host/API headers",
+    )
+    edit_positive = Problems()
+    validate_c0007_post_recovery_review_edit_observation(
+        post_activation_review,
+        post_edit_observation,
+        edit_positive,
+        context="self-test CONT01 GraphQL edit history positive",
+    )
+    problems.require(
+        not edit_positive.messages,
+        "self-test CONT01 GraphQL edit history positive",
+        f"valid zero-edit observation rejected: {edit_positive.messages}",
+    )
+    for label, mutate in (
+        ("edited issue", lambda value: value["data"]["repository"]["issue"].__setitem__("lastEditedAt", "2026-08-27T20:03:00Z")),
+        ("edited comment", lambda value: value["data"]["node"]["userContentEdits"].__setitem__("totalCount", 1)),
+        ("comment node substitution", lambda value: value["data"]["node"].__setitem__("id", "IC_kwOTHER")),
+    ):
+        mutated = json.loads(canonical_json(post_edit_observation))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_post_recovery_review_edit_observation(
+            post_activation_review,
+            mutated,
+            negative,
+            context=f"self-test CONT01 {label}",
+        )
+        if negative.messages:
+            cont01_rejected_cases += 1
+        else:
+            problems.add(f"self-test CONT01 {label}", "edit-history mutation was accepted")
+
+    def post_success_ci(sha: str, tree: str, offset: int) -> dict[str, Any]:
+        record = json.loads(canonical_json(c0007_planned_recovery_ci_record()))
+        record["candidate_sha"] = sha
+        record["candidate_tree"] = tree
+        record["run_id"] += offset
+        record["job_id"] += offset
+        record["check_suite_id"] += offset
+        for key in ("started_at", "completed_at"):
+            instant = parse_rfc3339(record[key])
+            assert instant is not None
+            record[key] = datetime.fromtimestamp(
+                instant.timestamp() + offset * 3600, timezone.utc
+            ).isoformat().replace("+00:00", "Z")
+        for step in record["steps"]:
+            for key in ("started_at", "completed_at"):
+                instant = parse_rfc3339(step[key])
+                assert instant is not None
+                step[key] = datetime.fromtimestamp(
+                    instant.timestamp() + offset * 3600, timezone.utc
+                ).isoformat().replace("+00:00", "Z")
+        return record
+
+    ci_negative_base = post_success_ci("a" * 40, "c" * 40, 23)
+    for label, mutate in (
+        ("CI extra scalar step", lambda value: value["steps"].append("not-a-step")),
+        (
+            "CI duplicate step number",
+            lambda value: value["steps"][1].__setitem__(
+                "number", value["steps"][0]["number"]
+            ),
+        ),
+        (
+            "CI reversed step time",
+            lambda value: value["steps"][1].__setitem__(
+                "started_at", "2026-08-27T23:59:59Z"
+            ),
+        ),
+    ):
+        mutated = json.loads(canonical_json(ci_negative_base))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_post_recovery_ci_record(
+            mutated,
+            "success",
+            "a" * 40,
+            "c" * 40,
+            negative,
+            context=f"self-test CONT01 {label}",
+        )
+        if negative.messages:
+            cont01_rejected_cases += 1
+        else:
+            problems.add(f"self-test CONT01 {label}", "malformed successful CI was accepted")
+
+    active_contract_fixture = json.loads(canonical_json(post_contract_fixture))
+    active_contract_fixture["lifecycle"].update({
+        "activation_candidate_commit_sha": "a" * 40,
+        "activation_candidate_contract_blob_oid": "b" * 40,
+        "activation_candidate_tree_sha": "c" * 40,
+        "state": "active",
+    })
+    active_contract_fixture["ci"]["activation_candidate"] = post_success_ci(
+        "a" * 40, "c" * 40, 23
+    )
+    active_contract_fixture["ci"]["active_attestation"] = c0007_pending_ci_record("pending")
+    active_contract_fixture["ci"]["implementation"] = c0007_pending_ci_record("pending")
+    active_contract_fixture["reviews"]["implementation"]["status"] = "pending"
+    active_positive = Problems()
+    validate_c0007_post_recovery_contract_payload(
+        active_contract_fixture,
+        post_artifact_fixture,
+        post_authorization_fixture,
+        active_positive,
+        authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+        manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+        context="self-test CONT01 schema5 active positive",
+    )
+    problems.require(
+        not active_positive.messages,
+        "self-test CONT01 schema5 active positive",
+        f"valid active/T contract rejected: {active_positive.messages}",
+    )
+    verified_contract_fixture = json.loads(canonical_json(active_contract_fixture))
+    verified_contract_fixture["lifecycle"].update({
+        "active_attestation_commit_sha": "d" * 40,
+        "active_attestation_contract_blob_oid": "e" * 40,
+        "active_attestation_tree_sha": "f" * 40,
+        "implementation_commit_sha": "1" * 40,
+        "implementation_contract_blob_oid": "e" * 40,
+        "implementation_tree_sha": "2" * 40,
+        "state": "verified",
+    })
+    verified_contract_fixture["ci"]["active_attestation"] = post_success_ci(
+        "d" * 40, "f" * 40, 24
+    )
+    verified_contract_fixture["ci"]["implementation"] = post_success_ci(
+        "1" * 40, "2" * 40, 25
+    )
+    implementation_request_fixture = c0007_post_recovery_implementation_review_request(
+        "1" * 40,
+        "2" * 40,
+        "e" * 40,
+        verified_contract_fixture["ci"]["implementation"],
+    )
+    implementation_comment_fixture = json.loads(canonical_json(post_comment_fixture))
+    implementation_comment_fixture.update({
+        "body": implementation_request_fixture["body"],
+        "created_at": "2026-08-27T23:30:00Z",
+        "html_url": f"{post_issue_html}#issuecomment-{post_comment_id + 1}",
+        "id": post_comment_id + 1,
+        "node_id": "IC_kwCONT01_IMPLEMENTATION",
+        "updated_at": "2026-08-27T23:30:00Z",
+        "url": (
+            f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/comments/"
+            f"{post_comment_id + 1}"
+        ),
+    })
+    implementation_review_problems = Problems()
+    implementation_review_fixture = c0007_post_recovery_approved_implementation_review(
+        post_activation_review,
+        "1" * 40,
+        "2" * 40,
+        "e" * 40,
+        verified_contract_fixture["ci"]["implementation"],
+        post_repository_fixture,
+        post_issue_fixture,
+        implementation_comment_fixture,
+        implementation_review_problems,
+        context="self-test CONT01 implementation review positive",
+    )
+    implementation_completed_at = parse_rfc3339(
+        verified_contract_fixture["ci"]["implementation"]["completed_at"]
+    )
+    assert implementation_completed_at is not None
+    same_second_implementation_comment = json.loads(
+        canonical_json(implementation_comment_fixture)
+    )
+    same_second_implementation_comment["created_at"] = (
+        verified_contract_fixture["ci"]["implementation"]["completed_at"]
+    )
+    same_second_implementation_comment["updated_at"] = (
+        verified_contract_fixture["ci"]["implementation"]["completed_at"]
+    )
+    same_second_implementation_problems = Problems()
+    same_second_implementation_review = (
+        c0007_post_recovery_approved_implementation_review(
+            post_activation_review,
+            "1" * 40,
+            "2" * 40,
+            "e" * 40,
+            verified_contract_fixture["ci"]["implementation"],
+            post_repository_fixture,
+            post_issue_fixture,
+            same_second_implementation_comment,
+            same_second_implementation_problems,
+            context="self-test CONT01 same-second I CI review",
+        )
+    )
+    if isinstance(same_second_implementation_review, Mapping):
+        validate_c0007_post_recovery_implementation_review(
+            same_second_implementation_review,
+            post_activation_review,
+            verified_contract_fixture["ci"]["implementation"],
+            "1" * 40,
+            "2" * 40,
+            "e" * 40,
+            same_second_implementation_problems,
+            context="self-test CONT01 same-second I CI review persisted",
+        )
+    problems.require(
+        isinstance(same_second_implementation_review, Mapping)
+        and not same_second_implementation_problems.messages,
+        "self-test CONT01 same-second I CI review",
+        "second-granular I-CI/review equality was rejected",
+    )
+    pre_ci_implementation_comment = json.loads(
+        canonical_json(implementation_comment_fixture)
+    )
+    pre_ci_timestamp = datetime.fromtimestamp(
+        implementation_completed_at.timestamp() - 1, timezone.utc
+    ).isoformat().replace("+00:00", "Z")
+    pre_ci_implementation_comment["created_at"] = pre_ci_timestamp
+    pre_ci_implementation_comment["updated_at"] = pre_ci_timestamp
+    pre_ci_implementation_problems = Problems()
+    pre_ci_implementation_review = c0007_post_recovery_approved_implementation_review(
+        post_activation_review,
+        "1" * 40,
+        "2" * 40,
+        "e" * 40,
+        verified_contract_fixture["ci"]["implementation"],
+        post_repository_fixture,
+        post_issue_fixture,
+        pre_ci_implementation_comment,
+        pre_ci_implementation_problems,
+        context="self-test CONT01 implementation review before I CI",
+    )
+    if pre_ci_implementation_review is None and pre_ci_implementation_problems.messages:
+        cont01_rejected_cases += 1
+    else:
+        problems.add(
+            "self-test CONT01 implementation review before I CI",
+            "implementation review before I CI completion was accepted",
+        )
+    verified_contract_fixture["reviews"]["implementation"] = (
+        implementation_review_fixture
+        if isinstance(implementation_review_fixture, Mapping)
+        else {}
+    )
+    verified_positive = Problems()
+    validate_c0007_post_recovery_contract_payload(
+        verified_contract_fixture,
+        post_artifact_fixture,
+        post_authorization_fixture,
+        verified_positive,
+        authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+        manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+        context="self-test CONT01 schema5 verified positive",
+    )
+    problems.require(
+        not implementation_review_problems.messages
+        and isinstance(implementation_review_fixture, Mapping)
+        and not verified_positive.messages,
+        "self-test CONT01 schema5 verified positive",
+        f"valid verified/V contract rejected: {verified_positive.messages}",
+    )
+    for label, mutate in (
+        (
+            "implementation same-comment reuse",
+            lambda value: (
+                value["source"].__setitem__("comment_database_id", post_comment_id),
+                value["source"].__setitem__("comment_node_id", post_comment_node),
+            ),
+        ),
+        (
+            "implementation wrong owner",
+            lambda value: value["source"].__setitem__("author_login", "AlexGeorgantzas"),
+        ),
+        (
+            "implementation app mediation",
+            lambda value: value["source"].__setitem__(
+                "performed_via_github_app", {"id": 1}
+            ),
+        ),
+        (
+            "implementation wrong I identity",
+            lambda value: value.__setitem__("reviewed_commit_sha", "3" * 40),
+        ),
+        (
+            "implementation pre-I-CI timestamp",
+            lambda value: (
+                value.__setitem__("reviewed_at", "2026-08-27T20:30:00Z"),
+                value["source"].__setitem__("created_at", "2026-08-27T20:30:00Z"),
+                value["source"].__setitem__("updated_at", "2026-08-27T20:30:00Z"),
+            ),
+        ),
+        (
+            "implementation message substitution",
+            lambda value: value["source"].__setitem__("message", "approve something else"),
+        ),
+    ):
+        mutated = json.loads(canonical_json(implementation_review_fixture))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_post_recovery_implementation_review(
+            mutated,
+            post_activation_review,
+            verified_contract_fixture["ci"]["implementation"],
+            "1" * 40,
+            "2" * 40,
+            "e" * 40,
+            negative,
+            context=f"self-test CONT01 {label}",
+        )
+        if negative.messages:
+            cont01_rejected_cases += 1
+        else:
+            problems.add(f"self-test CONT01 {label}", "implementation review mutation was accepted")
+
+    implementation_edit_observation = {
+        "data": {
+            "node": {
+                "author": {
+                    "databaseId": C0007_ACTIVATION_REVIEWER_DATABASE_ID,
+                    "id": C0007_ACTIVATION_REVIEWER_NODE_ID,
+                    "login": C0007_ACTIVATION_REVIEWER_LOGIN,
+                },
+                "body": implementation_request_fixture["body"],
+                "id": implementation_comment_fixture["node_id"],
+                "lastEditedAt": None,
+                "userContentEdits": {"totalCount": 0},
+            },
+            "repository": post_edit_observation["data"]["repository"],
+        }
+    }
+    implementation_edit_positive = Problems()
+    validate_c0007_post_recovery_review_edit_observation(
+        implementation_review_fixture,
+        implementation_edit_observation,
+        implementation_edit_positive,
+        context="self-test CONT01 implementation edit history positive",
+    )
+    problems.require(
+        not implementation_edit_positive.messages,
+        "self-test CONT01 implementation edit history positive",
+        f"valid implementation edit history rejected: {implementation_edit_positive.messages}",
+    )
+    for label, mutate in (
+        (
+            "implementation edited comment",
+            lambda value: value["data"]["node"].__setitem__(
+                "lastEditedAt", "2026-08-27T01:31:00Z"
+            ),
+        ),
+        (
+            "implementation deleted comment",
+            lambda value: value["data"].__setitem__("node", None),
+        ),
+        (
+            "implementation comment node substitution",
+            lambda value: value["data"]["node"].__setitem__("id", "IC_kwOTHER_I"),
+        ),
+    ):
+        mutated = json.loads(canonical_json(implementation_edit_observation))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_post_recovery_review_edit_observation(
+            implementation_review_fixture,
+            mutated,
+            negative,
+            context=f"self-test CONT01 {label}",
+        )
+        if negative.messages:
+            cont01_rejected_cases += 1
+        else:
+            problems.add(f"self-test CONT01 {label}", "implementation edit mutation was accepted")
+    for label, fixture, mutate in (
+        (
+            "active missing A identity",
+            active_contract_fixture,
+            lambda value: value["lifecycle"].__setitem__("activation_candidate_commit_sha", None),
+        ),
+        (
+            "verified missing implementation review",
+            verified_contract_fixture,
+            lambda value: value["reviews"].__setitem__("implementation", {**value["reviews"]["implementation"], "status": "pending"}),
+        ),
+    ):
+        mutated = json.loads(canonical_json(fixture))
+        mutate(mutated)
+        negative = Problems()
+        validate_c0007_post_recovery_contract_payload(
+            mutated,
+            post_artifact_fixture,
+            post_authorization_fixture,
+            negative,
+            authorization_sha256=C0007_POST_RECOVERY_AUTHORIZATION_SHA256,
+            manifest_sha256=C0007_POST_RECOVERY_MANIFEST_SHA256,
+            context=f"self-test CONT01 {label}",
+        )
+        if negative.messages:
+            cont01_rejected_cases += 1
+        else:
+            problems.add(f"self-test CONT01 {label}", "lifecycle mutation was accepted")
+    problems.require(
+        cont01_rejected_cases == 49,
+        "self-test CONT01 adversarial count",
+        f"expected 49 named CONT01 negatives, observed {cont01_rejected_cases}",
+    )
+
+    # The A/T/V writers share one compare-and-swap rollback primitive.  Exercise
+    # every ownership state for each caller label, including replacement/read
+    # failures, so rollback can never overwrite unknown concurrent bytes.
+    with tempfile.TemporaryDirectory(prefix="completion-cont01-cas-") as raw_directory:
+        cas_directory = Path(raw_directory)
+        cas_path = cas_directory / "contract.json"
+        old_bytes = b"old-contract\n"
+        installed_bytes = b"installed-contract\n"
+        concurrent_bytes = b"concurrent-contract\n"
+        for writer_label in ("A", "T", "V"):
+            cas_path.write_bytes(installed_bytes)
+            cas_positive = Problems()
+            restored = c0007_compare_and_swap_restore(
+                cas_path,
+                installed_bytes,
+                old_bytes,
+                cas_directory,
+                cas_positive,
+                context=f"self-test CONT01 {writer_label} CAS installed",
+            )
+            problems.require(
+                restored
+                and cas_path.read_bytes() == old_bytes
+                and not cas_positive.messages,
+                f"self-test CONT01 {writer_label} CAS installed",
+                f"owned installed payload did not restore: {cas_positive.messages}",
+            )
+            cas_already_old = Problems()
+            problems.require(
+                c0007_compare_and_swap_restore(
+                    cas_path,
+                    installed_bytes,
+                    old_bytes,
+                    cas_directory,
+                    cas_already_old,
+                    context=f"self-test CONT01 {writer_label} CAS old",
+                )
+                and cas_path.read_bytes() == old_bytes
+                and not cas_already_old.messages,
+                f"self-test CONT01 {writer_label} CAS old",
+                f"already-restored payload was not a no-op: {cas_already_old.messages}",
+            )
+            cas_path.write_bytes(concurrent_bytes)
+            cas_concurrent = Problems()
+            concurrent_result = c0007_compare_and_swap_restore(
+                cas_path,
+                installed_bytes,
+                old_bytes,
+                cas_directory,
+                cas_concurrent,
+                context=f"self-test CONT01 {writer_label} CAS concurrent",
+            )
+            problems.require(
+                not concurrent_result
+                and cas_path.read_bytes() == concurrent_bytes
+                and any(
+                    "rollback refused due concurrent contract mutation" in message
+                    for message in cas_concurrent.messages
+                ),
+                f"self-test CONT01 {writer_label} CAS concurrent",
+                f"unknown concurrent bytes were not preserved: {cas_concurrent.messages}",
+            )
+            cas_path.write_bytes(installed_bytes)
+            cas_replace_failure = Problems()
+
+            def fail_replace(_source: Any, _destination: Any) -> None:
+                raise OSError("injected rollback replacement failure")
+
+            replace_result = c0007_compare_and_swap_restore(
+                cas_path,
+                installed_bytes,
+                old_bytes,
+                cas_directory,
+                cas_replace_failure,
+                context=f"self-test CONT01 {writer_label} CAS replace failure",
+                replace_fn=fail_replace,
+            )
+            problems.require(
+                not replace_result
+                and cas_path.read_bytes() == installed_bytes
+                and any("contract rollback failed" in message for message in cas_replace_failure.messages),
+                f"self-test CONT01 {writer_label} CAS replace failure",
+                f"rollback replacement failure was not reported: {cas_replace_failure.messages}",
+            )
+            cas_read_failure = Problems()
+
+            def fail_read(_path: Path) -> bytes:
+                raise ValueError("injected stable-read failure")
+
+            read_result = c0007_compare_and_swap_restore(
+                cas_path,
+                installed_bytes,
+                old_bytes,
+                cas_directory,
+                cas_read_failure,
+                context=f"self-test CONT01 {writer_label} CAS read failure",
+                read_fn=fail_read,
+            )
+            problems.require(
+                not read_result
+                and cas_path.read_bytes() == installed_bytes
+                and any("rollback stable read failed" in message for message in cas_read_failure.messages),
+                f"self-test CONT01 {writer_label} CAS read failure",
+                f"stable-read ValueError was not reported: {cas_read_failure.messages}",
+            )
+
+    temp_status_problems = Problems()
+    temp_status_validator = CompletionValidator(ROOT, DEFAULT_PHASE_DIR)
+    git_temp_directory = temp_status_validator.c0007_atomic_temp_directory(
+        temp_status_problems,
+        context="self-test CONT01 writer temp directory",
+    )
+    status_temp_path: Path | None = None
+    if git_temp_directory is not None:
+        descriptor, raw_status_temp = tempfile.mkstemp(
+            prefix=".C0007-writer-status-", suffix=".tmp", dir=git_temp_directory
+        )
+        os.close(descriptor)
+        status_temp_path = Path(raw_status_temp)
+        status_capture = subprocess.run(
+            ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+            cwd=ROOT,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        problems.require(
+            status_capture.returncode == 0
+            and status_temp_path.name.encode("utf-8") not in status_capture.stdout,
+            "self-test CONT01 writer temp status",
+            "owned .git writer temp leaked into real Git status",
+        )
+    if status_temp_path is not None:
+        try:
+            status_temp_path.unlink()
+        except OSError as error:
+            problems.add("self-test CONT01 writer temp cleanup", str(error))
+    problems.require(
+        git_temp_directory is not None and not temp_status_problems.messages,
+        "self-test CONT01 writer temp directory",
+        f"validated same-volume .git temp directory rejected: {temp_status_problems.messages}",
+    )
+
+    # Invoke all three transactional writers themselves.  The probes retain the
+    # real render/validate/temp/replace/CAS paths while replacing only external
+    # Git and GitHub observations with deterministic authenticated fixtures.
+    def live_ci_from_compact(record: Mapping[str, Any]) -> dict[str, Any]:
+        return {
+            "branch": record.get("branch"),
+            "check_suite_conclusion": "success",
+            "check_suite_id": record.get("check_suite_id"),
+            "event": record.get("event"),
+            "head_sha": record.get("candidate_sha"),
+            "job_completed_at": record.get("completed_at"),
+            "job_conclusion": "success",
+            "job_id": record.get("job_id"),
+            "job_log_byte_count": record.get("job_log_byte_count"),
+            "job_log_sha256": record.get("job_log_sha256"),
+            "job_name": record.get("job_name"),
+            "job_started_at": record.get("started_at"),
+            "run_attempt": record.get("run_attempt"),
+            "run_completed_at": record.get("completed_at"),
+            "run_conclusion": "success",
+            "run_id": record.get("run_id"),
+            "run_started_at": record.get("started_at"),
+            "run_status": "completed",
+            "runner_name": "GitHub Actions 1",
+            "steps": json.loads(canonical_json(record.get("steps"))),
+            "toolchain": C0007_BOUNDED_TOOLCHAIN,
+            "workflow_id": C0007_BOUNDED_WORKFLOW_ID,
+            "workflow_name": C0007_BOUNDED_WORKFLOW_NAME,
+            "workflow_path": record.get("workflow_path"),
+            "workflow_sha256": C0007_CI_RECOVERY_WORKFLOW_SHA256,
+        }
+
+    def writer_process(stdout: str, returncode: int = 0) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess([], returncode, stdout=stdout, stderr="")
+
+    pr_contract_process = subprocess.run(
+        ["git", "cat-file", "blob", C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    pr_contract_payload = pr_contract_process.stdout
+    problems.require(
+        pr_contract_process.returncode == 0
+        and len(pr_contract_payload)
+        == C0007_POST_RECOVERY_PREIMAGES[C0007_BOUNDED_PLANNED_CONTROL_PATH][1]
+        and hashlib.sha256(pr_contract_payload).hexdigest().upper()
+        == C0007_PLANNED_RECOVERY_CONTRACT_SHA256,
+        "self-test CONT01 writer immutable PR fixture",
+        "cannot load the exact immutable PR contract fixture",
+    )
+
+    class DirectAWriterProbe(CompletionValidator):
+        def __init__(self, root: Path, drift: str) -> None:
+            super().__init__(root, root / "phase")
+            self.drift = drift
+            (root / ".git").mkdir()
+            authorization_path = root / C0007_BOUNDED_AUTHORIZATION_PATH
+            authorization_path.parent.mkdir(parents=True, exist_ok=True)
+            authorization_path.write_bytes(post_authorization_payload)
+            contract_path = root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+            contract_path.parent.mkdir(parents=True, exist_ok=True)
+            contract_path.write_bytes(pr_contract_payload)
+
+        def validate_c0007_git_repository_identity(self) -> None:
+            return None
+
+        def validate_c0007_git_transport_configuration(self) -> None:
+            return None
+
+        def load_r07_planned_contract(self) -> None:
+            return None
+
+        def validate_pointer(self) -> None:
+            return None
+
+        def load_phase(self) -> None:
+            return None
+
+        def c0007_pr_recovery_candidate_snapshot(
+            self,
+            probe_problems: Problems,
+            *,
+            context: str,
+            allow_contract_worktree_overlay: bool = False,
+        ) -> tuple[dict[str, str | None], bytes] | None:
+            self.c0007_pr_successor_artifacts = json.loads(
+                canonical_json(post_artifact_fixture)
+            )
+            snapshot: dict[str, str | None] = {"head": C0007_PLANNED_RECOVERY_SHA}
+            identity = b"stable-candidate"
+            if self.drift == "pre_local" and ".local.pre_replace" in context:
+                identity = b"pre-replace-drift"
+            if self.drift == "post_local" and ".local.post_replace" in context:
+                probe_problems.add(context, "injected post-replace local/ref drift")
+                snapshot["head"] = "0" * 40
+            return snapshot, identity
+
+        def c0007_gh_api_json(
+            self,
+            endpoint: str,
+            probe_problems: Problems,
+            *,
+            context: str,
+            paginate: bool = False,
+        ) -> Any:
+            if endpoint.endswith(
+                "/issues/comments?per_page=100&sort=created&direction=asc"
+            ):
+                list_view = json.loads(canonical_json(post_comment_fixture))
+                list_view["user"]["avatar_url"] = (
+                    "https://avatars.githubusercontent.com/u/"
+                    f"{C0007_ACTIVATION_REVIEWER_DATABASE_ID}?v=4"
+                )
+                return [list_view]
+            if endpoint.endswith(f"/issues/comments/{post_comment_id}"):
+                # Reproduce live GitHub: the single-object refetch adds ``pin``
+                # and the avatar cache-buster that the list response omits.
+                single_view = json.loads(canonical_json(post_comment_fixture))
+                single_view["pin"] = None
+                single_view["user"]["avatar_url"] = (
+                    "https://avatars.githubusercontent.com/u/"
+                    f"{C0007_ACTIVATION_REVIEWER_DATABASE_ID}"
+                    "?u=9f3c1a8906b4c612cc7d019ef318f885618ac722&v=4"
+                )
+                return single_view
+            if endpoint.endswith(f"/issues/{post_issue_number}"):
+                return json.loads(canonical_json(post_issue_fixture))
+            if endpoint == f"repos/{C0007_BOUNDED_REPOSITORY}":
+                return json.loads(canonical_json(post_repository_fixture))
+            probe_problems.add(context, f"unexpected fake GitHub endpoint {endpoint}")
+            return None
+
+        def c0007_post_recovery_review_edit_observation(
+            self,
+            issue_number: int,
+            comment_node_id: str,
+            probe_problems: Problems,
+            *,
+            context: str,
+        ) -> dict[str, Any] | None:
+            observation = json.loads(canonical_json(post_edit_observation))
+            if self.drift == "post_review" and ".post_replace.edits" in context:
+                probe_problems.add(
+                    context, "injected post-replace activation review drift"
+                )
+                observation["data"]["node"]["lastEditedAt"] = "2026-08-26T23:59:59Z"
+            return observation
+
+        def reauthenticate_c0007_compact_ci_record(
+            self,
+            candidate_sha: str,
+            candidate_tree: str,
+            record: Mapping[str, Any] | None,
+            probe_problems: Problems,
+            *,
+            context: str,
+        ) -> dict[str, Any] | None:
+            if self.drift == "post_ci" and ".ci.post_replace" in context:
+                probe_problems.add(context, "injected post-replace R CI drift")
+                return None
+            return json.loads(canonical_json(c0007_planned_recovery_ci_record()))
+
+        def validate_c0007_global_index_flags(
+            self,
+            probe_problems: Problems,
+            *,
+            context: str,
+            env: dict[str, str] | None = None,
+        ) -> bytes | None:
+            return b"stable-index"
+
+        def c0007_atomic_temp_directory(
+            self, probe_problems: Problems, *, context: str
+        ) -> Path | None:
+            return self.root / ".git"
+
+    expected_a_payload = canonical_tracked_json_bytes(post_contract_fixture)
+    a_expected_diagnostic = {
+        "pre_local": "local HEAD/branch/status and both remote refs must remain byte-stable",
+        "post_ci": "injected post-replace R CI drift",
+        "post_review": "injected post-replace activation review drift",
+        "post_local": "injected post-replace local/ref drift",
+    }
+    for a_scenario in (
+        "success",
+        "pre_local",
+        "post_ci",
+        "post_review",
+        "post_local",
+    ):
+        with tempfile.TemporaryDirectory(prefix="completion-cont01-writer-a-") as raw_root:
+            a_root = Path(raw_root)
+            a_probe = DirectAWriterProbe(a_root, a_scenario)
+            a_result = a_probe.write_c0007_post_recovery_contract()
+            a_final = (
+                a_root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+            ).read_bytes()
+            a_ok = (
+                not a_result.messages and a_final == expected_a_payload
+                if a_scenario == "success"
+                else bool(a_result.messages)
+                and a_final == pr_contract_payload
+                and a_expected_diagnostic[a_scenario]
+                in "\n".join(a_result.messages)
+            )
+            problems.require(
+                a_ok,
+                f"self-test CONT01 direct A writer {a_scenario}",
+                f"A writer transaction outcome drifted: {a_result.messages}",
+            )
+
+    writer_a_blob = git_blob_oid(expected_a_payload)
+    writer_a_sha = "a" * 40
+    writer_a_tree = "c" * 40
+    writer_a_ci = post_success_ci(writer_a_sha, writer_a_tree, 23)
+    writer_active_contract = build_c0007_post_recovery_active_contract(
+        post_contract_fixture,
+        activation_commit_sha=writer_a_sha,
+        activation_tree_sha=writer_a_tree,
+        activation_contract_blob_oid=writer_a_blob,
+        activation_ci=writer_a_ci,
+    )
+    writer_active_payload = canonical_tracked_json_bytes(writer_active_contract)
+
+    class DirectTWriterProbe(CompletionValidator):
+        def __init__(self, root: Path, drift: str) -> None:
+            super().__init__(root, root / "phase")
+            self.drift = drift
+            (root / ".git").mkdir()
+            contract_path = root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+            contract_path.parent.mkdir(parents=True, exist_ok=True)
+            contract_path.write_bytes(expected_a_payload)
+
+        def validate_c0007_git_repository_identity(self) -> None:
+            return None
+
+        def validate_c0007_git_transport_configuration(self) -> None:
+            return None
+
+        def run_c0007_live_readonly(self) -> Problems:
+            self.c0007_bounded_contract = json.loads(canonical_json(post_contract_fixture))
+            self.c0007_post_recovery_authorization = json.loads(
+                canonical_json(post_authorization_fixture)
+            )
+            self.c0007_bounded_state = "activation_pending"
+            return self.problems
+
+        def observe_c0007_live_evidence(
+            self, evidence_kind: str, *, allow_exact_i_overlay: bool = False
+        ) -> tuple[dict[str, Any] | None, Problems]:
+            return (
+                {
+                    "candidate_sha": writer_a_sha,
+                    "candidate_tree": writer_a_tree,
+                    "ci": live_ci_from_compact(writer_a_ci),
+                    "evidence_kind": "c0007_a_activation_ready_v1",
+                },
+                Problems(),
+            )
+
+        def git(
+            self,
+            *args: str,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> subprocess.CompletedProcess[str]:
+            if args == ("rev-parse", "HEAD"):
+                return writer_process(writer_a_sha + "\n")
+            if args == ("rev-parse", "HEAD^{tree}"):
+                return writer_process(writer_a_tree + "\n")
+            if args == (
+                "rev-parse",
+                f"HEAD:{C0007_BOUNDED_PLANNED_CONTROL_PATH}",
+            ):
+                return writer_process(writer_a_blob + "\n")
+            return writer_process("", 1)
+
+        def observe_c0007_review_custody(
+            self,
+            review: Mapping[str, Any],
+            probe_problems: Problems,
+            *,
+            context: str,
+        ) -> dict[str, Any] | None:
+            if self.drift == "pre_review" and ".activation.pre_replace" in context:
+                return {"custody": "drift"}
+            if (
+                self.drift == "post_activation_review"
+                and ".activation.post_replace" in context
+            ):
+                probe_problems.add(
+                    context, "injected post-replace activation review drift"
+                )
+                return None
+            return {"custody": "stable"}
+
+        def reauthenticate_c0007_compact_ci_record(
+            self,
+            candidate_sha: str,
+            candidate_tree: str,
+            record: Mapping[str, Any] | None,
+            probe_problems: Problems,
+            *,
+            context: str,
+        ) -> dict[str, Any] | None:
+            return json.loads(canonical_json(writer_a_ci))
+
+        def c0007_live_ref_snapshot(
+            self,
+            probe_problems: Problems,
+            *,
+            context: str,
+            allowed_status_rows: Sequence[str] = (),
+        ) -> tuple[dict[str, str | None], bytes] | None:
+            snapshot: dict[str, str | None] = {"head": writer_a_sha}
+            if self.drift == "post_ref" and ".local.post_replace" in context:
+                probe_problems.add(context, "injected post-replace local/ref drift")
+                snapshot["head"] = "0" * 40
+            return snapshot, b"stable-ref"
+
+        def validate_c0007_global_index_flags(
+            self,
+            probe_problems: Problems,
+            *,
+            context: str,
+            env: dict[str, str] | None = None,
+        ) -> bytes | None:
+            return b"stable-index"
+
+        def c0007_atomic_temp_directory(
+            self, probe_problems: Problems, *, context: str
+        ) -> Path | None:
+            return self.root / ".git"
+
+    t_expected_diagnostic = {
+        "pre_review": "A CI, refs/config/index, and A contract must remain exact",
+        "post_activation_review": "injected post-replace activation review drift",
+        "post_ref": "injected post-replace local/ref drift",
+    }
+    for t_scenario in (
+        "success",
+        "pre_review",
+        "post_activation_review",
+        "post_ref",
+    ):
+        with tempfile.TemporaryDirectory(prefix="completion-cont01-writer-t-") as raw_root:
+            t_root = Path(raw_root)
+            t_probe = DirectTWriterProbe(t_root, t_scenario)
+            t_result = t_probe.write_c0007_post_recovery_active_contract()
+            t_final = (
+                t_root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+            ).read_bytes()
+            t_ok = (
+                not t_result.messages and t_final == writer_active_payload
+                if t_scenario == "success"
+                else bool(t_result.messages)
+                and t_final == expected_a_payload
+                and t_expected_diagnostic[t_scenario]
+                in "\n".join(t_result.messages)
+            )
+            problems.require(
+                t_ok,
+                f"self-test CONT01 direct T writer {t_scenario}",
+                f"T writer transaction outcome drifted: {t_result.messages}",
+            )
+
+    writer_t_sha = "d" * 40
+    writer_t_tree = "f" * 40
+    writer_t_ci = post_success_ci(writer_t_sha, writer_t_tree, 24)
+    writer_i_sha = "1" * 40
+    writer_i_tree = "2" * 40
+    writer_i_ci = post_success_ci(writer_i_sha, writer_i_tree, 25)
+    writer_t_blob = git_blob_oid(writer_active_payload)
+    writer_implementation_request = c0007_post_recovery_implementation_review_request(
+        writer_i_sha, writer_i_tree, writer_t_blob, writer_i_ci
+    )
+    writer_implementation_comment = json.loads(
+        canonical_json(implementation_comment_fixture)
+    )
+    writer_implementation_comment.update(
+        {
+            "body": writer_implementation_request["body"],
+            "node_id": "IC_kwCONT01_WRITER_IMPLEMENTATION",
+        }
+    )
+    writer_implementation_edits = json.loads(
+        canonical_json(implementation_edit_observation)
+    )
+    writer_implementation_edits["data"]["node"].update(
+        {
+            "body": writer_implementation_request["body"],
+            "id": writer_implementation_comment["node_id"],
+        }
+    )
+
+    class DirectVWriterProbe(CompletionValidator):
+        def __init__(self, root: Path, drift: str) -> None:
+            super().__init__(root, root / "phase")
+            self.drift = drift
+            (root / ".git").mkdir()
+            contract_path = root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+            contract_path.parent.mkdir(parents=True, exist_ok=True)
+            contract_path.write_bytes(writer_active_payload)
+
+        def validate_c0007_git_repository_identity(self) -> None:
+            return None
+
+        def validate_c0007_git_transport_configuration(self) -> None:
+            return None
+
+        def run_c0007_live_readonly(self) -> Problems:
+            self.c0007_bounded_contract = json.loads(
+                canonical_json(writer_active_contract)
+            )
+            self.c0007_post_recovery_authorization = json.loads(
+                canonical_json(post_authorization_fixture)
+            )
+            self.c0007_bounded_state = "active"
+            return self.problems
+
+        def observe_c0007_live_evidence(
+            self, evidence_kind: str, *, allow_exact_i_overlay: bool = False
+        ) -> tuple[dict[str, Any] | None, Problems]:
+            return (
+                {
+                    "candidate_sha": writer_i_sha,
+                    "candidate_tree": writer_i_tree,
+                    "ci": live_ci_from_compact(writer_i_ci),
+                    "evidence_kind": "c0007_i_implementation_review_ready_v1",
+                    "review_request": json.loads(
+                        canonical_json(writer_implementation_request)
+                    ),
+                },
+                Problems(),
+            )
+
+        def git(
+            self,
+            *args: str,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> subprocess.CompletedProcess[str]:
+            responses = {
+                ("rev-parse", "HEAD"): writer_i_sha,
+                ("rev-parse", "HEAD^{tree}"): writer_i_tree,
+                ("show", "-s", "--format=%P", writer_i_sha): writer_t_sha,
+                ("show", "-s", "--format=%T", writer_t_sha): writer_t_tree,
+                (
+                    "rev-parse",
+                    f"{writer_t_sha}:{C0007_BOUNDED_PLANNED_CONTROL_PATH}",
+                ): writer_t_blob,
+                (
+                    "rev-parse",
+                    f"{writer_i_sha}:{C0007_BOUNDED_PLANNED_CONTROL_PATH}",
+                ): writer_t_blob,
+            }
+            value = responses.get(tuple(args))
+            return writer_process(value + "\n") if value is not None else writer_process("", 1)
+
+        def reauthenticate_c0007_compact_ci_record(
+            self,
+            candidate_sha: str,
+            candidate_tree: str,
+            record: Mapping[str, Any] | None,
+            probe_problems: Problems,
+            *,
+            context: str,
+        ) -> dict[str, Any] | None:
+            selected = writer_t_ci if candidate_sha == writer_t_sha else writer_i_ci
+            return json.loads(canonical_json(selected))
+
+        def observe_c0007_review_custody(
+            self,
+            review: Mapping[str, Any],
+            probe_problems: Problems,
+            *,
+            context: str,
+        ) -> dict[str, Any] | None:
+            if self.drift == "pre_review" and ".pre_replace.activation" in context:
+                return {"custody": "drift"}
+            if (
+                self.drift == "post_activation_review"
+                and ".post_replace.activation" in context
+            ):
+                probe_problems.add(
+                    context, "injected post-replace activation review drift"
+                )
+                return None
+            return {"custody": "stable"}
+
+        def c0007_gh_api_json(
+            self,
+            endpoint: str,
+            probe_problems: Problems,
+            *,
+            context: str,
+            paginate: bool = False,
+        ) -> Any:
+            if endpoint.endswith(
+                f"/issues/{post_issue_number}/comments?per_page=100&sort=created&direction=asc"
+            ):
+                list_view = json.loads(canonical_json(writer_implementation_comment))
+                list_view["user"]["avatar_url"] = (
+                    "https://avatars.githubusercontent.com/u/"
+                    f"{C0007_ACTIVATION_REVIEWER_DATABASE_ID}?v=4"
+                )
+                return [list_view]
+            if endpoint.endswith(
+                f"/issues/comments/{writer_implementation_comment['id']}"
+            ):
+                single_view = json.loads(
+                    canonical_json(writer_implementation_comment)
+                )
+                single_view["pin"] = None
+                single_view["user"]["avatar_url"] = (
+                    "https://avatars.githubusercontent.com/u/"
+                    f"{C0007_ACTIVATION_REVIEWER_DATABASE_ID}"
+                    "?u=9f3c1a8906b4c612cc7d019ef318f885618ac722&v=4"
+                )
+                return single_view
+            if endpoint.endswith(f"/issues/{post_issue_number}"):
+                return json.loads(canonical_json(post_issue_fixture))
+            if endpoint == f"repos/{C0007_BOUNDED_REPOSITORY}":
+                return json.loads(canonical_json(post_repository_fixture))
+            probe_problems.add(context, f"unexpected fake GitHub endpoint {endpoint}")
+            return None
+
+        def c0007_post_recovery_review_edit_observation(
+            self,
+            issue_number: int,
+            comment_node_id: str,
+            probe_problems: Problems,
+            *,
+            context: str,
+        ) -> dict[str, Any] | None:
+            observation = json.loads(canonical_json(writer_implementation_edits))
+            if (
+                self.drift == "post_implementation_review"
+                and ".post_replace.edits" in context
+            ):
+                probe_problems.add(
+                    context, "injected post-replace implementation review drift"
+                )
+                observation["data"]["node"]["lastEditedAt"] = (
+                    "2026-08-26T23:59:59Z"
+                )
+            return observation
+
+        def c0007_live_ref_snapshot(
+            self,
+            probe_problems: Problems,
+            *,
+            context: str,
+            allowed_status_rows: Sequence[str] = (),
+        ) -> tuple[dict[str, str | None], bytes] | None:
+            return {"head": writer_i_sha}, b"stable-ref"
+
+        def validate_c0007_global_index_flags(
+            self,
+            probe_problems: Problems,
+            *,
+            context: str,
+            env: dict[str, str] | None = None,
+        ) -> bytes | None:
+            if self.drift == "post_index" and ".index.after" in context:
+                probe_problems.add(context, "injected post-replace index drift")
+                return b"post-index-drift"
+            return b"stable-index"
+
+        def c0007_atomic_temp_directory(
+            self, probe_problems: Problems, *, context: str
+        ) -> Path | None:
+            return self.root / ".git"
+
+    v_expected_diagnostic = {
+        "pre_review": "repository, issue, full comment census, implementation comment, or edit history changed",
+        "post_activation_review": "injected post-replace activation review drift",
+        "post_implementation_review": "injected post-replace implementation review drift",
+        "post_index": "injected post-replace index drift",
+    }
+    for v_scenario in (
+        "success",
+        "pre_review",
+        "post_activation_review",
+        "post_implementation_review",
+        "post_index",
+    ):
+        with tempfile.TemporaryDirectory(prefix="completion-cont01-writer-v-") as raw_root:
+            v_root = Path(raw_root)
+            v_probe = DirectVWriterProbe(v_root, v_scenario)
+            v_result = v_probe.write_c0007_post_recovery_verified_contract()
+            v_final = (
+                v_root / C0007_BOUNDED_PLANNED_CONTROL_PATH
+            ).read_bytes()
+            if v_scenario == "success":
+                try:
+                    v_value = strict_json_loads(v_final.decode("utf-8"))
+                except (UnicodeError, ValueError, json.JSONDecodeError):
+                    v_value = None
+                v_ok = (
+                    not v_result.messages
+                    and isinstance(v_value, Mapping)
+                    and mapping_path(v_value, "lifecycle", "state") == "verified"
+                    and mapping_path(v_value, "reviews", "implementation", "source", "message")
+                    == writer_implementation_request["body"]
+                )
+            else:
+                v_ok = (
+                    bool(v_result.messages)
+                    and v_final == writer_active_payload
+                    and v_expected_diagnostic[v_scenario]
+                    in "\n".join(v_result.messages)
+                )
+            problems.require(
+                v_ok,
+                f"self-test CONT01 direct V writer {v_scenario}",
+                f"V writer transaction outcome drifted: {v_result.messages}",
+            )
+
+    class AuthorizationDispatchProbe(CompletionValidator):
+        def validate_c0007_git_repository_identity(self) -> None:
+            return None
+
+        def validate_c0007_git_transport_configuration(self) -> None:
+            return None
+
+    for label, malformed_authorization in (
+        ("scalar", "invalid"),
+        ("list", []),
+        ("null", None),
+    ):
+        with tempfile.TemporaryDirectory(
+            prefix="completion-cont01-auth-dispatch-"
+        ) as raw_root:
+            dispatch_root = Path(raw_root)
+            authorization_path = dispatch_root / C0007_BOUNDED_AUTHORIZATION_PATH
+            authorization_path.parent.mkdir(parents=True, exist_ok=True)
+            authorization_path.write_bytes(
+                canonical_tracked_json_bytes(malformed_authorization)
+            )
+            dispatch_probe = AuthorizationDispatchProbe(
+                dispatch_root, dispatch_root / "phase"
+            )
+            dispatch_probe.current_checkpoint_id = "self-test-non-C0007"
+            try:
+                dispatch_probe.validate_c0007_bounded_authorization()
+            except Exception as error:  # pragma: no cover - explicit no-crash ratchet
+                problems.add(
+                    f"self-test CONT01 authorization dispatch {label}",
+                    f"ordinary dispatcher crashed: {error}",
+                )
+            else:
+                problems.require(
+                    any(
+                        "expected a JSON object" in message
+                        or "canonical JSON object" in message
+                        for message in dispatch_probe.problems.messages
+                    ),
+                    f"self-test CONT01 authorization dispatch {label}",
+                    "ordinary dispatcher did not fail closed on a non-object authorization",
+                )
 
     gate_fixture = {
         "candidate_sha": "a" * 40,
@@ -35857,7 +44226,9 @@ No implementation began before activation-control CI. The worker remains frozen 
         "captured-JSON, exact P/A/T/I/V ref-position, owner-review split, workflow timeout/cache, "
         "and paginated current-attempt T/V live-evidence adversarial tests; plus exact "
         "eight-path schema-v4 CI-only recovery authority/contract/workflow, immutable-P "
-        "evidence, direct-child shape, and no-rerun/no-implementation adversarial tests"
+        "evidence, direct-child shape, and no-rerun/no-implementation adversarial tests; "
+        "plus exact 21-row CONT01/schema-4/schema-5 readiness, issue-bound OWNER review, "
+        "A/T/I/V state matrix, deterministic no-byte-count contract, and 49 named adversarial tests"
     )
     return 0
 
@@ -35877,9 +44248,27 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="run isolated positive/negative helper tests without phase artifacts",
     )
     modes.add_argument(
+        "--require-pr-recovery-review-ready",
+        action="store_true",
+        help=(
+            "authenticate immutable PR plus six staged successor inputs and emit "
+            "the canonical OWNER review request"
+        ),
+    )
+    modes.add_argument(
+        "--require-pr-recovery-review-issue-ready",
+        action="store_true",
+        help="authenticate PR readiness and emit the separate exact issue-solicitation envelope",
+    )
+    modes.add_argument(
         "--require-t-implementation-ready",
         action="store_true",
         help="authenticate clean pushed T and emit one canonical local-only readiness record",
+    )
+    modes.add_argument(
+        "--require-i-implementation-review-ready",
+        action="store_true",
+        help="authenticate clean pushed I CI and emit the distinct canonical OWNER review request",
     )
     modes.add_argument(
         "--require-terminal-v-post-assurance",
@@ -35890,6 +44279,21 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
         "--write-ci-recovery-contract",
         action="store_true",
         help="atomically render only the pending eight-path CI-recovery contract from exact P",
+    )
+    modes.add_argument(
+        "--write-post-recovery-contract",
+        action="store_true",
+        help="after one exact live OWNER comment, atomically render the seventh schema-5 A path",
+    )
+    modes.add_argument(
+        "--write-post-recovery-active-contract",
+        action="store_true",
+        help="after exact-head A CI, atomically render contract-only T",
+    )
+    modes.add_argument(
+        "--write-post-recovery-verified-contract",
+        action="store_true",
+        help="after exact I CI and the distinct OWNER comment, atomically render contract-only V",
     )
     return parser.parse_args(argv)
 
@@ -35913,10 +44317,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     # All exact object/ancestry queries must ignore untracked local replace refs.
     harden_c0007_git_object_environment(os.environ)
     live_mode = bool(
-        args.require_t_implementation_ready
+        args.require_pr_recovery_review_ready
+        or args.require_pr_recovery_review_issue_ready
+        or args.require_t_implementation_ready
+        or args.require_i_implementation_review_ready
         or args.require_terminal_v_post_assurance
     )
-    if live_mode or args.write_ci_recovery_contract:
+    contract_write_mode = bool(
+        args.write_ci_recovery_contract
+        or args.write_post_recovery_contract
+        or args.write_post_recovery_active_contract
+        or args.write_post_recovery_verified_contract
+    )
+    if live_mode or contract_write_mode:
         phase_dir_problems = Problems()
         validate_c0007_live_phase_dir(
             ROOT,
@@ -35930,12 +44343,69 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 1
     if args.self_test:
         return run_self_test()
-    if live_mode or args.write_ci_recovery_contract:
+    if live_mode or contract_write_mode:
         # Prevent implicit object hydration and even Git's optional index-stat refresh
         # while producing read-only local-ledger evidence. Every subprocess inherits it.
         os.environ["GIT_OPTIONAL_LOCKS"] = "0"
         os.environ["GIT_NO_LAZY_FETCH"] = "1"
     validator = CompletionValidator(ROOT, args.phase_dir)
+    if args.write_post_recovery_contract:
+        problems = validator.write_c0007_post_recovery_contract()
+        if problems.messages:
+            for message in problems.messages:
+                print(f"completion phase violation: {message}", file=sys.stderr)
+            print(
+                "completion phase post-recovery contract generation failed with "
+                f"{len(problems.messages)} violation(s)",
+                file=sys.stderr,
+            )
+            return 1
+        contract_path = ROOT / C0007_BOUNDED_PLANNED_CONTROL_PATH
+        print(
+            "completion phase wrote exact post-recovery contract: "
+            f"{contract_path.relative_to(ROOT).as_posix()} "
+            f"{contract_path.stat().st_size} bytes "
+            f"SHA-256 {sha256_path(contract_path)}"
+        )
+        return 0
+    if args.write_post_recovery_active_contract:
+        problems = validator.write_c0007_post_recovery_active_contract()
+        if problems.messages:
+            for message in problems.messages:
+                print(f"completion phase violation: {message}", file=sys.stderr)
+            print(
+                "completion phase active-contract generation failed with "
+                f"{len(problems.messages)} violation(s)",
+                file=sys.stderr,
+            )
+            return 1
+        contract_path = ROOT / C0007_BOUNDED_PLANNED_CONTROL_PATH
+        print(
+            "completion phase wrote exact post-recovery active contract: "
+            f"{contract_path.relative_to(ROOT).as_posix()} "
+            f"{contract_path.stat().st_size} bytes "
+            f"SHA-256 {sha256_path(contract_path)}"
+        )
+        return 0
+    if args.write_post_recovery_verified_contract:
+        problems = validator.write_c0007_post_recovery_verified_contract()
+        if problems.messages:
+            for message in problems.messages:
+                print(f"completion phase violation: {message}", file=sys.stderr)
+            print(
+                "completion phase verified-contract generation failed with "
+                f"{len(problems.messages)} violation(s)",
+                file=sys.stderr,
+            )
+            return 1
+        contract_path = ROOT / C0007_BOUNDED_PLANNED_CONTROL_PATH
+        print(
+            "completion phase wrote exact post-recovery verified contract: "
+            f"{contract_path.relative_to(ROOT).as_posix()} "
+            f"{contract_path.stat().st_size} bytes "
+            f"SHA-256 {sha256_path(contract_path)}"
+        )
+        return 0
     if args.write_ci_recovery_contract:
         problems = validator.write_c0007_ci_recovery_contract()
         if problems.messages:
@@ -35956,7 +44426,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 0
     problems = (
-        validator.run_c0007_live_readonly()
+        validator.run_c0007_pr_recovery_review_ready()
+        if args.require_pr_recovery_review_ready
+        or args.require_pr_recovery_review_issue_ready
+        else validator.run_c0007_live_readonly()
         if live_mode
         else validator.run()
     )
@@ -35969,8 +44442,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 1
     live_evidence_kind = (
-        "c0007_t_implementation_ready_v1"
+        "c0007_pr_recovery_review_ready_v1"
+        if args.require_pr_recovery_review_ready
+        or args.require_pr_recovery_review_issue_ready
+        else "c0007_t_implementation_ready_v1"
         if args.require_t_implementation_ready
+        else "c0007_i_implementation_review_ready_v1"
+        if args.require_i_implementation_review_ready
         else "c0007_terminal_v_post_assurance_v1"
         if args.require_terminal_v_post_assurance
         else None
@@ -35988,6 +44466,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                 file=sys.stderr,
             )
             return 1
+        if args.require_pr_recovery_review_issue_ready:
+            issue_request = c0007_post_recovery_issue_request(evidence)
+            envelope = {
+                "evidence_kind": "c0007_pr_recovery_review_issue_ready_v1",
+                "issue_request": issue_request,
+                "repository": C0007_BOUNDED_REPOSITORY,
+                "schema_version": 1,
+            }
+            sys.stdout.buffer.write((canonical_json(envelope) + "\n").encode("utf-8"))
+            return 0
         sys.stdout.buffer.write((canonical_json(evidence) + "\n").encode("utf-8"))
         return 0
     r07_lifecycle = {
