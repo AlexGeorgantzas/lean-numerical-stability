@@ -68,18 +68,18 @@ Install Git and [elan](https://github.com/leanprover/elan), then run:
 ```bash
 lake exe cache get
 lake build NumStability
-lake env lean examples/LibraryLookup.lean
+lake env lean docs/LibraryLookupChecks.lean
 ```
 
-The final command checks a broad set of representative public declarations and
-also serves as an executable API-discovery example.
+The final command keeps the lookup guide's representative imports and public
+declaration names compiler-checked.
 
 ## Documentation
 
 - [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md) is the detailed declaration
   and module lookup guide.
-- [`examples/LibraryLookup.lean`](examples/LibraryLookup.lean) is the executable
-  public-surface lookup.
+- [`docs/LibraryLookupChecks.lean`](docs/LibraryLookupChecks.lean) checks the
+  representative imports and public declarations used by the lookup guide.
 
 ## Repository layout
 
@@ -93,8 +93,9 @@ NumStability/
   Algorithms/                      numerical algorithms
   Source/                          source-facing correspondence
   Upstream/                        attributed adapted or backported code
-docs/                              user-facing declaration and module lookup
-examples/LibraryLookup.lean        executable API lookup
+docs/
+  LIBRARY_LOOKUP.md                human-readable module and declaration guide
+  LibraryLookupChecks.lean         executable checks for documented API paths
 ```
 
 ## License

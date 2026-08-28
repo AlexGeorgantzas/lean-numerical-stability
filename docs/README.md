@@ -9,8 +9,8 @@ and source-audit records remain on the development branches.
 - [`LIBRARY_LOOKUP.md`](LIBRARY_LOOKUP.md) is the human-readable, structure-first
   map. It tells users and agents which subtree owns each kind of declaration,
   lists the main domain imports, and indexes every Higham chapter.
-- [`../examples/LibraryLookup.lean`](../examples/LibraryLookup.lean) is the
-  executable companion. Its narrow imports and representative `#check`
+- [`LibraryLookupChecks.lean`](LibraryLookupChecks.lean) is the executable
+  validation companion. Its narrow imports and representative `#check`
   commands verify that the documented navigation paths still work.
 
 The lookup is curated for fast discovery rather than generated as an exhaustive

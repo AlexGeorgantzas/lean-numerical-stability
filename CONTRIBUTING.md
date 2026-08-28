@@ -23,7 +23,7 @@ Run from the repository root:
 ```bash
 lake exe cache get
 lake build NumStability
-lake env lean examples/LibraryLookup.lean
+lake env lean docs/LibraryLookupChecks.lean
 ```
 
 Generated caches, benchmark output, local references, private agent files, and
