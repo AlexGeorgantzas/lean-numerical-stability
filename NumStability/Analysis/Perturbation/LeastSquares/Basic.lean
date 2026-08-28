@@ -559,10 +559,7 @@ theorem rectLSRhsPerturbation_abs_le_normBudget {m n : ℕ}
             (mul_le_mul_of_nonneg_right hΔAij (abs_nonneg _)))
           (mul_le_mul hΔAij hΔbi (abs_nonneg _) (le_trans (abs_nonneg _) hΔAij))
 /-- A perturbed rectangular normal equation induces the corresponding
-    perturbed Gram system for the unperturbed data.  This is the deterministic
-    adapter needed to connect a future rectangular QR backward-error theorem to
-    the repository's existing `LSQRSolveBackwardError`-based RandNLA solver
-    transfer. -/
+    perturbed Gram system for the unperturbed data. -/
 theorem rectLSNormalEquations_perturbed_to_gram_system {m n : ℕ}
     (A ΔA : Fin m → Fin n → ℝ) (b Δb : Fin m → ℝ)
     (x_hat : Fin n → ℝ)

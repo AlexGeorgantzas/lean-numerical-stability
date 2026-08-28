@@ -9,6 +9,7 @@ import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.LinearOperators.Schur
 import NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds
 import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.All
+import NumStability.Analysis.SingularValues.RectangularGram
 import NumStability.Analysis.TestMatrices
 import NumStability.Analysis.Summation.ErrorBounds
 import NumStability.Algorithms.Summation.Recursive.Core
@@ -32,8 +33,6 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Basic
 import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.FirstOrder
 import NumStability.Algorithms.NormEstimation.OneNorm.LAPACK.Basic
 import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.PNormPowerMethod
-import NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.Elementwise.Core
-import NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling.Sampling
 import NumStability.Source.Higham.Chapter06
 import NumStability.Source.Higham.Chapter12
 import NumStability.Source.Higham.Chapter16
@@ -68,6 +67,9 @@ open NumStability
 #check schur_triangulation
 #check resolventPseudospectralRadius
 #check matPow_tendsto_zero_of_spectralRadius_lt_one
+#check RectRankFactorization
+#check rectRightGram
+#check rectRightGramBasisSingularValue
 
 -- Standard matrix families.
 #check hilbertMatrix
@@ -104,11 +106,6 @@ open NumStability
 #check condSylvester
 #check lapackNormEstimator
 #check Ch15.PNormPair
-
--- Randomized linear algebra and source correspondence.
-#check sqMagProb
-#check fl_elementwiseSampleUpdate_error_bound
-#check sqMagProb_sum_eq_one
 
 -- Representative Higham source-facing results.
 #check Lemma66.lemma66_a_op2_le

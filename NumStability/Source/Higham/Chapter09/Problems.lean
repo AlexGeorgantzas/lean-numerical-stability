@@ -26549,9 +26549,7 @@ lemma higham9_16_fosterS_two : higham9_16_fosterS 2 = 1 := by
     (by norm_num)
     (by
       unfold higham9_16_fosterStage higham9_16_fosterStageConst
-      norm_num
-      rw [show (4 : ℝ) = 2 ^ 2 from by norm_num]
-      rw [Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 2)])
+      norm_num)
   exact h.symm
 
 /-- **Foster Lemma A.1**, all stage roots are at most `1`:

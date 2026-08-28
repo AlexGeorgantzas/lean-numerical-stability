@@ -6892,8 +6892,9 @@ theorem rounded_normalized_betaSpec_compact_handoff_not_forall_FPModel :
         Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
       exact Real.mul_self_sqrt (by norm_num)
     nlinarith
-  norm_num [firstArgTwoMulFPModel, fl_householderApplyCompact, fl_dotProduct,
-    householderNormalizedVector, householderBetaSpec, hsqrt2_ne_two] at h0
+  simp [firstArgTwoMulFPModel, fl_householderApplyCompact, fl_dotProduct,
+    householderNormalizedVector, householderBetaSpec, hsqrt2_ne_two,
+    Real.mul_self_sqrt] at h0
 
 /-- Stored-panel form of the rounded handoff boundary.
 
@@ -6921,10 +6922,10 @@ theorem rounded_normalized_betaSpec_storedPanelStep_handoff_not_forall_FPModel :
         Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
       exact Real.mul_self_sqrt (by norm_num)
     nlinarith
-  norm_num [firstArgTwoMulFPModel, fl_householderStoredPanelStep,
+  simp [firstArgTwoMulFPModel, fl_householderStoredPanelStep,
     fl_householderApplyCompactPanel, fl_householderApplyCompact,
     fl_dotProduct, householderNormalizedVector, householderBetaSpec,
-    hsqrt2_ne_two] at h00
+    hsqrt2_ne_two, Real.mul_self_sqrt] at h00
 
 /-- Matrix-rectangular form of the rounded handoff boundary.
 
@@ -6951,9 +6952,10 @@ theorem rounded_normalized_betaSpec_matrixRect_handoff_not_forall_FPModel :
         Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
       exact Real.mul_self_sqrt (by norm_num)
     nlinarith
-  norm_num [firstArgTwoMulFPModel, fl_householderApplyMatrixRect,
-    fl_householderApply, fl_householderApplyCompact, fl_dotProduct,
-    householderNormalizedVector, householderBetaSpec, hsqrt2_ne_two] at h00
+  simp [firstArgTwoMulFPModel, fl_householderApplyMatrixRect,
+    fl_householderApply, fl_dotProduct,
+    householderNormalizedVector, householderBetaSpec, hsqrt2_ne_two,
+    Real.mul_self_sqrt] at h00
 
 /-- First-pivot QR-storage form of the rounded handoff boundary.
 
@@ -6984,12 +6986,12 @@ theorem rounded_normalized_betaSpec_firstStoredPanelStep_handoff_not_forall_FPMo
         Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
       exact Real.mul_self_sqrt (by norm_num)
     nlinarith
-  norm_num [firstArgTwoMulFPModel, panelFromTopAndTrailing, panelTopLeft,
-    panelTopRowTail, trailingPanel, fl_householderApplyMatrixRect,
+  simp [firstArgTwoMulFPModel, panelFromTopAndTrailing, panelTopLeft,
+    fl_householderApplyMatrixRect,
     fl_householderApply, fl_householderStoredPanelStep,
     fl_householderApplyCompactPanel, fl_householderApplyCompact,
     fl_dotProduct, householderNormalizedVector, householderBetaSpec,
-    hsqrt2_ne_two] at h00
+    hsqrt2_ne_two, Real.mul_self_sqrt] at h00
 
 /-- A concrete rounded model used to audit computed normalized-vector
 self-dot assumptions.

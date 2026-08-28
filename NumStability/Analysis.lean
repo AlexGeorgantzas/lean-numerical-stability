@@ -43,9 +43,7 @@ import NumStability.Analysis.LeadingDigits
 import NumStability.Analysis.LinearOperators
 import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.All
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Analysis.MatrixConcentration
 import NumStability.Analysis.MatrixEquations.SylvesterExistence
-import NumStability.Analysis.MatrixInequalities
 import NumStability.Analysis.MatrixNorms
 import NumStability.Analysis.MatrixSpectral
 import NumStability.Analysis.Monotonicity

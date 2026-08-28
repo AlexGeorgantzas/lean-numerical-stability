@@ -71,7 +71,6 @@ import NumStability.Algorithms.PolynomialEvaluation.DerivativeEvaluation.ErrorBo
 import NumStability.Algorithms.PriestAccuracy
 import NumStability.Algorithms.PriestDefectBounded
 import NumStability.Algorithms.Quadrature
-import NumStability.Algorithms.RandomizedLinearAlgebra
 import NumStability.Algorithms.RankOneUpdate
 import NumStability.Algorithms.SquareDifference
 import NumStability.Algorithms.Summation

@@ -19,7 +19,7 @@ import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamAssembly
 import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
-import NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.RankFactorizations.Core
+import NumStability.Analysis.SingularValues.RectangularRankFactorization
 import NumStability.Source.Higham.Chapter21.Equation04.Pseudoinverse
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding

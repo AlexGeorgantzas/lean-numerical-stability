@@ -3360,8 +3360,7 @@ theorem mgsPaddedEconomyQ_gram_eq_id_sub_P11_gram {m n : Nat}
     congrFun (congrFun (mgsPaddedEconomy_blocks_gram_sum_eq_id hP) i) j
   linarith
 
-/-- Candidate `Q` has orthonormal columns, using the Gram-Schmidt QR naming
-surface to avoid collisions with the RandNLA basis predicate. -/
+/-- Candidate `Q` has orthonormal columns in the Gram-Schmidt QR interface. -/
 def GramSchmidtOrthonormalColumns {m n : Nat}
     (Q : Fin m -> Fin n -> Real) : Prop :=
   forall i j : Fin n, rectangularGram Q i j = idMatrix n i j

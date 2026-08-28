@@ -1891,9 +1891,8 @@ def rectPermuteCols {m n : ℕ} (π : Fin n ≃ Fin n)
     ‖A‖²_F = ∑ᵢ∑ⱼ Aᵢⱼ² for A ∈ ℝ^{m×n}.
 
     The original `frobNormSq` is square-matrix specialized because much of
-    the library's linear-system infrastructure is square. RandNLA sampling
-    algorithms naturally act on rectangular data matrices, so we expose this
-    rectangular variant for their probability weights and scaling factors. -/
+    the library's linear-system infrastructure is square. This rectangular
+    variant supports least-squares and singular-value analysis. -/
 noncomputable def frobNormSqRect {m n : ℕ} (A : Fin m → Fin n → ℝ) : ℝ :=
   ∑ i : Fin m, ∑ j : Fin n, A i j ^ 2
 
@@ -4913,8 +4912,7 @@ theorem finiteOpNorm2Le_of_finitePSD_of_finiteLoewnerLe_of_finiteOpNorm2Le
       (finiteLoewnerLe_smul_id_of_finiteOpNorm2Le N hN))
 
 /-- A symmetric idempotent finite matrix is nonexpansive in the Euclidean
-norm.  This is the finite-dimensional orthogonal-projector contraction used by
-the RandNLA equation-(9) coupling-tail surface. -/
+norm. -/
 theorem finiteVecNorm2_finiteMatVec_le_of_symmetric_idempotent
     {ι : Type*} [Fintype ι] (P : ι → ι → ℝ)
     (hSym : IsSymmetricFiniteMatrix P)

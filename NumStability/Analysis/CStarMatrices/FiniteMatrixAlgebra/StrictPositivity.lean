@@ -20,8 +20,7 @@ namespace NumStability
 open scoped ComplexOrder MatrixOrder
 
 /-- A strictly positive real scalar multiple of the complex C⋆-matrix identity
-is strictly positive.  This is the regularizing identity term used before
-applying operator logarithms. -/
+is strictly positive. This is a standard positive regularization term. -/
 theorem cstarMatrix_pos_real_smul_one_isStrictlyPositive
     {ι : Type*} [Fintype ι] [DecidableEq ι] {eps : ℝ} (heps : 0 < eps) :
     IsStrictlyPositive ((eps : ℂ) • (1 : CStarMatrix ι ι ℂ)) := by

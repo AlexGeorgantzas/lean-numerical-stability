@@ -14,8 +14,8 @@ that their public declarations remain available.
 
 ## Fast Path
 
-1. Decide whether the result is reusable mathematics or correspondence to a
-   particular publication.
+1. Decide whether the result is reusable mathematics or correspondence to the
+   Higham book.
 2. Start in `NumStability.Analysis` for general theory,
    `NumStability.Algorithms` for an algorithm or its error analysis,
    `NumStability.FloatingPoint` for the primitive arithmetic model, and
@@ -39,7 +39,7 @@ that their public declarations remain available.
 | `NumStability.FloatingPoint` | Floating-point models and operation laws. |
 | `NumStability.Analysis` | General error, norm, conditioning, perturbation, probability, and operator theory. |
 | `NumStability.Algorithms` | Numerical algorithms and their correctness or error results. |
-| `NumStability.Source` | Source-correspondence modules for books and papers. |
+| `NumStability.Source` | Source correspondence for Higham's book. |
 | `NumStability.Source.Higham` | All Higham chapter correspondence. |
 | `NumStability.All` | All supported library domains. |
 | `NumStability` | Package-wide convenience import; currently forwards to `NumStability.All`. |
@@ -52,7 +52,7 @@ that their public declarations remain available.
 | Primitive floating-point model or operation law | `NumStability/FloatingPoint/` | Put representation-independent arithmetic semantics here. |
 | Reusable error definition or theorem | `NumStability/Analysis/` | Keep it independent of one named algorithm or publication. |
 | Algorithm, execution model, or algorithm-specific bound | `NumStability/Algorithms/` | Place it with the algorithm family it analyzes. |
-| Statement tied to a numbered source result | `NumStability/Source/<AuthorOrBook>/` | State the source-facing result here and reuse canonical Analysis or Algorithms facts. |
+| Statement tied to a numbered Higham result | `NumStability/Source/Higham/` | State the source-facing result here and reuse canonical Analysis or Algorithms facts. |
 | Imported prerequisite maintained locally | `NumStability/Upstream/` | Use only for an explicitly tracked upstream dependency. |
 
 Do not place a reusable theorem in `Source` merely because a publication uses
@@ -71,12 +71,14 @@ move a source-correspondence statement into a generic module.
 | Stability and condition-number interfaces | `NumStability.Analysis.Stability` | `normwiseBackwardErrorBoundedVec`, `normwiseConditionNumberBoundedVec` |
 | Vector norms | `NumStability.Analysis.VectorNorms` | `complexVecLpNorm` and vector-norm theory |
 | Matrix norms | `NumStability.Analysis.MatrixNorms` | `complexMatrixLpNorm` and matrix-norm theory |
+| Rectangular rank factorizations | `NumStability.Analysis.SingularValues.RectangularRankFactorization` | `RectRankFactorization`, orthonormal-completion infrastructure |
+| Rectangular right-Gram SVD analysis | `NumStability.Analysis.SingularValues.RectangularGram` | `rectRightGram`, `rectRightGramBasisSingularValue` |
 | Residual and perturbation bounds | `NumStability.Analysis.PerturbationTheory` | `forward_error_from_residual`, `oettli_prager` |
 | Linear operators and spectra | `NumStability.Analysis.LinearOperators` | Operator, Schur, pseudospectral, and power theory |
 | Schur theory | `NumStability.Analysis.LinearOperators.Schur` | `schur_triangulation` |
 | Pseudospectral power bounds | `NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds` | `resolventPseudospectralRadius` |
 | Matrix-power limits and semiconvergence | `NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.All` | `matPow_tendsto_zero_of_spectralRadius_lt_one` |
-| Probability support | `NumStability.Analysis.Probability` | Probability lemmas used by randomized algorithms |
+| Probability support | `NumStability.Analysis.Probability` | Probability lemmas used by statistical rounding and distributional analysis |
 | Sample-variance statistics | `NumStability.Analysis.Statistics.SampleVariance.All` | Sample-variance definitions and results |
 | Standard test matrices | `NumStability.Analysis.TestMatrices` | Hilbert, Pascal, Cauchy, companion, and related matrices |
 
@@ -107,7 +109,6 @@ move a source-correspondence statement into a generic module.
 | One-norm estimation | `NumStability.Algorithms.NormEstimation.OneNorm.LAPACK.Basic` | `lapackNormEstimator` |
 | p-norm power methods | `NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.PNormPowerMethod` | `Ch15.PNormPair` |
 | Matrix powers | `NumStability.Algorithms.MatrixPowers` | Computation and error bounds for powers |
-| Randomized linear algebra | `NumStability.Algorithms.RandomizedLinearAlgebra` | Sampling, sketching, and approximation algorithms |
 
 ## Higham Source Map
 
@@ -153,25 +154,7 @@ Representative source-facing declarations include
 `higham22_vandermonde_det_ne_zero_iff`, and
 `higham24Radix2FFT_eq_dftApply`.
 
-## Other Source Correspondence
-
-The `NumStability/Source/DrineasMahoney/RandNLA2016/` subtree collects
-correspondence to the 2016 randomized numerical linear algebra survey. It has
-no single survey-level aggregate import; import the narrow result module. The
-subtree covers:
-
-| Source item | Topic |
-| --- | --- |
-| Algorithm 1 | Elementwise matrix sampling |
-| Algorithm 2 | Row sampling |
-| Algorithm 3 | Random-projection preconditioning |
-| Equation 2 | Spectral approximation |
-| Equation 4 | Row-sampling probabilities |
-| Equation 5 | Gram-matrix approximation |
-| Equation 6 | Leverage-score probabilities |
-| Equation 7 | Subspace embeddings |
-| Equation 8 | Least-squares sketching |
-| Equation 9 | Low-rank approximation |
+## Local Prerequisites
 
 The `NumStability/Upstream/Lindemann/` subtree contains the locally maintained
 Lindemann prerequisite used by library results; it is not a general
