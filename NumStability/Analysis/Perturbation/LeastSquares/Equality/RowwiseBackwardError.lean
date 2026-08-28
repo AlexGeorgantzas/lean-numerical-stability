@@ -30031,9 +30031,7 @@ theorem theorem20_7_compactActiveStepFactor_not_le_rowwise_step_growth_factor_ni
   have hactive_ge_three :
       3 ≤ H19.Theorem19_6.active_row_growth_factor 9 := by
     have hsqrt9 : Real.sqrt (9 : ℝ) = 3 := by
-      have h := Real.sqrt_sq (show 0 ≤ (3 : ℝ) by norm_num)
-      norm_num at h
-      exact h
+      norm_num
     dsimp [H19.Theorem19_6.active_row_growth_factor,
       coxHighamActiveRowGrowthFactor]
     rw [hsqrt9]

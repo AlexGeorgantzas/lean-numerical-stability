@@ -1176,13 +1176,11 @@ theorem higham13_problem13_4_all_tail_inverse_entry_bound_counterexample :
     fin_cases i
     fin_cases j
     norm_num [P, Pinv, Fin.sum_univ_one]
-    rfl
   have hP_left : IsLeftInverse 1 P Pinv := by
     intro i j
     fin_cases i
     fin_cases j
     norm_num [P, Pinv, Fin.sum_univ_one]
-    rfl
   have hP_initial : ∀ i j : Fin 1, P i j = A (0 : Fin 2) (0 : Fin 2) := by
     intro i j
     fin_cases i
@@ -1349,13 +1347,11 @@ theorem
     fin_cases i
     fin_cases j
     norm_num [T, Tinv, Fin.sum_univ_one]
-    rfl
   have hT_left : IsLeftInverse 1 T Tinv := by
     intro i j
     fin_cases i
     fin_cases j
     norm_num [T, Tinv, Fin.sum_univ_one]
-    rfl
   have hG_tail : ∀ i j : Fin 2, G i j = A (Fin.succ i) (Fin.succ j) := by
     intro i j
     fin_cases i <;> fin_cases j <;> norm_num [A, G]

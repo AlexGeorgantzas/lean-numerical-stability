@@ -431,14 +431,6 @@ theorem sigmaCounter_final_11 :
         householderActiveVector, householderTrailingPart,
         householderTrailingNorm2Sq, vecNorm2Sq, Fin.sum_univ_two,
         signedHouseholderAlpha]
-      have h81 : Real.sqrt (81 : ℝ) = 9 := by
-        nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 81),
-          Real.sqrt_nonneg (81 : ℝ)]
-      have h64 : Real.sqrt (64 : ℝ) = 8 := by
-        nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 64),
-          Real.sqrt_nonneg (64 : ℝ)]
-      rw [h81, h64]
-      norm_num
   have hbeta :
       pivotedStoredQRBeta subInflatedQuarterFPModel (m := 2) (n := 2)
         (by omega) sigmaCounterA 1 = 32 / 81 := by

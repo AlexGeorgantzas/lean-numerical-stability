@@ -4,6 +4,7 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Analysis.Asymptotics.Lemmas
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
+import Mathlib.Data.Real.StarOrdered
 import Mathlib.LinearAlgebra.Matrix.SchurComplement
 import Mathlib.Logic.Equiv.Fin.Basic
 import Mathlib.Tactic.Abel

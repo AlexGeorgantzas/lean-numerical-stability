@@ -135,9 +135,6 @@ theorem higham19MGSBreakdown_first_norm :
   norm_num [flMGSColumnNorm, flMGSVectors, gsColumn, fl_norm2, fl_norm2Sq,
     fl_dotProduct, Fin.foldl_succ,
     higham19MGSBreakdownFP, higham19MGSBreakdownA]
-  rw [show (25 : Real) = (5 : Real) ^ 2 by norm_num,
-    Real.sqrt_sq_eq_abs]
-  norm_num
 
 /-- The two admissible division roundings make the first computed normalized
 column equal exactly to the second source column. -/
