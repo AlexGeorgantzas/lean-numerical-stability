@@ -75,8 +75,6 @@ REQUIRED_RUNTIME_RELEASE_FILES = {
     "tools/preflight.py",
     "tools/provider_token_gate.py",
     "tools/promote_live_canary.py",
-    "tools/render_p01_report.py",
-    "tools/render_report.py",
     "tools/result_set.py",
     "tools/refresh_snapshot.py",
     "tools/run_matrix.py",
@@ -140,6 +138,9 @@ CONDITION_L_PROMPT_RELATIVE = "condition_prompts/L.md"
 PROMPT_PROTOCOL_VERSION = "signposted-library-v1"
 FROZEN_MODEL_VERSION = "gpt-5.6-sol"
 FROZEN_REASONING_EFFORT = "ultra"
+NUMSTABILITY_PACKAGE_DIRECTORY = "numStability"
+NUMSTABILITY_LOOKUP_RELATIVE = Path("docs/LIBRARY_LOOKUP.md")
+NUMSTABILITY_LOOKUP_EXAMPLE_RELATIVE = Path("examples/LibraryLookup.lean")
 ULTRA_MULTI_AGENT_VERSION = "v2"
 ULTRA_MAX_CONCURRENT_THREADS_PER_SESSION = 4
 EXPECTED_FAILURE_REASON_PRIORITY = (
@@ -3836,6 +3837,10 @@ def expected_packages_runtime_files(packages_root: Path) -> set[str]:
             raise BenchmarkToolError(
                 f"packages root contains a non-directory entry: {package}"
             )
+        # NumStability is the experimental treatment. It is mounted separately
+        # only for condition L and must never enter the shared package runtime.
+        if package.name == NUMSTABILITY_PACKAGE_DIRECTORY:
+            continue
         compiled = package / ".lake" / "build" / "lib" / "lean"
         if not compiled.is_dir():
             continue
@@ -4414,12 +4419,27 @@ def verify_frozen_run_environment(
     """
 
     project = args.project_root.resolve()
+    library_project = (
+        project / ".lake" / "packages" / NUMSTABILITY_PACKAGE_DIRECTORY
+    ).resolve()
     if args.packages_root.resolve() != (project / ".lake" / "packages").resolve():
         raise BenchmarkToolError("packages_root is not the project .lake/packages tree")
-    if args.library_source.resolve() != (project / "NumStability").resolve():
-        raise BenchmarkToolError("library_source is not project_root/NumStability")
-    if args.library_root_file.resolve() != (project / "NumStability.lean").resolve():
-        raise BenchmarkToolError("library_root_file is not project_root/NumStability.lean")
+    if args.library_source.resolve() != (library_project / "NumStability").resolve():
+        raise BenchmarkToolError(
+            "library_source is not the Lake-managed numStability package source"
+        )
+    if args.library_root_file.resolve() != (library_project / "NumStability.lean").resolve():
+        raise BenchmarkToolError(
+            "library_root_file is not the Lake-managed numStability package root source"
+        )
+    args.library_lookup = _require_file(
+        library_project / NUMSTABILITY_LOOKUP_RELATIVE,
+        "NumStability library lookup",
+    )
+    args.library_lookup_example = _require_file(
+        library_project / NUMSTABILITY_LOOKUP_EXAMPLE_RELATIVE,
+        "NumStability library lookup example",
+    )
     config = _mapping(read_json(root / "metadata" / "config.json"), "config")
     environment = _mapping(
         read_json(root / "metadata" / "environment.json"), "environment record"
@@ -4919,16 +4939,32 @@ def verify_frozen_run_environment(
     mathlib_repository = _require_dir(args.packages_root / "mathlib", "mathlib repository")
     if _git_head(mathlib_repository, "mathlib commit") != expected_mathlib:
         raise BenchmarkToolError("actual mathlib commit does not match frozen metadata")
-    _require_git_commit(project, expected_numstability, "NumStability baseline commit")
+    if _git_head(library_project, "NumStability package commit") != expected_numstability:
+        raise BenchmarkToolError("Lake-managed NumStability package is at the wrong commit")
+    _require_git_commit(library_project, expected_numstability, "NumStability package commit")
     _require_git_paths_equal(
-        project,
+        library_project,
         expected_numstability,
         "HEAD",
-        ["NumStability", "NumStability.lean"],
+        [
+            "NumStability",
+            "NumStability.lean",
+            NUMSTABILITY_LOOKUP_RELATIVE.as_posix(),
+            NUMSTABILITY_LOOKUP_EXAMPLE_RELATIVE.as_posix(),
+        ],
         "NumStability source tree",
     )
     _require_git_sources_clean(mathlib_repository, ["Mathlib", "Mathlib.lean"], "mathlib")
-    _require_git_sources_clean(project, ["NumStability", "NumStability.lean"], "NumStability")
+    _require_git_sources_clean(
+        library_project,
+        [
+            "NumStability",
+            "NumStability.lean",
+            NUMSTABILITY_LOOKUP_RELATIVE.as_posix(),
+            NUMSTABILITY_LOOKUP_EXAMPLE_RELATIVE.as_posix(),
+        ],
+        "NumStability",
+    )
 
     source_manifest_relative = _fixed_value(
         "NumStability source manifest path",
@@ -4949,16 +4985,20 @@ def verify_frozen_run_environment(
     if sha256_file(source_manifest_path) != source_manifest_digest:
         raise BenchmarkToolError("NumStability source manifest has the wrong SHA-256")
     source_manifest = load_manifest(source_manifest_path)
-    source_check = verify_manifest(project, source_manifest)
+    source_check = verify_manifest(library_project, source_manifest)
     if not source_check["ok"]:
         raise BenchmarkToolError(f"NumStability source tree is not frozen: {source_check}")
     listed_source = {entry["path"] for entry in source_manifest["files"]}
-    actual_source = {"NumStability.lean"}
-    for path in (project / "NumStability").rglob("*"):
+    actual_source = {
+        "NumStability.lean",
+        NUMSTABILITY_LOOKUP_RELATIVE.as_posix(),
+        NUMSTABILITY_LOOKUP_EXAMPLE_RELATIVE.as_posix(),
+    }
+    for path in (library_project / "NumStability").rglob("*"):
         if path.is_symlink():
             raise BenchmarkToolError(f"NumStability source tree contains a symlink: {path}")
         if path.is_file():
-            actual_source.add(path.relative_to(project).as_posix())
+            actual_source.add(path.relative_to(library_project).as_posix())
     if listed_source != actual_source:
         raise BenchmarkToolError(
             "NumStability source manifest is not exact "
@@ -7072,6 +7112,10 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
             str(args.library_source.resolve()),
             "--library-root-file",
             str(args.library_root_file.resolve()),
+            "--library-lookup",
+            str(args.library_lookup.resolve()),
+            "--library-lookup-example",
+            str(args.library_lookup_example.resolve()),
             "--library-olean",
             str(args.library_olean.resolve()),
         ]

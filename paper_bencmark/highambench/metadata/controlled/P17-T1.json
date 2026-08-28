@@ -21,9 +21,9 @@
       "sha256": "4332f8549fe96bb969b46e6f3e33f54fa7584d3c7bcd11137b1be325a10aa80a"
     },
     {
-      "bytes": 2268,
+      "bytes": 2091,
       "path": "tasks/P17/T1/context.md",
-      "sha256": "a270ff1b19c10029be465095ffa086c53ef0a64fd2c97a05ed5d46d598c676ad"
+      "sha256": "929e75eadde03e657c33ea3604d09a87a6f09ff24500493288b3b7b04f0a6fd0"
     }
   ],
   "kind": "highambench-controlled-files",

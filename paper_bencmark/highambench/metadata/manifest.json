@@ -63,7 +63,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean",
       "role": "P04-only block-FMA execution models, coefficients, and finite matrix notation",
-      "sha256": "d5ff5fe4b6ca28e0637b0df7bbc91a7f199b95caf4f4a32532ee14de9613f836",
+      "sha256": "cbf88a9826eef35e7f1972ddc402fe31a95e7add5b1e305c8e6e32da2e9ef61a",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -72,7 +72,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P05Definitions.lean",
       "role": "P05-only floating-point execution models, Doolittle and Cholesky certificates, backward-error sources, and finite matrix notation",
-      "sha256": "1a399e16e2453fdb7b05d46e0f4e348e6c74ccf10944ed28b411722811f7875a",
+      "sha256": "e3370cd168a8b37474d8dc06c659f588be3032563d5908a86ba00b45f909d68d",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -81,7 +81,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
       "role": "P06-only Model 1.5 probability and execution interfaces, Householder QR certificates, finite norms, symmetric dilation, and transformation-sequence expansion",
-      "sha256": "a8b26a6d6fb23bb227d6779309edc71f2002b92dc682361a613f1d7f46044445",
+      "sha256": "e9a3986f76f3bc6364fce9d245e0606e87aea9970763506b926eeaa2ec55697a",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -90,7 +90,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P07Definitions.lean",
       "role": "P07-only finite norms, computed sketch-QR and forward-substitution models, exact spectral and pseudoinverse data, SAA LSQR and back-substitution witnesses, matrix products, and backward-error expansion",
-      "sha256": "6f0bad7f110b187ab3e04a0d3be457997ab16edb9414280f2f92ad2f12a059c8",
+      "sha256": "1aa816eb0962482b6c6cd806b05a8646b9e724eabcdb61c9d44e3da35ce8c3dc",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -99,7 +99,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P08Definitions.lean",
       "role": "P08-only matrix actions, Section 4 arithmetic and iterative-refinement traces, exact residual semantics, absolute norms, Lemma 4.3 constants, and finite four-term bound",
-      "sha256": "64149b9a6617083dd7dd78f55692760290ebb53614063091c7f017e2087cf837",
+      "sha256": "183876e32b1330dc5b91d47ffff5ab57677366f5e02331f8b2197feeb64a02f0",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -135,7 +135,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean",
       "role": "P10-only finite matrix products, the linked first-order product-error model, and the power-of-two SylR execution, Frobenius separation, recurrence, and equation-(20) definitions",
-      "sha256": "f49e4d8aea5940088440cc81e8a85365243730ec35689bf1f3bb9434c1e80cc6",
+      "sha256": "0b7d641504c97de374de25cda3e19860a3293f4d60f2d642a0e1eafb1c52975b",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -144,7 +144,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean",
       "role": "P11-only CGS-P execution models, rectangular leading-factor algebra, Euclidean, spectral, and Frobenius norms, normal-equation residuals, and orthogonality defects",
-      "sha256": "6756f18215387ae4f685e6cd69598895af8117ed6fe81c264b4591f04d20e40d",
+      "sha256": "3ec45c6fbd29587ee731d6a89fead89df8b7935d00d5555ccb3393b5e8655466",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -153,7 +153,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean",
       "role": "P12-only equation-(1) radix format, derived grid geometry, rounding relations, and FastTwoSum/TwoProduct/ThreeProduct execution records",
-      "sha256": "3e58eed419082337e49fab333f872c016fd6c0bec01cc02a9dad52a6033771bb",
+      "sha256": "b2a25eace2e5472b3f277df9b1f48f03dc9fa3f3ad7849b9b0c6611d63820295",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -180,7 +180,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean",
       "role": "P15-only finite matrix norms, products, low-rank matrix-vector executions, and composed BLR solve perturbations",
-      "sha256": "b6e99e9b2e55582ab283590cdab7dce218b8db759e425a343925af9c06f3f857",
+      "sha256": "467b2a69d7ee8650cda517c7f1b127fabe6a2e90d9643a6e6d735611b2730731",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -189,7 +189,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean",
       "role": "P16-only finite matrix and vector norms, residuals, first-order iterative-refinement steps, mixed-precision MGS-GMRES execution certificates, condition factors, contractions, and attainable floors",
-      "sha256": "d4ea17de614c48b1916c5ffba10daf092bf258761c0850111aa6c560eff72196",
+      "sha256": "bb76fe0f8277c626736671271e6624392c15033411d78ab850b1461c56cd36a6",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -207,7 +207,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean",
       "role": "P18-only additive Runge--Kutta executions, finite Euclidean error vectors, and corrected-midpoint and Method 4s3pC coefficient certificates",
-      "sha256": "a11687548e70c89c129470e3165fc7a5d0c24e72d264e41282bc54107355d509",
+      "sha256": "d0fdac24940ee54cdcd5a60f0c0e4fc4c81d30ef6c03fc89dde95dfc627ecbad",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -216,7 +216,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P19Definitions.lean",
       "role": "P19-only vector and matrix norms, modular and right/flexible GMRES execution models, inverse-linked condition numbers, and perturbation-linked first-order analyses",
-      "sha256": "759c84ed6e94f963fc82ca1563591d08c7d575325e9d2e9944dcc5f9be16f803",
+      "sha256": "d1ee3760a4b34e9b845d1f5a65909aed6737cf7fb411c3607928aed8ed72ee27",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -225,7 +225,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P20Definitions.lean",
       "role": "P20-only finite infinity norms, binary Model-1 semantics, power-of-two scaling, scaled multiword execution and error decomposition, and narrow-range error envelopes",
-      "sha256": "e2129407ca9260c9544e2105f2ede46a5fdf2514d17b69d7f447573e555f4341",
+      "sha256": "3fda14f944d37cc4740956ac7c63f8341aa3cfcf2d8308f888f40908e410b490",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     }
   ],
@@ -886,7 +886,7 @@
           "informal_statement_paraphrase": "Algorithm 3.1's indexed perturbation factorization yields equation (3.4), its q+b-1 right-to-left refinement, and its zero-alpha same-precision reduction.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "c26a9e4cde7e60be6bea67cf5b21aac6ed89138b78973be26394f9e75175c552",
+            "controlled_file_sha256": "2bfaa12fb4acbadd9866984cdd81a4622d5360dbb1e29b0af7a5c2d7df82cf73",
             "declaration": "p04_t1_chained_rounding_factor",
             "file": "paper_bencmark/highambench/tasks/P04/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -1190,7 +1190,7 @@
           "informal_statement_paraphrase": "Theorem 4.4 in full: conventional Cholesky execution, local estimates (4.5), exact backward relation, and both componentwise bounds in (4.4).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "aa6e36344de4982006edfc069bd22907e1349339b4ed3e19b5e240693a262f38",
+            "controlled_file_sha256": "26d07cef8ee5e1c3b00db72e8c109eeb65f1438eb85304e6d038a679908e094e",
             "declaration": "p05_t3_cholesky_backward_error",
             "file": "paper_bencmark/highambench/tasks/P05/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -1271,7 +1271,7 @@
           "informal_statement_paraphrase": "Equation (4.20), retaining its inherited Model 1.5 Householder-QR execution, probability-one local assumption, exact backward relation, event probability, coefficient, dimensions, and additive O(u^2) remainder.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "58b5668acafdbd9fc628fcd1a6ca85f8ff956a51cf02b0e5b2c1f0c1fda3895d",
+            "controlled_file_sha256": "dd81e6e8eb963b0f9eea3e51aab80ef2dce770b6168c042a976d2d4ef4dc7722",
             "declaration": "p06_t1_householder_qr_frobenius_backward_error",
             "file": "paper_bencmark/highambench/tasks/P06/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -1530,7 +1530,7 @@
           "informal_statement_paraphrase": "The algorithm-linked exact DeltaA construction and immediate spectral-norm estimate in the proof of Theorem 3.5, with the perturbed right-hand side and least-squares relation retained.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "6c74a35b9ccd229e305dde38e11b1e247bee8bef50a42a127e0a5bd8f977371a",
+            "controlled_file_sha256": "311a25e878b2f886e9611877f6b8f235b33e985d4c0bebd530cbf48fbb3dde30",
             "declaration": "p07_t2_backward_error_product_budget",
             "file": "paper_bencmark/highambench/tasks/P07/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -1729,7 +1729,7 @@
           "informal_statement_paraphrase": "The complete finite Lemma 4.3 componentwise bound for the algorithmic exact residual q_(m+1), including the precision-dependent four terms and source conditioning threshold.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "3e2146203b4b72c536a5f0354845ccd4c8d1113eedeb5765186e57631c052057",
+            "controlled_file_sha256": "2e0ed250d2dc54230f8aaf3da4399ba60c88847d15786c10b7a3d0bfc389cd97",
             "declaration": "p08_t3_lemma_4_3_exact_residual_bound",
             "file": "paper_bencmark/highambench/tasks/P08/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -1803,6 +1803,8 @@
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+              "paper_bencmark/highambench/shared/HighamBench/P09Base.lean",
+              "paper_bencmark/highambench/shared/HighamBench/P09TheoremOne.lean",
               "paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean"
             ],
             "statement_summary": "The maximum coordinate error is at most square-root-of-dimension times the RMS error."
@@ -1833,12 +1835,14 @@
           "informal_statement_paraphrase": "The exact complex fictional-input construction and both finite-remainder norm certificates on printed page 768, linked to the paper's mixed-radix FFT execution.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "ab34e0817be964c449461a4e5bd02e397e304d57fab6d1d149cd67ca767423b5",
+            "controlled_file_sha256": "181b53293ca05cf9b2a1f0b6e2c9ea1dbf78a1811a2e37466c409a6309f3d8a5",
             "declaration": "p09_t2_fictional_input_backward_error",
             "file": "paper_bencmark/highambench/tasks/P09/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+              "paper_bencmark/highambench/shared/HighamBench/P09Base.lean",
+              "paper_bencmark/highambench/shared/HighamBench/P09TheoremOne.lean",
               "paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean"
             ],
             "statement_summary": "The linked mixed-radix complex FFT error is exactly T delta, with Ramos's exact RMS scaling and both epsilon-K norm bounds carrying explicit second-order remainders."
@@ -1898,12 +1902,14 @@
           "informal_statement_paraphrase": "Theorem 2(a)'s linked product-indexed complex multidimensional FFT relative RMS estimate, retaining the nested execution, exact telescoping identity, fixed per-axis K constants, input condition, and explicit finite second-order remainder.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "5f4cdf4d102e37290628347ea4ad52baa30f3afcbf86fbc81313e0499dae3f36",
+            "controlled_file_sha256": "cc140cb5ee2c2d77c7fc101c33fd09d48a797d86767c9f1afd1bc12734d9ea07",
             "declaration": "p09_t3_multidimensional_rms_error_bound",
             "file": "paper_bencmark/highambench/tasks/P09/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+              "paper_bencmark/highambench/shared/HighamBench/P09Base.lean",
+              "paper_bencmark/highambench/shared/HighamBench/P09TheoremOne.lean",
               "paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean"
             ],
             "statement_summary": "The linked nested complex FFT error is its exact m-term propagated local-error sum and satisfies Theorem 2(a)'s relative RMS bound with coefficient sum_l K(N_l,gamma) plus an explicit finite second-order term."
@@ -1988,7 +1994,7 @@
           "informal_statement_paraphrase": "Equation (8)'s inherited-right first-order contribution, linked to the right operand's actual prior-computation error and retained as the middle term of the complete product-error budget.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "935474be1c1fede023141a23fc630c2234eb71c72df1c724133e29163e78a735",
+            "controlled_file_sha256": "5b81bbeed4d7ea8c07958b66a8195484a8a2ef6f4ac4c81c6deb3ad1e99368e1",
             "declaration": "p10_t1_inherited_right_product_error",
             "file": "paper_bencmark/highambench/tasks/P10/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -2036,7 +2042,7 @@
           "informal_statement_paraphrase": "Equation (8)'s complete three-term first-order absolute normwise product-error rule for a linked stable computation under its otherwise unspecified matrix norm.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "f56d9d29c88782c5d68a355e935a7fe695114305d019209ecfb4438dc36ff3a4",
+            "controlled_file_sha256": "753c197449d85ead7c0ecf95bd91ffdb31604a0fe1ac917aa9a126b7b85dcfbf",
             "declaration": "p10_t2_first_order_product_error",
             "file": "paper_bencmark/highambench/tasks/P10/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -2072,7 +2078,7 @@
           "informal_statement_paraphrase": "The ordinary power-of-two SylR execution satisfies the page-86 first-order recurrence, equation (20), and the paper's logarithmic-stability comparison.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "3768d2f5a743618038ff91cf8dbe7e3882be20611078b6235b6a4abc7a6137f3",
+            "controlled_file_sha256": "00375cfea3c0ff4c537b0924b76c44b015eabd79eb3f4b338aa54abd6f34aaef",
             "declaration": "p10_t3_sylr_logarithmic_stability",
             "file": "paper_bencmark/highambench/tasks/P10/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -2154,7 +2160,7 @@
           "informal_statement_paraphrase": "The exact computed CGS-P first-column residual identity and complete induced-2-norm chain in equation (16).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "cce293127384ae51b7929f9bc9e0c80139057f1c877763204b151e172e362fc3",
+            "controlled_file_sha256": "d288077fb1730fbea2cf9f145a2df64efb854f87b8e1a42b31558025b230a7e4",
             "declaration": "p11_t1_first_column_residual_action",
             "file": "paper_bencmark/highambench/tasks/P11/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -2281,7 +2287,7 @@
           "informal_statement_paraphrase": "Every positive prefix of one successful rectangular CGS-P execution satisfies Theorem 1(7)'s spectral loss-of-orthogonality estimate with its exact leading coefficient and an explicit finite second-order remainder.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "b6ecd17c207880a5b97422a423981ad79c542ee4f29eddfd1b4b5c460e1cf48a",
+            "controlled_file_sha256": "0eaab59fcfb01896aef43b4a9837885c12acc2da6c9c19527293f5261d68f82d",
             "declaration": "p11_t3_orthogonality_defect_bound",
             "file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -2409,7 +2415,7 @@
           "informal_statement_paraphrase": "Theorem 2 for arbitrary radix: equation-(1) inputs satisfying existential condition (7) make nearest-addition/faithful-subtraction FastTwoSum error-free, with both exact subtraction identities and equation (10)'s local error bound exposed.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "3100033c4f50b31b8a19dc91b1cd9d58aec379619098437b917b98d9b7e560c1",
+            "controlled_file_sha256": "1b581058811f544b9aa568725c1f1d163124a9c0b4fb7685d039254c1b9c8411",
             "declaration": "p12_t2_fast_two_sum_exact",
             "file": "paper_bencmark/highambench/tasks/P12/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -2467,7 +2473,7 @@
           "informal_statement_paraphrase": "Lemma 4 and equation (18): an actual ThreeProduct execution reduces its exact four-term expansion to three floating-point outputs without error, for arbitrary radix and without ordering the middle terms.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "358fc92a23f1728d172df527442e4df0dd28a617b644d63cf626cd2a188b4d6c",
+            "controlled_file_sha256": "d2835574e18a08cca5b90a4ccd815014a63dcad249e9cf2917988ac99957ab4d",
             "declaration": "p12_t3_three_product_exact",
             "file": "paper_bencmark/highambench/tasks/P12/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -3029,7 +3035,7 @@
           "informal_statement_paraphrase": "The complete finite content of Theorem 4.5 equations (4.23)-(4.25) for a proof-carrying UFC or UCF BLR solve, with algorithm parameters and explicit finite O(u epsilon) and O(u^2) replacements.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "f45086a8968e238c276f6f26cd6fb71f3d615a1b04d1e71079cad6b5a1349acc",
+            "controlled_file_sha256": "cd64eac33391a79ec64af98e01861410305bc3549ba4e0fe8cd44741195368e0",
             "declaration": "p15_t3_blr_lu_solve_backward_error",
             "file": "paper_bencmark/highambench/tasks/P15/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -3185,7 +3191,7 @@
           "informal_statement_paraphrase": "The exact residual identity (4.18) and Lemma 4.2's first-order next-residual recurrence (4.15), with the omitted second-order term represented explicitly.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "1c582176b5d6f0ea639794f09f49d14c1343fed97e7e030bd8cc1c506739809a",
+            "controlled_file_sha256": "7edca8e0ba3ce4dadcc55dd3950afc22ba1389070814a3e25d4e14e8ee189665",
             "declaration": "p16_t2_restarted_residual_recurrence",
             "file": "paper_bencmark/highambench/tasks/P16/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -3251,7 +3257,7 @@
           "informal_statement_paraphrase": "For every restart of the recorded mixed-precision MGS-GMRES execution, the actual normalized backward error and relative forward error contract by Lambda up to the respective high-precision first-order floors.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "4673ced6d389102473dc6b8f2307c084c43b89703cf9265030bd4f4cad6d0ad0",
+            "controlled_file_sha256": "b2fbda0cd4a25a550f5c1e6748f19106ede7893d7f407d99f6fde565c766e49a",
             "declaration": "p16_t3_mixed_precision_geometric_convergence",
             "file": "paper_bencmark/highambench/tasks/P16/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -3539,7 +3545,7 @@
           "informal_statement_paraphrase": "The exact E = E_sch + E_per split for an additive Runge--Kutta one-step execution, together with a stronger Euclidean triangle corollary.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "a9b6807124a1ed5664980f475a52e135fd01dc586defc7a8877ed44e7b8674e6",
+            "controlled_file_sha256": "336718b64b38d02e31778d65ead999145160c1c125f443598fa097581d656598",
             "declaration": "p18_t1_scheme_perturbation_error_split",
             "file": "paper_bencmark/highambench/tasks/P18/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -3634,7 +3640,7 @@
           "informal_statement_paraphrase": "The printed Method 4s3pC coefficients satisfy third-order consistency and the simplified smooth perturbation conditions to print precision, while failing the stricter nonsmooth condition.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "c840feeef03171551b63d4517e814fd8d34a9aa6904d6b965f7cebd27fa3dbc0",
+            "controlled_file_sha256": "49f3c1f801a32c3b35d3c5fbe9f848f9d3201e4f6664be5e9c14068fbe28c14c",
             "declaration": "p18_t3_method4s3pc_order_certificate",
             "file": "paper_bencmark/highambench/tasks/P18/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -3752,7 +3758,7 @@
           "informal_statement_paraphrase": "The complete modular attainable-forward-error result of Theorem 3.1, including its key dimension, two basis-conditioning bounds, and normalized first-order estimate (3.8).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "f8110a6e567310af2cbdf98ff75fc52acbb6806106a7b1553358b6e1a5bf32e7",
+            "controlled_file_sha256": "93526540f05f838dab8c1649079e99d83c23a36134657f262b3bba6909e3290b",
             "declaration": "p19_t2_modular_gmres_forward_error",
             "file": "paper_bencmark/highambench/tasks/P19/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -3810,7 +3816,7 @@
           "informal_statement_paraphrase": "The complete conditional attainable-forward-error bounds of Theorems 3.3 and 3.4, together with Remark 4's identification of the right-only preconditioner-reapplication term.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "793e14ac90b4c3015ce2f3b3b4e1990b88acff120a3b7418bf373c1e6a9d748e",
+            "controlled_file_sha256": "951ad8781d52c26a79b0619673bc81478be3e31afa80728ae045070b69bf2867",
             "declaration": "p19_t3_right_flexible_attainable_forward_error",
             "file": "paper_bencmark/highambench/tasks/P19/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -4009,7 +4015,7 @@
           "informal_statement_paraphrase": "Theorem 4.1: the actual computed result of the scaled p-word algorithm (4.29)-(4.31) satisfies the four-term first-order infinity-norm forward-error bound (4.32), whose range-free terms are those in (4.33).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "bed58eaf44970ecf9a18a1418f57786ae9f1f8abd20e7254aaf9ab0c7ad0749b",
+            "controlled_file_sha256": "dcc89a9a1a76d2083786647d8d7cf10e9b1dab20ab322d5411f89cd367b38005",
             "declaration": "p20_t3_multiword_forward_error",
             "file": "paper_bencmark/highambench/tasks/P20/T3/Target.lean",
             "must_compile_without_numstability": true,

@@ -7,9 +7,11 @@ no theorem or module is being recommended.
 
 Frozen snapshot:
 
-- Git commit: `45813a95dacf577461bae13f033af0dbc985a225`
+- Git commit: `4ec1ec874353010ad93cc0bb76370ac321da4681`
 - read-only source tree: `/library/NumStability`
 - read-only root source file: `/library/NumStability.lean`
+- read-only navigation index: `/library/docs/LIBRARY_LOOKUP.md`
+- read-only lookup example: `/library/examples/LibraryLookup.lean`
 - read-only compiled Lean tree: `/library-olean`
 
 `/library-olean` is already on `LEAN_PATH`; do not modify `LEAN_PATH`. A module
@@ -21,6 +23,8 @@ importable frozen object set. For example,
 Useful local discovery commands include:
 
 ```sh
+sed -n '1,240p' /library/docs/LIBRARY_LOOKUP.md
+
 find /library-olean/NumStability -type f -name '*.olean' -print | sort
 
 find /library-olean/NumStability -type f -name '*.olean' -print \

@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete 16-page local PDF sequentially, including Model 1, hardware examples, the full derivations of Theorems 3.1 and 4.1, numerical experiments, conclusion, reproducibility statement, and references; during the audit-driven P20 rebuilds, rechecked Model 1, equations (3.1)-(3.16), the complete derivation (4.18)-(4.28), Theorem 4.1 and equations (4.29)-(4.33), including rendered B786-B795 pages; searched all 24 frozen mounted object modules; and compiled private N/L constructions plus concrete nonvacuity witnesses.",
+    "method": "Codex read the complete 16-page local PDF sequentially, including Model 1, hardware examples, the full derivations of Theorems 3.1 and 4.1, numerical experiments, conclusion, reproducibility statement, and references; while reconstructing the P20 tasks, rechecked Model 1, equations (3.1)-(3.16), the complete derivation (4.18)-(4.28), Theorem 4.1 and equations (4.29)-(4.33), including rendered B786-B795 pages; searched all 24 frozen mounted object modules; and compiled private N/L constructions plus concrete nonvacuity witnesses.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P20 source selection and benchmark annotation to Codex."

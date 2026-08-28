@@ -1,7 +1,7 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "audit-driven static reconstruction of Theorems 3.3-3.4, equations (3.17) and (3.20), and Remark 4 with derived MGS dimensions, separately quantified algorithm families, source-level perturbation magnitudes, generic condition-number semantics, and qualitative first-order meaning",
+    "kind": "static reconstruction of Theorems 3.3-3.4, equations (3.17) and (3.20), and Remark 4 with derived MGS dimensions, separately quantified algorithm families, source-level perturbation magnitudes, generic condition-number semantics, and qualitative first-order meaning",
     "performed_by": "Codex"
   },
   "assumptions": [

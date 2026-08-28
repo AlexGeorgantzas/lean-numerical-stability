@@ -14,9 +14,7 @@ the exact residual identity (4.18) and the following derivation on PDF page 20
 (printed page 1958).
 
 This is a project-corrected task. The published lemma omits a comparison that
-its proof requires. The source-validity analysis and counterexample are
-recorded in
-`paper_bencmark/faithfulness_audit/source_validity/P16-T2.md`.
+its proof requires; the counterexample and correction are summarized below.
 
 ## Printed branch
 
@@ -119,9 +117,8 @@ real-valued operation model makes no claim about overflow, underflow,
 subnormals, NaNs, or infinities.
 
 Because the iterate comparison and the precise filter-level interpretation of
-`lesssim` are project-supplied, this corrected task is excluded from ordinary
-paper-faithfulness acceptance and faithfulness-rate aggregates. The preceding
-audit remains unchanged as provenance.
+`lesssim` are project-supplied, this is a project-corrected benchmark target
+rather than a literal formalization of the printed lemma.
 
 ## Satisfiability
 

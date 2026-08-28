@@ -1,7 +1,7 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "faithfulness rebuild of equation (8)'s linked inherited-right first-order error contribution",
+    "kind": "reconstruction of equation (8)'s linked inherited-right first-order error contribution",
     "performed_by": "Codex"
   },
   "assumptions": [

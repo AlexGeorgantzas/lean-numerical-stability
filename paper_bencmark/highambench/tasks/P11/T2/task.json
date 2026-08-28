@@ -1,7 +1,7 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "faithfulness rebuild of the exact rectangular orthogonality-defect identity used in Theorem 1(7)",
+    "kind": "reconstruction of the exact rectangular orthogonality-defect identity used in Theorem 1(7)",
     "performed_by": "Codex"
   },
   "assumptions": [

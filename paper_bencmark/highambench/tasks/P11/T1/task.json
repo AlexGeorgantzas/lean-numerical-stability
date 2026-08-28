@@ -1,7 +1,7 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "faithfulness rebuild of the computed CGS-P first-column residual identity and equation (16)",
+    "kind": "reconstruction of the computed CGS-P first-column residual identity and equation (16)",
     "performed_by": "Codex"
   },
   "assumptions": [

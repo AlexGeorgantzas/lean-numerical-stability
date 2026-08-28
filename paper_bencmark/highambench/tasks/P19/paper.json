@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete 47-page local PDF sequentially and, during the audit-driven P19-T2 and P19-T3 rebuilds, rechecked Algorithms 1-2, equations (3.2)-(3.20), Theorems 3.1, 3.3, and 3.4, and Appendices A, C, and D in extracted text and rendered source pages; searched the frozen library and compiled private N/L constructions for the rebuilt targets.",
+    "method": "Codex read the complete 47-page local PDF sequentially and, while reconstructing P19-T2 and P19-T3, rechecked Algorithms 1-2, equations (3.2)-(3.20), Theorems 3.1, 3.3, and 3.4, and Appendices A, C, and D in extracted text and rendered source pages; searched the frozen library and compiled private N/L constructions for the rebuilt targets.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P19 source selection and benchmark annotation to Codex."

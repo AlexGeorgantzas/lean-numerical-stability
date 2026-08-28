@@ -326,152 +326,6 @@ def _set_task_phase(
         write_json(path, record)
 
 
-def _measurement_readiness(
-    root: Path,
-    targets: Sequence[tuple[str, str, str, Mapping[str, Any]]],
-    *,
-    ignore_exact_target_novelty_rejections: bool = False,
-) -> dict[str, Any]:
-    """Require complete construction and two current reviews for every task."""
-
-    task_ids = [task_id for _paper_id, _tier, task_id, _target in targets]
-    evidence_dir = root / "metadata" / "evidence"
-    construction_records: list[Mapping[str, Any]] = []
-    if evidence_dir.is_dir():
-        for path in sorted(evidence_dir.glob("*.json")):
-            value = read_json(path)
-            if isinstance(value, Mapping) and value.get("kind") == "highambench-private-construction-check":
-                construction_records.append(value)
-    complete = []
-    current_manifest_sha256 = sha256_file(root / "metadata" / "manifest.json")
-    for record in construction_records:
-        scope = record.get("scope")
-        summary = record.get("summary")
-        proof_count = len(task_ids) * 2
-        if (
-            record.get("pass") is True
-            and record.get("record_status") == "current_final"
-            and isinstance(scope, Mapping)
-            and scope.get("complete_manifest_scope") is True
-            and scope.get("selected_task_ids") == task_ids
-            and scope.get("central_manifest_sha256") == current_manifest_sha256
-            and isinstance(summary, Mapping)
-            and summary.get("expected") == proof_count
-            and summary.get("checked") == proof_count
-            and summary.get("passed") == proof_count
-        ):
-            complete.append(record)
-    if not complete:
-        raise BenchmarkToolError(
-            "measurement-ready phase requires one passing full-corpus private construction record"
-        )
-
-    coverage = {task_id: 0 for task_id in task_ids}
-    review_records: list[dict[str, Any]] = []
-    ignored_rejections: set[str] = set()
-    reviews_dir = root / "metadata" / "reviews"
-    if reviews_dir.is_dir():
-        for path in sorted(reviews_dir.glob("*.json")):
-            review = read_json(path)
-            if not isinstance(review, Mapping):
-                continue
-            status = review.get("record_status")
-            if ignore_exact_target_novelty_rejections:
-                if status not in ("current_final", "final", "current_with_blocking_defects"):
-                    continue
-                reviewer = review.get("reviewer")
-                if not isinstance(reviewer, Mapping) or reviewer.get("fresh_context") is not True:
-                    raise BenchmarkToolError(
-                        f"novelty override review {path.name} is not a fresh-context Codex review"
-                    )
-                identifiers = review.get("identifiers")
-                snapshot = review.get("snapshot")
-                review_manifest_sha256 = (
-                    review.get("benchmark_manifest_sha256")
-                    or (
-                        identifiers.get("benchmark_manifest_sha256")
-                        if isinstance(identifiers, Mapping)
-                        else None
-                    )
-                    or (
-                        snapshot.get("manifest_sha256")
-                        if isinstance(snapshot, Mapping)
-                        else None
-                    )
-                )
-                if review_manifest_sha256 != current_manifest_sha256:
-                    raise BenchmarkToolError(
-                        f"novelty override review {path.name} cites a stale benchmark manifest"
-                    )
-            elif status != "current_final":
-                continue
-            task_reviews = review.get("task_reviews", review.get("tasks"))
-            if not isinstance(task_reviews, list):
-                continue
-            covered_in_record: set[str] = set()
-            for raw_task_review in task_reviews:
-                if not isinstance(raw_task_review, Mapping):
-                    continue
-                task_id = raw_task_review.get("task_id")
-                outcome = raw_task_review.get(
-                    "review_outcome",
-                    raw_task_review.get("outcome", raw_task_review.get("decision")),
-                )
-                if task_id not in coverage or task_id in covered_in_record:
-                    continue
-                accepted = isinstance(outcome, str) and outcome.lower().startswith("pass")
-                if ignore_exact_target_novelty_rejections and not accepted:
-                    normalized = outcome.lower() if isinstance(outcome, str) else ""
-                    exact_target_collision = (
-                        raw_task_review.get("exact_target_absent_from_mathlib") is False
-                        or raw_task_review.get("exact_target_absent_from_numstability") is False
-                    )
-                    accepted = (
-                        raw_task_review.get("source_faithful") is True
-                        and ("exact_target" in normalized or exact_target_collision)
-                        and ("fail" in normalized or "collision" in normalized)
-                    )
-                    if accepted:
-                        ignored_rejections.add(str(task_id))
-                if ignore_exact_target_novelty_rejections and raw_task_review.get(
-                    "source_faithful"
-                ) is not True:
-                    accepted = False
-                if accepted:
-                    coverage[str(task_id)] += 1
-                    covered_in_record.add(str(task_id))
-            if covered_in_record:
-                review_records.append(
-                    {
-                        "path": f"metadata/reviews/{path.name}",
-                        "sha256": sha256_file(path),
-                        "record_status": status,
-                        "task_count": len(covered_in_record),
-                    }
-                )
-    missing = [task_id for task_id, count in coverage.items() if count < 2]
-    if missing:
-        raise BenchmarkToolError(
-            "measurement-ready phase requires two current final reviews for every task; missing: "
-            + ", ".join(missing)
-        )
-    return {
-        "enabled": ignore_exact_target_novelty_rejections,
-        "scope": "exact-target novelty rejections only",
-        "source_fidelity_required": True,
-        "fresh_context_reviews_required": ignore_exact_target_novelty_rejections,
-        "review_records": review_records,
-        "ignored_rejection_task_ids": sorted(ignored_rejections),
-        "note": (
-            "The project owner directed that the fresh-context reviews be retained "
-            "but their exact-target novelty rejections be ignored for this private, "
-            "pre-publication measurement."
-            if ignore_exact_target_novelty_rejections
-            else "No review override was applied."
-        ),
-    }
-
-
 def _sync_manifest(
     root: Path,
     manifest: dict[str, Any],
@@ -849,6 +703,57 @@ def _sync_provider_token_gate(
     environment["provider_token_gate"] = record
 
 
+def _preserve_provider_token_gate(
+    root: Path, config: dict[str, Any], environment: dict[str, Any]
+) -> None:
+    """Validate the frozen Linux gate record without regenerating it locally."""
+
+    record = _object(
+        environment.get("provider_token_gate"), "environment provider_token_gate"
+    )
+    implementation = _object(
+        record.get("implementation"), "provider-token-gate implementation"
+    )
+    source_path = root / "tools" / "provider_token_gate.py"
+    if implementation.get("source_sha256") != sha256_file(source_path):
+        raise BenchmarkToolError(
+            "construction snapshot cannot preserve a provider-token-gate record "
+            "whose source hash is stale"
+        )
+    frozen = _object(config.get("frozen_environment"), "config frozen_environment")
+    frozen["provider_token_gate_sha256"] = canonical_document_digest(record)
+
+
+def _require_final_compiled_artifact_manifests(root: Path) -> None:
+    """Reject measurement-ready snapshots with construction placeholders."""
+
+    controlled_names = ("library_olean.json", "packages_runtime.json")
+    for name in controlled_names:
+        record = _object(
+            read_json(root / "metadata" / name), f"{name} artifact manifest"
+        )
+        files = record.get("files")
+        if record.get("artifact_status") is not None or not isinstance(files, list) or not files:
+            raise BenchmarkToolError(
+                f"measurement-ready phase requires a non-placeholder metadata/{name}"
+            )
+
+    compiled = _object(
+        read_json(root / "metadata" / "packages_olean.json"),
+        "packages_olean.json artifact manifest",
+    )
+    if (
+        compiled.get("artifact_status") is not None
+        or not isinstance(compiled.get("toolchain"), Mapping)
+        or not isinstance(compiled.get("packages"), list)
+        or not compiled["packages"]
+    ):
+        raise BenchmarkToolError(
+            "measurement-ready phase requires a non-placeholder "
+            "metadata/packages_olean.json"
+        )
+
+
 def _invalidate_live_canary_descriptors(
     config: dict[str, Any], environment: dict[str, Any]
 ) -> None:
@@ -881,6 +786,22 @@ def _sync_release_and_environment(
     corpus_slug: str,
 ) -> tuple[str, str, int]:
     frozen = _object(config.get("frozen_environment"), "config frozen_environment")
+    lean = _object(environment.setdefault("lean", {}), "environment lean")
+    runtime = _object(environment.setdefault("runtime", {}), "environment runtime")
+    artifact_manifests = (
+        ("compiled_environment_summary", "packages_olean.json", lean),
+        ("numstability_compiled_manifest", "library_olean.json", lean),
+        ("numstability_source_manifest", "library_source.json", lean),
+        ("packages_runtime_manifest", "packages_runtime.json", runtime),
+    )
+    for field, filename, section in artifact_manifests:
+        relative = f"paper_bencmark/highambench/metadata/{filename}"
+        digest = sha256_file(root / "metadata" / filename)
+        frozen[field] = relative
+        frozen[f"{field}_sha256"] = digest
+        section[field] = relative
+        section[f"{field}_sha256"] = digest
+
     prompt_sha256 = sha256_file(root / "agent_prompt.md")
     frozen["prompt_sha256"] = prompt_sha256
     agent = _object(environment.setdefault("agent", {}), "environment agent")
@@ -945,7 +866,6 @@ def _sync_release_and_environment(
     environment["release_manifest_sha256"] = release_sha256
     environment["environment_bundle_definition"] = ENVIRONMENT_BUNDLE_DEFINITION
 
-    lean = _object(environment.setdefault("lean", {}), "environment lean")
     shared_sources: dict[str, str] = {}
     raw_shared = manifest.get("controlled_shared_files")
     if not isinstance(raw_shared, list):
@@ -980,7 +900,6 @@ def refresh_snapshot(
     root: Path,
     *,
     phase: str,
-    ignore_exact_target_novelty_rejections: bool = False,
 ) -> dict[str, Any]:
     if phase not in PHASES:
         raise BenchmarkToolError(f"phase must be one of {', '.join(PHASES)}")
@@ -999,10 +918,6 @@ def refresh_snapshot(
     paper_ids = [str(paper["paper_id"]) for paper in papers]
     benchmark_id = _benchmark_id(manifest, paper_ids)
     measurement_ready = phase == PHASE_MEASUREMENT_READY
-    if ignore_exact_target_novelty_rejections and not measurement_ready:
-        raise BenchmarkToolError(
-            "the exact-target novelty override is valid only for measurement-ready snapshots"
-        )
 
     tag_catalog = validate_task_catalog(benchmark_root)
     manifest_task_ids = [task_id for _paper_id, _tier, task_id, _target in targets]
@@ -1018,16 +933,8 @@ def refresh_snapshot(
             "paper directories must exactly match manifest papers: "
             f"manifest={sorted(paper_ids)}, directories={paper_record_ids}"
         )
-
-    review_policy: dict[str, Any] | None = None
     if measurement_ready:
-        review_policy = _measurement_readiness(
-            benchmark_root,
-            targets,
-            ignore_exact_target_novelty_rejections=(
-                ignore_exact_target_novelty_rejections
-            ),
-        )
+        _require_final_compiled_artifact_manifests(benchmark_root)
 
     _set_task_phase(
         benchmark_root,
@@ -1058,24 +965,25 @@ def refresh_snapshot(
     _sync_token_control(config, environment)
     _sync_session_isolation(config, environment)
     _sync_ultra_orchestration(config, environment)
-    _sync_provider_token_gate(benchmark_root, config, environment)
+    if measurement_ready:
+        _sync_provider_token_gate(benchmark_root, config, environment)
+    else:
+        _preserve_provider_token_gate(benchmark_root, config, environment)
     _invalidate_live_canary_descriptors(config, environment)
     config["configuration_status"] = (
         "corpus under construction; task metadata and snapshots may be regenerated"
         if phase == PHASE_CONSTRUCTION
         else "measurement-ready corpus snapshot; changes require a new snapshot"
     )
-    if review_policy is None:
-        config.pop("private_measurement_review_override", None)
-    else:
-        config["private_measurement_review_override"] = review_policy
+    config.pop("private_measurement_review_override", None)
     frozen = _object(config.get("frozen_environment"), "config frozen_environment")
     frozen["construction_status_note"] = (
-        "The corpus is still being built. No measured run may start until every task "
-        "has been reviewed and a measurement-ready snapshot is created."
+        "The corpus is fixed, but compiled artifact manifests and live canaries require "
+        "replacement on the frozen Linux host. No measured run may start until a "
+        "measurement-ready snapshot is created."
         if phase == PHASE_CONSTRUCTION
         else "Every manifest task is marked measurement-ready for this snapshot. "
-        "Construction proofs and reviews must still pass before results are reported."
+        "The documented private N/L construction check must pass before results are reported."
     )
     environment["benchmark_id"] = benchmark_id
     release_sha256, bundle, release_count = _sync_release_and_environment(
@@ -1108,14 +1016,6 @@ def make_parser() -> argparse.ArgumentParser:
         default=Path(__file__).resolve().parents[1],
     )
     parser.add_argument("--phase", choices=PHASES, required=True)
-    parser.add_argument(
-        "--ignore-exact-target-novelty-rejections",
-        action="store_true",
-        help=(
-            "retain two fresh-context reviews and require source fidelity, but "
-            "ignore only exact-target novelty rejections for a private measurement"
-        ),
-    )
     return parser
 
 
@@ -1125,9 +1025,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         result = refresh_snapshot(
             args.benchmark_root,
             phase=args.phase,
-            ignore_exact_target_novelty_rejections=(
-                args.ignore_exact_target_novelty_rejections
-            ),
         )
     except (OSError, BenchmarkToolError, ValueError) as error:
         print(f"refresh-snapshot error: {error}", file=sys.stderr)

@@ -76,6 +76,8 @@ CURRENT_CONSTRUCTION_EVIDENCE_PROJECT_PATH = (
 EXPECTED_FULL_PAPER_COUNT = 20
 EXPECTED_FULL_TASK_COUNT = 60
 EXPECTED_FULL_RESULT_COUNT = 120
+NUMSTABILITY_LOOKUP_RELATIVE = Path("docs/LIBRARY_LOOKUP.md")
+NUMSTABILITY_LOOKUP_EXAMPLE_RELATIVE = Path("examples/LibraryLookup.lean")
 
 CONSTRUCTION_TOOL_RELATIVES = (
     "tools/check_construction.py",
@@ -125,6 +127,8 @@ class ConstructionEnvironment:
     shared_olean_root: Path
     library_source: Path
     library_root_file: Path
+    library_lookup: Path
+    library_lookup_example: Path
     library_olean: Path
     hidden_parent: Path | None
     bwrap: Path
@@ -481,6 +485,22 @@ def resolve_environment(args: argparse.Namespace) -> ConstructionEnvironment:
         library_root_file=_required_file(
             args.library_root_file, "NumStability root source"
         ),
+        library_lookup=_required_file(
+            project_root
+            / ".lake"
+            / "packages"
+            / "numStability"
+            / NUMSTABILITY_LOOKUP_RELATIVE,
+            "NumStability library lookup",
+        ),
+        library_lookup_example=_required_file(
+            project_root
+            / ".lake"
+            / "packages"
+            / "numStability"
+            / NUMSTABILITY_LOOKUP_EXAMPLE_RELATIVE,
+            "NumStability library lookup example",
+        ),
         library_olean=_required_directory(args.library_olean, "NumStability olean root"),
         hidden_parent=hidden_parent,
         bwrap=_required_file(args.bwrap, "bubblewrap executable"),
@@ -603,25 +623,46 @@ def _binary_marker_scan(root: Path, relatives: set[str]) -> dict[str, Any]:
 def verification_basis(environment: ConstructionEnvironment) -> dict[str, Any]:
     """Authenticate the tools and exact library trees used by this check."""
 
-    expected_source = (environment.project_root / "NumStability").resolve()
-    expected_root_file = (environment.project_root / "NumStability.lean").resolve()
+    library_project = (
+        environment.project_root / ".lake" / "packages" / "numStability"
+    ).resolve()
+    expected_source = (library_project / "NumStability").resolve()
+    expected_root_file = (library_project / "NumStability.lean").resolve()
+    expected_lookup = (library_project / NUMSTABILITY_LOOKUP_RELATIVE).resolve()
+    expected_lookup_example = (
+        library_project / NUMSTABILITY_LOOKUP_EXAMPLE_RELATIVE
+    ).resolve()
     if environment.library_source != expected_source:
         raise BenchmarkToolError(
-            "NumStability source must be project_root/NumStability for construction checks"
+            "NumStability source must come from the Lake-managed numStability package"
         )
     if environment.library_root_file != expected_root_file:
         raise BenchmarkToolError(
-            "NumStability root source must be project_root/NumStability.lean"
+            "NumStability root source must come from the Lake-managed numStability package"
+        )
+    if environment.library_lookup != expected_lookup:
+        raise BenchmarkToolError(
+            "NumStability lookup must come from the Lake-managed numStability package"
+        )
+    if environment.library_lookup_example != expected_lookup_example:
+        raise BenchmarkToolError(
+            "NumStability lookup example must come from the Lake-managed numStability package"
         )
 
     source_files = {
         f"NumStability/{relative}"
         for relative in _exact_regular_files(environment.library_source)
     }
-    source_files.add("NumStability.lean")
+    source_files.update(
+        {
+            "NumStability.lean",
+            NUMSTABILITY_LOOKUP_RELATIVE.as_posix(),
+            NUMSTABILITY_LOOKUP_EXAMPLE_RELATIVE.as_posix(),
+        }
+    )
     source_identity = _manifest_identity(
         environment.source_manifest,
-        environment.project_root,
+        library_project,
         actual_files=source_files,
         label="NumStability source",
     )
@@ -885,6 +926,10 @@ def isolated_lean_command(
                 str(environment.library_source),
                 "--library-root-file",
                 str(environment.library_root_file),
+                "--library-lookup",
+                str(environment.library_lookup),
+                "--library-lookup-example",
+                str(environment.library_lookup_example),
                 "--library-olean",
                 str(environment.library_olean),
             ]
@@ -1968,15 +2013,6 @@ def make_parser() -> argparse.ArgumentParser:
         help="number of independent construction workspaces to validate concurrently",
     )
     parser.add_argument("--output", type=Path)
-    parser.add_argument(
-        "--promote-current",
-        action="store_true",
-        help=(
-            "after a successful complete 20-paper/60-task check written to a "
-            "separate --output file, independently authenticate and transactionally "
-            "promote its 120/120 certificate plus both derived evidence pointers"
-        ),
-    )
     return parser
 
 
@@ -2010,33 +2046,6 @@ def main() -> int:
     if args.jobs <= 0:
         print("construction-check error: jobs must be positive", file=sys.stderr)
         return 2
-    if args.promote_current:
-        if args.output is None:
-            print(
-                "construction-check error: --promote-current requires a separate --output file",
-                file=sys.stderr,
-            )
-            return 2
-        if args.paper_id:
-            print(
-                "construction-check error: --promote-current forbids partial --paper-id checks",
-                file=sys.stderr,
-            )
-            return 2
-        output = Path(args.output)
-        if output.is_symlink() or output.exists():
-            print(
-                "construction-check error: promoted --output must be a new non-symlink file",
-                file=sys.stderr,
-            )
-            return 2
-        parent = output.parent
-        if parent.is_symlink() or not parent.is_dir():
-            print(
-                "construction-check error: promoted --output parent must be an existing non-symlink directory",
-                file=sys.stderr,
-            )
-            return 2
     try:
         environment = resolve_environment(args)
         evidence = run_checks(environment, jobs=args.jobs)
@@ -2063,13 +2072,6 @@ def main() -> int:
         write_json(args.output, evidence)
     else:
         print(json.dumps(evidence, indent=2, sort_keys=True))
-    if args.promote_current:
-        try:
-            promoted = promote_current_evidence(environment, args.output)
-        except (OSError, BenchmarkToolError, ValueError) as error:
-            print(f"construction-check promotion error: {error}", file=sys.stderr)
-            return 2
-        print(json.dumps({"promotion": promoted}, indent=2, sort_keys=True))
     return 0 if evidence["pass"] else 1
 
 

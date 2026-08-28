@@ -31,9 +31,9 @@
       ],
       "condition_supplements": {
         "L": {
-          "bytes": 1834,
+          "bytes": 2014,
           "path": "condition_prompts/L.md",
-          "sha256": "24d10a8812290b8abe26091a20fe11368ee0d4d0ab2b545ef6972dff57de941e"
+          "sha256": "1485c8be733b34d63036e22a278e680aca316c426ec71deb694a14dac316446d"
         }
       },
       "relevant_theorem_or_module_hints_supplied": false,
@@ -163,8 +163,8 @@
   },
   "benchmark_id": "highambench-0.2-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20",
   "environment_bundle_definition": "SHA-256 of UTF-8 canonical JSON with sorted keys and compact separators over an object containing the complete config and environment records, after removing environment_id and environment_bundle_sha256 from their top-level/frozen locations.",
-  "environment_bundle_sha256": "c9580d9ce26ffa5f01c41f04cb7aa4423d4a37d4439af69bc0a7f4c7ce215070",
-  "environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-c9580d9ce26ffa5f",
+  "environment_bundle_sha256": "98c9aa5571703ca329bca27de73d1e313dc4126abc7e484c58ea7ccd72ad7aeb",
+  "environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-98c9aa5571703ca3",
   "host_class": {
     "allocated_physical_cores": 2,
     "allocated_sockets": 1,
@@ -196,12 +196,12 @@
     "container_image_digest": null,
     "dependency_audit_sha256": "0f19d8c9e1a2e6c17f22f0ab38425d0351e4d6cf65c0b03165e06ecb9d718be7",
     "ephemeral_thread_start_per_run": false,
-    "filesystem_adapter_sha256": "2344a77a19efea09efb7d42ee4da1c371d171870cca88852a5038ce58bb5f359",
+    "filesystem_adapter_sha256": "ec22c6046b479bc7ce908b74a4446cfc2f3022ada62ee7c669d9e4a8f5443025",
     "fresh_codex_state_directory_per_run": true,
     "gold_proof_policy": "The private construction proofs and source PDFs are never mounted in an evaluated attempt.",
     "history_persistence": "none",
     "kind": "bubblewrap namespace; not an OCI container",
-    "lean_adapter_sha256": "aae24febc4bf42802919c027bf6edb1c409903376ae0c37d9d0294d855d895ca",
+    "lean_adapter_sha256": "3c5f55db6d6a0bc05360d846bb00146f80c2bf1fbcf07dfa7629f58341bbfd46",
     "memories_feature_disabled": true,
     "network_boundary": "Model-generated shell commands inherit a kernel rule that rejects socket operations and records every denied request. The Codex control process keeps only the provider connection needed for the model. Model web, app, plugin, and search capabilities are disabled.",
     "normal_exit_state_cleanup": true,
@@ -239,13 +239,13 @@
     "binary_sha256": "3e0d0d3d801675359f2d4cf9815bfdb417b20b92fdd9d48b3b14c95bbae28bbf",
     "commit": "5d86aa4032284a5242470e95fbe25f1ff506763d",
     "compiled_environment_summary": "paper_bencmark/highambench/metadata/packages_olean.json",
-    "compiled_environment_summary_sha256": "ae361f8e83f4e65745249c1b7ce415fe91024b32cbe935be34402598ac1f7844",
+    "compiled_environment_summary_sha256": "73965221a1862b77486d7c78bf190068a16fe37c93b8e9ae22d0efff787bc0ea",
     "mathlib_commit": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
-    "numstability_commit": "45813a95dacf577461bae13f033af0dbc985a225",
+    "numstability_commit": "4ec1ec874353010ad93cc0bb76370ac321da4681",
     "numstability_compiled_manifest": "paper_bencmark/highambench/metadata/library_olean.json",
-    "numstability_compiled_manifest_sha256": "bbea1e90bc11605bd3c14b28dc39bf49b7bcb64ab5cf2306841f65b803a6ae2a",
+    "numstability_compiled_manifest_sha256": "4d40cc111bbecde75539e395f074158b892753d15e912f32bf0e7ac82185feeb",
     "numstability_source_manifest": "paper_bencmark/highambench/metadata/library_source.json",
-    "numstability_source_manifest_sha256": "8b52061f0fafc283acd2363267ebbee2f9c6eb97360c596723b95b27515c7828",
+    "numstability_source_manifest_sha256": "b413b15792b4e8b3a5746201bed5b3d6d3d125fdb1da4c5c0b682d3aca4a15ec",
     "shared_olean_bundles": {
       "P01": {
         "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
@@ -332,24 +332,26 @@
       "HighamBench/Core.lean": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a",
       "HighamBench/P01Definitions.lean": "f84e0fcd73a73392e539081c1ab832e76c71902085eaae4614d305d138ca7a29",
       "HighamBench/P02Definitions.lean": "803efe47eb37140c04ed8dad9fcdfe8470d0527aaedf9c60ff9333441ad5136b",
-      "HighamBench/P03Definitions.lean": "25e5b0fc93004b684254c879d71dd789e3a2153c4517d5cfabdc617d84ead38a",
-      "HighamBench/P04Definitions.lean": "d5ff5fe4b6ca28e0637b0df7bbc91a7f199b95caf4f4a32532ee14de9613f836",
-      "HighamBench/P05Definitions.lean": "1a399e16e2453fdb7b05d46e0f4e348e6c74ccf10944ed28b411722811f7875a",
-      "HighamBench/P06Definitions.lean": "a8b26a6d6fb23bb227d6779309edc71f2002b92dc682361a613f1d7f46044445",
-      "HighamBench/P07Definitions.lean": "6f0bad7f110b187ab3e04a0d3be457997ab16edb9414280f2f92ad2f12a059c8",
-      "HighamBench/P08Definitions.lean": "64149b9a6617083dd7dd78f55692760290ebb53614063091c7f017e2087cf837",
-      "HighamBench/P09Definitions.lean": "17346c26dd0150dbdb16b77fbbd7240745e9f95617f619267e13740105a92fa9",
-      "HighamBench/P10Definitions.lean": "f49e4d8aea5940088440cc81e8a85365243730ec35689bf1f3bb9434c1e80cc6",
-      "HighamBench/P11Definitions.lean": "6756f18215387ae4f685e6cd69598895af8117ed6fe81c264b4591f04d20e40d",
-      "HighamBench/P12Definitions.lean": "3e58eed419082337e49fab333f872c016fd6c0bec01cc02a9dad52a6033771bb",
+      "HighamBench/P03Definitions.lean": "ccc48a0a3eab21e5835a7981f26f11b16ab49d96f35e80e2196e59f5be16e81b",
+      "HighamBench/P04Definitions.lean": "cbf88a9826eef35e7f1972ddc402fe31a95e7add5b1e305c8e6e32da2e9ef61a",
+      "HighamBench/P05Definitions.lean": "e3370cd168a8b37474d8dc06c659f588be3032563d5908a86ba00b45f909d68d",
+      "HighamBench/P06Definitions.lean": "e9a3986f76f3bc6364fce9d245e0606e87aea9970763506b926eeaa2ec55697a",
+      "HighamBench/P07Definitions.lean": "1aa816eb0962482b6c6cd806b05a8646b9e724eabcdb61c9d44e3da35ce8c3dc",
+      "HighamBench/P08Definitions.lean": "183876e32b1330dc5b91d47ffff5ab57677366f5e02331f8b2197feeb64a02f0",
+      "HighamBench/P09Base.lean": "25d81f1315b7e2d9b9d6e8214d3a9ca20bd73a88bf9408776cfb8134f5832501",
+      "HighamBench/P09Definitions.lean": "dd89e5c96be1ed020dcaa021111d816613f0151eac62544e7315ae6eac79c332",
+      "HighamBench/P09TheoremOne.lean": "37ffc3a24f5063b287d2c925e52bf04a05b19b928bf3e2891c7b035f2444550f",
+      "HighamBench/P10Definitions.lean": "0b7d641504c97de374de25cda3e19860a3293f4d60f2d642a0e1eafb1c52975b",
+      "HighamBench/P11Definitions.lean": "3ec45c6fbd29587ee731d6a89fead89df8b7935d00d5555ccb3393b5e8655466",
+      "HighamBench/P12Definitions.lean": "b2a25eace2e5472b3f277df9b1f48f03dc9fa3f3ad7849b9b0c6611d63820295",
       "HighamBench/P13Definitions.lean": "7068b71541b010c612ecd1cceafe4d1b30fe7a0a82bc98ce27a63963cf0f1799",
       "HighamBench/P14Definitions.lean": "6fb3de99ac2eb3f774020ccc849aae32d0b00fe7efe88eefeb340f4c866ad124",
-      "HighamBench/P15Definitions.lean": "b6e99e9b2e55582ab283590cdab7dce218b8db759e425a343925af9c06f3f857",
-      "HighamBench/P16Definitions.lean": "d4ea17de614c48b1916c5ffba10daf092bf258761c0850111aa6c560eff72196",
-      "HighamBench/P17Definitions.lean": "90ea1cc4af8101d1e345960950d5c2c97a04fcadac1147c75edfbe1e7e7ad9a0",
-      "HighamBench/P18Definitions.lean": "e8076948865057c148e1531349eca646c2cbb158637d394c47a28ec84a12cfb2",
-      "HighamBench/P19Definitions.lean": "5f2109bae7fa37ed222b56d3bd9ba97eadcf30ffe7f073d6f8dc75f36c896e13",
-      "HighamBench/P20Definitions.lean": "5b94f6f4eac02fe552a60504a7d4c1efb1d8dbe27826e3c608c83a495fbb8c2b"
+      "HighamBench/P15Definitions.lean": "467b2a69d7ee8650cda517c7f1b127fabe6a2e90d9643a6e6d735611b2730731",
+      "HighamBench/P16Definitions.lean": "bb76fe0f8277c626736671271e6624392c15033411d78ab850b1461c56cd36a6",
+      "HighamBench/P17Definitions.lean": "3223e501fa3f1646cb206f7ae62604b601ae8e951204ee8f5d048141f634ef9a",
+      "HighamBench/P18Definitions.lean": "d0fdac24940ee54cdcd5a60f0c0e4fc4c81d30ef6c03fc89dde95dfc627ecbad",
+      "HighamBench/P19Definitions.lean": "d1ee3760a4b34e9b845d1f5a65909aed6737cf7fb411c3607928aed8ed72ee27",
+      "HighamBench/P20Definitions.lean": "3fda14f944d37cc4740956ac7c63f8341aa3cfcf2d8308f888f40908e410b490"
     },
     "version": "4.29.0-rc3"
   },
@@ -726,10 +728,10 @@
     }
   },
   "release_manifest": "paper_bencmark/highambench/metadata/release_files.json",
-  "release_manifest_sha256": "583675aeee9cb03b733d4553052d2e1d1cfa4f0f49a03d70d0276a64aadbd734",
+  "release_manifest_sha256": "f56fbe465bf44d36908a70a049d69510b46e21f7eec68379285046baa0f05985",
   "runtime": {
     "packages_runtime_manifest": "paper_bencmark/highambench/metadata/packages_runtime.json",
-    "packages_runtime_manifest_sha256": "a2ee0563bc731aa3dba22ed7af0e9bd1322c8c06b51cd9d01bd573282d9c8c31",
+    "packages_runtime_manifest_sha256": "0d41dbd359cf474774049dee16b6ed9ae90f03ad50d2ea44074ef51ac48d2988",
     "post_submission_validation_reserve_seconds": 369,
     "prompt_startup_timeout_seconds": 120,
     "python": {
@@ -818,11 +820,11 @@
   "token_control_canary": {
     "path": "paper_bencmark/highambench/metadata/evidence/token_control_live_canary.json",
     "sha256": "b2fb3ae15ed94d4d79f2978b6d8de45f901e24ae6dbeafb9adde6048c381dc2a",
-    "status": "passed"
+    "status": "replacement_required"
   },
   "ultra_orchestration_canary": {
     "path": "paper_bencmark/highambench/metadata/evidence/ultra_orchestration_live_canary.json",
     "sha256": "381e3c35753610a54626cfbcad4798777a8179653a522969bd4822935a1fd909",
-    "status": "passed"
+    "status": "replacement_required"
   }
 }

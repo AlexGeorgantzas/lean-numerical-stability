@@ -66,12 +66,29 @@ def namespace_prefix(args: argparse.Namespace) -> list[str]:
     lean_paths.append("/lean/lib/lean")
 
     if args.condition == "L":
-        if args.library_source is None or args.library_olean is None:
-            raise RuntimeError("condition L requires --library-source and --library-olean")
-        command.extend(("--dir", "/library"))
+        if any(
+            path is None
+            for path in (
+                args.library_source,
+                args.library_root_file,
+                args.library_lookup,
+                args.library_lookup_example,
+                args.library_olean,
+            )
+        ):
+            raise RuntimeError("condition L requires the complete frozen library projection")
+        command.extend(
+            ("--dir", "/library", "--dir", "/library/docs", "--dir", "/library/examples")
+        )
         _bind(command, args.library_source, "/library/NumStability", writable=False)
-        if args.library_root_file is not None:
-            _bind(command, args.library_root_file, "/library/NumStability.lean", writable=False)
+        _bind(command, args.library_root_file, "/library/NumStability.lean", writable=False)
+        _bind(command, args.library_lookup, "/library/docs/LIBRARY_LOOKUP.md", writable=False)
+        _bind(
+            command,
+            args.library_lookup_example,
+            "/library/examples/LibraryLookup.lean",
+            writable=False,
+        )
         _bind(command, args.library_olean, "/library-olean", writable=False)
         lean_paths.insert(0, "/library-olean")
 
@@ -171,6 +188,8 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--shared-root-relative", default="task/shared")
     parser.add_argument("--library-source", type=Path)
     parser.add_argument("--library-root-file", type=Path)
+    parser.add_argument("--library-lookup", type=Path)
+    parser.add_argument("--library-lookup-example", type=Path)
     parser.add_argument("--library-olean", type=Path)
     parser.add_argument("--audit-helper", type=Path)
     parser.add_argument("--submission-module")

@@ -1,7 +1,7 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "faithfulness rebuild of equation (7) with an operational CGS-P family and a uniform second-order remainder",
+    "kind": "reconstruction of equation (7) with an operational CGS-P family and a uniform second-order remainder",
     "performed_by": "Codex"
   },
   "assumptions": [
@@ -34,7 +34,7 @@
   },
   "paper_id": "P11",
   "paper_source": {
-    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram–Schmidt.pdf",
+    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf",
     "sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5"
   },
   "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",

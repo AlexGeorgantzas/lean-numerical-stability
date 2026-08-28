@@ -1,7 +1,7 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "audit-driven reconstruction of the format-derived threshold, row-specific power-of-two diagonal scaling, equation (3.4a), and its exact maximum-coefficient consequence",
+    "kind": "reconstruction of the format-derived threshold, row-specific power-of-two diagonal scaling, equation (3.4a), and its exact maximum-coefficient consequence",
     "performed_by": "Codex"
   },
   "assumptions": [

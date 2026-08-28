@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete 23-page local paper, surveyed every section and labeled result, visually checked the selected source pages, searched the frozen library, and compiled private N/L proofs. After audit_001 exposed a defect in Theorem 3.6, Codex verified the proof gap and counterexample and rebuilt P17-T1 as the project-authorized corrected theorem.",
+    "method": "Codex read the complete 23-page local paper, surveyed every section and labeled result, visually checked the selected source pages, searched the frozen library, and compiled private N/L proofs. Theorem 3.6 contains a proof gap, so P17-T1 uses the project-authorized corrected theorem with the required sign conditions.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P17 source selection and benchmark annotation to Codex."
@@ -109,7 +109,6 @@
   },
   "source_validity": {
     "benchmark_treatment": "P17-T1 uses a project-corrected version of Theorem 3.6 with nonnegative rounding factors and 0 < B <= 1. This is not asserted to be an author-issued correction.",
-    "record": "paper_bencmark/faithfulness_audit/source_validity/P17-T1.md",
     "status": "published-statement-contradicted"
   },
   "title": "Probabilistic Error Analysis of Limited-Precision Stochastic Rounding"

@@ -1525,6 +1525,8 @@ def _verify_provider_command(
         "--condition-prompt-sha256",
         "--library-source-root",
         "--library-root-file",
+        "--library-lookup",
+        "--library-lookup-example",
         "--library-olean-root",
     )
     if any(option in command for option in forbidden):

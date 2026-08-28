@@ -2931,6 +2931,8 @@ def verify_evidence_document(
         "--condition-prompt-sha256",
         "--library-source",
         "--library-root-file",
+        "--library-lookup",
+        "--library-lookup-example",
         "--library-olean",
         "--shared-olean-root",
     ):
@@ -3014,6 +3016,8 @@ def verify_evidence_document(
         "--condition-prompt-sha256",
         "--library-source",
         "--library-root-file",
+        "--library-lookup",
+        "--library-lookup-example",
         "--library-olean",
         "--shared-olean-root",
     ):

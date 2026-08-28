@@ -1,4 +1,0 @@
-interface:
-  display_name: "HighamBench Task Builder"
-  short_description: "Repair audited HighamBench Lean tasks"
-  default_prompt: "Use $highambench-task-builder to repair a failed HighamBench task from its latest faithfulness audit."

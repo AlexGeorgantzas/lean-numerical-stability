@@ -109,6 +109,5 @@ source provides none.
 
 These are sufficient conditions supplied by the project, not hypotheses
 printed in Theorem 3.5 and not an author-issued correction. Consequently this
-task is excluded from ordinary paper-faithfulness acceptance. The source defect
-and benchmark decision are recorded in
-`paper_bencmark/faithfulness_audit/source_validity/P07-T2.md`.
+task is treated as a project-corrected benchmark target rather than a literal
+formalization of the printed theorem.

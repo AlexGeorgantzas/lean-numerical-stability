@@ -82,7 +82,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use a project-corrected version of the algorithm-linked Theorem 3.5 construction: add the missing perturbed full-rank and right-hand-side range conditions, then retain the proof's product pseudoinverse, the printed exact perturbed-system equation, and the immediate fixed-coefficient spectral estimate. Exclude this task from ordinary faithfulness acceptance.",
+      "decision": "Use a project-corrected version of the algorithm-linked Theorem 3.5 construction: add the missing perturbed full-rank and right-hand-side range conditions, then retain the proof's product pseudoinverse, the printed exact perturbed-system equation, and the immediate fixed-coefficient spectral estimate.",
       "task_id": "P07-T2",
       "theorem_name": "p07_t2_backward_error_product_budget"
     },

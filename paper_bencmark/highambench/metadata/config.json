@@ -6,8 +6,8 @@
       "lean_and_mathlib": "frozen_environment",
       "local_file_search": "allowed only inside mounted local files",
       "network": "model tools disabled; the Codex control process retains only its required provider connection",
-      "numstability_access": "frozen read-only source at /library/NumStability and /library/NumStability.lean plus compiled files at /library-olean, already on LEAN_PATH",
-      "prompt_supplement": "condition_prompts/L.md is authenticated and appended by the trusted adapter; it explicitly encourages neutral NumStability discovery and reuse without naming a relevant theorem or module",
+      "numstability_access": "frozen read-only source at /library/NumStability and /library/NumStability.lean, the general navigation index and checked lookup example under /library, plus compiled files at /library-olean already on LEAN_PATH",
+      "prompt_supplement": "condition_prompts/L.md is authenticated and appended by the trusted adapter; it encourages NumStability discovery and reuse without making a task-specific theorem or module recommendation",
       "task_files": "identical controlled files"
     },
     "N": {
@@ -28,7 +28,7 @@
       "task_files": "identical controlled files"
     }
   },
-  "configuration_status": "measurement-ready corpus snapshot; changes require a new snapshot",
+  "configuration_status": "corpus under construction; task metadata and snapshots may be regenerated",
   "failure_reason_priority": [
     "TIME_LIMIT",
     "TOKEN_LIMIT",
@@ -50,12 +50,12 @@
     "bubblewrap_binary_sha256": "d78807229d616606e339c5988392b9e0ab4a6a6998fa51e4590837f426a12fca",
     "bubblewrap_version": "bubblewrap 0.6.1",
     "compiled_environment_summary": "paper_bencmark/highambench/metadata/packages_olean.json",
-    "compiled_environment_summary_sha256": "ae361f8e83f4e65745249c1b7ce415fe91024b32cbe935be34402598ac1f7844",
-    "construction_status_note": "Every manifest task is marked measurement-ready for this snapshot. Construction proofs and reviews must still pass before results are reported.",
+    "compiled_environment_summary_sha256": "73965221a1862b77486d7c78bf190068a16fe37c93b8e9ae22d0efff787bc0ea",
+    "construction_status_note": "The corpus is fixed, but compiled artifact manifests and live canaries require replacement on the frozen Linux host. No measured run may start until a measurement-ready snapshot is created.",
     "container_image_digest": null,
     "container_note": "No OCI image is used. Every attempt receives a fresh bubblewrap filesystem and process namespace. The host system folders are read-only but are not one completely fingerprinted image.",
-    "environment_bundle_sha256": "c9580d9ce26ffa5f01c41f04cb7aa4423d4a37d4439af69bc0a7f4c7ce215070",
-    "environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-c9580d9ce26ffa5f",
+    "environment_bundle_sha256": "98c9aa5571703ca329bca27de73d1e313dc4126abc7e484c58ea7ccd72ad7aeb",
+    "environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-98c9aa5571703ca3",
     "hardware_class": "Slurm allocation of 1 node/1 task/4 CPUs per task on an LXC guest with Intel Xeon 6960P (family 6/model 173/stepping 1); 4 logical threads on 2 physical cores in 1 socket; 32 GiB allocated and cgroup-limited memory; 995999997952 bytes visible to the actual benchmark process",
     "lake_package_name": "numStability",
     "lean_binary_sha256": "3e0d0d3d801675359f2d4cf9815bfdb417b20b92fdd9d48b3b14c95bbae28bbf",
@@ -65,16 +65,16 @@
     "mathlib_repository": "https://github.com/leanprover-community/mathlib4",
     "model_reasoning_effort": "ultra",
     "model_version": "gpt-5.6-sol",
-    "numstability_commit": "45813a95dacf577461bae13f033af0dbc985a225",
-    "numstability_commit_role": "source baseline before benchmark task files were added",
+    "numstability_commit": "4ec1ec874353010ad93cc0bb76370ac321da4681",
+    "numstability_commit_role": "frozen Higham-only release package installed through Lake",
     "numstability_compiled_manifest": "paper_bencmark/highambench/metadata/library_olean.json",
-    "numstability_compiled_manifest_sha256": "bbea1e90bc11605bd3c14b28dc39bf49b7bcb64ab5cf2306841f65b803a6ae2a",
+    "numstability_compiled_manifest_sha256": "4d40cc111bbecde75539e395f074158b892753d15e912f32bf0e7ac82185feeb",
     "numstability_repository": "https://github.com/AlexGeorgantzas/lean-numerical-stability.git",
     "numstability_source_manifest": "paper_bencmark/highambench/metadata/library_source.json",
-    "numstability_source_manifest_sha256": "8b52061f0fafc283acd2363267ebbee2f9c6eb97360c596723b95b27515c7828",
+    "numstability_source_manifest_sha256": "b413b15792b4e8b3a5746201bed5b3d6d3d125fdb1da4c5c0b682d3aca4a15ec",
     "operating_system": "Linux 6.17.0-35-generic x86_64",
     "packages_runtime_manifest": "paper_bencmark/highambench/metadata/packages_runtime.json",
-    "packages_runtime_manifest_sha256": "a2ee0563bc731aa3dba22ed7af0e9bd1322c8c06b51cd9d01bd573282d9c8c31",
+    "packages_runtime_manifest_sha256": "0d41dbd359cf474774049dee16b6ed9ae90f03ad50d2ea44074ef51ac48d2988",
     "prompt_protocol": {
       "N_receives_condition_supplement": false,
       "common_prompt": {
@@ -90,9 +90,9 @@
       ],
       "condition_supplements": {
         "L": {
-          "bytes": 1834,
+          "bytes": 2014,
           "path": "condition_prompts/L.md",
-          "sha256": "24d10a8812290b8abe26091a20fe11368ee0d4d0ab2b545ef6972dff57de941e"
+          "sha256": "1485c8be733b34d63036e22a278e680aca316c426ec71deb694a14dac316446d"
         }
       },
       "relevant_theorem_or_module_hints_supplied": false,
@@ -104,11 +104,11 @@
     "python_version": "3.10.12",
     "release_blocker_note": "This is an amended HighamBench-derived protocol, not a strict reference-PDF HighamBench 0.2 score: condition L uses signposted-library-v1; the backend exposes no demonstrated random seed; no OCI image is frozen; the current user-authorized 5,000,000-token cap replaces the earlier 2,000,000-token project freeze identically for N and L; and an external gate-v6 buffering/reservation layer (not the unchanged Codex binary) supplies a call-atomic token endpoint identically for N and L. Gate v6 accepts an absent upstream Content-Type only after strict complete byte-level SSE authentication and makes provider totals authoritative while explicitly reconciling the structural app-server ledger, suppressed collaboration waits, collaboration-message supersessions, and completed child responses discarded only after an authenticated explicit parent interrupt. Results remain private and are not authorized for public release.",
     "release_manifest": "paper_bencmark/highambench/metadata/release_files.json",
-    "release_manifest_sha256": "583675aeee9cb03b733d4553052d2e1d1cfa4f0f49a03d70d0276a64aadbd734",
+    "release_manifest_sha256": "f56fbe465bf44d36908a70a049d69510b46e21f7eec68379285046baa0f05985",
     "token_control_canary": {
       "path": "paper_bencmark/highambench/metadata/evidence/token_control_live_canary.json",
       "sha256": "b2fb3ae15ed94d4d79f2978b6d8de45f901e24ae6dbeafb9adde6048c381dc2a",
-      "status": "passed"
+      "status": "replacement_required"
     },
     "ultra_orchestration": {
       "accounting_projection_schema_version": 6,
@@ -231,7 +231,7 @@
     "ultra_orchestration_canary": {
       "path": "paper_bencmark/highambench/metadata/evidence/ultra_orchestration_live_canary.json",
       "sha256": "381e3c35753610a54626cfbcad4798777a8179653a522969bd4822935a1fd909",
-      "status": "passed"
+      "status": "replacement_required"
     }
   },
   "isolation": {
@@ -285,42 +285,6 @@
     "repetitions_per_task": 3,
     "runs": 360,
     "tasks": 60
-  },
-  "private_measurement_review_override": {
-    "enabled": true,
-    "fresh_context_reviews_required": true,
-    "ignored_rejection_task_ids": [
-      "P06-T1",
-      "P07-T1",
-      "P08-T1",
-      "P09-T1",
-      "P10-T1",
-      "P11-T1",
-      "P12-T1",
-      "P13-T1",
-      "P14-T1",
-      "P15-T1",
-      "P17-T1",
-      "P18-T1",
-      "P19-T1"
-    ],
-    "note": "The project owner directed that the fresh-context reviews be retained but their exact-target novelty rejections be ignored for this private, pre-publication measurement.",
-    "review_records": [
-      {
-        "path": "metadata/reviews/independent_formal_review_20260807_signposted.json",
-        "record_status": "current_with_blocking_defects",
-        "sha256": "ddb24c9a27396bbb07aa5457461bfe17f6327b8094e18003781891d4433a53f8",
-        "task_count": 60
-      },
-      {
-        "path": "metadata/reviews/independent_source_review_20260807_signposted.json",
-        "record_status": "current_with_blocking_defects",
-        "sha256": "22321d23cbe12d8db3bce5d8002aaeedbbe72466d8a18538ebb9d344ccdee04e",
-        "task_count": 60
-      }
-    ],
-    "scope": "exact-target novelty rejections only",
-    "source_fidelity_required": true
   },
   "repetition_note": "These are fixed repetition IDs, not random seeds. No backend seed support has been established. Record a real backend seed before evaluation if the chosen backend supports and obeys one.",
   "repetitions": [

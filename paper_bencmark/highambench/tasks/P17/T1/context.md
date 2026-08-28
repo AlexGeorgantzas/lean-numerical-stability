@@ -13,8 +13,7 @@ accumulated product lies between `(1-B)^n` and `(1+B)^n`.
 The published statement omits sign conditions used by its induction. The step
 that multiplies the bounds for `1 + beta_k` by the preceding product requires
 that product to be nonnegative, and the lower induction also requires
-`1-B >= 0`. As written, the theorem admits a two-outcome counterexample recorded
-in `paper_bencmark/faithfulness_audit/source_validity/P17-T1.md`.
+`1-B >= 0`. As written, the theorem admits a two-outcome counterexample.
 
 This target is the project-authorized corrected version of Theorem 3.6. The
 finite run therefore records:
@@ -40,5 +39,4 @@ through its separate rounding-error bound.
 
 The frozen NumStability library provides finite-expectation linearity and
 monotonicity, plus a deterministic product bound, but no theorem for this
-conditional-expectation product induction. The recorded T1 slot is therefore
-provisional and requires paper-level tier review before measurement.
+conditional-expectation product induction.

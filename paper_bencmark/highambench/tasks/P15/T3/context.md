@@ -8,7 +8,7 @@ PDF SHA-256 is
 `a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7`.
 
 The selected result is Lemma 3.3, equations (3.10)--(3.11), on PDF pages
-9--10 (printed pages 959--960). This selection replaces the previously audited
+9--10 (printed pages 959--960). This selection replaces the previous
 Theorem 4.5 task with the project owner's approval.
 
 ## Source statement

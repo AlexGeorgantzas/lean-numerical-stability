@@ -1,16 +1,7 @@
-name = "numStability"
-version = "0.1.0"
-defaultTargets = ["NumStability"]
-testDriver = "NumStabilityTest"
-weakLeanArgs = ["-j", "1"]
-
-[[lean_lib]]
-name = "NumStability"
-
-[[lean_lib]]
-name = "NumStabilityTest"
+name = "highamBenchExecution"
+version = "0.2.0"
 
 [[require]]
-name = "mathlib"
-scope = "leanprover-community"
-rev = "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b"
+name = "numStability"
+git = "https://github.com/AlexGeorgantzas/lean-numerical-stability.git"
+rev = "4ec1ec874353010ad93cc0bb76370ac321da4681"
