@@ -3,7 +3,7 @@
 .DS_Store
 __pycache__/
 /.agents/
-/.codex/
+/.codex/*
 
 # Local auto-formalization workspace. Do not commit or push.
 /chapter_splitting/
@@ -23,4 +23,33 @@ References/
 /scripts/
 /docs/chapter13/
 /paper_bencmark/scratch_pad/
+# Preserve only the audited HighamBench measurement code; keep all results private.
+!/paper_bencmark/scratch_pad/
+/paper_bencmark/scratch_pad/*
+!/paper_bencmark/scratch_pad/aggregate_highambench_pair_shards.py
+!/paper_bencmark/scratch_pad/inventory_highambench_host.py
+!/paper_bencmark/scratch_pad/manage_highambench_p11_campaign.py
+!/paper_bencmark/scratch_pad/manage_highambench_pair_shard.py
+!/paper_bencmark/scratch_pad/probe_highambench_pair_node.sh
+!/paper_bencmark/scratch_pad/report_highambench_pair_shards.py
+!/paper_bencmark/scratch_pad/run_highambench_canary_bootstrap_actual_ultra.sh
+!/paper_bencmark/scratch_pad/run_highambench_p01_actual_ultra.sh
+!/paper_bencmark/scratch_pad/run_highambench_p11_actual_ultra.sh
+!/paper_bencmark/scratch_pad/run_highambench_pair_shard_actual_ultra.sh
+!/paper_bencmark/scratch_pad/run_highambench_provider_gate_canaries_v7_v3.sh
+!/paper_bencmark/scratch_pad/test_highambench_pair_shard_report.py
+!/paper_bencmark/scratch_pad/test_highambench_pair_shards.py
 /paper_bencmark/reference_papers/
+
+# Track exactly one repository-local skill for HighamBench experiments.
+!/.codex/skills/
+/.codex/skills/*
+!/.codex/skills/run-highambench-experiments/
+/.codex/skills/run-highambench-experiments/*
+!/.codex/skills/run-highambench-experiments/SKILL.md
+!/.codex/skills/run-highambench-experiments/agents/
+/.codex/skills/run-highambench-experiments/agents/*
+!/.codex/skills/run-highambench-experiments/agents/openai.yaml
+!/.codex/skills/run-highambench-experiments/references/
+/.codex/skills/run-highambench-experiments/references/*
+!/.codex/skills/run-highambench-experiments/references/operations.md

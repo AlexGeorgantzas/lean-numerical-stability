@@ -29,6 +29,18 @@ MATHLIB_COMMIT = "2" * 40
 NUMSTABILITY_COMMIT = "3" * 40
 P01_PAPER_SHA256 = "4" * 64
 P02_PAPER_SHA256 = "5" * 64
+_PROVIDER_TRANSPORT_FIXTURE: dict[str, object] | None = None
+
+
+def _provider_transport_fixture() -> dict[str, object]:
+    global _PROVIDER_TRANSPORT_FIXTURE
+    if _PROVIDER_TRANSPORT_FIXTURE is None:
+        _PROVIDER_TRANSPORT_FIXTURE = (
+            run_matrix.ultra_canary.runner.authenticate_provider_transport_provenance(
+                [str(run_matrix.PROVIDER_GATE_PROVENANCE_INTERPRETER)]
+            )
+        )
+    return json.loads(json.dumps(_PROVIDER_TRANSPORT_FIXTURE))
 
 
 def _valid_sse_call_fixture(*, content_type_present: bool = True) -> dict[str, object]:
@@ -213,6 +225,12 @@ def _allocation_freeze_check() -> dict[str, object]:
         "environment_bundle_sha256": "a" * 64,
         "release_manifest": {"sha256": "b" * 64},
         "host_class": _allocation_host_class(),
+        "hardware_matching_policy": json.loads(
+            json.dumps(run_matrix.HARDWARE_MATCHING_POLICY)
+        ),
+        "provider_token_gate": {
+            "transport_provenance": _provider_transport_fixture(),
+        },
         "agent": {
             "id": "codex-cli",
             "version": "1.2.3",
@@ -1223,6 +1241,7 @@ class FrozenEnvironmentFixture:
                     run_matrix.ultra_canary.runner.PROVIDER_GATE_UPSTREAM_RESPONSE_CONTRACT
                 ),
             },
+            "transport_provenance": _provider_transport_fixture(),
         }
         ultra_orchestration = run_matrix.ultra_orchestration_record()
 
@@ -1423,6 +1442,9 @@ class FrozenEnvironmentFixture:
             "prompt_protocol": prompt_protocol,
             "allowed_tools": ["shell", "Lean"],
             "hardware_class": "fixture host",
+            "hardware_matching_policy": json.loads(
+                json.dumps(run_matrix.HARDWARE_MATCHING_POLICY)
+            ),
             "operating_system": "fixture",
             "bubblewrap_binary_sha256": sha256_file(Path("/bin/bwrap")),
             "bubblewrap_version": "bubblewrap 0.6.1",
@@ -1575,6 +1597,9 @@ class FrozenEnvironmentFixture:
                 "online_logical_cpus": 1,
                 "visible_memory_bytes": 1,
             },
+            "hardware_matching_policy": json.loads(
+                json.dumps(run_matrix.HARDWARE_MATCHING_POLICY)
+            ),
             "token_control": token_control,
             "token_control_canary": canary_descriptor,
             "provider_token_gate": self.provider_gate_record,
@@ -1774,6 +1799,146 @@ class RunMatrixTests(unittest.TestCase):
         ):
             run_matrix.verify_provider_usage_reconciliation(
                 malformed,
+                expected_thread_accounting=thread_accounting,
+                expected_root_thread_id="root-thread",
+                expected_appserver_response_ledger=direct_ledger,
+            )
+
+    def test_provider_reconciliation_v3_supersession_reaches_direct_through_wait(
+        self,
+    ) -> None:
+        zero = {field: 0 for field in run_matrix.PROVIDER_USAGE_FIELDS}
+        direct_usage = {**zero, "input_tokens": 20, "total_tokens": 20}
+        suppressed_usage = {**zero, "input_tokens": 7, "total_tokens": 7}
+        superseded_usage = {**zero, "input_tokens": 11, "total_tokens": 11}
+        provider_usage = {**zero, "input_tokens": 38, "total_tokens": 38}
+        value = {
+            "schema_version": 3,
+            "provider_response_count": 3,
+            "appserver_response_count": 1,
+            "suppressed_collaboration_wait_response_count": 1,
+            "superseded_by_collaboration_message_response_count": 1,
+            "discarded_after_explicit_child_interrupt_response_count": 0,
+            "provider_usage": provider_usage,
+            "appserver_usage": direct_usage,
+            "suppressed_collaboration_wait_usage": suppressed_usage,
+            "superseded_by_collaboration_message_usage": superseded_usage,
+            "discarded_after_explicit_child_interrupt_usage": zero,
+            "provider_response_ids": [
+                "superseded-response",
+                "suppressed-response",
+                "direct-response",
+            ],
+            "appserver_response_ids": ["direct-response"],
+            "suppressed_collaboration_wait_response_ids": [
+                "suppressed-response"
+            ],
+            "suppressed_collaboration_wait_evidence": [
+                {
+                    "response_id": "suppressed-response",
+                    "provider_call_id": "provider-call-2",
+                    "thread_id": "root-thread",
+                    "turn_id": "root-turn",
+                    "successor_response_id": "direct-response",
+                    "successor_call_id": "provider-call-3",
+                    "agent_message_item_id": "agent-final-2",
+                    "agent_message_sha256": "b" * 64,
+                    "agent_message_author": "/root/child",
+                    "agent_message_recipient": "/root",
+                    "agent_message_observed_at_unix_ns": 4,
+                    "agent_message_observed_at_monotonic_ns": 5,
+                }
+            ],
+            "superseded_by_collaboration_message_response_ids": [
+                "superseded-response"
+            ],
+            "superseded_by_collaboration_message_evidence": [
+                {
+                    "response_id": "superseded-response",
+                    "provider_call_id": "provider-call-1",
+                    "thread_id": "root-thread",
+                    "turn_id": "root-turn",
+                    "successor_response_id": "suppressed-response",
+                    "successor_call_id": "provider-call-2",
+                    "collaboration_messages": [
+                        {
+                            "item_id": "agent-message-1",
+                            "item_sha256": "a" * 64,
+                            "author": "/root/child",
+                            "recipient": "/root",
+                            "observed_at_unix_ns": 2,
+                            "observed_at_monotonic_ns": 3,
+                        }
+                    ],
+                }
+            ],
+            "discarded_after_explicit_child_interrupt_response_ids": [],
+            "discarded_after_explicit_child_interrupt_evidence": [],
+        }
+        thread_accounting = [
+            {
+                "thread_id": "root-thread",
+                "parent_thread_id": None,
+                "agent_path": "root",
+            },
+            {
+                "thread_id": "child-thread",
+                "parent_thread_id": "root-thread",
+                "agent_path": "/root/child",
+            },
+        ]
+        direct_ledger = [
+            {
+                "response_id": "direct-response",
+                "thread_id": "root-thread",
+                "turn_id": "root-turn",
+                "provider_gate_call": {
+                    "response_id": "direct-response",
+                    "call_id": "provider-call-3",
+                    "request_metadata": {
+                        "thread_id": "root-thread",
+                        "turn_id": "root-turn",
+                        "request_kind": "turn",
+                    },
+                },
+            }
+        ]
+        verified = run_matrix.verify_provider_usage_reconciliation(
+            value,
+            expected_thread_accounting=thread_accounting,
+            expected_root_thread_id="root-thread",
+            expected_appserver_response_ledger=direct_ledger,
+        )
+        self.assertEqual(
+            verified["suppressed_collaboration_wait_response_ids"],
+            ["suppressed-response"],
+        )
+
+        skipped_wait = json.loads(json.dumps(value))
+        superseded = skipped_wait[
+            "superseded_by_collaboration_message_evidence"
+        ][0]
+        superseded.update(
+            {
+                "successor_response_id": "direct-response",
+                "successor_call_id": "provider-call-3",
+            }
+        )
+        with self.assertRaisesRegex(BenchmarkToolError, "immediate same-route"):
+            run_matrix.verify_provider_usage_reconciliation(
+                skipped_wait,
+                expected_thread_accounting=thread_accounting,
+                expected_root_thread_id="root-thread",
+                expected_appserver_response_ledger=direct_ledger,
+            )
+
+        mismatched_wait_call = json.loads(json.dumps(value))
+        mismatched_wait_call["suppressed_collaboration_wait_evidence"][0][
+            "successor_call_id"
+        ] = "wrong-provider-call"
+        with self.assertRaisesRegex(BenchmarkToolError, "earliest direct same-route"):
+            run_matrix.verify_provider_usage_reconciliation(
+                mismatched_wait_call,
                 expected_thread_accounting=thread_accounting,
                 expected_root_thread_id="root-thread",
                 expected_appserver_response_ledger=direct_ledger,
@@ -2332,6 +2497,7 @@ class RunMatrixTests(unittest.TestCase):
             first["path"], "allocation_hardware/slurm-1505507.json"
         )
         hardware = read_json(path)
+        self.assertEqual(hardware["schema_version"], 2)
         self.assertEqual(hardware["job_id"], "1505507")
         self.assertEqual(hardware["hostname"], "watgpu108")
         self.assertEqual(hardware["slurm"]["node_list"], "watgpu108")
@@ -2354,6 +2520,20 @@ class RunMatrixTests(unittest.TestCase):
         )
         self.assertFalse(hardware["scheduler_sharing"]["exclusive"])
         self.assertEqual(
+            hardware["hardware_matching_policy"],
+            run_matrix.HARDWARE_MATCHING_POLICY,
+        )
+        self.assertEqual(
+            hardware["host_class_sha256"],
+            run_matrix.canonical_document_digest(hardware["host_class"]),
+        )
+        self.assertEqual(
+            hardware["provider_transport_provenance_sha256"],
+            run_matrix.canonical_document_digest(
+                hardware["provider_transport_provenance"]
+            ),
+        )
+        self.assertEqual(
             hardware["measurement_environment"]["freeze_check_sha256"],
             run_matrix.canonical_document_digest(freeze),
         )
@@ -2372,6 +2552,308 @@ class RunMatrixTests(unittest.TestCase):
         changed["job_id"] = "1505508"
         with self.assertRaisesRegex(Exception, "different allocation"):
             run_matrix._bind_allocation_hardware(attempt, changed)
+
+    def test_pair_policy_allows_only_enumerated_cross_allocation_variation(self) -> None:
+        reference = _allocation_freeze_check()
+        candidate = json.loads(json.dumps(reference))
+        candidate["host_class"].update(  # type: ignore[union-attr]
+            {
+                "cpu_vendor": "AuthenticAMD",
+                "cpu_family": 25,
+                "cpu_model": 17,
+                "cpu_stepping": 1,
+                "processor": "AMD EPYC 9354",
+                "visible_memory_bytes": 256 * 1024**3,
+            }
+        )
+        candidate["provider_token_gate"]["transport_provenance"]["resolver"][  # type: ignore[index]
+            "hosts_file"
+        ]["sha256"] = "9" * 64
+        run_matrix.verify_pair_policy_compatible_freeze_checks(reference, candidate)
+
+        invariant = json.loads(json.dumps(candidate))
+        invariant["host_class"]["allocated_physical_cores"] = 4
+        with self.assertRaisesRegex(Exception, "invariant host field"):
+            run_matrix.verify_pair_policy_compatible_freeze_checks(reference, invariant)
+
+        transport = json.loads(json.dumps(candidate))
+        transport["provider_token_gate"]["transport_provenance"]["resolver"][
+            "gai_conf"
+        ]["sha256"] = "8" * 64
+        with self.assertRaisesRegex(Exception, "outside.*allowlist"):
+            run_matrix.verify_pair_policy_compatible_freeze_checks(reference, transport)
+
+        malformed_hosts = json.loads(json.dumps(candidate))
+        malformed_hosts["provider_token_gate"]["transport_provenance"]["resolver"][
+            "hosts_file"
+        ]["extra"] = "not allowed"
+        with self.assertRaisesRegex(Exception, "missing or extra field"):
+            run_matrix.verify_pair_policy_compatible_freeze_checks(
+                reference, malformed_hosts
+            )
+
+    @mock.patch.object(
+        run_matrix, "authenticate_runner_provider_gate_summary", return_value={}
+    )
+    def test_historical_final_and_pair_commit_are_pair_policy_authenticated(
+        self, _gate: mock.Mock
+    ) -> None:
+        results = self.base / "pair-results"
+        (results / "records").mkdir(parents=True)
+        reference = _allocation_freeze_check()
+        historical = json.loads(json.dumps(reference))
+        historical["host_class"]["cpu_model"] = 17
+        historical["host_class"]["processor"] = "AMD EPYC 9354"
+        historical["provider_token_gate"]["transport_provenance"]["resolver"][
+            "hosts_file"
+        ]["sha256"] = "9" * 64
+        allocation = _historical_allocation_descriptor(results, historical)
+        assignments = [_assignment_fixture(), _assignment_fixture(condition="L")]
+        for assignment in assignments:
+            record = _sealed_final_record(assignment, historical, allocation)
+            write_json(results / "records" / f"{assignment['run_id']}.json", record)
+
+        authenticated = run_matrix._authenticate_existing_final_records(
+            results, results / "records", assignments, reference
+        )
+        self.assertEqual(len(authenticated), 2)
+        commit = run_matrix.create_or_verify_pair_commit(
+            results, assignments, reference
+        )
+        self.assertEqual(commit["pair_id"], "P01-T1-rep-01")
+        self.assertEqual(commit["allocation_hardware"], allocation)
+        self.assertEqual(
+            commit[run_matrix.PAIR_COMMIT_SHA256_FIELD],
+            run_matrix.pair_commit_digest(commit),
+        )
+        self.assertEqual(
+            run_matrix.verify_pair_commit(results, assignments, reference), commit
+        )
+        self.assertEqual(
+            stat.S_IMODE((results / run_matrix.PAIR_COMMIT_PATH).stat().st_mode),
+            0o444,
+        )
+        run_matrix._write_pair_complete_status(
+            results, "P01-T1-rep-01", commit
+        )
+        status = read_json(results / "last_chunk_status.json")
+        self.assertEqual(status["status"], "stopped_after_requested_pair")
+        self.assertEqual(status["pair_commit"]["path"], "pair_commit.json")
+
+        split = json.loads(
+            json.dumps(authenticated["P01-T1-rep-01-N"]["allocation_hardware"])
+        )
+        split["job_id"] = "1505508"
+        with self.assertRaisesRegex(Exception, "half-finished pair.*another allocation"):
+            run_matrix._verify_partial_pairs_use_current_allocation(
+                assignments,
+                {"P01-T1-rep-01-N": authenticated["P01-T1-rep-01-N"]},
+                split,
+            )
+
+    def test_only_pair_selector_is_exact_and_canonical(self) -> None:
+        assignments = [
+            _assignment_fixture(),
+            _assignment_fixture(condition="L"),
+            _assignment_fixture(
+                run_id="P01-T1-rep-02-N", order_index=3
+            )
+            | {"pair_id": "P01-T1-rep-02", "repetition_id": "rep-02"},
+            _assignment_fixture(
+                condition="L", run_id="P01-T1-rep-02-L", order_index=4
+            )
+            | {"pair_id": "P01-T1-rep-02", "repetition_id": "rep-02"},
+        ]
+        selected = run_matrix._assignments_for_only_pair(
+            assignments, "P01-T1-rep-02"
+        )
+        self.assertEqual([item["condition"] for item in selected], ["N", "L"])
+        with self.assertRaisesRegex(Exception, "no exact canonical N/L pair"):
+            run_matrix._assignments_for_only_pair(assignments, "P01-T1-rep-99")
+
+    @mock.patch.object(
+        run_matrix, "authenticate_runner_provider_gate_summary", return_value={}
+    )
+    def test_only_pair_run_commits_deadline_stops_and_split_resume_rejects(
+        self, _gate: mock.Mock
+    ) -> None:
+        root = self.base / "pair-benchmark"
+        project = self.base / "pair-project"
+        for directory in (
+            root / "metadata",
+            project,
+            self.base / "pair-toolchain",
+            self.base / "pair-packages",
+            self.base / "pair-packages-runtime",
+            self.base / "pair-shared",
+            self.base / "pair-library-source",
+            self.base / "pair-library-olean",
+        ):
+            directory.mkdir(parents=True, exist_ok=True)
+        for path in (
+            self.base / "pair-codex",
+            self.base / "pair-auth",
+            self.base / "pair-offline",
+            self.base / "pair-root.lean",
+        ):
+            path.write_text("fixture\n", encoding="utf-8")
+        write_json(root / "metadata" / "manifest.json", {})
+        write_json(
+            root / "metadata" / "config.json",
+            {"repetitions": [{"id": "rep-01", "backend_seed": None}]},
+        )
+        write_json(root / "metadata" / "run_order.json", {})
+        assignments = [_assignment_fixture(), _assignment_fixture(condition="L")]
+        freeze = _allocation_freeze_check()
+
+        def arguments(results: Path, *, allocation_end_epoch: int) -> argparse.Namespace:
+            return argparse.Namespace(
+                benchmark_root=root,
+                project_root=project,
+                results_root=results,
+                codex=self.base / "pair-codex",
+                auth_file=self.base / "pair-auth",
+                offline_shell=self.base / "pair-offline",
+                library_root_file=self.base / "pair-root.lean",
+                toolchain_root=self.base / "pair-toolchain",
+                packages_root=self.base / "pair-packages",
+                packages_runtime_root=self.base / "pair-packages-runtime",
+                shared_olean_root=self.base / "pair-shared",
+                library_source=self.base / "pair-library-source",
+                library_olean=self.base / "pair-library-olean",
+                time_limit_seconds=1800,
+                allocation_end_epoch=allocation_end_epoch,
+                allocation_guard_seconds=600,
+                stop_after_paper=None,
+                only_pair_id="P01-T1-rep-01",
+                force=False,
+            )
+
+        def fake_command(
+            _args: argparse.Namespace,
+            assignment: dict[str, object],
+            attempt_jsonl: Path,
+            attempt_output: Path,
+            _base: Path,
+        ) -> list[str]:
+            return [
+                "fake-pair",
+                json.dumps(assignment),
+                str(attempt_output),
+                str(attempt_jsonl),
+            ]
+
+        def fake_hosted_run(
+            command: list[str], **_kwargs: object
+        ) -> subprocess.CompletedProcess:
+            assignment = json.loads(command[1])
+            output = Path(command[2])
+            transcript = Path(command[3])
+            active = read_json(output.parents[1] / run_matrix.ACTIVE_RUN_MARKER)
+            record = _sealed_final_record(
+                assignment, freeze, active["allocation_hardware"]
+            )
+            for field in (
+                "allocation_hardware",
+                run_matrix.MATRIX_ATTEMPT_FIELD,
+                run_matrix.MATRIX_RECORD_SHA256_FIELD,
+            ):
+                record.pop(field)
+            write_json(output, record)
+            transcript.write_text("{}\n", encoding="utf-8")
+            return subprocess.CompletedProcess(command, 0)
+
+        def invoke(
+            args: argparse.Namespace,
+            *,
+            job_id: str,
+            hosted_side_effect: object = fake_hosted_run,
+        ) -> tuple[int, mock.Mock]:
+            with mock.patch.object(
+                run_matrix, "verify_frozen_run_environment", return_value=freeze
+            ), mock.patch.object(
+                run_matrix, "load_task_catalog", return_value={"P01-T1": {}}
+            ), mock.patch.object(
+                run_matrix, "configured_repetition_ids", return_value=["rep-01"]
+            ), mock.patch.object(
+                run_matrix, "_validate_planned_counts"
+            ), mock.patch.object(
+                run_matrix,
+                "assignments_from_order",
+                return_value=json.loads(json.dumps(assignments)),
+            ), mock.patch.object(
+                run_matrix, "runner_command", side_effect=fake_command
+            ), mock.patch.object(
+                run_matrix.subprocess, "run", side_effect=hosted_side_effect
+            ) as hosted, mock.patch.dict(
+                os.environ, {run_matrix.SLURM_JOB_ID_ENV: job_id}
+            ), mock.patch.object(
+                run_matrix.platform, "node", return_value="watgpu108"
+            ), mock.patch.object(
+                run_matrix, "_current_cpu_affinity", return_value=[8, 9, 56, 57]
+            ), mock.patch.object(
+                run_matrix,
+                "_slurm_scheduler_sharing",
+                return_value=_scheduler_sharing(),
+            ), mock.patch.object(
+                run_matrix,
+                "_slurm_gpu_provenance",
+                return_value=_slurm_gpu_provenance(),
+            ):
+                return run_matrix.run(args), hosted
+
+        successful = self.base / "pair-success"
+        # Exactly the complete-pair envelope is available at admission.  A
+        # deliberately much later clock value before the mate would fail an
+        # erroneous second deadline check, but atomic pair mode must continue.
+        with mock.patch.object(
+            run_matrix.time, "time", side_effect=[1000.0, 1001.0, 10_000.0]
+        ):
+            exit_code, hosted = invoke(
+                arguments(successful, allocation_end_epoch=6418),
+                job_id="1505507",
+            )
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(hosted.call_count, 2)
+        status = read_json(successful / "last_chunk_status.json")
+        self.assertEqual(status["status"], "stopped_after_requested_pair")
+        self.assertEqual(status["completed_runs"], 2)
+        commit = read_json(successful / run_matrix.PAIR_COMMIT_PATH)
+        self.assertEqual(commit["allocation_hardware"]["job_id"], "1505507")
+        self.assertEqual(
+            commit[run_matrix.PAIR_COMMIT_SHA256_FIELD],
+            run_matrix.pair_commit_digest(commit),
+        )
+
+        deadline = self.base / "pair-deadline"
+        exit_code, hosted = invoke(
+            arguments(deadline, allocation_end_epoch=1), job_id="1505508"
+        )
+        self.assertEqual(exit_code, run_matrix.CHUNK_INCOMPLETE_EXIT_CODE)
+        self.assertEqual(hosted.call_count, 0)
+        self.assertEqual(list((deadline / "records").glob("*.json")), [])
+        self.assertEqual(
+            read_json(deadline / "last_chunk_status.json")["status"],
+            "stopped_before_allocation_deadline",
+        )
+
+        split = self.base / "pair-split"
+        (split / "records").mkdir(parents=True)
+        old_allocation = _historical_allocation_descriptor(
+            split, freeze, job_id="1505507"
+        )
+        write_json(
+            split / "records" / "P01-T1-rep-01-N.json",
+            _sealed_final_record(assignments[0], freeze, old_allocation),
+        )
+        with self.assertRaisesRegex(Exception, "half-finished pair.*another allocation"):
+            invoke(
+                arguments(split, allocation_end_epoch=4_102_444_800),
+                job_id="1505508",
+                hosted_side_effect=AssertionError(
+                    "hosted subprocess must not start for a split pair"
+                ),
+            )
 
     def test_allocation_hardware_record_rejects_tamper_and_stale_freeze(self) -> None:
         freeze = _allocation_freeze_check()
@@ -3612,6 +4094,181 @@ class RunMatrixTests(unittest.TestCase):
         (tree / "alias").symlink_to("missing")
         with self.assertRaisesRegex(Exception, "broken or external symlink"):
             run_matrix.exact_tree_digest(tree)
+
+    def test_t4_task_catalog_binds_ordered_plural_identity(self) -> None:
+        root = self.base / "catalog" / "paper_bencmark" / "highambench"
+        target_dir = root / "tasks" / "P01" / "T4"
+        target_dir.mkdir(parents=True)
+        (target_dir / "Target.lean").write_text(
+            "theorem first : True := by sorry\n", encoding="utf-8"
+        )
+        (target_dir / "context.md").write_text("context\n", encoding="utf-8")
+        required = ["HighamBench.first", "HighamBench.second"]
+        hole = {
+            "placeholder_order": 1,
+            "placeholder_id": "H001",
+            "declaration_id": "D001",
+            "lean_name": "HighamBench.first",
+            "marker": "-- PROOF_START H001",
+            "line": 2,
+            "column": 3,
+        }
+        task_file = "paper_bencmark/highambench/tasks/P01/T4/Target.lean"
+        write_json(
+            target_dir / "task.json",
+            {
+                "task_id": "P01-T4",
+                "paper_id": "P01",
+                "tier": "T4",
+                "paper_source": {"sha256": P01_PAPER_SHA256},
+                "context_file": "paper_bencmark/highambench/tasks/P01/T4/context.md",
+                "declarations": [
+                    {"lean_name": required[0]},
+                    {"lean_name": required[1]},
+                ],
+                "validation": {
+                    "controlled_target_file": task_file,
+                    "required_declarations": required,
+                    "controlled_sorries": [hole],
+                },
+            },
+        )
+        write_json(
+            root / "tasks" / "P01" / "paper.json",
+            {
+                "paper_id": "P01",
+                "source": {"sha256": P01_PAPER_SHA256},
+                "included_tasks": ["P01-T4"],
+            },
+        )
+        controlled = root / "metadata" / "controlled" / "P01-T4.json"
+        controlled.parent.mkdir(parents=True)
+        write_json(controlled, {"task_id": "P01-T4"})
+        shared = [
+            "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+            "paper_bencmark/highambench/shared/HighamBench/P01Definitions.lean",
+        ]
+        manifest = {
+            "corpus": {"paper_count": 1, "paper_ids": ["P01"]},
+            "controlled_shared_files": [
+                {"path": shared[0], "paper_ids": ["P01"], "sha256": "a" * 64},
+                {"path": shared[1], "paper_ids": ["P01"], "sha256": "b" * 64},
+            ],
+            "papers": [
+                {
+                    "paper_id": "P01",
+                    "source": {"sha256": P01_PAPER_SHA256},
+                    "targets": [
+                        {
+                            "task_id": "P01-T4",
+                            "tier": "T4",
+                            "availability": "available",
+                            "lean_target": {
+                                "file": task_file,
+                                "required_declarations": required,
+                                "shared_files": shared,
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
+        with mock.patch.object(
+            run_matrix,
+            "validate_task_source_tags",
+            return_value={"measurement_ready": True},
+        ):
+            catalog = run_matrix.load_task_catalog(root, manifest)
+        self.assertEqual(catalog["P01-T4"]["required_declarations"], required)
+        self.assertEqual(
+            catalog["P01-T4"]["proof_declarations"], ["HighamBench.first"]
+        )
+        self.assertEqual(catalog["P01-T4"]["controlled_sorries"], [hole])
+
+    def test_t4_runner_command_routes_plural_validator_and_audit_fields(self) -> None:
+        root = TOOLS.parent
+        args = argparse.Namespace(
+            benchmark_root=root,
+            project_root=self.base / "project",
+            results_root=self.base / "results",
+            toolchain_root=self.base / "toolchain",
+            packages_runtime_root=self.base / "packages-runtime",
+            shared_olean_root=self.base / "shared-olean",
+            library_source=self.base / "NumStability",
+            library_root_file=self.base / "NumStability.lean",
+            library_olean=self.base / "library-olean",
+            codex=self.base / "codex",
+            auth_file=self.base / "auth.json",
+            offline_shell=self.base / "offline-shell",
+            model="test-model",
+            reasoning_effort="medium",
+            token_limit=100,
+            time_limit_seconds=60,
+            prompt_startup_timeout_seconds=20,
+            agent_id="agent",
+            agent_version="1",
+            environment_id="env",
+            freeze_check_json="{}",
+            agent_network_verified=True,
+            token_control_verified=True,
+        )
+        hole = {
+            "placeholder_order": 1,
+            "placeholder_id": "H001",
+            "declaration_id": "D001",
+            "lean_name": "HighamBench.first",
+            "marker": "-- PROOF_START H001",
+            "line": 2,
+            "column": 3,
+        }
+        required = ["HighamBench.first", "HighamBench.second"]
+        assignment = {
+            "task_id": "P01-T4",
+            "paper_id": "P01",
+            "paper_sha256": P01_PAPER_SHA256,
+            "tier": "T4",
+            "required_declarations": required,
+            "proof_declarations": ["HighamBench.first"],
+            "controlled_sorries": [hole],
+            "target_dir": "tasks/P01/T4",
+            "target_file": "tasks/P01/T4/Target.lean",
+            "context_file": "tasks/P01/T4/context.md",
+            "condition": "N",
+            "condition_order": ["N", "L"],
+            "order_index": 1,
+            "repetition_id": "rep-01",
+            "pair_id": "P01-T4-rep-01",
+            "run_id": "P01-T4-rep-01-N",
+        }
+        command = run_matrix.runner_command(
+            args,
+            assignment,
+            self.base / "attempt.jsonl",
+            self.base / "attempt.json",
+            self.base / "base",
+        )
+        self.assertEqual(
+            [
+                command[index + 1]
+                for index, value in enumerate(command)
+                if value == "--required-declaration"
+            ],
+            required,
+        )
+        self.assertEqual(
+            json.loads(command[command.index("--controlled-sorry-json") + 1]),
+            hole,
+        )
+        self.assertEqual(
+            command[command.index("--target-theorem") + 1], "HighamBench.first"
+        )
+        audit = json.loads(command[command.index("--audit-command-json") + 1])
+        self.assertIn("--audit-pairs-file", audit)
+        self.assertEqual(
+            audit[audit.index("--audit-pairs-file") + 1], "{audit_pairs_file}"
+        )
+        self.assertNotIn("--target-theorem", audit)
+        self.assertNotIn("--expected-theorem", audit)
 
     def test_task_catalog_rejects_construction_state_before_runs(self) -> None:
         root = self.base / "benchmark"

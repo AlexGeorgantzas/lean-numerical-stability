@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest import mock
 
 
@@ -30,6 +31,9 @@ from render_report import (  # noqa: E402
     _validate_ultra_accounting_summary,
     _validate_ultra_boundary_summary,
     _validated_prompt_protocol,
+)
+from paper_bencmark.highambench.tools.tests.test_task_tags import (  # noqa: E402
+    base_t4_task,
 )
 from paper_bencmark.highambench.tools.tests.test_render_p01_report import (  # noqa: E402
     install_accepted_provider_gate_fixture,
@@ -70,7 +74,9 @@ def natural_projection_evidence() -> dict:
         render_report_module.ultra_canary.codex_isolated.ultra_fork_policy_static_record()
     )
     projection = {
-        "accounting_projection_schema_version": 4,
+        "accounting_projection_schema_version": (
+            render_report_module.ACCOUNTING_PROJECTION_SCHEMA_VERSION
+        ),
         "spawn_binding_source": "raw_function_call.call_id=subAgentActivity.id",
         "raw_spawn_call_ids": [],
         "activity_spawn_call_ids": [],
@@ -2154,6 +2160,90 @@ end HighamBench
         write_json(self.analysis_path, analysis)
 
 
+class TierFourReportBranchTests(unittest.TestCase):
+    def test_t4_coverage_uses_strict_claim_scoped_metadata(self) -> None:
+        task = base_t4_task()
+        task["classification_frozen_before_runs"] = True
+        rows = render_report_module._t4_coverage_rows([task])
+        self.assertEqual(
+            rows,
+            [
+                {
+                    "paper_id": "P01",
+                    "task_id": "P01-T4",
+                    "tier": "T4",
+                    "stratum": "whole-paper",
+                    "source_inventory_count": 3,
+                    "included_source_count": 2,
+                    "excluded_source_count": 1,
+                    "reviewed_included_source_count": 2,
+                    "declaration_count": 3,
+                    "reviewed_declaration_count": 3,
+                    "review_unit_count": 2,
+                    "accepted_review_count": 2,
+                    "accepted_review_unit_coverage_rate": 1.0,
+                    "controlled_sorry_count": 1,
+                    "measurement_ready": True,
+                }
+            ],
+        )
+        task["faithfulness_reviews"][0]["status"] = "pending"
+        with self.assertRaisesRegex(ReportError, "invalid T4 whole-paper metadata"):
+            render_report_module._t4_coverage_rows([task])
+
+    def test_matrix_is_explicitly_t1_t3_only_when_t4_is_present(self) -> None:
+        inputs = SimpleNamespace(
+            tasks=(
+                {"task_id": "P01-T1", "paper_id": "P01", "tier": "T1"},
+                {"task_id": "P01-T4", "paper_id": "P01", "tier": "T4"},
+            ),
+            config={"repetitions": [{"id": "rep-01"}]},
+        )
+        selected_runs = [
+            {
+                "task_id": "P01-T1",
+                "repetition_id": "rep-01",
+                "condition": condition,
+            }
+            for condition in ("N", "L")
+        ]
+        condition_rows = [
+            {"scope": scope, "condition": condition}
+            for scope in ("overall", "T1")
+            for condition in ("N", "L")
+        ]
+        task_rows = [
+            {"task_id": "P01-T1", "condition": condition}
+            for condition in ("N", "L")
+        ]
+        pair_rows = [{"scope": scope} for scope in ("overall", "T1")]
+        task_pair_rows = [{"task_id": "P01-T1"}]
+        render_report_module._check_matrix_coverage(
+            inputs,
+            selected_runs,
+            condition_rows,
+            task_rows,
+            pair_rows,
+            task_pair_rows,
+        )
+        with self.assertRaisesRegex(ReportError, "fixed task matrix exactly"):
+            render_report_module._check_matrix_coverage(
+                inputs,
+                [
+                    *selected_runs,
+                    {
+                        "task_id": "P01-T4",
+                        "repetition_id": "rep-01",
+                        "condition": "N",
+                    },
+                ],
+                condition_rows,
+                task_rows,
+                pair_rows,
+                task_pair_rows,
+            )
+
+
 class RenderReportTests(unittest.TestCase):
     def setUp(self) -> None:
         self.production_bindings = mock.patch.object(
@@ -2572,7 +2662,7 @@ class RenderReportTests(unittest.TestCase):
             "artifacts": artifacts,
         }
 
-    def test_report_independently_rederives_projection_v4_summary(self) -> None:
+    def test_report_independently_rederives_current_projection_summary(self) -> None:
         evidence = natural_projection_evidence()
         derived = _rederive_ultra_accounting_evidence(evidence)
         audit = {
@@ -2582,7 +2672,7 @@ class RenderReportTests(unittest.TestCase):
             "evidence": evidence,
         }
         summary = {
-            "schema_version": 4,
+            "schema_version": render_report_module.ACCOUNTING_PROJECTION_SCHEMA_VERSION,
             "spawn_binding_source": "raw_function_call.call_id=subAgentActivity.id",
             "selected_ultra_run_count": 1,
             "complete_projection_count": 1,
@@ -2694,6 +2784,7 @@ class RenderReportTests(unittest.TestCase):
             "child-direct-2",
             "root-superseded-2",
             "child-direct-3",
+            "root-suppressed",
             "root-direct",
         ]
         appserver_ids = [
@@ -2739,15 +2830,25 @@ class RenderReportTests(unittest.TestCase):
                 "provider_call_id": "root-call-2",
                 "thread_id": "root",
                 "turn_id": "root-turn",
+                "successor_response_id": "root-suppressed",
+                "successor_call_id": "root-wait-call",
+            },
+        ]
+        suppressed = [
+            {
+                "response_id": "root-suppressed",
+                "provider_call_id": "root-wait-call",
+                "thread_id": "root",
+                "turn_id": "root-turn",
                 "successor_response_id": "root-direct",
                 "successor_call_id": "root-call-3",
-            },
+            }
         ]
         render_report_module._validate_projection_superseded_route_order(
             response_ids=response_ids,
             appserver_response_ids=appserver_ids,
             direct_calls=calls,
-            suppressed_evidence=[],
+            suppressed_evidence=suppressed,
             superseded_evidence=superseded,
             discarded_evidence=[],
         )
@@ -2756,22 +2857,32 @@ class RenderReportTests(unittest.TestCase):
             "same_route_intervening": (
                 json.loads(json.dumps(calls)),
                 superseded,
+                suppressed,
             ),
             "wrong_successor_call": (
                 calls,
                 json.loads(json.dumps(superseded)),
+                suppressed,
             ),
             "wrong_successor_response": (
                 calls,
                 json.loads(json.dumps(superseded)),
+                suppressed,
             ),
             "wrong_successor_thread": (
                 json.loads(json.dumps(calls)),
                 superseded,
+                suppressed,
             ),
             "wrong_successor_turn": (
                 json.loads(json.dumps(calls)),
                 superseded,
+                suppressed,
+            ),
+            "wrong_suppressed_successor_call": (
+                calls,
+                superseded,
+                json.loads(json.dumps(suppressed)),
             ),
         }
         mutations["same_route_intervening"][0][0]["request_metadata"].update(
@@ -2789,15 +2900,22 @@ class RenderReportTests(unittest.TestCase):
         mutations["wrong_successor_turn"][0][-1]["request_metadata"][
             "turn_id"
         ] = "other-root-turn"
-        for name, (mutated_calls, mutated_superseded) in mutations.items():
+        mutations["wrong_suppressed_successor_call"][2][0][
+            "successor_call_id"
+        ] = "wrong-direct-call"
+        for name, (
+            mutated_calls,
+            mutated_superseded,
+            mutated_suppressed,
+        ) in mutations.items():
             with self.subTest(name=name), self.assertRaisesRegex(
-                ReportError, "superseded chain changed"
+                ReportError, "(?:superseded chain|suppressed bridge) changed"
             ):
                 render_report_module._validate_projection_superseded_route_order(
                     response_ids=response_ids,
                     appserver_response_ids=appserver_ids,
                     direct_calls=mutated_calls,
-                    suppressed_evidence=[],
+                    suppressed_evidence=mutated_suppressed,
                     superseded_evidence=mutated_superseded,
                     discarded_evidence=[],
                 )
@@ -3241,12 +3359,12 @@ class RenderReportTests(unittest.TestCase):
                     "normalized_usage": wait_usage,
                     "previous_total": 0,
                     "committed_total": 12,
-                    "admitted_monotonic_ns": direct_admit_mono - 100_000,
-                    "upstream_start_monotonic_ns": direct_admit_mono - 75_000,
+                    "admitted_monotonic_ns": direct_admit_mono - 150_000,
+                    "upstream_start_monotonic_ns": direct_admit_mono - 100_000,
                     "commit_monotonic_ns": direct_admit_mono - 50_000,
-                    "admitted_unix_ns": direct_admit_unix - 100_000,
-                    "upstream_start_unix_ns": direct_admit_unix - 75_000,
-                    "commit_unix_ns": direct_admit_unix - 50_000,
+                    "admitted_unix_ns": direct_admit_unix - 3_000_000,
+                    "upstream_start_unix_ns": direct_admit_unix - 2_500_000,
+                    "commit_unix_ns": direct_admit_unix - 2_000_000,
                     "crossed_cap": False,
                     "release_kind": "byte_identity",
                     "released_body_sha256": direct["upstream_body_sha256"],
@@ -3348,7 +3466,9 @@ class RenderReportTests(unittest.TestCase):
                 "agent_message_sha256": "c" * 64,
                 "agent_message_author": "/root/fixture_child",
                 "agent_message_recipient": "/root",
-                "agent_message_observed_at_unix_ns": direct_admit_unix - 25_000,
+                # Collaboration event timestamps have millisecond resolution;
+                # leave a full millisecond before successor admission.
+                "agent_message_observed_at_unix_ns": direct_admit_unix - 1_500_000,
                 "agent_message_observed_at_monotonic_ns": direct_admit_mono - 25_000,
             }
             usage.update(
@@ -3462,6 +3582,308 @@ class RenderReportTests(unittest.TestCase):
                     bad_evidence,
                     artifact_path=accepted_gate,
                     label="suppressed-wait bad evidence",
+                )
+
+            # Extend the authenticated two-call wait fixture with the exact
+            # job-1510529 shape: a general supersession immediately names the
+            # suppressed wait, which in turn names the earliest direct call.
+            mixed = json.loads(json.dumps(reconciled))
+            mixed_record = json.loads(json.dumps(record))
+            mixed_suppressed = mixed_record["calls"][0]
+            mixed_direct = mixed_record["calls"][1]
+            generic_response_id = "superseded-before-wait-response"
+            generic = json.loads(json.dumps(mixed_suppressed))
+            generic.update(
+                {
+                    "sequence": 3,
+                    "call_id": "provider-call-00000003",
+                    "response_id": generic_response_id,
+                    "completed_before": 0,
+                    "reserved_before": 0,
+                    "reservation_after": render_report_module.runner.PROVIDER_RESPONSE_TOKEN_BOUND,
+                    "previous_total": 0,
+                    "committed_total": wait_usage["total_tokens"],
+                    "admitted_monotonic_ns": direct_admit_mono - 190_000,
+                    "upstream_start_monotonic_ns": direct_admit_mono - 180_000,
+                    "commit_monotonic_ns": direct_admit_mono - 160_000,
+                    "admitted_unix_ns": direct_admit_unix - 6_000_000,
+                    "upstream_start_unix_ns": direct_admit_unix - 5_500_000,
+                    "commit_unix_ns": direct_admit_unix - 5_000_000,
+                    "response_output_manifest": {
+                        "schema_version": 1,
+                        "response_id": generic_response_id,
+                        "output_item_count": 2,
+                        "action_capable_item_count": 0,
+                        "items": [
+                            {
+                                "index": 0,
+                                "id": "generic-reasoning-item",
+                                "type": "reasoning",
+                                "name": None,
+                                "namespace": None,
+                                "call_id": None,
+                                "payload_sha256": "d" * 64,
+                                "payload_bytes": 10,
+                                "arguments_sha256": None,
+                                "arguments_bytes": None,
+                                "wait_timeout_ms": None,
+                            },
+                            {
+                                "index": 1,
+                                "id": "generic-message-item",
+                                "type": "message",
+                                "name": None,
+                                "namespace": None,
+                                "call_id": None,
+                                "payload_sha256": "e" * 64,
+                                "payload_bytes": 20,
+                                "arguments_sha256": None,
+                                "arguments_bytes": None,
+                                "wait_timeout_ms": None,
+                            },
+                        ],
+                    },
+                    "appserver_crossbind": None,
+                }
+            )
+            generic["upstream_sse_authentication"][
+                "response_id"
+            ] = generic_response_id
+            mixed_suppressed.update(
+                {
+                    "sequence": 4,
+                    "call_id": "provider-call-00000004",
+                    "completed_before": wait_usage["total_tokens"],
+                    "reserved_before": wait_usage["total_tokens"],
+                    "reservation_after": wait_usage["total_tokens"]
+                    + render_report_module.runner.PROVIDER_RESPONSE_TOKEN_BOUND,
+                    "previous_total": wait_usage["total_tokens"],
+                    "committed_total": 2 * wait_usage["total_tokens"],
+                }
+            )
+            mixed_direct.update(
+                {
+                    "sequence": 5,
+                    "call_id": "provider-call-00000005",
+                    "completed_before": 2 * wait_usage["total_tokens"],
+                    "reserved_before": 2 * wait_usage["total_tokens"],
+                    "reservation_after": 2 * wait_usage["total_tokens"]
+                    + render_report_module.runner.PROVIDER_RESPONSE_TOKEN_BOUND,
+                    "previous_total": 2 * wait_usage["total_tokens"],
+                    "committed_total": 2 * wait_usage["total_tokens"]
+                    + mixed_direct["normalized_usage"]["total_tokens"],
+                }
+            )
+            mixed_suppressed["appserver_delivery"].update(
+                {
+                    "successor_call_id": mixed_direct["call_id"],
+                    "successor_response_id": mixed_direct["response_id"],
+                }
+            )
+            generic["appserver_delivery"] = {
+                "kind": "superseded_by_collaboration_message",
+                "successor_call_id": mixed_suppressed["call_id"],
+                "successor_response_id": mixed_suppressed["response_id"],
+                "bind_unix_ns": mixed_suppressed["appserver_delivery"][
+                    "bind_unix_ns"
+                ]
+                + 10,
+                "bind_monotonic_ns": mixed_suppressed["appserver_delivery"][
+                    "bind_monotonic_ns"
+                ]
+                + 10,
+            }
+            mixed_record["calls"] = [generic, mixed_suppressed, mixed_direct]
+            mixed_record["state"].update(
+                {
+                    "completed_tokens": mixed_direct["committed_total"],
+                    "sequence": 6,
+                }
+            )
+            mixed_record["transitions"][-1]["sequence"] = 6
+            mixed_record.pop("record_sha256")
+            mixed_record["record_sha256"] = hashlib.sha256(
+                render_report_module._gate_canonical_newline(mixed_record)
+            ).hexdigest()
+            accepted_gate.chmod(0o600)
+            accepted_gate.write_bytes(
+                render_report_module._gate_canonical_newline(mixed_record)
+            )
+            accepted_gate.chmod(0o444)
+
+            mixed_usage = mixed["token_usage"]
+            mixed_usage["submission_boundary"]["provider_gate_close"][
+                "sequence"
+            ] = 6
+            mixed_provider_usage = {
+                field: appserver_usage[field] + 2 * wait_usage[field]
+                for field in render_report_module.ACCOUNTING_TOKEN_FIELDS
+            }
+            mixed_provider_ids = [
+                generic_response_id,
+                wait_response_id,
+                mixed_direct["response_id"],
+            ]
+            mixed_wait_evidence = json.loads(json.dumps(evidence))
+            mixed_wait_evidence["provider_call_id"] = mixed_suppressed[
+                "call_id"
+            ]
+            mixed_wait_evidence["successor_call_id"] = mixed_direct["call_id"]
+            generic_evidence = {
+                "response_id": generic_response_id,
+                "provider_call_id": generic["call_id"],
+                "thread_id": generic["request_metadata"]["thread_id"],
+                "turn_id": generic["request_metadata"]["turn_id"],
+                "successor_response_id": mixed_suppressed["response_id"],
+                "successor_call_id": mixed_suppressed["call_id"],
+                "collaboration_messages": [
+                    {
+                        "item_id": "child-message-before-wait",
+                        "item_sha256": "f" * 64,
+                        "author": "/root/fixture_child",
+                        "recipient": "/root",
+                        "observed_at_unix_ns": direct_admit_unix - 4_500_000,
+                        "observed_at_monotonic_ns": direct_admit_mono
+                        - 155_000,
+                    }
+                ],
+            }
+            mixed_usage.update(
+                {
+                    "input_tokens": mixed_provider_usage["input_tokens"],
+                    "cached_input_tokens": mixed_provider_usage[
+                        "cached_input_tokens"
+                    ],
+                    "cache_write_input_tokens": mixed_provider_usage[
+                        "cache_write_input_tokens"
+                    ],
+                    "output_tokens": mixed_provider_usage["output_tokens"],
+                    "reasoning_output_tokens": mixed_provider_usage[
+                        "reasoning_output_tokens"
+                    ],
+                    "model_tokens": mixed_provider_usage["total_tokens"],
+                    "total_tokens": mixed_provider_usage["total_tokens"],
+                    "call_count": 3,
+                    "response_count": 3,
+                    "response_ids": mixed_provider_ids,
+                    "provider_response_count": 3,
+                    "provider_response_ids": mixed_provider_ids,
+                    "provider_usage": mixed_provider_usage,
+                    "suppressed_collaboration_wait_evidence": [
+                        mixed_wait_evidence
+                    ],
+                    "superseded_by_collaboration_message_response_count": 1,
+                    "superseded_by_collaboration_message_response_ids": [
+                        generic_response_id
+                    ],
+                    "superseded_by_collaboration_message_usage": wait_usage,
+                    "superseded_by_collaboration_message_evidence": [
+                        generic_evidence
+                    ],
+                }
+            )
+            mixed_usage["provider_usage_reconciliation"].update(
+                {
+                    "provider_response_count": 3,
+                    "provider_usage": mixed_provider_usage,
+                    "provider_response_ids": mixed_provider_ids,
+                    "suppressed_collaboration_wait_evidence": [
+                        mixed_wait_evidence
+                    ],
+                    "superseded_by_collaboration_message_response_count": 1,
+                    "superseded_by_collaboration_message_usage": wait_usage,
+                    "superseded_by_collaboration_message_response_ids": [
+                        generic_response_id
+                    ],
+                    "superseded_by_collaboration_message_evidence": [
+                        generic_evidence
+                    ],
+                }
+            )
+            mixed_usage["appserver_response_ledger"][0][
+                "provider_gate_call"
+            ] = mixed_direct
+            mixed_usage["thread_accounting"] = [
+                {
+                    "thread_id": mixed_usage["root_thread_id"],
+                    "parent_thread_id": None,
+                    "agent_path": "root",
+                    "provisional": False,
+                    "spawn_binding_status": "root_zero",
+                },
+                {
+                    "thread_id": "fixture-child-thread",
+                    "parent_thread_id": mixed_usage["root_thread_id"],
+                    "agent_path": "/root/fixture_child",
+                    "provisional": False,
+                    "spawn_binding_status": "resolved",
+                },
+            ]
+            mixed_usage["provider_token_gate"][
+                "record_sha256"
+            ] = mixed_record["record_sha256"]
+            mixed_usage["provider_token_gate"]["live"] = mixed_record["state"]
+            mixed_usage["provider_token_gate"]["terminal"] = mixed_record[
+                "state"
+            ]
+
+            mixed_payload = render_report_module._gate_canonical_newline(
+                mixed_record
+            )
+            mixed_file_sha = hashlib.sha256(mixed_payload).hexdigest()
+            mixed_final = mixed["provider_token_gate"]["final"]
+            mixed_final["file"].update(
+                {
+                    "size_bytes": len(mixed_payload),
+                    "file_sha256": mixed_file_sha,
+                }
+            )
+            mixed_authentication = mixed_final["authentication"]
+            mixed_authentication.update(
+                {
+                    "file_sha256": mixed_file_sha,
+                    "record_sha256": mixed_record["record_sha256"],
+                    "size_bytes": len(mixed_payload),
+                    "record": mixed_record,
+                }
+            )
+            mixed_authentication["derived"].update(
+                {
+                    "completed_tokens": mixed_provider_usage["total_tokens"],
+                    "response_count": 3,
+                    "response_ids": mixed_provider_ids,
+                    "provider_response_count": 3,
+                    "provider_response_ids": mixed_provider_ids,
+                    "superseded_by_collaboration_message_response_count": 1,
+                    "superseded_by_collaboration_message_response_ids": [
+                        generic_response_id
+                    ],
+                }
+            )
+            mixed_auth = render_report_module._authenticate_provider_gate_record(
+                mixed,
+                artifact_path=accepted_gate,
+                label="job-1510529 mixed-chain fixture",
+            )
+            self.assertEqual(mixed_auth["provider_response_count"], 3)
+            self.assertEqual(
+                mixed_auth["superseded_by_collaboration_message_response_count"],
+                1,
+            )
+
+            wrong_bridge_call = json.loads(json.dumps(mixed))
+            for target in (
+                wrong_bridge_call["token_usage"],
+                wrong_bridge_call["token_usage"]["provider_usage_reconciliation"],
+            ):
+                target["suppressed_collaboration_wait_evidence"][0][
+                    "successor_call_id"
+                ] = "wrong-direct-call"
+            with self.assertRaises(ReportError):
+                render_report_module._authenticate_provider_gate_record(
+                    wrong_bridge_call,
+                    artifact_path=accepted_gate,
+                    label="job-1510529 mismatched wait bridge",
                 )
 
     def test_report_rederives_prompt_release_and_request_publication(self) -> None:

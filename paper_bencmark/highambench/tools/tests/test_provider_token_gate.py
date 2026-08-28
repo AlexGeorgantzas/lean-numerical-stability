@@ -1738,6 +1738,129 @@ class ProviderTokenGateTests(unittest.TestCase):
         with self.assertRaises(ProviderGateValidationError):
             validate_artifact(forged_path)
 
+    def test_superseded_message_chain_may_end_through_suppressed_wait(self) -> None:
+        """An authenticated wait is a bridge from its predecessor to direct delivery."""
+
+        usage = provider_usage(40, output=10)
+        source = output_items_completed_sse(
+            "mixed-source",
+            usage,
+            [
+                {
+                    "type": "reasoning",
+                    "id": "mixed-source-reasoning",
+                    "status": "completed",
+                    "summary": [],
+                },
+                {
+                    "type": "function_call",
+                    "id": "mixed-source-function",
+                    "status": "completed",
+                    "call_id": "mixed-source-collaboration-call",
+                    "name": "send_message",
+                    "namespace": "collaboration",
+                    "arguments": '{"message":"opaque","target":"child"}',
+                },
+            ],
+        )
+        harness = GateHarness(
+            self,
+            [
+                FakePlan(source),
+                FakePlan(collaboration_wait_sse("mixed-wait", usage)),
+                FakePlan(completed_sse("mixed-direct", usage)),
+            ],
+            token_limit=1_000,
+            response_bound=100,
+        )
+        self.addCleanup(harness.cleanup)
+
+        for _ in range(3):
+            self.assertEqual(harness.post()[0], 200)
+        harness.crossbind("mixed-direct", usage, 3)
+        harness.gate.crossbind_suppressed_collaboration_wait(
+            "mixed-wait", ROOT, "turn-1", "mixed-direct"
+        )
+        candidates = harness.gate.superseded_by_collaboration_message_candidates(
+            ROOT, "turn-1"
+        )
+        self.assertEqual(
+            [
+                (item["response_id"], item["successor_response_id"])
+                for item in candidates
+            ],
+            [("mixed-source", "mixed-wait")],
+        )
+        harness.gate.crossbind_superseded_by_collaboration_message(
+            "mixed-source", ROOT, "turn-1", "mixed-wait"
+        )
+
+        artifact = harness.finish(CLOSE_REASON_ACCEPTED_SUBMISSION)
+        self.assertEqual(
+            [call["appserver_delivery"]["kind"] for call in artifact["calls"]],
+            [
+                gate_module.PROVIDER_GATE_DELIVERY_SUPERSEDED_COLLABORATION_MESSAGE,
+                gate_module.PROVIDER_GATE_DELIVERY_SUPPRESSED_WAIT,
+                gate_module.PROVIDER_GATE_DELIVERY_DIRECT,
+            ],
+        )
+        self.assertEqual(
+            validate_artifact(harness.gate.final_artifact_path), artifact
+        )
+
+        skipped_wait = json.loads(json.dumps(artifact))
+        skipped_wait["calls"][0]["appserver_delivery"].update(
+            {
+                "successor_call_id": skipped_wait["calls"][2]["call_id"],
+                "successor_response_id": skipped_wait["calls"][2][
+                    "response_id"
+                ],
+            }
+        )
+        reseal_provider_gate_record(skipped_wait)
+        skipped_path = harness.root / "forged-mixed-chain-skips-wait.json"
+        skipped_path.write_text(
+            json.dumps(skipped_wait, sort_keys=True, separators=(",", ":"))
+            + "\n",
+            encoding="utf-8",
+        )
+        skipped_path.chmod(0o444)
+        with self.assertRaisesRegex(
+            ProviderGateValidationError, "skipped its immediate successor"
+        ):
+            validate_artifact(skipped_path)
+
+        non_direct_wait_successor = json.loads(json.dumps(artifact))
+        final_delivery = non_direct_wait_successor["calls"][2][
+            "appserver_delivery"
+        ]
+        final_delivery.update(
+            {
+                "kind": gate_module.PROVIDER_GATE_DELIVERY_SUPERSEDED_COLLABORATION_MESSAGE,
+                "successor_call_id": non_direct_wait_successor["calls"][1][
+                    "call_id"
+                ],
+                "successor_response_id": non_direct_wait_successor["calls"][1][
+                    "response_id"
+                ],
+            }
+        )
+        non_direct_wait_successor["calls"][2]["appserver_crossbind"] = None
+        reseal_provider_gate_record(non_direct_wait_successor)
+        non_direct_path = harness.root / "forged-mixed-chain-nondirect-wait.json"
+        non_direct_path.write_text(
+            json.dumps(
+                non_direct_wait_successor,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        non_direct_path.chmod(0o444)
+        with self.assertRaises(ProviderGateValidationError):
+            validate_artifact(non_direct_path)
+
     def test_superseded_message_requires_an_immediate_exact_metadata_successor(
         self,
     ) -> None:

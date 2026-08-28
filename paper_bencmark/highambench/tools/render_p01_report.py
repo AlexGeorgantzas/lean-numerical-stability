@@ -45,7 +45,7 @@ except ImportError:  # Direct script execution.
     from common import BenchmarkToolError  # type: ignore
 
 
-REPORT_SCHEMA_VERSION = 1
+REPORT_SCHEMA_VERSION = 2
 EXPECTED_PAPER = "P01"
 EXPECTED_TASKS = ("P01-T1", "P01-T2", "P01-T3")
 EXPECTED_CONDITIONS = ("N", "L")
@@ -202,6 +202,37 @@ def _hex(value: Any, label: str) -> str:
     if not isinstance(value, str) or HEX64.fullmatch(value) is None:
         raise ReportError(f"{label} must be a lowercase SHA-256")
     return value
+
+
+def _authenticated_historical_hosts_file(
+    freeze: Mapping[str, Any], label: str
+) -> Mapping[str, Any] | None:
+    """Return the pair-policy-authorized launch-time ``/etc/hosts`` snapshot."""
+
+    policy = freeze.get("hardware_matching_policy")
+    if policy is None:
+        return None
+    if policy != run_matrix.HARDWARE_MATCHING_POLICY:
+        raise ReportError(f"{label} has an unknown paired-hardware policy")
+    gate = _mapping(freeze.get("provider_token_gate"), f"{label} provider gate")
+    transport = _mapping(
+        gate.get("transport_provenance"), f"{label} provider transport"
+    )
+    try:
+        runner._validate_provider_transport_provenance(
+            transport, field=f"{label}.provider_token_gate.transport_provenance"
+        )
+    except BenchmarkToolError as error:
+        raise ReportError(f"{label} provider transport is malformed: {error}") from error
+    resolver = _mapping(transport.get("resolver"), f"{label} resolver")
+    hosts_file = _mapping(resolver.get("hosts_file"), f"{label} hosts file")
+    if (
+        hosts_file.get("logical_path") != runner.PROVIDER_HOSTS_PATH
+        or hosts_file.get("resolved_path") != runner.PROVIDER_HOSTS_PATH
+        or hosts_file.get("symlink_target") is not None
+    ):
+        raise ReportError(f"{label} does not freeze the fixed regular /etc/hosts file")
+    return dict(hosts_file)
 
 
 def _number(value: Any, label: str, *, nonnegative: bool = True) -> float:
@@ -644,11 +675,40 @@ def _authenticate_canary(
     canary_runner_record = _mapping(
         read_json(canary_runner_path), f"{name} runner record"
     )
+    canary_freeze_path = canary_artifact_path("freeze_check")
+    canary_freeze = _mapping(read_json(canary_freeze_path), f"{name} freeze check")
+    historical_hosts_file = _authenticated_historical_hosts_file(
+        canary_freeze, f"{name} freeze check"
+    )
+    if historical_hosts_file is not None:
+        canary_freeze_wrapper = _mapping(
+            canary_runner_record.get("frozen_run_verification"),
+            f"{name} runner freeze wrapper",
+        )
+        embedded_canary_freeze = _mapping(
+            canary_freeze_wrapper.get("freeze_check"),
+            f"{name} embedded runner freeze",
+        )
+        if (
+            canary_freeze_wrapper.get("freeze_check_sha256")
+            != document_sha256(embedded_canary_freeze)
+        ):
+            raise ReportError(
+                f"{name} runner record has a stale embedded freeze self-hash"
+            )
+        embedded_hosts_file = _authenticated_historical_hosts_file(
+            embedded_canary_freeze, f"{name} embedded runner freeze"
+        )
+        if embedded_hosts_file != historical_hosts_file:
+            raise ReportError(
+                f"{name} embedded and production freezes disagree on /etc/hosts"
+            )
     try:
         gate_authentication = construction_report._authenticate_provider_gate_record(
             canary_runner_record,
             artifact_path=canary_gate_path,
             label=name,
+            authenticated_historical_hosts_file=historical_hosts_file,
         )
     except construction_report.ReportError as error:
         raise ReportError(f"{name} provider-gate authentication failed: {error}") from error
@@ -971,27 +1031,10 @@ def _construction_check(
     certificate = read_json(path)
     certificate_sha = file_sha256(path)
     summary = _mapping(certificate.get("summary"), "construction summary")
-    expected_summary = {
-        "expected": EXPECTED_CONSTRUCTION_RESULTS,
-        "checked": EXPECTED_CONSTRUCTION_RESULTS,
-        "passed": EXPECTED_CONSTRUCTION_RESULTS,
-        "condition_n_passed": EXPECTED_CONSTRUCTION_RESULTS // 2,
-        "condition_l_passed": EXPECTED_CONSTRUCTION_RESULTS // 2,
-    }
-    if (
-        certificate.get("schema_version") != 1
-        or certificate.get("kind") != "highambench-private-construction-check"
-        or certificate.get("pass") is not True
-        or certificate.get("record_status") != "current_final"
-        or any(summary.get(field) != wanted for field, wanted in expected_summary.items())
-    ):
-        raise ReportError("construction certificate is not current final 120/120 evidence")
-    results = _list(certificate.get("results"), "construction results")
-    if len(results) != EXPECTED_CONSTRUCTION_RESULTS:
-        raise ReportError("construction certificate does not contain exactly 120 results")
     manifest_path = benchmark_root / "metadata" / "manifest.json"
     manifest_sha = file_sha256(manifest_path)
-    manifest_task_data: dict[str, dict[str, str]] = {}
+    manifest_task_data: dict[str, dict[str, Any]] = {}
+    manifest_task_ids: list[str] = []
     manifest_papers: list[str] = []
     for raw_paper in _list(manifest.get("papers"), "manifest papers"):
         paper = _mapping(raw_paper, "manifest paper")
@@ -1000,26 +1043,118 @@ def _construction_check(
         for raw_target in _list(paper.get("targets"), f"manifest {paper_id} targets"):
             target = _mapping(raw_target, "manifest target")
             task_id = str(target.get("task_id"))
-            lean = _mapping(target.get("lean_target"), f"manifest target {task_id}")
+            tier = str(target.get("tier"))
             if task_id in manifest_task_data:
                 raise ReportError("manifest repeats a construction task")
+            if tier not in {"T1", "T2", "T3", "T4"}:
+                raise ReportError(f"manifest has an unsupported construction tier {tier!r}")
+            target_theorem: str | None = None
+            if tier != "T4":
+                lean = _mapping(target.get("lean_target"), f"manifest target {task_id}")
+                declaration = lean.get("declaration")
+                if not isinstance(declaration, str) or not declaration:
+                    raise ReportError(f"manifest target {task_id} has no declaration")
+                target_theorem = f"HighamBench.{declaration}"
+            manifest_task_ids.append(task_id)
             manifest_task_data[task_id] = {
                 "paper_id": paper_id,
-                "tier": str(target.get("tier")),
-                "target_theorem": f"HighamBench.{lean.get('declaration')}",
+                "tier": tier,
+                "target_theorem": target_theorem,
             }
     manifest_tasks = set(manifest_task_data)
-    wanted = {(task, condition) for task in manifest_tasks for condition in EXPECTED_CONDITIONS}
-    if len(manifest_tasks) != 60 or len(manifest_papers) != 20 or len(set(manifest_papers)) != 20:
-        raise ReportError("construction certificate requires the exact 20-paper/60-task manifest")
+    proof_task_ids = [
+        task_id
+        for task_id in manifest_task_ids
+        if manifest_task_data[task_id]["tier"] in {"T1", "T2", "T3"}
+    ]
+    t4_task_ids = [
+        task_id
+        for task_id in manifest_task_ids
+        if manifest_task_data[task_id]["tier"] == "T4"
+    ]
+    if (
+        len(proof_task_ids) != 60
+        or len(manifest_papers) != 20
+        or len(set(manifest_papers)) != 20
+    ):
+        raise ReportError(
+            "construction certificate requires the exact historical "
+            "20-paper/60-task T1--T3 manifest stratum"
+        )
+    certificate_result_count = len(manifest_task_ids) * 2
+    expected_certificate_summary = {
+        "expected": certificate_result_count,
+        "checked": certificate_result_count,
+        "passed": certificate_result_count,
+        "condition_n_passed": len(manifest_task_ids),
+        "condition_l_passed": len(manifest_task_ids),
+    }
+    if t4_task_ids:
+        expected_profile = {
+            "task_count": len(manifest_task_ids),
+            "private_proof_task_count": 60,
+            "t4_skeleton_task_count": len(t4_task_ids),
+            "private_proof_result_count": EXPECTED_CONSTRUCTION_RESULTS,
+            "t4_skeleton_result_count": len(t4_task_ids) * 2,
+        }
+        required_declarations = summary.get("required_declaration_count")
+        controlled_sorries = summary.get("t4_controlled_sorry_count")
+        if (
+            certificate.get("schema_version") != 2
+            or set(summary)
+            != set(expected_certificate_summary)
+            | set(expected_profile)
+            | {"required_declaration_count", "t4_controlled_sorry_count"}
+            or any(
+                summary.get(field) != wanted
+                for field, wanted in {
+                    **expected_certificate_summary,
+                    **expected_profile,
+                }.items()
+            )
+            or type(required_declarations) is not int
+            or required_declarations < 60 + len(t4_task_ids)
+            or type(controlled_sorries) is not int
+            or controlled_sorries < len(t4_task_ids)
+        ):
+            raise ReportError(
+                "construction certificate is not current schema-aware T1--T4 evidence"
+            )
+    elif (
+        certificate.get("schema_version") != 1
+        or dict(summary) != expected_certificate_summary
+    ):
+        raise ReportError("construction certificate is not current final 120/120 evidence")
+    if (
+        certificate.get("kind") != "highambench-private-construction-check"
+        or certificate.get("pass") is not True
+        or certificate.get("record_status") != "current_final"
+    ):
+        raise ReportError("construction certificate is not current final evidence")
+    results = _list(certificate.get("results"), "construction results")
+    if len(results) != certificate_result_count:
+        raise ReportError(
+            "construction certificate does not contain the exact schema-aware result count"
+        )
+    wanted_all = {
+        (task, condition)
+        for task in manifest_tasks
+        for condition in EXPECTED_CONDITIONS
+    }
+    wanted_proofs = {
+        (task, condition)
+        for task in proof_task_ids
+        for condition in EXPECTED_CONDITIONS
+    }
+
 
     scope = _mapping(certificate.get("scope"), "construction scope")
     if (
         scope.get("central_manifest") != "metadata/manifest.json"
         or scope.get("central_manifest_sha256") != manifest_sha
         or scope.get("complete_manifest_scope") is not True
-        or scope.get("manifest_available_task_ids") != sorted(manifest_tasks)
-        or scope.get("selected_task_ids") != sorted(manifest_tasks)
+        or scope.get("manifest_available_task_ids") != manifest_task_ids
+        or scope.get("selected_task_ids") != manifest_task_ids
         or scope.get("manifest_paper_ids") != manifest_papers
         or scope.get("selected_paper_ids") != manifest_papers
     ):
@@ -1041,6 +1176,14 @@ def _construction_check(
         "private_helper_oleans_reused": False,
         "validator_hidden_rebuild": True,
     }
+    if t4_task_ids:
+        required_isolation.update(
+            {
+                "t4_private_gold_required": False,
+                "t4_skeleton_staged_from_controlled_target": True,
+                "t4_designated_sorries_only": True,
+            }
+        )
     if any(isolation.get(field) != value for field, value in required_isolation.items()):
         raise ReportError("construction certificate lacks its hidden/isolation controls")
 
@@ -1104,14 +1247,14 @@ def _construction_check(
         raise ReportError("construction packages did not pass the complete condition-N scan")
     shared = _mapping(basis.get("shared_olean"), "construction shared olean")
     bundles = _mapping(shared.get("bundles"), "construction shared olean bundles")
-    if set(bundles) != set(manifest_papers) or shared.get("exact_file_count") != 40:
-        raise ReportError("construction shared-olean scope is incomplete")
+    if (
+        set(bundles) != set(manifest_papers)
+        or shared.get("exact_file_count") != len(manifest_papers)
+    ):
+        raise ReportError("construction paper-olean scope is incomplete")
     for paper_id, raw_bundle in bundles.items():
-        bundle = _mapping(raw_bundle, f"construction shared bundle {paper_id}")
-        expected_names = {
-            "HighamBench/Core.olean",
-            f"HighamBench/{paper_id}Definitions.olean",
-        }
+        bundle = _mapping(raw_bundle, f"construction paper bundle {paper_id}")
+        expected_names = {f"HighamBench/{paper_id}Definitions.olean"}
         if set(bundle) != expected_names:
             raise ReportError(f"construction shared bundle {paper_id} has the wrong files")
         for name, digest in bundle.items():
@@ -1135,7 +1278,8 @@ def _construction_check(
         if not isinstance(entry.get("path"), str) or not entry["path"]:
             raise ReportError(f"construction executable {label} has no path")
 
-    observed: set[tuple[str, str]] = set()
+    observed_all: set[tuple[str, str]] = set()
+    observed_proofs: set[tuple[str, str]] = set()
     l_library_use = 0
     n_preflight_count = 0
     for raw in results:
@@ -1145,18 +1289,75 @@ def _construction_check(
         task = manifest_task_data.get(task_id)
         controlled_path = benchmark_root / "metadata" / "controlled" / f"{task_id}.json"
         if (
-            identity in observed
+            identity in observed_all
             or task is None
+            or condition not in EXPECTED_CONDITIONS
             or result.get("pass") is not True
             or result.get("paper_id") != task["paper_id"]
             or result.get("tier") != task["tier"]
-            or result.get("target_theorem") != task["target_theorem"]
-            or result.get("manifest_sha256") != file_sha256(controlled_path)
             or not controlled_path.is_file()
+            or result.get("manifest_sha256") != file_sha256(controlled_path)
             or result.get("reasons") != []
         ):
             raise ReportError("construction certificate has a duplicate or failed result")
-        observed.add(identity)
+        observed_all.add(identity)
+        if task["tier"] == "T4":
+            required = _list(
+                result.get("required_declarations"),
+                f"T4 construction declarations {task_id}/{condition}",
+            )
+            sorries = _list(
+                result.get("controlled_sorries"),
+                f"T4 construction sorries {task_id}/{condition}",
+            )
+            validation = _mapping(
+                result.get("validation"),
+                f"T4 construction validation {task_id}/{condition}",
+            )
+            if (
+                result.get("construction_kind") != "designated-hole-skeleton"
+                or result.get("helpers") != []
+                or not required
+                or not sorries
+                or HEX64.fullmatch(str(result.get("target_source_sha256"))) is None
+                or validation.get("pass") is not True
+                or validation.get("failure_code") is not None
+                or validation.get("compile_exit_code") != 0
+                or validation.get("compile_timed_out") is not False
+                or validation.get("compile_system_error") is not None
+                or validation.get("olean_created") is not True
+                or validation.get("required_declaration_count") != len(required)
+                or validation.get("required_declarations_checked") != len(required)
+                or validation.get("controlled_sorry_count") != len(sorries)
+                or validation.get("controlled_sorries_checked") != len(sorries)
+                or validation.get("static_finding_count") != 0
+                or validation.get("static_findings") != []
+            ):
+                raise ReportError(
+                    f"construction T4 skeleton gate failed for {task_id}/{condition}"
+                )
+            if condition == "N":
+                preflight = _mapping(
+                    result.get("n_preflight"), f"T4 construction N preflight {task_id}"
+                )
+                if (
+                    result.get("condition_n_library_arguments_omitted") is not True
+                    or preflight.get("ok") is not True
+                    or preflight.get("complete") is not True
+                ):
+                    raise ReportError(f"construction T4 N isolation failed for {task_id}")
+            elif (
+                result.get("condition_n_library_arguments_omitted") is not False
+                or result.get("n_preflight") is not None
+            ):
+                raise ReportError(f"construction T4 L isolation failed for {task_id}")
+            continue
+        if (
+            result.get("construction_kind") not in (None, "private-proof")
+            or result.get("target_theorem") != task["target_theorem"]
+        ):
+            raise ReportError(f"construction proof identity failed for {task_id}/{condition}")
+        observed_proofs.add(identity)
         _hex(result.get("gold_source_sha256"), f"construction gold proof {task_id} {condition}")
         helpers = _list(result.get("helpers"), f"construction helpers {task_id} {condition}")
         for helper_raw in helpers:
@@ -1258,8 +1459,10 @@ def _construction_check(
                 if not isinstance(name, str) or "NumStability" not in name:
                     raise ReportError(f"construction result {task_id}/L has a non-library declaration")
             l_library_use += 1
-    if observed != wanted or len(wanted) != EXPECTED_CONSTRUCTION_RESULTS:
-        raise ReportError("construction certificate scope is not the complete 60-task N/L matrix")
+    if observed_all != wanted_all or observed_proofs != wanted_proofs:
+        raise ReportError(
+            "construction certificate scope is not the complete schema-aware matrix"
+        )
     if n_preflight_count != 60 or l_library_use != 60:
         raise ReportError("construction certificate does not certify all N preflights and L dependencies")
 
@@ -1289,13 +1492,25 @@ def _construction_check(
     for filename, expected in pointer_expectations.items():
         pointer_path = path.parent / filename
         pointer = read_json(pointer_path)
+        current_result = _mapping(
+            pointer.get("current_result"), f"construction pointer result {filename}"
+        )
+        wanted_counts = dict(expected["counts"])
+        if filename == "condition_n_preflight.json":
+            wanted_counts.update(
+                {
+                    "condition_n_tasks_checked": len(manifest_task_ids),
+                    "complete_staged_task_scans_passed": len(manifest_task_ids),
+                    "reliable_failed_import_probes": len(manifest_task_ids),
+                }
+            )
         if (
             pointer.get("kind") != expected["kind"]
             or pointer.get("status") != "current complete-corpus construction evidence"
             or pointer.get("current_evidence")
             != "paper_bencmark/highambench/metadata/evidence/construction_validation_full_current.json"
             or pointer.get("current_evidence_sha256") != certificate_sha
-            or pointer.get("current_result") != expected["counts"]
+            or any(current_result.get(field) != value for field, value in wanted_counts.items())
         ):
             raise ReportError(f"construction evidence pointer is stale: {filename}")
         pointer_summaries.append(
@@ -1306,7 +1521,7 @@ def _construction_check(
         )
     p02 = sorted(
         f"{task}/{condition}"
-        for task, condition in observed
+        for task, condition in observed_proofs
         if task in {"P02-T1", "P02-T2", "P02-T3"}
     )
     if p02 != sorted(
@@ -1318,7 +1533,13 @@ def _construction_check(
     return {
         "path": path.relative_to(benchmark_root).as_posix(),
         "sha256": certificate_sha,
-        **expected_summary,
+        "expected": EXPECTED_CONSTRUCTION_RESULTS,
+        "checked": EXPECTED_CONSTRUCTION_RESULTS,
+        "passed": EXPECTED_CONSTRUCTION_RESULTS,
+        "condition_n_passed": EXPECTED_CONSTRUCTION_RESULTS // 2,
+        "condition_l_passed": EXPECTED_CONSTRUCTION_RESULTS // 2,
+        "certificate_result_count": certificate_result_count,
+        "ignored_t4_task_ids": t4_task_ids,
         "condition_n_preflights": n_preflight_count,
         "condition_l_library_dependencies": l_library_use,
         "p02_construction_task_conditions": p02,
@@ -1357,6 +1578,7 @@ def _review_check(
         for paper in _list(manifest.get("papers"), "manifest papers")
         for target in _list(_mapping(paper, "manifest paper").get("targets"), "paper targets")
         if isinstance(target, Mapping)
+        and target.get("tier") in {"T1", "T2", "T3"}
     }
     if len(expected_task_ids) != 60:
         raise ReportError("fresh reviews require the exact 60-task manifest")
@@ -1472,6 +1694,7 @@ def _manifest_tasks(
     benchmark_root: Path, manifest: Mapping[str, Any]
 ) -> dict[str, dict[str, Any]]:
     tasks: dict[str, dict[str, Any]] = {}
+    seen_manifest_task_ids: set[str] = set()
     papers = _list(manifest.get("papers"), "manifest papers")
     for paper_raw in papers:
         paper = _mapping(paper_raw, "manifest paper")
@@ -1481,8 +1704,16 @@ def _manifest_tasks(
         for target_raw in _list(paper.get("targets"), f"paper {paper_id} targets"):
             target = _mapping(target_raw, "manifest target")
             task_id = target.get("task_id")
-            if not isinstance(task_id, str) or task_id in tasks:
+            tier = target.get("tier")
+            if not isinstance(task_id, str) or task_id in seen_manifest_task_ids:
                 raise ReportError("manifest has an invalid or duplicate task ID")
+            seen_manifest_task_ids.add(task_id)
+            if tier == "T4":
+                continue
+            if tier not in {"T1", "T2", "T3"}:
+                raise ReportError(
+                    f"historical P01 report does not support manifest tier {tier!r}"
+                )
             lean = _mapping(target.get("lean_target"), f"target {task_id}")
             target_path = _resolve_frozen_path(
                 benchmark_root, lean.get("file"), f"target {task_id}"
@@ -1494,7 +1725,7 @@ def _manifest_tasks(
                 "task_id": task_id,
                 "paper_id": paper_id,
                 "paper_sha256": paper_sha,
-                "tier": target.get("tier"),
+                "tier": tier,
                 "title": target.get("title", task_id),
                 "target_file": target_path,
                 "target_sha256": target_sha,
@@ -1536,6 +1767,8 @@ def _expected_assignments(
         repetition = pair.get("repetition_id")
         order = pair.get("condition_order")
         run_ids = pair.get("run_ids")
+        if isinstance(task_id, str) and task_id.endswith("-T4"):
+            continue
         if task_id not in tasks or repetition not in repetitions:
             raise ReportError(f"run-order pair {pair_id!r} names an unknown assignment")
         if order not in (["N", "L"], ["L", "N"]):
@@ -4666,6 +4899,9 @@ def _validate_record(
         run,
         artifact_path=runner.provider_gate_paths(usage_path.resolve())["final"],
         label=label,
+        authenticated_historical_hosts_file=_authenticated_historical_hosts_file(
+            freeze, f"{label} freeze check"
+        ),
     )
     _validate_failure_semantics(
         run,
@@ -4675,6 +4911,19 @@ def _validate_record(
         token_limit=_integer(limits.get("total_model_tokens"), "token limit", positive=True),
         scored_failure_seconds=_number(
             limits.get("failure_scored_time_seconds"), "fixed failure scored time"
+        ),
+    )
+    hardware_identity = {
+        field: authenticated_hardware[field]
+        for field in ("path", "sha256", "record_sha256", "job_id", "hostname")
+    }
+    hardware_identity["host_class_sha256"] = authenticated_hardware.get(
+        "host_class_sha256",
+        document_sha256(
+            _mapping(
+                authenticated_hardware.get("host_class"),
+                f"{label} authenticated host class",
+            )
         ),
     )
     return {
@@ -4706,6 +4955,15 @@ def _validate_record(
         "started_at_utc": run["started_at_utc"],
         "finished_at_utc": run["finished_at_utc"],
         "allocation_hardware": dict(hardware),
+        "allocation_job_id": hardware_identity["job_id"],
+        "allocation_hostname": hardware_identity["hostname"],
+        "allocation_host_class_sha256": hardware_identity[
+            "host_class_sha256"
+        ],
+        "allocation_record_sha256": hardware_identity["record_sha256"],
+        "allocation_campaign_path": hardware_identity["path"],
+        "allocation_hardware_identity": hardware_identity,
+        "freeze_check_sha256": wrapper["freeze_check_sha256"],
         "matrix_attempt": matrix_authentication["matrix_attempt"],
         "matrix_record_sha256": matrix_authentication["matrix_record_sha256"],
         "prompt_release_authentication": prompt_release,
@@ -4773,8 +5031,29 @@ def _freeze_check(
         ),
     }:
         raise ReportError("freeze check has different resource limits")
-    if freeze.get("host_class") != environment.get("host_class"):
-        raise ReportError("freeze check hardware class differs from environment.json")
+    policy = environment.get("hardware_matching_policy")
+    if policy is None:
+        if freeze.get("host_class") != environment.get("host_class"):
+            raise ReportError("freeze check hardware class differs from environment.json")
+    else:
+        if policy != getattr(run_matrix, "HARDWARE_MATCHING_POLICY", None):
+            raise ReportError("environment has an unsupported paired-hardware policy")
+        if freeze.get("hardware_matching_policy") != policy:
+            raise ReportError("freeze check has a stale paired-hardware policy")
+        host = _mapping(freeze.get("host_class"), "freeze host class")
+        reference_host = _mapping(environment.get("host_class"), "reference host class")
+        exact_fields = _list(
+            _mapping(policy.get("frozen_host_class"), "paired-hardware host policy").get(
+                "exact_fields"
+            ),
+            "paired-hardware exact host fields",
+        )
+        if set(host) != set(reference_host) or any(
+            host.get(field) != reference_host.get(field) for field in exact_fields
+        ):
+            raise ReportError(
+                "freeze check violates the invariant fields of the paired-hardware policy"
+            )
     if freeze.get("token_control") != config.get("token_control"):
         raise ReportError("freeze check token-control contract is stale")
     for field, key in (
@@ -4785,6 +5064,111 @@ def _freeze_check(
         expected = canaries[key]
         if any(summary.get(name) != expected[name] for name in ("path", "sha256", "status")):
             raise ReportError(f"freeze check has stale {field} evidence")
+    return freeze, metadata_hashes
+
+
+def _authenticate_pair_freeze(
+    benchmark_root: Path,
+    results_root: Path,
+    config: Mapping[str, Any],
+    environment: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+    run_order: Mapping[str, Any],
+    release_summary: Mapping[str, Any],
+    canaries: Mapping[str, Mapping[str, Any]],
+) -> tuple[dict[str, Any], dict[str, str]]:
+    """Authenticate one allocation-local freeze against stable metadata/policy."""
+
+    freeze = read_json(results_root / "freeze_check.json")
+    reference = json.loads(json.dumps(freeze))
+    reference["host_class"] = json.loads(json.dumps(environment.get("host_class")))
+    reference["provider_token_gate"] = json.loads(
+        json.dumps(environment.get("provider_token_gate"))
+    )
+    try:
+        run_matrix.verify_pair_policy_compatible_freeze_checks(reference, freeze)
+    except BenchmarkToolError as error:
+        raise ReportError(
+            f"pair freeze is incompatible with current paired-hardware metadata: {error}"
+        ) from error
+    # The general checker authenticates every stable field and both canaries.
+    # Give it the reconstructed reference while preserving the allocation-local
+    # freeze as the owning object returned to record/hardware validators.
+    freeze_path = results_root / "freeze_check.json"
+    original = freeze_path.read_bytes()
+    try:
+        # Avoid rewriting evidence: perform the stable checks directly on a local
+        # copy using the same predicates as _freeze_check.
+        frozen = _mapping(config.get("frozen_environment"), "frozen environment")
+        metadata_hashes = {
+            "config": document_sha256(config),
+            "environment": document_sha256(environment),
+            "manifest": document_sha256(manifest),
+            "run_order": document_sha256(run_order),
+        }
+        if (
+            freeze.get("schema_version") != 1
+            or freeze.get("kind") != "highambench-frozen-run-verification"
+            or freeze.get("ok") is not True
+            or freeze.get("benchmark_id") != config.get("benchmark_id")
+            or freeze.get("environment_id") != frozen.get("environment_id")
+            or freeze.get("environment_bundle_sha256")
+            != frozen.get("environment_bundle_sha256")
+            or freeze.get("metadata_document_sha256") != metadata_hashes
+            or freeze.get("hardware_matching_policy")
+            != environment.get("hardware_matching_policy")
+        ):
+            raise ReportError("pair freeze has stale stable metadata")
+        release = _mapping(freeze.get("release_manifest"), "pair freeze release")
+        verification = _mapping(release.get("verification"), "pair release verification")
+        if (
+            release.get("sha256") != release_summary["sha256"]
+            or release.get("file_count") != release_summary["file_count"]
+            or verification.get("ok") is not True
+            or verification.get("expected") != release_summary["file_count"]
+            or verification.get("verified") != release_summary["file_count"]
+            or verification.get("missing") != []
+            or verification.get("changed") != []
+        ):
+            raise ReportError("pair freeze has incomplete release verification")
+        if freeze.get("agent") != {
+            **_expected_agent(config),
+            "binary_sha256": frozen.get("agent_binary_sha256"),
+            **(
+                {"ultra_orchestration": frozen.get("ultra_orchestration")}
+                if frozen.get("ultra_orchestration") is not None
+                else {}
+            ),
+        }:
+            raise ReportError("pair freeze has stale agent identity")
+        limits = _mapping(config.get("limits"), "config limits")
+        if freeze.get("limits") != {
+            "wall_clock_seconds": limits.get("wall_clock_seconds"),
+            "total_model_tokens": limits.get("total_model_tokens"),
+            "prompt_startup_timeout_seconds": limits.get(
+                "prompt_startup_timeout_seconds"
+            ),
+            "post_submission_validation_reserve_seconds": limits.get(
+                "post_submission_validation_reserve_seconds"
+            ),
+        }:
+            raise ReportError("pair freeze has stale resource limits")
+        if freeze.get("token_control") != config.get("token_control"):
+            raise ReportError("pair freeze has stale token-control evidence")
+        for field, key in (
+            ("token_control_canary", "token_control"),
+            ("ultra_orchestration_canary", "ultra_orchestration"),
+        ):
+            summary = _mapping(freeze.get(field), f"pair freeze {field}")
+            expected = canaries[key]
+            if any(
+                summary.get(name) != expected[name]
+                for name in ("path", "sha256", "status")
+            ):
+                raise ReportError(f"pair freeze has stale {field} evidence")
+    finally:
+        if freeze_path.read_bytes() != original:
+            raise ReportError("pair freeze changed during authentication")
     return freeze, metadata_hashes
 
 
@@ -4846,12 +5230,14 @@ def _validate_hardware_records(
     results_root: Path,
     environment: Mapping[str, Any],
     release_sha: str,
-    freeze_sha: str,
+    freeze: Mapping[str, Any],
 ) -> dict[str, dict[str, Any]]:
     directory = results_root / "allocation_hardware"
     if not directory.is_dir():
         raise ReportError("results root has no authenticated allocation_hardware records")
     records: dict[str, dict[str, Any]] = {}
+    policy = environment.get("hardware_matching_policy")
+    paired_policy = policy is not None
     expected_top_keys = {
         "schema_version",
         "kind",
@@ -4865,12 +5251,24 @@ def _validate_hardware_records(
         "scheduler_sharing",
         "record_sha256",
     }
-    frozen_host = dict(_mapping(environment.get("host_class"), "frozen host class"))
+    if paired_policy:
+        expected_top_keys.update(
+            {
+                "hardware_matching_policy",
+                "host_class_sha256",
+                "provider_transport_provenance",
+                "provider_transport_provenance_sha256",
+            }
+        )
+    reference_host = dict(
+        _mapping(environment.get("host_class"), "reference host class")
+    )
+    freeze_sha = document_sha256(freeze)
     for path in sorted(directory.glob("*.json")):
         value = read_json(path)
         if (
             set(value) != expected_top_keys
-            or value.get("schema_version") != 1
+            or value.get("schema_version") != (2 if paired_policy else 1)
             or value.get("kind") != "highambench-allocation-hardware-record"
         ):
             raise ReportError(f"unexpected hardware record kind: {path}")
@@ -4888,7 +5286,61 @@ def _validate_hardware_records(
         }
         if dict(measurement) != expected_measurement:
             raise ReportError(f"hardware record {path.name} has stale environment provenance")
-        if value.get("host_class") != frozen_host:
+        actual_host = dict(
+            _mapping(value.get("host_class"), f"hardware record {path.name} host class")
+        )
+        if set(actual_host) != set(reference_host):
+            raise ReportError(f"hardware record {path.name} has incomplete host evidence")
+        if paired_policy:
+            if value.get("hardware_matching_policy") != policy:
+                raise ReportError(f"hardware record {path.name} has a stale hardware policy")
+            policy_host = _mapping(
+                _mapping(policy, "paired-hardware policy").get("frozen_host_class"),
+                "paired-hardware host policy",
+            )
+            exact_fields = _list(
+                policy_host.get("exact_fields"), "paired-hardware exact host fields"
+            )
+            variable_fields = _list(
+                policy_host.get("variable_fields"), "paired-hardware variable host fields"
+            )
+            if set(exact_fields) | set(variable_fields) != set(actual_host) or set(
+                exact_fields
+            ) & set(variable_fields):
+                raise ReportError("paired-hardware policy does not partition host fields")
+            if any(
+                actual_host.get(field) != reference_host.get(field)
+                for field in exact_fields
+            ):
+                raise ReportError(
+                    f"hardware record {path.name} violates invariant host fields"
+                )
+            if value.get("host_class_sha256") != document_sha256(actual_host):
+                raise ReportError(f"hardware record {path.name} has a stale host-class hash")
+            transport = _mapping(
+                value.get("provider_transport_provenance"),
+                f"hardware record {path.name} provider transport",
+            )
+            if value.get("provider_transport_provenance_sha256") != document_sha256(
+                transport
+            ):
+                raise ReportError(
+                    f"hardware record {path.name} has a stale provider-transport hash"
+                )
+            freeze_gate = _mapping(
+                freeze.get("provider_token_gate"), "freeze provider-token gate"
+            )
+            if transport != freeze_gate.get("transport_provenance"):
+                raise ReportError(
+                    f"hardware record {path.name} provider transport differs from its freeze"
+                )
+            try:
+                run_matrix._validate_allocation_hardware_record(value, freeze)
+            except BenchmarkToolError as error:
+                raise ReportError(
+                    f"hardware record {path.name} failed allocation authentication: {error}"
+                ) from error
+        elif actual_host != reference_host:
             raise ReportError(f"hardware record {path.name} has the wrong frozen host class")
         job_id = value.get("job_id")
         hostname = value.get("hostname")
@@ -4902,31 +5354,31 @@ def _validate_hardware_records(
         )
         expected_host = {
             "hostname": hostname,
-            "kernel": frozen_host.get("kernel"),
-            "virtualization": frozen_host.get("virtualization"),
-            "cpu_vendor": frozen_host.get("cpu_vendor"),
-            "processor": frozen_host.get("processor"),
-            "cpu_family": frozen_host.get("cpu_family"),
-            "cpu_model": frozen_host.get("cpu_model"),
-            "cpu_stepping": frozen_host.get("cpu_stepping"),
-            "benchmark_process_visible_memory_bytes": frozen_host.get("visible_memory_bytes"),
+            "kernel": actual_host.get("kernel"),
+            "virtualization": actual_host.get("virtualization"),
+            "cpu_vendor": actual_host.get("cpu_vendor"),
+            "processor": actual_host.get("processor"),
+            "cpu_family": actual_host.get("cpu_family"),
+            "cpu_model": actual_host.get("cpu_model"),
+            "cpu_stepping": actual_host.get("cpu_stepping"),
+            "benchmark_process_visible_memory_bytes": actual_host.get("visible_memory_bytes"),
         }
         expected_allocation = {
             "cpu_affinity_logical_cpus": allocation.get("cpu_affinity_logical_cpus"),
-            "online_logical_cpus": frozen_host.get("online_logical_cpus"),
-            "allocated_physical_cores": frozen_host.get("allocated_physical_cores"),
-            "allocated_sockets": frozen_host.get("allocated_sockets"),
-            "allocated_threads_per_core": frozen_host.get("allocated_threads_per_core"),
-            "cgroup_memory_limit_bytes": frozen_host.get("allocation_memory_limit_bytes"),
+            "online_logical_cpus": actual_host.get("online_logical_cpus"),
+            "allocated_physical_cores": actual_host.get("allocated_physical_cores"),
+            "allocated_sockets": actual_host.get("allocated_sockets"),
+            "allocated_threads_per_core": actual_host.get("allocated_threads_per_core"),
+            "cgroup_memory_limit_bytes": actual_host.get("allocation_memory_limit_bytes"),
         }
         expected_slurm = {
             "job_id": job_id,
             "node_list": hostname,
-            "num_nodes": frozen_host.get("slurm_num_nodes"),
-            "num_cpus": frozen_host.get("slurm_num_cpus"),
-            "num_tasks": frozen_host.get("slurm_num_tasks"),
-            "cpus_per_task": frozen_host.get("slurm_cpus_per_task"),
-            "allocated_memory_bytes": frozen_host.get("slurm_allocated_memory_bytes"),
+            "num_nodes": actual_host.get("slurm_num_nodes"),
+            "num_cpus": actual_host.get("slurm_num_cpus"),
+            "num_tasks": actual_host.get("slurm_num_tasks"),
+            "cpus_per_task": actual_host.get("slurm_cpus_per_task"),
+            "allocated_memory_bytes": actual_host.get("slurm_allocated_memory_bytes"),
             "alloc_tres": slurm.get("alloc_tres"),
             "allocated_gpu_count": slurm.get("allocated_gpu_count"),
             "gpu_environment": slurm.get("gpu_environment"),
@@ -4952,7 +5404,7 @@ def _validate_hardware_records(
             not isinstance(affinity, list)
             or any(not isinstance(cpu, int) or isinstance(cpu, bool) or cpu < 0 for cpu in affinity)
             or affinity != sorted(set(affinity))
-            or len(affinity) != frozen_host.get("online_logical_cpus")
+            or len(affinity) != actual_host.get("online_logical_cpus")
         ):
             raise ReportError(f"hardware record {path.name} has an invalid CPU-affinity set")
         if set(scheduler) != {
@@ -4988,6 +5440,17 @@ def _validate_hardware_records(
             "record_sha256": self_hash,
             "job_id": job_id,
             "hostname": hostname,
+            "host_class": actual_host,
+            "host_class_sha256": (
+                value.get("host_class_sha256")
+                if paired_policy
+                else document_sha256(actual_host)
+            ),
+            "provider_transport_provenance_sha256": (
+                value.get("provider_transport_provenance_sha256")
+                if paired_policy
+                else None
+            ),
             "cpu_affinity_logical_cpus": list(affinity),
             "partition": scheduler.get("partition"),
             "job_oversubscribe": scheduler.get("job_oversubscribe"),
@@ -5167,6 +5630,7 @@ def _authenticate_startup_incident(
             "incident_provenance": json.loads(json.dumps(provenance)),
         }
     )
+    retained_artifacts: list[dict[str, Any]] = []
     for field in ("agent_log", "validation_log"):
         raw = source.get(field)
         digest_field = f"{field}_sha256"
@@ -5192,6 +5656,13 @@ def _authenticate_startup_incident(
         if copied != destination.resolve() or file_sha256(copied) != source_log_digest:
             raise ReportError(f"{run_id} copied incident {field} is not byte-identical")
         expected_incident[field] = copied.relative_to(results_root).as_posix()
+        retained_artifacts.append(
+            {
+                "field": field,
+                "path": expected_incident[field],
+                "sha256": source_log_digest,
+            }
+        )
     expected_incident["matrix_incident_sha256"] = document_sha256(expected_incident)
     if dict(incident) != expected_incident:
         raise ReportError(f"{run_id} matrix incident is not exactly derived from its source")
@@ -5207,6 +5678,7 @@ def _authenticate_startup_incident(
         "transcript_sha256": transcript_descriptor["sha256"],
         "failure_code": incident.get("failure_code"),
         "reason": reason,
+        "retained_artifacts": retained_artifacts,
     }
 
 
@@ -5221,8 +5693,11 @@ def _load_records(
         raise ReportError("results root has no records directory")
     json_paths = sorted(records_dir.glob("*.json"))
     expected_ids = {str(item["run_id"]) for item in expected}
-    if {path.stem for path in json_paths} != expected_ids or len(json_paths) != EXPECTED_FINAL_RUNS:
-        raise ReportError("records directory is not exactly the 18 expected P01 final records")
+    if {path.stem for path in json_paths} != expected_ids or len(json_paths) != len(expected):
+        raise ReportError(
+            f"records directory is not exactly the {len(expected)} expected "
+            "P01 final records"
+        )
     if any(not path.is_file() or path.is_symlink() for path in json_paths):
         raise ReportError("final record ledger contains a non-regular or symlinked JSON file")
     by_id = {path.stem: read_json(path) for path in json_paths}
@@ -5374,6 +5849,548 @@ def _validate_boundary_status(
     return status
 
 
+def _validate_pair_boundary_status(
+    results_root: Path, pair_id: str, pair_commit: Mapping[str, Any]
+) -> dict[str, Any]:
+    status = read_json(results_root / "last_chunk_status.json")
+    wanted = {
+        "schema_version": 1,
+        "kind": "highambench-matrix-chunk-status",
+        "status": "stopped_after_requested_pair",
+        "pair_id": pair_id,
+        "completed_runs": 2,
+        "planned_runs": 2,
+        "pair_commit": run_matrix.pair_commit_descriptor(results_root, pair_commit),
+    }
+    if status != wanted:
+        raise ReportError(f"pair {pair_id} has no exact pair-complete status")
+    return status
+
+
+def _validate_canonical_temporal_order(
+    records: Sequence[Mapping[str, Any]],
+    expected: Sequence[Mapping[str, Any]],
+) -> None:
+    """Require actual final runs to follow the complete frozen ledger order."""
+
+    by_id = {str(record.get("run_id")): record for record in records}
+    expected_ids = [str(item.get("run_id")) for item in expected]
+    if set(by_id) != set(expected_ids) or len(by_id) != len(expected_ids):
+        raise ReportError("cannot authenticate temporal order for an incomplete final ledger")
+    for previous_id, next_id in zip(expected_ids, expected_ids[1:]):
+        previous = by_id[previous_id]
+        following = by_id[next_id]
+        if _iso(
+            previous.get("finished_at_utc"), f"{previous_id} finish"
+        ) > _iso(following.get("started_at_utc"), f"{next_id} start"):
+            raise ReportError(
+                "final records violate frozen canonical temporal order between "
+                f"{previous_id} and {next_id}"
+            )
+
+
+def _recursive_file_manifest(root: Path) -> tuple[int, int, str]:
+    """Authenticate one permanent campaign attempt without following links."""
+
+    files: list[dict[str, Any]] = []
+    for path in sorted(root.rglob("*")):
+        try:
+            mode = path.lstat().st_mode
+        except OSError as error:
+            raise ReportError(f"cannot inspect campaign path {path}: {error}") from error
+        if stat.S_ISLNK(mode):
+            raise ReportError(f"campaign attempt contains a symlink: {path}")
+        if stat.S_ISDIR(mode):
+            continue
+        if not stat.S_ISREG(mode):
+            raise ReportError(f"campaign attempt contains a special file: {path}")
+        relative = path.relative_to(root).as_posix()
+        files.append(
+            {
+                "path": relative,
+                "size_bytes": path.stat().st_size,
+                "sha256": file_sha256(path),
+            }
+        )
+    manifest = {
+        "schema_version": 1,
+        "kind": "highambench-recursive-file-manifest",
+        "files": files,
+    }
+    return len(files), sum(int(item["size_bytes"]) for item in files), document_sha256(manifest)
+
+
+def _failed_attempt_cause_summary(
+    descriptor: Mapping[str, Any],
+    incident_summaries: Sequence[Mapping[str, Any]],
+    *,
+    active_marker_present: bool,
+    boundary_cause: Any,
+) -> str:
+    """Give one sanitized reason for an already-authenticated failed pair root."""
+
+    terminal_statuses = {
+        "terminal_pre_prompt_system_error",
+        "aborted_after_unscorable_useful_work",
+    }
+    has_terminal_incident = any(
+        item.get("status") in terminal_statuses for item in incident_summaries
+    )
+    if (
+        descriptor.get("outcome") == "matrix_error"
+        and descriptor.get("final_record_count") == 1
+        and not has_terminal_incident
+        and not active_marker_present
+    ):
+        return "partial_pair_matrix_error"
+    incident_text = ", ".join(
+        f"{item.get('status')}/{item.get('failure_code')}"
+        for item in incident_summaries
+    )
+    if incident_text:
+        return incident_text
+    if active_marker_present:
+        return "active_run_marker"
+    return str(boundary_cause or descriptor.get("outcome"))
+
+
+def _authenticated_incident_artifact_descriptors(
+    root: Path,
+    incident: Mapping[str, Any],
+    *,
+    label: str,
+) -> list[dict[str, Any]]:
+    """Reopen exact retained artifacts from an already-authenticated incident."""
+
+    try:
+        from . import manage_p01_campaign as campaign_manager
+    except ImportError:  # pragma: no cover - direct script execution
+        import manage_p01_campaign as campaign_manager  # type: ignore
+    try:
+        campaign_manager.authenticated_incident_artifact_names(root, [incident])
+        descriptors: list[dict[str, Any]] = []
+        for field in ("agent_log", "validation_log"):
+            raw = incident.get(field)
+            if raw is None:
+                continue
+            relative = campaign_manager.safe_relative_path(raw, f"{label} {field}")
+            path = campaign_manager.resolve_below(
+                root, relative.as_posix(), f"{label} {field}"
+            )
+            descriptors.append(
+                {
+                    "field": field,
+                    "path": relative.as_posix(),
+                    "sha256": file_sha256(path),
+                }
+            )
+        return descriptors
+    except (campaign_manager.CampaignError, OSError, ValueError) as error:
+        raise ReportError(f"{label} retained artifact authentication failed: {error}") from error
+
+
+def _campaign_pair_roots(
+    campaign_root: Path,
+    benchmark_root: Path,
+    config: Mapping[str, Any],
+    environment: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+    run_order: Mapping[str, Any],
+    expected_p01: Sequence[Mapping[str, Any]],
+) -> tuple[list[tuple[Path, list[Mapping[str, Any]], Mapping[str, Any]]], dict[str, Any]]:
+    """Authenticate a self-hashed nine-pair campaign and its permanent commits."""
+
+    index_path = campaign_root / "campaign_index.json"
+    if index_path.is_symlink() or not index_path.is_file():
+        raise ReportError("campaign_index.json must be a regular permanent file")
+    index = read_json(index_path)
+    expected_index_fields = {
+        "schema_version",
+        "kind",
+        "benchmark_id",
+        "manifest",
+        "run_order",
+        "environment",
+        "hardware_matching_policy",
+        "hardware_matching_policy_sha256",
+        "canonical_pairs",
+        "committed_pairs",
+        "failed_pair_attempts",
+        "active_pair_attempt",
+        "created_at_utc",
+        "updated_at_utc",
+        "campaign_index_sha256",
+    }
+    if (
+        set(index) != expected_index_fields
+        or index.get("schema_version") != 1
+        or index.get("kind")
+        != "highambench-private-p01-pair-campaign-index"
+        or index.get("benchmark_id") != config.get("benchmark_id")
+    ):
+        raise ReportError("campaign index has an unsupported identity or schema")
+    recorded_index_sha = _hex(
+        index.get("campaign_index_sha256"), "campaign-index self-hash"
+    )
+    unsigned_index = dict(index)
+    unsigned_index.pop("campaign_index_sha256")
+    if document_sha256(unsigned_index) != recorded_index_sha:
+        raise ReportError("campaign index has a stale canonical self-hash")
+    if index.get("active_pair_attempt") is not None:
+        raise ReportError("campaign still has an active pair attempt")
+    policy = environment.get("hardware_matching_policy")
+    if (
+        policy is None
+        or policy != getattr(run_matrix, "HARDWARE_MATCHING_POLICY", None)
+        or index.get("hardware_matching_policy") != policy
+        or index.get("hardware_matching_policy_sha256") != document_sha256(policy)
+    ):
+        raise ReportError("campaign index has a stale paired-hardware policy")
+    if index.get("manifest") != {
+        "path": "metadata/manifest.json",
+        "sha256": file_sha256(benchmark_root / "metadata" / "manifest.json"),
+    } or index.get("run_order") != {
+        "path": "metadata/run_order.json",
+        "sha256": file_sha256(benchmark_root / "metadata" / "run_order.json"),
+    }:
+        raise ReportError("campaign index cites stale manifest/run-order metadata")
+    if index.get("environment") != {
+        "path": "metadata/environment.json",
+        "environment_id": environment.get("environment_id"),
+        "environment_bundle_sha256": environment.get("environment_bundle_sha256"),
+    }:
+        raise ReportError("campaign index cites a stale environment")
+
+    planned_by_pair: dict[str, list[Mapping[str, Any]]] = {}
+    for planned in expected_p01:
+        planned_by_pair.setdefault(str(planned["pair_id"]), []).append(planned)
+    raw_pairs = {
+        str(pair.get("pair_id")): pair
+        for pair in _list(run_order.get("pairs"), "run-order pairs")
+        if isinstance(pair, Mapping)
+        and pair.get("task_id") in EXPECTED_TASKS
+    }
+    canonical_pairs = []
+    for pair_id, planned_items in sorted(planned_by_pair.items()):
+        pair = raw_pairs.get(pair_id)
+        if pair is None:
+            raise ReportError(f"campaign pair {pair_id} is absent from run_order.json")
+        canonical_pairs.append(
+            {
+                "pair_id": pair_id,
+                "task_id": pair.get("task_id"),
+                "repetition_id": pair.get("repetition_id"),
+                "condition_order": pair.get("condition_order"),
+                "run_ids": pair.get("run_ids"),
+                "run_order_pair_sha256": pair.get("sha256"),
+            }
+        )
+    if index.get("canonical_pairs") != canonical_pairs:
+        raise ReportError("campaign index canonical pairs differ from run_order.json")
+    committed = _mapping(index.get("committed_pairs"), "campaign committed pairs")
+    if set(committed) != set(planned_by_pair) or len(committed) != 9:
+        raise ReportError("campaign does not contain exactly nine committed P01 pairs")
+
+    try:
+        from . import manage_p01_campaign as campaign_manager
+    except ImportError:  # Direct script execution.
+        import manage_p01_campaign as campaign_manager  # type: ignore
+    try:
+        manager_index = campaign_manager.load_and_verify_index(
+            campaign_root, benchmark_root
+        )
+    except (campaign_manager.CampaignError, BenchmarkToolError, OSError, ValueError) as error:
+        raise ReportError(f"campaign manager authentication failed: {error}") from error
+    if manager_index != index:
+        raise ReportError("campaign index changed during authentication")
+
+    contexts: list[tuple[Path, list[Mapping[str, Any]], Mapping[str, Any]]] = []
+    seen_roots: set[Path] = set()
+    seen_final_paths: set[Path] = set()
+    commit_summaries: list[dict[str, Any]] = []
+    for pair_id in sorted(planned_by_pair):
+        descriptor = _mapping(committed[pair_id], f"campaign commit {pair_id}")
+        descriptor_fields = {
+            "pair_id",
+            "attempt_id",
+            "path",
+            "slurm_job_id",
+            "allocation_node",
+            "started_at_utc",
+            "committed_at_utc",
+            "file_count",
+            "total_bytes",
+            "tree_sha256",
+            "pair_commit",
+            "final_records",
+            "allocation_hardware",
+            "freeze_check_sha256",
+            "hardware_matching_policy_sha256",
+        }
+        if set(descriptor) != descriptor_fields or descriptor.get("pair_id") != pair_id:
+            raise ReportError(f"campaign commit {pair_id} has unexpected fields")
+        attempt_id = str(descriptor.get("attempt_id"))
+        job_id = str(descriptor.get("slurm_job_id"))
+        expected_relative = f"pair_attempts/{pair_id}/{attempt_id}"
+        if (
+            descriptor.get("path") != expected_relative
+            or re.fullmatch(rf"attempt-[1-9][0-9]*-slurm-{re.escape(job_id)}", attempt_id)
+            is None
+            or re.fullmatch(r"[0-9]+", job_id) is None
+        ):
+            raise ReportError(f"campaign commit {pair_id} has a noncanonical permanent path")
+        try:
+            pair_root = campaign_manager.resolve_below(
+                campaign_root,
+                descriptor.get("path"),
+                f"campaign commit {pair_id} root",
+            )
+        except campaign_manager.CampaignError as error:
+            raise ReportError(
+                f"campaign commit {pair_id} has an unsafe permanent path: {error}"
+            ) from error
+        if not pair_root.is_dir() or pair_root.is_symlink() or pair_root in seen_roots:
+            raise ReportError(f"campaign commit {pair_id} root is missing, linked, or reused")
+        seen_roots.add(pair_root)
+        file_count, total_bytes, tree_sha = _recursive_file_manifest(pair_root)
+        if (
+            descriptor.get("file_count") != file_count
+            or descriptor.get("total_bytes") != total_bytes
+            or descriptor.get("tree_sha256") != tree_sha
+        ):
+            raise ReportError(f"campaign commit {pair_id} recursive tree authentication failed")
+        commit_descriptor = _mapping(
+            descriptor.get("pair_commit"), f"campaign pair-commit descriptor {pair_id}"
+        )
+        expected_commit_path = f"{expected_relative}/pair_commit.json"
+        commit_path = _resolve_result_path(
+            campaign_root, commit_descriptor.get("path"), f"campaign pair commit {pair_id}"
+        )
+        if (
+            set(commit_descriptor) != {"path", "sha256", "pair_commit_sha256"}
+            or commit_descriptor.get("path") != expected_commit_path
+            or commit_path != pair_root / "pair_commit.json"
+            or commit_descriptor.get("sha256") != file_sha256(commit_path)
+        ):
+            raise ReportError(f"campaign pair-commit descriptor {pair_id} is invalid")
+        pair_commit = read_json(commit_path)
+        pair_commit_sha = _hex(
+            pair_commit.get("pair_commit_sha256"), f"pair commit {pair_id} self-hash"
+        )
+        unsigned_commit = dict(pair_commit)
+        unsigned_commit.pop("pair_commit_sha256", None)
+        if (
+            pair_commit_sha != document_sha256(unsigned_commit)
+            or commit_descriptor.get("pair_commit_sha256") != pair_commit_sha
+        ):
+            raise ReportError(f"pair commit {pair_id} has a stale canonical self-hash")
+        planned_items = sorted(
+            planned_by_pair[pair_id], key=lambda item: int(item["order_index"])
+        )
+        condition_order = [str(item["condition"]) for item in planned_items]
+        run_ids = [str(item["run_id"]) for item in planned_items]
+        if (
+            pair_commit.get("schema_version") != 1
+            or pair_commit.get("kind") != "highambench-pair-commit"
+            or pair_commit.get("pair_id") != pair_id
+            or pair_commit.get("condition_order") != condition_order
+            or pair_commit.get("run_ids") != run_ids
+            or pair_commit.get("allocation_hardware")
+            != descriptor.get("allocation_hardware")
+            or pair_commit.get("freeze_check_sha256")
+            != descriptor.get("freeze_check_sha256")
+            or pair_commit.get("hardware_matching_policy_sha256")
+            != descriptor.get("hardware_matching_policy_sha256")
+            or descriptor.get("hardware_matching_policy_sha256")
+            != document_sha256(policy)
+        ):
+            raise ReportError(f"pair commit {pair_id} is stale or inconsistent")
+        if stat.S_IMODE(commit_path.stat().st_mode) != 0o444:
+            raise ReportError(f"pair commit {pair_id} is not immutable mode 0444")
+        final_descriptors = _mapping(
+            descriptor.get("final_records"), f"campaign final records {pair_id}"
+        )
+        if final_descriptors != pair_commit.get("final_records") or set(
+            final_descriptors
+        ) != {"N", "L"}:
+            raise ReportError(f"campaign pair {pair_id} has inconsistent final descriptors")
+        for condition, final_descriptor in final_descriptors.items():
+            final_descriptor = _mapping(
+                final_descriptor, f"campaign {pair_id} condition-{condition} final"
+            )
+            if set(final_descriptor) != {
+                "run_id",
+                "path",
+                "sha256",
+                "matrix_record_sha256",
+            }:
+                raise ReportError(f"campaign {pair_id} has malformed final descriptors")
+            final_path = _resolve_result_path(
+                pair_root,
+                final_descriptor.get("path"),
+                f"campaign {pair_id} condition-{condition} final",
+            )
+            if final_path in seen_final_paths:
+                raise ReportError("campaign final record path is reused across pairs")
+            seen_final_paths.add(final_path)
+            final = read_json(final_path)
+            if (
+                final_descriptor.get("run_id") != final.get("run_id")
+                or final_descriptor.get("sha256") != file_sha256(final_path)
+                or final_descriptor.get("matrix_record_sha256")
+                != final.get("matrix_record_sha256")
+            ):
+                raise ReportError(f"campaign {pair_id} final-record authentication failed")
+        freeze_path = pair_root / "freeze_check.json"
+        if freeze_path.is_symlink() or not freeze_path.is_file():
+            raise ReportError(f"campaign pair {pair_id} has no regular freeze check")
+        pair_freeze = read_json(freeze_path)
+        if descriptor.get("freeze_check_sha256") != document_sha256(pair_freeze):
+            raise ReportError(f"campaign pair {pair_id} has a stale freeze-check digest")
+        try:
+            runner_assignments = campaign_manager.planned_pair_assignments(
+                benchmark_root, pair_id
+            )
+            verified_commit = run_matrix.verify_pair_commit(
+                pair_root, runner_assignments, pair_freeze
+            )
+        except (BenchmarkToolError, OSError, ValueError) as error:
+            raise ReportError(
+                f"pair commit {pair_id} failed runner-level authentication: {error}"
+            ) from error
+        if verified_commit != pair_commit:
+            raise ReportError(f"pair commit {pair_id} differs from runner verification")
+        contexts.append((pair_root, planned_items, descriptor))
+        commit_summaries.append(
+            {
+                "pair_id": pair_id,
+                "attempt_id": attempt_id,
+                "path": expected_relative,
+                "slurm_job_id": job_id,
+                "allocation_node": descriptor.get("allocation_node"),
+                "started_at_utc": descriptor.get("started_at_utc"),
+                "committed_at_utc": descriptor.get("committed_at_utc"),
+                "tree_sha256": tree_sha,
+                "pair_commit_sha256": pair_commit_sha,
+            }
+        )
+    failed_attempts_raw = _list(
+        index.get("failed_pair_attempts"), "failed campaign attempts"
+    )
+    failed_summaries: list[dict[str, Any]] = []
+    for offset, raw in enumerate(failed_attempts_raw):
+        descriptor = _mapping(raw, f"failed campaign attempt {offset}")
+        try:
+            campaign_manager.verify_failed_index_descriptor(
+                campaign_root, benchmark_root, index, descriptor
+            )
+        except (campaign_manager.CampaignError, BenchmarkToolError, OSError, ValueError) as error:
+            raise ReportError(
+                f"failed campaign attempt {offset} is unauthenticated: {error}"
+            ) from error
+        failed_root = campaign_manager.resolve_below(
+            campaign_root,
+            descriptor.get("path"),
+            f"failed campaign attempt {offset} root",
+        )
+        incident_summaries: list[dict[str, Any]] = []
+        for incident_offset, raw_incident in enumerate(
+            _list(descriptor.get("incidents"), "failed attempt incidents")
+        ):
+            incident_descriptor = _mapping(
+                raw_incident,
+                f"failed attempt {offset} incident {incident_offset}",
+            )
+            incident_path = campaign_manager.resolve_below(
+                failed_root,
+                incident_descriptor.get("path"),
+                f"failed attempt {offset} incident {incident_offset}",
+            )
+            incident = _mapping(
+                read_json(incident_path),
+                f"failed attempt {offset} incident {incident_offset}",
+            )
+            control = _mapping(
+                incident.get("matrix_incident"),
+                f"failed attempt {offset} incident control",
+            )
+            retained_artifacts = _authenticated_incident_artifact_descriptors(
+                failed_root,
+                incident,
+                label=f"failed attempt {offset} incident {incident_offset}",
+            )
+            incident_summaries.append(
+                {
+                    **dict(incident_descriptor),
+                    "planned_run_id": incident.get("planned_run_id"),
+                    "matrix_attempt": incident.get("matrix_attempt"),
+                    "status": control.get("status"),
+                    "failure_code": incident.get("failure_code"),
+                    "useful_work_started": incident.get("useful_work_started"),
+                    "retained_artifacts": retained_artifacts,
+                }
+            )
+        active_marker_present = (
+            failed_root / run_matrix.ACTIVE_RUN_MARKER
+        ).is_file()
+        status_descriptor = descriptor.get("last_chunk_status")
+        status_value = (
+            status_descriptor.get("value")
+            if isinstance(status_descriptor, Mapping)
+            and isinstance(status_descriptor.get("value"), Mapping)
+            else None
+        )
+        boundary_cause = (
+            status_value.get("status")
+            if isinstance(status_value, Mapping)
+            else None
+        )
+        cause_summary = _failed_attempt_cause_summary(
+            descriptor,
+            incident_summaries,
+            active_marker_present=active_marker_present,
+            boundary_cause=boundary_cause,
+        )
+        failed_summaries.append(
+            {
+                "pair_id": descriptor.get("pair_id"),
+                "attempt_id": descriptor.get("attempt_id"),
+                "path": descriptor.get("path"),
+                "slurm_job_id": descriptor.get("slurm_job_id"),
+                "allocation_node": descriptor.get("allocation_node"),
+                "started_at_utc": descriptor.get("started_at_utc"),
+                "archived_at_utc": descriptor.get("archived_at_utc"),
+                "outcome": descriptor.get("outcome"),
+                "matrix_exit_code": descriptor.get("matrix_exit_code"),
+                "final_record_count": descriptor.get("final_record_count"),
+                "incident_count": len(incident_summaries),
+                "retained_incident_artifact_count": sum(
+                    len(item["retained_artifacts"])
+                    for item in incident_summaries
+                ),
+                "incidents": incident_summaries,
+                "cause_summary": cause_summary,
+                "active_run_marker_present": active_marker_present,
+                "last_chunk_status": descriptor.get("last_chunk_status"),
+                "tree_sha256": descriptor.get("tree_sha256"),
+            }
+        )
+    return contexts, {
+        "schema_version": 1,
+        "campaign_index": {
+            "path": "campaign_index.json",
+            "sha256": file_sha256(index_path),
+            "campaign_index_sha256": recorded_index_sha,
+        },
+        "committed_pair_count": len(contexts),
+        "failed_pair_attempt_count": len(failed_summaries),
+        "failed_pair_attempts": failed_summaries,
+        "active_pair_attempt": None,
+        "permanent_pair_roots": True,
+        "commits": commit_summaries,
+    }
+
+
 def _summary(
     rows: Sequence[Mapping[str, Any]], pairs: Sequence[Mapping[str, Any]]
 ) -> dict[str, Any]:
@@ -5402,6 +6419,7 @@ def _summary(
             "mean_scored_seconds": statistics.mean(times) if times else None,
             "median_model_tokens": statistics.median(tokens) if tokens else None,
             "mean_model_tokens": statistics.mean(tokens) if tokens else None,
+            "absolute_elapsed_summary_role": "descriptive_only",
             "failure_code_counts": failure_counts,
             "library_use_numerator_among_passing_l": library_numerator,
             "library_use_denominator_passing_l": len(audited_l_passes),
@@ -5447,7 +6465,20 @@ def _summary(
         )
         for tier in ("T1", "T2", "T3")
     }
+    allocations = {str(row["allocation_record_sha256"]) for row in rows}
+    allocation_jobs = {str(row["allocation_job_id"]) for row in rows}
+    allocation_hosts = {str(row["allocation_hostname"]) for row in rows}
+    host_classes = {
+        str(row["allocation_host_class_sha256"]) for row in rows
+    }
     return {
+        "primary_elapsed_estimand": "within_pair_l_minus_n_scored_seconds",
+        "pooled_absolute_elapsed_summaries": "descriptive_only",
+        "hardware_blocking_unit": "one complete N/L pair",
+        "distinct_authenticated_allocation_count": len(allocations),
+        "distinct_slurm_job_count": len(allocation_jobs),
+        "distinct_hostname_count": len(allocation_hosts),
+        "distinct_host_class_count": len(host_classes),
         "overall": group(list(rows)),
         "by_condition": by_condition,
         "comparison": comparison(by_condition["N"], by_condition["L"], pairs),
@@ -5469,6 +6500,28 @@ def _pairs(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
         if set(bucket) != set(EXPECTED_CONDITIONS):
             raise ReportError(f"paired analysis is incomplete for {pair_id}")
         n, l = bucket["N"], bucket["L"]
+        n_hardware = _mapping(
+            n.get("allocation_hardware"), f"pair {pair_id} condition-N hardware"
+        )
+        l_hardware = _mapping(
+            l.get("allocation_hardware"), f"pair {pair_id} condition-L hardware"
+        )
+        if dict(n_hardware) != dict(l_hardware):
+            raise ReportError(
+                f"pair {pair_id} N/L runs do not use the same authenticated allocation"
+            )
+        if any(
+            n.get(field) != l.get(field)
+            for field in (
+                "allocation_job_id",
+                "allocation_hostname",
+                "allocation_host_class_sha256",
+                "allocation_record_sha256",
+            )
+        ):
+            raise ReportError(
+                f"pair {pair_id} N/L hardware identities do not match exactly"
+            )
         result.append(
             {
                 "pair_id": pair_id,
@@ -5484,6 +6537,15 @@ def _pairs(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
                 "n_model_tokens": n["model_tokens"],
                 "l_model_tokens": l["model_tokens"],
                 "l_minus_n_model_tokens": l["model_tokens"] - n["model_tokens"],
+                "allocation_job_id": n["allocation_job_id"],
+                "allocation_hostname": n["allocation_hostname"],
+                "allocation_hardware_path": n.get(
+                    "allocation_campaign_path", n_hardware["path"]
+                ),
+                "allocation_file_sha256": n_hardware["sha256"],
+                "allocation_record_sha256": n["allocation_record_sha256"],
+                "host_class_sha256": n["allocation_host_class_sha256"],
+                "same_authenticated_allocation": True,
             }
         )
     if len(result) != 9:
@@ -5561,6 +6623,17 @@ def _tex(value: Any) -> str:
         "^": r"\textasciicircum{}",
     }
     return "".join(replacements.get(character, character) for character in text)
+
+
+def _tex_breakable_identifier(value: Any) -> str:
+    """Escape an identifier while allowing table-column line breaks."""
+
+    return (
+        _tex(value)
+        .replace(r"\_", r"\_\allowbreak{}")
+        .replace("/", r"/\allowbreak{}")
+        .replace("-", r"-\allowbreak{}")
+    )
 
 
 def _fmt_bool(value: bool) -> str:
@@ -5661,7 +6734,7 @@ def _render_latex(report: Mapping[str, Any]) -> str:
         f"{_tex(row['run_id'])} & {_fmt_bool(row['pass'])} & "
         f"{row['scored_elapsed_seconds']:.1f} & {row['model_tokens']} & "
         f"{('yes' if row['library_use'] is True else 'no' if row['library_use'] is False else 'n/a')} & "
-        f"{_tex(', '.join(row['library_declarations']) or '--')} \\\\"
+        f"{len(row['library_declarations'])} \\\\"
         for row in rows
     )
     pair_rows = "\n".join(
@@ -5696,7 +6769,7 @@ def _render_latex(report: Mapping[str, Any]) -> str:
     hashes = provenance["metadata_document_sha256"]
     proof_count = sum(row["proof"] is not None for row in rows)
     library_names = sorted({name for row in rows for name in row["library_declarations"]})
-    library_text = ", ".join(_tex(name) for name in library_names) or "none declared"
+    library_count = len(library_names)
     bootstrap_note = _tex(report["uncertainty"]["note"])
     failure_count_rows = "\n".join(
         f"{_failure_tex(code)} & {count} \\\\"
@@ -5725,10 +6798,17 @@ def _render_latex(report: Mapping[str, Any]) -> str:
     supplement = provenance["prompt_protocol"]["condition_l_supplement"]
     common_prompt = provenance["prompt_protocol"]["common_prompt"]
     hardware_record_rows = "\n".join(
-        f"{_tex(item['job_id'])} & {_path_tex(item['path'])} & "
+        f"{_tex(item['job_id'])} & {_path_tex(item.get('campaign_path', item['path']))} & "
         f"{{\\ttfamily\\scriptsize\\seqsplit{{{item['sha256']}}}}} & "
         f"{{\\ttfamily\\scriptsize\\seqsplit{{{item['record_sha256']}}}}} \\\\"
         for item in provenance["hardware_records"]
+    )
+    pair_hardware_rows = "\n".join(
+        f"{_tex(pair['pair_id'])} & {_tex(pair['allocation_job_id'])} & "
+        f"{_tex(pair['allocation_hostname'])} & "
+        f"{{\\ttfamily\\scriptsize\\seqsplit{{{pair['host_class_sha256']}}}}} & "
+        f"{{\\ttfamily\\scriptsize\\seqsplit{{{pair['allocation_record_sha256']}}}}} \\\\"
+        for pair in pairs
     )
     hardware_sharing_text = "; ".join(
         _tex(
@@ -5747,6 +6827,25 @@ def _render_latex(report: Mapping[str, Any]) -> str:
         f"{_tex(item['reason'])} \\\\"
         for item in incident_evidence["incidents"]
     ) or "-- & 0 & -- & No resolved pre-prompt startup retries \\\\"
+    campaign = provenance.get("pair_campaign")
+    failed_pair_attempts = (
+        campaign.get("failed_pair_attempts", [])
+        if isinstance(campaign, Mapping)
+        else []
+    )
+    failed_pair_attempt_rows = "\n".join(
+        f"{_tex_breakable_identifier(item['pair_id'])} & "
+        f"{_tex_breakable_identifier(item['attempt_id'])} & "
+        f"{_tex_breakable_identifier(item['slurm_job_id'])}/\\allowbreak{{}}"
+        f"{_tex_breakable_identifier(item['allocation_node'])} & "
+        f"{_tex_breakable_identifier(item['outcome'])} "
+        f"(exit {_tex(item['matrix_exit_code'])}); "
+        f"{_tex_breakable_identifier(item['cause_summary'])} & "
+        f"{item['final_record_count']}/{item['incident_count']}/"
+        f"{item['retained_incident_artifact_count']} & "
+        f"{{\\ttfamily\\scriptsize\\seqsplit{{{item['tree_sha256']}}}}} \\\\"
+        for item in failed_pair_attempts
+    ) or r"\multicolumn{6}{c}{No failed pair attempts} \\"
     return rf"""\documentclass[11pt]{{article}}
 \usepackage[margin=0.72in]{{geometry}}
 \usepackage{{booktabs,longtable,array,ragged2e,xcolor,hyperref,seqsplit,tikz,pgfplots}}
@@ -5771,7 +6870,8 @@ it is neither a placeholder nor a smoke test.}}}}
 \section{{Scope and acceptance}}
 The checkpoint contains exactly 18 final, scored P01 records: three fixed tasks,
 three frozen repetitions, and conditions N and L. No P02 or later benchmark
-record is included. All records cite one current freeze, the current release and
+record is included. Each pair's records cite one authenticated allocation-local
+freeze compatible with the current paired-hardware policy, the current release and
 environment identities, a 120/120 construction certificate, and two passed live
 canaries. The token-control probe is the unscored synthetic Token V8 provider-gate
 compaction crossing with exactly {len(token_canary.ARTIFACT_LABELS)} authenticated artifacts; the Ultra V12 orchestration probe
@@ -5813,9 +6913,13 @@ construction checks are validator/isolation readiness evidence, not measured run
 \end{{center}}
 
 \section{{Outcomes and resource use}}
+Within-pair L-minus-N changes are the principal elapsed-time estimand. The
+condition-level absolute elapsed summaries below are descriptive because hardware
+may differ across pairs. Each paired contrast nevertheless uses one exact
+authenticated Slurm allocation.
 \begin{{table}}[ht]
 \centering
-\caption{{Condition-level outcomes. Tokens include cached input exactly once.}}
+\caption{{Descriptive condition-level outcomes. Tokens include cached input exactly once.}}
 \begin{{tabular}}{{lrrrrr}}
 \toprule Condition & Pass & Rate (\%) & Median seconds & Median tokens & L-use/pass L \\
 \midrule
@@ -5865,11 +6969,11 @@ $\widetilde{{\Delta t}}$ & $\widetilde{{\Delta tok}}$ \\
 
 \section{{Run-level measurements}}
 \small
-\begin{{longtable}}{{p{{3.7cm}}lrrlp{{4.3cm}}}}
-\caption{{All final scored records and audited library declarations.}}\\
-\toprule Run & Outcome & Seconds & Tokens & Lib. used & Declarations \\
+\begin{{longtable}}{{p{{3.7cm}}lrrlr}}
+\caption{{All final scored records and audited library-declaration counts. Exact names are retained in summary.json and runs.csv.}}\\
+\toprule Run & Outcome & Seconds & Tokens & Lib. used & Decl. count \\
 \midrule\endfirsthead
-\toprule Run & Outcome & Seconds & Tokens & Lib. used & Declarations \\
+\toprule Run & Outcome & Seconds & Tokens & Lib. used & Decl. count \\
 \midrule\endhead
 {run_rows}
 \bottomrule
@@ -5906,7 +7010,10 @@ $\widetilde{{\Delta t}}$ & $\widetilde{{\Delta tok}}$ \\
 \bottomrule
 \end{{tabular}}
 \end{{center}}
-Across accepted proofs, the transitive dependency audit declared: {library_text}.
+Across accepted proofs, the transitive dependency audit found {library_count}
+distinct declarations. Exact per-run declaration names are retained in the
+authenticated JSON and CSV report artifacts; the PDF uses counts so long Lean
+identifiers cannot obscure or overflow the measurement table.
 Condition N is required to declare none and to carry a successful import-absence preflight.
 Library uptake elsewhere in this report always means the numerator, denominator,
 and rate among passing L runs; failed L runs without a completed validation audit
@@ -5954,9 +7061,37 @@ All rep-01/02/03 records authenticate \texttt{{backend\_seed=null}} and
 the repetition names are not represented as backend seeds.
 
 \section{{Hardware and protocol provenance}}
+The nine N/L pairs use
+{summary['distinct_authenticated_allocation_count']} authenticated allocation(s),
+{summary['distinct_hostname_count']} hostname(s), and
+{summary['distinct_host_class_count']} host class(es). Hardware is permitted to vary
+across pairs, but each row below authenticates exact N/L allocation equality.
+Slurm's partition policy forces oversubscription and these jobs are non-exclusive;
+dynamic co-tenant counts were not recorded, so residual contention is a limitation.
 \footnotesize
+\begin{{longtable}}{{p{{2.7cm}}p{{1.4cm}}p{{2.3cm}}p{{4.3cm}}p{{4.3cm}}}}
+\toprule Pair & Job & Host & Host-class SHA-256 & Allocation-record SHA-256 \\
+\midrule\endfirsthead
+\toprule Pair & Job & Host & Host-class SHA-256 & Allocation-record SHA-256 \\
+\midrule\endhead
+{pair_hardware_rows}
+\bottomrule
+\end{{longtable}}
+
+\begin{{longtable}}{{p{{2.2cm}}p{{2.3cm}}p{{2.4cm}}p{{3.3cm}}p{{1.7cm}}p{{3.0cm}}}}
+\caption{{Retained, authenticated uncommitted pair attempts. Completed pairs are
+durable; after an uncommitted failure, both N and L are rerun as a fresh pair.
+Counts are finals/incidents/incident artifacts.}}\\
+\toprule Pair & Attempt & Job/host & Outcome & Counts & Tree SHA-256 \\
+\midrule\endfirsthead
+\toprule Pair & Attempt & Job/host & Outcome & Counts & Tree SHA-256 \\
+\midrule\endhead
+{failed_pair_attempt_rows}
+\bottomrule
+\end{{longtable}}
+
 \begin{{longtable}}{{p{{5.3cm}}p{{9.7cm}}}}
-\toprule Frozen field & Value \\
+\toprule Reference/invariant field & Value \\
 \midrule\endfirsthead
 \toprule Frozen field & Value \\
 \midrule\endhead
@@ -6022,7 +7157,7 @@ config=\texttt{{{hook_thread_config}}}, and effective source=
 \texttt{{{hook_effective_source}}}. Thus CLI presence is not mistaken for the
 pinned app-server's effective thread-start configuration. Passing runs use
 the schema-v5 boundary in which the sole final outer custom-exec raw item has the
-frozen 98-byte source (SHA-256
+frozen 104-byte rejection-forwarding source (SHA-256
 \texttt{{\seqsplit{{{codex_isolated.NESTED_SUBMISSION_EXEC_SOURCE_SHA256}}}}}),
 including an exact 2,400,000-ms code-mode yield pragma, and both its authenticated
 inner submit-proof dynamic call and the same completed raw response are observed
@@ -6057,8 +7192,10 @@ startup is governed by a separate frozen 120-second timeout and is excluded from
 the 1,800-second scored wall limit. The frozen post-submission validation reserve
 is 369 seconds. The incident ledger contains
 {incident_evidence['resolved_pre_prompt_retry_count']} authenticated, resolved
-attempt-1 pre-prompt retry record(s), and no terminal/unscorable incident or active
-run marker.
+attempt-1 pre-prompt retry record(s) in committed final roots, and those roots have
+no terminal/unscorable incident or active-run marker. Retained failed pair attempts
+are authenticated and disclosed separately above; their terminal or interrupted
+evidence is not counted as a final scored run.
 
 \paragraph{{Interpretation boundary.}}
 This is a private one-paper checkpoint. It reports the authenticated measurements
@@ -6220,41 +7357,197 @@ def build_report(
     ) != frozen.get("ultra_orchestration_canary"):
         raise ReportError("canary descriptors disagree between config and environment")
     expected_all, expected_p01 = _expected_assignments(config, run_order, tasks)
-    boundary_status = _validate_boundary_status(results_root, expected_all, expected_p01)
-    freeze, metadata_hashes = _freeze_check(
-        benchmark_root,
-        results_root,
-        config,
-        environment,
-        manifest,
-        run_order,
-        release_summary,
-        canaries,
-    )
-    freeze_sha = document_sha256(freeze)
-    hardware_records = _validate_hardware_records(
-        results_root,
-        environment,
-        release_summary["sha256"],
-        freeze_sha,
-    )
-    raw_records, startup_incidents = _load_records(results_root, expected_p01)
     runtime_binding_cache: dict[tuple[str, str], bool] = {}
-    rows = [
-        _validate_record(
+    campaign_provenance: dict[str, Any] | None = None
+    all_hardware_records: list[dict[str, Any]] = []
+    pair_freeze_digests: list[str] = []
+    if (results_root / "campaign_index.json").is_file():
+        contexts, campaign_provenance = _campaign_pair_roots(
+            results_root,
+            benchmark_root,
+            config,
+            environment,
+            manifest,
+            run_order,
+            expected_p01,
+        )
+        rows = []
+        raw_records = []
+        startup_incidents = []
+        pair_statuses = []
+        metadata_hashes: dict[str, str] | None = None
+        reference_pair_freeze: dict[str, Any] | None = None
+        for pair_root, planned_items, commit_descriptor in contexts:
+            pair_freeze, pair_metadata_hashes = _authenticate_pair_freeze(
+                benchmark_root,
+                pair_root,
+                config,
+                environment,
+                manifest,
+                run_order,
+                release_summary,
+                canaries,
+            )
+            if reference_pair_freeze is None:
+                reference_pair_freeze = pair_freeze
+            else:
+                try:
+                    run_matrix.verify_pair_policy_compatible_freeze_checks(
+                        reference_pair_freeze, pair_freeze
+                    )
+                except BenchmarkToolError as error:
+                    raise ReportError(
+                        "campaign pair freezes differ outside the paired-hardware "
+                        f"allowlist: {error}"
+                    ) from error
+            if metadata_hashes is None:
+                metadata_hashes = pair_metadata_hashes
+            elif metadata_hashes != pair_metadata_hashes:
+                raise ReportError("campaign pairs cite different frozen metadata")
+            pair_freeze_sha = document_sha256(pair_freeze)
+            if pair_freeze_sha != commit_descriptor.get("freeze_check_sha256"):
+                raise ReportError("campaign pair freeze differs from its commit")
+            pair_freeze_digests.append(pair_freeze_sha)
+            pair_hardware = _validate_hardware_records(
+                pair_root,
+                environment,
+                release_summary["sha256"],
+                pair_freeze,
+            )
+            committed_hardware = _mapping(
+                commit_descriptor.get("allocation_hardware"),
+                f"campaign pair {planned_items[0]['pair_id']} allocation descriptor",
+            )
+            if set(pair_hardware) != {committed_hardware.get("path")}:
+                raise ReportError(
+                    f"campaign pair {planned_items[0]['pair_id']} does not contain "
+                    "exactly its committed allocation record"
+                )
+            authenticated_hardware = pair_hardware[str(committed_hardware["path"])]
+            if dict(committed_hardware) != {
+                field: authenticated_hardware[field]
+                for field in ("path", "sha256", "record_sha256", "job_id")
+            }:
+                raise ReportError(
+                    f"campaign pair {planned_items[0]['pair_id']} allocation "
+                    "descriptor differs from its authenticated record"
+                )
+            pair_prefix = str(commit_descriptor["path"])
+            all_hardware_records.extend(
+                {
+                    **record,
+                    "campaign_path": f"{pair_prefix}/{record['path']}",
+                    "pair_id": str(planned_items[0]["pair_id"]),
+                }
+                for record in pair_hardware.values()
+            )
+            pair_raw, pair_incidents = _load_records(pair_root, planned_items)
+            startup_incidents.extend(pair_incidents)
+            if (
+                _iso(
+                    commit_descriptor.get("started_at_utc"),
+                    f"campaign pair {planned_items[0]['pair_id']} attempt start",
+                )
+                > _iso(
+                    pair_raw[0].get("started_at_utc"),
+                    f"campaign pair {planned_items[0]['pair_id']} first run start",
+                )
+                or _iso(
+                    pair_raw[-1].get("finished_at_utc"),
+                    f"campaign pair {planned_items[0]['pair_id']} last run finish",
+                )
+                > _iso(
+                    commit_descriptor.get("committed_at_utc"),
+                    f"campaign pair {planned_items[0]['pair_id']} commit time",
+                )
+            ):
+                raise ReportError(
+                    f"campaign pair {planned_items[0]['pair_id']} final-run chronology "
+                    "escapes its committed attempt envelope"
+                )
+            commit = read_json(pair_root / "pair_commit.json")
+            pair_statuses.append(
+                _validate_pair_boundary_status(
+                    pair_root, str(planned_items[0]["pair_id"]), commit
+                )
+            )
+            for planned, record in zip(planned_items, pair_raw):
+                validated = _validate_record(
+                    benchmark_root,
+                    pair_root,
+                    config,
+                    environment,
+                    pair_freeze,
+                    tasks[str(planned["task_id"])],
+                    planned,
+                    record,
+                    pair_hardware,
+                    runtime_binding_cache,
+                )
+                validated["allocation_campaign_path"] = (
+                    f"{pair_prefix}/{validated['allocation_hardware']['path']}"
+                )
+                validated["pair_root"] = pair_prefix
+                rows.append(validated)
+            raw_records.extend(pair_raw)
+        assert metadata_hashes is not None
+        if {row["run_id"] for row in rows} != {
+            str(item["run_id"]) for item in expected_p01
+        } or len(rows) != EXPECTED_FINAL_RUNS:
+            raise ReportError("campaign union is not exactly the 18 planned P01 finals")
+        planned_index = {str(item["run_id"]): index for index, item in enumerate(expected_p01)}
+        rows.sort(key=lambda row: planned_index[str(row["run_id"])])
+        raw_by_run = {str(record["run_id"]): record for record in raw_records}
+        raw_records = [raw_by_run[str(item["run_id"])] for item in expected_p01]
+        freeze_sha = document_sha256(
+            {"pair_freeze_check_sha256s": sorted(pair_freeze_digests)}
+        )
+        boundary_status = {
+            "schema_version": 1,
+            "kind": "highambench-p01-pair-campaign-boundary",
+            "status": "nine_pairs_committed",
+            "committed_pair_count": 9,
+            "completed_run_count": EXPECTED_FINAL_RUNS,
+            "pair_statuses": pair_statuses,
+        }
+    else:
+        boundary_status = _validate_boundary_status(
+            results_root, expected_all, expected_p01
+        )
+        freeze, metadata_hashes = _freeze_check(
             benchmark_root,
             results_root,
             config,
             environment,
-            freeze,
-            tasks[str(planned["task_id"])],
-            planned,
-            record,
-            hardware_records,
-            runtime_binding_cache,
+            manifest,
+            run_order,
+            release_summary,
+            canaries,
         )
-        for planned, record in zip(expected_p01, raw_records)
-    ]
+        freeze_sha = document_sha256(freeze)
+        hardware_records = _validate_hardware_records(
+            results_root,
+            environment,
+            release_summary["sha256"],
+            freeze,
+        )
+        all_hardware_records.extend(hardware_records.values())
+        raw_records, startup_incidents = _load_records(results_root, expected_p01)
+        rows = [
+            _validate_record(
+                benchmark_root,
+                results_root,
+                config,
+                environment,
+                freeze,
+                tasks[str(planned["task_id"])],
+                planned,
+                record,
+                hardware_records,
+                runtime_binding_cache,
+            )
+            for planned, record in zip(expected_p01, raw_records)
+        ]
     prompt_artifacts = [
         path
         for row in rows
@@ -6316,17 +7609,9 @@ def build_report(
         "active_run_marker_present": False,
         "incidents": startup_incidents,
     }
-    # Enforce the frozen pair execution order using actual timestamps.
-    raw_by_id = {str(record["run_id"]): record for record in raw_records}
-    for planned in expected_p01:
-        if planned["order_index"] != 1:
-            continue
-        pair = [item for item in expected_p01 if item["pair_id"] == planned["pair_id"]]
-        first, second = sorted(pair, key=lambda item: int(item["order_index"]))
-        if _iso(raw_by_id[str(first["run_id"])]["finished_at_utc"], "pair finish") > _iso(
-            raw_by_id[str(second["run_id"])]["started_at_utc"], "pair start"
-        ):
-            raise ReportError(f"pair {planned['pair_id']} ran out of frozen N/L order")
+    # Pair subroots are independent checkpoints, but actual final runs must
+    # still realize the complete canonical 18-run order across root boundaries.
+    _validate_canonical_temporal_order(raw_records, expected_p01)
     pairs = _pairs(rows)
     analysis = _summary(rows, pairs)
     bootstrap_seed_material = document_sha256(
@@ -6356,7 +7641,34 @@ def build_report(
         "reviews": reviews,
         "canaries": canaries,
         "host_class": environment.get("host_class"),
-        "hardware_records": list(hardware_records.values()),
+        "hardware_matching_policy": environment.get("hardware_matching_policy"),
+        "hardware_records": all_hardware_records,
+        "pair_hardware": [
+            {
+                key: pair[key]
+                for key in (
+                    "pair_id",
+                    "allocation_job_id",
+                    "allocation_hostname",
+                    "allocation_hardware_path",
+                    "allocation_file_sha256",
+                    "allocation_record_sha256",
+                    "host_class_sha256",
+                    "same_authenticated_allocation",
+                )
+            }
+            for pair in pairs
+        ],
+        "hardware_counts": {
+            "distinct_authenticated_allocations": analysis[
+                "distinct_authenticated_allocation_count"
+            ],
+            "distinct_slurm_jobs": analysis["distinct_slurm_job_count"],
+            "distinct_hostnames": analysis["distinct_hostname_count"],
+            "distinct_host_classes": analysis["distinct_host_class_count"],
+        },
+        "pair_campaign": campaign_provenance,
+        "pair_freeze_check_sha256s": sorted(pair_freeze_digests),
         "backend_seed": None,
         "seed_enforced_by_agent": False,
         "p01_target_sha256": {task: tasks[task]["target_sha256"] for task in EXPECTED_TASKS},
@@ -6398,6 +7710,31 @@ def build_report(
         "authenticated_prompt_release_artifact_count": 3 * EXPECTED_FINAL_RUNS,
         "authenticated_resolved_startup_incident_count": len(startup_incidents),
         "terminal_or_unscorable_incident_count": 0,
+        "paired_hardware_policy": "exact_same_authenticated_slurm_allocation_per_pair",
+        "authenticated_hardware_pair_count": len(pairs),
+        "all_n_l_pairs_share_exact_allocation": all(
+            pair["same_authenticated_allocation"] is True for pair in pairs
+        ),
+        "cross_pair_hardware_variation_allowed": True,
+        "distinct_authenticated_allocation_count": analysis[
+            "distinct_authenticated_allocation_count"
+        ],
+        "distinct_slurm_job_count": analysis["distinct_slurm_job_count"],
+        "distinct_hostname_count": analysis["distinct_hostname_count"],
+        "distinct_host_class_count": analysis["distinct_host_class_count"],
+        "pair_hardware": provenance["pair_hardware"],
+        "principal_elapsed_estimand": "within_pair_l_minus_n_scored_seconds",
+        "pooled_absolute_elapsed_summaries": "descriptive_only",
+        "campaign_index_sha256": (
+            campaign_provenance["campaign_index"]["campaign_index_sha256"]
+            if campaign_provenance is not None
+            else None
+        ),
+        "failed_pair_attempt_count": (
+            campaign_provenance["failed_pair_attempt_count"]
+            if campaign_provenance is not None
+            else 0
+        ),
     }
     _write_json(output_dir / "validation.json", validation)
     _write_json(output_dir / "summary.json", report)
@@ -6422,6 +7759,11 @@ def build_report(
             "thread_count",
             "response_count",
             "library_use",
+            "allocation_job_id",
+            "allocation_hostname",
+            "allocation_host_class_sha256",
+            "allocation_record_sha256",
+            "freeze_check_sha256",
         ),
     )
     _write_csv(
@@ -6441,6 +7783,13 @@ def build_report(
             "n_model_tokens",
             "l_model_tokens",
             "l_minus_n_model_tokens",
+            "allocation_job_id",
+            "allocation_hostname",
+            "allocation_hardware_path",
+            "allocation_file_sha256",
+            "allocation_record_sha256",
+            "host_class_sha256",
+            "same_authenticated_allocation",
         ),
     )
     tex_path = output_dir / "HighamBench_P01_Checkpoint_Report.tex"

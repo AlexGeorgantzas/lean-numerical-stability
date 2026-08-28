@@ -1,0 +1,4 @@
+interface:
+  display_name: "Run HighamBench Experiments"
+  short_description: "Run validated HighamBench N/L experiments"
+  default_prompt: "Use $run-highambench-experiments to preflight and run an authorized HighamBench T1–T3 N/L campaign."

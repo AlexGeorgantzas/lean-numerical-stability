@@ -670,7 +670,7 @@ def synthetic_job_1508245_gate(
                 "call_id": "call-job-1508245-wait",
                 "name": "wait_agent",
                 "namespace": "collaboration",
-                "arguments": '{"timeout_ms":1280}',
+                "arguments": '{"timeout_ms":10000}',
             }
             output.append(wait_item)
             events.append(
@@ -721,7 +721,7 @@ def synthetic_job_1508245_gate(
                         arguments_payload
                     ).hexdigest(),
                     "arguments_bytes": len(arguments_payload),
-                    "wait_timeout_ms": 1280,
+                    "wait_timeout_ms": 10_000,
                 }
             )
         running_before = running
@@ -1226,7 +1226,7 @@ def active_tree_provider_crossing_usage(
                     "tokens": aggregate["total_tokens"],
                     "active_thread_ids": ["root-thread"],
                 },
-                "response_ledger": [
+                "appserver_response_ledger": [
                     {
                         "response_id": prompt_call["response_id"],
                         "thread_id": "root-thread",
@@ -1255,6 +1255,19 @@ def active_tree_provider_crossing_usage(
                 "record_sha256": record["record_sha256"],
                 "live": copy.deepcopy(record["state"]),
                 "terminal": copy.deepcopy(record["state"]),
+            }
+        )
+        reconciliation = gate_usage["provider_usage_reconciliation"]
+        reconciliation.update(
+            {
+                "provider_response_count": 2,
+                "appserver_response_count": 2,
+                "provider_response_ids": copy.deepcopy(
+                    gate_usage["response_ids"]
+                ),
+                "appserver_response_ids": copy.deepcopy(
+                    gate_usage["response_ids"]
+                ),
             }
         )
         gate_usage["adapter_teardown"].update(
@@ -1304,7 +1317,7 @@ def active_tree_provider_crossing_usage(
         "cumulative_projection_status": "missing_cumulative",
         "accounting_complete": False,
     }
-    response_ledger = copy.deepcopy(gate_usage["response_ledger"])
+    response_ledger = copy.deepcopy(gate_usage["appserver_response_ledger"])
     return {
         "schema_version": 1,
         "accounting_projection_schema_version": (
@@ -1349,6 +1362,9 @@ def active_tree_provider_crossing_usage(
         "threads": [thread],
         "response_ids": copy.deepcopy(gate_usage["response_ids"]),
         "response_ledger": response_ledger,
+        "provider_usage_reconciliation": copy.deepcopy(
+            gate_usage["provider_usage_reconciliation"]
+        ),
         "provider_token_gate": copy.deepcopy(gate_usage["provider_token_gate"]),
         "adapter_teardown": copy.deepcopy(gate_usage["adapter_teardown"]),
         **ultra_fork_policy_fields(),
@@ -2145,6 +2161,206 @@ class RunnerTests(unittest.TestCase):
                     "superseded_by_collaboration_message_response_ids"
                 ],
                 [call["response_id"]],
+            )
+
+    def test_job_1510529_supersession_replays_through_suppressed_wait(
+        self,
+    ) -> None:
+        """Replay general -> suppressed-wait -> direct delivery end to end."""
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "job-1510529.provider-token-gate.json"
+            record, usage, expected = synthetic_job_1508245_gate(path)
+            general = record["calls"][5]
+            suppressed = record["calls"][6]
+            direct = record["calls"][7]
+
+            # Give both collaboration events a full millisecond-resolution
+            # window, mirroring the retained 136 -> 143 -> 146 incident.
+            for field in (
+                "admitted_unix_ns",
+                "upstream_start_unix_ns",
+                "commit_unix_ns",
+            ):
+                suppressed[field] = int(suppressed[field]) + 1_000_000
+
+            general["response_output_manifest"] = {
+                "schema_version": 1,
+                "response_id": general["response_id"],
+                "output_item_count": 2,
+                "action_capable_item_count": 0,
+                "items": [
+                    {
+                        "index": 0,
+                        "id": "job-1510529-reasoning",
+                        "type": "reasoning",
+                        "name": None,
+                        "namespace": None,
+                        "call_id": None,
+                        "payload_sha256": "d" * 64,
+                        "payload_bytes": 10,
+                        "arguments_sha256": None,
+                        "arguments_bytes": None,
+                        "wait_timeout_ms": None,
+                    },
+                    {
+                        "index": 1,
+                        "id": "job-1510529-message",
+                        "type": "message",
+                        "name": None,
+                        "namespace": None,
+                        "call_id": None,
+                        "payload_sha256": "e" * 64,
+                        "payload_bytes": 20,
+                        "arguments_sha256": None,
+                        "arguments_bytes": None,
+                        "wait_timeout_ms": None,
+                    },
+                ],
+            }
+            general["appserver_crossbind"] = None
+            general["appserver_delivery"] = {
+                "kind": "superseded_by_collaboration_message",
+                "successor_call_id": suppressed["call_id"],
+                "successor_response_id": suppressed["response_id"],
+                "bind_unix_ns": int(
+                    suppressed["appserver_delivery"]["bind_unix_ns"]
+                )
+                + 10,
+                "bind_monotonic_ns": int(
+                    suppressed["appserver_delivery"]["bind_monotonic_ns"]
+                )
+                + 10,
+            }
+
+            general_response_id = str(general["response_id"])
+            appserver_ids = [
+                response_id
+                for response_id in usage["appserver_response_ids"]
+                if response_id != general_response_id
+            ]
+            appserver_ledger = [
+                entry
+                for entry in usage["appserver_response_ledger"]
+                if entry["response_id"] != general_response_id
+            ]
+            for provider_call in record["calls"][7:]:
+                crossbind = provider_call.get("appserver_crossbind")
+                if isinstance(crossbind, dict):
+                    crossbind["event_sequence"] = int(
+                        crossbind["event_sequence"]
+                    ) - 1
+            for entry in appserver_ledger:
+                if int(entry["raw_response_notification_sequence"]) > 6:
+                    entry["raw_response_notification_sequence"] = int(
+                        entry["raw_response_notification_sequence"]
+                    ) - 1
+
+            fields = tuple(runner_module.PROVIDER_GATE_USAGE_KEYS)
+            appserver_usage = {
+                field: int(usage["appserver_usage"][field])
+                - int(general["normalized_usage"][field])
+                for field in fields
+            }
+            suppressed_evidence = copy.deepcopy(
+                usage["suppressed_collaboration_wait_evidence"][0]
+            )
+            suppressed_evidence["agent_message_observed_at_unix_ns"] = (
+                int(suppressed["commit_unix_ns"]) + 100
+            )
+            general_evidence = {
+                "response_id": general["response_id"],
+                "provider_call_id": general["call_id"],
+                "thread_id": "root-thread",
+                "turn_id": "root-turn",
+                "successor_response_id": suppressed["response_id"],
+                "successor_call_id": suppressed["call_id"],
+                "collaboration_messages": [
+                    {
+                        "item_id": "amsg-job-1510529-message",
+                        "item_sha256": "f" * 64,
+                        "author": "/root/ultra_child",
+                        "recipient": "/root",
+                        "observed_at_unix_ns": int(general["commit_unix_ns"])
+                        + 100,
+                        "observed_at_monotonic_ns": int(
+                            general["commit_monotonic_ns"]
+                        )
+                        + 50,
+                    }
+                ],
+            }
+            zero = {field: 0 for field in fields}
+            reconciliation = usage["provider_usage_reconciliation"]
+            for target in (usage, reconciliation):
+                target["appserver_response_count"] = 7
+                target["appserver_response_ids"] = copy.deepcopy(appserver_ids)
+                target["appserver_usage"] = copy.deepcopy(appserver_usage)
+                target["suppressed_collaboration_wait_response_count"] = 1
+                target["suppressed_collaboration_wait_response_ids"] = [
+                    suppressed["response_id"]
+                ]
+                target["suppressed_collaboration_wait_usage"] = copy.deepcopy(
+                    suppressed["normalized_usage"]
+                )
+                target["suppressed_collaboration_wait_evidence"] = [
+                    copy.deepcopy(suppressed_evidence)
+                ]
+                target[
+                    "superseded_by_collaboration_message_response_count"
+                ] = 1
+                target[
+                    "superseded_by_collaboration_message_response_ids"
+                ] = [general["response_id"]]
+                target[
+                    "superseded_by_collaboration_message_usage"
+                ] = copy.deepcopy(general["normalized_usage"])
+                target[
+                    "superseded_by_collaboration_message_evidence"
+                ] = [copy.deepcopy(general_evidence)]
+                target.setdefault(
+                    "discarded_after_explicit_child_interrupt_usage",
+                    copy.deepcopy(zero),
+                )
+            usage["appserver_response_ledger"] = appserver_ledger
+            usage["notification_sequence"] = 7
+            usage["thread_accounting"] = [
+                {
+                    "thread_id": "root-thread",
+                    "parent_thread_id": None,
+                    "agent_path": "root",
+                    "provisional": False,
+                    "spawn_binding_status": "root_zero",
+                },
+                {
+                    "thread_id": "child-thread",
+                    "parent_thread_id": "root-thread",
+                    "agent_path": "/root/ultra_child",
+                    "provisional": False,
+                    "spawn_binding_status": "resolved",
+                },
+            ]
+
+            _seal_synthetic_gate(path, record)
+            usage["provider_token_gate"]["record_sha256"] = record[
+                "record_sha256"
+            ]
+            authenticated = authenticate_provider_gate_artifact(
+                path,
+                usage=usage,
+                **expected,
+            )
+            self.assertEqual(
+                authenticated["derived"][
+                    "superseded_by_collaboration_message_response_ids"
+                ],
+                [general["response_id"]],
+            )
+            self.assertEqual(
+                authenticated["derived"][
+                    "suppressed_collaboration_wait_response_ids"
+                ],
+                [suppressed["response_id"]],
             )
 
     def test_job_1509369_complete_superseded_shapes_replay(self) -> None:
@@ -3591,7 +3807,7 @@ class RunnerTests(unittest.TestCase):
                     self.assertEqual(
                         [
                             response["turn_id"]
-                            for response in usage["response_ledger"]
+                            for response in usage["appserver_response_ledger"]
                         ],
                         ["root-turn", "compaction-turn"],
                     )
@@ -3641,6 +3857,92 @@ class RunnerTests(unittest.TestCase):
                     )
                 )
         self.assertGreaterEqual(PROVIDER_GATE_CLEANUP_GRACE_SECONDS, 40.0)
+
+    def test_job_1510379_crossing_waits_for_final_teardown_publication(self) -> None:
+        """A sealed crossing may be polled safely while teardown is in flight."""
+
+        gate_path = (self.root / "job-1510379.provider-token-gate.json").resolve()
+        final_raw = active_tree_provider_crossing_usage(gate_path)
+        usage_path = self.root / "job-1510379.usage.json"
+
+        transient = copy.deepcopy(final_raw)
+        transient.pop("adapter_teardown")
+        transient["measurement_exact"] = False
+        write_json(usage_path, transient)
+        polled = read_token_usage(usage_path)
+        assert polled is not None
+        self.assertFalse(polled["measurement_exact"], polled)
+        self.assertEqual(polled["model_tokens"], 10_500)
+        self.assertEqual(polled["stop_reason"], "token_limit")
+        self.assertIsNone(polled["adapter_teardown"])
+
+        contradictory = copy.deepcopy(transient)
+        contradictory["measurement_exact"] = True
+        write_json(usage_path, contradictory)
+        with self.assertRaisesRegex(
+            BenchmarkToolError,
+            "Ultra exactness contradicts lifecycle evidence",
+        ):
+            read_token_usage(usage_path)
+
+        write_json(usage_path, final_raw)
+        final = read_token_usage(usage_path)
+        assert final is not None
+        self.assertTrue(final["measurement_exact"], final)
+        self.assertTrue(final["adapter_teardown"]["immediate"])
+        first_crossing = final["first_crossing"]
+        assert isinstance(first_crossing, Mapping)
+        self.assertIsNone(
+            exact_ultra_token_drain_error(
+                final,
+                token_limit=10_000,
+                first_crossing=first_crossing,
+            )
+        )
+
+    def test_job_1510379_retained_usage_replays_across_publication_window(
+        self,
+    ) -> None:
+        """Replay the retained 5,004,169-token artifact that exposed the race."""
+
+        retained = (
+            TOOLS.parent.parent
+            / "scratch_pad"
+            / "highambench_p01_actual_ultra"
+            / "pair_attempts"
+            / "P01-T2-rep-03"
+            / "attempt-1-slurm-1510379"
+            / "logs"
+            / "P01-T2-rep-03-N.attempt-1.usage.json"
+        )
+        if not retained.is_file():
+            self.skipTest("job 1510379 retained usage is unavailable")
+
+        final = read_token_usage(retained)
+        assert final is not None
+        self.assertEqual(final["model_tokens"], 5_004_169)
+        self.assertTrue(final["measurement_exact"])
+        self.assertTrue(final["adapter_teardown"]["immediate"])
+
+        raw = json.loads(retained.read_text(encoding="utf-8"))
+        transient = copy.deepcopy(raw)
+        transient.pop("adapter_teardown")
+        transient["measurement_exact"] = False
+        transient_path = self.root / "job-1510379-pre-teardown.usage.json"
+        write_json(transient_path, transient)
+        polled = read_token_usage(transient_path)
+        assert polled is not None
+        self.assertEqual(polled["model_tokens"], 5_004_169)
+        self.assertFalse(polled["measurement_exact"])
+        self.assertIsNone(polled["adapter_teardown"])
+
+        transient["measurement_exact"] = True
+        write_json(transient_path, transient)
+        with self.assertRaisesRegex(
+            BenchmarkToolError,
+            "Ultra exactness contradicts lifecycle evidence",
+        ):
+            read_token_usage(transient_path)
 
     def args(self, condition: str) -> argparse.Namespace:
         return argparse.Namespace(
@@ -3930,6 +4232,81 @@ class RunnerTests(unittest.TestCase):
         ).hexdigest()
         self.assertEqual(result["record_sha256"], expected)
 
+    def test_t4_validator_contract_and_authentication_are_plural(self) -> None:
+        parser = runner_module.make_parser()
+        tier_action = next(action for action in parser._actions if action.dest == "tier")
+        self.assertIn("T4", tier_action.choices)
+        hole_action = next(
+            action for action in parser._actions if action.dest == "controlled_sorries"
+        )
+        self.assertEqual(
+            hole_action.type('{"placeholder_order":1}'), {"placeholder_order": 1}
+        )
+        hole = {
+            "placeholder_order": 1,
+            "placeholder_id": "H001",
+            "declaration_id": "D001",
+            "lean_name": "HighamBench.first",
+            "marker": "-- PROOF_START H001",
+            "line": 4,
+            "column": 3,
+        }
+        required = ["HighamBench.first", "HighamBench.fixed"]
+        args = self.args("L")
+        args.tier = "T4"
+        args.required_declarations = required
+        args.controlled_sorries = [hole]
+        contract = _validator_contract(
+            args,
+            compile_command=["lean", "Submission.lean"],
+            audit_command=["lean", "--run", "audit.lean"],
+        )
+        self.assertNotIn("target_theorem", contract)
+        self.assertEqual(contract["required_declarations"], required)
+        self.assertEqual(contract["controlled_sorries"], [hole])
+
+        result = _authenticate_validation_result(
+            {
+                "pass": False,
+                "failure_code": "PROOF_ERROR",
+                "required_declarations": required,
+                "controlled_sorries": [hole],
+            },
+            run_id="run-1",
+            task_id="P01-T4",
+            candidate_sha256="a" * 64,
+            target_theorem="HighamBench.first",
+            controlled_manifest_sha256="b" * 64,
+            validator_contract_sha256="c" * 64,
+            submission_request_sha256=None,
+            submission_sequence=None,
+            required_declarations=required,
+            controlled_sorries=[hole],
+        )
+        authentication = result["authentication"]
+        self.assertEqual(authentication["schema_version"], 2)
+        self.assertEqual(authentication["required_declarations"], required)
+        self.assertEqual(authentication["controlled_sorries"], [hole])
+        self.assertNotIn("target_theorem", authentication)
+        with self.assertRaisesRegex(BenchmarkToolError, "plural controlled surface"):
+            _authenticate_validation_result(
+                {
+                    "pass": False,
+                    "required_declarations": list(reversed(required)),
+                    "controlled_sorries": [hole],
+                },
+                run_id="run-1",
+                task_id="P01-T4",
+                candidate_sha256="a" * 64,
+                target_theorem="HighamBench.first",
+                controlled_manifest_sha256="b" * 64,
+                validator_contract_sha256="c" * 64,
+                submission_request_sha256=None,
+                submission_sequence=None,
+                required_declarations=required,
+                controlled_sorries=[hole],
+            )
+
     def test_final_outcome_uses_global_failure_precedence(self) -> None:
         clean_network = {"detected": False, "note": ""}
 
@@ -3966,10 +4343,23 @@ class RunnerTests(unittest.TestCase):
             submission_present=False,
             ultra_submission_attempted=False,
             validation_result=None,
+            agent_system_error=None,
             network_violation={"detected": True, "note": "blocked socket"},
         )
         self.assertEqual(no_submission[1], "NO_SUBMISSION")
-        self.assertIn("without a proof submission", no_submission[2])
+        self.assertIn(
+            "cleanly without an authenticated proof submission", no_submission[2]
+        )
+
+        adapter_failure_without_submission = classify(
+            submission_present=False,
+            ultra_submission_attempted=False,
+            validation_result=None,
+        )
+        self.assertEqual(adapter_failure_without_submission[1], "SYSTEM_ERROR")
+        self.assertEqual(
+            adapter_failure_without_submission[2], "adapter tail failed"
+        )
 
         rule = classify(
             network_violation={"detected": True, "note": "blocked socket"}
@@ -4478,6 +4868,8 @@ class RunnerTests(unittest.TestCase):
             "thread_count": 1,
             "notification_sequence": 1,
             "response_ids": ["response"],
+            "appserver_response_count": 1,
+            "appserver_response_ids": ["response"],
         }
         request["boundary_usage"] = boundary_usage
         ack = {"ack_sha256": "f" * 64}
@@ -4500,6 +4892,8 @@ class RunnerTests(unittest.TestCase):
             "thread_count": 1,
             "notification_sequence": 1,
             "response_ids": ["response"],
+            "appserver_response_count": 1,
+            "appserver_response_ids": ["response"],
         }
         _bind_final_submission_boundary(usage, request, ack)
         for field, forged in (
@@ -5552,7 +5946,10 @@ class RunnerTests(unittest.TestCase):
         return
         self.assertFalse(result["pass"], result)
         self.assertEqual(result["failure_code"], "NO_SUBMISSION")
-        self.assertIn("without a proof submission", result["failure_note"])
+        self.assertIn(
+            "cleanly without an authenticated proof submission",
+            result["failure_note"],
+        )
         self.assertFalse(result["protocol"]["complete"])
 
     def test_ultra_token_limit_precedes_simultaneous_direct_submission(self) -> None:
@@ -6155,10 +6552,10 @@ class RunnerTests(unittest.TestCase):
         args.agent_command_json = json.dumps([sys.executable, str(failed_adapter)])
         result = run_one(args)
         self.assertFalse(result["pass"], result)
-        self.assertEqual(result["failure_code"], "NO_SUBMISSION")
+        self.assertEqual(result["failure_code"], "SYSTEM_ERROR")
         self.assertTrue(result["useful_work_started"])
         self.assertEqual(result["agent_exit_code"], 7)
-        self.assertIn("without a proof submission", result["failure_note"])
+        self.assertIn("before producing", result["failure_note"])
         self.assertIn("before producing", result["agent_system_error"])
 
     def test_n_preflight_scans_the_staged_controlled_task(self) -> None:

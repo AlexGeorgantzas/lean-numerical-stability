@@ -18,6 +18,7 @@ from hashes import create_manifest  # noqa: E402
 from validator import (  # noqa: E402
     ValidationConfig,
     classify_lean_failure,
+    compare_required_surfaces,
     compare_target_signature,
     extract_imports,
     forbidden_source_findings,
@@ -130,7 +131,7 @@ class ValidatorTests(unittest.TestCase):
             "import os, subprocess, sys\n"
             "lean, audit, workspace, module, target, expected_module, expected, local_modules = sys.argv[1:]\n"
             "environment = os.environ.copy()\n"
-            "environment['LEAN_PATH'] = workspace\n"
+            "environment['LEAN_PATH'] = workspace + '/task:' + workspace\n"
             "environment['PATH'] = os.path.dirname(lean) + ':/usr/bin:/bin'\n"
             "result = subprocess.run(\n"
             "  [lean, '--run', audit, module, target, expected_module, expected, local_modules],\n"
@@ -684,6 +685,238 @@ class ValidatorTests(unittest.TestCase):
         submitted.write_text("theorem target\n (n : Nat) : n = n := by rfl\n")
         canonical.write_text(SIGNATURE)
         self.assertTrue(compare_target_signature(submitted, canonical, "target")["ok"])
+
+    def test_t4_authenticates_qualified_controlled_definition_name(self) -> None:
+        shared = (
+            "namespace HighamBench\n"
+            "def Scope.FeasibleResult (n : Nat) : Prop := n = n\n"
+            "end HighamBench\n"
+        )
+        checks = compare_required_surfaces(
+            "import HighamBench.Shared\n",
+            "theorem placeholder : True := by sorry\n",
+            ("HighamBench.Scope.FeasibleResult",),
+            (),
+            ("HighamBench/Shared.lean",),
+            (2,),
+            {"HighamBench/Shared.lean": shared},
+            "Canonical.lean",
+        )
+        self.assertEqual(len(checks), 1)
+        self.assertTrue(checks[0]["ok"], checks[0])
+        self.assertEqual(checks[0]["kind"], "controlled_imported_declaration")
+
+
+    def _t4_config_and_sources(self) -> tuple[ValidationConfig, str, str]:
+        shared = (
+            "namespace HighamBench\n"
+            "def fixed : Nat := 1\n"
+            "end HighamBench\n"
+        )
+        shared_path = self.task / "HighamBench" / "Shared.lean"
+        shared_path.parent.mkdir(parents=True, exist_ok=True)
+        shared_path.write_text(shared, encoding="utf-8")
+        canonical = (
+            "import HighamBench.Shared\n"
+            "\n"
+            "namespace HighamBench\n"
+            "theorem first : True := by\n"
+            "  -- PROOF_START H001\n"
+            "  sorry\n"
+            "theorem second (n : Nat) : n + fixed = n + 1 := by\n"
+            "  -- PROOF_START H002\n"
+            "  sorry\n"
+            "end HighamBench\n"
+        )
+        submission = (
+            "import HighamBench.Shared\n"
+            "\n"
+            "namespace HighamBench\n"
+            "theorem first : True := by\n"
+            "  -- PROOF_START H001\n"
+            "  trivial\n"
+            "theorem second (n : Nat) : n + fixed = n + 1 := by\n"
+            "  -- PROOF_START H002\n"
+            "  rfl\n"
+            "theorem provedLocalHelper : True := by trivial\n"
+            "end HighamBench\n"
+        )
+        (self.task / "Canonical.lean").write_text(canonical, encoding="utf-8")
+        write_json(self.manifest_path, create_manifest(self.task))
+
+        def hole(order: int, placeholder_id: str, lean_name: str) -> dict:
+            marker = f"-- PROOF_START {placeholder_id}"
+            offset = canonical.index(marker)
+            previous_newline = canonical.rfind("\n", 0, offset)
+            return {
+                "placeholder_order": order,
+                "placeholder_id": placeholder_id,
+                "declaration_id": f"D{order:03d}",
+                "lean_name": lean_name,
+                "marker": marker,
+                "line": canonical.count("\n", 0, offset) + 1,
+                "column": offset - previous_newline,
+            }
+
+        holes = [
+            hole(1, "H001", "HighamBench.first"),
+            hole(2, "H002", "HighamBench.second"),
+        ]
+        plural_audit = self.root / "fake_plural_audit.py"
+        plural_audit.write_text(
+            "from pathlib import Path\n"
+            "import sys\n"
+            "for row in Path(sys.argv[1]).read_text().splitlines():\n"
+            "    kind, candidate, expected = row.split('\\t')\n"
+            "    if kind != 'proof':\n"
+            "        continue\n"
+            "    print('format\\t2')\n"
+            "    print(f'typeeq\\t{candidate}\\t{expected}\\ttrue')\n"
+            "    print(f'target\\t{candidate}\\tHighamBenchChecked')\n"
+            "    print('visited\\t1')\n"
+            "    print('summary\\t0\\t0')\n",
+            encoding="utf-8",
+        )
+        config = replace(
+            self.config(),
+            target_theorem="HighamBench.first",
+            required_declarations=(
+                "HighamBench.first",
+                "HighamBench.fixed",
+                "HighamBench.second",
+            ),
+            required_declaration_sources=(
+                "Canonical.lean",
+                "HighamBench/Shared.lean",
+                "Canonical.lean",
+            ),
+            required_declaration_source_lines=(4, 2, 7),
+            controlled_sorries=holes,
+            audit_command=[sys.executable, str(plural_audit), "{audit_pairs_file}"],
+        )
+        return config, canonical, submission
+
+    def test_t4_checks_every_declaration_hole_and_audit(self) -> None:
+        config, _, submission = self._t4_config_and_sources()
+        self.write_submission(submission)
+        result = validate(config)
+        self.assertTrue(result["pass"], result)
+        self.assertEqual(
+            [check["lean_name"] for check in result["statement_checks"]],
+            list(config.required_declarations),
+        )
+        self.assertTrue(all(check["ok"] for check in result["statement_checks"]))
+        self.assertEqual(len(result["proof_hole_check"]["holes"]), 2)
+        self.assertEqual(len(result["dependency_audits"]), 2)
+        self.assertEqual(
+            [check["candidate"] for check in result["semantic_statement_checks"]],
+            ["HighamBench.first", "HighamBench.second"],
+        )
+        self.assertTrue(result["audit_pairs_side_channel"]["unchanged_after_audit"])
+        self.assertEqual(result["audit_pairs_side_channel"]["pair_count"], 2)
+        self.assertEqual(result["audit_pairs_side_channel"]["mapping_count"], 2)
+        self.assertEqual(
+            result["audit_pairs_side_channel"]["controlled_source_binding_count"],
+            3,
+        )
+        shared_check = result["statement_checks"][1]
+        self.assertEqual(shared_check["kind"], "controlled_imported_declaration")
+        self.assertEqual(
+            shared_check["controlled_source_file"], "HighamBench/Shared.lean"
+        )
+        self.assertIsNone(shared_check["submitted"])
+
+    def test_t4_real_lean_audits_every_proof_declaration(self) -> None:
+        elan = shutil.which("elan")
+        if elan is not None:
+            lean = subprocess.check_output([elan, "which", "lean"], text=True).strip()
+        else:
+            lean = shutil.which("lean")
+        if not lean:
+            self.skipTest("Lean is unavailable")
+        config, _, submission = self._t4_config_and_sources()
+        shared_source = self.task / "HighamBench" / "Shared.lean"
+        shared_olean = shared_source.with_suffix(".olean")
+        subprocess.run(
+            [lean, "-o", str(shared_olean), str(shared_source)],
+            check=True,
+            cwd=self.workspace,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        write_json(self.manifest_path, create_manifest(self.task))
+        self.write_submission(submission)
+        driver = self.root / "trusted_plural_audit_driver.py"
+        driver.write_text(
+            "import os, subprocess, sys\n"
+            "lean, audit, workspace, module, pairs, expected_module, local_modules = sys.argv[1:]\n"
+            "environment = os.environ.copy()\n"
+            "environment['LEAN_PATH'] = workspace + '/task:' + workspace\n"
+            "environment['PATH'] = os.path.dirname(lean) + ':/usr/bin:/bin'\n"
+            "result = subprocess.run(\n"
+            "  [lean, '--run', audit, module, '--pairs-file', pairs, expected_module, local_modules],\n"
+            "  cwd=workspace, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environment)\n"
+            "print(result.stdout, end='')\n"
+            "raise SystemExit(result.returncode)\n",
+            encoding="utf-8",
+        )
+        config = replace(
+            config,
+            compile_command=[
+                shutil.which("env") or "/usr/bin/env",
+                "LEAN_PATH={workspace}/task:{workspace}",
+                lean,
+                "-o",
+                "{checked_olean}",
+                "{checked_submission}",
+            ],
+            audit_command=[
+                sys.executable,
+                str(driver),
+                lean,
+                str(TOOLS / "dependency_audit.lean"),
+                "{workspace}",
+                "{submission_module}",
+                "{audit_pairs_file}",
+                "{expected_module}",
+                "{local_modules_file}",
+            ],
+        )
+        result = validate(config)
+        self.assertTrue(result["pass"], result)
+        self.assertEqual(len(result["dependency_audits"]), 2)
+
+    def test_t4_rejects_changed_later_surface_and_bad_hole_ledgers(self) -> None:
+        config, _, submission = self._t4_config_and_sources()
+        cases = {
+            "later signature": submission.replace(
+                "theorem second (n : Nat) : n + fixed = n + 1 := by",
+                "theorem second (n : Nat) : n + fixed + 0 = n + 1 := by",
+            ),
+            "fixed definition": submission.replace(
+                "namespace HighamBench\n",
+                "namespace HighamBench\ndef fixed : Nat := 2\n",
+                1,
+            ),
+            "missing marker": submission.replace("  -- PROOF_START H002\n", ""),
+            "extra marker": submission.replace(
+                "theorem provedLocalHelper",
+                "-- PROOF_START EXTRA\ntheorem provedLocalHelper",
+            ),
+        }
+        for label, candidate in cases.items():
+            with self.subTest(label=label):
+                self.write_submission(candidate)
+                result = validate(config)
+                self.assertEqual(result["failure_code"], "RULE_VIOLATION", result)
+
+        self.write_submission(submission.replace("  rfl\n", "  sorry\n", 1))
+        retained = validate(config)
+        self.assertEqual(retained["failure_code"], "RULE_VIOLATION", retained)
+        self.assertIn(
+            "sorry", {finding["kind"] for finding in retained["static_findings"]}
+        )
 
 
 if __name__ == "__main__":

@@ -124,8 +124,15 @@ def run(args: argparse.Namespace) -> int:
     if args.action == "olean":
         return run_command(prefix + ["/lean/bin/lean", "-o", inside_olean, source])
 
-    if args.audit_helper is None or not args.target_theorem or not args.submission_module:
-        raise RuntimeError("audit needs --audit-helper, --submission-module, and --target-theorem")
+    audit_pairs_file = getattr(args, "audit_pairs_file", None)
+    target_theorem = getattr(args, "target_theorem", None)
+    plural_audit = audit_pairs_file is not None
+    if args.audit_helper is None or not args.submission_module:
+        raise RuntimeError("audit needs --audit-helper and --submission-module")
+    if plural_audit == bool(target_theorem):
+        raise RuntimeError(
+            "audit needs exactly one of --target-theorem or --audit-pairs-file"
+        )
     if args.action == "build-audit":
         compile_code = run_command(prefix + ["/lean/bin/lean", "-o", inside_olean, source])
         if compile_code != 0:
@@ -136,16 +143,31 @@ def run(args: argparse.Namespace) -> int:
         )
     audit_prefix = list(prefix)
     _bind(audit_prefix, args.audit_helper, "/audit.lean", writable=False)
-    audit_arguments = [args.submission_module, args.target_theorem]
-    if args.expected_module or args.expected_theorem:
-        if not args.expected_module or not args.expected_theorem:
+    if plural_audit:
+        if not args.expected_module or args.expected_theorem:
             raise RuntimeError(
-                "semantic audit needs both --expected-module and --expected-theorem"
+                "plural semantic audit needs --expected-module but not --expected-theorem"
             )
-        audit_arguments.extend([args.expected_module, args.expected_theorem])
         if args.local_modules_file is None:
-            raise RuntimeError("semantic audit needs --local-modules-file")
-        audit_arguments.append(inside_source(workspace, args.local_modules_file))
+            raise RuntimeError("plural semantic audit needs --local-modules-file")
+        audit_arguments = [
+            args.submission_module,
+            "--pairs-file",
+            inside_source(workspace, audit_pairs_file),
+            args.expected_module,
+            inside_source(workspace, args.local_modules_file),
+        ]
+    else:
+        audit_arguments = [args.submission_module, target_theorem]
+        if args.expected_module or args.expected_theorem:
+            if not args.expected_module or not args.expected_theorem:
+                raise RuntimeError(
+                    "semantic audit needs both --expected-module and --expected-theorem"
+                )
+            audit_arguments.extend([args.expected_module, args.expected_theorem])
+            if args.local_modules_file is None:
+                raise RuntimeError("semantic audit needs --local-modules-file")
+            audit_arguments.append(inside_source(workspace, args.local_modules_file))
     return run_command(
         audit_prefix
         + [
@@ -175,6 +197,7 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--audit-helper", type=Path)
     parser.add_argument("--submission-module")
     parser.add_argument("--target-theorem")
+    parser.add_argument("--audit-pairs-file", type=Path)
     parser.add_argument("--expected-module")
     parser.add_argument("--expected-theorem")
     parser.add_argument("--local-modules-file", type=Path)

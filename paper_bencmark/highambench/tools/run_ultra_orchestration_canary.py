@@ -184,12 +184,13 @@ In a separate final model response, make exactly one model tool call: code-mode
 `exec` with this exact raw two-line source, including the final newline:
 ```javascript
 // @exec: {"yield_time_ms": 2400000}
-await tools.submit_proof({candidate_path:"Candidate.lean"});
+text(await tools.submit_proof({candidate_path:"Candidate.lean"}));
 ```
 That program must make exactly one nested `submit_proof` call with
-`candidate_path="Candidate.lean"`. The yield pragma is transport-only and does
-not extend the measured deadline. Do not make any other tool call or action in
-that response, and do not answer after acceptance.
+`candidate_path="Candidate.lean"` and must forward any rejection through `text`
+so it is visible for a retry. The yield pragma is transport-only and does not
+extend the measured deadline. Do not make any other tool call or action in that
+response, and do not answer after acceptance.
 
 If delegation, Lean checking, or submission is unavailable, do not imitate it
 or claim success; report the failure plainly."""

@@ -1,4 +1,0 @@
-import NumStability.Algorithms.RecursiveSum
-
-#check NumStability.recursiveSum_backward_error
-#check NumStability.recursiveSum_problem43_abs_error_bound

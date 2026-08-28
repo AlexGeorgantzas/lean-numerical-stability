@@ -2027,6 +2027,100 @@ class ResultSetTests(unittest.TestCase):
             )
             self.assertTrue(any("byte hash" in error for error in errors), errors)
 
+    def test_t4_validation_authentication_binds_plural_surface(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            required = ["HighamBench.first", "HighamBench.second"]
+            hole = {
+                "placeholder_order": 1,
+                "placeholder_id": "H001",
+                "declaration_id": "D001",
+                "lean_name": "HighamBench.first",
+                "marker": "-- PROOF_START H001",
+                "line": 4,
+                "column": 3,
+            }
+            authentication = {
+                "schema_version": 2,
+                "run_id": "run-4",
+                "task_id": "P01-T4",
+                "candidate_sha256": SHA_A,
+                "required_declarations": required,
+                "controlled_sorries": [hole],
+                "controlled_manifest_sha256": SHA_B,
+                "validator_contract_sha256": SHA_C,
+                "submission_request_sha256": None,
+                "submission_sequence": None,
+            }
+            validation = {
+                "pass": True,
+                "failure_code": None,
+                "target_theorem": "HighamBench.first",
+                "required_declarations": required,
+                "controlled_sorries": [hole],
+                "proof_declarations": ["HighamBench.first"],
+                "authentication": authentication,
+            }
+            path = root / "validation-t4.json"
+
+            def seal() -> str:
+                validation.pop("record_sha256", None)
+                validation["record_sha256"] = hashlib.sha256(
+                    json.dumps(
+                        validation, sort_keys=True, separators=(",", ":")
+                    ).encode()
+                ).hexdigest()
+                path.write_text(
+                    json.dumps(validation, sort_keys=True) + "\n", encoding="utf-8"
+                )
+                return hashlib.sha256(path.read_bytes()).hexdigest()
+
+            run = {
+                "run_id": "run-4",
+                "task_id": "P01-T4",
+                "pass": True,
+                "failure_code": None,
+                "submission_sha256": SHA_A,
+                "final_submission_sha256": SHA_A,
+                "validation_log": str(path),
+                "validation_log_sha256": seal(),
+                "validation_record_sha256": validation["record_sha256"],
+            }
+            task = {
+                "tier": "T4",
+                "required_declarations": required,
+                "controlled_sorries": [hole],
+            }
+            errors: list[str] = []
+            _check_validation_authentication(
+                run,
+                task,
+                {"frozen_environment": {"model_reasoning_effort": "medium"}},
+                errors,
+                controlled_manifest_sha256=SHA_B,
+                repository_root=root,
+            )
+            self.assertEqual(errors, [])
+
+            tampered = copy.deepcopy(hole)
+            tampered["marker"] = "-- PROOF_START OTHER"
+            authentication["controlled_sorries"] = [tampered]
+            validation["controlled_sorries"] = [tampered]
+            run["validation_log_sha256"] = seal()
+            run["validation_record_sha256"] = validation["record_sha256"]
+            errors = []
+            _check_validation_authentication(
+                run,
+                task,
+                {"frozen_environment": {"model_reasoning_effort": "medium"}},
+                errors,
+                controlled_manifest_sha256=SHA_B,
+                repository_root=root,
+            )
+            self.assertTrue(
+                any("authentication identity" in error for error in errors), errors
+            )
+
     def test_ultra_canary_uses_exact_blocked_boundary_not_a_tree_drain(self) -> None:
         descriptor = ultra_canary_descriptor()
         summary = ultra_canary_summary(descriptor)

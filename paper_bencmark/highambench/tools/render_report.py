@@ -25,6 +25,7 @@ from typing import Any, Iterable, Mapping, Sequence
 try:
     from .common import FAILURE_CODES, BenchmarkToolError, read_json
     from .hashes import load_manifest, verify_manifest
+    from .task_tags import validate_t4_task_metadata
     from . import run_matrix
     from . import codex_isolated
     from . import provider_token_gate
@@ -34,6 +35,7 @@ try:
 except ImportError:  # Direct script execution.
     from common import FAILURE_CODES, BenchmarkToolError, read_json  # type: ignore
     from hashes import load_manifest, verify_manifest  # type: ignore
+    from task_tags import validate_t4_task_metadata  # type: ignore
     import run_matrix  # type: ignore
     import codex_isolated  # type: ignore
     import provider_token_gate  # type: ignore
@@ -1344,7 +1346,21 @@ def _gate_read_sealed(path: Path, label: str) -> tuple[dict[str, Any], bytes]:
     return record, payload
 
 
-def _gate_dependency(value: Any, label: str) -> dict[str, Any]:
+def _gate_dependency(
+    value: Any,
+    label: str,
+    *,
+    authenticated_historical_snapshot: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Validate one transport dependency, including historical node-local state.
+
+    Production/current validation still rereads the dependency from disk.  A
+    report over a completed paired-hardware campaign may instead supply the
+    exact independently authenticated launch-time ``/etc/hosts`` descriptor.
+    That file is node-local and can legitimately differ on the node rendering
+    the report.  No other dependency is eligible for historical validation.
+    """
+
     dependency = _gate_object(value, runner.PROVIDER_TRANSPORT_DEPENDENCY_KEYS, label)
     logical = dependency.get("logical_path")
     resolved = dependency.get("resolved_path")
@@ -1362,6 +1378,25 @@ def _gate_dependency(value: Any, label: str) -> dict[str, Any]:
         or re.fullmatch(r"0[0-7]{3}", str(dependency.get("mode"))) is None
     ):
         raise ReportError(f"{label} transport dependency descriptor is malformed")
+    if authenticated_historical_snapshot is not None:
+        snapshot = _gate_object(
+            authenticated_historical_snapshot,
+            runner.PROVIDER_TRANSPORT_DEPENDENCY_KEYS,
+            f"{label} authenticated historical snapshot",
+        )
+        if (
+            logical != runner.PROVIDER_HOSTS_PATH
+            or resolved != runner.PROVIDER_HOSTS_PATH
+            or symlink_target is not None
+        ):
+            raise ReportError(
+                f"{label} is not the fixed regular node-local hosts file"
+            )
+        if dependency != snapshot:
+            raise ReportError(
+                f"{label} does not match its authenticated historical snapshot"
+            )
+        return dependency
     resolved_path = Path(resolved)
     try:
         details = resolved_path.stat()
@@ -1377,7 +1412,12 @@ def _gate_dependency(value: Any, label: str) -> dict[str, Any]:
     return dependency
 
 
-def _gate_transport(value: Any, label: str) -> dict[str, Any]:
+def _gate_transport(
+    value: Any,
+    label: str,
+    *,
+    authenticated_historical_hosts_file: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     provenance = _gate_object(value, runner.PROVIDER_TRANSPORT_PROVENANCE_KEYS, label)
     if (
         provenance.get("schema_version") != runner.PROVIDER_TRANSPORT_SCHEMA_VERSION
@@ -1494,18 +1534,25 @@ def _gate_transport(value: Any, label: str) -> dict[str, Any]:
         != runner.PROVIDER_RESOLVER_VARIABILITY_CLASSIFICATION
     ):
         raise ReportError(f"{label} DNS variability is not classified as availability-only")
-    resolver_dependencies = {
-        field: _gate_dependency(resolver[field], f"{label}.resolver.{field}")
-        for field in (
-            "resolv_conf",
-            "nsswitch_conf",
-            "hosts_file",
-            "gai_conf",
-            "libc",
-            "libnss_dns",
-            "libnss_files",
+    resolver_dependencies = {}
+    for field in (
+        "resolv_conf",
+        "nsswitch_conf",
+        "hosts_file",
+        "gai_conf",
+        "libc",
+        "libnss_dns",
+        "libnss_files",
+    ):
+        resolver_dependencies[field] = _gate_dependency(
+            resolver[field],
+            f"{label}.resolver.{field}",
+            authenticated_historical_snapshot=(
+                authenticated_historical_hosts_file
+                if field == "hosts_file"
+                else None
+            ),
         )
-    }
     expected_paths = {
         "resolv_conf": runner.PROVIDER_RESOLV_CONF_PATH,
         "nsswitch_conf": runner.PROVIDER_NSSWITCH_PATH,
@@ -1713,6 +1760,7 @@ def _authenticate_provider_gate_record(
     *,
     artifact_path: Path | None = None,
     label: str | None = None,
+    authenticated_historical_hosts_file: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Independently authenticate one sealed provider-token endpoint.
 
@@ -1779,7 +1827,9 @@ def _authenticate_provider_gate_record(
         raise ReportError(f"{run_label} provider model-catalog projection changed")
 
     transport = _gate_transport(
-        summary.get("transport_provenance"), f"{run_label} prelaunch transport"
+        summary.get("transport_provenance"),
+        f"{run_label} prelaunch transport",
+        authenticated_historical_hosts_file=authenticated_historical_hosts_file,
     )
     command = run.get("agent_command")
     usage_raw = _gate_command_value(command, "--usage-output", run_label)
@@ -2444,6 +2494,7 @@ def _authenticate_provider_gate_record(
             not in {
                 provider_token_gate.PROVIDER_GATE_DELIVERY_DIRECT,
                 provider_token_gate.PROVIDER_GATE_DELIVERY_SUPERSEDED_COLLABORATION_MESSAGE,
+                provider_token_gate.PROVIDER_GATE_DELIVERY_SUPPRESSED_WAIT,
             }
             or successor["admitted_unix_ns"] <= superseded["commit_unix_ns"]
         ):
@@ -2453,10 +2504,10 @@ def _authenticate_provider_gate_record(
     for origin in superseded_calls:
         cursor = origin
         seen_chain: set[str] = set()
-        while (
-            cursor["appserver_delivery"]["kind"]
-            == provider_token_gate.PROVIDER_GATE_DELIVERY_SUPERSEDED_COLLABORATION_MESSAGE
-        ):
+        while cursor["appserver_delivery"]["kind"] in {
+            provider_token_gate.PROVIDER_GATE_DELIVERY_SUPERSEDED_COLLABORATION_MESSAGE,
+            provider_token_gate.PROVIDER_GATE_DELIVERY_SUPPRESSED_WAIT,
+        }:
             if cursor["response_id"] in seen_chain:
                 raise ReportError(
                     f"{run_label} superseded collaboration response chain is cyclic"
@@ -3874,6 +3925,54 @@ def _task_records(
     return paper_ids, task_records
 
 
+def _selected_tasks(
+    tasks: Sequence[Mapping[str, Any]],
+) -> list[Mapping[str, Any]]:
+    """Return the measured T1--T3 stratum; T4 is whole-paper coverage."""
+
+    return [task for task in tasks if task.get("tier") != "T4"]
+
+
+def _t4_coverage_rows(
+    tasks: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Authenticate and summarize final claim-scoped whole-paper coverage."""
+
+    rows: list[dict[str, Any]] = []
+    for task in tasks:
+        if task.get("tier") != "T4":
+            continue
+        task_id = str(task.get("task_id"))
+        try:
+            summary = validate_t4_task_metadata(task, label=task_id)
+        except BenchmarkToolError as error:
+            raise ReportError(f"invalid T4 whole-paper metadata for {task_id}: {error}") from error
+        review_units = int(summary["review_unit_count"])
+        accepted_reviews = int(summary["review_count"])
+        rows.append(
+            {
+                "paper_id": str(task.get("paper_id")),
+                "task_id": task_id,
+                "tier": "T4",
+                "stratum": "whole-paper",
+                "source_inventory_count": int(summary["source_inventory_count"]),
+                "included_source_count": int(summary["included_source_count"]),
+                "excluded_source_count": int(summary["excluded_source_count"]),
+                "reviewed_included_source_count": int(summary["included_source_count"]),
+                "declaration_count": int(summary["declaration_count"]),
+                "reviewed_declaration_count": int(summary["declaration_count"]),
+                "review_unit_count": review_units,
+                "accepted_review_count": accepted_reviews,
+                "accepted_review_unit_coverage_rate": (
+                    accepted_reviews / review_units if review_units else None
+                ),
+                "controlled_sorry_count": int(summary["controlled_sorry_count"]),
+                "measurement_ready": summary.get("measurement_ready") is True,
+            }
+        )
+    return rows
+
+
 def _review_task_records(review: Mapping[str, Any]) -> list[Mapping[str, Any]]:
     """Return either supported fresh-review task-list schema."""
 
@@ -3926,6 +4025,8 @@ def _load_review_records(
     root: Path,
     metadata: Path,
     config: Mapping[str, Any],
+    *,
+    required: bool,
 ) -> tuple[Mapping[str, Any], ...]:
     """Load current reviews, authenticating a configured private override.
 
@@ -3934,6 +4035,8 @@ def _load_review_records(
     retained while the unchanged matrix is measured privately.
     """
 
+    if not required:
+        return ()
     review_dir = metadata / "reviews"
     override = config.get("private_measurement_review_override")
     if isinstance(override, Mapping) and override.get("enabled") is True:
@@ -4104,7 +4207,12 @@ def load_report_inputs(benchmark_root: Path, analysis_path: Path) -> ReportInput
         evidence["library_dependency_probe"],
     )
 
-    reviews = _load_review_records(root, metadata, config)
+    reviews = _load_review_records(
+        root,
+        metadata,
+        config,
+        required=bool(_selected_tasks(tasks)),
+    )
 
     raw_shared_entries = manifest.get("controlled_shared_files")
     if not isinstance(raw_shared_entries, list) or not raw_shared_entries:
@@ -4203,7 +4311,12 @@ def _check_matrix_coverage(
     pair_rows: Sequence[Mapping[str, Any]],
     task_pair_rows: Sequence[Mapping[str, Any]],
 ) -> None:
-    task_ids = {str(task.get("task_id")) for task in inputs.tasks}
+    measured_tasks = _selected_tasks(inputs.tasks)
+    task_ids = {str(task.get("task_id")) for task in measured_tasks}
+    if not task_ids:
+        raise ReportError(
+            "the measured report requires at least one T1--T3 task; T4 is coverage-only"
+        )
     repetitions = inputs.config.get("repetitions")
     if not isinstance(repetitions, list) or not repetitions:
         raise ReportError("configuration metadata has no repetitions")
@@ -4225,18 +4338,51 @@ def _check_matrix_coverage(
     if actual != expected or len(selected_runs) != len(expected):
         raise ReportError("incomplete analysis: selected final runs do not cover the fixed task matrix exactly")
 
-    overall_conditions = {
-        row.get("condition") for row in condition_rows if row.get("scope") == "overall"
+    tier_scopes = {str(task.get("tier")) for task in measured_tasks}
+    expected_scopes = {"overall", *tier_scopes}
+    condition_scope_pairs = {
+        (row.get("scope"), row.get("condition")) for row in condition_rows
     }
-    if overall_conditions != {"N", "L"}:
-        raise ReportError("incomplete analysis: overall N and L condition rows are required")
+    if condition_scope_pairs != {
+        (scope, condition)
+        for scope in expected_scopes
+        for condition in ("N", "L")
+    }:
+        raise ReportError(
+            "incomplete analysis: T1--T3 overall/tier N and L rows are not exact"
+        )
     task_conditions = {(row.get("task_id"), row.get("condition")) for row in task_rows}
     if task_conditions != {(task_id, condition) for task_id in task_ids for condition in ("N", "L")}:
         raise ReportError("incomplete analysis: each task needs both an N and an L summary")
-    if "overall" not in {row.get("scope") for row in pair_rows}:
-        raise ReportError("incomplete analysis: the overall paired-change row is missing")
+    if {row.get("scope") for row in pair_rows} != expected_scopes:
+        raise ReportError(
+            "incomplete analysis: T1--T3 overall/tier paired rows are not exact"
+        )
     if {row.get("task_id") for row in task_pair_rows} != task_ids:
         raise ReportError("incomplete analysis: each task needs a paired-change row")
+
+
+def _bootstrap_paper_count(
+    inputs: ReportInputs, row: Mapping[str, Any]
+) -> int:
+    """Return the exact paper population for one measured analysis row."""
+
+    task_id = row.get("task_id")
+    if isinstance(task_id, str) and task_id:
+        return 1
+    scope = row.get("scope")
+    tasks = _selected_tasks(inputs.tasks)
+    if scope == "overall":
+        return len({str(task.get("paper_id")) for task in tasks})
+    if scope in {"T1", "T2", "T3"}:
+        return len(
+            {
+                str(task.get("paper_id"))
+                for task in tasks
+                if task.get("tier") == scope
+            }
+        )
+    raise ReportError(f"incomplete analysis: unknown bootstrap scope {scope!r}")
 
 
 def _release_file_hashes(inputs: ReportInputs) -> dict[str, str]:
@@ -4456,6 +4602,107 @@ def _identity_matches_manifest(
         raise ReportError(f"construction evidence has a stale or incomplete {label} identity")
 
 
+def _validate_t4_construction_result(
+    result: Mapping[str, Any],
+    task: Mapping[str, Any],
+    target: Mapping[str, Any],
+) -> None:
+    """Authenticate a T4 skeleton compile without inventing a private proof."""
+
+    task_id = str(task.get("task_id"))
+    condition = str(result.get("condition"))
+    label = f"{task_id}/{condition} designated-hole T4 skeleton"
+    task_validation = task.get("validation")
+    lean_target = target.get("lean_target")
+    if not isinstance(task_validation, Mapping) or not isinstance(lean_target, Mapping):
+        raise ReportError(f"{label} lacks task or manifest validation metadata")
+    required = task_validation.get("required_declarations")
+    raw_sorries = task_validation.get("controlled_sorries")
+    if not isinstance(required, list) or not isinstance(raw_sorries, list):
+        raise ReportError(f"{label} lacks plural declarations or controlled holes")
+    expected_sorries = [
+        {
+            key: raw.get(key)
+            for key in (
+                "placeholder_id",
+                "declaration_id",
+                "lean_name",
+                "marker",
+                "line",
+                "column",
+            )
+        }
+        for raw in raw_sorries
+        if isinstance(raw, Mapping)
+    ]
+    validation = result.get("validation")
+    if (
+        len(expected_sorries) != len(raw_sorries)
+        or result.get("tier") != "T4"
+        or result.get("construction_kind") != "designated-hole-skeleton"
+        or result.get("required_declarations") != required
+        or result.get("controlled_sorries") != expected_sorries
+        or result.get("helpers") != []
+        or result.get("target_source_sha256")
+        != lean_target.get("controlled_file_sha256")
+        or result.get("pass") is not True
+        or result.get("reasons") != []
+        or not _hex_digest(result.get("manifest_sha256"))
+        or not isinstance(validation, Mapping)
+        or validation.get("pass") is not True
+        or validation.get("failure_code") is not None
+        or validation.get("compile_exit_code") != 0
+        or validation.get("compile_timed_out") is not False
+        or validation.get("compile_system_error") is not None
+        or validation.get("olean_created") is not True
+        or validation.get("required_declaration_count") != len(required)
+        or validation.get("required_declarations_checked") != len(required)
+        or validation.get("controlled_sorry_count") != len(raw_sorries)
+        or validation.get("controlled_sorries_checked") != len(raw_sorries)
+        or validation.get("static_finding_count") != 0
+        or validation.get("static_findings") != []
+        or validation.get("dependency_audit") is not None
+    ):
+        raise ReportError(f"{label} has an incomplete compile/hole record")
+    if condition == "N":
+        preflight = result.get("n_preflight")
+        controlled = (
+            preflight.get("controlled_files_verified_after_staging")
+            if isinstance(preflight, Mapping)
+            else None
+        )
+        probe = preflight.get("import_probe") if isinstance(preflight, Mapping) else None
+        if (
+            result.get("condition_n_library_arguments_omitted") is not True
+            or not isinstance(preflight, Mapping)
+            or preflight.get("ok") is not True
+            or preflight.get("complete") is not True
+            or preflight.get("controlled_manifest_sha256")
+            != result.get("manifest_sha256")
+            or preflight.get("filesystem_leaks") != []
+            or not isinstance(controlled, Mapping)
+            or controlled.get("ok") is not True
+            or controlled.get("changed") != []
+            or controlled.get("missing") != []
+            or controlled.get("verified") != controlled.get("expected")
+            or type(controlled.get("verified")) is not int
+            or controlled["verified"] <= 0
+            or not isinstance(probe, Mapping)
+            or probe.get("attempted") is not True
+            or probe.get("reliable") is not True
+            or probe.get("importable") is not False
+            or probe.get("timed_out") is not False
+            or probe.get("system_error") is not None
+        ):
+            raise ReportError(f"{label} has an incomplete N isolation preflight")
+    elif (
+        condition != "L"
+        or result.get("condition_n_library_arguments_omitted") is not False
+        or result.get("n_preflight") is not None
+    ):
+        raise ReportError(f"{label} has invalid L isolation metadata")
+
+
 def _validate_construction(inputs: ReportInputs) -> None:
     search_records = [
         record
@@ -4553,10 +4800,46 @@ def _validate_construction(inputs: ReportInputs) -> None:
     results = check.get("results")
     task_count = len(inputs.tasks)
     proof_count = task_count * 2
+    t4_tasks = [task for task in inputs.tasks if task.get("tier") == "T4"]
+    private_task_count = task_count - len(t4_tasks)
+    expected_construction_summary: dict[str, Any] = {
+        "expected": proof_count,
+        "checked": proof_count,
+        "passed": proof_count,
+        "condition_n_passed": task_count,
+        "condition_l_passed": task_count,
+    }
+    if t4_tasks:
+        t4_required_declarations = sum(
+            len(task["validation"]["required_declarations"])
+            for task in t4_tasks
+            if isinstance(task.get("validation"), Mapping)
+            and isinstance(task["validation"].get("required_declarations"), list)
+        )
+        t4_controlled_sorries = sum(
+            len(task["validation"]["controlled_sorries"])
+            for task in t4_tasks
+            if isinstance(task.get("validation"), Mapping)
+            and isinstance(task["validation"].get("controlled_sorries"), list)
+        )
+        expected_construction_summary.update(
+            {
+                "task_count": task_count,
+                "required_declaration_count": private_task_count
+                + t4_required_declarations,
+                "t4_controlled_sorry_count": t4_controlled_sorries,
+                "private_proof_task_count": private_task_count,
+                "t4_skeleton_task_count": len(t4_tasks),
+                "private_proof_result_count": private_task_count * 2,
+                "t4_skeleton_result_count": len(t4_tasks) * 2,
+            }
+        )
     if (
         check.get("kind") != "highambench-private-construction-check"
         or check.get("pass") is not True
+        or check.get("schema_version") != (2 if t4_tasks else 1)
         or not isinstance(summary, Mapping)
+        or dict(summary) != expected_construction_summary
         or summary.get("expected") != proof_count
         or summary.get("checked") != proof_count
         or summary.get("passed") != proof_count
@@ -4579,6 +4862,18 @@ def _validate_construction(inputs: ReportInputs) -> None:
         is not False
         or construction_isolation.get("condition_l_numstability_mounts_configured")
         is not True
+        or (
+            bool(t4_tasks)
+            and (
+                construction_isolation.get("t4_private_gold_required") is not False
+                or construction_isolation.get(
+                    "t4_skeleton_staged_from_controlled_target"
+                )
+                is not True
+                or construction_isolation.get("t4_designated_sorries_only")
+                is not True
+            )
+        )
     ):
         raise ReportError("construction isolation order or condition mounts are not authenticated")
 
@@ -4758,6 +5053,10 @@ def _validate_construction(inputs: ReportInputs) -> None:
     task_tiers = {
         str(task.get("task_id")): str(task.get("tier")) for task in inputs.tasks
     }
+    tasks_by_id = {str(task.get("task_id")): task for task in inputs.tasks}
+    targets_by_id = {
+        str(target.get("task_id")): target for target in _manifest_targets(inputs)
+    }
     expected_results = {
         (task_id, condition)
         for task_id in task_tiers
@@ -4769,13 +5068,20 @@ def _validate_construction(inputs: ReportInputs) -> None:
     }
     if actual_results != expected_results or len(actual_results) != len(results):
         raise ReportError(
-            "the private construction check does not contain exactly one N and one L proof for every task"
+            "the construction check does not contain exactly one N and one L result for every task"
         )
 
     for result in results:
         task_id = str(result.get("task_id"))
         condition = str(result.get("condition"))
         label = f"{task_id}/{condition} private construction proof"
+        if task_tiers[task_id] == "T4":
+            _validate_t4_construction_result(
+                result,
+                tasks_by_id[task_id],
+                targets_by_id[task_id],
+            )
+            continue
         validation = result.get("validation")
         audit = validation.get("dependency_audit") if isinstance(validation, Mapping) else None
         if (
@@ -4975,9 +5281,19 @@ def _validate_hashes_and_reviews(inputs: ReportInputs) -> None:
             f"controlled target {target.get('task_id')}",
         )
 
-    task_ids = {str(task.get("task_id")) for task in inputs.tasks}
+    # T4 claim-scoped reviews are embedded in task.json and authenticated by
+    # the schema-0.4 validator.  The older two-record task-level review gate
+    # applies only to measured T1--T3 tasks.
+    _t4_coverage_rows(inputs.tasks)
+    task_ids = {
+        str(task.get("task_id")) for task in _selected_tasks(inputs.tasks)
+    }
     override = inputs.config.get("private_measurement_review_override")
-    override_enabled = isinstance(override, Mapping) and override.get("enabled") is True
+    override_enabled = (
+        bool(task_ids)
+        and isinstance(override, Mapping)
+        and override.get("enabled") is True
+    )
     ignored_rejections: set[str] = set()
     fresh_context_required = False
     source_fidelity_required = False
@@ -5702,14 +6018,44 @@ def _validate_freeze_link(inputs: ReportInputs, result_check: Mapping[str, Any])
 
     freeze = inputs.freeze_check
     digest = _document_digest(freeze)
-    if not _hex_digest(result_check.get("freeze_check_sha256")) or result_check.get(
-        "freeze_check_sha256"
-    ) != digest:
-        raise ReportError("analysis is not linked to the adjacent frozen-run verification")
     frozen = inputs.config.get("frozen_environment")
     lean_environment = inputs.environment.get("lean")
     if not isinstance(frozen, Mapping) or not isinstance(lean_environment, Mapping):
         raise ReportError("frozen environment metadata is missing")
+    hardware_policy = frozen.get("hardware_matching_policy")
+    recorded_freeze_digest = result_check.get("freeze_check_sha256")
+    if hardware_policy is None:
+        if not _hex_digest(recorded_freeze_digest) or recorded_freeze_digest != digest:
+            raise ReportError(
+                "analysis is not linked to the adjacent frozen-run verification"
+            )
+    else:
+        matrix = result_check.get("matrix_record_authentication")
+        evidence = matrix.get("run_evidence") if isinstance(matrix, Mapping) else None
+        embedded_digests = sorted(
+            {
+                str(wrapper.get("freeze_check_sha256"))
+                for item in evidence or []
+                if isinstance(item, Mapping)
+                and isinstance(item.get("record"), Mapping)
+                and isinstance(
+                    wrapper := item["record"].get("frozen_run_verification"),
+                    Mapping,
+                )
+                and _hex_digest(wrapper.get("freeze_check_sha256"))
+            }
+        )
+        aggregate = _document_digest({"freeze_check_sha256s": embedded_digests})
+        if (
+            hardware_policy != getattr(run_matrix, "HARDWARE_MATCHING_POLICY", None)
+            or inputs.environment.get("hardware_matching_policy") != hardware_policy
+            or not embedded_digests
+            or digest not in embedded_digests
+            or recorded_freeze_digest != aggregate
+        ):
+            raise ReportError(
+                "analysis is not linked to the authenticated paired-hardware freezes"
+            )
     if (
         freeze.get("schema_version") != 1
         or freeze.get("kind") != "highambench-frozen-run-verification"
@@ -5935,13 +6281,34 @@ def _validate_freeze_link(inputs: ReportInputs, result_check: Mapping[str, Any])
         "slurm_cpus_per_task",
         "slurm_allocated_memory_bytes",
     }
-    if (
+    exact_host_fields = host_fields
+    if hardware_policy is not None:
+        policy_host = hardware_policy.get("frozen_host_class")
+        exact_host_fields = set(
+            policy_host.get("exact_fields", [])
+            if isinstance(policy_host, Mapping)
+            else []
+        )
+    invalid_host = (
         not isinstance(freeze_host, Mapping)
         or not isinstance(environment_host, Mapping)
         or set(freeze_host) != host_fields
-        or any(environment_host.get(field) != freeze_host.get(field) for field in host_fields)
+    )
+    if hardware_policy is not None and freeze.get(
+        "hardware_matching_policy"
+    ) != hardware_policy:
+        invalid_host = True
+    if not invalid_host and any(
+        environment_host.get(field) != freeze_host.get(field)  # type: ignore[union-attr]
+        for field in exact_host_fields
     ):
-        raise ReportError("the frozen-run verification disagrees with the measured host")
+        invalid_host = True
+    if invalid_host:
+        raise ReportError(
+            "the frozen-run verification violates the paired-hardware invariants"
+            if hardware_policy is not None
+            else "the frozen-run verification disagrees with the measured host"
+        )
 
     selected = result_check.get("selected_final_record_count")
     network_runs = result_check.get("network_violation_run_count")
@@ -6405,8 +6772,13 @@ def _validate_projection_superseded_route_order(
     superseded_by_response = {
         str(item["response_id"]): item for item in superseded_evidence
     }
+    suppressed_by_response = {
+        str(item["response_id"]): item for item in suppressed_evidence
+    }
     superseded_ids = set(superseded_by_response)
-    allowed_successors = set(appserver_response_ids) | superseded_ids
+    allowed_successors = (
+        set(appserver_response_ids) | superseded_ids | set(suppressed_by_response)
+    )
     for evidence in superseded_evidence:
         response_id = str(evidence["response_id"])
         successor_id = str(evidence["successor_response_id"])
@@ -6430,18 +6802,51 @@ def _validate_projection_superseded_route_order(
                 "incomplete analysis: projection-v6 superseded chain changed"
             )
 
+    # A suppressed wait is a valid bridge only when its evidence names the
+    # earliest later direct response on the identical thread/turn route.
+    appserver_id_set = set(appserver_response_ids)
+    for evidence in suppressed_evidence:
+        response_id = str(evidence["response_id"])
+        successor_id = str(evidence["successor_response_id"])
+        origin = response_bindings[response_id]
+        successor = response_bindings.get(successor_id)
+        origin_index = positions[response_id]
+        successor_index = positions.get(successor_id, -1)
+        if (
+            successor is None
+            or successor_id not in appserver_id_set
+            or successor_index <= origin_index
+            or successor[0] != evidence.get("successor_call_id")
+            or successor[1:] != origin[1:]
+            or successor[3] != "turn"
+            or any(
+                intervening in appserver_id_set
+                and response_bindings[intervening][1:3] == origin[1:3]
+                for intervening in response_ids[origin_index + 1 : successor_index]
+            )
+        ):
+            raise ReportError(
+                "incomplete analysis: projection-v6 suppressed bridge changed"
+            )
+
     for origin_id in superseded_ids:
         cursor_id = origin_id
         seen_chain: set[str] = set()
-        while cursor_id in superseded_by_response:
+        while (
+            cursor_id in superseded_by_response
+            or cursor_id in suppressed_by_response
+        ):
             if cursor_id in seen_chain:
                 raise ReportError(
                     "incomplete analysis: projection-v6 superseded chain is cyclic"
                 )
             seen_chain.add(cursor_id)
-            cursor_id = str(
-                superseded_by_response[cursor_id]["successor_response_id"]
+            edge = (
+                superseded_by_response[cursor_id]
+                if cursor_id in superseded_by_response
+                else suppressed_by_response[cursor_id]
             )
+            cursor_id = str(edge["successor_response_id"])
         if cursor_id not in set(appserver_response_ids):
             raise ReportError(
                 "incomplete analysis: projection-v6 superseded chain has no direct end"
@@ -8121,6 +8526,12 @@ def validate_report_inputs(inputs: ReportInputs) -> None:
     analysis = inputs.analysis
     if analysis.get("kind") != "highambench-analysis":
         raise ReportError("incomplete analysis: input is not a highambench-analysis document")
+    expected_t4_coverage = _t4_coverage_rows(inputs.tasks)
+    observed_t4_coverage = analysis.get("whole_paper_t4_coverage", [])
+    if observed_t4_coverage != expected_t4_coverage:
+        raise ReportError(
+            "incomplete analysis: T4 whole-paper coverage is missing or stale"
+        )
     if analysis.get("malformed_input_lines") != []:
         raise ReportError("incomplete analysis: malformed input lines were not ruled out")
     check = analysis.get("result_set_check")
@@ -8229,9 +8640,9 @@ def validate_report_inputs(inputs: ReportInputs) -> None:
     _check_matrix_coverage(
         inputs, selected_runs, condition_rows, task_rows, pair_rows, task_pair_rows
     )
-    paper_count = len(inputs.papers)
-    informative_bootstrap = paper_count > 1
     for row in (*pair_rows, *task_pair_rows):
+        paper_count = _bootstrap_paper_count(inputs, row)
+        informative_bootstrap = paper_count > 1
         bootstrap = row.get("bootstrap")
         if (
             not isinstance(bootstrap, Mapping)
@@ -8455,8 +8866,14 @@ def render_report(inputs: ReportInputs) -> str:
     paper_records = {str(paper["paper_id"]): paper for paper in inputs.papers}
     paper_count = len(manifest_papers)
     task_count = len(inputs.tasks)
+    measured_tasks = _selected_tasks(inputs.tasks)
+    measured_task_count = len(measured_tasks)
+    measured_paper_count = len(
+        {str(task.get("paper_id")) for task in measured_tasks}
+    )
+    t4_coverage = _t4_coverage_rows(inputs.tasks)
     repetitions = inputs.config.get("repetitions", [])
-    pair_count = task_count * len(repetitions)
+    pair_count = measured_task_count * len(repetitions)
     run_count = pair_count * 2
     specification = inputs.manifest["specification"]
     frozen = inputs.config["frozen_environment"]
@@ -8533,7 +8950,11 @@ def render_report(inputs: ReportInputs) -> str:
             + latex_escape(paper_count)
             + " paper(s) and "
             + latex_escape(task_count)
-            + " task(s): "
+            + " formalized task record(s), of which "
+            + latex_escape(measured_task_count)
+            + " T1--T3 task(s) form the measured matrix and "
+            + latex_escape(len(t4_coverage))
+            + " T4 record(s) form a separate whole-paper coverage stratum: "
             + "; ".join(
                 latex_escape(paper.get("paper_id"))
                 + ", ``"
@@ -8667,8 +9088,8 @@ def render_report(inputs: ReportInputs) -> str:
 
     lines.extend(
         [
-            r"\section{Why T1, T2, and T3 are present}",
-            "A tier is a difficulty label fixed before measurement. T1 means direct use: a close library result already exists. T2 means combine: several existing facts and small new steps must be joined. T3 means extend: the library does not contain the complete result, so a substantial new proof step is required.",
+            r"\section{T1--T3 difficulty tasks and T4 whole-paper coverage}",
+            "T1, T2, and T3 are difficulty labels fixed before measurement. T1 means direct use: a close library result already exists. T2 means combine: several existing facts and small new steps must be joined. T3 means extend: the library does not contain the complete result, so a substantial new proof step is required. T4 is not a harder difficulty tier; it is a separate whole-paper formalization corpus and is not included in the T1--T3 overall score.",
         ]
     )
     manifest_by_task = {item.get("task_id"): item for item in _manifest_targets(inputs)}
@@ -8676,6 +9097,8 @@ def render_report(inputs: ReportInputs) -> str:
         task_id = str(task.get("task_id"))
         target = manifest_by_task[task_id]
         tier = str(task.get("tier"))
+        if tier == "T4":
+            continue
         lines.extend(
             [
                 rf"\subsection{{{latex_escape(task_id)}: {latex_escape(target.get('title'))}}}",
@@ -8722,6 +9145,46 @@ def render_report(inputs: ReportInputs) -> str:
             ]
         )
 
+    if t4_coverage:
+        lines.extend(
+            [
+                r"\subsection{T4 whole-paper formalization coverage}",
+                "Every included paper claim is assigned to a review unit, every required Lean declaration is covered, and every recorded claim review is accepted. The designated holes are the public theorem/lemma skeletons compiled in both N and L; they are not private gold proofs.",
+            ]
+        )
+        lines.extend(
+            _longtable(
+                "Authenticated T4 inventory, declaration, and review-unit coverage",
+                "P{0.13\\linewidth}rrrrrrrr",
+                (
+                    "Task",
+                    "Inventory",
+                    "Included",
+                    "Excluded",
+                    "Decls.",
+                    "Units",
+                    "Accepted",
+                    "Holes",
+                    "Ready",
+                ),
+                (
+                    (
+                        latex_escape(row["task_id"]),
+                        latex_escape(row["source_inventory_count"]),
+                        latex_escape(row["included_source_count"]),
+                        latex_escape(row["excluded_source_count"]),
+                        latex_escape(row["declaration_count"]),
+                        latex_escape(row["review_unit_count"]),
+                        latex_escape(row["accepted_review_count"]),
+                        latex_escape(row["controlled_sorry_count"]),
+                        latex_escape(row["measurement_ready"]),
+                    )
+                    for row in t4_coverage
+                ),
+                size="footnotesize",
+            )
+        )
+
     search_rows: list[Sequence[str]] = []
     search_task_ids: set[str] = set()
     for evidence_name, target_search in sorted(inputs.evidence.items()):
@@ -8743,8 +9206,8 @@ def render_report(inputs: ReportInputs) -> str:
             "An exact duplicate has the same fixed Lean claim. A semantic duplicate may use different names but still says the same mathematical thing with the same assumptions. The separately authenticated exact-target-search artifacts cover "
             + latex_escape(len(search_task_ids))
             + " of "
-            + latex_escape(task_count)
-            + " tasks ("
+            + latex_escape(measured_task_count)
+            + " measured T1--T3 tasks ("
             + ", ".join(latex_escape(task_id) for task_id in sorted(search_task_ids))
             + "). For those tasks, the frozen NumStability and mathlib source trees were searched and plausible nearby results were compared by meaning. The fresh-context review records later in this report provide the separate corpus-wide review. Text search alone was not treated as proof that a duplicate was absent.",
         ]
@@ -8773,10 +9236,19 @@ def render_report(inputs: ReportInputs) -> str:
         ]
     )
 
+    paired_hardware_policy = inputs.environment.get("hardware_matching_policy")
+    hardware_pair_clause = (
+        "same exact authenticated Slurm allocation within each N/L pair; hardware "
+        "may differ between pairs"
+        if paired_hardware_policy is not None
+        else "same frozen machine class"
+    )
     if prompt_protocol is not None:
         prompt_condition_text = (
             "Both sides receive the same common prompt, context, target, shared file, "
-            "Lean version, mathlib version, time limit, token limit, and machine class. "
+            "Lean version, mathlib version, time limit, and token limit, with the "
+            + hardware_pair_clause
+            + ". "
             "Condition L alone additionally receives the exact frozen neutral supplement "
             "condition_prompts/L.md, which names the frozen NumStability snapshot and "
             "generic ways to search, import, and inspect it without recommending any "
@@ -8796,7 +9268,9 @@ def render_report(inputs: ReportInputs) -> str:
     else:
         prompt_condition_text = (
             "The same target, context, shared file, agent prompt, Lean version, mathlib "
-            "version, time limit, token limit, and machine class are used on both sides. "
+            "version, time limit, and token limit are used on both sides, with the "
+            + hardware_pair_clause
+            + ". "
             "Mathlib is Lean's main collection of already proved mathematics."
         )
         n_diagram = (
@@ -8887,18 +9361,41 @@ def render_report(inputs: ReportInputs) -> str:
             "Kernel and virtualization",
             freeze_host.get("kernel"),
             str(freeze_host.get("virtualization"))
-            + "; every accepted run cites a startup check matching all frozen host fields.",
+            + (
+                "; invariant allocation fields match the reference, while every pair "
+                "retains its full authenticated host class."
+                if inputs.environment.get("hardware_matching_policy") is not None
+                else "; every accepted run cites a startup check matching all frozen host fields."
+            ),
         ),
     ]
     lines.extend(
         [
-            r"\subsection{Frozen hardware and allocation class}",
-            "A resumed measurement chunk is admitted only after its processor identity, allocated topology, memory ceiling, visible memory, kernel, and virtualization match this frozen class. Hostname and logical CPU numbers may differ; the measured hardware class may not.",
+            r"\subsection{Paired hardware and allocation provenance}"
+            if paired_hardware_policy is not None
+            else r"\subsection{Frozen hardware and allocation class}",
+            (
+                "Each N/L pair is required to use one exact authenticated Slurm "
+                "allocation descriptor and job. Hardware may differ between pairs; "
+                "the table shows the adjacent authenticated allocation, while every "
+                "pair retains its own host-class evidence. Pooled absolute elapsed-time "
+                "summaries are descriptive; within-pair L-minus-N changes are the "
+                "principal time estimand."
+                if paired_hardware_policy is not None
+                else "A resumed measurement chunk is admitted only after its processor "
+                "identity, allocated topology, memory ceiling, visible memory, kernel, "
+                "and virtualization match this frozen class. Hostname and logical CPU "
+                "numbers may differ; the measured hardware class may not."
+            ),
         ]
     )
     lines.extend(
         _longtable(
-            "Hardware and allocation fields enforced across chunks",
+            (
+                "Reference hardware and invariant allocation fields"
+                if paired_hardware_policy is not None
+                else "Hardware and allocation fields enforced across chunks"
+            ),
             "P{0.23\\linewidth}P{0.31\\linewidth}P{0.38\\linewidth}",
             ("Field", "Frozen value", "Continuity meaning"),
             (
@@ -9167,9 +9664,9 @@ def render_report(inputs: ReportInputs) -> str:
             ("Unique completed responses", ultra_canary_summary.get("response_count"), "Response IDs were replayed and deduplicated."),
             ("Model tokens at boundary", ultra_canary_summary.get("total_model_tokens"), "Cached-inclusive input plus output through the outer exec response containing the nested submission."),
             ("Exact submission boundary", ultra_canary_summary.get("submission_boundary_exact"), "The frozen outer custom exec and root-only inner submit_proof call were authenticated."),
-            ("Nested wire", barrier.get("submission_transport"), "Replay proved the exact 98-byte outer custom exec and one of the two schema-v5 timestamp-authenticated inner-call/raw-response observation orders before publication."),
+            ("Nested wire", barrier.get("submission_transport"), "Replay proved the exact 104-byte rejection-forwarding outer custom exec and one of the two schema-v5 timestamp-authenticated inner-call/raw-response observation orders before publication."),
             ("Submission event order", barrier.get("submission_event_order"), "The enum agrees with exactly one of the two order flags and the retained monotonic timestamps."),
-            ("Frozen exec bytes", barrier.get("outer_exec_program_bytes"), "The sole final model tool item used the frozen 98-byte source."),
+            ("Frozen exec bytes", barrier.get("outer_exec_program_bytes"), "The sole final model tool item used the frozen 104-byte source."),
             ("Frozen exec SHA-256", barrier.get("outer_exec_program_sha256"), "The exact code-mode wrapper source was fingerprinted."),
             ("Exec yield time (ms)", barrier.get("outer_exec_yield_time_ms"), "The exact pragma prevents code-mode progress output throughout the authenticated envelope."),
             ("Yield envelope (ms)", barrier.get("outer_exec_yield_envelope_ms"), "This is 1,800 seconds of measured time plus the 369-second validation/teardown reserve."),
@@ -9236,12 +9733,20 @@ def render_report(inputs: ReportInputs) -> str:
         ]
     )
     construction_results = list(inputs.construction_check["results"])
+    proof_results = [
+        result for result in construction_results if result.get("tier") != "T4"
+    ]
+    t4_skeleton_results = [
+        result for result in construction_results if result.get("tier") == "T4"
+    ]
     n_results = [result for result in construction_results if result.get("condition") == "N"]
     n_staged_file_count = sum(
         result["n_preflight"]["controlled_files_verified_after_staging"]["verified"]
         for result in n_results
     )
-    l_results = [result for result in construction_results if result.get("condition") == "L"]
+    l_results = [
+        result for result in proof_results if result.get("condition") == "L"
+    ]
     l_compile_count = sum(
         1
         for result in l_results
@@ -9268,6 +9773,14 @@ def render_report(inputs: ReportInputs) -> str:
         len(result["validation"]["dependency_audit"].get("library_declarations", []))
         for result in l_results
     )
+    t4_compile_count = sum(
+        1
+        for result in t4_skeleton_results
+        if isinstance(result.get("validation"), Mapping)
+        and result["validation"].get("compile_exit_code") == 0
+        and result["validation"].get("controlled_sorries_checked")
+        == result["validation"].get("controlled_sorry_count")
+    )
     evidence_rows = [
         (
             "N staged-task scans",
@@ -9281,18 +9794,23 @@ def render_report(inputs: ReportInputs) -> str:
         ),
         (
             "L hidden proof compiles",
-            "pass" if l_compile_count == task_count else "fail",
-            f"{l_compile_count} of {task_count} private library-side proofs compiled",
+            "pass" if l_compile_count == measured_task_count else "fail",
+            f"{l_compile_count} of {measured_task_count} private library-side proofs compiled",
         ),
         (
             "L dependency checks",
-            "pass" if l_audit_count == task_count else "fail",
-            f"{l_audit_count} of {task_count} proof dependency records were complete",
+            "pass" if l_audit_count == measured_task_count else "fail",
+            f"{l_audit_count} of {measured_task_count} proof dependency records were complete",
         ),
         (
             "L NumStability use",
-            "pass" if l_use_count == task_count else "fail",
-            f"{l_use_count} of {task_count} proofs used NumStability; {l_declaration_count} declaration records were found",
+            "pass" if l_use_count == measured_task_count else "fail",
+            f"{l_use_count} of {measured_task_count} proofs used NumStability; {l_declaration_count} declaration records were found",
+        ),
+        (
+            "T4 designated-hole skeletons",
+            "pass" if t4_compile_count == len(t4_skeleton_results) else "fail",
+            f"{t4_compile_count} of {len(t4_skeleton_results)} N/L skeleton builds compiled with exactly their controlled holes; no private gold proof was used",
         ),
     ]
     lines.extend(
@@ -9313,7 +9831,11 @@ def render_report(inputs: ReportInputs) -> str:
         ),
     ):
         validation = result["validation"]
-        audit = validation["dependency_audit"]
+        audit = (
+            validation.get("dependency_audit", {})
+            if result.get("tier") != "T4"
+            else {}
+        )
         compile_ok = (
             validation.get("compile_exit_code") == 0
             and validation.get("compile_timed_out") is False
@@ -9324,19 +9846,31 @@ def render_report(inputs: ReportInputs) -> str:
                 latex_escape(result.get("condition")),
                 latex_escape(_fmt_number(compile_ok)),
                 latex_escape(_fmt_number(result.get("pass"))),
-                latex_escape(_fmt_number(validation.get("statement_unchanged"))),
-                latex_escape(_fmt_number(audit.get("complete"))),
-                latex_escape(_fmt_number(audit.get("library_use"))),
+                latex_escape(
+                    "designated holes"
+                    if result.get("tier") == "T4"
+                    else _fmt_number(validation.get("statement_unchanged"))
+                ),
+                latex_escape(
+                    "not applicable"
+                    if result.get("tier") == "T4"
+                    else _fmt_number(audit.get("complete"))
+                ),
+                latex_escape(
+                    "not applicable"
+                    if result.get("tier") == "T4"
+                    else _fmt_number(audit.get("library_use"))
+                ),
             )
         )
     lines.append(
-        "A private construction proof is a complete answer used only to prove that a task can be solved. The following "
+        "T1--T3 private construction proofs are complete answers used only to prove that measured tasks can be solved. T4 instead uses the public designated-hole skeleton and no private gold proof. The following "
         + latex_escape(len(construction_results))
-        + " answers were rebuilt in fresh N and L workspaces and passed the same hidden checker used for submissions. The report followed the small evidence file that names the complete record, then checked the recorded file fingerprint before using these rows."
+        + " schema-aware N/L construction results were rebuilt in fresh workspaces. The report authenticated the complete record before using these rows."
     )
     lines.extend(
         _longtable(
-            "All " + str(len(construction_results)) + " private construction proofs",
+            "All " + str(len(construction_results)) + " schema-aware construction results",
             "P{0.16\\linewidth}P{0.08\\linewidth}P{0.10\\linewidth}P{0.08\\linewidth}P{0.16\\linewidth}P{0.13\\linewidth}P{0.13\\linewidth}",
             (
                 "Task",
@@ -9439,6 +9973,39 @@ def render_report(inputs: ReportInputs) -> str:
         )
     )
 
+    if t4_coverage:
+        lines.extend(
+            [
+                "T4 uses claim-scoped review units stored in its schema-0.4 task record. Each accepted row binds immutable source and Lean packets plus fresh direct, blind-translation, and round-trip roles; these are separate from the two legacy task-level T1--T3 reviews above."
+            ]
+        )
+        lines.extend(
+            _longtable(
+                "Accepted T4 claim-review coverage",
+                "P{0.18\\linewidth}rrrrr",
+                (
+                    "Task",
+                    "Included claims",
+                    "Declarations",
+                    "Review units",
+                    "Accepted",
+                    "Coverage",
+                ),
+                (
+                    (
+                        latex_escape(row["task_id"]),
+                        latex_escape(row["included_source_count"]),
+                        latex_escape(row["declaration_count"]),
+                        latex_escape(row["review_unit_count"]),
+                        latex_escape(row["accepted_review_count"]),
+                        _fmt_rate(row["accepted_review_unit_coverage_rate"]),
+                    )
+                    for row in t4_coverage
+                ),
+                size="footnotesize",
+            )
+        )
+
     lines.extend(
         [
             r"\section{Measurement limits and result meaning}",
@@ -9451,7 +10018,7 @@ def render_report(inputs: ReportInputs) -> str:
             + latex_escape(limits.get("prompt_startup_timeout_seconds"))
             + "-second timeout and did not consume the measured allowance.",
             (
-                "For Ultra attempts, an authenticated loopback provider gate fully buffered each counted turn or compaction response before releasing it to Codex app-server. Its frozen model catalog fixes a 272,000-token per-response bound. Requests begin under conservative concurrent reservations; when another bound would reach the cap, the gate drains existing requests and admits one exclusive request. Unknown or missing request metadata is denied before upstream. Direct app-server delivery rows are bound to their gate calls. A provider response hidden by a collaboration wait is accepted only when the retained evidence proves its exact later direct delivery. Provider totals determine the scored token count; app-server rows remain structural delivery evidence. For a pass, schema v5 authenticates the exact frozen 98-byte outer exec and blocked inner submit_proof boundary; the accepted gate close occurs after request publication, with every provider start and commit no later than publication. The provider endpoint is then CLOSED and quiescent even though the rooted app-server tree is still active, and immediate child teardown prevents a later model response. A TOKEN_LIMIT endpoint instead closes on the unique sole-inflight crossing: an ordinary turn releases a minimal empty-output completion, while a compaction crossing releases exactly one opaque compaction item followed by a minimal completion. Both are buffered and action-free, with no messages, tool frames, or interrupt. This exact provider-token endpoint may intentionally retain an active tree and incomplete drain/cumulative accounting. Other scored failures require a natural provider-and-tree drain. Thus one crossing response can overshoot, but no concurrent in-flight tail can."
+                "For Ultra attempts, an authenticated loopback provider gate fully buffered each counted turn or compaction response before releasing it to Codex app-server. Its frozen model catalog fixes a 272,000-token per-response bound. Requests begin under conservative concurrent reservations; when another bound would reach the cap, the gate drains existing requests and admits one exclusive request. Unknown or missing request metadata is denied before upstream. Direct app-server delivery rows are bound to their gate calls. A provider response hidden by a collaboration wait is accepted only when the retained evidence proves its exact later direct delivery. Provider totals determine the scored token count; app-server rows remain structural delivery evidence. For a pass, schema v5 authenticates the exact frozen 104-byte rejection-forwarding outer exec and blocked inner submit_proof boundary; the accepted gate close occurs after request publication, with every provider start and commit no later than publication. The provider endpoint is then CLOSED and quiescent even though the rooted app-server tree is still active, and immediate child teardown prevents a later model response. A TOKEN_LIMIT endpoint instead closes on the unique sole-inflight crossing: an ordinary turn releases a minimal empty-output completion, while a compaction crossing releases exactly one opaque compaction item followed by a minimal completion. Both are buffered and action-free, with no messages, tool frames, or interrupt. This exact provider-token endpoint may intentionally retain an active tree and incomplete drain/cumulative accounting. Other scored failures require a natural provider-and-tree drain. Thus one crossing response can overshoot, but no concurrent in-flight tail can."
                 if ultra_submission_accounting
                 else (
                     "The provider ledger counts every completed provider response. Direct app-server delivery rows and narrowly proved collaboration-wait suppressions reconcile those responses without changing the scored provider total. The sealed gate makes an accepted close or sole sanitized token crossing exact at the provider endpoint; provider quiescence is distinct from app-server-tree terminality."
@@ -9685,7 +10252,7 @@ def render_report(inputs: ReportInputs) -> str:
             size="footnotesize",
         )
     )
-    if paper_count == 1:
+    if measured_paper_count == 1:
         lines.extend(
             [
                 r"\begin{center}",
@@ -9760,7 +10327,7 @@ def render_report(inputs: ReportInputs) -> str:
                 "The provider gate reserves the authenticated 272,000-token response bound before upstream: concurrent reservations are allowed only while the strict inequality remains below the cap, after which the gate drains and admits one exclusive request. A passing proof stops only after both the exact nested submit_proof call and its containing outer raw-response completion have been observed. Schema v5 records whichever observation arrived first with an enum, exclusive Boolean flags, and consistent monotonic timestamps before publication, then records the accepted provider close after publication. Its exact 2,400,000-ms yield pragma exceeds the measured limit plus the frozen validation/teardown reserve, with the timer beginning no earlier than authenticated prompt release. A token crossing is exact at the CLOSED provider endpoint even when the app-server tree and cumulative projection remain active; ordinary and compaction crossings use their distinct action-free sanitized releases. Naturally stopped failures still require full tree and accounting closure. Production transport provenance is authenticated through explicit TLS and the frozen trust store; resolver address variability is availability-only and never changes scoring semantics. First-valid wall time runs from authenticated RELEASED to retained boundary publication, not earlier candidate capture."
                 if ultra_submission_accounting
                 else (
-                    "A completed-response token endpoint is exact only when its sealed gate, provider ledger, reconciled app-server deliveries, and teardown agree. One sole-inflight response may cross the cap, while concurrent in-flight overshoot is forbidden; provider closure does not by itself claim tree terminality."
+                r"A rawResponse/completed token endpoint is exact only when its sealed gate, provider ledger, authenticated crossbindings, reconciled app-server deliveries, and teardown agree. One sole-inflight response may cross the cap, while concurrent in-flight overshoot is forbidden; provider closure does not by itself claim tree terminality. The nested \texttt{rollout\_budget} remains advisory."
                     if ultra_token_accounting
                     else "The token-timing caveat is notification granularity. The service reports live cumulative totals between model responses, so the outer runner may first observe a limit after one response has crossed it. Such a TOKEN_LIMIT record may contain one-response overshoot. For a passing proof, the runner requires a newer usage update after it notices the submission; the recorded total may therefore include tokens reported just after the proof first became valid. First-valid wall time is still taken when the validator accepts the proof."
                 )
@@ -9873,7 +10440,7 @@ def render_report(inputs: ReportInputs) -> str:
             r"\end{lstlisting}",
             "The report builder rereads the final metadata, evidence, reviews, and analysis. It also requires the nearby frozen-run check, checks its fingerprint against the accepted result set, verifies the release files, and compares the construction tools, Python executable, pruned package view, and pruned NumStability library with those fixed identities. It refuses missing runs, stale records, damaged network evidence, failed token-control evidence, failed construction checks, or missing task summaries. This prevents an incomplete measurement from becoming a polished report by accident.",
             r"\section{Final scope statement}",
-            "This private measurement snapshot contains " + latex_escape(paper_count) + " paper(s) and " + latex_escape(task_count) + " fixed task(s). It measures proof completion under N and L; it does not measure how well an agent translates unrestricted paper prose into Lean because the statements are fixed before each run. It is not approved for public release.",
+            "This private snapshot contains " + latex_escape(measured_paper_count) + " paper(s) and " + latex_escape(measured_task_count) + " measured T1--T3 task(s), plus " + latex_escape(len(t4_coverage)) + " separate T4 whole-paper formalization record(s). The N/L score measures only the T1--T3 proof tasks; it does not measure unrestricted prose translation, and T4 is not folded into the overall difficulty score. It is not approved for public release.",
             "Recorded benchmark ID: " + _inline_code(benchmark_id) + ".",
             r"\end{document}",
             "",

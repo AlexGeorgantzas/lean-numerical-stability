@@ -1,5 +1,0 @@
-import NumStability.Algorithms.Arithmetic.DotProduct.NoGuard
-
-#check NumStability.fl_noGuardDotProduct
-#check NumStability.SumTree.noGuardEval
-#check NumStability.noGuardDotTree_factor_backward_error
