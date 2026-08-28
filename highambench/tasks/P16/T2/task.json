@@ -1,0 +1,120 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "project-corrected backward-error half of Lemma 4.2 with the proof-required iterate comparison made explicit",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "A is a nonsingular real n by n matrix with n > 0, and b is a nonzero real vector.",
+    "The task represents one fixed iteration i of generic iterative refinement; it does not require MOD-GMRES.",
+    "The computed residual and update satisfy the exact operation equations and Euclidean error bounds (4.1)-(4.2).",
+    "The computed correction satisfies the residual bound (4.14).",
+    "epsilonR, epsilonU, w_i, and omega_i are nonnegative; the epsilonR and epsilonU families tend to zero.",
+    "Project correction: the first-order comparison ||xHat_i||_2 lesssim ||xHat_(i+1)||_2 used after equation (4.18) is an explicit theorem hypothesis.",
+    "The project represents lesssim by an eventual inequality with an O(scale^2) remainder, where scale tends to zero.",
+    "The real-valued normwise operation model makes no claim about overflow, underflow, NaNs, infinities, or subnormals."
+  ],
+  "author_label": "Lemma 4.2",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P16 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P16 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P16/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p16_t2_corrected_restarted_residual_recurrence {n : Nat} {iota : Type*} {l : Filter iota} [l.NeBot] (A : P16Matrix n) (b : P16Vector n) (iteration : Nat) (scale : iota -> Real) (hscale : Tendsto scale l (nhds 0)) (hn : 0 < n) (hA : p16IsNonsingular A) (hb : b != 0) (step : P16Lemma42BackwardStep l scale A b iteration) (hiterate : p16FirstOrderLeAt l scale (fun t => p16VecNorm (step.xHat t)) (fun t => p16VecNorm (step.xHatNext t))) : exact identity (4.18) for every family member /\\ p16FirstOrderLeAt l scale nextResidual recurrenceEnvelope",
+    "namespace": "HighamBench",
+    "plain_language": "For one computed generic iterative-refinement step, explicitly assume the first-order current-to-next iterate norm comparison used by the published proof. Then equation (4.18) holds exactly and the next residual satisfies Lemma 4.2's recurrence up to an O(scale^2) remainder.",
+    "target_file": "highambench/tasks/P16/T2/Target.lean",
+    "theorem_name": "p16_t2_corrected_restarted_residual_recurrence"
+  },
+  "informal_proof": "Derive (4.18) from the residual and update equations. Rewrite the next residual as (rHat-A*correction)-deltaR-A*deltaX, apply Euclidean triangle and Frobenius matrix-action bounds, and substitute (4.1), (4.2), and (4.14). Use the explicit project-correction hypothesis to replace ||xHat_i||_2 by ||xHat_(i+1)||_2 plus an O(scale^2) remainder. Since epsilonR tends to zero and is nonnegative, it is eventually at most one, so the hidden product remains O(scale^2). Collect the exact w_i and epsilonR+epsilonU+omega_i coefficients.",
+  "informal_statement": "A project-corrected version of Lemma 4.2's backward-error clause: under the iterate-norm comparison used by the published proof, exact residual composition (4.18) and first-order recurrence (4.15) hold.",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P16",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P16_A modular framework for the backward error analysis of GMRES.pdf",
+    "sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a"
+  },
+  "paper_version": "published open-access journal version; IMA Journal of Numerical Analysis 46(4), 2026, printed pages 1939-1993",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.frobNorm_nonneg",
+      "NumStability.vecNorm2_nonneg",
+      "NumStability.vecNorm2_add_le",
+      "NumStability.vecNorm2_neg",
+      "NumStability.vecNorm2_matMulVec_le_frobNorm_mul"
+    ],
+    "note": "All 24 frozen mounted modules were searched. MatrixAlgebra supplies the individual Euclidean/Frobenius rules used directly by the L proof, but no mounted declaration models iterative refinement, the added first-order iterate comparison, exact identity (4.18), or recurrence (4.15). The source-visible but unmounted NumStability/Algorithms/IterativeRefinement.lean contains a different componentwise Higham one-step identity and residual bound; it has no frozen object and does not state this corrected target."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P16Matrix",
+    "P16Vector",
+    "p16MatVec",
+    "p16FrobNorm",
+    "p16VecNorm",
+    "p16Residual",
+    "p16IsNonsingular",
+    "p16SecondOrderAt",
+    "p16FirstOrderLeAt",
+    "P16Lemma42BackwardStep"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (1.1), nonsingular square real system with nonzero right-hand side",
+      "pdf_page": 1,
+      "printed_page": "1939",
+      "role": "standing system assumptions",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "convention for lesssim and approximately-equal after dropping negligible second-order terms",
+      "pdf_page": 4,
+      "printed_page": "1942",
+      "role": "first-order comparison semantics",
+      "section": "2. Notations"
+    },
+    {
+      "anchor": "residual and update models (4.1)-(4.3)",
+      "pdf_page": 17,
+      "printed_page": "1955",
+      "role": "computed iterative-refinement operation model and parameter smallness",
+      "section": "4.1 The modular algorithm, error model, and error analysis"
+    },
+    {
+      "anchor": "Lemma 4.2, correction residual (4.14) and next-residual recurrence (4.15)",
+      "pdf_page": 19,
+      "printed_page": "1957",
+      "role": "selected one-step backward-error recurrence",
+      "section": "4.1 The modular algorithm, error model, and error analysis"
+    },
+    {
+      "anchor": "exact iterative-refinement identity (4.18), iterate comparison, and following norm derivation",
+      "pdf_page": 20,
+      "printed_page": "1958",
+      "role": "exact composition, proof-required iterate comparison omitted from the lemma statement, and second-order remainder propagation",
+      "section": "4.1 The modular algorithm, error model, and error analysis"
+    }
+  ],
+  "source_tags": [
+    "LEM"
+  ],
+  "task_id": "P16-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The L proof directly combines NumStability.frobNorm_nonneg, vecNorm2_nonneg, vecNorm2_add_le, vecNorm2_neg, and vecNorm2_matMulVec_le_frobNorm_mul with the paper-specific computed-step equations. It must additionally use the explicit project-correction hypothesis, derive (4.18), propagate its iterate remainder through the residual model, and prove the output remainder remains O(scale^2). No mounted theorem performs that combination, so T2 remains appropriate.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P16/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p16_t2_corrected_restarted_residual_recurrence"
+  }
+}

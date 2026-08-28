@@ -1,0 +1,115 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "reconstruction of the computed CGS-P first-column residual identity and equation (16)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The dimensions m and n are positive, n is at most m, and the rectangular input A has full column rank.",
+    "Q and upper-triangular R are the computed factors represented by the proof-carrying CGS-P first-column execution contract, with r11 linked to the computed norm and q1 linked to componentwise division.",
+    "Every leading block of R has a certified inverse and satisfies condition (3): c4(m,k)*epsilonM*kappa2(R_k)^2 < 1, where c4=c2+2*c1 and c1(m,k)=2*sqrt(2*m*k)+2*sqrt(k) for k at least two.",
+    "The machine unit epsilonM is positive and less than one; normalized IEEE division has relative error at most epsilonM, and the computed norm has the paper's first-order error plus one unspecified nonnegative O(epsilonM^2) coefficient.",
+    "The real-valued arithmetic interface represents the paper's IEEE normalized finite regime; subnormals, overflow, infinities, NaNs, and higher-order contributions outside the recorded norm remainder are outside the claim."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P11 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P11 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P11/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p11_t1_first_column_residual_action {m n : Nat} (run : P11CGSPFirstColumnRun m n) : P11Equation16 run",
+    "namespace": "HighamBench",
+    "plain_language": "For the computed first column of any admissible CGS-P run, derive the exact normalization and factorization-residual identities and the complete equation-(16) spectral/Euclidean norm chain ending at epsilonM times the input-column norm.",
+    "target_file": "highambench/tasks/P11/T1/Target.lean",
+    "theorem_name": "p11_t1_first_column_residual_action"
+  },
+  "informal_proof": "Use the normalized IEEE division law at each first-column entry to obtain relative errors delta_i with |delta_i|<=epsilonM. The diagonal matrix with entries delta_i has induced 2-norm at most epsilonM and witnesses q1=(I+G1)*a1/r11. Substitute this relation into A1-Q1*R1, cancel the positive computed r11, identify the one-column matrix norm with its Euclidean column norm, and apply the spectral operator-norm action bound.",
+  "informal_statement": "The exact computed CGS-P first-column residual identity and complete induced-2-norm chain in equation (16).",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P11",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf",
+    "sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5"
+  },
+  "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.opNorm2Le_opNorm2"
+    ],
+    "note": "The complete mounted 24-module frozen baseline has no CGS-P execution model or equation-(16) residual theorem. NumStability.opNorm2Le_opNorm2 in NumStability/Analysis/MatrixAlgebra.lean directly supplies the induced-2-norm action step; the remaining proof extracts primitive normalized-division errors, constructs the existential witness, and performs exact first-column residual algebra."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P11Matrix",
+    "P11RectMatrix",
+    "p11VecNorm",
+    "p11MatVec",
+    "p11OpNorm2",
+    "p11C4",
+    "p11Kappa2",
+    "P11NormalizedIEEEArithmetic",
+    "P11CGSPFirstColumnRun",
+    "p11FirstColumnFactorizationResidual",
+    "P11Equation16Witness",
+    "P11Equation16"
+  ],
+  "source_locations": [
+    {
+      "anchor": "opening matrix setting and column notation",
+      "pdf_page": 2,
+      "printed_page": "300",
+      "role": "positive rectangular dimensions, full column rank, and A/Q/R notation",
+      "section": "Introduction and Algorithm 1 setup"
+    },
+    {
+      "anchor": "Algorithm 2 and following floating-point model",
+      "pdf_page": 3,
+      "printed_page": "301",
+      "role": "CGS-P first-column computation and normalized-range IEEE model",
+      "section": "Algorithm 2 (CGS-P)"
+    },
+    {
+      "anchor": "Theorem 1, condition (3)",
+      "pdf_page": 4,
+      "printed_page": "302",
+      "role": "inherited leading-block conditioning hypothesis",
+      "section": "Theorem 1"
+    },
+    {
+      "anchor": "nonsingularity paragraph after equations (14)-(15)",
+      "pdf_page": 9,
+      "printed_page": "307",
+      "role": "positivity of every computed diagonal, including r11",
+      "section": "Appendix: Proof of Lemma 2"
+    },
+    {
+      "anchor": "standard-error-bound display, exact residual identity, and equation (16)",
+      "pdf_page": 10,
+      "printed_page": "308",
+      "role": "computed normalization relation, exact residual, and complete norm chain",
+      "section": "Appendix: Proof of Theorem 1"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P11-T1",
+  "tier": "T1",
+  "tier_label": "direct use",
+  "tier_rationale": "NumStability.opNorm2Le_opNorm2 in the frozen NumStability/Analysis/MatrixAlgebra.lean module is the close theorem for equation (16)'s operator-action step. The L proof directly specializes it after constructing G1 from normalized division errors, then performs the source's exact one-column substitution, cancellation, and norm identification; no frozen declaration models the CGS-P execution or produces G1.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P11/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p11_t1_first_column_residual_action"
+  }
+}

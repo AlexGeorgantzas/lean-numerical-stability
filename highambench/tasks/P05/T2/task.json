@@ -1,0 +1,97 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, Doolittle execution certificate, rectangular finite-matrix encoding, and zero-based index adapter",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The matrix has dimensions m by n with m>=n and n>0.",
+    "A, LHat, and UHat belong to one finite symmetric radix format whose rounding laws implement the paper's round-to-nearest error bounds with unit roundoff u.",
+    "Gaussian elimination is represented by a completed Doolittle trace: LHat is unit lower trapezoidal, UHat is upper triangular, and every computed entry is linked to its scalar subtraction or pivot-division execution.",
+    "Every scalar execution records rounded products, an arbitrary permuted binary summation tree, range checks excluding underflow and overflow, and the protected input's path through the actual rounded merges.",
+    "A protected summation trace assumes only the earlier equation (2.4) estimate for each sibling subtree; the Lemma 4.1 residual estimates and all Doolittle local and global bounds must be derived."
+  ],
+  "author_label": "Theorem 4.2",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P05 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P05 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P05/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p05_t2_lu_backward_error {m n : Nat} (run : P05DoolittleRun m n) : the local (4.3a)-(4.3b) bounds and exists DeltaA, LHat*UHat=A+DeltaA, |DeltaA|<=n*u*|LHat||UHat|, with the square rowwise and (n-1)u refinements",
+    "namespace": "HighamBench",
+    "plain_language": "Every completed range-safe rectangular Doolittle execution has the two local residual bounds and the full componentwise LU backward-error conclusion of Theorem 4.2, including both square-case sharpenings.",
+    "target_file": "highambench/tasks/P05/T2/Target.lean",
+    "theorem_name": "p05_t2_lu_backward_error"
+  },
+  "informal_proof": "First prove the scalar Lemma 4.1 residual estimates from the protected-leaf summation trace, the equation (2.4) sibling estimates, and the format's rounding-error laws. Specialize those results to each certified upper-row and below-diagonal computation to obtain (4.3a) and (4.3b). Triangular support turns each through-pivot sum into the full entry of LHat*UHat. Set DeltaA=LHat*UHat-A. The local stage indices are at most n, giving the rectangular n*u bound; when m=n, each coefficient is at most the zero-based row index and then at most n-1.",
+  "informal_statement": "Theorem 4.2 in full: rectangular LU backward stability, the local Doolittle estimates used in its proof, and the sharper rowwise and uniform square bounds.",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P05",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P05_IMPROVED BACKWARD ERROR BOUNDS FOR LU ANDCHOLESKY FACTORIZATIONS.pdf",
+    "sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6"
+  },
+  "paper_version": "published journal version; volume 35, issue 2, 2014, printed pages 684-698",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.higham9_2_rectMatMul_eq_prefix_add_upper",
+      "NumStability.higham9_2_rectMatMul_eq_prefix_add_lower",
+      "NumStability.rectMatMul"
+    ],
+    "note": "The frozen library supplies the two rectangular triangular-support decompositions used by the L proof, but no Gaussian-elimination execution theorem, local residual estimate, or P05 componentwise backward-error result."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P05FiniteRoundToNearestFormat",
+    "P05Lemma41Run",
+    "P05DoolittleUpperEntry",
+    "P05DoolittleLowerEntry",
+    "P05DoolittleRun",
+    "p05RectMatMul",
+    "p05RectAbsMatMul",
+    "p05RectRow",
+    "p05PrefixIndex",
+    "p05DoolittlePrefixDot",
+    "p05DoolittlePrefixAbsDot",
+    "p05DoolittleThroughPivotDot",
+    "p05DoolittleThroughPivotAbsDot"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Theorem 4.2 and equation (4.2)",
+      "pdf_page": 10,
+      "printed_page": "693",
+      "role": "rectangular LU backward-error identity and n*u bound, followed by the sharp square rowwise and uniform bounds",
+      "section": "4.2. An improved backward error bound for LU factorization"
+    },
+    {
+      "anchor": "Doolittle formulas, equations (4.3a)-(4.3b), and the final coefficient comparison",
+      "pdf_page": 11,
+      "printed_page": "694",
+      "role": "algorithm linkage, local residual estimates, and derivation of every global coefficient in the target",
+      "section": "4.2. An improved backward error bound for LU factorization"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P05-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The L proof combines NumStability's upper and lower rectangular triangular-support decompositions with the paper-specific scalar execution residuals, stage-index bounds, exact perturbation assembly, and square row comparison. No frozen declaration states the local or global P05 result.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P05/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p05_t2_lu_backward_error"
+  }
+}

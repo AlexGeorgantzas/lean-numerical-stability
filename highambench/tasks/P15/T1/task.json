@@ -1,0 +1,72 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "Audit 1 repair preserving compatible rectangular dimensions and the explicit Frobenius norm in Section 2.1",
+    "performed_by": "Codex"
+  },
+  "assumptions": [],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P15 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P15 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P15/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p15_t1_frobenius_submultiplicative {m n p : Nat} (A : P15RectMatrix m n) (B : P15RectMatrix n p) : p15RectFrobNorm (p15RectMatMul A B) <= p15RectFrobNorm A * p15RectFrobNorm B",
+    "namespace": "HighamBench",
+    "plain_language": "For every pair of compatible finite rectangular real matrices, the Frobenius norm of their product is at most the product of their Frobenius norms.",
+    "target_file": "highambench/tasks/P15/T1/Target.lean",
+    "theorem_name": "p15_t1_frobenius_submultiplicative"
+  },
+  "informal_proof": "Identify the explicit square-root-of-sums definition and finite compatible product with the corresponding rectangular Frobenius objects, then apply constant-one Frobenius submultiplicativity.",
+  "informal_statement": "The first Frobenius-norm property listed in Section 2.1 for arbitrary multiplication-compatible rectangular real matrices.",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P15",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P15_Solving block low-rank linear systems by LU factorization is numerically stable.pdf",
+    "sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7"
+  },
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 42(2), 2022, printed pages 951-980",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": true,
+    "exact_target_found_in_numstability_baseline": true,
+    "nearby_numstability_declarations": [
+      "NumStability.frobNormRect_rectMatMul_le"
+    ],
+    "note": "NumStability.Analysis.MatrixAlgebra exposes the identical compatible rectangular Frobenius product inequality; only the transparent P15 notation bridge is required. Mathlib also supplies Matrix.frobenius_norm_mul for these dimensions."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P15RectMatrix",
+    "p15RectMatMul",
+    "p15RectFrobNorm"
+  ],
+  "source_locations": [
+    {
+      "anchor": "prose listing the Frobenius norm's first useful property, ||AB|| <= ||A|| ||B||",
+      "pdf_page": 3,
+      "printed_page": "953",
+      "role": "submultiplicative norm step used throughout the analysis",
+      "section": "2.1 Block low-rank matrices"
+    }
+  ],
+  "source_tags": [
+    "TXT"
+  ],
+  "task_id": "P15-T1",
+  "tier": "T1",
+  "tier_label": "direct",
+  "tier_rationale": "The exact frozen-library theorem is NumStability.frobNormRect_rectMatMul_le in NumStability/Analysis/MatrixAlgebra.lean. The L proof only unfolds the transparent P15 rectangular product and Frobenius definitions.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P15/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p15_t1_frobenius_submultiplicative"
+  }
+}

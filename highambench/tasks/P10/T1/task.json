@@ -1,0 +1,93 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "reconstruction of equation (8)'s linked inherited-right first-order error contribution",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The matrix dimension is positive and the exact and computed operands are real square n-by-n matrices, as in equation (1) and the recursive-inversion application of equation (8).",
+    "One otherwise unspecified matrix norm is used throughout and satisfies nonnegativity, definiteness, homogeneity, subadditivity, and submultiplicativity.",
+    "The computed product is linked to exact operands, inherited left and right perturbations, local multiplication error, and a higher-order remainder; the first-order error removes the inherited cross product and that remainder.",
+    "The actual right perturbation norm is bounded by the nonnegative absolute inherited error err(B,n).",
+    "Machine epsilon is positive and mu is nonnegative, although neither appears in the selected inherited-right term; no per-run global polynomial-growth premise is added.",
+    "The selected result uses the finite real-valued first-order regime; exceptional values, the inherited-error cross product, and the unspecified local higher-order remainder are outside this contribution."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P10 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P10 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P10/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p10_t1_inherited_right_product_error {n : Nat} (run : P10FirstOrderProductRun n) : P10InheritedRightEquation8Term run",
+    "namespace": "HighamBench",
+    "plain_language": "For a linked first-order product, the realized first-order error decomposes into the local, inherited-right A*dB, and inherited-left dA*B matrices, and the selected right matrix is bounded by ||A||*err(B,n).",
+    "target_file": "highambench/tasks/P10/T1/Target.lean",
+    "theorem_name": "p10_t1_inherited_right_product_error"
+  },
+  "informal_proof": "Expand the linked computed-product equation and cancel the exact product, inherited perturbation cross product, and higher-order remainder to derive the three-matrix first-order decomposition. Then apply submultiplicativity to A*dB and multiply the supplied ||dB|| <= err(B,n) bound by the nonnegative norm ||A||.",
+  "informal_statement": "Equation (8)'s inherited-right first-order contribution, linked through a derived three-source decomposition to the realized first-order product error and bounded with the source's coefficient and operand orientation.",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P10",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P10_Fast linear algebra is stable.pdf",
+    "sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269"
+  },
+  "paper_version": "published journal version; volume 108, 2007, printed pages 59-91",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.matSeqProd_normwise_perturbation_bound",
+      "NumStability.frobNorm_matMul_le"
+    ],
+    "note": "The complete 24-module frozen baseline has no declaration deriving the exact three-source first-order matrix decomposition from this linked product execution or identifying its inherited-right component under an unspecified consistent norm. MatrixAlgebra contains generic finite-product and concrete Frobenius bounds, but neither preserves this source-specific execution and error decomposition."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P10Matrix",
+    "p10MatMul",
+    "P10ConsistentMatrixNorm",
+    "P10FirstOrderProductRun",
+    "p10FirstOrderProductError",
+    "p10InheritedRightError",
+    "p10InheritedLeftError",
+    "p10InheritedRightErrorContribution",
+    "P10InheritedRightEquation8Term"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (1) and following norm-equivalence paragraph",
+      "pdf_page": 2,
+      "printed_page": "60",
+      "role": "stable matrix-multiplication model and unspecified norm convention",
+      "section": "Introduction"
+    },
+    {
+      "anchor": "equation (8), middle term ||A||*err(B,n)",
+      "pdf_page": 8,
+      "printed_page": "66",
+      "role": "linked first-order amplification of error inherited from the right operand and its additive position",
+      "section": "3.1 Recursive triangular matrix inversion"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P10-T1",
+  "tier": "T1",
+  "tier_label": "direct use",
+  "tier_rationale": "After the source execution is packaged in P10FirstOrderProductRun, the proof directly expands and cancels the linked product equation to expose the three first-order matrices, then specializes one submultiplicativity certificate and the supplied right-inherited-error bound. The frozen baseline has related generic and concrete product-norm results but no theorem preserving this linked decomposition and unspecified-norm component semantics.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P10/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p10_t1_inherited_right_product_error"
+  }
+}

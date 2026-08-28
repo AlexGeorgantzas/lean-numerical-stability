@@ -1,0 +1,89 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, fixed stable-product algorithm, operational error family, and uniform first-order interpretation of equation (8)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The matrix dimension is positive and the exact and computed operands are real square n-by-n matrices, as in equation (1) and the recursive-inversion application of equation (8).",
+    "One otherwise unspecified matrix norm is used throughout and satisfies nonnegativity, definiteness, homogeneity, subadditivity, and submultiplicativity.",
+    "One multiplication operation, norm family, and nonnegative function mu are fixed across dimensions, inputs, calls, and positive precisions; mu has one global polynomial-growth certificate.",
+    "The exact operands are fixed while their computed perturbations and inherited absolute-error bounds vary with epsilon; both inherited errors are uniformly O(epsilon) on one positive radius.",
+    "Every computed output is the actual result of the fixed multiplication operation on the two perturbed operands, and its local error satisfies equation (1) with one uniform epsilon-squared coefficient.",
+    "The conclusion bounds the full realized product error without subtracting the inherited cross product or any local remainder; no exceptional-value semantics are added beyond the paper's real-valued normwise model."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P10 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P10 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P10/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p10_t2_first_order_product_error {n : Nat} (algorithm : P10StableMatrixMultiplication) (family : P10FirstOrderProductFamily algorithm n) : exists secondOrderCoeff : Real, 0 <= secondOrderCoeff and exists radius : Real, 0 < radius and forall epsilon : P10PositiveEpsilon, (epsilon : Real) <= radius -> (algorithm.matrixNorm n).value (p10ProductFamilyError algorithm family epsilon) <= p10ProductFamilyErrorBudget algorithm family epsilon + secondOrderCoeff * (epsilon : Real)^2",
+    "namespace": "HighamBench",
+    "plain_language": "For one fixed stable matrix-multiplication algorithm and one uniformly first-order family of inherited operand errors, the actual absolute normwise product error is bounded by equation (8)'s three leading terms plus one uniform quadratic remainder.",
+    "target_file": "highambench/tasks/P10/T2/Target.lean",
+    "theorem_name": "p10_t2_first_order_product_error"
+  },
+  "informal_proof": "Expand the actual error as localError + A*dB + dA*B + dA*dB. Apply subadditivity, submultiplicativity, the local equation-(1) certificate, and the two inherited-error bounds. Their uniform O(epsilon) certificates bound dA*dB by leftCoeff*rightCoeff*epsilon^2; add this coefficient to the local quadratic coefficient.",
+  "informal_statement": "Equation (8)'s complete three-term first-order absolute normwise product-error rule for the actual output of one fixed multiplication algorithm, with every suppressed effect bounded by one explicit uniform O(epsilon^2) term.",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P10",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P10_Fast linear algebra is stable.pdf",
+    "sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269"
+  },
+  "paper_version": "published journal version; volume 108, 2007, printed pages 59-91",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.matMul_add_left",
+      "NumStability.matMul_add_right",
+      "NumStability.matSeqProd_normwise_perturbation_bound",
+      "NumStability.rectMatMul_entry_abs_sub_computed_le_of_component_sums",
+      "NumStability.frobNorm_add_le",
+      "NumStability.frobNorm_matMul_le"
+    ],
+    "note": "All 24 compiled modules in metadata/library_olean.json were searched. The mounted MatrixAlgebra object supplies exact matrix distributivity, concrete Frobenius bounds, a generic finite-product perturbation theorem, and an entrywise computed-product composition theorem. The L construction proof uses the frozen distributivity declarations for the paper-specific first-order extraction. The other mounted results fix different norm or componentwise semantics and cannot be substituted for the target's unnamed norm. A closer MatMulFirstOrderSpec exists only in the source-visible NumStability/Algorithms/LU/BlockLU.lean module, which is absent from the compiled baseline and is not counted as available. No mounted declaration states the linked three-term bound."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P10Matrix",
+    "p10MatMul",
+    "P10ConsistentMatrixNorm",
+    "P10PositiveEpsilon",
+    "P10StableMatrixMultiplication",
+    "P10FirstOrderProductFamily",
+    "p10ProductFamilyError",
+    "p10ProductFamilyErrorBudget"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (8), the three-term first-order product-error rule",
+      "pdf_page": 8,
+      "printed_page": "66",
+      "role": "local matrix-multiplication error and propagation of both inherited input errors",
+      "section": "3.1 Recursive triangular matrix inversion"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P10-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The proof combines the local stable-multiplication certificate, both uniform inherited-error certificates, three abstract submultiplicative bounds, and repeated subadditivity after a paper-specific four-term expansion of the actual error. The L proof materially combines NumStability.matMul_add_left and NumStability.matMul_add_right from the frozen MatrixAlgebra module to derive that expansion. Searches across all 24 mounted modules found no declaration giving equation (8)'s linked uniform bound; the closer source-only MatMulFirstOrderSpec is not mounted, while the mounted Frobenius and entrywise results would improperly change the source's unnamed norm semantics.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P10/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p10_t2_first_order_product_error"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, and exact finite-certificate strengthening of Theorem 3.3",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "Computed exponential terms are nonnegative and satisfy a uniform componentwise relative error bound.",
+    "The final division has a bounded relative error with a nonnegative radius.",
+    "Gamma is valid through n and the exact denominator radius is strictly less than one.",
+    "Overflow and underflow are outside the finite certificate, matching the theorem's source assumptions."
+  ],
+  "author_label": "Theorem 3.3",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P14 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P14 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P14/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p14_t2_basic_softmax_component_error {n : Nat} (fp : StandardAddModel) (x wHat : Fin n -> Real) (j : Fin n) ... : relativeError computedSoftmax exactSoftmax <= (numeratorRadius+denominatorRadius)/(1-denominatorRadius)",
+    "namespace": "HighamBench",
+    "plain_language": "Componentwise exponential and division errors, combined with recursive summation, give an exact finite relative-error bound for every basic softmax component.",
+    "target_file": "highambench/tasks/P14/T2/Target.lean",
+    "theorem_name": "p14_t2_basic_softmax_component_error"
+  },
+  "informal_proof": "Bound the perturbed numerator, combine the componentwise exponential errors with the recursive-summation error for the denominator, prove the computed denominator remains nonzero, and apply an exact quotient perturbation inequality.",
+  "informal_statement": "Exact finite componentwise counterpart of Theorem 3.3; setting both operation radii to u recovers the first-order coefficient n+3.",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P14",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P14_Accurately computing the log-sum-exp and softmax functions.pdf",
+    "sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd"
+  },
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 41(4), 2021, printed pages 2311-2330",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.recursiveSum_forward_error_bound",
+      "NumStability.gamma_mono"
+    ],
+    "note": "The mounted library supplies recursive-summation and gamma bounds, but no theorem composes exponential evaluation, summation, and final division through a softmax quotient or proves denominator safety."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p14ExpSum",
+    "p14Softmax",
+    "p14ComputedSoftmax",
+    "p14DenominatorRadius",
+    "p14NumeratorRadius"
+  ],
+  "source_locations": [
+    {
+      "anchor": "componentwise basic-softmax error derivation following equation (3.5)",
+      "pdf_page": 8,
+      "printed_page": "2318",
+      "role": "exponential, denominator, and division error composition",
+      "section": "3. Basic algorithms and error analysis"
+    },
+    {
+      "anchor": "Theorem 3.3, equation (3.6)",
+      "pdf_page": 9,
+      "printed_page": "2319",
+      "role": "basic softmax forward-error result",
+      "section": "3. Basic algorithms and error analysis"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P14-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The proof combines the mounted recursive-summation bound with paper-scoped exponential and division error models, then performs new exact quotient and denominator-safety reasoning.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P14/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p14_t2_basic_softmax_component_error"
+  }
+}

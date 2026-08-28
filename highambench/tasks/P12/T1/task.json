@@ -1,0 +1,73 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and condition-neutral nearest-representative form of equation (10)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "x is representable.",
+    "s is a nearest representable value to x+y."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P12 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P12 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P12/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p12_t1_nearest_add_error_le_right (representable : Real -> Prop) (x y s : Real) (hx : representable x) (hs : p12Nearest representable (x+y) s) : abs (s-(x+y)) <= abs y",
+    "namespace": "HighamBench",
+    "plain_language": "A nearest representable approximation to x+y has absolute error no larger than the right summand whenever x itself is representable.",
+    "target_file": "highambench/tasks/P12/T1/Target.lean",
+    "theorem_name": "p12_t1_nearest_add_error_le_right"
+  },
+  "informal_proof": "Use x as a representable competitor in the nearest-rounding relation and simplify the competitor distance to |y|.",
+  "informal_statement": "Equation (10), the only nearest-addition property used in the proof of Theorem 2.",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P12",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P12_A note on Dekker\u2019s FastTwoSum algorithm.pdf",
+    "sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1"
+  },
+  "paper_version": "published journal version; volume 145, issue 2, 2020, printed pages 383-403; corrected open-access publication 2021",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": true,
+    "nearby_numstability_declarations": [
+      "NumStability.FloatingPointFormat.nearestRoundingIn_minimal"
+    ],
+    "note": "The mounted FloatingPointArithmetic object states the same arbitrary-set nearest-representative minimality theorem. The L proof only bridges the definition and chooses x as the candidate."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p12Nearest"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (10)",
+      "pdf_page": 6,
+      "printed_page": "388",
+      "role": "nearest-addition error bound used by Theorem 2",
+      "section": "3. Generalization for arbitrary bases"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P12-T1",
+  "tier": "T1",
+  "tier_label": "direct use",
+  "tier_rationale": "NumStability.FloatingPointFormat.nearestRoundingIn_minimal in the mounted NumStability/Analysis/FloatingPointArithmetic object directly supplies the selected inequality after choosing x as the representable candidate.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P12/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p12_t1_nearest_add_error_le_right"
+  }
+}

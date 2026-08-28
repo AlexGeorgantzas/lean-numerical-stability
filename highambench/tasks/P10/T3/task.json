@@ -1,0 +1,82 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source reselection to the exact multiplication-to-inversion reduction in the proof of Theorem 3.3",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The block entries A and B are real n-by-n matrices for the same positive dimension n.",
+    "All matrix operations are exact real arithmetic.",
+    "No floating-point, exceptional-value, conditioning, or asymptotic complexity claim is included."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P10 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P10 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P10/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p10_t3_multiplication_via_block_inverse {n : Nat} (hn : 0 < n) (A B : P10Matrix n) : P10MultiplicationViaInverse A B",
+    "namespace": "HighamBench",
+    "plain_language": "For any two real square matrices A and B, prove that the paper's displayed three-by-three upper-triangular block matrix has the printed two-sided inverse and that the inverse's upper-right block is A*B.",
+    "target_file": "highambench/tasks/P10/T3/Target.lean",
+    "theorem_name": "p10_t3_multiplication_via_block_inverse"
+  },
+  "informal_proof": "Multiply the two printed three-by-three block matrices in each order. The diagonal blocks are identities, the first two strict upper-diagonal blocks cancel, and the upper-right block is A*B-A*B=0 in one order and 0-A*B+A*B=0 in the other. Finally unfold the printed inverse and read its (0,2) block as A*B.",
+  "informal_statement": "The unnumbered display in the converse proof of Theorem 3.3 is a valid two-sided block inverse, and exact inversion exposes the product A*B in its upper-right block.",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P10",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P10_Fast linear algebra is stable.pdf",
+    "sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269"
+  },
+  "paper_version": "published journal version; volume 108, 2007, printed pages 59-91",
+  "result_form_tag": "EQ",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.matMul_add_left",
+      "NumStability.matMul_add_right"
+    ],
+    "note": "The complete mounted 24-module frozen baseline has ordinary matrix-algebra lemmas but no declaration of the paper's three-by-three block reduction, no proof that the displayed candidate is a two-sided inverse, and no theorem extracting A*B from its upper-right block."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P10Matrix",
+    "P10ThreeBlockMatrix",
+    "p10MatMul",
+    "p10MultiplicationReductionInput",
+    "p10MultiplicationReductionInverse",
+    "p10ThreeBlockMul",
+    "p10ThreeBlockIdentity",
+    "P10MultiplicationViaInverse"
+  ],
+  "source_locations": [
+    {
+      "anchor": "unnumbered three-by-three block inverse in the converse proof of Theorem 3.3 and the following product-extraction sentence",
+      "pdf_page": 12,
+      "printed_page": "70",
+      "role": "exact inverse identity and reduction from exact inversion to matrix multiplication",
+      "section": "3.2 Bit complexity"
+    }
+  ],
+  "source_tags": [
+    "UNL"
+  ],
+  "task_id": "P10-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "The task must construct the paper-specific three-by-three block matrices, prove both multiplication orders equal the block identity, and expose the product block. No mounted frozen declaration states this complete reduction. P10-T1 and P10-T2 instead concern the distinct first-order error rule in equation (8), so this target adds a separate complete result.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P10/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p10_t3_multiplication_via_block_inverse"
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source reselection and reconstruction of the scaled input-rounding and input-underflow error bound in equation (3.13)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The inner-product length n is positive and the finite vectors x and y have positive explicit maximum norms, so the quotients in (3.4a)-(3.4b) are defined.",
+    "The input and accumulation formats form a Model-1 binary-format family: accumulation precision and exponent range contain the input format, and the rounding maps satisfy (2.3)-(2.4), including mutually exclusive relative and underflow errors, on operations without overflow.",
+    "The scaling threshold is theta=min(fmax,sqrt(Fmax/n)) from (3.2), with fmax and Fmax derived from the two Model-1 formats.",
+    "The positive factors lambda and mu are powers of two satisfying the maximal intervals (3.4a)-(3.4b).",
+    "The computed quantity at this stage is exactly lambda^-1 mu^-1 fl(lambda x)^T fl(mu y), using componentwise input-format conversions only; accumulation-format arithmetic begins after equation (3.15).",
+    "NaNs and infinities are outside the finite-real model; the represented operations exclude overflow while retaining the paper's input-underflow terms."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P20 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P20 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P20/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p20_t2_scaled_input_error {n : Nat} {iota : Type*} (model : P20Model1 iota) (t : iota) (x y : Fin n -> Real) (lambda mu : Real) (hn : 0 < n) (hx : 0 < p20InfNormVec x) (hy : 0 < p20InfNormVec y) (hlambda : p20MaximalPowerTwoScale (p20ModelScalingThreshold n model t) (p20InfNormVec x) lambda) (hmu : p20MaximalPowerTwoScale (p20ModelScalingThreshold n model t) (p20InfNormVec y) mu) : abs (p20InputStageError model t lambda mu x y) <= p20InputStageErrorEnvelope (p20InputUnitRoundoff model t) (p20InputUnderflowEnvelope model t) (p20ModelScalingThreshold n model t) x y",
+    "namespace": "HighamBench",
+    "plain_language": "For the paper's maximally power-of-two-scaled row and column, the error introduced by the two componentwise input-format conversions satisfies the complete rounding-plus-underflow bound (3.13).",
+    "target_file": "highambench/tasks/P20/T2/Target.lean",
+    "theorem_name": "p20_t2_scaled_input_error"
+  },
+  "informal_proof": "Use the Model-1 input-rounding equation to bound each inverse-scaled component error by u times the exact component plus twice theta inverse times gmin times the corresponding infinity norm. Expand the product of the two perturbed vectors, compose the left- and right-input error contractions, bound component sums by n times the infinity norms, and collect the coefficients to obtain exactly (3.13).",
+  "informal_statement": "Equation (3.13): the complete exact bound for epsilon_1, the error caused by componentwise input conversion and input underflow in the scaled inner product (3.3), before accumulation-format rounding.",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P20",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P20_ERROR ANALYSIS OF MATRIX MULTIPLICATION WITHNARROW RANGE FLOATING-POINT ARITHMETIC.pdf",
+    "sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2"
+  },
+  "paper_version": "SIAM Journal on Scientific Computing 47(4), B785-B800, published 2025-07-01",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "absence_search": {
+      "patterns": [
+        "scaled input",
+        "input underflow",
+        "component sums",
+        "computed rectangular product",
+        "infinity norm vector"
+      ],
+      "result": "The frozen library has no Model-1 format family, power-of-two scaling rule, narrow-range input-conversion theorem, or equation (3.13). It does contain a generic two-input rectangular-product error composition theorem and the componentwise vector infinity-norm bound used by the L construction.",
+      "scope": "all Lean source files corresponding to the 24 frozen .olean modules in metadata/library_olean.json"
+    },
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.rectMatMul_entry_abs_sub_computed_le_of_component_sums",
+      "NumStability.abs_le_infNormVec"
+    ],
+    "note": "The condition-L construction materially combines the frozen two-input perturbation-composition theorem with the frozen infinity-norm coordinate bound. Condition N manually reconstructs both steps. The paper-specific Model-1 conversion equations, inverse-scale estimates, and exact coefficient collection remain necessary in both conditions."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P20BinaryFormatFamily",
+    "P20Model1",
+    "p20InfNormVec",
+    "p20ModelScalingThreshold",
+    "p20MaximalPowerTwoScale",
+    "p20AbsInnerProduct",
+    "p20ScaledInputInnerProduct",
+    "p20InputStageError",
+    "p20InputStageErrorEnvelope",
+    "p20InputUnitRoundoff",
+    "p20InputUnderflowEnvelope"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Model 1 and equations (2.1)-(2.3)",
+      "pdf_page": 2,
+      "printed_page": "B786",
+      "role": "binary formats, roundoff and underflow parameters, format nesting, and input rounding equation",
+      "section": "2.1. The model of matrix multiplication"
+    },
+    {
+      "anchor": "equation (2.4) and the following rounding-mode paragraph",
+      "pdf_page": 3,
+      "printed_page": "B787",
+      "role": "accumulation rounding equation, mutually exclusive relative and underflow errors, and exceptional-value scope",
+      "section": "2.1. The model of matrix multiplication"
+    },
+    {
+      "anchor": "equations (3.2)-(3.8)",
+      "pdf_page": 5,
+      "printed_page": "B789",
+      "role": "format-derived threshold, maximal power-of-two scales, componentwise input conversions, scaled inner product, and definition of epsilon_1",
+      "section": "3.1. Analysis"
+    },
+    {
+      "anchor": "equations (3.9)-(3.13)",
+      "pdf_page": 5,
+      "printed_page": "B789",
+      "role": "selected exact input-rounding and input-underflow error bound",
+      "section": "3.1. Analysis"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P20-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The condition-L proof materially combines NumStability.rectMatMul_entry_abs_sub_computed_le_of_component_sums for the two converted inputs with NumStability.abs_le_infNormVec for the n-scaled normwise underflow terms. Condition N must manually reconstruct the perturbation split and finite-maximum coordinate argument. Equation (3.16), considered first as a replacement, did not pass this dependency check because it reduces to the two inverse-scale inequalities and scalar arithmetic; equation (3.13) retains a genuine combine-level dependency while selecting an exact valid result from the same derivation.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P20/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p20_t2_scaled_input_error"
+  }
+}

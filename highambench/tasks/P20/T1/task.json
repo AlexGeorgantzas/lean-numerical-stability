@@ -1,0 +1,90 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "reconstruction of the format-derived threshold, row-specific power-of-two diagonal scaling, equation (3.4a), and its exact maximum-coefficient consequence",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The matrix dimensions m and n are positive.",
+    "The largest finite input- and accumulation-format values fmax and Fmax are positive, and theta is fixed to min(fmax,sqrt(Fmax/n)) as in (3.2).",
+    "Every row of A has positive explicit finite-maximum infinity norm, making the quotients in (3.4a) defined.",
+    "The exact-real model represents the source assumption that A, B, and C are stored in sufficiently high precision and that no range exception occurs before forward scaling or after inverse scaling."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P20 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P20 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "highambench/tasks/P20/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p20_t1_power_two_row_scaling {m n : Nat} (A : Matrix (Fin m) (Fin n) Real) (fmax Fmax : Real) (hm : 0 < m) (hn : 0 < n) (hfmax : 0 < fmax) (hFmax : 0 < Fmax) (hrow : forall i, 0 < p20InfNormVec (A i)) : let theta := p20ScalingThreshold n fmax Fmax; every selected row factor is a positive integer power of two satisfying (3.4a), every coefficient of p20LeftScaledMatrix theta A is bounded by theta, and every row has a coefficient strictly larger than theta/2",
+    "namespace": "HighamBench",
+    "plain_language": "For every nonzero row of A, construct the power-of-two diagonal factor prescribed by the paper using its format-derived theta, prove the exact interval (3.4a), and prove that the scaled row maximum lies in (theta/2,theta].",
+    "target_file": "highambench/tasks/P20/T1/Target.lean",
+    "theorem_name": "p20_t1_power_two_row_scaling"
+  },
+  "informal_proof": "For each positive ratio theta/||A_i||_infinity, use the Archimedean adjacent-power theorem to select an integer exponent k with 2^k <= theta/||A_i||_infinity < 2^(k+1). Rearranging gives (3.4a). Bound every row coefficient by the explicit finite maximum and select a coefficient attaining that maximum to obtain the closed upper and strict lower scaled-row bounds.",
+  "informal_statement": "The paper's complete row-side scaling selection from (3.1)-(3.4a): format-derived theta, positive power-of-two diagonal factors, and scaled-row maxima in (theta/2,theta].",
+  "limits": {
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
+  },
+  "paper_id": "P20",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P20_ERROR ANALYSIS OF MATRIX MULTIPLICATION WITHNARROW RANGE FLOATING-POINT ARITHMETIC.pdf",
+    "sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2"
+  },
+  "paper_version": "SIAM Journal on Scientific Computing 47(4), B785-B800, published 2025-07-01",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.abs_le_infNormVec",
+      "NumStability.infNormVec_exists_abs_eq"
+    ],
+    "note": "The frozen MatrixAlgebra module supplies the exact coordinate bound and attainment theorem for the same finite infinity norm. It does not contain the format-derived theta, adjacent power-of-two selection, diagonal scaling construction, or equation (3.4a)."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p20InfNormVec",
+    "p20ScalingThreshold",
+    "p20IsPowerOfTwo",
+    "p20RowScaleExponent",
+    "p20RowScaleFactor",
+    "p20RowScalingMatrix",
+    "p20LeftScaledMatrix"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (3.1) and preceding/following scaling assumptions",
+      "pdf_page": 4,
+      "printed_page": "B788",
+      "role": "diagonal row scaling, power-of-two factors, exact scaling, and range-exception scope",
+      "section": "3. Error analysis of matrix multiplication"
+    },
+    {
+      "anchor": "equations (3.2) and (3.4a) with the maximum-coefficient prose",
+      "pdf_page": 5,
+      "printed_page": "B789",
+      "role": "format-derived theta, row-specific scaling-factor interval, and scaled-row maximum in (theta/2,theta]",
+      "section": "3.1. Analysis"
+    }
+  ],
+  "source_tags": [
+    "EQN",
+    "TXT"
+  ],
+  "task_id": "P20-T1",
+  "tier": "T1",
+  "tier_label": "direct",
+  "tier_rationale": "The L proof directly reuses NumStability.abs_le_infNormVec and NumStability.infNormVec_exists_abs_eq for the exact finite infinity-norm steps. The remaining work is the generic Archimedean selection of an adjacent power of two and scalar rearrangement of (3.4a); the frozen library contains no paper-specific scaling theorem. The task remains direct-use T1.",
+  "validation": {
+    "controlled_target_file": "highambench/tasks/P20/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p20_t1_power_two_row_scaling"
+  }
+}
