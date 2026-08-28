@@ -26,6 +26,8 @@ structure P01StandardAddModel where
       |δ| ≤ u ∧
       fl_add x y = (x + y) * (1 + δ)
 
+attribute [simp] P01StandardAddModel.fl_add_zero
+
 /-- P01's accumulated-error number `γₙ = n*u/(1-n*u)`. -/
 noncomputable def p01Gamma (u : ℝ) (n : ℕ) : ℝ :=
   ((n : ℝ) * u) / (1 - (n : ℝ) * u)
@@ -48,11 +50,14 @@ structure NoGuardAddModel where
   u : ℝ
   u_pos : 0 < u
   fl_add : ℝ → ℝ → ℝ
+  fl_add_zero : ∀ x : ℝ, fl_add 0 x = x
   model_add :
     ∀ x y : ℝ, ∃ α β : ℝ,
       |α| ≤ u ∧
       |β| ≤ u ∧
       fl_add x y = x * (1 + α) + y * (1 + β)
+
+attribute [simp] NoGuardAddModel.fl_add_zero
 
 /-- Embed an index into the left half of a vector of length `2^(r+1)`. -/
 def leftIndex (r : ℕ) (i : Fin (2 ^ r)) : Fin (2 ^ (r + 1)) :=
@@ -353,18 +358,24 @@ noncomputable def p01NearAttainabilityInput
 /-- The stepwise rounding behavior stated for the near-attainability construction. -/
 def P01NearAttainabilityRoundingTrace
     (flAdd : ℝ → ℝ → ℝ) (r t : ℕ) : Prop :=
-  ∀ k : Fin (2 ^ r), 0 < k.val →
+  ∀ k : Fin (2 ^ r),
     flAdd (k.val : ℝ) (p01NearAttainabilityInput r t k) = k.val + 1
 
 /-- Qualitative parameter regime stated for the near-attainability family. -/
 structure P01NearAttainabilityQualitativeRegimeReport where
+  equation28Equation25Equation26BoundsReportedNearlyAttainable : Bool
+  unitRoundoffSetToTwoToNegativeT : Bool
+  inputLengthSetToTwoToR : Bool
   comparedParametersAreRAndT : Bool
   rReportedMuchSmallerThanT : Bool
   quantitativeMeaningSpecified : Bool
 
 def p01NearAttainabilityQualitativeRegimeReport :
     P01NearAttainabilityQualitativeRegimeReport :=
-  { comparedParametersAreRAndT := true
+  { equation28Equation25Equation26BoundsReportedNearlyAttainable := true
+    unitRoundoffSetToTwoToNegativeT := true
+    inputLengthSetToTwoToR := true
+    comparedParametersAreRAndT := true
     rReportedMuchSmallerThanT := true
     quantitativeMeaningSpecified := false }
 
@@ -450,9 +461,11 @@ noncomputable def exactValues : P01SumTree → List ℝ
 
 end P01SumTree
 
-/-- Equation (3.1): a legal tree has exactly the supplied inputs as leaves, up to order. -/
+/-- Equation (3.1): a legal tree has the supplied inputs as leaves and `n - 1`
+internal additions; the rooted tree records the dependency order and final output. -/
 def P01AdditionScheme (xs : List ℝ) (tree : P01SumTree) : Prop :=
-  tree.leaves.Perm xs
+  tree.leaves.Perm xs ∧
+    (P01SumTree.internalValues (· + ·) tree).length = xs.length - 1
 
 /-- Every internal addition has at least one original input as an operand. -/
 def P01EveryAdditionHasOriginalOperand : P01SumTree → Prop
@@ -479,11 +492,21 @@ noncomputable def p01TreeRunningMagnitude
     (flAdd : ℝ → ℝ → ℝ) (tree : P01SumTree) : ℝ :=
   (P01SumTree.internalValues flAdd tree).map abs |>.sum
 
-/-- The reported experiment metric `T`, tied to the rounded internal values of
-an evaluated addition tree. -/
+/-- The reported experiment metric `T`, including its printed internal-node
+indexing convention and the compensated-method exclusion. -/
+structure P01ReportedRunningMagnitudeTReport where
+  value : ℝ
+  indicatesSharpnessOfErrorBounds : Bool
+  sumsComputedIntermediateValuesIndexedFromNPlusOneThroughTwoNMinusOne : Bool
+  reportedForEveryMethodExceptCompensatedSummation : Bool
+
 noncomputable def p01ReportedRunningMagnitudeT
-    (flAdd : ℝ → ℝ → ℝ) (tree : P01SumTree) : ℝ :=
-  p01TreeRunningMagnitude flAdd tree
+    (flAdd : ℝ → ℝ → ℝ) (tree : P01SumTree) :
+    P01ReportedRunningMagnitudeTReport :=
+  { value := p01TreeRunningMagnitude flAdd tree
+    indicatesSharpnessOfErrorBounds := true
+    sumsComputedIntermediateValuesIndexedFromNPlusOneThroughTwoNMinusOne := true
+    reportedForEveryMethodExceptCompensatedSummation := true }
 
 /-! ### Pairwise summation -/
 
@@ -550,20 +573,26 @@ noncomputable def p01InversePowerSeries (power : ℕ) : ℝ :=
 The paper uses `≈` without specifying an approximation tolerance. -/
 structure P01InversePowerCoefficientApproximationReport where
   power : ℕ
+  finitePartialCoefficient : ℕ → ℝ
+  infiniteSeriesCoefficient : ℝ
   finitePartialReportedApproximatelyInfinite : Bool
   reportedDecimalCoefficient : ℚ
   approximationToleranceSpecified : Bool
 
-def p01InverseCubeCoefficientApproximationReport :
+noncomputable def p01InverseCubeCoefficientApproximationReport :
     P01InversePowerCoefficientApproximationReport :=
   { power := 3
+    finitePartialCoefficient := p01InversePowerPartial 3
+    infiniteSeriesCoefficient := p01InversePowerSeries 3
     finitePartialReportedApproximatelyInfinite := true
     reportedDecimalCoefficient := 6 / 5
     approximationToleranceSpecified := false }
 
-def p01InverseSquareCoefficientApproximationReport :
+noncomputable def p01InverseSquareCoefficientApproximationReport :
     P01InversePowerCoefficientApproximationReport :=
   { power := 2
+    finitePartialCoefficient := p01InversePowerPartial 2
+    infiniteSeriesCoefficient := p01InversePowerSeries 2
     finitePartialReportedApproximatelyInfinite := true
     reportedDecimalCoefficient := 41 / 25
     approximationToleranceSpecified := false }
@@ -571,12 +600,22 @@ def p01InverseSquareCoefficientApproximationReport :
 /-- Status of the source's approximate inverse-cube comparison.  The printed
 `≈ log₂ n` relation is qualitative because no tolerance is supplied. -/
 structure P01InverseCubeApproximateLogComparisonReport where
+  inputTermsAreReciprocalCubes : Bool
+  comparedPairwiseEquation37Bound : Bool
+  comparedIncreasingRecursiveEquation25Bound : Bool
+  comparisonIsMultiplicative : Bool
+  comparisonFactorIsLogTwoOfInputLength : Bool
   pairwiseBoundReportedApproximatelyLogTwoLarger : Bool
   approximationToleranceSpecified : Bool
 
 def p01InverseCubeApproximateLogComparisonReport :
     P01InverseCubeApproximateLogComparisonReport :=
-  { pairwiseBoundReportedApproximatelyLogTwoLarger := true
+  { inputTermsAreReciprocalCubes := true
+    comparedPairwiseEquation37Bound := true
+    comparedIncreasingRecursiveEquation25Bound := true
+    comparisonIsMultiplicative := true
+    comparisonFactorIsLogTwoOfInputLength := true
+    pairwiseBoundReportedApproximatelyLogTwoLarger := true
     approximationToleranceSpecified := false }
 
 /-- Recursive evaluation on a list, keeping its first input exact. -/
@@ -680,12 +719,14 @@ It is retained as an attributed claim because it is false for some permitted
 round-to-nearest binary inputs. -/
 structure P01InsertionOptimalityReport where
   assertedForAllPositiveInputs : Bool
-  concernsComputedInternalValues : Bool
+  concernsTermsInErrorExpression33 : Bool
+  comparisonClassIsAllMethodsOfFormEquation31 : Bool
   minimizesEquation34AmongAdditionTrees : Bool
 
 def p01InsertionOptimalityReport : P01InsertionOptimalityReport :=
   { assertedForAllPositiveInputs := true
-    concernsComputedInternalValues := true
+    concernsTermsInErrorExpression33 := true
+    comparisonClassIsAllMethodsOfFormEquation31 := true
     minimizesEquation34AmongAdditionTrees := true }
 
 /-- The geometric family underlying the printed power-of-two insertion trace. -/
@@ -887,17 +928,23 @@ noncomputable def p01CompensatedStep
 
 /-- Failure of the magnitude premise needed for an exact local correction. -/
 structure P01CompensatedCorrectionMagnitudeCaveatReport where
+  compensatedMethodReportedToHaveTwoWeaknesses : Bool
+  thisIsTheFirstReportedWeakness : Bool
   concernsCorrectionIdentityEquation39 : Bool
   exactnessRequiresFirstAddendMagnitudeAtLeastSecond : Bool
   requiredMagnitudePremiseGuaranteedAtEveryCompensatedStep : Bool
   localCorrectionNecessarilyExact : Bool
+  secondReportedWeaknessIsInexactInputCorrectionAddition : Bool
 
 def p01CompensatedCorrectionMagnitudeCaveatReport :
     P01CompensatedCorrectionMagnitudeCaveatReport :=
-  { concernsCorrectionIdentityEquation39 := true
+  { compensatedMethodReportedToHaveTwoWeaknesses := true
+    thisIsTheFirstReportedWeakness := true
+    concernsCorrectionIdentityEquation39 := true
     exactnessRequiresFirstAddendMagnitudeAtLeastSecond := true
     requiredMagnitudePremiseGuaranteedAtEveryCompensatedStep := false
-    localCorrectionNecessarilyExact := false }
+    localCorrectionNecessarilyExact := false
+    secondReportedWeaknessIsInexactInputCorrectionAddition := true }
 
 /-- The separate rounding caveat for forming the corrected next input. -/
 structure P01CompensatedInputCorrectionAdditionCaveatReport where
@@ -947,94 +994,122 @@ def P01InputsRepresentableForAdd
     (fp : P01StandardAddModel) (n : ℕ) (v : Fin n → ℝ) : Prop :=
   ∀ i, fp.fl_add (v i) 0 = v i
 
-/-- Status-aware form of equation (3.10) under the displayed relative-error
-model.  The source asserts the stated backward representation, but the bare
-`P01StandardAddModel` interface admits a validated countermodel. -/
-structure P01Equation310BareModelGapReport where
-  sourceAssertsBackwardRepresentation : Bool
-  leadingRoundoffCoefficient : ℕ
-  remainderHasOrderNTimesUSquared : Bool
-  claimIsUniformForSufficientlySmallNUnitRoundoff : Bool
-  bareStandardAddModelSufficesForUniversalClaim : Bool
+/-- The exact attributed backward representation (3.10), with
+O(n*u^2) given its standard one-sided, fixed-problem meaning as u tends to zero. -/
+def P01Equation310BackwardRepresentationClaim
+    (family : P01StandardAddFamily) : Prop :=
+  ∀ (n : ℕ) (v : Fin n → ℝ),
+    ∃ C ε : ℝ, 0 ≤ C ∧ 0 < ε ∧
+      ∀ u : NNReal, 0 < (u : ℝ) → (u : ℝ) ≤ ε →
+        P01InputsRepresentableForAdd (family.model u) n v →
+        ∃ μ : Fin n → ℝ,
+          p01CompensatedSum (family.model u).fl_add (List.ofFn v) =
+              ∑ i : Fin n, (1 + μ i) * v i ∧
+            ∀ i, |μ i| ≤
+              2 * (u : ℝ) + C * (n : ℝ) * (u : ℝ) ^ 2
 
-/-- Status-aware form of the stronger final-corrected backward bound. -/
-structure P01FinalCorrectedBareModelGapReport where
-  sourceAssertsFinalCorrectedBackwardRepresentation : Bool
-  leadingRoundoffCoefficient : ℕ
-  quadraticRemainderUsesRemainingInputCount : Bool
-  claimIsUniformForSufficientlySmallNUnitRoundoff : Bool
-  bareStandardAddModelSufficesForUniversalClaim : Bool
+/-- The exact attributed final-corrected backward representation, whose
+quadratic remainder at input i scales with the remaining-input count. -/
+def P01FinalCorrectedBackwardRepresentationClaim
+    (family : P01StandardAddFamily) : Prop :=
+  ∀ (n : ℕ) (v : Fin n → ℝ),
+    ∃ C ε : ℝ, 0 ≤ C ∧ 0 < ε ∧
+      ∀ u : NNReal, 0 < (u : ℝ) → (u : ℝ) ≤ ε →
+        P01InputsRepresentableForAdd (family.model u) n v →
+        ∃ μ : Fin n → ℝ,
+          p01FinalCorrectedSum (family.model u).fl_add (List.ofFn v) =
+              ∑ i : Fin n, (1 + μ i) * v i ∧
+            ∀ i, |μ i| ≤
+              2 * (u : ℝ) +
+                C * ((n - i.val : ℕ) : ℝ) * (u : ℝ) ^ 2
 
-/-- Status-aware form of the forward-error bound (3.11). -/
-structure P01Equation311BareModelGapReport where
-  sourceAssertsForwardAbsoluteErrorBound : Bool
-  boundScalesBySumOfInputMagnitudes : Bool
-  leadingRoundoffCoefficient : ℕ
-  remainderHasOrderNTimesUSquared : Bool
-  claimIsUniformForSufficientlySmallNUnitRoundoff : Bool
-  bareStandardAddModelSufficesForUniversalClaim : Bool
+/-- The exact attributed forward-error bound (3.11), again interpreting
+O(n*u^2) one-sidedly for each fixed input problem. -/
+def P01Equation311ForwardErrorClaim
+    (family : P01StandardAddFamily) : Prop :=
+  ∀ (n : ℕ) (v : Fin n → ℝ),
+    ∃ C ε : ℝ, 0 ≤ C ∧ 0 < ε ∧
+      ∀ u : NNReal, 0 < (u : ℝ) → (u : ℝ) ≤ ε →
+        P01InputsRepresentableForAdd (family.model u) n v →
+        |p01CompensatedSum (family.model u).fl_add (List.ofFn v) -
+            p01ExactSum n v| ≤
+          (2 * (u : ℝ) + C * (n : ℝ) * (u : ℝ) ^ 2) *
+            p01AbsoluteSum n v
 
-/-- Status-aware form of the source's n-independent-constant consequence of
-equation (3.11) under `n*u ≤ 1`. -/
-structure P01Equation311NIndependentConstantBareModelGapReport where
-  concernsEquation311 : Bool
-  appliesWhenNUnitRoundoffAtMostOne : Bool
-  leadingRoundoffCoefficient : ℕ
-  remainderConstantAssertedIndependentOfN : Bool
-  bareStandardAddModelSufficesForUniversalClaim : Bool
+/-- The separate source assertion that one constant works independently of
+n throughout the regime n*u <= 1 in (3.11). -/
+def P01Equation311NIndependentConstantClaim
+    (family : P01StandardAddFamily) : Prop :=
+  ∃ C : ℝ, 0 ≤ C ∧
+    ∀ u : NNReal, 0 < (u : ℝ) →
+      ∀ (n : ℕ) (v : Fin n → ℝ),
+        (n : ℝ) * (u : ℝ) ≤ 1 →
+        P01InputsRepresentableForAdd (family.model u) n v →
+        |p01CompensatedSum (family.model u).fl_add (List.ofFn v) -
+            p01ExactSum n v| ≤
+          (2 * (u : ℝ) + C * (n : ℝ) * (u : ℝ) ^ 2) *
+            p01AbsoluteSum n v
 
-/-- Status-aware form of the section-6 first-order compensated-error cap. -/
-structure P01CompensatedFirstOrderCapBareModelGapReport where
+/-- Source-facing attributed form of equation (3.10). It carries the exact
+mathematical claim without asserting that the bare model proves it. -/
+structure P01Equation310SourceReport where
+  claimedRelation : P01StandardAddFamily → Prop
+  claimedRelation_eq :
+    claimedRelation = P01Equation310BackwardRepresentationClaim
+  sourceAssertsClaimedRelation : Bool
+
+/-- Source-facing attributed form of the stronger final-corrected bound. -/
+structure P01FinalCorrectedSourceReport where
+  claimedRelation : P01StandardAddFamily → Prop
+  claimedRelation_eq :
+    claimedRelation = P01FinalCorrectedBackwardRepresentationClaim
+  sourceAssertsClaimedRelation : Bool
+
+/-- Source-facing attributed form of forward-error bound (3.11). -/
+structure P01Equation311SourceReport where
+  claimedRelation : P01StandardAddFamily → Prop
+  claimedRelation_eq : claimedRelation = P01Equation311ForwardErrorClaim
+  sourceAssertsClaimedRelation : Bool
+
+/-- Source-facing attributed form of the n-independent-constant clause. -/
+structure P01Equation311NIndependentConstantSourceReport where
+  claimedRelation : P01StandardAddFamily → Prop
+  claimedRelation_eq :
+    claimedRelation = P01Equation311NIndependentConstantClaim
+  sourceAssertsClaimedRelation : Bool
+
+def p01_t4_eq_3_10 : P01Equation310SourceReport :=
+  { claimedRelation := P01Equation310BackwardRepresentationClaim
+    claimedRelation_eq := rfl
+    sourceAssertsClaimedRelation := true }
+
+def p01_t4_final_corrected_backward_error :
+    P01FinalCorrectedSourceReport :=
+  { claimedRelation := P01FinalCorrectedBackwardRepresentationClaim
+    claimedRelation_eq := rfl
+    sourceAssertsClaimedRelation := true }
+
+def p01_t4_eq_3_11 : P01Equation311SourceReport :=
+  { claimedRelation := P01Equation311ForwardErrorClaim
+    claimedRelation_eq := rfl
+    sourceAssertsClaimedRelation := true }
+
+def p01_t4_compensated_constant_independent_of_n :
+    P01Equation311NIndependentConstantSourceReport :=
+  { claimedRelation := P01Equation311NIndependentConstantClaim
+    claimedRelation_eq := rfl
+    sourceAssertsClaimedRelation := true }
+
+/-- Source-facing form of the section-6 first-order compensated-error cap. -/
+structure P01CompensatedFirstOrderCapReport where
   sourceAssertsNormalizedErrorFirstOrderCap : Bool
   firstOrderCap : ℕ
-  bareStandardAddModelSufficesForUniversalClaim : Bool
 
-/-- Equation (3.10), retained as an attributed source claim because the bare
-standard-model interface does not support its universal proof. -/
-def p01_t4_eq_3_10 : P01Equation310BareModelGapReport :=
-  { sourceAssertsBackwardRepresentation := true
-    leadingRoundoffCoefficient := 2
-    remainderHasOrderNTimesUSquared := true
-    claimIsUniformForSufficientlySmallNUnitRoundoff := true
-    bareStandardAddModelSufficesForUniversalClaim := false }
-
-/-- The final-corrected bound, retained with its index-dependent quadratic
-remainder and its status under the bare standard-model interface. -/
-def p01_t4_final_corrected_backward_error :
-    P01FinalCorrectedBareModelGapReport :=
-  { sourceAssertsFinalCorrectedBackwardRepresentation := true
-    leadingRoundoffCoefficient := 2
-    quadraticRemainderUsesRemainingInputCount := true
-    claimIsUniformForSufficientlySmallNUnitRoundoff := true
-    bareStandardAddModelSufficesForUniversalClaim := false }
-
-/-- Equation (3.11), retained as an attributed forward-error claim with the
-source's coefficient and asymptotic scale. -/
-def p01_t4_eq_3_11 : P01Equation311BareModelGapReport :=
-  { sourceAssertsForwardAbsoluteErrorBound := true
-    boundScalesBySumOfInputMagnitudes := true
-    leadingRoundoffCoefficient := 2
-    remainderHasOrderNTimesUSquared := true
-    claimIsUniformForSufficientlySmallNUnitRoundoff := true
-    bareStandardAddModelSufficesForUniversalClaim := false }
-
-/-- The n-independent-constant assertion following (3.11), retained as
-status-aware source data because the referenced bare-model bound fails. -/
-def p01_t4_compensated_constant_independent_of_n :
-    P01Equation311NIndependentConstantBareModelGapReport :=
-  { concernsEquation311 := true
-    appliesWhenNUnitRoundoffAtMostOne := true
-    leadingRoundoffCoefficient := 2
-    remainderConstantAssertedIndependentOfN := true
-    bareStandardAddModelSufficesForUniversalClaim := false }
-
-/-- The reported first-order normalized-error cap for compensated summation,
-retained as status-aware source data under the bare standard model. -/
+/-- The reported first-order normalized-error cap for compensated summation. -/
 def p01_t4_first_order_R_cap_compensated :
-    P01CompensatedFirstOrderCapBareModelGapReport :=
+    P01CompensatedFirstOrderCapReport :=
   { sourceAssertsNormalizedErrorFirstOrderCap := true
-    firstOrderCap := 2
-    bareStandardAddModelSufficesForUniversalClaim := false }
+    firstOrderCap := 2 }
 
 /-- Status-preserving record of the one-signed accuracy assertion in conclusion item 2.
 
@@ -1099,7 +1174,7 @@ inductive P01AccumulatorCascade
       P01AccumulatorCascade sys level state x
         (Function.update state level (sys.flAdd (state level) x))
   | carry (level : Fin sys.levelCount) (state : Fin sys.levelCount → ℝ) (x : ℝ)
-      (hover : ¬ P01AccumulatorFits sys level (sys.flAdd (state level) x))
+      (hover : sys.upper level ≤ sys.flAdd (state level) x)
       (hnext : level.val + 1 < sys.levelCount)
       {result : Fin sys.levelCount → ℝ}
       (next : P01AccumulatorCascade sys
@@ -1193,7 +1268,7 @@ inductive P01SummationMethod
 
 /-- The eight summation options used throughout the section 6 experiments. -/
 def p01EightSummationMethods : List P01SummationMethod :=
-  [.original, .increasing, .decreasing, .psum, .pairwise, .insertion, .plusMinus,
+  [.original, .increasing, .decreasing, .psum, .insertion, .plusMinus, .pairwise,
     .compensated]
 
 /-- Increasing-recursive sign-separated evaluation used in the section 6 experiments. -/
@@ -1242,7 +1317,7 @@ inductive P01InputDistribution
 inductive P01StatisticalMethod
   | increasing | random | decreasing | insertion | pairwise
 
-/-- The probabilistic assumptions under which the cited Table 4.1 estimates are reported. -/
+/-- The probabilistic setup attributed to Robertazzi and Schwartz [35]. -/
 structure P01StatisticalModelSpecification where
   distribution : P01InputDistribution
   inputsNonnegative : Bool
@@ -1250,10 +1325,15 @@ structure P01StatisticalModelSpecification where
   inputMean_pos : 0 < inputMean
   uniformLower : Option ℝ
   uniformUpper : Option ℝ
+  exponentialMean : Option ℝ
   additionErrorsAreRelative : Bool
   additionErrorsIndependent : Bool
   additionErrorMean : ℝ
   additionErrorVariance : ℝ
+  additionErrorVarianceIsFinite : Bool
+  variousSimplifyingAssumptionsMade : Bool
+  analysisAttributedToRobertazziAndSchwartz : Bool
+  citationReference : ℕ
   meanSquareErrorDefinedAsVarianceOfAbsoluteError : Bool
 
 noncomputable def p01StatisticalModelSpecification
@@ -1269,10 +1349,17 @@ noncomputable def p01StatisticalModelSpecification
     uniformUpper := match distribution with
       | .uniform => some (2 * μ)
       | .exponential => none
+    exponentialMean := match distribution with
+      | .uniform => none
+      | .exponential => some μ
     additionErrorsAreRelative := true
     additionErrorsIndependent := true
     additionErrorMean := 0
     additionErrorVariance := σ ^ 2
+    additionErrorVarianceIsFinite := true
+    variousSimplifyingAssumptionsMade := true
+    analysisAttributedToRobertazziAndSchwartz := true
+    citationReference := 35
     meanSquareErrorDefinedAsVarianceOfAbsoluteError := true }
 
 /-- The decimal coefficient reported in Table 4.1. -/
@@ -1313,19 +1400,17 @@ def p01Table41RecursiveRankingAgreementReport :
     rankingOrdersIncreasingBeforeRandomBeforeDecreasing := true
     rankingReportedAsPreciselyThatGivenByEquation28 := true }
 
-/-- Status-aware insertion-versus-pairwise bound comparison below Table 4.1. -/
+/-- Source-facing insertion-versus-pairwise bound comparison below Table 4.1. -/
 structure P01Table41InsertionPairwiseBoundSourceErrorReport where
   appliesToNonnegativeInputs : Bool
   concernsComputedRoundingErrorBounds : Bool
   insertionBoundAssertedNoLargerThanPairwise : Bool
-  literalUniversalAssertionValidForPermittedRoundings : Bool
 
 def p01Table41InsertionPairwiseBoundSourceErrorReport :
     P01Table41InsertionPairwiseBoundSourceErrorReport :=
   { appliesToNonnegativeInputs := true
     concernsComputedRoundingErrorBounds := true
-    insertionBoundAssertedNoLargerThanPairwise := true
-    literalUniversalAssertionValidForPermittedRoundings := false }
+    insertionBoundAssertedNoLargerThanPairwise := true }
 
 /-- Literal reported constants in the pairwise-versus-recursive bound comparison. -/
 structure P01Table41PairwiseRecursiveBoundConstantReport where
@@ -1367,16 +1452,20 @@ def P01NoGuardThetaWitness
   p01RecursiveSum fp.fl_add n v = ∑ i : Fin n, v i * (1 + θ i) ∧
   ∀ i : Fin n, |θ i| ≤ p01Gamma fp.u (p01RecursivePathLength n i)
 
-/-- Independent perturbations at both children of every no-guard addition node. -/
+/-- The no-guard replacement of (3.3): each internal-node error has the
+two-input perturbation expansion analogous to (5.2). -/
 def P01NoGuardTreeWitness
     (fp : NoGuardAddModel) : P01SumTree → Prop
   | .leaf _ => True
   | .node left right =>
       (∃ α β : ℝ,
         |α| ≤ fp.u ∧ |β| ≤ fp.u ∧
-        P01SumTree.rounded fp.fl_add (.node left right) =
-          P01SumTree.rounded fp.fl_add left * (1 + α) +
-            P01SumTree.rounded fp.fl_add right * (1 + β)) ∧
+        P01SumTree.rounded fp.fl_add (.node left right) -
+            P01SumTree.exact (.node left right) =
+          (P01SumTree.rounded fp.fl_add left - P01SumTree.exact left) +
+          (P01SumTree.rounded fp.fl_add right - P01SumTree.exact right) +
+          P01SumTree.rounded fp.fl_add left * α +
+          P01SumTree.rounded fp.fl_add right * β) ∧
       P01NoGuardTreeWitness fp left ∧ P01NoGuardTreeWitness fp right
 
 /-- Same-sign test used literally by the modified no-guard correction. -/
@@ -1524,12 +1613,14 @@ structure P01Table61FirstFourRunningMagnitudeSimilarityReport where
   scope : P01Table61ExperimentScope
   methods : List P01SummationMethod
   runningMagnitudeValuesHaveSimilarMagnitude : Bool
+  similarityReportedAsReasonRunningMagnitudeBoundMissesDecreasingOrderMerit : Bool
 
 noncomputable def p01Table61FirstFourRunningMagnitudeSimilarityReport :
     P01Table61FirstFourRunningMagnitudeSimilarityReport :=
   { scope := p01Table61ExperimentScope
     methods := [.original, .increasing, .decreasing, .psum]
-    runningMagnitudeValuesHaveSimilarMagnitude := true }
+    runningMagnitudeValuesHaveSimilarMagnitude := true
+    similarityReportedAsReasonRunningMagnitudeBoundMissesDecreasingOrderMerit := true }
 
 /-- The running-magnitude bounds are reported not to expose the merit of decreasing order. -/
 structure P01Table61RunningMagnitudeBoundLimitationReport where
@@ -1573,6 +1664,7 @@ structure P01Table61PlusMinusRunningMagnitudePredictionReport where
   scope : P01Table61ExperimentScope
   method : P01SummationMethod
   diagnosticIsRunningMagnitudeT : Bool
+  predictedObservationIsOneAdditionalCorrectSignificantFigureLost : Bool
   diagnosticReportedToPredictDigitLoss : Bool
 
 noncomputable def p01Table61PlusMinusRunningMagnitudePredictionReport :
@@ -1580,6 +1672,7 @@ noncomputable def p01Table61PlusMinusRunningMagnitudePredictionReport :
   { scope := p01Table61ExperimentScope
     method := .plusMinus
     diagnosticIsRunningMagnitudeT := true
+    predictedObservationIsOneAdditionalCorrectSignificantFigureLost := true
     diagnosticReportedToPredictDigitLoss := true }
 
 /-- Table 6.2, for `n=2048` standard-normal inputs. -/
@@ -1914,12 +2007,16 @@ structure P01ForwardErrorVariationFactorsReport where
   firstSystemFactor : ℕ
   secondSystem : P01ForwardSystem
   secondSystemFactor : ℕ
+  comparedMethods : List P01SummationMethod
+  factorsMeasureVariationAcrossTable65ForwardErrors : Bool
 
 def p01ForwardErrorVariationFactorsReport : P01ForwardErrorVariationFactorsReport :=
   { firstSystem := .first
     firstSystemFactor := 98
     secondSystem := .second
-    secondSystemFactor := 39 }
+    secondSystemFactor := 39
+    comparedMethods := p01EightSummationMethods
+    factorsMeasureVariationAcrossTable65ForwardErrors := true }
 
 /-- The two reported factors were the largest in a broader test set. -/
 structure P01ForwardLargestObservedVariationReport where
@@ -1979,14 +2076,21 @@ def p01ForwardNaturalRecursiveRecommendationReport :
   { appliesToInnerProductsInGeneralLinearEquationSolvers := true
     recommendsRecursiveSummationInNaturalOrder := true }
 
-/-- MATLAB double unit roundoff is printed only as an untoleranced approximation. -/
+/-- MATLAB/IEEE-double arithmetic used for all experiments, with the printed
+unit-roundoff value retained as an untoleranced approximation. -/
 structure P01MatlabDoubleUnitRoundoffApproximationReport where
+  allExperimentsReportedDoneUsingMATLAB : Bool
+  matlabCitationReference : ℕ
+  matlabReportedToUseIEEEStandardDoublePrecisionArithmetic : Bool
   reportedApproximateValue : ℚ
   approximationToleranceSpecified : Bool
 
 def p01MatlabDoubleUnitRoundoffApproximationReport :
     P01MatlabDoubleUnitRoundoffApproximationReport :=
-  { reportedApproximateValue := 11 / 100000000000000000
+  { allExperimentsReportedDoneUsingMATLAB := true
+    matlabCitationReference := 30
+    matlabReportedToUseIEEEStandardDoublePrecisionArithmetic := true
+    reportedApproximateValue := 11 / 100000000000000000
     approximationToleranceSpecified := false }
 
 /-- A standard addition model carrying the source-visible MATLAB-double
@@ -2201,26 +2305,34 @@ def p01DecreasingEq28NoSmallerSourceErrorReport :
 /-- The separate qualitative claim that the decreasing equation-(2.8) bound can be much larger. -/
 structure P01DecreasingEq28PotentiallyLargerReport where
   appliesToPositiveInputs : Bool
+  concernsEquation28ComputedPrefixBound : Bool
   concernsComputedPrefixMagnitudes : Bool
+  comparisonOrderingIsIncreasingMagnitude : Bool
   decreasingBoundAssertedPotentiallyMuchLarger : Bool
   quantitativeMeaningSpecified : Bool
 
 def p01DecreasingEq28PotentiallyLargerReport :
     P01DecreasingEq28PotentiallyLargerReport :=
   { appliesToPositiveInputs := true
+    concernsEquation28ComputedPrefixBound := true
     concernsComputedPrefixMagnitudes := true
+    comparisonOrderingIsIncreasingMagnitude := true
     decreasingBoundAssertedPotentiallyMuchLarger := true
     quantitativeMeaningSpecified := false }
 
 /-- The corresponding qualitative equation-(2.5) claim, whose scale is left unspecified. -/
 structure P01DecreasingEq25PotentiallyLargerReport where
   appliesToPositiveInputs : Bool
+  concernsEquation25WeakerBound : Bool
+  comparisonOrderingIsIncreasingMagnitude : Bool
   decreasingBoundAssertedPotentiallyMuchLarger : Bool
   quantitativeMeaningSpecified : Bool
 
 def p01DecreasingEq25PotentiallyLargerReport :
     P01DecreasingEq25PotentiallyLargerReport :=
   { appliesToPositiveInputs := true
+    concernsEquation25WeakerBound := true
+    comparisonOrderingIsIncreasingMagnitude := true
     decreasingBoundAssertedPotentiallyMuchLarger := true
     quantitativeMeaningSpecified := false }
 
@@ -2246,13 +2358,25 @@ noncomputable def p01MaxExactValueMagnitude (tree : P01SumTree) : ℝ :=
 
 /-- Explanation of the exact decreasing-order result in example (2.9). -/
 structure P01Eq29DecreasingExplanationReport where
+  input : ℝ → Fin 4 → ℝ
+  MRequiredToBeMachineBasePower : Bool
+  roundingModeIsRoundToNearest : Bool
+  permittedTiePolicies : List P01NearestTiePolicy
+  requiresRoundOnePlusMEqualsM : Bool
+  sourceInfersMStrictlyGreaterThanUnitRoundoffInverse : Bool
   concernsDecreasingOrderingInExample29 : Bool
   unitTermAddedAfterInevitableHeavyCancellation : Bool
   comparisonOrderingsAddUnitTermBeforeThatCancellation : Bool
   lateAdditionRetainsImportantInformationInUnitTerm : Bool
 
 def p01Eq29DecreasingExplanationReport : P01Eq29DecreasingExplanationReport :=
-  { concernsDecreasingOrderingInExample29 := true
+  { input := p01Eq29Input
+    MRequiredToBeMachineBasePower := true
+    roundingModeIsRoundToNearest := true
+    permittedTiePolicies := [.evenLastDigit, .awayFromZero]
+    requiresRoundOnePlusMEqualsM := true
+    sourceInfersMStrictlyGreaterThanUnitRoundoffInverse := true
+    concernsDecreasingOrderingInExample29 := true
     unitTermAddedAfterInevitableHeavyCancellation := true
     comparisonOrderingsAddUnitTermBeforeThatCancellation := true
     lateAdditionRetainsImportantInformationInUnitTerm := true }
@@ -2320,66 +2444,75 @@ def p01PairwiseRecursiveGeneralBoundComparisonReport :
 /-- First motivation reported for the insertion strategy. -/
 structure P01InsertionSimilarMagnitudeMotivationReport where
   concernsInsertionSummation : Bool
+  strategyRepeatedlyUsesIncreasingOrderUntilFinalSumObtained : Bool
+  motivationAttributedToReferenceNumber : ℕ
   strategyTendsToEncourageSimilarMagnitudeAdditions : Bool
 
 def p01InsertionSimilarMagnitudeMotivationReport :
     P01InsertionSimilarMagnitudeMotivationReport :=
   { concernsInsertionSummation := true
+    strategyRepeatedlyUsesIncreasingOrderUntilFinalSumObtained := true
+    motivationAttributedToReferenceNumber := 35
     strategyTendsToEncourageSimilarMagnitudeAdditions := true }
 
 /-- Information-retention comparison used to motivate similar-magnitude additions. -/
 structure P01SimilarMagnitudeInformationRetentionReport where
+  similarMagnitudeAdditionsReportedPreferred : Bool
+  preferenceJustifiedByRetainingMoreAddendInformation : Bool
   similarMagnitudeAdditionsReportedToRetainMoreAddendInformation : Bool
   largePlusSmallCanLoseManySignificantDigitsFromSmallAddend : Bool
 
 def p01SimilarMagnitudeInformationRetentionReport :
     P01SimilarMagnitudeInformationRetentionReport :=
-  { similarMagnitudeAdditionsReportedToRetainMoreAddendInformation := true
+  { similarMagnitudeAdditionsReportedPreferred := true
+    preferenceJustifiedByRetainingMoreAddendInformation := true
+    similarMagnitudeAdditionsReportedToRetainMoreAddendInformation := true
     largePlusSmallCanLoseManySignificantDigitsFromSmallAddend := true }
 
 /-- Sequential objective attributed to the insertion strategy in equation (3.3). -/
 structure P01InsertionSequentialInternalMagnitudeObjectiveReport where
   concernsInsertionSummation : Bool
-  targetTermsRunFromTSubNPlusOneThroughTSubTwoNMinusOne : Bool
+  targetTermsAreHattedTermsInErrorExpression33 : Bool
+  targetTermsRunFromTHatSubNPlusOneThroughTHatSubTwoNMinusOne : Bool
   absoluteValuesMinimizedOneAtATime : Bool
 
 def p01InsertionSequentialInternalMagnitudeObjectiveReport :
     P01InsertionSequentialInternalMagnitudeObjectiveReport :=
   { concernsInsertionSummation := true
-    targetTermsRunFromTSubNPlusOneThroughTSubTwoNMinusOne := true
+    targetTermsAreHattedTermsInErrorExpression33 := true
+    targetTermsRunFromTHatSubNPlusOneThroughTHatSubTwoNMinusOne := true
     absoluteValuesMinimizedOneAtATime := true }
 
 /-- Heavy-cancellation tendency stated after the plus/minus maximum claim. -/
 structure P01PlusMinusHeavyCancellationInternalMagnitudeReport where
   scope : P01HeavyCancellationScopeReport
   concernsMaximumAbsoluteInternalValue : Bool
-  plusMinusValueTendsToExceedValuesForOtherConsideredMethods : Bool
+  plusMinusValueTendsToBeMuchLargerThanForOtherConsideredMethods : Bool
 
 noncomputable def p01PlusMinusHeavyCancellationInternalMagnitudeReport :
     P01PlusMinusHeavyCancellationInternalMagnitudeReport :=
   { scope := p01HeavyCancellationScopeReport
     concernsMaximumAbsoluteInternalValue := true
-    plusMinusValueTendsToExceedValuesForOtherConsideredMethods := true }
+    plusMinusValueTendsToBeMuchLargerThanForOtherConsideredMethods := true }
 
 /-- Overall qualitative assessment of plus/minus summation before the final method. -/
 structure P01PlusMinusNoAdvantagesAssessmentReport where
-  otherMethodsConsideredAtThatPoint : List P01SummationMethod
+  comparisonClassIsOtherMethodsConsideredHere : Bool
   plusMinusReportedToHaveNoAdvantagesOverThoseMethods : Bool
 
 def p01PlusMinusNoAdvantagesAssessmentReport :
     P01PlusMinusNoAdvantagesAssessmentReport :=
-  { otherMethodsConsideredAtThatPoint :=
-      [.original, .increasing, .decreasing, .psum, .pairwise, .insertion]
+  { comparisonClassIsOtherMethodsConsideredHere := true
     plusMinusReportedToHaveNoAdvantagesOverThoseMethods := true }
 
 /-- The stated arithmetic limitation of Gill's rounding-error estimate. -/
 structure P01GillFixedPointEstimateLimitationReport where
-  concernsGillsRoundingErrorEstimateForAddingTwoNumbers : Bool
+  concernsGillsEstimate : Bool
   estimateReportedValidForFixedPointArithmeticOnly : Bool
 
 def p01GillFixedPointEstimateLimitationReport :
     P01GillFixedPointEstimateLimitationReport :=
-  { concernsGillsRoundingErrorEstimateForAddingTwoNumbers := true
+  { concernsGillsEstimate := true
     estimateReportedValidForFixedPointArithmeticOnly := true }
 
 /-- Kahan's and Møller's historical extension of Gill's idea. -/
@@ -2396,12 +2529,16 @@ def p01KahanMollerFloatingPointExtensionReport :
 
 /-- Møller's version estimates the addition error in chopped arithmetic. -/
 structure P01MollerChoppedArithmeticEstimateReport where
+  mollerShowsHowToEstimateTheQuantity : Bool
+  estimatedQuantity : (ℝ → ℝ) → ℝ → ℝ → ℝ
   estimatedQuantityIsExactSumMinusRoundedSum : Bool
   arithmeticModeIsChopping : Bool
 
 def p01MollerChoppedArithmeticEstimateReport :
     P01MollerChoppedArithmeticEstimateReport :=
-  { estimatedQuantityIsExactSumMinusRoundedSum := true
+  { mollerShowsHowToEstimateTheQuantity := true
+    estimatedQuantity := fun fl a b => a + b - fl (a + b)
+    estimatedQuantityIsExactSumMinusRoundedSum := true
     arithmeticModeIsChopping := true }
 
 /-- Comparative description of Kahan's rounding-error estimate. -/
@@ -2415,12 +2552,18 @@ def p01KahanSimplerEstimateReport : P01KahanSimplerEstimateReport :=
 
 /-- Use of Kahan's estimate to derive compensated summation. -/
 structure P01KahanCompensatedSummationDerivationReport where
+  mollerEstimateIsExactSumMinusRoundedSumInChoppedArithmetic : Bool
+  kahanEstimateReportedSlightlySimplerThanMollers : Bool
   usesKahansRoundingErrorEstimate : Bool
+  derivationUsesThatEstimate : Bool
   derivesCompensatedSummationForFiniteSums : Bool
 
 def p01KahanCompensatedSummationDerivationReport :
     P01KahanCompensatedSummationDerivationReport :=
-  { usesKahansRoundingErrorEstimate := true
+  { mollerEstimateIsExactSumMinusRoundedSumInChoppedArithmetic := true
+    kahanEstimateReportedSlightlySimplerThanMollers := true
+    usesKahansRoundingErrorEstimate := true
+    derivationUsesThatEstimate := true
     derivesCompensatedSummationForFiniteSums := true }
 
 /-- Algorithmic idea behind compensated summation. -/
@@ -2445,26 +2588,31 @@ def p01Equation310BackwardErrorAssessmentReport :
   { concernsEquation310 := true
     describedAsAlmostIdealBackwardErrorResult := true }
 
-/-- Effect of final correction on the dimension dependence in (3.10). -/
+/-- Effect of the stronger final-corrected bound on the comparison with (2.3). -/
 structure P01FinalCorrectionDimensionDependenceReport where
-  concernsFinalCorrectedCompensatedSummation : Bool
-  comparesWithRecursiveEquation23 : Bool
+  governingBackwardClaim : P01StandardAddFamily → Prop
+  governingBackwardClaim_eq :
+    governingBackwardClaim = P01FinalCorrectedBackwardRepresentationClaim
+  equation310WithThisBoundReportedEssentiallyEquation23 : Bool
   dimensionDependenceTransferredFromLinearRoundoffTermToQuadraticTerm : Bool
 
 def p01FinalCorrectionDimensionDependenceReport :
     P01FinalCorrectionDimensionDependenceReport :=
-  { concernsFinalCorrectedCompensatedSummation := true
-    comparesWithRecursiveEquation23 := true
+  { governingBackwardClaim := P01FinalCorrectedBackwardRepresentationClaim
+    governingBackwardClaim_eq := rfl
+    equation310WithThisBoundReportedEssentiallyEquation23 := true
     dimensionDependenceTransferredFromLinearRoundoffTermToQuadraticTerm := true }
 
 /-- Forward-error comparison stated for equation (3.11). -/
 structure P01Equation311ImprovementReport where
-  concernsEquation311UnderNUnitRoundoffLessThanOne : Bool
+  appliesWhenNUnitRoundoffAtMostOne : Bool
+  constantInEquation311BoundAssertedIndependentOfN : Bool
   significantlyImprovesOnRecursiveEquation26 : Bool
   significantlyImprovesOnPairwiseEquation36 : Bool
 
 def p01Equation311ImprovementReport : P01Equation311ImprovementReport :=
-  { concernsEquation311UnderNUnitRoundoffLessThanOne := true
+  { appliesWhenNUnitRoundoffAtMostOne := true
+    constantInEquation311BoundAssertedIndependentOfN := true
     significantlyImprovesOnRecursiveEquation26 := true
     significantlyImprovesOnPairwiseEquation36 := true }
 
@@ -2492,34 +2640,48 @@ structure P01NoGuardFamily where
 
 /-- Arithmetic outcome of the cited Cray subtraction example. -/
 structure P01CraySubtractionOutcomeReport where
+  appliesToCrayComputers : Bool
+  appliesToEveryPowerOfTwo : Bool
   subtractsPowerOfTwoFromNextSmallerFloatingPointNumber : Bool
   resultCanBeZero : Bool
   resultCanBeTwiceTheExactDifference : Bool
 
 def p01CraySubtractionOutcomeReport : P01CraySubtractionOutcomeReport :=
-  { subtractsPowerOfTwoFromNextSmallerFloatingPointNumber := true
+  { appliesToCrayComputers := true
+    appliesToEveryPowerOfTwo := true
+    subtractsPowerOfTwoFromNextSmallerFloatingPointNumber := true
     resultCanBeZero := true
     resultCanBeTwiceTheExactDifference := true }
 
 /-- Perturbation size forced by that outcome in the standard relative model. -/
 structure P01CrayRequiredRelativePerturbationReport where
   concernsStandardRelativeErrorExpressionForCitedSubtraction : Bool
+  expressionCanBeRepresentedWithPerturbationMagnitudeAtMostOne : Bool
+  unitRoundoffSizedPerturbationDoesNotSuffice : Bool
   requiredPerturbationMagnitude : ℚ
+  citationReference : ℕ
 
 def p01CrayRequiredRelativePerturbationReport :
     P01CrayRequiredRelativePerturbationReport :=
   { concernsStandardRelativeErrorExpressionForCitedSubtraction := true
-    requiredPerturbationMagnitude := 1 }
+    expressionCanBeRepresentedWithPerturbationMagnitudeAtMostOne := true
+    unitRoundoffSizedPerturbationDoesNotSuffice := true
+    requiredPerturbationMagnitude := 1
+    citationReference := 20 }
 
-/-- Consequence of the Cray subtraction outcome for model (1.2). -/
+/-- Scope of the source's model-(1.2) invalidation statement. -/
 structure P01CrayStandardModelInvalidationReport where
+  paperErrorAnalysisIsBasedOnEquation12 : Bool
   concernsStandardRelativeArithmeticModelEquation12 : Bool
-  modelInvalidatedOnCrayNoGuardArithmetic : Bool
+  modelInvalidOnMachinesThatLackAdditionGuardDigit : Bool
+  crayComputersReportedAsNotableExamples : Bool
 
 def p01CrayStandardModelInvalidationReport :
     P01CrayStandardModelInvalidationReport :=
-  { concernsStandardRelativeArithmeticModelEquation12 := true
-    modelInvalidatedOnCrayNoGuardArithmetic := true }
+  { paperErrorAnalysisIsBasedOnEquation12 := true
+    concernsStandardRelativeArithmeticModelEquation12 := true
+    modelInvalidOnMachinesThatLackAdditionGuardDigit := true
+    crayComputersReportedAsNotableExamples := true }
 
 /-- Equation (3.10) does not hold universally in the no-guard model. -/
 structure P01NoGuardEquation310FailureReport where
@@ -2533,22 +2695,30 @@ def p01NoGuardEquation310FailureReport :
 
 /-- Kahan is reported to construct a Cray counterexample to equation (3.11). -/
 structure P01CrayEquation311CounterexampleReport where
+  exampleAttributedToKahan : Bool
+  citationReference : ℕ
+  concernsCompensatedSummation : Bool
   appliesToCrayNoGuardArithmetic : Bool
   constructedExampleViolatesEquation311 : Bool
 
 def p01CrayEquation311CounterexampleReport :
     P01CrayEquation311CounterexampleReport :=
-  { appliesToCrayNoGuardArithmetic := true
+  { exampleAttributedToKahan := true
+    citationReference := 20
+    concernsCompensatedSummation := true
+    appliesToCrayNoGuardArithmetic := true
     constructedExampleViolatesEquation311 := true }
 
-/-- The source separately reports that the Cray failure of (3.11) is extremely rare. -/
+/-- Kahan separately reports that the Cray failure of (3.11) is extremely rare. -/
 structure P01CrayEquation311FailureRarityReport where
+  rarityStatementAttributedToKahan : Bool
   concernsCrayCompensatedSummationFailure : Bool
   failureReportedExtremelyRare : Bool
 
 def p01CrayEquation311FailureRarityReport :
     P01CrayEquation311FailureRarityReport :=
-  { concernsCrayCompensatedSummationFailure := true
+  { rarityStatementAttributedToKahan := true
+    concernsCrayCompensatedSummationFailure := true
     failureReportedExtremelyRare := true }
 
 /-- Reported hardware-domain success of the modified compensated algorithm. -/
@@ -2568,6 +2738,7 @@ structure P01NoGuardModifiedConstantRangeReport where
   printedConstant : ℚ
   suggestedReplacementLower : ℚ
   suggestedReplacementUpper : ℚ
+  endpointInclusivitySpecifiedBySource : Bool
   replacementRangeIsTentative : Bool
 
 def p01NoGuardModifiedConstantRangeReport :
@@ -2575,6 +2746,7 @@ def p01NoGuardModifiedConstantRangeReport :
   { printedConstant := 23 / 50
     suggestedReplacementLower := 1 / 4
     suggestedReplacementUpper := 1 / 2
+    endpointInclusivitySpecifiedBySource := false
     replacementRangeIsTentative := true }
 
 /-- Qualitative adjective applied to the printed modified-algorithm constant. -/
@@ -2644,14 +2816,28 @@ def p01ReferenceSumConstructionReport : P01ReferenceSumConstructionReport :=
     arithmeticIsDoublePrecision := true
     constructedValueIsAnApproximationToExactSumSn := true }
 
-/-- Empirical status of the strict reference-sum certification criterion. -/
+/-- Empirical status and exact formula of the strict reference-sum
+certification criterion. -/
 structure P01ReferenceSumCriterionObservedReport where
   concernsAprioriExperimentReferenceSums : Bool
+  strictCriterion :
+    (doubleUnitRoundoff singleUnitRoundoff : ℝ) →
+      (n : ℕ) → (Fin n → ℝ) → Prop
+  strictCriterion_eq :
+    strictCriterion = fun (doubleUnitRoundoff singleUnitRoundoff : ℝ)
+        (n : ℕ) (v : Fin n → ℝ) =>
+      (n : ℝ) * doubleUnitRoundoff * p01AbsoluteSum n v <
+        singleUnitRoundoff * |p01ExactSum n v|
   strictCertificationCriterionHeldInEveryTest : Bool
 
 def p01ReferenceSumCriterionObservedReport :
     P01ReferenceSumCriterionObservedReport :=
   { concernsAprioriExperimentReferenceSums := true
+    strictCriterion := fun (doubleUnitRoundoff singleUnitRoundoff : ℝ)
+        (n : ℕ) (v : Fin n → ℝ) =>
+      (n : ℝ) * doubleUnitRoundoff * p01AbsoluteSum n v <
+        singleUnitRoundoff * |p01ExactSum n v|
+    strictCriterion_eq := rfl
     strictCertificationCriterionHeldInEveryTest := true }
 
 /-- The paper says equation (2.6) supplies the reference-sum certification. -/
@@ -2673,7 +2859,8 @@ noncomputable def p01SimulatedSingleData
 def P01ExperimentMethodEvaluation
     (fp : P01BinaryRoundModel) (method : P01SummationMethod)
     {n : ℕ} (v : Fin n → ℝ) (result : ℝ) : Prop :=
-  (∀ i, P01BaseTwoRepresentable fp.precision (v i)) ∧
+  fp.precision = 23 ∧
+    (∀ i, P01BaseTwoRepresentable fp.precision (v i)) ∧
     P01SummationMethodEvaluation (p01RoundAdd fp) method v result
 
 /-- Standard-addition specialization of the neutral eight-method semantics. -/
@@ -2688,7 +2875,14 @@ structure P01MaximizationProblem where
   fp : P01BinaryRoundModel
   singlePrecision : fp.precision = 23
   method : P01SummationMethod
+  usesMatlabImplementation : Bool
+  matlabImplementationReferenceNumber : ℕ
+  searchMethodName : String
+  searchMethodReferenceNumbers : List ℕ
+  attemptsToLocateMaximizer : Bool
   usesFunctionValuesOnly : Bool
+  objectiveIsRelativeErrorOfComputedSum : Bool
+  paperInitiallyAppliesProtocolToIncreasingRecursiveSummation : Bool
 
 /-- Legal result relation for the selected single-precision summation method. -/
 def P01MaximizationProblem.FeasibleResult
@@ -2723,7 +2917,14 @@ def p01MDSMaximizationProblem
     fp := fp
     singlePrecision := hprecision
     method := method
-    usesFunctionValuesOnly := true }
+    usesMatlabImplementation := true
+    matlabImplementationReferenceNumber := 12
+    searchMethodName := "multidirectional search (MDS)"
+    searchMethodReferenceNumbers := [39, 40]
+    attemptsToLocateMaximizer := true
+    usesFunctionValuesOnly := true
+    objectiveIsRelativeErrorOfComputedSum := true
+    paperInitiallyAppliesProtocolToIncreasingRecursiveSummation := true }
 
 /-- Shared scope of the reciprocal MDS error-ratio searches on page 796. -/
 structure P01MDSRatioComparisonScope where
@@ -2739,19 +2940,27 @@ def p01MDSRatioComparisonScope : P01MDSRatioComparisonScope :=
 /-- The increasing-over-compensated error ratio was made arbitrarily large. -/
 structure P01MDSFirstOverSecondRatioReport where
   scope : P01MDSRatioComparisonScope
+  comparisonUsesMDSMaximizer : Bool
+  certainStartingValuesRequired : Bool
   ratioObservedArbitrarilyLarge : Bool
 
 def p01MDSFirstOverSecondRatioReport : P01MDSFirstOverSecondRatioReport :=
   { scope := p01MDSRatioComparisonScope
+    comparisonUsesMDSMaximizer := true
+    certainStartingValuesRequired := true
     ratioObservedArbitrarilyLarge := true }
 
 /-- The reciprocal compensated-over-increasing error ratio was made arbitrarily large. -/
 structure P01MDSSecondOverFirstRatioReport where
   scope : P01MDSRatioComparisonScope
+  comparisonUsesMDSMaximizer : Bool
+  certainStartingValuesRequired : Bool
   ratioObservedArbitrarilyLarge : Bool
 
 def p01MDSSecondOverFirstRatioReport : P01MDSSecondOverFirstRatioReport :=
   { scope := p01MDSRatioComparisonScope
+    comparisonUsesMDSMaximizer := true
+    certainStartingValuesRequired := true
     ratioObservedArbitrarilyLarge := true }
 
 /-- Reported mechanism for the two arbitrarily large reciprocal ratios. -/
@@ -2767,11 +2976,15 @@ def p01MDSZeroDenominatorMechanismReport :
 /-- Similar ratio behavior was observed for method pairs outside the named pair. -/
 structure P01MDSOtherMethodPairsBehaviorReport where
   namedComparisonScope : P01MDSRatioComparisonScope
+  sameMDSMaximizerAndErrorRatioProtocol : Bool
+  similarBehaviorMeansArbitrarilyLargeRatiosFromZeroDenominatorError : Bool
   similarBehaviorObservedForOtherMethodPairs : Bool
 
 def p01MDSOtherMethodPairsBehaviorReport :
     P01MDSOtherMethodPairsBehaviorReport :=
   { namedComparisonScope := p01MDSRatioComparisonScope
+    sameMDSMaximizerAndErrorRatioProtocol := true
+    similarBehaviorMeansArbitrarilyLargeRatiosFromZeroDenominatorError := true
     similarBehaviorObservedForOtherMethodPairs := true }
 
 /-- A data-independent relative error bound for a possibly relational summation method. -/
@@ -2877,20 +3090,24 @@ def p01LinzExperimentReport : P01LinzExperimentReport :=
 
 /-- Caprani is reported to run a Linz-like test that also includes compensation. -/
 structure P01CapraniExperimentReport where
+  citedReferenceNumber : ℕ
   experimentReportedSimilarToLinz : Bool
   compensatedSummationIncluded : Bool
 
 def p01CapraniExperimentReport : P01CapraniExperimentReport :=
-  { experimentReportedSimilarToLinz := true
+  { citedReferenceNumber := 4
+    experimentReportedSimilarToLinz := true
     compensatedSummationIncluded := true }
 
 /-- Gregory is separately reported to run a Linz-like test including compensation. -/
 structure P01GregoryExperimentReport where
+  citedReferenceNumber : ℕ
   experimentReportedSimilarToLinz : Bool
   compensatedSummationIncluded : Bool
 
 def p01GregoryExperimentReport : P01GregoryExperimentReport :=
-  { experimentReportedSimilarToLinz := true
+  { citedReferenceNumber := 10
+    experimentReportedSimilarToLinz := true
     compensatedSummationIncluded := true }
 
 /-- Problems and methods in the externally cited Linnainmaa experiments. -/
@@ -3056,20 +3273,24 @@ def p01SonarDifficultiesEliminatedReport :
 /-- The paper separately assesses plus/minus summation as unattractive. -/
 structure P01SonarPlusMinusAssessmentReport where
   concernsPlusMinusSummation : Bool
+  contrastsWithReportedCureOfSomeInaccurateGradientProblems : Bool
+  unattractivenessIsWhyReportedCureIsALittleSurprising : Bool
   paperFoundMethodUnattractive : Bool
 
 def p01SonarPlusMinusAssessmentReport : P01SonarPlusMinusAssessmentReport :=
   { concernsPlusMinusSummation := true
+    contrastsWithReportedCureOfSomeInaccurateGradientProblems := true
+    unattractivenessIsWhyReportedCureIsALittleSurprising := true
     paperFoundMethodUnattractive := true }
 
 /-- The reported sonar cure is described as surprising. -/
 structure P01SonarSurpriseReport where
   concernsReportedCureByPlusMinusSummation : Bool
-  reportedCureDescribedAsSurprising : Bool
+  reportedCureDescribedAsALittleSurprising : Bool
 
 def p01SonarSurpriseReport : P01SonarSurpriseReport :=
   { concernsReportedCureByPlusMinusSummation := true
-    reportedCureDescribedAsSurprising := true }
+    reportedCureDescribedAsALittleSurprising := true }
 
 /-- Apparent effect of an application feature on the method comparison. -/
 structure P01SonarApplicationFeatureComparisonReport where
@@ -3084,11 +3305,13 @@ def p01SonarApplicationFeatureComparisonReport :
 /-- Separate epistemic status of the feature invoked in that comparison. -/
 structure P01SonarApplicationFeatureNotApparentReport where
   concernsFeatureFavoringPlusMinusInSonarApplication : Bool
+  citedReferenceNumber : ℕ
   featureIsApparentFromCitedSource : Bool
 
 def p01SonarApplicationFeatureNotApparentReport :
     P01SonarApplicationFeatureNotApparentReport :=
   { concernsFeatureFavoringPlusMinusInSonarApplication := true
+    citedReferenceNumber := 24
     featureIsApparentFromCitedSource := false }
 
 /-- Search-direction symmetry loss observed in the quasi-Newton application. -/
@@ -3216,33 +3439,43 @@ structure P01DixonMillsTieBreakingSpecificationReport where
   sortedTermsDividedIntoNegativeAndNonnegativeLists : Bool
   negativeListIsOrdered : Bool
   nonnegativeListIsOrdered : Bool
+  tieBreakingSpecifiedBySource : Bool
 
 def p01DixonMillsTieBreakingSpecificationReport :
     P01DixonMillsTieBreakingSpecificationReport :=
   { inputTermsAreSorted := true
     sortedTermsDividedIntoNegativeAndNonnegativeLists := true
     negativeListIsOrdered := true
-    nonnegativeListIsOrdered := true }
+    nonnegativeListIsOrdered := true
+    tieBreakingSpecifiedBySource := false }
 
 /-- The source-specified repeated combination and ordered reinsertion step. -/
 structure P01DixonMillsTerminalReductionSpecificationReport where
   repeatedlyFormsSumOfLargestNonnegativeAndMostNegativeElements : Bool
   eachComputedSumPlacedIntoAppropriateSignList : Bool
   eachComputedSumReinsertedInOrder : Bool
+  sourceClaimsAlgorithmEvaluatesScalar : Bool
+  terminalMultiElementOneSignReductionOrderSpecifiedBySource : Bool
 
 def p01DixonMillsTerminalReductionSpecificationReport :
     P01DixonMillsTerminalReductionSpecificationReport :=
   { repeatedlyFormsSumOfLargestNonnegativeAndMostNegativeElements := true
     eachComputedSumPlacedIntoAppropriateSignList := true
-    eachComputedSumReinsertedInOrder := true }
+    eachComputedSumReinsertedInOrder := true
+    sourceClaimsAlgorithmEvaluatesScalar := true
+    terminalMultiElementOneSignReductionOrderSpecifiedBySource := false }
 
-/-- Every pairwise-summation stage is reported to be parallelizable. -/
+/-- Pairwise summation is attractive in parallel settings because every stage is parallelizable. -/
 structure P01PairwiseParallelStageReport where
   concernsPairwiseSummationStages : Bool
+  pairwiseSummationReportedAttractiveInParallelSettings : Bool
+  attractivenessReasonIsEveryStageParallelizable : Bool
   everyStageReportedParallelizable : Bool
 
 def p01PairwiseParallelStageReport : P01PairwiseParallelStageReport :=
   { concernsPairwiseSummationStages := true
+    pairwiseSummationReportedAttractiveInParallelSettings := true
+    attractivenessReasonIsEveryStageParallelizable := true
     everyStageReportedParallelizable := true }
 
 /-- Caprani serial implementation and its storage behavior. -/
@@ -3270,32 +3503,39 @@ structure P01NoGuardAddSubModel where
   sub_model : ∀ x y, ∃ α β : ℝ,
     |α| ≤ u ∧ |β| ≤ u ∧ flSub x y = x * (1 + α) - y * (1 + β)
 
-/-- Malcolm is reported to prove relative error of order unit roundoff. -/
+/-- Malcolm [28] is reported to establish order-u relative error by a
+detailed error analysis of his accumulator method. -/
 structure P01MalcolmOrderUAccuracyReport where
   concernsMalcolmAccumulatorMethod : Bool
-  relativeErrorReportedOrderU : Bool
+  detailedErrorAnalysisAttributedToMalcolm : Bool
+  citationReference : ℕ
+  analysisShowsMethodAchievesRelativeErrorOrderU : Bool
 
 def p01MalcolmOrderUAccuracyReport : P01MalcolmOrderUAccuracyReport :=
   { concernsMalcolmAccumulatorMethod := true
-    relativeErrorReportedOrderU := true }
+    detailedErrorAnalysisAttributedToMalcolm := true
+    citationReference := 28
+    analysisShowsMethodAchievesRelativeErrorOrderU := true }
 
-/-- The cited Malcolm accumulator algorithm is reported to be strongly machine dependent. -/
+/-- The source explicitly calls strong machine dependence a drawback. -/
 structure P01MalcolmMachineDependenceReport where
   concernsMalcolmAccumulatorMethod : Bool
   stronglyMachineDependent : Bool
+  strongMachineDependenceReportedAsDrawback : Bool
 
 def p01MalcolmMachineDependenceReport : P01MalcolmMachineDependenceReport :=
   { concernsMalcolmAccumulatorMethod := true
-    stronglyMachineDependent := true }
+    stronglyMachineDependent := true
+    strongMachineDependenceReportedAsDrawback := true }
 
-/-- Characterization of the final-level ordering feature in Malcolm method. -/
+/-- Characterization of Malcolm's actual final-step accumulator reduction. -/
 structure P01MalcolmFinalOrderCharacterizationReport where
-  concernsRecursiveFinalLevelSummationInDecreasingAbsoluteMagnitude : Bool
+  malcolmAlgorithmFinalStepRecursivelySumsAccumulatorsInDecreasingAbsoluteMagnitude : Bool
   featureCharacterizedAsInterestingAndCrucial : Bool
 
 def p01MalcolmFinalOrderCharacterizationReport :
     P01MalcolmFinalOrderCharacterizationReport :=
-  { concernsRecursiveFinalLevelSummationInDecreasingAbsoluteMagnitude := true
+  { malcolmAlgorithmFinalStepRecursivelySumsAccumulatorsInDecreasingAbsoluteMagnitude := true
     featureCharacterizedAsInterestingAndCrucial := true }
 
 /-- Effect of the decreasing-magnitude final-level order on significant-digit loss. -/
@@ -3323,37 +3563,70 @@ def P01AverageRuntimeAtLeastNLogN (runtime : ℕ → ℝ) : Prop :=
   ∃ c : ℝ, 0 < c ∧ ∃ n0 : ℕ, ∀ n, n0 ≤ n →
     c * (n : ℝ) * Nat.log 2 n ≤ runtime n
 
-/-- Kahan's explicitly tentative average-runtime conjecture for distillation algorithms. -/
-def P01DistillationRuntimeConjecture (averageRuntime : ℕ → ℝ) : Prop :=
-  P01AverageRuntimeAtLeastNLogN averageRuntime
+/-- Attributed and explicitly tentative report about the plural class of
+distillation algorithms. -/
+structure P01DistillationRuntimeConjectureReport where
+  concernsDistillationAlgorithms : Bool
+  appliesToEachAlgorithmInThatClass : Bool
+  averageRuntimeLowerOrder : (ℕ → ℝ) → Prop
+  averageRuntimeLowerOrder_eq :
+    averageRuntimeLowerOrder = P01AverageRuntimeAtLeastNLogN
+  claimAttributedToKahan : Bool
+  citationReference : ℕ
+  sourceUsesTentativeAppearLanguage : Bool
 
-/-- The cancellation ratio reported for the Taylor data in Table 6.1. -/
-def p01Table61CancellationRatio : ℚ :=
-  348 / 100000000
+def P01DistillationRuntimeConjecture :
+    P01DistillationRuntimeConjectureReport :=
+  { concernsDistillationAlgorithms := true
+    appliesToEachAlgorithmInThatClass := true
+    averageRuntimeLowerOrder := P01AverageRuntimeAtLeastNLogN
+    averageRuntimeLowerOrder_eq := rfl
+    claimAttributedToKahan := true
+    citationReference := 19
+    sourceUsesTentativeAppearLanguage := true }
+
+/-- Table 6.1 input, cancellation-ratio functional `|sum xᵢ| / sum |xᵢ|`, and reported value `3.48e-6`. -/
+noncomputable def p01Table61CancellationRatio :
+    (Fin 64 → ℝ) × ((Fin 64 → ℝ) → ℝ) × ℚ :=
+  (p01Table61Input,
+    fun x => |p01ExactSum 64 x| / p01AbsoluteSum 64 x,
+    348 / 100000000)
 
 /-- The two cancellation ratios reported for the normal data in Table 6.2. -/
 structure P01Table62CancellationRatioReport where
+  setup : P01Table62SetupReport
+  ratioIsAbsoluteExactSumOverAbsoluteInputSum : Bool
   normal2048 : ℚ
   normal4096 : ℚ
 
 def p01Table62CancellationRatios : P01Table62CancellationRatioReport :=
-  ⟨808 / 100000, 348 / 100000⟩
+  { setup := p01Table62SetupReport
+    ratioIsAbsoluteExactSumOverAbsoluteInputSum := true
+    normal2048 := 808 / 100000
+    normal4096 := 348 / 100000 }
 
 /-- The approximately reported normwise condition number of the triangular
 matrix. -/
 structure P01ForwardNormwiseConditionReport where
+  concernsTestedTriangularMatrix : Bool
+  usesMatrixAndVectorInfinityNorms : Bool
   reportedValue : ℚ
   reportedApproximately : Bool
   approximationToleranceSpecified : Bool
 
 def p01ForwardNormwiseConditionReport : P01ForwardNormwiseConditionReport :=
-  { reportedValue := 30000000
+  { concernsTestedTriangularMatrix := true
+    usesMatrixAndVectorInfinityNorms := true
+    reportedValue := 30000000
     reportedApproximately := true
     approximationToleranceSpecified := false }
 
 /-- The approximately reported componentwise condition numbers for the two
 specified right-hand sides. -/
 structure P01ForwardComponentwiseConditionReport where
+  concernsTestedTriangularMatrix : Bool
+  systems : List P01ForwardSystem
+  valuesAreForComponentwiseTriangularCondition : Bool
   firstSystemReportedValue : ℚ
   secondSystemReportedValue : ℚ
   valuesReportedApproximately : Bool
@@ -3361,7 +3634,10 @@ structure P01ForwardComponentwiseConditionReport where
 
 def p01ForwardComponentwiseConditionReport :
     P01ForwardComponentwiseConditionReport :=
-  { firstSystemReportedValue := 700000
+  { concernsTestedTriangularMatrix := true
+    systems := [.first, .second]
+    valuesAreForComponentwiseTriangularCondition := true
+    firstSystemReportedValue := 700000
     secondSystemReportedValue := 700000
     valuesReportedApproximately := true
     approximationToleranceSpecified := false }
@@ -3369,29 +3645,44 @@ def p01ForwardComponentwiseConditionReport :
 /-- The empirical statement that each tested method could be driven to no correct digits. -/
 structure P01MDSAllMethodsFailureReport where
   dimension : ℕ
+  precedingTwoExamplesReportedTypical : Bool
+  usesMDSMaximizer : Bool
+  dataReportedStraightforwardToFind : Bool
   noCorrectSignificantFiguresFoundFor : P01SummationMethod → Bool
 
 def p01MDSReportedTotalFailure : P01MDSAllMethodsFailureReport :=
   { dimension := 3
+    precedingTwoExamplesReportedTypical := true
+    usesMDSMaximizer := true
+    dataReportedStraightforwardToFind := true
     noCorrectSignificantFiguresFoundFor := fun _ => true }
 
 /-- The second MDS vector's reported objective after increasing/decreasing reordering. -/
 structure P01MDSReorderingObjectiveReport where
+  sourceReport : P01MDSReport
+  sourceVectorIsSecondLocatedMDSVector : Bool
+  firstOrdering : P01SummationMethod
   increasingObjective : ℚ
+  secondOrdering : P01SummationMethod
   decreasingObjective : ℚ
 
 def p01MDSSecondReorderingObjectives : P01MDSReorderingObjectiveReport :=
-  ⟨1, 0⟩
+  { sourceReport := p01MDSCompensatedReport
+    sourceVectorIsSecondLocatedMDSVector := true
+    firstOrdering := .increasing
+    increasingObjective := 1
+    secondOrdering := .decreasing
+    decreasingObjective := 0 }
 
 /-- The conclusion's negative answer to uniform accuracy superiority. -/
 structure P01UniformAccuracySuperiorityReport where
-  comparisonMethods : List P01SummationMethod
+  comparisonScopeIsSummationMethodsConsideredInPaper : Bool
+  comparisonMethodSetEnumeratedAtClaim : Bool
   anyMethodUniformlySuperiorInAccuracy : Bool
 
 def p01UniformAccuracySuperiorityReport : P01UniformAccuracySuperiorityReport :=
-  { comparisonMethods :=
-      [.original, .increasing, .decreasing, .psum, .pairwise, .insertion, .plusMinus,
-        .compensated]
+  { comparisonScopeIsSummationMethodsConsideredInPaper := true
+    comparisonMethodSetEnumeratedAtClaim := false
     anyMethodUniformlySuperiorInAccuracy := false }
 
 /-- The conclusion's separate observation about data-dependent variability. -/
@@ -3422,10 +3713,12 @@ summation. -/
 structure P01PairwiseWorstCaseGrowthReport where
   appliesToPairwiseSummation : Bool
   worstCaseLeadingCoefficientLogarithmic : Bool
+  reportedLeadingCoefficient : ℕ → ℕ
 
 def p01PairwiseWorstCaseGrowthReport : P01PairwiseWorstCaseGrowthReport :=
   { appliesToPairwiseSummation := true
-    worstCaseLeadingCoefficientLogarithmic := true }
+    worstCaseLeadingCoefficientLogarithmic := true
+    reportedLeadingCoefficient := p01CeilLog2 }
 
 /-- The order-one worst-case leading coefficient assigned to compensated
 summation. -/
@@ -3518,15 +3811,16 @@ noncomputable def p01DecreasingHeavyCancellationLikelihoodReport :
 cancellation. -/
 structure P01PlusMinusHeavyCancellationExpectationReport where
   scope : P01HeavyCancellationScopeReport
-  comparisonMethods : List P01SummationMethod
-  plusMinusExpectedLeastAccurateAmongComparisonMethods : Bool
+  noAdvantagesAssessment : P01PlusMinusNoAdvantagesAssessmentReport
+  comparisonClassIsOtherMethodsConsideredHere : Bool
+  plusMinusExpectedLeastAccurateUnderHeavyCancellation : Bool
 
 noncomputable def p01PlusMinusHeavyCancellationExpectationReport :
     P01PlusMinusHeavyCancellationExpectationReport :=
   { scope := p01HeavyCancellationScopeReport
-    comparisonMethods :=
-      [.original, .increasing, .decreasing, .psum, .pairwise, .insertion, .plusMinus]
-    plusMinusExpectedLeastAccurateAmongComparisonMethods := true }
+    noAdvantagesAssessment := p01PlusMinusNoAdvantagesAssessmentReport
+    comparisonClassIsOtherMethodsConsideredHere := true
+    plusMinusExpectedLeastAccurateUnderHeavyCancellation := true }
 
 /-- Qualitative attraction of decreasing recursive order under heavy cancellation. -/
 structure P01DecreasingHeavyCancellationAttractivenessReport where
@@ -3568,19 +3862,25 @@ def p01LinearOperationCostReport : P01LinearOperationCostReport :=
 /-- The search-or-sort overhead assigned to the other considered orderings. -/
 structure P01OrderingOverheadReport where
   methodsRequiringSearchingOrSorting : List P01SummationMethod
+  methodsReportedMoreExpensiveBecauseTheyRequireSearchingOrSorting : Bool
 
 def p01OrderingOverheadReport : P01OrderingOverheadReport :=
   { methodsRequiringSearchingOrSorting :=
-      [.increasing, .decreasing, .psum, .insertion, .plusMinus] }
+      [.increasing, .decreasing, .psum, .insertion, .plusMinus]
+    methodsReportedMoreExpensiveBecauseTheyRequireSearchingOrSorting := true }
 
 /-- The source's sequential-data obstruction to reordering an entire input. -/
 structure P01SequentialGenerationConstraintReport where
+  applicationIsNumericalSolutionOfOrdinaryDifferentialEquations : Bool
+  inputsAreGeneratedSequentially : Bool
   termMayDependOnSumOfAllEarlierTerms : Bool
   generationCanPrecludeSearchingOrSorting : Bool
 
 def p01SequentialGenerationConstraintReport :
     P01SequentialGenerationConstraintReport :=
-  { termMayDependOnSumOfAllEarlierTerms := true
+  { applicationIsNumericalSolutionOfOrdinaryDifferentialEquations := true
+    inputsAreGeneratedSequentially := true
+    termMayDependOnSumOfAllEarlierTerms := true
     generationCanPrecludeSearchingOrSorting := true }
 
 /-- Shared feasibility and comparator scope for the higher-precision guidance. -/
@@ -3612,5 +3912,42 @@ def p01HigherPrecisionRecursiveAccuracyReport :
     P01HigherPrecisionRecursiveAccuracyReport :=
   { scope := p01HigherPrecisionRecursiveComparisonScope
     mayBeMoreAccurate := true }
+
+/-- Source-facing assertion that the sign-separated plus/minus algorithm is
+an addition scheme of form (3.1), without importing the other three methods
+that share the paper's earlier general-class theorem. -/
+structure P01PlusMinusForm31Report where
+  sourceAssertsPlusMinusIsOfForm31 : Bool
+  claim : (ℝ → ℝ → ℝ) → Prop
+
+noncomputable def p01PlusMinusForm31Report : P01PlusMinusForm31Report :=
+  { sourceAssertsPlusMinusIsOfForm31 := true
+    claim := fun flAdd =>
+      ∀ (inputs : List ℝ) (result : ℝ), inputs ≠ [] →
+        P01PlusMinusEvaluation flAdd inputs result →
+        ∃ tree : P01SumTree,
+          P01AdditionScheme inputs tree ∧
+          P01SumTree.rounded flAdd tree = result }
+
+/-- The two nonempty, increasing-magnitude sign blocks that are the complete
+hypothesis of the equation-(3.8) plus/minus estimate. -/
+structure P01Equation38OrderedSignBlocks
+    (p q : ℕ) (negative : Fin p → ℝ) (nonnegative : Fin q → ℝ) where
+  negativeBlockNonempty : 0 < p
+  nonnegativeBlockNonempty : 0 < q
+  negativeEntriesStrictlyNegative : ∀ i, negative i < 0
+  nonnegativeEntriesNonnegative : ∀ i, 0 ≤ nonnegative i
+  negativeBlockIncreasingMagnitude : P01MagnitudeNondecreasing negative
+  nonnegativeBlockIncreasingMagnitude : P01MagnitudeNondecreasing nonnegative
+
+/-- Kahan's printed two-output correction construction before (3.9), stated
+for an arbitrary floating-point rounding operation and restricted exactly to
+floating inputs satisfying the displayed magnitude premise. -/
+noncomputable def p01FastTwoSumConstruction
+    (fl : ℝ → ℝ) (isFloat : ℝ → Prop) (a b : ℝ)
+    (_ha : isFloat a) (_hb : isFloat b) (_hmag : |b| ≤ |a|) : ℝ × ℝ :=
+  let sumHat := fl (a + b)
+  let correctionHat := -(fl (fl (sumHat - a) - b))
+  (sumHat, correctionHat)
 
 end HighamBench

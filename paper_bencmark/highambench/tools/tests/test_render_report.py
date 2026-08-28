@@ -2161,6 +2161,16 @@ end HighamBench
 
 
 class TierFourReportBranchTests(unittest.TestCase):
+    def test_t4_private_proof_wording_is_not_obsolete(self) -> None:
+        combined = (
+            render_report_module.T4_SKELETON_PRIVATE_PROOF_NOTE
+            + render_report_module.T4_PRIVATE_CONSTRUCTION_PROSE
+        )
+        self.assertIn("proof-complete private N/L solvability builds", combined)
+        self.assertIn("private N/L builds are mandatory", combined)
+        self.assertNotIn("T4 instead uses", combined)
+        self.assertNotIn("no private gold proof", combined)
+
     def test_t4_coverage_uses_strict_claim_scoped_metadata(self) -> None:
         task = base_t4_task()
         task["classification_frozen_before_runs"] = True
@@ -4237,6 +4247,14 @@ class RenderReportTests(unittest.TestCase):
             self.assertIn("3 of 3 proof dependency records were complete", latex)
             self.assertIn("3 of 3 proofs used NumStability", latex)
             self.assertIn("All 6 private construction proofs", latex)
+            self.assertIn(
+                "proof-complete private N/L builds are mandatory", latex
+            )
+            self.assertIn(
+                "skeleton-specific check is separate from the mandatory", latex
+            )
+            self.assertNotIn("T4 instead uses", latex)
+            self.assertNotIn("no private gold proof", latex)
 
     def test_accepts_authenticated_fresh_novelty_override_without_hiding_rejection(self) -> None:
         with tempfile.TemporaryDirectory() as raw:

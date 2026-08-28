@@ -230,7 +230,7 @@ near-attainability family. -/
 theorem p01_t4_near_attainability_eq26_upper
     (r t : ℕ)
     (hvalid : P01GammaValid ((2 : ℝ) ^ (-(t : ℤ))) (2 ^ r)) :
-    p01NearAttainabilityEq26Bound r t ≤
+    p01NearAttainabilityEq26Bound r t <
       ((2 : ℝ) ^ r * (2 : ℝ) ^ (-(t : ℤ))) /
         (1 - (2 : ℝ) ^ r * (2 : ℝ) ^ (-(t : ℤ))) * (2 : ℝ) ^ r := by
   -- PROOF_START P01-D033U
@@ -338,9 +338,13 @@ theorem p01_t4_eq_3_3
       (P01SumTree.localErrors flAdd tree).sum := by
   -- PROOF_START P01-D043
   sorry
-/-- Equation (3.4), the sharp general-tree running bound. -/
+/-- Equation (3.4): the coefficient is the least uniform local-error coefficient,
+and it gives the general-tree running bound. -/
 theorem p01_t4_eq_3_4
     (fp : P01StandardAddModel) (tree : P01SumTree) (hu : fp.u < 1) :
+    (∀ c : ℝ,
+      (∀ δ : ℝ, |δ| ≤ fp.u → |δ / (1 + δ)| ≤ c) →
+        fp.u / (1 - fp.u) ≤ c) ∧
     |P01SumTree.rounded fp.fl_add tree - P01SumTree.exact tree| ≤
       fp.u / (1 - fp.u) * p01TreeRunningMagnitude fp.fl_add tree := by
   -- PROOF_START P01-D044
@@ -455,7 +459,7 @@ theorem p01_t4_increasing_inverse_cube_asymptotic
       ∀ u : NNReal, (u : ℝ) ≤ ε →
         let v : Fin n → ℝ :=
           fun i => 1 / ((n - i.val : ℕ) : ℝ) ^ 3
-        |p01RecursiveError (family.model u) n v| ≤
+        |p01RecursiveError (family.model u).fl_add n v| ≤
             p01InversePowerPartial 2 n * (u : ℝ) + C * (u : ℝ) ^ 2 := by
   -- PROOF_START P01-D055A
   sorry
@@ -480,12 +484,12 @@ theorem p01_t4_insertion_power_two_example :
     P01InsertionEvaluation (· + ·) [1, 2, 4, 8] 15 := by
   -- PROOF_START P01-D058
   sorry
-/-- On `1 ≤ x₁ < ⋯ < xₙ ≤ 2`, insertion is pairwise summation for power-of-two length. -/
+/-- On `1 < x₁ < ⋯ < xₙ < 2`, insertion is pairwise summation for power-of-two length. -/
 theorem p01_t4_insertion_pairwise_interval
     (fp : P01RadixRoundModel) (r : ℕ) (v : Fin (2 ^ r) → ℝ)
     (hrepresentable : ∀ i, P01BaseRepresentable fp.radix fp.precision (v i))
     (hordered : ∀ i j, i.val < j.val → v i < v j)
-    (hlower : ∀ i, 1 ≤ v i) (hupper : ∀ i, v i ≤ 2) :
+    (hlower : ∀ i, 1 < v i) (hupper : ∀ i, v i < 2) :
     P01InsertionBackEvaluation (p01RadixRoundAdd fp) (List.ofFn v)
         (pairwiseSum (p01RadixRoundAdd fp) r v) ∧
     ∀ result,
@@ -515,8 +519,10 @@ theorem p01_t4_plusminus_integer_example (m : ℕ) :
     let xs := p01AlternatingIntegers m
     let positive := xs.filter fun x => 0 ≤ x
     let negative := xs.filter fun x => x < 0
+    let TtwoNMinusTwo := negative.sum
     |positive.sum| = (m : ℝ) * (m + 1) / 2 ∧
-    |negative.sum| = (m : ℝ) * (m + 1) / 2 := by
+    |negative.sum| = (m : ℝ) * (m + 1) / 2 ∧
+    |TtwoNMinusTwo| = (m : ℝ) * (m + 1) / 2 := by
   -- PROOF_START P01-D062
   sorry
 /-- In increasing-magnitude recursive order, every exact prefix has magnitude at most `m`. -/
@@ -590,18 +596,28 @@ theorem p01_t4_eq_3_12
       ∀ i, |μ i| ≤ 2 * fp.u + (n : ℝ) ^ 2 * fp.u ^ 2 := by
   -- PROOF_START P01-D078
   sorry
-/-- The `2.1u` corollary printed immediately after equation (3.12). -/
+/-- The 2.1u bound for the indexed coefficients occurring in (3.12). -/
 theorem p01_t4_eq_3_12_corollary
-    (u : ℝ) (n : ℕ) (hu : 0 ≤ u) (hsmall : (n : ℝ) ^ 2 * u ≤ 1 / 10) :
-    2 * u + (n : ℝ) ^ 2 * u ^ 2 ≤ (21 / 10 : ℝ) * u := by
+    (fp : P01StandardAddModel) (n : ℕ) (v : Fin n → ℝ)
+    (μ : Fin n → ℝ)
+    (hrepresentation :
+      p01GlobalCorrectedSum fp.fl_add (List.ofFn v) =
+        ∑ i : Fin n, (1 + μ i) * v i)
+    (hcoefficient :
+      ∀ i, |μ i| ≤ 2 * fp.u + (n : ℝ) ^ 2 * fp.u ^ 2)
+    (hsmall : (n : ℝ) ^ 2 * fp.u ≤ 1 / 10) :
+    ∀ i, |μ i| ≤ (21 / 10 : ℝ) * fp.u := by
   -- PROOF_START P01-D079
   sorry
-/-- The three recursive orderings all have cubic mean-square-error growth;
-ordering changes only the coefficient. -/
+/-- In every reported Table 4.1 recursive estimate, the ordering changes
+only the coefficient: the full mean-square-error expression has power n^3. -/
 theorem p01_t4_table_4_1_recursive_mse_power :
-    ∀ method : P01StatisticalMethod,
+    ∀ (distribution : P01InputDistribution)
+      (method : P01StatisticalMethod) (μ σ : ℝ) (n : ℕ),
       (method = .increasing ∨ method = .random ∨ method = .decreasing) →
-      p01MSEPower method = 3 := by
+      p01ReportedMSE distribution method μ σ n =
+        p01MSECoefficient distribution method * μ ^ 2 *
+          (n : ℝ) ^ 3 * σ ^ 2 := by
   -- PROOF_START P01-D087R
   sorry
 /-- For either input distribution, the increasing recursive coefficient is
@@ -614,10 +630,14 @@ theorem p01_t4_table_4_1_recursive_coefficient_ranking :
         p01MSECoefficient distribution .decreasing := by
   -- PROOF_START P01-D087C
   sorry
-/-- Insertion and pairwise summation have quadratic rather than cubic
-mean-square-error growth. -/
+/-- Insertion and pairwise summation have quadratic rather than the cubic
+mean-square-error growth of all three recursive orderings. -/
 theorem p01_t4_table_4_1_insertion_pairwise_mse_power :
-    p01MSEPower .insertion = 2 ∧ p01MSEPower .pairwise = 2 := by
+    p01MSEPower .insertion = 2 ∧
+    p01MSEPower .pairwise = 2 ∧
+    p01MSEPower .increasing = 3 ∧
+    p01MSEPower .random = 3 ∧
+    p01MSEPower .decreasing = 3 := by
   -- PROOF_START P01-D087P
   sorry
 /-- For either input distribution, insertion has the smaller coefficient of
@@ -714,14 +734,24 @@ theorem p01_t4_no_guard_pairwise_bound
       p01Gamma fp.u r * p01AbsoluteSum (2 ^ r) v := by
   -- PROOF_START P01-D094P
   sorry
-/-- The replacement final-addition term for the no-guard sign-separated bound. -/
+/-- In the no-guard version of (3.8), the two sign-block contributions are
+unchanged and its final term is replaced by `u * (|Ŝ₊| + |Ŝ₋|)`. -/
 theorem p01_t4_no_guard_plusminus_final_bound
     (fp : NoGuardAddModel) (p q : ℕ)
-    (neg : Fin p → ℝ) (nonneg : Fin q → ℝ) :
+    (hp : 0 < p) (hq : 0 < q)
+    (neg : Fin p → ℝ) (nonneg : Fin q → ℝ)
+    (hneg : ∀ i, neg i < 0) (hnonneg : ∀ i, 0 ≤ nonneg i)
+    (hnegOrder : P01MagnitudeNondecreasing neg)
+    (hnonnegOrder : P01MagnitudeNondecreasing nonneg)
+    (hvalidNeg : P01GammaValid fp.u p) (hvalidPos : P01GammaValid fp.u q) :
     let sNeg := p01RecursiveSum fp.fl_add p neg
     let sPos := p01RecursiveSum fp.fl_add q nonneg
-    |fp.fl_add sPos sNeg - (sPos + sNeg)| ≤
-      fp.u * (|sNeg| + |sPos|) := by
+    let computed := fp.fl_add sPos sNeg
+    let exact := p01ExactSum q nonneg + p01ExactSum p neg
+    |computed - exact| ≤
+      (∑ i : Fin p, |neg i| * p01Gamma fp.u (p - i.val)) +
+      (∑ i : Fin q, |nonneg i| * p01Gamma fp.u (q - i.val)) +
+      fp.u * (|sPos| + |sNeg|) := by
   -- PROOF_START P01-D095
   sorry
 /-- The replacement sign-block budget is bounded by `u * sum |xᵢ| + O(u²)`. -/
@@ -774,17 +804,18 @@ theorem p01_t4_first_order_R_cap_n
           ((n : ℝ) * (u : ℝ) + C * (u : ℝ) ^ 2) * p01AbsoluteSum n v := by
   -- PROOF_START P01-D103N
   sorry
-/-- Pairwise summation has normalized-error cap `ceil(log₂ n)` to first order. -/
+/-- For the paper's power-of-two pairwise trees, pairwise summation has
+normalized-error cap `log₂ n = r` to first order when `n = 2^r`. -/
 theorem p01_t4_first_order_R_cap_pairwise
-    (family : P01StandardAddFamily) (n : ℕ) (hn : 0 < n) :
+    (family : P01StandardAddFamily) (r : ℕ) :
     ∃ C η : ℝ, 0 ≤ C ∧ 0 < η ∧
       ∀ u : NNReal, (u : ℝ) ≤ η →
-      ∀ (v : Fin n → ℝ) (result : ℝ),
-        P01InputsRepresentableForAdd (family.model u) n v →
+      ∀ (v : Fin (2 ^ r) → ℝ) (result : ℝ),
+        P01InputsRepresentableForAdd (family.model u) (2 ^ r) v →
         P01StandardMethodEvaluation (family.model u) .pairwise v result →
-        |result - p01ExactSum n v| ≤
-          ((p01CeilLog2 n : ℝ) * (u : ℝ) + C * (u : ℝ) ^ 2) *
-            p01AbsoluteSum n v := by
+        |result - p01ExactSum (2 ^ r) v| ≤
+          ((r : ℝ) * (u : ℝ) + C * (u : ℝ) ^ 2) *
+            p01AbsoluteSum (2 ^ r) v := by
   -- PROOF_START P01-D103P
   sorry
 /-- Decreasing order has the smallest reported relative error in Table 6.1. -/
@@ -862,14 +893,16 @@ theorem p01_t4_componentwise_condition_le_normwise
   sorry
 /-- The zero-sum counterexample refutes a uniform bound for this relational method. -/
 theorem p01_t4_no_uniform_relative_bound_from_zero_sum
-    : ∃ fp : P01BinaryRoundModel, ∃ n : ℕ,
+    (fp : P01BinaryRoundModel) (hprecision : fp.precision = 23) :
+    ∃ n : ℕ,
       ¬ P01UniformRelativeErrorBound (p01BinaryUnitRoundoff fp)
         (P01DecreasingCompensatedEvaluation fp (n := n)) := by
   -- PROOF_START P01-D121
   sorry
 /-- For decreasing-order compensated summation, zero exact sum can have nonzero error. -/
-theorem p01_t4_decreasing_compensated_zero_sum_counterexample :
-    ∃ fp : P01BinaryRoundModel, ∃ n : ℕ, ∃ v : Fin n → ℝ, ∃ result : ℝ,
+theorem p01_t4_decreasing_compensated_zero_sum_counterexample
+    (fp : P01BinaryRoundModel) (hprecision : fp.precision = 23) :
+    ∃ n : ℕ, ∃ v : Fin n → ℝ, ∃ result : ℝ,
       (∀ i, P01BaseTwoRepresentable fp.precision (v i)) ∧
       p01ExactSum n v = 0 ∧
       P01DecreasingCompensatedEvaluation fp v result ∧ result ≠ 0 := by

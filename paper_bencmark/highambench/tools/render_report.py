@@ -63,6 +63,16 @@ PRUNED_LIBRARY_OLEAN_ROOT = (
 PACKAGES_RUNTIME_ROOT = (
     "paper_bencmark/scratch_pad/highambench_environment/packages_runtime"
 )
+T4_SKELETON_PRIVATE_PROOF_NOTE = (
+    "this skeleton-specific check is separate from the mandatory "
+    "proof-complete private N/L solvability builds"
+)
+T4_PRIVATE_CONSTRUCTION_PROSE = (
+    "T1--T4 private construction proofs are complete answers used only to "
+    "establish that controlled tasks are solvable. For T4, proof-complete "
+    "private N/L builds are mandatory in addition to the public "
+    "designated-hole skeleton gate. The following "
+)
 PACKAGE_COMPILED_SUPPORT_SUFFIXES = (
     ".olean.server",
     ".olean.private",
@@ -9810,7 +9820,7 @@ def render_report(inputs: ReportInputs) -> str:
         (
             "T4 designated-hole skeletons",
             "pass" if t4_compile_count == len(t4_skeleton_results) else "fail",
-            f"{t4_compile_count} of {len(t4_skeleton_results)} N/L skeleton builds compiled with exactly their controlled holes; no private gold proof was used",
+            f"{t4_compile_count} of {len(t4_skeleton_results)} N/L skeleton builds compiled with exactly their controlled holes; {T4_SKELETON_PRIVATE_PROOF_NOTE}",
         ),
     ]
     lines.extend(
@@ -9864,7 +9874,7 @@ def render_report(inputs: ReportInputs) -> str:
             )
         )
     lines.append(
-        "T1--T3 private construction proofs are complete answers used only to prove that measured tasks can be solved. T4 instead uses the public designated-hole skeleton and no private gold proof. The following "
+        T4_PRIVATE_CONSTRUCTION_PROSE
         + latex_escape(len(construction_results))
         + " schema-aware N/L construction results were rebuilt in fresh workspaces. The report authenticated the complete record before using these rows."
     )

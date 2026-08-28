@@ -77,15 +77,27 @@ environment, run order, release list, or another paper's controlled manifest.
 Consumers discover valid receipts in paper-ID order and compose a deterministic
 catalog in memory, so no later merge or serialized refresh is required.
 
-For T4, initialize the generic paper-local workspace before the first write.
-Its descriptor hash-binds the source PDF and the shared read-only schemas and
+For T4, claim the paper-local writer lease into an owner-only credential file,
+then initialize the generic paper-local workspace before any other write. Its
+descriptor hash-binds the source PDF and the shared read-only schemas and
 pending templates under `schemas/` and `templates/T4/`:
 
-```text
+```bash
+lease_credential_dir="$(mktemp -d /tmp/highambench-P0X-lease.XXXXXXXX)"
+lease_credential_file="$lease_credential_dir/credential.json"
+python3 paper_bencmark/highambench/tools/t4_writer_lease.py claim \
+  --scratch-root paper_bencmark/scratch_pad --paper-id P0X \
+  --credential-out "$lease_credential_file"
 python3 paper_bencmark/highambench/tools/t4_workspace.py init \
   --benchmark-root paper_bencmark/highambench \
-  --reference-root paper_bencmark/reference_papers --paper-id P0X
+  --reference-root paper_bencmark/reference_papers \
+  --scratch-root paper_bencmark/scratch_pad --paper-id P0X \
+  --lease-credential-file "$lease_credential_file"
 ```
+
+Pass the same file to later lease-guarded writes. Workspace `check` is
+read-only and verifies bindings, not metadata or stage readiness. Release the
+lease after the final write; successful release removes the credential file.
 
 After synchronizing the canonical external inventory with the embedded task
 view, freeze and check only that paper's T4 metadata:

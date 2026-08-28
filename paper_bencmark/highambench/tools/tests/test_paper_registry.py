@@ -463,6 +463,106 @@ class PaperRegistryTests(unittest.TestCase):
             "pending",
         )
 
+    def test_construction_phase_reports_valid_stale_construction_as_pending(
+        self,
+    ) -> None:
+        preflight = finalize_paper(self.root, "P01", mode="dry-run")
+        controlled = {
+            "P01-T1": next(
+                str(item["sha256"])
+                for item in preflight["write_set"]
+                if item["path"] == "metadata/papers/P01/controlled/T1.json"
+            )
+        }
+        path = self._write_evidence(
+            "P01",
+            name="construction",
+            schema=CONSTRUCTION_EVIDENCE_SCHEMA,
+            kind=CONSTRUCTION_EVIDENCE_KIND,
+            controlled_manifest_sha256=controlled,
+        )
+        original = path.read_bytes()
+        definitions = (
+            self.root / "shared" / "HighamBench" / "P01Definitions.lean"
+        )
+        definitions.write_text(
+            definitions.read_text(encoding="utf-8") + "\ndef p01Revision : True := True.intro\n",
+            encoding="utf-8",
+        )
+
+        registration = plan_paper_registration(self.root, "P01").registration
+
+        self.assertEqual(
+            registration["readiness_artifacts"]["construction"]["status"],
+            "pending",
+        )
+        self.assertEqual(path.read_bytes(), original)
+
+    def test_construction_phase_still_rejects_tampered_stale_construction(
+        self,
+    ) -> None:
+        preflight = finalize_paper(self.root, "P01", mode="dry-run")
+        controlled = {
+            "P01-T1": next(
+                str(item["sha256"])
+                for item in preflight["write_set"]
+                if item["path"] == "metadata/papers/P01/controlled/T1.json"
+            )
+        }
+        path = self._write_evidence(
+            "P01",
+            name="construction",
+            schema=CONSTRUCTION_EVIDENCE_SCHEMA,
+            kind=CONSTRUCTION_EVIDENCE_KIND,
+            controlled_manifest_sha256=controlled,
+        )
+        evidence = json.loads(path.read_text(encoding="utf-8"))
+        evidence["certificate"]["pass"] = False
+        write_json(path, evidence)
+        definitions = (
+            self.root / "shared" / "HighamBench" / "P01Definitions.lean"
+        )
+        definitions.write_text(
+            definitions.read_text(encoding="utf-8") + "\ndef p01Revision : True := True.intro\n",
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(BenchmarkToolError, "certificate digest"):
+            plan_paper_registration(self.root, "P01")
+
+    @patch("paper_registry.validate_t4_file_bindings", return_value=None)
+    @patch("paper_registry.validate_task_source_tags", return_value={})
+    def test_construction_phase_reports_valid_stale_review_as_pending(
+        self, _validate_tags: object, _validate_files: object
+    ) -> None:
+        self._add_paper("P03", tier="T4")
+        preflight = finalize_paper(self.root, "P03", mode="dry-run")
+        controlled = {
+            "P03-T4": next(
+                str(item["sha256"])
+                for item in preflight["write_set"]
+                if item["path"] == "metadata/papers/P03/controlled/T4.json"
+            )
+        }
+        path = self._write_evidence(
+            "P03",
+            name="review",
+            schema=REVIEW_EVIDENCE_SCHEMA,
+            kind=REVIEW_EVIDENCE_KIND,
+            controlled_manifest_sha256=controlled,
+        )
+        original = path.read_bytes()
+        context = self.root / "tasks" / "P03" / "T4" / "context.md"
+        context.write_text("revised context\n", encoding="utf-8")
+
+        registration = plan_paper_registration(self.root, "P03").registration
+
+        self.assertEqual(
+            registration["readiness_artifacts"]["review"]["status"],
+            "pending",
+        )
+        self.assertEqual(path.read_bytes(), original)
+
     def test_rejects_tampered_embedded_construction_certificate(self) -> None:
         preflight = finalize_paper(self.root, "P01", mode="dry-run")
         controlled = {

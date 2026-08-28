@@ -1,0 +1,60 @@
+{
+  "schema_version": "highambench-t4-review-authorization-0.1",
+  "kind": "highambench-t4-standing-review-authorization",
+  "authorization_status": "pending",
+  "authorization_id": "__AUTHORIZATION_ID__",
+  "scope": {
+    "paper_ids": [
+      "__PAPER_ID__"
+    ],
+    "campaign_kind": "t4_source_faithfulness_review",
+    "replacement_campaigns": false,
+    "manifest_sha256": null,
+    "campaign_plan_sha256": null,
+    "transmitted_artifact_classes": [
+      "source_packet",
+      "direct_lean_packet",
+      "blind_lean_packet",
+      "locked_blind_translation",
+      "direct_verdict",
+      "round_trip_verdict"
+    ]
+  },
+  "runtime": {
+    "provider": "__PROVIDER__",
+    "account": "__ACCOUNT__",
+    "model": "__MODEL__",
+    "reasoning": "ultra",
+    "speed_mode": "standard"
+  },
+  "role_isolation": {
+    "fresh_role_contexts": true,
+    "role_blindness": true,
+    "packet_local_tools": [
+      "in_memory_search",
+      "calculator"
+    ],
+    "max_same_role_advisory_children": 1,
+    "host_repository_access": false,
+    "full_pdf_access": false,
+    "private_proof_access": false,
+    "web_access": false,
+    "prior_review_artifact_access": false
+  },
+  "session_ceilings": {
+    "maximum_sessions": "__MAXIMUM_SESSIONS_INTEGER__",
+    "maximum_units": "__MAXIMUM_UNITS_INTEGER__",
+    "concurrency": 4,
+    "timeout_seconds": 900,
+    "attempts_per_role": 1,
+    "infrastructure_retries": 3
+  },
+  "authorization_statement_sha256": "__AUTHORIZATION_STATEMENT_SHA256__",
+  "authorized_at_utc": "__AUTHORIZED_AT_UTC__",
+  "expires_at_utc": null,
+  "measurements_authorized": false,
+  "measurement_ready_authorized": false,
+  "commit_authorized": false,
+  "push_authorized": false,
+  "receipt_sha256": "__RECEIPT_SHA256__"
+}

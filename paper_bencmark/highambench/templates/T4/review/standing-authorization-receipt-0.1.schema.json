@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://highambench.local/schemas/t4-standing-authorization-receipt-0.1.schema.json",
+  "title": "HighamBench T4 scoped standing review authorization receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "authorization_status",
+    "authorization_id",
+    "scope",
+    "runtime",
+    "role_isolation",
+    "session_ceilings",
+    "authorization_statement_sha256",
+    "authorized_at_utc",
+    "expires_at_utc",
+    "measurements_authorized",
+    "measurement_ready_authorized",
+    "commit_authorized",
+    "push_authorized",
+    "receipt_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "highambench-t4-review-authorization-0.1"
+    },
+    "kind": {
+      "const": "highambench-t4-standing-review-authorization"
+    },
+    "authorization_status": {
+      "enum": ["pending", "active", "revoked", "expired"]
+    },
+    "authorization_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "paper_ids",
+        "campaign_kind",
+        "replacement_campaigns",
+        "manifest_sha256",
+        "campaign_plan_sha256",
+        "transmitted_artifact_classes"
+      ],
+      "properties": {
+        "paper_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^P[0-9]{2}$"
+          }
+        },
+        "campaign_kind": {
+          "const": "t4_source_faithfulness_review"
+        },
+        "replacement_campaigns": {
+          "type": "boolean"
+        },
+        "manifest_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "campaign_plan_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "transmitted_artifact_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "source_packet",
+              "direct_lean_packet",
+              "blind_lean_packet",
+              "locked_blind_translation",
+              "direct_verdict",
+              "round_trip_verdict"
+            ]
+          }
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "account", "model", "reasoning", "speed_mode"],
+      "properties": {
+        "provider": {"type": "string", "minLength": 1},
+        "account": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "minLength": 1},
+        "reasoning": {"const": "ultra"},
+        "speed_mode": {"const": "standard"}
+      }
+    },
+    "role_isolation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fresh_role_contexts",
+        "role_blindness",
+        "packet_local_tools",
+        "max_same_role_advisory_children",
+        "host_repository_access",
+        "full_pdf_access",
+        "private_proof_access",
+        "web_access",
+        "prior_review_artifact_access"
+      ],
+      "properties": {
+        "fresh_role_contexts": {"const": true},
+        "role_blindness": {"const": true},
+        "packet_local_tools": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "max_same_role_advisory_children": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "host_repository_access": {"const": false},
+        "full_pdf_access": {"const": false},
+        "private_proof_access": {"const": false},
+        "web_access": {"const": false},
+        "prior_review_artifact_access": {"const": false}
+      }
+    },
+    "session_ceilings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maximum_sessions",
+        "maximum_units",
+        "concurrency",
+        "timeout_seconds",
+        "attempts_per_role",
+        "infrastructure_retries"
+      ],
+      "properties": {
+        "maximum_sessions": {"type": "integer", "minimum": 1},
+        "maximum_units": {"type": "integer", "minimum": 1},
+        "concurrency": {"type": "integer", "minimum": 1},
+        "timeout_seconds": {"type": "integer", "minimum": 1},
+        "attempts_per_role": {"type": "integer", "minimum": 1},
+        "infrastructure_retries": {"type": "integer", "minimum": 0}
+      }
+    },
+    "authorization_statement_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "authorized_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at_utc": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "measurements_authorized": {"const": false},
+    "measurement_ready_authorized": {"const": false},
+    "commit_authorized": {"const": false},
+    "push_authorized": {"const": false},
+    "receipt_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

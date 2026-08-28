@@ -7,9 +7,14 @@ its write set is disjoint from every other paper's write set.  Historical P01
 campaign scripts remain useful for auditing their immutable artifacts, but are
 not generic workspace initializers and must not be copied for later papers.
 
-Only ``scratch_pad/t4_source_faithfulness/P0X/workspace.json`` is written by
-this tool.  Paper-owned paths are bindings for the paper's single writer; the
-generic schema and template bindings are shared, hash-pinned, and read-only.
+The ``init`` mode writes only
+``scratch_pad/t4_source_faithfulness/P0X/workspace.json``.  Both ``init``
+and the fail-closed ``scaffold`` mode require an active matching paper writer
+lease.  Scaffold creates a bounded set of explicitly incomplete paper-owned
+starter files and never overwrites an existing destination.  Generic schema,
+prompt, policy, and template bindings are shared, hash-pinned, and read-only.
+The read-only ``check`` mode verifies workspace bindings only; it is not a
+metadata or stage-readiness gate.
 """
 
 from __future__ import annotations
@@ -28,6 +33,7 @@ import uuid
 
 try:
     from .common import BenchmarkToolError, read_json, safe_relative_path, sha256_file
+    from .t4_writer_lease import locked_active_lease, read_lease_credentials
     from .validator import sanitize_lean
 except ImportError:  # Direct script execution.
     from common import (  # type: ignore
@@ -36,19 +42,23 @@ except ImportError:  # Direct script execution.
         safe_relative_path,
         sha256_file,
     )
+    from t4_writer_lease import (  # type: ignore
+        locked_active_lease,
+        read_lease_credentials,
+    )
     from validator import sanitize_lean  # type: ignore
 
 
 SCHEMA_VERSION = "highambench-t4-workspace-0.1"
 KIND = "highambench-t4-workspace"
-MODES = ("init", "check", "write-set")
+MODES = ("init", "check", "write-set", "scaffold")
 PAPER_ID_RE = re.compile(r"^P[0-9]{2}$")
 MODULE_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_']*(?:\.[A-Za-z_][A-Za-z0-9_']*)*$")
 IMPORT_RE = re.compile(
     r"(?m)^\s*(?:(?:public|private|meta)\s+)*import\s+([^\r\n]+?)\s*$"
 )
 UPSTREAM_IMPORT_ROOTS = ("Batteries", "Lean", "Mathlib", "Std")
-GENERIC_CONTRACT_FILES = (
+BASE_GENERIC_CONTRACT_FILES = (
     ("task_schema", "schemas/highambench-t4-task-0.4.schema.json"),
     (
         "source_inventory_schema",
@@ -60,6 +70,37 @@ GENERIC_CONTRACT_FILES = (
         "templates/T4/source_inventory.pending.template.json",
     ),
 )
+GENERIC_CONTRACT_FILES = BASE_GENERIC_CONTRACT_FILES + (
+    (
+        "review_direct_judge_prompt_v1",
+        "templates/T4/review/direct-judge.v1.md",
+    ),
+    (
+        "review_blind_translator_prompt_v1",
+        "templates/T4/review/blind-translator.v1.md",
+    ),
+    (
+        "review_round_trip_judge_prompt_v1",
+        "templates/T4/review/round-trip-judge.v1.md",
+    ),
+    (
+        "review_adjudicator_prompt_v1",
+        "templates/T4/review/adjudicator.v1.md",
+    ),
+    (
+        "review_durable_artifact_policy_v1",
+        "templates/T4/review/durable-artifact-policy.v1.md",
+    ),
+    (
+        "review_authorization_schema_v01",
+        "templates/T4/review/standing-authorization-receipt-0.1.schema.json",
+    ),
+    (
+        "review_authorization_template_v01",
+        "templates/T4/review/standing-authorization-receipt.pending.template.json",
+    ),
+)
+
 
 
 @dataclass(frozen=True)
@@ -481,6 +522,54 @@ def _validate_pre_contract_upgrade(
             "workspace descriptor is not an authentic pre-contract descriptor"
         )
 
+def _validate_generic_contract_upgrade(
+    observed: Mapping[str, Any], expected: Mapping[str, Any]
+) -> None:
+    """Accept only the exact four-contract descriptor used before review assets."""
+
+    _validate_descriptor_anchors(observed, expected)
+    legacy = copy.deepcopy(dict(expected))
+    names = {name for name, _ in BASE_GENERIC_CONTRACT_FILES}
+    legacy["generic_contract_files"] = {
+        name: value
+        for name, value in legacy["generic_contract_files"].items()
+        if name in names
+    }
+    legacy = _bind_descriptor_digest(legacy)
+    if observed != legacy:
+        raise BenchmarkToolError(
+            "workspace descriptor is not an authentic prior-contract descriptor"
+        )
+
+
+def _validate_init_compatible_descriptor(
+    observed: Mapping[str, Any], expected: Mapping[str, Any]
+) -> None:
+    if "generic_contract_files" not in observed:
+        _validate_pre_contract_upgrade(observed, expected)
+        return
+    try:
+        _validate_descriptor_ownership(observed, expected)
+    except BenchmarkToolError:
+        _validate_generic_contract_upgrade(observed, expected)
+
+
+def _validate_current_workspace(
+    observed: Mapping[str, Any], expected: Mapping[str, Any]
+) -> None:
+    try:
+        _validate_descriptor_ownership(observed, expected)
+    except BenchmarkToolError as current_error:
+        try:
+            _validate_init_compatible_descriptor(observed, expected)
+        except BenchmarkToolError:
+            raise current_error
+        raise BenchmarkToolError(
+            "workspace descriptor is an authentic prior contract; rerun "
+            "lease-guarded init before check"
+        ) from current_error
+
+
 
 def _read_workspace(path: Path) -> Mapping[str, Any]:
     if path.is_symlink() or not path.is_file():
@@ -521,6 +610,285 @@ def _atomic_write(path: Path, payload: bytes) -> bool:
     return True
 
 
+def _template_object(path: Path, label: str) -> dict[str, Any]:
+    value = read_json(path)
+    if not isinstance(value, Mapping):
+        raise BenchmarkToolError(f"{label} must be a JSON object")
+    return copy.deepcopy(dict(value))
+
+
+def _scaffold_payloads(
+    layout: WorkspaceLayout,
+) -> list[tuple[str, Path, Path, bytes]]:
+    paper_id = layout.paper_id
+    namespace = f"HighamBench.{paper_id}"
+    source_path = f"paper_bencmark/reference_papers/{layout.source_pdf.name}"
+    target_relative = f"paper_bencmark/highambench/tasks/{paper_id}/T4/Target.lean"
+    inventory_relative = (
+        f"paper_bencmark/highambench/tasks/{paper_id}/T4/source_inventory.json"
+    )
+    context_relative = f"paper_bencmark/highambench/tasks/{paper_id}/T4/context.md"
+    definitions = (
+        "import Mathlib.Data.Real.Basic\n\n"
+        "/-!\n"
+        f"Paper-local semantic definitions scaffold for {paper_id}.\n\n"
+        "This file intentionally contains no benchmark mathematics. Replace this\n"
+        "comment with only the minimal statement-facing definitions justified by\n"
+        "the selected paper; do not add proof-only helpers or shared-paper imports.\n"
+        "-/\n\n"
+        f"namespace {namespace}\n\n"
+        "-- NON-BENCHMARK STARTER: add audited paper-local semantics here.\n\n"
+        f"end {namespace}\n"
+    ).encode("utf-8")
+    target = (
+        f"import HighamBench.{paper_id}Definitions\n\n"
+        "/-!\n"
+        f"Controlled T4 target scaffold for {paper_id}.\n\n"
+        "This starter contains no benchmark declaration or proof placeholder.\n"
+        "Add declarations only after the source-order coverage ledger identifies\n"
+        "their exact paper claims and scopes.\n"
+        "-/\n\n"
+        f"namespace {namespace}\n\n"
+        "-- NON-BENCHMARK STARTER: no source claim has been encoded yet.\n\n"
+        f"end {namespace}\n"
+    ).encode("utf-8")
+    context = (
+        f"# {paper_id} T4 construction scaffold\n\n"
+        "This file is deliberately incomplete. Record only source-grounded context\n"
+        "needed by the final controlled task; no claim has been accepted yet.\n\n"
+        "## Durable workflow artifacts\n\n"
+        "Follow paper_bencmark/highambench/templates/T4/review/"
+        "durable-artifact-policy.v1.md. Persist and hash exact prompts, packets,\n"
+        "manifests, plans, checkpoints, validated final JSON, provenance, and audit\n"
+        "ledgers. Hidden reasoning and raw conversational transcripts are not\n"
+        "workflow dependencies.\n"
+    ).encode("utf-8")
+    private_common = (
+        f"import HighamBench.{paper_id}Definitions\n\n"
+        "/-!\n"
+        "PRIVATE SOLUTION SCAFFOLD ONLY. This file is intentionally not a\n"
+        "proof-complete answer and must not satisfy the private-solvability gate.\n"
+        "Replace it with an exact-statement, proof-complete private solution after\n"
+        "the controlled target bytes are frozen. Never expose it to reviewers or\n"
+        "measured agents.\n"
+        "-/\n\n"
+        f"namespace {namespace}\n\n"
+    )
+    private_n = (
+        private_common
+        + "-- Condition N private proofs will be constructed here.\n\n"
+        + f"end {namespace}\n"
+    ).encode("utf-8")
+    private_l = (
+        private_common
+        + "-- Condition L private proofs will be constructed here.\n\n"
+        + f"end {namespace}\n"
+    ).encode("utf-8")
+
+    inventory_path = (
+        layout.benchmark_root
+        / "templates"
+        / "T4"
+        / "source_inventory.pending.template.json"
+    )
+    inventory = _template_object(inventory_path, "T4 source-inventory template")
+    if inventory.get("schema_version") != "highambench-t4-source-inventory-0.3":
+        raise BenchmarkToolError("T4 source-inventory template schema changed")
+    inventory.update(
+        {
+            "paper_id": paper_id,
+            "title": f"PENDING exact source title for {paper_id}",
+            "status": "construction",
+            "inventory_method": (
+                "PENDING: complete a sequential full-paper atomic-claim audit"
+            ),
+            "source": {
+                "local_path": source_path,
+                "sha256": sha256_file(layout.source_pdf),
+            },
+            "named_results": [],
+            "local_numbered_equations": [],
+            "items": [],
+        }
+    )
+    inventory_bytes = _canonical_json_bytes(inventory)
+
+    task_path = layout.benchmark_root / "templates" / "T4" / "task.pending.template.json"
+    task = _template_object(task_path, "T4 task template")
+    if task.get("schema_version") != "highambench-task-0.4":
+        raise BenchmarkToolError("T4 task template schema changed")
+    task.update(
+        {
+            "task_id": f"{paper_id}-T4",
+            "paper_id": paper_id,
+            "tier": "T4",
+            "classification_frozen_before_runs": False,
+            "paper_source": {
+                "local_path": source_path,
+                "sha256": sha256_file(layout.source_pdf),
+            },
+            "context_file": context_relative,
+            "source_inventory_file": inventory_relative,
+            "construction_inputs": {
+                "paper_definitions_sha256": hashlib.sha256(definitions).hexdigest(),
+                "target_sha256": hashlib.sha256(target).hexdigest(),
+                "source_inventory_sha256": hashlib.sha256(
+                    inventory_bytes
+                ).hexdigest(),
+                "review_campaign_status": "not_started",
+            },
+            "source_inventory": [],
+            "declarations": [],
+            "review_units": [],
+            "validation": {
+                "controlled_target_file": target_relative,
+                "required_declarations": [],
+                "controlled_sorries": [],
+                "mode": "pending paper-local T4 construction scaffold",
+                "reject_noncontrolled_sorry_admit_new_axiom_unsafe_or_forbidden_import": True,
+                "reject_statement_changes": True,
+            },
+            "faithfulness_reviews": [],
+        }
+    )
+    task_bytes = _canonical_json_bytes(task)
+
+    return [
+        (
+            "definitions",
+            layout.benchmark_root,
+            layout.definitions,
+            definitions,
+        ),
+        (
+            "target",
+            layout.benchmark_root,
+            layout.task_root / "Target.lean",
+            target,
+        ),
+        (
+            "context",
+            layout.benchmark_root,
+            layout.task_root / "context.md",
+            context,
+        ),
+        (
+            "source inventory",
+            layout.benchmark_root,
+            layout.task_root / "source_inventory.json",
+            inventory_bytes,
+        ),
+        (
+            "task record",
+            layout.benchmark_root,
+            layout.task_root / "task.json",
+            task_bytes,
+        ),
+        (
+            "private N scaffold",
+            layout.scratch_root,
+            layout.private_root / "T4_N.lean",
+            private_n,
+        ),
+        (
+            "private L scaffold",
+            layout.scratch_root,
+            layout.private_root / "T4_L.lean",
+            private_l,
+        ),
+    ]
+
+
+def _preflight_scaffold_destination(root: Path, path: Path, label: str) -> None:
+    _assert_below(root, path, f"T4 scaffold {label}")
+    cursor = root
+    for part in path.relative_to(root).parts[:-1]:
+        cursor = cursor / part
+        if cursor.is_symlink():
+            raise BenchmarkToolError(
+                f"T4 scaffold {label} contains a symlink parent: {cursor}"
+            )
+        if cursor.exists() and not cursor.is_dir():
+            raise BenchmarkToolError(
+                f"T4 scaffold {label} parent is not a directory: {cursor}"
+            )
+    if path.exists() or path.is_symlink():
+        raise BenchmarkToolError(
+            f"T4 scaffold refuses existing destination for {label}: {path}"
+        )
+
+
+def _exclusive_scaffold_write(root: Path, path: Path, payload: bytes) -> None:
+    cursor = root
+    for part in path.relative_to(root).parts[:-1]:
+        cursor = cursor / part
+        try:
+            cursor.mkdir(mode=0o755)
+        except FileExistsError:
+            pass
+        if cursor.is_symlink() or not cursor.is_dir():
+            raise BenchmarkToolError(f"unsafe T4 scaffold parent: {cursor}")
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(path, flags, 0o644)
+    with os.fdopen(descriptor, "wb") as stream:
+        stream.write(payload)
+        stream.flush()
+        os.fsync(stream.fileno())
+    _fsync_directory(path.parent)
+
+
+def _scaffold_workspace(layout: WorkspaceLayout) -> list[str]:
+    payloads = _scaffold_payloads(layout)
+    for label, root, path, _ in payloads:
+        _preflight_scaffold_destination(root, path, label)
+    created: list[tuple[Path, bytes]] = []
+    try:
+        for _, root, path, payload in payloads:
+            _exclusive_scaffold_write(root, path, payload)
+            created.append((path, payload))
+        _validate_bound_files(layout)
+    except BaseException:
+        for path, payload in reversed(created):
+            try:
+                if (
+                    not path.is_symlink()
+                    and path.is_file()
+                    and path.read_bytes() == payload
+                ):
+                    path.unlink()
+                    _fsync_directory(path.parent)
+            except OSError:
+                pass
+        raise
+    return [str(path) for path, _ in created]
+
+
+def _workspace_lease_credentials(
+    layout: WorkspaceLayout,
+    operation: str,
+    invocation_id: str | None,
+    token: str | None,
+    credential_file: Path | None,
+) -> tuple[str, str]:
+    if credential_file is not None:
+        if invocation_id is not None or token is not None:
+            raise BenchmarkToolError(
+                "--lease-credential-file cannot be combined with "
+                "--lease-invocation-id or --lease-token"
+            )
+        return read_lease_credentials(
+            credential_file, layout.scratch_root, layout.paper_id
+        )
+    if invocation_id is None or token is None:
+        raise BenchmarkToolError(
+            f"T4 {operation} requires an active lease credential file or "
+            "matching invocation UUID and token"
+        )
+    return invocation_id, token
+
+
 def manage_workspace(
     benchmark_root: Path,
     reference_root: Path,
@@ -528,6 +896,9 @@ def manage_workspace(
     *,
     scratch_root: Path | None = None,
     mode: str = "init",
+    lease_invocation_id: str | None = None,
+    lease_token: str | None = None,
+    lease_credential_file: Path | None = None,
 ) -> dict[str, Any]:
     if mode not in MODES:
         raise BenchmarkToolError(f"unsupported T4 workspace mode: {mode!r}")
@@ -548,21 +919,47 @@ def manage_workspace(
         return result
     if mode == "check":
         observed = _read_workspace(workspace)
-        _validate_descriptor_ownership(observed, expected)
+        _validate_current_workspace(observed, expected)
         if observed != expected:
             raise BenchmarkToolError(
-                f"workspace descriptor is stale for {paper_id}; rerun init"
+                f"workspace descriptor is stale for {paper_id}; rerun "
+                "lease-guarded init"
             )
         return result
 
-    if workspace.exists() or workspace.is_symlink():
-        observed = _read_workspace(workspace)
-        if "generic_contract_files" not in observed:
-            _validate_pre_contract_upgrade(observed, expected)
-        else:
+    lease_invocation_id, lease_token = _workspace_lease_credentials(
+        layout,
+        mode,
+        lease_invocation_id,
+        lease_token,
+        lease_credential_file,
+    )
+    with locked_active_lease(
+        layout.scratch_root,
+        paper_id,
+        lease_invocation_id,
+        lease_token,
+    ):
+        locked_expected = build_workspace_descriptor(layout)
+        if locked_expected != expected:
+            raise BenchmarkToolError(
+                f"workspace inputs changed while acquiring the {paper_id} lease"
+            )
+        if mode == "scaffold":
+            observed = _read_workspace(workspace)
             _validate_descriptor_ownership(observed, expected)
-    if _atomic_write(workspace, _canonical_json_bytes(expected)):
-        result["written"] = [str(workspace)]
+            if observed != expected:
+                raise BenchmarkToolError(
+                    f"workspace descriptor is stale for {paper_id}; rerun "
+                    "lease-guarded init"
+                )
+            result["written"] = _scaffold_workspace(layout)
+        else:
+            if workspace.exists() or workspace.is_symlink():
+                observed = _read_workspace(workspace)
+                _validate_init_compatible_descriptor(observed, expected)
+            if _atomic_write(workspace, _canonical_json_bytes(expected)):
+                result["written"] = [str(workspace)]
     return result
 
 
@@ -577,6 +974,13 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--reference-root", type=Path, required=True)
     parser.add_argument("--scratch-root", type=Path)
     parser.add_argument("--paper-id", required=True)
+    parser.add_argument("--lease-invocation-id")
+    parser.add_argument("--lease-token")
+    parser.add_argument(
+        "--lease-credential-file",
+        type=Path,
+        help="owner-only credential file created by t4_writer_lease.py claim",
+    )
     return parser
 
 
@@ -589,6 +993,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.paper_id,
             scratch_root=args.scratch_root,
             mode=args.mode,
+            lease_invocation_id=args.lease_invocation_id,
+            lease_token=args.lease_token,
+            lease_credential_file=args.lease_credential_file,
         )
     except (BenchmarkToolError, OSError, ValueError) as error:
         print(f"t4-workspace error: {error}", file=sys.stderr)

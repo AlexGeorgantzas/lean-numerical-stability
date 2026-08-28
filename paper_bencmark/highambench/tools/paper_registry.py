@@ -218,6 +218,7 @@ def _validate_evidence_receipt(
     paper_record_sha256: str,
     task_record_sha256: Mapping[str, str],
     controlled_manifest_sha256: Mapping[str, str],
+    stale_bindings_are_pending: bool = False,
 ) -> dict[str, Any]:
     relative = f"metadata/papers/{paper_id}/{name}.json"
     path = root / relative
@@ -234,21 +235,45 @@ def _validate_evidence_receipt(
         or evidence.get("pass") is not True
     ):
         raise BenchmarkToolError(f"{paper_id} {name} evidence identity/pass is invalid")
-    if evidence.get("task_ids") != list(task_ids):
-        raise BenchmarkToolError(f"{paper_id} {name} evidence task_ids are stale")
-    if evidence.get("definition_source_sha256") != definition_source_sha256:
+
+    recorded_task_ids = evidence.get("task_ids")
+    if (
+        not isinstance(recorded_task_ids, list)
+        or any(not isinstance(task_id, str) or not task_id for task_id in recorded_task_ids)
+        or len(recorded_task_ids) != len(set(recorded_task_ids))
+    ):
+        raise BenchmarkToolError(f"{paper_id} {name} evidence task_ids are invalid")
+    recorded_definition_sha256 = evidence.get("definition_source_sha256")
+    if (
+        not isinstance(recorded_definition_sha256, str)
+        or SHA256_RE.fullmatch(recorded_definition_sha256) is None
+    ):
         raise BenchmarkToolError(
-            f"{paper_id} {name} evidence definitions hash is stale"
+            f"{paper_id} {name} evidence definitions hash is invalid"
         )
-    if evidence.get("paper_record_sha256") != paper_record_sha256:
-        raise BenchmarkToolError(f"{paper_id} {name} evidence paper record is stale")
-    if evidence.get("task_record_sha256") != dict(task_record_sha256):
-        raise BenchmarkToolError(f"{paper_id} {name} evidence task records are stale")
-    expected_manifests = dict(controlled_manifest_sha256)
-    if evidence.get("controlled_manifest_sha256") != expected_manifests:
-        raise BenchmarkToolError(
-            f"{paper_id} {name} evidence controlled manifest hashes are stale"
+    recorded_paper_sha256 = evidence.get("paper_record_sha256")
+    if (
+        not isinstance(recorded_paper_sha256, str)
+        or SHA256_RE.fullmatch(recorded_paper_sha256) is None
+    ):
+        raise BenchmarkToolError(f"{paper_id} {name} evidence paper record is invalid")
+
+    def recorded_digest_map(field: str) -> dict[str, str]:
+        value = _mapping(
+            evidence.get(field), f"{paper_id} {name} evidence {field}"
         )
+        if set(value) != set(recorded_task_ids) or any(
+            not isinstance(digest, str) or SHA256_RE.fullmatch(digest) is None
+            for digest in value.values()
+        ):
+            raise BenchmarkToolError(
+                f"{paper_id} {name} evidence {field} is invalid"
+            )
+        return {task_id: str(value[task_id]) for task_id in recorded_task_ids}
+
+    recorded_task_sha256 = recorded_digest_map("task_record_sha256")
+    recorded_manifest_sha256 = recorded_digest_map("controlled_manifest_sha256")
+
     artifact = {
         "status": "authenticated",
         "receipt": _file_record(root, path),
@@ -276,8 +301,8 @@ def _validate_evidence_receipt(
             or certificate.get("record_status") != "paper_current_final"
             or scope.get("scope_kind") != "paper-local"
             or scope.get("paper_id") != paper_id
-            or scope.get("paper_record_sha256") != paper_record_sha256
-            or scope.get("task_ids") != list(task_ids)
+            or scope.get("paper_record_sha256") != recorded_paper_sha256
+            or scope.get("task_ids") != recorded_task_ids
             or scope.get("complete_paper_scope") is not True
         ):
             raise BenchmarkToolError(
@@ -287,14 +312,40 @@ def _validate_evidence_receipt(
             evidence.get("validation"), f"{paper_id} construction validation"
         )
         if (
-            validation.get("paper_record_sha256") != paper_record_sha256
+            validation.get("paper_record_sha256") != recorded_paper_sha256
             or validation.get("controlled_manifest_sha256")
-            != dict(controlled_manifest_sha256)
+            != recorded_manifest_sha256
         ):
             raise BenchmarkToolError(
                 f"{paper_id} construction validation bindings are stale"
             )
         artifact["certificate_sha256"] = certificate_sha256
+
+    if recorded_task_ids != list(task_ids):
+        if stale_bindings_are_pending:
+            return _pending_artifact(relative)
+        raise BenchmarkToolError(f"{paper_id} {name} evidence task_ids are stale")
+    if recorded_definition_sha256 != definition_source_sha256:
+        if stale_bindings_are_pending:
+            return _pending_artifact(relative)
+        raise BenchmarkToolError(
+            f"{paper_id} {name} evidence definitions hash is stale"
+        )
+    if recorded_paper_sha256 != paper_record_sha256:
+        if stale_bindings_are_pending:
+            return _pending_artifact(relative)
+        raise BenchmarkToolError(f"{paper_id} {name} evidence paper record is stale")
+    if recorded_task_sha256 != dict(task_record_sha256):
+        if stale_bindings_are_pending:
+            return _pending_artifact(relative)
+        raise BenchmarkToolError(f"{paper_id} {name} evidence task records are stale")
+    expected_manifests = dict(controlled_manifest_sha256)
+    if recorded_manifest_sha256 != expected_manifests:
+        if stale_bindings_are_pending:
+            return _pending_artifact(relative)
+        raise BenchmarkToolError(
+            f"{paper_id} {name} evidence controlled manifest hashes are stale"
+        )
     return artifact
 
 
@@ -600,6 +651,7 @@ def plan_paper_registration(
             paper_record_sha256=str(paper_record["sha256"]),
             task_record_sha256=task_record_sha256,
             controlled_manifest_sha256=controlled_manifest_sha256,
+            stale_bindings_are_pending=not paper_phase,
         ),
         "review": (
             _validate_evidence_receipt(
@@ -613,6 +665,7 @@ def plan_paper_registration(
                 paper_record_sha256=str(paper_record["sha256"]),
                 task_record_sha256=review_task_record_sha256,
                 controlled_manifest_sha256=review_manifest_sha256,
+                stale_bindings_are_pending=not paper_phase,
             )
             if t4_task_ids
             else {

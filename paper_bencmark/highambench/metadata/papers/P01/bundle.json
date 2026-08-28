@@ -1,16 +1,16 @@
 {
-  "bundle_sha256": "a9c1f30c163b8c7e75aa152c6b021ae5515b11e70442686ff21ae40790970f8d",
+  "bundle_sha256": "10913a178b24572b985d6bdac336dff4f423b176906557f45981b10cb8e40b8d",
   "definition_source": {
-    "bytes": 153386,
+    "bytes": 173132,
     "path": "shared/HighamBench/P01Definitions.lean",
-    "sha256": "c82bc8f0042b441403c61d4c043e5097d0ce61d9a1aa9dc82568866f3da2d93a"
+    "sha256": "f0734a12a26a0d725a34fa854b225beef08b22e08502dd400ac4e248196f9669"
   },
   "kind": "highambench-paper-bundle",
   "olean_files": [
     {
-      "bytes": 5086592,
+      "bytes": 5676176,
       "path": "HighamBench/P01Definitions.olean",
-      "sha256": "cdd07d45a893bbe3412cf7a0f6a14eab158f778da6d9ad07c62c35efab06b31a"
+      "sha256": "41c7fe0685d1912ef87922222afa3686862c6ba2170ef7e898415df403a9d01d"
     }
   ],
   "paper_id": "P01",
