@@ -279,9 +279,7 @@
   }
  },
  "legacy": {
-  "declaration_bearing_umbrellas": [
-   "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample"
-  ],
+  "declaration_bearing_umbrellas": [],
   "missing_module_docstrings": [],
   "mixed_modules": [],
   "noncanonical_modules": [],

@@ -1356,6 +1356,8 @@
   "NumStability.Source.Higham.Chapter01.Section17": "aggregate",
   "NumStability.Source.Higham.Chapter02": "aggregate",
   "NumStability.Source.Higham.Chapter02.Problem03.AdjacentPrecisionValues.Results.Theorems": "source",
+  "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample": "aggregate",
+  "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs": "source",
   "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Results": "source",
   "NumStability.Source.Higham.Chapter02.Problem10.DivisionRoundTrip.ExhaustiveBinary64.Results": "source",
   "NumStability.Source.Higham.Chapter02.Problem11": "source",

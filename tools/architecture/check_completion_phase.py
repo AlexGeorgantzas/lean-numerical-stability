@@ -973,6 +973,25 @@ R09_R10_UNION_POSTIMAGES_PATH = (
     "docs/architecture/phases/2026-08-repository-reorganization-completion/"
     "requests/R0012-R0013-union-postimages.tsv"
 )
+# The reviewed R0014/R0015 implementation (M13 I01 + CODE03) supersedes
+# exactly these three union rows; the other 22 postimages stay byte-exact
+# against the reviewed ledger. The pins are the postimage SHA-256 values
+# frozen in requests/R0014-postimages.tsv
+# (42F4ED7EFE7C611DE214A0E6FE4ABADA11034632A9086952EADCD1A8AA33A1C9) at
+# planned commit 1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9 on the bounded
+# closeout branch, applied to main 2026-08-30 under the primary human's
+# recorded cutover decision.
+R0014_R0015_SUPERSEDED_UNION_POSTIMAGES = {
+    "NumStabilityTest.lean": (
+        "7F0E17A350B13DC45E55902B11279B7973010E45725008A4F3F8D00D622BC704"
+    ),
+    "docs/architecture/layout-exceptions.json": (
+        "E23EED1B1E5619B8D9EBA7136EBAD9769C160B41FC7A3AED20B7BAC823EC5D6D"
+    ),
+    "docs/architecture/tiers.json": (
+        "96D8329E018769925658FD7BC8392F8005210C83665333B333EB03EFD2B0F6F6"
+    ),
+}
 R09_DELIVERY_SHA = "3de7b02333d7415664f440ceb6ad7ea899f32f57"
 R10_DELIVERY_SHA = "6be9f1100557c78f7187da99b269eb3767befba0"
 # the integration control could not pin its own SHA; the closeout lands it
@@ -8136,6 +8155,8 @@ class CompletionValidator:
                     expected = row[3].upper()
                     if row[0] == R09_R10_AMENDED_UNION_PATH:
                         expected = R09_R10_AMENDED_UNION_SHA256
+                    if row[0] in R0014_R0015_SUPERSEDED_UNION_POSTIMAGES:
+                        expected = R0014_R0015_SUPERSEDED_UNION_POSTIMAGES[row[0]]
                     union_path = self.root / Path(*PurePosixPath(row[0]).parts)
                     try:
                         payload = union_path.read_bytes()
@@ -8149,8 +8170,9 @@ class CompletionValidator:
                         hashlib.sha256(payload).hexdigest().upper() == expected,
                         f"{context}.request.union_postimage[{row[0]}]",
                         "live bytes must equal the reviewed R0012/R0013 union "
-                        "postimage, or the amended postimage for the re-anchored "
-                        "row",
+                        "postimage, the amended postimage for the re-anchored "
+                        "row, or the reviewed R0014/R0015 postimage for a "
+                        "superseded row",
                     )
             for path in sorted(request_paths | correction_paths):
                 if r09_r10_integrated:

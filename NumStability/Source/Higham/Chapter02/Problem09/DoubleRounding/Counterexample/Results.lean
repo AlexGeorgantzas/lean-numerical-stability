@@ -11,7 +11,7 @@
 import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.Analysis.FloatingPointArithmetic.DoubleRounding.FiniteNormalRange
 import NumStability.Analysis.FloatingPointArithmetic.DoubleRounding.ToyBinary
-import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample
+import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Inputs
 import NumStability.Source.Higham.Chapter02.Section03.DoubleRounding.Counterexample
 
 /-!

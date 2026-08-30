@@ -2,8 +2,8 @@ import NumStability.Algorithms.LinearSystems.QR.GivensQR
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 
 /-! Canonical Higham Chapter 19 QR source module. -/
 

@@ -1,0 +1,12 @@
+import NumStabilityTest.Reorganization.I01.Aggregate.NumStability_Algorithms_NormEstimation_PNorm_All
+import NumStabilityTest.Reorganization.I01.Aggregate.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample
+import NumStabilityTest.Reorganization.I01.Canonical.NumStability_Source_Higham_Chapter02_Problem09_DoubleRounding_Counterexample_Inputs
+import NumStabilityTest.Reorganization.I01.Canonical.NumStability_Source_Higham_Chapter17_Results_Series
+import NumStabilityTest.Reorganization.I01.OldOnly.NumStability_Analysis_DoubleRounding
+
+/-!
+# I01 reorganization tests
+
+Focused canonical, aggregate, and historical-import witnesses for the final
+integration wave.
+-/
