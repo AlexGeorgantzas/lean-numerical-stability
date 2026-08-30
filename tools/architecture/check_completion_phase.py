@@ -855,6 +855,48 @@ C0007_PLANNED_RECOVERY_CONTRACT_SHA256 = (
     "6E3F15DECA9E47347570E378C0637C979218DA155EFD52B9F1B095D3E37F712B"
 )
 C0007_PLANNED_RECOVERY_RUN_ID = 33016546729
+# Immutable failed first activation candidate A1: the exact seven-path direct
+# child of PR whose sole exact-head run failed at the schema-5 live
+# remote-namespace census before any build.  A1 is never relabelled, rerun, or
+# force-updated; the successor activation candidate A is its direct child.
+C0007_FAILED_ACTIVATION_SHA = "c66c57b46a5424e58ea67f09ccc13e2b91dca93d"
+C0007_FAILED_ACTIVATION_TREE_SHA = "d8a194f58bf1a419800e1a7aa8b982cc5f5fcc58"
+C0007_FAILED_ACTIVATION_RUN_ID = 33138416007
+C0007_FAILED_ACTIVATION_RUN_NUMBER = 8952
+C0007_FAILED_ACTIVATION_CHECK_SUITE_ID = 89801605862
+C0007_FAILED_ACTIVATION_JOB_ID = 98743572702
+C0007_FAILED_ACTIVATION_JOB_LOG_BYTE_COUNT = 21133
+C0007_FAILED_ACTIVATION_JOB_LOG_SHA256 = (
+    "CCBB73BB7131DF91DC36B24F2D78796B5FABE14DE1355E0396EE14393F45DBD3"
+)
+C0007_FAILED_ACTIVATION_FAILURE_REASON = (
+    "the schema-5 live census required a remote.origin.tagopt row that "
+    "actions checkout never writes"
+)
+C0007_FAILED_ACTIVATION_CONTRACT_BLOB_OID = (
+    "90f29c1ad9bf2435d00df045dbee93105638db7a"
+)
+C0007_FAILED_ACTIVATION_CONTRACT_SHA256 = (
+    "94FE8FB22BB300F686D3B5BC778223A13CBF83DED99703BC3422138B2D3C2D40"
+)
+C0007_FAILED_ACTIVATION_AUTHORIZATION_BLOB_OID = (
+    "f2564d2d9b84fb0e668a1fc62dd616ddddb09f0a"
+)
+C0007_FAILED_ACTIVATION_AUTHORIZATION_SHA256 = (
+    "1BFE364FF33DD89E75C183BF88028F690E599BF3FAA29D29EC402D5706B68906"
+)
+C0007_FAILED_ACTIVATION_MANIFEST_BLOB_OID = (
+    "a26a395a1a92aab00b3b424e8b3ceafbe8ebd9b4"
+)
+C0007_FAILED_ACTIVATION_CHECKER_BLOB_OID = (
+    "f64236938d53090a405fcbcf934aff3ec97360f1"
+)
+C0007_FAILED_ACTIVATION_CHECKER_SHA256 = (
+    "9DC10746CF278EB577BC1F0AB3A107D4CBF787272490A231400C6368A57B0F80"
+)
+C0007_FAILED_ACTIVATION_WORKFLOW_BLOB_OID = (
+    "88249bd10e4c55fd4f52e6fd1e4c2275e24ff6ae"
+)
 C0007_PLANNED_RECOVERY_RUN_NUMBER = 8951
 C0007_PLANNED_RECOVERY_JOB_ID = 98336144783
 C0007_PLANNED_RECOVERY_CHECK_SUITE_ID = 89447381703
@@ -869,7 +911,13 @@ C0007_POST_RECOVERY_ISSUE_TITLE = (
     "C0007 post-recovery activation review — " + C0007_PLANNED_RECOVERY_SHA
 )
 C0007_POST_RECOVERY_AUTHORIZATION_ID = (
+    "C0007-M13-I01-CODE03-post-recovery-terminal-v7"
+)
+C0007_SUPERSEDED_TERMINAL_V6_AUTHORIZATION_ID = (
     "C0007-M13-I01-CODE03-post-recovery-terminal-v6"
+)
+C0007_SUPERSEDED_TERMINAL_V6_AUTHORIZATION_SHA256 = (
+    "1BFE364FF33DD89E75C183BF88028F690E599BF3FAA29D29EC402D5706B68906"
 )
 # The exact superseded v4 grant, retained for supersedes validation.
 C0007_SUPERSEDED_TERMINAL_V4_AUTHORIZATION_ID = (
@@ -882,25 +930,25 @@ C0007_POST_RECOVERY_CONTROL_ID = (
     "C0007-M13-I01-CODE03-post-recovery-terminal-v5"
 )
 C0007_POST_RECOVERY_AUTHORIZATION_SHA256 = (
-    "1BFE364FF33DD89E75C183BF88028F690E599BF3FAA29D29EC402D5706B68906"
+    "E3878995622212A396B22C035E9306F4840747FD1FFBCCE2D43790DBCC640A33"
 )
 C0007_POST_RECOVERY_AUTHORIZED_ACTIONS_SHA256 = (
     "EDAA45BFE69E047A7307B6E86FEADF216C606802826023C1A012B6B63448FA07"
 )
 C0007_POST_RECOVERY_ACTIVATION_CONDITIONS_SHA256 = (
-    "4DA422CF9BAC9FE7F2C43E8A052AF129C244FF214990386B760265A07A93A93E"
+    "0F58EE17FBB4F0624779248FAE506097D7EEAA011CD274914CCD529D0BDB4330"
 )
 C0007_POST_RECOVERY_PRESERVED_EXCLUSIONS_SHA256 = (
     "FD43740F500EE47F85B002292394E171BB7A4912B8828F06C344E773942F88A8"
 )
 C0007_POST_RECOVERY_EXPIRY_SHA256 = (
-    "056976D37621C7355FF0A64D53112E511E52BF74EAE03AD346B4E99DB82E4188"
+    "AEDB1E2E428C5755D5DA427A740793979EED71B89A53B8BB844E42565C98503B"
 )
 C0007_POST_RECOVERY_RUN_POLICY_SHA256 = (
     "60252D1D4EDD616E1553888E8087C8D6B69135C440C479739FE9E471B662A45B"
 )
 C0007_POST_RECOVERY_SCOPE_SHA256 = (
-    "6A9EB1BB7C3785D319EE32791445AB6C9D1F1A306F9405ED716BF82B21BA482C"
+    "3B2CDF8D2592F9A06471B7F92EC04595D6D44517F1C2879FF8496CE17FEAC860"
 )
 C0007_POST_RECOVERY_MANIFEST_SHA256 = (
     "DEF42E27D780A91362FB39A9B6078D41F39B4145CFF5D82AA272D10F46C65C0D"
@@ -915,7 +963,7 @@ C0007_POST_RECOVERY_ALL_PATH_SET_SHA256 = (
     "F15AE108A9B1F9D80C0E5AEEC032B00E7A8D1473D55DE6F117A9F9F2719E55F5"
 )
 C0007_POST_RECOVERY_PREIMAGE_FREEZE_SHA256 = (
-    "4E4FAAF3B9E21573FBF3BB590B30B452D1C65552CB078177F47224E4A1F5013C"
+    "B5B75BEA44A29984ADE08EBFD4591C9370D4A172A4506F76D5D7D1E1085E2AA4"
 )
 C0007_POST_RECOVERY_PREIMAGE_FREEZE_BYTE_COUNT = 1040
 C0007_POST_RECOVERY_PACKET_ID = "CONT01"
@@ -942,39 +990,39 @@ C0007_POST_RECOVERY_NON_SELF_PATHS = tuple(
 )
 C0007_POST_RECOVERY_PREIMAGES: dict[str, tuple[str, int, str]] = {
     C0007_BOUNDED_AUTHORIZED_PATHS_PATH: (
-        "2143ee01b0074c60be192736a47f9c0d11a58393",
-        925,
-        C0007_CI_RECOVERY_MANIFEST_SHA256,
+        "a26a395a1a92aab00b3b424e8b3ceafbe8ebd9b4",
+        2271,
+        C0007_POST_RECOVERY_MANIFEST_SHA256,
     ),
     C0007_BOUNDED_AUTHORIZATION_PATH: (
-        "ea3971ee450ab256168b4179ee2fbc2d2cfb4cfe",
-        7758,
-        C0007_CI_RECOVERY_AUTHORIZATION_SHA256,
+        C0007_FAILED_ACTIVATION_AUTHORIZATION_BLOB_OID,
+        11089,
+        C0007_FAILED_ACTIVATION_AUTHORIZATION_SHA256,
     ),
     C0007_BOUNDED_PLANNED_CONTROL_PATH: (
-        C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID,
-        19635,
-        C0007_PLANNED_RECOVERY_CONTRACT_SHA256,
+        C0007_FAILED_ACTIVATION_CONTRACT_BLOB_OID,
+        62318,
+        C0007_FAILED_ACTIVATION_CONTRACT_SHA256,
     ),
     C0007_BOUNDED_SUPPORTED_API_REVIEW_PATH: (
-        "3f77f4613da5a92b55b52abd7fae26f00fcf7b2b",
+        "949253dcf58803991de328db3847be9ef359ba33",
         10763,
-        "4E00B4E39325AB14E880C198CB78A58DD9199778C6AD8A24643CC6B6ECB72A73",
+        "F50070F0231ED0BD2A0795A6E1385C8656EF7E5BF0CFA0D5EDE1086E97C81CF8",
     ),
     C0007_BOUNDED_SUPPORTED_API_PATH: (
-        "df2a6f7a0438a620c059183c9a289ad372bbcbaf",
+        "b6ba2a8abdcaf9836ddeb0dabecf1c455c5e54ee",
         33196596,
-        "420F5028A9E7BD99EC1243B94933E98207B79B732071B35A2F9E6757663A143F",
+        "A2B21FE851BBC4D8C590C1B94540BAEEA27B0F7C460F36CFF22CE01C57E10BB0",
     ),
     "tools/architecture/check_completion_phase.py": (
-        "a6a17693125b4bdc4bf14d6d71ad0984cbe45b35",
-        1517805,
-        "7C149108C32A728D50A23441FD49B446CEDE1D87EA5CA7F8051476F09F734BBC",
+        C0007_FAILED_ACTIVATION_CHECKER_BLOB_OID,
+        1893552,
+        C0007_FAILED_ACTIVATION_CHECKER_SHA256,
     ),
     "tools/architecture/check_supported_api.py": (
-        "83549982294329df8c57bfe21bbeb28cc06d8fa4",
-        298030,
-        "F098677E56CBF0EBC7077B378DD707387B3224A4A3090022A149280A77E047D3",
+        "37eafcf7888391d02920b4c9046fa891c9b23e9a",
+        433121,
+        "10BEABF6B5CEA7F62665C4E870CF827C91DD2FF9CFEE061DD7EE0BD70F517D8F",
     ),
 }
 # Compatibility aliases used by the read-only staged-candidate observer.
@@ -982,6 +1030,15 @@ C0007_CI_RECOVERY_COMMIT_SHA = C0007_PLANNED_RECOVERY_SHA
 C0007_CI_RECOVERY_TREE_SHA = C0007_PLANNED_RECOVERY_TREE_SHA
 C0007_CI_RECOVERY_CONTRACT_BLOB_OID = C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID
 C0007_POST_RECOVERY_STAGED_BASIS_PATHS = C0007_POST_RECOVERY_NON_SELF_PATHS
+# A2 genuinely changes only five of the six non-contract inputs: the
+# authorized-path manifest is byte-identical at its A1 blob, and git cannot
+# stage a no-op modification.  The manifest stays inside the six-artifact
+# reviewed basis as a verified unchanged row.
+C0007_A2_CHANGED_NON_SELF_PATHS = tuple(
+    path
+    for path in C0007_POST_RECOVERY_NON_SELF_PATHS
+    if path != C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+)
 
 # Exact P preimages for the eight authorized recovery paths.  The recovery
 # contract inventories the seven non-self postimages; its own blob is bound by
@@ -3368,6 +3425,62 @@ def c0007_failed_planned_control_record() -> dict[str, Any]:
     }
 
 
+def c0007_failed_activation_record() -> dict[str, Any]:
+    """Immutable evidence for failed first activation candidate A1."""
+
+    return {
+        "authorization_blob_oid": C0007_FAILED_ACTIVATION_AUTHORIZATION_BLOB_OID,
+        "authorization_path": C0007_BOUNDED_AUTHORIZATION_PATH,
+        "authorization_sha256": C0007_FAILED_ACTIVATION_AUTHORIZATION_SHA256,
+        "ci": {
+            "branch": C0007_BOUNDED_BRANCH,
+            "check_suite_conclusion": "failure",
+            "check_suite_id": C0007_FAILED_ACTIVATION_CHECK_SUITE_ID,
+            "completed_at": "2026-08-28T03:17:53Z",
+            "conclusion": "failure",
+            "event": "workflow_dispatch",
+            "failed_step": C0007_BOUNDED_ARCHITECTURE_STEP,
+            "head_sha": C0007_FAILED_ACTIVATION_SHA,
+            "job_completed_at": "2026-08-28T03:17:52Z",
+            "job_conclusion": "failure",
+            "job_id": C0007_FAILED_ACTIVATION_JOB_ID,
+            "job_log_byte_count": C0007_FAILED_ACTIVATION_JOB_LOG_BYTE_COUNT,
+            "job_log_sha256": C0007_FAILED_ACTIVATION_JOB_LOG_SHA256,
+            "job_name": C0007_BOUNDED_JOB_NAME,
+            "job_started_at": "2026-08-28T03:16:52Z",
+            "run_attempt": 1,
+            "run_id": C0007_FAILED_ACTIVATION_RUN_ID,
+            "run_number": C0007_FAILED_ACTIVATION_RUN_NUMBER,
+            "runner_name": "GitHub Actions 1000008998",
+            "skipped_steps": [
+                C0007_BOUNDED_BUILD_STEP,
+                C0007_BOUNDED_SUPPORTED_API_STEP,
+                C0007_BOUNDED_TEST_STEP,
+            ],
+            "started_at": "2026-08-28T03:16:47Z",
+            "status": "failure",
+            "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
+        },
+        "commit_sha": C0007_FAILED_ACTIVATION_SHA,
+        "completion_checker_blob_oid": C0007_FAILED_ACTIVATION_CHECKER_BLOB_OID,
+        "completion_checker_path": "tools/architecture/check_completion_phase.py",
+        "completion_checker_sha256": C0007_FAILED_ACTIVATION_CHECKER_SHA256,
+        "contract_blob_oid": C0007_FAILED_ACTIVATION_CONTRACT_BLOB_OID,
+        "contract_path": C0007_BOUNDED_PLANNED_CONTROL_PATH,
+        "contract_sha256": C0007_FAILED_ACTIVATION_CONTRACT_SHA256,
+        "failure_reason": C0007_FAILED_ACTIVATION_FAILURE_REASON,
+        "manifest_blob_oid": C0007_FAILED_ACTIVATION_MANIFEST_BLOB_OID,
+        "manifest_path": C0007_BOUNDED_AUTHORIZED_PATHS_PATH,
+        "manifest_sha256": C0007_POST_RECOVERY_MANIFEST_SHA256,
+        "parent_sha": C0007_PLANNED_RECOVERY_SHA,
+        "subject": "docs(reorganization): record M13 recovery review",
+        "tree_sha": C0007_FAILED_ACTIVATION_TREE_SHA,
+        "workflow_blob_oid": C0007_FAILED_ACTIVATION_WORKFLOW_BLOB_OID,
+        "workflow_path": C0007_BOUNDED_WORKFLOW_PATH,
+        "workflow_sha256": C0007_CI_RECOVERY_WORKFLOW_SHA256,
+    }
+
+
 def build_c0007_ci_recovery_contract(
     artifacts: Sequence[dict[str, Any]],
     authorization: dict[str, Any],
@@ -3748,7 +3861,7 @@ def validate_c0007_post_recovery_authorization_payload(
         "authority_id": "primary-human",
         "operator_id": "claude-local",
         "phase_id": PHASE_ID,
-        "recorded_at": "2026-08-27T19:47:02Z",
+        "recorded_at": "2026-08-28T03:36:14Z",
     }
     problems.require(
         all(exact_json_equal(authorization.get(key), value) for key, value in exact_fields.items()),
@@ -3782,6 +3895,7 @@ def validate_c0007_post_recovery_authorization_payload(
         == {
             "active_phase_pointer_sha256", "control_head_sha", "control_tree_sha",
             "current_checkpoint_id", "current_checkpoint_sha",
+            "failed_activation",
             "failed_planned_control", "phase_sha256", "planned_recovery",
             "remote_main_sha",
         }
@@ -3804,6 +3918,22 @@ def validate_c0007_post_recovery_authorization_payload(
                 "run_conclusion": "failure",
                 "run_id": C0007_FAILED_PLANNED_CONTROL_RUN_ID,
                 "tree_sha": C0007_FAILED_PLANNED_CONTROL_TREE_SHA,
+            },
+        )
+        and exact_json_equal(
+            base.get("failed_activation"),
+            {
+                "commit_sha": C0007_FAILED_ACTIVATION_SHA,
+                "contract_blob_oid": C0007_FAILED_ACTIVATION_CONTRACT_BLOB_OID,
+                "contract_sha256": C0007_FAILED_ACTIVATION_CONTRACT_SHA256,
+                "job_id": C0007_FAILED_ACTIVATION_JOB_ID,
+                "job_log_byte_count": C0007_FAILED_ACTIVATION_JOB_LOG_BYTE_COUNT,
+                "job_log_sha256": C0007_FAILED_ACTIVATION_JOB_LOG_SHA256,
+                "parent_sha": C0007_PLANNED_RECOVERY_SHA,
+                "run_attempt": 1,
+                "run_conclusion": "failure",
+                "run_id": C0007_FAILED_ACTIVATION_RUN_ID,
+                "tree_sha": C0007_FAILED_ACTIVATION_TREE_SHA,
             },
         )
         and exact_json_equal(
@@ -3839,7 +3969,7 @@ def validate_c0007_post_recovery_authorization_payload(
         and scope.get("remote_main_mutation_authorized") is False
         and scope.get("request_resolution_authorized") is False
         and scope.get("bounded_ref") == C0007_BOUNDED_REMOTE_BRANCH_REF
-        and scope.get("lifecycle_graph") == "B -> P_failed -> PR -> A -> T -> I -> V"
+        and scope.get("lifecycle_graph") == "B -> P_failed -> PR -> A1_failed -> A -> T -> I -> V"
         and exact_json_equal(
             manifest_binding,
             {
@@ -3868,9 +3998,9 @@ def validate_c0007_post_recovery_authorization_payload(
         exact_json_equal(
             authorization.get("supersedes"),
             {
-                "authorization_id": C0007_SUPERSEDED_TERMINAL_V4_AUTHORIZATION_ID,
-                "effect": "superseded by the 2026-08-27 primary-human reviewer re-pin instruction before any A commit; no continuation action remains authorized by it",
-                "sha256": C0007_SUPERSEDED_TERMINAL_V4_AUTHORIZATION_SHA256,
+                "authorization_id": C0007_SUPERSEDED_TERMINAL_V6_AUTHORIZATION_ID,
+                "effect": "superseded after failed activation candidate A1: the schema-5 live census rejected the actions-checkout remote namespace; the graph extends through immutable failed A1 and no v6 action remains authorized",
+                "sha256": C0007_SUPERSEDED_TERMINAL_V6_AUTHORIZATION_SHA256,
             },
         ),
         f"{context}.supersedes",
@@ -4108,11 +4238,20 @@ def canonicalize_c0007_post_recovery_artifacts(
             and artifact.get("base_mode") == "100644"
             and type(artifact.get("byte_count")) is int
             and artifact.get("byte_count", -1) >= 0
-            and artifact.get("operation") == "modify"
+            and artifact.get("operation")
+            == (
+                "retain"
+                if path == C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+                else "modify"
+            )
             and artifact.get("packet_id") == C0007_POST_RECOVERY_PACKET_ID
             and isinstance(artifact.get("post_blob_oid"), str)
             and SHA1_RE.fullmatch(str(artifact.get("post_blob_oid"))) is not None
-            and artifact.get("post_blob_oid") != artifact.get("base_blob_oid")
+            and (
+                artifact.get("post_blob_oid") == artifact.get("base_blob_oid")
+                if path == C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+                else artifact.get("post_blob_oid") != artifact.get("base_blob_oid")
+            )
             and artifact.get("post_mode") == "100644"
             and isinstance(artifact.get("sha256"), str)
             and SHA256_RE.fullmatch(str(artifact.get("sha256"))) is not None
@@ -4220,8 +4359,8 @@ def c0007_post_recovery_issue_request(
     if not isinstance(ci, Mapping) or not isinstance(artifacts, list):
         raise ValueError("PR readiness evidence lacks authenticated CI or successor artifacts")
     expected_ref_snapshot = {
-        "local_head": C0007_PLANNED_RECOVERY_SHA,
-        "origin_bounded_ref": C0007_PLANNED_RECOVERY_SHA,
+        "local_head": C0007_FAILED_ACTIVATION_SHA,
+        "origin_bounded_ref": C0007_FAILED_ACTIVATION_SHA,
         "origin_main": C0007_BOUNDED_CONTROL_HEAD_SHA,
         "remote_configuration": c0007_expected_remote_configuration_census(),
         "symbolic_branch": C0007_BOUNDED_BRANCH,
@@ -4437,7 +4576,7 @@ def c0007_post_recovery_approved_review(
     created_at = parse_rfc3339(created)
     issue_created_at = parse_rfc3339(issue.get("created_at"))
     readiness_observed_at = parse_rfc3339(readiness_evidence.get("observed_at"))
-    authorization_recorded_at = parse_rfc3339("2026-08-27T19:47:02Z")
+    authorization_recorded_at = parse_rfc3339("2026-08-28T03:36:14Z")
     pr_ci_completed = parse_rfc3339("2026-08-26T22:20:07Z")
     problems.require(
         repository.get("full_name") == C0007_BOUNDED_REPOSITORY
@@ -4654,7 +4793,7 @@ def validate_c0007_post_recovery_activation_review(
     issue_created = parse_rfc3339(source.get("issue_created_at"))
     issue_updated = parse_rfc3339(source.get("issue_updated_at"))
     observed = parse_rfc3339(evidence.get("observed_at")) if isinstance(evidence, Mapping) else None
-    authorized = parse_rfc3339("2026-08-27T19:47:02Z")
+    authorized = parse_rfc3339("2026-08-28T03:36:14Z")
     pr_ci_completed = parse_rfc3339("2026-08-26T22:20:07Z")
     issue_api_url = f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/{issue_number}"
     issue_html_url = f"https://github.com/{C0007_BOUNDED_REPOSITORY}/issues/{issue_number}"
@@ -5111,6 +5250,7 @@ def build_c0007_post_recovery_contract(
         "authorized_actions": constraints["authorized_actions"],
         "base": {
             "control_head_sha": C0007_BOUNDED_CONTROL_HEAD_SHA,
+            "failed_activation_sha": C0007_FAILED_ACTIVATION_SHA,
             "failed_planned_control_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
             "planned_recovery_sha": C0007_PLANNED_RECOVERY_SHA,
             "remote_main_sha_at_authorization": C0007_BOUNDED_CONTROL_HEAD_SHA,
@@ -5133,6 +5273,7 @@ def build_c0007_post_recovery_contract(
         "ci": {
             "activation_candidate": c0007_pending_ci_record("pending"),
             "active_attestation": c0007_pending_ci_record("not_due"),
+            "failed_activation": c0007_failed_activation_record()["ci"],
             "failed_planned_control": c0007_failed_planned_control_record()["ci"],
             "implementation": c0007_pending_ci_record("not_due"),
             "planned_recovery": c0007_planned_recovery_ci_record(),
@@ -5140,15 +5281,17 @@ def build_c0007_post_recovery_contract(
         "constraints_sha256": canonical_json_sha256(constraints),
         "control_id": C0007_POST_RECOVERY_CONTROL_ID,
         "expiry": constraints["expiry"],
+        "failed_activation": c0007_failed_activation_record(),
         "failed_planned_control": c0007_failed_planned_control_record(),
         "graph": {
             "actual_prefix": [
                 C0007_BOUNDED_CONTROL_HEAD_SHA,
                 C0007_FAILED_PLANNED_CONTROL_SHA,
                 C0007_PLANNED_RECOVERY_SHA,
+                C0007_FAILED_ACTIVATION_SHA,
             ],
-            "lifecycle": "B -> P_failed -> PR -> A -> T -> I -> V",
-            "required_changed_path_counts": [42, 8, 7, 1, 14, 1],
+            "lifecycle": "B -> P_failed -> PR -> A1_failed -> A -> T -> I -> V",
+            "required_changed_path_counts": [42, 8, 7, 6, 1, 14, 1],
             "stale_thirteen_path_recovery_forbidden": True,
         },
         "historical_packet_artifacts": historical_packet_artifacts,
@@ -5159,6 +5302,9 @@ def build_c0007_post_recovery_contract(
             "active_attestation_commit_sha": None,
             "active_attestation_contract_blob_oid": None,
             "active_attestation_tree_sha": None,
+            "failed_activation_commit_sha": C0007_FAILED_ACTIVATION_SHA,
+            "failed_activation_contract_blob_oid": C0007_FAILED_ACTIVATION_CONTRACT_BLOB_OID,
+            "failed_activation_tree_sha": C0007_FAILED_ACTIVATION_TREE_SHA,
             "failed_planned_control_commit_sha": C0007_FAILED_PLANNED_CONTROL_SHA,
             "failed_planned_control_contract_blob_oid": C0007_FAILED_PLANNED_CONTROL_CONTRACT_BLOB_OID,
             "failed_planned_control_tree_sha": C0007_FAILED_PLANNED_CONTROL_TREE_SHA,
@@ -5521,7 +5667,8 @@ def validate_c0007_post_recovery_contract_payload(
     expected_top_keys = {
         "activation_conditions", "application_mode", "artifacts", "authority",
         "authorized_actions", "base", "branch", "ci", "constraints_sha256",
-        "control_id", "expiry", "failed_planned_control", "graph",
+        "control_id", "expiry", "failed_activation", "failed_planned_control",
+        "graph",
         "historical_packet_artifacts", "lifecycle", "milestone_id", "packets",
         "path_census", "permissions", "phase_id", "planned_recovery",
         "preserved_exclusions", "record_kind", "reviews", "run_policy",
@@ -5586,6 +5733,12 @@ def validate_c0007_post_recovery_contract_payload(
         == C0007_FAILED_PLANNED_CONTROL_TREE_SHA
         and lifecycle.get("failed_planned_control_contract_blob_oid")
         == C0007_FAILED_PLANNED_CONTROL_CONTRACT_BLOB_OID
+        and lifecycle.get("failed_activation_commit_sha")
+        == C0007_FAILED_ACTIVATION_SHA
+        and lifecycle.get("failed_activation_tree_sha")
+        == C0007_FAILED_ACTIVATION_TREE_SHA
+        and lifecycle.get("failed_activation_contract_blob_oid")
+        == C0007_FAILED_ACTIVATION_CONTRACT_BLOB_OID
         and lifecycle.get("implementation_allowed") is False,
         f"{context}.lifecycle",
         "schema-5 lifecycle keys and immutable PR identity must remain exact",
@@ -5621,11 +5774,12 @@ def validate_c0007_post_recovery_contract_payload(
     problems.require(
         isinstance(ci, Mapping)
         and set(ci)
-        == {"activation_candidate", "active_attestation", "failed_planned_control", "implementation", "planned_recovery"}
+        == {"activation_candidate", "active_attestation", "failed_activation", "failed_planned_control", "implementation", "planned_recovery"}
+        and exact_json_equal(ci.get("failed_activation"), expected["ci"]["failed_activation"])
         and exact_json_equal(ci.get("failed_planned_control"), expected["ci"]["failed_planned_control"])
         and exact_json_equal(ci.get("planned_recovery"), expected["ci"]["planned_recovery"]),
         f"{context}.ci",
-        "schema-5 CI must preserve exact failed-P and successful-PR evidence",
+        "schema-5 CI must preserve exact failed-P, successful-PR, and failed-A1 evidence",
     )
     ci_statuses = {
         "activation_pending": ("pending", "not_due", "not_due"),
@@ -13733,16 +13887,29 @@ class CompletionValidator:
                     return None
                 namespace_rows.append(f"{key}={value}")
         census["effective_remote_namespace_rows"] = sorted(namespace_rows)
-        if (
-            census["effective_remote_namespace_rows"]
-            != c0007_expected_remote_configuration_census()[
-                "effective_remote_namespace_rows"
-            ]
+        # Exactly two effective shapes are canonical.  A local lifecycle clone
+        # carries the tagopt=--no-tags row; a GitHub-Actions checkout fetches
+        # with --no-tags on the command line and never writes that row, so the
+        # two-row shape is equally exact there.  Anything else -- an extra row,
+        # a missing url/fetch row, a helper/vcs/uploadpack/receivepack/proxy
+        # override, or a foreign remote -- still fails closed.
+        expected_namespace_rows = c0007_expected_remote_configuration_census()[
+            "effective_remote_namespace_rows"
+        ]
+        ci_checkout_namespace_rows = [
+            row
+            for row in expected_namespace_rows
+            if row != f"remote.{C0007_BOUNDED_REMOTE}.tagopt=--no-tags"
+        ]
+        if census["effective_remote_namespace_rows"] not in (
+            expected_namespace_rows,
+            ci_checkout_namespace_rows,
         ):
             problems.add(
                 f"{context}.effective_remote_namespace_rows",
                 "full effective remote.* namespace must contain only the exact "
-                "origin URL/fetch/tagopt rows; helper/vcs/uploadpack/receivepack/"
+                "origin URL/fetch rows plus at most the exact tagopt=--no-tags "
+                "row; helper/vcs/uploadpack/receivepack/"
                 "proxy or foreign remote overrides are forbidden",
             )
             return None
@@ -14017,13 +14184,14 @@ class CompletionValidator:
                 return []
 
         expected_paths = list(C0007_POST_RECOVERY_STAGED_BASIS_PATHS)
+        expected_changed_paths = sorted(C0007_A2_CHANGED_NON_SELF_PATHS)
         staged_paths = nul_paths(staged.stdout, f"{context}.staged")
         unstaged_paths = nul_paths(unstaged.stdout, f"{context}.unstaged")
         untracked_paths = nul_paths(untracked.stdout, f"{context}.untracked")
         problems.require(
-            staged_paths == expected_paths,
+            staged_paths == expected_changed_paths,
             f"{context}.staged",
-            "PR readiness requires exactly the six sorted non-contract CONT01 paths staged",
+            "PR readiness requires exactly the five changed non-contract CONT01 paths staged; the manifest stays byte-identical at its A1 blob",
         )
         problems.require(
             unstaged_paths
@@ -14049,7 +14217,7 @@ class CompletionValidator:
                     else f"M  {path}"
                 )
                 for path in sorted(
-                    expected_paths
+                    expected_changed_paths
                     + (
                         [C0007_BOUNDED_PLANNED_CONTROL_PATH]
                         if allow_contract_worktree_overlay else []
@@ -14057,7 +14225,7 @@ class CompletionValidator:
                 )
             ],
             f"{context}.status",
-            "all six successor inputs must be ordinary staged modifications with clean copies",
+            "all five changed successor inputs must be ordinary staged modifications with clean copies and the manifest must carry no status at all",
         )
         remote_tips: dict[str, str] = {}
         for row in remote.stdout.splitlines():
@@ -14077,13 +14245,13 @@ class CompletionValidator:
         }
         problems.require(
             snapshot == {
-                "local_head": C0007_PLANNED_RECOVERY_SHA,
-                "origin_bounded_ref": C0007_PLANNED_RECOVERY_SHA,
+                "local_head": C0007_FAILED_ACTIVATION_SHA,
+                "origin_bounded_ref": C0007_FAILED_ACTIVATION_SHA,
                 "origin_main": C0007_BOUNDED_CONTROL_HEAD_SHA,
                 "remote_configuration": c0007_expected_remote_configuration_census(),
                 "symbolic_branch": C0007_BOUNDED_BRANCH,
             }
-            and tree.stdout.strip() == C0007_PLANNED_RECOVERY_TREE_SHA,
+            and tree.stdout.strip() == C0007_FAILED_ACTIVATION_TREE_SHA,
             f"{context}.refs",
             "PR readiness must run at immutable pushed PR with unchanged remote main",
         )
@@ -14091,7 +14259,7 @@ class CompletionValidator:
             lifecycle_position="PR-committed",
             state=None,
             head=str(snapshot["local_head"] or ""),
-            planned_commit=C0007_PLANNED_RECOVERY_SHA,
+            planned_commit=C0007_FAILED_ACTIVATION_SHA,
             activation_commit=None,
             active_commit=None,
             implementation_commit=None,
@@ -14113,7 +14281,7 @@ class CompletionValidator:
             check=False, env=readonly_env,
         )
         base_rows_result = self.git_bytes(
-            "ls-tree", "-r", "-z", C0007_PLANNED_RECOVERY_SHA, "--",
+            "ls-tree", "-r", "-z", C0007_FAILED_ACTIVATION_SHA, "--",
             *C0007_POST_RECOVERY_PATHS, C0007_BOUNDED_WORKFLOW_PATH,
             check=False, env=readonly_env,
         )
@@ -14214,9 +14382,13 @@ class CompletionValidator:
                 and base_oid == expected_preimage[0]
                 and isinstance(post_oid, str)
                 and SHA1_RE.fullmatch(post_oid) is not None
-                and post_oid != base_oid,
+                and (
+                    post_oid == base_oid
+                    if path == C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+                    else post_oid != base_oid
+                ),
                 f"{context}.blobs[{path}]",
-                "each CONT01 input must be a distinct 100644 modification of its exact PR blob",
+                "each changed CONT01 input must be a distinct 100644 modification of its exact A1 blob, and the manifest must remain byte-identical to its A1 blob",
             )
             payload_result = self.git_bytes(
                 "cat-file", "blob", str(post_oid or ""), check=False, env=readonly_env
@@ -14230,7 +14402,11 @@ class CompletionValidator:
                     "base_blob_oid": base_oid,
                     "base_mode": base_mode,
                     "byte_count": len(payload_result.stdout),
-                    "operation": "modify",
+                    "operation": (
+                        "retain"
+                        if path == C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+                        else "modify"
+                    ),
                     "packet_id": C0007_POST_RECOVERY_PACKET_ID,
                     "path": path,
                     "post_blob_oid": post_oid,
@@ -14287,11 +14463,11 @@ class CompletionValidator:
         immutable_rows = parse_index(immutable.stdout, f"{context}.immutable")
         problems.require(
             immutable_rows.get(C0007_BOUNDED_PLANNED_CONTROL_PATH)
-            == ("100644", C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID)
+            == ("100644", C0007_FAILED_ACTIVATION_CONTRACT_BLOB_OID)
             and immutable_rows.get(C0007_BOUNDED_WORKFLOW_PATH)
             == ("100644", C0007_CI_RECOVERY_WORKFLOW_BLOB_OID),
             f"{context}.immutable",
-            "PR contract and recovery workflow must remain at their immutable PR blobs",
+            "A1 contract and recovery workflow must remain at their immutable A1 blobs",
         )
         self.c0007_pr_successor_artifacts = artifacts
         self.c0007_pr_recovery_candidate_valid = not problems.messages
@@ -15001,6 +15177,11 @@ class CompletionValidator:
                 "public T/V evidence requires a clean checkout; internal T reauthentication permits only the exact staged 14-path I overlay",
             )
         candidate_sha = str(before.get("local_head") or "")
+        if pr_readiness:
+            # The readiness evidence attests the immutable recovery base PR --
+            # its subject, tree, and sole successful run -- while the live refs
+            # sit at immutable failed A1, whose evidence lives in the v7 base.
+            candidate_sha = C0007_PLANNED_RECOVERY_SHA
         identity = self.git(
             "show",
             "-s",
@@ -15732,9 +15913,9 @@ class CompletionValidator:
         self.problems.require(
             len(old_payload) == C0007_POST_RECOVERY_PREIMAGES[C0007_BOUNDED_PLANNED_CONTROL_PATH][1]
             and hashlib.sha256(old_payload).hexdigest().upper()
-            == C0007_PLANNED_RECOVERY_CONTRACT_SHA256,
+            == C0007_FAILED_ACTIVATION_CONTRACT_SHA256,
             context,
-            "contract destination must remain the exact immutable PR blob before final render",
+            "contract destination must remain the exact immutable A1 blob before final render",
         )
         if self.problems.messages:
             return self.problems
@@ -18023,7 +18204,7 @@ class CompletionValidator:
             immutable_preimages.items()
         ):
             oid_result = self.git(
-                "rev-parse", f"{C0007_PLANNED_RECOVERY_SHA}:{path}",
+                "rev-parse", f"{C0007_FAILED_ACTIVATION_SHA}:{path}",
                 check=False, env=readonly_env,
             )
             payload_result = self.git_bytes(
@@ -18233,6 +18414,10 @@ class CompletionValidator:
             "the local ledger must remain wholly untracked and outside every index/commit",
         )
         control_paths = set(C0007_POST_RECOVERY_PATHS)
+        a2_changed_paths = (
+            set(C0007_A2_CHANGED_NON_SELF_PATHS)
+            | {C0007_BOUNDED_PLANNED_CONTROL_PATH}
+        )
         contract_only = {C0007_BOUNDED_PLANNED_CONTROL_PATH}
         overlay = self.git_live_change_paths(head, context, env=readonly_env) if head else set()
         overlay.discard("REMOTE_MAIN_REORGANIZATION_CLOSEOUT_PLAN.md")
@@ -18240,17 +18425,17 @@ class CompletionValidator:
         active_commit: str | None = None
         implementation_overlay = False
         if isinstance(lifecycle, Mapping) and state == "activation_pending":
-            if head == C0007_PLANNED_RECOVERY_SHA:
+            if head == C0007_FAILED_ACTIVATION_SHA:
                 lifecycle_position = "A-precommit"
                 local.require(
-                    overlay == control_paths and symbolic_branch == C0007_BOUNDED_BRANCH,
+                    overlay == a2_changed_paths and symbolic_branch == C0007_BOUNDED_BRANCH,
                     f"{context}.A.precommit",
-                    "A precommit requires exactly seven control paths on the symbolic bounded branch",
+                    "A precommit requires exactly the six changed control paths on the symbolic bounded branch",
                 )
             else:
                 lifecycle_position = "A-committed"
                 validate_commit(
-                    head, C0007_PLANNED_RECOVERY_SHA, control_paths,
+                    head, C0007_FAILED_ACTIVATION_SHA, a2_changed_paths,
                     C0007_POST_RECOVERY_COMMIT_SUBJECTS["activation_pending"],
                     f"{context}.A",
                 )
@@ -18258,7 +18443,7 @@ class CompletionValidator:
         elif isinstance(lifecycle, Mapping) and state in {"active", "verified"}:
             activation_commit = str(lifecycle.get("activation_candidate_commit_sha") or "")
             activation_identity = validate_commit(
-                activation_commit, C0007_PLANNED_RECOVERY_SHA, control_paths,
+                activation_commit, C0007_FAILED_ACTIVATION_SHA, a2_changed_paths,
                 C0007_POST_RECOVERY_COMMIT_SUBJECTS["activation_pending"],
                 f"{context}.A",
             )
@@ -18613,7 +18798,7 @@ class CompletionValidator:
             lifecycle_position=lifecycle_position,
             state=str(state) if state is not None else None,
             head=head,
-            planned_commit=C0007_PLANNED_RECOVERY_SHA,
+            planned_commit=C0007_FAILED_ACTIVATION_SHA,
             activation_commit=(
                 str(lifecycle.get("activation_candidate_commit_sha") or "")
                 if isinstance(lifecycle, Mapping) else None
@@ -37825,10 +38010,18 @@ def run_self_test() -> int:
             "base_blob_oid": C0007_POST_RECOVERY_PREIMAGES[path][0],
             "base_mode": "100644",
             "byte_count": 1000 + index,
-            "operation": "modify",
+            "operation": (
+                "retain"
+                if path == C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+                else "modify"
+            ),
             "packet_id": C0007_POST_RECOVERY_PACKET_ID,
             "path": path,
-            "post_blob_oid": f"{index + 8:x}" * 40,
+            "post_blob_oid": (
+                C0007_POST_RECOVERY_PREIMAGES[path][0]
+                if path == C0007_BOUNDED_AUTHORIZED_PATHS_PATH
+                else f"{index + 8:x}" * 40
+            ),
             "post_mode": "100644",
             "sha256": f"{index + 8:X}" * 64,
         }
@@ -37843,8 +38036,8 @@ def run_self_test() -> int:
         workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
     )
     expected_pr_snapshot = {
-        "local_head": C0007_PLANNED_RECOVERY_SHA,
-        "origin_bounded_ref": C0007_PLANNED_RECOVERY_SHA,
+        "local_head": C0007_FAILED_ACTIVATION_SHA,
+        "origin_bounded_ref": C0007_FAILED_ACTIVATION_SHA,
         "origin_main": C0007_BOUNDED_CONTROL_HEAD_SHA,
         "remote_configuration": c0007_expected_remote_configuration_census(),
         "symbolic_branch": C0007_BOUNDED_BRANCH,
@@ -37854,7 +38047,7 @@ def run_self_test() -> int:
         "candidate_tree": C0007_PLANNED_RECOVERY_TREE_SHA,
         "ci": c0007_planned_recovery_live_ci_record(),
         "evidence_kind": "c0007_pr_recovery_review_ready_v1",
-        "observed_at": "2026-08-27T20:00:00Z",
+        "observed_at": "2026-08-28T04:00:00Z",
         "refs": {"after": expected_pr_snapshot, "before": expected_pr_snapshot},
         "repository": C0007_BOUNDED_REPOSITORY,
         "review_request": post_review_request,
@@ -37884,14 +38077,14 @@ def run_self_test() -> int:
     post_issue_fixture = {
         "body": post_issue_request["body"],
         "comments_url": f"{post_issue_url}/comments",
-        "created_at": "2026-08-27T20:01:00Z",
+        "created_at": "2026-08-28T04:01:00Z",
         "html_url": post_issue_html,
         "id": post_issue_id,
         "node_id": post_issue_node,
         "number": post_issue_number,
         "repository_url": C0007_BOUNDED_REPOSITORY_API_URL,
         "title": post_issue_request["title"],
-        "updated_at": "2026-08-27T20:02:00Z",
+        "updated_at": "2026-08-28T04:02:00Z",
         "url": post_issue_url,
         "user": {
             "id": C0007_POST_RECOVERY_ISSUE_CREATOR_DATABASE_ID,
@@ -37903,13 +38096,13 @@ def run_self_test() -> int:
     post_comment_fixture = {
         "author_association": C0007_ACTIVATION_REVIEWER_ASSOCIATION,
         "body": post_review_request["body"],
-        "created_at": "2026-08-27T20:02:00Z",
+        "created_at": "2026-08-28T04:02:00Z",
         "html_url": f"{post_issue_html}#issuecomment-{post_comment_id}",
         "id": post_comment_id,
         "issue_url": post_issue_url,
         "node_id": post_comment_node,
         "performed_via_github_app": None,
-        "updated_at": "2026-08-27T20:02:00Z",
+        "updated_at": "2026-08-28T04:02:00Z",
         "url": f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/comments/{post_comment_id}",
         "user": {
             "id": C0007_ACTIVATION_REVIEWER_DATABASE_ID,
@@ -38132,8 +38325,9 @@ def run_self_test() -> int:
             problems.add(f"self-test CONT01 {label}", "invalid schema5 contract was accepted")
     substitution_evidence = json.loads(canonical_json(post_readiness_fixture))
     substitution_artifacts = json.loads(canonical_json(post_artifact_fixture))
-    substitution_artifacts[0]["sha256"] = "F" * 64
-    substitution_artifacts[0]["post_blob_oid"] = "f" * 40
+    # index 0 is the retained manifest row; substitute a changed row instead
+    substitution_artifacts[1]["sha256"] = "F" * 64
+    substitution_artifacts[1]["post_blob_oid"] = "f" * 40
     substitution_evidence["review_request"] = c0007_post_recovery_review_request(
         substitution_artifacts,
         workflow_sha256=C0007_CI_RECOVERY_WORKFLOW_SHA256,
@@ -38235,7 +38429,7 @@ def run_self_test() -> int:
         f"valid zero-edit observation rejected: {edit_positive.messages}",
     )
     for label, mutate in (
-        ("edited issue", lambda value: value["data"]["repository"]["issue"].__setitem__("lastEditedAt", "2026-08-27T20:03:00Z")),
+        ("edited issue", lambda value: value["data"]["repository"]["issue"].__setitem__("lastEditedAt", "2026-08-28T04:03:00Z")),
         ("edited comment", lambda value: value["data"]["node"]["userContentEdits"].__setitem__("totalCount", 1)),
         ("comment node substitution", lambda value: value["data"]["node"].__setitem__("id", "IC_kwOTHER")),
     ):
@@ -38275,7 +38469,7 @@ def run_self_test() -> int:
                 ).isoformat().replace("+00:00", "Z")
         return record
 
-    ci_negative_base = post_success_ci("a" * 40, "c" * 40, 23)
+    ci_negative_base = post_success_ci("a" * 40, "c" * 40, 30)
     for label, mutate in (
         ("CI extra scalar step", lambda value: value["steps"].append("not-a-step")),
         (
@@ -38315,7 +38509,7 @@ def run_self_test() -> int:
         "state": "active",
     })
     active_contract_fixture["ci"]["activation_candidate"] = post_success_ci(
-        "a" * 40, "c" * 40, 23
+        "a" * 40, "c" * 40, 30
     )
     active_contract_fixture["ci"]["active_attestation"] = c0007_pending_ci_record("pending")
     active_contract_fixture["ci"]["implementation"] = c0007_pending_ci_record("pending")
@@ -38346,10 +38540,10 @@ def run_self_test() -> int:
         "state": "verified",
     })
     verified_contract_fixture["ci"]["active_attestation"] = post_success_ci(
-        "d" * 40, "f" * 40, 24
+        "d" * 40, "f" * 40, 31
     )
     verified_contract_fixture["ci"]["implementation"] = post_success_ci(
-        "1" * 40, "2" * 40, 25
+        "1" * 40, "2" * 40, 32
     )
     implementation_request_fixture = c0007_post_recovery_implementation_review_request(
         "1" * 40,
@@ -38360,11 +38554,11 @@ def run_self_test() -> int:
     implementation_comment_fixture = json.loads(canonical_json(post_comment_fixture))
     implementation_comment_fixture.update({
         "body": implementation_request_fixture["body"],
-        "created_at": "2026-08-27T23:30:00Z",
+        "created_at": "2026-08-28T06:30:00Z",
         "html_url": f"{post_issue_html}#issuecomment-{post_comment_id + 1}",
         "id": post_comment_id + 1,
         "node_id": "IC_kwCONT01_IMPLEMENTATION",
-        "updated_at": "2026-08-27T23:30:00Z",
+        "updated_at": "2026-08-28T06:30:00Z",
         "url": (
             f"{C0007_BOUNDED_REPOSITORY_API_URL}/issues/comments/"
             f"{post_comment_id + 1}"
@@ -38503,9 +38697,9 @@ def run_self_test() -> int:
         (
             "implementation pre-I-CI timestamp",
             lambda value: (
-                value.__setitem__("reviewed_at", "2026-08-27T20:30:00Z"),
-                value["source"].__setitem__("created_at", "2026-08-27T20:30:00Z"),
-                value["source"].__setitem__("updated_at", "2026-08-27T20:30:00Z"),
+                value.__setitem__("reviewed_at", "2026-08-28T04:30:00Z"),
+                value["source"].__setitem__("created_at", "2026-08-28T04:30:00Z"),
+                value["source"].__setitem__("updated_at", "2026-08-28T04:30:00Z"),
             ),
         ),
         (
@@ -38800,7 +38994,7 @@ def run_self_test() -> int:
         return subprocess.CompletedProcess([], returncode, stdout=stdout, stderr="")
 
     pr_contract_process = subprocess.run(
-        ["git", "cat-file", "blob", C0007_PLANNED_RECOVERY_CONTRACT_BLOB_OID],
+        ["git", "cat-file", "blob", C0007_FAILED_ACTIVATION_CONTRACT_BLOB_OID],
         cwd=ROOT,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -38811,7 +39005,7 @@ def run_self_test() -> int:
         and len(pr_contract_payload)
         == C0007_POST_RECOVERY_PREIMAGES[C0007_BOUNDED_PLANNED_CONTROL_PATH][1]
         and hashlib.sha256(pr_contract_payload).hexdigest().upper()
-        == C0007_PLANNED_RECOVERY_CONTRACT_SHA256,
+        == C0007_FAILED_ACTIVATION_CONTRACT_SHA256,
         "self-test CONT01 writer immutable PR fixture",
         "cannot load the exact immutable PR contract fixture",
     )
@@ -38853,7 +39047,7 @@ def run_self_test() -> int:
             self.c0007_pr_successor_artifacts = json.loads(
                 canonical_json(post_artifact_fixture)
             )
-            snapshot: dict[str, str | None] = {"head": C0007_PLANNED_RECOVERY_SHA}
+            snapshot: dict[str, str | None] = {"head": C0007_FAILED_ACTIVATION_SHA}
             identity = b"stable-candidate"
             if self.drift == "pre_local" and ".local.pre_replace" in context:
                 identity = b"pre-replace-drift"
@@ -38979,7 +39173,7 @@ def run_self_test() -> int:
     writer_a_blob = git_blob_oid(expected_a_payload)
     writer_a_sha = "a" * 40
     writer_a_tree = "c" * 40
-    writer_a_ci = post_success_ci(writer_a_sha, writer_a_tree, 23)
+    writer_a_ci = post_success_ci(writer_a_sha, writer_a_tree, 30)
     writer_active_contract = build_c0007_post_recovery_active_contract(
         post_contract_fixture,
         activation_commit_sha=writer_a_sha,
@@ -39133,10 +39327,10 @@ def run_self_test() -> int:
 
     writer_t_sha = "d" * 40
     writer_t_tree = "f" * 40
-    writer_t_ci = post_success_ci(writer_t_sha, writer_t_tree, 24)
+    writer_t_ci = post_success_ci(writer_t_sha, writer_t_tree, 31)
     writer_i_sha = "1" * 40
     writer_i_tree = "2" * 40
-    writer_i_ci = post_success_ci(writer_i_sha, writer_i_tree, 25)
+    writer_i_ci = post_success_ci(writer_i_sha, writer_i_tree, 32)
     writer_t_blob = git_blob_oid(writer_active_payload)
     writer_implementation_request = c0007_post_recovery_implementation_review_request(
         writer_i_sha, writer_i_tree, writer_t_blob, writer_i_ci

@@ -337,17 +337,17 @@ CI_RECOVERY_FROZEN_COMPLETION_CHECKER_FIXTURE = {
 # checkout.  Runtime successor validation therefore fails closed, while pure
 # self-tests pass an explicit 64-hex fixture pin.
 POST_RECOVERY_AUTHORIZATION_ID = (
-    "C0007-M13-I01-CODE03-post-recovery-terminal-v6"
+    "C0007-M13-I01-CODE03-post-recovery-terminal-v7"
 )
 POST_RECOVERY_AUTHORIZATION_SHA256 = (
-    "1BFE364FF33DD89E75C183BF88028F690E599BF3FAA29D29EC402D5706B68906"
+    "E3878995622212A396B22C035E9306F4840747FD1FFBCCE2D43790DBCC640A33"
 )
 POST_RECOVERY_CONTROL_ID = "C0007-M13-I01-CODE03-post-recovery-terminal-v5"
 POST_RECOVERY_CONTRACT_SCHEMA_VERSION = 5
 POST_RECOVERY_CONTRACT_KIND = (
     "c0007_bounded_post_recovery_continuation_control"
 )
-POST_RECOVERY_COMPLETION_CHECKER_SHA256 = "9DC10746CF278EB577BC1F0AB3A107D4CBF787272490A231400C6368A57B0F80"
+POST_RECOVERY_COMPLETION_CHECKER_SHA256 = "3D4F7950024AA3D4FB9002CD97DAADACD646DC97C3E428DB0D115BA42370BD29"
 POST_RECOVERY_MANIFEST_SHA256 = (
     "DEF42E27D780A91362FB39A9B6078D41F39B4145CFF5D82AA272D10F46C65C0D"
 )
@@ -361,7 +361,7 @@ POST_RECOVERY_ALL_PATH_SET_SHA256 = (
     "F15AE108A9B1F9D80C0E5AEEC032B00E7A8D1473D55DE6F117A9F9F2719E55F5"
 )
 POST_RECOVERY_PREIMAGE_FREEZE_SHA256 = (
-    "4E4FAAF3B9E21573FBF3BB590B30B452D1C65552CB078177F47224E4A1F5013C"
+    "B5B75BEA44A29984ADE08EBFD4591C9370D4A172A4506F76D5D7D1E1085E2AA4"
 )
 POST_RECOVERY_PACKET_ID = "CONT01"
 POST_RECOVERY_APPLICATION_MODE = "single_atomic_14_path_union"
@@ -391,19 +391,19 @@ POST_RECOVERY_AUTHORIZED_ACTIONS_SHA256 = (
     "EDAA45BFE69E047A7307B6E86FEADF216C606802826023C1A012B6B63448FA07"
 )
 POST_RECOVERY_ACTIVATION_CONDITIONS_SHA256 = (
-    "4DA422CF9BAC9FE7F2C43E8A052AF129C244FF214990386B760265A07A93A93E"
+    "0F58EE17FBB4F0624779248FAE506097D7EEAA011CD274914CCD529D0BDB4330"
 )
 POST_RECOVERY_PRESERVED_EXCLUSIONS_SHA256 = (
     "FD43740F500EE47F85B002292394E171BB7A4912B8828F06C344E773942F88A8"
 )
 POST_RECOVERY_EXPIRY_SHA256 = (
-    "056976D37621C7355FF0A64D53112E511E52BF74EAE03AD346B4E99DB82E4188"
+    "AEDB1E2E428C5755D5DA427A740793979EED71B89A53B8BB844E42565C98503B"
 )
 POST_RECOVERY_RUN_POLICY_SHA256 = (
     "60252D1D4EDD616E1553888E8087C8D6B69135C440C479739FE9E471B662A45B"
 )
 POST_RECOVERY_SCOPE_SHA256 = (
-    "6A9EB1BB7C3785D319EE32791445AB6C9D1F1A306F9405ED716BF82B21BA482C"
+    "3B2CDF8D2592F9A06471B7F92EC04595D6D44517F1C2879FF8496CE17FEAC860"
 )
 PLANNED_RECOVERY_COMMIT_SHA = "825b972bc2f9f132d4cd1863c4ef06aee3673f5c"
 PLANNED_RECOVERY_TREE_SHA = "490cd98af6ac1b0955b692c844dfada68d797e8a"
@@ -414,6 +414,37 @@ PLANNED_RECOVERY_CONTRACT_SHA256 = (
     "6E3F15DECA9E47347570E378C0637C979218DA155EFD52B9F1B095D3E37F712B"
 )
 PLANNED_RECOVERY_RUN_ID = 33016546729
+# Immutable failed first activation candidate A1 (see the completion checker).
+FAILED_ACTIVATION_COMMIT_SHA = "c66c57b46a5424e58ea67f09ccc13e2b91dca93d"
+FAILED_ACTIVATION_TREE_SHA = "d8a194f58bf1a419800e1a7aa8b982cc5f5fcc58"
+FAILED_ACTIVATION_RUN_ID = 33138416007
+FAILED_ACTIVATION_RUN_NUMBER = 8952
+FAILED_ACTIVATION_CHECK_SUITE_ID = 89801605862
+FAILED_ACTIVATION_JOB_ID = 98743572702
+FAILED_ACTIVATION_JOB_LOG_BYTE_COUNT = 21133
+FAILED_ACTIVATION_JOB_LOG_SHA256 = (
+    "CCBB73BB7131DF91DC36B24F2D78796B5FABE14DE1355E0396EE14393F45DBD3"
+)
+FAILED_ACTIVATION_FAILURE_REASON = (
+    "the schema-5 live census required a remote.origin.tagopt row that "
+    "actions checkout never writes"
+)
+FAILED_ACTIVATION_CONTRACT_BLOB_OID = "90f29c1ad9bf2435d00df045dbee93105638db7a"
+FAILED_ACTIVATION_CONTRACT_SHA256 = (
+    "94FE8FB22BB300F686D3B5BC778223A13CBF83DED99703BC3422138B2D3C2D40"
+)
+FAILED_ACTIVATION_AUTHORIZATION_BLOB_OID = (
+    "f2564d2d9b84fb0e668a1fc62dd616ddddb09f0a"
+)
+FAILED_ACTIVATION_AUTHORIZATION_SHA256 = (
+    "1BFE364FF33DD89E75C183BF88028F690E599BF3FAA29D29EC402D5706B68906"
+)
+FAILED_ACTIVATION_MANIFEST_BLOB_OID = "a26a395a1a92aab00b3b424e8b3ceafbe8ebd9b4"
+FAILED_ACTIVATION_CHECKER_BLOB_OID = "f64236938d53090a405fcbcf934aff3ec97360f1"
+FAILED_ACTIVATION_CHECKER_SHA256 = (
+    "9DC10746CF278EB577BC1F0AB3A107D4CBF787272490A231400C6368A57B0F80"
+)
+FAILED_ACTIVATION_WORKFLOW_BLOB_OID = "88249bd10e4c55fd4f52e6fd1e4c2275e24ff6ae"
 PLANNED_RECOVERY_JOB_ID = 98336144783
 PLANNED_RECOVERY_CHECK_SUITE_ID = 89447381703
 PLANNED_RECOVERY_JOB_LOG_BYTE_COUNT = 157334541
@@ -445,12 +476,12 @@ POST_RECOVERY_ARTIFACT_PATHS = tuple(
     if path != DEFAULT_ACTIVATION_REVIEW.relative_to(ROOT).as_posix()
 )
 POST_RECOVERY_ARTIFACT_BASE_BLOB_OIDS = {
-    BOUNDED_MANIFEST_RELATIVE: "2143ee01b0074c60be192736a47f9c0d11a58393",
-    BOUNDED_AUTHORIZATION_RELATIVE: "ea3971ee450ab256168b4179ee2fbc2d2cfb4cfe",
-    SUPPORTED_API_REVIEW_RELATIVE: "3f77f4613da5a92b55b52abd7fae26f00fcf7b2b",
-    SUPPORTED_API_BASELINE_RELATIVE: "df2a6f7a0438a620c059183c9a289ad372bbcbaf",
-    COMPLETION_CHECKER_RELATIVE: "a6a17693125b4bdc4bf14d6d71ad0984cbe45b35",
-    SUPPORTED_API_CHECKER_RELATIVE: "83549982294329df8c57bfe21bbeb28cc06d8fa4",
+    BOUNDED_MANIFEST_RELATIVE: "a26a395a1a92aab00b3b424e8b3ceafbe8ebd9b4",
+    BOUNDED_AUTHORIZATION_RELATIVE: "f2564d2d9b84fb0e668a1fc62dd616ddddb09f0a",
+    SUPPORTED_API_REVIEW_RELATIVE: "949253dcf58803991de328db3847be9ef359ba33",
+    SUPPORTED_API_BASELINE_RELATIVE: "b6ba2a8abdcaf9836ddeb0dabecf1c455c5e54ee",
+    COMPLETION_CHECKER_RELATIVE: "f64236938d53090a405fcbcf934aff3ec97360f1",
+    SUPPORTED_API_CHECKER_RELATIVE: "37eafcf7888391d02920b4c9046fa891c9b23e9a",
 }
 POST_RECOVERY_MANIFEST_BYTES = (
     "path\tpacket_id\tstage\toperation\n"
@@ -479,18 +510,18 @@ POST_RECOVERY_MANIFEST_BYTES = (
 POST_RECOVERY_AUTHORIZATION = json.loads(r'''
 {
   "activation_conditions": [
-    "immutable audited main B 8960f2a980be22166f321c4ba452eb547529b1fd, failed P 1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9 and its failed run 32966438799 attempt 1, and recovery PR 825b972bc2f9f132d4cd1863c4ef06aee3673f5c and its successful run 33016546729 attempt 1 remain exact",
+    "immutable audited main B 8960f2a980be22166f321c4ba452eb547529b1fd, failed P 1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9 and its failed run 32966438799 attempt 1, recovery PR 825b972bc2f9f132d4cd1863c4ef06aee3673f5c and its successful run 33016546729 attempt 1, and failed activation candidate A1 c66c57b46a5424e58ea67f09ccc13e2b91dca93d and its failed run 33138416007 attempt 1 remain exact",
     "the authorization manifest has exactly seven sorted CONT01 continuation_control modify rows plus the unchanged fourteen sorted R0014/R0015 implementation rows from immutable P",
-    "the six finalized non-contract A postimages are staged together while HEAD and the bounded remote ref remain exact PR, the contract remains its PR blob, and every unstaged, untracked, unmanifested, and implementation path is absent",
+    "the five changed non-contract A postimages are staged together while HEAD and the bounded remote ref remain exact A1, the authorized-path manifest remains byte-identical at its pinned SHA-256, the contract remains its A1 blob, and every unstaged, untracked, unmanifested, and implementation path is absent",
     "the non-mutating PR recovery review-readiness gate authenticates exact PR CI and stable refs, then emits the canonical authorized-reviewer comment body binding only PR commit, PR tree, PR contract, and the six-artifact successor-basis digest",
     "the first live unedited non-app comment by the authorized co-owner reviewer kfoynt (144732584 / MDQ6VXNlcjExNzIyNzEz, COLLABORATOR), personally posted or explicitly confirmed by the primary human, exactly matches that emitted body before the schema-5 contract is rendered as the seventh and final A postimage",
-    "A is the exact seven-path direct child of PR with subject docs(reorganization): record M13 recovery review; exact-head A CI succeeds before contract-only T is created",
+    "A is the exact six-path direct child of immutable failed A1 with subject docs(reorganization): record M13 recovery review; exact-head A CI succeeds before contract-only T is created",
     "T is the contract-only direct child of A; exact-head T CI and the read-only T implementation-readiness gate succeed before any R0014 or R0015 implementation byte is applied or staged",
     "I is the complete indivisible fourteen-path R0014/R0015 direct child of T; exact-head I CI and a second distinct live unedited authorized-reviewer comment succeed before contract-only V",
     "V is the contract-only direct child of I; exact-head V post-assurance CI succeeds with stable refs and its canonical evidence is retained only in the untracked local ledger"
   ],
   "authority_id": "primary-human",
-  "authorization_id": "C0007-M13-I01-CODE03-post-recovery-terminal-v6",
+  "authorization_id": "C0007-M13-I01-CODE03-post-recovery-terminal-v7",
   "authorized_actions": [
     "prepare and independently validate exactly the six non-contract successor-control postimages, stage them atomically at immutable PR, and run the non-mutating PR recovery review-readiness gate",
     "create one bounded ordinary GitHub issue if needed and solicit the exact emitted activation comment only from the fixed authorized co-owner reviewer kfoynt after readiness succeeds",
@@ -505,6 +536,19 @@ POST_RECOVERY_AUTHORIZATION = json.loads(r'''
     "control_tree_sha": "70cee1e77e1311129b00aeb0945770483d1aa5db",
     "current_checkpoint_id": "C0007",
     "current_checkpoint_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+    "failed_activation": {
+      "commit_sha": "c66c57b46a5424e58ea67f09ccc13e2b91dca93d",
+      "contract_blob_oid": "90f29c1ad9bf2435d00df045dbee93105638db7a",
+      "contract_sha256": "94FE8FB22BB300F686D3B5BC778223A13CBF83DED99703BC3422138B2D3C2D40",
+      "job_id": 98743572702,
+      "job_log_byte_count": 21133,
+      "job_log_sha256": "CCBB73BB7131DF91DC36B24F2D78796B5FABE14DE1355E0396EE14393F45DBD3",
+      "parent_sha": "825b972bc2f9f132d4cd1863c4ef06aee3673f5c",
+      "run_attempt": 1,
+      "run_conclusion": "failure",
+      "run_id": 33138416007,
+      "tree_sha": "d8a194f58bf1a419800e1a7aa8b982cc5f5fcc58"
+    },
     "failed_planned_control": {
       "commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
       "contract_blob_oid": "6c1f59211399c626c7727952c16ea63e504270c8",
@@ -541,7 +585,7 @@ POST_RECOVERY_AUTHORIZATION = json.loads(r'''
     "events": [
       "successful exact-head V post-assurance workflow_dispatch evidence is authenticated with stable main and bounded refs and recorded only in the untracked local ledger",
       "explicit cancellation, revocation, or supersession",
-      "authority, manifest, workflow, checker, packet, supported-API, base, immutable P, immutable PR, or artifact drift",
+      "authority, manifest, workflow, checker, packet, supported-API, base, immutable P, immutable PR, immutable failed A1, or artifact drift",
       "an exact-lease mismatch, bounded-ref drift, remote-main drift, duplicate matching run ID, edited or deleted reviewer comment, force update, or history rewrite"
     ],
     "terminal_control_state": "verified",
@@ -564,7 +608,7 @@ POST_RECOVERY_AUTHORIZATION = json.loads(r'''
     "bounded-ref deletion, force push, history rewrite, branch retirement, or compatibility-wrapper removal"
   ],
   "record_kind": "primary_human_post_recovery_continuation_authorization",
-  "recorded_at": "2026-08-27T19:47:02Z",
+  "recorded_at": "2026-08-28T03:36:14Z",
   "run_policy": {
     "attempt_policy": "one positive current attempt and exactly one matching run ID per exact lifecycle head",
     "event": "workflow_dispatch",
@@ -583,7 +627,7 @@ POST_RECOVERY_AUTHORIZATION = json.loads(r'''
       "implementation_path_set_sha256": "29BD21B735E94B3B8670E03A766FCF20F2E5762D9472C62028332A871403E189",
       "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-authorized-paths.tsv",
       "path_list_sha256": "F15AE108A9B1F9D80C0E5AEEC032B00E7A8D1473D55DE6F117A9F9F2719E55F5",
-      "preimage_freeze_sha256": "4E4FAAF3B9E21573FBF3BB590B30B452D1C65552CB078177F47224E4A1F5013C",
+      "preimage_freeze_sha256": "B5B75BEA44A29984ADE08EBFD4591C9370D4A172A4506F76D5D7D1E1085E2AA4",
       "row_count": 21,
       "sha256": "DEF42E27D780A91362FB39A9B6078D41F39B4145CFF5D82AA272D10F46C65C0D",
       "successor_non_self_path_count": 6,
@@ -592,7 +636,7 @@ POST_RECOVERY_AUTHORIZATION = json.loads(r'''
     "bounded_ref": "refs/heads/codex/reorg-closeout-2026-08-m13-i01",
     "checkpoint_acceptance_authorized": false,
     "implementation_authorized": true,
-    "lifecycle_graph": "B -> P_failed -> PR -> A -> T -> I -> V",
+    "lifecycle_graph": "B -> P_failed -> PR -> A1_failed -> A -> T -> I -> V",
     "owner_solicitation_authorized": true,
     "post_assurance_transition_authorized": true,
     "remote_main_mutation_authorized": false,
@@ -640,9 +684,9 @@ POST_RECOVERY_AUTHORIZATION = json.loads(r'''
     "user_principal_id": "primary-human"
   },
   "supersedes": {
-    "authorization_id": "C0007-M13-I01-CODE03-post-recovery-terminal-v4",
-    "effect": "superseded by the 2026-08-27 primary-human reviewer re-pin instruction before any A commit; no continuation action remains authorized by it",
-    "sha256": "DA9A9BC4834A28B43494D87810F64BEC3C8003C46F24F98B54025EC32E72BF43"
+    "authorization_id": "C0007-M13-I01-CODE03-post-recovery-terminal-v6",
+    "effect": "superseded after failed activation candidate A1: the schema-5 live census rejected the actions-checkout remote namespace; the graph extends through immutable failed A1 and no v6 action remains authorized",
+    "sha256": "1BFE364FF33DD89E75C183BF88028F690E599BF3FAA29D29EC402D5706B68906"
   }
 }
 ''')
@@ -5237,6 +5281,62 @@ def failed_p_control_record() -> dict[str, Any]:
     }
 
 
+def failed_activation_record() -> dict[str, Any]:
+    """Immutable evidence for failed first activation candidate A1."""
+
+    return {
+        "authorization_blob_oid": FAILED_ACTIVATION_AUTHORIZATION_BLOB_OID,
+        "authorization_path": BOUNDED_AUTHORIZATION_RELATIVE,
+        "authorization_sha256": FAILED_ACTIVATION_AUTHORIZATION_SHA256,
+        "ci": {
+            "branch": "codex/reorg-closeout-2026-08-m13-i01",
+            "check_suite_conclusion": "failure",
+            "check_suite_id": FAILED_ACTIVATION_CHECK_SUITE_ID,
+            "completed_at": "2026-08-28T03:17:53Z",
+            "conclusion": "failure",
+            "event": "workflow_dispatch",
+            "failed_step": "Check architecture source graph and Python tooling",
+            "head_sha": FAILED_ACTIVATION_COMMIT_SHA,
+            "job_completed_at": "2026-08-28T03:17:52Z",
+            "job_conclusion": "failure",
+            "job_id": FAILED_ACTIVATION_JOB_ID,
+            "job_log_byte_count": FAILED_ACTIVATION_JOB_LOG_BYTE_COUNT,
+            "job_log_sha256": FAILED_ACTIVATION_JOB_LOG_SHA256,
+            "job_name": "build",
+            "job_started_at": "2026-08-28T03:16:52Z",
+            "run_attempt": 1,
+            "run_id": FAILED_ACTIVATION_RUN_ID,
+            "run_number": FAILED_ACTIVATION_RUN_NUMBER,
+            "runner_name": "GitHub Actions 1000008998",
+            "skipped_steps": [
+                "Build library and smoke tests",
+                "Verify supported API from the built environment",
+                "Run Lake test driver",
+            ],
+            "started_at": "2026-08-28T03:16:47Z",
+            "status": "failure",
+            "workflow_path": WORKFLOW_RELATIVE,
+        },
+        "commit_sha": FAILED_ACTIVATION_COMMIT_SHA,
+        "completion_checker_blob_oid": FAILED_ACTIVATION_CHECKER_BLOB_OID,
+        "completion_checker_path": COMPLETION_CHECKER_RELATIVE,
+        "completion_checker_sha256": FAILED_ACTIVATION_CHECKER_SHA256,
+        "contract_blob_oid": FAILED_ACTIVATION_CONTRACT_BLOB_OID,
+        "contract_path": DEFAULT_ACTIVATION_REVIEW.relative_to(ROOT).as_posix(),
+        "contract_sha256": FAILED_ACTIVATION_CONTRACT_SHA256,
+        "failure_reason": FAILED_ACTIVATION_FAILURE_REASON,
+        "manifest_blob_oid": FAILED_ACTIVATION_MANIFEST_BLOB_OID,
+        "manifest_path": BOUNDED_MANIFEST_RELATIVE,
+        "manifest_sha256": POST_RECOVERY_MANIFEST_SHA256,
+        "parent_sha": PLANNED_RECOVERY_COMMIT_SHA,
+        "subject": "docs(reorganization): record M13 recovery review",
+        "tree_sha": FAILED_ACTIVATION_TREE_SHA,
+        "workflow_blob_oid": FAILED_ACTIVATION_WORKFLOW_BLOB_OID,
+        "workflow_path": WORKFLOW_RELATIVE,
+        "workflow_sha256": CI_ONLY_RECOVERY_WORKFLOW_SHA256,
+    }
+
+
 def expected_ci_only_recovery_contract(
     artifacts: Sequence[Mapping[str, Any]],
     authorization: Mapping[str, Any],
@@ -6113,7 +6213,9 @@ def post_recovery_artifacts_from_captures(
         row: dict[str, Any] = {
             "base_blob_oid": POST_RECOVERY_ARTIFACT_BASE_BLOB_OIDS[path],
             "base_mode": "100644",
-            "operation": "modify",
+            "operation": (
+                "retain" if path == BOUNDED_MANIFEST_RELATIVE else "modify"
+            ),
             "packet_id": POST_RECOVERY_PACKET_ID,
             "path": path,
             "post_blob_oid": git_blob_oid(capture.raw),
@@ -6162,11 +6264,16 @@ def post_recovery_review_request(
             and row.get("base_mode") == "100644"
             and type(row.get("byte_count")) is int
             and row.get("byte_count", -1) >= 0
-            and row.get("operation") == "modify"
+            and row.get("operation")
+            == ("retain" if path == BOUNDED_MANIFEST_RELATIVE else "modify")
             and row.get("packet_id") == POST_RECOVERY_PACKET_ID
             and isinstance(row.get("post_blob_oid"), str)
             and re.fullmatch(r"[0-9a-f]{40}", row["post_blob_oid"])
-            and row.get("post_blob_oid") != row.get("base_blob_oid")
+            and (
+                row.get("post_blob_oid") == row.get("base_blob_oid")
+                if path == BOUNDED_MANIFEST_RELATIVE
+                else row.get("post_blob_oid") != row.get("base_blob_oid")
+            )
             and row.get("post_mode") == "100644"
             and isinstance(row.get("sha256"), str)
             and re.fullmatch(r"[0-9A-F]{64}", row["sha256"])
@@ -6274,6 +6381,7 @@ def expected_post_recovery_immutable_projection(
         "authorized_actions": constraints["authorized_actions"],
         "base": {
             "control_head_sha": CI_ONLY_RECOVERY_CONTROL_HEAD_SHA,
+            "failed_activation_sha": FAILED_ACTIVATION_COMMIT_SHA,
             "failed_planned_control_sha": FAILED_P_COMMIT_SHA,
             "planned_recovery_sha": PLANNED_RECOVERY_COMMIT_SHA,
             "remote_main_sha_at_authorization": CI_ONLY_RECOVERY_CONTROL_HEAD_SHA,
@@ -6298,15 +6406,17 @@ def expected_post_recovery_immutable_projection(
         "constraints_sha256": canonical_json_sha256(constraints),
         "control_id": POST_RECOVERY_CONTROL_ID,
         "expiry": constraints["expiry"],
+        "failed_activation": failed_activation_record(),
         "failed_planned_control": failed_p_control_record(),
         "graph": {
             "actual_prefix": [
                 CI_ONLY_RECOVERY_CONTROL_HEAD_SHA,
                 FAILED_P_COMMIT_SHA,
                 PLANNED_RECOVERY_COMMIT_SHA,
+                FAILED_ACTIVATION_COMMIT_SHA,
             ],
-            "lifecycle": "B -> P_failed -> PR -> A -> T -> I -> V",
-            "required_changed_path_counts": [42, 8, 7, 1, 14, 1],
+            "lifecycle": "B -> P_failed -> PR -> A1_failed -> A -> T -> I -> V",
+            "required_changed_path_counts": [42, 8, 7, 6, 1, 14, 1],
             "stale_thirteen_path_recovery_forbidden": True,
         },
         "historical_packet_artifacts": post_recovery_historical_packet_artifacts(),
@@ -6468,8 +6578,8 @@ def post_recovery_issue_request(
         else None
     )
     expected_ref_snapshot = {
-        "local_head": PLANNED_RECOVERY_COMMIT_SHA,
-        "origin_bounded_ref": PLANNED_RECOVERY_COMMIT_SHA,
+        "local_head": FAILED_ACTIVATION_COMMIT_SHA,
+        "origin_bounded_ref": FAILED_ACTIVATION_COMMIT_SHA,
         "origin_main": CI_ONLY_RECOVERY_CONTROL_HEAD_SHA,
         "remote_configuration": post_recovery_remote_configuration_census(),
         "symbolic_branch": "codex/reorg-closeout-2026-08-m13-i01",
@@ -6578,6 +6688,9 @@ def post_recovery_lifecycle_record(
         "active_attestation_commit_sha": active[0],
         "active_attestation_contract_blob_oid": active[2],
         "active_attestation_tree_sha": active[1],
+        "failed_activation_commit_sha": FAILED_ACTIVATION_COMMIT_SHA,
+        "failed_activation_contract_blob_oid": FAILED_ACTIVATION_CONTRACT_BLOB_OID,
+        "failed_activation_tree_sha": FAILED_ACTIVATION_TREE_SHA,
         "failed_planned_control_commit_sha": FAILED_P_COMMIT_SHA,
         "failed_planned_control_contract_blob_oid": FAILED_P_CONTRACT_BLOB_OID,
         "failed_planned_control_tree_sha": FAILED_P_TREE_SHA,
@@ -6609,6 +6722,7 @@ def build_post_recovery_activation_contract(
             "ci": {
                 "activation_candidate": post_recovery_pending_ci("pending"),
                 "active_attestation": post_recovery_pending_ci("not_due"),
+                "failed_activation": failed_activation_record()["ci"],
                 "failed_planned_control": failed_p_control_record()["ci"],
                 "implementation": post_recovery_pending_ci("not_due"),
                 "planned_recovery": planned_recovery_ci_record(),
@@ -7029,7 +7143,7 @@ def validate_post_recovery_activation_review(
         and is_utc_timestamp(source.get("issue_created_at"))
         and is_utc_timestamp(source.get("issue_updated_at"))
         and is_utc_timestamp(source.get("created_at"))
-        and "2026-08-26T22:20:07Z" < "2026-08-27T19:47:02Z"
+        and "2026-08-26T22:20:07Z" < "2026-08-28T03:36:14Z"
         <= observed
         <= source["issue_created_at"]
         <= source["created_at"]
@@ -7185,6 +7299,7 @@ def validate_post_recovery_contract(
         "constraints_sha256",
         "control_id",
         "expiry",
+        "failed_activation",
         "failed_planned_control",
         "graph",
         "historical_packet_artifacts",
@@ -7247,6 +7362,7 @@ def validate_post_recovery_contract(
     if not isinstance(ci, Mapping) or set(ci) != {
         "activation_candidate",
         "active_attestation",
+        "failed_activation",
         "failed_planned_control",
         "implementation",
         "planned_recovery",
@@ -7255,6 +7371,8 @@ def validate_post_recovery_contract(
         return failures
     if not json_exact_equal(ci.get("failed_planned_control"), failed_p_control_record()["ci"]):
         failures.append("post-recovery CI failed-P evidence drifted")
+    if not json_exact_equal(ci.get("failed_activation"), failed_activation_record()["ci"]):
+        failures.append("post-recovery CI failed-A1 evidence drifted")
     if not json_exact_equal(ci.get("planned_recovery"), planned_recovery_ci_record()):
         failures.append("post-recovery CI successful-PR evidence drifted")
     if not isinstance(reviews, Mapping) or set(reviews) != {
@@ -7344,7 +7462,7 @@ def validate_post_recovery_contract(
     run_ids = [item.get("run_id") for item in successful]
     if not all(type(run_id) is int for run_id in run_ids) or (
         len(run_ids) != len(set(run_ids))
-        or any(run_id in {FAILED_P_RUN_ID, PLANNED_RECOVERY_RUN_ID} for run_id in run_ids)
+        or any(run_id in {FAILED_P_RUN_ID, PLANNED_RECOVERY_RUN_ID, FAILED_ACTIVATION_RUN_ID} for run_id in run_ids)
     ):
         failures.append("post-recovery lifecycle CI run IDs must be distinct and new")
     return failures
@@ -9183,12 +9301,12 @@ def _post_recovery_test_captures(
 def _post_recovery_test_readiness(
     full_artifacts: Sequence[Mapping[str, Any]],
     *,
-    observed_at: str = "2026-08-27T20:03:00Z",
+    observed_at: str = "2026-08-28T04:03:00Z",
 ) -> dict[str, Any]:
     request = post_recovery_review_request(full_artifacts)
     ref_snapshot = {
-        "local_head": PLANNED_RECOVERY_COMMIT_SHA,
-        "origin_bounded_ref": PLANNED_RECOVERY_COMMIT_SHA,
+        "local_head": FAILED_ACTIVATION_COMMIT_SHA,
+        "origin_bounded_ref": FAILED_ACTIVATION_COMMIT_SHA,
         "origin_main": CI_ONLY_RECOVERY_CONTROL_HEAD_SHA,
         "remote_configuration": post_recovery_remote_configuration_census(),
         "symbolic_branch": "codex/reorg-closeout-2026-08-m13-i01",
@@ -9212,10 +9330,10 @@ def _post_recovery_test_readiness(
 def _post_recovery_test_activation_review(
     full_artifacts: Sequence[Mapping[str, Any]],
     *,
-    observed_at: str = "2026-08-27T20:03:00Z",
-    issue_created_at: str = "2026-08-27T20:04:00Z",
-    issue_updated_at: str = "2026-08-27T20:04:30Z",
-    comment_at: str = "2026-08-27T20:05:00Z",
+    observed_at: str = "2026-08-28T04:03:00Z",
+    issue_created_at: str = "2026-08-28T04:04:00Z",
+    issue_updated_at: str = "2026-08-28T04:04:30Z",
+    comment_at: str = "2026-08-28T04:05:00Z",
 ) -> dict[str, Any]:
     request = post_recovery_review_request(full_artifacts)
     readiness = _post_recovery_test_readiness(
@@ -9293,7 +9411,7 @@ def _post_recovery_test_success_ci(
     run_id: int,
     hour: int,
 ) -> dict[str, Any]:
-    prefix = f"2026-08-27T{hour:02d}:"
+    prefix = f"2026-08-28T{hour:02d}:"
     names = [
         "Check architecture source graph and Python tooling",
         "Build library and smoke tests",
@@ -9338,7 +9456,7 @@ def _post_recovery_test_implementation_review(
     implementation_identity: tuple[str, str, str],
     implementation_ci: Mapping[str, Any],
     *,
-    reviewed_at: str = "2026-08-27T23:10:00Z",
+    reviewed_at: str = "2026-08-28T08:10:00Z",
     issue_updated_at: str | None = None,
 ) -> dict[str, Any]:
     request = post_recovery_implementation_review_request(
@@ -9492,24 +9610,24 @@ def self_test_post_recovery_successor() -> None:
     )
     same_second_activation_review = _post_recovery_test_activation_review(
         full_artifacts,
-        observed_at="2026-08-27T20:04:00Z",
-        issue_created_at="2026-08-27T20:04:00Z",
+        observed_at="2026-08-28T04:04:00Z",
+        issue_created_at="2026-08-28T04:04:00Z",
     )
     assert not validate_post_recovery_activation_review(
         same_second_activation_review, full_artifacts
     )
     reversed_activation_review = _post_recovery_test_activation_review(
         full_artifacts,
-        observed_at="2026-08-27T20:04:01Z",
-        issue_created_at="2026-08-27T20:04:00Z",
+        observed_at="2026-08-28T04:04:01Z",
+        issue_created_at="2026-08-28T04:04:00Z",
     )
     assert validate_post_recovery_activation_review(
         reversed_activation_review, full_artifacts
     )
     substituted_artifacts = json.loads(json.dumps(full_artifacts))
-    substituted_artifacts[0]["byte_count"] += 1
-    substituted_artifacts[0]["post_blob_oid"] = "f" * 40
-    substituted_artifacts[0]["sha256"] = "F" * 64
+    substituted_artifacts[1]["byte_count"] += 1
+    substituted_artifacts[1]["post_blob_oid"] = "f" * 40
+    substituted_artifacts[1]["sha256"] = "F" * 64
     substituted_review = _post_recovery_test_activation_review(
         substituted_artifacts
     )
@@ -9529,16 +9647,16 @@ def self_test_post_recovery_successor() -> None:
     active_identity = ("4" * 40, "5" * 40, "6" * 40)
     implementation_identity = ("7" * 40, "8" * 40, "6" * 40)
     activation_ci = _post_recovery_test_success_ci(
-        activation_identity[0], activation_identity[1], run_id=4001, hour=21
+        activation_identity[0], activation_identity[1], run_id=4001, hour=5
     )
     active_ci = _post_recovery_test_success_ci(
-        active_identity[0], active_identity[1], run_id=4002, hour=22
+        active_identity[0], active_identity[1], run_id=4002, hour=6
     )
     implementation_ci = _post_recovery_test_success_ci(
         implementation_identity[0],
         implementation_identity[1],
         run_id=4003,
-        hour=23,
+        hour=7,
     )
     assert not validate_post_recovery_ci_record(
         activation_ci,
@@ -9573,7 +9691,7 @@ def self_test_post_recovery_successor() -> None:
         activation_review,
         implementation_identity,
         implementation_ci,
-        issue_updated_at="2026-08-27T23:11:00Z",
+        issue_updated_at="2026-08-28T08:11:00Z",
     )
     assert not validate_post_recovery_implementation_review(
         advanced_issue_review,
@@ -9585,8 +9703,8 @@ def self_test_post_recovery_successor() -> None:
         activation_review,
         implementation_identity,
         implementation_ci,
-        reviewed_at="2026-08-27T23:10:00Z",
-        issue_updated_at="2026-08-27T23:09:59Z",
+        reviewed_at="2026-08-28T08:10:00Z",
+        issue_updated_at="2026-08-28T08:09:59Z",
     )
     assert validate_post_recovery_implementation_review(
         stale_issue_update_review,
@@ -9610,7 +9728,7 @@ def self_test_post_recovery_successor() -> None:
         activation_review,
         implementation_identity,
         implementation_ci,
-        reviewed_at="2026-08-27T23:05:59Z",
+        reviewed_at="2026-08-28T07:05:59Z",
     )
     assert validate_post_recovery_implementation_review(
         reversed_implementation_review,

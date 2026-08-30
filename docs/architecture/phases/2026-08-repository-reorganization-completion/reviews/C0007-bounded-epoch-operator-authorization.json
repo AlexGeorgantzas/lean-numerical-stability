@@ -1,17 +1,17 @@
 {
   "activation_conditions": [
-    "immutable audited main B 8960f2a980be22166f321c4ba452eb547529b1fd, failed P 1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9 and its failed run 32966438799 attempt 1, and recovery PR 825b972bc2f9f132d4cd1863c4ef06aee3673f5c and its successful run 33016546729 attempt 1 remain exact",
+    "immutable audited main B 8960f2a980be22166f321c4ba452eb547529b1fd, failed P 1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9 and its failed run 32966438799 attempt 1, recovery PR 825b972bc2f9f132d4cd1863c4ef06aee3673f5c and its successful run 33016546729 attempt 1, and failed activation candidate A1 c66c57b46a5424e58ea67f09ccc13e2b91dca93d and its failed run 33138416007 attempt 1 remain exact",
     "the authorization manifest has exactly seven sorted CONT01 continuation_control modify rows plus the unchanged fourteen sorted R0014/R0015 implementation rows from immutable P",
-    "the six finalized non-contract A postimages are staged together while HEAD and the bounded remote ref remain exact PR, the contract remains its PR blob, and every unstaged, untracked, unmanifested, and implementation path is absent",
+    "the five changed non-contract A postimages are staged together while HEAD and the bounded remote ref remain exact A1, the authorized-path manifest remains byte-identical at its pinned SHA-256, the contract remains its A1 blob, and every unstaged, untracked, unmanifested, and implementation path is absent",
     "the non-mutating PR recovery review-readiness gate authenticates exact PR CI and stable refs, then emits the canonical authorized-reviewer comment body binding only PR commit, PR tree, PR contract, and the six-artifact successor-basis digest",
     "the first live unedited non-app comment by the authorized co-owner reviewer kfoynt (144732584 / MDQ6VXNlcjExNzIyNzEz, COLLABORATOR), personally posted or explicitly confirmed by the primary human, exactly matches that emitted body before the schema-5 contract is rendered as the seventh and final A postimage",
-    "A is the exact seven-path direct child of PR with subject docs(reorganization): record M13 recovery review; exact-head A CI succeeds before contract-only T is created",
+    "A is the exact six-path direct child of immutable failed A1 with subject docs(reorganization): record M13 recovery review; exact-head A CI succeeds before contract-only T is created",
     "T is the contract-only direct child of A; exact-head T CI and the read-only T implementation-readiness gate succeed before any R0014 or R0015 implementation byte is applied or staged",
     "I is the complete indivisible fourteen-path R0014/R0015 direct child of T; exact-head I CI and a second distinct live unedited authorized-reviewer comment succeed before contract-only V",
     "V is the contract-only direct child of I; exact-head V post-assurance CI succeeds with stable refs and its canonical evidence is retained only in the untracked local ledger"
   ],
   "authority_id": "primary-human",
-  "authorization_id": "C0007-M13-I01-CODE03-post-recovery-terminal-v6",
+  "authorization_id": "C0007-M13-I01-CODE03-post-recovery-terminal-v7",
   "authorized_actions": [
     "prepare and independently validate exactly the six non-contract successor-control postimages, stage them atomically at immutable PR, and run the non-mutating PR recovery review-readiness gate",
     "create one bounded ordinary GitHub issue if needed and solicit the exact emitted activation comment only from the fixed authorized co-owner reviewer kfoynt after readiness succeeds",
@@ -26,6 +26,19 @@
     "control_tree_sha": "70cee1e77e1311129b00aeb0945770483d1aa5db",
     "current_checkpoint_id": "C0007",
     "current_checkpoint_sha": "4e26820d1f4989ec4ec77b7113085f593570e11b",
+    "failed_activation": {
+      "commit_sha": "c66c57b46a5424e58ea67f09ccc13e2b91dca93d",
+      "contract_blob_oid": "90f29c1ad9bf2435d00df045dbee93105638db7a",
+      "contract_sha256": "94FE8FB22BB300F686D3B5BC778223A13CBF83DED99703BC3422138B2D3C2D40",
+      "job_id": 98743572702,
+      "job_log_byte_count": 21133,
+      "job_log_sha256": "CCBB73BB7131DF91DC36B24F2D78796B5FABE14DE1355E0396EE14393F45DBD3",
+      "parent_sha": "825b972bc2f9f132d4cd1863c4ef06aee3673f5c",
+      "run_attempt": 1,
+      "run_conclusion": "failure",
+      "run_id": 33138416007,
+      "tree_sha": "d8a194f58bf1a419800e1a7aa8b982cc5f5fcc58"
+    },
     "failed_planned_control": {
       "commit_sha": "1d454ecb8dc80dc4ece21ebc26eec29b8f9a6ae9",
       "contract_blob_oid": "6c1f59211399c626c7727952c16ea63e504270c8",
@@ -62,7 +75,7 @@
     "events": [
       "successful exact-head V post-assurance workflow_dispatch evidence is authenticated with stable main and bounded refs and recorded only in the untracked local ledger",
       "explicit cancellation, revocation, or supersession",
-      "authority, manifest, workflow, checker, packet, supported-API, base, immutable P, immutable PR, or artifact drift",
+      "authority, manifest, workflow, checker, packet, supported-API, base, immutable P, immutable PR, immutable failed A1, or artifact drift",
       "an exact-lease mismatch, bounded-ref drift, remote-main drift, duplicate matching run ID, edited or deleted reviewer comment, force update, or history rewrite"
     ],
     "terminal_control_state": "verified",
@@ -85,7 +98,7 @@
     "bounded-ref deletion, force push, history rewrite, branch retirement, or compatibility-wrapper removal"
   ],
   "record_kind": "primary_human_post_recovery_continuation_authorization",
-  "recorded_at": "2026-08-27T19:47:02Z",
+  "recorded_at": "2026-08-28T03:36:14Z",
   "run_policy": {
     "attempt_policy": "one positive current attempt and exactly one matching run ID per exact lifecycle head",
     "event": "workflow_dispatch",
@@ -104,7 +117,7 @@
       "implementation_path_set_sha256": "29BD21B735E94B3B8670E03A766FCF20F2E5762D9472C62028332A871403E189",
       "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-bounded-epoch-authorized-paths.tsv",
       "path_list_sha256": "F15AE108A9B1F9D80C0E5AEEC032B00E7A8D1473D55DE6F117A9F9F2719E55F5",
-      "preimage_freeze_sha256": "4E4FAAF3B9E21573FBF3BB590B30B452D1C65552CB078177F47224E4A1F5013C",
+      "preimage_freeze_sha256": "B5B75BEA44A29984ADE08EBFD4591C9370D4A172A4506F76D5D7D1E1085E2AA4",
       "row_count": 21,
       "sha256": "DEF42E27D780A91362FB39A9B6078D41F39B4145CFF5D82AA272D10F46C65C0D",
       "successor_non_self_path_count": 6,
@@ -113,7 +126,7 @@
     "bounded_ref": "refs/heads/codex/reorg-closeout-2026-08-m13-i01",
     "checkpoint_acceptance_authorized": false,
     "implementation_authorized": true,
-    "lifecycle_graph": "B -> P_failed -> PR -> A -> T -> I -> V",
+    "lifecycle_graph": "B -> P_failed -> PR -> A1_failed -> A -> T -> I -> V",
     "owner_solicitation_authorized": true,
     "post_assurance_transition_authorized": true,
     "remote_main_mutation_authorized": false,
@@ -161,8 +174,8 @@
     "user_principal_id": "primary-human"
   },
   "supersedes": {
-    "authorization_id": "C0007-M13-I01-CODE03-post-recovery-terminal-v4",
-    "effect": "superseded by the 2026-08-27 primary-human reviewer re-pin instruction before any A commit; no continuation action remains authorized by it",
-    "sha256": "DA9A9BC4834A28B43494D87810F64BEC3C8003C46F24F98B54025EC32E72BF43"
+    "authorization_id": "C0007-M13-I01-CODE03-post-recovery-terminal-v6",
+    "effect": "superseded after failed activation candidate A1: the schema-5 live census rejected the actions-checkout remote namespace; the graph extends through immutable failed A1 and no v6 action remains authorized",
+    "sha256": "1BFE364FF33DD89E75C183BF88028F690E599BF3FAA29D29EC402D5706B68906"
   }
 }
