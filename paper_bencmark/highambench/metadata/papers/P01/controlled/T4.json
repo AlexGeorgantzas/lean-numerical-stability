@@ -6,14 +6,14 @@
       "sha256": "fc1fe48de1e1b6eaa0a869d37df680d70a2271179624738fd2f26b5f3cff1236"
     },
     {
-      "bytes": 175471,
+      "bytes": 177942,
       "path": "shared/HighamBench/P01Definitions.lean",
-      "sha256": "30cf2cba218e7dfaf6d102be49aacd9717f07f10afc7fe7e0c9676c129fdf620"
+      "sha256": "569b689a115dd11da614effd8e3e532ad7634f308f5dd956c83147962be65b6d"
     },
     {
-      "bytes": 43725,
+      "bytes": 44140,
       "path": "tasks/P01/T4/Target.lean",
-      "sha256": "305ddb589254581dbf7e9ea7cebf73aec6bb5adfaec4c31a39a06ab63cde3cb3"
+      "sha256": "81a58bf4e22dc9ce426ef309eb36737de6eea025b26e4930617ff8272ee79a19"
     },
     {
       "bytes": 1229,
