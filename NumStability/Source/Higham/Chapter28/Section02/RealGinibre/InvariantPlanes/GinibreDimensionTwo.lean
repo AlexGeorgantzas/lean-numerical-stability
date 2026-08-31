@@ -70,7 +70,7 @@ theorem realGinibreTwo_charpoly_eval (A : RSqMat 2) (x : ℝ) :
 
 theorem realGinibreTwo_charpoly_degree (A : RSqMat 2) :
     A.charpoly.degree = 2 := by
-  simpa using Matrix.charpoly_degree_eq_dim A
+  simp
 
 /-- A nonnegative discriminant makes the real characteristic polynomial
 split completely, including the repeated-root boundary. -/
@@ -119,7 +119,7 @@ theorem realEigenvalueCount_two_eq_ite (A : RSqMat 2) :
   split_ifs with hD
   · have hs := realGinibreTwo_charpoly_splits_of_discriminant_nonneg A hD
     rw [← hs.natDegree_eq_card_roots]
-    simpa using A.charpoly_natDegree_eq_dim
+    simp
   · have hneg : realGinibreTwoDiscriminant A < 0 := lt_of_not_ge hD
     have hzero : A.charpoly.roots = 0 := by
       rw [Polynomial.roots_eq_zero_iff_isRoot_eq_bot A.charpoly_monic.ne_zero]
@@ -140,8 +140,9 @@ theorem integral_Ioi_mul_exp_neg_sq_div_two (a : ℝ) :
   have hderiv : ∀ r : ℝ, HasDerivAt F
       (r * Real.exp (-(r ^ 2) / 2)) r := by
     intro r
-    convert (((hasDerivAt_pow 2 r).neg.div_const 2).exp.neg) using 1 <;>
-      norm_num [F] <;> ring
+    convert (((hasDerivAt_pow 2 r).neg.div_const 2).exp.neg) using 1
+    norm_num [F]
+    ring
   have hint : IntegrableOn (fun r : ℝ =>
       r * Real.exp (-(r ^ 2) / 2)) (Ioi a) := by
     have hbase : IntegrableOn
@@ -149,12 +150,12 @@ theorem integral_Ioi_mul_exp_neg_sq_div_two (a : ℝ) :
       (integrable_mul_exp_neg_mul_sq (show (0 : ℝ) < 1 / 2 by norm_num)).integrableOn
     refine hbase.congr_fun ?_ measurableSet_Ioi
     intro r hr
-    congr 2
     ring_nf
   have hlim : Tendsto F atTop (nhds 0) := by
     have hsq : Tendsto (fun r : ℝ => -(r ^ 2) / 2) atTop atBot := by
       convert (tendsto_pow_atTop (by norm_num : (2 : ℕ) ≠ 0)).const_mul_atTop_of_neg
-        (show (-1 / 2 : ℝ) < 0 by norm_num) using 1 <;> ring
+        (show (-1 / 2 : ℝ) < 0 by norm_num) using 1
+      ring
     simpa [F] using (Real.tendsto_exp_atBot.comp hsq).neg
   simpa [F] using integral_Ioi_of_hasDerivAt_of_tendsto'
     (fun r _ => hderiv r) hint hlim
@@ -455,7 +456,7 @@ theorem standardGaussianVectorMeasure_three_cone_real :
   have hpre : e ⁻¹' gaussianConeProduct = gaussianVectorConeThree := by
     ext x
     simp [e, gaussianConeProduct, gaussianVectorConeThree,
-      MeasurableEquiv.piFinSuccAbove_apply, Fin.removeNth_last, Fin.init]
+      MeasurableEquiv.piFinSuccAbove_apply]
     have h0 : Fin.removeNth (2 : Fin 3) x (0 : Fin 2) = x 0 := by
       rw [Fin.removeNth_apply]
       congr 1
@@ -499,7 +500,7 @@ noncomputable def ginibreTwoRotationOrthogonal :
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [ginibreTwoRotationMatrix, Matrix.mul_apply,
-        Fin.sum_univ_succ, Matrix.one_apply] <;>
+        Fin.sum_univ_succ] <;>
       nlinarith⟩
 
 def gaussianVectorConeFour : Set (Fin 4 → ℝ) :=

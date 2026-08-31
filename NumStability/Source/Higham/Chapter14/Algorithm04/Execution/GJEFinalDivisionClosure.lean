@@ -238,7 +238,6 @@ theorem ch14ext_gje_stage2_backward_error_of_accumulation_final_diagonal
     ch14ext_rhsAccumulation_c3 n fp Nhat xseq start hn h3 hidx hrecX
   have hQPV : matMul n Q (matMul n P (V start)) = V start := by
     rw [← matMul_assoc]
-    change matMul n (matMul n Q P) (V start) = V start
     rw [show matMul n Q P = idMatrix n by simpa [P] using hQP,
       matMul_id_left]
   have hDeltaUeq : forall i j : Fin n,
@@ -648,7 +647,7 @@ theorem ch14ext_gjeFinalDivisionEnvelope_nonneg (n : Nat)
 `|U||xhat| + c |X||U||xhat|` using `QD = U + DeltaU`. -/
 theorem ch14ext_gjeFinalDivisionEnvelope_le_stage_objects (n : Nat)
     (U X Q D DeltaU : Fin n -> Fin n -> Real)
-    (xhat : Fin n -> Real) (c : Real) (hc : 0 <= c)
+    (xhat : Fin n -> Real) (c : Real) (_hc : 0 <= c)
     (hDoff : forall i j : Fin n, i ≠ j -> D i j = 0)
     (hQD : forall i j : Fin n,
       U i j + DeltaU i j = matMul n Q D i j)
@@ -777,8 +776,8 @@ final divisions. -/
 theorem ch14ext_gjeResidual1433_bound_with_extra_rhs (n : Nat)
     (L U X DeltaA DeltaL DeltaU : Fin n -> Fin n -> Real)
     (y xhat DeltaY r : Fin n -> Real) (g c d : Real)
-    (hg : 0 <= g) (hc : 0 <= c) (hd : 0 <= d)
-    (hr : forall i : Fin n, 0 <= r i)
+    (hg : 0 <= g) (hc : 0 <= c) (_hd : 0 <= d)
+    (_hr : forall i : Fin n, 0 <= r i)
     (hDeltaA : forall i j : Fin n, |DeltaA i j| <= g *
       Finset.univ.sum (fun k : Fin n => |L i k| * |U k j|))
     (hDeltaL : forall i j : Fin n, |DeltaL i j| <= g * |L i j|)
@@ -1287,8 +1286,8 @@ theorem ch14ext_gjeDiagonalInv_mul_diagonal (n : Nat)
 
 theorem ch14ext_gjeDiagonalInv_delta_action (n : Nat)
     (D DeltaD : Fin n -> Fin n -> Real) (x : Fin n -> Real) (d : Real)
-    (hd : 0 <= d) (hdiag : forall i : Fin n, D i i ≠ 0)
-    (hDoff : forall i j : Fin n, i ≠ j -> D i j = 0)
+    (_hd : 0 <= d) (hdiag : forall i : Fin n, D i i ≠ 0)
+    (_hDoff : forall i j : Fin n, i ≠ j -> D i j = 0)
     (hDeltaOff : forall i j : Fin n, i ≠ j -> DeltaD i j = 0)
     (hDelta : forall i j : Fin n, |DeltaD i j| <= d * |D i j|) :
     forall i : Fin n,
@@ -1337,7 +1336,7 @@ division contributes `d*|xhat|` and the interaction `2*c*d*T2`; both are kept
 explicit. -/
 theorem ch14ext_gje_stage2_forward_split_with_final_division (n : Nat)
     (U X : Fin n -> Fin n -> Real) (z y xhat : Fin n -> Real)
-    (c d : Real) (hc : 0 <= c) (hd : 0 <= d)
+    (c d : Real) (hc : 0 <= c) (_hd : 0 <= d)
     (hX : forall i j : Fin n, 0 <= X i j)
     (hUz : forall i : Fin n, matMulVec n U z i = y i)
     (hErr : forall i : Fin n, |z i - xhat i| <=
@@ -2727,13 +2726,14 @@ theorem ch14ext_cor146Finalized_residual_source_literal
   have hbase' :
       vecNorm2 (fun i : Fin n => b i - matMulVec n A xhat i) <=
         C * (factor * khat) + rho := by
-    convert hbase using 1 <;>
-      simp [C, factor, khat, rho, xhat,
-        ch14ext_cor146FinalizedResidualTerminal,
-        ch14ext_gjeFinalizedFamilyOutput,
-        ch14ext_gjeFinalizedFamilyXabs,
-        ch14ext_gjeFinalizedFamilyNormalizedPabs,
-        ch14ext_cor146ClosureSqrtKappa, hAhat] <;> ring
+    convert hbase using 1
+    simp [C, factor, khat, rho, xhat,
+      ch14ext_cor146FinalizedResidualTerminal,
+      ch14ext_gjeFinalizedFamilyOutput,
+      ch14ext_gjeFinalizedFamilyXabs,
+      ch14ext_gjeFinalizedFamilyNormalizedPabs,
+      ch14ext_cor146ClosureSqrtKappa, hAhat]
+    ring
   calc
     vecNorm2 (fun i : Fin n =>
         b i - matMulVec n A (ch14ext_gjeFinalizedFamilyOutput F.gje t) i) <=

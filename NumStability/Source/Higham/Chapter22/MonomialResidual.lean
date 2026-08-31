@@ -230,9 +230,9 @@ theorem higham22ClosureComplexUpperBidiag_mul_invEntries {N : ℕ}
       · rw [dif_pos hi]
         have hisi : (i : ℕ) < ((⟨(i : ℕ) + 1, hi⟩ : Fin N) : ℕ) := by simp
         rw [higham22ClosureComplexUpperBidiagInvEntry_below u e _ i hisi]
-        simp [Matrix.one_apply, hu i]
+        simp [hu i]
       · rw [dif_neg hi]
-        simp [Matrix.one_apply, hu i]
+        simp [hu i]
     · have hijlt : (i : ℕ) < j := by omega
       have hi : (i : ℕ) + 1 < N := by omega
       rw [dif_pos hi]
@@ -240,7 +240,7 @@ theorem higham22ClosureComplexUpperBidiag_mul_invEntries {N : ℕ}
         u e hu i j hijlt
       dsimp only at hrec
       rw [hrec]
-      simp [Matrix.one_apply, hij]
+      simp [hij]
 
 theorem higham22ClosureComplexUpperBidiag_inv_apply {N : ℕ}
     (u e : Fin N → ℂ) (hu : ∀ p, u p ≠ 0) (i j : Fin N) :
@@ -361,11 +361,9 @@ theorem higham22Closure_complex_problem22_8_structured_factor
         (1 + delta p) * (-e p / u p) := by
     intro p
     field_simp [heps p]
-    <;> ring
   simp_rw [hterm]
   rw [Finset.prod_mul_distrib]
   field_simp [heps j]
-  <;> ring
 
 theorem higham22Closure_complex_problem22_8_structured_difference
     {N : ℕ} (u e eps delta : Fin N → ℂ) (i j : Fin N)
@@ -414,7 +412,7 @@ theorem higham22Closure_complex_problem22_8_inverse_entry_bound
       rw [Finset.ssubset_iff_subset_ne]
       refine ⟨Finset.filter_subset _ _, ?_⟩
       intro hEq
-      have hjmem : j ∈ S := by simpa [hEq]
+      have hjmem : j ∈ S := by simp [hEq]
       simp [S] at hjmem
     have hcardlt : S.card < N := by
       simpa using Finset.card_lt_card hSsub
@@ -645,7 +643,7 @@ theorem higham22Closure_monomial_stageII_linearized_eq_bidiag_mulVec {n : ℕ}
            apply Fin.ext
            exact hiLast
          have hnsub : 1 + (n - 1) = n := by omega
-         simpa only [hiFin, Fin.val_mk, hnsub])
+         simp only [hiFin, Fin.val_mk, hnsub])
 
 theorem higham22Closure_rounded_monomial_stageII_factor_eq_bidiag {n : ℕ}
     (rm : Higham22SourceRoundModel) (alpha a : Fin (n + 1) → ℂ)

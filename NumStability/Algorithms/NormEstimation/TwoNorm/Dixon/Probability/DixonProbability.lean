@@ -78,7 +78,7 @@ theorem ch15_standardGaussian_abs_le (a : ℝ) (ha : 0 ≤ a) :
         exact ch15_standardGaussian_pdf_le x
     _ = ((399 : ℝ) / 500) * a := by
       rw [setIntegral_const]
-      simp [Real.volume_Icc, ha]
+      simp [ha]
       ring
 
 theorem ch15_standardGaussian_coordinate_sq_integral
@@ -323,16 +323,16 @@ theorem ch15_standardGaussianDirection_firstCoordinate_small
         (δ / Real.sqrt (1 - δ ^ 2)) * Real.sqrt d) := by rfl
 
 theorem ch15_dixon_strip_coefficient_le
-    (d : ℕ) (δ : ℝ) (hδ0 : 0 ≤ δ) (hδ1 : δ < 1)
+    (d : ℕ) (δ : ℝ) (hδ0 : 0 ≤ δ) (_hδ1 : δ < 1)
     (hsmall : ((4 : ℝ) / 5) * Real.sqrt (d + 1) * Real.sqrt δ < 1) :
     ((399 : ℝ) / 500) * (δ / Real.sqrt (1 - δ ^ 2)) * Real.sqrt d ≤
       ((4 : ℝ) / 5) * Real.sqrt (d + 1) * Real.sqrt δ := by
   by_cases hd : d = 0
   · subst d
-    simp [hδ0]
+    simp
   have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr hd)
   let N : ℝ := d + 1
-  have hN2 : 2 ≤ N := by dsimp [N]; norm_num; linarith
+  have hN2 : 2 ≤ N := by dsimp [N]; linarith
   have hN0 : 0 ≤ N := hN2.trans' (by norm_num)
   have hδsq : Real.sqrt δ ^ 2 = δ := Real.sq_sqrt hδ0
   have hNsq : Real.sqrt N ^ 2 = N := Real.sq_sqrt hN0
@@ -429,16 +429,16 @@ theorem ch15SphereInner_base (d : ℕ) (x : OrthogonalSphere (d + 1)) :
       _ = a * b * @inner ℝ ℝ _ (1 : ℝ) 1 := by
         rw [real_inner_smul_left, real_inner_smul_right]
         ring
-      _ = a * b := by simp [real_inner_self_eq_norm_mul_norm]
+      _ = a * b := by simp
   simp only [ch15SphereInner, ch15SphereFirstCoordinate,
     orthogonalSphereBase, PiLp.inner_apply]
   simp_rw [hscalar]
   classical
   rw [Finset.sum_eq_single ⟨0, by omega⟩]
-  · simp [Pi.single_apply]
+  · simp
   · intro j _ hj
     have hj0 : j ≠ (0 : Fin (d + 1)) := by simpa using hj
-    simp [Pi.single_apply, hj0]
+    simp [hj0]
   · simp
 
 theorem ch15SphereInner_smul (d : ℕ)

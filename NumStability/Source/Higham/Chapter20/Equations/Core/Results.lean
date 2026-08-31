@@ -577,10 +577,10 @@ private theorem higham20Eq20_19_abs_minus_le_balanced_of_balanced_le_alpha
   let s : ℝ := Real.sqrt 2
   let t : ℝ := sigma / s
   have hs_pos : 0 < s := by
-    simpa [s] using Real.sqrt_pos.2 (by norm_num : (0 : ℝ) < 2)
+    simp [s]
   have hs_ne : s ≠ 0 := ne_of_gt hs_pos
   have hs_sq : s ^ 2 = (2 : ℝ) := by
-    simpa [s] using Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)
+    simp [s]
   have ht_nonneg : 0 ≤ t := by
     dsimp [t]
     positivity
@@ -665,7 +665,7 @@ condition-number conclusion is supplied as a hypothesis. -/
 theorem higham20_problem20_7_scaled_augmented_condition_extremum
     {m n : ℕ} [Nonempty (Fin n)] (hlt : n < m)
     {A : Fin m → Fin n → ℝ}
-    (hrank : Function.Injective (rectMatMulVec A))
+    (_hrank : Function.Injective (rectMatMulVec A))
     {sigma : Fin n → ℝ} {u : Fin n → Fin m → ℝ}
     {v : Fin n → Fin n → ℝ} {w : Fin (m - n) → Fin m → ℝ}
     (hu : ∀ i : Fin n, vecNorm2Sq (u i) = 1)

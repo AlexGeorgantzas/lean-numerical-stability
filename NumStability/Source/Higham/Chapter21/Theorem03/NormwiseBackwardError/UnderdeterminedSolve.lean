@@ -10291,7 +10291,7 @@ theorem higham21_thm21_3_nonzeroFormulaRHS_sq_le_costF_sq_of_feasible
           (T * vecNorm2Sq r) * Y = T * Y * vecNorm2Sq r := by ring
           _ <= D * (vecNorm2Sq w + T * Y * vecNorm2Sq Deltab) := hTYR_le
           _ = (D * (vecNorm2Sq w / Y + T * vecNorm2Sq Deltab)) * Y := by
-            field_simp [hYne] <;> ring
+            field_simp [hYne]
       exact le_of_mul_le_mul_right hmul hYpos
     have hformula :
         T * Y / D * (vecNorm2Sq r / Y) =
@@ -10324,7 +10324,7 @@ theorem higham21_thm21_3_nonzeroFormulaRHS_sq_le_costF_sq_of_feasible
         (vecNorm2Sq w / Y + T * vecNorm2Sq Deltab) +
           frobNormSqRect E := add_le_add hscalar hsigma_sq
     _ = frobNormSqRect DeltaA + T * vecNorm2Sq Deltab := by
-      rw [hpyth] <;> ring
+      (rw [hpyth]; ring)
 
 /-- Higham, 2nd ed., Chapter 21, Theorem 21.3: every feasible
     perturbation for a nonzero candidate has weighted Frobenius cost at least
@@ -10639,7 +10639,8 @@ theorem higham21_lsNormwiseBackwardErrorCostF_smul
           t * lsNormwiseBackwardErrorWeightedMatrix theta A b i j := by
     ext i j
     refine Fin.addCases (fun j => ?_) (fun j => ?_) j <;>
-      simp [lsNormwiseBackwardErrorWeightedMatrix] <;> ring
+      simp [lsNormwiseBackwardErrorWeightedMatrix]
+    ring
   rw [hweighted, frobNormRect_smul]
 
 /-- An arbitrarily small signed scalar can avoid one forbidden affine root. -/
@@ -10829,7 +10830,7 @@ theorem higham21_rectTransposeMulVec_sub_formulaMatrix_eq_rankOne
   ext j
   rw [hformula j]
   have happly := lsLemma20_6ProjectorComplement_apply_vec y v j
-  simp only [undetApproxComplementProjector] at happly
+  simp only at happly
   rw [happly]
   have hpair :
       (∑ k : Fin n, y k * v k) =
@@ -10879,7 +10880,7 @@ theorem higham21Thm21_3Approx_system_eq
   dsimp [higham21Thm21_3ResidualDeltab, r, Y, den]
   unfold undetResidualHigham
   unfold rectMatMulVec
-  field_simp [hden'] <;> ring
+  (field_simp [hden']; ring)
 
 /-- The signed family has a rank-one transpose action, with coefficient
     determined by its exact perturbed right-hand side. -/
@@ -10993,7 +10994,7 @@ theorem higham21Thm21_3Approx_transpose_action
 
 /-- The `t = 0` member has cost exactly the displayed Theorem 21.3 RHS. -/
 theorem higham21Thm21_3Approx_cost_zero_eq_formulaRHS_of_attaining
-    {m n : Nat} {theta : Real} (htheta : 0 <= theta)
+    {m n : Nat} {theta : Real} (_htheta : 0 <= theta)
     (A : Fin (m + 1) -> Fin n -> Real) (b : Fin (m + 1) -> Real)
     (y : Fin n -> Real) (u : Fin (m + 1) -> Real)
     (hy : y ≠ 0) (hu : u ≠ 0)
@@ -11085,7 +11086,7 @@ theorem higham21Thm21_3Approx_cost_zero_eq_formulaRHS_of_attaining
       lsNormwiseBackwardErrorCostF theta base db ^ 2 =
         theta ^ 2 * R / den + sigma ^ 2 := by
     rw [lsNormwiseBackwardErrorCostF_sq, hbasefrob, hdbnorm]
-    field_simp [hden] <;> ring
+    (field_simp [hden]; ring)
   have hrhssq :
       undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ^ 2 =
         theta ^ 2 * R / den + sigma ^ 2 := by
