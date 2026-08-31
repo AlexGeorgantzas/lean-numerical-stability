@@ -17,9 +17,21 @@ CI runs on every push to `main` and on every pull request
 the four checker self-tests, `check_phase.py --all-phases`,
 `check_completion_phase.py`, `check_layout.py`, `check_compatibility.py`,
 `check_provenance.py`, `generate_baseline.py --skip-declarations
---strict-source`, and `lake build NumStability NumStabilityTest`.
+--strict-source`, `lake build NumStability NumStabilityTest`, the literal
+`lake test` test-driver step, and `check_warnings.py --check` against
+`docs/architecture/warnings.json`.
 
 Before every push, the same sequence runs locally, plus `lake test`.
+
+The warning contract is a ratchet in both directions. `warnings.json` is the
+authoritative census of every enabled diagnostic and every reviewed
+`set_option linter.* false` suppression; the checker fails on a new
+fingerprint, an exceeded global, per-kind, per-role, or per-file ceiling, a
+warning in a file with no reviewed allowance, an unlisted or expired
+suppression, or a toolchain, Mathlib, or platform change that invalidates the
+capture. A diagnostic that stops firing also fails, as an improvement that
+requires a reviewed baseline reduction: `--write-baseline` is review-only, so
+the census can only fall through a reviewed batch, never drift.
 A change that touches CI-facing tooling is additionally rehearsed in a
 checkout-shaped local clone (long paths on, `core.autocrlf` off, detached
 HEAD at the exact candidate commit) before it is pushed.

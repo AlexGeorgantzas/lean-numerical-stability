@@ -45,3 +45,8 @@ jobs:
           lint: false
       - name: Run lake test
         run: lake test
+      - name: Check the warning baseline
+        run: |
+          set -o pipefail
+          lake build NumStability NumStabilityTest 2>&1 | tee "$RUNNER_TEMP/lean-build.log"
+          python tools/architecture/check_warnings.py --log "$RUNNER_TEMP/lean-build.log" --baseline docs/architecture/warnings.json --check

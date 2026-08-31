@@ -60,6 +60,19 @@ book-formalization migration. The generator has two layers:
   permits selected private names to change while pinning each normalized
   declaration's destination owner.
 - `check_provenance.py` validates license pointers and exact upstream evidence.
+- `check_warnings.py` enforces the warning contract in
+  `docs/architecture/warnings.json` against a build or test log. It normalizes
+  ANSI sequences, CRLF, GitHub timestamp prefixes, runner path prefixes, and
+  multiline diagnostics, then identifies each diagnostic by path, kind,
+  normalized message, a stable nearby-source anchor hash, and occurrence, so
+  line and column stay evidence rather than identity. `--check` fails on a new
+  fingerprint, an unclassifiable diagnostic, an exceeded global, per-kind,
+  per-role, or per-file ceiling, a warning in a file with no reviewed
+  allowance, a path or kind mutation, an unlisted or expired suppression, or a
+  capture-environment change; a diagnostic that no longer fires fails as an
+  improvement requiring a reviewed reduction. `--write-baseline` is review-only
+  and byte-reproducible from a given log. `--self-test` exercises every failure
+  class against synthetic fixtures.
 - `sort_aggregate_imports.py` mechanically normalizes import-only umbrellas.
 
 Run the complete capture from the repository root:
