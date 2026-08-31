@@ -23,7 +23,6 @@ private theorem det_eval_descPochhammer_eq_factorial_mul_choose
     (fun j : Fin k => (Nat.factorial j : ℝ))
     (fun i j : Fin k => (Nat.choose (v i) j : ℝ))
   · rw [Matrix.of_apply, descPochhammer_eval_eq_descFactorial]
-    congr
     exact_mod_cast Nat.descFactorial_eq_factorial_mul_choose _ _
 
 private theorem det_choose_initial_columns_pos

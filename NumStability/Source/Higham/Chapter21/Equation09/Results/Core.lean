@@ -603,7 +603,8 @@ theorem higham21_eq21_9_operatorCertificateCoefficient_le_dimensionCoefficient
       Real.sqrt (m : Real) * vecNorm2 b +
           (d * Aop) * vecNorm2 x <=
         d * (Aop * vecNorm2 x) + d * (Aop * vecNorm2 x) := by
-    convert add_le_add hrhs le_rfl using 1 <;> ring
+    convert add_le_add hrhs le_rfl using 1
+    ring
   have hnat :
       Nat.min 1 (n - m) + 2 = Nat.min 3 (n - m + 2) := by
     by_cases hgap : n - m = 0
@@ -769,7 +770,6 @@ theorem higham21_eq21_9_relative_firstOrder
       div_le_div_of_nonneg_right hscaled hxpos.le
     _ = |eps| * K := by
       field_simp [ne_of_gt hxpos]
-      <;> ring
 
 
 

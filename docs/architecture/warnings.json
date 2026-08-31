@@ -23,7 +23,6 @@
       "NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/CorrectedRecurrence/Core.lean": 1,
       "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/QuasiTriangularBartelsStewart/SmallSystemRounding.lean": 3,
       "NumStability/Algorithms/NormEstimation/PNorm/Boyd/Differentiation/BoydLocal.lean": 1,
-      "NumStability/Algorithms/NormEstimation/PNorm/Boyd/Differentiation/PNormGeneral.lean": 4,
       "NumStability/Algorithms/NormEstimation/PNorm/Boyd/LocalStability/BoydConcrete.lean": 1,
       "NumStability/Algorithms/NormEstimation/PNorm/Boyd/Scalar/BoydLocal.lean": 2,
       "NumStability/Algorithms/NormEstimation/PNorm/Duality/PNormGeneral.lean": 1,
@@ -35,7 +34,6 @@
       "NumStability/Analysis/LeadingDigits/DecimalPowers.lean": 1,
       "NumStability/Analysis/LinearOperators/MatrixPowers/BaiDemmelGu/DistanceToInstability.lean": 12,
       "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarAlgebra.lean": 1,
-      "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarCrossingBounds/Polynomial.lean": 1,
       "NumStability/Analysis/MatrixInequalities/LiebTrace/Concavity.lean": 1,
       "NumStability/Analysis/MatrixNorms/SpectralExtrema/Basic.lean": 1,
       "NumStability/Analysis/Polynomials/RealRootCounting.lean": 3,
@@ -54,7 +52,6 @@
       "NumStability/Source/Higham/Chapter07/Corollary06/Equilibration/Basic.lean": 1,
       "NumStability/Source/Higham/Chapter07/Equation17/KahanConditioningExample.lean": 2,
       "NumStability/Source/Higham/Chapter08/Equation14/FanInProduct/Basic.lean": 10,
-      "NumStability/Source/Higham/Chapter08/Section03/TriangularSystems/ArbitraryOrder.lean": 4,
       "NumStability/Source/Higham/Chapter09/Problems.lean": 21,
       "NumStability/Source/Higham/Chapter09/Theorem14/Actual.lean": 13,
       "NumStability/Source/Higham/Chapter09/Theorem14/DiagDominant.lean": 2,
@@ -100,7 +97,6 @@
       "NumStability/Source/Higham/Chapter15/Problem04/LUConditionBounds/Basic.lean": 1,
       "NumStability/Source/Higham/Chapter15/Problem06/TridiagonalInverseNorm/Recurrences/FactorizationAndNorm.lean": 16,
       "NumStability/Source/Higham/Chapter15/Problem06/TridiagonalInverseNorm/TridiagonalInverse.lean": 5,
-      "NumStability/Source/Higham/Chapter15/Section02/Boyd/LocalConvergence/ConstrainedLagrangian/Differentiation.lean": 4,
       "NumStability/Source/Higham/Chapter16/Problem02/Results/Core.lean": 7,
       "NumStability/Source/Higham/Chapter16/Spectrum/Results.lean": 2,
       "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/Equations04And05/Equation05Primary.lean": 2,
@@ -119,8 +115,6 @@
       "NumStability/Source/Higham/Chapter20/Theorem07/RowPolicy.lean": 10,
       "NumStability/Source/Higham/Chapter20/Theorem07/SourceTrace.lean": 2,
       "NumStability/Source/Higham/Chapter21/Equation07/UnderdeterminedSolve.lean": 2,
-      "NumStability/Source/Higham/Chapter21/Equation08/EquationClosure.lean": 2,
-      "NumStability/Source/Higham/Chapter21/Equation09/Results/Core.lean": 3,
       "NumStability/Source/Higham/Chapter21/Theorem03/Attainment.lean": 2,
       "NumStability/Source/Higham/Chapter21/Theorem03/NormwiseBackwardError/UnderdeterminedSolve.lean": 8,
       "NumStability/Source/Higham/Chapter21/Theorem04/GivensQMethod/RoundedReplay.lean": 1,
@@ -157,9 +151,7 @@
       "NumStability/Source/Higham/Chapter28/Section04/Pascal/OscillationEigenbasis.lean": 1,
       "NumStability/Source/Higham/Chapter28/Section04/Pascal/OscillationSpectrum.lean": 1,
       "NumStability/Source/Higham/Chapter28/Section04/Pascal/SingularizingPerturbation.lean": 1,
-      "NumStability/Source/Higham/Chapter28/Section04/Pascal/TotalPositivity.lean": 1,
       "NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/ReciprocalSPD.lean": 2,
-      "NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/TriangularInvolution.lean": 1,
       "NumStability/Source/Higham/Chapter28/Section06/Companion/CharacteristicPolynomial.lean": 2,
       "NumStability/Source/Higham/Chapter28/Section06/Companion/SingularValues.lean": 5,
       "NumStability/Upstream/Lindemann/Basic.lean": 6,
@@ -170,21 +162,21 @@
     "by_kind": {
       "deprecation": 5,
       "intro/binder suggestion": 4,
-      "linter.unnecessarySeqFocus": 278,
+      "linter.unnecessarySeqFocus": 273,
       "linter.unnecessarySimpa": 76,
-      "linter.unreachableTactic": 48,
+      "linter.unreachableTactic": 42,
       "linter.unusedSimpArgs": 424,
-      "linter.unusedTactic": 68,
+      "linter.unusedTactic": 59,
       "linter.unusedVariables": 153
     },
     "by_role": {
       "internal": 1,
-      "reusable": 118,
-      "source": 927,
+      "reusable": 113,
+      "source": 912,
       "test": 3,
       "upstream": 7
     },
-    "global": 1056
+    "global": 1036
   },
   "diagnostics": [
     {
@@ -1112,94 +1104,6 @@
       "status": "accepted_baseline"
     },
     {
-      "anchor_sha256": "c47782a2a93ea1c31584fe91b25f12e698996e6ebf33c738f02411ec81fe9ef8",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 2,
-        "line": 119
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unnecessarySeqFocus",
-      "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`",
-      "message_sha256": "1a14f32def31275eb9261a821a8c4534a04753a63cb3a5f87e95a46655d07f05",
-      "module": "NumStability.Algorithms.NormEstimation.PNorm.Boyd.Differentiation.PNormGeneral",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Algorithms/NormEstimation/PNorm/Boyd/Differentiation/PNormGeneral.lean",
-      "rationale": "Pre-existing `tac1 <;> tac2` where `(tac1; tac2)` suffices; the rewrite is local but must be re-elaborated per proof.",
-      "reconsideration_trigger": "Reconsider when the owning module is next edited, or on a toolchain bump that changes the linter's verdict.",
-      "reviewer": "primary-human",
-      "role": "reusable",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "db583cba4783ebe1a78502a0ec0724d6996db93cb0abeb0cb361c95b4266c8c1",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 2,
-        "line": 118
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unnecessarySeqFocus",
-      "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`",
-      "message_sha256": "1a14f32def31275eb9261a821a8c4534a04753a63cb3a5f87e95a46655d07f05",
-      "module": "NumStability.Algorithms.NormEstimation.PNorm.Boyd.Differentiation.PNormGeneral",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Algorithms/NormEstimation/PNorm/Boyd/Differentiation/PNormGeneral.lean",
-      "rationale": "Pre-existing `tac1 <;> tac2` where `(tac1; tac2)` suffices; the rewrite is local but must be re-elaborated per proof.",
-      "reconsideration_trigger": "Reconsider when the owning module is next edited, or on a toolchain bump that changes the linter's verdict.",
-      "reviewer": "primary-human",
-      "role": "reusable",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "ae244e0fd4b98212f858439f93f05298222d05ecb5e881668f8a2143b0858eda",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 45,
-        "line": 91
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unreachableTactic",
-      "message": "this tactic is never executed Note: This linter can be disabled with `set_option linter.unreachableTactic false`",
-      "message_sha256": "07abe00e5328abddf55d87a9663d14a92d9c46345b17e5dcbd1d83b64268b5f8",
-      "module": "NumStability.Algorithms.NormEstimation.PNorm.Boyd.Differentiation.PNormGeneral",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Algorithms/NormEstimation/PNorm/Boyd/Differentiation/PNormGeneral.lean",
-      "rationale": "Pre-existing unreachable tactic left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "reusable",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "ae244e0fd4b98212f858439f93f05298222d05ecb5e881668f8a2143b0858eda",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 45,
-        "line": 91
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unusedTactic",
-      "message": "'ring' tactic does nothing Note: This linter can be disabled with `set_option linter.unusedTactic false`",
-      "message_sha256": "efa4fa34ac11d5a09992b28bdb5884583d7cb41459586f318ab82ca6905660c9",
-      "module": "NumStability.Algorithms.NormEstimation.PNorm.Boyd.Differentiation.PNormGeneral",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Algorithms/NormEstimation/PNorm/Boyd/Differentiation/PNormGeneral.lean",
-      "rationale": "Pre-existing no-op tactic step left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "reusable",
-      "status": "accepted_baseline"
-    },
-    {
       "anchor_sha256": "278004c2901a02702d5ce0598b14971ac9c36e91a962b106a6c4a4bb6821d7c5",
       "disposition": "baseline_debt",
       "evidence": {
@@ -1877,28 +1781,6 @@
       "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarAlgebra.lean",
       "rationale": "Pre-existing `tac1 <;> tac2` where `(tac1; tac2)` suffices; the rewrite is local but must be re-elaborated per proof.",
       "reconsideration_trigger": "Reconsider when the owning module is next edited, or on a toolchain bump that changes the linter's verdict.",
-      "reviewer": "primary-human",
-      "role": "reusable",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "c6c8daa35c00783781caedf6038eab7f0e4c2ee6e0616d4d21e8a225e0aeed4b",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 6,
-        "line": 258
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unusedTactic",
-      "message": "'push_cast' tactic does nothing Note: This linter can be disabled with `set_option linter.unusedTactic false`",
-      "message_sha256": "ff5a7629f7213d522dd964b68a4a76600a042836ca211311462474ca9e130a1e",
-      "module": "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarCrossingBounds.Polynomial",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker/PlanarCrossingBounds/Polynomial.lean",
-      "rationale": "Pre-existing no-op tactic step left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
       "reviewer": "primary-human",
       "role": "reusable",
       "status": "accepted_baseline"
@@ -4561,94 +4443,6 @@
       "path": "NumStability/Source/Higham/Chapter08/Equation14/FanInProduct/Basic.lean",
       "rationale": "Pre-existing `tac1 <;> tac2` where `(tac1; tac2)` suffices; the rewrite is local but must be re-elaborated per proof.",
       "reconsideration_trigger": "Reconsider when the owning module is next edited, or on a toolchain bump that changes the linter's verdict.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "4da9363c8e1cd8c42516bcc2e6119285485224c598823433d43b2825ebf5ea79",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 26,
-        "line": 560
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unnecessarySeqFocus",
-      "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`",
-      "message_sha256": "1a14f32def31275eb9261a821a8c4534a04753a63cb3a5f87e95a46655d07f05",
-      "module": "NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.ArbitraryOrder",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter08/Section03/TriangularSystems/ArbitraryOrder.lean",
-      "rationale": "Pre-existing `tac1 <;> tac2` where `(tac1; tac2)` suffices; the rewrite is local but must be re-elaborated per proof.",
-      "reconsideration_trigger": "Reconsider when the owning module is next edited, or on a toolchain bump that changes the linter's verdict.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "50f1093ad52c4f067249d1cdbce1df2973800d9d2b180120583f6f09c3cddcdd",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 26,
-        "line": 538
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unnecessarySeqFocus",
-      "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`",
-      "message_sha256": "1a14f32def31275eb9261a821a8c4534a04753a63cb3a5f87e95a46655d07f05",
-      "module": "NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.ArbitraryOrder",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter08/Section03/TriangularSystems/ArbitraryOrder.lean",
-      "rationale": "Pre-existing `tac1 <;> tac2` where `(tac1; tac2)` suffices; the rewrite is local but must be re-elaborated per proof.",
-      "reconsideration_trigger": "Reconsider when the owning module is next edited, or on a toolchain bump that changes the linter's verdict.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "4da9363c8e1cd8c42516bcc2e6119285485224c598823433d43b2825ebf5ea79",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 43,
-        "line": 560
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unreachableTactic",
-      "message": "this tactic is never executed Note: This linter can be disabled with `set_option linter.unreachableTactic false`",
-      "message_sha256": "07abe00e5328abddf55d87a9663d14a92d9c46345b17e5dcbd1d83b64268b5f8",
-      "module": "NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.ArbitraryOrder",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter08/Section03/TriangularSystems/ArbitraryOrder.lean",
-      "rationale": "Pre-existing unreachable tactic left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "4da9363c8e1cd8c42516bcc2e6119285485224c598823433d43b2825ebf5ea79",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 43,
-        "line": 560
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unusedTactic",
-      "message": "'ring' tactic does nothing Note: This linter can be disabled with `set_option linter.unusedTactic false`",
-      "message_sha256": "efa4fa34ac11d5a09992b28bdb5884583d7cb41459586f318ab82ca6905660c9",
-      "module": "NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.ArbitraryOrder",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter08/Section03/TriangularSystems/ArbitraryOrder.lean",
-      "rationale": "Pre-existing no-op tactic step left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
       "reviewer": "primary-human",
       "role": "source",
       "status": "accepted_baseline"
@@ -13674,94 +13468,6 @@
       "status": "accepted_baseline"
     },
     {
-      "anchor_sha256": "fb92cffe847d2b17aa85ac9d7323e4a9e900bf1d925ea7fc6d3beb0f2a0bd6d4",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 4,
-        "line": 143
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unreachableTactic",
-      "message": "this tactic is never executed Note: This linter can be disabled with `set_option linter.unreachableTactic false`",
-      "message_sha256": "07abe00e5328abddf55d87a9663d14a92d9c46345b17e5dcbd1d83b64268b5f8",
-      "module": "NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.ConstrainedLagrangian.Differentiation",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter15/Section02/Boyd/LocalConvergence/ConstrainedLagrangian/Differentiation.lean",
-      "rationale": "Pre-existing unreachable tactic left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "fb92cffe847d2b17aa85ac9d7323e4a9e900bf1d925ea7fc6d3beb0f2a0bd6d4",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 60,
-        "line": 143
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unreachableTactic",
-      "message": "this tactic is never executed Note: This linter can be disabled with `set_option linter.unreachableTactic false`",
-      "message_sha256": "07abe00e5328abddf55d87a9663d14a92d9c46345b17e5dcbd1d83b64268b5f8",
-      "module": "NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.ConstrainedLagrangian.Differentiation",
-      "occurrence": 1,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter15/Section02/Boyd/LocalConvergence/ConstrainedLagrangian/Differentiation.lean",
-      "rationale": "Pre-existing unreachable tactic left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "fb92cffe847d2b17aa85ac9d7323e4a9e900bf1d925ea7fc6d3beb0f2a0bd6d4",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 4,
-        "line": 143
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unusedTactic",
-      "message": "'simp only [zero_mul, add_zero, Function.comp_apply]' tactic does nothing Note: This linter can be disabled with `set_option linter.unusedTactic false`",
-      "message_sha256": "1650aa4d965bab7ca5ef26e0821d22672265b3faf7655e0d3e1a46e516d293a3",
-      "module": "NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.ConstrainedLagrangian.Differentiation",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter15/Section02/Boyd/LocalConvergence/ConstrainedLagrangian/Differentiation.lean",
-      "rationale": "Pre-existing no-op tactic step left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "fb92cffe847d2b17aa85ac9d7323e4a9e900bf1d925ea7fc6d3beb0f2a0bd6d4",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 60,
-        "line": 143
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unusedTactic",
-      "message": "'ring' tactic does nothing Note: This linter can be disabled with `set_option linter.unusedTactic false`",
-      "message_sha256": "efa4fa34ac11d5a09992b28bdb5884583d7cb41459586f318ab82ca6905660c9",
-      "module": "NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.ConstrainedLagrangian.Differentiation",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter15/Section02/Boyd/LocalConvergence/ConstrainedLagrangian/Differentiation.lean",
-      "rationale": "Pre-existing no-op tactic step left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
       "anchor_sha256": "5bdbd9310341232f09a08067e2179eef234e3405a78f07f7207a670032d7fcaf",
       "disposition": "baseline_debt",
       "evidence": {
@@ -15561,116 +15267,6 @@
       "path": "NumStability/Source/Higham/Chapter21/Equation07/UnderdeterminedSolve.lean",
       "rationale": "Pre-existing unused hypothesis or binder name; renaming to `_` changes proof text that downstream proofs may reference.",
       "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "4fc16a48374a3d3c28eae64f0aa8062793e765980ad27e74de571834bc7531ef",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 38,
-        "line": 656
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unreachableTactic",
-      "message": "this tactic is never executed Note: This linter can be disabled with `set_option linter.unreachableTactic false`",
-      "message_sha256": "07abe00e5328abddf55d87a9663d14a92d9c46345b17e5dcbd1d83b64268b5f8",
-      "module": "NumStability.Source.Higham.Chapter21.Equation08.EquationClosure",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter21/Equation08/EquationClosure.lean",
-      "rationale": "Pre-existing unreachable tactic left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "4fc16a48374a3d3c28eae64f0aa8062793e765980ad27e74de571834bc7531ef",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 38,
-        "line": 656
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unusedTactic",
-      "message": "'ring' tactic does nothing Note: This linter can be disabled with `set_option linter.unusedTactic false`",
-      "message_sha256": "efa4fa34ac11d5a09992b28bdb5884583d7cb41459586f318ab82ca6905660c9",
-      "module": "NumStability.Source.Higham.Chapter21.Equation08.EquationClosure",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter21/Equation08/EquationClosure.lean",
-      "rationale": "Pre-existing no-op tactic step left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "89ba975a80dfb7ad85080b55c1b927e29f4c862757a84248cc1b097bc5148e5d",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 43,
-        "line": 606
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unnecessarySeqFocus",
-      "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`",
-      "message_sha256": "1a14f32def31275eb9261a821a8c4534a04753a63cb3a5f87e95a46655d07f05",
-      "module": "NumStability.Source.Higham.Chapter21.Equation09.Results.Core",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter21/Equation09/Results/Core.lean",
-      "rationale": "Pre-existing `tac1 <;> tac2` where `(tac1; tac2)` suffices; the rewrite is local but must be re-elaborated per proof.",
-      "reconsideration_trigger": "Reconsider when the owning module is next edited, or on a toolchain bump that changes the linter's verdict.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "155e19654f401ac706aff3b73fd473d71fe97d642e6b376cda874114501cd2fa",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 10,
-        "line": 772
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unreachableTactic",
-      "message": "this tactic is never executed Note: This linter can be disabled with `set_option linter.unreachableTactic false`",
-      "message_sha256": "07abe00e5328abddf55d87a9663d14a92d9c46345b17e5dcbd1d83b64268b5f8",
-      "module": "NumStability.Source.Higham.Chapter21.Equation09.Results.Core",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter21/Equation09/Results/Core.lean",
-      "rationale": "Pre-existing unreachable tactic left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "155e19654f401ac706aff3b73fd473d71fe97d642e6b376cda874114501cd2fa",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 10,
-        "line": 772
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unusedTactic",
-      "message": "'ring' tactic does nothing Note: This linter can be disabled with `set_option linter.unusedTactic false`",
-      "message_sha256": "efa4fa34ac11d5a09992b28bdb5884583d7cb41459586f318ab82ca6905660c9",
-      "module": "NumStability.Source.Higham.Chapter21.Equation09.Results.Core",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter21/Equation09/Results/Core.lean",
-      "rationale": "Pre-existing no-op tactic step left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
       "reviewer": "primary-human",
       "role": "source",
       "status": "accepted_baseline"
@@ -22958,28 +22554,6 @@
       "status": "accepted_baseline"
     },
     {
-      "anchor_sha256": "a1a006ac5d13ec89a07f29ea168cdbfdc906a3b3f4a978f5cce175b7283fa0c0",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 4,
-        "line": 26
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unusedTactic",
-      "message": "'congr' tactic does nothing Note: This linter can be disabled with `set_option linter.unusedTactic false`",
-      "message_sha256": "9b4e2396b208396f67bf5ee1a5880d7436bc5986dcc52e861e0e60e6774fdd9d",
-      "module": "NumStability.Source.Higham.Chapter28.Section04.Pascal.TotalPositivity",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/TotalPositivity.lean",
-      "rationale": "Pre-existing no-op tactic step left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
       "anchor_sha256": "aa529fe2abfee451408c9d5f80b67e8b3524375dcb97b656a8202580b24d6e17",
       "disposition": "baseline_debt",
       "evidence": {
@@ -23019,28 +22593,6 @@
       "path": "NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/ReciprocalSPD.lean",
       "rationale": "Pre-existing redundant simp argument; dropping it is safe but the surviving call must still close the goal.",
       "reconsideration_trigger": "Reconsider when the owning module is next edited, or on a toolchain bump that changes the simp set.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "a4db8a8bf9df56bf852eb6a7ea4c1b0aaca1c3cb304f4e00f16a7e85e3feda39",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 4,
-        "line": 84
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "linter.unusedTactic",
-      "message": "'change (Z i i * d i) * Z⁻¹ i i = d i' tactic does nothing Note: This linter can be disabled with `set_option linter.unusedTactic false`",
-      "message_sha256": "abae4f127e89e1241b989d0a2a025813461aad645301a225b0a5497a95182ba9",
-      "module": "NumStability.Source.Higham.Chapter28.Section04.ReciprocalSpectrumSPD.TriangularInvolution",
-      "occurrence": 0,
-      "owner_batch": "B2",
-      "path": "NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/TriangularInvolution.lean",
-      "rationale": "Pre-existing no-op tactic step left behind by proof refactoring.",
-      "reconsideration_trigger": "Reconsider when the owning proof is next edited.",
       "reviewer": "primary-human",
       "role": "source",
       "status": "accepted_baseline"

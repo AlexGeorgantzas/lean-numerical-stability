@@ -535,7 +535,8 @@ theorem higham8_4_anyOrder_mulSub_noDiv_counter (fp : FPModel) {m : ℕ}
   have hGinv : relErrorCounter fp m (1 / G) :=
     relErrorCounter_inv fp m G (by simpa using hG) hu
   have hθ0counter : relErrorCounter fp m (1 + (1 / G - 1)) := by
-    convert hGinv using 1 <;> ring
+    convert hGinv using 1
+    ring
   have hθ0bd : |1 / G - 1| ≤ gamma fp m :=
     relErrorCounter_abs_sub_one_le_gamma fp m (1 / G) hGinv ht
   have hmul : ∀ q : Fin m, ∃ ε, |ε| ≤ fp.u ∧
@@ -557,7 +558,8 @@ theorem higham8_4_anyOrder_mulSub_noDiv_counter (fp : FPModel) {m : ℕ}
       (higham8_relErrorCounter_single fp (hεbd q)) (hθc q.succ)
     have hcount : 1 + (m - 1) = m := by omega
     rw [hcount] at hprod
-    convert hprod using 1 <;> simp [η] <;> ring
+    convert hprod using 1
+    simp [η]
   have hηbd : ∀ q, |η q| ≤ gamma fp m := fun q => by
     simpa using
       (relErrorCounter_abs_sub_one_le_gamma fp m (1 + η q) (hηcounter q) ht)

@@ -653,7 +653,7 @@ theorem higham21_eq21_8_firstOrder_relative_bound_with
         (|eps| * (K * vecNorm2 x)) / vecNorm2 x :=
       div_le_div_of_nonneg_right hscaled hxpos.le
     _ = |eps| * K := by
-      field_simp [ne_of_gt hxpos] <;> ring
+      field_simp [ne_of_gt hxpos]
 
 /-- The canonical source first-order expression agrees with the existing
     equation-(21.7) first-order vector, now for a perturbed right-hand side. -/

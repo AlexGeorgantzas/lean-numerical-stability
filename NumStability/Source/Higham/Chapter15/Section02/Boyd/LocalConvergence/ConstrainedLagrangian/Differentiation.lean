@@ -139,8 +139,7 @@ private theorem hasDerivAt_abs_rpow_affine {p a b : ℝ} (hp : 1 < p) :
   have hbase : HasDerivAt (fun u : ℝ => |u| ^ p)
       (p * |a| ^ (p - 2) * a) (a + 0 * b) := by
     simpa using hasDerivAt_abs_rpow a hp
-  convert hbase.comp 0 hline using 1 <;>
-    simp only [zero_mul, add_zero, Function.comp_apply] <;> ring
+  convert hbase.comp 0 hline using 1
 
 /-- The displayed first formula is the actual derivative of the constrained
 Lagrangian line. -/

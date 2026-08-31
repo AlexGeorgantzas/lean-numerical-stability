@@ -255,7 +255,6 @@ theorem RationalOrderCertificate.arcLength_le_of_planar_analyticBridge
             exact mul_le_mul_of_nonneg_left houter (by norm_num)
     _ = 2 * Real.pi * n * C := by
       rw [intervalIntegral.integral_const]
-      push_cast
       simp only [smul_eq_mul]
       ring
 

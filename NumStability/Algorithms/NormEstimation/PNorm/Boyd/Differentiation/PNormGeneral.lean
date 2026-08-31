@@ -88,7 +88,7 @@ theorem realVecLpNorm_hasDirectionalGradientAt {n : ℕ} {p : ℝ}
       have hbase : HasDerivAt (fun u : ℝ => |u| ^ p)
           (p * |x i| ^ (p - 2) * x i) (x i + 0 * h i) := by
         simpa using hasDerivAt_abs_rpow (x i) hp
-      convert hbase.comp 0 hline using 1 <;> ring
+      convert hbase.comp 0 hline using 1
     convert HasDerivAt.fun_sum hterms using 1
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
@@ -115,8 +115,8 @@ theorem realVecLpNorm_hasDirectionalGradientAt {n : ℕ} {p : ℝ}
     intro i _hi
     ring]
   field_simp [ne_of_gt (zero_lt_one.trans hp)]
-  <;> unfold realLpPowerSum
-  <;> ring_nf
+  unfold realLpPowerSum
+  ring_nf
 
 /-- The chosen concrete normalized dual is the actual gradient of the
 finite-dimensional real `l^p` norm; this is derived from direct calculus and

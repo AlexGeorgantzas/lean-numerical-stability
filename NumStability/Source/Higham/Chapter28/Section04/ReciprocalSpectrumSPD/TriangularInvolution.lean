@@ -81,7 +81,6 @@ theorem higham28ReciprocalInvolution_lower_and_diag {n : ℕ}
       hZDlower hZinvLower i]
     rw [higham28_lowerTriangular_mul_apply_diag Z D hZlower hDlower i]
     rw [show D i i = d i by simp [D, higham28SignDiagonal]]
-    change (Z i i * d i) * Z⁻¹ i i = d i
     calc
       (Z i i * d i) * Z⁻¹ i i = d i * (Z i i * Z⁻¹ i i) := by ring
       _ = d i := by rw [hZdiagInv]; ring
