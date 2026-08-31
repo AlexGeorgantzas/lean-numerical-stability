@@ -204,6 +204,14 @@ SUPPRESSION_RE = re.compile(
 )
 
 BASELINE_DEBT = "baseline_debt"
+# A record is either unreviewed debt or one the reviewer keeps deliberately.
+# Both are enforced identically -- the disposition explains why a record is
+# here, it never relaxes the contract.
+REVIEWED_COMPATIBILITY_EXCEPTION = "reviewed_compatibility_exception"
+REVIEWED_DEFERRED_MIGRATION = "reviewed_deferred_migration"
+DISPOSITIONS = frozenset(
+    {BASELINE_DEBT, REVIEWED_COMPATIBILITY_EXCEPTION, REVIEWED_DEFERRED_MIGRATION}
+)
 ACCEPTED_BASELINE = "accepted_baseline"
 PRIMARY_REVIEWER = "primary-human"
 
@@ -718,6 +726,92 @@ class Census:
         return "\n".join(lines)
 
 
+# Records the reviewer keeps deliberately, rather than as unreviewed debt. The
+# table is consulted by --write-baseline so regeneration stays deterministic:
+# a reviewed disposition survives a re-capture instead of resetting to debt.
+REVIEWED_DISPOSITIONS: dict[tuple[str, str], dict[str, str]] = {
+    (
+        "NumStabilityTest/Reorganization/R06/OldOnly/"
+        "NumStability_Source_Higham_Chapter09_Problems.lean",
+        "deprecation",
+    ): {
+        "disposition": "reviewed_compatibility_exception",
+        "rationale": (
+            "This old-only R06 test exists to exercise the historical "
+            "declaration surface, and the deprecated constructor index is part "
+            "of that surface. Rewriting the call would delete the coverage the "
+            "test was written to provide."
+        ),
+        "expiry_release": "alias-removal release",
+        "reconsideration_trigger": (
+            "Reconsider when the deprecated alias is removed upstream, which "
+            "makes the historical surface unavailable and the test obsolete."
+        ),
+    },
+    (
+        "NumStabilityTest/Reorganization/R06/OldOnly/"
+        "NumStability_Source_Higham_Chapter11_Section01_PartialPivoting.lean",
+        "deprecation",
+    ): {
+        "disposition": "reviewed_compatibility_exception",
+        "rationale": (
+            "This old-only R06 test exists to exercise the historical "
+            "declaration surface, and the deprecated constructor index is part "
+            "of that surface. Rewriting the call would delete the coverage the "
+            "test was written to provide."
+        ),
+        "expiry_release": "alias-removal release",
+        "reconsideration_trigger": (
+            "Reconsider when the deprecated alias is removed upstream, which "
+            "makes the historical surface unavailable and the test obsolete."
+        ),
+    },
+    (
+        "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Algebra/"
+        "DixonCompletion.lean",
+        "deprecation",
+    ): {
+        "disposition": "reviewed_deferred_migration",
+        "rationale": (
+            "Matrix.PosSemidef.commute_iff is not a rename: its replacement "
+            "commute_iff_mul_nonneg is stated for a non-unital star-ordered "
+            "ring with a continuous functional calculus and concludes 0 <= a * b "
+            "rather than (A * B).PosSemidef. Migrating the site through the "
+            "Loewner order the way Mathlib's own deprecated wrapper does fails "
+            "instance synthesis here (StarRing (Matrix (Fin n) (Fin n) R)), so "
+            "the migration is proof work rather than a mechanical edit and is "
+            "deferred to its own reviewed batch."
+        ),
+        "expiry_release": None,
+        "reconsideration_trigger": (
+            "Reconsider in the reviewed PosSemidef migration batch, or sooner "
+            "if upstream supplies the matrix instances the replacement needs."
+        ),
+    },
+    (
+        "NumStability/Source/Higham/Chapter13/DemmelSharpMultiplier.lean",
+        "deprecation",
+    ): {
+        "disposition": "reviewed_deferred_migration",
+        "rationale": (
+            "Matrix.PosSemidef.commute_iff is not a rename: its replacement "
+            "commute_iff_mul_nonneg is stated for a non-unital star-ordered "
+            "ring with a continuous functional calculus and concludes 0 <= a * b "
+            "rather than (A * B).PosSemidef. Migrating the site through the "
+            "Loewner order the way Mathlib's own deprecated wrapper does fails "
+            "instance synthesis here (StarRing (Matrix i i R)), so the "
+            "migration is proof work rather than a mechanical edit and is "
+            "deferred to its own reviewed batch."
+        ),
+        "expiry_release": None,
+        "reconsideration_trigger": (
+            "Reconsider in the reviewed PosSemidef migration batch, or sooner "
+            "if upstream supplies the matrix instances the replacement needs."
+        ),
+    },
+}
+
+
 def diagnostic_record(
     diagnostic: Diagnostic, census: Census, commit: str | None
 ) -> dict[str, Any]:
@@ -742,7 +836,7 @@ def diagnostic_record(
         "reviewer": PRIMARY_REVIEWER,
         "role": census.role[diagnostic.path],
         "status": ACCEPTED_BASELINE,
-    }
+    } | REVIEWED_DISPOSITIONS.get((diagnostic.path, kind), {})
 
 
 def suppression_record(
@@ -956,8 +1050,12 @@ def baseline_identities(
         if kind not in KNOWN_KINDS:
             problems.malformed("baseline", f"diagnostic records an unknown kind: {kind}")
             continue
-        if entry.get("disposition") != BASELINE_DEBT:
-            problems.malformed("baseline", f"diagnostic disposition must be {BASELINE_DEBT}: {path}")
+        if entry.get("disposition") not in DISPOSITIONS:
+            problems.malformed(
+                "baseline",
+                f"diagnostic disposition must be one of {sorted(DISPOSITIONS)}: "
+                f"{path} records {entry.get('disposition')!r}",
+            )
         if entry.get("status") != ACCEPTED_BASELINE:
             problems.malformed("baseline", f"diagnostic status must be {ACCEPTED_BASELINE}: {path}")
         if entry.get("reviewer") != PRIMARY_REVIEWER:
@@ -1250,15 +1348,18 @@ def check(
             f"(occurrence {occurrence}, evidence line {diagnostic.line} column "
             f"{diagnostic.column})",
         )
+    gone_groups: dict[tuple[str, str], int] = {}
     for key in gone_keys:
         if key in consumed:
             continue
-        path, kind, _, _, occurrence = key
+        path, kind, _, _, _occurrence = key
+        gone_groups[(path, kind)] = gone_groups.get((path, kind), 0) + 1
+    for (path, kind), count in sorted(gone_groups.items()):
         problems.violation(
             "fingerprints",
-            f"baseline diagnostic no longer fires; this is an improvement, not a "
-            f"regression, and it requires a reviewed baseline reduction "
-            f"(--write-baseline): {kind} at {path} (occurrence {occurrence})",
+            f"{count} baseline diagnostic(s) no longer fire; this is an "
+            f"improvement, not a regression, and it requires a reviewed baseline "
+            f"reduction (--write-baseline): {kind} at {path}",
         )
 
     allowances = active_exceptions(baseline, today, problems)

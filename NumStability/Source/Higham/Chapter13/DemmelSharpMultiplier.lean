@@ -665,13 +665,13 @@ private theorem higham13_rectOpNorm2_singleton
   have hQ : IsOrthogonal 1 Q := by
     apply IsOrthogonal.of_col_orthonormal
     intro i j
-    fin_cases i <;> fin_cases j
+    (fin_cases i; fin_cases j)
     simp [Q]
   have heig : ∀ k : Fin 1,
       Matrix.mulVec M (fun i => Q i k) = d k • (fun i => Q i k) := by
     intro k
     funext i
-    fin_cases k <;> fin_cases i
+    (fin_cases k; fin_cases i)
     simp [Q, d, Matrix.mulVec, dotProduct, Pi.smul_apply, smul_eq_mul]
   apply higham13_opNorm2_eq_of_orthogonal_eigenbasis_attained
     M Q d hQ heig |M 0 0| (abs_nonneg _) (fun k => by

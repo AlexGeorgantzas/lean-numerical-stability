@@ -4127,9 +4127,9 @@ theorem higham9_14_LUFactSpec_leadingSubmatrix_det_eq_prod_U_diag {n : ℕ}
       push_neg at hlt
       exact hp (Finset.mem_map.mpr
         ⟨⟨p.val, hlt⟩, Finset.mem_univ _, by
-          apply Fin.ext; simp [he, Fin.coe_castLE]⟩)
+          apply Fin.ext; simp [he]⟩)
     have hlt : (e i).val < p.val := by
-      have h1 : (e i).val = i.val := by simp [he, Fin.coe_castLE]
+      have h1 : (e i).val = i.val := by simp [he]
       have h2 : i.val < k := i.isLt
       omega
     rw [hLU.L_upper_zero (e i) p hlt, zero_mul]
@@ -4137,13 +4137,13 @@ theorem higham9_14_LUFactSpec_leadingSubmatrix_det_eq_prod_U_diag {n : ℕ}
   have hLtri : Matrix.BlockTriangular Lk OrderDual.toDual := by
     intro a b hab
     have hab' : a.val < b.val := by simpa using hab
-    have : (e a).val < (e b).val := by simp [he, Fin.coe_castLE]; exact hab'
+    have : (e a).val < (e b).val := by simp [he]; exact hab'
     simp only [hLk, Matrix.submatrix_apply, Matrix.of_apply]
     exact hLU.L_upper_zero (e a) (e b) this
   have hUtri : Matrix.BlockTriangular Uk id := by
     intro a b hab
     have hab' : b.val < a.val := by simpa using hab
-    have : (e b).val < (e a).val := by simp [he, Fin.coe_castLE]; exact hab'
+    have : (e b).val < (e a).val := by simp [he]; exact hab'
     simp only [hUk, Matrix.submatrix_apply, Matrix.of_apply]
     exact hLU.U_lower_zero (e a) (e b) this
   have hLdet : Lk.det = 1 := by

@@ -1049,9 +1049,9 @@ private theorem higham10_30_complex_leading_det_eq_prod_U_diag
       exact hp (Finset.mem_map.mpr
         ⟨⟨p.val, hlt⟩, Finset.mem_univ _, by
           apply Fin.ext
-          simp [he, Fin.coe_castLE]⟩)
+          simp [he]⟩)
     have hlt : (e i).val < p.val := by
-      have h1 : (e i).val = i.val := by simp [he, Fin.coe_castLE]
+      have h1 : (e i).val = i.val := by simp [he]
       have h2 : i.val < k := i.isLt
       omega
     rw [hLU.L_upper_zero (e i) p hlt, zero_mul]
@@ -1059,7 +1059,7 @@ private theorem higham10_30_complex_leading_det_eq_prod_U_diag
     intro a b hab
     have hab' : a.val < b.val := by simpa using hab
     have : (e a).val < (e b).val := by
-      simp [he, Fin.coe_castLE]
+      simp [he]
       exact hab'
     simp only [hLk, Matrix.submatrix_apply, Matrix.of_apply]
     exact hLU.L_upper_zero (e a) (e b) this
@@ -1067,7 +1067,7 @@ private theorem higham10_30_complex_leading_det_eq_prod_U_diag
     intro a b hab
     have hab' : b.val < a.val := by simpa using hab
     have : (e b).val < (e a).val := by
-      simp [he, Fin.coe_castLE]
+      simp [he]
       exact hab'
     simp only [hUk, Matrix.submatrix_apply, Matrix.of_apply]
     exact hLU.U_lower_zero (e a) (e b) this
@@ -1713,7 +1713,7 @@ private theorem higham10_30_complexBlockSchur_re_im_posDef
       simpa [z, qc] using hi
     have htop : Matrix.mulVec P (fun i => -w i) + Matrix.mulVec Q qc = 0 := by
       rw [show (fun i => -w i) = -w by rfl, Matrix.mulVec_neg]
-      simp [w, Matrix.mulVec_mulVec, Matrix.mul_inv_of_invertible]
+      simp [w, Matrix.mulVec_mulVec]
     have hbot : Matrix.mulVec Q.transpose (fun i => -w i) +
         Matrix.mulVec D qc = Matrix.mulVec S qc := by
       calc
@@ -1889,7 +1889,7 @@ private theorem higham10_30_sourceSchurDiagonalRep_of_leading
       intro p
       simp [v, B, C, b, c, e, higham10_30_complexPositiveDefiniteForm,
         Matrix.mulVec, dotProduct, Complex.mul_re, Complex.mul_im,
-        Finset.sum_add_distrib, Finset.sum_sub_distrib]
+        Finset.sum_add_distrib]
       ring
     change higham10_30_complexPositiveDefiniteForm n B₀ C₀ r r -
         ∑ p : Fin k,
@@ -1897,7 +1897,7 @@ private theorem higham10_30_sourceSchurDiagonalRep_of_leading
     apply Complex.ext
     · simp [B, C, b, c, β, γ, e, hBsym, hCsym, hvre, hvim,
         higham10_30_complexPositiveDefiniteForm,
-        Complex.mul_re, Complex.mul_im, Finset.sum_add_distrib,
+        Complex.mul_re, Complex.mul_im,
         Finset.sum_sub_distrib]
       simp_rw [mul_add, mul_sub]
       rw [Finset.sum_add_distrib, Finset.sum_sub_distrib]
@@ -1905,8 +1905,7 @@ private theorem higham10_30_sourceSchurDiagonalRep_of_leading
       ring
     · simp [B, C, b, c, β, γ, e, hBsym, hCsym, hvre, hvim,
         higham10_30_complexPositiveDefiniteForm,
-        Complex.mul_re, Complex.mul_im, Finset.sum_add_distrib,
-        Finset.sum_sub_distrib]
+        Complex.mul_re, Complex.mul_im, Finset.sum_add_distrib]
       simp_rw [mul_add, mul_sub]
       rw [Finset.sum_sub_distrib, Finset.sum_add_distrib]
       rw [hXcross]

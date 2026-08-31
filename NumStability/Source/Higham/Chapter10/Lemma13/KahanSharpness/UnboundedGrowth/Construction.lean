@@ -89,11 +89,11 @@ private lemma higham10_18_row_cast (k : ℕ) (α : ℝ) (hk : 0 < k)
     · intro b _ hb
       unfold higham10_18_matrix
       have hne : (Fin.castAdd k i).val ≠ (Fin.castAdd k b).val := by
-        simp only [Fin.coe_castAdd]
+        simp only [Fin.val_castAdd]
         exact fun h => hb (Fin.ext h.symm)
       have h2 : ¬((Fin.castAdd k i).val + k = (Fin.castAdd k b).val ∨
           (Fin.castAdd k b).val + k = (Fin.castAdd k i).val) := by
-        simp only [Fin.coe_castAdd]
+        simp only [Fin.val_castAdd]
         push_neg
         omega
       rw [if_neg hne, if_neg h2, zero_mul]
@@ -105,22 +105,22 @@ private lemma higham10_18_row_cast (k : ℕ) (α : ℝ) (hk : 0 < k)
     rw [Finset.sum_eq_single i]
     · unfold higham10_18_matrix
       have hne : (Fin.castAdd k i).val ≠ (Fin.natAdd k i).val := by
-        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        simp only [Fin.val_castAdd, Fin.val_natAdd]
         omega
       have hor : (Fin.castAdd k i).val + k = (Fin.natAdd k i).val ∨
           (Fin.natAdd k i).val + k = (Fin.castAdd k i).val := by
         left
-        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        simp only [Fin.val_castAdd, Fin.val_natAdd]
         omega
       rw [if_neg hne, if_pos hor, one_mul]
     · intro b _ hb
       unfold higham10_18_matrix
       have hne : (Fin.castAdd k i).val ≠ (Fin.natAdd k b).val := by
-        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        simp only [Fin.val_castAdd, Fin.val_natAdd]
         omega
       have h3 : ¬((Fin.castAdd k i).val + k = (Fin.natAdd k b).val ∨
           (Fin.natAdd k b).val + k = (Fin.castAdd k i).val) := by
-        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        simp only [Fin.val_castAdd, Fin.val_natAdd]
         push_neg
         constructor
         · intro h
@@ -144,22 +144,22 @@ private lemma higham10_18_row_nat (k : ℕ) (α : ℝ) (hk : 0 < k)
     rw [Finset.sum_eq_single i]
     · unfold higham10_18_matrix
       have hne : (Fin.natAdd k i).val ≠ (Fin.castAdd k i).val := by
-        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        simp only [Fin.val_castAdd, Fin.val_natAdd]
         omega
       have hor : (Fin.natAdd k i).val + k = (Fin.castAdd k i).val ∨
           (Fin.castAdd k i).val + k = (Fin.natAdd k i).val := by
         right
-        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        simp only [Fin.val_castAdd, Fin.val_natAdd]
         omega
       rw [if_neg hne, if_pos hor, one_mul]
     · intro b _ hb
       unfold higham10_18_matrix
       have hne : (Fin.natAdd k i).val ≠ (Fin.castAdd k b).val := by
-        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        simp only [Fin.val_castAdd, Fin.val_natAdd]
         omega
       have h3 : ¬((Fin.natAdd k i).val + k = (Fin.castAdd k b).val ∨
           (Fin.castAdd k b).val + k = (Fin.natAdd k i).val) := by
-        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        simp only [Fin.val_castAdd, Fin.val_natAdd]
         push_neg
         constructor
         · omega
@@ -175,18 +175,18 @@ private lemma higham10_18_row_nat (k : ℕ) (α : ℝ) (hk : 0 < k)
     · unfold higham10_18_matrix
       have heq : (Fin.natAdd k i).val = (Fin.natAdd k i).val := rfl
       have hge : ¬(Fin.natAdd k i).val < k := by
-        simp only [Fin.coe_natAdd]
+        simp only [Fin.val_natAdd]
         omega
       rw [if_pos heq, if_neg hge]
     · intro b _ hb
       unfold higham10_18_matrix
       have hne : (Fin.natAdd k i).val ≠ (Fin.natAdd k b).val := by
-        simp only [Fin.coe_natAdd]
+        simp only [Fin.val_natAdd]
         intro h
         exact hb (Fin.ext (by omega)).symm
       have h3 : ¬((Fin.natAdd k i).val + k = (Fin.natAdd k b).val ∨
           (Fin.natAdd k b).val + k = (Fin.natAdd k i).val) := by
-        simp only [Fin.coe_natAdd]
+        simp only [Fin.val_natAdd]
         push_neg
         omega
       rw [if_neg hne, if_neg h3, zero_mul]
@@ -293,18 +293,18 @@ theorem higham10_18_w_arbitrarily_large (k : ℕ) (hk : 0 < k)
         (Fin.castAdd k j) * (α⁻¹ * v j) = v i := by
       rw [Finset.sum_eq_single i]
       · unfold higham10_18_matrix
-        simp only [Fin.coe_castAdd, if_true]
+        simp only [Fin.val_castAdd, if_true]
         rw [if_pos i.isLt]
         field_simp
       · intro b _ hb
         unfold higham10_18_matrix
         have hne : (Fin.castAdd k i).val ≠ (Fin.castAdd k b).val := by
-          simp only [Fin.coe_castAdd]
+          simp only [Fin.val_castAdd]
           exact fun h => hb (Fin.ext h.symm)
         have h3 : ¬((Fin.castAdd k i).val + k =
             (Fin.castAdd k b).val ∨
             (Fin.castAdd k b).val + k = (Fin.castAdd k i).val) := by
-          simp only [Fin.coe_castAdd]
+          simp only [Fin.val_castAdd]
           push_neg
           omega
         rw [if_neg hne, if_neg h3, zero_mul]
@@ -314,12 +314,12 @@ theorem higham10_18_w_arbitrarily_large (k : ℕ) (hk : 0 < k)
         (Fin.natAdd k i) = 1 := by
       unfold higham10_18_matrix
       have hne : (Fin.castAdd k i).val ≠ (Fin.natAdd k i).val := by
-        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        simp only [Fin.val_castAdd, Fin.val_natAdd]
         omega
       have hor : (Fin.castAdd k i).val + k = (Fin.natAdd k i).val ∨
           (Fin.natAdd k i).val + k = (Fin.castAdd k i).val := by
         left
-        simp only [Fin.coe_castAdd, Fin.coe_natAdd]
+        simp only [Fin.val_castAdd, Fin.val_natAdd]
         omega
       rw [if_neg hne, if_pos hor]
     rw [hL, hR, one_mul]
