@@ -21,3 +21,44 @@ historical BlockLU-owner, and ten-module BlockLU sibling splits are complete.
 Next split LSQR and LSE; finally split the large Chapter 9 and 11 source
 monoliths. Moving a source monolith first would
 preserve the same unwanted low-level dependencies under a cleaner pathname.
+
+## Superseding dispositions (2026-08-30)
+
+Audited at revision `cca0621da6c2b0f19836aec67aa736ef9a06a838` (main, after
+the R0014/R0015 integration). Every module still queued above has since been
+canonicalized under the repository reorganization: each historical path now
+survives as a declaration-free, import-only module classified in the
+`compatibility` tier of `docs/architecture/tiers.json`, with its canonical
+owners recorded in `docs/architecture/COMPATIBILITY.md` and its forwarding
+contract enforced by `tools/architecture/check_compatibility.py`, which also
+verifies that production code contains zero imports of these historical
+paths. Verified live at the audited revision:
+
+- `Algorithms.HighamChapter9`: 16-line import umbrella over the ten
+  canonical `Source.Higham.Chapter09` section/problem modules.
+- `Algorithms.HighamChapter11`: 12-line import wrapper over the eight
+  canonical `Source.Higham.Chapter11` section/problem modules.
+- `Algorithms.LeastSquares.LSQRSolve`: 44-line import-only wrapper whose
+  declarations moved unchanged to canonical
+  `Algorithms.LinearSystems.LeastSquares`/`QR`/`Triangular`,
+  `Analysis.Perturbation.LeastSquares`, and
+  `Source.Higham.Chapter20.Theorem03` owners.
+- `Algorithms.LeastSquares.LSE`: 34-line import-only wrapper over the
+  canonical `Algorithms.LinearSystems.LeastSquares.Equality`,
+  `Analysis.Perturbation.LeastSquares.Equality`, and
+  `Source.Higham.Chapter20.Theorem08.LSE` owners.
+- `Analysis.Problem2_10`: 20-line import-only wrapper (retained by wave
+  R03) over the canonical `Source.Higham.Chapter02` Problem09/Problem10
+  owners.
+- `Algorithms.Cholesky.Higham10Theorem10_7Source`: 8-line import wrapper
+  over the canonical `Source.Higham.Chapter10.Theorem07` owner.
+- `Analysis.InstabilityWithoutCancellation`: 27-line import-only wrapper
+  (retained by wave R03) over the canonical `Source.Higham.Chapter01`
+  owners.
+
+This section supersedes the remaining "Current decision" rows and the
+closing dependency-order paragraph, including the present-tense plan to
+split LSQR and LSE next: those splits and the Chapter 9 and 11 monolith
+splits are done, and no open extraction queue remains from this review. The
+original table and paragraph are retained verbatim above as immutable review
+history.

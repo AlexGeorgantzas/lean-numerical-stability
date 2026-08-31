@@ -61,13 +61,15 @@ split from the reusable library.
   operations over the IEEE value-level model, beginning with
   `IEEE.NaiveMaximum`.
 - `NumStability.Algorithms.LinearSystems` is the declaration-free reusable
-  linear-systems entry point. It re-exports the reviewed `Triangular` family
-  and the canonical `LU` hierarchy. Phase 12 completes the reusable
-  `LinearSystems.LU.BlockLU` umbrella over fifteen direct declaration-bearing
-  leaves plus the `VaryingBlocks` subaggregate, whose five leaves support
-  unequal block orders. The 1,695 source declarations cut over from the
-  historical `Algorithms.LU.BlockLU` owner live below
-  `Source.Higham.Chapter13.BlockLU`. Its follow-on moves 287 declarations from
+  linear-systems entry point. It re-exports the canonical `Cholesky`,
+  `CramersRule`, `GaussJordan`, `Iterative`, `IterativeRefinement`,
+  `LeastSquares`, `LU`, `QR`, `SymmetricIndefinite`, `Triangular`, and
+  `Underdetermined` families. As migration history, Phase 12 completed the
+  reusable `LinearSystems.LU.BlockLU` umbrella over fifteen direct
+  declaration-bearing leaves plus the `VaryingBlocks` subaggregate, whose five
+  leaves support unequal block orders. The 1,695 source declarations cut over
+  from the historical `Algorithms.LU.BlockLU` owner live below
+  `Source.Higham.Chapter13.BlockLU`. Its follow-on moved 287 declarations from
   ten separately scoped siblings into 22 semantic destinations; all ten old
   sibling paths are now declaration-free compatibility wrappers.
 - `NumStability.Algorithms.Summation` is the complete published summation
@@ -143,27 +145,36 @@ split from the reusable library.
   `Analysis.Higham6Asides`, `Analysis.Higham6BlockAntidiag`, and
   `Analysis.HighamChapter6Duality` are now exact one-target compatibility
   wrappers.
-  Chapter 14 owns `Problem13`, `Problem14` for Problem 14.14's Hyman
-  determinant result, `Problem15` for Problem 14.15's determinant bound and
-  discrepancy witness, and the declaration-free `Section05` aggregate for its
+  Chapter 14's canonical source tree covers `Algorithm04`, `Corollary06`,
+  `Corollary07`, `Discrepancies`, `Equation34`--`Equation36`,
+  `Problem02`--`Problem05`, `Problem07`, `Problem08`, `Problem10`--`Problem15`
+  (including Problem 14.14's Hyman determinant result and Problem 14.15's
+  determinant bound and discrepancy witness), `Section01`--`Section03`,
+  `Theorem05`, and the declaration-free `Section05` aggregate for its
   Schulz-iteration leaves. Generic Weyl--Mirsky support lives in reusable
   `Analysis.SingularValues.WeylMirsky`; the former combined Algorithms path is
-  a compatibility wrapper. The currently canonicalized Chapter 21 subset is
-  the declaration-free `Chapter21` aggregate over `RowScalingInvariance`, the
-  declaration-free `Theorem03` aggregate, and the declaration-free `Theorem04`
+  a compatibility wrapper. The canonical Chapter 21 source tree covers
+  `Equation01`--`Equation11`, `Lemma02`, `Theorem01`, `Theorem03`,
+  `Theorem04`, `RowScalingInvariance`, `Attainability`, `Corrections`, and
+  `Section03`, exposed through the declaration-free 35-import `Chapter21`
   aggregate. `Theorem03.Attainment` owns the exact/closure attainment and
   scalar nonattainment refinements; `Theorem04.RowwiseBackwardError` owns the
-  printed row-wise measure and quantitative gamma criterion. The comprehensive
-  historical Chapter 21 discovery surface remains
-  `Algorithms.Underdetermined.Higham21` during migration. Chapter 28 now has a
-  declaration-free canonical source aggregate. Its declaration-free
-  `Equation02` aggregate exposes the source-specific `RatioDiscrepancy` leaf;
-  that leaf deliberately retains its historical `Higham28HilbertAsymptotic`
-  dependency until the wider Hilbert family moves. The migrated homogeneous-
-  space uniqueness support remains reusable `Analysis.Probability.Haar`, while
-  the other source-specific Stewart and test-matrix modules remain historical.
-  These Chapter 14, 21, and 28 frontiers do not claim that the broader chapter
-  families are fully migrated.
+  printed row-wise measure and quantitative gamma criterion. The canonical
+  source tree is the comprehensive Chapter 21 surface; the historical
+  `Algorithms.Underdetermined.Higham21` path is a declaration-free
+  compatibility wrapper over it. Chapter 28 has a declaration-free canonical
+  source aggregate over canonical `Equation01`--`Equation04` and
+  `Section01`--`Section06` subtrees. Its declaration-free `Equation02`
+  aggregate exposes the source-specific `RatioDiscrepancy` leaf, which imports
+  reusable `Analysis.TestMatrices.Hilbert.HilbertAsymptotic` and
+  `Chapter28.Equation02.DeterminantAsymptotics`. The homogeneous-space
+  uniqueness support remains reusable `Analysis.Probability.Haar`, and the
+  R09 wave relocated the remaining `Higham28*` Stewart and test-matrix owners,
+  leaving the former `Algorithms.TestMatrices.Higham28HilbertAsymptotic` owner
+  as an import-only compatibility wrapper. The Chapter 14, 21, and 28 families
+  are migrated and classified: R09 canonicalized the TestMatrices surface, R10
+  canonicalized the RandNLA surface, and the tier inventory records 0
+  unclassified modules and 0 noncanonical names.
   Chapter 12 uses the declaration-free
   `NumStability.Source.Higham.Chapter12` aggregate over the source leaves
   `IterativeRefinement`, `OmegaDiscontinuity`, and `Problem02`. Chapter 13's
@@ -195,8 +206,11 @@ split from the reusable library.
 - `NumStability.All` is the explicit complete-tree entry point.
 - `NumStability.Algorithms` preserves its historical complete algorithm-layer
   surface, including source correspondence; it is not the pure reusable entry
-  point. Its checked direct-import ceilings are 435 total imports, including 43
-  below `NumStability.Analysis` and 15 below `NumStability.Source`.
+  point. Its checked direct-import ceilings, recorded in
+  [`docs/architecture/layout-exceptions.json`](docs/architecture/layout-exceptions.json),
+  are 446 imports below `NumStability`, including 44 below
+  `NumStability.Analysis` and 73 below `NumStability.Source`; these are
+  enforced ceilings, not the live direct-import count.
 - `NumStability` retains its historical complete-tree behavior through the
   compatibility window.
 
@@ -285,7 +299,8 @@ when all of the following hold:
 - [`docs/architecture/COMPATIBILITY.md`](docs/architecture/COMPATIBILITY.md)
   records forwarding paths and their removal policy.
 - [`docs/architecture/TIERS.md`](docs/architecture/TIERS.md) explains the
-  executable, deliberately partial tier inventory and forbidden-edge gate.
+  executable tier inventory, now complete over every production module, and
+  the forbidden-edge gate.
 - [`docs/architecture/reviews/`](docs/architecture/reviews/) contains the
   endpoint, performance, family, outlier, and physical-target decisions.
 - [`docs/architecture/baselines/`](docs/architecture/baselines/) contains the

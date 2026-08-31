@@ -7,16 +7,15 @@ transitive path from `reusable` into `source` or `mixed` as forbidden. This
 prevents aggregate, compatibility, internal, or not-yet-classified
 intermediate modules from hiding a dependency inversion.
 
-The inventory is intentionally partial during this migration. Large historical
-areas below `Algorithms/` and `Analysis/` still mix reusable mathematics,
-numbered-source correspondence, and proof support; assigning either directory
-one blanket tier would hide the problem. The generated baseline therefore
-reports both classification coverage and the complete unclassified queue.
+The inventory is complete. Since the R09/R10 integration, sustained after the
+R0014/R0015 landing, classification coverage is 100% with 0 unclassified and 0
+mixed modules. The generated baseline reports classification coverage together
+with the unclassified queue; that queue is empty.
 
 A zero forbidden-edge count is conclusive only when classification coverage is
-100% and no `mixed` modules remain. Until then, the physical-source-target gate
-is not satisfied, even when all currently classified reusable modules have zero
-source or mixed imports.
+100% and no `mixed` modules remain. That precondition now holds, so the strict
+source audit's forbidden-edge count is conclusive for the
+physical-source-target gate.
 
 When a module is reviewed:
 
@@ -40,7 +39,12 @@ six historical `NumStability.Analysis.NonrandomRounding*` paths use exact
 `compatibility` rules; there is deliberately no source-tier prefix rule for
 that historical directory.
 
-Through Phase 11B2, reviewed source families cover the canonicalized Higham
+## Archived phase narratives
+
+The following paragraphs are retained phase-by-phase migration history; the
+normative current inventory is recorded under "Current inventory" below.
+
+Through Phase 11B2, reviewed source families covered the canonicalized Higham
 frontiers in Chapters 1, 2, 4, 6, 8, 10--14, 17, 20--28, and cross-chapter
 locators. Exact `aggregate` rules identify every declaration-free chapter and
 family umbrella; canonical leaves inherit `source` from the Source prefix and
@@ -100,17 +104,20 @@ the 17 source-owner identities required by `Theorem02.Factorization` and
 identities. Its ten historical modules are now exact import-only wrappers with
 isolated old-only tests.
 
-The completed Phase 12 ratchet classifies 562 of 1,154 production modules
-(48.700%): 231 as source, 104 as aggregate, 119 as compatibility, 101 as
-reusable, 2 as internal, and 5 as upstream. The explicit unclassified queue is
-592 modules, and no fully classified module is marked mixed. The
-`NumStability.Algorithms` direct-import ceilings are 435 imports below
-`NumStability`, including 43 below `NumStability.Analysis` and 15 below
-`NumStability.Source`. The remaining layout debt is 209 missing module
-docstrings and 392 noncanonical historical module names; the compatibility
-inventory contains 119 wrappers with 228 direct targets. Three reviewed source
-parents (`Equation23`, `Equation25`, and `Table01`) remain declaration-bearing
-while hosting semantic children.
+## Current inventory
+
+The live ratchet classifies all 2,928 production modules (100%): 1,224 as
+source, 405 as aggregate, 712 as compatibility, 577 as reusable, 5 as
+internal, and 5 as upstream. The unclassified queue is empty and no module is
+marked mixed. The `NumStability.Algorithms` direct-import ceilings are read
+live from the `direct_import_ceilings` entry of
+[`layout-exceptions.json`](layout-exceptions.json). Every legacy debt list in
+that manifest is empty: 0 missing module docstrings, 0 noncanonical historical
+module names, and 0 declaration-bearing umbrellas; the compatibility inventory
+contains 712 forwarding modules over 2,364 canonical targets. The three
+formerly declaration-bearing source parents (`Equation23`, `Equation25`, and
+`Table01` under `NumStability.Source.Higham.Chapter13`) are now
+declaration-free import umbrellas over their semantic children.
 
 Because structural aggregates do not themselves own declarations,
 `reusable_entrypoints` separately lists aggregates whose entire reachable

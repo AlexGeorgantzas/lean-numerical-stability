@@ -19,10 +19,12 @@ Read:
 ## Place new code deliberately
 
 Every new or moved production module must be classified in
-[`docs/architecture/tiers.json`](docs/architecture/tiers.json). The remaining
-historical inventory is recorded exactly in
-[`docs/architecture/layout-exceptions.json`](docs/architecture/layout-exceptions.json);
-that reviewed debt may only decrease until classification reaches 100%.
+[`docs/architecture/tiers.json`](docs/architecture/tiers.json). Classification
+is 100% complete: every production module carries exactly one tier, with no
+unclassified or mixed entries, and CI forbids regression from that state.
+[`docs/architecture/layout-exceptions.json`](docs/architecture/layout-exceptions.json)
+now records only the checked structural ceilings; its legacy debt lists are
+empty and may not regrow.
 
 - Put source-independent mathematics in `FloatingPoint`, `Analysis`, or a
   semantic `Algorithms` family.

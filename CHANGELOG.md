@@ -42,13 +42,35 @@ follows semantic versioning for its public module paths and declaration API.
 - `Summation.Insertion` is now a declaration-free complete family aggregate;
   production consumers import its narrow reusable layers, while the historical
   `InsertionSum` path retains the complete reusable and source surface.
-- The Algorithms aggregate imports the Sylvester family through one umbrella,
-  reducing its direct imports from 490 to 463, and its imports are sorted and
-  deduplicated by a repository-owned formatter.
+- The Algorithms aggregate imports the Sylvester family through one umbrella
+  (a step that, at the time, reduced its direct imports from 490 to 463), and
+  its imports are sorted and deduplicated by a repository-owned formatter. The
+  checked ceilings in
+  [`docs/architecture/layout-exceptions.json`](docs/architecture/layout-exceptions.json)
+  now cap the aggregate at 446 direct imports below `NumStability`, including
+  44 below `NumStability.Analysis` and 73 below `NumStability.Source`; these
+  are enforced ceilings, not the live import count.
 - `NumStability.Higham` now forwards to the canonical
   `NumStability.Source.Higham` surface.
 - Mathlib is pinned to an exact revision and `lake test` has an explicit test
   driver.
+- The in-progress 2026-08 reorganization-completion phase canonicalized the
+  remaining historical Higham surfaces, including the Chapter 9, 11, 13, 14,
+  20, 21, and 28 source trees, the R09 TestMatrices canonicalization, and the
+  R10 RandNLA canonicalization. Historical paths remain supported as 712
+  import-only forwarding modules over 2,364 canonical targets, and the
+  executable tier inventory classifies 2,928 of 2,928 production modules with
+  0 unclassified and 0 mixed; CI forbids regression from that state.
+- The reviewed I01 wave (R0014/R0015) landed on `main` at
+  `9fbb1e36bcc85f866893e902cbe206ba468a65b0`: the Chapter 2 Problem 2.9
+  double-rounding counterexample umbrella was split into declaration-free
+  aggregates over source leaves, `Source.Higham.Chapter19.Core` was retargeted
+  to canonical Householder QR imports, and the retained-production
+  compatibility-exception mechanism was retired from
+  `tools/architecture/check_compatibility.py`.
+- Repository reorganization is now governed by
+  [`docs/architecture/PROCESS.md`](docs/architecture/PROCESS.md): per-batch
+  static gates, plain-language recorded review, and fast-forward-only `main`.
 
 ### Deprecated
 

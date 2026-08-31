@@ -4,31 +4,42 @@ This is the executable migration sequence for NumStability.  A gate is complete
 only when its stated evidence is checked into the repository or recorded by CI.
 
 The active repository-wide operating contract is
-[`phases/2026-08-repository-reorganization-completion/`](phases/2026-08-repository-reorganization-completion/README.md).
-Its current C0005 checkpoint accepts M04/R04 and M08/R08 at exact integrated
-code commit `ad92bbfae62d538f3e52829a269a846688a8e213`. Generated evidence records
+[`phases/2026-08-repository-reorganization-completion/`](phases/2026-08-repository-reorganization-completion/README.md),
+operated per [`PROCESS.md`](PROCESS.md). Its current accepted checkpoint is
+C0007 (exact code commit `4e26820d1f4989ec4ec77b7113085f593570e11b`, green on
+Lean CI run 32794282084): M09 and M10 are accepted, B0011 and B0012 are
+accepted with retirement due, P0011 and P0012 are retired, and R0012 and R0013
+are applied as the reviewed 25-path union. No C0008 exists. R0014 and R0015
+(the M13 I01 + CODE03 union) have since been applied on `main` at
+`9fbb1e36bcc85f866893e902cbe206ba468a65b0` under the primary human's recorded
+2026-08-30 cutover decision, which retired the bounded worker lifecycle; after
+that landing the live tree records 2,928 production modules: 2,928 classified,
+0 unclassified, and 0 mixed, with zero noncanonical names. Branch retirement
+remains a separate later control. Bounded-phase and repository-wide completion
+both remain incomplete.
+The checkpoint distinguishes bounded-phase from repository-wide completion and
+records branch, baseline, shared-request, build-lock, and lifecycle rules.
+Validate the phase fleet with
+`python tools/architecture/check_phase.py --all-phases`, which also enforces
+the supersession fleet invariants. Dated packets and
+migration reports are evidence, not current worker instructions.
+
+## Archived checkpoint history
+
+C0005 accepted M04/R04 and M08/R08 at exact integrated code commit
+`ad92bbfae62d538f3e52829a269a846688a8e213`. Its generated evidence records
 2,818 production modules: 2,685 classified, 133 unclassified, and 0 mixed. M04
-and M08 are accepted and M07 is ready. B0010/R07 is delivered at
-`2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` and its code is integrated on
+and M08 were accepted and M07 was ready. B0010/R07 was delivered at
+`2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` and its code was integrated on
 `main` at `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`, after which the live
 tree recorded 2,860 production modules: 2,770 classified, 90 unclassified, and
 0 mixed. R09 and R10 were then integrated at
-`09512c1b15fd4f6892a313341b1edc8c02bb913d`, after which the live tree records 2,927 production modules: 2,927 classified, 0 unclassified,
+`09512c1b15fd4f6892a313341b1edc8c02bb913d`, after which the live tree recorded
+2,927 production modules: 2,927 classified, 0 unclassified,
 and 0 mixed, with zero noncanonical names. Checkpoint C0006 (exact code commit
 `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`) is accepted: M07 is accepted,
 B0010 is accepted with retirement due, P0010 is retired, and R0011 is
 applied.
-
-Checkpoint C0007 (exact code commit
-`4e26820d1f4989ec4ec77b7113085f593570e11b`, green on Lean CI run 32794282084)
-is accepted: M09 and M10 are accepted, B0011 and B0012 are accepted with
-retirement due, P0011 and P0012 are retired, and R0012 and R0013 are applied as
-the reviewed 25-path union. The remaining queue is exactly I01=12; branch
-retirement remains a separate later control.
-The checkpoint distinguishes bounded-phase from repository-wide completion and
-records branch, baseline, shared-request, build-lock, and lifecycle rules.
-Validate it with `python tools/architecture/check_phase.py`. Dated packets and
-migration reports are evidence, not current worker instructions.
 
 C0003 accepts M03/R03 at exact code commit
 `e20de2f931caa12221e708c341e9cb4f64d29b25`, but it does not claim bounded or
@@ -94,9 +105,11 @@ and 111-path ledger SHA-256 values remain pinned at
 `D3F30A410903B1CA2858951CB26107B94B62630BC424723A0EC9EDF484AEDDDF`,
 `08FA3E41DA0C72E7F5D4ECFD315F0CC6C73EB0F45089CF1DAC6AB04A81A1E326`,
 and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`;
-the accepted C0005 baseline and inventory supersede them. Bounded-phase completion is reached: after the
-R09/R10 integration, 0 unclassified modules, 0 noncanonical names, and one
-reviewed declaration-bearing umbrella remain. Acceptance-control commit
+the accepted C0005 baseline and inventory supersede them. Bounded-phase and
+repository-wide completion both remain incomplete; after the R09/R10
+integration and the subsequent R0014/R0015 landing, the live tree measures 0
+unclassified modules, 0 noncanonical names, and 0 declaration-bearing
+umbrellas. Acceptance-control commit
 `131a0c6f333de0eb47a67698decf36ee82e01dab` passed Lean CI run 31966141900
 (job 95211495907); `primary-human` retired B0006/B0007 at
 `2026-08-16T19:08:57Z`. Their exact remote refs were deleted atomically under
@@ -111,14 +124,17 @@ delivery branches remain preserved at
 [`R05/R06 retirement review`](phases/2026-08-repository-reorganization-completion/reviews/R05-R06-retirement.md)
 records the exact leases, archive, cleanup, and preserved refs.
 
-## Planned Chapter 14 matrix-inversion compatibility completion
+## Archived Chapter 14 matrix-inversion compatibility completion (delivered)
 
-R08 preserves 42 historical Algorithm import paths as declaration-free compatibility
-modules, relocates their remaining C0004 declarations whole-owner into 21 new Source
-leaves, and converts the Chapter 14 Problem13, Problem14, and Problem15 entry points
-into declaration-free aggregates. The accepted W08 regression suite remains unchanged;
-the R08 delivery adds isolated old-path, canonical, consumer, focused, private-name, and
+R08 was delivered, integrated, and accepted at C0005. It preserved 42
+historical Algorithm import paths as declaration-free compatibility
+modules, relocated their remaining C0004 declarations whole-owner into 21 new Source
+leaves, and converted the Chapter 14 Problem13, Problem14, and Problem15 entry points
+into declaration-free aggregates. The accepted W08 regression suite remained unchanged;
+the R08 delivery added isolated old-path, canonical, consumer, focused, private-name, and
 aggregate-completeness tests under `NumStabilityTest.Reorganization.R08`.
+
+## Migration gate sequence
 
 1. **Current baseline.** Regenerate and version the architecture and build
    report at the exact migration commit using tracked tooling.

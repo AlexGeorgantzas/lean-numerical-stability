@@ -50,6 +50,7 @@ RECORD_FILE_RE = {
 }
 
 PHASE_STATUSES = {"draft", "active", "integration", "closed", "superseded", "cancelled"}
+TERMINAL_PHASE_STATUSES = {"closed", "superseded", "cancelled"}
 MILESTONE_STATUSES = {"planned", "ready", "accepted", "superseded", "cancelled"}
 BRANCH_STATUSES = {
     "planned",
@@ -4452,6 +4453,102 @@ def run_self_test() -> int:
             print("self-test failure: artifact tampering was not rejected", file=sys.stderr)
             return 1
 
+        fleet_root = Path(temporary) / "fleet"
+        fleet_phases = fleet_root / PHASES_ROOT
+        pred_dir = fleet_phases / "2026-01-alpha"
+        succ_dir = fleet_phases / "2026-02-beta"
+        review_relative = "docs/architecture/reviews/fleet-decision.md"
+        review_path = fleet_root / Path(*PurePosixPath(review_relative).parts)
+        review_path.parent.mkdir(parents=True, exist_ok=True)
+        review_path.write_text("fleet fixture decision review\n", encoding="utf-8", newline="\n")
+        write_json(pred_dir / "phase.json", {"phase_id": "alpha-phase", "status": "active"})
+        write_json(succ_dir / "phase.json", {"phase_id": "beta-phase", "status": "active"})
+
+        def fleet_record(**overrides: object) -> dict[str, Any]:
+            record: dict[str, Any] = {
+                "decided_at": "2026-08-30T20:00:00Z",
+                "decision_review": review_relative,
+                "effective_status": "superseded",
+                "phase_id": "alpha-phase",
+                "preserved_phase_sha256": sha256_file(pred_dir / "phase.json"),
+                "record_kind": "phase_supersession",
+                "reviewer": "primary-human",
+                "schema_version": 1,
+                "successor_phase_id": "beta-phase",
+                "successor_path": (succ_dir.relative_to(fleet_root)).as_posix(),
+            }
+            record.update(overrides)
+            return record
+
+        fleet_dirs = [pred_dir, succ_dir]
+
+        def fleet_case(expected: str | None, label: str) -> bool:
+            result = validate_all_phases(fleet_root, fleet_dirs, succ_dir.resolve())
+            if expected is None:
+                if result.ok:
+                    return True
+                result.render()
+                print(f"self-test failure: {label}", file=sys.stderr)
+                return False
+            if any(expected in message for message in result.contract_errors):
+                return True
+            result.render()
+            print(f"self-test failure: {label}", file=sys.stderr)
+            return False
+
+        write_json(pred_dir / "supersession.json", fleet_record())
+        if not fleet_case(None, "valid supersession fleet rejected"):
+            return 1
+        (pred_dir / "supersession.json").unlink()
+        if not fleet_case(
+            "exactly one retained phase must be effectively active",
+            "two effectively active phases accepted",
+        ):
+            return 1
+        write_json(pred_dir / "supersession.json", fleet_record())
+        pointer_result = validate_all_phases(fleet_root, fleet_dirs, pred_dir.resolve())
+        if not any(
+            "must select the effectively active phase" in message
+            for message in pointer_result.contract_errors
+        ):
+            pointer_result.render()
+            print("self-test failure: pointer to terminal phase accepted", file=sys.stderr)
+            return 1
+        write_json(
+            pred_dir / "supersession.json",
+            fleet_record(successor_phase_id="gamma-phase", successor_path="docs/architecture/phases/2026-03-gamma"),
+        )
+        if not fleet_case(
+            "existing distinct successor",
+            "missing supersession successor accepted",
+        ):
+            return 1
+        write_json(pred_dir / "supersession.json", fleet_record())
+        write_json(
+            succ_dir / "supersession.json",
+            fleet_record(
+                phase_id="beta-phase",
+                preserved_phase_sha256=sha256_file(succ_dir / "phase.json"),
+                successor_phase_id="alpha-phase",
+                successor_path=(pred_dir.relative_to(fleet_root)).as_posix(),
+            ),
+        )
+        if not fleet_case("supersession cycle includes", "successor cycle accepted"):
+            return 1
+        (succ_dir / "supersession.json").unlink()
+        write_json(
+            pred_dir / "supersession.json",
+            fleet_record(preserved_phase_sha256="0" * 64),
+        )
+        if not fleet_case(
+            "preserved_phase_sha256 must match the live phase.json bytes",
+            "preserved-hash mismatch accepted",
+        ):
+            return 1
+        write_json(pred_dir / "supersession.json", fleet_record())
+        if not fleet_case(None, "restored supersession fleet rejected"):
+            return 1
+
     print(
         "phase contract self-test passed: valid fixture accepted; queue drift, semantic "
         "status mismatch, wrong ownership, destination overlap, stale baseline metadata, "
@@ -4460,7 +4557,9 @@ def run_self_test() -> int:
         "tampering and unknown terminal operators rejected; known terminal historical "
         "operator attribution and terminal shared-path release accepted; integration "
         "amendment active-index, applied-commit, predecessor-chain, approval, and "
-        "malformed-input lifecycle cases verified"
+        "malformed-input lifecycle cases verified; supersession fleet single-active, "
+        "pointer-agreement, terminal-nonpointer, missing-successor, successor-cycle, "
+        "and preserved-hash cases verified"
     )
     return 0
 
@@ -4555,6 +4654,218 @@ def active_phase_dir() -> tuple[Path | None, list[str]]:
     return phase_dir, errors
 
 
+SUPERSESSION_REQUIRED_KEYS = {
+    "decided_at",
+    "decision_review",
+    "effective_status",
+    "phase_id",
+    "preserved_phase_sha256",
+    "record_kind",
+    "reviewer",
+    "schema_version",
+    "successor_phase_id",
+    "successor_path",
+}
+
+
+def load_phase_identity(
+    phase_dir: Path, context: str, problems: Problems
+) -> tuple[str | None, str | None]:
+    """Read (phase_id, stored status) from one retained phase.json."""
+
+    try:
+        phase = json.loads(
+            (phase_dir / "phase.json").read_text(encoding="utf-8"),
+            object_pairs_hook=duplicate_safe_object,
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, DuplicateKeyError) as error:
+        problems.malformed(context, f"cannot read phase.json: {error}")
+        return None, None
+    phase_id = phase.get("phase_id") if isinstance(phase, dict) else None
+    status = phase.get("status") if isinstance(phase, dict) else None
+    if not isinstance(phase_id, str) or not ID_RE.fullmatch(phase_id):
+        problems.malformed(context, "phase.json phase_id must be a stable slug")
+        phase_id = None
+    if status not in PHASE_STATUSES:
+        problems.malformed(context, "phase.json status is not a known phase status")
+        status = None
+    return phase_id, status
+
+
+def validate_all_phases(
+    root: Path, phase_dirs: Sequence[Path], active_dir: Path | None
+) -> Problems:
+    """Enforce the retained-phase fleet invariants.
+
+    A phase's stored status is overridden only by a valid terminal
+    supersession record (supersession.json beside its phase.json): exactly
+    one phase is effectively active, the active-phase pointer selects it,
+    every other retained phase is effectively terminal, each supersession
+    names an existing successor, successor chains are acyclic and reach the
+    active phase, and the preserved-phase hash matches the live phase.json.
+    """
+
+    problems = Problems()
+    effective: dict[str, str] = {}
+    successors: dict[str, str] = {}
+    dirs_by_id: dict[str, Path] = {}
+    for phase_dir in phase_dirs:
+        context = phase_dir.relative_to(root).as_posix()
+        phase_id, status = load_phase_identity(phase_dir, context, problems)
+        if phase_id is None or status is None:
+            continue
+        if phase_id in dirs_by_id:
+            problems.violation(context, f"duplicate retained phase_id {phase_id}")
+            continue
+        dirs_by_id[phase_id] = phase_dir
+        record_path = phase_dir / "supersession.json"
+        if not record_path.is_file():
+            effective[phase_id] = status
+            continue
+        record_context = f"{context}/supersession.json"
+        try:
+            record = json.loads(
+                record_path.read_text(encoding="utf-8"),
+                object_pairs_hook=duplicate_safe_object,
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError, DuplicateKeyError) as error:
+            problems.malformed(record_context, f"cannot read supersession record: {error}")
+            effective[phase_id] = status
+            continue
+        if not isinstance(record, dict):
+            problems.malformed(record_context, "supersession record must be a JSON object")
+            effective[phase_id] = status
+            continue
+        missing = sorted(SUPERSESSION_REQUIRED_KEYS - set(record))
+        unexpected = sorted(set(record) - SUPERSESSION_REQUIRED_KEYS)
+        if missing:
+            problems.malformed(record_context, "missing key(s): " + ", ".join(missing))
+        if unexpected:
+            problems.malformed(record_context, "unexpected key(s): " + ", ".join(unexpected))
+        valid = not missing and not unexpected
+        if valid and record.get("schema_version") != SCHEMA_VERSION:
+            problems.malformed(record_context, "schema_version must be 1")
+            valid = False
+        if valid and record.get("record_kind") != "phase_supersession":
+            problems.malformed(record_context, "record_kind must be 'phase_supersession'")
+            valid = False
+        if valid and record.get("effective_status") != "superseded":
+            problems.violation(
+                record_context,
+                "a stored status is overridden only by a terminal supersession "
+                "record with effective_status 'superseded'",
+            )
+            valid = False
+        if valid and record.get("phase_id") != phase_id:
+            problems.violation(record_context, "supersession phase_id differs from phase.json")
+            valid = False
+        if valid and not (
+            isinstance(record.get("decided_at"), str) and is_rfc3339(record["decided_at"])
+        ):
+            problems.malformed(record_context, "decided_at must be an RFC 3339 instant")
+            valid = False
+        if valid and not (
+            isinstance(record.get("reviewer"), str) and record["reviewer"]
+        ):
+            problems.malformed(record_context, "reviewer must be a nonempty string")
+            valid = False
+        if valid:
+            review = record.get("decision_review")
+            if not (
+                isinstance(review, str)
+                and is_repo_path(review)
+                and (root / Path(*PurePosixPath(review).parts)).is_file()
+            ):
+                problems.violation(
+                    record_context, "decision_review must name an existing repository file"
+                )
+                valid = False
+        if valid:
+            pinned = record.get("preserved_phase_sha256")
+            if not (
+                isinstance(pinned, str)
+                and SHA256_RE.fullmatch(pinned)
+                and pinned.upper() == sha256_file(phase_dir / "phase.json")
+            ):
+                problems.violation(
+                    record_context,
+                    "preserved_phase_sha256 must match the live phase.json bytes",
+                )
+                valid = False
+        if valid:
+            successor_id = record.get("successor_phase_id")
+            successor_path = record.get("successor_path")
+            successor_ok = (
+                isinstance(successor_id, str)
+                and ID_RE.fullmatch(successor_id)
+                and successor_id != phase_id
+                and isinstance(successor_path, str)
+                and is_repo_path(successor_path)
+                and (root / Path(*PurePosixPath(successor_path).parts) / "phase.json").is_file()
+            )
+            if not successor_ok:
+                problems.violation(
+                    record_context,
+                    "supersession must name an existing distinct successor phase",
+                )
+                valid = False
+            else:
+                successors[phase_id] = successor_id
+        effective[phase_id] = "superseded" if valid else status
+    active_ids = sorted(
+        phase_id for phase_id, status in effective.items() if status == "active"
+    )
+    fleet_context = PHASES_ROOT.as_posix()
+    if len(active_ids) != 1:
+        problems.violation(
+            fleet_context,
+            "exactly one retained phase must be effectively active, found "
+            + (", ".join(active_ids) if active_ids else "none"),
+        )
+    active_id = active_ids[0] if len(active_ids) == 1 else None
+    if active_id is not None and active_dir is not None:
+        if dirs_by_id.get(active_id, Path()).resolve() != active_dir:
+            problems.violation(
+                fleet_context,
+                "the active-phase pointer must select the effectively active phase",
+            )
+    for phase_id, status in sorted(effective.items()):
+        if phase_id == active_id:
+            continue
+        if status not in TERMINAL_PHASE_STATUSES:
+            problems.violation(
+                fleet_context,
+                f"retained nonpointer phase {phase_id} must be effectively "
+                f"terminal, found status {status}",
+            )
+    for phase_id in sorted(successors):
+        successor_id = successors[phase_id]
+        if successor_id not in dirs_by_id:
+            problems.violation(
+                fleet_context,
+                f"supersession successor {successor_id} is not a retained phase",
+            )
+            continue
+        visited = {phase_id}
+        cursor = successor_id
+        while cursor in successors:
+            if cursor in visited:
+                problems.violation(
+                    fleet_context, f"supersession cycle includes {cursor}"
+                )
+                break
+            visited.add(cursor)
+            cursor = successors[cursor]
+        else:
+            if active_id is not None and cursor != active_id:
+                problems.violation(
+                    fleet_context,
+                    f"supersession chain from {phase_id} ends at {cursor}, "
+                    "not the effectively active phase",
+                )
+    return problems
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
     if args.self_test:
@@ -4589,6 +4900,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"phase validation failed: {phase_dir.relative_to(ROOT).as_posix()}", file=sys.stderr)
             problems.render()
             exit_code = max(exit_code, 2 if problems.format_errors else 1)
+        fleet = validate_all_phases(ROOT, phase_dirs, active_dir)
+        if not fleet.ok:
+            print("phase fleet validation failed", file=sys.stderr)
+            fleet.render()
+            exit_code = max(exit_code, 2 if fleet.format_errors else 1)
         return exit_code
 
     phase_dir = args.phase_dir

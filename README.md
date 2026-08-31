@@ -17,6 +17,13 @@ does not specify precisely enough to formalize honestly.
 
 ## Reorganization acceptance record
 
+Checkpoint C0007 (exact code commit
+`4e26820d1f4989ec4ec77b7113085f593570e11b`) remains the current accepted
+checkpoint. The reviewed I01 wave (R0014/R0015) was subsequently applied on
+`main` at `9fbb1e36bcc85f866893e902cbe206ba468a65b0` (2026-08-30) under the
+primary human's recorded cutover decision, and repository reorganization now
+follows [`docs/architecture/PROCESS.md`](docs/architecture/PROCESS.md).
+
 The accepted C0007/R09-R10 epoch retains the following checkpoint facts as
 immutable history; the current production statistics appear below.
 C0005 accepts M04/R04 and M08/R08 at exact integrated code commit
@@ -32,8 +39,10 @@ correction `DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909`.
 The resulting projection was 2,860 production modules: 2,770 classified, 90
 unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
 That queue is now empty: R09 and R10 were integrated at
-`09512c1b15fd4f6892a313341b1edc8c02bb913d` and the live ratchet records 2,927
-production modules with 0 unclassified.
+`09512c1b15fd4f6892a313341b1edc8c02bb913d`, after which the accepted C0007
+baseline recorded 2,927 production modules with 0 unclassified; the later I01
+landing brought the live tree to 2,928 production modules, still with 0
+unclassified.
 
 Exact integration-control commit `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`
 passed GitHub Lean CI run 32616508317 (job 97138028649). Checkpoint C0006 is
@@ -118,7 +127,9 @@ low-rank approximation, and least-squares preconditioning.
 ## Project statistics
 
 The latest generated production snapshot is the accepted
-[`C0007` baseline](docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0007-combined.json):
+[`C0007` baseline](docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0007-combined.json),
+measured at C0007 code commit `4e26820d1f4989ec4ec77b7113085f593570e11b`. The
+figures below are that accepted snapshot, not a live measurement:
 
 | Metric | Count |
 |---|---:|
@@ -132,6 +143,12 @@ The latest generated production snapshot is the accepted
 | Classified modules | **2,927 / 2,927 (100%)** |
 | Modules with documentation | **2,927 / 2,927 (100%)** |
 | `sorry` / `admit` / top-level `axiom` or `constant` commands | **0** |
+
+The reviewed I01 wave (R0014/R0015, applied at
+`9fbb1e36bcc85f866893e902cbe206ba468a65b0`) landed after this snapshot and
+added one production module: the live tree contains 2,928 production modules,
+all classified and documented, with 712 import-only forwarding modules over
+2,364 canonical targets. Regenerate the baseline for fresh live figures.
 
 Source, import, tier, and declaration figures come from the generated baseline.
 The placeholder and layout invariants are enforced by
@@ -340,7 +357,8 @@ experiments/                          C/Python reproductions of selected source 
 └── chapter04/
 
 ARCHITECTURE.md                       API-tier and dependency policy
-RENAME_LEDGER.md                      historical-to-canonical module mapping
+RENAME_LEDGER.md                      archived package/repository/library identity record
+                                      (module forwarding: docs/architecture/COMPATIBILITY.md)
 lakefile.toml                         Lake package and build configuration
 lean-toolchain                        pinned Lean toolchain
 ```

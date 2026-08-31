@@ -1,0 +1,12 @@
+{
+  "decided_at": "2026-08-30T23:56:52Z",
+  "decision_review": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-governance-reconciliation.md",
+  "effective_status": "superseded",
+  "phase_id": "repository-reorganization-2026-08",
+  "preserved_phase_sha256": "7E19F798C3B14E44F8765CF72E31CE8C47BC6D4862A528305FA7D61E9FB2ECA2",
+  "record_kind": "phase_supersession",
+  "reviewer": "primary-human",
+  "schema_version": 1,
+  "successor_path": "docs/architecture/phases/2026-08-repository-reorganization-completion",
+  "successor_phase_id": "repository-reorganization-completion-2026-08"
+}

@@ -4,12 +4,51 @@ The active operating contract is the
 [`2026-08 repository reorganization completion`](2026-08-repository-reorganization-completion/README.md),
 selected by [`active-phase.json`](active-phase.json). It is rooted at C0000 on
 accepted predecessor code commit
-`b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0005
-at exact integrated code commit `ad92bbfae62d538f3e52829a269a846688a8e213`.
+`b1b18772d80185ec08f49c818919558645c330a1`. The predecessor
+[`2026-08 repository reorganization`](2026-08-repository-reorganization/README.md)
+phase is formally superseded via its
+[`supersession.json`](2026-08-repository-reorganization/supersession.json), and
+`tools/architecture/check_phase.py --all-phases` enforces the fleet
+invariants, including exactly one effectively active phase and valid acyclic
+supersession chains.
+
+The accepted checkpoint is C0007 at exact integrated code commit
+`4e26820d1f4989ec4ec77b7113085f593570e11b`: M09 and M10 are accepted, B0011
+and B0012 are accepted with retirement due, P0011 and P0012 are retired, and
+R0012 and R0013 are applied. R0014 and R0015 (the M13 I01 wave plus the
+CODE03 correction) are applied on `main` at commit
+`9fbb1e36bcc85f866893e902cbe206ba468a65b0` under the primary human's recorded
+2026-08-30 cutover decision, which retired the bounded
+plan/activate/deliver/integrate lifecycle; the bounded branch
+`codex/reorg-closeout-2026-08-m13-i01` remains immutable history at
+`46c42a339b59a08cec3cbc439a929c3707447229`, and the operative light-regime
+process is recorded in [`docs/architecture/PROCESS.md`](../PROCESS.md). The
+live tree records 2,928 of 2,928 production modules classified, with zero
+unclassified, mixed, or noncanonical modules and zero declaration-bearing
+umbrellas; 712 forwarding modules cover 2,364 canonical targets, and
+provenance records 137 Apache-2.0-marked production files and 5 evidenced
+upstream modules. Bounded-phase and repository-wide completion both remain
+incomplete. The
+[`C0007 governance reconciliation review`](2026-08-repository-reorganization-completion/reviews/C0007-governance-reconciliation.md)
+records the cutover decision and the reconciled current-state measurements.
+
+This successor has precedence over dated migration packets and historical
+handoffs. Closed or superseded phases remain here as immutable evidence. A
+retained phase must identify its status and successor rather than silently
+changing its original scope.
+
+## Archived chronology
+
+The records below are preserved as past-tense history with their exact
+hashes, CI runs, and figures; the normative current-state summary above
+supersedes any status language they contain.
+
+Checkpoint C0005 was accepted at exact integrated code commit
+`ad92bbfae62d538f3e52829a269a846688a8e213`.
 C0005 accepts M04/R04 and M08/R08 on top of C0004's accepted R05/R06. Its
 generated evidence records 2,818 production modules: 2,685 classified, 133
-unclassified, and 0 mixed. M04 and M08 are accepted; M07 remains ready and
-B0010/R07 was delivered (M07 having become ready) from exact C0005 base code
+unclassified, and 0 mixed. M04 and M08 are accepted; M07 became ready and
+B0010/R07 was delivered from exact C0005 base code
 `ad92bbfae62d538f3e52829a269a846688a8e213`. Immutable delivery
 `2f55e0aa5687829ca3a7dd54d5f90663ec4293cc` is preserved by true merge
 `4e298a102c6f914b42581492152ab9eea1cd0edf`, whose first parent is exact
@@ -18,10 +57,10 @@ integration-control commit applies exact R0011 and reviewed correction
 `DFF0256BCDAB3DA2A3248D85A5A390E345AE5C49D45C6E099E26E315CF03B909`.
 The resulting projection is 2,860 production modules: 2,770 classified, 90
 unclassified, and 0 mixed, with the residual queue exactly R09=72 and R10=18.
-That queue is now empty: R09 and R10 were integrated at
+That queue was subsequently emptied: R09 and R10 were integrated at
 `09512c1b15fd4f6892a313341b1edc8c02bb913d` under the reviewed 25-path
-R0012/R0013 union, and the live ratchet records 2,927 production modules with 0
-unclassified and 0 noncanonical names.
+R0012/R0013 union, and the post-integration ratchet recorded 2,927 production
+modules with 0 unclassified and 0 noncanonical names.
 Exact integration-control commit `b2b9ab9057deda15c3fcf27745b76dcc49d3a1a5`
 passed GitHub Lean CI run 32616508317 (job 97138028649). Checkpoint C0006 is
 accepted by `primary-human` at exact code commit
@@ -35,27 +74,27 @@ Checkpoint C0007 is accepted by `primary-human` at exact code commit
 with retirement due, P0011 and P0012 are retired, and R0012 and R0013 are
 applied as the reviewed 25-path union. The eighteen wave-specific shared-path
 reservations are released, leaving seven perennial. C0007 is the first
-checkpoint with an empty classification queue, leaving M13 and its I01 wave of
-twelve reserved modules as the phase's remaining wave work. Both remote worker
+checkpoint with an empty classification queue; M13 and its I01 wave remained
+the phase's outstanding wave work until the R0014/R0015 landing recorded in
+the current-state summary above. Both remote worker
 refs remain preserved at their immutable deliveries. Branch retirement remains a
 separate later control.
 
-B0011/R09 and B0012/R10 are active at exact C0006 base code
+B0011/R09 and B0012/R10 were activated at exact C0006 base code
 `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`. Exact planned-control commit
 `b12c9c6b829f9cf80a9ad6cf2d0c55f3530cd0d7` passed Lean CI run 32747422537
 (job 97496170577). The local and remote
 `claude/reorg-completion-2026-08-r09-test-matrices-ch28` and
 `claude/reorg-completion-2026-08-r10-randnla-drineas-mahoney` refs and the
 clean LF named worktrees `C:\Users\qed_s\higham-worktrees\completion-r09-claude` and
-`C:\Users\qed_s\higham-worktrees\completion-r10-claude` point to that exact base. Both
-workers are frozen until the separate activation-control commit passes Lean CI.
-Activation is authorized by a reviewed primary-human activation authorization
+`C:\Users\qed_s\higham-worktrees\completion-r10-claude` pointed to that exact base at
+activation. Both workers remained frozen until the separate activation-control
+commit passed Lean CI.
+Activation was authorized by a reviewed primary-human activation authorization
 that is deliberately narrower than the R07 precedent's semantic review and
-records what it does not cover. No R09 or R10 implementation, delivery,
-integration, self-acceptance, checkpoint acceptance, or branch retirement is
-recorded.
-This successor has precedence over dated migration packets and historical
-handoffs.
+records what it does not cover. Both waves were subsequently delivered,
+integrated at `09512c1b15fd4f6892a313341b1edc8c02bb913d`, and accepted at
+C0007 as recorded above.
 
 After C0001 acceptance-control commit
 `93883eb0ec69a01704ff24ac71713a03f0be5a49` passed Lean CI run 31542177523
@@ -202,7 +241,7 @@ delivery branches remain preserved at
 [`R05/R06 retirement review`](2026-08-repository-reorganization-completion/reviews/R05-R06-retirement.md)
 records the exact leases, archive, cleanup, and preserved refs.
 
-Exact-C0004 successor activation now records
+Exact-C0004 successor activation recorded
 [`B0008/R04`](2026-08-repository-reorganization-completion/branches/B0008.json)
 and
 [`B0009/R08`](2026-08-repository-reorganization-completion/branches/B0009.json)
@@ -234,9 +273,7 @@ pinned at
 `D3F30A410903B1CA2858951CB26107B94B62630BC424723A0EC9EDF484AEDDDF`,
 `08FA3E41DA0C72E7F5D4ECFD315F0CC6C73EB0F45089CF1DAC6AB04A81A1E326`,
 and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`;
-the accepted C0005 baseline and inventory supersede them. Bounded-phase completion is reached: after the
-R09/R10 integration, 0 unclassified modules, 0 noncanonical names, and one
-reviewed declaration-bearing umbrella remain.
+the accepted C0005 baseline and inventory supersede them.
 
 The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
 passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and
@@ -284,11 +321,7 @@ B0004/W03 and B0005/W05 are
 accepted at C0005 and retired; their exact remote delivery refs were deleted
 after the C0005 acceptance-control commit passed Lean CI.
 
-Closed or superseded phases remain here as immutable evidence. A retained
-phase must identify its status and successor rather than silently changing its
-original scope.
-
-Exact-C0006 successor planning now records
+Exact-C0006 successor planning recorded
 [`B0011/R09`](2026-08-repository-reorganization-completion/branches/B0011.json)
 and
 [`B0012/R10`](2026-08-repository-reorganization-completion/branches/B0012.json)
@@ -298,12 +331,13 @@ exactly five integrator-owned files and are reconciled by the reviewed
 [`25-path common-base union`](2026-08-repository-reorganization-completion/requests/R0012-R0013-union-review.md).
 The
 [`selection review`](2026-08-repository-reorganization-completion/reviews/C0006-R09-R10-selection.md)
-records zero peer overlap across every enforced dimension. B0011/R09 runs in
-`claude-lane`; the immutable scope freeze assigns R10 to `codex-lane`, so B0012
-runs there under a
+records zero peer overlap across every enforced dimension. B0011/R09 ran in
+`claude-lane`; the immutable scope freeze assigned R10 to `codex-lane`, so B0012
+ran there under a
 [`temporary operator authorization`](2026-08-repository-reorganization-completion/reviews/R10-operator-authorization.md)
-adding `claude-local` to that lane. No worker ref or worktree exists, neither wave is activated, and
-both waves were activated, delivered and integrated. R09 reclassified the 72
+adding `claude-local` to that lane. At planning time no worker ref or worktree
+existed and neither wave was activated; both waves were subsequently
+activated, delivered, and integrated. R09 reclassified the 72
 `Higham28*` owners and R10 the last 18 `RandNLA*` owners, which emptied the
 unclassified ratchet. Integration control
 `09512c1b15fd4f6892a313341b1edc8c02bb913d` preserves both immutable delivery

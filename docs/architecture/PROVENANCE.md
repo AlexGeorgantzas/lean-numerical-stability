@@ -9,8 +9,10 @@ changes its license, copyright holder, or authorship.
 ## Audited state
 
 The organization audit on 2026-07-22 found 148 production Lean files with
-Apache-2.0 notices. Five of those are evidenced Mathlib adaptations or
-backports under `NumStability/Upstream/Lindemann`; their exact pull requests,
+Apache-2.0 notices. The current executable re-measurement (2026-08-30) finds
+137 production Lean files with Apache-2.0 notices. Five of those are evidenced
+Mathlib adaptations or backports under `NumStability/Upstream/Lindemann`,
+unchanged since the audit; their exact pull requests,
 commit hashes, authors, and copyright holders are recorded in
 [`THIRD_PARTY_NOTICES.md`](../../THIRD_PARTY_NOTICES.md).
 
