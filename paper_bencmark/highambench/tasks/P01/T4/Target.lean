@@ -13,28 +13,31 @@ namespace HighamBench
 
 open scoped BigOperators
 
-/-- Recursive, pairwise, insertion, and sign-separated methods are addition-tree methods. -/
-theorem p01_t4_four_methods_are_general_addition_schemes
-    (flAdd : ℝ → ℝ → ℝ) :
-    (∀ inputs : List ℝ, inputs ≠ [] →
-      ∃ tree : P01SumTree,
-        P01AdditionScheme inputs tree ∧
-        P01SumTree.rounded flAdd tree = p01RecursiveList flAdd inputs) ∧
-    (∀ inputs result, inputs ≠ [] → P01PairwiseEvaluation flAdd inputs result →
-      ∃ tree : P01SumTree,
-        P01AdditionScheme inputs tree ∧ P01SumTree.rounded flAdd tree = result) ∧
-    (∀ inputs result, inputs ≠ [] → P01InsertionEvaluation flAdd inputs result →
-      ∃ tree : P01SumTree,
-        P01AdditionScheme inputs tree ∧ P01SumTree.rounded flAdd tree = result) ∧
-    (∀ inputs result, inputs ≠ [] → P01PlusMinusEvaluation flAdd inputs result →
-      ∃ tree : P01SumTree,
-        P01AdditionScheme inputs tree ∧ P01SumTree.rounded flAdd tree = result) := by
+/-- Recursive, pairwise, insertion, and sign-separated summation are the four
+methods with the literal indexed form (3.1). -/
+theorem p01_t4_four_methods_are_general_addition_schemes :
+    ∀ (n : ℕ) (x : Fin n → ℝ), 0 < n →
+      P01AdditionScheme n x
+          (p01RecursiveList (· + ·) (List.ofFn x)) ∧
+      (∀ result,
+        P01PairwiseEvaluation (· + ·) (List.ofFn x) result →
+        P01AdditionScheme n x result) ∧
+      (∀ result,
+        P01InsertionEvaluation (· + ·) (List.ofFn x) result →
+        P01AdditionScheme n x result) ∧
+      P01AdditionScheme n x
+        (p01PlusMinusFinal (· + ·) (List.ofFn x)) := by
   -- PROOF_START P01-D001
   sorry
-/-- The permutation symmetry stated immediately after equation (1.1). -/
+/-- The function and coordinate-derivative symmetries stated immediately after
+equation (1.1), specialized to the displayed pair swap for `n = 4`. -/
 theorem p01_t4_rosenbrock_pair_swap (a b c d : ℝ) :
-    p01ExtendedRosenbrock 2 (p01Four a b c d) =
-      p01ExtendedRosenbrock 2 (p01Four c d a b) := by
+    p01ExtendedRosenbrock 4 (by decide) (p01Four a b c d) =
+        p01ExtendedRosenbrock 4 (by decide) (p01Four c d a b) ∧
+      ∀ j : Fin 4,
+        p01ExtendedRosenbrockCoordinateDerivatives4 (p01Four c d a b) j =
+          p01ExtendedRosenbrockCoordinateDerivatives4 (p01Four a b c d)
+            (p01RosenbrockPairSwapIndex j) := by
   -- PROOF_START P01-D005
   sorry
 /-- Equation (2.1): all recursive additions admit bounded local factors. -/
@@ -45,10 +48,9 @@ theorem p01_t4_eq_2_1
   sorry
 /-- Equation (2.2), represented as one path product for each input. -/
 theorem p01_t4_eq_2_2
-    (fp : P01StandardAddModel) (n : ℕ) (v : Fin n → ℝ) (hn : 2 ≤ n) :
-    ∃ δ : Fin n → ℝ,
-      P01RecursiveDeltaWitness fp n v δ ∧
-      p01RecursiveSum fp.fl_add n v = p01RecursiveProductExpansion n v δ := by
+    (flAdd : ℝ → ℝ → ℝ) (n : ℕ) (v δ : Fin n → ℝ) (hn : 2 ≤ n)
+    (hδ : P01RecursiveDeltaRecurrence flAdd n v δ) :
+    p01RecursiveSum flAdd n v = p01RecursiveProductExpansion n v δ := by
   -- PROOF_START P01-D013
   sorry
 /-- The finite-product lemma displayed after equation (2.2). -/
@@ -124,10 +126,12 @@ theorem p01_t4_gamma_first_order_remainder
   sorry
 /-- The unnumbered relative-error consequence of equation (2.6). -/
 theorem p01_t4_recursive_relative_error
-    (fp : P01StandardAddModel) (n : ℕ) (v : Fin n → ℝ)
-    (hvalid : P01GammaValid fp.u (n - 1)) (hsum : p01ExactSum n v ≠ 0) :
-    |p01RecursiveError fp.fl_add n v| / |p01ExactSum n v| ≤
-      p01Gamma fp.u (n - 1) * p01SummationCondition n v := by
+    (flAdd : ℝ → ℝ → ℝ) (u : ℝ) (n : ℕ) (v : Fin n → ℝ)
+    (h26 : |p01RecursiveError flAdd n v| ≤
+      p01Gamma u (n - 1) * p01AbsoluteSum n v)
+    (hsum : p01ExactSum n v ≠ 0) :
+    |p01RecursiveError flAdd n v| / |p01ExactSum n v| ≤
+      p01Gamma u (n - 1) * p01SummationCondition n v := by
   -- PROOF_START P01-D021
   sorry
 /-- For nonnegative data with nonzero sum, the absolute-sum condition number is one. -/
@@ -154,12 +158,13 @@ theorem p01_t4_summation_condition_number
   sorry
 /-- Equation (2.7), retaining explicit local rounding witnesses. -/
 theorem p01_t4_eq_2_7
-    (fp : P01StandardAddModel) (n : ℕ) (v δ : Fin n → ℝ)
-    (hδ : P01RecursiveDeltaWitness fp n v δ) (hu : fp.u < 1) :
-    p01RecursiveError fp.fl_add n v =
+    (flAdd : ℝ → ℝ → ℝ) (n : ℕ) (v δ : Fin n → ℝ)
+    (hδ : P01RecursiveDeltaRecurrence flAdd n v δ)
+    (hden : ∀ k : Fin n, 0 < k.val → 1 + δ k ≠ 0) :
+    p01RecursiveError flAdd n v =
       ∑ k : Fin n,
         if 0 < k.val then
-          p01RecursivePrefix fp n v k * δ k / (1 + δ k)
+          p01RecursivePrefixWith flAdd n v k * δ k / (1 + δ k)
         else 0 := by
   -- PROOF_START P01-D024
   sorry
@@ -372,7 +377,7 @@ theorem p01_t4_recursive_tree_specialization
     (fp : P01StandardAddModel) (n : ℕ) (v : Fin n → ℝ) (hn : 0 < n) :
     ∃ tree : P01SumTree,
       p01RecursiveTree (List.ofFn v) = some tree ∧
-      P01AdditionScheme (List.ofFn v) tree ∧
+      P01TreeAdditionScheme (List.ofFn v) tree ∧
       P01SumTree.rounded fp.fl_add tree = p01RecursiveSum fp.fl_add n v ∧
       (P01SumTree.localErrors fp.fl_add tree).sum = p01RecursiveError fp.fl_add n v ∧
       ((P01SumTree.internalValues fp.fl_add tree).map abs).sum =
@@ -470,12 +475,12 @@ theorem p01_t4_inverse_square_series_value :
   sorry
 /-- For powers of two, insertion and ordinary recursive summation have a common evaluation. -/
 theorem p01_t4_insertion_powers_of_two_are_recursive
-    (fp : P01BinaryRoundModel) (n : ℕ) (hn : 0 < n) :
+    (n : ℕ) (hn : 0 < n) :
     let inputs := p01PowersOfTwo n
-    let recursiveResult := p01RecursiveList (p01RoundAdd fp) inputs
-    P01InsertionFrontEvaluation (p01RoundAdd fp) inputs recursiveResult ∧
+    let recursiveResult := p01RecursiveList (· + ·) inputs
+    P01InsertionFrontEvaluation (· + ·) inputs recursiveResult ∧
     ∀ result,
-      P01InsertionEvaluation (p01RoundAdd fp) inputs result ↔
+      P01InsertionEvaluation (· + ·) inputs result ↔
         result = recursiveResult := by
   -- PROOF_START P01-D058G
   sorry
@@ -509,8 +514,8 @@ theorem p01_t4_plusminus_maximizes_internal_magnitude
     (inputs : List ℝ) (hnonempty : inputs ≠ []) :
     (∃ witness : P01SumTree, P01PlusMinusTree (· + ·) inputs witness) ∧
     ∀ plusTree : P01SumTree, P01PlusMinusTree (· + ·) inputs plusTree →
-      P01AdditionScheme inputs plusTree ∧
-      ∀ tree : P01SumTree, P01AdditionScheme inputs tree →
+      P01TreeAdditionScheme inputs plusTree ∧
+      ∀ tree : P01SumTree, P01TreeAdditionScheme inputs tree →
         p01MaxExactValueMagnitude tree ≤ p01MaxExactValueMagnitude plusTree := by
   -- PROOF_START P01-D061
   sorry
@@ -928,5 +933,14 @@ theorem p01_t4_increasing_sign_tie_is_permutation_invariant
     (hordered₂ : P01IncreasingSignOrdered ordered₂) :
     p01RecursiveList flAdd ordered₁ = p01RecursiveList flAdd ordered₂ := by
   -- PROOF_START P01-D128A
+  sorry
+
+/-- Under exact addition, every permitted sign-subtotal evaluation gives an
+addition scheme of the literal indexed form (3.1). -/
+theorem p01PlusMinusForm31Report
+    (n : ℕ) (x : Fin n → ℝ) (hn : 0 < n) (result : ℝ)
+    (heval : P01PlusMinusEvaluation (· + ·) (List.ofFn x) result) :
+    P01AdditionScheme n x result := by
+  -- PROOF_START P01-D061M
   sorry
 end HighamBench

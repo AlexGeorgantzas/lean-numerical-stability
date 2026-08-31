@@ -11,6 +11,21 @@ there is sufficient to start review; a locked construction-runner receipt or
 measurement-ready registration is not a precondition. Never disclose private
 solutions or proof-derived hints to a reviewer.
 
+## Enter final review only after construction stabilizes
+
+Do not use a durable campaign as an iterative construction scratchpad. While
+the inventory, definitions, statements, mappings, or private proofs are still
+changing, keep editing the paper-owned files and use direct local audits or
+disposable packet previews. Do not create an immutable campaign directory,
+campaign plan, or accepted review record for those drafts.
+
+Start a durable review attempt only after one complete candidate has passed
+the exact-byte N/L gate. The packets for that launched attempt remain immutable
+so its verdicts can be traced to the bytes the reviewers actually saw. This is
+not a lock on the paper: if review exposes a problem, return to mutable
+construction, batch and validate the repairs, and then create a new attempt.
+Never rewrite or "unfreeze" the previous attempt.
+
 ## Build immutable review units and packets
 
 Create one review unit for each atomic included source claim, coalescing
@@ -22,8 +37,8 @@ closure. Controlled overlap between units is permitted only for explicitly
 recorded carrier reuse. Judge statement and definition semantics, never the
 placeholder or a possible proof.
 
-For each review unit and revision attempt, make immutable source and Lean
-packets with per-declaration records. The source packet contains the exact
+For each unit in a launched final-review attempt, make immutable source and
+Lean packets with per-declaration records. The source packet contains the exact
 claim, enough surrounding text and formula images to recover scoped notation
 and assumptions, exact PDF/printed page, section and anchor, and the paper
 hash. The Lean packet contains the declaration group with its proofs erased
@@ -242,20 +257,21 @@ expected hash before any root launch.
 
 ## Apply the score and adjudication contract
 
-- `4 / faithful-equivalent`: all material content is preserved with the same
-  mathematical meaning, up to definitional, notational, or syntactic equality.
-- `3 / faithful-equivalent`: differences are only benign semantics-preserving
-  representation changes.
-- `3 / faithful-stronger`: over the same intended objects and semantics, the
-  Lean statement entails the source claim. Extra assumptions, a narrowed
-  domain, altered constants, or a weaker conclusion are not strengthening.
+- `3 / faithful-equivalent`: all material content is preserved with the same
+  mathematical meaning. Definitional, notational, syntactic, and other benign
+  semantics-preserving representation changes belong here too.
+- `4 / faithful-stronger`: over the same intended objects and semantics, the
+  Lean statement entails the source claim and genuinely states more. Extra
+  assumptions, a narrowed domain, altered constants, or a weaker conclusion
+  are not strengthening.
 - Scores `0`--`2` fail. Any tag other than `faithful-equivalent` or
   `faithful-stronger` is nonpassing and must identify the mismatch or an
   unreviewable packet.
 
-A verdict passes exactly when its score is at least 3 and its tag is one of the
-two passing tags. Without disagreement, accept only when both judges pass and
-give the same tag; different numeric scores alone do not trigger adjudication.
+A verdict passes exactly when it is `3 / faithful-equivalent` or
+`4 / faithful-stronger`. These are the only passing score/tag pairs. Without
+disagreement, accept only when both judges pass and give the same tag; different
+numeric scores alone do not trigger adjudication.
 Any tag disagreement or pass/fail disagreement invokes a new clean-context
 Adjudicator, even when both raw scores fail. Give it both packets, the locked
 reconstruction, and both verdicts. It resolves the semantic issue rather than

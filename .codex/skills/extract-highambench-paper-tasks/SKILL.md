@@ -38,6 +38,19 @@ change its mathematics, invent a wrapper stack, or edit shared tools to force
 it. Hashing a current snapshot never prohibits later construction edits; every
 semantic edit simply requires fresh direct N/L checks and review evidence.
 
+Treat construction as a mutable phase. While the inventory, definitions,
+statements, mappings, or private proofs are still being revised, batch related
+edits and do not create final immutable campaign directories, accept campaign
+results, or perform any release or measurement freeze. Draft packet inspection
+may use disposable output outside the durable campaign root. Once one complete
+candidate is stable, refresh its metadata hashes, run the exact-byte N/L gate,
+and create one immutable snapshot for final faithfulness review. If that review
+finds a semantic problem, return to construction and batch the repairs before
+creating a new review attempt; never "unfreeze" or rewrite the old attempt.
+The unfortunately named `t4_metadata.py freeze` command only refreshes three
+hash fields. Run it at a validation or review hand-off, not after every small
+edit; it does not lock files or change the construction-stage status.
+
 - For any T1--T3 selection, construction, revision, tier review, metadata
   review, or private N/L proof work, read
   [T1--T3 selected-result workflow](references/t1-t3-workflow.md).

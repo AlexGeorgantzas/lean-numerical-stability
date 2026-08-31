@@ -12,11 +12,6 @@
           "declaration_id": "P01-T4-D225",
           "notes": "This declaration directly carries the atomic source claim. This occurrence is an explicit reuse required independently by this source item.",
           "role": "primary_carrier"
-        },
-        {
-          "declaration_id": "P01-T4-D016",
-          "notes": "This named source-facing definition or report is material context for interpreting the carrier.",
-          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -24,7 +19,7 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I001",
       "review_unit_id": "P01-T4-U001",
-      "scope": "Four of the five principal methods are special cases of the general summation class later defined by equation (3.1).",
+      "scope": "On floating-point inputs, four of the five principal methods are special cases of the general summation class later defined by equation (3.1).",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim. Controlled reuse is required for independently inventoried atomic claims and is recorded by the frozen packet manifest: HighamBench.p01_t4_four_methods_are_general_addition_schemes.",
       "source_issue_notes": [],
       "source_kind": "precise_unnumbered_claim",
@@ -81,7 +76,7 @@
       "inventory_id": "P01-I002",
       "review_unit_id": "P01-T4-U002",
       "scope": "No considered method is uniformly more accurate than all others.",
-      "smallest_group_reason": "The abstract and conclusion give exact restatements of the same no-uniform-superiority assessment and therefore share one report carrier.",
+      "smallest_group_reason": "This single declaration directly carries the abstract's uniform-accuracy claim.",
       "source_issue_notes": [
         "Uniform superiority is qualitative unless the method set and accuracy order are fixed."
       ],
@@ -294,7 +289,7 @@
     },
     {
       "assumptions": [
-        "The reported optimizer problems and intervention in P01-I003A--P01-I003D."
+        "The reported optimizer problems in P01-I003A--P01-I003D and the objective gradient written as the cited sum (4.1) of M terms."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -312,7 +307,7 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I003E",
       "review_unit_id": "P01-T4-U008",
-      "scope": "The cited authors report that the sign-separated accumulation intervention eliminated the optimizer problems.",
+      "scope": "The cited authors report that separately accumulating positive and negative terms for each component of the objective gradient in sum (4.1), and adding the two subtotals only after all M terms, eliminated the optimizer problems.",
       "smallest_group_reason": "One report carrier explicitly preserves both the initial elimination claim and the conclusion's separately qualified claim that the method cured some such problems.",
       "source_issue_notes": [],
       "source_kind": "empirical_claim",
@@ -370,7 +365,7 @@
     },
     {
       "assumptions": [
-        "a,b,c,d are real."
+        "a,b,c,d are real, and derivatives mean the coordinate derivatives of the n = 4 extended Rosenbrock function."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -388,8 +383,8 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I005",
       "review_unit_id": "P01-T4-U010",
-      "scope": "For n = 4, F(a,b,c,d) = F(c,d,a,b).",
-      "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
+      "scope": "The extended Rosenbrock function and its derivatives possess the pair-swap symmetry: for n = 4, F(a,b,c,d) = F(c,d,a,b), and the coordinate derivatives transform by the same swap.",
+      "smallest_group_reason": "One theorem carries both the displayed n = 4 function-value example and the corresponding genuine coordinate-derivative symmetry.",
       "source_issue_notes": [],
       "source_kind": "precise_unnumbered_claim",
       "source_locations": [
@@ -470,7 +465,7 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I007E",
       "review_unit_id": "P01-T4-U012",
-      "scope": "Reference [7] observes that an expected symmetry of the search Hessian approximation is lost in practice.",
+      "scope": "Reference [7] observes that expected symmetries of the search direction and Hessian approximation are lost in practice.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
       "source_kind": "empirical_claim",
@@ -514,13 +509,19 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I007A",
       "review_unit_id": "P01-T4-U013",
-      "scope": "The lost symmetries caused the quasi-Newton method to require more iterations than theory predicted.",
+      "scope": "The lost expected symmetries of the search direction and Hessian approximation caused the quasi-Newton method to require more iterations than theory predicted.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
       "source_kind": "empirical_claim",
       "source_locations": [
         {
-          "anchor": "Dixon--Mills paragraph; iteration impact of lost symmetry",
+          "anchor": "Dixon--Mills application across the page 783--784 break; iteration impact of lost symmetries",
+          "pdf_page": 1,
+          "printed_page": 783,
+          "section": "1"
+        },
+        {
+          "anchor": "Dixon--Mills application across the page 783--784 break; iteration impact of lost symmetries",
           "pdf_page": 2,
           "printed_page": 784,
           "section": "1"
@@ -552,13 +553,19 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I007B",
       "review_unit_id": "P01-T4-U014",
-      "scope": "Dixon and Mills attributed the symmetry loss to rounding errors in the evaluation of certain inner products.",
+      "scope": "Dixon and Mills attributed the loss of the expected search-direction and Hessian-approximation symmetries to rounding errors in the evaluation of certain inner products.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
       "source_kind": "empirical_claim",
       "source_locations": [
         {
-          "anchor": "Dixon--Mills paragraph; rounding attribution",
+          "anchor": "Dixon--Mills application across the page 783--784 break; rounding attribution for lost symmetries",
+          "pdf_page": 1,
+          "printed_page": 783,
+          "section": "1"
+        },
+        {
+          "anchor": "Dixon--Mills application across the page 783--784 break; rounding attribution for lost symmetries",
           "pdf_page": 2,
           "printed_page": 784,
           "section": "1"
@@ -590,7 +597,7 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I007F",
       "review_unit_id": "P01-T4-U015",
-      "scope": "Rounding errors in the relevant inner products can cause identities such as the stated Rosenbrock symmetry identity to fail in floating-point arithmetic.",
+      "scope": "Rounding errors in the relevant inner products can cause the quoted n = 4 Rosenbrock identity F(a, b, c, d) = F(c, d, a, b), and identities like it, to fail in floating-point arithmetic.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
       "source_kind": "empirical_claim",
@@ -672,7 +679,7 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I007D",
       "review_unit_id": "P01-T4-U017",
-      "scope": "Restoring the symmetries reduced the number of quasi-Newton iterations.",
+      "scope": "Using the special summation algorithm when evaluating inner products restored the relevant symmetries and thereby reduced the number of quasi-Newton iterations.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
       "source_kind": "empirical_claim",
@@ -706,12 +713,12 @@
         },
         {
           "declaration_id": "P01-T4-D189",
-          "notes": "Records the source-specified sorting/sign-list preparation and the absence of a tie-breaking convention.",
+          "notes": "Carries the actual sorted sign-list preparation relation; equal-value ties remain unconstrained because the source gives no tie-breaking rule.",
           "role": "semantic_context"
         },
         {
           "declaration_id": "P01-T4-D190",
-          "notes": "Records the repeated opposite-sign reduction, scalar-result claim, and unspecified terminal one-sign reduction order.",
+          "notes": "Carries the actual repeated opposite-sign combination and ordered-reinsertion relation.",
           "role": "semantic_context"
         }
       ],
@@ -1051,7 +1058,7 @@
     },
     {
       "assumptions": [
-        "n >= 2; recursive delta witnesses from (2.1)."
+        "n >= 2; the local recursive relations (2.1) for the supplied deltas."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -1380,28 +1387,16 @@
     },
     {
       "assumptions": [
-        "Each method is used under its stated arithmetic and size conditions."
+        "The paper's standard floating-point family; sufficiently small positive unit roundoff; representable inputs; each method is used under its stated conditions."
       ],
       "author_label": null,
       "declaration_ids": [
-        "P01-T4-D225",
-        "P01-T4-D258",
-        "P01-T4-D034"
+        "P01-T4-D321"
       ],
       "declaration_mappings": [
         {
-          "declaration_id": "P01-T4-D225",
-          "notes": "This declaration directly carries the atomic source claim. This occurrence is an explicit reuse required independently by this source item.",
-          "role": "primary_carrier"
-        },
-        {
-          "declaration_id": "P01-T4-D258",
-          "notes": "This declaration directly carries the atomic source claim. This occurrence is an explicit reuse required independently by this source item.",
-          "role": "primary_carrier"
-        },
-        {
-          "declaration_id": "P01-T4-D034",
-          "notes": "This declaration directly carries the atomic source claim. This occurrence is an explicit reuse required independently by this source item.",
+          "declaration_id": "P01-T4-D321",
+          "notes": "This source-facing declaration directly records the paper-wide equation-(2.6) claim for all eight examined methods.",
           "role": "primary_carrier"
         }
       ],
@@ -1411,7 +1406,7 @@
       "inventory_id": "P01-I020",
       "review_unit_id": "P01-T4-U035",
       "scope": "Every summation method examined in the paper satisfies bound (2.6).",
-      "smallest_group_reason": "The three carriers cover exactly the general-class, recursive/tree, and status-aware compensated cases needed for the paper-wide claim that every examined method satisfies bound (2.6). Controlled reuse is required for independently inventoried atomic claims and is recorded by the frozen packet manifest: HighamBench.p01_t4_eq_3_11, HighamBench.p01_t4_four_methods_are_general_addition_schemes, HighamBench.p01_t4_eq_3_5.",
+      "smallest_group_reason": "This single source-facing declaration directly records the complete paper-wide claim.",
       "source_issue_notes": [
         "The compensated case used to complete this paper-wide summary is not valid for every operation satisfying only the bare P01StandardAddModel relative-error axioms; the attributed claim is therefore carried by a status-aware report rather than an impossible proof target."
       ],
@@ -1432,7 +1427,7 @@
     },
     {
       "assumptions": [
-        "S_n != 0; P01GammaValid(u,n-1)."
+        "Equation (2.6); S_n != 0."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -1591,7 +1586,7 @@
     },
     {
       "assumptions": [
-        "Recursive delta witnesses from (2.1)."
+        "Local recurrence (2.1); 1+delta_k != 0 for k=2,...,n (implicit denominator definedness)."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -3140,9 +3135,7 @@
       ]
     },
     {
-      "assumptions": [
-        "Each input occurs as one leaf of the addition scheme."
-      ],
+      "assumptions": [],
       "author_label": null,
       "declaration_ids": [
         "P01-T4-D016"
@@ -4456,7 +4449,9 @@
       ]
     },
     {
-      "assumptions": [],
+      "assumptions": [
+        "The powers-of-two input sequence is nonempty."
+      ],
       "author_label": null,
       "declaration_ids": [
         "P01-T4-D270"
@@ -4613,7 +4608,7 @@
     },
     {
       "assumptions": [
-        "For the error bound (3.8), both subtotals are specialized to increasing recursive order."
+        "Each subtotal is computed by one of the methods discussed earlier; the final combination is one floating-point addition."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -4777,7 +4772,7 @@
     },
     {
       "assumptions": [
-        "A nonempty input list and a plus/minus evaluation under an arbitrary addition operation."
+        "A nonempty input list; each sign subtotal is evaluated by any previously specified method, and the final combination uses ordinary addition."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -12046,31 +12041,29 @@
       ],
       "author_label": null,
       "declaration_ids": [
-        "P01-T4-D206"
+        "P01-T4-D320"
       ],
       "declaration_mappings": [
         {
-          "declaration_id": "P01-T4-D206",
-          "notes": "This is the same claim carried by anchor source item P01-I002.",
-          "role": "duplicate_anchor"
+          "declaration_id": "P01-T4-D320",
+          "notes": "This declaration directly carries the conclusion's unqualified accuracy-superiority claim.",
+          "role": "primary_carrier"
         }
       ],
       "disposition": "included",
-      "duplicate_of_source_item_ids": [
-        "P01-I002"
-      ],
+      "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I124",
-      "review_unit_id": "P01-T4-U002",
-      "scope": "No summation method considered in the paper is uniformly superior to all the others in accuracy.",
-      "smallest_group_reason": "The abstract and conclusion give exact restatements of the same no-uniform-superiority assessment and therefore share one report carrier.",
+      "review_unit_id": "P01-T4-U291",
+      "scope": "No summation method considered in the paper can be regarded as superior to the rest in accuracy.",
+      "smallest_group_reason": "This single declaration directly carries the conclusion's unqualified accuracy-superiority claim.",
       "source_issue_notes": [
         "The source does not define a total accuracy order over methods and data."
       ],
       "source_kind": "precise_unnumbered_claim",
       "source_locations": [
         {
-          "anchor": "opening conclusion paragraph; atomic clause: conclusion restatement of abstract",
+          "anchor": "opening conclusion paragraph; unqualified accuracy-superiority clause",
           "pdf_page": 15,
           "printed_page": 797,
           "section": "7"
@@ -12097,8 +12090,8 @@
           "role": "primary_carrier"
         },
         {
-          "declaration_id": "P01-T4-D206",
-          "notes": "No-uniform-superiority antecedent.",
+          "declaration_id": "P01-T4-D320",
+          "notes": "No-accuracy-superiority antecedent.",
           "role": "semantic_context"
         }
       ],
@@ -12106,8 +12099,8 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I124A",
-      "review_unit_id": "P01-T4-U291",
-      "scope": "No method is uniformly superior, since each method error can vary greatly with data within its bounds.",
+      "review_unit_id": "P01-T4-U292",
+      "scope": "No considered method is regarded as superior in accuracy, since each method's error can vary greatly with data within its bounds.",
       "smallest_group_reason": "Both reports reconstruct the causal sentence.",
       "source_issue_notes": [
         "The qualitative phrase vary greatly is preserved as an attributed report rather than assigned a quantitative threshold."
@@ -12146,7 +12139,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I125",
-      "review_unit_id": "P01-T4-U292",
+      "review_unit_id": "P01-T4-U293",
       "scope": "All considered methods other than pairwise and compensated summation have worst-case error proportional to n.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -12184,7 +12177,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I125A",
-      "review_unit_id": "P01-T4-U293",
+      "review_unit_id": "P01-T4-U294",
       "scope": "Pairwise summation has worst-case leading coefficient log₂ n, represented for arbitrary n by ceil(log₂ n).",
       "smallest_group_reason": "The enriched report exposes the exact base-two coefficient function.",
       "source_issue_notes": [],
@@ -12222,7 +12215,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I125B",
-      "review_unit_id": "P01-T4-U294",
+      "review_unit_id": "P01-T4-U295",
       "scope": "Compensated summation has an order-one worst-case leading error constant.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -12258,7 +12251,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I125C",
-      "review_unit_id": "P01-T4-U295",
+      "review_unit_id": "P01-T4-U296",
       "scope": "For very large n, pairwise summation is reported to be an attractive choice.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -12294,7 +12287,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I125D",
-      "review_unit_id": "P01-T4-U296",
+      "review_unit_id": "P01-T4-U297",
       "scope": "For very large n, compensated summation is reported to be an attractive choice.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -12332,7 +12325,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I126",
-      "review_unit_id": "P01-T4-U297",
+      "review_unit_id": "P01-T4-U298",
       "scope": "For one-signed inputs, every considered method is reported to have relative error at most n*u.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -12370,7 +12363,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I126A",
-      "review_unit_id": "P01-T4-U298",
+      "review_unit_id": "P01-T4-U299",
       "scope": "For one-signed inputs, compensated summation is claimed to have perfect relative accuracy when n*u <= 1; this is retained as an attributed source claim.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [
@@ -12416,7 +12409,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I126B",
-      "review_unit_id": "P01-T4-U299",
+      "review_unit_id": "P01-T4-U300",
       "scope": "For one-signed inputs compensated summation is claimed perfectly relatively accurate when n u≤1; for recursive summation increasing order is preferred to decreasing.",
       "smallest_group_reason": "The two clauses share an inseparable printed line, so both reports form the primary group.",
       "source_issue_notes": [
@@ -12504,7 +12497,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I126D",
-      "review_unit_id": "P01-T4-U300",
+      "review_unit_id": "P01-T4-U301",
       "scope": "For one-signed data increasing recursive order is equivalent to Psum; however insertion is claimed to minimize bound (3.4) among considered noncompensated methods.",
       "smallest_group_reason": "The equivalence antecedent and insertion conclusion share one authoritative crop, requiring both carriers.",
       "source_issue_notes": [
@@ -12542,7 +12535,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I127",
-      "review_unit_id": "P01-T4-U301",
+      "review_unit_id": "P01-T4-U302",
       "scope": "Decreasing recursive order is reported to be attractive under heavy cancellation.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -12578,7 +12571,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I127A",
-      "review_unit_id": "P01-T4-U302",
+      "review_unit_id": "P01-T4-U303",
       "scope": "Decreasing recursive order is not guaranteed to be the best method under heavy cancellation.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -12616,7 +12609,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I128",
-      "review_unit_id": "P01-T4-U303",
+      "review_unit_id": "P01-T4-U304",
       "scope": "Natural-order recursive, pairwise, and compensated summation can each be implemented in O(n) operations.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -12654,7 +12647,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I128A",
-      "review_unit_id": "P01-T4-U304",
+      "review_unit_id": "P01-T4-U305",
       "scope": "The other considered methods are more expensive because they require searching or sorting.",
       "smallest_group_reason": "The enriched report carries methods and the causal more-expensive comparison.",
       "source_issue_notes": [
@@ -12694,7 +12687,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I128B",
-      "review_unit_id": "P01-T4-U305",
+      "review_unit_id": "P01-T4-U306",
       "scope": "For numerical ODE solution, x_k is generated sequentially and may depend on the preceding partial sum, so sorting/searching may be impossible.",
       "smallest_group_reason": "The enriched report carries application, sequence, dependency, and qualified obstruction.",
       "source_issue_notes": [
@@ -12732,7 +12725,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I128C",
-      "review_unit_id": "P01-T4-U306",
+      "review_unit_id": "P01-T4-U307",
       "scope": "When higher precision is feasible, higher-precision recursive summation may be less expensive than an alternative working-precision method.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -12768,7 +12761,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I128D",
-      "review_unit_id": "P01-T4-U307",
+      "review_unit_id": "P01-T4-U308",
       "scope": "When higher precision is feasible, higher-precision recursive summation may be more accurate than an alternative working-precision method.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -12846,7 +12839,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I003G",
-      "review_unit_id": "P01-T4-U308",
+      "review_unit_id": "P01-T4-U309",
       "scope": "The reported sonar cure by the plus/minus method is described as a little surprising.",
       "smallest_group_reason": "The refined report preserves the source degree: a little surprising.",
       "source_issue_notes": [],
@@ -12887,7 +12880,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I003H",
-      "review_unit_id": "P01-T4-U309",
+      "review_unit_id": "P01-T4-U310",
       "scope": "The cure is a little surprising because the authors had found plus/minus summation unattractive.",
       "smallest_group_reason": "Both reports reconstruct the causal statement.",
       "source_issue_notes": [],
@@ -12923,7 +12916,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I003I",
-      "review_unit_id": "P01-T4-U310",
+      "review_unit_id": "P01-T4-U311",
       "scope": "The application feature responsible for the sonar behavior is not apparent from cited reference [24].",
       "smallest_group_reason": "The enriched report names reference 24 and preserves not-apparent status.",
       "source_issue_notes": [],
@@ -12959,7 +12952,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I003J",
-      "review_unit_id": "P01-T4-U311",
+      "review_unit_id": "P01-T4-U312",
       "scope": "A feature of the sonar application appears to encourage the plus/minus method to perform better than natural-order recursive summation.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [
@@ -12999,7 +12992,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I129",
-      "review_unit_id": "P01-T4-U312",
+      "review_unit_id": "P01-T4-U313",
       "scope": "Any summation procedure whose computed answer is invariant under input permutation preserves the pair-permutation symmetries of the extended Rosenbrock function.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],
@@ -13037,7 +13030,7 @@
       "duplicate_of_source_item_ids": [],
       "exclusion_reason": null,
       "inventory_id": "P01-I129A",
-      "review_unit_id": "P01-T4-U313",
+      "review_unit_id": "P01-T4-U314",
       "scope": "Increasing-magnitude recursive summation with equal-magnitude elements ordered by sign is an example of a permutation-invariant procedure.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [],

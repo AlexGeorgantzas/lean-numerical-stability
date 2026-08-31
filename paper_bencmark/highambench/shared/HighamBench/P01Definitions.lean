@@ -1,4 +1,5 @@
 import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
 set_option genSizeOf false
@@ -158,17 +159,35 @@ def p01RosenbrockLeftIndex (m : ℕ) (i : Fin m) : Fin (2 * m) :=
 def p01RosenbrockRightIndex (m : ℕ) (i : Fin m) : Fin (2 * m) :=
   ⟨2 * i.val + 1, by omega⟩
 
-/-- The extended Rosenbrock function in equation (1.1), with `n = 2*m`. -/
+/-- Read `x_i` from an `n`-entry Lean vector using the paper's one-based
+coordinate convention. The fallback is irrelevant for indices `1, ..., n`. -/
+def p01OneBasedValue {n : ℕ} (x : Fin n → ℝ) (i : ℕ) : ℝ :=
+  if hi : 1 ≤ i ∧ i ≤ n then x ⟨i - 1, by omega⟩ else 0
+
+/-- The extended Rosenbrock function exactly as printed in equation (1.1). -/
 noncomputable def p01ExtendedRosenbrock
-    (m : ℕ) (x : Fin (2 * m) → ℝ) : ℝ :=
-  ∑ i : Fin m,
+    (n : ℕ) (_hn : Even n) (x : Fin n → ℝ) : ℝ :=
+  ∑ i ∈ Finset.Icc 1 (n / 2),
     ((100 : ℝ) *
-        (x (p01RosenbrockRightIndex m i) -
-          x (p01RosenbrockLeftIndex m i) ^ 2) ^ 2 +
-      (1 - x (p01RosenbrockLeftIndex m i)) ^ 2)
+        (p01OneBasedValue x (2 * i) -
+          p01OneBasedValue x (2 * i - 1) ^ 2) ^ 2 +
+      (1 - p01OneBasedValue x (2 * i - 1)) ^ 2)
 
 /-- A four-entry vector, used for the symmetry following equation (1.1). -/
 def p01Four (a b c d : ℝ) : Fin 4 → ℝ := ![a, b, c, d]
+
+/-- The coordinate permutation that exchanges the two Rosenbrock pairs. -/
+def p01RosenbrockPairSwapIndex : Fin 4 → Fin 4 :=
+  ![⟨2, by omega⟩, ⟨3, by omega⟩, ⟨0, by omega⟩, ⟨1, by omega⟩]
+
+/-- The actual coordinate derivatives of the `n = 4` extended Rosenbrock
+function, obtained by differentiating each one-coordinate slice. -/
+noncomputable def p01ExtendedRosenbrockCoordinateDerivatives4
+    (x : Fin 4 → ℝ) : Fin 4 → ℝ :=
+  fun j =>
+    deriv
+      (fun t => p01ExtendedRosenbrock 4 (by decide) (Function.update x j t))
+      (x j)
 
 /-! ## Recursive summation and the results of section 2 -/
 
@@ -185,6 +204,13 @@ noncomputable def p01RecursiveError
     (flAdd : ℝ → ℝ → ℝ) (n : ℕ) (v : Fin n → ℝ) : ℝ :=
   p01RecursiveSum flAdd n v - p01ExactSum n v
 
+/-- The computed sum of the first `k+1` entries, for an explicitly supplied
+floating-point addition operation. -/
+noncomputable def p01RecursivePrefixWith
+    (flAdd : ℝ → ℝ → ℝ) (n : ℕ) (v : Fin n → ℝ) (k : Fin n) : ℝ :=
+  p01RecursiveSum flAdd (k.val + 1) fun i =>
+    v ⟨i.val, by omega⟩
+
 /-- The computed sum of the first `k+1` entries of `v`. -/
 noncomputable def p01RecursivePrefix
     (fp : P01StandardAddModel) (n : ℕ) (v : Fin n → ℝ) (k : Fin n) : ℝ :=
@@ -194,6 +220,16 @@ noncomputable def p01RecursivePrefix
 /-- The preceding input index, used only when the supplied index is positive. -/
 def p01PreviousIndex {n : ℕ} (k : Fin n) : Fin n :=
   ⟨k.val - 1, lt_of_le_of_lt (Nat.sub_le _ _) k.isLt⟩
+
+/-- The local recurrence assumed when equation (2.2) is expanded. -/
+def P01RecursiveDeltaRecurrence
+    (flAdd : ℝ → ℝ → ℝ) (n : ℕ) (v : Fin n → ℝ) (δ : Fin n → ℝ) : Prop :=
+  (∀ k : Fin n, 0 < k.val →
+    p01RecursivePrefixWith flAdd n v k =
+      (p01RecursivePrefixWith flAdd n v (p01PreviousIndex k) + v k) *
+        (1 + δ k)) ∧
+  ∀ h : 0 < n,
+    p01RecursivePrefixWith flAdd n v ⟨0, h⟩ = v ⟨0, h⟩
 
 /-- Stepwise rounding witnesses for recursive summation, corresponding to (2.1). -/
 def P01RecursiveDeltaWitness
@@ -461,11 +497,27 @@ noncomputable def exactValues : P01SumTree → List ℝ
 
 end P01SumTree
 
-/-- Equation (3.1): a legal tree has the supplied inputs as leaves and `n - 1`
-internal additions; the rooted tree records the dependency order and final output. -/
-def P01AdditionScheme (xs : List ℝ) (tree : P01SumTree) : Prop :=
+/-- A tree representation used internally by the paper's tree-based results. -/
+def P01TreeAdditionScheme (xs : List ℝ) (tree : P01SumTree) : Prop :=
   tree.leaves.Perm xs ∧
     (P01SumTree.internalValues (· + ·) tree).length = xs.length - 1
+
+/-- The literal one-based indexed computation printed in equation (3.1). -/
+def P01Equation31Trace
+    (n : ℕ) (x : Fin n → ℝ) (T : ℕ → ℝ) (S : ℝ) : Prop :=
+  0 < n ∧
+  (∀ k : Fin n, T (k.val + 1) = x k) ∧
+  (∀ k : ℕ, n + 1 ≤ k → k ≤ 2 * n - 1 →
+    ∃ k₁ k₂ : ℕ,
+      1 ≤ k₁ ∧ k₁ < k₂ ∧ k₂ < k ∧
+      T k = T k₁ + T k₂) ∧
+  S = T (2 * n - 1)
+
+/-- Equation (3.1): a general addition scheme is exactly a literal indexed
+trace beginning with the supplied inputs and returning its last entry. -/
+def P01AdditionScheme
+    (n : ℕ) (x : Fin n → ℝ) (S : ℝ) : Prop :=
+  ∃ T : ℕ → ℝ, P01Equation31Trace n x T S
 
 /-- Every internal addition has at least one original input as an operand. -/
 def P01EveryAdditionHasOriginalOperand : P01SumTree → Prop
@@ -689,31 +741,6 @@ def P01InsertionBackEvaluation
     ordered.Perm inputs ∧ P01AbsNondecreasing ordered ∧
     Relation.ReflTransGen (P01InsertionBackStep flAdd) ordered [result]
 
-/-- A list of partial trees ordered by their current rounded-value magnitudes. -/
-def P01TreeAbsNondecreasing
-    (flAdd : ℝ → ℝ → ℝ) (trees : List P01SumTree) : Prop :=
-  trees.Pairwise fun left right =>
-    |left.rounded flAdd| ≤ |right.rounded flAdd|
-
-/-- One structural insertion step, retaining the complete parenthesization. -/
-def P01InsertionTreeStep
-    (flAdd : ℝ → ℝ → ℝ) (trees next : List P01SumTree) : Prop :=
-  ∃ left right : P01SumTree, ∃ rest : List P01SumTree,
-    trees = left :: right :: rest ∧
-    next.Perm (.node left right :: rest) ∧
-    P01TreeAbsNondecreasing flAdd next
-
-/-- Structural insertion evaluation from magnitude-sorted singleton leaves to a
-final addition tree.  The initial ordering is existential because insertion
-summation first sorts arbitrary input, with ties left unspecified. -/
-def P01InsertionTreeEvaluation
-    (flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) (tree : P01SumTree) : Prop :=
-  ∃ ordered : List ℝ,
-    ordered.Perm inputs ∧
-    P01AbsNondecreasing ordered ∧
-    Relation.ReflTransGen (P01InsertionTreeStep flAdd)
-      (ordered.map P01SumTree.leaf) [tree]
-
 /-- The paper's literal computed-(3.4) insertion-optimality assertion.
 It is retained as an attributed claim because it is false for some permitted
 round-to-nearest binary inputs. -/
@@ -733,54 +760,75 @@ def p01InsertionOptimalityReport : P01InsertionOptimalityReport :=
 noncomputable def p01PowersOfTwo (n : ℕ) : List ℝ :=
   (List.range n).map fun k => (2 : ℝ) ^ k
 
-/-- A recursive subtotal tree in the original order or in one of the three
-orderings specified in section 2. -/
-def P01PreviouslySpecifiedRecursiveTree
-    (flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) (tree : P01SumTree) : Prop :=
-  p01RecursiveTree inputs = some tree ∨
-    ∃ p : Equiv.Perm (Fin inputs.length),
-      (P01IncreasingMagnitude (fun i => inputs.get i) p ∨
-        P01DecreasingMagnitude (fun i => inputs.get i) p ∨
-        P01PsumOrder flAdd (fun i => inputs.get i) p) ∧
-      p01RecursiveTree
-        (List.ofFn (p01Permuted (fun i => inputs.get i) p)) = some tree
+/-- The source-order negative subsequence for sign-separated summation. -/
+noncomputable def p01PlusMinusNegativeInputs (inputs : List ℝ) : List ℝ :=
+  inputs.filter fun x => x < 0
 
-/-- A subtotal tree produced by a method discussed before sign-separated summation.
+/-- The source-order nonnegative subsequence for sign-separated summation.
+Zeros are assigned to this side so every original input remains a leaf. -/
+noncomputable def p01PlusMinusNonnegativeInputs (inputs : List ℝ) : List ℝ :=
+  inputs.filter fun x => 0 ≤ x
 
-The recursive branch permits exactly the original, increasing, decreasing, and
-Psum orderings.  The other branches retain the full tree semantics of pairwise
-and insertion summation.
--/
-def P01PreviouslySpecifiedSubtotalTree
-    (flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) (tree : P01SumTree) : Prop :=
-  P01AdditionScheme inputs tree ∧
-    (P01PreviouslySpecifiedRecursiveTree flAdd inputs tree ∨
-      P01PairwiseTreeEvaluation inputs tree ∨
-      P01InsertionTreeEvaluation flAdd inputs tree)
+/-- The explicitly named final floating-point combination `S₊ + S₋`. -/
+noncomputable def p01PlusMinusConceptualFinal
+    (flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) : ℝ :=
+  flAdd
+    (p01RecursiveList flAdd (p01PlusMinusNonnegativeInputs inputs))
+    (p01RecursiveList flAdd (p01PlusMinusNegativeInputs inputs))
 
-/-- A tree that forms the negative and nonnegative subtotals separately, using
-one of the summation methods already specified in the paper. -/
+/-- The sign-separated equation-(3.1) tree.  Each sign subtotal is accumulated
+recursively in its order from the input list.  When both sign classes occur,
+the root is the final `S₊ + S₋` addition.  For an empty sign class, the
+redundant zero-side operation is elided so the tree has exactly the original
+inputs as leaves and exactly `n - 1` additions. -/
 noncomputable def P01PlusMinusTree
-    (flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) (tree : P01SumTree) : Prop :=
-  let negatives := inputs.filter fun x => x < 0
-  let nonnegatives := inputs.filter fun x => 0 ≤ x
-  ((negatives = [] ∧ ∃ nonnegativeTree,
-        P01PreviouslySpecifiedSubtotalTree flAdd nonnegatives nonnegativeTree ∧
-          tree = nonnegativeTree) ∨
-      (nonnegatives = [] ∧ ∃ negativeTree,
-        P01PreviouslySpecifiedSubtotalTree flAdd negatives negativeTree ∧
-          tree = negativeTree) ∨
-      (∃ negativeTree nonnegativeTree,
-        P01PreviouslySpecifiedSubtotalTree flAdd negatives negativeTree ∧
-        P01PreviouslySpecifiedSubtotalTree flAdd nonnegatives nonnegativeTree ∧
-        tree = .node nonnegativeTree negativeTree))
+    (_flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) (tree : P01SumTree) : Prop :=
+  let negatives := p01PlusMinusNegativeInputs inputs
+  let nonnegatives := p01PlusMinusNonnegativeInputs inputs
+  (negatives = [] ∧ p01RecursiveTree nonnegatives = some tree) ∨
+  (nonnegatives = [] ∧ p01RecursiveTree negatives = some tree) ∨
+  ∃ negativeTree nonnegativeTree : P01SumTree,
+    p01RecursiveTree negatives = some negativeTree ∧
+    p01RecursiveTree nonnegatives = some nonnegativeTree ∧
+    tree = .node nonnegativeTree negativeTree
 
-/-- Evaluate a sign-separated sum using one of the previously specified methods
-for each subtotal. -/
+/-- The equation-(3.1) operational value of sign-separated summation.  It is
+the explicit final combination when both subtotals exist and elides only a
+redundant addition with an empty subtotal otherwise. -/
+noncomputable def p01PlusMinusFinal
+    (flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) : ℝ :=
+  let negatives := p01PlusMinusNegativeInputs inputs
+  let nonnegatives := p01PlusMinusNonnegativeInputs inputs
+  if negatives = [] then p01RecursiveList flAdd nonnegatives
+  else if nonnegatives = [] then p01RecursiveList flAdd negatives
+  else p01PlusMinusConceptualFinal flAdd inputs
+
+/-- One of the methods available before the paper introduces plus/minus
+summation: recursive summation in a chosen order, pairwise summation, or
+insertion summation. -/
+def P01PreviouslySpecifiedSubtotalEvaluation
+    (flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) (result : ℝ) : Prop :=
+  (∃ ordered : List ℝ,
+      ordered.Perm inputs ∧ result = p01RecursiveList flAdd ordered) ∨
+  P01PairwiseEvaluation flAdd inputs result ∨
+  P01InsertionEvaluation flAdd inputs result
+
+/-- Sign-separated summation.  Each nonempty sign subtotal may be evaluated
+by any method specified earlier in the paper; when both sign classes occur,
+their two results are joined by the final floating-point addition. -/
 def P01PlusMinusEvaluation
     (flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) (result : ℝ) : Prop :=
-  ∃ tree : P01SumTree,
-    P01PlusMinusTree flAdd inputs tree ∧ P01SumTree.rounded flAdd tree = result
+  let negatives := p01PlusMinusNegativeInputs inputs
+  let nonnegatives := p01PlusMinusNonnegativeInputs inputs
+  (negatives = [] ∧
+      P01PreviouslySpecifiedSubtotalEvaluation flAdd nonnegatives result) ∨
+  (nonnegatives = [] ∧
+      P01PreviouslySpecifiedSubtotalEvaluation flAdd negatives result) ∨
+  (∃ negativeResult nonnegativeResult : ℝ,
+      negatives ≠ [] ∧ nonnegatives ≠ [] ∧
+      P01PreviouslySpecifiedSubtotalEvaluation flAdd negatives negativeResult ∧
+      P01PreviouslySpecifiedSubtotalEvaluation flAdd nonnegatives nonnegativeResult ∧
+      result = flAdd nonnegativeResult negativeResult)
 
 /-- The alternating integer family used to expose the large sign-separated intermediates. -/
 def p01AlternatingIntegers (m : ℕ) : List ℝ :=
@@ -2869,6 +2917,31 @@ def P01StandardMethodEvaluation
     {n : ℕ} (v : Fin n → ℝ) (result : ℝ) : Prop :=
   P01SummationMethodEvaluation fp.fl_add method v result
 
+/-- The paper's first-order equation-(2.6) assertion for every one of the
+eight examined summation methods.  The assertion is retained as a
+source-facing family: its `C` and sufficiently small positive threshold may
+depend on the method and on the input length, but not on the inputs or result
+chosen below that threshold. -/
+def P01AllExaminedMethodsEquation26Claim
+    (family : P01StandardAddFamily) : Prop :=
+  ∀ method : P01SummationMethod, method ∈ p01EightSummationMethods →
+    ∀ n : ℕ, 0 < n →
+      ∃ C ε : ℝ, 0 ≤ C ∧ 0 < ε ∧
+        ∀ u : NNReal, 0 < (u : ℝ) → (u : ℝ) ≤ ε →
+          ∀ (v : Fin n → ℝ) (result : ℝ),
+            P01InputsRepresentableForAdd (family.model u) n v →
+            P01StandardMethodEvaluation (family.model u) method v result →
+            |result - p01ExactSum n v| ≤
+              (((n - 1 : ℕ) : ℝ) * (u : ℝ) + C * (u : ℝ) ^ 2) *
+                p01AbsoluteSum n v
+
+/-- The paper's equation-(2.6) first-order error claim for all eight examined
+methods. This source-facing proposition records the quantified claim without
+turning its asymptotic wording into an additional proof obligation. -/
+def p01_t4_all_examined_methods_equation26
+    (family : P01StandardAddFamily) : Prop :=
+  P01AllExaminedMethodsEquation26Claim family
+
 /-- A function-value-only maximization problem tied to a selected summation semantics. -/
 structure P01MaximizationProblem where
   dimension : ℕ
@@ -3169,8 +3242,10 @@ noncomputable def p01RosenbrockTerms
 structure P01SonarApplicationSetupReport where
   citedAuthors : String
   citedReferenceNumber : ℕ
+  quotedStatementPageInCitedReference : ℕ
   citedAuthorsDerivedOptimizationAlgorithm : Bool
   optimizationProblemArisesInSonarArrayDesign : Bool
+  quotedGradientStatementAttributedToCitedAuthors : Bool
   objectiveGradientIsTheGradientInCitedEquation41 : Bool
   objectiveGradientIsSumOfMTerms : Bool
   reportedM : ℕ
@@ -3180,8 +3255,10 @@ structure P01SonarApplicationSetupReport where
 def p01SonarApplicationSetupReport : P01SonarApplicationSetupReport :=
   { citedAuthors := "Lasdon et al."
     citedReferenceNumber := 24
+    quotedStatementPageInCitedReference := 145
     citedAuthorsDerivedOptimizationAlgorithm := true
     optimizationProblemArisesInSonarArrayDesign := true
+    quotedGradientStatementAttributedToCitedAuthors := true
     objectiveGradientIsTheGradientInCitedEquation41 := true
     objectiveGradientIsSumOfMTerms := true
     reportedM := 284
@@ -3248,27 +3325,42 @@ def p01SonarSignSeparatedProtocolReport :
     positiveAndNegativeTermsAccumulatedSeparately := true
     accumulatedSignBlocksAddedTogetherOnlyAfterAllMTermsProcessed := true }
 
-/-- Reported outcome of the sign-separated sonar-gradient protocol. -/
+/-- The intervention reported in the sonar application: for each gradient
+component, positive and negative terms are accumulated separately and the two
+subtotals are added only after all `M` terms have been processed. -/
+inductive P01SonarGradientIntervention
+  | separatePositiveAndNegativeTermsForEachComponentThenAddAfterAllMTerms
+
+/-- The exact expression to which the reported intervention was applied. -/
+inductive P01SonarGradientInterventionTarget
+  | objectiveGradientSum41
+
+/-- The two source-worded reports of what that intervention achieved. -/
+inductive P01SonarReportedOutcome
+  | eliminatedTheseOptimizerDifficulties
+  | curedSomeInaccurateGradientProblemsInAnOptimizationMethod
+
+/-- Reported outcome of the sign-separated sonar-gradient protocol, retaining
+the initial elimination claim and the conclusion's weaker `some problems`
+restatement as distinct outcomes. -/
 structure P01SonarDifficultiesEliminatedReport where
-  initialReportConcernsOptimizerDifficultiesFromInaccurateGradientEvaluation : Bool
-  initialProtocolAppliedSeparatelyToEachObjectiveGradientComponent : Bool
-  initialPositiveAndNegativeTermsAccumulatedSeparately : Bool
-  initialSignBlocksAddedOnlyAfterAllMTermsProcessed : Bool
-  initialProtocolReportedToEliminateThoseDifficulties : Bool
-  conclusionIdentifiesProtocolAsPlusMinusSummation : Bool
-  conclusionConcernsInaccurateGradientsInAnOptimizationMethod : Bool
-  conclusionReportsMethodCuredSomeSuchProblems : Bool
+  citedReferenceNumber : ℕ
+  interventionTarget : P01SonarGradientInterventionTarget
+  intervention : P01SonarGradientIntervention
+  method : P01SummationMethod
+  initialReport : P01SonarReportedOutcome
+  conclusionReport : P01SonarReportedOutcome
 
 def p01SonarDifficultiesEliminatedReport :
     P01SonarDifficultiesEliminatedReport :=
-  { initialReportConcernsOptimizerDifficultiesFromInaccurateGradientEvaluation := true
-    initialProtocolAppliedSeparatelyToEachObjectiveGradientComponent := true
-    initialPositiveAndNegativeTermsAccumulatedSeparately := true
-    initialSignBlocksAddedOnlyAfterAllMTermsProcessed := true
-    initialProtocolReportedToEliminateThoseDifficulties := true
-    conclusionIdentifiesProtocolAsPlusMinusSummation := true
-    conclusionConcernsInaccurateGradientsInAnOptimizationMethod := true
-    conclusionReportsMethodCuredSomeSuchProblems := true }
+  { citedReferenceNumber := 24
+    interventionTarget := .objectiveGradientSum41
+    intervention :=
+      .separatePositiveAndNegativeTermsForEachComponentThenAddAfterAllMTerms
+    method := .plusMinus
+    initialReport := .eliminatedTheseOptimizerDifficulties
+    conclusionReport :=
+      .curedSomeInaccurateGradientProblemsInAnOptimizationMethod }
 
 /-- The paper separately assesses plus/minus summation as unattractive. -/
 structure P01SonarPlusMinusAssessmentReport where
@@ -3326,42 +3418,42 @@ def p01DixonMillsSearchDirectionSymmetryLossReport :
     concernsExpectedSymmetryOfSearchDirection := true
     expectedSymmetryReportedLostInPractice := true }
 
-/-- Separate Hessian-approximation symmetry loss in the same application. -/
+/-- The paired search-direction and Hessian-approximation symmetry loss. -/
 structure P01DixonMillsHessianSymmetryLossReport where
   observationAttributedToReferenceSeven : Bool
-  concernsExpectedSymmetryOfSearchHessianApproximation : Bool
-  expectedSymmetryReportedLostInPractice : Bool
+  expectedSearchDirectionSymmetryReportedLostInPractice : Bool
+  expectedHessianApproximationSymmetryReportedLostInPractice : Bool
 
 def p01DixonMillsHessianSymmetryLossReport :
     P01DixonMillsHessianSymmetryLossReport :=
   { observationAttributedToReferenceSeven := true
-    concernsExpectedSymmetryOfSearchHessianApproximation := true
-    expectedSymmetryReportedLostInPractice := true }
+    expectedSearchDirectionSymmetryReportedLostInPractice := true
+    expectedHessianApproximationSymmetryReportedLostInPractice := true }
 
 /-- The observed iteration impact of the symmetry loss. -/
 structure P01DixonMillsIterationImpactReport where
   expectedSearchDirectionSymmetryLostInPractice : Bool
-  expectedSearchHessianApproximationSymmetryLostInPractice : Bool
+  expectedHessianApproximationSymmetryLostInPractice : Bool
   lossesCausedMoreIterationsForQuasiNewtonConvergence : Bool
   iterationCountExceededTheoreticalPrediction : Bool
 
 def p01DixonMillsIterationImpactReport : P01DixonMillsIterationImpactReport :=
   { expectedSearchDirectionSymmetryLostInPractice := true
-    expectedSearchHessianApproximationSymmetryLostInPractice := true
+    expectedHessianApproximationSymmetryLostInPractice := true
     lossesCausedMoreIterationsForQuasiNewtonConvergence := true
     iterationCountExceededTheoreticalPrediction := true }
 
 /-- Dixon and Mills's attribution of the symmetry loss. -/
 structure P01DixonMillsRoundingAttributionReport where
   attributionMadeByDixonAndMills : Bool
-  concernsLossOfExpectedSearchDirectionAndHessianSymmetries : Bool
+  concernsLossOfExpectedSearchDirectionAndHessianApproximationSymmetries : Bool
   lossAttributedToRoundingErrors : Bool
   roundingErrorsAriseInEvaluationOfCertainInnerProducts : Bool
 
 def p01DixonMillsRoundingAttributionReport :
     P01DixonMillsRoundingAttributionReport :=
   { attributionMadeByDixonAndMills := true
-    concernsLossOfExpectedSearchDirectionAndHessianSymmetries := true
+    concernsLossOfExpectedSearchDirectionAndHessianApproximationSymmetries := true
     lossAttributedToRoundingErrors := true
     roundingErrorsAriseInEvaluationOfCertainInnerProducts := true }
 
@@ -3369,13 +3461,13 @@ def p01DixonMillsRoundingAttributionReport :
 following the extended Rosenbrock formula (1.1). -/
 structure P01DixonMillsFloatingPointIdentityFailureReport where
   causeIsRoundingErrorsInEvaluationOfCertainInnerProducts : Bool
-  exampleIdentityIsEquation11RosenbrockPairSwap : Bool
+  exampleIdentityIsQuotedRosenbrockPairSwapForNFour : Bool
   suchRoundingErrorsCanCauseTheIdentityToFailInFloatingPointArithmetic : Bool
 
 def p01DixonMillsFloatingPointIdentityFailureReport :
     P01DixonMillsFloatingPointIdentityFailureReport :=
   { causeIsRoundingErrorsInEvaluationOfCertainInnerProducts := true
-    exampleIdentityIsEquation11RosenbrockPairSwap := true
+    exampleIdentityIsQuotedRosenbrockPairSwapForNFour := true
     suchRoundingErrorsCanCauseTheIdentityToFailInFloatingPointArithmetic := true }
 
 /-- The reported restoration of the relevant symmetries. -/
@@ -3394,12 +3486,14 @@ def p01DixonMillsSymmetryRestorationReport :
 
 /-- The reported reduction in iteration count. -/
 structure P01DixonMillsIterationReductionReport where
+  specialSummationProcedureUsedWhenEvaluatingInnerProducts : Bool
   specialSummationProcedureRestoredRelevantSymmetries : Bool
   restoredSymmetriesTherebyReducedIterationCount : Bool
 
 def p01DixonMillsIterationReductionReport :
     P01DixonMillsIterationReductionReport :=
-  { specialSummationProcedureRestoredRelevantSymmetries := true
+  { specialSummationProcedureUsedWhenEvaluatingInnerProducts := true
+    specialSummationProcedureRestoredRelevantSymmetries := true
     restoredSymmetriesTherebyReducedIterationCount := true }
 
 /-- One Dixon--Mills step: combine the largest nonnegative and most negative terms. -/
@@ -3417,53 +3511,58 @@ def P01DixonMillsStep
 def P01DixonMillsTerminal (xs : List ℝ) : Prop :=
   (∀ x ∈ xs, x < 0) ∨ (∀ x ∈ xs, 0 ≤ x)
 
-/-- The Dixon--Mills evaluation relation, including its source-specified
-opposite-sign reduction and an arbitrary addition-tree finish once only one
-sign remains.  The latter records that the excerpt claims a scalar evaluation
-without inventing a particular terminal order. -/
+/-- The source-specified initial sorting and division into ordered negative and
+nonnegative lists.  Equal terms may occur in either order because the source
+does not give a tie-breaking rule. -/
+def P01DixonMillsPreparation
+    (inputs negatives nonnegatives : List ℝ) : Prop :=
+  (negatives ++ nonnegatives).Perm inputs ∧
+  (∀ x ∈ negatives, x < 0) ∧ negatives.Pairwise (· ≤ ·) ∧
+  (∀ x ∈ nonnegatives, 0 ≤ x) ∧ nonnegatives.Pairwise (· ≤ ·)
+
+/-- Zero or more source-specified opposite-sign combinations with ordered
+reinsertion after each combination. -/
+def P01DixonMillsRepeatedReduction
+    (flAdd : ℝ → ℝ → ℝ) (start residual : List ℝ) : Prop :=
+  Relation.ReflTransGen (P01DixonMillsStep flAdd) start residual
+
+/-- A terminal evaluation that preserves the maintained list order.  All
+binary associations are admitted because the source excerpt does not choose
+one after the opposite-sign phase ends. -/
+inductive P01OrderPreservingEvaluation
+    (flAdd : ℝ → ℝ → ℝ) : List ℝ → ℝ → Prop
+  | empty : P01OrderPreservingEvaluation flAdd [] 0
+  | singleton (x : ℝ) : P01OrderPreservingEvaluation flAdd [x] x
+  | append (left right : List ℝ) (leftResult rightResult : ℝ)
+      (hleft : left ≠ []) (hright : right ≠ [])
+      (evalLeft : P01OrderPreservingEvaluation flAdd left leftResult)
+      (evalRight : P01OrderPreservingEvaluation flAdd right rightResult) :
+      P01OrderPreservingEvaluation flAdd (left ++ right)
+        (flAdd leftResult rightResult)
+
+/-- The Dixon--Mills evaluation relation: perform exactly the stated ordered
+opposite-sign reductions, then finish without changing the remaining order.
+The terminal association remains deliberately unspecified, as in the source. -/
 def P01DixonMillsReduction
     (fp : P01StandardAddModel) (inputs : List ℝ) (result : ℝ) : Prop :=
-  ∃ negatives nonnegatives residual : List ℝ, ∃ tree : P01SumTree,
-    (negatives ++ nonnegatives).Perm inputs ∧
-    (∀ x ∈ negatives, x < 0) ∧ negatives.Pairwise (· ≤ ·) ∧
-    (∀ x ∈ nonnegatives, 0 ≤ x) ∧ nonnegatives.Pairwise (· ≤ ·) ∧
-    Relation.ReflTransGen
-      (P01DixonMillsStep fp.fl_add) (negatives ++ nonnegatives) residual ∧
+  ∃ negatives nonnegatives residual : List ℝ,
+    P01DixonMillsPreparation inputs negatives nonnegatives ∧
+    P01DixonMillsRepeatedReduction
+      fp.fl_add (negatives ++ nonnegatives) residual ∧
     P01DixonMillsTerminal residual ∧
-    P01AdditionScheme residual tree ∧
-    P01SumTree.rounded fp.fl_add tree = result
+    P01OrderPreservingEvaluation fp.fl_add residual result
 
 /-- The source-specified sorting and sign-list preparation in the Dixon--Mills procedure. -/
-structure P01DixonMillsTieBreakingSpecificationReport where
-  inputTermsAreSorted : Bool
-  sortedTermsDividedIntoNegativeAndNonnegativeLists : Bool
-  negativeListIsOrdered : Bool
-  nonnegativeListIsOrdered : Bool
-  tieBreakingSpecifiedBySource : Bool
-
-def p01DixonMillsTieBreakingSpecificationReport :
-    P01DixonMillsTieBreakingSpecificationReport :=
-  { inputTermsAreSorted := true
-    sortedTermsDividedIntoNegativeAndNonnegativeLists := true
-    negativeListIsOrdered := true
-    nonnegativeListIsOrdered := true
-    tieBreakingSpecifiedBySource := false }
+def p01DixonMillsTieBreakingSpecificationReport
+    (inputs negatives nonnegatives : List ℝ) : Prop :=
+  P01DixonMillsPreparation inputs negatives nonnegatives
 
 /-- The source-specified repeated combination and ordered reinsertion step. -/
-structure P01DixonMillsTerminalReductionSpecificationReport where
-  repeatedlyFormsSumOfLargestNonnegativeAndMostNegativeElements : Bool
-  eachComputedSumPlacedIntoAppropriateSignList : Bool
-  eachComputedSumReinsertedInOrder : Bool
-  sourceClaimsAlgorithmEvaluatesScalar : Bool
-  terminalMultiElementOneSignReductionOrderSpecifiedBySource : Bool
-
-def p01DixonMillsTerminalReductionSpecificationReport :
-    P01DixonMillsTerminalReductionSpecificationReport :=
-  { repeatedlyFormsSumOfLargestNonnegativeAndMostNegativeElements := true
-    eachComputedSumPlacedIntoAppropriateSignList := true
-    eachComputedSumReinsertedInOrder := true
-    sourceClaimsAlgorithmEvaluatesScalar := true
-    terminalMultiElementOneSignReductionOrderSpecifiedBySource := false }
+def p01DixonMillsTerminalReductionSpecificationReport
+    (flAdd : ℝ → ℝ → ℝ) (inputs negatives nonnegatives residual : List ℝ) : Prop :=
+  P01DixonMillsPreparation inputs negatives nonnegatives ∧
+  P01DixonMillsRepeatedReduction
+    flAdd (negatives ++ nonnegatives) residual
 
 /-- Pairwise summation is attractive in parallel settings because every stage is parallelizable. -/
 structure P01PairwiseParallelStageReport where
@@ -3674,16 +3773,16 @@ def p01MDSSecondReorderingObjectives : P01MDSReorderingObjectiveReport :=
     secondOrdering := .decreasing
     decreasingObjective := 0 }
 
-/-- The conclusion's negative answer to uniform accuracy superiority. -/
+/-- The abstract's negative uniform-accuracy-superiority claim. -/
 structure P01UniformAccuracySuperiorityReport where
   comparisonScopeIsSummationMethodsConsideredInPaper : Bool
   comparisonMethodSetEnumeratedAtClaim : Bool
-  anyMethodUniformlySuperiorInAccuracy : Bool
+  anyMethodUniformlyMoreAccurateThanOthers : Bool
 
 def p01UniformAccuracySuperiorityReport : P01UniformAccuracySuperiorityReport :=
   { comparisonScopeIsSummationMethodsConsideredInPaper := true
     comparisonMethodSetEnumeratedAtClaim := false
-    anyMethodUniformlySuperiorInAccuracy := false }
+    anyMethodUniformlyMoreAccurateThanOthers := false }
 
 /-- The conclusion's separate observation about data-dependent variability. -/
 structure P01AccuracyVariabilityWithinBoundsReport where
@@ -3913,22 +4012,6 @@ def p01HigherPrecisionRecursiveAccuracyReport :
   { scope := p01HigherPrecisionRecursiveComparisonScope
     mayBeMoreAccurate := true }
 
-/-- Source-facing assertion that the sign-separated plus/minus algorithm is
-an addition scheme of form (3.1), without importing the other three methods
-that share the paper's earlier general-class theorem. -/
-structure P01PlusMinusForm31Report where
-  sourceAssertsPlusMinusIsOfForm31 : Bool
-  claim : (ℝ → ℝ → ℝ) → Prop
-
-noncomputable def p01PlusMinusForm31Report : P01PlusMinusForm31Report :=
-  { sourceAssertsPlusMinusIsOfForm31 := true
-    claim := fun flAdd =>
-      ∀ (inputs : List ℝ) (result : ℝ), inputs ≠ [] →
-        P01PlusMinusEvaluation flAdd inputs result →
-        ∃ tree : P01SumTree,
-          P01AdditionScheme inputs tree ∧
-          P01SumTree.rounded flAdd tree = result }
-
 /-- The two nonempty, increasing-magnitude sign blocks that are the complete
 hypothesis of the equation-(3.8) plus/minus estimate. -/
 structure P01Equation38OrderedSignBlocks
@@ -3949,5 +4032,17 @@ noncomputable def p01FastTwoSumConstruction
   let sumHat := fl (a + b)
   let correctionHat := -(fl (fl (sumHat - a) - b))
   (sumHat, correctionHat)
+
+/-- The conclusion's separate, unqualified negative accuracy-superiority claim. -/
+structure P01ConclusionAccuracySuperiorityReport where
+  comparisonScopeIsSummationMethodsConsideredInPaper : Bool
+  comparisonMethodSetEnumeratedAtClaim : Bool
+  anyConsideredMethodRegardedAsSuperiorToRestInAccuracy : Bool
+
+def p01ConclusionAccuracySuperiorityReport :
+    P01ConclusionAccuracySuperiorityReport :=
+  { comparisonScopeIsSummationMethodsConsideredInPaper := true
+    comparisonMethodSetEnumeratedAtClaim := false
+    anyConsideredMethodRegardedAsSuperiorToRestInAccuracy := false }
 
 end HighamBench

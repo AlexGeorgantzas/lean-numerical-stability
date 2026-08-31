@@ -20,10 +20,18 @@ tools, or change the mathematics because an optional hardened runner cannot
 start on the current host. Record that release/measurement registration remains
 pending and continue the paper-local construction and faithfulness work.
 
-Commands or prose that say `freeze` in this workflow mean “hash this exact
-current snapshot.” They do not set `classification_frozen_before_runs: true`,
-make the files read-only, or forbid continued extraction. After any semantic
-edit, refresh the hashes and rerun the direct private N/L checks before review.
+Construction remains mutable until the complete candidate is ready for final
+faithfulness review. Batch related edits; do not create immutable campaign
+directories, campaign plans, or accepted review records during ordinary
+construction. Inspect draft packets only in disposable output when useful.
+
+The command `t4_metadata.py freeze` is poorly named: it only refreshes the
+three current-file hashes in `task.json`. It does not set
+`classification_frozen_before_runs: true`, make files read-only, or require an
+`unfreeze`. Run it once after a batch of edits when a metadata check or review
+hand-off needs synchronized hashes, rather than after every small change. A
+semantic edit after that hand-off simply returns the paper to construction;
+after completing and validating the next batch, refresh the hashes again.
 
 ## Claim and initialize the paper-local T4 shard
 
@@ -95,9 +103,10 @@ rmdir "$lease_credential_dir"
 ```
 
 An expired hand-off requires an explicit archived takeover rather than silent
-reuse. After constructing metadata, use the `t4_metadata.py freeze` and `check`
-commands routed in the metadata contract; that helper may write only the
-selected paper's `T4/task.json`.
+reuse. At a validation or review hand-off after constructing a coherent
+metadata candidate, use the `t4_metadata.py freeze` and `check` commands routed
+in the metadata contract; there is no need to run them between small edits.
+That helper may write only the selected paper's `T4/task.json`.
 Never copy a P01-specific campaign script or path layout to another paper;
 historical P01 tooling audits only its own immutable artifacts. Distinct paper
 descriptors have disjoint write scopes.

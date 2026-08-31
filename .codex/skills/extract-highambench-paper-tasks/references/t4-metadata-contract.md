@@ -125,20 +125,25 @@ construction normally uses `not_started`, pending review units, an empty
    construct the paper-local Lean declarations.
 4. Synchronize the task's embedded inventory from the canonical external
    `items`, then complete declarations, units, backlinks, and placeholders.
-5. Freeze the exact paper definitions, target, and external-inventory bytes
-   with the paper-local helper (the PDF hash remains in `paper_source`):
+5. At a validation or review hand-off, refresh the hashes of the exact paper
+   definitions, target, and external-inventory bytes with the paper-local
+   helper (the PDF hash remains in `paper_source`):
 
    ```text
    python3 paper_bencmark/highambench/tools/t4_metadata.py freeze \
      --benchmark-root paper_bencmark/highambench --paper-id P0X
    ```
 
-   `freeze` may write only `tasks/P0X/T4/task.json`; inspect `write-set` first
-   when auditing scope. Here `freeze` only refreshes hashes for the current
-   snapshot. It does not make construction files read-only, set
-   `classification_frozen_before_runs: true`, or prevent further extraction.
-   Before an accepted campaign, edit as needed and rerun `freeze` plus the
-   direct N/L gate; it refuses hash drift only after an accepted campaign.
+   The helper's `freeze` subcommand is a historical and potentially confusing
+   name. It may write only `tasks/P0X/T4/task.json`; inspect `write-set` first
+   when auditing scope. It only refreshes hashes for the current snapshot. It
+   does not make construction files read-only, set
+   `classification_frozen_before_runs: true`, or prevent further extraction,
+   and there is no `unfreeze` step. Batch ordinary construction edits and run
+   this command only when synchronized hashes are needed for a check or final
+   review hand-off. Before an accepted campaign, edit as needed and rerun the
+   hash refresh plus the direct N/L gate; it refuses hash drift only after an
+   accepted campaign.
 6. Parse both metadata files as JSON, validate them against the frozen schemas,
    then run both read-only hand-off checks:
 
