@@ -1294,11 +1294,11 @@ theorem higham22_basisMultiply_apply (theta beta gamma : ℕ → ℂ) (alpha : �
       by_cases hr : r = 0
       · subst r
         cases a with
-        | zero => simp <;> ring
+        | zero => (simp; ring)
         | succ a =>
             cases a with
-            | zero => simp <;> ring
-            | succ a => simp <;> ring
+            | zero => (simp; ring)
+            | succ a => simp
       · by_cases hprev : a + 1 = r
         · have har : a = r - 1 := by omega
           have hne : a ≠ r := by omega
@@ -1307,7 +1307,7 @@ theorem higham22_basisMultiply_apply (theta beta gamma : ℕ → ℂ) (alpha : �
           have hrr : r - 1 ≠ r := by omega
           have hone : r - 1 + 1 = r := by omega
           have hsubsub : r - 1 - 1 ≠ r := by omega
-          simp [hr, hprev, har, hne, hsub, hnext, hrr]
+          simp [hr, har, hrr]
           rw [if_pos hone]
           by_cases hzero : r - 1 = 0
           · rw [if_pos hzero]
@@ -1320,7 +1320,7 @@ theorem higham22_basisMultiply_apply (theta beta gamma : ℕ → ℂ) (alpha : �
             have hprev' : a ≠ r - 1 := by omega
             have hnext : a ≠ r + 1 := by omega
             have hrr : r ≠ r - 1 := by omega
-            simp [hr, hprev, hdiag, hsub, hprev', hnext, hrr]
+            simp [hr, hdiag, hrr]
             ring
           · by_cases hnext : a = r + 1
             · have ha0 : a ≠ 0 := by omega
@@ -1328,16 +1328,16 @@ theorem higham22_basisMultiply_apply (theta beta gamma : ℕ → ℂ) (alpha : �
               have hprev' : a ≠ r - 1 := by omega
               have htwo : r + 1 + 1 ≠ r := by omega
               have hfar : r + 1 ≠ r - 1 := by omega
-              simp [hr, hprev, hdiag, hnext, ha0, hsub, hprev', htwo, hfar]
+              simp [hr, hnext, htwo, hfar]
               ring
             · have hsub : a - 1 ≠ r := by omega
               have hprev' : a ≠ r - 1 := by omega
               by_cases ha0 : a = 0
               · subst a
                 have hzero : 0 ≠ r - 1 := hprev'
-                simp [hr, hprev, hdiag, hnext, hzero]
+                simp [hr, hprev, hdiag, hzero]
               · rw [if_neg ha0, Finsupp.single_eq_of_ne hsub.symm]
-                simp [hr, hprev, hdiag, hnext, hsub, hprev', ha0]
+                simp [hr, hprev, hdiag, hnext, hprev']
 
 /-- One executable Stage-II coefficient step: form `(x-alpha)q+c` from the
 coefficient vector of `q`. -/
@@ -2340,8 +2340,7 @@ theorem higham22_printedStageIIStep_shifted {n : ℕ}
   cases r with
   | zero =>
       have hklt : k < n + 1 := by omega
-      simp only [Nat.add_zero, if_pos rfl, zero_add, Nat.zero_sub,
-        Nat.add_sub_cancel]
+      simp only [Nat.add_zero, zero_add, Nat.zero_sub]
       rw [higham22FinExtend_apply
         (fun i : Fin (n + 1) =>
           higham22Algorithm22_2PrintedStageIIStep theta beta gamma
@@ -2603,7 +2602,7 @@ theorem higham22ShiftedCoefficients_zero_eq_sum {n : ℕ}
         intro h
         apply hji
         exact Fin.ext h
-      simp [Finsupp.single_apply, hne]
+      simp [hne]
     · simp
   · rw [Finsupp.finset_sum_apply]
     have hleft : higham22ShiftedCoefficients 0 a r = 0 := by
@@ -2613,7 +2612,7 @@ theorem higham22ShiftedCoefficients_zero_eq_sum {n : ℕ}
     apply Finset.sum_eq_zero
     intro i _hi
     have hne : (i : ℕ) ≠ r := by omega
-    simp [Finsupp.single_apply, hne]
+    simp [hne]
 
 theorem higham22_basisSynthesis_shifted_zero {n : ℕ}
     (p : ℕ → Polynomial ℂ) (a : Fin (n + 1) → ℂ) :
@@ -2879,7 +2878,7 @@ theorem higham22HermiteNodeOrder_lt_of_equal_on
     (Nat.le_of_not_gt h) hkj hEq
 
 theorem higham22HermiteNodeOrder_le_of_ne (alpha : ℕ → ℂ) {j k : ℕ}
-    (hkj : k < j) (hne : alpha j ≠ alpha (j - k - 1)) :
+    (_hkj : k < j) (hne : alpha j ≠ alpha (j - k - 1)) :
     higham22HermiteNodeOrder alpha j ≤ k := by
   by_contra h
   have heq := higham22HermiteNodeOrder_recent_equal alpha
@@ -2903,8 +2902,7 @@ theorem higham22Hermite_hermiteData_div_factorial
     (R := ℂ) (k := higham22HermiteNodeOrder alpha j)
   have hpoly := congrFun hfun q
   have heval := congrArg (Polynomial.eval (alpha j)) hpoly
-  simp only [nsmul_eq_mul, Polynomial.eval_smul,
-    smul_eq_mul] at heval
+  simp only [nsmul_eq_mul] at heval
   have hfac : (Nat.factorial (higham22HermiteNodeOrder alpha j) : ℂ) ≠ 0 := by
     exact_mod_cast Nat.factorial_ne_zero (higham22HermiteNodeOrder alpha j)
   apply (div_eq_iff hfac).2
@@ -2920,7 +2918,7 @@ theorem higham22Hermite_hermiteDataOn_div_factorial
     (R := ℂ) (k := higham22HermiteNodeOrder alpha j)
   have hpoly := congrFun hfun q
   have heval := congrArg (Polynomial.eval (alpha j)) hpoly
-  simp only [nsmul_eq_mul, Polynomial.eval_smul, smul_eq_mul] at heval
+  simp only [nsmul_eq_mul] at heval
   have hfac : (Nat.factorial (higham22HermiteNodeOrder alpha j) : ℂ) ≠ 0 := by
     exact_mod_cast Nat.factorial_ne_zero (higham22HermiteNodeOrder alpha j)
   apply (div_eq_iff hfac).2
@@ -3046,7 +3044,7 @@ theorem higham22HermiteListDD_append_singleton (q : Polynomial ℂ) (xs : List �
       cases xs with
       | nil => rfl
       | cons c rest =>
-          simp only [higham22HermiteListDD, higham22HermiteListQuotient]
+          simp only [higham22HermiteListQuotient]
           exact ih _
 
 theorem higham22HermiteListDD_cons_of_ne_nil (q : Polynomial ℂ) (a : ℂ)
@@ -3080,7 +3078,7 @@ theorem higham22HermiteListDD_first_last_recurrence (q : Polynomial ℂ)
     ← higham22HermiteListDD_append_singleton q middle a]
   congr 2
   apply higham22HermiteListDD_perm q
-  simpa using (List.perm_middle (l₁ := middle) (l₂ := []) (a := a))
+  simp
 
 def higham22HermiteWindowNodes (alpha : ℕ → ℂ) (start k : ℕ) : List ℂ :=
   (List.range k).map fun r => alpha (start + r)
@@ -3235,7 +3233,8 @@ theorem higham22Hermite_confluentTable_eq_windowDD
                 rw [show j - (k + 1) = j - k - 1 by omega,
                   higham22Hermite_repeated_windowDD_eq_hasse alpha q
                   (j - k - 1) (k + 1) hrepeat]
-                congr 2 <;> omega
+                congr 2
+                omega
       · rw [if_neg heq, ih j hjN (by omega)
             (higham22HermiteNodeOrder_le_of_ne alpha (by omega) heq),
           hsaved (j - 1) (by omega) (by omega)]
@@ -3424,7 +3423,7 @@ theorem higham22Hermite_basisCoefficientMatrix_mulVec_apply
     (higham22HermiteBasisCoefficientMatrix p).mulVec a i =
       (higham22BasisExpansion p a).coeff i := by
   simp [higham22HermiteBasisCoefficientMatrix, Matrix.mulVec, dotProduct,
-    higham22BasisExpansion, Polynomial.coeff_sum, Polynomial.coeff_C_mul,
+    higham22BasisExpansion, 
     mul_comm]
 
 theorem higham22Hermite_basisExpansion_injective
@@ -3873,14 +3872,14 @@ theorem higham22_algorithm22_3StageISweep_eq_upper_transpose_mulVec
   · rw [if_pos hi0]
     have hik1 : (i : ℕ) ≠ k + 1 := by omega
     have hnot : ¬(k + 2 ≤ (i : ℕ) ∧ (i : ℕ) ≤ k + (n - k)) := by omega
-    simp [higham22Algorithm22_3StageISweep, higham22_algorithm22_3StageIInner_apply, hik1, hi0,
+    simp [higham22Algorithm22_3StageISweep, higham22_algorithm22_3StageIInner_apply, hik1, 
       hnot, higham22FinExtend_apply]
   · rw [if_neg hi0]
     by_cases hi1 : (i : ℕ) = k + 1
     · rw [if_pos hi1]
       have hknot : ¬(k + 2 ≤ k ∧ k ≤ k + (n - k)) := by omega
       have hk1not : ¬(k + 2 ≤ k + 1 ∧ k + 1 ≤ k + (n - k)) := by omega
-      simp [higham22Algorithm22_3StageISweep, higham22_algorithm22_3StageIInner_apply, hi1, hknot, hk1not,
+      simp [higham22Algorithm22_3StageISweep, higham22_algorithm22_3StageIInner_apply, hi1, 
         higham22FinExtend]
     · rw [if_neg hi1]
       have hi2 : k + 2 ≤ (i : ℕ) := by omega
@@ -3968,7 +3967,7 @@ theorem higham22_algorithm22_3StageI_eq_outer
       simp [higham22Algorithm22_3StageI, higham22Algorithm22_3StageIOuter]
   | succ m =>
       simp [higham22Algorithm22_3StageI, higham22Algorithm22_3StageIOuter,
-        higham22Algorithm22_3StageISweep, higham22Algorithm22_3StageIInner]
+        higham22Algorithm22_3StageIInner]
 
 theorem higham22_algorithm22_3StageI_restrict_eq_upperProduct_transpose_mulVec
     (theta beta gamma : ℕ → ℂ) {n : ℕ}
@@ -4797,12 +4796,11 @@ theorem higham22_roundedStageILowerFactor_mulVec {N : ℕ}
         exact (rm.subDivError_bound _ _).trans_lt huround
       simp only [higham22StageIRowMultiplier, hik, if_false, heq,
         higham22Algorithm22_2StageIStep,
-        higham22RoundedAlgorithm22_2StageIStep, base, a, x, saved]
+        higham22RoundedAlgorithm22_2StageIStep, base, a, x]
       rw [Higham22ScalarRoundModel.flDiv_eq,
         Higham22ScalarRoundModel.flSub_eq,
         Higham22SourceRoundModel.flSub_eq_div]
       field_simp [hden, hsubdiv]
-      <;> ring
 
 theorem higham22_stageIRowMultiplier_sub_one_norm_le {N : ℕ}
     (rm : Higham22SourceRoundModel)
@@ -4819,7 +4817,7 @@ theorem higham22_stageIRowMultiplier_sub_one_norm_le {N : ℕ}
     simpa [higham22StageIRowMultiplier, hik] using (sub_nonneg.mpr hp)
   · by_cases heq : a i = a ((i : ℕ) - k - 1)
     · simp only [higham22StageIRowMultiplier, hik, if_false, heq, if_true,
-        base, a, x, add_sub_cancel_left]
+        a, add_sub_cancel_left]
       apply (base.divError_bound _ _).trans
       have hu := rm.u_nonneg
       nlinarith [sq_nonneg rm.u, mul_nonneg hu (sq_nonneg rm.u)]
@@ -5308,7 +5306,7 @@ theorem higham22_roundedStageIIDelta_bound
   intro i j
   let z : ℕ → ℂ := higham22FinExtend (Pi.single j 1)
   have hz (m : ℕ) : z m = if m = (j : ℕ) then 1 else 0 := by
-    simpa [z] using higham22FinExtend_single j (1 : ℂ) m
+    simp [z]
   rw [higham22RoundedStageIIDelta, Matrix.sub_apply,
     higham22RoundedStageIIUpperFactor, higham22StageIIUpperFactor,
     LinearMap.toMatrix'_apply, LinearMap.toMatrix'_apply]
@@ -5326,7 +5324,7 @@ theorem higham22_roundedStageIIDelta_bound
     · have hj1 : k + 1 ≠ (j : ℕ) := by omega
       have hj2 : k + 2 ≠ (j : ℕ) := by omega
       rw [hz k, hz (k + 1), hz (k + 2)]
-      simp [hj0.symm, hj1, hj2]
+      simp [hj0.symm]
       apply higham22ThreeTermTotalEta0_sub_one_norm_le
       simpa using rm.u_nonneg
     · by_cases hj1 : (j : ℕ) = k + 1
@@ -5355,7 +5353,7 @@ theorem higham22_roundedStageIIDelta_bound
     · have hj1 : (i : ℕ) + 1 ≠ (j : ℕ) := by omega
       have hj2 : (i : ℕ) + 2 ≠ (j : ℕ) := by omega
       rw [hz i, hz ((i : ℕ) + 1), hz ((i : ℕ) + 2)]
-      simp [hj0.symm, hj1, hj2]
+      simp [hj0.symm]
       rw [← norm_inv]
       apply higham22_eta_mul_sub_self_norm_le
       exact higham22ThreeTermTotalEta0_sub_one_norm_le rm _ _ _ _ _ _
@@ -5387,7 +5385,7 @@ theorem higham22_roundedStageIIDelta_bound
       have hj1 : n ≠ (j : ℕ) := by omega
       have hnprev : n ≠ n - 1 := by omega
       rw [hz (n - 1), hz n]
-      simp [hj0.symm, hj1, hnprev]
+      simp [hj0.symm, hj1]
       rw [← norm_inv]
       apply higham22_eta_mul_sub_self_norm_le
       exact higham22TwoTermTotalEta0_sub_one_norm_le rm _ _ _ _
@@ -5398,7 +5396,7 @@ theorem higham22_roundedStageIIDelta_bound
         have hprevn : n - 1 ≠ n := by omega
         have hjprev : (j : ℕ) - 1 ≠ (j : ℕ) := by omega
         rw [hz (n - 1), hz n]
-        simp [hj0', hj1.symm, hprevn, hjprev]
+        simp [hj1.symm, hjprev]
         apply higham22_eta_mul_sub_self_norm_le
         exact higham22TwoTermTotalEta1_sub_one_norm_le rm _ _ _ _
           (rm.subError_bound _ _)
@@ -6135,11 +6133,6 @@ theorem higham22_roundedAlgorithm22_2FactorSeq_bound
           (higham22RoundedAlgorithm22_2StageIFin
             rm.toHigham22ScalarRoundModel alpha f n) n (by omega) k i j
   · intro k i j
-    change ‖higham22RoundedAlgorithm22_2FactorDelta rm theta beta gamma
-        alpha f (Fin.natAdd n k) i j‖ ≤
-      higham22FactorRelativeBudget rm.u n (Fin.natAdd n k) *
-        ‖higham22ExactAlgorithm22_2FactorSeq theta beta gamma alpha
-          (Fin.natAdd n k) i j‖
     simpa only [higham22RoundedAlgorithm22_2FactorDelta,
       higham22RoundedAlgorithm22_2FactorSeq,
       higham22ExactAlgorithm22_2FactorSeq,
@@ -6341,7 +6334,7 @@ theorem higham22_checkerboard_mul {d : ℕ}
     calc
       ‖(A * B) i j‖ =
           ‖higham22CheckerSign i * (A * B) i j * higham22CheckerSign j‖ := by
-            simp [norm_mul, higham22_checkerSign_norm]
+            simp [higham22_checkerSign_norm]
       _ = ‖(S : ℂ)‖ := congrArg norm hscaled
       _ = S := by simp [hS]
   rw [hscaled]
@@ -6360,7 +6353,7 @@ theorem higham22_checkerboard_mul_norm {d : ℕ}
   calc
     ‖(A * B) i j‖ =
         ‖higham22CheckerSign i * (A * B) i j * higham22CheckerSign j‖ := by
-          simp [norm_mul, higham22_checkerSign_norm]
+          simp [higham22_checkerSign_norm]
     _ = ‖(S : ℂ)‖ := congrArg norm hscaled
     _ = S := by simp [hS]
 
@@ -6486,8 +6479,8 @@ theorem higham22_stageILowerFactor_checkerboard_of_strictMono {N : ℕ}
     rw [higham22FinExtend_apply]
     by_cases hij : i = j
     · subst j
-      simp [Pi.single_apply, higham22_checkerSign_sq]
-    · simp [Pi.single_apply, hij]
+      simp [higham22_checkerSign_sq]
+    · simp [hij]
   · have hki : k < (i : ℕ) := Nat.lt_of_not_ge hik
     let q : Fin N := ⟨(i : ℕ) - k - 1, by omega⟩
     let p : Fin N := ⟨(i : ℕ) - 1, by omega⟩
@@ -6537,8 +6530,7 @@ theorem higham22_stageILowerFactor_checkerboard_of_strictMono {N : ℕ}
         apply Fin.mk_lt_mk.mpr
         change (i : ℕ) - 1 < (i : ℕ)
         omega)
-      simp [Pi.single_apply, hpi_ne, higham22_checkerSign_sq,
-        Complex.norm_real, abs_of_pos hden]
+      simp [hpi_ne]
       rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs,
         abs_of_pos hden]
       calc
@@ -6557,8 +6549,7 @@ theorem higham22_stageILowerFactor_checkerboard_of_strictMono {N : ℕ}
           omega)
         have hsign : higham22CheckerSign i = -higham22CheckerSign p :=
           higham22_checkerSign_eq_neg_of_val_eq_succ i p hpi.symm
-        simp [Pi.single_apply, hip, hsign, higham22_checkerSign_sq,
-          Complex.norm_real, abs_of_pos hden]
+        simp [hip, hsign]
         rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs,
           abs_of_pos hden]
         calc
@@ -6572,7 +6563,7 @@ theorem higham22_stageILowerFactor_checkerboard_of_strictMono {N : ℕ}
             ring
       · have hip : i ≠ j := Ne.symm hji
         have hpj : p ≠ j := Ne.symm hjp
-        simp [Pi.single_apply, hip, hpj]
+        simp [hip, hpj]
 
 noncomputable def higham22RealNatToComplex (x : ℕ → ℝ) : ℕ → ℂ :=
   fun j => x j
@@ -6699,7 +6690,7 @@ theorem higham22_stageIIUpperFactor_checkerboard_of_signs
             (gamma (r + 1) / theta (r + 1)) hx
           simpa [r, hj0, hj1, hj2, hkext, higham22RealNatToComplex,
             higham22RealFinToComplex] using hs
-        · simp [r, hj0, hj1, hj2]
+        · simp [hj0, hj1, hj2]
   · simp only [higham22FinExtend_single]
     let r := n - k - 1
     by_cases hj0 : n - 1 = (j : ℕ)
@@ -7020,7 +7011,7 @@ noncomputable def higham22InverseFactorRelativeBudget (u : ℝ) (n : ℕ) :
 
 /-- The scalar product calculation in (22.25). -/
 theorem higham22_inverseFactorRelativeBudget_product
-    (u : ℝ) (n : ℕ) (hu1 : u < 1) :
+    (u : ℝ) (n : ℕ) (_hu1 : u < 1) :
     scalarSeqProd (n + n)
         (fun r ↦ 1 + higham22InverseFactorRelativeBudget u n r) =
       1 + higham22Theorem22_6Coefficient n u := by
@@ -7107,11 +7098,9 @@ theorem higham22_problem22_8_general_factor
         ((1 + deltaSuper p) / (1 + deltaDiag p)) * (-e p / u p) := by
     intro p
     field_simp [hdiag p]
-    <;> ring
   simp_rw [hterm]
   rw [Finset.prod_mul_distrib]
   field_simp [hdiag j]
-  <;> ring
 
 /-- Difference form of the first Problem 22.8 identity. -/
 theorem higham22_problem22_8_general_difference
@@ -7147,11 +7136,9 @@ theorem higham22_problem22_8_structured_factor
         (1 + delta p) * (-e p / u p) := by
     intro p
     field_simp [heps p]
-    <;> ring
   simp_rw [hterm]
   rw [Finset.prod_mul_distrib]
   field_simp [heps j]
-  <;> ring
 
 /-- Difference form of the structured Appendix A factor identity. -/
 theorem higham22_problem22_8_structured_difference
@@ -7283,7 +7270,7 @@ theorem higham22_problem22_8_inverse_entry_bound
       rw [Finset.ssubset_iff_subset_ne]
       refine ⟨Finset.filter_subset _ _, ?_⟩
       intro hEq
-      have hjmem : j ∈ S := by simpa [hEq]
+      have hjmem : j ∈ S := by simp [hEq]
       simp [S] at hjmem
     have hcardlt : S.card < N := by
       simpa using Finset.card_lt_card hSsub
@@ -7415,8 +7402,7 @@ theorem higham22_eq22_23_reverse_inverse_product {d m : ℕ}
     higham22ComplexMatSeqProd d m (higham22ReverseInverseMatrixSeq X) =
       (higham22ComplexMatSeqProd d m X)⁻¹ := by
   induction m with
-  | zero => simp [higham22ComplexMatSeqProd, higham22ReverseInverseMatrixSeq,
-      higham22ReverseMatrixSeq]
+  | zero => simp [higham22ComplexMatSeqProd]
   | succ m ih =>
       let X0 : Fin m → Matrix (Fin d) (Fin d) ℂ := fun r => X r.castSucc
       let A : Matrix (Fin d) (Fin d) ℂ := X (Fin.last m)
@@ -7527,7 +7513,7 @@ noncomputable def higham22Theorem22_6CoefficientWith
   (1 + c) ^ n / (1 - u) ^ (3 * n) - 1
 
 theorem higham22_inverseFactorRelativeBudgetWith_product
-    (u c : ℝ) (n : ℕ) (hu1 : u < 1) :
+    (u c : ℝ) (n : ℕ) (_hu1 : u < 1) :
     scalarSeqProd (n + n)
         (fun r => 1 + higham22InverseFactorRelativeBudgetWith u c n r) =
       1 + higham22Theorem22_6CoefficientWith n u c := by
@@ -7691,11 +7677,11 @@ theorem higham22_stageIRowMultiplier_ne_zero {N : ℕ}
   · simp [higham22StageIRowMultiplier, hik]
   · by_cases heq : a i = a ((i : ℕ) - k - 1)
     · simp only [higham22StageIRowMultiplier, hik, if_false, heq, if_true,
-        base, a, x]
+        a]
       exact higham22_one_add_ne_zero_of_norm_lt_one
         ((base.divError_bound _ _).trans_lt huround)
     · simp only [higham22StageIRowMultiplier, hik, if_false, heq,
-        base, a, x, saved]
+        a]
       exact mul_ne_zero
         (mul_ne_zero
           (higham22_one_add_ne_zero_of_norm_lt_one
@@ -8017,7 +8003,7 @@ theorem higham22_stageILowerFactor_diagonal_ne_zero {N : ℕ}
       have heq' : alpha i ≠
           higham22FinExtend alpha ((i : ℕ) - k - 1) := by
         simpa using heq
-      simp [higham22Algorithm22_2StageIStep, hik, heq,
+      simp [higham22Algorithm22_2StageIStep, hik, 
         heq', higham22FinExtend_single, hsne]
       exact sub_ne_zero.mpr heq'
 
@@ -8212,7 +8198,8 @@ theorem higham22_corollary22_7_first_order (n : ℕ) :
     simpa using hlin.const_sub 1
   have hfrac : HasDerivAt
       (fun u : ℝ => a * u / (1 - a * u)) a 0 := by
-    convert hlin.div hden (by norm_num) using 1 <;> norm_num
+    convert hlin.div hden (by norm_num) using 1
+    norm_num
   have hone : HasDerivAt
       (fun u : ℝ => 1 + a * u / (1 - a * u)) a 0 := by
     simpa using hfrac.const_add 1
@@ -8225,7 +8212,7 @@ theorem higham22_corollary22_7_first_order (n : ℕ) :
   have hquot := hnum.div hdenpow hden0
   have hfinal := hquot.sub_const 1
   convert hfinal using 1
-  all_goals simp [a] <;> push_cast <;> ring
+  all_goals (simp [a]; ring)
 
 /-- Conditional monomial residual specialization at the coefficient stated by
 Corollary 22.7.  The explicit `h22_24` argument marks the remaining producer
