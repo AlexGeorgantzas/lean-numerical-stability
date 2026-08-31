@@ -43,3 +43,5 @@ jobs:
           build-args: NumStability NumStabilityTest
           test: false
           lint: false
+      - name: Run lake test
+        run: lake test

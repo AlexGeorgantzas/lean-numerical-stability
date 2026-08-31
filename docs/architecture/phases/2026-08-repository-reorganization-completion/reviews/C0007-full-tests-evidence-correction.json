@@ -1,0 +1,94 @@
+{
+ "checkpoint_id": "C0007",
+ "corrected_semantics": {
+  "corrected_label": "C0007 full_tests attested test-library compilation, not lake test execution",
+  "explanation": "At C0007 acceptance the Lean CI workflow invoked leanprover/lean-action@v1 with build-args 'NumStability NumStabilityTest' and test: false. The green CI evidence therefore proves that the NumStabilityTest test library compiled at the accepted code; it does not prove that the literal command 'lake test' was executed by CI. Because lakefile.toml declares testDriver = 'NumStabilityTest' (a lean_lib), 'lake test' is semantically equivalent to building that library, so the compilation attestation is materially equivalent in outcome; this record corrects the label of what was executed, not the PASS outcome.",
+  "recorded_claim": "C0007 acceptance gate full_tests at exact code 4e26820d1f4989ec4ec77b7113085f593570e11b, status PASS, executor github-actions"
+ },
+ "correction_id": "C0007-full-tests-evidence-correction",
+ "decided_at": "2026-08-31T03:18:58Z",
+ "decision": "approved",
+ "evidence_scope": {
+  "does_not_authorize_or_record": [
+   "any change to the C0007 PASS outcome",
+   "full_tests evidence for C0008 or later checkpoints",
+   "modification of any immutable acceptance record"
+  ],
+  "proves": [
+   "the exact bytes of the C0007 checkpoint record, gate evidence, and pre-correction workflow definition",
+   "that Lean CI through run 32846311774 contained no step executing the literal command 'lake test'"
+  ],
+  "use": "semantic relabel of C0007 full_tests evidence only"
+ },
+ "gate_id": "full_tests",
+ "historical_run": {
+  "api_endpoint": "https://api.github.com/repos/AlexGeorgantzas/lean-numerical-stability/actions/runs/32846311774",
+  "conclusion": "success",
+  "created_at": "2026-08-25T12:12:17Z",
+  "event": "push",
+  "head_branch": "main",
+  "head_sha": "8960f2a980be22166f321c4ba452eb547529b1fd",
+  "job": {
+   "html_url": "https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/32846311774/job/97796705380",
+   "id": 97796705380,
+   "lake_test_step_present": false,
+   "name": "build",
+   "steps": [
+    "Set up job",
+    "Run actions/checkout@v5",
+    "Check architecture source graph and Python tooling",
+    "Build library and smoke tests",
+    "Post Run actions/checkout@v5",
+    "Complete job"
+   ]
+  },
+  "relation_to_c0007": "run head 8960f2a980be22166f321c4ba452eb547529b1fd is a descendant of the C0007 accepted code 4e26820d1f4989ec4ec77b7113085f593570e11b under the same workflow definition (sha256 0A9E8B535D7A780623557A107E00D02B44513E650A4F6C5A259FC0323A435FD7), demonstrating that no 'lake test' step existed in any Lean CI run through this run",
+  "run_attempt": 1,
+  "run_id": 32846311774,
+  "run_url": "https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/32846311774",
+  "workflow_path": ".github/workflows/lean_action_ci.yml"
+ },
+ "immutability": {
+  "correction_mechanism": "append-only evidence-correction record committed to history",
+  "statement": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0007.json and C0007-gates.md are immutable acceptance records and are not modified by this correction; this record is an append-only annotation, and the pins below prove the annotated bytes."
+ },
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "pinned_artifacts": [
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0007.json",
+   "role": "checkpoint_record",
+   "sha256": "D1C9C3AEBAA00077D118790E730C5DEFCD1925AE69E866776105A38CCE3F3EF8"
+  },
+  {
+   "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0007-gates.md",
+   "role": "gate_evidence",
+   "sha256": "75A838606398B2D166250FF9CF522D639A7B3AABBBE2BC3D12A9D6C76D791EBA"
+  },
+  {
+   "path": ".github/workflows/lean_action_ci.yml",
+   "role": "workflow_definition_pre_correction",
+   "sha256": "0A9E8B535D7A780623557A107E00D02B44513E650A4F6C5A259FC0323A435FD7"
+  }
+ ],
+ "record_kind": "checkpoint_evidence_correction",
+ "reuse_prohibition": "This correction applies to the C0007 full_tests gate label only. It must not be cited as, or reused for, full_tests evidence for C0008 or any later checkpoint; every subsequent checkpoint claiming full_tests must point at CI evidence containing an explicit, separately named 'lake test' step with its own conclusion.",
+ "reviewer_id": "primary-human",
+ "schema_version": 1,
+ "workflow_facts": {
+  "lake_test_step_present": false,
+  "lean_action_inputs": {
+   "build": true,
+   "build-args": "NumStability NumStabilityTest",
+   "lint": false,
+   "test": false
+  },
+  "path": ".github/workflows/lean_action_ci.yml",
+  "test_driver": {
+   "kind": "lean_lib",
+   "lake_test_semantics": "builds the NumStabilityTest library",
+   "lakefile": "lakefile.toml",
+   "testDriver": "NumStabilityTest"
+  },
+  "workflow_id": 240911818
+ }
+}
