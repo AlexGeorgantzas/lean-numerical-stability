@@ -146,11 +146,11 @@ theorem orthogonalTailEmbedding_fixesFirstRow (d : ℕ)
     OrthogonalFixesFirstRow (orthogonalTailEmbedding d K) := by
   intro j
   refine Fin.cases ?_ (fun jj => ?_) j
-  · simp [OrthogonalFixesFirstRow, orthogonalTailEmbedding]
+  · simp [orthogonalTailEmbedding]
   · have h : (jj.succ : Fin (d + 1)) ≠ 0 := by
       intro hEq
       simpa using congrArg Fin.val hEq
-    simp [OrthogonalFixesFirstRow, orthogonalTailEmbedding, h]
+    simp [orthogonalTailEmbedding, h]
 
 /-- For an orthogonal matrix, fixing the first row forces the first column to
 be fixed as well. -/
@@ -302,7 +302,7 @@ theorem abs_householderAlpha_eq_euclideanNorm (d : ℕ)
   congr 1
   apply Finset.sum_congr rfl
   intro i _
-  simp [Real.norm_eq_abs, sq_abs, pow_two]
+  simp [Real.norm_eq_abs, pow_two]
 
 /-- Away from the null zero input, the first row of the sign-corrected
 Householder section is radial normalization of its input. -/
@@ -368,7 +368,7 @@ theorem stewartFirstSection_firstRow_of_ne_zero (d : ℕ)
   have hsection : stewartFirstSectionMatrix d x 0 j =
       householderSign α * H 0 j := by
     simp [stewartFirstSectionMatrix, stewartFirstSignMatrix, matMul,
-      Fin.sum_univ_succ, H, α, diagMatrix]
+      H, α, diagMatrix]
   rw [hsection]
   rw [← habs, hxj]
   by_cases hneg : α < 0
@@ -385,7 +385,7 @@ theorem orthogonalFirstRow_stewartSphereSection (d : ℕ)
     (v : OrthogonalSphere (d + 1)) :
     orthogonalFirstRow d (stewartSphereSection d v) = v := by
   have hvnorm : ‖(v : EuclideanSpace ℝ (Fin (d + 1)))‖ = 1 := by
-    simpa [Metric.mem_sphere, dist_zero_right] using v.property
+    simp
   have hvne : WithLp.ofLp (v : EuclideanSpace ℝ (Fin (d + 1))) ≠ 0 := by
     intro h
     have : (v : EuclideanSpace ℝ (Fin (d + 1))) = 0 := by

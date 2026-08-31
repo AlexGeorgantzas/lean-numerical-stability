@@ -942,7 +942,7 @@ theorem rawRowCounter_printedAlphaScale_zero :
     · simpa [fl_pivotedStoredQRMatrixSeq,
         rawRowCounter_rowInftyNorm_zero] using
         (show (0 : ℝ) ≤ 27 / 64 by norm_num)
-    · simpa [rawRowCounter_rowInftyNorm_one]
+    · simp [rawRowCounter_rowInftyNorm_one]
   · have h := le_ciSup
       (Finite.bddAbove_range (fun t : Fin 2 =>
         Wave18D.rowInftyNorm

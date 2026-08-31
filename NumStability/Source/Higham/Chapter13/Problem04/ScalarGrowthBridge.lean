@@ -1004,7 +1004,7 @@ theorem higham13_blockUpper_le_noPivotReducedHistory {m r : ℕ}
           rw [Nat.add_mul]
         _ = m * r := by rw [hsplit]
     have hTailBlocks : 0 < tailBlocks := by
-      simpa [tailBlocks] using Nat.sub_pos_of_lt bi.isLt
+      simp [tailBlocks]
     have hSuffix : 0 < suffix := by
       exact Nat.mul_pos hTailBlocks hr
     let Ac : Matrix (Fin (cut + suffix)) (Fin (cut + suffix)) ℝ :=
@@ -1039,14 +1039,14 @@ theorem higham13_blockUpper_le_noPivotReducedHistory {m r : ℕ}
         Lbc (leadFin i) (tailFin j) = 0 := by
       intro i j
       apply blockMatrixFlatFin_lower_leading_trailing_zero hr hBlock bi
-      · simpa [cut, leadFin] using i.isLt
+      · simp [cut, leadFin]
       · simp [cut, tailFin]
     have hUbc21 : ∀ i : Fin suffix, ∀ j : Fin cut,
         Ubc (tailFin i) (leadFin j) = 0 := by
       intro i j
       apply blockMatrixFlatFin_upper_trailing_leading_zero hr hBlock bi
       · simp [cut, tailFin]
-      · simpa [cut, leadFin] using j.isLt
+      · simp [cut, leadFin]
     let firstTail : Fin tailBlocks := ⟨0, hTailBlocks⟩
     have hbjTail : bj.val - bi.val < tailBlocks := by
       simpa [tailBlocks] using Nat.sub_lt_sub_right hibj bj.isLt

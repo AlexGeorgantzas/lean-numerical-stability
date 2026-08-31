@@ -25,7 +25,7 @@ theorem pascalSortedEigenbasis_apply (n : ℕ) (i : Fin n) :
   have h' : (hP.eigenvectorBasis.reindex
       (pascalSortedEigenEquiv n).symm) i =
       hP.eigenvectorBasis (pascalSortedEigenIndex n i) := by
-    simpa using h
+    simp
   exact congrArg (fun x : EuclideanSpace ℝ (Fin n) => ⇑x) h'
 
 @[simp]

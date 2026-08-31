@@ -603,7 +603,7 @@ theorem ginibreIncidenceEigenvalue_isRoot_charpoly {n : ℕ}
   have hv_ne : ginibreAffineEigenvector q.2 ≠ 0 := by
     intro hv
     have hlast := congrFun hv (Sum.inr ())
-    simpa [ginibreAffineEigenvector] using hlast
+    simp [ginibreAffineEigenvector] at hlast
   have heig :
       Matrix.mulVec (ginibreIncidenceMatrix q) (ginibreAffineEigenvector q.2) =
         ginibreIncidenceEigenvalue q • ginibreAffineEigenvector q.2 :=

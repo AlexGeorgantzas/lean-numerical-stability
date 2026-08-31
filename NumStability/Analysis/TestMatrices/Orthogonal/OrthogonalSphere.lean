@@ -98,6 +98,6 @@ theorem orthogonalGroup_action_pretransitive
   rw [orthogonalGroupEuclideanLinearIsometryEquiv_apply]
   rw [orthogonalGroupOfEuclideanLinearIsometryEquiv_apply]
   exact Submodule.reflection_sub
-    (by simpa [Metric.mem_sphere] using x.property.trans y.property.symm)
+    (by simp)
 
 end NumStability

@@ -252,7 +252,7 @@ theorem ginibreAffineCoordinateLinearMap_ker_ne_top {n : ℕ} (j : Fin n) :
   intro h
   have hmem : (((0, 0), 0), Pi.single j 1) ∈
       (ginibreAffineCoordinateLinearMap j).ker := by rw [h]; trivial
-  simpa [ginibreAffineCoordinateLinearMap] using hmem
+  simp [ginibreAffineCoordinateLinearMap] at hmem
 
 theorem measure_ginibreAffineCoordinateHyperplane_eq_zero
     (n : ℕ) (μ : Measure (GinibreIncidenceCoordinates n))

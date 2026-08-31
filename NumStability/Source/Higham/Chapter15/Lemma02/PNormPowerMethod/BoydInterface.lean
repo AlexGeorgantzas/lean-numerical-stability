@@ -324,7 +324,7 @@ theorem boydCarrier_fixedPoint_pos {m n : ℕ}
     induction r with
     | zero =>
         intro i hxi
-        simpa [hxi]
+        simp [hxi]
     | succ r ihr =>
         intro i hxi
         rw [pow_succ']

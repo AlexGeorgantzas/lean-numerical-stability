@@ -32,8 +32,7 @@ noncomputable def orthogonalSphereBase (d : ℕ) :
     OrthogonalSphere (d + 1) :=
   ⟨WithLp.toLp 2 (Pi.single (0 : Fin (d + 1)) 1), by
     rw [Metric.mem_sphere, dist_zero_right]
-    simpa using
-      PiLp.norm_toLp_single 2 (fun _ : Fin (d + 1) => ℝ) 0 1⟩
+    simp⟩
 
 /-- Ambient value of radial normalization. -/
 noncomputable def gaussianUnitDirectionValue (d : ℕ)

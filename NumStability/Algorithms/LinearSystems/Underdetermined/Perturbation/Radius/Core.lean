@@ -354,7 +354,7 @@ theorem higham21_theorem21_1_scaled_gramInverse_frobNorm_le_of_radius
   let s : Real := higham21PerturbationGramSensitivity A E
   let c : Real := eta * s
   have heta : 0 <= eta := by
-    simpa [eta] using abs_nonneg t
+    simp [eta]
   have heta_rho : eta <= higham21PerturbationRadius A E q := by
     simpa [eta] using ht
   have heta_one : eta <= 1 :=

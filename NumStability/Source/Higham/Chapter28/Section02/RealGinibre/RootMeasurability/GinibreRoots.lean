@@ -244,7 +244,7 @@ theorem compl_complexRootTupleCountProjection (n k : ℕ) :
   · rw [Set.mem_iUnion]
     rintro ⟨j, hj⟩ hA
     by_cases heq : j = k
-    · simpa [heq] using hj
+    · simp [heq] at hj
     · have hjcount : realEigenvalueCount n A = j :=
         (mem_complexRootTupleCountProjection_iff n j A).1 (by simpa [heq] using hj)
       have hkcount : realEigenvalueCount n A = k :=
@@ -333,7 +333,7 @@ theorem compl_complexRootTupleBelowCountProjection (n k : ℕ) :
   · rw [Set.mem_iUnion]
     rintro ⟨j, hj⟩ hp
     by_cases heq : j = k
-    · simpa [heq] using hj
+    · simp [heq] at hj
     · have hjcount : realEigenvalueBelowCount p = j :=
         (mem_complexRootTupleBelowCountProjection_iff n j p).1 (by simpa [heq] using hj)
       have hkcount : realEigenvalueBelowCount p = k :=

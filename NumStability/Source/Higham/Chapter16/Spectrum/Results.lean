@@ -9894,7 +9894,7 @@ theorem sylvester_quasiSchur_blockTraversal_columns_eq_of_solution_det_frontier_
               exact hcols.2
   have hfinal : Prefix r := hprefix r (le_rfl)
   funext i k
-  exact hfinal k (by simpa [hend] using k.isLt) i
+  exact hfinal k (by simp [hend]) i
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), scheduled
     quasi-Schur traversal uniqueness skeleton with product-shift determinant
@@ -10087,7 +10087,7 @@ theorem sylvester_quasiSchur_blockTraversal_solution_of_det_frontier_step_oracle
               exact hcols.2
   have hfinal : Prefix r := hprefix r (le_rfl)
   intro i k
-  exact hfinal k (by simpa [hend] using k.isLt) i
+  exact hfinal k (by simp [hend]) i
 
 /-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.8), exact
     original-coordinate reconstruction from a scheduled quasi-Schur traversal:

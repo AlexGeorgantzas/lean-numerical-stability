@@ -91,7 +91,7 @@ private theorem Polynomial.eval_pos_of_monic_of_roots_eq_zero
       have hxroot : P.IsRoot x := hx
       have hxmem : x ∈ P.roots :=
         (Polynomial.mem_roots hmonic.ne_zero).2 hxroot
-      simpa [hroots] using hxmem
+      simp [hroots] at hxmem
     have hxnonneg : 0 ≤ P.eval x := by
       by_contra hx
       have hxneg : P.eval x < 0 := lt_of_not_ge hx
@@ -102,7 +102,7 @@ private theorem Polynomial.eval_pos_of_monic_of_roots_eq_zero
       have hzroot : P.IsRoot z := hz
       have hzmem : z ∈ P.roots :=
         (Polynomial.mem_roots hmonic.ne_zero).2 hzroot
-      simpa [hroots] using hzmem
+      simp [hroots] at hzmem
     exact hxnonneg.lt_of_ne' hxne
 
 private theorem Polynomial.exists_isRoot_of_monic_of_odd_natDegree
@@ -166,7 +166,7 @@ theorem Polynomial.negOnePow_card_roots_lt_mul_abs_eval
               Polynomial.exists_isRoot_of_monic_of_odd_natDegree hmonic hodd
             have hrmem : r ∈ P.roots :=
               (Polynomial.mem_roots hmonic.ne_zero).2 hr
-            simpa [hroots] using hrmem
+            simp [hroots] at hrmem
         have hsign : (-1 : ℝ) ^ P.natDegree = 1 :=
           heven.neg_one_pow
         have hpos : 0 < (-1 : ℝ) ^ P.natDegree * P.eval x := by

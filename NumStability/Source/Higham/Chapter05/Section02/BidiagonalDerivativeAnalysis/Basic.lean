@@ -120,13 +120,13 @@ theorem flHighamBidiagonalSolve_last
     (a : Fin n → ℝ) (i : Fin n) (hi : i.val + 1 = n) :
     flHighamBidiagonalSolve fp alpha a i = a i := by
   let l := List.ofFn a
-  have hil : i.val < l.length := by simpa [l] using i.isLt
+  have hil : i.val < l.length := by simp [l]
   have hdrop := List.drop_eq_getElem_cons hil
   have htail : (List.ofFn a).drop (i.val + 1) = [] := by
     apply List.drop_eq_nil_of_le
     simp [hi]
   have hget : l[i.val] = a i := by
-    simpa [l] using List.getElem_ofFn (f := a) hil
+    simp [l]
   unfold flHighamBidiagonalSolve
   rw [hdrop, htail]
   simp [fl_hornerDesc, hget]

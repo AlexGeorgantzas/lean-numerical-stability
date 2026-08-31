@@ -77,7 +77,7 @@ theorem companionCharacteristicFormula_aeval_transpose
       rw [Fin.rev_rev] at hpow
       rw [hpow]
       simp [Fin.val_rev]
-      congr 1 <;> omega
+      (congr 1; omega)
     · intro k hk hki
       let kfin : Fin n := ⟨k, Finset.mem_range.mp hk⟩
       have hpow := companion_transpose_krylov_eq_reverseBasis hn a kfin
@@ -203,7 +203,7 @@ theorem companionMatrix_charpoly
     simpa using hdeg
   calc
     (companionMatrix n a).charpoly = A.charpoly := by
-      simpa [A] using (Matrix.charpoly_transpose (companionMatrix n a)).symm
+      simp [A]
     _ = q := hchar_eq_q
     _ = companionCharacteristicFormula n a := hc_eq_q.symm
 

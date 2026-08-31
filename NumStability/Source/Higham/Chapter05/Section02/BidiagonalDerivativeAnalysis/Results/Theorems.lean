@@ -73,7 +73,7 @@ private theorem ch5_bidiagonal_row_sum
             have hsuper : (x.val = i.val + 1) ↔ x = s := by
               constructor
               · intro hv; exact Fin.ext (by simpa [s] using hv)
-              · intro hx; simpa [s, hx]
+              · intro hx; simp [s, hx]
             simp only [hsuper]
             by_cases hxi : x = i
             · subst x; simp [Ne.symm hne]
@@ -386,16 +386,16 @@ theorem flHighamBidiagonalSolve_succ
       fl_hornerStep fp alpha
         (flHighamBidiagonalSolve fp alpha a ⟨i.val + 1, hi⟩) (a i) := by
   let l := List.ofFn a
-  have hil : i.val < l.length := by simpa [l] using i.isLt
+  have hil : i.val < l.length := by simp [l]
   have hdrop := List.drop_eq_getElem_cons hil
   have hget : l[i.val] = a i := by
-    simpa [l] using List.getElem_ofFn (f := a) hil
+    simp [l]
   unfold flHighamBidiagonalSolve
   rw [show (List.ofFn a).drop i.val =
       (List.ofFn a)[i.val] :: (List.ofFn a).drop (i.val + 1) by
         simpa [l] using hdrop]
   rw [List.reverse_cons, ch5_fl_hornerDesc_append_singleton]
-  simpa [hget]
+  simp
 
 /-- Higham, 2nd ed., Chapter 5, Section 5.2, equation (5.5), literal
 matrix-form producer.  The actual rounded Horner sweep satisfies
@@ -598,7 +598,7 @@ theorem flHighamBidiagonalSolve_forward_majorant_first_order_quadratic
           (highamBidiagonalUInv alpha n) (fun l => |qhat l|) k := by
     intro k
     calc
-      |qhat k| = |q k + (qhat k - q k)| := by congr 1 <;> ring
+      |qhat k| = |q k + (qhat k - q k)| := by (congr 1; ring)
       _ ≤ |q k| + |qhat k - q k| := abs_add_le _ _
       _ = |q k| + |q k - qhat k| := by rw [abs_sub_comm]
       _ ≤ |q k| +
@@ -992,7 +992,7 @@ theorem flHighamBidiagonalSolve_two_sweeps_forward_error_first_order_quadratic
   have hrhat : ∀ k : Fin n, |rhat k| ≤ |r k| + E k := by
     intro k
     calc
-      |rhat k| = |r k + (rhat k - r k)| := by congr 1 <;> ring
+      |rhat k| = |r k + (rhat k - r k)| := by (congr 1; ring)
       _ ≤ |r k| + |rhat k - r k| := abs_add_le _ _
       _ = |r k| + |r k - rhat k| := by rw [abs_sub_comm]
       _ ≤ |r k| + E k := add_le_add (le_refl _) (hbase k)

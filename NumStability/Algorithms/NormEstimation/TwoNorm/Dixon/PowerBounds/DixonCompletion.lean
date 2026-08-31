@@ -202,7 +202,7 @@ theorem ch15Closure_dixon_left_power_inequality
     exact ch15Closure_opNorm2Le_matPow G (opNorm2 B ^ 2)
       (sq_nonneg (opNorm2 B)) hG k
   have hxnorm : ‖WithLp.toLp 2 xv‖ = 1 := by
-    simpa [xv, Metric.mem_sphere, dist_zero_right] using x.property
+    simp [xv]
   have hxsq : vecNorm2Sq xv = 1 := by
     have hsq : ‖WithLp.toLp 2 xv‖ ^ 2 = 1 := by rw [hxnorm]; norm_num
     rw [EuclideanSpace.norm_sq_eq] at hsq

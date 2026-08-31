@@ -187,7 +187,7 @@ theorem Higham13Eq1322GlobalTableauSourceChain.head_schur_condition_exact_kappa
           Sdisplay hInvS
       have hSinvRight : IsRightInverse ((m + 1) * r) Sdisplay Sinv := by
         have hmul : Sdisplay * Sinv = 1 := by
-          simpa [Sinv] using hInvS.mul_invOf_self
+          simp [Sinv]
         intro i j
         have hentry := congrArg
           (fun M : Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ => M i j)

@@ -251,7 +251,7 @@ theorem realGinibreExpectedCountClosedForm_one :
   norm_num only [Nat.cast_one, pow_one]
   have hh : ₂F₁ (1 : ℝ) (-(1 / 2 : ℝ)) (1 : ℝ) (1 / 2 : ℝ) =
       Real.sqrt (1 / 2 : ℝ) := by
-    convert realGinibre_hypergeometric_one using 1 <;> ring
+    (convert realGinibre_hypergeometric_one using 1; ring)
   rw [hh]
   norm_num [Nat.centralBinom]
   have hspi : Real.sqrt Real.pi ≠ 0 := by positivity
@@ -398,7 +398,7 @@ theorem realGinibreExpectedCountClosedForm_shift_two
         ((m : ℝ) + 1) * ((m : ℝ) * Real.Gamma (m : ℝ)) := by
     calc
       Real.Gamma ((m : ℝ) + 2) =
-          Real.Gamma (((m : ℝ) + 1) + 1) := by congr 1 <;> ring
+          Real.Gamma (((m : ℝ) + 1) + 1) := by (congr 1; ring)
       _ = ((m : ℝ) + 1) * Real.Gamma ((m : ℝ) + 1) := by
         rw [Real.Gamma_add_one]
         positivity
@@ -409,7 +409,7 @@ theorem realGinibreExpectedCountClosedForm_shift_two
           Real.Gamma ((m : ℝ) + 1 / 2)) := by
     calc
       Real.Gamma ((m : ℝ) + 2 + 1 / 2) =
-          Real.Gamma (((m : ℝ) + 3 / 2) + 1) := by congr 1 <;> ring
+          Real.Gamma (((m : ℝ) + 3 / 2) + 1) := by (congr 1; ring)
       _ = ((m : ℝ) + 3 / 2) * Real.Gamma ((m : ℝ) + 3 / 2) := by
         rw [Real.Gamma_add_one hmthreehalf]
       _ = ((m : ℝ) + 3 / 2) *
@@ -626,7 +626,7 @@ private theorem realGamma_five_halves_div_two :
   rw [Real.Gamma_add_one (by norm_num : (1 / 2 : ℝ) ≠ 0)]
   rw [Real.Gamma_one_half_eq]
   have hgammaTwo : Real.Gamma (2 : ℝ) = 1 := by
-    simpa using Real.Gamma_nat_eq_factorial 1
+    simp
   rw [hgammaTwo]
   ring
 
@@ -654,7 +654,7 @@ theorem realGinibreParityIncrement_zero :
   norm_num only [Nat.cast_zero, zero_add]
   rw [Real.Gamma_one_half_eq]
   have hgammaOne : Real.Gamma (1 : ℝ) = 1 := by
-    simpa using Real.Gamma_nat_eq_factorial 0
+    simp
   rw [hgammaOne, div_one, sqrt_two_div_pi_mul_sqrt_pi]
 
 private theorem realGinibreExpectedCountClosedForm_add_increment

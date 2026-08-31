@@ -97,7 +97,7 @@ private theorem companionCoefficientMoment_truncated
           a 0 * x (Fin.last (m + 1)) =
         ∑ i : Fin (m + 2),
           companionReverseCoefficients (m + 2) a i * x i := by
-    simpa [companionReverseCoefficients_last] using hsum
+    simp [companionReverseCoefficients_last]
   unfold companionCoefficientMoment
   linear_combination hsum'
 
@@ -322,12 +322,12 @@ private theorem companionGram_sub_one_eq_rankTwo
         intro hj
         exact hij (hilast.trans hj.symm)
       have hjlast' : Fin.last (m + 1) ≠ j := Ne.symm hjlast
-      simp [hij, companionLastBasis, Pi.single_apply,
+      simp [companionLastBasis,
         companionReverseCoefficients, hilast, hjlast, hjlast']
     · by_cases hjlast : j = Fin.last (m + 1)
-      · simp [hij, companionLastBasis, Pi.single_apply,
+      · simp [companionLastBasis, Pi.single_apply,
           companionReverseCoefficients, hilast, hjlast]
-      · simp [hij, companionLastBasis, Pi.single_apply,
+      · simp [hij, companionLastBasis,
           companionReverseCoefficients, hilast, hjlast]
 
 /-- In order at least two, `CᴴC-I` has rank at most two. Thus the unit

@@ -396,7 +396,7 @@ theorem mixedInverseAmbientRelativeAmplificationRadiusSup_tendsto_conditionNumbe
         να νβ A S a s (rho i)).Nonempty) l :=
     eventually_mixedInverseRelativeAmplificationRadius_nonempty_of_small_perturbations
       hn hα hβ hAlin hSlin hS_left hspos hS.1 hDlin hdpos
-      (by simpa [d] using hboundary.le) hsmall hD
+      (by simp [d]) hsmall hD
   have hAmbientNonempty : Filter.Eventually
       (fun i => (MixedInverseAmbientRelativeAmplificationRadiusSet
         να νβ A S a s (rho i)).Nonempty) l := by

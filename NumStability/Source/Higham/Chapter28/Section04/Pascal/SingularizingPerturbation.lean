@@ -93,7 +93,7 @@ theorem opNorm2_pascalOptimalSingularizingPerturbation (n : ℕ) :
     simp [pascalOptimalSingularizingPerturbation,
       residualRankOnePerturbation, hvsq, lam, v]
   have hPred := opNorm2Le_residualRankOnePerturbation
-    (n + 1) (-lam • v) v (by simpa [hv])
+    (n + 1) (-lam • v) v (by simp [hv])
   have hratio : vecNorm2 (-lam • v) / vecNorm2 v = lam := by
     rw [vecNorm2_module_smul, hv]
     simp [abs_of_nonneg hlam]

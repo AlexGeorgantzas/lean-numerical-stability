@@ -207,7 +207,7 @@ theorem ginibreRegularFiberMultiplicity_eq_realEigenvalueCount
       obtain ⟨q, hreg, hchart, hlam⟩ := hpre l hl
       refine ⟨q, ?_, hchart⟩
       refine ⟨hreg, ?_⟩
-      simpa [r, ginibreIncidenceRootRank, hchart, hlam]
+      simp [r, ginibreIncidenceRootRank, hchart, hlam]
   have hrinj : Set.InjOn r (R : Set ℝ) := by
     intro a ha b hb hab
     by_contra hne

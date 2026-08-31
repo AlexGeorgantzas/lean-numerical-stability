@@ -144,9 +144,7 @@ lemma problem2_11_decimalLeadingDigit_iff_logb_sub_int
 lemma nsmul_logb_ten_coe (q : ℝ) (k : ℕ) :
     k • ((Real.logb 10 q : ℝ) : AddCircle (1 : ℝ)) =
       ((((k : ℕ) : ℝ) * Real.logb 10 q : ℝ) : AddCircle (1 : ℝ)) := by
-  simpa [nsmul_eq_mul] using
-    (AddCircle.coe_nsmul (1 : ℝ)
-      (n := k) (x := Real.logb 10 q)).symm
+  simp
 
 lemma orbit_mem_decimalDigitArc_iff
     {q : ℝ} (hq : 0 < q) (d : Fin 9) (k : ℕ) :

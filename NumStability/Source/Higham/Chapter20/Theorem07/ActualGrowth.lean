@@ -80,7 +80,6 @@ theorem sourceConstructedPivotedStoredQRActiveInput_succ_eq_zero_of_input_eq_zer
   by_cases hq : (nextRowSwap q).val < k + 1
   · simp [sourceConstructedPivotedStoredQRActiveInput,
       sourceConstructedActiveInput,
-      sourceConstructedPivotedStoredQRActivePanelPerm,
       sourceConstructedActivePanelPerm, nextRowSwap, hq, hk1]
   · have hrow : k ≤ (nextRowSwap q).val := by omega
     have hzero :=
@@ -89,7 +88,6 @@ theorem sourceConstructedPivotedStoredQRActiveInput_succ_eq_zero_of_input_eq_zer
         (nextRowSwap q) hrow sourceCol (by omega)
     simp only [sourceConstructedPivotedStoredQRActiveInput, dif_pos hk1,
       sourceConstructedActiveInput,
-      sourceConstructedPivotedStoredQRActivePanelPerm,
       sourceConstructedActivePanelPerm]
     change (if (nextRowSwap q).val < k + 1 then 0 else
       sourceConstructedPivotedStoredQRSwappedPanel fp hn hmn A (k + 1)
@@ -146,7 +144,6 @@ theorem sourceConstructedPivotedStoredQRActiveInput_succ_vecNorm2_le_appliedColu
           sourceConstructedPivotedStoredQRActiveInput fp hn hmn A (k + 1) q = 0 := by
         simp [sourceConstructedPivotedStoredQRActiveInput,
           sourceConstructedActiveInput,
-          sourceConstructedPivotedStoredQRActivePanelPerm,
           sourceConstructedActivePanelPerm, nextRowSwap, hq, hk1]
       rw [hzero, abs_zero]
       exact abs_nonneg _
@@ -159,7 +156,6 @@ theorem sourceConstructedPivotedStoredQRActiveInput_succ_vecNorm2_le_appliedColu
               (nextRowSwap q) sourceCol := by
         simp only [sourceConstructedPivotedStoredQRActiveInput, dif_pos hk1,
           sourceConstructedActiveInput,
-          sourceConstructedPivotedStoredQRActivePanelPerm,
           sourceConstructedActivePanelPerm]
         change (if (nextRowSwap q).val < k + 1 then 0 else
           fl_sourceConstructedPivotedStoredQRMatrixSeq fp hn hmn A (k + 1)
@@ -186,7 +182,7 @@ theorem sourceConstructedPivotedStoredQRActiveInput_succ_vecNorm2_le_appliedColu
           Nat.lt_trans (Nat.lt_succ_self k) hk1] using hx
       rw [dif_neg hxDirect]
       simp only [hnotPrev, if_false, Nat.not_lt.mpr hrow, hnotPivot]
-      simpa [vecPermute, T, raw, b, x, currentRowSwap,
+      simp [vecPermute, T, raw, b, x, currentRowSwap,
         sourceConstructedPivotedStoredQRActiveInput,
         sourceConstructedPivotedStoredQRActivePanelPerm,
         sourceConstructedPivotedStoredQRRowSwap,

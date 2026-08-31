@@ -165,7 +165,7 @@ theorem higham10KahanW_solve (r m : ℕ) (c s : ℝ) :
               -c * s ^ i.val := by
           have hgt : i.val < r := i.isLt
           apply kahanR_above c s
-          simpa [higham10KahanLeadCol] using hgt
+          simp [higham10KahanLeadCol]
         have hborderNew :
             kahanR (r + 1) (r + 1 + m) c s i.castSucc
                 ⟨r + 1 + j.val, by omega⟩ = -c * s ^ i.val := by

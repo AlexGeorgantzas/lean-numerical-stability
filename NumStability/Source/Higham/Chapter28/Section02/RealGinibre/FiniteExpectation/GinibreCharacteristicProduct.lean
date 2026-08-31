@@ -93,8 +93,7 @@ theorem integrable_ginibrePermutationPairCoordinateFactor {n : ℕ}
       integrable_standardGaussian_id
   · simpa [hσ, hτ] using
       integrable_standardGaussian_id
-  · simpa [hσ, hτ] using
-      (integrable_const (μ := gaussianReal 0 1) (c := (1 : ℝ)))
+  · simp [hσ, hτ]
 
 /-- The integral of a single coordinate factor is one exactly when the two
 permutation monomials either both use that coordinate or both omit it. -/
@@ -156,7 +155,7 @@ theorem ginibrePermutationSignReal_mul_self {n : ℕ}
   have hint :
       ((Equiv.Perm.sign σ : ℤˣ) : ℤ) *
           ((Equiv.Perm.sign σ : ℤˣ) : ℤ) = 1 := by
-    simpa using congrArg (fun u : ℤˣ => (u : ℤ)) hunit
+    simp
   unfold ginibrePermutationSignReal
   exact_mod_cast hint
 
@@ -273,8 +272,7 @@ theorem integrable_ginibreShiftedPermutationPairCoordinateFactor {n : ℕ}
     · simpa [hσ, hτ] using
         (integrable_const (μ := gaussianReal 0 1) (c := (w : ℝ))).sub
           integrable_standardGaussian_id
-    · simpa [hσ, hτ] using
-        (integrable_const (μ := gaussianReal 0 1) (c := (1 : ℝ)))
+    · simp [hσ, hτ]
   · by_cases hσ : σ j = i <;> by_cases hτ : τ j = i
     · simpa [hσ, hτ, hij, neg_mul_neg, pow_two] using
         integrable_standardGaussian_sq
@@ -284,8 +282,7 @@ theorem integrable_ginibreShiftedPermutationPairCoordinateFactor {n : ℕ}
     · have hneg : Integrable (fun x : ℝ => -x) (gaussianReal 0 1) :=
         integrable_standardGaussian_id.neg
       simpa [hσ, hτ, hij] using hneg
-    · simpa [hσ, hτ, hij] using
-        (integrable_const (μ := gaussianReal 0 1) (c := (1 : ℝ)))
+    · simp [hσ, hτ]
 
 /-- Exact integral of one shifted coordinate factor. -/
 theorem integral_ginibreShiftedPermutationPairCoordinateFactor {n : ℕ}
@@ -314,7 +311,7 @@ theorem integral_ginibreShiftedPermutationPairCoordinateFactor {n : ℕ}
         integral_standardGaussian_neg
     · simpa [ginibreShiftedPermutationPairCoordinateFactor, hσ, hτ, hij] using
         integral_standardGaussian_neg
-    · simp [ginibreShiftedPermutationPairCoordinateFactor, hσ, hτ, hij]
+    · simp [ginibreShiftedPermutationPairCoordinateFactor, hσ, hτ]
 
 /-- The fixed points of a finite permutation as a finset. -/
 def ginibrePermutationFixedPoints {n : ℕ}
@@ -336,7 +333,8 @@ theorem integral_ginibreShiftedPermutationPairCoordinateFactor_self {n : ℕ}
   rw [integral_ginibreShiftedPermutationPairCoordinateFactor]
   by_cases hij : i = j
   · subst i
-    by_cases h : σ j = j <;> simp [h] <;> ring
+    by_cases h : σ j = j <;> simp [h]
+    ring
   · by_cases h : σ j = i <;> simp [h, hij]
 
 /-- The product of all shifted coordinate-factor integrals vanishes for
@@ -360,9 +358,7 @@ theorem prod_integral_ginibreShiftedPermutationPairCoordinateFactor {n : ℕ}
         (∏ i : Fin n,
           if σ j = i then (if i = j then 1 + z * w else 1) else 1) =
           if σ j = j then 1 + z * w else 1 := by
-      simpa [eq_comm] using
-        (Finset.prod_ite_eq' (Finset.univ : Finset (Fin n)) (σ j)
-          (fun i => if i = j then 1 + z * w else 1))
+      simp [eq_comm]
     simp_rw [hinner]
     rw [← Finset.prod_filter]
     simp [ginibrePermutationFixedPoints, Finset.prod_const]
@@ -459,7 +455,7 @@ theorem card_ginibrePermutationsFixing {n : ℕ} (S : Finset (Fin n)) :
   rw [← Fintype.card_congr (ginibreComplementPermEquivFixing S)]
   rw [Fintype.card_perm]
   congr 1
-  simpa using Fintype.card_subtype_compl (fun j : Fin n => j ∈ S)
+  simp
 
 /-- A constant summed over permutations fixing `S` contributes exactly
 `(n-|S|)!` copies. -/
@@ -717,10 +713,10 @@ theorem ginibreComplexShiftedPermutationPairCoordinateProduct {n : ℕ}
   congr 1
   · apply Finset.prod_congr rfl
     intro j hj
-    by_cases h : σ j = j <;> simp [h, Matrix.diagonal_apply]
+    by_cases h : σ j = j <;> simp [h]
   · apply Finset.prod_congr rfl
     intro j hj
-    by_cases h : τ j = j <;> simp [h, Matrix.diagonal_apply]
+    by_cases h : τ j = j <;> simp [h]
 
 /-- Every complex shifted coordinate factor is integrable against the
 standard real Gaussian law. -/
@@ -747,8 +743,7 @@ theorem integrable_ginibreComplexShiftedPermutationPairCoordinateFactor
     · simpa [hσ, hτ] using
         (integrable_const (μ := gaussianReal 0 1) (c := w)).sub
           integrable_standardGaussian_complex_id
-    · simpa [hσ, hτ] using
-        (integrable_const (μ := gaussianReal 0 1) (c := (1 : ℂ)))
+    · simp [hσ, hτ]
   · by_cases hσ : σ j = i <;> by_cases hτ : τ j = i
     · simpa [hσ, hτ, hij, neg_mul_neg, pow_two] using
         integrable_standardGaussian_complex_sq
@@ -758,8 +753,7 @@ theorem integrable_ginibreComplexShiftedPermutationPairCoordinateFactor
     · have hneg : Integrable (fun x : ℝ => -(x : ℂ))
           (gaussianReal 0 1) := integrable_standardGaussian_complex_id.neg
       simpa [hσ, hτ, hij] using hneg
-    · simpa [hσ, hτ, hij] using
-        (integrable_const (μ := gaussianReal 0 1) (c := (1 : ℂ)))
+    · simp [hσ, hτ]
 
 theorem integral_standardGaussian_complex_neg :
     (∫ x : ℝ, -(x : ℂ) ∂gaussianReal 0 1) = 0 := by
@@ -795,7 +789,7 @@ theorem integral_ginibreComplexShiftedPermutationPairCoordinateFactor
         hij] using integral_standardGaussian_complex_neg
     · simpa [ginibreComplexShiftedPermutationPairCoordinateFactor, hσ, hτ,
         hij] using integral_standardGaussian_complex_neg
-    · simp [ginibreComplexShiftedPermutationPairCoordinateFactor, hσ, hτ, hij]
+    · simp [ginibreComplexShiftedPermutationPairCoordinateFactor, hσ, hτ]
 
 /-- Diagonal specialization of the one-coordinate complex integral. -/
 theorem integral_ginibreComplexShiftedPermutationPairCoordinateFactor_self
@@ -807,7 +801,8 @@ theorem integral_ginibreComplexShiftedPermutationPairCoordinateFactor_self
   rw [integral_ginibreComplexShiftedPermutationPairCoordinateFactor]
   by_cases hij : i = j
   · subst i
-    by_cases h : σ j = j <;> simp [h] <;> ring
+    by_cases h : σ j = j <;> simp [h]
+    ring
   · by_cases h : σ j = i <;> simp [h, hij]
 
 /-- Product of all complex coordinate-factor integrals. -/
@@ -830,9 +825,7 @@ theorem prod_integral_ginibreComplexShiftedPermutationPairCoordinateFactor
         (∏ i : Fin n,
           if σ j = i then (if i = j then 1 + z * w else 1) else 1) =
           if σ j = j then 1 + z * w else 1 := by
-      simpa [eq_comm] using
-        (Finset.prod_ite_eq' (Finset.univ : Finset (Fin n)) (σ j)
-          (fun i => if i = j then 1 + z * w else 1))
+      simp [eq_comm]
     simp_rw [hinner]
     rw [← Finset.prod_filter]
     simp [ginibrePermutationFixedPoints, Finset.prod_const]
