@@ -70,7 +70,7 @@
  },
  "completion": {
   "bounded_phase": {
-   "evidence_checkpoint_id": null,
+   "evidence_checkpoint_id": "C0008",
    "required_condition_ids": [
     "all_in_scope_waves_accepted",
     "all_required_milestones_satisfied",
@@ -78,7 +78,7 @@
     "no_active_requests",
     "no_open_branches"
    ],
-   "status": "incomplete"
+   "status": "complete"
   },
   "repository_wide": {
    "evidence_checkpoint_id": null,
@@ -102,7 +102,7 @@
   }
  },
  "created_at": "2026-08-11T09:20:00Z",
- "current_checkpoint_id": "C0007",
+ "current_checkpoint_id": "C0008",
  "milestones": [
   {
    "acceptance_gate_ids": [
@@ -427,7 +427,7 @@
     "scope",
     "strict_source"
    ],
-   "accepted_checkpoint_id": null,
+   "accepted_checkpoint_id": "C0008",
    "depends_on": [
     "M01",
     "M02",
@@ -443,7 +443,7 @@
     "M12"
    ],
    "milestone_id": "M13",
-   "status": "planned",
+   "status": "accepted",
    "superseded_by": null,
    "unblocks": [],
    "wave_ids": [

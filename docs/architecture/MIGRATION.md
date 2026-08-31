@@ -6,10 +6,14 @@ only when its stated evidence is checked into the repository or recorded by CI.
 The active repository-wide operating contract is
 [`phases/2026-08-repository-reorganization-completion/`](phases/2026-08-repository-reorganization-completion/README.md),
 operated per [`PROCESS.md`](PROCESS.md). Its current accepted checkpoint is
-C0007 (exact code commit `4e26820d1f4989ec4ec77b7113085f593570e11b`, green on
-Lean CI run 32794282084): M09 and M10 are accepted, B0011 and B0012 are
-accepted with retirement due, P0011 and P0012 are retired, and R0012 and R0013
-are applied as the reviewed 25-path union. No C0008 exists. R0014 and R0015
+C0008 (exact code commit `897557779a2102aa0e23b0b2f63edeb35b06bc68`, green on
+Lean CI run 33354902730), which accepts milestone M13 with its I01 wave and is
+the evidence checkpoint for bounded-phase completion; repository-wide
+completion remains incomplete. Its parent C0007 (exact code commit
+`4e26820d1f4989ec4ec77b7113085f593570e11b`, green on Lean CI run 32794282084)
+accepted M09 and M10, moved B0011 and B0012 to accepted with retirement due,
+retired P0011 and P0012, and applied R0012 and R0013 as the reviewed 25-path
+union. R0014 and R0015
 (the M13 I01 + CODE03 union) have since been applied on `main` at
 `9fbb1e36bcc85f866893e902cbe206ba468a65b0` under the primary human's recorded
 2026-08-30 cutover decision, which retired the bounded worker lifecycle; after

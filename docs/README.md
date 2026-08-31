@@ -7,14 +7,15 @@ The operative reorganization process is
 [`architecture/PROCESS.md`](architecture/PROCESS.md): per-batch static gates,
 plain-language recorded review, and fast-forward-only `main`. The bounded
 worker lifecycle was retired by the primary human's recorded 2026-08-30
-cutover decision. C0007 (exact code commit
-`4e26820d1f4989ec4ec77b7113085f593570e11b`) is the current accepted
-checkpoint; no C0008 exists. R0014 and R0015 (the M13 I01 + CODE03 union) were
-applied on `main` at `9fbb1e36bcc85f866893e902cbe206ba468a65b0`, after which
-the live tree records 2,928 production modules: 2,928 classified, 0
-unclassified, and 0 mixed, with zero noncanonical names and zero
-declaration-bearing umbrellas. Bounded-phase and repository-wide completion
-both remain incomplete. The normative current-state summary and measurements
+cutover decision. C0008 (exact code commit
+`897557779a2102aa0e23b0b2f63edeb35b06bc68`) is the current accepted
+checkpoint: it accepts milestone M13 with its I01 wave, whose reviewed
+R0014/R0015 union was applied on `main` at
+`9fbb1e36bcc85f866893e902cbe206ba468a65b0`, after which the live tree records
+2,928 production modules: 2,928 classified, 0 unclassified, and 0 mixed, with
+zero noncanonical names and zero declaration-bearing umbrellas. Bounded-phase
+completion is recorded complete with C0008 as its evidence checkpoint;
+repository-wide completion remains incomplete. The normative current-state summary and measurements
 are recorded in the
 [`C0007 governance reconciliation`](architecture/phases/2026-08-repository-reorganization-completion/reviews/C0007-governance-reconciliation.md).
 
@@ -58,9 +59,11 @@ remains a separate later control.
    per-file licensing and upstream-attribution policy.
 6. [`architecture/phases/2026-08-repository-reorganization-completion/`](architecture/phases/2026-08-repository-reorganization-completion/README.md)
    is the active repository-wide scope, authority, wave, checkpoint, and branch
-   contract. Its current checkpoint is C0007 at exact code commit
-   `4e26820d1f4989ec4ec77b7113085f593570e11b`, accepting the R09/R10 epoch on
-   top of C0006 at exact integrated code commit
+   contract. Its current checkpoint is C0008 at exact code commit
+   `897557779a2102aa0e23b0b2f63edeb35b06bc68`, accepting M13/I01 on top of
+   C0007 at exact code commit
+   `4e26820d1f4989ec4ec77b7113085f593570e11b`, which accepted the R09/R10
+   epoch on top of C0006 at exact integrated code commit
    `fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5`. M04/R04 and M08/R08 are
    accepted; P0008/P0009 are retired evidence, R0009/R0010 are applied, and the
    temporary operator expansion and wave reservations are released. M07 is
@@ -88,10 +91,10 @@ remains a separate later control.
    the accepted C0005 baseline and inventory supersede them at
    `2FC0C95FFECF114A2EDB8C14DB8C2874BDBB85FCEBA722C345AA084B3E97C02A` and
    `7C383B1AF57F65F9559C81402013412172CC93B623F7ED2E26968B9C7AFB4172`.
-   Bounded-phase and repository-wide completion both remain incomplete. After
-   the R09/R10 integration and the subsequent R0014/R0015 landing, the live
-   tree measures 0 unclassified modules, 0 noncanonical names, and 0
-   declaration-bearing umbrellas. Dated worker packets do not override the
+   Bounded-phase completion is recorded complete at C0008; repository-wide
+   completion remains incomplete. After the R09/R10 integration and the
+   subsequent R0014/R0015 landing, the live tree measures 0 unclassified
+   modules, 0 noncanonical names, and 0 declaration-bearing umbrellas. Dated worker packets do not override the
    active phase contract.
 
 ## Current source coverage

@@ -659,6 +659,79 @@ C0007_MILESTONES = [
     "M01", "M02", "M03", "M04", "M05", "M06",
     "M07", "M08", "M09", "M10", "M11", "M12",
 ]
+# C0008 accepts M13/I01, the phase's last in-scope wave, at the exact code
+# commit that also repaired the test contract. The reviewed R0014/R0015
+# postimages landed by the ordinary gated route recorded in
+# docs/architecture/PROCESS.md after the bounded lifecycle was retired; the
+# bounded branch remains immutable history at its failed second candidate.
+C0008_CHECKPOINT_ID = "C0008"
+C0008_CODE_SHA = "897557779a2102aa0e23b0b2f63edeb35b06bc68"
+C0008_PARENT_CHECKPOINT_ID = C0007_CHECKPOINT_ID
+C0008_ACCEPTED_AT = "2026-08-31T04:10:00Z"
+C0008_CI_RUN = 33354902730
+C0008_CI_JOB = 99375060412
+C0008_CI_SUITE = 90378441233
+C0008_CI_JOB_LOG_BYTE_COUNT = 157342571
+C0008_CI_JOB_LOG_SHA256 = (
+    "FEEB92A24CBCFBCEE86FC75A735549CE92DE23A6315C26AC0A8B0431A7482DF1"
+)
+# The test contract is explicit from C0008 onward: the full build and the test
+# driver are distinct named CI steps with distinct literal commands, and a
+# build-only log can never satisfy full_tests.
+C0008_FULL_BUILD_COMMAND = "lake build NumStability NumStabilityTest"
+C0008_FULL_TESTS_COMMAND = "lake test"
+C0008_METRICS = {
+    "production_modules": 2928,
+    "unclassified_modules": 0,
+    "mixed_modules": 0,
+    "missing_module_docstrings": 0,
+    "noncanonical_modules": 0,
+    "declaration_bearing_umbrellas": 0,
+    "unsorted_aggregate_imports": 0,
+}
+C0008_MILESTONES = C0007_MILESTONES + ["M13"]
+C0008_GATE_IDS = [
+    "architecture", "canonical_import", "combined_baseline", "compatibility",
+    "focused_build", "full_build", "full_tests", "layout", "old_import",
+    "provenance", "scope", "strict_source",
+]
+C0008_GATES_SHA256 = (
+    "D66AC08877ADD71246AFED9340DC349878FCF30B5E180DDC93E92051427CA2F9"
+)
+C0008_COMBINED_BASELINE_SHA256 = (
+    "F46630771D68B4A7CD602580F9AF116F9C93E2CD3B79B206E1E7BB054F6856B1"
+)
+C0008_COMBINED_SUMMARY_SHA256 = (
+    "E6106C42CED68BBCFC628D74139B968EBD0EF7FEA0503C89A84662D24C885480"
+)
+C0008_INVENTORY_SHA256 = (
+    "FADDC6529266357C836BC0DBD99CF8151C2DC75D3B16D64B4D8AB383F996EF73"
+)
+C0008_INTEGRATION_LEDGER_SHA256 = (
+    "7B140432E55D8B2E77FBC3B3A045BBA8937B795BFB79BB6EF31D2B23CB92EBC3"
+)
+C0008_SOURCE_FACTS = {
+    "module_count": 2928,
+    "module_docstring_count": 2928,
+    "line_count": 3981679,
+    "nonblank_line_count": 1457460,
+    "direct_import_count": 31331,
+}
+C0008_TIER_COUNTS = {
+    "aggregate": 405,
+    "compatibility": 712,
+    "internal": 5,
+    "mixed": 0,
+    "reusable": 577,
+    "source": 1224,
+    "upstream": 5,
+}
+# The I01 epoch is declaration-preserving in both directions: C0007's exact
+# totals carry forward, so any drift here means the wave changed the elaborated
+# surface and the acceptance is not the reviewed one.
+C0008_DECLARATION_MODULE_COUNT = 1705
+C0008_DECLARATION_COUNT = 56913
+C0008_INTEGRATION_LEDGER_ROWS = 48
 C0006_CODE_SHA = "fda296b2079acae3bf1d3565b2dc6e45dc8f6ef5"
 C0006_ACCEPTANCE_SUBJECT = "chore(reorganization): accept C0006 R07 epoch"
 C0006_METRICS = {
@@ -2100,6 +2173,7 @@ def validate_c0005_epoch_state(
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }
         else set()
     )
@@ -2131,6 +2205,7 @@ def validate_c0005_epoch_state(
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }:
         problems.require(
             c0005_checkpoint_exists,
@@ -3125,6 +3200,7 @@ def validate_r05r06_branch_record(
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }
         else set()
     )
@@ -5569,6 +5645,55 @@ def validate_c0006_acceptance_commit_shape(
         )
 
 
+def validate_c0008_gate_records(gates: Any) -> list[str]:
+    """Validate the C0008 gate census and its explicit test contract.
+
+    The test contract is the point of this validator: `full_build` and
+    `full_tests` must be recorded as distinct gates carrying distinct literal
+    commands, so a build-only log can never satisfy the test-driver claim.
+    """
+
+    failures: list[str] = []
+    if not isinstance(gates, list):
+        return ["gates must be a list"]
+    gate_ids = [
+        gate.get("gate_id") if isinstance(gate, dict) else None
+        for gate in gates
+    ]
+    if gate_ids != C0008_GATE_IDS:
+        failures.append(
+            f"gate ids must be exactly {C0008_GATE_IDS}, found {gate_ids}"
+        )
+    by_id = {
+        gate.get("gate_id"): gate
+        for gate in gates
+        if isinstance(gate, dict)
+    }
+    for gate_id, gate in sorted(by_id.items()):
+        if gate.get("status") != "PASS":
+            failures.append(f"gate {gate_id} must record PASS")
+        if gate.get("commit_sha") != C0008_CODE_SHA:
+            failures.append(f"gate {gate_id} must be recorded at the C0008 code commit")
+    full_build = by_id.get("full_build", {})
+    full_tests = by_id.get("full_tests", {})
+    if full_build.get("command") != C0008_FULL_BUILD_COMMAND:
+        failures.append(
+            f"full_build must record the literal command {C0008_FULL_BUILD_COMMAND!r}"
+        )
+    if full_tests.get("command") != C0008_FULL_TESTS_COMMAND:
+        failures.append(
+            f"full_tests must record the literal command {C0008_FULL_TESTS_COMMAND!r}; "
+            "a build target or action input never satisfies the test-driver claim"
+        )
+    if full_build.get("command") == full_tests.get("command"):
+        failures.append("full_build and full_tests must record distinct commands")
+    for gate_id in ("architecture", "full_build", "full_tests"):
+        gate = by_id.get(gate_id, {})
+        if gate.get("executor_id") != "github-actions":
+            failures.append(f"gate {gate_id} must be executed by github-actions")
+    return failures
+
+
 def validate_c0007_acceptance_commit_shape(
     *,
     head: str,
@@ -5795,6 +5920,7 @@ def next_branch_statuses(checkpoint_id: str) -> set[str]:
         C0005_CHECKPOINT_ID,
         C0006_CHECKPOINT_ID,
         C0007_CHECKPOINT_ID,
+        C0008_CHECKPOINT_ID,
     }:
         return {"retired"}
     return set()
@@ -5810,6 +5936,7 @@ def next_projection_status(checkpoint_id: str) -> str | None:
         C0005_CHECKPOINT_ID,
         C0006_CHECKPOINT_ID,
         C0007_CHECKPOINT_ID,
+        C0008_CHECKPOINT_ID,
     }:
         return "retired"
     return None
@@ -5825,6 +5952,7 @@ def next_request_status(checkpoint_id: str) -> str | None:
         C0005_CHECKPOINT_ID,
         C0006_CHECKPOINT_ID,
         C0007_CHECKPOINT_ID,
+        C0008_CHECKPOINT_ID,
     }:
         return "applied"
     return None
@@ -5840,6 +5968,7 @@ def next_lane_operators(checkpoint_id: str) -> list[str]:
         C0005_CHECKPOINT_ID,
         C0006_CHECKPOINT_ID,
         C0007_CHECKPOINT_ID,
+        C0008_CHECKPOINT_ID,
     }:
         return ["claude-local"]
     return []
@@ -10140,6 +10269,7 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }
         self.problems.require(
             current in allowed_checkpoints,
@@ -10232,6 +10362,7 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }:
             try:
                 accepted_phase = json.loads(
@@ -10387,13 +10518,45 @@ class CompletionValidator:
                                         milestone["accepted_checkpoint_id"] = (
                                             C0007_CHECKPOINT_ID
                                         )
+                            if (
+                                self.phase_dir / "checkpoints/C0008.json"
+                            ).is_file():
+                                # C0008 acceptance advances the pointer a final
+                                # time, accepts M13 with its I01 wave, and is
+                                # the evidence checkpoint for bounded-phase
+                                # completion. Repository-wide completion is
+                                # untouched here: it stays incomplete with null
+                                # evidence, so this arm cannot weaken it.
+                                expected_phase["current_checkpoint_id"] = (
+                                    C0008_CHECKPOINT_ID
+                                )
+                                for milestone in expected_phase.get(
+                                    "milestones", []
+                                ):
+                                    if (
+                                        isinstance(milestone, dict)
+                                        and milestone.get("milestone_id") == "M13"
+                                    ):
+                                        milestone["status"] = "accepted"
+                                        milestone["accepted_checkpoint_id"] = (
+                                            C0008_CHECKPOINT_ID
+                                        )
+                                _bounded = expected_phase.get(
+                                    "completion", {}
+                                ).get("bounded_phase")
+                                if isinstance(_bounded, dict):
+                                    _bounded["status"] = "complete"
+                                    _bounded["evidence_checkpoint_id"] = (
+                                        C0008_CHECKPOINT_ID
+                                    )
                             self.problems.require(
                                 phase == expected_phase,
                                 "phase.json R07 planned lifecycle",
                                 "R07 planning may change only exact shared-path "
                                 "reservations, plus the checkpoint pointer, "
-                                "M07 acceptance at C0006, and M09/M10 "
-                                "acceptance at C0007",
+                                "M07 acceptance at C0006, M09/M10 acceptance at "
+                                "C0007, and M13 acceptance with bounded-phase "
+                                "completion at C0008",
                             )
                             accepted_rules = self.parse_rules(
                                 accepted_phase.get("shared_paths"),
@@ -10554,6 +10717,7 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }:
             self.validate_successor_checkpoint()
         if self.current_checkpoint_id in {
@@ -10563,6 +10727,7 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }:
             self.validate_c0002_checkpoint()
         if self.current_checkpoint_id in {
@@ -10571,6 +10736,7 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }:
             self.validate_c0003_checkpoint()
         if self.current_checkpoint_id in {
@@ -10578,16 +10744,20 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }:
             self.validate_c0004_checkpoint()
         if self.current_checkpoint_id in {
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }:
             self.validate_c0005_checkpoint()
         if self.current_checkpoint_id == C0006_CHECKPOINT_ID:
             self.validate_c0006_checkpoint()
+        if self.current_checkpoint_id == C0008_CHECKPOINT_ID:
+            self.validate_c0008_checkpoint()
         inventory_ref = self.artifact(
             checkpoint.get("inventory"), "checkpoints/C0000.json.inventory"
         )
@@ -12282,6 +12452,145 @@ class CompletionValidator:
                     )
         self.validate_c0005_history()
 
+    def validate_c0008_checkpoint(self) -> None:
+        """Validate the primary-human C0008 acceptance of the M13/I01 wave."""
+
+        context = "checkpoints/C0008.json"
+        path = self.phase_dir / "checkpoints/C0008.json"
+        checkpoint = self.read_json(path, self.relative(path))
+        if checkpoint is None:
+            return
+        expected_keys = {
+            "accepted_at", "accepted_by", "checkpoint_id", "combined_baseline",
+            "commit_sha", "gates", "inventory", "metrics", "milestones_satisfied",
+            "parent_checkpoint_id", "phase_id", "record_kind", "schema_version",
+            "unblocks",
+        }
+        self.problems.require(
+            set(checkpoint) == expected_keys,
+            context,
+            f"checkpoint keys must be exactly {sorted(expected_keys)}",
+        )
+        for key, expected in {
+            "schema_version": 1,
+            "record_kind": "phase_checkpoint",
+            "phase_id": PHASE_ID,
+            "checkpoint_id": C0008_CHECKPOINT_ID,
+            "parent_checkpoint_id": C0008_PARENT_CHECKPOINT_ID,
+            "commit_sha": C0008_CODE_SHA,
+            "accepted_by": "primary-human",
+            "milestones_satisfied": C0008_MILESTONES,
+            "unblocks": [],
+            "metrics": C0008_METRICS,
+        }.items():
+            self.problems.require(
+                checkpoint.get(key) == expected,
+                f"{context}.{key}",
+                f"expected {expected!r}, found {checkpoint.get(key)!r}",
+            )
+        accepted_at = checkpoint.get("accepted_at")
+        self.problems.require(
+            isinstance(accepted_at, str)
+            and RFC3339_RE.fullmatch(accepted_at) is not None,
+            f"{context}.accepted_at",
+            "primary-human acceptance requires an RFC3339 timestamp",
+        )
+
+        # Gate census, including the explicit test contract.
+        gate_failures = validate_c0008_gate_records(checkpoint.get("gates"))
+        for failure in gate_failures:
+            self.problems.add(f"{context}.gates", failure)
+
+        # Generated evidence pins.
+        baseline_path = self.phase_dir / "baselines/C0008-combined.json"
+        summary_path = self.phase_dir / "baselines/C0008-combined.md"
+        inventory_path = self.phase_dir / "checkpoints/C0008-inventory.tsv"
+        ledger_path = self.phase_dir / "checkpoints/C0008-integration-paths.tsv"
+        gates_path = self.phase_dir / "checkpoints/C0008-gates.md"
+        for artifact_path, digest in (
+            (baseline_path, C0008_COMBINED_BASELINE_SHA256),
+            (summary_path, C0008_COMBINED_SUMMARY_SHA256),
+            (inventory_path, C0008_INVENTORY_SHA256),
+            (ledger_path, C0008_INTEGRATION_LEDGER_SHA256),
+            (gates_path, C0008_GATES_SHA256),
+        ):
+            self.problems.require(
+                artifact_path.is_file() and sha256_path(artifact_path) == digest,
+                self.relative(artifact_path),
+                f"accepted C0008 artifact must hash to {digest}",
+            )
+        baseline = self.read_json(baseline_path, self.relative(baseline_path))
+        metadata = baseline.get("metadata") if isinstance(baseline, dict) else None
+        source = baseline.get("source") if isinstance(baseline, dict) else None
+        tiers = source.get("tier_audit") if isinstance(source, dict) else None
+        declarations = (
+            baseline.get("declarations") if isinstance(baseline, dict) else None
+        )
+        self.problems.require(
+            isinstance(metadata, dict)
+            and metadata.get("commit") == C0008_CODE_SHA
+            and metadata.get("branch") == "main"
+            and metadata.get("library_source_clean") is True
+            and metadata.get("library_source_dirty_paths") == [],
+            "C0008 baseline.metadata",
+            "must record exact clean C0008 main code",
+        )
+        self.problems.require(
+            isinstance(source, dict)
+            and all(
+                source.get(key) == value
+                for key, value in C0008_SOURCE_FACTS.items()
+            ),
+            "C0008 baseline.source",
+            f"source totals must equal {C0008_SOURCE_FACTS}",
+        )
+        self.problems.require(
+            isinstance(tiers, dict)
+            and tiers.get("module_counts_by_tier") == C0008_TIER_COUNTS
+            and tiers.get("classified_module_count") == 2928,
+            "C0008 baseline.tier_audit",
+            "must reproduce 2,928 classified modules with zero mixed and the "
+            "exact post-I01 role census",
+        )
+        self.problems.require(
+            isinstance(declarations, dict)
+            and declarations.get("format_version") == 2
+            and declarations.get("module_count") == C0008_DECLARATION_MODULE_COUNT
+            and declarations.get("declaration_count") == C0008_DECLARATION_COUNT,
+            "C0008 baseline.declarations",
+            "the I01 wave is declaration-preserving: format-2 totals must equal "
+            "the exact C0007 figures",
+        )
+
+        # The changed-path ledger from the C0007 code commit to this checkpoint.
+        _, ledger = self.read_tsv(
+            ledger_path,
+            self.relative(ledger_path),
+            ("status", "category", "path"),
+        )
+        self.problems.require(
+            len(ledger) == C0008_INTEGRATION_LEDGER_ROWS,
+            self.relative(ledger_path),
+            f"expected {C0008_INTEGRATION_LEDGER_ROWS} changed-path rows, "
+            f"found {len(ledger)}",
+        )
+        paths = [row.get("path", "") for row in ledger]
+        self.problems.require(
+            paths == sorted(paths) and len(set(paths)) == len(paths),
+            self.relative(ledger_path),
+            "changed-path rows must be sorted and unique",
+        )
+        self.problems.require(
+            any(
+                row.get("category") == "i01_implementation"
+                and row.get("path") == C0003_I01_COUNTEREXAMPLE_ROW["path"]
+                for row in ledger
+            ),
+            self.relative(ledger_path),
+            "the ledger must attribute the counterexample split to the I01 "
+            "implementation landing",
+        )
+
     def validate_c0006_checkpoint(self) -> None:
         """Validate the primary-human C0006 acceptance of the R07 epoch."""
 
@@ -12786,13 +13095,21 @@ class CompletionValidator:
                 f"phase.json.milestones[{milestone_id}]",
                 "only C0007 acceptance may accept the R09/R10 pair",
             )
-        # M13/I01 is the phase's remaining wave milestone; no checkpoint yet
-        # accepts it, so it stays planned across every accepted epoch.
+        # M13/I01 is the phase's last wave milestone: it stays planned across
+        # every earlier accepted epoch and is accepted only by the C0008
+        # record, exactly as M07 is gated on C0006 and the R09/R10 pair on
+        # C0007.
+        c0008_accepted = (
+            self.phase_dir / "checkpoints/C0008.json"
+        ).is_file()
         self.problems.require(
-            by_id.get("M13", {}).get("status") == "planned"
-            and by_id.get("M13", {}).get("accepted_checkpoint_id") is None,
+            by_id.get("M13", {}).get("status")
+            == ("accepted" if c0008_accepted else "planned")
+            and by_id.get("M13", {}).get("accepted_checkpoint_id")
+            == (C0008_CHECKPOINT_ID if c0008_accepted else None),
             "phase.json.milestones[M13]",
-            "must remain planned and unaccepted",
+            "must remain planned and unaccepted before C0008 and accepted at "
+            "C0008 once its checkpoint record exists",
         )
         resolution_times: set[str] = set()
         for request_id in ("R0009", "R0010"):
@@ -12891,6 +13208,7 @@ class CompletionValidator:
                     C0005_CHECKPOINT_ID,
                     C0006_CHECKPOINT_ID,
                     C0007_CHECKPOINT_ID,
+                    C0008_CHECKPOINT_ID,
                 }
                 else {"accepted", "retired"}
             )
@@ -14268,6 +14586,7 @@ class CompletionValidator:
                 C0005_CHECKPOINT_ID,
                 C0006_CHECKPOINT_ID,
                 C0007_CHECKPOINT_ID,
+                C0008_CHECKPOINT_ID,
             },
             context,
             "next-wave controls require current checkpoint C0001 through C0007",
@@ -15898,6 +16217,7 @@ class CompletionValidator:
                 C0005_CHECKPOINT_ID,
                 C0006_CHECKPOINT_ID,
                 C0007_CHECKPOINT_ID,
+                C0008_CHECKPOINT_ID,
             }
             else R03_ARTIFACT_SHA256.get(key)
         )
@@ -15955,6 +16275,7 @@ class CompletionValidator:
                 C0005_CHECKPOINT_ID,
                 C0006_CHECKPOINT_ID,
                 C0007_CHECKPOINT_ID,
+                C0008_CHECKPOINT_ID,
             },
             context,
             "R04/R08 controls require current checkpoint C0004 through C0007",
@@ -17090,6 +17411,7 @@ class CompletionValidator:
                 C0005_CHECKPOINT_ID,
                 C0006_CHECKPOINT_ID,
                 C0007_CHECKPOINT_ID,
+                C0008_CHECKPOINT_ID,
             },
             context,
             "R05/R06 controls require current checkpoint C0003 through C0007",
@@ -17525,6 +17847,7 @@ class CompletionValidator:
                 C0005_CHECKPOINT_ID,
                 C0006_CHECKPOINT_ID,
                 C0007_CHECKPOINT_ID,
+                C0008_CHECKPOINT_ID,
             },
             context,
             "R03 controls require current checkpoint C0002 through C0007",
@@ -17630,7 +17953,7 @@ class CompletionValidator:
                 expected_r07_status=(
                     "accepted"
                     if self.current_checkpoint_id
-                    in {C0006_CHECKPOINT_ID, C0007_CHECKPOINT_ID}
+                    in {C0006_CHECKPOINT_ID, C0007_CHECKPOINT_ID, C0008_CHECKPOINT_ID}
                     else "ready"
                     if self.current_checkpoint_id == C0005_CHECKPOINT_ID
                     else "planned"
@@ -17654,6 +17977,7 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }:
             self.problems.require(
                 m03.get("wave_ids") == [R03_WAVE_ID]
@@ -17701,7 +18025,7 @@ class CompletionValidator:
         expected_r07_status = (
             "accepted"
             if self.current_checkpoint_id
-            in {C0006_CHECKPOINT_ID, C0007_CHECKPOINT_ID}
+            in {C0006_CHECKPOINT_ID, C0007_CHECKPOINT_ID, C0008_CHECKPOINT_ID}
             else "ready"
             if self.current_checkpoint_id == C0005_CHECKPOINT_ID
             else "planned"
@@ -17736,6 +18060,7 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }
             else R05R06_OPERATOR_PAIR
             if self.current_checkpoint_id == C0003_CHECKPOINT_ID
@@ -17925,6 +18250,7 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }
             else {"accepted", "retired"}
             if self.current_checkpoint_id == C0003_CHECKPOINT_ID
@@ -18192,6 +18518,7 @@ class CompletionValidator:
                     C0005_CHECKPOINT_ID,
                     C0006_CHECKPOINT_ID,
                     C0007_CHECKPOINT_ID,
+                    C0008_CHECKPOINT_ID,
                 }
                 else "active"
             ),
@@ -18961,6 +19288,7 @@ class CompletionValidator:
                     C0005_CHECKPOINT_ID,
                     C0006_CHECKPOINT_ID,
                     C0007_CHECKPOINT_ID,
+                    C0008_CHECKPOINT_ID,
                 }
                 else "active"
             ),
@@ -19013,6 +19341,7 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }:
             self.problems.require(
                 len(unreserved) == 91 and len(set(paths) & shared_exact) == 30,
@@ -19181,6 +19510,7 @@ class CompletionValidator:
             C0005_CHECKPOINT_ID,
             C0006_CHECKPOINT_ID,
             C0007_CHECKPOINT_ID,
+            C0008_CHECKPOINT_ID,
         }:
             resolution = request.get("resolution")
             if not isinstance(resolution, dict):
@@ -20877,6 +21207,88 @@ def run_self_test() -> int:
                 f"adversarial acceptance mutation missed {diagnostic}: "
                 f"{c0007_negative.messages}",
             )
+        # C0008 gate census and the explicit test contract.
+        def c0008_gates(**overrides: Any) -> list[dict[str, Any]]:
+            gates: list[dict[str, Any]] = []
+            for gate_id in C0008_GATE_IDS:
+                command = {
+                    "full_build": C0008_FULL_BUILD_COMMAND,
+                    "full_tests": C0008_FULL_TESTS_COMMAND,
+                }.get(gate_id, f"C0008 acceptance gate {gate_id}")
+                gates.append({
+                    "command": command,
+                    "commit_sha": C0008_CODE_SHA,
+                    "executor_id": (
+                        "github-actions"
+                        if gate_id in {"architecture", "full_build", "full_tests"}
+                        else "primary-human"
+                    ),
+                    "gate_id": gate_id,
+                    "status": "PASS",
+                })
+            for gate in gates:
+                for key, value in overrides.get(gate["gate_id"], {}).items():
+                    gate[key] = value
+            if overrides.get("drop"):
+                gates = [g for g in gates if g["gate_id"] not in overrides["drop"]]
+            return gates
+
+        problems.require(
+            not validate_c0008_gate_records(c0008_gates()),
+            "self-test C0008 gate census positive",
+            "the exact twelve-gate C0008 census with distinct literal build and "
+            "test commands was rejected: "
+            f"{validate_c0008_gate_records(c0008_gates())}",
+        )
+        for label, overrides, diagnostic in (
+            (
+                "build-only full_tests",
+                {"full_tests": {"command": C0008_FULL_BUILD_COMMAND}},
+                "literal command 'lake test'",
+            ),
+            (
+                "inferred test command",
+                {"full_tests": {"command": "lean-action test: true"}},
+                "literal command 'lake test'",
+            ),
+            (
+                "build target substitution",
+                {"full_build": {"command": "lake build NumStability"}},
+                "literal command 'lake build NumStability NumStabilityTest'",
+            ),
+            (
+                "unpassed gate",
+                {"full_tests": {"status": "NOT_RUN"}},
+                "must record PASS",
+            ),
+            (
+                "stale gate commit",
+                {"layout": {"commit_sha": C0007_CODE_SHA}},
+                "recorded at the C0008 code commit",
+            ),
+            (
+                "locally claimed test driver",
+                {"full_tests": {"executor_id": "primary-human"}},
+                "executed by github-actions",
+            ),
+            ("missing test gate", {"drop": {"full_tests"}}, "gate ids must be exactly"),
+        ):
+            failures = validate_c0008_gate_records(c0008_gates(**overrides))
+            problems.require(
+                any(diagnostic in failure for failure in failures),
+                f"self-test C0008 gate census {label}",
+                f"adversarial gate mutation missed {diagnostic}: {failures}",
+            )
+        problems.require(
+            validate_c0008_gate_records("not-a-list")
+            == ["gates must be a list"]
+            and C0008_MILESTONES == C0007_MILESTONES + ["M13"]
+            and C0008_METRICS["declaration_bearing_umbrellas"] == 0
+            and C0008_PARENT_CHECKPOINT_ID == C0007_CHECKPOINT_ID,
+            "self-test C0008 constants",
+            "C0008 must extend C0007's milestones with M13, retire the last "
+            "declaration-bearing umbrella, and chain to C0007",
+        )
         refresh_shape_positive = Problems()
         validate_r07_narrative_refresh_commit_shape(
             parents=[R07_CLOSEOUT_CONTROL_SHA],
@@ -23555,7 +23967,7 @@ No implementation began before activation-control CI. The worker remains frozen 
         "source-coordinate, planned/active/delivered branch delta, hash-pinned "
         "activation/planned-CI/ref/worktree, activation-control-CI/integration-authority, "
         "and integration-control-CI evidence, plus planned/activation/integration/closeout "
-        "precommit/direct-child commit-shape adversarial tests"
+        "precommit/direct-child commit-shape adversarial tests; plus the C0008 bounded-acceptance gate census with build-only, inferred-command, substituted-target, unpassed, stale-commit, locally-claimed, and missing test-gate mutations rejected"
     )
     return 0
 

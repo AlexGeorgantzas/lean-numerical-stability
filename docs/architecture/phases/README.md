@@ -12,11 +12,14 @@ phase is formally superseded via its
 invariants, including exactly one effectively active phase and valid acyclic
 supersession chains.
 
-The accepted checkpoint is C0007 at exact integrated code commit
-`4e26820d1f4989ec4ec77b7113085f593570e11b`: M09 and M10 are accepted, B0011
-and B0012 are accepted with retirement due, P0011 and P0012 are retired, and
-R0012 and R0013 are applied. R0014 and R0015 (the M13 I01 wave plus the
-CODE03 correction) are applied on `main` at commit
+The accepted checkpoint is C0008 at exact code commit
+`897557779a2102aa0e23b0b2f63edeb35b06bc68`, which accepts milestone M13 with
+its I01 wave and is the evidence checkpoint for bounded-phase completion;
+repository-wide completion remains incomplete. Its parent C0007 at exact
+integrated code commit `4e26820d1f4989ec4ec77b7113085f593570e11b` accepted M09
+and M10, moved B0011 and B0012 to accepted with retirement due, retired P0011
+and P0012, and applied R0012 and R0013. R0014 and R0015 (the M13 I01 wave plus
+the CODE03 correction) are applied on `main` at commit
 `9fbb1e36bcc85f866893e902cbe206ba468a65b0` under the primary human's recorded
 2026-08-30 cutover decision, which retired the bounded
 plan/activate/deliver/integrate lifecycle; the bounded branch

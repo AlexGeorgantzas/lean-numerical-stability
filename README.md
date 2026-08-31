@@ -17,12 +17,15 @@ does not specify precisely enough to formalize honestly.
 
 ## Reorganization acceptance record
 
-Checkpoint C0007 (exact code commit
-`4e26820d1f4989ec4ec77b7113085f593570e11b`) remains the current accepted
-checkpoint. The reviewed I01 wave (R0014/R0015) was subsequently applied on
-`main` at `9fbb1e36bcc85f866893e902cbe206ba468a65b0` (2026-08-30) under the
-primary human's recorded cutover decision, and repository reorganization now
-follows [`docs/architecture/PROCESS.md`](docs/architecture/PROCESS.md).
+Checkpoint C0008 (exact code commit
+`897557779a2102aa0e23b0b2f63edeb35b06bc68`) is the current accepted
+checkpoint. It accepts milestone M13 with its I01 wave (the reviewed
+R0014/R0015 union applied on `main` at
+`9fbb1e36bcc85f866893e902cbe206ba468a65b0` under the primary human's recorded
+2026-08-30 cutover decision) and is the evidence checkpoint for bounded-phase
+completion. Repository-wide completion remains incomplete. Repository
+reorganization follows
+[`docs/architecture/PROCESS.md`](docs/architecture/PROCESS.md).
 
 The accepted C0007/R09-R10 epoch retains the following checkpoint facts as
 immutable history; the current production statistics appear below.
@@ -374,7 +377,7 @@ lean-toolchain                        pinned Lean toolchain
 - [`CHANGELOG.md`](CHANGELOG.md) records release-facing changes.
 
 The selected source-audit scope is terminal, but repository organization work
-is still in progress. Checkpoint C0007 is accepted; the
+is still in progress. Checkpoint C0008 is accepted; the
 [active phase registry](docs/architecture/phases/2026-08-repository-reorganization-completion/README.md)
 is the authoritative source for remaining migration work.
 
