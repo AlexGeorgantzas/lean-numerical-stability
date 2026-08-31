@@ -653,7 +653,8 @@ private theorem block_adjusted_log_le_log_det
     simp only [Higham11BunchSharpBlock.penalty, hw',
       if_neg (by norm_num : (2 : ℕ) ≠ 1),
       higham11_1_bunchPenaltyTwo, Nat.cast_ofNat]
-    convert hlog using 1 <;> ring
+    convert hlog using 1
+    ring
 
 private theorem detProduct_pos
     (blocks : List Higham11BunchSharpBlock) :
@@ -712,7 +713,6 @@ theorem adjustedLogSum_le_boundary
           (d : ℝ) * Real.log (firstMax blocks) := by
     rw [Real.log_mul (ne_of_gt hsqrt) (ne_of_gt (pow_pos hm d)),
       Real.log_sqrt (le_of_lt hpow), Real.log_pow, Real.log_pow]
-    push_cast
     ring
   rw [hlogrhs] at hlogdet
   exact (adjustedLogSum_le_log_detProduct blocks).trans hlogdet
@@ -738,7 +738,6 @@ private theorem local_log_growth
   have hlog := Real.log_le_log next.stageMax_pos h
   rw [Real.log_mul (ne_of_gt hpow) (ne_of_gt b.stageMax_pos),
     Real.log_pow] at hlog
-  push_cast at hlog
   linarith
 
 private theorem eliminatedWidth_lt_totalWidth
@@ -832,7 +831,8 @@ private theorem local_adjusted_gap_scaled
       have hp := block_penalty_le_exponent b
       have hmul := mul_le_mul_of_nonneg_left hp (Nat.cast_nonneg b.width)
       convert hmul using 1 <;>
-        simp [totalWidth, adjustedLogSum, lastMax, boundaryMoment] <;> ring
+        simp [totalWidth, adjustedLogSum, lastMax, boundaryMoment]
+      ring
   | cons b next rest tail local_growth hadamard ih =>
       have hg := last_log_sub_first_log_le
         (Higham11BunchSharpBlockCertificate.cons b next rest tail
@@ -874,7 +874,7 @@ private theorem local_adjusted_gap_scaled
               Real.log higham11_1_bunchLocalGrowthFactor +
             (totalWidth (b :: next :: rest) : ℝ) *
               ((223 : ℝ) / 500) := by
-          simp only [boundaryMoment, totalWidth, eliminatedWidth,
+          simp only [boundaryMoment, totalWidth,
             List.map_cons, List.sum_cons, Nat.cast_add, Nat.cast_mul]
           ring
 
@@ -937,7 +937,7 @@ private theorem adjustedMean_cons_step
   have hfactor : 0 ≤ w / (d * D) := by positivity
   have htailWidth : (totalWidth (next :: rest) : ℝ) = d := rfl
   have hwholeWidth : (totalWidth (b :: next :: rest) : ℝ) = D := by
-    simp [totalWidth, D, w, d]
+    simp [totalWidth, D]
   have hwholeAdjusted : adjustedLogSum (b :: next :: rest) =
       w * (q - c) + A := by
     simp only [adjustedLogSum, List.map_cons, List.sum_cons]
@@ -960,7 +960,7 @@ private theorem adjustedMean_cons_step
         (b.width : ℝ) * b.penalty /
           (totalWidth (next :: rest) : ℝ) := by
       rw [show (((b.width + totalWidth (next :: rest) : ℕ) : ℝ)) = D by
-          simp [D, w, d], htailWidth]
+          simp [D], htailWidth]
       change (w / (d * D)) * (D / 2 * Real.log D + D * c) =
         w * Real.log D / (2 * d) + w * c / d
       field_simp [ne_of_gt hd, ne_of_gt hD]
@@ -991,7 +991,6 @@ private theorem log_symmetric_ratio_lower {d : ℕ} (hd : 1 < d) :
     rw [Nat.cast_sub (by omega : 1 ≤ d)]
     push_cast
     field_simp
-    <;> nlinarith
   rw [hratio] at hseries
   norm_num [Finset.sum_range_succ] at hseries
   dsimp [x] at hseries
@@ -1017,7 +1016,6 @@ private theorem one_div_le_log_self_div_pred {d : ℕ} (hd : 2 ≤ d) :
   have hdR : (0 : ℝ) < d := by positivity
   have hleft : (1 : ℝ) / d ≤ (2 : ℝ) / (2 * d - 1 : ℕ) := by
     rw [div_le_div_iff₀ hdR hdenR]
-    push_cast
     rw [Nat.cast_sub (by omega : 1 ≤ 2 * d)]
     push_cast
     nlinarith

@@ -25516,7 +25516,7 @@ theorem higham9_16_foster_subset_hadamard {n : ℕ}
     set e : Fin h → Fin n := fun a => emb a with he
     have heinj : Function.Injective e := emb.injective
     have himg : Finset.image e Finset.univ = I := by
-      simpa [he, hemb] using Finset.image_orderEmbOfFin_univ I hh.symm
+      simp [he, hemb]
     have he_lt : ∀ {a b : Fin h}, a.val < b.val → (e a).val < (e b).val := by
       intro a b hab
       have : a < b := hab
@@ -31396,7 +31396,7 @@ theorem higham9_11_bandActive_schur_preserved {p m : ℕ}
       exact hrle
     · by_cases hxr : x = r
       · have hswap : σ x = 0 := by
-          simp [hσdef, higham9_7_firstPivotRowSwap, hxr, hx0]
+          simp [hσdef, higham9_7_firstPivotRowSwap, hxr]
         rw [hswap]
         simp
       · have hid : σ x = x := by
@@ -31884,7 +31884,8 @@ lemma higham9_11_bohteExStage8_choice :
     higham9_1_partialPivotChoice higham9_11_bohteExStage8 0 ⟨0, by norm_num⟩ := by
   refine ⟨by norm_num, ?_⟩
   intro i _
-  fin_cases i <;> norm_num [higham9_11_bohteExStage8]
+  fin_cases i
+  norm_num [higham9_11_bohteExStage8]
 
 lemma higham9_11_bohteExStage8_pivot :
     higham9_11_bohteExStage8 ⟨0, by norm_num⟩ 0 ≠ 0 := by
@@ -31897,8 +31898,7 @@ lemma higham9_11_bohteExStage1_schur :
   funext i j
   fin_cases i <;> fin_cases j <;>
     (norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
-      higham9_7_firstPivotRowSwap, higham9_11_bohteExample, higham9_11_bohteExStage1, Fin.ext_iff]) <;>
-    try ring
+      higham9_7_firstPivotRowSwap, higham9_11_bohteExample, higham9_11_bohteExStage1, Fin.ext_iff])
 
 lemma higham9_11_bohteExStage2_schur :
     luFirstSchurComplement (higham9_2_rowPermutedMatrix higham9_11_bohteExStage1
@@ -31907,8 +31907,7 @@ lemma higham9_11_bohteExStage2_schur :
   funext i j
   fin_cases i <;> fin_cases j <;>
     (norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
-      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage1, higham9_11_bohteExStage2, Fin.ext_iff]) <;>
-    try ring
+      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage1, higham9_11_bohteExStage2, Fin.ext_iff])
 
 lemma higham9_11_bohteExStage3_schur :
     luFirstSchurComplement (higham9_2_rowPermutedMatrix higham9_11_bohteExStage2
@@ -31917,8 +31916,7 @@ lemma higham9_11_bohteExStage3_schur :
   funext i j
   fin_cases i <;> fin_cases j <;>
     (norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
-      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage2, higham9_11_bohteExStage3, Fin.ext_iff]) <;>
-    try ring
+      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage2, higham9_11_bohteExStage3, Fin.ext_iff])
 
 lemma higham9_11_bohteExStage4_schur :
     luFirstSchurComplement (higham9_2_rowPermutedMatrix higham9_11_bohteExStage3
@@ -31927,8 +31925,7 @@ lemma higham9_11_bohteExStage4_schur :
   funext i j
   fin_cases i <;> fin_cases j <;>
     (norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
-      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage3, higham9_11_bohteExStage4, Fin.ext_iff]) <;>
-    try ring
+      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage3, higham9_11_bohteExStage4, Fin.ext_iff])
 
 lemma higham9_11_bohteExStage5_schur :
     luFirstSchurComplement (higham9_2_rowPermutedMatrix higham9_11_bohteExStage4
@@ -31937,8 +31934,7 @@ lemma higham9_11_bohteExStage5_schur :
   funext i j
   fin_cases i <;> fin_cases j <;>
     (norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
-      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage4, higham9_11_bohteExStage5, Fin.ext_iff]) <;>
-    try ring
+      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage4, higham9_11_bohteExStage5, Fin.ext_iff])
 
 lemma higham9_11_bohteExStage6_schur :
     luFirstSchurComplement (higham9_2_rowPermutedMatrix higham9_11_bohteExStage5
@@ -31947,8 +31943,7 @@ lemma higham9_11_bohteExStage6_schur :
   funext i j
   fin_cases i <;> fin_cases j <;>
     (norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
-      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage5, higham9_11_bohteExStage6, Fin.ext_iff]) <;>
-    try ring
+      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage5, higham9_11_bohteExStage6, Fin.ext_iff])
 
 lemma higham9_11_bohteExStage7_schur :
     luFirstSchurComplement (higham9_2_rowPermutedMatrix higham9_11_bohteExStage6
@@ -31957,18 +31952,17 @@ lemma higham9_11_bohteExStage7_schur :
   funext i j
   fin_cases i <;> fin_cases j <;>
     (norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
-      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage6, higham9_11_bohteExStage7, Fin.ext_iff]) <;>
-    try ring
+      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage6, higham9_11_bohteExStage7, Fin.ext_iff])
 
 lemma higham9_11_bohteExStage8_schur :
     luFirstSchurComplement (higham9_2_rowPermutedMatrix higham9_11_bohteExStage7
       (higham9_7_firstPivotRowSwap ⟨0, by norm_num⟩)) =
       higham9_11_bohteExStage8 := by
   funext i j
-  fin_cases i <;> fin_cases j <;>
-    (norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
-      higham9_7_firstPivotRowSwap, higham9_11_bohteExStage7, higham9_11_bohteExStage8, Fin.ext_iff]) <;>
-    try ring
+  fin_cases i
+  fin_cases j
+  (norm_num [luFirstSchurComplement, higham9_2_rowPermutedMatrix,
+    higham9_7_firstPivotRowSwap, higham9_11_bohteExStage7, higham9_11_bohteExStage8, Fin.ext_iff])
 
 /-- **Theorem 9.11 example support**, the explicit upper factor produced by
 the GEPP trace on the Bohte example (nested first-step factors through the

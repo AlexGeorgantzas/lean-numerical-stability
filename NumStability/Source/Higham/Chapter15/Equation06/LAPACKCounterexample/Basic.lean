@@ -61,8 +61,7 @@ theorem H15_eq15_6_P_mul_e (i : Fin 4) :
 theorem H15_eq15_6_P_mul_e1 (i : Fin 4) :
     ∑ j : Fin 4, H15_eq15_6_P i j * basisVec (0 : Fin 4) j = 0 := by
   fin_cases i <;>
-    simp [Fin.sum_univ_four, H15_eq15_6_P, H15_eq15_6_v, basisVec] <;>
-    norm_num
+    simp [H15_eq15_6_P, H15_eq15_6_v, basisVec]
 
 /-- `Pb = 0`, where `b` is Algorithm 15.4's alternating vector. -/
 theorem H15_eq15_6_P_mul_b (i : Fin 4) :
@@ -111,7 +110,7 @@ theorem H15_eq15_6_lapackNormEstimator (θ : ℝ) :
         (fun i : Fin 4 => ∑ j : Fin 4,
           H15_eq15_6_A θ i j * ((1 : ℝ) / 4)) = 1 := by
       rw [hvals]
-      simp [oneNormVec, Fin.sum_univ_four]
+      simp [oneNormVec]
     change (⟨(fun _ : Fin 4 => (1 : ℝ) / 4),
       oneNormVec (fun i : Fin 4 => ∑ j : Fin 4,
         H15_eq15_6_A θ i j * ((1 : ℝ) / 4))⟩ : OneNormState 4) = _
@@ -142,14 +141,17 @@ theorem H15_eq15_6_lapackNormEstimator (θ : ℝ) :
     have h0 : lapackAltVec (by omega : 1 < 4) (0 : Fin 4) = 1 := by
       norm_num [lapackAltVec, even_iff_two_dvd]
     have h1 : lapackAltVec (by omega : 1 < 4) (1 : Fin 4) = -(4 / 3 : ℝ) := by
-      norm_num [lapackAltVec, even_iff_two_dvd] <;>
-        simp only [div_eq_mul_inv] <;> nlinarith [hthree]
+      norm_num [lapackAltVec, even_iff_two_dvd]
+      simp only [div_eq_mul_inv]
+      nlinarith [hthree]
     have h2 : lapackAltVec (by omega : 1 < 4) (2 : Fin 4) = 5 / 3 := by
-      norm_num [lapackAltVec, even_iff_two_dvd] <;>
-        simp only [div_eq_mul_inv] <;> nlinarith [hthree]
+      norm_num [lapackAltVec, even_iff_two_dvd]
+      simp only [div_eq_mul_inv]
+      nlinarith [hthree]
     have h3 : lapackAltVec (by omega : 1 < 4) (3 : Fin 4) = -2 := by
-      norm_num [lapackAltVec, even_iff_two_dvd] <;>
-        simp only [div_eq_mul_inv] <;> nlinarith [hthree]
+      norm_num [lapackAltVec, even_iff_two_dvd]
+      simp only [div_eq_mul_inv]
+      nlinarith [hthree]
     simp only [oneNormVec, Fin.sum_univ_four, h0, h1, h2, h3, abs_neg]
     rw [abs_of_nonneg (by positivity : (0 : ℝ) ≤ 4 / 3),
       abs_of_nonneg (by positivity : (0 : ℝ) ≤ 5 / 3)]

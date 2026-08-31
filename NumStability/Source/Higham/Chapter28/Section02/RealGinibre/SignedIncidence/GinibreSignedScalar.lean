@@ -75,8 +75,7 @@ theorem ginibreCharacteristicProductKernel_eq_sub_two_add_tail
   rcases m with (_ | _ | m)
   · simp [ginibreCharacteristicProductKernel]
   · norm_num [ginibreCharacteristicProductKernel, Finset.sum_range_succ]
-  · convert ginibreCharacteristicProductKernel_add_two m t using 1 <;>
-      push_cast <;> try omega <;> ring
+  · convert ginibreCharacteristicProductKernel_add_two m t using 1
 
 /-- Every polynomial moment is integrable against the unnormalized standard
 Gaussian density. -/
@@ -179,14 +178,16 @@ theorem hasDerivAt_ginibre_signed_boundary_primitive
   have hexp : HasDerivAt (fun y : ℝ =>
       Real.exp (-(1 / 2 : ℝ) * y ^ 2))
       (-t * Real.exp (-(1 / 2 : ℝ) * t ^ 2)) t := by
-    convert (((hasDerivAt_pow 2 t).const_mul (-(1 / 2 : ℝ))).exp) using 1 <;>
-      norm_num <;> ring
+    convert (((hasDerivAt_pow 2 t).const_mul (-(1 / 2 : ℝ))).exp) using 1
+    norm_num
+    ring
   have hquad : HasDerivAt (fun y : ℝ => a - y ^ 2 / 2) (-t) t := by
     convert (hasDerivAt_const t a).sub
-      ((hasDerivAt_pow 2 t).div_const 2) using 1 <;>
-      norm_num <;> ring
-  convert hexp.mul (hquad.pow m) using 1 <;>
-    norm_num <;> ring
+      ((hasDerivAt_pow 2 t).div_const 2) using 1
+    norm_num
+  convert hexp.mul (hquad.pow m) using 1
+  norm_num
+  ring
 
 /-- Exact half-line Gaussian boundary integral.  This is the analytic core
 of the two-incidence dimension jump; it uses only the fundamental theorem

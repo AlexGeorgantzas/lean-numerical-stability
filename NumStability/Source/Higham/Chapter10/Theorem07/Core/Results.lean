@@ -92,7 +92,7 @@ the additive pivot-rounding loss in the older, split perturbation proof.
 theorem signedBorder_source_endgame
     (a W t E I P Q B C x y : ℝ)
     (hW : 0 ≤ W) (ht : 0 ≤ t) (hP : 0 ≤ P) (hQ : 0 ≤ Q)
-    (hB : 0 ≤ B) (hC : 0 ≤ C) (hx : 0 ≤ x) (hy : 0 ≤ y)
+    (hB : 0 ≤ B) (_hC : 0 ≤ C) (hx : 0 ≤ x) (hy : 0 ≤ y)
     (hxy : x ≤ y) (hx2 : x ^ 2 = t) (hy2 : y ^ 2 = C * W)
     (hQdef : Q = E - I)
     (hshift : P * t ≤ (E - 1) * a + t)
@@ -145,7 +145,6 @@ lemma gamma_div_one_sub_gamma_eq (fp : FPModel) (k : ℕ)
     rw [div_lt_one hd] at this
     linarith
   unfold gamma
-  push_cast
   field_simp [hd.ne', (by linarith : 1 - 2 * (k : ℝ) * fp.u ≠ 0)]
   ring
 
@@ -159,7 +158,6 @@ lemma one_sub_gamma_div_one_add_gamma_eq (fp : FPModel) (k : ℕ)
     simpa [gammaValid] using hk
   have hd : 0 < 1 - (k : ℝ) * fp.u := by linarith
   unfold gamma
-  push_cast
   field_simp [hd.ne']
   ring
 
@@ -177,7 +175,6 @@ lemma one_div_one_sub_gamma_eq (fp : FPModel) (k : ℕ)
     rw [div_lt_one hd] at this
     linarith
   unfold gamma
-  push_cast
   field_simp [hd.ne', (by linarith : 1 - 2 * (k : ℝ) * fp.u ≠ 0)]
   ring
 
@@ -570,7 +567,6 @@ theorem higham10_7_stage_border_mass_commonDenom (fp : FPModel) {n : ℕ}
   have hd_le_h2 : d ≤ 1 - ((j.val : ℝ) + 2) * fp.u := by
     dsimp [d]
     have hj : (j.val : ℝ) + 2 ≤ 2 * ((n : ℝ) + 1) := by
-      norm_num
       exact_mod_cast (show j.val + 2 ≤ 2 * (n + 1) by omega)
     nlinarith [mul_le_mul_of_nonneg_right hj fp.u_nonneg]
   have hγ2B : gamma fp (j.val + 2) ≤ B := by
@@ -660,7 +656,8 @@ theorem higham10_7_stage_border_mass_commonDenom (fp : FPModel) {n : ℕ}
     (fun i => (hAdiag _).le) (B * Real.sqrt C) t (by positivity) ht
     (fun i h0 => absurd h0 (hAdiag _).ne') hcert y
   dsimp [B, C, t, W, d] at hsqrt ⊢
-  convert hsqrt using 1 <;> ring
+  convert hsqrt using 1
+  ring
 
 private noncomputable def sourceD (u : ℝ) (n : ℕ) : ℝ :=
   1 - 2 * ((n : ℝ) + 1) * u
@@ -921,7 +918,7 @@ private lemma sourceP_formula (u : ℝ) (n j : ℕ)
       2 * ((j : ℝ) + 1) * d) / (d * r)
   field_simp [hd0, hr0]
   rw [hddef, hrdef]
-  simp [sourceD, sourceR, Nat.rawCast]
+  simp [sourceD, sourceR]
   ring
 
 /-- Exact numerator form of the remaining interior coefficient. -/
@@ -955,7 +952,7 @@ private lemma source_boundary_two_formula (u : ℝ)
   rw [← hddef, ← hrdef]
   field_simp [hd0, hr0]
   rw [hddef, hrdef]
-  simp only [sourceD, sourceR, Nat.rawCast]
+  simp only [sourceD, sourceR]
   norm_num [Nat.rawCast]
   ring_nf
   norm_num [Nat.rawCast]
@@ -980,7 +977,7 @@ private lemma sourceP_sub_B_two_formula (u : ℝ)
     u * (36 * u - 1) / (d * r)
   field_simp [hd0, hr0]
   rw [hddef, hrdef]
-  simp only [sourceD, sourceR, Nat.rawCast]
+  simp only [sourceD, sourceR]
   norm_num [Nat.rawCast]
   ring_nf
   norm_num [Nat.rawCast]
@@ -1003,7 +1000,7 @@ private lemma source_product_two_formula (u : ℝ)
   rw [← hddef, ← hrdef]
   field_simp [hd0, hr0]
   rw [hddef, hrdef]
-  simp only [sourceD, sourceR, Nat.rawCast]
+  simp only [sourceD, sourceR]
   norm_num [Nat.rawCast]
   ring_nf
   norm_num [Nat.rawCast]
@@ -1027,7 +1024,7 @@ private lemma sourceP_sub_B_formula (u : ℝ) (n j : ℕ)
   have hr0 : r ≠ 0 := by simpa [r] using hr
   dsimp [sourceB]
   rw [← hddef]
-  field_simp [hd0, hr0] <;> ring
+  field_simp [hd0, hr0]
 
 /-- A single exact rational identity turns the integer-polynomial core into
     the product alternative required by `signedBorder_source_endgame`. -/
@@ -1049,7 +1046,7 @@ private lemma source_product_diff_formula (u : ℝ) (n j : ℕ)
   have hr0 : r ≠ 0 := by simpa [r] using hr
   dsimp [sourceB, sourceC]
   rw [← hddef]
-  field_simp [hd0, hr0] <;> ring
+  field_simp [hd0, hr0]
 
 /-- All scalar side conditions needed by the exact source-threshold stage
     argument.  The two alternatives are exhaustive: dimensions at least
@@ -1335,7 +1332,7 @@ private lemma solved_border_mass_le (m : ℕ)
       rw [Finset.mul_sum, Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro i _
-      field_simp [hd.ne'] <;> ring
+      field_simp [hd.ne']
 
 /-- The source common denominator is positive exactly under the usual
     `γ_{n+1} < 1` hypothesis. -/
@@ -1433,7 +1430,8 @@ private lemma source_stage_interior_coeff_le (fp : FPModel) {n : ℕ}
       (j.val : ℝ) * ((j.val : ℝ) + 1) * fp.u / d :=
     div_le_div₀ hnum le_rfl hd hdle
   dsimp [sourceI, d, dm] at *
-  convert hdiv using 1 <;> ring
+  convert hdiv using 1
+  ring
 
 set_option maxHeartbeats 1800000 in
 /-- Source-strength stage step for the concrete Algorithm 10.2 run.  Unlike

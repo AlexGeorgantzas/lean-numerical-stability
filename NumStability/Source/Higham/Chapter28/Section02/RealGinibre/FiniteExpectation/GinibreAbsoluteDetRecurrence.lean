@@ -224,7 +224,7 @@ noncomputable def ginibreAbsDetTwoRotationOrthogonal :
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [ginibreAbsDetTwoRotationMatrix, Matrix.mul_apply,
-        Fin.sum_univ_succ, Matrix.one_apply] <;>
+        Fin.sum_univ_succ] <;>
       nlinarith⟩
 
 /-- Flatten a `2×2` matrix and its independent scalar shift into five
@@ -293,7 +293,7 @@ theorem abs_det_two_eq_normalForm_rotation (p : RSqMat 2 × ℝ) :
   rw [show (p.1 - p.2 • (1 : RSqMat 2)).det =
       (p.1 0 0 - p.2) * (p.1 1 1 - p.2) -
         p.1 0 1 * p.1 1 0 by
-    simp [Matrix.det_fin_two, Matrix.one_apply]]
+    simp [Matrix.det_fin_two]]
   unfold ginibreAbsDetTwoNormalForm
   rw [ginibreAbsDetTwoRotation_apply_zero,
     ginibreAbsDetTwoRotation_apply_one,
@@ -305,7 +305,7 @@ theorem abs_det_two_eq_normalForm_rotation (p : RSqMat 2 × ℝ) :
 
 /-- Cubic Gaussian radial tails are integrable on every nonnegative ray. -/
 theorem integrableOn_Ioi_cube_mul_exp_neg_sq_div_two
-    (a : ℝ) (ha : 0 ≤ a) :
+    (a : ℝ) (_ha : 0 ≤ a) :
     IntegrableOn (fun r : ℝ => r ^ 3 * Real.exp (-(r ^ 2) / 2)) (Ioi a) := by
   have hbase : IntegrableOn
       (fun r : ℝ => r ^ (3 : ℝ) * Real.exp (-(1 / 2) * r ^ 2))
@@ -319,7 +319,8 @@ theorem integrableOn_Ioi_cube_mul_exp_neg_sq_div_two
     r ^ (3 : ℕ) * Real.exp (-r ^ 2 / 2)
   rw [show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num]
   rw [Real.rpow_natCast]
-  congr 2 <;> try ring
+  congr 2
+  try ring
 
 /-- Cubic companion to the elementary Gaussian radial-tail integral. -/
 theorem integral_Ioi_cube_mul_exp_neg_sq_div_two
@@ -332,8 +333,9 @@ theorem integral_Ioi_cube_mul_exp_neg_sq_div_two
       (r ^ 3 * Real.exp (-(r ^ 2) / 2)) r := by
     intro r
     convert (((hasDerivAt_pow 2 r).add_const 2).neg.mul
-      (((hasDerivAt_pow 2 r).neg.div_const 2).exp)) using 1 <;>
-      norm_num [F] <;> ring
+      (((hasDerivAt_pow 2 r).neg.div_const 2).exp)) using 1
+    norm_num [F]
+    ring
   have hint : IntegrableOn
       (fun r : ℝ => r ^ 3 * Real.exp (-(r ^ 2) / 2)) (Ioi a) :=
     integrableOn_Ioi_cube_mul_exp_neg_sq_div_two a ha
@@ -351,7 +353,8 @@ theorem integral_Ioi_cube_mul_exp_neg_sq_div_two
     · funext r
       simp only [F, Function.comp_apply, pow_zero, pow_one, one_mul]
       ring
-    · congr 1 <;> norm_num
+    · congr 1
+      norm_num
   calc
     (∫ r in Ioi a, r ^ 3 * Real.exp (-(r ^ 2) / 2)) =
         0 - F a := integral_Ioi_of_hasDerivAt_of_tendsto'
@@ -374,7 +377,6 @@ theorem integral_Ioi_sq_sub_mul_exp_neg_sq_div_two
         (show (0 : ℝ) < 1 / 2 by norm_num)).integrableOn
     apply h.congr_fun _ measurableSet_Ioi
     intro r hr
-    congr 2
     ring
   have hconst : IntegrableOn
       (fun r : ℝ => a ^ 2 * (r * Real.exp (-(r ^ 2) / 2))) (Ioi a) :=
@@ -420,7 +422,6 @@ theorem integral_Ioi_abs_sub_sq_mul_exp_neg_sq_div_two
         (show (0 : ℝ) < 1 / 2 by norm_num)).integrableOn
     apply h.congr_fun _ measurableSet_Ioi
     intro r hr
-    congr 2
     ring
   have hcube := integrableOn_Ioi_cube_mul_exp_neg_sq_div_two 0 (le_refl 0)
   have hbase : IntegrableOn base (Ioi (0 : ℝ)) := by
@@ -451,7 +452,6 @@ theorem integral_Ioi_abs_sub_sq_mul_exp_neg_sq_div_two
             (fun r : ℝ => r * Real.exp (-(r ^ 2) / 2)) (Ioi a) := by
           apply hl0.congr_fun _ measurableSet_Ioi
           intro r hr
-          congr 2
           ring
         exact hl1.const_mul _
       have hsub : IntegrableOn
@@ -522,7 +522,8 @@ theorem integral_Ioi_abs_sub_sq_mul_exp_neg_sq_div_two
             rw [integral_Ioi_mul_exp_neg_sq_div_two,
               integral_Ioi_cube_mul_exp_neg_sq_div_two 0 (le_refl 0)]
             have hexpZero : Real.exp (-((0 : ℝ) ^ 2) / 2) = 1 := by
-              convert Real.exp_zero using 1 <;> ring_nf <;> rfl
+              convert Real.exp_zero using 1
+              ring_nf
             rw [hexpZero]
             ring_nf
       · simp only [excess, ha_sq]
