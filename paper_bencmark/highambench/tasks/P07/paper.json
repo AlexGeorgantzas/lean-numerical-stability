@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete local paper, surveyed every labeled mathematical result and the source-facing error formulas, excluded delegated probability and experimental claims, searched the frozen mathlib and NumStability baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
+    "method": "Codex read the complete local paper, surveyed every labeled mathematical result and the source-facing error formulas, excluded delegated probability and experimental claims, searched the frozen mathlib and NumStability baselines, visually checked every selected source page, and compiled private N/L proofs. P07-T2 is retained only as a documented project-corrected source exception.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P07 source selection and benchmark annotation to Codex."
@@ -54,7 +54,7 @@
     },
     {
       "candidate": "Lemma 3.1",
-      "reason": "Its complete singular-value and pseudoinverse statement requires substantially more spectral infrastructure than the condition-neutral bundle; P07-T3 retains the paper's exact condition-number algebra and P07-T1 retains the strict-perturbation rank core."
+      "reason": "It is retained as the computed-preconditioner provenance for P07-T1, but its own two condition-number bounds are not separately selected as a target."
     },
     {
       "candidate": "Lemma 3.3 and Theorem 3.4",
@@ -62,7 +62,7 @@
     },
     {
       "candidate": "the full numerical conclusion of Theorem 3.5",
-      "reason": "The printed constants depend on the excluded multi-stage rounding analysis. P07-T2 retains the theorem's exact backward-error expansion and norm-budget step without weakening it by big-O notation."
+      "reason": "The final constants 6.04 and 2.01 depend on the preceding Theorem 3.4 estimates. P07-T2 selects the earlier unnumbered result in the proof, while retaining its full Algorithm 1.3 linkage, perturbed least-squares relation, exact four-term DeltaA, and fixed n/sqrt(n)/gamma_n estimate."
     },
     {
       "candidate": "Theorems 4.1 and 4.2",
@@ -76,13 +76,13 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use Lemma 3.2's strict-perturbation full-rank conclusion in lower/upper vector-action form.",
+      "decision": "Use all of Lemma 3.2: the full-rank conclusion and its complete quantitative condition-number bound for the finite-precision forward-substitution output.",
       "task_id": "P07-T1",
       "theorem_name": "p07_t1_perturbed_preconditioned_map_injective"
     },
     "T2": {
       "available": true,
-      "decision": "Use Theorem 3.5's exact four-term backward-error expansion and compositional operator-norm budget.",
+      "decision": "Use a project-corrected version of the algorithm-linked Theorem 3.5 construction: add the missing perturbed full-rank and right-hand-side range conditions, then retain the proof's product pseudoinverse, the printed exact perturbed-system equation, and the immediate fixed-coefficient spectral estimate. Exclude this task from ordinary faithfulness acceptance.",
       "task_id": "P07-T2",
       "theorem_name": "p07_t2_backward_error_product_budget"
     },

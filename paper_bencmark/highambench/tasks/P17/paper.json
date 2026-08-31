@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete 23-page local paper, surveyed every section, definition, labeled result, bound analysis, experiment, conclusion, and reference, visually checked all three selected source pages, searched all 24 frozen mounted object modules, and compiled private N/L proofs before accepting the targets.",
+    "method": "Codex read the complete 23-page local paper, surveyed every section and labeled result, visually checked the selected source pages, searched the frozen library, and compiled private N/L proofs. After audit_001 exposed a defect in Theorem 3.6, Codex verified the proof gap and counterexample and rebuilt P17-T1 as the project-authorized corrected theorem.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P17 source selection and benchmark annotation to Codex."
@@ -47,7 +47,7 @@
     },
     {
       "candidate": "Lemma 3.2 and equation (3.3)",
-      "reason": "The conditional-bias identity is central, but a faithful standalone target would require a full conditional-expectation model for the SR implementation. Theorem 3.6 exposes its reusable finite product consequence."
+      "reason": "The conditional-bias identity is central supporting material. The corrected Theorem 3.6 target now includes its finite test-function semantics rather than selecting Lemma 3.2 as the benchmark result."
     },
     {
       "candidate": "Lemma 3.9's power-set expansion",
@@ -55,7 +55,7 @@
     },
     {
       "candidate": "Lemma 3.10 in full",
-      "reason": "Its full conditional mean-independence statement and power-set remainder require a considerably larger probability filtration interface. T3 retains the exact second-moment-plus-remainder assembly used downstream."
+      "reason": "It is supporting material rather than the selected final result. T3 records its mean-independence, alpha bound, exact path-dependent remainder, and equation (3.9) consequence inside the full Theorem 4.3 execution model."
     },
     {
       "candidate": "Theorems 4.2, 4.4, 4.5, and 4.6",
@@ -73,19 +73,19 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the deterministic one-atom specialization of Theorem 3.6's finite product envelope.",
+      "decision": "Use a project-corrected finite-probability version of Theorem 3.6, retaining its random errors, bounded history-conditional biases, and expected-product conclusion while adding the sign conditions required by its induction.",
       "task_id": "P17-T1",
-      "theorem_name": "p17_t1_product_bias_envelope"
+      "theorem_name": "p17_t1_corrected_product_bias_envelope"
     },
     "T2": {
       "available": true,
-      "decision": "Use the coefficientwise condition-number step that turns the expected suffix-product envelope into Theorem 4.1's summation-bias bound.",
+      "decision": "Use Theorem 4.1's full limited-precision stochastic recursive-summation bias bound, including the generated recurrence, conditional-bias model, exact expectation, and gamma_(n-1)(u_(p+r)) constant.",
       "task_id": "P17-T2",
       "theorem_name": "p17_t2_recursive_sum_bias_condition_bound"
     },
     "T3": {
       "available": true,
-      "decision": "Use the exact finite-probability second-moment-plus-bias assembly in the proof of Theorem 4.3.",
+      "decision": "Use Theorem 4.3 in full: the SR_(p,r) recursive-summation execution, exact M+A decomposition, path-dependent limited-precision remainder, variance-derived gamma_(n-1)(u_p^2) radius, summation condition number, and final relative forward-error event.",
       "task_id": "P17-T3",
       "theorem_name": "p17_t3_variance_plus_bias_probability_bound"
     }
@@ -106,6 +106,11 @@
     "pdf_pages": 23,
     "rights_note": "The local article copy states SIAM copyright and prohibits unauthorized reproduction. Release only bibliographic metadata, locators, hashes, and concise benchmark-author paraphrases unless redistribution permission is confirmed.",
     "sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d"
+  },
+  "source_validity": {
+    "benchmark_treatment": "P17-T1 uses a project-corrected version of Theorem 3.6 with nonnegative rounding factors and 0 < B <= 1. This is not asserted to be an author-issued correction.",
+    "record": "paper_bencmark/faithfulness_audit/source_validity/P17-T1.md",
+    "status": "published-statement-contradicted"
   },
   "title": "Probabilistic Error Analysis of Limited-Precision Stochastic Rounding"
 }

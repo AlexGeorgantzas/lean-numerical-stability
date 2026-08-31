@@ -4,23 +4,24 @@ namespace HighamBench
 
 open scoped BigOperators
 
-/-- P05-T1: the uniform componentwise coefficient form used in Lemma 4.1.
-The preceding summation analysis supplies `herror` with `C = (k+1)*u`; this
-theorem performs the exact sign-aligned residual distribution. -/
+/-- P05-T1: Lemma 4.1 for the paper's `k = m + 1`. A certified
+round-to-nearest execution of
+`(c - sum_i a_i*b_i) / bK` has protected-`c` backward coefficients bounded by
+`(m+1)u`; when `bK = 1` and no division is performed, the sharper bound is
+`m*u`. -/
 theorem p05_t1_uniform_backward_coefficients
-    {k : ℕ} (u computed c : ℝ) (products : Fin k → ℝ)
-    (hu : 0 ≤ u)
-    (herror :
-      |computed - (c - ∑ i : Fin k, products i)| ≤
-        ((k + 1 : ℕ) : ℝ) * u *
-          ∑ x : Option (Option (Fin k)),
-            |p05CoefficientSource computed c products x|) :
-    ∃ θ0 θc : ℝ, ∃ θp : Fin k → ℝ,
-      |θ0| ≤ ((k + 1 : ℕ) : ℝ) * u ∧
-      |θc| ≤ ((k + 1 : ℕ) : ℝ) * u ∧
-      (∀ i, |θp i| ≤ ((k + 1 : ℕ) : ℝ) * u) ∧
-      computed * (1 + θ0) =
-        c * (1 + θc) - ∑ i : Fin k, products i * (1 + θp i) := by
+    {m : ℕ} (run : P05Lemma41Run m) :
+    (∃ θ0 : ℝ, ∃ θ : Fin m → ℝ,
+      |θ0| ≤ ((m + 1 : ℕ) : ℝ) * run.format.unitRoundoff ∧
+      (∀ i, |θ i| ≤ ((m + 1 : ℕ) : ℝ) * run.format.unitRoundoff) ∧
+      run.bK * run.yHat * (1 + θ0) =
+        run.c - ∑ i : Fin m, run.a i * run.b i * (1 + θ i)) ∧
+    (run.bK = 1 →
+      ∃ θ0 : ℝ, ∃ θ : Fin m → ℝ,
+        |θ0| ≤ (m : ℝ) * run.format.unitRoundoff ∧
+        (∀ i, |θ i| ≤ (m : ℝ) * run.format.unitRoundoff) ∧
+        run.yHat * (1 + θ0) =
+          run.c - ∑ i : Fin m, run.a i * run.b i * (1 + θ i)) := by
   -- PROOF_START
   sorry
 

@@ -65,7 +65,7 @@
     },
     {
       "candidate": "TwoProduct equation (17) and FourSumThreeProduct",
-      "reason": "TwoProduct exactness is imported background. The selected Lemma 4 target treats the three exact TwoProduct decompositions as certificates and formalizes the paper's new four-to-three composition."
+      "reason": "TwoProduct exactness is delegated background rather than a separately selected result. The Lemma 4 target nevertheless retains equation (17)'s complete semantic contract for all three calls before proving the paper's new four-to-three composition."
     },
     {
       "candidate": "Algorithm 2, Corollary 2, and equation (20)",
@@ -89,13 +89,13 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use Theorem 2's exact FastTwoSum identity with the two representability obligations from implication (8) exposed as finite certificates.",
+      "decision": "Use Theorem 2's exact FastTwoSum identity over equation (1), retaining the exact existential ceiling in condition (7), adding no theorem-level overflow premise, and deriving the radix geometry and both exact subtraction steps through the paper's arbitrary-base case analysis and implication (8).",
       "task_id": "P12-T2",
       "theorem_name": "p12_t2_fast_two_sum_exact"
     },
     "T3": {
       "available": true,
-      "decision": "Use Lemma 4's equation (18), composing exact TwoProduct expansions, the FastTwoSum middle-error merge, and the exact final addition.",
+      "decision": "Use Lemma 4's equation (18) over the equation-(1) format and the actual ThreeProduct execution, deriving condition (7), the FastTwoSum middle-error merge, and the exact final addition from the three equation-(17) TwoProduct contracts and source range assumptions.",
       "task_id": "P12-T3",
       "theorem_name": "p12_t3_three_product_exact"
     }
@@ -103,7 +103,7 @@
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
     "Use results proved in this paper rather than definitions, pseudocode, or delegated earlier theorems.",
-    "Expose finite representability obligations explicitly instead of hiding a complete radix implementation in shared definitions.",
+    "Model equation (1), nearest addition, faithful subtraction, TwoProduct equation (17), algorithm linkage, source range assumptions, and condition (7) explicitly; derive exact subtraction and final-addition obligations through the paper's radix argument rather than assuming them.",
     "Preserve the exact error-free transformation identities and the nearest-addition bound.",
     "Keep the fixed Lean setting condition-neutral and paper-scoped.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json; do not count the broader source-only compensated FastTwoSum module."

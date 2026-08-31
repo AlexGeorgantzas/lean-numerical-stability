@@ -2,28 +2,29 @@ import HighamBench.P16Definitions
 
 namespace HighamBench
 
-/-- P16-T2: exact finite form of the backward-error half of Lemma 4.2. The
-computed residual, correction, and update errors yield the next-residual
-recurrence before any second-order terms are dropped. -/
-theorem p16_t2_restarted_residual_recurrence {n : ℕ}
-    (A : P16Matrix n) (b x correction xNext rhat deltaR deltaX : P16Vector n)
-    (epsilonR epsilonU w omega : ℝ)
-    (hresidual : rhat = p16Residual A b x + deltaR)
-    (hupdate : xNext = x + correction + deltaX)
-    (hcorrection :
-      p16VecNorm (rhat - p16MatVec A correction) ≤
-        w * p16VecNorm (p16Residual A b x) +
-          omega * (p16VecNorm b + p16FrobNorm A * p16VecNorm xNext))
-    (hdeltaR :
-      p16VecNorm deltaR ≤
-        epsilonR * (p16VecNorm b + p16FrobNorm A * p16VecNorm x))
-    (hdeltaX : p16VecNorm deltaX ≤ epsilonU * p16VecNorm xNext)
-    (hxmono : p16VecNorm x ≤ p16VecNorm xNext)
-    (hepsilonR : 0 ≤ epsilonR) (hepsilonU : 0 ≤ epsilonU) :
-    p16VecNorm (p16Residual A b xNext) ≤
-      w * p16VecNorm (p16Residual A b x) +
-        (epsilonR + epsilonU + omega) *
-          (p16VecNorm b + p16FrobNorm A * p16VecNorm xNext) := by
+/-- P16-T2: project-corrected backward-error half of Lemma 4.2. The iterate
+comparison used but not assumed by the paper is explicit. -/
+theorem p16_t2_corrected_restarted_residual_recurrence
+    {n : ℕ} {ι : Type*} {l : Filter ι} [l.NeBot]
+    (A : P16Matrix n) (b : P16Vector n) (iteration : ℕ)
+    (scale : ι → ℝ) (hscale : Filter.Tendsto scale l (nhds 0))
+    (hn : 0 < n) (hA : p16IsNonsingular A) (hb : b ≠ 0)
+    (step : P16Lemma42BackwardStep l scale A b iteration)
+    (hiterate :
+      p16FirstOrderLeAt l scale
+        (fun t ↦ p16VecNorm (step.xHat t))
+        (fun t ↦ p16VecNorm (step.xHatNext t))) :
+    (∀ t,
+      p16MatVec A (step.xHatNext t) - b =
+        step.deltaR t + p16MatVec A (step.correctionHat t) -
+          step.residualHat t + p16MatVec A (step.deltaX t)) ∧
+      p16FirstOrderLeAt l scale
+        (fun t ↦ p16VecNorm (p16Residual A b (step.xHatNext t)))
+        (fun t ↦
+          step.w t * p16VecNorm (p16Residual A b (step.xHat t)) +
+            (step.epsilonR t + step.epsilonU t + step.omega t) *
+              (p16VecNorm b +
+                p16FrobNorm A * p16VecNorm (step.xHatNext t))) := by
   -- PROOF_START
   sorry
 

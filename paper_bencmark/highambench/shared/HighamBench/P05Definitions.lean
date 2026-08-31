@@ -21,13 +21,352 @@ noncomputable def p05AbsMatMul {n : ℕ}
     (A B : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fun i j => ∑ k : Fin n, |A i k| * |B k j|
 
-/-- The three source families across which the proof of P05 Lemma 4.1
-distributes its scalar residual: `c`, the computed result, and the products. -/
-noncomputable def p05CoefficientSource {k : ℕ}
-    (computed c : ℝ) (products : Fin k → ℝ) :
-    Option (Option (Fin k)) → ℝ
-  | none => c
-  | some none => computed
-  | some (some i) => products i
+/-- A finite radix format interface for P05's round-to-nearest arithmetic.
+`safeRange` excludes underflow and overflow for an exact operation result. The
+error laws expose equations (2.1b), (2.2), and the square-root estimate (3.7)
+proved in Corollary 3.2. Unlike an unconstrained rounding oracle, they connect
+the format metadata and unit roundoff to every recorded operation. -/
+structure P05FiniteRoundToNearestFormat where
+  radix : ℕ
+  precision : ℕ
+  minExponent : ℤ
+  maxExponent : ℤ
+  radix_ge_two : 2 ≤ radix
+  precision_pos : 0 < precision
+  exponent_range_nonempty : minExponent < maxExponent
+  representable : ℝ → Prop
+  representable_finite : Set.Finite {x | representable x}
+  representable_radix_expansion : ∀ x, representable x →
+    x = 0 ∨ ∃ m e : ℤ,
+      m.natAbs < radix ^ precision ∧
+      minExponent ≤ e ∧ e ≤ maxExponent ∧
+      x = (m : ℝ) * (radix : ℝ) ^ (e - ((precision : ℤ) - 1))
+  safeRange : ℝ → Prop
+  round : ℝ → ℝ
+  unitRoundoff : ℝ
+  unitRoundoff_nonneg : 0 ≤ unitRoundoff
+  unitRoundoff_le_half : unitRoundoff ≤ 1 / 2
+  unitRoundoff_scale :
+    unitRoundoff * (2 * (radix : ℝ) ^ (precision - 1)) = 1
+  zero_representable : representable 0
+  one_representable : representable 1
+  neg_representable : ∀ x, representable x → representable (-x)
+  round_representable : ∀ x, safeRange x → representable (round x)
+  round_nearest : ∀ x, safeRange x → ∀ z, representable z →
+    |x - round x| ≤ |x - z|
+  round_error_to_output : ∀ x, safeRange x →
+    |round x - x| ≤ unitRoundoff * |round x|
+  round_nonnegative : ∀ x, 0 ≤ x → safeRange x → 0 ≤ round x
+  sqrt_round_square_error : ∀ x, 0 ≤ x → representable x →
+    safeRange (Real.sqrt x) →
+      |(round (Real.sqrt x)) ^ 2 - x| ≤
+        2 * unitRoundoff * |(round (Real.sqrt x)) ^ 2|
+  round_exact : ∀ x, representable x → round x = x
+
+/-- A binary tree encoding an arbitrary pairwise evaluation order for a
+nonempty finite sum. -/
+inductive P05SumTree : ℕ → Type
+  | leaf : P05SumTree 1
+  | node {m n : ℕ} : P05SumTree m → P05SumTree n → P05SumTree (m + n)
+
+/-- Evaluation of a P05 summation tree, rounding at every internal addition. -/
+noncomputable def p05SumTreeEval
+    (fmt : P05FiniteRoundToNearestFormat) {n : ℕ}
+    (tree : P05SumTree n) (v : Fin n → ℝ) : ℝ :=
+  match tree with
+  | .leaf => v ⟨0, by norm_num⟩
+  | .node left right =>
+      fmt.round
+        (p05SumTreeEval fmt left (fun i => v (Fin.castAdd _ i)) +
+          p05SumTreeEval fmt right (fun i => v (Fin.natAdd _ i)))
+
+/-- Every exact internal addition in a tree lies in the format's range, which
+is the paper's no-underflow/no-overflow requirement for summation. -/
+def p05SumTreeSafe
+    (fmt : P05FiniteRoundToNearestFormat) {n : ℕ}
+    (tree : P05SumTree n) (v : Fin n → ℝ) : Prop :=
+  match tree with
+  | .leaf => fmt.representable (v ⟨0, by norm_num⟩)
+  | .node left right =>
+      p05SumTreeSafe fmt left (fun i => v (Fin.castAdd _ i)) ∧
+      p05SumTreeSafe fmt right (fun i => v (Fin.natAdd _ i)) ∧
+      fmt.safeRange
+        (p05SumTreeEval fmt left (fun i => v (Fin.castAdd _ i)) +
+          p05SumTreeEval fmt right (fun i => v (Fin.natAdd _ i)))
+
+/-- Rounded products appearing in the computed numerator of P05 Lemma 4.1. -/
+noncomputable def p05RoundedProducts {m : ℕ}
+    (fmt : P05FiniteRoundToNearestFormat)
+    (a b : Fin m → ℝ) : Fin m → ℝ :=
+  fun i => fmt.round (a i * b i)
+
+/-- The summands `c,-fl(a₁b₁),...,-fl(aₘbₘ)` supplied to an
+arbitrary summation tree in P05 Lemma 4.1, where the paper's `k=m+1`. -/
+noncomputable def p05Lemma41Summands {m : ℕ}
+    (fmt : P05FiniteRoundToNearestFormat)
+    (a b : Fin m → ℝ) (c : ℝ) : Fin (m + 1) → ℝ :=
+  Fin.cases c (fun i => -p05RoundedProducts fmt a b i)
+
+/-- The two perturbable source families in Lemma 4.1. The protected input `c`
+is deliberately absent. -/
+noncomputable def p05BackwardSource {m : ℕ}
+    (computedProduct : ℝ) (products : Fin m → ℝ) :
+    Option (Fin m) → ℝ
+  | none => computedProduct
+  | some i => products i
+
+/-- The protected-leaf decomposition of an arbitrary summation tree used in
+the proof of Theorem 3.1. A `merge` is one sibling subtree on the path from the
+protected input to the root. Its error premise is the earlier arbitrary-order
+summation estimate (2.4), while the merge itself is linked to an actual rounded
+addition. The inductive record contains no global residual or backward
+coefficient conclusion. -/
+inductive P05ProtectedSumTrace (fmt : P05FiniteRoundToNearestFormat) :
+    (termCount : ℕ) → (pivotValue outsideExact outsideAbs computed : ℝ) → Prop
+  | leaf (pivotValue : ℝ) (pivot_representable : fmt.representable pivotValue) :
+      P05ProtectedSumTrace fmt 1 pivotValue 0 0 pivotValue
+  | merge {outerCount siblingCount : ℕ}
+      {pivotValue siblingExact siblingAbs siblingComputed outerExact outerAbs computed : ℝ}
+      (pivot_representable : fmt.representable pivotValue)
+      (sibling_count_pos : 0 < siblingCount)
+      (sibling_abs_nonneg : 0 ≤ siblingAbs)
+      (sibling_exact_abs_le : |siblingExact| ≤ siblingAbs)
+      (sibling_computed_representable : fmt.representable siblingComputed)
+      (sibling_error_bound :
+        |siblingComputed - siblingExact| ≤
+          (siblingCount : ℝ) * fmt.unitRoundoff * siblingAbs)
+      (merge_safe : fmt.safeRange (pivotValue + siblingComputed))
+      (outer : P05ProtectedSumTrace fmt outerCount
+        (fmt.round (pivotValue + siblingComputed)) outerExact outerAbs computed) :
+      P05ProtectedSumTrace fmt (outerCount + siblingCount) pivotValue
+        (siblingExact + outerExact) (siblingAbs + outerAbs) computed
+
+/-- A complete finite execution certificate for P05 Lemma 4.1. The tree and
+permutation encode every permitted summation order. Product, addition, and
+division range fields state the absence of underflow and overflow. The
+protected trace exposes the paper's decomposition of that same computation
+into rounded merges and equation (2.4) sibling bounds; it does not assume
+Theorem 3.1, Corollary 3.2, or Lemma 4.1. -/
+structure P05Lemma41Run (m : ℕ) where
+  format : P05FiniteRoundToNearestFormat
+  a : Fin m → ℝ
+  b : Fin m → ℝ
+  bK : ℝ
+  c : ℝ
+  a_representable : ∀ i, format.representable (a i)
+  b_representable : ∀ i, format.representable (b i)
+  bK_representable : format.representable bK
+  c_representable : format.representable c
+  bK_nonzero : bK ≠ 0
+  product_safe : ∀ i, format.safeRange (a i * b i)
+  tree : P05SumTree (m + 1)
+  order : Equiv.Perm (Fin (m + 1))
+  tree_safe : p05SumTreeSafe format tree
+    (fun i => p05Lemma41Summands format a b c (order i))
+  numerator : ℝ
+  numerator_eq : numerator = p05SumTreeEval format tree
+    (fun i => p05Lemma41Summands format a b c (order i))
+  protected_sum_trace : P05ProtectedSumTrace format (m + 1) c
+    (-(∑ i : Fin m, a i * b i))
+    (∑ i : Fin m, |a i * b i|) numerator
+  yHat : ℝ
+  no_division_when_unit : bK = 1 → yHat = numerator
+  division_safe : bK ≠ 1 → format.safeRange (numerator / bK)
+  rounded_division : bK ≠ 1 → yHat = format.round (numerator / bK)
+
+/-- Exact rectangular matrix multiplication for P05 Theorem 4.2. -/
+noncomputable def p05RectMatMul {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  fun i j => ∑ k : Fin n, L i k * U k j
+
+/-- The componentwise absolute product `|L_hat||U_hat|` in Theorem 4.2. -/
+noncomputable def p05RectAbsMatMul {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  fun i j => ∑ k : Fin n, |L i k| * |U k j|
+
+/-- Embed a Doolittle pivot-row index into the rectangular row index. -/
+def p05RectRow {m n : ℕ} (hmn : n ≤ m) (k : Fin n) : Fin m :=
+  Fin.castLE hmn k
+
+/-- Embed an index strictly preceding Doolittle stage `k` into `Fin n`. -/
+def p05PrefixIndex {n : ℕ} (k : Fin n) (s : Fin k.val) : Fin n :=
+  ⟨s.val, lt_trans s.isLt k.isLt⟩
+
+/-- The exact dot product over entries strictly preceding Doolittle stage `k`. -/
+noncomputable def p05DoolittlePrefixDot {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j k : Fin n) : ℝ :=
+  ∑ s : Fin k.val, L i (p05PrefixIndex k s) * U (p05PrefixIndex k s) j
+
+/-- The corresponding absolute-value prefix dot product. -/
+noncomputable def p05DoolittlePrefixAbsDot {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j k : Fin n) : ℝ :=
+  ∑ s : Fin k.val,
+    |L i (p05PrefixIndex k s)| * |U (p05PrefixIndex k s) j|
+
+/-- The exact local product through stage `k`, matching the sums in (4.3). -/
+noncomputable def p05DoolittleThroughPivotDot {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j k : Fin n) : ℝ :=
+  p05DoolittlePrefixDot L U i j k + L i k * U k j
+
+/-- The absolute local product through stage `k`, matching the right sides of
+equations (4.3a) and (4.3b). -/
+noncomputable def p05DoolittleThroughPivotAbsDot {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j k : Fin n) : ℝ :=
+  p05DoolittlePrefixAbsDot L U i j k + |L i k| * |U k j|
+
+/-- One completed upper-row Doolittle evaluation at stage `k`. The nested
+Lemma 4.1 run computes `U_hat[k,j]` from the protected input `A[k,j]`, the
+already computed prefix products, and unit denominator. -/
+structure P05DoolittleUpperEntry {m n : ℕ}
+    (fmt : P05FiniteRoundToNearestFormat) (hmn : n ≤ m)
+    (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (k j : Fin n) where
+  execution : P05Lemma41Run k.val
+  format_eq : execution.format = fmt
+  left_input_eq : ∀ s,
+    execution.a s = L (p05RectRow hmn k) (p05PrefixIndex k s)
+  right_input_eq : ∀ s,
+    execution.b s = U (p05PrefixIndex k s) j
+  denominator_eq : execution.bK = 1
+  protected_input_eq : execution.c = A (p05RectRow hmn k) j
+  computed_output_eq : execution.yHat = U k j
+
+/-- One completed below-diagonal Doolittle evaluation at stage `k`. The nested
+Lemma 4.1 run computes `L_hat[i,k]` after division by the computed pivot
+`U_hat[k,k]`. -/
+structure P05DoolittleLowerEntry {m n : ℕ}
+    (fmt : P05FiniteRoundToNearestFormat)
+    (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (k : Fin n) where
+  execution : P05Lemma41Run k.val
+  format_eq : execution.format = fmt
+  left_input_eq : ∀ s,
+    execution.a s = L i (p05PrefixIndex k s)
+  right_input_eq : ∀ s,
+    execution.b s = U (p05PrefixIndex k s) k
+  denominator_eq : execution.bK = U k k
+  protected_input_eq : execution.c = A i k
+  computed_output_eq : execution.yHat = L i k
+
+/-- A completed rectangular floating-point Doolittle run used in the proof of
+P05 Theorem 4.2. Every stored upper and lower entry has its own arbitrary-order,
+range-certified Lemma 4.1 execution. Thus completion, round-to-nearest
+arithmetic, and the absence of underflow and overflow are explicit without
+storing a Doolittle-specific local estimate or the final matrix bound. -/
+structure P05DoolittleRun (m n : ℕ) where
+  format : P05FiniteRoundToNearestFormat
+  rows_ge_columns : n ≤ m
+  columns_pos : 0 < n
+  A : Fin m → Fin n → ℝ
+  LHat : Fin m → Fin n → ℝ
+  UHat : Fin n → Fin n → ℝ
+  A_representable : ∀ i j, format.representable (A i j)
+  LHat_representable : ∀ i j, format.representable (LHat i j)
+  UHat_representable : ∀ i j, format.representable (UHat i j)
+  LHat_diag : ∀ k : Fin n, LHat (p05RectRow rows_ge_columns k) k = 1
+  LHat_upper_zero : ∀ i j, i.val < j.val → LHat i j = 0
+  UHat_lower_zero : ∀ i j, j.val < i.val → UHat i j = 0
+  upper_entry : ∀ k j, k.val ≤ j.val →
+    P05DoolittleUpperEntry format rows_ge_columns A LHat UHat k j
+  lower_entry : ∀ i k, k.val < i.val →
+    P05DoolittleLowerEntry format A LHat UHat i k
+
+/-- A range-certified execution of P05 Lemma 4.3's rounded square-root
+expression with `m` product terms. Its protected trace records the actual
+arbitrary-order subtraction sum without storing Lemma 4.3's residual bound. -/
+structure P05Lemma43Run (m : ℕ) where
+  format : P05FiniteRoundToNearestFormat
+  a : Fin m → ℝ
+  b : Fin m → ℝ
+  c : ℝ
+  a_representable : ∀ i, format.representable (a i)
+  b_representable : ∀ i, format.representable (b i)
+  c_representable : format.representable c
+  product_safe : ∀ i, format.safeRange (a i * b i)
+  tree : P05SumTree (m + 1)
+  order : Equiv.Perm (Fin (m + 1))
+  tree_safe : p05SumTreeSafe format tree
+    (fun i => p05Lemma41Summands format a b c (order i))
+  numerator : ℝ
+  numerator_eq : numerator = p05SumTreeEval format tree
+    (fun i => p05Lemma41Summands format a b c (order i))
+  protected_sum_trace : P05ProtectedSumTrace format (m + 1) c
+    (-(∑ i : Fin m, a i * b i))
+    (∑ i : Fin m, |a i * b i|) numerator
+  numerator_nonneg : 0 ≤ numerator
+  sqrt_safe : format.safeRange (Real.sqrt numerator)
+  yHat : ℝ
+  rounded_sqrt : yHat = format.round (Real.sqrt numerator)
+
+/-- Exact prefix Gram entry used by the conventional Cholesky algorithm. -/
+noncomputable def p05CholeskyPrefixDot {n : ℕ}
+    (R : Fin n → Fin n → ℝ) (i j : Fin n) : ℝ :=
+  ∑ k : Fin i.val,
+    R (p05PrefixIndex i k) i * R (p05PrefixIndex i k) j
+
+/-- Absolute-value counterpart of the Cholesky prefix Gram entry. -/
+noncomputable def p05CholeskyPrefixAbsDot {n : ℕ}
+    (R : Fin n → Fin n → ℝ) (i j : Fin n) : ℝ :=
+  ∑ k : Fin i.val,
+    |R (p05PrefixIndex i k) i| * |R (p05PrefixIndex i k) j|
+
+/-- Cholesky's Gram entry through row `i`, including the newly computed term. -/
+noncomputable def p05CholeskyThroughDot {n : ℕ}
+    (R : Fin n → Fin n → ℝ) (i j : Fin n) : ℝ :=
+  p05CholeskyPrefixDot R i j + R i i * R i j
+
+/-- Absolute Cholesky Gram entry through row `i`. -/
+noncomputable def p05CholeskyThroughAbsDot {n : ℕ}
+    (R : Fin n → Fin n → ℝ) (i j : Fin n) : ℝ :=
+  p05CholeskyPrefixAbsDot R i j + |R i i| * |R i j|
+
+/-- One computed off-diagonal entry in a conventional Cholesky column. -/
+structure P05CholeskyOffDiagonalEntry {n : ℕ}
+    (fmt : P05FiniteRoundToNearestFormat)
+    (A R : Fin n → Fin n → ℝ) (i j : Fin n) where
+  execution : P05Lemma41Run i.val
+  format_eq : execution.format = fmt
+  left_input_eq : ∀ k,
+    execution.a k = R (p05PrefixIndex i k) i
+  right_input_eq : ∀ k,
+    execution.b k = R (p05PrefixIndex i k) j
+  denominator_eq : execution.bK = R i i
+  protected_input_eq : execution.c = A i j
+  computed_output_eq : execution.yHat = R i j
+
+/-- One computed diagonal square-root entry in a conventional Cholesky column. -/
+structure P05CholeskyDiagonalEntry {n : ℕ}
+    (fmt : P05FiniteRoundToNearestFormat)
+    (A R : Fin n → Fin n → ℝ) (j : Fin n) where
+  execution : P05Lemma43Run j.val
+  format_eq : execution.format = fmt
+  left_input_eq : ∀ k,
+    execution.a k = R (p05PrefixIndex j k) j
+  right_input_eq : ∀ k,
+    execution.b k = R (p05PrefixIndex j k) j
+  protected_input_eq : execution.c = A j j
+  computed_output_eq : execution.yHat = R j j
+
+/-- A completed conventional floating-point Cholesky execution for P05
+Theorem 4.4. Each column entry is linked to its arbitrary-order, range-certified
+subtraction/division or subtraction/square-root execution. -/
+structure P05CholeskyRun (n : ℕ) where
+  format : P05FiniteRoundToNearestFormat
+  dimension_pos : 0 < n
+  A : Fin n → Fin n → ℝ
+  RHat : Fin n → Fin n → ℝ
+  A_representable : ∀ i j, format.representable (A i j)
+  A_symmetric : ∀ i j, A i j = A j i
+  RHat_lower_zero : ∀ i j, j.val < i.val → RHat i j = 0
+  off_diagonal_entry : ∀ i j, i.val < j.val →
+    P05CholeskyOffDiagonalEntry format A RHat i j
+  diagonal_entry : ∀ j,
+    P05CholeskyDiagonalEntry format A RHat j
 
 end HighamBench

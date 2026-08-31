@@ -1,15 +1,18 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, and exact finite-restart strengthening of Theorem 6.3",
+    "kind": "source selection, tier label, fixed-run first-order strengthening, operational mixed-precision restarted MGS-GMRES contract, and formal composition of Theorem 6.3",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The dimension factor and both unit-roundoff parameters are nonnegative.",
-    "The mixed-precision factor Lambda = c*uLow*kappaF(A) is strictly less than one.",
-    "At each restart, backward error contracts by Lambda whenever it remains above the high-precision backward floor.",
-    "At each restart, forward error contracts by Lambda whenever it remains above the high-precision forward floor.",
-    "Ainv is supplied as the inverse representative used to form the Frobenius condition-number factor."
+    "The dimension is positive; A is nonsingular; b is nonzero; xExact solves A*xExact=b; and Ainv has both inverse actions, so kappa_F(A)=||Ainv||_F*||A||_F uses the actual inverse.",
+    "One fixed execution uses the same positive unit roundoffs uHigh and uLow at every restart; no separate uHigh <= uLow restriction is imposed because Theorem 6.3 does not print one.",
+    "At every restart, the computed residual and update satisfy the exact high-precision equations (6.19) and (6.20), including their componentwise error bounds.",
+    "Every correction exposes the fully stored low-precision MGS projection, update, and normalization operations for a positive restart-dependent key dimension k_i <= n, identifies the cast residual with its norm times the first Arnoldi basis vector, and records the Arnoldi product, columnwise augmented least-squares, and rounded correction-formation models.",
+    "Each low-precision operation error is tied to uLow, and witness forms of conditions (3.5)-(3.8), the coefficients in (3.12), and the correction-level estimates inherited from the earlier MGS-GMRES analysis are explicit; no global Theorem 4.1 recurrence is stored.",
+    "A nonnegative bivariate polynomial represents the paper's dimension-only c(n,k), and each contraction and floor evaluates it at the actual restart key dimension k_i rather than at an artificial uniform index.",
+    "Every Lambda_i=c(n,k_i)*uLow*kappa_F(A) is a nonnegative strict contraction. The exact-real standard model excludes underflow, overflow, NaNs, and infinities.",
+    "The target gives exact affine inequalities as a strengthening of the paper's first-order lesssim notation; it does not introduce a fixed-precision remainder certificate or a stationary 1/(1-Lambda) denominator."
   ],
   "author_label": "Theorem 6.3",
   "classification_frozen_before_runs": false,
@@ -19,14 +22,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P16/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p16_t3_mixed_precision_geometric_convergence {n : Nat} (A Ainv : P16Matrix n) (c uLow uHigh : Real) (backwardError forwardError : Nat -> Real) ... : 0 <= p16BackwardFloor c uHigh and 0 <= p16ForwardFloor c uHigh A Ainv and forall i, p16MixedContraction c uLow A Ainv ^ i <= 1 and ...",
+    "lean_header": "theorem p16_t3_mixed_precision_geometric_convergence {n : Nat} (run : P16FixedMixedPrecisionGMRESRun n) (hLambda : forall i, 0 <= p16FixedMixedContraction run i and p16FixedMixedContraction run i < 1) : (forall i, actualBackwardError_(i+1) <= Lambda_i*actualBackwardError_i + backwardFloor_i) and (forall i, actualForwardError_(i+1) <= Lambda_i*actualForwardError_i + forwardFloor_i)",
     "namespace": "HighamBench",
-    "plain_language": "For every finite run of consecutive above-floor restarts, the mixed-precision backward and forward errors are bounded by Lambda to the number of restarts times their initial values.",
+    "plain_language": "For one fixed-precision restarted MGS-GMRES execution, every actual normalized backward and relative forward error obeys the paper's restart-local low-precision contraction plus its corresponding high-precision attainable floor.",
     "target_file": "paper_bencmark/highambench/tasks/P16/T3/Target.lean",
     "theorem_name": "p16_t3_mixed_precision_geometric_convergence"
   },
-  "informal_proof": "Prove the Frobenius condition factor, contraction factor, and attainable floors are nonnegative. Use Lambda < 1 to bound every power by one, then induct on the restart count and apply the conditional contraction at the final step.",
-  "informal_statement": "Exact finite interpretation of Theorem 6.3's claim that mixed-precision restarted GMRES contracts by Lambda until it reaches the high-precision attainable floors.",
+  "informal_proof": "At each restart, use the high-precision residual and update equations to split the next actual backward and forward errors into the low-precision MGS correction defect and the high-precision roundoff contribution. Apply the correction-level estimates inherited from the earlier MGS-GMRES analysis and the normalized high-precision bounds, both evaluated with c(n,k_i), and add the inequalities.",
+  "informal_statement": "Theorem 6.3's fixed-run first-order contraction for actual mixed-precision restarted MGS-GMRES errors, with Lambda_i=c(n,k_i)uLow*kappa_F(A), backward floor c(n,k_i)uHigh, and forward floor c(n,k_i)uHigh*kappa_F(A).",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -42,25 +45,70 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.frobNorm_nonneg"
+      "NumStability.frobNorm_nonneg",
+      "NumStability.vecNorm2_add_le",
+      "NumStability.vecNorm2_nonneg"
     ],
-    "note": "The frozen baseline can certify nonnegativity of the Frobenius condition factor, but searches of all 24 mounted modules found no GMRES, restarted-GMRES, mixed-precision convergence, or conditional geometric-until-floor theorem."
+    "note": "The 24-module frozen baseline has useful Euclidean/Frobenius norm lemmas but no GMRES, Arnoldi, restarted mixed-precision execution, actual-error contraction, or Theorem 6.3 specialization. A broader source checkout contains generic iterative-refinement material, but that module is not mounted in condition L and does not state this result."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "P16Matrix",
+    "P16Vector",
+    "P16RectMatrix",
+    "p16MatVec",
+    "p16RectMatVec",
+    "p16SquareRectMul",
+    "p16RectMatMul",
+    "p16VecNorm",
     "p16FrobNorm",
+    "p16Residual",
     "p16ConditionNumberF",
-    "p16MixedContraction",
-    "p16BackwardFloor",
-    "p16ForwardFloor"
+    "p16BackwardError",
+    "p16ForwardError",
+    "p16AugmentedColumn",
+    "P16PolynomialFactor",
+    "p16PolynomialFactorValue",
+    "P16FixedLowPrecisionMGSRestart",
+    "P16FixedMixedPrecisionGMRESRun",
+    "p16FixedMixedContraction",
+    "p16FixedBackwardFloor",
+    "p16FixedForwardFloor"
   ],
   "source_locations": [
     {
-      "anchor": "Theorem 6.3, contraction condition (6.17) and attainable error floors (6.18)",
+      "anchor": "definitions of normwise backward and forward errors",
+      "pdf_page": 4,
+      "printed_page": "1942",
+      "role": "actual error notions and Frobenius condition number",
+      "section": "2. Notation"
+    },
+    {
+      "anchor": "conditions (3.1)-(3.8)",
+      "pdf_page": 6,
+      "printed_page": "1944-1946",
+      "role": "modular GMRES operation models, numerical-rank assumptions, and key dimension",
+      "section": "3. Backward error analysis of MOD-GMRES"
+    },
+    {
+      "anchor": "Algorithm 2 and Theorem 4.1, equations (4.1)-(4.11)",
+      "pdf_page": 17,
+      "printed_page": "1955-1956",
+      "role": "restarted execution, inherited iterate comparison, contraction factors, and attainable floors",
+      "section": "4. Backward error analysis of restarted MOD-GMRES"
+    },
+    {
+      "anchor": "Theorem 5.2 and its proof",
+      "pdf_page": 27,
+      "printed_page": "1965-1967",
+      "role": "fully stored MGS-Arnoldi correction solve and key-dimension certificate",
+      "section": "5.3 MGS-GMRES"
+    },
+    {
+      "anchor": "Theorem 6.3 and equations (6.17)-(6.21)",
       "pdf_page": 40,
-      "printed_page": "1978",
-      "role": "mixed-precision restarted-GMRES convergence statement",
+      "printed_page": "1978-1979",
+      "role": "mixed-precision contraction, high-precision floors, residual/update models, low cast, and factor specialization",
       "section": "6.3 Mixed precision restarted GMRES"
     }
   ],
@@ -70,7 +118,7 @@
   "task_id": "P16-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "The frozen library contributes only the primitive Frobenius nonnegativity used for the condition factor. The task adds the paper-specific mixed-precision floors, conditional restart semantics, and a finite Lambda-power induction absent from every mounted module.",
+  "tier_rationale": "The mounted condition-L library supplies only generic Euclidean and Frobenius norm facts useful in the residual and update decompositions. It contains no MGS-Arnoldi execution model, restart-dependent key-dimension framework, mixed-precision operation linkage, actual GMRES error definitions, or Theorem 6.3 composition theorem. Both conditions must establish the paper-specific actual-error split and combine the two precision regimes, so the selected result remains an extension task.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P16/T3/Target.lean",
     "mode": "shared automatic validator",

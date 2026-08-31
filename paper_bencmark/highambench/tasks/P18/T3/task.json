@@ -1,12 +1,17 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, exact two-regime realization, and small-step comparison extending Method 4s3pC",
+    "kind": "source selection, exact-tableau interpretation, complete Method 4s3pC order conditions, algorithm-linked local errors, explicit stability semantics, two global error regimes, and tier review",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The normalized time step h lies between zero and one.",
-    "The perturbation magnitude epsilon is nonnegative."
+    "An underlying exact four-stage Method 4s3pC tableau is supplied because the paper prints only rounded decimal coefficients; it has b^epsilon=0, satisfies all four exact consistency conditions through order three, and satisfies every exact simplified smooth condition (3.5a)-(3.5f).",
+    "Both branches consist of actual executions of the original additive Runge--Kutta algorithm (3.1), using the same exact tableau, operator pair, perturbation operator, epsilon, and chained computed and exact states.",
+    "The state is an arbitrary normed real vector space; the theorem does not select a dimension or norm for the paper.",
+    "The smooth branch is tagged well-behaved and has local errors O(h^4)+O(epsilon*h^4); the nonsmooth branch is tagged not-well-behaved and has local errors O(h^4)+O(epsilon*h^3).",
+    "For each branch, epsilon is positive, step sizes are nonnegative, the number of steps times the step size is at most a fixed nonnegative horizon, and all local and stability constants are nonnegative.",
+    "Stability means each accumulated global scheme or perturbation contribution is bounded by one stability constant times the sum of the corresponding algorithm-linked local error norms.",
+    "The exact-real model adds no IEEE rounding mode, unit-roundoff formula, overflow, underflow, subnormal, NaN, infinity, or solver-failure semantics."
   ],
   "author_label": null,
   "classification_frozen_before_runs": false,
@@ -16,14 +21,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P18/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p18_t3_smooth_nonsmooth_method_error_bounds {n : Nat} (h epsilon : Real) (scheme perturbation : Fin n -> Real) (hh0 : 0 <= h) (hh1 : h <= 1) (hepsilon : 0 <= epsilon) : smooth_exact_bound and nonsmooth_exact_bound and smooth_envelope <= nonsmooth_envelope",
+    "lean_header": "theorem p18_t3_method4s3pc_global_error_regimes {State : Type*} [NormedAddCommGroup State] [NormedSpace Real State] {iota : Type*} (method : P18Method4s3pCSourceModel) (smooth : P18StableMethod4s3pCBranch State iota method 4) (nonsmooth : P18StableMethod4s3pCBranch State iota method 3) (hsmooth : smooth.tauRegime = wellBehaved) (hnonsmooth : nonsmooth.tauRegime = notWellBehaved) : method has zero perturbation weights, exact third-order consistency, and every exact smooth order-three condition, and smooth.globalError is O(h^3)+O(epsilon*h^3), and nonsmooth.globalError is O(h^3)+O(epsilon*h^2)",
     "namespace": "HighamBench",
-    "plain_language": "Method 4s3pC's smooth third-order precision error and nonsmooth second-order precision error satisfy exact Euclidean envelopes, and the smooth envelope is smaller on a normalized small time step.",
+    "plain_language": "For stable, algorithm-linked Method 4s3pC families, the scheme contribution is globally third order in both cases; the perturbation contribution is globally third order when tau is well-behaved and second order otherwise. The complete exact coefficient conditions used by the source remain visible.",
     "target_file": "paper_bencmark/highambench/tasks/P18/T3/Target.lean",
-    "theorem_name": "p18_t3_smooth_nonsmooth_method_error_bounds"
+    "theorem_name": "p18_t3_method4s3pc_global_error_regimes"
   },
-  "informal_proof": "Apply the vector triangle and homogeneity inequalities to both error representatives. Normalize absolute values using h and epsilon nonnegativity. Since zero is at most h and h is at most one, h cubed is at most h squared; multiply this inequality by the nonnegative perturbation coefficient norm to compare the envelopes.",
-  "informal_statement": "Exact finite-vector bounds for the smooth and nonsmooth Method 4s3pC error regimes, plus their small-step ordering.",
+  "informal_proof": "Retain the exact tableau's zero perturbation weights and complete order-condition records. For each asymptotic parameter, sum the local scheme bounds and use stability to bound the global scheme contribution. Replace the finite sum by N times its uniform local bound, use N*h <= T, and obtain a hidden global constant times h^3. Repeat for the perturbation contribution: local epsilon*h^4 yields global epsilon*h^3 in the well-behaved branch, while local epsilon*h^3 yields global epsilon*h^2 in the other branch. Package the two contributions separately with existential constants.",
+  "informal_statement": "Method 4s3pC's two stability-conditional page-18 global error regimes, retaining the complete exact third-order and smooth perturbation conditions and deriving the one-power local-to-global loss for actual additive Runge--Kutta executions.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -39,50 +44,77 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.vecNorm2_add_le",
-      "NumStability.vecNorm2_smul",
-      "NumStability.vecNorm2_nonneg"
+      "NumStability.vecNorm2_nonneg",
+      "NumStability.vecNorm2_add_le"
     ],
-    "note": "The mounted library contains only the generic Euclidean primitives. It has no Runge\u2013Kutta, Method 4s3pC, smooth/nonsmooth perturbation, or h-cubed versus h-squared regime-comparison theorem."
+    "note": "The frozen library contains generic Euclidean norm facts but no additive Runge--Kutta execution, Method 4s3pC tableau, B-series order conditions, stability accumulation model, local-to-global order theorem, or smooth-versus-nonsmooth two-regime result."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "p18VecNorm2Sq",
-    "p18VecNorm2",
-    "p18Add",
-    "p18Scale",
-    "p18SmoothMethodError",
-    "p18NonsmoothMethodError"
+    "p18CoeffDot",
+    "p18CoeffMatVec",
+    "p18CoeffMatAdd",
+    "p18CoeffHadamard",
+    "p18Method4s3pCA",
+    "p18Method4s3pCAPerturbation",
+    "p18Method4s3pCB",
+    "p18Method4s3pCBPerturbation",
+    "p18Method4s3pCE",
+    "p18Method4s3pCC",
+    "p18Method4s3pCCPerturbation",
+    "p18Method4s3pCATilde",
+    "p18Method4s3pCCTilde",
+    "p18Method4s3pCBTilde",
+    "P18AdditiveRKTableau",
+    "p18TableauE",
+    "p18TableauATilde",
+    "p18TableauBTilde",
+    "p18TableauC",
+    "p18TableauCPerturbation",
+    "p18TableauCTilde",
+    "p18ThirdOrderConsistency",
+    "p18SmoothPerturbationOrderThree",
+    "P18Method4s3pCSourceModel",
+    "P18TauRegime",
+    "p18UniformTwoTermGlobalOrder",
+    "P18StableMethod4s3pCBranch"
   ],
   "source_locations": [
     {
-      "anchor": "Method 4s3pC coefficients and the two displayed smooth and nonsmooth error forms",
-      "pdf_page": 18,
-      "printed_page": "18",
-      "role": "third-order versus second-order perturbation regimes",
-      "section": "4.3 A Method that Satisfies the Simplified Order Conditions"
+      "anchor": "third-order consistency conditions preceding Section 3.1.1",
+      "pdf_page": 7,
+      "printed_page": "7",
+      "role": "consistency conditions through order three",
+      "section": "3.1 Perturbation Conditions"
     },
     {
-      "anchor": "Figure 6 interpretation of well-behaved and chopped perturbations",
-      "pdf_page": 19,
-      "printed_page": "19",
-      "role": "regime interpretation and observed order reduction",
+      "anchor": "simplified perturbation conditions (3.5a)-(3.5f)",
+      "pdf_page": 8,
+      "printed_page": "8",
+      "role": "smooth perturbation conditions through order three",
+      "section": "3.1.2 Perturbation Conditions when tau is Well Behaved"
+    },
+    {
+      "anchor": "Method 4s3pC coefficient displays and following smooth and nonsmooth error-form discussion",
+      "pdf_page": 18,
+      "printed_page": "18",
+      "role": "four-stage coefficient data and the intended regularity distinction",
       "section": "4.3 A Method that Satisfies the Simplified Order Conditions"
     }
   ],
   "source_tags": [
-    "EQN",
-    "TXT"
+    "TXT",
+    "UNL"
   ],
   "task_id": "P18-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "The proof uses frozen Euclidean norm primitives but adds both paper-specific Method 4s3pC representatives and the exact small-step ordering between the smooth and nonsmooth asymptotic envelopes.",
+  "tier_rationale": "The task extends beyond the frozen library by modeling exact Method 4s3pC order conditions, actual chained additive Runge--Kutta executions, regularity-dependent local errors, stability accumulation, and the finite-horizon local-to-global argument that yields both page-18 asymptotic regimes. No frozen declaration states or materially packages this analysis.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P18/T3/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p18_t3_smooth_nonsmooth_method_error_bounds"
+    "required_declaration": "HighamBench.p18_t3_method4s3pc_global_error_regimes"
   }
 }

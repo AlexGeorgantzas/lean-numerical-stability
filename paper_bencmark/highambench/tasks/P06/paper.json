@@ -15,7 +15,7 @@
     "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P06-T1",
@@ -55,8 +55,8 @@
       "reason": "The rectangular concentration theorem relies on the delegated Theorem 3.1 and conditional-expectation machinery absent from the frozen bundle; its exact paper-specific dilation step is retained in P06-T2."
     },
     {
-      "candidate": "full Lemmas 4.1-4.3 and Theorem 4.4",
-      "reason": "Their printed conclusions combine probability events, a technical probability-one assumption, and O(u^2) terms. P06-T3 retains the exact product-expansion core, while P06-T1 retains the exact norm aggregation consequence."
+      "candidate": "full proofs of Lemmas 4.1-4.3",
+      "reason": "Their concentration arguments and detailed local-error constructions require a probabilistic proof stack absent from the frozen bundle. P06-T3 separately retains the exact product-expansion core, while P06-T1 selects only the paper's explicit implication from the already established simultaneous column bounds (4.17) to the Frobenius bound (4.20)."
     },
     {
       "candidate": "Theorem 4.5",
@@ -78,7 +78,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use equation (4.20)'s exact columnwise-to-Frobenius implication.",
+      "decision": "Use the explicit sentence preceding equation (4.20): the simultaneous columnwise bounds (4.17), with their exact coefficient and O(u^2) remainders, imply the Frobenius-norm bound (4.20) with one O(u^2) remainder.",
       "task_id": "P06-T1",
       "theorem_name": "p06_t1_columnwise_to_frobenius"
     },
@@ -90,7 +90,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use equations (4.8)-(4.9)'s first-order perturbed-product expansion with an explicit exact higher-order remainder.",
+      "decision": "Use both forms of equations (4.8)-(4.9), retaining the Model 1.5 computed Householder product, the probability-one local bound, a matrix-valued O(u^2) remainder, and the exact Q^T/F_j factor ordering.",
       "task_id": "P06-T3",
       "theorem_name": "p06_t3_householder_product_first_order_expansion"
     }
@@ -98,7 +98,7 @@
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
     "Use a finite claim made and proved in this paper.",
-    "Reject experiments, vague asymptotics, and claims whose proof is mainly delegated elsewhere.",
+    "Reject experiments and claims whose proof is mainly delegated elsewhere; when a selected displayed result contains asymptotic notation, represent that notation explicitly rather than deleting it.",
     "Prefer exact displayed bounds and identities.",
     "Keep the fixed Lean setting condition-neutral and paper-scoped.",
     "Assign tiers only after verified frozen-library searches."

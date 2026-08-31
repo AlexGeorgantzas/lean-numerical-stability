@@ -1,13 +1,13 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, exact coefficient assembly, and notation adapter",
+    "kind": "faithfulness repair of Theorem 4.1 with an indexed Algorithm 1.1 execution contract",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The paper's condition c\u2081 \u03ba(A) u_s < 1 makes the displayed denominator positive.",
-    "The three scalar hypotheses are the norm bounds for equation (4.1)'s residual-computation, correction-solve, and update-rounding terms.",
-    "R, D, and Y denote nonnegative norm quantities in the paper application."
+    "The system dimension is positive and A is nonsingular, witnessed by the inverse action of Ainv.",
+    "The indexed computed quantities satisfy Algorithm 1.1's exact residual and update equations, componentwise error models (3.3) and (3.6), and normwise correction-solver condition (2.4).",
+    "The unit roundoffs satisfy u_r <= u <= u_s <= u_f, gamma_p^r has a positive denominator, c1_i and c2_i are nonnegative, and c1_i*kappa_inf(A)*u_s < 1 pointwise."
   ],
   "author_label": "Theorem 4.1",
   "classification_frozen_before_runs": false,
@@ -17,14 +17,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P03/T2/context.md",
   "formal_statement": {
-    "lean_header": "theorem p03_t2_normwise_residual_contraction (u us gammaR c1 c2 kappa R D Y eRes eSolve eUpdate Rnext : \u211d) ... : Rnext \u2264 \u03b1 * R + \u03b2",
+    "lean_header": "theorem p03_t2_normwise_residual_contraction {n : \u2115} (run : P03NormwiseIRRun n) (i : \u2115) : p03VecInfNorm (p03ExactResidual run (i + 1)) \u2264 p03Alpha run i * p03VecInfNorm (p03ExactResidual run i) + p03Beta run i",
     "namespace": "HighamBench",
-    "plain_language": "The three one-step norm bounds combine to the exact \u03b1\u1d62 residual contraction plus \u03b2\u1d62 floor in Theorem 4.1.",
+    "plain_language": "Every indexed execution satisfying Algorithm 1.1's residual, correction-solver, and update contracts obeys the exact alpha_i residual contraction plus beta_i floor in Theorem 4.1.",
     "target_file": "paper_bencmark/highambench/tasks/P03/T2/Target.lean",
     "theorem_name": "p03_t2_normwise_residual_contraction"
   },
-  "informal_proof": "Bound the three terms in equation (4.1), substitute the solver-residual estimate, and collect the old-residual coefficient and remaining floor terms.",
-  "informal_statement": "The exact finite coefficient assembly in Theorem 4.1.",
+  "informal_proof": "Use Ainv and (2.4) to bound and isolate the correction defect; derive norm bounds from the componentwise models (3.3) and (3.6); substitute them into the exact one-step identity (4.1); then collect the exact alpha_i and beta_i coefficients.",
+  "informal_statement": "The exact Algorithm 1.1 normwise residual recurrence in Theorem 4.1.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -40,27 +40,72 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
+      "NumStability.abs_le_infNormVec",
+      "NumStability.infNormVec_le_of_abs_le",
+      "NumStability.infNormVec_matMulVec_le",
       "NumStability.one_step_residual_bound",
-      "NumStability.r_hat_abs_bound",
-      "NumStability.linear_contraction"
+      "NumStability.r_hat_abs_bound"
     ],
-    "note": "The library supplies the one-step residual and computed-residual ingredients but not Carson--Higham's four-precision \u03b1\u1d62 and \u03b2\u1d62 coefficient assembly."
+    "note": "The library supplies reusable infinity-norm and iterative-refinement ingredients, but no declaration states Carson--Higham Theorem 4.1 with its Algorithm 1.1 execution model, solver denominator, and exact alpha_i/beta_i coefficients."
   },
   "schema_version": "highambench-task-0.3",
-  "shared_symbols": [],
+  "shared_symbols": [
+    "p03MatVec",
+    "p03VecAbs",
+    "p03MatAbs",
+    "p03VecInfNorm",
+    "p03MatInfNorm",
+    "p03AugmentedRowNnz",
+    "p03MaxAugmentedRowNnz",
+    "P03NormwiseIRRun",
+    "p03ExactResidual",
+    "p03CorrectionDefect",
+    "p03KappaInf",
+    "p03CorrectionRatio",
+    "p03Alpha",
+    "p03Beta"
+  ],
   "source_locations": [
     {
-      "anchor": "equation (4.1) and the displayed derivation immediately before Theorem 4.1",
+      "anchor": "Algorithm 1.1",
+      "pdf_page": 2,
+      "printed_page": "A818",
+      "role": "indexed unscaled iterative-refinement computation and precision roles",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "equations (2.1) and (2.4)",
+      "pdf_page": 5,
+      "printed_page": "A821",
+      "role": "infinity-norm condition number and correction-solver contract",
+      "section": "2. Preliminaries"
+    },
+    {
+      "anchor": "equations (3.3) and (3.6)",
+      "pdf_page": 7,
+      "printed_page": "A823",
+      "role": "computed residual and update error models",
+      "section": "3. Rounding error analysis"
+    },
+    {
+      "anchor": "equation (4.1) and the correction-defect derivation",
+      "pdf_page": 8,
+      "printed_page": "A824",
+      "role": "exact one-step identity and inverse-based defect estimate",
+      "section": "4. Normwise backward error analysis"
+    },
+    {
+      "anchor": "isolated correction-defect bound and displayed derivation immediately before Theorem 4.1",
       "pdf_pages": "8-9",
       "printed_pages": "A824-A825",
-      "role": "three one-step norm bounds",
+      "role": "one-step norm bounds and exact coefficient derivation",
       "section": "4. Normwise backward error analysis"
     },
     {
       "anchor": "Theorem 4.1",
       "pdf_page": 9,
       "printed_page": "A825",
-      "role": "normwise residual recurrence with \u03b1\u1d62 and \u03b2\u1d62",
+      "role": "normwise residual recurrence with alpha_i and beta_i",
       "section": "4. Normwise backward error analysis"
     }
   ],
@@ -70,7 +115,7 @@
   "task_id": "P03-T2",
   "tier": "T2",
   "tier_label": "combine",
-  "tier_rationale": "The frozen module NumStability/Algorithms/IterativeRefinement.lean provides NumStability.one_step_residual_bound, NumStability.r_hat_abs_bound, and NumStability.linear_contraction. The target must combine these shapes with the paper-specific solver denominator and collect the exact \u03b1\u1d62 and \u03b2\u1d62 coefficients; no one declaration states that result.",
+  "tier_rationale": "The frozen library provides infinity-norm conversion and matrix-vector bounds, together with generic iterative-refinement residual ingredients such as NumStability.r_hat_abs_bound and NumStability.one_step_residual_bound. The target combines those shapes with the paper-specific indexed execution contract, inverse-based solver-defect isolation, and exact alpha_i/beta_i collection; no one declaration states the result.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P03/T2/Target.lean",
     "mode": "shared automatic validator",

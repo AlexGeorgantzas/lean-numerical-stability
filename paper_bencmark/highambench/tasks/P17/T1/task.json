@@ -1,12 +1,16 @@
 {
   "annotation": {
-    "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and deterministic one-atom specialization of Theorem 3.6",
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, explicit source-defect correction, and provisional tier review for Theorem 3.6",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The truncation radius B is between zero and one.",
-    "Every finite relative-error factor has magnitude at most B."
+    "The number n of product factors is positive.",
+    "The finite probability law has nonnegative masses summing to one.",
+    "The bias radius satisfies 0 < B <= 1.",
+    "Every random rounding factor 1 + delta_k is nonnegative.",
+    "Every bias beta_k satisfies |beta_k| <= B, and each beta_k after the first is determined by the preceding errors.",
+    "For every history-measurable finite test function X, E[X delta_k] = E[X beta_k]."
   ],
   "author_label": "Theorem 3.6",
   "classification_frozen_before_runs": false,
@@ -16,14 +20,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P17/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p17_t1_product_bias_envelope (n : Nat) (B : Real) (hB0 : 0 <= B) (hB1 : B <= 1) (delta : Fin n -> Real) (hdelta : forall i, abs (delta i) <= B) : (1-B)^n <= product i, (1+delta i) and product i, (1+delta i) <= (1+B)^n",
+    "lean_header": "theorem p17_t1_corrected_product_bias_envelope {n : Nat} {Omega : Type*} [Fintype Omega] (run : P17CorrectedProductBiasRun n Omega) : (1-run.B)^n <= p17ExpectedErrorProduct run and p17ExpectedErrorProduct run <= (1+run.B)^n",
     "namespace": "HighamBench",
-    "plain_language": "A finite product of relative-error factors bounded by B lies between the lower and upper binomial envelopes from Theorem 3.6.",
+    "plain_language": "Under the corrected sign conditions and Theorem 3.6's bounded conditional-bias hypotheses, the expected product of the random relative-error factors lies between the lower and upper binomial envelopes.",
     "target_file": "paper_bencmark/highambench/tasks/P17/T1/Target.lean",
-    "theorem_name": "p17_t1_product_bias_envelope"
+    "theorem_name": "p17_t1_corrected_product_bias_envelope"
   },
-  "informal_proof": "Each factor lies between 1-B and 1+B. Since B is at most one, the lower factors are nonnegative, so monotonicity of finite products gives both bounds.",
-  "informal_statement": "The deterministic one-atom specialization of Theorem 3.6's expectation envelope for accumulated limited-precision stochastic-rounding errors.",
+  "informal_proof": "Induct on prefix length. The prefix product is nonnegative and depends only on earlier errors, so the conditional-mean identity replaces the next delta by beta inside its expectation. The bound |beta_k| <= B and expectation monotonicity place the next expectation between (1-B) and (1+B) times the preceding expectation. The explicit condition B <= 1 preserves both inequalities through the induction.",
+  "informal_statement": "A project-corrected finite-probability version of Theorem 3.6's expected accumulated-product envelope, with the proof-required nonnegativity conditions made explicit.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -37,29 +41,42 @@
   "result_form_tag": "BND",
   "review_record_not_for_run_prompt": {
     "exact_target_found_in_mathlib": false,
-    "exact_target_found_in_numstability_baseline": true,
+    "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
+      "NumStability.FiniteProbability.expectationReal_add",
+      "NumStability.FiniteProbability.expectationReal_mul_const",
+      "NumStability.FiniteProbability.expectationReal_mono",
       "NumStability.prod_one_add_delta_bounds"
     ],
-    "note": "The frozen RoundingProductBounds module contains the same finite product envelope; the L proof is a direct application after paper-scoped renaming."
+    "note": "The frozen library supplies finite-expectation algebra and a deterministic pointwise product envelope, but no result combines bounded history-conditional biases into this expected-product theorem. The private L construction must still perform the paper-specific induction."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "p17Gamma"
+    "P17CorrectedProductBiasRun",
+    "p17ExpectedErrorProduct",
+    "p17Expectation",
+    "p17HistoryMeasurable"
   ],
   "source_locations": [
+    {
+      "anchor": "Lemma 3.2 conditional-bias identity",
+      "pdf_page": 8,
+      "printed_page": "B1234",
+      "role": "supporting conditional-expectation semantics",
+      "section": "3. Properties of limited-precision stochastic rounding"
+    },
     {
       "anchor": "Theorem 3.6 product expectation envelope",
       "pdf_page": 9,
       "printed_page": "B1235",
-      "role": "finite accumulated-error product bound",
+      "role": "selected finite accumulated-error product bound",
       "section": "3. Properties of limited-precision stochastic rounding"
     },
     {
-      "anchor": "completion of the induction proof and Remark 3.7 specialization",
+      "anchor": "completion of Theorem 3.6's induction proof",
       "pdf_page": 10,
       "printed_page": "B1236",
-      "role": "roundoff-radius instantiation",
+      "role": "location of the proof steps requiring the added sign conditions",
       "section": "3. Properties of limited-precision stochastic rounding"
     }
   ],
@@ -69,12 +86,12 @@
   "task_id": "P17-T1",
   "tier": "T1",
   "tier_label": "direct",
-  "tier_rationale": "The frozen theorem NumStability.prod_one_add_delta_bounds has the same product surface and conclusion. The L proof only supplies the paper-scoped names and hypotheses.",
+  "tier_rationale": "Provisional task-slot label only. The exact corrected theorem is absent from the frozen library; the L proof reuses finite-expectation primitives but reconstructs the conditional-mean induction. Its actual proof shape is combine/T2, so P17 requires coordinated tier reassignment before measurement.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P17/T1/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p17_t1_product_bias_envelope"
+    "required_declaration": "HighamBench.p17_t1_corrected_product_bias_envelope"
   }
 }

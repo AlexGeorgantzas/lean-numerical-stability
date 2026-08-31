@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete local paper, surveyed its matrix factorization, one- and multidimensional error theorems, proofs, experiment, and concluding backward-error interpretation, rejected delegated, asymptotic-only, experimental, or redundant candidates, searched the frozen mathlib and mounted NumStability object baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
+    "method": "Codex read the complete local paper, surveyed its matrix factorization, one- and multidimensional error theorems, proofs, experiment, and concluding backward-error interpretation, rejected delegated, experimental, or redundant candidates, represented retained asymptotic terms with explicit local right-neighborhood witnesses, searched the frozen mathlib and mounted NumStability object baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P09 source selection and benchmark annotation to Codex."
@@ -43,7 +43,7 @@
     },
     {
       "candidate": "the complete first-order formula in Theorem 1(a)",
-      "reason": "Its literal formalization would require a full floating FFT implementation, trigonometric evaluation error, generic theta variables, and asymptotic O(epsilon squared) semantics. T1 retains the exact finite norm bridge used for part (b), while T2 and T3 capture the paper's exact structural conclusions."
+      "reason": "It is not selected as a separate target. The P09 shared module derives its family-local asymptotic form from the scalar Wilkinson model, the operational radix-sensitive kernels, and exact factor propagation; P09-T2 invokes that proved theorem before deriving the fictional-input interpretation."
     },
     {
       "candidate": "the direct-transformation error matrix (3.3) and bounds (3.4)-(3.5)",
@@ -55,7 +55,7 @@
     },
     {
       "candidate": "equations (3.7) and (3.8)",
-      "reason": "These are local block and diagonal error estimates with O(epsilon squared) terms; T3 instead preserves how such local budgets accumulate across an arbitrary finite collection of transforms."
+      "reason": "These local block and diagonal error estimates are not separate targets. Their distinct, trace-linked forms are proved from the primitive operation model inside the imported derivation of Theorem 1(a) used by P09-T2, while T3 preserves how one-dimensional budgets accumulate across an arbitrary finite collection of transforms."
     },
     {
       "candidate": "Theorem 2(b)",
@@ -79,22 +79,22 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use the final fictional-input backward-error construction for the positively scaled orthogonal real-equivalent Fourier action.",
+      "decision": "Use the final complex fictional-input backward-error construction, linked to the radix-sensitive operational mixed-radix FFT and retaining both bounds with family-local O(epsilon squared) semantics.",
       "task_id": "P09-T2",
-      "theorem_name": "p09_t2_scaled_orthogonal_backward_error"
+      "theorem_name": "p09_t2_fictional_input_backward_error"
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 2(a)'s multidimensional telescoping bound with every O(epsilon squared) contribution exposed as an explicit finite remainder.",
+      "decision": "Use Theorem 2(a)'s product-indexed complex multidimensional FFT bound with operational nested coordinate traces, exactly represented fixed input, fixed per-axis K constants, derived telescoping and intermediate estimates, and uniform right-neighborhood O(epsilon squared) semantics.",
       "task_id": "P09-T3",
-      "theorem_name": "p09_t3_multidimensional_rms_error_budget"
+      "theorem_name": "p09_t3_multidimensional_rms_error_bound"
     }
   },
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
-    "Use finite claims made and proved in this paper.",
-    "Reject definitions, experiments, delegated background, and formulas whose literal content is only vague asymptotics.",
-    "Expose O(epsilon squared) contributions as explicit finite remainder hypotheses when retaining the paper's exact accumulation argument.",
+    "Use mathematically precise claims made and proved in this paper, including asymptotic claims when their uniform quantifier content can be represented.",
+    "Reject definitions, experiments, delegated background, and asymptotic claims whose quantifier content cannot be reconstructed from the source context.",
+    "Represent retained O(epsilon squared) contributions by coefficients and radii fixed before the varying positive epsilon, without inventing cross-family uniformity absent from the source.",
     "Keep the fixed Lean setting condition-neutral and paper-scoped.",
     "Assign tiers only after checking the mounted frozen object baseline, not merely the broader source tree."
   ],

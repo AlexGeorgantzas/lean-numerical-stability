@@ -4,13 +4,13 @@ namespace HighamBench
 
 open scoped BigOperators
 
-/-- P17-T1: deterministic one-atom specialization of Theorem 3.6's envelope
-for the accumulated product of limited-precision rounding factors. -/
-theorem p17_t1_product_bias_envelope (n : ℕ) (B : ℝ)
-    (hB0 : 0 ≤ B) (hB1 : B ≤ 1) (delta : Fin n → ℝ)
-    (hdelta : ∀ i, |delta i| ≤ B) :
-    (1 - B) ^ n ≤ ∏ i, (1 + delta i) ∧
-      (∏ i, (1 + delta i)) ≤ (1 + B) ^ n := by
+/-- P17-T1: corrected finite-probability form of Theorem 3.6, with the
+nonnegativity conditions required by the paper's induction made explicit. -/
+theorem p17_t1_corrected_product_bias_envelope
+    {n : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17CorrectedProductBiasRun n Ω) :
+    (1 - run.B) ^ n ≤ p17ExpectedErrorProduct run ∧
+      p17ExpectedErrorProduct run ≤ (1 + run.B) ^ n := by
   -- PROOF_START
   sorry
 

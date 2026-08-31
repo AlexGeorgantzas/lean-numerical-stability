@@ -2,14 +2,16 @@ import HighamBench.P16Definitions
 
 namespace HighamBench
 
-/-- P16-T1: a perturbed solve produces a residual bounded by the matrix and
-right-hand-side perturbations, the exact estimate behind the normwise backward
-error formula in Section 2. -/
-theorem p16_t1_perturbed_solve_residual_bound {n : ℕ}
-    (A deltaA : P16Matrix n) (b deltaB x : P16Vector n)
-    (hsolve : p16MatVec (A + deltaA) x = b + deltaB) :
-    p16VecNorm (p16Residual A b x) ≤
-      p16FrobNorm deltaA * p16VecNorm x + p16VecNorm deltaB := by
+/-- P16-T1: the normwise backward error of a computed candidate is exactly its
+normalized residual. `IsLeast` states both that the displayed value is attained
+by one shared relative perturbation level and that every admissible level is at
+least as large. -/
+theorem p16_t1_normwise_backward_error_formula {n : ℕ}
+    (A : P16Matrix n) (b xHat : P16Vector n)
+    (hA : p16IsNonsingular A) (hb : b ≠ 0) :
+    IsLeast
+      {epsilon : ℝ | p16NormwiseBackwardErrorAdmissible A b xHat epsilon}
+      (p16NormalizedResidual A b xHat) := by
   -- PROOF_START
   sorry
 

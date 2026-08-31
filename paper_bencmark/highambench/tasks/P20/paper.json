@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete 16-page local PDF sequentially, including Model 1, hardware examples, the full derivations of Theorems 3.1 and 4.1, numerical experiments, conclusion, reproducibility statement, and references; visually checked every selected source page; searched all 24 frozen mounted object modules; and compiled private N/L proofs before accepting the targets.",
+    "method": "Codex read the complete 16-page local PDF sequentially, including Model 1, hardware examples, the full derivations of Theorems 3.1 and 4.1, numerical experiments, conclusion, reproducibility statement, and references; during the audit-driven P20 rebuilds, rechecked Model 1, equations (3.1)-(3.16), the complete derivation (4.18)-(4.28), Theorem 4.1 and equations (4.29)-(4.33), including rendered B786-B795 pages; searched all 24 frozen mounted object modules; and compiled private N/L constructions plus concrete nonvacuity witnesses.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P20 source selection and benchmark annotation to Codex."
@@ -41,11 +41,19 @@
     },
     {
       "candidate": "complete Theorem 3.1 algorithm-to-error statement",
-      "reason": "The displayed relation uses an asymptotic less-similar sign after dropping terms and requires a full executable mixed-precision MMA semantics. T2 instead selects the exact underflow-term comparison the paper draws from its simplified envelope."
+      "reason": "The displayed relation uses an asymptotic less-similar sign after dropping terms and requires a full executable mixed-precision MMA semantics. T2 instead selects the exact input-stage bound (3.13) from its derivation."
     },
     {
-      "candidate": "multiword recursion (4.8)-(4.20)",
-      "reason": "This long induction is supporting machinery for Theorem 4.1. T3 captures the exact final narrow-range versus range-free comparison and strengthens it with auditable gap certificates."
+      "candidate": "equation (3.16), the bound for one accumulation-underflow error",
+      "reason": "This is an exact valid source result, but the concrete frozen-library check found that its proof reduces to the two inverse-scale inequalities and scalar arithmetic. It therefore does not materially combine multiple NumStability results and would be T1 rather than the required T2 slot."
+    },
+    {
+      "candidate": "the post-(3.26) comparison of accumulation- and input-underflow terms",
+      "reason": "Under literal Model 1, format nesting does not imply Gmin <= gmin when the two formats use different subnormal modes. Adding that comparison as a hypothesis makes the formal target weaker than the written claim, so the audited task was rejected."
+    },
+    {
+      "candidate": "standalone multiword recursion (4.8)-(4.20)",
+      "reason": "This induction is supporting machinery rather than the selected conclusion. Its decomposition consequences and the pre-theorem estimates through (4.27) are represented by the fixed Section 4 derivation used by T3, whose target is Theorem 4.1."
     },
     {
       "candidate": "Figures 5.1-5.2 and the large-n divergence discussion",
@@ -59,26 +67,26 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the exact maximum-coefficient consequence of the row-scaling interval (3.4a).",
+      "decision": "Use the complete row-side scaling selection from equations (3.1)-(3.4a): construct the power-of-two diagonal factors at the format-derived threshold and prove the exact scaled-row maximum interval.",
       "task_id": "P20-T1",
-      "theorem_name": "p20_t1_scaled_row_range"
+      "theorem_name": "p20_t1_power_two_row_scaling"
     },
     "T2": {
       "available": true,
-      "decision": "Use the exact comparison of accumulation- and input-underflow contributions stated after the simplified bound (3.26).",
+      "decision": "Use equation (3.13): the complete exact input-conversion rounding and underflow bound for the scaled inner product (3.3).",
       "task_id": "P20-T2",
-      "theorem_name": "p20_t2_accumulation_underflow_le_input"
+      "theorem_name": "p20_t2_scaled_input_error"
     },
     "T3": {
       "available": true,
-      "decision": "Use the exact gap between the narrow-range multiword envelope (4.32) and range-free envelope (4.33), strengthened with equality and strictness certificates.",
+      "decision": "Use Theorem 4.1: the actual fixed round-to-nearest scaled p-word computation (4.29)-(4.31), with multiplication and addition rounded in the accumulation format, satisfies (4.32) from the pre-theorem Section 4 estimates. Also formalize the (4.33) envelope difference and the post-(4.33) order-u^(p-1) comparison.",
       "task_id": "P20-T3",
-      "theorem_name": "p20_t3_multiword_narrow_range_gap"
+      "theorem_name": "p20_t3_multiword_forward_error"
     }
   },
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
-    "Prefer exact scaling and envelope comparisons over asymptotic bounds with dropped terms.",
+    "Represent an undefined first-order lesssim by an explicit second-order remainder instead of silently replacing it with an exact displayed inequality.",
     "Represent input and accumulation underflow contributions separately.",
     "Do not promote experimental curves, qualified expectations, or future generalizations to theorem targets.",
     "Keep every public definition free of NumStability imports.",

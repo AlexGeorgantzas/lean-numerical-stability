@@ -35,12 +35,12 @@
   },
   "rejected_candidates": [
     {
-      "candidate": "Lagrange representation (2.1) and Definition 2.1",
-      "reason": "Equation (2.1) is setup and Definition 2.1 is a limit/supremum definition. Lemma 2.2 supplies the closed form and its proved perturbation consequences."
+      "candidate": "Lagrange representation (2.1) standing alone",
+      "reason": "Equation (2.1) is setup rather than a standalone result. Its exact basis and interpolation value are retained in T1 to state Definition 2.1 and Lemma 2.2 faithfully."
     },
     {
-      "candidate": "the equality-attainment clause in the proof of Lemma 2.2",
-      "reason": "The extremizing sign choice is useful but secondary; T1 and T2 retain both the lower bound and the operational perturbation inequality."
+      "candidate": "Definition 2.1 standing alone",
+      "reason": "The limit/supremum definition is not used as an isolated task. T1 combines it with Lemma 2.2's proved closed form, exact sign-aligned attainment, and lower bound."
     },
     {
       "candidate": "modified Lagrange formulae (3.1)-(3.3)",
@@ -60,7 +60,7 @@
     },
     {
       "candidate": "second barycentric formula (4.1) and the perturbed quotient derivation",
-      "reason": "Equation (4.1) is a formula definition. Its perturbed quotient is retained as the certificate surface for T3 rather than selected alone as an equality target."
+      "reason": "Equation (4.1) alone is a formula definition. Its exact uncollected and collected perturbed quotient is retained inside T3 as the execution layer supporting Theorem 4.1 rather than selected as a separate equality task."
     },
     {
       "candidate": "Corollary 4.2 and the Lebesgue-constant bound (4.4)",
@@ -86,7 +86,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the lower-bound clause of Lemma 2.2, which directly matches the frozen generic summation condition-number theorem.",
+      "decision": "Use Definition 2.1 and the full conclusion of Lemma 2.2: the componentwise data-perturbation supremum tends to the exact quotient in (2.2), which is at least one, for the paper's degree-n Lagrange problem with n+1 fixed distinct nodes.",
       "task_id": "P13-T1",
       "theorem_name": "p13_t1_condition_ge_one"
     },
@@ -98,7 +98,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use an exact finite-certificate form of Theorem 4.1's two cancellation terms, with the denominator correction that completes its first-order O(u^2) presentation.",
+      "decision": "Use Theorem 4.1 with its directly weighted second-barycentric execution, exact 3n+4 and 3n+2 counter model, two first-order condition-number terms, genuine O(u^2) remainder, and constant-factor sharpness.",
       "task_id": "P13-T3",
       "theorem_name": "p13_t3_barycentric_forward_bound"
     }
@@ -107,8 +107,8 @@
   "selection_policy": [
     "Use results proved in this paper rather than definitions, empirical figures, or results delegated to cited approximation-theory sources.",
     "Preserve the fixed-node, fixed-evaluation-point interpretation and componentwise perturbations in the data.",
-    "Represent the second barycentric formula as its exact numerator/denominator finite certificate.",
-    "Disclose the exact finite denominator correction in T3 as benchmark-author mathematics beyond the paper's displayed first-order theorem.",
+    "Represent the second barycentric formula using the paper's reciprocal-product weights and exact uncollected and collected relative-error counters.",
+    "Retain Theorem 4.1's O(u^2) term as a genuine asymptotic statement; expose the exact finite remainder and concrete factor-three sharpness witness as disclosed benchmark-author mathematics resolving the paper's unquantified notation.",
     "Keep every public definition paper-scoped and free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."
   ],
