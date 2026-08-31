@@ -88,7 +88,8 @@ theorem higham23_biniError_trans (h : ℕ) :
       calc
         |X - Z| ≤ |X - Y| + |Y - Z| := by
           have h := abs_add_le (X - Y) (Y - Z)
-          convert h using 1 <;> ring
+          convert h using 1
+          ring
         _ ≤ e + f := add_le_add hXY hYZ
   | depth + 1, X, Y, Z, e, f, hXY, hYZ => fun i j ↦
       higham23_biniError_trans h depth (X i j) (Y i j) (Z i j)
@@ -98,8 +99,8 @@ theorem higham23_biniError_mono (h : ℕ) :
     ∀ depth (X Y : Higham23BiniMatrix h depth) {e f : ℝ},
       Higham23BiniErrorLe h depth X Y e → e ≤ f →
       Higham23BiniErrorLe h depth X Y f
-  | 0, X, Y, e, f, hE, hef => hE.trans hef
-  | depth + 1, X, Y, e, f, hE, hef => fun i j ↦
+  | 0, _X, _Y, _e, _f, hE, hef => hE.trans hef
+  | depth + 1, X, Y, _e, _f, hE, hef => fun i j ↦
       higham23_biniError_mono h depth (X i j) (Y i j) (hE i j) hef
 
 theorem higham23_biniNorm_of_error (h : ℕ) :
@@ -164,7 +165,8 @@ theorem higham23_biniFlDot_certificate
             have hh := abs_add_le
               ((∑ q, c q * X q) - ∑ q, c q * Xhat q)
               ((∑ q, c q * Xhat q) - fl_dotProduct fp n c Xhat)
-            convert hh using 1 <;> ring
+            convert hh using 1
+            ring
           _ ≤ _ := add_le_add hinput hlocal
       have hExactHat : |∑ q, c q * Xhat q| ≤ ∑ q, |c q| * rad q := by
         calc
@@ -234,16 +236,16 @@ theorem higham23_biniNorm_sub_of_error (h : ℕ) :
     ∀ depth (X Y : Higham23BiniMatrix h depth) {e : ℝ},
       Higham23BiniErrorLe h depth X Y e →
       Higham23BiniNormLe h depth (higham23BiniSub h depth X Y) e
-  | 0, X, Y, e, hE => hE
-  | depth + 1, X, Y, e, hE => fun i j ↦
+  | 0, _X, _Y, _e, hE => hE
+  | depth + 1, X, Y, _e, hE => fun i j ↦
       higham23_biniNorm_sub_of_error h depth (X i j) (Y i j) (hE i j)
 
 theorem higham23_biniError_of_norm_sub (h : ℕ) :
     ∀ depth (X Y : Higham23BiniMatrix h depth) {e : ℝ},
       Higham23BiniNormLe h depth (higham23BiniSub h depth X Y) e →
       Higham23BiniErrorLe h depth X Y e
-  | 0, X, Y, e, hE => hE
-  | depth + 1, X, Y, e, hE => fun i j ↦
+  | 0, _X, _Y, _e, hE => hE
+  | depth + 1, X, Y, _e, hE => fun i j ↦
       higham23_biniError_of_norm_sub h depth (X i j) (Y i j) (hE i j)
 
 theorem higham23_biniNorm_mul (h : ℕ) :
@@ -271,7 +273,6 @@ theorem higham23_biniNorm_mul (h : ℕ) :
       have hpow : (∑ _k : Fin h, |(1 : ℝ)| * nrad) =
           (((h ^ (depth + 1) : ℕ) : ℝ) * a * b) := by
         simp [nrad, pow_succ]
-        push_cast
         ring
       rw [← hpow]
       exact hsum
@@ -341,7 +342,10 @@ theorem higham23_biniError_mul (h : ℕ) :
         (fun k ↦ higham23BiniMul h depth (Ahat i k) (Bhat k j))
         (fun k ↦ higham23BiniMul h depth (A i k) (B k j))
         (fun _ ↦ er) (fun _ ↦ by dsimp [er]; positivity) hterm
-      convert hsum using 1 <;> dsimp [er] <;> simp [pow_succ] <;> push_cast <;> ring
+      convert hsum using 1
+      dsimp [er]
+      simp [pow_succ]
+      ring
 
 structure Higham23BiniCertificate (h depth : ℕ)
     (X Xhat : Higham23BiniMatrix h depth) (error norm : ℝ) : Prop where
@@ -375,6 +379,7 @@ theorem higham23_biniCertificate_product (h depth : ℕ)
   have hout := higham23_biniNorm_of_error h depth _ _ hprod hRec
   constructor
   · exact higham23_biniError_mono h depth _ _ herr (by ring_nf; linarith)
-  · convert hout using 1 <;> ring
+  · convert hout using 1
+    ring
 
 end NumStability

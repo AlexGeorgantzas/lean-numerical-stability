@@ -189,8 +189,8 @@ private theorem highamCh4KahanFiniteFamily_normalizedValue_22 (k : Nat) :
   have hexp : (5 : Int) - ((k + 5 : Nat) : Int) = -(k : Int) := by omega
   rw [FloatingPointFormat.normalizedValue]
   simp only [highamCh4KahanFiniteFamilyFormat,
-    FloatingPointFormat.signValue, FloatingPointFormat.betaR, if_false,
-    one_mul, hexp, zpow_neg]
+    FloatingPointFormat.signValue, FloatingPointFormat.betaR,
+    hexp, zpow_neg]
   norm_num [Nat.cast_mul, Nat.cast_pow]
 
 private theorem highamCh4KahanFiniteFamily_normalizedValue_16_add_one
@@ -214,7 +214,7 @@ private theorem highamCh4KahanFiniteFamily_normalizedValue_exp7
   have hexp : ((k + 7 : Nat) : Int) - ((k + 5 : Nat) : Int) = 2 := by omega
   rw [FloatingPointFormat.normalizedValue]
   simp [highamCh4KahanFiniteFamilyFormat,
-    FloatingPointFormat.signValue, FloatingPointFormat.betaR, hexp]
+    FloatingPointFormat.signValue, FloatingPointFormat.betaR]
   ring
 
 private theorem highamCh4KahanFiniteFamily_normalizedValue_exp8
@@ -224,7 +224,7 @@ private theorem highamCh4KahanFiniteFamily_normalizedValue_exp8
   have hexp : ((k + 8 : Nat) : Int) - ((k + 5 : Nat) : Int) = 3 := by omega
   rw [FloatingPointFormat.normalizedValue]
   simp [highamCh4KahanFiniteFamilyFormat,
-    FloatingPointFormat.signValue, FloatingPointFormat.betaR, hexp]
+    FloatingPointFormat.signValue, FloatingPointFormat.betaR]
   ring
 
 private theorem highamCh4KahanFiniteFamily_normalizedValue_exp9
@@ -234,7 +234,7 @@ private theorem highamCh4KahanFiniteFamily_normalizedValue_exp9
   have hexp : ((k + 9 : Nat) : Int) - ((k + 5 : Nat) : Int) = 4 := by omega
   rw [FloatingPointFormat.normalizedValue]
   simp [highamCh4KahanFiniteFamilyFormat,
-    FloatingPointFormat.signValue, FloatingPointFormat.betaR, hexp]
+    FloatingPointFormat.signValue, FloatingPointFormat.betaR]
   ring
 
 private theorem highamCh4KahanFiniteFamily_normalizedValue_exp7_16_add
@@ -458,10 +458,10 @@ theorem highamCh4KahanFiniteFamily_round_twoP_add_26 (k : Nat) :
   · simpa [Nat.add_assoc] using
       highamCh4KahanFiniteFamily_normalizedMantissa_16_add k 7 (by omega)
   · exact highamCh4KahanFiniteFamily_exponentInRange_7 k
-  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp7_16_add k 6).symm using 1 <;>
-      norm_num
-  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp7_16_add k 7).symm using 1 <;>
-      norm_num
+  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp7_16_add k 6).symm using 1
+    norm_num
+  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp7_16_add k 7).symm using 1
+    norm_num
   · nlinarith [highamCh4KahanFiniteFamilyP_pos k]
   · constructor <;> norm_num
   · ring_nf
@@ -481,15 +481,15 @@ theorem highamCh4KahanFiniteFamily_round_twoP_add_2 (k : Nat) :
   · simpa using highamCh4KahanFiniteFamily_normalizedMantissa_16_add k 0 (by omega)
   · simpa using highamCh4KahanFiniteFamily_normalizedMantissa_16_add k 1 (by omega)
   · exact highamCh4KahanFiniteFamily_exponentInRange_7 k
-  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp7_16_add k 0).symm using 1 <;>
-      norm_num
-  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp7_16_add k 1).symm using 1 <;>
-      norm_num
+  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp7_16_add k 0).symm using 1
+    norm_num
+  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp7_16_add k 1).symm using 1
+    norm_num
   · nlinarith [highamCh4KahanFiniteFamilyP_pos k]
   · constructor <;> norm_num
   · ring_nf
     rw [abs_neg]
-  · simp [FloatingPointFormat.evenMantissa, Nat.add_mod, Nat.mul_mod]
+  · simp [FloatingPointFormat.evenMantissa, Nat.mul_mod]
 
 /-- The third corrected input is the midpoint between the largest mantissa at
 one exponent and the even smallest mantissa at the next exponent. -/
@@ -502,12 +502,12 @@ theorem highamCh4KahanFiniteFamily_round_eightP_sub_4 (k : Nat) :
     (left := 8 * highamCh4KahanFiniteFamilyP k - 8)
     (right := 8 * highamCh4KahanFiniteFamilyP k)
   · exact highamCh4KahanFiniteFamily_exponentInRange_8 k
-  · convert highamCh4KahanFiniteFamily_exponentInRange_9 k using 1 <;> omega
+  · convert highamCh4KahanFiniteFamily_exponentInRange_9 k using 1
   · rw [highamCh4KahanFiniteFamily_maxNormalMantissa]
     exact (highamCh4KahanFiniteFamily_normalizedValue_exp8_max k).symm
   · rw [highamCh4KahanFiniteFamily_minNormalMantissa]
-    convert (highamCh4KahanFiniteFamily_normalizedValue_exp9_16_add k 0).symm using 1 <;>
-      norm_num
+    convert (highamCh4KahanFiniteFamily_normalizedValue_exp9_16_add k 0).symm using 1
+    norm_num
   · nlinarith [highamCh4KahanFiniteFamilyP_ge_32 k]
   · constructor <;> norm_num
   · ring_nf
@@ -531,10 +531,10 @@ theorem highamCh4KahanFiniteFamily_round_tenP_add_24 (k : Nat) :
   · simpa [Nat.add_assoc] using
       highamCh4KahanFiniteFamily_normalizedMantissa_20_add k 2 (by omega)
   · exact highamCh4KahanFiniteFamily_exponentInRange_9 k
-  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp9_20_add k 1).symm using 1 <;>
-      norm_num
-  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp9_20_add k 2).symm using 1 <;>
-      norm_num
+  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp9_20_add k 1).symm using 1
+    norm_num
+  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp9_20_add k 2).symm using 1
+    norm_num
   · nlinarith [highamCh4KahanFiniteFamilyP_pos k]
   · constructor <;> norm_num
   · ring_nf
@@ -555,15 +555,15 @@ theorem highamCh4KahanFiniteFamily_round_eightP_add_8 (k : Nat) :
   · simpa using highamCh4KahanFiniteFamily_normalizedMantissa_16_add k 0 (by omega)
   · simpa using highamCh4KahanFiniteFamily_normalizedMantissa_16_add k 1 (by omega)
   · exact highamCh4KahanFiniteFamily_exponentInRange_9 k
-  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp9_16_add k 0).symm using 1 <;>
-      norm_num
-  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp9_16_add k 1).symm using 1 <;>
-      norm_num
+  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp9_16_add k 0).symm using 1
+    norm_num
+  · convert (highamCh4KahanFiniteFamily_normalizedValue_exp9_16_add k 1).symm using 1
+    norm_num
   · nlinarith [highamCh4KahanFiniteFamilyP_pos k]
   · constructor <;> norm_num
   · ring_nf
     norm_num
-  · simp [FloatingPointFormat.evenMantissa, Nat.add_mod, Nat.mul_mod]
+  · simp [FloatingPointFormat.evenMantissa, Nat.mul_mod]
 
 private theorem highamCh4KahanFiniteFamily_finiteSystem_zero (k : Nat) :
     (highamCh4KahanFiniteFamilyFormat k).finiteSystem (0 : Real) :=
@@ -759,8 +759,8 @@ theorem highamCh4KahanFiniteFamily_rounding (k : Nat) :
       highamCh4KahanReturnedCounterexampleX1,
       highamCh4KahanReturnedCounterexampleX2,
       highamCh4KahanReturnedCounterexampleS2]
-    convert highamCh4KahanFiniteFamily_round_neg_twoP_add_26 k using 1 <;>
-      ring_nf <;> simp [Nat.rawCast] <;> rfl
+    convert highamCh4KahanFiniteFamily_round_neg_twoP_add_26 k using 1
+    ring_nf
   · change fmt.finiteRoundToEven
       (BasicOp.exact BasicOp.sub
         highamCh4KahanReturnedCounterexampleX1
@@ -768,10 +768,12 @@ theorem highamCh4KahanFiniteFamily_rounding (k : Nat) :
     simp only [fmt, p, BasicOp.exact,
       highamCh4KahanReturnedCounterexampleX1,
       highamCh4KahanReturnedCounterexampleS2]
-    convert highamCh4KahanFiniteFamily_round_twoP_add_2 k using 1 <;>
-      ring_nf <;> simp [Nat.rawCast] <;> rfl
+    convert highamCh4KahanFiniteFamily_round_twoP_add_2 k using 1
+    ring_nf
+    simp [Nat.rawCast]
+    rfl
   · apply highamCh4KahanFiniteFamily_finiteRoundToEvenOp_eq k
-    · simp [BasicOp.exact, p,
+    · simp [BasicOp.exact,
         highamCh4KahanReturnedCounterexampleX2]
     · exact highamCh4KahanFiniteFamily_finiteSystem_neg4 k
   · change fmt.finiteRoundToEven
@@ -781,8 +783,8 @@ theorem highamCh4KahanFiniteFamily_rounding (k : Nat) :
     simp only [fmt, p, BasicOp.exact,
       highamCh4KahanReturnedCounterexampleX3,
       highamCh4KahanReturnedCounterexampleY3]
-    convert highamCh4KahanFiniteFamily_round_neg_eightP_sub_4 k using 1 <;>
-      ring_nf <;> simp [Nat.rawCast] <;> rfl
+    convert highamCh4KahanFiniteFamily_round_neg_eightP_sub_4 k using 1
+    ring_nf
   · change fmt.finiteRoundToEven
       (BasicOp.exact BasicOp.add
         (highamCh4KahanReturnedCounterexampleS2 p)
@@ -792,8 +794,8 @@ theorem highamCh4KahanFiniteFamily_rounding (k : Nat) :
       highamCh4KahanReturnedCounterexampleS2,
       highamCh4KahanReturnedCounterexampleY3,
       highamCh4KahanReturnedCounterexampleS3]
-    convert highamCh4KahanFiniteFamily_round_neg_tenP_add_24 k using 1 <;>
-      ring_nf <;> simp [Nat.rawCast] <;> rfl
+    convert highamCh4KahanFiniteFamily_round_neg_tenP_add_24 k using 1
+    ring_nf
   · change fmt.finiteRoundToEven
       (BasicOp.exact BasicOp.sub
         (highamCh4KahanReturnedCounterexampleS2 p)
@@ -801,10 +803,12 @@ theorem highamCh4KahanFiniteFamily_rounding (k : Nat) :
     simp only [fmt, p, BasicOp.exact,
       highamCh4KahanReturnedCounterexampleS2,
       highamCh4KahanReturnedCounterexampleS3]
-    convert highamCh4KahanFiniteFamily_round_eightP_add_8 k using 1 <;>
-      ring_nf <;> simp [Nat.rawCast] <;> rfl
+    convert highamCh4KahanFiniteFamily_round_eightP_add_8 k using 1
+    ring_nf
+    simp [Nat.rawCast]
+    rfl
   · apply highamCh4KahanFiniteFamily_finiteRoundToEvenOp_eq k
-    · simp [BasicOp.exact, p,
+    · simp [BasicOp.exact,
         highamCh4KahanReturnedCounterexampleY3]
     · exact highamCh4KahanFiniteFamily_finiteSystem_zero k
   · apply highamCh4KahanFiniteFamily_finiteRoundToEvenOp_eq k
@@ -818,8 +822,8 @@ theorem highamCh4KahanFiniteFamily_rounding (k : Nat) :
     simp only [fmt, p, BasicOp.exact,
       highamCh4KahanReturnedCounterexampleS3,
       highamCh4KahanReturnedCounterexampleX4]
-    convert highamCh4KahanFiniteFamily_round_neg_tenP_add_24 k using 1 <;>
-      ring_nf <;> simp [Nat.rawCast] <;> rfl
+    convert highamCh4KahanFiniteFamily_round_neg_tenP_add_24 k using 1
+    ring_nf
   · apply highamCh4KahanFiniteFamily_finiteRoundToEvenOp_eq k
     · simp [BasicOp.exact]
     · exact highamCh4KahanFiniteFamily_finiteSystem_zero k

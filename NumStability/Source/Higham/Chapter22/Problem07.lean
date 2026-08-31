@@ -128,13 +128,13 @@ lemma higham22_problem22_7_endpointWeight_interior
 
 /-- A weighted range sum is the full sum with half of each endpoint removed. -/
 lemma higham22_problem22_7_endpointWeight_sum
-    (n : Nat) (hn : 0 < n) (f : Nat -> Real) :
+    (n : Nat) (_hn : 0 < n) (f : Nat -> Real) :
     (Finset.range (n + 1)).sum
         (fun j => higham22Problem22_7EndpointWeight n j * f j) =
       (Finset.range (n + 1)).sum f - (f 0 + f n) / 2 := by
   simp_rw [higham22Problem22_7EndpointWeight, sub_mul, one_mul]
   rw [Finset.sum_sub_distrib, Finset.sum_sub_distrib]
-  simp [hn, Nat.ne_of_gt hn, add_div]
+  simp [add_div]
   ring
 
 /-- Trapezoidally weighted cosine sum on `0, a, ..., n*a`, before
@@ -181,7 +181,8 @@ lemma higham22_problem22_7_endpoint_cos_telescope
           rw [show (0 - 1 / 2) * a = -(a / 2) by ring, Real.sin_neg]
         rw [hneg]
         norm_num [Nat.cast_add, Nat.cast_one]
-        congr 1 <;> ring
+        congr 1
+        ring
   rw [hfull]
   have hcorr :
       2 * Real.sin (a / 2) *
@@ -195,7 +196,8 @@ lemma higham22_problem22_7_endpoint_cos_telescope
       Real.sin (((n : Real) + 1 / 2) * a) =
         Real.sin ((n : Real) * a) * Real.cos (a / 2) +
           Real.cos ((n : Real) * a) * Real.sin (a / 2) := by
-    convert Real.sin_add ((n : Real) * a) (a / 2) using 1 <;> ring
+    convert Real.sin_add ((n : Real) * a) (a / 2) using 1
+    ring
   rw [hadd]
   ring
 
@@ -350,7 +352,7 @@ lemma higham22_problem22_7_zero_mode_sum
   apply Finset.sum_congr rfl
   intro j hj
   congr 1
-  simp [higham22Problem22_7ZeroAngle]
+  simp
   ring
 
 /-- Product-to-sum identity over the DCT-II grid. -/
@@ -410,7 +412,8 @@ theorem higham22_problem22_7_zero_discrete_orthogonality
         apply Finset.sum_congr rfl
         intro j hj
         congr 1
-        norm_cast <;> ring
+        norm_cast
+        ring
       rw [hdiff, hsum, add_zero] at htwice
       linarith
   · rw [if_neg hrs]
@@ -443,7 +446,7 @@ theorem higham22_problem22_7_zero_discrete_orthogonality
         apply Finset.sum_congr rfl
         intro j hj
         congr 1
-        norm_cast <;> ring
+        norm_cast
       rw [hdiff', hsum', add_zero] at htwice
       linarith
     · have hdpos : 0 < r.val - s.val := Nat.sub_pos_of_lt hrslt
@@ -472,7 +475,7 @@ theorem higham22_problem22_7_zero_discrete_orthogonality
         apply Finset.sum_congr rfl
         intro j hj
         congr 1
-        norm_cast <;> ring
+        norm_cast
       rw [hdiff', hsum', add_zero] at htwice
       linarith
 
@@ -494,7 +497,7 @@ theorem higham22_problem22_7_zero_gram
   by_cases hij : i = j
   · subst j
     simp [diagMatrix, higham22Problem22_7ZeroGramDiagonal]
-  · simp [diagMatrix, higham22Problem22_7ZeroGramDiagonal, hij]
+  · simp [diagMatrix, hij]
 
 end ZeroOrthogonality
 
@@ -544,7 +547,7 @@ lemma higham22_problem22_7_extrema_top_mode_sum
           (j.val : Real) * (2 * Real.pi) := by
         rw [higham22Problem22_7ExtremaAngle]
         push_cast
-        field_simp <;> ring
+        field_simp
       rw [harg, Real.cos_nat_mul_two_pi, mul_one]
     _ = (Finset.range (n + 1)).sum
           (fun j => higham22Problem22_7EndpointWeight n j) := by
@@ -645,7 +648,8 @@ theorem higham22_problem22_7_extrema_discrete_orthogonality
           apply Finset.sum_congr rfl
           intro j hj
           congr 2
-          norm_cast <;> ring
+          norm_cast
+          ring
         rw [hsumTop] at htwice
         linarith
     · rw [if_neg hrend]
@@ -666,7 +670,8 @@ theorem higham22_problem22_7_extrema_discrete_orthogonality
         apply Finset.sum_congr rfl
         intro j hj
         congr 2
-        norm_cast <;> ring
+        norm_cast
+        ring
       rw [hsumMode, add_zero] at htwice
       linarith
   · rw [if_neg hrs]
@@ -702,7 +707,7 @@ theorem higham22_problem22_7_extrema_discrete_orthogonality
         apply Finset.sum_congr rfl
         intro j hj
         congr 2
-        norm_cast <;> ring
+        norm_cast
       rw [hdiff', hsum', add_zero] at htwice
       linarith
     · have hdpos : 0 < r.val - s.val := Nat.sub_pos_of_lt hrslt
@@ -733,7 +738,7 @@ theorem higham22_problem22_7_extrema_discrete_orthogonality
         apply Finset.sum_congr rfl
         intro j hj
         congr 2
-        norm_cast <;> ring
+        norm_cast
       rw [hdiff', hsum', add_zero] at htwice
       linarith
 
@@ -784,10 +789,8 @@ theorem higham22_problem22_7_extrema_weighted_gram
   rw [higham22_problem22_7_extrema_discrete_orthogonality n hn]
   by_cases hij : i = j
   · subst j
-    simp [higham22Problem22_7ExtremaD, diagMatrix,
-      higham22Problem22_7ExtremaGramDiagonal]
-  · simp [higham22Problem22_7ExtremaD, diagMatrix,
-      higham22Problem22_7ExtremaGramDiagonal, hij]
+    simp [higham22Problem22_7ExtremaGramDiagonal]
+  · simp [hij]
 
 end ExtremaOrthogonality
 
@@ -1148,7 +1151,7 @@ theorem higham22_problem22_7_extrema_B_gram
   by_cases hij : i = j
   · subst j
     simp [diagMatrix, higham22Problem22_7ExtremaGramDiagonal]
-  · simp [diagMatrix, higham22Problem22_7ExtremaGramDiagonal, hij]
+  · simp [diagMatrix, hij]
 
 /-- Inverse of the scaled Gram diagonal. -/
 noncomputable def higham22Problem22_7ExtremaGramInvDiagonal (n : Nat) :
@@ -1313,7 +1316,8 @@ theorem higham22_problem22_7_extrema_B_op2_sq
     · positivity
     · intro i
       by_cases hi : higham22Problem22_7IsEndpoint n i <;>
-        simp [higham22Problem22_7ExtremaGramDiagonal, hi] <;> positivity
+        simp [higham22Problem22_7ExtremaGramDiagonal, hi]
+      positivity
     · intro i
       by_cases hi : higham22Problem22_7IsEndpoint n i
       · simp [higham22Problem22_7ExtremaGramDiagonal, hi]
@@ -1339,7 +1343,8 @@ theorem higham22_problem22_7_extrema_B_inverse_op2_sq_le
   · positivity
   · intro i
     by_cases hi : higham22Problem22_7IsEndpoint n i <;>
-      simp [higham22Problem22_7ExtremaGramInvDiagonal, hi] <;> positivity
+      simp [higham22Problem22_7ExtremaGramInvDiagonal, hi]
+    positivity
   · intro i
     by_cases hi : higham22Problem22_7IsEndpoint n i
     · simp [higham22Problem22_7ExtremaGramInvDiagonal, hi]
