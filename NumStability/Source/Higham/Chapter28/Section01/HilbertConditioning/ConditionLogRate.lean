@@ -181,7 +181,7 @@ theorem opNorm2_hilbertInverseFormula_log_rate :
       atTop (nhds (4 * Real.log b)) := by
     have h := (hD.const_mul 2).sub (hlogsucc.const_mul 2)
     dsimp [b]
-    convert h using 1 <;> ring
+    (convert h using 1; ring)
   have hupperLim : Tendsto
       (fun n : ℕ =>
         3 * (Real.log (n + 1 : ℝ) / (n : ℝ)) +
@@ -189,7 +189,7 @@ theorem opNorm2_hilbertInverseFormula_log_rate :
       atTop (nhds (4 * Real.log b)) := by
     have h := (hlogsucc.const_mul 3).add (hDsucc.const_mul 2)
     dsimp [b]
-    convert h using 1 <;> ring
+    (convert h using 1; ring)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le' hlowerLim hupperLim
   · filter_upwards [eventually_atTop.2 ⟨1, fun _ hn => hn⟩] with n hn
     have hnR : (0 : ℝ) < n := by exact_mod_cast (show 0 < n by omega)

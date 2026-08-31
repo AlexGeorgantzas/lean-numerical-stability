@@ -382,7 +382,8 @@ theorem higham11_5_stable_solve_does_not_imply_exact_abs_coupling :
       norm_num [E, DeltaE]
   · intro p
     fin_cases p <;>
-      norm_num [E, DeltaE, y, f, Fin.sum_univ_two] <;> rfl
+      norm_num [E, DeltaE, y, f, Fin.sum_univ_two]
+    rfl
   · norm_num [E, y, f, Fin.sum_univ_two]
 
 end NumStability

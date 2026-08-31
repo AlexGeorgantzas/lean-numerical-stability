@@ -164,7 +164,7 @@ theorem pascalOscillation_pascalLeadingPlucker_same_sign
     simp only [Pi.smul_apply, smul_eq_mul] at hds
     change 0 < -1 * d s
     rw [hds]
-    convert mul_pos (neg_pos.mpr htneg) (hp s) using 1 <;> ring
+    (convert mul_pos (neg_pos.mpr htneg) (hp s) using 1; ring)
   · refine ⟨1, Or.inl rfl, ?_⟩
     intro s
     have hds := congrFun hdt s

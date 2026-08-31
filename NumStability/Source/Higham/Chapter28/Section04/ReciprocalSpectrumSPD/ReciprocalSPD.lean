@@ -282,8 +282,7 @@ theorem higham28ColumnScalingCounterZ_inv :
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [higham28ColumnScalingCounterZ,
-      higham28ColumnScalingCounterZInv, Matrix.mul_apply, Fin.sum_univ_two,
-      Matrix.one_apply]
+      higham28ColumnScalingCounterZInv, Matrix.mul_apply, Fin.sum_univ_two]
 
 theorem higham28ColumnScalingCounter_involution :
     higham28ReciprocalInvolution higham28ColumnScalingCounterZ
@@ -295,7 +294,8 @@ theorem higham28ColumnScalingCounter_involution :
     simp [higham28SignDiagonal,
       higham28ColumnScalingCounterZ, higham28ColumnScalingCounterSigns,
       higham28ColumnScalingCounterX, higham28ColumnScalingCounterZInv,
-      Matrix.mul_apply, Fin.sum_univ_two] <;> norm_num
+      Matrix.mul_apply, Fin.sum_univ_two]
+  norm_num
 
 /-- Literal right/column scaling of `X` by the source sign diagonal changes the
 off-diagonal signs of its Gram matrix in this nonsingular lower-triangular

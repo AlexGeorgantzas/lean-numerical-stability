@@ -86,7 +86,8 @@ theorem middleCoeffOneCounter_exact_h20 :
   · intro i j
     fin_cases i <;> fin_cases j <;>
       norm_num [middleCoeffOneCounterT, middleCoeffOneCounterL,
-        middleCoeffOneCounterU, Fin.sum_univ_two] <;> rfl
+        middleCoeffOneCounterU, Fin.sum_univ_two]
+    rfl
   · intro i j
     norm_num
 
@@ -143,8 +144,8 @@ theorem middleCoeffOneCounter_flAasen_pivots :
   norm_num [flAasenIter, flAasenStep, flAasenInit,
     aTdiag, aHdiag, aHsub, aUpperH, aHcol, aLcol,
     middleCoeffOneCounterFP, middleCoeffOneCounterT,
-    FPModel.exactWithUnitRoundoff, fl_dotProduct, Fin.foldl_succ] <;>
-    exact (one_ne_zero : (1 : ℝ) ≠ 0)
+    FPModel.exactWithUnitRoundoff, fl_dotProduct, Fin.foldl_succ]
+  exact (one_ne_zero : (1 : ℝ) ≠ 0)
 
 theorem middleCoeffOneCounter_flAasen_Lhat_cap :
     ∀ i j : Fin 2,
@@ -519,10 +520,12 @@ theorem middleAccumCounter_GEPP_trace :
           (fun i => Fin.elim0 i) :=
       higham9_7_PartialPivotGEPPUTrace.done
     have h := higham9_7_PartialPivotGEPPUTrace.step hchoice2 hpivot2 hzero
-    convert h using 1 <;>
-      funext i j <;> fin_cases i <;> fin_cases j <;>
-      norm_num [luFirstStepU, higham9_2_rowPermutedMatrix,
-        higham9_7_firstPivotRowSwap]
+    convert h using 1
+    funext i j
+    fin_cases i
+    fin_cases j
+    norm_num [luFirstStepU, higham9_2_rowPermutedMatrix,
+      higham9_7_firstPivotRowSwap]
   have htail2 :
       higham9_7_PartialPivotGEPPUTrace 2
         middleAccumCounterS1 middleAccumCounterU2 := by
@@ -535,8 +538,9 @@ theorem middleAccumCounter_GEPP_trace :
       rw [hstage2]
       exact htail1
     have h := higham9_7_PartialPivotGEPPUTrace.step hchoice1 hpivot1 hnext
-    convert h using 1 <;>
-      funext i j <;> fin_cases i <;> fin_cases j <;>
+    convert h using 1
+    funext i j
+    fin_cases i <;> fin_cases j <;>
       norm_num [middleAccumCounterU2, luFirstStepU,
         higham9_2_rowPermutedMatrix, higham9_7_firstPivotRowSwap,
         middleAccumCounterS1]
@@ -549,8 +553,9 @@ theorem middleAccumCounter_GEPP_trace :
     rw [hstage1]
     exact htail2
   have h := higham9_7_PartialPivotGEPPUTrace.step hchoice0 hpivot0 hnext
-  convert h using 1 <;>
-    funext i j <;> fin_cases i <;> fin_cases j <;>
+  convert h using 1
+  funext i j
+  fin_cases i <;> fin_cases j <;>
     norm_num [middleAccumCounterU, middleAccumCounterU2, luFirstStepU,
       higham9_2_rowPermutedMatrix, higham9_7_firstPivotRowSwap,
       middleAccumCounterT]

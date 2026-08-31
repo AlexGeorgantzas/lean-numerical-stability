@@ -152,8 +152,8 @@ theorem higham11_15_printed_coordinate_return_is_false :
   constructor
   · intro i j
     fin_cases i <;> fin_cases j <;>
-      norm_num [higham11_15_cycleP, higham11_15_identity3, Fin.sum_univ_three] <;>
-      omega
+      norm_num [higham11_15_cycleP, higham11_15_identity3, Fin.sum_univ_three]
+    omega
   constructor
   · simp [higham11_15_aasenSolveChain, higham11_15_identity3,
       higham11_15_cycleY, higham11_15_cycleW, higham11_15_printedX,

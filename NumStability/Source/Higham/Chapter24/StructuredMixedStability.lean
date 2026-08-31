@@ -809,8 +809,9 @@ theorem higham24_literalTheorem24_3_remainder_quadratic
     have hu2 : 0 ≤ u ^ 2 := sq_nonneg _
     nlinarith [mul_nonneg hu2 (sub_nonneg.mpr hfourHalf)]
   have hgamma8 : gamma fp 4 ≤ 8 * u := by
-    convert gamma_le_two_mul_n_u_of_nu_le_half fp 4 hfourHalf using 1 <;>
-      dsimp [u] <;> ring
+    convert gamma_le_two_mul_n_u_of_nu_le_half fp 4 hfourHalf using 1
+    dsimp [u]
+    ring
   have hmuC : mu ≤ cMu := by
     have hcu : cMu * u ≤ cMu := by
       nlinarith [mul_nonneg hcMu (sub_nonneg.mpr huOne)]

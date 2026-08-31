@@ -264,7 +264,7 @@ theorem higham21_sne_fl_transpose_forward_error_of_componentwise
   have hyhat_abs : forall i : Fin m, |y_hat i| <= |y i| + envelope i := by
     intro i
     calc
-      |y_hat i| = |(y_hat i - y i) + y i| := by congr 1 <;> ring
+      |y_hat i| = |(y_hat i - y i) + y i| := by (congr 1; ring)
       _ <= |y_hat i - y i| + |y i| := abs_add_le _ _
       _ <= envelope i + |y i| :=
         add_le_add_left (hcomponentwise i) _

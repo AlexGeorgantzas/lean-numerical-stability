@@ -313,7 +313,7 @@ theorem higham24_eta_le_linearCoefficient_mul_u
     higham24Eta mu (gamma fp 4) <=
       higham24EtaLinearCoefficient cMu * fp.u := by
   have hgamma8 : gamma fp 4 <= 8 * fp.u := by
-    convert gamma_le_two_mul_n_u_of_nu_le_half fp 4 hfourHalf using 1 <;> ring
+    (convert gamma_le_two_mul_n_u_of_nu_le_half fp 4 hfourHalf using 1; ring)
   have huOne : fp.u <= 1 := by linarith [fp.u_nonneg]
   have hmuC : mu <= cMu := by
     exact hmuLinear.trans (by

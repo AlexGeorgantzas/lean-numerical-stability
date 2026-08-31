@@ -983,12 +983,13 @@ theorem ch14ext_cor146Finalized_forward_absolute_source_literal
   have hbase' :
       vecNorm2 (fun i : Fin n => x i - xhat i) <=
         raw * ((F.gje.model t).u * vecNorm2 xhat) + rho := by
-    convert hbase using 1 <;>
-      simp [raw, a, d, factor, khat, kap, rho, xhat,
-        ch14ext_cor146FinalizedForwardTerminal,
-        ch14ext_gjeFinalizedFamilyOutput,
-        ch14ext_gjeFinalizedFamilyNormalizedPabs,
-        ch14ext_cor146ClosureSqrtKappa, hAhat] <;> ring
+    convert hbase using 1
+    simp [raw, a, d, factor, khat, kap, rho, xhat,
+      ch14ext_cor146FinalizedForwardTerminal,
+      ch14ext_gjeFinalizedFamilyOutput,
+      ch14ext_gjeFinalizedFamilyNormalizedPabs,
+      ch14ext_cor146ClosureSqrtKappa, hAhat]
+    ring
   have hmult0 : 0 <= (F.gje.model t).u * vecNorm2 xhat :=
     mul_nonneg (F.gje.model t).u_nonneg (vecNorm2_nonneg xhat)
   calc
@@ -1063,7 +1064,7 @@ theorem ch14ext_cor146Finalized_forward_relative_source_literal
   have hq0 : 0 <= q := mul_nonneg hc0 (F.gje.model t).u_nonneg
   have hq1 : q < 1 := by
     dsimp [q, c, ch14ext_cor146ForwardPrintedCoefficient]
-    convert hbootstrap using 1 <;> ring
+    (convert hbootstrap using 1; ring)
   have hself : e <= q * (xn + e) + r := by
     exact le_trans habs'
       (add_le_add (mul_le_mul_of_nonneg_left hxhat hq0) (le_refl r))

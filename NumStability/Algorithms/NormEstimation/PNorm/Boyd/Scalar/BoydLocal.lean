@@ -185,7 +185,7 @@ lemma boyd_scaled_dualCoordinate_involution {p q α a : ℝ}
           α ^ (q - 2) * α = α ^ (q - 2) * α ^ (1 : ℝ) := by
             rw [Real.rpow_one]
           _ = α ^ ((q - 2) + 1) := (Real.rpow_add hα (q - 2) 1).symm
-          _ = α ^ (q - 1) := by congr 1 <;> ring]
+          _ = α ^ (q - 1) := by (congr 1; ring)]
 
 lemma boyd_scaled_gradient_coefficient {q α : ℝ}
     (hq : q ≠ 0) (hα : 0 < α) :
@@ -208,7 +208,7 @@ lemma boyd_scale_coefficient {p q S : ℝ}
       α ^ (q - 2) * α = α ^ (q - 2) * α ^ (1 : ℝ) := by
         rw [Real.rpow_one]
       _ = α ^ ((q - 2) + 1) := (Real.rpow_add hα (q - 2) 1).symm
-      _ = α ^ (q - 1) := by congr 1 <;> ring
+      _ = α ^ (q - 1) := by (congr 1; ring)
   have hgrad := boyd_scaled_gradient_coefficient hpq.symm.ne_zero hα
   have hholder := boyd_holder_sub_one_mul_sub_one hpq
   change (q - 1) * (α ^ q) ^ (q⁻¹ - 1) *

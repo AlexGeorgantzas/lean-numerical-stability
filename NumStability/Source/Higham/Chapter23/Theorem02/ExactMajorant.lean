@@ -112,11 +112,15 @@ theorem higham23_strassenHeavyProduct_transfer
     (mul_nonneg (by norm_num) hb)
     (mul_nonneg (mul_nonneg (by norm_num) fp.u_nonneg) ha)
     (mul_nonneg (mul_nonneg (by norm_num) fp.u_nonneg) hb)
-    hXhat hY (by convert hYhat using 1 <;> ring) hXerr hYerr
-    (by convert hRec using 1 <;> ring)
+    hXhat hY (by convert hYhat using 1; ring) hXerr hYerr
+    (by convert hRec using 1; ring)
   constructor
-  · convert ht.1 using 1 <;> dsimp [higham23StrassenHeavyError] <;> ring
-  · convert ht.2 using 1 <;> dsimp [higham23StrassenHeavyNorm] <;> ring
+  · convert ht.1 using 1
+    dsimp [higham23StrassenHeavyError]
+    ring
+  · convert ht.2 using 1
+    dsimp [higham23StrassenHeavyNorm]
+    ring
 
 /-- One rounded left input sum followed by a recursive product. -/
 theorem higham23_strassenLightLeftProduct_transfer
@@ -141,10 +145,14 @@ theorem higham23_strassenLightLeftProduct_transfer
     hb (mul_nonneg (mul_nonneg (by norm_num) fp.u_nonneg) ha) (by norm_num)
     hXhat hY (by simpa using hY) hXerr
     (higham23_recursiveErrorLe_refl r depth Y)
-    (by convert hRec using 1 <;> ring)
+    (by convert hRec using 1; ring)
   constructor
-  · convert ht.1 using 1 <;> dsimp [higham23StrassenLightError] <;> ring
-  · convert ht.2 using 1 <;> dsimp [higham23StrassenLightNorm] <;> ring
+  · convert ht.1 using 1
+    dsimp [higham23StrassenLightError]
+    ring
+  · convert ht.2 using 1
+    dsimp [higham23StrassenLightNorm]
+    ring
 
 /-- One rounded right input sum followed by a recursive product. -/
 theorem higham23_strassenLightRightProduct_transfer
@@ -167,12 +175,16 @@ theorem higham23_strassenLightRightProduct_transfer
   have ht := higham23_recursiveProduct_transfer r depth X X Y Yhat P
     a (2 * b) 0 (2 * fp.u * b) e ha (mul_nonneg (by norm_num) hb)
     (by norm_num) (mul_nonneg (mul_nonneg (by norm_num) fp.u_nonneg) hb)
-    hX hY (by convert hYhat using 1 <;> ring)
+    hX hY (by convert hYhat using 1; ring)
     (higham23_recursiveErrorLe_refl r depth X) hYerr
-    (by convert hRec using 1 <;> ring)
+    (by convert hRec using 1; ring)
   constructor
-  · convert ht.1 using 1 <;> dsimp [higham23StrassenLightError] <;> ring
-  · convert ht.2 using 1 <;> dsimp [higham23StrassenLightNorm] <;> ring
+  · convert ht.1 using 1
+    dsimp [higham23StrassenLightError]
+    ring
+  · convert ht.2 using 1
+    dsimp [higham23StrassenLightNorm]
+    ring
 
 /-- Exact nonlinear coefficient proved for the literal recursive Strassen
 evaluator.  Its linearization is the 12/46 recurrence in (23.16). -/

@@ -92,18 +92,20 @@ theorem higham23_threeMStrassen_exactMajorant
   have hP2normRaw := higham23_recursiveMaxNormLe_of_error r depth
     (A.2 * B.2) P2 hP2exact hP2err
   have hP1norm : Higham23RecursiveMaxNormLe r depth P1 (N1 * a * b) := by
-    convert hP1normRaw using 1 <;>
-      dsimp [N1, n, e, higham23ThreeMStrassenP1Norm] <;> ring
+    convert hP1normRaw using 1
+    dsimp [N1, n, e, higham23ThreeMStrassenP1Norm]
+    ring
   have hP2norm : Higham23RecursiveMaxNormLe r depth P2 (N1 * a * b) := by
-    convert hP2normRaw using 1 <;>
-      dsimp [N1, n, e, higham23ThreeMStrassenP1Norm] <;> ring
+    convert hP2normRaw using 1
+    dsimp [N1, n, e, higham23ThreeMStrassenP1Norm]
+    ring
   have hP3rec : Higham23RecursiveErrorLe r depth (As * Bs) P3
       (e * ((1 + u) * sA) * ((1 + u) * sB)) := by
     simpa [P3, e] using higham23_theorem23_2_strassen_exactMajorant
       fp r hvalid depth As Bs ((1 + u) * sA) ((1 + u) * sB)
       (by positivity) (by positivity) hAsNorm hBsNorm
   have hBsNorm' : Higham23RecursiveMaxNormLe r depth Bs (sB + u * sB) := by
-    convert hBsNorm using 1 <;> ring
+    convert hBsNorm using 1; ring
   have hP3transfer := higham23_recursiveProduct_transfer r depth
     (A.1 + A.2) As (B.1 + B.2) Bs P3
     ((1 + u) * sA) sB (u * sA) (u * sB) e
@@ -111,7 +113,7 @@ theorem higham23_threeMStrassen_exactMajorant
     hAsNorm hBsum hBsNorm'
     (higham23_recursiveErrorLe_symm r depth _ _ hAsErr)
     (higham23_recursiveErrorLe_symm r depth _ _ hBsErr)
-    (by convert hP3rec using 1 <;> ring)
+    (by convert hP3rec using 1; ring)
   have hP3err : Higham23RecursiveErrorLe r depth Q P3 (T * a * b) := by
     apply higham23_recursiveErrorLe_mono r depth _ _ hP3transfer.1
     have hcore : 0 ≤ n * u + n * u * (1 + u) + e * (1 + u) ^ 2 := by
@@ -134,9 +136,10 @@ theorem higham23_threeMStrassen_exactMajorant
       (A.1 * B.1 - A.2 * B.2)
       (higham23RecursiveFlSub fp r depth P1 P2)
       (higham23ThreeMStrassenRealMajorant n e u * a * b) := by
-    convert hRealRaw using 1 <;>
-      dsimp [N1, higham23ThreeMStrassenRealMajorant,
-        higham23ThreeMStrassenP1Norm] <;> ring
+    convert hRealRaw using 1
+    dsimp [N1, higham23ThreeMStrassenRealMajorant,
+      higham23ThreeMStrassenP1Norm]
+    ring
   let Q1 := higham23RecursiveFlSub fp r depth P3 P1
   have hQ1prod := higham23_recursiveErrorLe_sub r depth Q P3
     (A.1 * B.1) P1 hP3err hP1err
@@ -145,12 +148,16 @@ theorem higham23_threeMStrassen_exactMajorant
   have hQ1raw := higham23_recursiveErrorLe_trans r depth _ _ _ hQ1prod hQ1round
   have hQ1 : Higham23RecursiveErrorLe r depth (Q - A.1 * B.1) Q1
       ((T + e + u * (N3 + N1)) * a * b) := by
-    convert hQ1raw using 1 <;> dsimp [Q1] <;> ring
+    convert hQ1raw using 1
+    dsimp [Q1]
+    ring
   have hQ1normRaw := higham23_recursiveFlSub_norm fp r depth P3 P1
     (N3 * a * b) (N1 * a * b) (by positivity) (by positivity) hP3norm hP1norm
   have hQ1norm : Higham23RecursiveMaxNormLe r depth Q1
       ((1 + u) * (N3 + N1) * a * b) := by
-    convert hQ1normRaw using 1 <;> dsimp [Q1] <;> ring
+    convert hQ1normRaw using 1
+    dsimp [Q1]
+    ring
   have hImagProd := higham23_recursiveErrorLe_sub r depth
     (Q - A.1 * B.1) Q1 (A.2 * B.2) P2 hQ1 hP2err
   have hImagRound := higham23_recursiveFlSub_error fp r depth Q1 P2
@@ -161,8 +168,9 @@ theorem higham23_threeMStrassen_exactMajorant
       (Q - A.1 * B.1 - A.2 * B.2)
       (higham23RecursiveFlSub fp r depth Q1 P2)
       (higham23ThreeMStrassenImagMajorant n e u * a * b) := by
-    convert hImagRaw using 1 <;>
-      dsimp [higham23ThreeMStrassenImagMajorant, N1, N3, T, Q1] <;> ring
+    convert hImagRaw using 1
+    dsimp [higham23ThreeMStrassenImagMajorant, N1, N3, T, Q1]
+    ring
   constructor
   · simpa [Higham23RecursiveComplexErrorLe, higham23ThreeMExactRecursive,
       higham23ThreeM, higham23FlThreeMStrassen, As, Bs, P1, P2, P3,

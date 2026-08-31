@@ -50,15 +50,25 @@ theorem higham8_18_fanIn7CoefficientRemainder_isBigO_unit_sq
   have hg2 : (fun t => g t ^ 2) =O[l] (fun t => u t ^ 2) := by
     simpa only [pow_two] using hg.mul hg
   have hg3 : (fun t => g t ^ 3) =O[l] (fun t => u t ^ 2) := by
-    convert hg2.mul hg_one using 1 <;> funext t <;> ring
+    convert hg2.mul hg_one using 1
+    funext t
+    ring
   have hg4 : (fun t => g t ^ 4) =O[l] (fun t => u t ^ 2) := by
-    convert hg3.mul hg_one using 1 <;> funext t <;> ring
+    convert hg3.mul hg_one using 1
+    funext t
+    ring
   have hg5 : (fun t => g t ^ 5) =O[l] (fun t => u t ^ 2) := by
-    convert hg4.mul hg_one using 1 <;> funext t <;> ring
+    convert hg4.mul hg_one using 1
+    funext t
+    ring
   have hg6 : (fun t => g t ^ 6) =O[l] (fun t => u t ^ 2) := by
-    convert hg5.mul hg_one using 1 <;> funext t <;> ring
+    convert hg5.mul hg_one using 1
+    funext t
+    ring
   have hg7 : (fun t => g t ^ 7) =O[l] (fun t => u t ^ 2) := by
-    convert hg6.mul hg_one using 1 <;> funext t <;> ring
+    convert hg6.mul hg_one using 1
+    funext t
+    ring
   have hgammaRemainder :
       (fun t => (((n : ℝ) * u t) ^ 2) / (1 - (n : ℝ) * u t)) =O[l]
         (fun t => u t ^ 2) := by

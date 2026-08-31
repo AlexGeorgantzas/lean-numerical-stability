@@ -87,11 +87,11 @@ theorem pascalStirling_two_mul_div_sq (n : ℕ) (hn : 0 < n) :
   have ha : (n : ℝ) / Real.exp 1 ≠ 0 :=
     div_ne_zero hnR (Real.exp_ne_zero 1)
   have hsqrt2 : Real.sqrt 2 * Real.sqrt 2 = 2 := by
-    rw [Real.mul_self_sqrt] <;> norm_num
+    (rw [Real.mul_self_sqrt]; norm_num)
   have hsqrtn : Real.sqrt (n : ℝ) * Real.sqrt n = n := by
-    rw [Real.mul_self_sqrt] <;> positivity
+    (rw [Real.mul_self_sqrt]; positivity)
   have hsqrtpi : Real.sqrt Real.pi * Real.sqrt Real.pi = Real.pi := by
-    rw [Real.mul_self_sqrt] <;> positivity
+    (rw [Real.mul_self_sqrt]; positivity)
   have hpow :
       (2 * (n : ℝ) / Real.exp 1) ^ (2 * n) =
         (4 : ℝ) ^ n * ((n : ℝ) / Real.exp 1) ^ (2 * n) := by
@@ -171,7 +171,7 @@ theorem pascalCentralBinomial_sq_isEquivalent :
   have hnR : (n : ℝ) ≠ 0 := by
     exact_mod_cast (show 0 < n from hn).ne'
   have hsqrt : Real.sqrt (Real.pi * n) ^ 2 = Real.pi * n := by
-    rw [Real.sq_sqrt] <;> positivity
+    (rw [Real.sq_sqrt]; positivity)
   rw [div_pow, hsqrt]
   field_simp [hnR, Real.pi_ne_zero]
   rw [← pow_mul, mul_comm n 2, pow_mul]

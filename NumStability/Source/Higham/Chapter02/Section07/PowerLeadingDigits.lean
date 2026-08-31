@@ -39,7 +39,7 @@ theorem higham2_power_decimalLeadingDigit_frequency_tendsto
     (by
       exact div_nonneg (decimalDigit_interval_length_nonneg d) (by norm_num))
     (by
-      convert decimalDigit_interval_length_le_one d using 1 <;> ring)
+      (convert decimalDigit_interval_length_le_one d using 1; ring))
   change Tendsto
       (fun N : ℕ ↦
         (({i : Fin (N + 1) |

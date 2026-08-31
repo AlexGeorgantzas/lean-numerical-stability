@@ -436,7 +436,7 @@ theorem higham21_theorem21_3_scalar_formula_is_not_exactly_attainable :
       lsNormwiseBackwardErrorCostF 1 DeltaA Deltab ^ 2 =
         DeltaA 0 0 ^ 2 + Deltab 0 ^ 2 := by
     rw [lsNormwiseBackwardErrorCostF_sq]
-    simp [frobNormSqRect, vecNorm2Sq, Fin.sum_univ_succ]
+    simp [frobNormSqRect, vecNorm2Sq]
   have hformula_sq :
       undetNormwiseBackwardErrorNonzeroFormulaRHS 1
           higham21Thm21_3ScalarNonattainmentA
@@ -450,7 +450,8 @@ theorem higham21_theorem21_3_scalar_formula_is_not_exactly_attainable :
     norm_num [higham21Thm21_3ScalarNonattainmentA,
       higham21Thm21_3ScalarNonattainmentB,
       higham21Thm21_3ScalarNonattainmentY, undetResidualHigham,
-      rectMatMulVec, vecNorm2Sq, Fin.sum_univ_succ] <;> rfl
+      rectMatMulVec, vecNorm2Sq, Fin.sum_univ_succ]
+    rfl
   have hsq :
       lsNormwiseBackwardErrorCostF 1 DeltaA Deltab ^ 2 =
         undetNormwiseBackwardErrorNonzeroFormulaRHS 1

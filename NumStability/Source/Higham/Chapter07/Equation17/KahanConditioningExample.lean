@@ -105,7 +105,8 @@ private theorem ch7_kahan_solution (ε : ℝ) :
   ext i
   fin_cases i <;>
     simp [matMulVec, ch7KahanMatrix, ch7KahanSolution, ch7KahanRhs,
-      Fin.sum_univ_three] <;> ring
+      Fin.sum_univ_three]
+  ring
 
 
 private theorem ch7_kahan_inverse (ε : ℝ) (hε : 0 < ε) :
@@ -229,7 +230,8 @@ private theorem ch7_kahan_solution_infNorm
   · apply infNormVec_le_of_abs_le
     · intro i
       fin_cases i <;>
-        simp [ch7KahanSolution, abs_of_nonneg hε0] <;> linarith
+        simp [ch7KahanSolution, abs_of_nonneg hε0]
+      linarith
     · norm_num
   · have h := abs_le_infNormVec (ch7KahanSolution ε) (1 : Fin 3)
     simpa [ch7KahanSolution] using h

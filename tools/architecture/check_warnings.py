@@ -209,8 +209,14 @@ BASELINE_DEBT = "baseline_debt"
 # here, it never relaxes the contract.
 REVIEWED_COMPATIBILITY_EXCEPTION = "reviewed_compatibility_exception"
 REVIEWED_DEFERRED_MIGRATION = "reviewed_deferred_migration"
+REVIEWED_UPSTREAM_EXCEPTION = "reviewed_upstream_exception"
 DISPOSITIONS = frozenset(
-    {BASELINE_DEBT, REVIEWED_COMPATIBILITY_EXCEPTION, REVIEWED_DEFERRED_MIGRATION}
+    {
+        BASELINE_DEBT,
+        REVIEWED_COMPATIBILITY_EXCEPTION,
+        REVIEWED_DEFERRED_MIGRATION,
+        REVIEWED_UPSTREAM_EXCEPTION,
+    }
 )
 ACCEPTED_BASELINE = "accepted_baseline"
 PRIMARY_REVIEWER = "primary-human"
@@ -729,7 +735,40 @@ class Census:
 # Records the reviewer keeps deliberately, rather than as unreviewed debt. The
 # table is consulted by --write-baseline so regeneration stays deterministic:
 # a reviewed disposition survives a re-capture instead of resetting to debt.
+# Vendored upstream sources carry another project's copyright and are adapted
+# from a pinned commit, so their diagnostics are retained rather than fixed:
+# editing them would diverge the copy from the source it is adapted from and
+# make a future re-sync harder to verify. The reviewed CI-02 packet designates
+# these exact records as retained exceptions to reconsider on an upstream
+# revision, not as debt to clear.
+_UPSTREAM_VENDORED = {
+    "disposition": REVIEWED_UPSTREAM_EXCEPTION,
+    "rationale": (
+        "Vendored upstream source adapted from mathlib4 PR #28013 at a pinned "
+        "commit, retaining the original Apache-2.0 notice and authorship. "
+        "Style edits here would diverge the copy from its upstream original "
+        "and complicate re-synchronisation, so the diagnostic is retained."
+    ),
+    "expiry_release": "next upstream re-synchronisation",
+    "reconsideration_trigger": (
+        "Reconsider when the vendored file is re-synchronised with a newer "
+        "upstream revision, at which point the upstream text decides."
+    ),
+}
+
 REVIEWED_DISPOSITIONS: dict[tuple[str, str], dict[str, str]] = {
+    (
+        "NumStability/Upstream/Lindemann/Basic.lean",
+        "linter.unnecessarySeqFocus",
+    ): _UPSTREAM_VENDORED,
+    (
+        "NumStability/Upstream/Lindemann/Basic.lean",
+        "linter.unusedSimpArgs",
+    ): _UPSTREAM_VENDORED,
+    (
+        "NumStability/Upstream/Lindemann/MonoidAlgebraCompat.lean",
+        "linter.unusedSimpArgs",
+    ): _UPSTREAM_VENDORED,
     (
         "NumStabilityTest/Reorganization/R06/OldOnly/"
         "NumStability_Source_Higham_Chapter09_Problems.lean",

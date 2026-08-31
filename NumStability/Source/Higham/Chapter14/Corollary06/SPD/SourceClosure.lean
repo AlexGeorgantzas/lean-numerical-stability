@@ -109,7 +109,7 @@ theorem ch14ext_cor146Source_envelope_le_printed_add_correction {n : Nat}
     have hsub := ch14ext_gjeSource_constructedQ_sub_U_bound fp s hnpos h3
       hUpper hfinal hpiv i j
     calc
-      |Q i j| = |(Q i j - U i j) + U i j| := by congr 1 <;> ring
+      |Q i j| = |(Q i j - U i j) + U i j| := by (congr 1; ring)
       _ <= |Q i j - U i j| + |U i j| := abs_add_le _ _
       _ <= c * matMul n X (absMatrix n U) i j + |U i j| := by
         exact add_le_add (by simpa [Q, X, U, c] using hsub) (le_refl _)
@@ -659,9 +659,10 @@ theorem ch14ext_cor146Source_residual_source_literal
   have hbase' :
       vecNorm2 (fun i : Fin n => b i - matMulVec n A (F.gje.x_hat t) i) <=
         C * (factor * khat) + rho := by
-    convert hbase using 1 <;>
-      simp [C, factor, khat, rho, ch14ext_cor146ClosureSqrtKappa,
-        hAhat] <;> ring
+    convert hbase using 1
+    simp [C, factor, khat, rho, ch14ext_cor146ClosureSqrtKappa,
+      hAhat]
+    ring
   have hVone : (fun s => ch14ext_cor146SourceRunV F s 1) =
       (fun s => (F.gje.state s).matrix) := by
     funext s
@@ -778,9 +779,10 @@ theorem ch14ext_cor146Source_forward_absolute_source_literal
   have hbase' :
       vecNorm2 (fun i : Fin n => x i - F.gje.x_hat t i) <=
         raw * ((F.gje.model t).u * vecNorm2 (F.gje.x_hat t)) + rho := by
-    convert hbase using 1 <;>
-      simp [raw, a, d, factor, khat, kap, rho,
-        ch14ext_cor146ClosureSqrtKappa, hAhat] <;> ring
+    convert hbase using 1
+    simp [raw, a, d, factor, khat, kap, rho,
+      ch14ext_cor146ClosureSqrtKappa, hAhat]
+    ring
   have hmult0 : 0 <= (F.gje.model t).u * vecNorm2 (F.gje.x_hat t) :=
     mul_nonneg (F.gje.model t).u_nonneg (vecNorm2_nonneg (F.gje.x_hat t))
   have hVone : (fun s => ch14ext_cor146SourceRunV F s 1) =
@@ -865,7 +867,7 @@ theorem ch14ext_cor146Source_forward_relative_source_literal
   have hq0 : 0 <= q := mul_nonneg hc0 (F.gje.model t).u_nonneg
   have hq1 : q < 1 := by
     dsimp [q, c, ch14ext_cor146ForwardPrintedCoefficient]
-    convert hbootstrap using 1 <;> ring
+    (convert hbootstrap using 1; ring)
   have hself : e <= q * (xn + e) + r := by
     exact le_trans habs'
       (add_le_add (mul_le_mul_of_nonneg_left hxhat hq0) (le_refl r))
@@ -931,7 +933,7 @@ theorem ch14ext_cor146Source_vanishing_family_endpoint
         kappa2 A A_inv < 1) l := by
     filter_upwards [hqSmall] with t ht
     dsimp [c, ch14ext_cor146ForwardPrintedCoefficient] at ht
-    convert ht using 1 <;> ring
+    (convert ht using 1; ring)
   refine ⟨?_, ?_, ?_, ?_⟩
   · exact ch14ext_cor146Source_residual_source_literal F
   · exact ch14ext_cor146Source_residualRemainder_isBigO_u_sq F

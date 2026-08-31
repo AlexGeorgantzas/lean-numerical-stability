@@ -169,7 +169,8 @@ theorem higham23_recursiveErrorLe_trans (r : ℕ) :
       calc
         |A i j - C i j| ≤ |A i j - B i j| + |B i j - C i j| := by
           have := abs_add_le (A i j - B i j) (B i j - C i j)
-          convert this using 1 <;> ring
+          convert this using 1
+          ring
         _ ≤ e + f := add_le_add (hAB i j) (hBC i j)
   | depth + 1, A, B, C, e, f, hAB, hBC => by
       rcases hAB with ⟨hAB11, hAB12, hAB21, hAB22⟩
@@ -191,7 +192,8 @@ theorem higham23_recursiveErrorLe_add (r : ℕ) :
             |A i j - A' i j| + |B i j - B' i j| := by
           have := abs_add_le (A i j - A' i j) (B i j - B' i j)
           change |(A i j + B i j) - (A' i j + B' i j)| ≤ _
-          convert this using 1 <;> ring
+          convert this using 1
+          ring
         _ ≤ e + f := add_le_add (hA i j) (hB i j)
   | depth + 1, A, A', B, B', e, f, hA, hB => by
       rcases hA with ⟨hA11, hA12, hA21, hA22⟩
@@ -223,7 +225,8 @@ theorem higham23_recursiveErrorLe_sub (r : ℕ) :
             |A i j - A' i j| + |B i j - B' i j| := by
           have := abs_sub (A i j - A' i j) (B i j - B' i j)
           change |(A i j - B i j) - (A' i j - B' i j)| ≤ _
-          convert this using 1 <;> ring
+          convert this using 1
+          ring
         _ ≤ e + f := add_le_add (hA i j) (hB i j)
   | depth + 1, A, A', B, B', e, f, hA, hB => by
       rcases hA with ⟨hA11, hA12, hA21, hA22⟩
@@ -444,7 +447,8 @@ theorem higham23_recursiveFlAdd_norm (fp : FPModel) (r depth : ℕ)
   have hExact := higham23_recursiveMaxNormLe_add r depth A B hA hB
   have hErr := higham23_recursiveFlAdd_error fp r depth A B a b ha hb hA hB
   have h := higham23_recursiveMaxNormLe_of_error r depth _ _ hExact hErr
-  convert h using 1 <;> ring
+  convert h using 1
+  ring
 
 theorem higham23_recursiveFlSub_norm (fp : FPModel) (r depth : ℕ)
     (A B : Higham23RecursiveMatrix r depth) (a b : ℝ)
@@ -456,7 +460,8 @@ theorem higham23_recursiveFlSub_norm (fp : FPModel) (r depth : ℕ)
   have hExact := higham23_recursiveMaxNormLe_sub r depth A B hA hB
   have hErr := higham23_recursiveFlSub_error fp r depth A B a b ha hb hA hB
   have h := higham23_recursiveMaxNormLe_of_error r depth _ _ hExact hErr
-  convert h using 1 <;> ring
+  convert h using 1
+  ring
 
 theorem higham23_recursiveFlAdd_pair (fp : FPModel) (r depth : ℕ)
     (A B : Higham23RecursiveMatrix r depth) (a : ℝ) (ha : 0 ≤ a)
@@ -467,11 +472,11 @@ theorem higham23_recursiveFlAdd_pair (fp : FPModel) (r depth : ℕ)
       Higham23RecursiveErrorLe r depth
         (higham23RecursiveFlAdd fp r depth A B) (A + B) (2 * fp.u * a) := by
   constructor
-  · convert higham23_recursiveFlAdd_norm fp r depth A B a a ha ha hA hB using 1 <;>
-      ring
+  · convert higham23_recursiveFlAdd_norm fp r depth A B a a ha ha hA hB using 1
+    ring
   · apply higham23_recursiveErrorLe_symm r depth
-    convert higham23_recursiveFlAdd_error fp r depth A B a a ha ha hA hB using 1 <;>
-      ring
+    convert higham23_recursiveFlAdd_error fp r depth A B a a ha ha hA hB using 1
+    ring
 
 theorem higham23_recursiveFlSub_pair (fp : FPModel) (r depth : ℕ)
     (A B : Higham23RecursiveMatrix r depth) (a : ℝ) (ha : 0 ≤ a)
@@ -482,11 +487,11 @@ theorem higham23_recursiveFlSub_pair (fp : FPModel) (r depth : ℕ)
       Higham23RecursiveErrorLe r depth
         (higham23RecursiveFlSub fp r depth A B) (A - B) (2 * fp.u * a) := by
   constructor
-  · convert higham23_recursiveFlSub_norm fp r depth A B a a ha ha hA hB using 1 <;>
-      ring
+  · convert higham23_recursiveFlSub_norm fp r depth A B a a ha ha hA hB using 1
+    ring
   · apply higham23_recursiveErrorLe_symm r depth
-    convert higham23_recursiveFlSub_error fp r depth A B a a ha ha hA hB using 1 <;>
-      ring
+    convert higham23_recursiveFlSub_error fp r depth A B a a ha ha hA hB using 1
+    ring
 
 /-- Transfer a recursive-product error theorem across rounded input
 preparations.  This is the operation-level step used for each of the seven
@@ -518,6 +523,7 @@ theorem higham23_recursiveProduct_transfer (r depth : ℕ)
     Xhat Yhat xHat (y + dy) hxHat hyHat0 hXhat hYhat
   have hNorm := higham23_recursiveMaxNormLe_of_error r depth _ _ hExact hRec
   refine ⟨hErr, ?_⟩
-  convert hNorm using 1 <;> ring
+  convert hNorm using 1
+  ring
 
 end NumStability

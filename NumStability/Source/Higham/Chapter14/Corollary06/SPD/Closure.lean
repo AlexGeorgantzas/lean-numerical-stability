@@ -2203,9 +2203,10 @@ theorem ch14ext_cor146_concrete_residual_source_literal
   have hbase' :
       vecNorm2 (fun i : Fin n => b i - matMulVec n A (x_hat t) i) <=
         C * (factor * khat) + rho := by
-    convert hbase using 1 <;>
-      simp [C, factor, khat, rho, ch14ext_cor146ClosureSqrtKappa,
-        hAhat, ch14ext_cor146ClosureX] <;> ring
+    convert hbase using 1
+    simp [C, factor, khat, rho, ch14ext_cor146ClosureSqrtKappa,
+      hAhat, ch14ext_cor146ClosureX]
+    ring
   calc
     vecNorm2 (fun i : Fin n => b i - matMulVec n A (x_hat t) i) <=
         C * (factor * khat) + rho := hbase'
@@ -2343,9 +2344,10 @@ theorem ch14ext_cor146_concrete_forward_absolute_source_literal
   have hbase' :
       vecNorm2 (fun i : Fin n => x i - x_hat t i) <=
         raw * ((fp t).u * vecNorm2 (x_hat t)) + rho := by
-    convert hbase using 1 <;>
-      simp [raw, a, d, factor, khat, kap, rho,
-        ch14ext_cor146ClosureSqrtKappa, hAhat] <;> ring
+    convert hbase using 1
+    simp [raw, a, d, factor, khat, kap, rho,
+      ch14ext_cor146ClosureSqrtKappa, hAhat]
+    ring
   have hmult0 : 0 <= (fp t).u * vecNorm2 (x_hat t) :=
     mul_nonneg (fp t).u_nonneg (vecNorm2_nonneg (x_hat t))
   calc
@@ -2459,7 +2461,7 @@ theorem ch14ext_cor146_concrete_forward_relative_source_literal
   have hq0 : 0 <= q := mul_nonneg hc0 (fp t).u_nonneg
   have hq1 : q < 1 := by
     dsimp [q, c, ch14ext_cor146ForwardPrintedCoefficient]
-    convert hbootstrap using 1 <;> ring
+    (convert hbootstrap using 1; ring)
   have hself : e <= q * (xn + e) + r := by
     exact le_trans habs'
       (add_le_add (mul_le_mul_of_nonneg_left hxhat hq0) (le_refl r))
@@ -2601,7 +2603,7 @@ theorem ch14ext_cor146_full_source_literal_family_endpoint
         kappa2 A A_inv < 1) l := by
     filter_upwards [hqSmall] with t ht
     dsimp [c, ch14ext_cor146ForwardPrintedCoefficient] at ht
-    convert ht using 1 <;> ring
+    (convert ht using 1; ring)
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro t
     exact ch14ext_cor146_concrete_residual_source_literal

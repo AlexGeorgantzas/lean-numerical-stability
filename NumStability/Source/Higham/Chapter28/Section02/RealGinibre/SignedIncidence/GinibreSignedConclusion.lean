@@ -75,7 +75,7 @@ theorem two_mul_ginibreCorollary31Factor_product_div_pi (m : ℕ) :
           Real.Gamma (((m : ℝ) + 2) / 2) =
           Real.Gamma (((m : ℝ) + 1) / 2) *
             Real.Gamma (((m : ℝ) + 1) / 2 + 1 / 2) := by
-              congr 2 <;> ring
+              (congr 2; ring)
       _ = Real.Gamma (2 * (((m : ℝ) + 1) / 2)) *
           Real.rpow 2 (1 - 2 * (((m : ℝ) + 1) / 2)) *
             Real.sqrt Real.pi := hdup0

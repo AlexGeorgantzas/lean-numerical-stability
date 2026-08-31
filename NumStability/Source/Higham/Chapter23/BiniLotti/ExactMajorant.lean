@@ -165,10 +165,12 @@ theorem higham23_theorem23_4_biniLotti_exactMajorant
           (by simpa [uw] using hXcert k) (by simpa [vw] using hYcert k)
           (by simpa [P, e, uw, vw] using hrec)
         constructor
-        · convert hp.error_le using 1 <;>
-            dsimp [PE, higham23BiniProductErrorCore, N, e, g, uw, vw] <;> ring
-        · convert hp.norm_le using 1 <;>
-            dsimp [PN, higham23BiniProductNormCore, N, e, g, uw, vw] <;> ring
+        · convert hp.error_le using 1
+          dsimp [PE, higham23BiniProductErrorCore, N, e, g, uw, vw]
+          ring
+        · convert hp.norm_le using 1
+          dsimp [PN, higham23BiniProductNormCore, N, e, g, uw, vw]
+          ring
       have hOutCert (i j : Fin h) := higham23_biniFlDot_certificate fp h t hOutput
         depth (alg.W i j)
         (fun k ↦ higham23BiniMul h depth (X k) (Y k)) P
@@ -240,9 +242,10 @@ theorem higham23_theorem23_4_biniLotti_exactMajorant
           (higham23BiniExactLevel alg A B i j)
           (higham23BiniFlEvaluate fp alg (depth + 1) A B i j)
           (higham23BiniStepMajorant K N e g gt * a * b) := by
-        convert hmonoRaw using 1 <;>
-          dsimp [higham23BiniExactLevel, higham23BiniFlEvaluate, X, Y, Xhat, Yhat,
-            P, higham23BiniStepMajorant, K, N, e, g, gt, PE, PN] <;> ring
+        convert hmonoRaw using 1
+        dsimp [higham23BiniExactLevel, higham23BiniFlEvaluate, X, Y, Xhat, Yhat,
+          P, higham23BiniStepMajorant, K, N, e, g, gt, PE, PN]
+        ring
       have hCorrectEntry := congrArg
         (fun M : Higham23BiniMatrix h (depth + 1) ↦ M i j) hCorrect
       change higham23BiniExactLevel alg A B i j =

@@ -407,7 +407,7 @@ theorem boyd_inner_directional_eq_weighted_projectedLemma3B
         rw [Real.rpow_one]
       _ = S ^ ((p⁻¹ - 2) + 1) :=
         (Real.rpow_add hSpos (p⁻¹ - 2) 1).symm
-      _ = S ^ (p⁻¹ - 1) := by congr 1 <;> ring
+      _ = S ^ (p⁻¹ - 1) := by (congr 1; ring)
   funext j
   rw [boyd_transpose_inner_directional_expansion A x h j]
   change (1 - p) * S ^ (p⁻¹ - 2) * D *

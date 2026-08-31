@@ -63,7 +63,7 @@ theorem forward_column_scaled {n : ℕ} (hn : 0 < n)
               omega
             have hact := tridiag_mulVec_entry T (fun k => A_inv k last) r
             rw [hRight r last] at hact
-            simp [hrlast, r, one, hn2] at hact
+            simp [hrlast, r, hn2] at hact
             have hc : T.c r ≠ 0 := hIrred.2 r hn2
             have hfirst : r = first := by rfl
             have hone : (⟨r.val + 1, by simpa [r] using hn2⟩ : Fin n) = one := by
@@ -94,7 +94,7 @@ theorem forward_column_scaled {n : ℕ} (hn : 0 < n)
               omega
             have hact := tridiag_mulVec_entry T (fun q => A_inv q last) r
             rw [hRight r last] at hact
-            simp [hrlast, r, hk1, hk2] at hact
+            simp [hrlast, r, hk2] at hact
             have hc : T.c r ≠ 0 := hIrred.2 r (by simp [r]; omega)
             change 0 = T.d r * A_inv r last + T.a r * A_inv prev last +
               T.c r * A_inv next last at hact
@@ -232,7 +232,11 @@ theorem backward_row_scaled {n : ℕ} (hn : 0 < n)
                     T.a next * (backwardRowNat T k * A_inv first last) := by ring
                 _ = _ := by
                   rw [ih1, ih0]
-                  congr 2 <;> congr 1 <;> apply Fin.ext <;> simp [col, next] <;> omega
+                  congr 2
+                  congr 1
+                  apply Fin.ext
+                  simp [col]
+                  omega
             simp only [backwardRowNat]
             rw [hd, ha, hcAt, htarget, div_mul_eq_mul_div]
             apply (div_eq_iff hc).2
@@ -245,7 +249,7 @@ theorem backward_row_scaled {n : ℕ} (hn : 0 < n)
   have hidx :
       (⟨n - 1 - (n - 1 - i.val), by omega⟩ : Fin n) = i := by
     apply Fin.ext
-    simp only [Fin.val_mk]
+    simp only
     omega
   rw [hidx] at hres
   simpa [problem15_6_yBar, first, last] using hres
@@ -486,7 +490,11 @@ theorem backward_column_scaled {n : ℕ} (hn : 0 < n)
                     T.c col * (backwardColumnNat T k * A_inv last first) := by ring
                 _ = _ := by
                   rw [ih1, ih0]
-                  congr 2 <;> congr 1 <;> apply Fin.ext <;> simp [col] <;> omega
+                  congr 2
+                  congr 1
+                  apply Fin.ext
+                  simp [col]
+                  omega
             simp only [backwardColumnNat]
             rw [hd, hcAt, haAt, htarget, div_mul_eq_mul_div]
             apply (div_eq_iff ha).2
@@ -499,7 +507,7 @@ theorem backward_column_scaled {n : ℕ} (hn : 0 < n)
   have hidx :
       (⟨n - 1 - (n - 1 - i.val), by omega⟩ : Fin n) = i := by
     apply Fin.ext
-    simp only [Fin.val_mk]
+    simp only
     omega
   rw [hidx] at hres
   simpa [problem15_6_p, first, last] using hres
@@ -533,7 +541,7 @@ theorem forward_row_scaled {n : ℕ} (hn : 0 < n)
               omega
             have hact := tridiag_vecMul_entry T (fun q => A_inv last q) first
             rw [hLeft last first] at hact
-            simp [hlastfirst, first, one, hn2] at hact
+            simp [hlastfirst, first, hn2] at hact
             change 0 = T.d first * A_inv last first +
               T.a one * A_inv last one at hact
             have hd : diagAt T 0 = T.d first := by simp [diagAt, first, hn]
@@ -775,13 +783,13 @@ theorem absInvMul_correct {n : ℕ} (hn : 0 < n)
     · rw [if_pos hki]
       have hfac := hl i j (by simp [j]; omega)
       simp only [lw, problem15_6_lowerWeight]
-      simp [finVectorAt, hk, j]
+      simp [finVectorAt, hk]
       rw [hfac, abs_mul]
       ring
     · rw [if_neg hki]
       have hfac := hu i j (by simp [j]; omega)
       simp only [uw, problem15_6_upperWeight]
-      simp [finVectorAt, hk, j]
+      simp [finVectorAt, hk]
       rw [hfac, abs_mul]
       ring
   have hfin := Fin.sum_univ_eq_sum_range

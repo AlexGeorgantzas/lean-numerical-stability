@@ -79,7 +79,7 @@ theorem higham23_recursiveFlAdd_norm_of_sum_norm
       (higham23RecursiveFlAdd fp r depth A B) ((1 + fp.u) * s) := by
   have hErr := higham23_recursiveFlAdd_error_of_sum_norm fp r depth A B s hs hSum
   have hNorm := higham23_recursiveMaxNormLe_of_error r depth _ _ hSum hErr
-  convert hNorm using 1 <;> ring
+  convert hNorm using 1; ring
 
 noncomputable def higham23ThreeMStrassenP3Error (n e u : ℝ) : ℝ :=
   2 * (n * u + n * u * (1 + u) + e * (1 + u) ^ 2)

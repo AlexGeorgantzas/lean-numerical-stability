@@ -95,7 +95,8 @@ private theorem higham26Regular_base_sum (n : Nat) (hn : 0 < n)
       (b + if j = i then a else 0) ^ 2 =
         b ^ 2 + if j = i then a ^ 2 + 2 * a * b else 0 := by
     intro j
-    by_cases hji : j = i <;> simp [hji] <;> ring
+    by_cases hji : j = i <;> simp [hji]
+    ring
   simp_rw [hpoint]
   rw [Finset.sum_add_distrib]
   simp

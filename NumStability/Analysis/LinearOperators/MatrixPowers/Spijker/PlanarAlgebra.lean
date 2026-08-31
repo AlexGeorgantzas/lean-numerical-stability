@@ -55,8 +55,8 @@ lemma eval_spijkerConjugatePolynomial (p : ℂ[X]) (z : ℂ) :
     (spijkerConjugatePolynomial p).eval z =
       conj (p.eval (conj z)) := by
   rw [spijkerConjugatePolynomial, Polynomial.eval_map]
-  convert Polynomial.eval₂_at_apply (p := p) (starRingEnd ℂ) (conj z) using 1 <;>
-    simp
+  convert Polynomial.eval₂_at_apply (p := p) (starRingEnd ℂ) (conj z) using 1
+  simp
 
 lemma eval_spijkerCircleConjugateLift_of_norm_one
     {n : ℕ} {p : ℂ[X]} (hp : p.natDegree ≤ n)

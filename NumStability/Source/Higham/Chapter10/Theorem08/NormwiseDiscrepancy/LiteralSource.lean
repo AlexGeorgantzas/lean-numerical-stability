@@ -132,9 +132,9 @@ theorem higham10_8_counterR_cholesky :
     fin_cases i <;> fin_cases j
     · norm_num [Fin.sum_univ_two, higham10_8_counterR,
         higham10_8_counterA]
-    · simp [Fin.sum_univ_two, higham10_8_counterR,
+    · simp [higham10_8_counterR,
         higham10_8_counterA]
-    · simp [Fin.sum_univ_two, higham10_8_counterR,
+    · simp [higham10_8_counterR,
         higham10_8_counterA]
     · norm_num [Fin.sum_univ_two, higham10_8_counterR,
         higham10_8_counterA]
@@ -173,8 +173,8 @@ theorem higham10_8_counterRhat_cholesky :
     rw [higham10_8_counterAplus_eq]
     fin_cases i <;> fin_cases j
     · simpa [Fin.sum_univ_two, higham10_8_counterRhat] using hsquare
-    · simp [Fin.sum_univ_two, higham10_8_counterRhat]
-    · simp [Fin.sum_univ_two, higham10_8_counterRhat]
+    · simp [higham10_8_counterRhat]
+    · simp [higham10_8_counterRhat]
     · norm_num [Fin.sum_univ_two, higham10_8_counterRhat]
 
 theorem higham10_8_counterA_inverse :
@@ -264,7 +264,8 @@ theorem higham10_8_counter_product :
   funext i j
   fin_cases i <;> fin_cases j <;>
     norm_num [matMul, Fin.sum_univ_two, higham10_8_counterAinv,
-      higham10_8_counterDeltaA] <;> rfl
+      higham10_8_counterDeltaA]
+  rfl
 
 theorem higham10_8_counterDeltaA_opNorm2 :
     opNorm2 higham10_8_counterDeltaA = 1 / 2 := by

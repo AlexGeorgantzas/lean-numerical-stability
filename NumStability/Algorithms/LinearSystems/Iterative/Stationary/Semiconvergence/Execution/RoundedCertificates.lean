@@ -74,7 +74,7 @@ theorem stationaryRoundedRhs_error_bound (fp : FPModel) (n : ℕ)
     simpa [y_hat, y, s] using matVec_error_bound fp n n N x hn i
   have hy_hat : |y_hat| ≤ (1 + gamma fp n) * s := by
     calc
-      |y_hat| = |(y_hat - y) + y| := by congr 1 <;> ring
+      |y_hat| = |(y_hat - y) + y| := by (congr 1; ring)
       _ ≤ |y_hat - y| + |y| := abs_add_le _ _
       _ ≤ gamma fp n * s + s := add_le_add hmat hy
       _ = (1 + gamma fp n) * s := by ring
@@ -92,7 +92,7 @@ theorem stationaryRoundedRhs_error_bound (fp : FPModel) (n : ℕ)
         ((∑ j : Fin n, N i j * x j) + b i)|
         = |(y_hat + b i) * (1 + δ) - (y + b i)| := by
             simp only [stationaryRoundedRhs, y_hat, y, hadd]
-    _ = |(y_hat - y) + δ * (y_hat + b i)| := by congr 1 <;> ring
+    _ = |(y_hat - y) + δ * (y_hat + b i)| := by (congr 1; ring)
     _ ≤ |y_hat - y| + |δ * (y_hat + b i)| := abs_add_le _ _
     _ = |y_hat - y| + |δ| * |y_hat + b i| := by rw [abs_mul]
     _ ≤ gamma fp n * s + gamma fp 1 * (|y_hat| + |b i|) := by

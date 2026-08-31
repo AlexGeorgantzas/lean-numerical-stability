@@ -751,7 +751,7 @@ theorem ch14ext_cor146Finalized_vanishing_family_endpoint
         kappa2 A A_inv < 1) l := by
     filter_upwards [hqSmall] with t ht
     dsimp [c, ch14ext_cor146ForwardPrintedCoefficient] at ht
-    convert ht using 1 <;> ring
+    (convert ht using 1; ring)
   refine ⟨?_, ?_, ?_, ?_⟩
   · exact ch14ext_cor146Finalized_residual_exact_solution_literal F
   · exact
