@@ -333,7 +333,7 @@ theorem sourceConstructedPivotedStoredQRBackSub_tail_entry_abs_le
         (mul_nonneg hgm0 (by linarith)) (pow_nonneg hg0 m))
       (vecNorm2_nonneg _)
   by_cases hik : i.val < k
-  · simp [householderTrailingPart, row, pivotedQRActiveRow, hik]
+  · simp [householderTrailingPart, pivotedQRActiveRow, hik]
     exact htarget0
   · by_cases hin : i.val < n
     · let ii : Fin n := ⟨i.val, hin⟩
@@ -347,7 +347,7 @@ theorem sourceConstructedPivotedStoredQRBackSub_tail_entry_abs_le
         have hd := hdR ii j
         rw [hRzero, abs_zero, mul_zero] at hd
         have hd0 : dR ii j = 0 := abs_eq_zero.mp (le_antisymm hd (abs_nonneg _))
-        simp [householderTrailingPart, row, pivotedQRActiveRow, hik,
+        simp [householderTrailingPart, pivotedQRActiveRow, hik,
           rectTopBlock, hin, ii, hd0]
         exact htarget0
       · have hR :=
@@ -390,7 +390,7 @@ theorem sourceConstructedPivotedStoredQRBackSub_tail_entry_abs_le
             _ = gamma fp m * (1 + D) * g ^ m * sigma k := by ring
         simpa [householderTrailingPart, row, pivotedQRActiveRow, hik,
           rectTopBlock, hin, ii, D, g, sigma] using htarget
-    · simp [householderTrailingPart, row, pivotedQRActiveRow, hik,
+    · simp [householderTrailingPart, pivotedQRActiveRow, hik,
         rectTopBlock, hin]
       exact htarget0
 /-- Produced active-tail norm bound used by the direct Householder multiplier

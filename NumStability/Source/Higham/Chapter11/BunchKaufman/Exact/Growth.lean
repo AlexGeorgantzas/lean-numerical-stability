@@ -80,9 +80,8 @@ private theorem blockTwo_absProduct_00 {n : Nat}
   simp only [higham11_4_bunchKaufmanProductEntry, sum_fin_add_two,
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_0t, higham11_2_blockTwoD_00,
-    higham11_2_blockTwoD_01, higham11_2_blockTwoD_0t,
     abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one,
-    add_zero, zero_add, Finset.sum_const_zero]
+    add_zero, Finset.sum_const_zero]
 
 private theorem blockTwo_absProduct_01 {n : Nat}
     (W : Fin n -> Fin 2 -> Real) (Ls : Fin n -> Fin n -> Real)
@@ -94,8 +93,8 @@ private theorem blockTwo_absProduct_01 {n : Nat}
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
     higham11_2_blockTwoL_0t, higham11_2_blockTwoL_1t,
-    higham11_2_blockTwoD_00, higham11_2_blockTwoD_01,
-    higham11_2_blockTwoD_0t, abs_zero, abs_one, zero_mul, mul_zero,
+    higham11_2_blockTwoD_01,
+    abs_zero, abs_one, zero_mul, mul_zero,
     one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
 
 private theorem blockTwo_absProduct_10 {n : Nat}
@@ -108,8 +107,8 @@ private theorem blockTwo_absProduct_10 {n : Nat}
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
     higham11_2_blockTwoL_0t, higham11_2_blockTwoL_1t,
-    higham11_2_blockTwoD_10, higham11_2_blockTwoD_11,
-    higham11_2_blockTwoD_1t, abs_zero, abs_one, zero_mul, mul_zero,
+    higham11_2_blockTwoD_10,
+    abs_zero, abs_one, zero_mul, mul_zero,
     one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
 
 private theorem blockTwo_absProduct_11 {n : Nat}
@@ -120,8 +119,8 @@ private theorem blockTwo_absProduct_11 {n : Nat}
       (Fin.succ 0) (Fin.succ 0) = |E 1 1| := by
   simp only [higham11_4_bunchKaufmanProductEntry, sum_fin_add_two,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
-    higham11_2_blockTwoL_1t, higham11_2_blockTwoD_10,
-    higham11_2_blockTwoD_11, higham11_2_blockTwoD_1t,
+    higham11_2_blockTwoL_1t,
+    higham11_2_blockTwoD_11,
     abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one,
     add_zero, zero_add, Finset.sum_const_zero]
 

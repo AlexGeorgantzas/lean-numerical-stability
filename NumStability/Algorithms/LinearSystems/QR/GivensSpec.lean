@@ -291,7 +291,7 @@ private lemma giv_row_p (n : ℕ) (p q : Fin n) (c s : ℝ) (hpq : p ≠ q) (j :
   by_cases h1 : j = p
   · simp [h1]
   · by_cases h2 : j = q
-    · simp [h1, h2, hpq]
+    · simp [h2, hpq]
     · simp [h1, h2, hpq, Ne.symm h1]
 
 -- Row q: G(q, j) = if j=p then -s else if j=q then c else 0
@@ -303,7 +303,7 @@ private lemma giv_row_q (n : ℕ) (p q : Fin n) (c s : ℝ) (hpq : p ≠ q) (j :
   by_cases h1 : j = p
   · simp [h1, hqp, hpq]
   · by_cases h2 : j = q
-    · simp [h1, h2, hqp, hpq]
+    · simp [h2, hqp]
     · simp [h1, h2, hqp, Ne.symm h2]
 
 -- Column k (k ∉ {p,q}): G(i, k) = if i=k then 1 else 0 for any i
@@ -312,7 +312,7 @@ private lemma giv_col_other (n : ℕ) (p q : Fin n) (c s : ℝ)
     (i k : Fin n) (hkp : k ≠ p) (hkq : k ≠ q) :
     givensRotation n p q c s i k = if i = k then 1 else 0 := by
   unfold givensRotation
-  simp [hkp, hkq, Ne.symm hkp, Ne.symm hkq]
+  simp [hkp, hkq]
 
 -- Row k (k ∉ {p,q}): G(k, j) = if k=j then 1 else 0 for any j
 private lemma giv_row_other (n : ℕ) (p q : Fin n) (c s : ℝ)
@@ -327,10 +327,10 @@ private lemma giv_col_p (n : ℕ) (p q : Fin n) (c s : ℝ) (hpq : p ≠ q) (i :
   have hqp := hpq.symm
   unfold givensRotation
   by_cases h1 : i = p
-  · simp [h1, hqp]
+  · simp [h1]
   · by_cases h2 : i = q
-    · simp [h1, h2, hqp, hpq]
-    · simp [h1, h2, Ne.symm h1]
+    · simp [h2, hqp, hpq]
+    · simp [h1, h2]
 
 -- Column q: G(i, q) = if i=p then s else if i=q then c else 0
 private lemma giv_col_q (n : ℕ) (p q : Fin n) (c s : ℝ) (hpq : p ≠ q) (i : Fin n) :
@@ -341,8 +341,8 @@ private lemma giv_col_q (n : ℕ) (p q : Fin n) (c s : ℝ) (hpq : p ≠ q) (i :
   by_cases h1 : i = p
   · simp [h1, hpq, hqp]
   · by_cases h2 : i = q
-    · simp [h1, h2, hqp]
-    · simp [h1, h2, Ne.symm h2]
+    · simp [h2, hqp]
+    · simp [h1, h2]
 
 @[simp] theorem fl_givensApply_p (fp : FPModel) (n : ℕ)
     (p q : Fin n) (c s : ℝ) (x : Fin n → ℝ) :
@@ -571,7 +571,7 @@ theorem givensRotation_orthogonal (n : ℕ) (p q : Fin n) (c s : ℝ)
         · -- (p, other j): 0 + 0 + 0 = 0 ≠ 1
           subst hip
           simp only [if_true, if_neg hjp, if_neg hjq, if_neg hpnr]
-          simp [Ne.symm hjp, Ne.symm hjq]
+          simp [Ne.symm hjp]
     · by_cases hiq : i = q
       · by_cases hjp : j = p
         · -- (q,p): s*c + c*(-s) + 0 = 0 ≠ 1
@@ -586,16 +586,16 @@ theorem givensRotation_orthogonal (n : ℕ) (p q : Fin n) (c s : ℝ)
           · -- (q, other j): 0
             subst hiq
             simp only [if_neg hqp, if_true, if_neg hjp, if_neg hjq, if_neg hqnr]
-            simp [Ne.symm hjp, Ne.symm hjq]
+            simp [Ne.symm hjq]
       · -- i ∉ {p,q}
         have hir : i ∈ (Finset.univ.erase p).erase q := by
           rw [mem_rest]; exact ⟨hiq, hip⟩
         simp only [if_neg hip, if_neg hiq, if_pos hir]
         by_cases hjp : j = p
-        · subst hjp; simp [Ne.symm hip]
+        · subst hjp; simp
         · by_cases hjq : j = q
-          · subst hjq; simp [Ne.symm hiq]
-          · simp [Ne.symm hip, Ne.symm hiq]
+          · subst hjq; simp
+          · simp
   · -- GGᵀ = I: ∑_k G_{ik}·G_{jk} = δ_{ij}
     show ∑ k, givensRotation n p q c s i k * givensRotation n p q c s j k = _
     rw [sum_split,
@@ -626,7 +626,7 @@ theorem givensRotation_orthogonal (n : ℕ) (p q : Fin n) (c s : ℝ)
         · -- (p, other j): 0
           subst hip
           simp only [if_true, if_neg hjp, if_neg hjq, if_neg hpnr]
-          simp [Ne.symm hjp, Ne.symm hjq]
+          simp [Ne.symm hjp]
     · by_cases hiq : i = q
       · by_cases hjp : j = p
         · -- (q,p): (-s)*c + c*s + 0 = 0 ≠ 1
@@ -641,16 +641,16 @@ theorem givensRotation_orthogonal (n : ℕ) (p q : Fin n) (c s : ℝ)
           · -- (q, other j): 0
             subst hiq
             simp only [if_neg hqp, if_true, if_neg hjp, if_neg hjq, if_neg hqnr]
-            simp [Ne.symm hjp, Ne.symm hjq]
+            simp [Ne.symm hjq]
       · -- i ∉ {p,q}
         have hir : i ∈ (Finset.univ.erase p).erase q := by
           rw [mem_rest]; exact ⟨hiq, hip⟩
         simp only [if_neg hip, if_neg hiq, if_pos hir]
         by_cases hjp : j = p
-        · subst hjp; simp [Ne.symm hip]
+        · subst hjp; simp
         · by_cases hjq : j = q
-          · subst hjq; simp [Ne.symm hiq]
-          · simp [Ne.symm hip, Ne.symm hiq]
+          · subst hjq; simp
+          · simp
 
 /-- The exact coefficients from (18.14) produce an orthogonal rotation. -/
 theorem givensRotation_constructed_orthogonal (n : ℕ) (p q : Fin n)

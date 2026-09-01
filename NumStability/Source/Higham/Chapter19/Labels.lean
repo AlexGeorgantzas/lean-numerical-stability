@@ -439,7 +439,7 @@ private theorem givensRotation_row_p {n : ℕ} (p q : Fin n) (c s : ℝ)
   by_cases h1 : j = p
   · simp [h1]
   · by_cases h2 : j = q
-    · simp [h1, h2, hpq]
+    · simp [h2, hpq]
     · simp [h1, h2, hpq, Ne.symm h1]
 
 /-- Row-`q` values of the exact Givens rotation. -/
@@ -452,7 +452,7 @@ private theorem givensRotation_row_q {n : ℕ} (p q : Fin n) (c s : ℝ)
   by_cases h1 : j = p
   · simp [h1, hqp, hpq]
   · by_cases h2 : j = q
-    · simp [h1, h2, hqp, hpq]
+    · simp [h2, hqp]
     · simp [h1, h2, hqp, Ne.symm h2]
 
 /-- Dimension-independent Frobenius bound for the four-entry Givens
@@ -487,7 +487,7 @@ private theorem givensApplyPert_frobNorm_le {n : ℕ} (p q : Fin n)
     have : ΔG p p = c * θcp := by rw [hΔG_def]; simp [givensApplyPert]
     rw [this]; exact hent c θcp hc_le hθcp
   have hpq' : |ΔG p q| ≤ μ := by
-    have : ΔG p q = s * θsp := by rw [hΔG_def]; simp [givensApplyPert, hpq, hpq.symm]
+    have : ΔG p q = s * θsp := by rw [hΔG_def]; simp [givensApplyPert, hpq.symm]
     rw [this]; exact hent s θsp hs_le hθsp
   have hqp : |ΔG q p| ≤ μ := by
     have : ΔG q p = -s * θsq := by rw [hΔG_def]; simp [givensApplyPert, hpq, hpq.symm]
@@ -495,7 +495,7 @@ private theorem givensApplyPert_frobNorm_le {n : ℕ} (p q : Fin n)
     have := hent s θsq hs_le hθsq
     simpa [abs_neg, neg_mul] using this
   have hqq : |ΔG q q| ≤ μ := by
-    have : ΔG q q = c * θcq := by rw [hΔG_def]; simp [givensApplyPert, hpq, hpq.symm]
+    have : ΔG q q = c * θcq := by rw [hΔG_def]; simp [givensApplyPert, hpq.symm]
     rw [this]; exact hent c θcq hc_le hθcq
   exact PairBlockSupported_frobNorm_le hpq hsupp hμ hpp hpq' hqp hqq
 
@@ -518,11 +518,11 @@ private theorem givensApplyPert_repr (fp : FPModel) (n : ℕ)
   set ΔG : Fin n → Fin n → ℝ := givensApplyPert p q c s θcp θsp θcq θsq with hΔG_def
   have hΔpp : ΔG p p = c * θcp := by rw [hΔG_def]; simp [givensApplyPert]
   have hΔpq : ΔG p q = s * θsp := by
-    rw [hΔG_def]; simp [givensApplyPert, hpq, hpq.symm]
+    rw [hΔG_def]; simp [givensApplyPert, hpq.symm]
   have hΔqp : ΔG q p = -s * θsq := by
     rw [hΔG_def]; simp [givensApplyPert, hpq, hpq.symm]
   have hΔqq : ΔG q q = c * θcq := by
-    rw [hΔG_def]; simp [givensApplyPert, hpq, hpq.symm]
+    rw [hΔG_def]; simp [givensApplyPert, hpq.symm]
   have hΔp_other : ∀ j : Fin n, j ≠ p → j ≠ q → ΔG p j = 0 := by
     intro j hjp hjq; rw [hΔG_def]; simp [givensApplyPert, hjp, hjq]
   have hΔq_other : ∀ j : Fin n, j ≠ p → j ≠ q → ΔG q j = 0 := by
@@ -564,7 +564,7 @@ private theorem givensApplyPert_repr (fp : FPModel) (n : ℕ)
         intro j
         rw [givensRotation_row_q p q c s hpq j]
         by_cases hjp : j = p
-        · subst j; rw [hΔqp]; simp [hpq.symm]; ring
+        · subst j; rw [hΔqp]; simp; ring
         · by_cases hjq : j = q
           · subst j; rw [hΔqq]; simp [hjp]; ring
           · rw [hΔq_other j hjp hjq]; simp [hjp, hjq]

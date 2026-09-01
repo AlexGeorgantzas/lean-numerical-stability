@@ -346,23 +346,23 @@ theorem widths_sum_of_completed : {n : Nat} ->
   | _, _, .nil _ => by simp [Completed, widths]
   | _, _, .noAction _ _ _ tail => by
       intro ht
-      simp [Completed, widths, widths_sum_of_completed tail ht]
+      simp [widths, widths_sum_of_completed tail ht]
       omega
   | _, _, .case1 _ _ _ tail => by
       intro ht
-      simp [Completed, widths, widths_sum_of_completed tail ht]
+      simp [widths, widths_sum_of_completed tail ht]
       omega
   | _, _, .case2 _ _ _ tail => by
       intro ht
-      simp [Completed, widths, widths_sum_of_completed tail ht]
+      simp [widths, widths_sum_of_completed tail ht]
       omega
   | _, _, .case3 _ _ _ tail => by
       intro ht
-      simp [Completed, widths, widths_sum_of_completed tail ht]
+      simp [widths, widths_sum_of_completed tail ht]
       omega
   | _, _, .case4 _ _ _ _ tail => by
       intro ht
-      simp [Completed, widths, widths_sum_of_completed tail ht]
+      simp [widths, widths_sum_of_completed tail ht]
       omega
   | _, _, .case4Breakdown _ _ _ _ => by
       intro h

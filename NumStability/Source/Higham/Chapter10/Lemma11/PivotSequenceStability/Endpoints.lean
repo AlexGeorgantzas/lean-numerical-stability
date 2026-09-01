@@ -105,8 +105,8 @@ theorem higham10_11_schur_perturbation_leadingBlock {k m : ℕ}
       = (A22 + (0 : Matrix (Fin m) (Fin m) ℝ))
         - (A21 + 0) * X * (A12 + 0) := by simp
   rw [hLHS, hEq]
-  simp only [Matrix.zero_mul, Matrix.mul_zero, sub_zero, zero_sub, neg_zero,
-    zero_add, add_zero]
+  simp only [Matrix.zero_mul, Matrix.mul_zero, sub_zero,
+    zero_add]
   rw [hterm]
 
 /-- **Lemma 10.11 first-order term as `WᵀW`.**  When `A` is symmetric

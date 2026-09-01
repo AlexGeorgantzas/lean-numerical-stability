@@ -132,7 +132,7 @@ theorem flBand2ForwardSub_row_tight (fp : FPModel) (n : ℕ)
       rw [dif_neg (by omega), dif_pos (by omega)]
       congr 1
       apply Fin.ext
-      simp only [Fin.mk.injEq]
+      simp only
       omega
     have hsumOff :
         ∑ j ∈ (Finset.univ.erase i).filter
@@ -154,7 +154,7 @@ theorem flBand2ForwardSub_row_tight (fp : FPModel) (n : ℕ)
           simpa using hj
         refine ⟨⟨j.val - (i.val - m), by omega⟩, Finset.mem_univ _, ?_⟩
         apply Fin.ext
-        simp only [Fin.mk.injEq]
+        simp only
         omega
       · intro t _
         rw [hoffφ t]

@@ -74,8 +74,8 @@ theorem productEntry_consTwo_00 (fp : FPModel) {m : ℕ}
         (flMixedD fp (s.consTwo) A) 0 0 = |A 0 0| := by
   unfold higham11_4_bunchKaufmanProductEntry
   simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
-    flMixedD_consTwo_00, flMixedD_consTwo_01, flMixedD_consTwo_0t,
-    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
+    flMixedD_consTwo_00,
+    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero,
     Finset.sum_const_zero]
 
 theorem productEntry_consTwo_01 (fp : FPModel) {m : ℕ}
@@ -85,7 +85,7 @@ theorem productEntry_consTwo_01 (fp : FPModel) {m : ℕ}
   unfold higham11_4_bunchKaufmanProductEntry
   simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
     flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
-    flMixedD_consTwo_00, flMixedD_consTwo_01, flMixedD_consTwo_0t,
+    flMixedD_consTwo_01,
     abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
     Finset.sum_const_zero]
 
@@ -96,7 +96,7 @@ theorem productEntry_consTwo_10 (fp : FPModel) {m : ℕ}
   unfold higham11_4_bunchKaufmanProductEntry
   simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
     flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
-    flMixedD_consTwo_10, flMixedD_consTwo_11, flMixedD_consTwo_1t,
+    flMixedD_consTwo_10,
     abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
     Finset.sum_const_zero]
 
@@ -106,7 +106,7 @@ theorem productEntry_consTwo_11 (fp : FPModel) {m : ℕ}
         (flMixedD fp (s.consTwo) A) (Fin.succ 0) (Fin.succ 0) = |A (oneIdx m) (oneIdx m)| := by
   unfold higham11_4_bunchKaufmanProductEntry
   simp only [sum_fin_add_two, flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
-    flMixedD_consTwo_10, flMixedD_consTwo_11, flMixedD_consTwo_1t,
+    flMixedD_consTwo_11,
     abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
     Finset.sum_const_zero]
 
@@ -120,8 +120,8 @@ theorem productEntry_head00 (fp : FPModel) {n : ℕ}
   | consOne s' =>
       unfold higham11_4_bunchKaufmanProductEntry
       simp only [Fin.sum_univ_succ, flMixedL_consOne_00, flMixedL_consOne_0s,
-        flMixedD_consOne_00, flMixedD_consOne_0s,
-        abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
+        flMixedD_consOne_00,
+        abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero,
         Finset.sum_const_zero]
   | consTwo s' =>
       exact productEntry_consTwo_00 fp s' A

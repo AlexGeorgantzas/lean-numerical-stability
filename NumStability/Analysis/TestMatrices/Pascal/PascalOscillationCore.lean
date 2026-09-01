@@ -165,8 +165,7 @@ theorem pascalOscillation_exists_positive_dominant_eigenvector
       have hj := congrFun heigx (e.symm j)
       have hjc := congrArg (fun r : ℝ => (r : ℂ)) hj
       simp only [Matrix.mulVec, dotProduct, Pi.smul_apply, smul_eq_mul] at hjc
-      simp only [complexMatrixVecMul, realRectToCMatrix, B, z,
-        Complex.ofReal_sum, Complex.ofReal_mul]
+      simp only [complexMatrixVecMul, realRectToCMatrix, B, z]
       rw [← e.sum_comp (fun i =>
         (A (e.symm j) (e.symm i) : ℂ) * (x (e.symm i) : ℂ))]
       simpa using hjc
@@ -241,7 +240,7 @@ def pascalOscillationPascalAdjacentAlternateEmbedding {n : ℕ} (i : Fin n) :
       change a.val < b.val at hab
       dsimp
       split <;> split <;>
-        simp only [Fin.mk_lt_mk, Fin.val_mk] <;> omega)
+        simp only [Fin.mk_lt_mk] <;> omega)
 
 noncomputable def pascalOscillationPascalAdjacentAlternatePowerset {n : ℕ} (i : Fin n) :
     Set.powersetCard (Fin (n + 1)) (i.val + 1) :=
@@ -442,7 +441,7 @@ theorem boolSignChangeCount_not {n : ℕ}
       have htail := ih (fun i : Fin (n + 1) => s i.succ)
       rw [← htail]
       congr 1
-      cases h0 : s 0 <;> cases h1 : s 1 <;> simp [h0, h1]
+      cases h0 : s 0 <;> cases h1 : s 1 <;> simp
 
 theorem pascalOscillationCheckerBool_count_add {n : ℕ}
     (s : Fin (n + 1) → Bool) :
@@ -462,7 +461,7 @@ theorem pascalOscillationCheckerBool_count_add {n : ℕ}
         rw [pascalOscillationCheckerBool_succ, pascalOscillationCheckerBool_zero]
       rw [hc1]
       cases h0 : s 0 <;> cases h1 : s 1 <;>
-        simp [h0, h1] at htail ⊢ <;> omega
+        simp at htail ⊢ <;> omega
 
 theorem boolSignChangeCount_extract
     {n k : ℕ} (s : Fin (n + 1) → Bool)
@@ -606,13 +605,13 @@ theorem pascalOscillationBoolToSign_mul_nonneg_of_completion
       by_contra h
       have := hpos (lt_of_not_ge h)
       simp [hsi] at this
-    simp [pascalOscillationBoolToSign, hsi, hxi]
+    simp [pascalOscillationBoolToSign, hxi]
   | true =>
     have hxi : 0 ≤ x i := by
       by_contra h
       have := hneg (lt_of_not_ge h)
       simp [hsi] at this
-    simp [pascalOscillationBoolToSign, hsi, hxi]
+    simp [pascalOscillationBoolToSign, hxi]
 
 theorem pascalOscillationIsSignCompletion_of_boolToSign_mul_nonneg
     {N : ℕ} {x : Fin N → ℝ} {s : Fin N → Bool}

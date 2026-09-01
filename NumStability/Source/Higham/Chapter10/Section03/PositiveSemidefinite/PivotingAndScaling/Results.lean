@@ -262,7 +262,7 @@ theorem unit_diag_psd_maxEigenvalue_bounds {n : ℕ} (hn : 0 < n)
     have hray := finiteMaxEigenvalue_rayleigh hn H hSym e
     have hquad : ∑ i : Fin n, ∑ j : Fin n, e i * H i j * e j =
         H ⟨0, hn⟩ ⟨0, hn⟩ := by
-      simp [he, Finset.sum_ite_eq', Finset.mul_sum]
+      simp [he, Finset.sum_ite_eq']
     have hnorm : ∑ i : Fin n, e i ^ 2 = 1 := by
       simp [he, Finset.sum_ite_eq']
     rw [hquad, hnorm, mul_one, hdiag] at hray

@@ -141,7 +141,7 @@ theorem compoundMatrix_apply (n k : ℕ) (A : RSqMat n)
   rw [← Matrix.det_transpose]
   apply congrArg Matrix.det
   ext i j
-  simp [Matrix.toLin'_apply, Matrix.mulVec, dotProduct,
+  simp [Matrix.toLin'_apply,
     Pi.basisFun_apply, Matrix.transpose_apply]
 
 theorem compoundMatrix_mul (n k : ℕ) (A B : RSqMat n) :
@@ -327,17 +327,17 @@ theorem pascalBidiagonalProduct_zero_apply
     by_cases hj : j.val = 0
     · simp [Matrix.one_apply, Fin.ext_iff, hj]
     · obtain ⟨m, hm⟩ := Nat.exists_eq_succ_of_ne_zero hj
-      simp [Matrix.one_apply, Fin.ext_iff, hm, Nat.choose_zero_succ]
+      simp [Fin.ext_iff, hm, Nat.choose_zero_succ]
   · have hipos : 0 < i.val := Nat.pos_of_ne_zero hi
     by_cases hij : i = j
     · subst j
-      simp [Matrix.one_apply, hi, Nat.choose_self]
+      simp [hi, Nat.choose_self]
     · have hvne : i.val ≠ j.val := fun h => hij (Fin.ext h)
       rcases lt_trichotomy j.val i.val with hji | hji | hijv
-      · simp [Matrix.one_apply, hi, hij, hji, show ¬i.val ≤ j.val by omega]
+      · simp [hi, hij, show ¬i.val ≤ j.val by omega]
       · exact (hvne hji.symm).elim
       · have hdiff : 0 < j.val - i.val := Nat.sub_pos_of_lt hijv
-        simp [Matrix.one_apply, hi, hij, hijv.le, Nat.choose_eq_zero_of_lt hdiff]
+        simp [hi, hij, hijv.le, Nat.choose_eq_zero_of_lt hdiff]
 
 theorem pascalBidiagonalProductEntry_succ (q i j : ℕ) :
     pascalBidiagonalProductEntry q i j +
@@ -348,7 +348,7 @@ theorem pascalBidiagonalProductEntry_succ (q i j : ℕ) :
   by_cases hiq : i ≤ q
   · have hiqs : i ≤ q + 1 := by omega
     have hnot : ¬(0 < i ∧ q + 1 ≤ i) := by omega
-    simp [pascalBidiagonalProductEntry, hiq, hiqs, hnot]
+    simp [pascalBidiagonalProductEntry, hiq, hiqs]
   · have hqi : q < i := by omega
     rcases eq_or_lt_of_le (show q + 1 ≤ i by omega) with hi | hi
     · subst i
@@ -365,8 +365,7 @@ theorem pascalBidiagonalProductEntry_succ (q i j : ℕ) :
           show t + 1 - 1 = t by omega,
           show 0 < q + 1 ∧ q + 1 ≤ q + 1 by omega,
           show q + 1 - 1 = q by omega,
-          show q ≤ q by omega,
-          show q + 1 ≤ q + 1 by omega]
+          show q ≤ q by omega]
         exact_mod_cast (Nat.choose_succ_succ' q t).symm
     · have hpos : 0 < i := by omega
       have hupdate : 0 < i ∧ q + 1 ≤ i := ⟨hpos, by omega⟩
@@ -382,15 +381,12 @@ theorem pascalBidiagonalProductEntry_succ (q i j : ℕ) :
         simp [pascalBidiagonalProductEntry, hiq, hupdate,
           show ¬i - 1 ≤ q by omega, show ¬i ≤ q + 1 by omega,
           hiqsub, himqsub, hnotd, hnotds,
-          show i - (q + 1) = d by simp [d],
-          show ¬i - (q + 1) ≤ j by omega]
+          show i - (q + 1) = d by simp [d]]
       · subst j
         have hnotds : ¬d + 1 ≤ d := by omega
         have hidecomp : i = d + (q + 1) := by simp [d]; omega
-        simp [pascalBidiagonalProductEntry, hiq, hupdate,
-          show ¬i - 1 ≤ q by omega, show ¬i ≤ q + 1 by omega,
-          hiqsub, himqsub, hnotds, hidecomp,
-          show i - (q + 1) = d by simp [d]]
+        simp [pascalBidiagonalProductEntry,
+          hidecomp]
         simp [hdpos.ne', show ¬d + (q + 1) ≤ q by omega]
       · obtain ⟨t, ht⟩ : ∃ t, j = d + (t + 1) := by
           refine ⟨j - d - 1, ?_⟩
@@ -404,8 +400,7 @@ theorem pascalBidiagonalProductEntry_succ (q i j : ℕ) :
           hupdate, show ¬i - 1 ≤ q by omega, himqsub, hdle,
           show d + (t + 1) - d = t + 1 by omega,
           show ¬i ≤ q + 1 by omega,
-          show i - (q + 1) = d by simp [d],
-          show d ≤ d + (t + 1) by omega]
+          show i - (q + 1) = d by simp [d]]
         exact_mod_cast (Nat.choose_succ_succ' q t).symm
 
 theorem pascalBidiagonalProduct_apply
@@ -443,7 +438,7 @@ theorem identity_isTotallyNonnegative (n : ℕ) :
     (hband := fun {i j} h => by
       have hij : i = j := by
         by_contra hne
-        simp [Matrix.one_apply, hne] at h
+        simp [hne] at h
       subst j
       omega)
     r c hr hc]

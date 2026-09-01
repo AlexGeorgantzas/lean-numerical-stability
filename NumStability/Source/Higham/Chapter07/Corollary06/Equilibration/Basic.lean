@@ -193,7 +193,7 @@ lemma higham7_propertyA_quadForm_complement
     _ = 2 * (∑ i : Fin n, x i ^ 2) -
           ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j := by
       simp_rw [Finset.sum_sub_distrib]
-      simp [Finset.mul_sum, Finset.sum_mul]
+      simp [Finset.mul_sum]
 
 /-- An SPD matrix has a strictly positive finite minimum eigenvalue. -/
 lemma higham7_finiteMinEigenvalue_pos_of_spd

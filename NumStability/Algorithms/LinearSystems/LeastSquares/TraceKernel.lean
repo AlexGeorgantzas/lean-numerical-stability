@@ -128,7 +128,7 @@ theorem fl_householderCoxHighamStoredPanelStep_pivot_eq
       alpha := by
   have hni : ¬ i.val < k := by omega
   have hnj : ¬ j.val < k := by omega
-  simp [fl_householderCoxHighamStoredPanelStep, hni, hnj, hi, hj]
+  simp [fl_householderCoxHighamStoredPanelStep, hi, hj]
 /-- Cox--Higham (3.7), in the prefix-transport orientation.
 
 `applyProd P 0 len f` equals `f` minus the sum of the direct rank-one
@@ -173,7 +173,7 @@ theorem fl_householderCoxHighamStoredPanelStep_pivotTail_eq_zero
   have hni : ¬ i.val < k := by omega
   have hnj : ¬ j.val < k := by omega
   have hine : ¬ i.val = k := by omega
-  simp [fl_householderCoxHighamStoredPanelStep, hni, hnj, hine, hj]
+  simp [fl_householderCoxHighamStoredPanelStep, hni, hine, hj]
 
 /-! ## Executed active-max trace and named reflector data -/
 /-- Conjugating a Householder vector and its argument by an involutive row

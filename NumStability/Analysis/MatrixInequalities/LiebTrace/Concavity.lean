@@ -2601,7 +2601,7 @@ theorem cstarMatrixRelativeEntropy_algebraMap_real
         algebraMap ℝ (CStarMatrix ι ι ℂ) (realRelativeEntropy a b) := by
     simp [realRelativeEntropy, map_sub, map_mul]
   rw [hinner]
-  simp [cstarMatrixTrace, Algebra.algebraMap_eq_smul_one, mul_comm]
+  simp [cstarMatrixTrace, Algebra.algebraMap_eq_smul_one]
 
 /-- C-star matrix relative entropy is nonnegative for positive real scalar
 identities.  This closes only the scalar-identity matrix case; it is not the

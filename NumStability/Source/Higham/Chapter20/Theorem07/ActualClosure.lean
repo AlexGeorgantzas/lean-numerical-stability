@@ -566,7 +566,7 @@ theorem sourceConstructedPivotedStoredQREseq_abs_le_componentBudget
         sourceConstructedPivotedStoredQRPseq_pivot_tail_zero
           fp hn hmn A k hk i hki]
       simp [sourceConstructedPivotedStoredQRComponentBudget,
-        pivotedQRActiveCol, hjPrev, hiPrev, hiPivot]
+        pivotedQRActiveCol, hiPrev, hiPivot]
   · have hkj : k < j.val := by omega
     simpa [sourceConstructedPivotedStoredQRComponentBudget,
       hjPrev, hiPrev, hjPivot] using

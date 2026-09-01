@@ -124,7 +124,7 @@ noncomputable def boydWeightScaleEquiv {n : ℕ} (p : ℝ)
     simp [mul_add]
   map_smul' a h := by
     funext i
-    simp [mul_assoc, mul_comm, mul_left_comm]
+    simp [mul_assoc, mul_comm]
 
 /-- The preceding finite-dimensional linear equivalence is continuous. -/
 noncomputable def boydWeightScaleContinuousEquiv {n : ℕ} (p : ℝ)

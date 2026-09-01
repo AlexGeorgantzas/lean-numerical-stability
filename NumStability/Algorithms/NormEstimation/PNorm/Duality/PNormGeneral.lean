@@ -119,7 +119,7 @@ lemma exists_realLpNormer {n : ℕ} {p q : ℝ}
       apply Finset.sum_congr rfl
       intro i _hi
       rw [show |d i| = (g i : ℝ) by
-        simp [d, abs_mul, abs_signVec, NNReal.coe_nonneg]]
+        simp [d, abs_mul, abs_signVec]]
     rw [hsum]
     exact Real.rpow_le_one
       (Finset.sum_nonneg (fun i _ => Real.rpow_nonneg (NNReal.coe_nonneg _) q))

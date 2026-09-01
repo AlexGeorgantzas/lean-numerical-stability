@@ -691,7 +691,7 @@ theorem sourcePivotedStoredQRRawVector_abs_le_two_printedAlphaScale
         simpa [row] using hirowNot
       have hv : sourcePivotedStoredQRRawVector fp hmn A k i =
           As i col := by
-        simp [sourcePivotedStoredQRRawVector, hk, row, col, As, alpha,
+        simp [sourcePivotedStoredQRRawVector, hk, col, As,
           householderTrailingActiveVector, householderActiveVector,
           householderTrailingPart, hirowNot', hir']
       have hx := sourcePivotedStoredQRSwappedPanel_abs_le_printedAlphaScale

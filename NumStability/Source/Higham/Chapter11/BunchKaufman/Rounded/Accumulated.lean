@@ -354,8 +354,7 @@ theorem higham11_2_blockTwo_product_00 {n : Nat} (W) (Ls) (E) (Ds) :
   simp only [higham11_2_ldltProduct, sum_fin_add_two,
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_0t, higham11_2_blockTwoD_00,
-    higham11_2_blockTwoD_01, higham11_2_blockTwoD_0t,
-    zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
+    zero_mul, mul_zero, one_mul, mul_one, add_zero,
     Finset.sum_const_zero]
 
 theorem higham11_2_blockTwo_product_01 {n : Nat} (W) (Ls) (E) (Ds) :
@@ -365,8 +364,8 @@ theorem higham11_2_blockTwo_product_01 {n : Nat} (W) (Ls) (E) (Ds) :
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
     higham11_2_blockTwoL_0t, higham11_2_blockTwoL_1t,
-    higham11_2_blockTwoD_00, higham11_2_blockTwoD_01,
-    higham11_2_blockTwoD_0t, zero_mul, mul_zero, one_mul, mul_one,
+    higham11_2_blockTwoD_01,
+    zero_mul, mul_zero, one_mul, mul_one,
     add_zero, zero_add, Finset.sum_const_zero]
 
 theorem higham11_2_blockTwo_product_10 {n : Nat} (W) (Ls) (E) (Ds) :
@@ -376,8 +375,8 @@ theorem higham11_2_blockTwo_product_10 {n : Nat} (W) (Ls) (E) (Ds) :
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
     higham11_2_blockTwoL_0t, higham11_2_blockTwoL_1t,
-    higham11_2_blockTwoD_10, higham11_2_blockTwoD_11,
-    higham11_2_blockTwoD_1t, zero_mul, mul_zero, one_mul, mul_one,
+    higham11_2_blockTwoD_10,
+    zero_mul, mul_zero, one_mul, mul_one,
     add_zero, zero_add, Finset.sum_const_zero]
 
 theorem higham11_2_blockTwo_product_11 {n : Nat} (W) (Ls) (E) (Ds) :
@@ -385,8 +384,8 @@ theorem higham11_2_blockTwo_product_11 {n : Nat} (W) (Ls) (E) (Ds) :
       (higham11_2_blockTwoD E Ds) (Fin.succ 0) (Fin.succ 0) = E 1 1 := by
   simp only [higham11_2_ldltProduct, sum_fin_add_two,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
-    higham11_2_blockTwoL_1t, higham11_2_blockTwoD_10,
-    higham11_2_blockTwoD_11, higham11_2_blockTwoD_1t,
+    higham11_2_blockTwoL_1t,
+    higham11_2_blockTwoD_11,
     zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
     Finset.sum_const_zero]
 
@@ -400,8 +399,8 @@ theorem higham11_2_blockTwo_product_0t {n : Nat} (W) (Ls) (E) (Ds)
     higham11_2_blockTwoL_0t, higham11_2_blockTwoL_t0,
     higham11_2_blockTwoL_t1, higham11_2_blockTwoL_tt,
     higham11_2_blockTwoD_00, higham11_2_blockTwoD_01,
-    higham11_2_blockTwoD_0t, zero_mul, mul_zero, one_mul, mul_one,
-    add_zero, zero_add, Finset.sum_const_zero]
+    higham11_2_blockTwoD_0t, zero_mul, mul_zero, one_mul,
+    add_zero, Finset.sum_const_zero]
 
 theorem higham11_2_blockTwo_product_1t {n : Nat} (W) (Ls) (E) (Ds)
     (j : Fin n) :
@@ -413,7 +412,7 @@ theorem higham11_2_blockTwo_product_1t {n : Nat} (W) (Ls) (E) (Ds)
     higham11_2_blockTwoL_1t, higham11_2_blockTwoL_t0,
     higham11_2_blockTwoL_t1, higham11_2_blockTwoL_tt,
     higham11_2_blockTwoD_10, higham11_2_blockTwoD_11,
-    higham11_2_blockTwoD_1t, zero_mul, mul_zero, one_mul, mul_one,
+    higham11_2_blockTwoD_1t, zero_mul, mul_zero, one_mul,
     add_zero, zero_add, Finset.sum_const_zero]
 
 theorem higham11_2_blockTwo_product_t0 {n : Nat} (W) (Ls) (E) (Ds)
@@ -426,11 +425,9 @@ theorem higham11_2_blockTwo_product_t0 {n : Nat} (W) (Ls) (E) (Ds)
     higham11_2_blockTwoL_0t, higham11_2_blockTwoL_t0,
     higham11_2_blockTwoL_t1, higham11_2_blockTwoL_tt,
     higham11_2_blockTwoD_00, higham11_2_blockTwoD_10,
-    higham11_2_blockTwoD_t0, higham11_2_blockTwoD_01,
-    higham11_2_blockTwoD_11, higham11_2_blockTwoD_t1,
-    higham11_2_blockTwoD_0t, higham11_2_blockTwoD_1t,
-    higham11_2_blockTwoD_tt, zero_mul, mul_zero, one_mul, mul_one,
-    add_zero, zero_add, Finset.sum_const_zero]
+    higham11_2_blockTwoD_t0,
+    mul_zero, mul_one,
+    add_zero, Finset.sum_const_zero]
 
 theorem higham11_2_blockTwo_product_t1 {n : Nat} (W) (Ls) (E) (Ds)
     (i : Fin n) :
@@ -441,11 +438,9 @@ theorem higham11_2_blockTwo_product_t1 {n : Nat} (W) (Ls) (E) (Ds)
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
     higham11_2_blockTwoL_1t, higham11_2_blockTwoL_t0,
     higham11_2_blockTwoL_t1, higham11_2_blockTwoL_tt,
-    higham11_2_blockTwoD_00, higham11_2_blockTwoD_10,
-    higham11_2_blockTwoD_t0, higham11_2_blockTwoD_01,
+    higham11_2_blockTwoD_01,
     higham11_2_blockTwoD_11, higham11_2_blockTwoD_t1,
-    higham11_2_blockTwoD_0t, higham11_2_blockTwoD_1t,
-    higham11_2_blockTwoD_tt, zero_mul, mul_zero, one_mul, mul_one,
+    mul_zero, mul_one,
     add_zero, zero_add, Finset.sum_const_zero]
 
 noncomputable def higham11_2_blockTwoPivotPath {n : Nat}
@@ -513,16 +508,15 @@ theorem higham11_2_blockTwo_absProduct_0t' {n : Nat} (W) (Ls) (E) (Ds)
   rw [Fin.sum_univ_two]
   simp only [higham11_4_bunchKaufmanProductEntry, sum_fin_add_two,
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
-    higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
-    higham11_2_blockTwoL_0t, higham11_2_blockTwoL_1t,
+    higham11_2_blockTwoL_0t,
     higham11_2_blockTwoL_t0, higham11_2_blockTwoL_t1,
     higham11_2_blockTwoL_tt, higham11_2_blockTwoD_00,
     higham11_2_blockTwoD_01, higham11_2_blockTwoD_0t,
     higham11_2_blockTwoD_10, higham11_2_blockTwoD_11,
     higham11_2_blockTwoD_1t, higham11_2_blockTwoD_t0,
     higham11_2_blockTwoD_t1, higham11_2_blockTwoD_tt,
-    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one,
-    add_zero, zero_add, Finset.sum_const_zero]
+    abs_zero, abs_one, zero_mul, mul_zero, one_mul,
+    add_zero, Finset.sum_const_zero]
 
 theorem higham11_2_blockTwo_absProduct_1t' {n : Nat} (W) (Ls) (E) (Ds)
     (j : Fin n) :
@@ -531,16 +525,15 @@ theorem higham11_2_blockTwo_absProduct_1t' {n : Nat} (W) (Ls) (E) (Ds)
       (Fin.succ 0) j.succ.succ = ∑ q : Fin 2, |E 1 q| * |W j q| := by
   rw [Fin.sum_univ_two]
   simp only [higham11_4_bunchKaufmanProductEntry, sum_fin_add_two,
-    higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
-    higham11_2_blockTwoL_0t, higham11_2_blockTwoL_1t,
+    higham11_2_blockTwoL_1t,
     higham11_2_blockTwoL_t0, higham11_2_blockTwoL_t1,
     higham11_2_blockTwoL_tt, higham11_2_blockTwoD_00,
     higham11_2_blockTwoD_01, higham11_2_blockTwoD_0t,
     higham11_2_blockTwoD_10, higham11_2_blockTwoD_11,
     higham11_2_blockTwoD_1t, higham11_2_blockTwoD_t0,
     higham11_2_blockTwoD_t1, higham11_2_blockTwoD_tt,
-    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one,
+    abs_zero, abs_one, zero_mul, mul_zero, one_mul,
     add_zero, zero_add, Finset.sum_const_zero]
 
 theorem higham11_2_blockTwo_absProduct_t0' {n : Nat} (W) (Ls) (E) (Ds)
@@ -551,16 +544,13 @@ theorem higham11_2_blockTwo_absProduct_t0' {n : Nat} (W) (Ls) (E) (Ds)
   rw [Fin.sum_univ_two]
   simp only [higham11_4_bunchKaufmanProductEntry, sum_fin_add_two,
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
-    higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
-    higham11_2_blockTwoL_0t, higham11_2_blockTwoL_1t,
+    higham11_2_blockTwoL_0t,
     higham11_2_blockTwoL_t0, higham11_2_blockTwoL_t1,
     higham11_2_blockTwoL_tt, higham11_2_blockTwoD_00,
-    higham11_2_blockTwoD_01, higham11_2_blockTwoD_0t,
-    higham11_2_blockTwoD_10, higham11_2_blockTwoD_11,
-    higham11_2_blockTwoD_1t, higham11_2_blockTwoD_t0,
-    higham11_2_blockTwoD_t1, higham11_2_blockTwoD_tt,
-    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one,
-    add_zero, zero_add, Finset.sum_const_zero]
+    higham11_2_blockTwoD_10,
+    higham11_2_blockTwoD_t0,
+    abs_zero, abs_one, mul_zero, mul_one,
+    add_zero, Finset.sum_const_zero]
 
 theorem higham11_2_blockTwo_absProduct_t1' {n : Nat} (W) (Ls) (E) (Ds)
     (i : Fin n) :
@@ -569,16 +559,14 @@ theorem higham11_2_blockTwo_absProduct_t1' {n : Nat} (W) (Ls) (E) (Ds)
       i.succ.succ (Fin.succ 0) = ∑ p : Fin 2, |W i p| * |E p 1| := by
   rw [Fin.sum_univ_two]
   simp only [higham11_4_bunchKaufmanProductEntry, sum_fin_add_two,
-    higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
-    higham11_2_blockTwoL_0t, higham11_2_blockTwoL_1t,
+    higham11_2_blockTwoL_1t,
     higham11_2_blockTwoL_t0, higham11_2_blockTwoL_t1,
-    higham11_2_blockTwoL_tt, higham11_2_blockTwoD_00,
-    higham11_2_blockTwoD_01, higham11_2_blockTwoD_0t,
-    higham11_2_blockTwoD_10, higham11_2_blockTwoD_11,
-    higham11_2_blockTwoD_1t, higham11_2_blockTwoD_t0,
-    higham11_2_blockTwoD_t1, higham11_2_blockTwoD_tt,
-    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one,
+    higham11_2_blockTwoL_tt,
+    higham11_2_blockTwoD_01,
+    higham11_2_blockTwoD_11,
+    higham11_2_blockTwoD_t1,
+    abs_zero, abs_one, mul_zero, mul_one,
     add_zero, zero_add, Finset.sum_const_zero]
 
 end NumStability

@@ -290,12 +290,10 @@ theorem higham9_14_exists_threshold_actual_diagDominant_growth_bound_16
             higham9_14_roundedMultiplierVec fp T i *
               higham9_14_roundedPivotVec fp T j := by
           simp [P, tridiag_to_matrix, higham9_14_roundedProductData,
-            hi, hsub, him1, show j.val ≠ i.val by omega,
-            show i.val + 1 ≠ j.val by omega]
+            hi, hsub, him1, show j.val ≠ i.val by omega]
         have hA : tridiag_to_matrix T i j = T.a i := by
           simp [tridiag_to_matrix, hsub,
-            show j.val ≠ i.val by omega,
-            show i.val + 1 ≠ j.val by omega]
+            show j.val ≠ i.val by omega]
         rw [hP] at hle
         rw [higham9_14_roundedMultiplierVec_of_pos fp T i hi, him1] at hle
         rw [hA]

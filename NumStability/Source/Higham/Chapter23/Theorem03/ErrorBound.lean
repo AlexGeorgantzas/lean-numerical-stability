@@ -52,8 +52,7 @@ theorem higham23_winogradStepResidual_factor (m e u : ℝ) :
     higham23WinogradN4 higham23WinogradE4
     higham23WinogradStepMQuadratic higham23WinogradStepEQuadratic
   simp only [higham23WinogradN1, higham23WinogradE1,
-    higham23WinogradN2, higham23WinogradE2,
-    higham23WinogradN4, higham23WinogradE4]
+    higham23WinogradN2, higham23WinogradE2]
   ring
 
 private theorem higham23_winogradStepMQuadratic_continuousAt :

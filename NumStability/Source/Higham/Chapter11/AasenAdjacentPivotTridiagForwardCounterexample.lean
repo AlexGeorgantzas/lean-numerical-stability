@@ -111,8 +111,8 @@ theorem forwardCounterS1_ipiv1 : forwardCounterS1.ipiv 1 = false := by
     finReplace, forwardCounterS0_ipiv1]
 
 theorem forwardCounterS1_dl0 : forwardCounterS1.dl 0 = 1 / 2 := by
-  simp [forwardCounterS1, flDGTTRFStepAt, forwardCounterS0_choice0,
-    finReplace, forwardCounterS0_d0, forwardCounterS0_dl0,
+  simp [forwardCounterS1, flDGTTRFStepAt,
+    forwardCounterS0_d0, forwardCounterS0_dl0,
     forwardCounterFP, skipZeroSubFP]
   norm_num
 
@@ -121,8 +121,8 @@ theorem forwardCounterS1_dl1 : forwardCounterS1.dl 1 = 1 := by
     finReplace, forwardCounterS0_dl1]
 
 theorem forwardCounterS1_d1 : forwardCounterS1.d 1 = -(101 / 400) := by
-  simp [forwardCounterS1, flDGTTRFStepAt, forwardCounterS0_choice0,
-    finReplace, forwardCounterS0_d0, forwardCounterS0_dl0,
+  simp [forwardCounterS1, flDGTTRFStepAt,
+    forwardCounterS0_d0, forwardCounterS0_dl0,
     forwardCounterS0_d1, forwardCounterS0_du0,
     forwardCounterFP, skipZeroSubFP]
   norm_num
@@ -172,7 +172,7 @@ theorem forwardCounterX1_0 : forwardCounterX1 0 = 1 / 100 := by
 
 theorem forwardCounterX1_1 : forwardCounterX1 1 = 20099 / 20000 := by
   simp [forwardCounterX1, flDGTTRSForwardStepAt, forwardCounter_ipiv0,
-    forwardCounter_dl0, forwardCounterZ, finReplace]
+    forwardCounter_dl0, forwardCounterZ]
   norm_num [forwardCounterFP, skipZeroSubFP]
 
 theorem forwardCounterX1_2 : forwardCounterX1 2 = -(1 / 100) := by
@@ -193,8 +193,7 @@ theorem forwardCounterX2_1 : forwardCounterX2 1 = -(1 / 100) := by
 
 theorem forwardCounterX2_2 : forwardCounterX2 2 = 4049797 / 4000000 := by
   simp [forwardCounterX2, flDGTTRSForwardStepAt, forwardCounter_ipiv1,
-    forwardCounter_dl1, forwardCounterX1_1, forwardCounterX1_2,
-    finReplace]
+    forwardCounter_dl1, forwardCounterX1_1, forwardCounterX1_2]
   norm_num [forwardCounterFP, skipZeroSubFP]
 
 theorem forwardCounter_forward_run_eq :
