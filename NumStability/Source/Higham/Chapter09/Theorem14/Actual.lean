@@ -279,7 +279,7 @@ theorem higham9_14_exactFP_product_eq_source {n : ℕ}
         subst j
         by_cases hi : 0 < i.val
         · have hrec := higham9_14_exactPivotVec_of_pos T i hi
-          simp only [tridiag_to_matrix, hdiag, if_pos,
+          simp only [tridiag_to_matrix, if_pos,
             higham9_14_roundedProductData,
             higham9_14_roundedPivotVec_exactFPModel_eq,
             higham9_14_roundedMultiplierVec_exactFPModel_eq]
@@ -310,7 +310,7 @@ theorem higham9_14_exactFP_product_eq_source {n : ℕ}
         · by_cases hsuper : i.val + 1 = j.val
           · simp [tridiag_to_matrix, higham9_14_roundedProductData,
               hdiag, hsub, hsuper]
-          · simp [tridiag_to_matrix, higham9_14_roundedProductData,
+          · simp [tridiag_to_matrix,
               hdiag, hsub, hsuper]
 
 /-- Concrete `LUFactSpec` packaged from the exact-primitive recurrence. -/
@@ -771,7 +771,7 @@ private theorem higham9_21_upper_row_sum
               · intro hv
                 exact Fin.ext (by simpa [s] using hv.symm)
               · intro hj
-                simpa [s, hj]
+                simp [s, hj]
             simp only [hsuper]
             by_cases hji : j = i
             · subst j
@@ -786,7 +786,7 @@ private theorem higham9_21_upper_row_sum
       _ = diag * v i + super * v ⟨i.val + 1, h⟩ := rfl
   · have hsuper : ∀ j : Fin n, i.val + 1 ≠ j.val := by
       intro j hj
-      exact h (by simpa [hj] using j.isLt)
+      exact h (by simp [hj])
     calc
       (∑ j : Fin n,
           (if j = i then diag
@@ -1050,7 +1050,7 @@ theorem higham9_21_actual_bidiagonal_solve_perturbation_model_corrected
       · have hval : j.val ≠ i.val := by
           intro hval
           exact hd (Fin.ext hval)
-        simp [DeltaL, tridiag_L_matrix, hd, hs, hval, hbeta]
+        simp [DeltaL, tridiag_L_matrix, hd, hs, hval]
   · intro i
     have hshape :
         (∑ j : Fin n,
@@ -1091,7 +1091,7 @@ theorem higham9_21_actual_bidiagonal_solve_perturbation_model_corrected
           exact hd (Fin.ext hval)
         have hcoeff : 0 ≤ 2 * beta + beta ^ 2 := by
           nlinarith [sq_nonneg beta]
-        simp [DeltaU, tridiag_U_matrix, hd, hs, hval, beta, hcoeff]
+        simp [DeltaU, tridiag_U_matrix, hd, hs, hval]
 
 /-- Equations (9.20)--(9.22) for the actual recurrence and actual sparse
 solves.  The source coefficient is the printed polynomial evaluated at the
@@ -1689,7 +1689,7 @@ theorem higham9_14_actual_noCancellation_of_diagonal_term_sign
           hlocal.symm
     · have hi0 : i.val = 0 := by omega
       simp [P, tridiag_to_matrix, higham9_14_roundedProductData,
-        L, U, tridiag_U_matrix, hi, hi0]
+        U, tridiag_U_matrix, hi0]
   · by_cases hsub : j.val + 1 = i.val
     · have hup :=
         tridiag_bidiag_growth_offdiag_sub L U P hStruct hLUeq i j hsub
@@ -1832,7 +1832,8 @@ theorem higham9_14_actual_noCancellation_of_signed_exact_pivots
     have hmul : 0 ≤ (ri * ei) * (rp * ep) *
         (ei * ep * (T.a i * T.c im1)) :=
       mul_nonneg (mul_nonneg hri.le hrp.le) hs
-    convert hmul using 1 <;> ring
+    convert hmul using 1
+    ring
   have hroundedSigned :
       0 ≤ ri * rp * (T.a i * T.c im1) :=
     nonneg_of_mul_nonneg_left hall hsquares
@@ -3323,7 +3324,8 @@ theorem higham9_14_smallUDiagDominantCounterexample_roundedPivot_one_eq_zero :
   norm_num [higham9_14_roundedPivotVec, higham9_14_roundedPivot,
     higham9_14_roundedMultiplier, higham9_14_natExtension,
     higham9_14_tenthRoundUpMulDivModel,
-    higham9_14_smallUDiagDominantCounterexampleData] <;> rfl
+    higham9_14_smallUDiagDominantCounterexampleData]
+  rfl
 
 /-- Even restricting the bare model to `u < 1/2`, nonsingular row/column
 diagonal dominance does not guarantee nonbreakdown of the actual recurrence. -/

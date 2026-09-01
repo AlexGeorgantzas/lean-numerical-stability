@@ -1188,11 +1188,11 @@ noncomputable def finiteResidualEnvelope : {n : Nat} ->
     (exec : Higham11RoundedBunchKaufmanExecution fp A) ->
       Fin n -> Fin n -> Real
   | _, _, .nil A => fun i _ => Fin.elim0 i
-  | _, _, .noAction A hA hbranch tail => fun I J =>
+  | _, _, .noAction A _hA _hbranch tail => fun I J =>
       Fin.cases 0
         (fun i => Fin.cases 0
           (fun j => tail.finiteResidualEnvelope i j) J) I
-  | _, _, .case1 A hA hbranch tail => fun I J =>
+  | _, _, .case1 A _hA _hbranch tail => fun I J =>
       let B := higham11_2_bunchKaufmanRoundedActive A
       let tau := tail.permutation
       Fin.cases
@@ -1205,7 +1205,7 @@ noncomputable def finiteResidualEnvelope : {n : Nat} ->
                   higham11_2_bunchKaufmanPivotPathOneAbs fp A
                     (tau i) (tau j)) +
               tail.finiteResidualEnvelope i j) J) I
-  | _, _, .case2 A hA hbranch tail => fun I J =>
+  | _, _, .case2 A _hA _hbranch tail => fun I J =>
       let B := higham11_2_bunchKaufmanRoundedActive A
       let tau := tail.permutation
       Fin.cases
@@ -1218,7 +1218,7 @@ noncomputable def finiteResidualEnvelope : {n : Nat} ->
                   higham11_2_bunchKaufmanPivotPathOneAbs fp A
                     (tau i) (tau j)) +
               tail.finiteResidualEnvelope i j) J) I
-  | _, _, .case3 A hA hbranch tail => fun I J =>
+  | _, _, .case3 A _hA _hbranch tail => fun I J =>
       let B := higham11_2_bunchKaufmanRoundedActive A
       let tau := tail.permutation
       Fin.cases
@@ -1231,7 +1231,7 @@ noncomputable def finiteResidualEnvelope : {n : Nat} ->
                   higham11_2_bunchKaufmanPivotPathOneAbs fp A
                     (tau i) (tau j)) +
               tail.finiteResidualEnvelope i j) J) I
-  | _, _, .case4 A hA hbranch hsecond tail => fun I J =>
+  | _, _, .case4 A _hA _hbranch _hsecond tail => fun I J =>
       let B := higham11_2_bunchKaufmanRoundedActive A
       let tau := tail.permutation
       Fin.cases
@@ -1540,8 +1540,8 @@ theorem schur_abs_le_one_add_coefficient
 the current local residual. -/
 theorem finiteResidual_accumulate
     (c C Babs Pabs Sabs Tabs Etail : Real)
-    (hc : 0 <= c) (hC : 0 <= C) (hB : 0 <= Babs)
-    (hP : 0 <= Pabs) (hT : 0 <= Tabs)
+    (hc : 0 <= c) (hC : 0 <= C) (_hB : 0 <= Babs)
+    (_hP : 0 <= Pabs) (hT : 0 <= Tabs)
     (hS : Sabs <= (1 + c) * (Babs + Pabs))
     (hE : Etail <= C * (Sabs + Tabs)) :
     c * (Babs + Pabs) + Etail <=
@@ -1691,7 +1691,7 @@ theorem residualEnvelope_le_finiteResidualEnvelope_of_completed
       refine Fin.cases ?_ (fun K => ?_) I
       · refine Fin.cases ?_ (fun L => ?_) J
         · simp only [residualEnvelope, finiteResidualEnvelope,
-            Fin.cases_zero, Fin.cases_succ]
+            Fin.cases_zero]
           rw [flatProduct_case4_00, permutedInput_case4_00]
           norm_num
         · refine Fin.cases ?_ (fun j => ?_) L
@@ -1884,7 +1884,7 @@ theorem finiteResidualEnvelope_le_coefficient
           simp only [finiteResidualEnvelope, finiteResidualCoefficient,
             Fin.cases_succ]
           rw [permutedInput_case1_ss, flatAbsProduct_case1_tt]
-          convert hacc using 1 <;> ring
+          (convert hacc using 1; ring)
   | _, _, .case2 A hA hbranch tail => by
       intro hcompleted I J
       let exec := Higham11RoundedBunchKaufmanExecution.case2
@@ -1989,7 +1989,7 @@ theorem finiteResidualEnvelope_le_coefficient
           simp only [finiteResidualEnvelope, finiteResidualCoefficient,
             Fin.cases_succ]
           rw [permutedInput_case2_ss, flatAbsProduct_case2_tt]
-          convert hacc using 1 <;> ring
+          (convert hacc using 1; ring)
   | _, _, .case3 A hA hbranch tail => by
       intro hcompleted I J
       let exec := Higham11RoundedBunchKaufmanExecution.case3
@@ -2094,7 +2094,7 @@ theorem finiteResidualEnvelope_le_coefficient
           simp only [finiteResidualEnvelope, finiteResidualCoefficient,
             Fin.cases_succ]
           rw [permutedInput_case3_ss, flatAbsProduct_case3_tt]
-          convert hacc using 1 <;> ring
+          (convert hacc using 1; ring)
   | _, _, .case4 A hA hbranch hsecond tail => by
       intro hcompleted I J
       let exec := Higham11RoundedBunchKaufmanExecution.case4
@@ -2264,7 +2264,7 @@ theorem finiteResidualEnvelope_le_coefficient
               simp only [finiteResidualEnvelope, finiteResidualCoefficient,
                 Fin.cases_succ]
               rw [permutedInput_case4_tt, flatAbsProduct_case4_tt]
-              convert hacc using 1 <;> ring
+              (convert hacc using 1; ring)
   | _, _, .case4Breakdown A hA hbranch hsecond => by
       intro hcompleted
       exact False.elim hcompleted

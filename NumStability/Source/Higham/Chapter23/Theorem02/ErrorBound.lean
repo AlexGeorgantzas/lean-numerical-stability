@@ -171,7 +171,7 @@ theorem higham23_theorem23_2_strassen_exactMajorant
       have hp1 := higham23_strassenHeavyProduct_transfer fp r depth
         (A.c11 + A.c22) x1 (B.c11 + B.c22) y1 p1 a b e ha hb
         (by simpa [x1, u] using hx1.1)
-        (by convert hBsum11_22 using 1 <;> ring)
+        (by (convert hBsum11_22 using 1; ring))
         (by simpa [y1, u] using hy1.1)
         (by simpa [x1, u] using hx1.2)
         (by simpa [y1, u] using hy1.2)
@@ -189,7 +189,7 @@ theorem higham23_theorem23_2_strassen_exactMajorant
         ha hbHat hA11 (by simpa [y3, u] using hy3.1)
       have hp3 := higham23_strassenLightRightProduct_transfer fp r depth
         A.c11 (B.c12 - B.c22) y3 p3 a b e ha hb hA11
-        (by convert hBsub12_22 using 1 <;> ring)
+        (by (convert hBsub12_22 using 1; ring))
         (by simpa [y3, u] using hy3.1)
         (by simpa [y3, u] using hy3.2)
         (by simpa [p3, e] using hp3Rec)
@@ -198,7 +198,7 @@ theorem higham23_theorem23_2_strassen_exactMajorant
         ha hbHat hA22 (by simpa [y4, u] using hy4.1)
       have hp4 := higham23_strassenLightRightProduct_transfer fp r depth
         A.c22 (B.c21 - B.c11) y4 p4 a b e ha hb hA22
-        (by convert hBsub21_11 using 1 <;> ring)
+        (by (convert hBsub21_11 using 1; ring))
         (by simpa [y4, u] using hy4.1)
         (by simpa [y4, u] using hy4.2)
         (by simpa [p4, e] using hp4Rec)
@@ -216,7 +216,7 @@ theorem higham23_theorem23_2_strassen_exactMajorant
       have hp6 := higham23_strassenHeavyProduct_transfer fp r depth
         (A.c21 - A.c11) x6 (B.c11 + B.c12) y6 p6 a b e ha hb
         (by simpa [x6, u] using hx6.1)
-        (by convert hBsum11_12 using 1 <;> ring)
+        (by (convert hBsum11_12 using 1; ring))
         (by simpa [y6, u] using hy6.1)
         (by simpa [x6, u] using hx6.2)
         (by simpa [y6, u] using hy6.2)
@@ -227,7 +227,7 @@ theorem higham23_theorem23_2_strassen_exactMajorant
       have hp7 := higham23_strassenHeavyProduct_transfer fp r depth
         (A.c12 - A.c22) x7 (B.c21 + B.c22) y7 p7 a b e ha hb
         (by simpa [x7, u] using hx7.1)
-        (by convert hBsum21_22 using 1 <;> ring)
+        (by (convert hBsum21_22 using 1; ring))
         (by simpa [y7, u] using hy7.1)
         (by simpa [x7, u] using hx7.2)
         (by simpa [y7, u] using hy7.2)
@@ -245,7 +245,9 @@ theorem higham23_theorem23_2_strassen_exactMajorant
             (higham23RecursiveFlSub fp r depth
               (higham23RecursiveFlAdd fp r depth p1 p4) p5) p7)
           (roundN * a * b) := by
-        convert hRound11raw using 1 <;> dsimp [roundN, q1N, q2N, u] <;> ring
+        convert hRound11raw using 1
+        dsimp [roundN, q1N, q2N, u]
+        ring
       have hProducts11a := higham23_recursiveErrorLe_add r depth
         ((A.c11 + A.c22) * (B.c11 + B.c22)) p1
         (A.c22 * (B.c21 - B.c11)) p4 hp1.1 hp4.1
@@ -260,7 +262,9 @@ theorem higham23_theorem23_2_strassen_exactMajorant
           ((A.c11 + A.c22) * (B.c11 + B.c22) + A.c22 * (B.c21 - B.c11) -
             (A.c11 + A.c12) * B.c22 + (A.c12 - A.c22) * (B.c21 + B.c22))
           (p1 + p4 - p5 + p7) ((2 * HE + 2 * LE) * a * b) := by
-        convert hProducts11c using 1 <;> dsimp [HE, LE] <;> ring
+        convert hProducts11c using 1
+        dsimp [HE, LE]
+        ring
       have h11raw := higham23_recursiveErrorLe_trans r depth _ _ _
         hProducts11 hRound11
       have h11 : Higham23RecursiveErrorLe r depth (A * B).c11
@@ -290,7 +294,9 @@ theorem higham23_theorem23_2_strassen_exactMajorant
               (A.c21 - A.c11) * (B.c11 + B.c12))
           (p1 + p3 - p2 + p6)
           ((2 * HE + 2 * LE) * a * b) := by
-        convert hProducts22c using 1 <;> dsimp [HE, LE] <;> ring
+        convert hProducts22c using 1
+        dsimp [HE, LE]
+        ring
       have hRound22raw := higham23_recursiveFourTermRecombination_error
         fp r depth p1 p3 p2 p6 (HN * a * b) (LN * a * b)
           (LN * a * b) (HN * a * b) hnH0 hnL0 hnL0 hnH0
@@ -301,7 +307,9 @@ theorem higham23_theorem23_2_strassen_exactMajorant
             (higham23RecursiveFlSub fp r depth
               (higham23RecursiveFlAdd fp r depth p1 p3) p2) p6)
           (roundN * a * b) := by
-        convert hRound22raw using 1 <;> dsimp [roundN, q1N, q2N, u] <;> ring
+        convert hRound22raw using 1
+        dsimp [roundN, q1N, q2N, u]
+        ring
       have h22raw := higham23_recursiveErrorLe_trans r depth _ _ _
         hProducts22 hRound22
       have h22 : Higham23RecursiveErrorLe r depth (A * B).c22

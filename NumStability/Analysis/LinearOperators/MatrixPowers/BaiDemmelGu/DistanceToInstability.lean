@@ -46,7 +46,7 @@ lemma cstarPi_norm_eq_euclidean
     rw [Complex.ofReal_sum]
     apply Finset.sum_congr rfl
     intro i _hi
-    simpa [← starRingEnd_apply, RCLike.mul_conj, pow_two]
+    simp [← starRingEnd_apply, RCLike.mul_conj, pow_two]
   rw [hcomplex, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (Finset.sum_nonneg fun i _hi => sq_nonneg ‖x i‖)]
 
@@ -56,10 +56,10 @@ noncomputable def cstarPiEuclideanLinearIsometryEquiv (n : ℕ) :
     WithCStarModule ℂ (Fin n → ℂ) ≃ₗᵢ[ℂ] EuclideanSpace ℂ (Fin n) where
   toFun x := WithLp.toLp 2 (WithCStarModule.equiv ℂ _ x)
   invFun x := (WithCStarModule.equiv ℂ _).symm (WithLp.ofLp x)
-  left_inv x := rfl
-  right_inv x := rfl
-  map_add' x y := rfl
-  map_smul' c x := rfl
+  left_inv _x := rfl
+  right_inv _x := rfl
+  map_add' _x _y := rfl
+  map_smul' _c _x := rfl
   norm_map' x := (cstarPi_norm_eq_euclidean x).symm
 
 @[simp]
@@ -139,7 +139,7 @@ lemma complexMatrixEuclideanLin_conj_apply
   intro x
   ext i
   simp [complexMatrixEuclideanLin, complexConjMatrix, Matrix.toLpLin_apply,
-    Matrix.mulVec, dotProduct, map_sum, map_mul]
+    Matrix.mulVec, dotProduct]
 
 theorem complexMatrixOp2_conj_eq {n : ℕ} (M : CMatrix n n) :
     complexMatrixOp2 (complexConjMatrix M) = complexMatrixOp2 M := by
@@ -317,7 +317,7 @@ theorem singularPerturbationOp2_isLeast
       exact hTval
     have hΔnorm : complexMatrixOp2 Δ = s⁻¹ := by
       exact (isComplexMatrixLpNormValue_two_eq_complexMatrixOp2 hn hΔval).symm
-    refine ⟨Δ, ?_, by simpa [s, hΔnorm]⟩
+    refine ⟨Δ, ?_, by simp [s, hΔnorm]⟩
     rw [complexMatrixVecMul_add, hTaction]
     exact hsing
   · intro d hd
@@ -403,7 +403,7 @@ theorem complexMatrixVecMul_complexShiftMatrix_apply
     complexMatrixVecMul (complexShiftMatrix A z) x i =
       z * x i - complexMatrixVecMul A x i := by
   simp [complexMatrixVecMul, complexShiftMatrix, Finset.sum_sub_distrib,
-    sub_mul, Finset.sum_ite_irrel, Finset.filter_eq']
+    sub_mul]
 
 theorem complexMatrixOp2_neg {m n : ℕ} (A : CMatrix m n) :
     complexMatrixOp2 (-A) = complexMatrixOp2 A := by

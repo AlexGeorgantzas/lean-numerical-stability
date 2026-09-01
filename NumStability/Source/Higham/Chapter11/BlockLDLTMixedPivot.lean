@@ -274,15 +274,15 @@ theorem product_consTwo_00 :
     (∑ k₁, ∑ k₂, flMixedL fp (s.consTwo) A 0 k₁ * flMixedD fp (s.consTwo) A k₁ k₂
         * flMixedL fp (s.consTwo) A 0 k₂) = A 0 0 := by
   simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
-    flMixedD_consTwo_00, flMixedD_consTwo_01, flMixedD_consTwo_0t,
-    zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
+    flMixedD_consTwo_00,
+    zero_mul, mul_zero, one_mul, mul_one, add_zero, Finset.sum_const_zero]
 
 theorem product_consTwo_0one :
     (∑ k₁, ∑ k₂, flMixedL fp (s.consTwo) A 0 k₁ * flMixedD fp (s.consTwo) A k₁ k₂
         * flMixedL fp (s.consTwo) A (Fin.succ 0) k₂) = A 0 (oneIdx m) := by
   simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
     flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
-    flMixedD_consTwo_00, flMixedD_consTwo_01, flMixedD_consTwo_0t,
+    flMixedD_consTwo_01,
     zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
 
 theorem product_consTwo_one0 :
@@ -290,14 +290,14 @@ theorem product_consTwo_one0 :
         * flMixedL fp (s.consTwo) A 0 k₂) = A (oneIdx m) 0 := by
   simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
     flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
-    flMixedD_consTwo_10, flMixedD_consTwo_11, flMixedD_consTwo_1t,
+    flMixedD_consTwo_10,
     zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
 
 theorem product_consTwo_oneone :
     (∑ k₁, ∑ k₂, flMixedL fp (s.consTwo) A (Fin.succ 0) k₁ * flMixedD fp (s.consTwo) A k₁ k₂
         * flMixedL fp (s.consTwo) A (Fin.succ 0) k₂) = A (oneIdx m) (oneIdx m) := by
   simp only [sum_fin_add_two, flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
-    flMixedD_consTwo_10, flMixedD_consTwo_11, flMixedD_consTwo_1t,
+    flMixedD_consTwo_11,
     zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
 
 /-- **Pivot-row reductions.**  `(L̂D̂L̂ᵀ)_{p, j+2} = (E·w_jᵀ)_p`. -/
@@ -308,7 +308,7 @@ theorem product_consTwo_0t (j : Fin m) :
   simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
     flMixedL_consTwo_t0, flMixedL_consTwo_t1, flMixedL_consTwo_tt,
     flMixedD_consTwo_00, flMixedD_consTwo_01, flMixedD_consTwo_0t,
-    zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
+    zero_mul, mul_zero, one_mul, add_zero, Finset.sum_const_zero]
 
 theorem product_consTwo_1t (j : Fin m) :
     (∑ k₁, ∑ k₂, flMixedL fp (s.consTwo) A (Fin.succ 0) k₁ * flMixedD fp (s.consTwo) A k₁ k₂
@@ -318,7 +318,7 @@ theorem product_consTwo_1t (j : Fin m) :
   simp only [sum_fin_add_two, flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
     flMixedL_consTwo_t0, flMixedL_consTwo_t1, flMixedL_consTwo_tt,
     flMixedD_consTwo_10, flMixedD_consTwo_11, flMixedD_consTwo_1t,
-    zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
+    zero_mul, mul_zero, one_mul, add_zero, zero_add, Finset.sum_const_zero]
 
 /-- **Pivot-column reductions.**  `(L̂D̂L̂ᵀ)_{i+2, q} = (w_i·E)_q`. -/
 theorem product_consTwo_t0 (i : Fin m) :
@@ -328,9 +328,7 @@ theorem product_consTwo_t0 (i : Fin m) :
   simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
     flMixedL_consTwo_t0, flMixedL_consTwo_t1, flMixedL_consTwo_tt,
     flMixedD_consTwo_00, flMixedD_consTwo_10, flMixedD_consTwo_t0,
-    flMixedD_consTwo_01, flMixedD_consTwo_11, flMixedD_consTwo_t1,
-    flMixedD_consTwo_0t, flMixedD_consTwo_1t, flMixedD_consTwo_tt,
-    zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
+    mul_zero, mul_one, add_zero, Finset.sum_const_zero]
 
 theorem product_consTwo_t1 (i : Fin m) :
     (∑ k₁, ∑ k₂, flMixedL fp (s.consTwo) A i.succ.succ k₁ * flMixedD fp (s.consTwo) A k₁ k₂
@@ -339,10 +337,8 @@ theorem product_consTwo_t1 (i : Fin m) :
         + flMixedMult2 m fp A i 1 * A (oneIdx m) (oneIdx m) := by
   simp only [sum_fin_add_two, flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
     flMixedL_consTwo_t0, flMixedL_consTwo_t1, flMixedL_consTwo_tt,
-    flMixedD_consTwo_00, flMixedD_consTwo_10, flMixedD_consTwo_t0,
     flMixedD_consTwo_01, flMixedD_consTwo_11, flMixedD_consTwo_t1,
-    flMixedD_consTwo_0t, flMixedD_consTwo_1t, flMixedD_consTwo_tt,
-    zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
+    mul_zero, mul_one, add_zero, zero_add, Finset.sum_const_zero]
 
 end Reductions
 
@@ -487,7 +483,7 @@ variable (m : ℕ) (fp : FPModel) (A : Fin (m + 2) → Fin (m + 2) → ℝ) (cSo
 @[simp] theorem SB2_tt (i j : Fin m) :
     flBlockLDLTTwoByTwoStageBound m fp A cSolve cStage Bs i.succ.succ j.succ.succ
       = cStage * gamma fp 3 * (|A i.succ.succ j.succ.succ| + pivotPath2Abs m fp A i j) + Bs i j := by
-  simp only [flBlockLDLTTwoByTwoStageBound, Fin.cases_zero, Fin.cases_succ]
+  simp only [flBlockLDLTTwoByTwoStageBound, Fin.cases_succ]
 end StageSimp
 
 @[simp] theorem flBlockLDLTMixedBound_consOne (fp : FPModel) (cSolve cStage : ℝ) {n : ℕ}
@@ -656,7 +652,7 @@ theorem productEntry_consTwo_0t (j : Fin m) :
   simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
     flMixedL_consTwo_t0, flMixedL_consTwo_t1, flMixedL_consTwo_tt,
     flMixedD_consTwo_00, flMixedD_consTwo_01, flMixedD_consTwo_0t,
-    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
+    abs_zero, abs_one, zero_mul, mul_zero, one_mul, add_zero,
     Finset.sum_const_zero]
   rw [pivotRowPathAbs, Fin.sum_univ_two]
   simp only [leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq]
@@ -669,7 +665,7 @@ theorem productEntry_consTwo_1t (j : Fin m) :
   simp only [sum_fin_add_two, flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
     flMixedL_consTwo_t0, flMixedL_consTwo_t1, flMixedL_consTwo_tt,
     flMixedD_consTwo_10, flMixedD_consTwo_11, flMixedD_consTwo_1t,
-    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
+    abs_zero, abs_one, zero_mul, mul_zero, one_mul, add_zero, zero_add,
     Finset.sum_const_zero]
   rw [pivotRowPathAbs, Fin.sum_univ_two]
   simp only [leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq]
@@ -682,9 +678,7 @@ theorem productEntry_consTwo_t0 (i : Fin m) :
   simp only [sum_fin_add_two, flMixedL_consTwo_00, flMixedL_consTwo_01, flMixedL_consTwo_0t,
     flMixedL_consTwo_t0, flMixedL_consTwo_t1, flMixedL_consTwo_tt,
     flMixedD_consTwo_00, flMixedD_consTwo_10, flMixedD_consTwo_t0,
-    flMixedD_consTwo_01, flMixedD_consTwo_11, flMixedD_consTwo_t1,
-    flMixedD_consTwo_0t, flMixedD_consTwo_1t, flMixedD_consTwo_tt,
-    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
+    abs_zero, abs_one, mul_zero, mul_one, add_zero,
     Finset.sum_const_zero]
   rw [pivotColPathAbs, Fin.sum_univ_two]
   simp only [leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq]
@@ -696,10 +690,8 @@ theorem productEntry_consTwo_t1 (i : Fin m) :
   unfold higham11_4_bunchKaufmanProductEntry
   simp only [sum_fin_add_two, flMixedL_consTwo_10, flMixedL_consTwo_11, flMixedL_consTwo_1t,
     flMixedL_consTwo_t0, flMixedL_consTwo_t1, flMixedL_consTwo_tt,
-    flMixedD_consTwo_00, flMixedD_consTwo_10, flMixedD_consTwo_t0,
     flMixedD_consTwo_01, flMixedD_consTwo_11, flMixedD_consTwo_t1,
-    flMixedD_consTwo_0t, flMixedD_consTwo_1t, flMixedD_consTwo_tt,
-    abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one, add_zero, zero_add,
+    abs_zero, abs_one, mul_zero, mul_one, add_zero, zero_add,
     Finset.sum_const_zero]
   rw [pivotColPathAbs, Fin.sum_univ_two]
   simp only [leadingTwoBlock_apply, embedTwo_zero, embedTwo_one_eq]
@@ -790,7 +782,7 @@ theorem abs_pivotPath2_le (fp : FPModel) {m : ℕ} (A : Fin (m + 2) → Fin (m +
 theorem trailing_arith_two (u K p q t fs as g3 Bs c : ℝ)
     (hu0 : 0 ≤ u) (huε : u ≤ 1 / 100) (hK0 : 0 ≤ K) (hKu : K * u ≤ 1 / 100)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (_ht : 0 ≤ t) (hfs : 0 ≤ fs) (_has0 : 0 ≤ as)
-    (_hg3 : 0 ≤ g3) (hg3u : g3 ≤ 6 * u) (hc0 : 0 ≤ c) (hc5 : c ≤ 5)
+    (_hg3 : 0 ≤ g3) (hg3u : g3 ≤ 6 * u) (_hc0 : 0 ≤ c) (hc5 : c ≤ 5)
     (has : as ≤ (1 + u) * p + (1 + u) ^ 3 * q)
     (htq : q * (1 - u) ^ 2 ≤ t)
     (hBs : Bs ≤ 20 * K * u * (as + fs)) :
@@ -856,7 +848,7 @@ theorem productEntry_consOne_split (fp : FPModel) {n : ℕ}
     the recursive mixed-pivot envelope is dominated by the printed Theorem 11.3
     first-order bound with the LINEAR polynomial `p(n) = 20 n`. -/
 theorem flMixed_envelope_le_printed (fp : FPModel) (hval : gammaValid fp 3)
-    (cSolve cStage : ℝ) (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
+    (cSolve cStage : ℝ) (_hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
     (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5) :
     ∀ {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ),
       (n : ℝ) * fp.u ≤ 1 / 100 →

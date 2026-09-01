@@ -96,7 +96,7 @@ theorem higham11_4_omegaOne_le_omegaRow {n : Nat} (hn : 0 < n)
   let i₀ := higham11_2_firstIndex hn
   let r := higham11_2_bunchKaufmanMaxRow hn A
   by_cases hri : r = i₀
-  · simpa [higham11_2_bunchKaufmanOmegaOne,
+  · simp [higham11_2_bunchKaufmanOmegaOne,
       higham11_2_bunchKaufmanOmegaRow, i₀, r, hri]
   · have hattain :=
       higham11_2_bunchKaufmanMaxRow_attains_omegaOne_if hn A
@@ -206,8 +206,7 @@ theorem higham11_4_active_offdiag_le_omegaRow_case3
     higham11_1_bunchParlettAlpha A
   let r := higham11_2_bunchKaufmanMaxRow (by omega) A
   have hp0 : p (0 : Fin (n + 2)) = r := by
-    simp [p, r, higham11_2_bunchKaufmanFirstPerm, hbranch,
-      higham11_2_firstIndex]
+    simp [p, r, higham11_2_bunchKaufmanFirstPerm, hbranch]
   have hpi : p i.succ ≠ r := by
     intro h
     have heq : p i.succ = p 0 := h.trans hp0.symm
@@ -460,7 +459,9 @@ private theorem higham11_4_perturbed_case4_solve_component_bounds
         |f00 * f11 - a11 * arr| + |f01 * f10 - a1r ^ 2| := by
       have h := abs_sub (f00 * f11 - a11 * arr)
         (f01 * f10 - a1r ^ 2)
-      convert h using 1 <;> simp [detf, det0] <;> ring
+      convert h using 1
+      simp [detf, det0]
+      ring
     calc
       |detf - det0| <=
           |f00 * f11 - a11 * arr| + |f01 * f10 - a1r ^ 2| := htri
@@ -488,7 +489,7 @@ private theorem higham11_4_perturbed_case4_solve_component_bounds
   have hdetf : (11 : Real) / 20 * ω₁ ^ 2 <= |detf| := by
     have htri : |det0| <= |detf| + |detf - det0| := by
       calc
-        |det0| = |detf - (detf - det0)| := by congr 1 <;> ring
+        |det0| = |detf - (detf - det0)| := by (congr 1; ring)
         _ <= |detf| + |detf - det0| := abs_sub _ _
     have hdet0 : (1 - α ^ 2) * ω₁ ^ 2 <= |det0| := by
       simpa [α, det0] using hdet
@@ -719,7 +720,7 @@ theorem higham11_4_case4_flMultTwo_component_bounds
     change higham11_2_bunchKaufmanExactActive A
       (embedTwo n 0) (embedTwo n 0) = A i₀ i₀
     rw [← hlead 0 0]
-    simp [B, higham11_2_bunchKaufmanSelectedTwoBlock, i₀]
+    simp [higham11_2_bunchKaufmanSelectedTwoBlock, i₀]
   have hB01 : B 0 1 = A i₀ r := by
     change higham11_2_bunchKaufmanExactActive A
       (embedTwo n 0) (embedTwo n 1) = A i₀ r
@@ -799,7 +800,7 @@ private theorem higham11_4_case4_four_term_path_le_thirtyThree
     (hxj1 : xj1 <= (31 : Real) / 10)
     (he00nonneg : 0 <= e00) (he01nonneg : 0 <= e01)
     (he10nonneg : 0 <= e10) (he11nonneg : 0 <= e11)
-    (hxi0nonneg : 0 <= xi0) (hxi1nonneg : 0 <= xi1)
+    (_hxi0nonneg : 0 <= xi0) (_hxi1nonneg : 0 <= xi1)
     (hxj0nonneg : 0 <= xj0) (hxj1nonneg : 0 <= xj1) :
     (xi0 * e00 * xj0 + xi0 * e01 * xj1) +
         (xi1 * e10 * xj0 + xi1 * e11 * xj1) <= 33 * M := by
@@ -1184,9 +1185,8 @@ private theorem higham11_4_blockTwo_absProduct_00 {n : Nat}
   simp only [higham11_4_bunchKaufmanProductEntry, sum_fin_add_two,
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_0t, higham11_2_blockTwoD_00,
-    higham11_2_blockTwoD_01, higham11_2_blockTwoD_0t,
     abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one,
-    add_zero, zero_add, Finset.sum_const_zero]
+    add_zero, Finset.sum_const_zero]
 
 private theorem higham11_4_blockTwo_absProduct_01 {n : Nat}
     (W : Fin n -> Fin 2 -> Real) (Ls : Fin n -> Fin n -> Real)
@@ -1198,8 +1198,8 @@ private theorem higham11_4_blockTwo_absProduct_01 {n : Nat}
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
     higham11_2_blockTwoL_0t, higham11_2_blockTwoL_1t,
-    higham11_2_blockTwoD_00, higham11_2_blockTwoD_01,
-    higham11_2_blockTwoD_0t, abs_zero, abs_one, zero_mul, mul_zero,
+    higham11_2_blockTwoD_01,
+    abs_zero, abs_one, zero_mul, mul_zero,
     one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
 
 private theorem higham11_4_blockTwo_absProduct_10 {n : Nat}
@@ -1212,8 +1212,8 @@ private theorem higham11_4_blockTwo_absProduct_10 {n : Nat}
     higham11_2_blockTwoL_00, higham11_2_blockTwoL_01,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
     higham11_2_blockTwoL_0t, higham11_2_blockTwoL_1t,
-    higham11_2_blockTwoD_10, higham11_2_blockTwoD_11,
-    higham11_2_blockTwoD_1t, abs_zero, abs_one, zero_mul, mul_zero,
+    higham11_2_blockTwoD_10,
+    abs_zero, abs_one, zero_mul, mul_zero,
     one_mul, mul_one, add_zero, zero_add, Finset.sum_const_zero]
 
 private theorem higham11_4_blockTwo_absProduct_11 {n : Nat}
@@ -1224,8 +1224,8 @@ private theorem higham11_4_blockTwo_absProduct_11 {n : Nat}
       (Fin.succ 0) (Fin.succ 0) = |E 1 1| := by
   simp only [higham11_4_bunchKaufmanProductEntry, sum_fin_add_two,
     higham11_2_blockTwoL_10, higham11_2_blockTwoL_11,
-    higham11_2_blockTwoL_1t, higham11_2_blockTwoD_10,
-    higham11_2_blockTwoD_11, higham11_2_blockTwoD_1t,
+    higham11_2_blockTwoL_1t,
+    higham11_2_blockTwoD_11,
     abs_zero, abs_one, zero_mul, mul_zero, one_mul, mul_one,
     add_zero, zero_add, Finset.sum_const_zero]
 
@@ -1375,15 +1375,15 @@ theorem roundedStageMax_nonneg : {n : Nat} ->
     (exec : Higham11RoundedBunchKaufmanExecution fp A) ->
     0 <= exec.roundedStageMax
   | _, _, .nil A => higham11_4_roundedActiveMax_nonneg A
-  | _, _, .noAction A _ _ tail =>
+  | _, _, .noAction A _ _ _tail =>
       le_max_of_le_left (higham11_4_roundedActiveMax_nonneg A)
-  | _, _, .case1 A _ _ tail =>
+  | _, _, .case1 A _ _ _tail =>
       le_max_of_le_left (higham11_4_roundedActiveMax_nonneg A)
-  | _, _, .case2 A _ _ tail =>
+  | _, _, .case2 A _ _ _tail =>
       le_max_of_le_left (higham11_4_roundedActiveMax_nonneg A)
-  | _, _, .case3 A _ _ tail =>
+  | _, _, .case3 A _ _ _tail =>
       le_max_of_le_left (higham11_4_roundedActiveMax_nonneg A)
-  | _, _, .case4 A _ _ _ tail =>
+  | _, _, .case4 A _ _ _ _tail =>
       le_max_of_le_left (higham11_4_roundedActiveMax_nonneg A)
   | _, _, .case4Breakdown A _ _ _ =>
       higham11_4_roundedActiveMax_nonneg A
@@ -1393,11 +1393,11 @@ theorem currentMax_le_roundedStageMax : {n : Nat} ->
     (exec : Higham11RoundedBunchKaufmanExecution fp A) ->
     higham11_4_roundedActiveMax A <= exec.roundedStageMax
   | _, _, .nil A => le_rfl
-  | _, _, .noAction A _ _ tail => le_max_left _ _
-  | _, _, .case1 A _ _ tail => le_max_left _ _
-  | _, _, .case2 A _ _ tail => le_max_left _ _
-  | _, _, .case3 A _ _ tail => le_max_left _ _
-  | _, _, .case4 A _ _ _ tail => le_max_left _ _
+  | _, _, .noAction A _ _ _tail => le_max_left _ _
+  | _, _, .case1 A _ _ _tail => le_max_left _ _
+  | _, _, .case2 A _ _ _tail => le_max_left _ _
+  | _, _, .case3 A _ _ _tail => le_max_left _ _
+  | _, _, .case4 A _ _ _ _tail => le_max_left _ _
   | _, _, .case4Breakdown A _ _ _ => le_rfl
 
 theorem tail_roundedStageMax_le_noAction {n : Nat}

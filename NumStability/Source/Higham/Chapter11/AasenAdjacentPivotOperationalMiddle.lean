@@ -251,7 +251,7 @@ theorem flDGTTRFRun_du2_eq_zero_of_steps_le_val (fp : FPModel) (n : ℕ)
         have hji : j ≠ i := by
           intro h
           have := Fin.mk.inj h
-          simp [i] at this
+          simp at this
           omega
         rw [flDGTTRFStepAt_du2_of_ne fp _ _ _ hstep hji]
         exact ih j (by omega)
@@ -357,7 +357,7 @@ theorem flDGTTRF_noSwap_combined_source_row_identity (fp : FPModel) {n : ℕ}
   have hkp_ne : kp ≠ k := by
     intro h
     have := Fin.mk.inj h
-    simp [kp] at this
+    simp at this
   have hk_ne : k ≠ kp := Ne.symm hkp_ne
   dsimp only
   constructor
@@ -367,11 +367,11 @@ theorem flDGTTRF_noSwap_combined_source_row_identity (fp : FPModel) {n : ℕ}
   constructor
   · simp [dgttrfUpperPivotResidual, dgttrfActivePivotResidual,
       flDGTTRFStepAt, flDGTTRSForwardStepAt, hchoice, hdu2,
-      finReplace, kp, hkp_ne, hk_ne]
+      finReplace, kp, hk_ne]
   · simp only [dgttrfActiveNextResidual, dgttrfUpperNextResidual,
       dgttrfActivePivotResidual]
     simp [flDGTTRFStepAt, flDGTTRSForwardStepAt, hchoice, hdu2,
-      finReplace, kp, hkp_ne, hk_ne]
+      finReplace]
     ring
 
 /-- Literal interchange factor/forward identity with source-row labels.  The
@@ -400,21 +400,21 @@ theorem flDGTTRF_swap_combined_source_row_identity (fp : FPModel) {n : ℕ}
   have hkp_ne : kp ≠ k := by
     intro h
     have := Fin.mk.inj h
-    simp [kp] at this
+    simp at this
   have hk_ne : k ≠ kp := Ne.symm hkp_ne
   dsimp only
   constructor
-  · simp [flDGTTRFStepAt, hchoice, finSwap, kp, hkp_ne, hk_ne]
+  · simp [flDGTTRFStepAt, hchoice, finSwap]
   constructor
-  · simp [flDGTTRFStepAt, hchoice, finSwap, kp, hkp_ne, hk_ne]
+  · simp [flDGTTRFStepAt, hchoice, finSwap, kp, hkp_ne]
   constructor
   · simp [dgttrfUpperPivotResidual, dgttrfActiveNextResidual,
-      flDGTTRFStepAt, flDGTTRSForwardStepAt, hchoice, hdu2,
-      finReplace, kp, hkp_ne, hk_ne]
+      flDGTTRFStepAt, flDGTTRSForwardStepAt, hchoice,
+      finReplace, kp, hk_ne]
   · simp only [dgttrfActiveNextResidual, dgttrfUpperNextResidual,
       dgttrfActivePivotResidual]
     simp [flDGTTRFStepAt, flDGTTRSForwardStepAt, hchoice, hdu2,
-      finReplace, kp, hkp_ne, hk_ne]
+      finReplace]
     ring
 
 /-- The three observable arithmetic terms in the literal no-interchange
@@ -623,7 +623,7 @@ theorem flDGTTRF_dl_abs_le_one_add_u (fp : FPModel) (n : ℕ)
 private theorem fp_fl_mul_zero_right (fp : FPModel) (x : ℝ) :
     fp.fl_mul x 0 = 0 := by
   obtain ⟨δ, _hδ, hfl⟩ := fp.model_mul x 0
-  simpa using hfl
+  simp
 
 /-- One adjacent-pivot DGTTRS forward stage cannot map a nonzero vector to the
 zero vector.  This is an exact structural fact: both branches retain one old
@@ -1151,7 +1151,7 @@ theorem higham11_8_aasen_backward_error_direct_of_actual_dgttrs_budget_norm
     let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
     let z := fl_forwardSub fp n Lh rhs
     let y := flDGTTRS fp n Th z
-    let DeltaT := dgttrsResidualCorrection Th z y
+    let _DeltaT := dgttrsResidualCorrection Th z y
     let BT := dgttrsResidualBudget Th z y
     let Uouter : Fin n → Fin n → ℝ := fun i j => Lh j i
     let w := fl_backSub fp n Uouter y
@@ -1205,7 +1205,7 @@ theorem higham11_8_aasen_backward_error_direct_of_actual_dgttrs_source_residual
     let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
     let z := fl_forwardSub fp n Lh rhs
     let y := flDGTTRS fp n Th z
-    let DeltaT := dgttrsSparseResidualCorrection (by omega) Th z y
+    let _DeltaT := dgttrsSparseResidualCorrection (by omega) Th z y
     let BT := dgttrsSparseResidualBudget (by omega) Th z y
     let Uouter : Fin n → Fin n → ℝ := fun i j => Lh j i
     let w := fl_backSub fp n Uouter y

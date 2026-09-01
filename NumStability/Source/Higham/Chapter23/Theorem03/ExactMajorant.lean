@@ -431,28 +431,44 @@ theorem higham23_theorem23_3_winograd_exactMajorant
 
       have hS1 := higham23_recursiveMaxNormLe_add r depth A.c21 A.c22 hA21 hA22
       have hS1' : Higham23RecursiveMaxNormLe r depth S1 (2 * a) := by
-        convert hS1 using 1 <;> dsimp [S1] <;> ring
+        convert hS1 using 1
+        dsimp [S1]
+        ring
       have hS2raw := higham23_recursiveMaxNormLe_sub r depth S1 A.c11 hS1' hA11
       have hS2 : Higham23RecursiveMaxNormLe r depth S2 (3 * a) := by
-        convert hS2raw using 1 <;> dsimp [S2] <;> ring
+        convert hS2raw using 1
+        dsimp [S2]
+        ring
       have hS3raw := higham23_recursiveMaxNormLe_sub r depth A.c11 A.c21 hA11 hA21
       have hS3 : Higham23RecursiveMaxNormLe r depth S3 (2 * a) := by
-        convert hS3raw using 1 <;> dsimp [S3] <;> ring
+        convert hS3raw using 1
+        dsimp [S3]
+        ring
       have hS4raw := higham23_recursiveMaxNormLe_sub r depth A.c12 S2 hA12 hS2
       have hS4 : Higham23RecursiveMaxNormLe r depth S4 (4 * a) := by
-        convert hS4raw using 1 <;> dsimp [S4] <;> ring
+        convert hS4raw using 1
+        dsimp [S4]
+        ring
       have hS5raw := higham23_recursiveMaxNormLe_sub r depth B.c12 B.c11 hB12 hB11
       have hS5 : Higham23RecursiveMaxNormLe r depth S5 (2 * b) := by
-        convert hS5raw using 1 <;> dsimp [S5] <;> ring
+        convert hS5raw using 1
+        dsimp [S5]
+        ring
       have hS6raw := higham23_recursiveMaxNormLe_sub r depth B.c22 S5 hB22 hS5
       have hS6 : Higham23RecursiveMaxNormLe r depth S6 (3 * b) := by
-        convert hS6raw using 1 <;> dsimp [S6] <;> ring
+        convert hS6raw using 1
+        dsimp [S6]
+        ring
       have hS7raw := higham23_recursiveMaxNormLe_sub r depth B.c22 B.c12 hB22 hB12
       have hS7 : Higham23RecursiveMaxNormLe r depth S7 (2 * b) := by
-        convert hS7raw using 1 <;> dsimp [S7] <;> ring
+        convert hS7raw using 1
+        dsimp [S7]
+        ring
       have hS8raw := higham23_recursiveMaxNormLe_sub r depth S6 B.c21 hS6 hB21
       have hS8 : Higham23RecursiveMaxNormLe r depth S8 (4 * b) := by
-        convert hS8raw using 1 <;> dsimp [S8] <;> ring
+        convert hS8raw using 1
+        dsimp [S8]
+        ring
 
       let p1 := higham23FlWinogradStrassenRecursive fp r depth s2 s6
       let p2 := higham23FlWinogradStrassenRecursive fp r depth A.c11 B.c11
@@ -484,7 +500,9 @@ theorem higham23_theorem23_3_winograd_exactMajorant
         hA11 hB11 hA11c hB11c (by simpa [p2, e] using hp2Rec)
       have hp2 : Higham23RecursiveCertificate r depth (A.c11 * B.c11) p2
           (e * a * b) ((m + e) * a * b) := by
-        convert hp2raw using 1 <;> dsimp [m] <;> ring
+        convert hp2raw using 1
+        dsimp [m]
+        ring
 
       have hp3Rec := ih A.c12 B.c21 a b ha hb hA12 hB21
       have hp3raw := higham23_recursiveCertificate_product r depth
@@ -493,7 +511,9 @@ theorem higham23_theorem23_3_winograd_exactMajorant
         hA12 hB21 hA12c hB21c (by simpa [p3, e] using hp3Rec)
       have hp3 : Higham23RecursiveCertificate r depth (A.c12 * B.c21) p3
           (e * a * b) ((m + e) * a * b) := by
-        convert hp3raw using 1 <;> dsimp [m] <;> ring
+        convert hp3raw using 1
+        dsimp [m]
+        ring
 
       have hp4Rec := ih s3 s7 (N1 * a) (N1 * b)
         (mul_nonneg hN10 ha) (mul_nonneg hN10 hb) hs3.norm_le hs7.norm_le
@@ -595,8 +615,9 @@ theorem higham23_theorem23_3_winograd_exactMajorant
           (higham23RecursiveFlAdd fp r depth p2 p3)
           (higham23WinogradC11Error m e u * a * b)
           ((1 + u) * (((m + e) * a * b) + ((m + e) * a * b))) := by
-        convert hc11raw using 1 <;>
-          dsimp [higham23WinogradC11Error, u] <;> ring
+        convert hc11raw using 1
+        dsimp [higham23WinogradC11Error, u]
+        ring
       have hc12raw := higham23_recursiveCertificate_flAdd fp r depth
         (S2 * S6 + A.c11 * B.c11 + S1 * S5) q12 (S4 * B.c22) p6
         (QE * a * b) (QN * a * b) (P6E * a * b) (P6N * a * b)
