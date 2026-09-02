@@ -13,10 +13,7 @@
   "ceilings": {
     "by_file": {
       "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon/Algebra/DixonCompletion.lean": 1,
-      "NumStability/Source/Higham/Chapter09/Theorem14/Actual.lean": 2,
       "NumStability/Source/Higham/Chapter13/DemmelSharpMultiplier.lean": 1,
-      "NumStability/Source/Higham/Chapter23/Theorem02/ErrorBound.lean": 1,
-      "NumStability/Source/Higham/Chapter23/Theorem03/ExactMajorant.lean": 1,
       "NumStability/Upstream/Lindemann/Basic.lean": 6,
       "NumStability/Upstream/Lindemann/MonoidAlgebraCompat.lean": 1,
       "NumStabilityTest/Reorganization/R06/OldOnly/NumStability_Source_Higham_Chapter09_Problems.lean": 2,
@@ -24,17 +21,16 @@
     },
     "by_kind": {
       "deprecation": 5,
-      "intro/binder suggestion": 4,
       "linter.unnecessarySeqFocus": 2,
       "linter.unusedSimpArgs": 5
     },
     "by_role": {
       "reusable": 1,
-      "source": 5,
+      "source": 1,
       "test": 3,
       "upstream": 7
     },
-    "global": 16
+    "global": 12
   },
   "diagnostics": [
     {
@@ -60,50 +56,6 @@
       "status": "accepted_baseline"
     },
     {
-      "anchor_sha256": "1f1bde6e8c5f2b6d8bc0361ce66ac01d0e4a66b4bcc4999921e06d9de3fa7f57",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 6,
-        "line": 2766
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "intro/binder suggestion",
-      "message": "Try this: intro i _ hi",
-      "message_sha256": "c7c84a32d9cd94c444045f29d8f5dc1a4e01a330b6ce483e0fe24c4f6a28384e",
-      "module": "NumStability.Source.Higham.Chapter09.Theorem14.Actual",
-      "occurrence": 0,
-      "owner_batch": "B3",
-      "path": "NumStability/Source/Higham/Chapter09/Theorem14/Actual.lean",
-      "rationale": "Pre-existing binder list that Lean can spell out; rewriting it touches proof text without changing the statement.",
-      "reconsideration_trigger": "Reconsider when the surrounding proof is next edited for any reason.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "910c7372dac4883b04bbe3a3cbb3c91d7dd5ca9ccdde7bf90a9efe8cf1ecf039",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 6,
-        "line": 2759
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "intro/binder suggestion",
-      "message": "Try this: intro i _ hi",
-      "message_sha256": "c7c84a32d9cd94c444045f29d8f5dc1a4e01a330b6ce483e0fe24c4f6a28384e",
-      "module": "NumStability.Source.Higham.Chapter09.Theorem14.Actual",
-      "occurrence": 0,
-      "owner_batch": "B3",
-      "path": "NumStability/Source/Higham/Chapter09/Theorem14/Actual.lean",
-      "rationale": "Pre-existing binder list that Lean can spell out; rewriting it touches proof text without changing the statement.",
-      "reconsideration_trigger": "Reconsider when the surrounding proof is next edited for any reason.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
       "anchor_sha256": "25442d269b6926049655ed37d2331977d50611d9c0147ecd44714cef68f62d8c",
       "disposition": "reviewed_deferred_migration",
       "evidence": {
@@ -121,50 +73,6 @@
       "path": "NumStability/Source/Higham/Chapter13/DemmelSharpMultiplier.lean",
       "rationale": "Matrix.PosSemidef.commute_iff is not a rename: its replacement commute_iff_mul_nonneg is stated for a non-unital star-ordered ring with a continuous functional calculus and concludes 0 <= a * b rather than (A * B).PosSemidef. Migrating the site through the Loewner order the way Mathlib's own deprecated wrapper does fails instance synthesis here (StarRing (Matrix i i R)), so the migration is proof work rather than a mechanical edit and is deferred to its own reviewed batch.",
       "reconsideration_trigger": "Reconsider in the reviewed PosSemidef migration batch, or sooner if upstream supplies the matrix instances the replacement needs.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "de0d46fd345e3d2c1c6fc6f948e990bf3c8ec047266e851755641932a6cc01b9",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 6,
-        "line": 45
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "intro/binder suggestion",
-      "message": "Try this: intro A B a b ha _hb hA hB i j",
-      "message_sha256": "dde34e214629c41e086d72eab26aaeffb17bfcfacce5d13e244d4a61830c4afb",
-      "module": "NumStability.Source.Higham.Chapter23.Theorem02.ErrorBound",
-      "occurrence": 0,
-      "owner_batch": "B3",
-      "path": "NumStability/Source/Higham/Chapter23/Theorem02/ErrorBound.lean",
-      "rationale": "Pre-existing binder list that Lean can spell out; rewriting it touches proof text without changing the statement.",
-      "reconsideration_trigger": "Reconsider when the surrounding proof is next edited for any reason.",
-      "reviewer": "primary-human",
-      "role": "source",
-      "status": "accepted_baseline"
-    },
-    {
-      "anchor_sha256": "de0d46fd345e3d2c1c6fc6f948e990bf3c8ec047266e851755641932a6cc01b9",
-      "disposition": "baseline_debt",
-      "evidence": {
-        "column": 6,
-        "line": 292
-      },
-      "expiry_release": null,
-      "introduced_at": null,
-      "kind": "intro/binder suggestion",
-      "message": "Try this: intro A B a b ha _hb hA hB i j",
-      "message_sha256": "dde34e214629c41e086d72eab26aaeffb17bfcfacce5d13e244d4a61830c4afb",
-      "module": "NumStability.Source.Higham.Chapter23.Theorem03.ExactMajorant",
-      "occurrence": 0,
-      "owner_batch": "B3",
-      "path": "NumStability/Source/Higham/Chapter23/Theorem03/ExactMajorant.lean",
-      "rationale": "Pre-existing binder list that Lean can spell out; rewriting it touches proof text without changing the statement.",
-      "reconsideration_trigger": "Reconsider when the surrounding proof is next edited for any reason.",
       "reviewer": "primary-human",
       "role": "source",
       "status": "accepted_baseline"

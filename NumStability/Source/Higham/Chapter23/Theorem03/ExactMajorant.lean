@@ -289,8 +289,7 @@ theorem higham23_theorem23_3_winograd_exactMajorant
   intro depth
   induction depth with
   | zero =>
-      intro A B a b ha _hb hA hB
-      intro i j
+      intro A B a b ha _hb hA hB i j
       have hcomp := higham23_eq23_10_conventional_componentwise
         fp A B hvalid i j
       have hsum : (∑ k : Fin (2 ^ r), |A i k| * |B k j|) ≤

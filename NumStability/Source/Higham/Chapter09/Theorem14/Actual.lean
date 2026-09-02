@@ -2756,15 +2756,13 @@ theorem higham9_14_det_ne_zero_of_signEquiv {n : ℕ}
   have hD₁ : Matrix.det D₁ ≠ 0 := by
     rw [show D₁ = Matrix.diagonal d₁ by rfl, Matrix.det_diagonal]
     exact Finset.prod_ne_zero_iff.mpr (by
-      intro i _
-      intro hi
+      intro i _ hi
       have := hd₁ i
       simp [hi] at this)
   have hD₂ : Matrix.det D₂ ≠ 0 := by
     rw [show D₂ = Matrix.diagonal d₂ by rfl, Matrix.det_diagonal]
     exact Finset.prod_ne_zero_iff.mpr (by
-      intro i _
-      intro hi
+      intro i _ hi
       have := hd₂ i
       simp [hi] at this)
   rw [hmatrix, Matrix.det_mul, Matrix.det_mul]
