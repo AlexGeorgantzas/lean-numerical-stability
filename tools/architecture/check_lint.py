@@ -173,6 +173,7 @@ REVIEWED_COMPATIBILITY_EXCEPTION = "reviewed_compatibility_exception"
 REVIEWED_DEFERRED_MIGRATION = "reviewed_deferred_migration"
 REVIEWED_UPSTREAM_EXCEPTION = "reviewed_upstream_exception"
 REVIEWED_UNTYPED_PROOF_DEF = "reviewed_untyped_proof_def"
+REVIEWED_DOCUMENTATION_DEFERRED = "reviewed_documentation_deferred"
 DISPOSITIONS = frozenset(
     {
         BASELINE_DEBT,
@@ -180,8 +181,31 @@ DISPOSITIONS = frozenset(
         REVIEWED_DEFERRED_MIGRATION,
         REVIEWED_UPSTREAM_EXCEPTION,
         REVIEWED_UNTYPED_PROOF_DEF,
+        REVIEWED_DOCUMENTATION_DEFERRED,
     }
 )
+# Linter-wide reviewed dispositions: consulted when no (linter, path) entry
+# matches. Same enforcement as everything else; only the explanation changes.
+_DOCUMENTATION_DEFERRED = {
+    "disposition": REVIEWED_DOCUMENTATION_DEFERRED,
+    "rationale": (
+        "Public declaration without a docstring. A docstring is an authored claim "
+        "about what the declaration means in the source argument; generating over "
+        "a thousand of them mechanically would produce unreviewed prose about "
+        "mathematical content at a scale no human will read. Recorded by the "
+        "primary human's delegated decision of 2026-09-01: the docstring is written "
+        "when a human next revises the owning module."
+    ),
+    "expiry_release": "next human revision of the owning module",
+    "reconsideration_trigger": (
+        "Reconsider when the owning declaration or module is next edited by a "
+        "person; a documented declaration then disappears from the census as a "
+        "reviewed reduction."
+    ),
+}
+REVIEWED_DISPOSITIONS_BY_LINTER: dict[str, dict[str, Any]] = {
+    "docBlame": _DOCUMENTATION_DEFERRED,
+}
 # Reviewed dispositions keyed by (linter, path). Applied at record construction
 # so they survive regeneration from a bare log, not only a carry from a previous
 # baseline. Enforced identically to debt: the fingerprint is still frozen and any
@@ -632,6 +656,8 @@ def finding_record(
         "status": ACCEPTED_BASELINE,
     }
     reviewed = REVIEWED_DISPOSITIONS.get((finding.linter, finding.path))
+    if reviewed is None:
+        reviewed = REVIEWED_DISPOSITIONS_BY_LINTER.get(finding.linter)
     if reviewed is not None:
         record.update(reviewed)
     if previous is not None and previous.get("disposition") in DISPOSITIONS - {BASELINE_DEBT}:
