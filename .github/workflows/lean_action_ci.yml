@@ -50,3 +50,8 @@ jobs:
           set -o pipefail
           lake build NumStability NumStabilityTest 2>&1 | tee "$RUNNER_TEMP/lean-build.log"
           python tools/architecture/check_warnings.py --log "$RUNNER_TEMP/lean-build.log" --baseline docs/architecture/warnings.json --check
+      - name: Check the lint baseline
+        run: |
+          PYTHONIOENCODING=utf-8 python tools/architecture/check_lint.py --self-test
+          lake lint 2>&1 | tee "$RUNNER_TEMP/lean-lint.log" || true
+          PYTHONIOENCODING=utf-8 python tools/architecture/check_lint.py --log "$RUNNER_TEMP/lean-lint.log" --baseline docs/architecture/lint.json --check

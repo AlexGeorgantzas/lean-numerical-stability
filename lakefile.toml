@@ -2,6 +2,8 @@ name = "numStability"
 version = "0.1.0"
 defaultTargets = ["NumStability"]
 testDriver = "NumStabilityTest"
+lintDriver = "batteries/runLinter"
+lintDriverArgs = ["NumStability"]
 weakLeanArgs = ["-j", "1"]
 
 [[lean_lib]]
