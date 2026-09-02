@@ -533,7 +533,7 @@ theorem finiteOpNorm2Le_blockLUOneStepU {m r : ℕ}
     cases i with
     | inl s =>
         cases j with
-        | inl t => simp [Afull, Matrix.fromBlocks, blockMatrixFirstSplitA11]
+        | inl t => simp [Afull, Matrix.fromBlocks, blockMatrixFirstSplitA11, blockMatrixFirstSplitFlat_11]
         | inr q =>
             let jq := finProdFinEquiv.symm q
             have hq : finProdFinEquiv jq = q := finProdFinEquiv.apply_symm_apply q

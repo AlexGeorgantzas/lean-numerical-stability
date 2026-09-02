@@ -24132,7 +24132,7 @@ ordinary computed-left budget. -/
 /-- If both the preconditioner and input matrix are exact, the
 computed-left/input budget reduces to the ordinary rounded matrix-product
 budget. -/
-@[simp] theorem flPreconditionRowsWithComputedLeftInputEntryErrorBudget_exact
+theorem flPreconditionRowsWithComputedLeftInputEntryErrorBudget_exact
     (fp : FPModel) {r m n : ℕ} (PiL : Fin r → Fin m → ℝ)
     (A : Fin m → Fin n → ℝ) (i : Fin r) (j : Fin n) :
     flPreconditionRowsWithComputedLeftInputEntryErrorBudget fp

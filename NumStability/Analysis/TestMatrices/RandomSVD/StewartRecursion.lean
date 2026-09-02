@@ -90,7 +90,7 @@ theorem householderAlpha_cast {m n : ℕ} (h : m = n)
   subst n
   simp
 
-@[simp] theorem finCastEquiv_val {m n : ℕ} (h : m = n) (i : Fin m) :
+theorem finCastEquiv_val {m n : ℕ} (h : m = n) (i : Fin m) :
     (Equiv.cast (congrArg Fin h) i).val = i.val := by
   subst n
   rfl

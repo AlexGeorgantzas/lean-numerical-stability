@@ -126,7 +126,7 @@ theorem higham11_2_blockOne_product_ss {n : Nat} (w) (Ls) (d) (Ds)
     higham11_2_blockTwoL (n := n) W Ls 0 0 = 1 := by
   simp only [higham11_2_blockTwoL, Fin.cases_zero]
 
-@[simp] theorem higham11_2_blockTwoL_01 {n : Nat} (W) (Ls) :
+theorem higham11_2_blockTwoL_01 {n : Nat} (W) (Ls) :
     higham11_2_blockTwoL (n := n) W Ls 0 (Fin.succ 0) = 0 := by
   simp only [higham11_2_blockTwoL, Fin.cases_zero, Fin.cases_succ]
 
@@ -134,15 +134,15 @@ theorem higham11_2_blockOne_product_ss {n : Nat} (w) (Ls) (d) (Ds)
     higham11_2_blockTwoL (n := n) W Ls 0 j.succ.succ = 0 := by
   simp only [higham11_2_blockTwoL, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem higham11_2_blockTwoL_10 {n : Nat} (W) (Ls) :
+theorem higham11_2_blockTwoL_10 {n : Nat} (W) (Ls) :
     higham11_2_blockTwoL (n := n) W Ls (Fin.succ 0) 0 = 0 := by
   simp only [higham11_2_blockTwoL, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem higham11_2_blockTwoL_11 {n : Nat} (W) (Ls) :
+theorem higham11_2_blockTwoL_11 {n : Nat} (W) (Ls) :
     higham11_2_blockTwoL (n := n) W Ls (Fin.succ 0) (Fin.succ 0) = 1 := by
   simp only [higham11_2_blockTwoL, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem higham11_2_blockTwoL_1t {n : Nat} (W) (Ls) (j : Fin n) :
+theorem higham11_2_blockTwoL_1t {n : Nat} (W) (Ls) (j : Fin n) :
     higham11_2_blockTwoL (n := n) W Ls (Fin.succ 0) j.succ.succ = 0 := by
   simp only [higham11_2_blockTwoL, Fin.cases_zero, Fin.cases_succ]
 
@@ -150,7 +150,7 @@ theorem higham11_2_blockOne_product_ss {n : Nat} (w) (Ls) (d) (Ds)
     higham11_2_blockTwoL (n := n) W Ls i.succ.succ 0 = W i 0 := by
   simp only [higham11_2_blockTwoL, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem higham11_2_blockTwoL_t1 {n : Nat} (W) (Ls) (i : Fin n) :
+theorem higham11_2_blockTwoL_t1 {n : Nat} (W) (Ls) (i : Fin n) :
     higham11_2_blockTwoL (n := n) W Ls i.succ.succ (Fin.succ 0) = W i 1 := by
   simp only [higham11_2_blockTwoL, Fin.cases_zero, Fin.cases_succ]
 
@@ -316,7 +316,7 @@ theorem higham11_2_blockTwo_absProduct_tp {n : Nat} (W) (Ls) (E) (Ds)
     higham11_2_blockTwoD (n := n) E Ds 0 0 = E 0 0 := by
   simp only [higham11_2_blockTwoD, Fin.cases_zero]
 
-@[simp] theorem higham11_2_blockTwoD_01 {n : Nat} (E) (Ds) :
+theorem higham11_2_blockTwoD_01 {n : Nat} (E) (Ds) :
     higham11_2_blockTwoD (n := n) E Ds 0 (Fin.succ 0) = E 0 1 := by
   simp only [higham11_2_blockTwoD, Fin.cases_zero, Fin.cases_succ]
 
@@ -324,15 +324,15 @@ theorem higham11_2_blockTwo_absProduct_tp {n : Nat} (W) (Ls) (E) (Ds)
     higham11_2_blockTwoD (n := n) E Ds 0 j.succ.succ = 0 := by
   simp only [higham11_2_blockTwoD, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem higham11_2_blockTwoD_10 {n : Nat} (E) (Ds) :
+theorem higham11_2_blockTwoD_10 {n : Nat} (E) (Ds) :
     higham11_2_blockTwoD (n := n) E Ds (Fin.succ 0) 0 = E 1 0 := by
   simp only [higham11_2_blockTwoD, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem higham11_2_blockTwoD_11 {n : Nat} (E) (Ds) :
+theorem higham11_2_blockTwoD_11 {n : Nat} (E) (Ds) :
     higham11_2_blockTwoD (n := n) E Ds (Fin.succ 0) (Fin.succ 0) = E 1 1 := by
   simp only [higham11_2_blockTwoD, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem higham11_2_blockTwoD_1t {n : Nat} (E) (Ds) (j : Fin n) :
+theorem higham11_2_blockTwoD_1t {n : Nat} (E) (Ds) (j : Fin n) :
     higham11_2_blockTwoD (n := n) E Ds (Fin.succ 0) j.succ.succ = 0 := by
   simp only [higham11_2_blockTwoD, Fin.cases_zero, Fin.cases_succ]
 
@@ -340,7 +340,7 @@ theorem higham11_2_blockTwo_absProduct_tp {n : Nat} (W) (Ls) (E) (Ds)
     higham11_2_blockTwoD (n := n) E Ds i.succ.succ 0 = 0 := by
   simp only [higham11_2_blockTwoD, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem higham11_2_blockTwoD_t1 {n : Nat} (E) (Ds) (i : Fin n) :
+theorem higham11_2_blockTwoD_t1 {n : Nat} (E) (Ds) (i : Fin n) :
     higham11_2_blockTwoD (n := n) E Ds i.succ.succ (Fin.succ 0) = 0 := by
   simp only [higham11_2_blockTwoD, Fin.cases_zero, Fin.cases_succ]
 

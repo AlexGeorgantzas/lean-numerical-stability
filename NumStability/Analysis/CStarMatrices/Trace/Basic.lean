@@ -162,7 +162,6 @@ theorem cstarMatrixTrace_apply {ι : Type*} [Fintype ι]
     cstarMatrixTrace M = ∑ i, M i i := by
   rfl
 
-@[simp]
 theorem cstarMatrixTrace_zero {ι : Type*} [Fintype ι] :
     cstarMatrixTrace (0 : CStarMatrix ι ι ℂ) = 0 := by
   simp [cstarMatrixTrace]

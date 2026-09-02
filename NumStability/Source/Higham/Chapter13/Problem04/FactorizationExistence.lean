@@ -123,7 +123,7 @@ noncomputable def higham13_problem13_4_schurStageMatrix {r s : ℕ}
 /-- The lower-right block of
     `higham13_problem13_4_schurStageMatrix` is exactly the supplied Schur
     complement. -/
-@[simp] theorem higham13_problem13_4_schurStageMatrix_lower_right {r s : ℕ}
+theorem higham13_problem13_4_schurStageMatrix_lower_right {r s : ℕ}
     (A : Fin (r + s) → Fin (r + s) → ℝ)
     (S : Matrix (Fin s) (Fin s) ℝ)
     (i j : Fin s) :

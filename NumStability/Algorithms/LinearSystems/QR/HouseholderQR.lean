@@ -956,7 +956,7 @@ noncomputable def embedTrailingOne {m : ℕ}
     panelFromTopAndTrailing a00 top tail i.succ j.succ = tail i j := by
   simp [panelFromTopAndTrailing]
 
-@[simp] theorem panelTopLeft_panelFromTopAndTrailing {m p : ℕ}
+theorem panelTopLeft_panelFromTopAndTrailing {m p : ℕ}
     (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ) :
     panelTopLeft (panelFromTopAndTrailing a00 top tail) = a00 := by
   rfl

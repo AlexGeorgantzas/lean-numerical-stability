@@ -178,21 +178,21 @@ variable (fp : FPModel) {m : ℕ} (s : PivotSchedule m) (A : Fin (m + 2) → Fin
 
 @[simp] theorem flMixedL_consTwo_00 : flMixedL fp (s.consTwo) A 0 0 = 1 := by
   simp only [flMixedL, Fin.cases_zero]
-@[simp] theorem flMixedL_consTwo_01 : flMixedL fp (s.consTwo) A 0 (Fin.succ 0) = 0 := by
+theorem flMixedL_consTwo_01 : flMixedL fp (s.consTwo) A 0 (Fin.succ 0) = 0 := by
   simp only [flMixedL, Fin.cases_zero, Fin.cases_succ]
 @[simp] theorem flMixedL_consTwo_0t (j : Fin m) : flMixedL fp (s.consTwo) A 0 j.succ.succ = 0 := by
   simp only [flMixedL, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem flMixedL_consTwo_10 : flMixedL fp (s.consTwo) A (Fin.succ 0) 0 = 0 := by
+theorem flMixedL_consTwo_10 : flMixedL fp (s.consTwo) A (Fin.succ 0) 0 = 0 := by
   simp only [flMixedL, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem flMixedL_consTwo_11 : flMixedL fp (s.consTwo) A (Fin.succ 0) (Fin.succ 0) = 1 := by
+theorem flMixedL_consTwo_11 : flMixedL fp (s.consTwo) A (Fin.succ 0) (Fin.succ 0) = 1 := by
   simp only [flMixedL, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem flMixedL_consTwo_1t (j : Fin m) :
+theorem flMixedL_consTwo_1t (j : Fin m) :
     flMixedL fp (s.consTwo) A (Fin.succ 0) j.succ.succ = 0 := by
   simp only [flMixedL, Fin.cases_zero, Fin.cases_succ]
 @[simp] theorem flMixedL_consTwo_t0 (i : Fin m) :
     flMixedL fp (s.consTwo) A i.succ.succ 0 = flMixedMult2 m fp A i 0 := by
   simp only [flMixedL, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem flMixedL_consTwo_t1 (i : Fin m) :
+theorem flMixedL_consTwo_t1 (i : Fin m) :
     flMixedL fp (s.consTwo) A i.succ.succ (Fin.succ 0) = flMixedMult2 m fp A i 1 := by
   simp only [flMixedL, Fin.cases_zero, Fin.cases_succ]
 @[simp] theorem flMixedL_consTwo_tt (i j : Fin m) :
@@ -202,23 +202,23 @@ variable (fp : FPModel) {m : ℕ} (s : PivotSchedule m) (A : Fin (m + 2) → Fin
 
 @[simp] theorem flMixedD_consTwo_00 : flMixedD fp (s.consTwo) A 0 0 = A 0 0 := by
   simp only [flMixedD, Fin.cases_zero]
-@[simp] theorem flMixedD_consTwo_01 :
+theorem flMixedD_consTwo_01 :
     flMixedD fp (s.consTwo) A 0 (Fin.succ 0) = A 0 (oneIdx m) := by
   simp only [flMixedD, Fin.cases_zero, Fin.cases_succ]
 @[simp] theorem flMixedD_consTwo_0t (j : Fin m) : flMixedD fp (s.consTwo) A 0 j.succ.succ = 0 := by
   simp only [flMixedD, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem flMixedD_consTwo_10 :
+theorem flMixedD_consTwo_10 :
     flMixedD fp (s.consTwo) A (Fin.succ 0) 0 = A (oneIdx m) 0 := by
   simp only [flMixedD, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem flMixedD_consTwo_11 :
+theorem flMixedD_consTwo_11 :
     flMixedD fp (s.consTwo) A (Fin.succ 0) (Fin.succ 0) = A (oneIdx m) (oneIdx m) := by
   simp only [flMixedD, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem flMixedD_consTwo_1t (j : Fin m) :
+theorem flMixedD_consTwo_1t (j : Fin m) :
     flMixedD fp (s.consTwo) A (Fin.succ 0) j.succ.succ = 0 := by
   simp only [flMixedD, Fin.cases_zero, Fin.cases_succ]
 @[simp] theorem flMixedD_consTwo_t0 (i : Fin m) : flMixedD fp (s.consTwo) A i.succ.succ 0 = 0 := by
   simp only [flMixedD, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem flMixedD_consTwo_t1 (i : Fin m) :
+theorem flMixedD_consTwo_t1 (i : Fin m) :
     flMixedD fp (s.consTwo) A i.succ.succ (Fin.succ 0) = 0 := by
   simp only [flMixedD, Fin.cases_zero, Fin.cases_succ]
 @[simp] theorem flMixedD_consTwo_tt (i j : Fin m) :
@@ -455,20 +455,20 @@ variable (m : ℕ) (fp : FPModel) (A : Fin (m + 2) → Fin (m + 2) → ℝ) (cSo
 
 @[simp] theorem SB2_00 : flBlockLDLTTwoByTwoStageBound m fp A cSolve cStage Bs 0 0 = 0 := by
   simp only [flBlockLDLTTwoByTwoStageBound, Fin.cases_zero]
-@[simp] theorem SB2_01 :
+theorem SB2_01 :
     flBlockLDLTTwoByTwoStageBound m fp A cSolve cStage Bs 0 (Fin.succ 0) = 0 := by
   simp only [flBlockLDLTTwoByTwoStageBound, Fin.cases_zero, Fin.cases_succ]
 @[simp] theorem SB2_0t (j : Fin m) :
     flBlockLDLTTwoByTwoStageBound m fp A cSolve cStage Bs 0 j.succ.succ
       = cSolve * fp.u * pivotRowPathAbs m fp A 0 j := by
   simp only [flBlockLDLTTwoByTwoStageBound, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem SB2_10 :
+theorem SB2_10 :
     flBlockLDLTTwoByTwoStageBound m fp A cSolve cStage Bs (Fin.succ 0) 0 = 0 := by
   simp only [flBlockLDLTTwoByTwoStageBound, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem SB2_11 :
+theorem SB2_11 :
     flBlockLDLTTwoByTwoStageBound m fp A cSolve cStage Bs (Fin.succ 0) (Fin.succ 0) = 0 := by
   simp only [flBlockLDLTTwoByTwoStageBound, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem SB2_1t (j : Fin m) :
+theorem SB2_1t (j : Fin m) :
     flBlockLDLTTwoByTwoStageBound m fp A cSolve cStage Bs (Fin.succ 0) j.succ.succ
       = cSolve * fp.u * pivotRowPathAbs m fp A 1 j := by
   simp only [flBlockLDLTTwoByTwoStageBound, Fin.cases_zero, Fin.cases_succ]
@@ -476,7 +476,7 @@ variable (m : ℕ) (fp : FPModel) (A : Fin (m + 2) → Fin (m + 2) → ℝ) (cSo
     flBlockLDLTTwoByTwoStageBound m fp A cSolve cStage Bs i.succ.succ 0
       = cSolve * fp.u * pivotColPathAbs m fp A i 0 := by
   simp only [flBlockLDLTTwoByTwoStageBound, Fin.cases_zero, Fin.cases_succ]
-@[simp] theorem SB2_t1 (i : Fin m) :
+theorem SB2_t1 (i : Fin m) :
     flBlockLDLTTwoByTwoStageBound m fp A cSolve cStage Bs i.succ.succ (Fin.succ 0)
       = cSolve * fp.u * pivotColPathAbs m fp A i 1 := by
   simp only [flBlockLDLTTwoByTwoStageBound, Fin.cases_zero, Fin.cases_succ]

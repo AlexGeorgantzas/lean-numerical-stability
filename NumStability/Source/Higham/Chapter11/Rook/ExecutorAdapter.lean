@@ -57,7 +57,7 @@ def mixedSchedulePartner : {n : Nat} -> PivotSchedule n -> Fin n -> Fin n
     (s : PivotSchedule n) :
     mixedSchedulePartner s.consTwo 0 = Fin.succ 0 := rfl
 
-@[simp] theorem mixedSchedulePartner_consTwo_one {n : Nat}
+theorem mixedSchedulePartner_consTwo_one {n : Nat}
     (s : PivotSchedule n) :
     mixedSchedulePartner s.consTwo (Fin.succ 0) = 0 := rfl
 

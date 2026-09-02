@@ -14718,13 +14718,13 @@ noncomputable def rectRightGramOrderedHeadTailColumnEquiv {n k : ℕ}
       (rectRightGramOrderedTopEmbedding hk))ᶜ).card) ≃ Fin n :=
   finSumFinEquiv.symm.trans (rectRightGramOrderedHeadTailColumnSumEquiv hk)
 
-@[simp] theorem rectRightGramOrderedHeadTailColumnEquiv_head {n k : ℕ}
+theorem rectRightGramOrderedHeadTailColumnEquiv_head {n k : ℕ}
     (hk : k ≤ n) (a : Fin k) :
     rectRightGramOrderedHeadTailColumnEquiv hk (finSumFinEquiv (Sum.inl a)) =
       rectRightGramOrderedTopEmbedding hk a := by
   simp [rectRightGramOrderedHeadTailColumnEquiv]
 
-@[simp] theorem rectRightGramOrderedHeadTailColumnEquiv_tail {n k : ℕ}
+theorem rectRightGramOrderedHeadTailColumnEquiv_tail {n k : ℕ}
     (hk : k ≤ n) (c : rectRightGramOrderedTailIndex hk) :
     rectRightGramOrderedHeadTailColumnEquiv hk (finSumFinEquiv (Sum.inr c)) =
       (((rectRightGramSelectedIndexSet

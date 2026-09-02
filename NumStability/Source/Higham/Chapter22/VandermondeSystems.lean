@@ -836,7 +836,6 @@ noncomputable def higham22NewtonPolynomialNest : List (ℂ × ℂ) → Polynomia
         (Polynomial.X - Polynomial.C alpha) * higham22NewtonPolynomialNest rest
 
 /-- Equation (22.10): the terminal nested polynomial is constant. -/
-@[simp]
 theorem higham22_eq22_10_polynomial (alpha c : ℂ) :
     higham22NewtonPolynomialNest [(alpha, c)] = Polynomial.C c := by
   simp [higham22NewtonPolynomialNest]

@@ -261,7 +261,7 @@ noncomputable def blockMatrixFirstSplitFlat {m r : ℕ}
         let jt := finProdFinEquiv.symm qt
         A (Fin.succ is.1) (Fin.succ jt.1) is.2 jt.2
 
-@[simp] theorem blockMatrixFirstSplitFlat_11 {m r : ℕ}
+theorem blockMatrixFirstSplitFlat_11 {m r : ℕ}
     (A : Fin (m + 1) → Fin (m + 1) → (Fin r → Fin r → ℝ))
     (s t : Fin r) :
     blockMatrixFirstSplitFlat A
@@ -270,7 +270,7 @@ noncomputable def blockMatrixFirstSplitFlat {m r : ℕ}
       A 0 0 s t := by
   simp [blockMatrixFirstSplitFlat]
 
-@[simp] theorem blockMatrixFirstSplitFlat_12 {m r : ℕ}
+theorem blockMatrixFirstSplitFlat_12 {m r : ℕ}
     (A : Fin (m + 1) → Fin (m + 1) → (Fin r → Fin r → ℝ))
     (s : Fin r) (j : Fin m) (t : Fin r) :
     blockMatrixFirstSplitFlat A
@@ -279,7 +279,7 @@ noncomputable def blockMatrixFirstSplitFlat {m r : ℕ}
       A 0 (Fin.succ j) s t := by
   simp [blockMatrixFirstSplitFlat]
 
-@[simp] theorem blockMatrixFirstSplitFlat_21 {m r : ℕ}
+theorem blockMatrixFirstSplitFlat_21 {m r : ℕ}
     (A : Fin (m + 1) → Fin (m + 1) → (Fin r → Fin r → ℝ))
     (i : Fin m) (s : Fin r) (t : Fin r) :
     blockMatrixFirstSplitFlat A
@@ -288,7 +288,7 @@ noncomputable def blockMatrixFirstSplitFlat {m r : ℕ}
       A (Fin.succ i) 0 s t := by
   simp [blockMatrixFirstSplitFlat]
 
-@[simp] theorem blockMatrixFirstSplitFlat_22 {m r : ℕ}
+theorem blockMatrixFirstSplitFlat_22 {m r : ℕ}
     (A : Fin (m + 1) → Fin (m + 1) → (Fin r → Fin r → ℝ))
     (i j : Fin m) (s t : Fin r) :
     blockMatrixFirstSplitFlat A
@@ -536,7 +536,7 @@ noncomputable def blockMatrixFirstSplitToFlatFinEquiv {m r : ℕ} :
     Fin (r + m * r) ≃ Fin ((m + 1) * r) :=
   blockMatrixFirstSplitToFlatProductEquiv.trans finProdFinEquiv
 
-@[simp] theorem blockMatrixFirstSplitToFlatFinEquiv_inl {m r : ℕ}
+theorem blockMatrixFirstSplitToFlatFinEquiv_inl {m r : ℕ}
     (s : Fin r) :
     (blockMatrixFirstSplitToFlatFinEquiv
         (finSumFinEquiv (Sum.inl s : Fin r ⊕ Fin (m * r))) :
@@ -545,7 +545,7 @@ noncomputable def blockMatrixFirstSplitToFlatFinEquiv {m r : ℕ} :
   dsimp [blockMatrixFirstSplitToFlatFinEquiv, blockMatrixFirstSplitToFlatProductEquiv]
   simp
 
-@[simp] theorem blockMatrixFirstSplitToFlatFinEquiv_inr {m r : ℕ}
+theorem blockMatrixFirstSplitToFlatFinEquiv_inr {m r : ℕ}
     (j : Fin m) (t : Fin r) :
     (blockMatrixFirstSplitToFlatFinEquiv
         (finSumFinEquiv

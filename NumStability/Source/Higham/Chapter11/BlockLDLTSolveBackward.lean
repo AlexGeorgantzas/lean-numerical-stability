@@ -275,7 +275,7 @@ noncomputable def middleVecConsTwo {n : ℕ} (xHead : Fin 2 → ℝ) (xtail : Fi
     middleBlockDiagConsTwo E Dtail 0 0 = E 0 0 := by
   simp only [middleBlockDiagConsTwo, Fin.cases_zero]
 
-@[simp] theorem middleBlockDiagConsTwo_01 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+theorem middleBlockDiagConsTwo_01 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
     (Dtail : Fin n → Fin n → ℝ) :
     middleBlockDiagConsTwo E Dtail 0 (Fin.succ 0) = E 0 1 := by
   simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
@@ -285,17 +285,17 @@ noncomputable def middleVecConsTwo {n : ℕ} (xHead : Fin 2 → ℝ) (xtail : Fi
     middleBlockDiagConsTwo E Dtail 0 j.succ.succ = 0 := by
   simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem middleBlockDiagConsTwo_10 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+theorem middleBlockDiagConsTwo_10 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
     (Dtail : Fin n → Fin n → ℝ) :
     middleBlockDiagConsTwo E Dtail (Fin.succ 0) 0 = E 1 0 := by
   simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem middleBlockDiagConsTwo_11 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+theorem middleBlockDiagConsTwo_11 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
     (Dtail : Fin n → Fin n → ℝ) :
     middleBlockDiagConsTwo E Dtail (Fin.succ 0) (Fin.succ 0) = E 1 1 := by
   simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem middleBlockDiagConsTwo_1t {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+theorem middleBlockDiagConsTwo_1t {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
     (Dtail : Fin n → Fin n → ℝ) (j : Fin n) :
     middleBlockDiagConsTwo E Dtail (Fin.succ 0) j.succ.succ = 0 := by
   simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
@@ -305,7 +305,7 @@ noncomputable def middleVecConsTwo {n : ℕ} (xHead : Fin 2 → ℝ) (xtail : Fi
     middleBlockDiagConsTwo E Dtail i.succ.succ 0 = 0 := by
   simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]
 
-@[simp] theorem middleBlockDiagConsTwo_t1 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
+theorem middleBlockDiagConsTwo_t1 {n : ℕ} (E : Fin 2 → Fin 2 → ℝ)
     (Dtail : Fin n → Fin n → ℝ) (i : Fin n) :
     middleBlockDiagConsTwo E Dtail i.succ.succ (Fin.succ 0) = 0 := by
   simp only [middleBlockDiagConsTwo, Fin.cases_zero, Fin.cases_succ]

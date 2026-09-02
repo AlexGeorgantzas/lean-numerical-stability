@@ -2669,13 +2669,13 @@ theorem paddedPerturbedInput_eta {m n : Nat}
       B := by
   exact mgsPaddedPerturbedInput_eta A B
 
-@[simp] theorem paddedRowFromFin_toFin_inl {m n : Nat}
+theorem paddedRowFromFin_toFin_inl {m n : Nat}
     (i : Fin n) :
     paddedRowFromFin (m := m) (n := n)
       (paddedRowToFin (Sum.inl i)) = Sum.inl i := by
   exact mgsPaddedRowFromFin_toFin_inl i
 
-@[simp] theorem paddedRowFromFin_toFin_inr {m n : Nat}
+theorem paddedRowFromFin_toFin_inr {m n : Nat}
     (i : Fin m) :
     paddedRowFromFin (m := m) (n := n)
       (paddedRowToFin (Sum.inr i)) = Sum.inr i := by

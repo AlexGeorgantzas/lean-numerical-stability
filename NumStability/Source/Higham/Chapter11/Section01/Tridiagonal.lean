@@ -296,7 +296,7 @@ abbrev higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex (n : ℕ)
       i.val + 2 :=
   tridiagonalTwoByTwoTrailingSubproblemIndex_val n i
 
-@[simp] theorem higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex_zero
+theorem higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex_zero
     (n : ℕ) :
     higham11_7_tridiagonalTwoByTwoTrailingSubproblemIndex n 0 =
       higham11_7_tridiagonalTwoByTwoFirstTrailingIndex n :=
@@ -1808,7 +1808,7 @@ abbrev higham11_7_tridiagonalOneByOneFirstTrailingIndex (n : ℕ) :
     Fin (n + 2) :=
   ⟨1, by omega⟩
 
-@[simp] theorem higham11_7_tridiagonalOneByOneFirstTrailingIndex_val (n : ℕ) :
+theorem higham11_7_tridiagonalOneByOneFirstTrailingIndex_val (n : ℕ) :
     (higham11_7_tridiagonalOneByOneFirstTrailingIndex n).val = 1 :=
   rfl
 

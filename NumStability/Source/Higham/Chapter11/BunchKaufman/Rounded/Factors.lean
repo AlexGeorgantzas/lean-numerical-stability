@@ -83,7 +83,7 @@ def higham11_2_liftPermTwo {n : Nat} (e : Equiv.Perm (Fin n)) :
 @[simp] theorem higham11_2_liftPermTwo_zero {n : Nat}
     (e : Equiv.Perm (Fin n)) : higham11_2_liftPermTwo e 0 = 0 := rfl
 
-@[simp] theorem higham11_2_liftPermTwo_one {n : Nat}
+theorem higham11_2_liftPermTwo_one {n : Nat}
     (e : Equiv.Perm (Fin n)) :
     higham11_2_liftPermTwo e (Fin.succ 0) = Fin.succ 0 := rfl
 
