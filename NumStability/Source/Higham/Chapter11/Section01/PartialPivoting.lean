@@ -10383,7 +10383,7 @@ theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_ze
 
 /-- Source-norm path product bound from the named off-branch-zero predicate and
 scalar/accepted-`2 × 2` local source-six/growth caps. -/
-def higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A :
+theorem higham11_4_maxEntryNorm_absLDLTProduct_le_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A :
     (k : ℕ) →
     (step : Fin k → higham11_4_BunchKaufmanActiveBranch) →
     (hk : 0 < k) →
@@ -10472,7 +10472,7 @@ theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_
 
 /-- Source-norm scalar product certificate from the named off-branch-zero
 predicate and scalar/accepted-`2 × 2` local source-six/growth caps. -/
-def higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A :
+theorem higham11_4_bunchKaufmanMaxEntryProductBound_of_path_offbranch_D_entries_zero_source_six_growth_bounds_maxEntryNorm_A :
     (k : ℕ) →
     (step : Fin k → higham11_4_BunchKaufmanActiveBranch) →
     (hk : 0 < k) →

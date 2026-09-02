@@ -155,7 +155,7 @@ structure Higham24FFTMatrixPerturbation {n : ℕ}
 
 /-- A concrete nonvacuity witness for (24.6): exact execution is the zero
 matrix perturbation whenever the advertised budget is nonnegative. -/
-noncomputable def higham24_eq24_6_exact_witness {n : ℕ}
+theorem higham24_eq24_6_exact_witness {n : ℕ}
     (F : Matrix (Fin n) (Fin n) ℂ) (bound : ℝ) (hbound : 0 ≤ bound) :
     Higham24FFTMatrixPerturbation F F 0 norm bound where
   representation := by simp

@@ -244,7 +244,7 @@ theorem pivotedStoredQR_QdR_runtime_bound
 No field is imported as a row-policy, component budget, accumulated-error
 premise, or desired backward conclusion.  All three bounds are derived from
 the local runtime scales above. -/
-noncomputable def pivotedStoredQR_split3B_numericalContract_runtime
+theorem pivotedStoredQR_split3B_numericalContract_runtime
     (fp : FPModel) {m n : Nat} (hn : 0 < n) (hmn : n <= m)
     (A : Fin m -> Fin n -> Real) (b : Fin m -> Real)
     (hgamma : gammaValid fp n) :

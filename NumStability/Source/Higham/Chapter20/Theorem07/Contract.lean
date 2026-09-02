@@ -323,7 +323,7 @@ structure PivotedStoredQRCoxHighamRowPolicy (fp : FPModel) {m n : ℕ}
             (pivotedStoredQRTopR fp hmn A) i j)) ≤
       |pivotedStoredQRSigma fp hmn A k|
 /-- Forget the legacy exact-tail field. -/
-def PivotedStoredQRCoxHighamRowPolicy.toForward
+theorem PivotedStoredQRCoxHighamRowPolicy.toForward
     (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
     (A : Fin m → Fin n → ℝ)
     (policy : PivotedStoredQRCoxHighamRowPolicy fp hn hmn A) :

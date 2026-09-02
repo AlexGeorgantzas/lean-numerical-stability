@@ -486,7 +486,7 @@ theorem spijker_crossing_variation
 
 /-- Both analytic ingredients in Spijker's projection proof, with no
 external proposition or target-shaped certificate. -/
-def spijkerPlanarAnalyticBridge : SpijkerPlanarAnalyticBridge where
+theorem spijkerPlanarAnalyticBridge : SpijkerPlanarAnalyticBridge where
   projection_average := spijker_projection_average_interval
   crossing_variation := spijker_crossing_variation
 

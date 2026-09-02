@@ -22,7 +22,7 @@ namespace Theorem20_8
 
 /-- The source null-intersection certificate supplied by stacked full column
 rank. -/
-def sourceNullIntersection {m n p : ℕ}
+theorem sourceNullIntersection {m n p : ℕ}
     {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
     (hStack : LSEStackedFullColumnRank A B) :
     LSENullIntersectionTrivial A B :=

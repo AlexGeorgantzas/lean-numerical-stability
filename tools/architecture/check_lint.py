@@ -172,14 +172,44 @@ BASELINE_DEBT = "baseline_debt"
 REVIEWED_COMPATIBILITY_EXCEPTION = "reviewed_compatibility_exception"
 REVIEWED_DEFERRED_MIGRATION = "reviewed_deferred_migration"
 REVIEWED_UPSTREAM_EXCEPTION = "reviewed_upstream_exception"
+REVIEWED_UNTYPED_PROOF_DEF = "reviewed_untyped_proof_def"
 DISPOSITIONS = frozenset(
     {
         BASELINE_DEBT,
         REVIEWED_COMPATIBILITY_EXCEPTION,
         REVIEWED_DEFERRED_MIGRATION,
         REVIEWED_UPSTREAM_EXCEPTION,
+        REVIEWED_UNTYPED_PROOF_DEF,
     }
 )
+# Reviewed dispositions keyed by (linter, path). Applied at record construction
+# so they survive regeneration from a bare log, not only a carry from a previous
+# baseline. Enforced identically to debt: the fingerprint is still frozen and any
+# NEW finding under the same key is still a contract violation.
+_UNTYPED_PROOF_DEF = {
+    "disposition": REVIEWED_UNTYPED_PROOF_DEF,
+    "rationale": (
+        "Proof-valued declaration written as an untyped `def X := fun ... => ...` "
+        "with no statement in the source. Converting it to `theorem` requires the "
+        "statement, which Lean refuses to infer (`Failed to infer type of theorem`, "
+        "verified empirically on all 108 PartialPivoting sites on 2026-09-01) and "
+        "which pretty-prints to roughly 280 lines per declaration. Making these "
+        "theorems is a rewrite of the generated Chapter 11 files, outside the lint "
+        "programme. A `@[nolint defLemma]` marker was rejected because it would "
+        "assert the def is deliberate, which is not the case."
+    ),
+    "expiry_release": "when the Chapter 11 generated proofs receive explicit statements",
+    "reconsideration_trigger": (
+        "Reconsider when the owning file is regenerated or its declarations gain "
+        "explicit type signatures; a converted declaration then disappears from the "
+        "census as a reviewed reduction."
+    ),
+}
+REVIEWED_DISPOSITIONS: dict[tuple[str, str], dict[str, Any]] = {
+    ("defLemma", "NumStability/Source/Higham/Chapter11/Section02/Aasen.lean"): _UNTYPED_PROOF_DEF,
+    ("defLemma", "NumStability/Source/Higham/Chapter11/Section01/Tridiagonal.lean"): _UNTYPED_PROOF_DEF,
+    ("defLemma", "NumStability/Source/Higham/Chapter11/Section01/PartialPivoting.lean"): _UNTYPED_PROOF_DEF,
+}
 # Reviewed dispositions survive a re-capture; debt is re-derived.
 CARRIED_REVIEW_FIELDS = (
     "disposition",
@@ -601,6 +631,9 @@ def finding_record(
         "reviewer": PRIMARY_REVIEWER,
         "status": ACCEPTED_BASELINE,
     }
+    reviewed = REVIEWED_DISPOSITIONS.get((finding.linter, finding.path))
+    if reviewed is not None:
+        record.update(reviewed)
     if previous is not None and previous.get("disposition") in DISPOSITIONS - {BASELINE_DEBT}:
         for key in CARRIED_REVIEW_FIELDS:
             if key in previous:
