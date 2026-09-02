@@ -209,7 +209,7 @@ lemma finiteMaxEigenvalue_ge_diag {n : ℕ} (hn : 0 < n)
     at `N`'s bottom eigenvector and pass through the congruence. -/
 lemma diag_congruence_minEigenvalue_ge {n : ℕ} (hn : 0 < n)
     (M : Fin n → Fin n → ℝ) (hSymM : IsSymmetricFiniteMatrix M)
-    (e : Fin n → ℝ) (m : ℝ) (hm : 0 ≤ m)
+    (e : Fin n → ℝ) (m : ℝ) (_hm : 0 ≤ m)
     (hme : ∀ i : Fin n, m ≤ e i ^ 2)
     (hSymN : IsSymmetricFiniteMatrix
       (fun i j : Fin n => e i * M i j * e j))

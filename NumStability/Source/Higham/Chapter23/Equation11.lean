@@ -140,7 +140,7 @@ theorem higham23_millerExactEvaluate_correct {h t : ℕ}
 
 private theorem higham23_miller_linearForm_error
     (fp : FPModel) (n : ℕ) (hvalid : gammaValid fp n)
-    (c x : Fin n → ℝ) (a : ℝ) (ha : 0 ≤ a)
+    (c x : Fin n → ℝ) (a : ℝ) (_ha : 0 ≤ a)
     (hx : ∀ q, |x q| ≤ a) :
     |(∑ q : Fin n, c q * x q) - fl_dotProduct fp n c x| ≤
       gamma fp n * (∑ q : Fin n, |c q|) * a := by
@@ -162,7 +162,7 @@ private theorem higham23_miller_linearForm_error
     _ = _ := by ring
 
 private theorem higham23_miller_linearForm_exact_abs
-    (n : ℕ) (c x : Fin n → ℝ) (a : ℝ) (ha : 0 ≤ a)
+    (n : ℕ) (c x : Fin n → ℝ) (a : ℝ) (_ha : 0 ≤ a)
     (hx : ∀ q, |x q| ≤ a) :
     |∑ q : Fin n, c q * x q| ≤ (∑ q : Fin n, |c q|) * a := by
   calc
@@ -212,7 +212,7 @@ private theorem higham23_miller_product_error
     (hg : 0 ≤ g) (hwx : 0 ≤ wx) (hwy : 0 ≤ wy)
     (ha : 0 ≤ a) (hb : 0 ≤ b)
     (x xhat y yhat : ℝ)
-    (hx : |x| ≤ wx * a) (hy : |y| ≤ wy * b)
+    (_hx : |x| ≤ wx * a) (hy : |y| ≤ wy * b)
     (hex : |x - xhat| ≤ g * wx * a)
     (hey : |y - yhat| ≤ g * wy * b)
     (hxhat : |xhat| ≤ (1 + g) * wx * a)
@@ -246,7 +246,7 @@ private theorem higham23_miller_product_error
         |x * y - xhat * yhat| + |xhat * yhat - fp.fl_mul xhat yhat| := by
       have h := abs_add_le (x * y - xhat * yhat)
         (xhat * yhat - fp.fl_mul xhat yhat)
-      convert h using 1 <;> ring
+      convert h using 1; ring
     _ ≤ _ := by
       rw [higham23MillerProductCore]
       nlinarith
@@ -461,7 +461,7 @@ theorem higham23_miller_literalCircuit_exact_error
       have h := abs_add_le
         (higham23MillerExactEvaluate alg A B i j - mid)
         (mid - higham23MillerFlEvaluate fp alg A B i j)
-      convert h using 1 <;> ring
+      convert h using 1; ring
     _ ≤ higham23MillerProductCore g fp.u * higham23MillerWeight alg i j * a * b +
       gt * higham23MillerProductNormCore g fp.u *
         higham23MillerWeight alg i j * a * b := add_le_add hProducts hDot
@@ -602,7 +602,7 @@ theorem higham23_eq23_11_miller_firstOrder
     unfold higham23MillerRemainder
     ring
   rw [hsplit] at hExact
-  convert hExact using 1 <;> ring
+  convert hExact using 1; ring
 
 theorem higham23_miller_weight_nonneg {h t : ℕ}
     (alg : Higham23BilinearAlgorithm h t) (i j : Fin h) :

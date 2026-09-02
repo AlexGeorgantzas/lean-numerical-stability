@@ -61,7 +61,7 @@ theorem transposeData_matrix {n : ℕ} (T : TridiagData n)
         apply Fin.ext
         exact hsuper
       · have hdiag' : i.val ≠ j.val := Ne.symm hdiag
-        simp [tridiag_to_matrix, transposeData, hdiag, hdiag', hsub,
+        simp [tridiag_to_matrix, hdiag, hdiag', hsub,
           hsuper]
 
 /-- Totalized accessors let the scalar recurrences be ordinary structurally
@@ -143,8 +143,8 @@ def problem15_6_yBar {n : ℕ} (T : TridiagData n) : Fin n → ℝ :=
 /-- Its first-column residual.  Dividing by this scalar changes the
 homogeneous row equations into `y A = e₀ᵀ`. -/
 def problem15_6_yResidual {n : ℕ} (T : TridiagData n) : ℝ :=
-  if hn : n = 0 then 1
-  else if hn1 : n = 1 then diagAt T 0
+  if _hn : n = 0 then 1
+  else if _hn1 : n = 1 then diagAt T 0
   else diagAt T 0 * backwardRowNat T (n - 1) +
     subAt T 1 * backwardRowNat T (n - 2)
 
@@ -162,8 +162,8 @@ def problem15_6_qBar {n : ℕ} (T : TridiagData n) : Fin n → ℝ :=
 
 /-- Last-column residual used to normalize the last inverse row. -/
 def problem15_6_qResidual {n : ℕ} (T : TridiagData n) : ℝ :=
-  if hn : n = 0 then 1
-  else if hn1 : n = 1 then diagAt T 0
+  if _hn : n = 0 then 1
+  else if _hn1 : n = 1 then diagAt T 0
   else superAt T (n - 2) * forwardRowNat T (n - 2) +
     diagAt T (n - 1) * forwardRowNat T (n - 1)
 

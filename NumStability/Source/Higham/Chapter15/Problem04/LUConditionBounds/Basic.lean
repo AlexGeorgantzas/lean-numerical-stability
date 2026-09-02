@@ -188,7 +188,7 @@ theorem ch15p4_Linv_row_partial_sum {n : ℕ} (L L_inv : Fin n → Fin n → ℝ
     (hL_diag : ∀ i : Fin n, L i i = 1)
     (hL_bound : ∀ i j : Fin n, j.val < i.val → |L i j| ≤ 1)
     (hLInv : IsLeftInverse n L L_inv) :
-    ∀ (i : Fin n) (d : ℕ) (jv : ℕ) (hjv : jv < n),
+    ∀ (i : Fin n) (d : ℕ) (jv : ℕ) (_hjv : jv < n),
       i.val - jv = d → jv ≤ i.val →
       ∑ k ∈ Finset.univ.filter (fun k : Fin n => jv ≤ k.val ∧ k.val ≤ i.val),
         |L_inv i k| ≤ 2 ^ d := by

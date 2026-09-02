@@ -565,7 +565,7 @@ theorem bordered_perturbation_floor_normwise (m : ℕ)
     (Gint : Fin m → Fin m → ℝ) (gb : Fin m → ℝ)
     (Bint : Fin m → Fin m → ℝ) (bb : Fin m → ℝ)
     (a : Fin m → ℝ) (ajj t : ℝ) (y : Fin m → ℝ) (ε lam : ℝ)
-    (hε0 : 0 ≤ ε) (ht0 : 0 ≤ t)
+    (_hε0 : 0 ≤ ε) (_ht0 : 0 ≤ t)
     (hgram : (∑ i : Fin m, ∑ l : Fin m, y i * Gint i l * y l) +
       2 * (∑ i : Fin m, y i * gb i) + t = 0)
     (hint : |∑ i : Fin m, ∑ l : Fin m,
@@ -612,8 +612,8 @@ theorem bordered_perturbation_floor_normwise (m : ℕ)
     normwise certificate `ε` (which carries the dimension), replacing
     the componentwise route's `2εm` weight. -/
 theorem normwise_stage_endgame (ajj t W lam ε γ s : ℝ)
-    (hAj : 0 < ajj) (ht0 : 0 ≤ t) (hW0 : 0 ≤ W)
-    (hγ0 : 0 ≤ γ) (hγ1 : γ < 1) (hε0 : 0 ≤ ε) (hε1 : ε < 1)
+    (hAj : 0 < ajj) (_ht0 : 0 ≤ t) (hW0 : 0 ≤ W)
+    (hγ0 : 0 ≤ γ) (_hγ1 : γ < 1) (hε0 : 0 ≤ ε) (hε1 : ε < 1)
     (hfloor : lam * ajj + (lam - 2 * ε) * W - ε * t ≤ ajj - t)
     (hlow : ajj - t - γ * (ajj + t) ≤ s)
     (hs : s ≤ 0)

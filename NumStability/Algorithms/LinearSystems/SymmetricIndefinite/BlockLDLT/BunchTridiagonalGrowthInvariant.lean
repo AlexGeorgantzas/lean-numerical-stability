@@ -97,7 +97,7 @@ and whose 1×1 pivot is accepted at the fixed scale `σ = M₀`, the reduced cor
 satisfies `|flSchurCompl A 0 0| ≤ K·M₀`. -/
 theorem oneByOne_corner_growth (fp : FPModel) (hval : gammaValid fp 3) {n : ℕ}
     (A : Fin (n + 2) → Fin (n + 2) → ℝ) (hA : IsSymTridiagonal (n + 2) A)
-    (M0 : ℝ) (hM0 : 0 < M0)
+    (M0 : ℝ) (_hM0 : 0 < M0)
     (hfed : |A ((0 : Fin (n + 1)).succ) ((0 : Fin (n + 1)).succ)| ≤ M0)
     (hchoice : BunchTridiagonalPivotChoice M0 (A 0 0)
       (A ((0 : Fin (n + 1)).succ) 0) PivotSize.one)
@@ -1205,7 +1205,7 @@ theorem growth_offcorner (fp : FPModel) (M0 τmax : ℝ) :
         intro i j hne
         refine le_trans (flSchurCompl2_offcorner_bound fp A hA i j hne) ?_
         have : |A i.succ.succ j.succ.succ| ≤ B :=
-          hoff i.succ.succ j.succ.succ (Or.inl (by simp only [Fin.val_succ, Fin.val_zero]; omega))
+          hoff i.succ.succ j.succ.succ (Or.inl (by simp only [Fin.val_succ]; omega))
         exact mul_le_mul_of_nonneg_left this hupos
       have hbud' : (1 + fp.u) ^ stages s * ((1 + fp.u) * B) ≤ τmax := by
         have : (1 + fp.u) ^ stages s * ((1 + fp.u) * B)

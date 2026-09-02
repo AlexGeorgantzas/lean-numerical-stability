@@ -599,7 +599,7 @@ def Higham21MGSCorrectedMGSRepairCompatibility
     {m n : Nat} {A : Fin m -> Fin n -> Real}
     {Qhat : Fin n -> Fin m -> Real} {Rhat : Fin m -> Fin m -> Real}
     {c1 c2 c3 u normA kappaA higherOrder : Real}
-    (hMGS : ModifiedGramSchmidtBackwardError n m
+    (_hMGS : ModifiedGramSchmidtBackwardError n m
       (finiteTranspose A) Qhat Rhat
       c1 c2 c3 u normA kappaA higherOrder)
     (y : Fin m -> Real) (xhat : Fin n -> Real) : Prop :=

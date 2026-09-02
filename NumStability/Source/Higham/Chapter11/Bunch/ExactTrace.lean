@@ -215,7 +215,7 @@ noncomputable def pivotDetAbs : {n : ℕ} → {A : Higham11BunchMatrix n} →
       simp [widths, sum_widths tail, Nat.add_comm]
 
 theorem two_indices_ne {n : ℕ} (A : Higham11BunchMatrix (n + 2))
-    (hA : IsSymmetricFiniteMatrix A) (p q r : Fin (n + 2))
+    (_hA : IsSymmetricFiniteMatrix A) (p q r : Fin (n + 2))
     (hentry : ∀ i j, |A i j| ≤ |A p q|)
     (hdiag : ∀ i, |A i i| ≤ |A r r|)
     (hmaxPos : 0 < |A p q|)
@@ -251,8 +251,8 @@ private theorem bunchAlpha_sq_le_one_sub_sq :
 /-- The two-by-two Algorithm 11.1 branch supplies the determinant lower
 bound needed at a genuine block boundary. -/
 theorem two_pivot_lower {n : ℕ} (A : Higham11BunchMatrix (n + 2))
-    (hA : IsSymmetricFiniteMatrix A) (p q r : Fin (n + 2))
-    (hentry : ∀ i j, |A i j| ≤ |A p q|)
+    (_hA : IsSymmetricFiniteMatrix A) (p q r : Fin (n + 2))
+    (_hentry : ∀ i j, |A i j| ≤ |A p q|)
     (hdiag : ∀ i, |A i i| ≤ |A r r|)
     (hchoice : higham11_1_BunchParlettCompletePivotChoice
       higham11_1_bunchParlettAlpha |A p q| |A r r| PivotSize.two) :

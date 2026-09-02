@@ -95,10 +95,10 @@ threaded explicitly so the child-to-parent spectral inequality can be used. -/
 theorem higham10_29_lu_growth_aux :
     ∀ (n : ℕ) (hn : 0 < n)
       (A Hinv : Fin n → Fin n → ℝ)
-      (hA : higham10_4_IsNonsymPosDef n A)
+      (_hA : higham10_4_IsNonsymPosDef n A)
       (hHinvSym : ∀ i j : Fin n, Hinv i j = Hinv j i)
-      (hHinvRight : IsRightInverse n (symmetricPart n A) Hinv)
-      (hHinvLeft : IsLeftInverse n (symmetricPart n A) Hinv),
+      (_hHinvRight : IsRightInverse n (symmetricPart n A) Hinv)
+      (_hHinvLeft : IsLeftInverse n (symmetricPart n A) Hinv),
       ∃ L U : Fin n → Fin n → ℝ,
         LUFactSpec n A L U ∧
         frobNorm (higham10_29_absLUProduct L U) ≤

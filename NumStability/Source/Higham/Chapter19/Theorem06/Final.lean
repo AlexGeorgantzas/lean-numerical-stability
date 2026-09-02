@@ -489,8 +489,8 @@ theorem H19_Theorem19_6_final
     (fp : FPModel) (m n : ℕ) (A : Fin m → Fin n → ℝ)
     (α : Fin m → ℝ) (γtil : ℝ)
     (hγtil : 0 ≤ γtil) (hα : ∀ i, 0 ≤ α i)
-    (hn : 0 < n) (hnm : n ≤ m)
-    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m))
+    (_hn : 0 < n) (_hnm : n ≤ m)
+    (_hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m))
     (hready : StageDataReady fp m n
       (Wave13.columnPermuteMatrix A (compositePivotPerm fp m n A)) α γtil) :
     ∃ (perm : Equiv.Perm (Fin n)) (Q : Fin m → Fin m → ℝ)

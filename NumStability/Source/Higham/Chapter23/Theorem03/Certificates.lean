@@ -76,10 +76,10 @@ theorem higham23_recursiveCertificate_product
     (r depth : ℕ)
     (X Xhat Y Yhat P : Higham23RecursiveMatrix r depth)
     (xExact yExact ex nx ey ny e : ℝ)
-    (hxExact : 0 ≤ xExact) (hyExact : 0 ≤ yExact)
+    (_hxExact : 0 ≤ xExact) (hyExact : 0 ≤ yExact)
     (hex : 0 ≤ ex) (hnx : 0 ≤ nx) (hey : 0 ≤ ey) (hny : 0 ≤ ny)
-    (he : 0 ≤ e)
-    (hXexact : Higham23RecursiveMaxNormLe r depth X xExact)
+    (_he : 0 ≤ e)
+    (_hXexact : Higham23RecursiveMaxNormLe r depth X xExact)
     (hYexact : Higham23RecursiveMaxNormLe r depth Y yExact)
     (hX : Higham23RecursiveCertificate r depth X Xhat ex nx)
     (hY : Higham23RecursiveCertificate r depth Y Yhat ey ny)
@@ -107,6 +107,6 @@ theorem higham23_recursiveCertificate_product
   · exact higham23_recursiveErrorLe_mono r depth _ _ herrRaw (by
       ring_nf
       linarith)
-  · convert houtNorm using 1 <;> dsimp [m] <;> ring
+  · convert houtNorm using 1; dsimp [m]; ring
 
 end NumStability

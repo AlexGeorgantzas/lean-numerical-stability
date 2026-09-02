@@ -51,7 +51,7 @@ noncomputable def fl_householderCoxHighamConstructedPanelStep
   let Srow := sourceConstructedRowSwap hm row
   let Aactive := sourceConstructedActivePanelPerm k Srow As
   let x := sourceConstructedActiveInput k Srow As col
-  if hx : x = 0 then
+  if _hx : x = 0 then
     fun i j =>
       if j.val < k then
         As i j
@@ -105,7 +105,7 @@ theorem fl_householderCoxHighamConstructedPanelStep_pivot_eq
   have hnj : ¬ j.val < k := by omega
   by_cases hx : sourceConstructedActiveInput k
       (sourceConstructedRowSwap hm row) As col = 0 <;>
-    simp [fl_householderCoxHighamConstructedPanelStep, hx, hni, hnj, hi, hj]
+    simp [fl_householderCoxHighamConstructedPanelStep, hx, hi, hj]
 theorem fl_householderCoxHighamConstructedPanelStep_pivotTail_eq_zero
     (fp : FPModel) {m n k : ℕ} (hm : 0 < m)
     (row : Fin m) (col : Fin n) (As : Fin m → Fin n → ℝ)
@@ -116,7 +116,7 @@ theorem fl_householderCoxHighamConstructedPanelStep_pivotTail_eq_zero
   have hine : ¬ i.val = k := by omega
   by_cases hx : sourceConstructedActiveInput k
       (sourceConstructedRowSwap hm row) As col = 0 <;>
-    simp [fl_householderCoxHighamConstructedPanelStep, hx, hni, hnj, hine, hj]
+    simp [fl_householderCoxHighamConstructedPanelStep, hx, hni, hine, hj]
 
 /-! ## Executed active-max loop -/
 /-- Full-shape, actively pivoted, actually rounded source-stored QR trace. -/
@@ -153,8 +153,8 @@ noncomputable def sourceConstructedPivotedStoredQRSwappedPanel
     (fl_sourceConstructedPivotedStoredQRMatrixSeq fp hn hmn A k)
     (sourceConstructedPivotedStoredQRSwapSeq fp hn hmn A k)
 noncomputable def sourceConstructedPivotedStoredQRRowSwap
-    (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
-    (A : Fin m → Fin n → ℝ) (k : ℕ) : Equiv.Perm (Fin m) :=
+    (_fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
+    (_A : Fin m → Fin n → ℝ) (k : ℕ) : Equiv.Perm (Fin m) :=
   if hk : k < n then
     sourceConstructedRowSwap (lt_of_lt_of_le hn hmn)
       (pivotedQRActiveRow hmn k hk)
@@ -438,7 +438,7 @@ theorem sourceConstructedPivotedStoredQRActiveInput_ne_of_sigma_pos
   intro hx
   unfold sourceConstructedPivotedStoredQRSigma at hsigma
   rw [hx] at hsigma
-  simpa [vecNorm2, vecNorm2Sq] using hsigma
+  simp [vecNorm2, vecNorm2Sq] at hsigma
 theorem sourceConstructedPivotedStoredQRPseq_orthogonal
     (fp : FPModel) {m n : ℕ} (hn : 0 < n) (hmn : n ≤ m)
     (A : Fin m → Fin n → ℝ) (k : ℕ)
@@ -514,7 +514,6 @@ theorem sourceConstructedPivotedStoredQRSwappedPanel_pivotColumn_eq_zero_of_inpu
   have hpoint := congrFun hx (S i)
   simp only [sourceConstructedPivotedStoredQRActiveInput, dif_pos hk,
     sourceConstructedActiveInput,
-    sourceConstructedPivotedStoredQRActivePanelPerm,
     sourceConstructedActivePanelPerm] at hpoint
   change (if (S (S i)).val < k then 0 else
       sourceConstructedPivotedStoredQRSwappedPanel fp hn hmn A k
@@ -535,7 +534,7 @@ theorem sourceConstructedPivotedStoredQRExactRawVector_zero_prefix
   let x := sourceConstructedPivotedStoredQRActiveInput fp hn hmn A k
   have hS : S = Equiv.swap first row := by
     simp [S, sourceConstructedPivotedStoredQRRowSwap,
-      sourceConstructedRowSwap, first, row, hk, hm]
+      sourceConstructedRowSwap, first, row, hk]
   have hSi : S i ≠ first := by
     rw [hS]
     intro h
@@ -874,7 +873,7 @@ theorem sourceConstructedPivotedStoredQREseq_activeTrailing_abs_le
   simp only [fl_householderCoxHighamConstructedPanelStep]
   rw [dif_neg hxDirect]
   simp only [hjPrev, if_false, Nat.not_lt.mpr hi, hjPivot]
-  simp only [fl_householderApplyMatrixRect, matMulRect]
+  simp only [fl_householderApplyMatrixRect]
   rw [← hSdef, ← hApdef, ← hxdef]
   change
     |fl_householderApply fp m (fl_householderNormalizedVector fp hm x) 1

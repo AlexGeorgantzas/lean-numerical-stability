@@ -93,7 +93,7 @@ theorem exactSwappedPanel_pivot_max {m n : ℕ} (hn : 0 < n)
     hmn (le_refl n) (rowSortedMatrix hn A) k hk
 theorem exactSwappedPanel_active_entry_bound {m n : ℕ}
     (hn : 0 < n) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
-    (k : ℕ) (hk : k < n) (r : Fin m) (hr : k ≤ r.val)
+    (k : ℕ) (_hk : k < n) (r : Fin m) (_hr : k ≤ r.val)
     (j : Fin n) (hj : k ≤ j.val) {B : ℝ}
     (hbound : ∀ q : Fin n, k ≤ q.val → |exactASeq hn hmn A k r q| ≤ B) :
     |exactSwappedPanel hn hmn A k r j| ≤ B := by
@@ -687,8 +687,7 @@ theorem exactBSeq_offPivot_step {m n : ℕ}
     simp [exactPSeq, Higham20EliminationActual.exactPivotedQRPseq,
       Higham20EliminationActual.exactPivotedQRRawVector,
       Higham20EliminationActual.exactPivotedQRBeta,
-      exactSwappedPanel, As, x, p, q, alpha, v, beta, hk,
-      householderTrailingColumnNorm2Sq]
+      exactSwappedPanel, As, x, p, q, alpha, v, beta, hk]
   have hvr : v r = As r q := by
     have hnot : ¬ r.val < k := not_lt.mpr (le_of_lt hr)
     have hrp : r ≠ p := by
@@ -759,7 +758,7 @@ the matrix rows. -/
 theorem exactBSeq_active_bound {m n : ℕ}
     (hn : 0 < n) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
     (b : Fin m → ℝ)
-    (hpivots : ∀ k : ℕ, ∀ hk : k < n,
+    (hpivots : ∀ k : ℕ, ∀ _hk : k < n,
       0 < exactPivotTailNorm hn hmn A k) :
     ∀ k : ℕ, k ≤ n → ∀ r : Fin m, k ≤ r.val →
       |exactBSeq hn hmn A b k r| ≤
@@ -768,11 +767,7 @@ theorem exactBSeq_active_bound {m n : ℕ}
   induction k with
   | zero =>
       intro _hk r _hr
-      simpa [exactPrintedBetaWeight] using
-        (le_max_right
-          (exactPrintedPhi hn hmn A b *
-            theorem20_7_initialRowMax hn (rowSortedMatrix hn A) r)
-          |rowSortedRhs hn A b r|)
+      simp [exactPrintedBetaWeight]
   | succ k ih =>
       intro hk r hr
       have hkn : k < n := Nat.lt_of_succ_le hk
@@ -934,7 +929,7 @@ Householder rounding step and is therefore not part of `max_k |b_i^(k)|`. -/
 theorem exactBSeq_uniform_printed_bound {m n : ℕ}
     (hn : 0 < n) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
     (b : Fin m → ℝ)
-    (hpivots : ∀ k : ℕ, ∀ hk : k < n,
+    (hpivots : ∀ k : ℕ, ∀ _hk : k < n,
       0 < exactPivotTailNorm hn hmn A k)
     (t : ℕ) (ht : t < n) (i : Fin m) :
     |exactBSeq hn hmn A b t i| ≤
@@ -1010,7 +1005,7 @@ noncomputable def exactPrintedBeta {m n : ℕ}
 theorem exactPrintedRhsRowGrowthScale_le_cap_mul_weight {m n : ℕ}
     (hn : 0 < n) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
     (b : Fin m → ℝ)
-    (hpivots : ∀ k : ℕ, ∀ hk : k < n,
+    (hpivots : ∀ k : ℕ, ∀ _hk : k < n,
       0 < exactPivotTailNorm hn hmn A k) (i : Fin m) :
     exactPrintedRhsRowGrowthScale hn hmn A b i ≤
       (Real.sqrt (m : ℝ) * (1 + Real.sqrt 2) ^ (n - 1)) *
@@ -1023,7 +1018,7 @@ theorem exactPrintedRhsRowGrowthScale_le_cap_mul_weight {m n : ℕ}
 theorem exactPrintedBetaScale_le_cap_mul_weight {m n : ℕ}
     (hn : 0 < n) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
     (b : Fin m → ℝ)
-    (hpivots : ∀ k : ℕ, ∀ hk : k < n,
+    (hpivots : ∀ k : ℕ, ∀ _hk : k < n,
       0 < exactPivotTailNorm hn hmn A k) (i : Fin m) :
     exactPrintedBetaScale hn hmn A b i ≤
       (Real.sqrt (m : ℝ) * (1 + Real.sqrt 2) ^ (n - 1)) *
@@ -1066,7 +1061,7 @@ bound forces its numerator to vanish as well. -/
 theorem exactPrintedBeta_le_cap {m n : ℕ}
     (hn : 0 < n) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
     (b : Fin m → ℝ)
-    (hpivots : ∀ k : ℕ, ∀ hk : k < n,
+    (hpivots : ∀ k : ℕ, ∀ _hk : k < n,
       0 < exactPivotTailNorm hn hmn A k) (i : Fin m) :
     exactPrintedBeta hn hmn A b i ≤
       Real.sqrt (m : ℝ) * (1 + Real.sqrt 2) ^ (n - 1) := by
@@ -1091,7 +1086,7 @@ theorem exactPrintedBeta_le_cap {m n : ℕ}
 theorem exactPrinted_max_alpha_beta_le_cap {m n : ℕ}
     (hn : 0 < n) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
     (b : Fin m → ℝ)
-    (hpivots : ∀ k : ℕ, ∀ hk : k < n,
+    (hpivots : ∀ k : ℕ, ∀ _hk : k < n,
       0 < exactPivotTailNorm hn hmn A k) (i : Fin m) :
     max (exactPrintedAlpha hn hmn A i)
         (exactPrintedBeta hn hmn A b i) ≤

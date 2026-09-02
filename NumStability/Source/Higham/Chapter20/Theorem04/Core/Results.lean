@@ -153,12 +153,12 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_with_source_bounds_
     (hRhs : HouseholderQRRhsPanelExplicitBackwardError (n + k) n
       A f Q c_hat cF)
     (hcG : 0 ≤ cG)
-    (hH1nonneg : ∀ i j, 0 ≤ H1 i j)
-    (hH2nonneg : ∀ i j, 0 ≤ H2 i j)
+    (_hH1nonneg : ∀ i j, 0 ≤ H1 i j)
+    (_hH2nonneg : ∀ i j, 0 ≤ H2 i j)
     (hH3nonneg : ∀ i j, 0 ≤ H3 i j)
-    (hH1norm : frobNorm H1 = 1)
-    (hH2norm : frobNorm H2 = 1)
-    (hH3norm : frobNorm H3 = 1)
+    (_hH1norm : frobNorm H1 = 1)
+    (_hH2norm : frobNorm H2 = 1)
+    (_hH3norm : frobNorm H3 = 1)
     (hDeltafDom :
       let R : Fin n → Fin n → ℝ :=
         fun i j => Rhat (Fin.castAdd k i) j

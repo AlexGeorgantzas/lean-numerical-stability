@@ -253,7 +253,7 @@ theorem higham16_hurwitz_exists_shift_spectralRadius_lt
     let i : Fin n := ⟨0, hn⟩
     exact ⟨⟨0, 1, fun h => by
       have hii := congrArg (fun M : Higham16CMatrix n => M i i) h
-      simpa using hii⟩⟩
+      simp at hii⟩⟩
   obtain ⟨zmax, hzmax, hmax⟩ :=
     (spectrum.isCompact A).exists_isMaxOn (spectrum.nonempty A)
       Complex.continuous_re.continuousOn
@@ -365,7 +365,7 @@ private theorem higham16_norm_exp_smul_le_of_uniform_power_bound
   have hreal : HasSum
       (fun k : Nat => K * ((k.factorial : Real)⁻¹ * (r * t) ^ k))
       (K * Real.exp (r * t)) := by
-    convert hreal0.mul_left K using 1 <;> simp [Real.exp_eq_exp_ℝ]
+    convert hreal0.mul_left K using 1; simp [Real.exp_eq_exp_ℝ]
   apply hmat.norm_le_of_bounded hreal
   intro k
   calc
@@ -395,7 +395,7 @@ theorem higham16_hurwitz_exp_decay
     let i : Fin n := ⟨0, hn⟩
     exact ⟨⟨0, 1, fun h => by
       have hii := congrArg (fun M : Higham16CMatrix n => M i i) h
-      simpa using hii⟩⟩
+      simp at hii⟩⟩
   obtain ⟨s, hs, hspecS⟩ :=
     higham16_hurwitz_exists_shift_spectralRadius_lt A hn hA
   let B : Higham16CMatrix n :=
@@ -461,7 +461,7 @@ theorem higham16_hurwitz_exp_decay
 private theorem higham16_kernel_integrable_of_exp_decay
     (A B C : Higham16CMatrix n)
     {KA KB alphaA alphaB : Real}
-    (hKA : 0 < KA) (hKB : 0 < KB)
+    (hKA : 0 < KA) (_hKB : 0 < KB)
     (hAlphaA : 0 < alphaA) (hAlphaB : 0 < alphaB)
     (hA : ∀ t : Real, 0 ≤ t →
       ‖NormedSpace.exp (t • A)‖ ≤ KA * Real.exp (-alphaA * t))
@@ -800,9 +800,9 @@ private theorem higham16_zero_posSemidef_not_posDef (hn : 0 < n) :
     have hx : x ≠ 0 := by
       intro hx0
       have hii := congrFun hx0 i
-      simpa [x] using hii
+      simp [x] at hii
     have hpos := hpd.dotProduct_mulVec_pos hx
-    simpa [Matrix.mulVec, dotProduct] using hpos
+    simp [Matrix.mulVec, dotProduct] at hpos
 
 private theorem higham16_neg_one_hurwitz (hn : 0 < n) :
     Higham16Hurwitz (-(1 : Higham16CMatrix n)) := by
@@ -810,7 +810,7 @@ private theorem higham16_neg_one_hurwitz (hn : 0 < n) :
     let i : Fin n := ⟨0, hn⟩
     exact ⟨⟨0, 1, fun h => by
       have hii := congrArg (fun M : Higham16CMatrix n => M i i) h
-      simpa using hii⟩⟩
+      simp at hii⟩⟩
   intro z hz
   have hspec : spectrum Complex (-(1 : Higham16CMatrix n)) =
       {(-1 : Complex)} := by

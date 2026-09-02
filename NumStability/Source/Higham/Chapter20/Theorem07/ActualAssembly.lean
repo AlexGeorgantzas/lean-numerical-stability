@@ -764,7 +764,9 @@ theorem sourceConstructedPivotedStoredQR_stageImage_entrywise_le
       change |Wave19.applyProd
           (fun t => householder m (v t) (beta t)) 0 (k + 1) f i| ≤
         (C + 6 * ((k : ℝ) + 1) * eta) * alpha i
-      convert hbound using 1 <;> push_cast <;> ring
+      convert hbound using 1
+      push_cast
+      ring
   · rw [sourceConstructedPivotedStoredQREseqTotal, if_neg hk]
     simp [matMulRect]
     exact mul_nonneg
@@ -1272,8 +1274,8 @@ theorem applyProd_rawHouseholder_entrywise_le_two_scales_phi {m : ℕ}
     (v : ℕ → Fin m → ℝ) (beta : ℕ → ℝ) (f : Fin m → ℝ)
     (alpha rho : Fin m → ℝ) (phi rawCoeff eta localCoeff : ℝ)
     (i : ℕ) (l : Fin m)
-    (hphi : 0 ≤ phi) (hrawCoeff : 0 ≤ rawCoeff) (heta : 0 ≤ eta)
-    (halpha : ∀ r, 0 ≤ alpha r) (hrho : ∀ r, 0 ≤ rho r)
+    (_hphi : 0 ≤ phi) (hrawCoeff : 0 ≤ rawCoeff) (heta : 0 ≤ eta)
+    (halpha : ∀ r, 0 ≤ alpha r) (_hrho : ∀ r, 0 ≤ rho r)
     (hphiAlpha : ∀ r, phi * alpha r ≤ rho r)
     (horth : ∀ k, IsOrthogonal m (householder m (v k) (beta k)))
     (hvpos : ∀ k < i, 0 < vecNorm2 (v k))
@@ -1838,7 +1840,9 @@ theorem sourceConstructedPivotedStoredQRRhs_stageImage_entrywise_le
       change |Wave19.applyProd
           (fun t => householder m (v t) (beta t)) 0 (k + 1) f i| ≤
         (C + 6 * ((k : ℝ) + 1) * eta) * rho i
-      convert hbound using 1 <;> push_cast <;> ring
+      convert hbound using 1
+      push_cast
+      ring
   · rw [sourceConstructedPivotedStoredQRRhsEseqTotal, if_neg hk]
     simp [matMulVec]
     exact mul_nonneg

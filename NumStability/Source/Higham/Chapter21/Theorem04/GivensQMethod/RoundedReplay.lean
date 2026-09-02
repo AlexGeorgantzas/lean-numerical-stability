@@ -180,7 +180,7 @@ theorem higham21_q_method_fixed_accumulation_two_perturbed_systems
           (0 : Fin k -> Real))) :
     let R_hat : Fin m -> Fin m -> Real := fun i j =>
       R_tall (Fin.castAdd k i) j
-    let y1 := fl_forwardSub fp m (matTranspose R_hat) b
+    let _y1 := fl_forwardSub fp m (matTranspose R_hat) b
     let eta := Higham21FixedAccumulationRoundedRowwiseCoefficient
       fp m etaQR etaQ
     exists (Q_inv : Fin (m + k) -> Fin (m + k) -> Real)

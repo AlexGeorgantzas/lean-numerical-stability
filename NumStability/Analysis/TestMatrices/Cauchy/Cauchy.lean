@@ -224,8 +224,7 @@ theorem cauchyDetNumerator_succ
   congr 1
   apply Finset.prod_congr rfl
   intro i _
-  simpa using prod_Ioi_succ_fin
-    (fun j => (x j - x i.succ) * (y j - y i.succ)) i
+  simp
 
 theorem cauchyDetDenominator_succ
     {n : ℕ} (x y : RVec (n + 1)) :
@@ -243,8 +242,8 @@ theorem cauchyDetDenominator_succ
 theorem cauchyAdmissible_tail
     {n : ℕ} {x y : RVec (n + 1)} (h : CauchyAdmissible x y) :
     CauchyAdmissible (fun i : Fin n => x i.succ) (fun i : Fin n => y i.succ) where
-  x_injective := fun i j hij => Fin.succ_injective _ (h.x_injective hij)
-  y_injective := fun i j hij => Fin.succ_injective _ (h.y_injective hij)
+  x_injective := fun _i _j hij => Fin.succ_injective _ (h.x_injective hij)
+  y_injective := fun _i _j hij => Fin.succ_injective _ (h.y_injective hij)
   sum_ne_zero := fun i j => h.sum_ne_zero i.succ j.succ
 
 theorem cauchyDetFormula_succ
@@ -316,7 +315,7 @@ theorem cauchyMatrix_det_eq_formula :
     ∀ (n : ℕ) (x y : RVec n), CauchyAdmissible x y →
       Matrix.det (cauchyMatrix x y) = cauchyDetFormula n x y
   | 0, x, y, _ => by
-      simp [cauchyMatrix, cauchyDetFormula]
+      simp [cauchyDetFormula]
   | n + 1, x, y, h => by
       rw [cauchyMatrix_det_succ h, cauchyDetFormula_succ h,
         cauchyMatrix_det_eq_formula n (fun i => x i.succ)
@@ -582,7 +581,7 @@ theorem cauchyMatrix_mul_cauchyInverseFormula
     _ = if i = j then 1 else 0 := by
       exact cauchyInverseInterpolationPoly_eval_at_node h i j
     _ = (1 : RSqMat n) i j := by
-      simp [Matrix.one_apply, eq_comm]
+      simp [Matrix.one_apply]
 
 theorem cauchyInverseFormula_mul_cauchyMatrix
     {n : ℕ} {x y : RVec n} (h : CauchyAdmissible x y) :

@@ -94,7 +94,7 @@ by the first-column structure. `sum_abs_le_of_exists_zero` then bounds the row
 sum by `n − 1`. -/
 theorem aasen_L_infNorm_le
     (n : ℕ) (hn : 2 ≤ n) (L : Fin n → Fin n → ℝ)
-    (hdiag  : ∀ i, L i i = 1)
+    (_hdiag  : ∀ i, L i i = 1)
     (hupper : ∀ i j, i.val < j.val → L i j = 0)
     (hfirst : ∀ i j, j.val = 0 → i.val ≠ 0 → L i j = 0)
     (hentry : ∀ i j, |L i j| ≤ 1) :
@@ -120,7 +120,7 @@ entry: column `0` vanishes below the diagonal (so entry `(1,0)` is `0`, using
 `‖Lᵀ‖∞ ≤ n − 1`. -/
 theorem aasen_LT_infNorm_le
     (n : ℕ) (hn : 2 ≤ n) (L : Fin n → Fin n → ℝ)
-    (hdiag  : ∀ i, L i i = 1)
+    (_hdiag  : ∀ i, L i i = 1)
     (hupper : ∀ i j, i.val < j.val → L i j = 0)
     (hfirst : ∀ i j, j.val = 0 → i.val ≠ 0 → L i j = 0)
     (hentry : ∀ i j, |L i j| ≤ 1) :

@@ -46,7 +46,7 @@ open NumStability.Ch11Closure.HFactor
 tridiagonal solve.  `BT` is kept separate from `DeltaT`: an interleaved GEPP
 proof can assemble a sparse nonnegative local budget without first proving an
 entrywise formula for the accumulated perturbation itself. -/
-def AasenDirectMiddleBudget (fp : FPModel) (n : ℕ)
+def AasenDirectMiddleBudget (_fp : FPModel) (n : ℕ)
     (T : Fin n → Fin n → ℝ) (z y : Fin n → ℝ)
     (DeltaT BT : Fin n → Fin n → ℝ) : Prop :=
   (∀ i j : Fin n, 0 ≤ BT i j) ∧
@@ -84,7 +84,7 @@ theorem higham11_15_fl_aasen_solve_chain_source_backward_error_of_direct_middle_
       (fl_forwardSub fp n L (fun i => ∑ j : Fin n, Pmat i j * b j))
       y DeltaT BT) :
     let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
-    let z := fl_forwardSub fp n L rhs
+    let _z := fl_forwardSub fp n L rhs
     let U : Fin n → Fin n → ℝ := fun i j => L j i
     let w := fl_backSub fp n U y
     let bound := higham11_15_aasenChainDeltaABound n (gamma fp n) BT L T U
@@ -199,7 +199,7 @@ theorem higham11_8_direct_middle_gamma_8n25_bracket_le_gamma_15n25
 /-- A nonnegative local envelope scaled by `gamma_ell`, whose norm is at most
 `m ||T||_inf`, is absorbed by `gamma_(m*ell)`. -/
 theorem higham11_8_scaled_envelope_infNorm_le_gamma_nsmul
-    (fp : FPModel) {n m ell : ℕ} (hm : 1 ≤ m) (hn : 0 < n)
+    (fp : FPModel) {n m ell : ℕ} (hm : 1 ≤ m) (_hn : 0 < n)
     (W T : Fin n → Fin n → ℝ)
     (hW : ∀ i j : Fin n, 0 ≤ W i j)
     (hWnorm : infNorm W ≤ (m : ℝ) * infNorm T)
@@ -296,7 +296,7 @@ theorem higham11_8_aasen_backward_error_direct_of_operational_middle_budget
     let Lh := (flAasen fp n A).Lhat
     let Th := (flAasen fp n A).That
     let rhs : Fin n → ℝ := fun i => ∑ j : Fin n, Pmat i j * b j
-    let z := fl_forwardSub fp n Lh rhs
+    let _z := fl_forwardSub fp n Lh rhs
     let Uouter : Fin n → Fin n → ℝ := fun i j => Lh j i
     let w := fl_backSub fp n Uouter y
     let Bfactor : Fin n → Fin n → ℝ := fun i j =>

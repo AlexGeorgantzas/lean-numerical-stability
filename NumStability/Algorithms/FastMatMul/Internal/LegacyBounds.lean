@@ -48,7 +48,7 @@ theorem conventional_componentwise_implies_cubic
     (n : ℕ) (c_conv c_fast : ℝ)
     (hConv : c_conv = (n : ℝ) ^ 2)
     (hFast_gt : c_fast > (n : ℝ) ^ 2)
-    (hn : 1 < (n : ℝ)) :
+    (_hn : 1 < (n : ℝ)) :
     c_conv < c_fast := by
   linarith
 

@@ -826,7 +826,7 @@ theorem higham11_7_bunch_tridiagonal_solve_backward_error_normwise
     {n : ℕ} (s : PivotSchedule n) (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
     (hvaln : gammaValid fp n)
     (Amax c0 cSolve cStage gammaMid : ℝ)
-    (hAmax : ∀ i j : Fin n, |A i j| ≤ Amax) (hAmax0 : 0 ≤ Amax) (hc0 : 0 ≤ c0)
+    (hAmax : ∀ i j : Fin n, |A i j| ≤ Amax) (_hAmax0 : 0 ≤ Amax) (_hc0 : 0 ≤ c0)
     (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
     (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5)
     (hgammaMid : 0 ≤ gammaMid)

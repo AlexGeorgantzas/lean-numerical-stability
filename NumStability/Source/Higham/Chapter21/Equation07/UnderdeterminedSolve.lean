@@ -1249,7 +1249,7 @@ noncomputable def higham21Eq21_7FixedRadiusCoefficient
 
 theorem higham21Eq21_7_gramPerturbation_abs_le_fixed_radius
     {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
-    (rho t : Real) (hrho : 0 <= rho) (ht : |t| <= rho) :
+    (rho t : Real) (_hrho : 0 <= rho) (ht : |t| <= rho) :
     forall i j,
       |higham21Eq21_7GramPerturbation A DeltaA t i j| <=
         |t| * higham21Eq21_7GramAbsEnvelope A DeltaA rho i j := by
@@ -1334,7 +1334,7 @@ set_option maxHeartbeats 800000 in
 theorem higham21Eq21_7_inverseQuadraticRemainder_frobNorm_le_fixed_radius
     {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real)
     (G_inv G_t_inv : Fin m -> Fin m -> Real)
-    (rho beta t : Real) (hrho : 0 <= rho) (hbeta : 0 <= beta)
+    (rho beta t : Real) (hrho : 0 <= rho) (_hbeta : 0 <= beta)
     (ht : |t| <= rho) (hG_t_inv : frobNorm G_t_inv <= beta) :
     frobNorm
         (fun i j =>

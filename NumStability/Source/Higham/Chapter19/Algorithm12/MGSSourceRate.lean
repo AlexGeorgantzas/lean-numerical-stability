@@ -62,7 +62,7 @@ theorem repaired_qr_right_inverse_rectOpNorm2Le_of_source_left_inverse
     (hfactor : (fun i j => A i j + dA i j) = rectMatMul Q R)
     (hRright : rectMatMul R Rinv = idMatrix n)
     (hQ : GramSchmidtOrthonormalColumns Q)
-    (hrho : 0 <= rho) (heta : 0 <= eta)
+    (hrho : 0 <= rho) (_heta : 0 <= eta)
     (hAplus : rectOpNorm2Le Aplus rho)
     (hdA : rectOpNorm2Le dA eta)
     (hsmall : rho * eta < 1) :
@@ -320,7 +320,7 @@ theorem higham19_13_literal_mgs_source_rate_of_coefficient_bounds
   have hradius :
       ((etaE + etaD) * (rhoA / (1 - rhoA * etaD))) =
         mgsSourceOrthogonalityRadius fp A Aplus c1 c3 := by
-    simp [etaE, etaD, rhoA, normA, kappaA,
+    simp [etaE, etaD, rhoA, normA,
       mgsSourceOrthogonalityRadius, mgsSourceKappa2With]
     field_simp
   have hclose : rectOpNorm2Le (fun i k => Qhat i k - Qrepair i k)
@@ -527,7 +527,7 @@ theorem mgsSource_gamma_le (fp : FPModel) (m : Nat)
         linarith
       _ <= 1 / 2 := hsmall
   have h := gamma_le_two_mul_n_u_of_nu_le_half fp (m + 1) hsmall'
-  convert h using 1 <;> simp [mgsSourceGammaCoeff] <;> ring
+  convert h using 1; simp [mgsSourceGammaCoeff]; ring
 
 theorem mgsSource_gamma_m_le (fp : FPModel) (m : Nat)
     (hsmall : (((2 * (m + 1) : Nat) : Real) * fp.u <= 1 / 2)) :
@@ -550,7 +550,7 @@ theorem mgsSource_gamma_m_le (fp : FPModel) (m : Nat)
 
 theorem mgsNormalizationEps_le_sourceCoeff_mul_u
     (fp : FPModel) (m : Nat)
-    (hm : gammaValid fp (2 * (m + 1)))
+    (_hm : gammaValid fp (2 * (m + 1)))
     (hsmall : (((2 * (m + 1) : Nat) : Real) * fp.u <= 1 / 2)) :
     mgsNormalizationEps fp m <= mgsSourceNormalizationCoeff m * fp.u := by
   let G := mgsSourceGammaCoeff m

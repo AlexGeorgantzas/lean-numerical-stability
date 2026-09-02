@@ -81,8 +81,8 @@ noncomputable def SmoothPNormPair.general {n : ℕ} (hn : 0 < n)
   one_lt_q := hpq.symm.lt
   conjugate := hpq.inv_add_inv_eq_one
   pN_zero := realVecLpNorm_zero (le_of_lt hpq.lt)
-  pN_pos := fun x hx => realVecLpNorm_pos (le_of_lt hpq.lt) hx
-  dp_qnorm_one := fun x hx => realLpDual_norm_eq_one hpq hx
+  pN_pos := fun _x hx => realVecLpNorm_pos (le_of_lt hpq.lt) hx
+  dp_qnorm_one := fun _x hx => realLpDual_norm_eq_one hpq hx
   pN_gradient := fun x hx => realLpDual_hasDirectionalGradientAt hpq x hx
 
 end Ch15

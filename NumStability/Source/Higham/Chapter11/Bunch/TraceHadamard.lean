@@ -107,7 +107,7 @@ private theorem onePivotBlock_det {n : ℕ}
 private theorem one_schur_selected_eq {n k : ℕ}
     (A : Higham11BunchMatrix (n + 1)) (e : Fin k → Fin n)
     (hA : IsSymmetricFiniteMatrix A)
-    (h00 : A 0 0 ≠ 0) :
+    (_h00 : A 0 0 ≠ 0) :
     let B := oneTopRight A e
     let C := oneBottomLeft A e
     let D := oneTailMinor A e
@@ -398,7 +398,7 @@ private theorem two_source_selected_det_step {n k : ℕ}
     higham11_1_bunchSymmetricPermute, Function.comp_def] using hstep
 
 theorem bunchSharpGrowthBound_le_of_le {k n : ℕ}
-    (hk : 2 ≤ k) (hkn : k ≤ n) :
+    (_hk : 2 ≤ k) (hkn : k ≤ n) :
     higham11_1_bunchSharpGrowthBound k ≤
       higham11_1_bunchSharpGrowthBound n := by
   have hsub : k - 1 ≤ n - 1 := Nat.sub_le_sub_right hkn 1
@@ -596,7 +596,7 @@ noncomputable def certifiedExecutionOfTrace {n : ℕ}
     {A : Higham11BunchMatrix n} (trace : Higham11ExactBunchTrace A) :
     Higham11BunchCertifiedExecution A where
   trace := trace
-  wholeBlockSegmentHadamard := fun segment hnonempty hinfix =>
+  wholeBlockSegmentHadamard := fun _segment hnonempty hinfix =>
     wholeBlockHadamard_of_isInfix trace hnonempty hinfix
 
 private theorem det_submatrix_self_of_injective {m n : ℕ}
@@ -664,14 +664,14 @@ theorem higham11_1_exists_exactBunchTrace_of_symmetric_det_ne_zero
               have h00 : A 0 0 ≠ 0 := by
                 intro hz
                 apply hdet
-                simpa [Matrix.det_fin_one, hz]
+                simp [hz]
               have hmaxPos : 0 < |A 0 0| := abs_pos.mpr h00
               have hentry : ∀ i j : Fin 1, |A i j| ≤ |A 0 0| := by
                 intro i j
-                simpa [Subsingleton.elim i 0, Subsingleton.elim j 0]
+                simp [Subsingleton.elim i 0, Subsingleton.elim j 0]
               have hdiag : ∀ i : Fin 1, |A i i| ≤ |A 0 0| := by
                 intro i
-                simpa [Subsingleton.elim i 0]
+                simp [Subsingleton.elim i 0]
               have hchoice : higham11_1_BunchParlettCompletePivotChoice
                   higham11_1_bunchParlettAlpha |A 0 0| |A 0 0|
                     PivotSize.one := by
@@ -716,7 +716,7 @@ theorem higham11_1_exists_exactBunchTrace_of_symmetric_det_ne_zero
                   intro hz
                   apply hdet
                   rw [hfactor]
-                  simpa [A₁, hz]
+                  simp [A₁, hz]
                 obtain ⟨tail⟩ := ih (k + 1) (by omega) A₁ hA₁ hdet₁
                 exact ⟨.one A hA p q r hentry hdiag hmaxPos hchoice tail⟩
               · have hchoice : higham11_1_BunchParlettCompletePivotChoice
@@ -744,7 +744,7 @@ theorem higham11_1_exists_exactBunchTrace_of_symmetric_det_ne_zero
                   intro hz
                   apply hdet
                   rw [hfactor]
-                  simpa [A₂, hz]
+                  simp [A₂, hz]
                 obtain ⟨tail⟩ := ih k (by omega) A₂ hA₂ hdet₂
                 exact ⟨.two A hA p q r hentry hdiag hmaxPos hchoice tail⟩
 

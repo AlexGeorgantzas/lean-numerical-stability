@@ -2055,7 +2055,7 @@ noncomputable def sylvesterQQBlockEntry (m n : Nat) (R : RMatFn m m)
 theorem sylvesterQQ_symm_block_offset (m n : Nat) (dblR : Fin m → Bool)
     (dblS : Fin n → Bool) (hSp : IsQuasiBlockPairing n dblS)
     (a : Fin (n * m)) (o : Nat)
-    (ho : o < (qqGrpEnd n dblS
+    (_ho : o < (qqGrpEnd n dblS
           ((sylvesterQQIndexEquiv m n dblS hSp).symm a).1 -
         qqGrpStart n dblS ((sylvesterQQIndexEquiv m n dblS hSp).symm a).1) *
       (qqGrpEnd m dblR ((sylvesterQQIndexEquiv m n dblS hSp).symm a).2 -
@@ -2155,13 +2155,13 @@ theorem sylvesterQQBlockCoeff_entry (m n : Nat) (dblR : Fin m → Bool)
       sylvesterQQBlockEntry m n R S
         ⟨qqGrpStart n dblS ((sylvesterQQIndexEquiv m n dblS hSp).symm a).1,
           by
-            obtain ⟨h1, h2, -⟩ := qqGrp_bounds n dblS
+            obtain ⟨h1, _h2, -⟩ := qqGrp_bounds n dblS
               ((sylvesterQQIndexEquiv m n dblS hSp).symm a).1
             have := ((sylvesterQQIndexEquiv m n dblS hSp).symm a).1.isLt
             omega⟩
         ⟨qqGrpStart m dblR ((sylvesterQQIndexEquiv m n dblS hSp).symm a).2,
           by
-            obtain ⟨h1, h2, -⟩ := qqGrp_bounds m dblR
+            obtain ⟨h1, _h2, -⟩ := qqGrp_bounds m dblR
               ((sylvesterQQIndexEquiv m n dblS hSp).symm a).2
             have := ((sylvesterQQIndexEquiv m n dblS hSp).symm a).2.isLt
             omega⟩

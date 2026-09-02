@@ -372,9 +372,9 @@ theorem computedSolve_backward_error_normwise_of_growth
     (exec : Higham11RoundedBunchKaufmanExecution fp A)
     (hcompleted : exec.Completed) (b : Fin n -> Real)
     (hvaln : gammaValid fp n) (gammaMid rho_n Amax : Real)
-    (hgammaMid : 0 <= gammaMid) (hrho : 0 <= rho_n)
+    (hgammaMid : 0 <= gammaMid) (_hrho : 0 <= rho_n)
     (hAmax : forall i j : Fin n, |exec.permutedInput i j| <= Amax)
-    (hAmax0 : 0 <= Amax)
+    (_hAmax0 : 0 <= Amax)
     (hgrowth : forall i j : Fin n,
       exec.flatAbsProduct i j <= 36 * (n : Real) * rho_n * Amax)
     (w_hat : Fin n -> Real) (DeltaD : Fin n -> Fin n -> Real)

@@ -244,10 +244,10 @@ theorem deltaT_col_le_sigma {m p : ℕ}
           (matTranspose (fl_householderQRPanel_Q fp m p
             (trailingPanel (stageStepPanel fp A))))
           (fun a b => trailingPanel (stageStoredPanel fp A) a b + ΔT a b) i j)
-    (hΔentry : ∀ i' j', |ΔT i' j'| ≤ stageCoeff (j'.val + 1) * γtil * α i'.succ)
+    (_hΔentry : ∀ i' j', |ΔT i' j'| ≤ stageCoeff (j'.val + 1) * γtil * α i'.succ)
     (j : Fin (p + 1)) :
     columnFrob (panelTrailingPerturbation ΔT) j ≤ γtil * |σ| := by
-  clear hΔentry
+  clear _hΔentry
   -- The deeper panel and its computed QR outputs.
   set T : Fin m → Fin p → ℝ := trailingPanel (stageStepPanel fp A) with hT
   -- `trailingPanel (stageStoredPanel) = trailingPanel (stageStepPanel) = T`.
@@ -433,7 +433,7 @@ theorem numerator_col_le {m p : ℕ}
     (fp : FPModel)
     (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (ΔT : Fin m → Fin p → ℝ)
-    (σ γtil : ℝ) (hσnn : 0 ≤ σ) (hγtil : 0 ≤ γtil)
+    (σ γtil : ℝ) (_hσnn : 0 ≤ σ) (_hγtil : 0 ≤ γtil)
     (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
     (hvalid : gammaValid fp (11 * (m + 1) + 23))
     (hpivot : ∀ j : Fin (p + 1), columnFrob A j ≤ σ)

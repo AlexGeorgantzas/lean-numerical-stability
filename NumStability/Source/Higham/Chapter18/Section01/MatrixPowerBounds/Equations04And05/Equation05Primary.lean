@@ -109,7 +109,7 @@ theorem higham_eq_18_5_primary_lp_jordan (n : ℕ) (hn : 0 < n)
     (hsup : ∀ i j : Fin n, (j : ℕ) = (i : ℕ) + 1 → ‖J i j‖ ≤ 1)
     (β : ℝ) (hβ0 : 0 < β) (s : ℕ)
     (q : Fin n → ℝ)
-    (hq1 : ∀ i, β ^ s ≤ q i) (hq2 : ∀ i, q i ≤ 1)
+    (hq1 : ∀ i, β ^ s ≤ q i) (_hq2 : ∀ i, q i ≤ 1)
     (hqstep : ∀ i j : Fin n, (j : ℕ) = (i : ℕ) + 1 → J i j ≠ 0 →
       q j = β * q i)
     (p : ℝ) (hp : 1 ≤ p) (k : ℕ) :
@@ -283,7 +283,7 @@ theorem higham_eq_18_5_primary_real_jordan (n : ℕ) (hn : 0 < n)
     (hsup : ∀ i j : Fin n, (j : ℕ) = (i : ℕ) + 1 → |J i j| ≤ 1)
     (β : ℝ) (hβ0 : 0 < β) (s : ℕ)
     (p : Fin n → ℝ)
-    (hp1 : ∀ i, β ^ s ≤ p i) (hp2 : ∀ i, p i ≤ 1)
+    (hp1 : ∀ i, β ^ s ≤ p i) (_hp2 : ∀ i, p i ≤ 1)
     (hpstep : ∀ i j : Fin n, (j : ℕ) = (i : ℕ) + 1 → J i j ≠ 0 → p j = β * p i)
     (k : ℕ) :
     infNorm (matPow n A k) ≤

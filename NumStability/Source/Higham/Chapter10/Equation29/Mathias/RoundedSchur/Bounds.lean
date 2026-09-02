@@ -125,15 +125,15 @@ Writing `H = sym(S)`, its SPD Schur complement as `Z`, and
 `Ĥ⁻¹ ≤ Z⁻¹`.  The quadratic form of `Z⁻¹` is the trailing principal
 quadratic form of `H⁻¹`, so its operator norm is bounded by `‖H⁻¹‖₂`. -/
 theorem higham10_mathias_luSchur_symPartInv_opNorm2_le
-    {m : ℕ} (hm : 0 < m)
+    {m : ℕ} (_hm : 0 < m)
     (S : Fin (m + 1) → Fin (m + 1) → ℝ)
     (Hinv : Fin (m + 1) → Fin (m + 1) → ℝ)
     (Hhatinv : Fin m → Fin m → ℝ)
     (hS : higham10_4_IsNonsymPosDef (m + 1) S)
-    (hHinvSym : ∀ i j, Hinv i j = Hinv j i)
+    (_hHinvSym : ∀ i j, Hinv i j = Hinv j i)
     (hHinvRight : IsRightInverse (m + 1)
       (symmetricPart (m + 1) S) Hinv)
-    (hHinvLeft : IsLeftInverse (m + 1)
+    (_hHinvLeft : IsLeftInverse (m + 1)
       (symmetricPart (m + 1) S) Hinv)
     (hHhatinvSym : ∀ i j, Hhatinv i j = Hhatinv j i)
     (hHhatinvRight : IsRightInverse m
@@ -400,11 +400,11 @@ theorem higham10_mathias_firstRoundedSchur_sourceCondition_exists
     mul_nonneg (opNorm2_nonneg E) (opNorm2_nonneg HSinv)
   have hparent :
       24 * (↑(m + 1) : ℝ) * Real.sqrt (↑(m + 1) : ℝ) * κ * fp.u ≤ 1 := by
-    convert hsource using 1 <;>
-      simp [higham10_mathias_sourceCondition,
-        higham10_mathias_nThreeHalves, κ] <;> ring
+    convert hsource using 1
+    simp [higham10_mathias_sourceCondition,
+      higham10_mathias_nThreeHalves, κ]; ring
   have hparentT : 24 * (↑(m + 1) : ℝ) * t ≤ 1 := by
-    convert hparent using 1 <;> simp [t] <;> ring
+    convert hparent using 1; simp [t]; ring
   have h24t : 24 * t ≤ 1 := by
     have hN1 : (1 : ℝ) ≤ (↑(m + 1) : ℝ) := by
       exact_mod_cast (show 1 ≤ m + 1 by omega)
@@ -463,9 +463,9 @@ theorem higham10_mathias_firstRoundedSchur_sourceCondition_exists
       (higham10_mathias_kappaH B Hchildinv) fp.u hκ0 fp.u_nonneg hparent
     simpa [t] using hKappaChild
   have hsourceB : higham10_mathias_sourceCondition fp B Hchildinv := by
-    convert hchildScalar using 1 <;>
-      simp [higham10_mathias_sourceCondition,
-        higham10_mathias_nThreeHalves] <;> ring
+    convert hchildScalar using 1
+    simp [higham10_mathias_sourceCondition,
+      higham10_mathias_nThreeHalves]; ring
   have hBEq : B = flSchurCompl m fp A := by
     funext i j
     simp [B, S, E, higham10_mathiasFirstSchurError]

@@ -424,8 +424,8 @@ theorem higham10_14_scalar_absorption_family {ι : Type*} {l : Filter ι}
     (r n : ℕ) (u g e q d rho : ι → ℝ) (a K CG CR : ℝ)
     (ha : 0 ≤ a) (hK : 1 ≤ K) (hCG : 0 ≤ CG) (hCR : 0 ≤ CR)
     (hu0 : ∀ t, 0 ≤ u t) (hu1 : ∀ t, u t ≤ 1)
-    (hg0 : ∀ t, 0 ≤ g t) (he0 : ∀ t, 0 ≤ e t)
-    (hq0 : ∀ t, 0 ≤ q t) (hd0 : ∀ t, 0 ≤ d t)
+    (hg0 : ∀ t, 0 ≤ g t) (_he0 : ∀ t, 0 ≤ e t)
+    (_hq0 : ∀ t, 0 ≤ q t) (_hd0 : ∀ t, 0 ≤ d t)
     (hrho0 : ∀ t, 0 ≤ rho t)
     (hg : ∀ t, g t ≤ CG * u t)
     (hradius : ∀ t, (r : ℝ) * g t ≤ 1 / 2)
@@ -585,14 +585,14 @@ theorem higham10_14_scalar_absorption_family {ι : Type*} {l : Filter ι}
   have hg_sq : g t ^ 2 ≤ CG ^ 2 * u t ^ 2 := by
     have hs := mul_self_le_mul_self hgt0 (hg t)
     rw [pow_two, pow_two]
-    convert hs using 1 <;> ring
+    convert hs using 1; ring
   have hgrho : g t * rho t ≤ CG * CR * u t ^ 2 := by
     have h1 : g t * rho t ≤ (CG * u t) * (CR * u t ^ 2) :=
       mul_le_mul (hg t) (hrho t) (hrho0 t)
         (mul_nonneg hCG hut0)
     have hu3 : u t ^ 3 ≤ u t ^ 2 := by
       have hs := mul_le_mul_of_nonneg_left (hu1 t) (sq_nonneg (u t))
-      convert hs using 1 <;> ring
+      convert hs using 1; ring
     calc
       g t * rho t ≤ (CG * u t) * (CR * u t ^ 2) := h1
       _ = CG * CR * u t ^ 3 := by ring
@@ -610,7 +610,7 @@ theorem higham10_14_scalar_absorption_family {ι : Type*} {l : Filter ι}
       have hc : 0 ≤ 2 * K * (r : ℝ) * a := by positivity
       have h := mul_le_mul_of_nonneg_left hαβdiff
         hc
-      convert h using 1 <;> ring
+      convert h using 1; ring
     have hsecond :
         2 * K * (α * β) * (n : ℝ) * rho t ≤
           8 * K * (n : ℝ) * (g t * rho t) := by
@@ -748,7 +748,7 @@ theorem higham10_14_scalar_absorption_family_of_error_sq
     have hgSq : g t ^ 2 ≤ CG ^ 2 * u t ^ 2 := by
       have hs := mul_self_le_mul_self (hg0 t) (hg t)
       rw [pow_two, pow_two]
-      convert hs using 1 <;> ring
+      convert hs using 1; ring
     calc
       rho t = D * e t ^ 2 := rfl
       _ ≤ D * (4 * (r : ℝ) * a * g t) ^ 2 :=

@@ -178,7 +178,7 @@ theorem pascalOscillationComplementRows_mem_compl {q l : ℕ}
   exact Finset.orderEmbOfFin_mem _ _ _
 
 noncomputable def pascalOscillationInsertedRows {q l : ℕ}
-    (f : Fin (l + 1) → Fin (q + l + 1)) (hf : StrictMono f)
+    (f : Fin (l + 1) → Fin (q + l + 1)) (_hf : StrictMono f)
     (r : Fin (l + 1)) : Finset (Fin (q + l + 1)) :=
   insert (f r) (pascalOscillationFRange f)ᶜ
 
@@ -394,7 +394,7 @@ theorem pascalOscillation_complement_position_parity
     intro x hxs hxg
     have hs : x ∈ sf := (Finset.mem_filter.mp hxs).1
     have hg : x ∈ sg := (Finset.mem_filter.mp hxg).1
-    simpa [sg, hs] using hg
+    simp [sg, hs] at hg
   have hcard := congrArg Finset.card hpartition
   rw [Finset.card_union_of_disjoint hdisjoint, Fin.card_Iio,
     hrCard, ← hsrsg, hpCard] at hcard
@@ -557,7 +557,7 @@ theorem pascalOscillation_leftKernel_orients_maximal_minors {l : ℕ}
     exact (lt_irrefl 0) hp
   have hw₀ : w 0 ≠ 0 := by
     dsimp [w]
-    simp only [Fin.val_zero, zero_add, Fin.zero_succAbove]
+    simp only [zero_add]
     exact mul_ne_zero (by norm_num) hminor₀
   let t : ℝ := w 0 / z 0
   have ht : t ≠ 0 := div_ne_zero hw₀ hz₀

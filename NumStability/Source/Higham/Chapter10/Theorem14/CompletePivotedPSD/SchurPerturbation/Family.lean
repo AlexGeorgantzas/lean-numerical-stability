@@ -184,7 +184,7 @@ theorem higham10_14_actual_schur_perturbation_exact (fp : FPModel) {r s : ℕ}
     (hsuccess : ∀ q : Fin (r + s), q.val < r →
       0 < fl_cholPivot fp (r + s) A q) :
     let E := higham10_14_sourceError fp A r (Nat.le_add_right r s)
-    let A11 : Matrix (Fin r) (Fin r) ℝ := higham10_14_block11 A
+    let _A11 : Matrix (Fin r) (Fin r) ℝ := higham10_14_block11 A
     let A12 : Matrix (Fin r) (Fin s) ℝ := higham10_14_block12 A
     let A21 : Matrix (Fin s) (Fin r) ℝ := higham10_14_block21 A
     let M : Matrix (Fin r) (Fin r) ℝ :=
@@ -422,7 +422,7 @@ theorem higham10_14_linearSchur_opNorm2Le {r s : ℕ}
     (rectMatMul
       (rectMatMul (finiteTranspose W) (higham10_14_block11 E)) W)
     h2 hWt11W
-  convert h3 using 1 <;> ring
+  convert h3 using 1; ring
 
 /-- Quantitative Lemma 10.10 for the literal trailing block in Theorem
 10.14.  The leading term has the exact source coefficient
@@ -575,7 +575,7 @@ theorem higham10_14_actualSchur_quadratic_bound {r s : ℕ}
     have hpre := opNorm2Le_of_abs_le s R (fun _ _ => C0 * e ^ 2 * 1)
       (fun i j => by rw [mul_one]; exact hRentry i j)
       (C0 * e ^ 2 * (s : ℝ)) hscaled
-    convert hpre using 1 <;> simp [C] <;> ring
+    convert hpre using 1; simp [C]; ring
   let L : Matrix (Fin s) (Fin s) ℝ := fun i j =>
     E22 i j - rectMatMul E21 W i j -
       rectMatMul (finiteTranspose W) E12 i j +
@@ -725,7 +725,7 @@ theorem higham10_14_equation_10_22_family_of_success
       (by simpa [hunit t] using hhalf t)
     dsimp [g, CG, u]
     rw [hunit t] at ht
-    convert ht using 1 <;> ring
+    convert ht using 1; ring
   have he0 : ∀ t, 0 ≤ e t := fun t => complexMatrixOp2_nonneg _
   have hq0 : ∀ t, 0 ≤ q t := fun t => complexMatrixOp2_nonneg _
   have hd0 : ∀ t, 0 ≤ d t := fun t => complexMatrixOp2_nonneg _

@@ -221,9 +221,9 @@ theorem pivotPath2_eq_zero_of_ne_corner (fp : FPModel) {m : ℕ}
   rw [pivotPath2]
   rcases hne with hi | hj
   · have h0 := flMixedMult2_eq_zero_of_tridiag fp A hA i (by omega)
-    simp only [Fin.sum_univ_two, h0.1, h0.2, zero_mul, mul_zero, add_zero, zero_add]
+    simp only [Fin.sum_univ_two, h0.1, h0.2, zero_mul, add_zero]
   · have h0 := flMixedMult2_eq_zero_of_tridiag fp A hA j (by omega)
-    simp only [Fin.sum_univ_two, h0.1, h0.2, zero_mul, mul_zero, add_zero, zero_add]
+    simp only [Fin.sum_univ_two, h0.1, h0.2, mul_zero, add_zero]
 
 /-- **Derived off-corner trailing budget.**  For a symmetric tridiagonal matrix,
     the per-stage trailing 2×2 Schur backward error holds with `cStage = 1` at
@@ -294,8 +294,8 @@ theorem higham11_7_bunch_tridiagonal_backward_error
     (fp : FPModel) (hval : gammaValid fp 3)
     {n : ℕ} (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
     (s : PivotSchedule n) (Amax c0 cSolve cStage : ℝ)
-    (hAmax : ∀ i j : Fin n, |A i j| ≤ Amax) (hAmax0 : 0 ≤ Amax)
-    (hc0 : 0 ≤ c0)
+    (hAmax : ∀ i j : Fin n, |A i j| ≤ Amax) (_hAmax0 : 0 ≤ Amax)
+    (_hc0 : 0 ≤ c0)
     (hcS0 : 0 ≤ cSolve) (hcS40 : cSolve ≤ 40)
     (hcSt0 : 0 ≤ cStage) (hcSt5 : cStage ≤ 5)
     (hsmall : (n : ℝ) * fp.u ≤ 1 / 100)
