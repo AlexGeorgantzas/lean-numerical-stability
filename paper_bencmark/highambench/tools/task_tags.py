@@ -209,19 +209,24 @@ def _validate_review_verdict(value: Any, label: str) -> dict[str, Any]:
     passed = verdict.get("passed")
     if not isinstance(passed, bool):
         raise BenchmarkToolError(f"{label}.passed must be a boolean")
-    expected_passed = score >= 3 and tag in T4_PASSING_REVIEW_TAGS
+    if score == 4 and tag != "faithful-stronger":
+        raise BenchmarkToolError(
+            f"{label} score 4 is reserved for faithful-stronger"
+        )
+    if score == 3 and tag != "faithful-equivalent":
+        raise BenchmarkToolError(
+            f"{label} score 3 is reserved for faithful-equivalent"
+        )
+    if score < 3 and tag in T4_PASSING_REVIEW_TAGS:
+        raise BenchmarkToolError(f"{label} a passing tag requires score 3 or 4")
+    expected_passed = (score, tag) in (
+        (3, "faithful-equivalent"),
+        (4, "faithful-stronger"),
+    )
     if passed != expected_passed:
         raise BenchmarkToolError(
             f"{label}.passed must equal the score-and-tag acceptance rule"
         )
-    if score == 4 and tag != "faithful-equivalent":
-        raise BenchmarkToolError(
-            f"{label} score 4 is reserved for faithful-equivalent"
-        )
-    if score == 3 and tag not in T4_PASSING_REVIEW_TAGS:
-        raise BenchmarkToolError(f"{label} score 3 requires a passing tag")
-    if score < 3 and tag in T4_PASSING_REVIEW_TAGS:
-        raise BenchmarkToolError(f"{label} a passing tag requires score 3 or 4")
     _require_string(verdict.get("evidence"), f"{label}.evidence")
     raw_discrepancies = _require_list(
         verdict.get("discrepancies"), f"{label}.discrepancies"
@@ -343,7 +348,8 @@ def validate_t4_task_metadata(
         task.get("source_inventory"), f"{task_label}.source_inventory", nonempty=True
     )
     inventory_ids: list[str] = []
-    inventory_declarations: dict[str, list[str]] = {}
+    inventory_carrier_declarations: dict[str, list[str]] = {}
+    inventory_mapped_declarations: dict[str, list[str]] = {}
     inventory_dispositions: dict[str, str] = {}
     for index, raw_item in enumerate(raw_inventory, start=1):
         item_label = f"{task_label}.source_inventory[{index - 1}]"
@@ -428,6 +434,41 @@ def validate_t4_task_metadata(
         ]
         if len(set(declaration_ids_for_item)) != len(declaration_ids_for_item):
             raise BenchmarkToolError(f"{item_label}.declaration_ids must be unique")
+        raw_mappings = _require_list(
+            item.get("declaration_mappings"),
+            f"{item_label}.declaration_mappings",
+        )
+        mapped_declaration_ids: list[str] = []
+        carrier_declaration_ids: list[str] = []
+        for mapping_index, raw_mapping in enumerate(raw_mappings):
+            mapping_label = (
+                f"{item_label}.declaration_mappings[{mapping_index}]"
+            )
+            mapping = _require_mapping(raw_mapping, mapping_label)
+            mapped_declaration_id = _require_stable_id(
+                mapping.get("declaration_id"),
+                f"{mapping_label}.declaration_id",
+            )
+            if mapped_declaration_id in mapped_declaration_ids:
+                raise BenchmarkToolError(
+                    f"{item_label}.declaration_mappings repeats declaration "
+                    f"{mapped_declaration_id!r}"
+                )
+            mapped_declaration_ids.append(mapped_declaration_id)
+            role = mapping.get("role")
+            if role not in T4_DECLARATION_MAPPING_ROLES:
+                raise BenchmarkToolError(
+                    f"{mapping_label}.role must be one of "
+                    f"{T4_DECLARATION_MAPPING_ROLES}"
+                )
+            _require_string(mapping.get("notes"), f"{mapping_label}.notes")
+            if role in ("primary_carrier", "duplicate_anchor"):
+                carrier_declaration_ids.append(mapped_declaration_id)
+        if declaration_ids_for_item != carrier_declaration_ids:
+            raise BenchmarkToolError(
+                f"{item_label}.declaration_ids must equal its ordered "
+                "primary-carrier and duplicate-anchor mappings"
+            )
         exclusion_reason = item.get("exclusion_reason")
         if disposition == "included":
             if not declaration_ids_for_item:
@@ -443,8 +484,13 @@ def validate_t4_task_metadata(
                 raise BenchmarkToolError(
                     f"{item_label} excluded source cannot map to a declaration"
                 )
+            if mapped_declaration_ids:
+                raise BenchmarkToolError(
+                    f"{item_label} excluded source cannot have declaration_mappings"
+                )
             _require_string(exclusion_reason, f"{item_label}.exclusion_reason")
-        inventory_declarations[inventory_id] = declaration_ids_for_item
+        inventory_carrier_declarations[inventory_id] = declaration_ids_for_item
+        inventory_mapped_declarations[inventory_id] = mapped_declaration_ids
         inventory_dispositions[inventory_id] = disposition
 
     raw_declarations = _require_list(
@@ -596,7 +642,7 @@ def validate_t4_task_metadata(
 
     known_inventory_ids = set(inventory_ids)
     known_declaration_ids = set(declaration_ids)
-    for inventory_id, mapped_declarations in inventory_declarations.items():
+    for inventory_id, mapped_declarations in inventory_mapped_declarations.items():
         for declaration_id in mapped_declarations:
             if declaration_id not in known_declaration_ids:
                 raise BenchmarkToolError(
@@ -620,7 +666,7 @@ def validate_t4_task_metadata(
                     f"{task_label} declaration {declaration_id!r} maps excluded inventory "
                     f"{inventory_id!r}"
                 )
-            if declaration_id not in inventory_declarations[inventory_id]:
+            if declaration_id not in inventory_mapped_declarations[inventory_id]:
                 raise BenchmarkToolError(
                     f"{task_label} mapping {declaration_id!r} -> {inventory_id!r} "
                     "is not bidirectional"
@@ -742,7 +788,7 @@ def validate_t4_task_metadata(
         mapped_declaration_ids = {
             declaration_id
             for source_item_id in unit_source_item_ids
-            for declaration_id in inventory_declarations[source_item_id]
+            for declaration_id in inventory_carrier_declarations[source_item_id]
         }
         expected_unit_declaration_ids = [
             declaration_id
@@ -853,10 +899,16 @@ def validate_t4_task_metadata(
             f"{missing_source_review_units!r}"
         )
 
+    carrier_declaration_ids = {
+        declaration_id
+        for mapped_declarations in inventory_carrier_declarations.values()
+        for declaration_id in mapped_declarations
+    }
     missing_declaration_review_units = [
         declaration_id
         for declaration_id in declaration_ids
-        if not declaration_review_units[declaration_id]
+        if declaration_id in carrier_declaration_ids
+        and not declaration_review_units[declaration_id]
     ]
     if missing_declaration_review_units:
         raise BenchmarkToolError(

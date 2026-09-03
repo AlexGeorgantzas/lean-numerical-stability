@@ -699,7 +699,8 @@
     },
     {
       "assumptions": [
-        "Input is a finite list of floating-point summands."
+        "Input is a finite list of floating-point summands.",
+        "Each combination uses floating-point addition satisfying model (1.2): fl(x + y) = (x + y)(1 + delta), with |delta| <= u."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -710,16 +711,6 @@
           "declaration_id": "P01-T4-D188",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
-        },
-        {
-          "declaration_id": "P01-T4-D189",
-          "notes": "Carries the actual sorted sign-list preparation relation; equal-value ties remain unconstrained because the source gives no tie-breaking rule.",
-          "role": "semantic_context"
-        },
-        {
-          "declaration_id": "P01-T4-D190",
-          "notes": "Carries the actual repeated opposite-sign combination and ordered-reinsertion relation.",
-          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -727,11 +718,12 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I006",
       "review_unit_id": "P01-T4-U018",
-      "scope": "Dixon and Mills' algorithm evaluates the finite sum by sorting and partitioning the terms into ordered negative and nonnegative lists, repeatedly combining the largest nonnegative and most negative entries, reinserting each result into the appropriate ordered list, and returning a scalar result.",
+      "scope": "The source states that Dixon and Mills' algorithm evaluates the finite sum by sorting and partitioning the terms into ordered negative and nonnegative lists, repeatedly combining the largest nonnegative and most negative entries, and reinserting each result into the appropriate ordered list.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [
         "Tie breaking is not specified.",
-        "The cited paragraph does not specify how a terminal multi-element one-signed residual is reduced to one scalar."
+        "The cited paragraph does not state how a terminal multi-element one-signed residual is reduced to one scalar.",
+        "P01-T4-D188 is a transparent attributed report of the specified reduction and the omitted terminal rule, not an invented terminal evaluator."
       ],
       "source_kind": "algorithm",
       "source_locations": [
@@ -743,7 +735,7 @@
         }
       ],
       "source_order": 18,
-      "source_status": "definitional_algorithm",
+      "source_status": "definitional_algorithm_source_issue",
       "source_tags": [
         "TXT"
       ]
@@ -906,12 +898,17 @@
       ],
       "author_label": null,
       "declaration_ids": [
-        "P01-T4-D001"
+        "P01-T4-D322"
       ],
       "declaration_mappings": [
         {
           "declaration_id": "P01-T4-D001",
-          "notes": "This declaration directly carries the atomic source claim.",
+          "notes": "Supplies the zero-seeded recurrence used by the source-facing model-bound carrier.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D322",
+          "notes": "HighamBench.p01FloatingRecursiveSum binds those recursive equations to the paper's floating-point addition model.",
           "role": "primary_carrier"
         }
       ],
@@ -921,7 +918,7 @@
       "inventory_id": "P01-I010",
       "review_unit_id": "P01-T4-U023",
       "scope": "Initialize s = 0 and perform s := s + x_i for i = 1,...,n.",
-      "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
+      "smallest_group_reason": "P01-T4-D322 alone directly carries the scoped algorithm; its semantic closure includes P01-T4-D001.",
       "source_issue_notes": [],
       "source_kind": "algorithm",
       "source_locations": [
@@ -981,16 +978,21 @@
     },
     {
       "assumptions": [
-        "x_i are real and the computed prefixes use recursive summation."
+        "x_i are real; the computed prefixes use the preceding zero-seeded recursive floating-point summation algorithm under model (1.2)."
       ],
       "author_label": null,
       "declaration_ids": [
-        "P01-T4-D006"
+        "P01-T4-D325"
       ],
       "declaration_mappings": [
         {
           "declaration_id": "P01-T4-D006",
-          "notes": "This declaration directly carries the atomic source claim.",
+          "notes": "Supplies the recursive-error expression used by the source-facing model-bound carrier.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D325",
+          "notes": "Binds the computed recursive sum and its error to the paper's relative-error floating-point addition model.",
           "role": "primary_carrier"
         }
       ],
@@ -1000,7 +1002,7 @@
       "inventory_id": "P01-I011",
       "review_unit_id": "P01-T4-U025",
       "scope": "S_k = sum_{i=1}^k x_i, S_hat_k is the computed prefix, and E_n = S_hat_n - S_n.",
-      "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
+      "smallest_group_reason": "P01-T4-D325 alone directly carries the scoped error definition; its semantic closure includes P01-T4-D006.",
       "source_issue_notes": [],
       "source_kind": "definition",
       "source_locations": [
@@ -1020,7 +1022,7 @@
     },
     {
       "assumptions": [
-        "Standard model (1.2); recursive summation."
+        "Standard model (1.2); recursive summation; the floating-point addition used here satisfies fl(0+x)=x, so S_hat_1=x_1 and the rounded recurrence begins at k=2."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -1040,7 +1042,9 @@
       "review_unit_id": "P01-T4-U026",
       "scope": "S_hat_k = fl(S_hat_(k-1)+x_k) = (S_hat_(k-1)+x_k)(1+delta_k), |delta_k| <= u, k=2,...,n.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
-      "source_issue_notes": [],
+      "source_issue_notes": [
+        "Equation (1.2) alone does not state the exact-zero law; this theorem records it explicitly to reconcile the zero-seeded pseudocode with equation (2.1)."
+      ],
       "source_kind": "numbered_equation",
       "source_locations": [
         {
@@ -1095,9 +1099,7 @@
       ]
     },
     {
-      "assumptions": [
-        "m*u < 1 is implicit in the denominator."
-      ],
+      "assumptions": [],
       "author_label": null,
       "declaration_ids": [
         "P01-T4-D229"
@@ -1114,10 +1116,10 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I014",
       "review_unit_id": "P01-T4-U028",
-      "scope": "If |delta_i| <= u then product_{i=1}^m(1+delta_i) = 1+theta_m with |theta_m| <= m*u/(1-m*u) = gamma_m.",
+      "scope": "The source asserts that if |delta_i| <= u then product_{i=1}^m(1+delta_i) = 1+theta_m with |theta_m| <= m*u/(1-m*u) = gamma_m, without stating m*u < 1.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [
-        "The displayed rational bound is false when m*u is at least one; the source omits the denominator-positivity condition that the Lean carrier makes explicit."
+        "The source omits denominator positivity, so the unrestricted displayed rational bound is false when m*u is at least one. P01-T4-D229 is a transparent attributed report of that source assertion, not a theorem asserting the false unrestricted bound."
       ],
       "source_kind": "precise_unnumbered_claim",
       "source_locations": [
@@ -1129,7 +1131,7 @@
         }
       ],
       "source_order": 28,
-      "source_status": "assertive_lemma_with_implicit_domain_source_issue",
+      "source_status": "assertive_source_issue",
       "source_tags": [
         "TXT",
         "UNL"
@@ -1137,7 +1139,8 @@
     },
     {
       "assumptions": [
-        "n >= 2; P01GammaValid(u,n-1)."
+        "n >= 2.",
+        "The local factors delta_k are the model-(1.2) witnesses from equation (2.1), so |delta_k| <= u."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -1155,21 +1158,22 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I015",
       "review_unit_id": "P01-T4-U029",
-      "scope": "S_hat_n = (x_1+x_2)(1+theta_(n-1)) + sum_{i=3}^n x_i(1+theta_(n-i+1)).",
+      "scope": "For the local factors delta_k from (2.1), each theta is its input path's product of (1+delta_k) factors minus 1; then S_hat_n = (x_1+x_2)(1+theta_(n-1)) + sum_{i=3}^n x_i(1+theta_(n-i+1)).",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [
-        "Different product occurrences require separate theta witnesses despite reused source notation."
+        "Different product occurrences require separate theta witnesses despite reused source notation.",
+        "The gamma inequality and its omitted denominator-positivity condition are separately inventoried in P01-I014/P01-T4-D229; P01-T4-D230 carries the unconditional exact product rewrite."
       ],
       "source_kind": "numbered_equation",
       "source_locations": [
         {
-          "anchor": "recursive-summation setup across the page 784--785 break and equation (2.3)",
+          "anchor": "equations (2.2)--(2.3) and the intervening finite-product remainder statement",
           "pdf_page": 2,
           "printed_page": 784,
           "section": "2"
         },
         {
-          "anchor": "recursive-summation setup across the page 784--785 break and equation (2.3)",
+          "anchor": "equations (2.2)--(2.3) and the intervening finite-product remainder statement",
           "pdf_page": 3,
           "printed_page": 785,
           "section": "2"
@@ -1183,7 +1187,7 @@
     },
     {
       "assumptions": [
-        "Theta witnesses from (2.3)."
+        "The theta values are the path-associated product remainders from equation (2.3)."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -1194,6 +1198,11 @@
           "declaration_id": "P01-T4-D231",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D230",
+          "notes": "Equation (2.3) supplies the product-remainder expansion used by equation (2.4).",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -1201,13 +1210,19 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I016",
       "review_unit_id": "P01-T4-U030",
-      "scope": "|E_n| = |(x_1+x_2)theta_(n-1) + sum_{i=3}^n x_i theta_(n-i+1)|.",
-      "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
+      "scope": "For the same path-associated theta values from (2.3), |E_n| = |(x_1+x_2)theta_(n-1) + sum_{i=3}^n x_i theta_(n-i+1)|.",
+      "smallest_group_reason": "P01-T4-D231 directly carries equation (2.4), while P01-T4-D230 supplies the immediately preceding theta expansion needed to interpret it.",
       "source_issue_notes": [],
       "source_kind": "numbered_equation",
       "source_locations": [
         {
-          "anchor": "equation (2.4)",
+          "anchor": "equations (2.2)--(2.4) and the intervening finite-product remainder statement",
+          "pdf_page": 2,
+          "printed_page": 784,
+          "section": "2"
+        },
+        {
+          "anchor": "equations (2.2)--(2.4) and the intervening finite-product remainder statement",
           "pdf_page": 3,
           "printed_page": 785,
           "section": "2"
@@ -1326,12 +1341,6 @@
           "anchor": "second clause after equation (2.5), witnessed by example (2.9)",
           "pdf_page": 3,
           "printed_page": 785,
-          "section": "2"
-        },
-        {
-          "anchor": "second clause after equation (2.5), witnessed by example (2.9)",
-          "pdf_page": 5,
-          "printed_page": 787,
           "section": "2"
         }
       ],
@@ -1521,6 +1530,11 @@
           "declaration_id": "P01-T4-D238",
           "notes": "This declaration is one member of the smallest ordered group needed to carry the atomic source claim. This occurrence is an explicit reuse required independently by this source item.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D235",
+          "notes": "Equation (2.6) supplies the recursive bound used by this one-signed relative-error consequence.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -1704,12 +1718,18 @@
       ],
       "author_label": null,
       "declaration_ids": [
-        "P01-T4-D008"
+        "P01-T4-D008",
+        "P01-T4-D323"
       ],
       "declaration_mappings": [
         {
           "declaration_id": "P01-T4-D008",
-          "notes": "This declaration directly carries the atomic source claim.",
+          "notes": "HighamBench.P01PsumOptimal directly supplies the minimization predicate defining a solution.",
+          "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D323",
+          "notes": "HighamBench.p01PsumObjectiveSuggestionReport directly records that equation (2.8) suggests this objective-and-solution problem.",
           "role": "primary_carrier"
         }
       ],
@@ -1719,7 +1739,7 @@
       "inventory_id": "P01-I027",
       "review_unit_id": "P01-T4-U043",
       "scope": "Choose a permutation minimizing sum_{k=2}^n |S_hat_k|.",
-      "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
+      "smallest_group_reason": "P01-T4-D008 gives the solution predicate and P01-T4-D323 records the source's suggested optimization problem; both are required direct carriers.",
       "source_issue_notes": [],
       "source_kind": "problem",
       "source_locations": [
@@ -1816,7 +1836,7 @@
     },
     {
       "assumptions": [
-        "Comparison-based ordering."
+        "The Psum sequential minimization rule of P01-I028; floating addition has the conventional order-preservation property that, for each fixed accumulated sum, the rounded result is monotone in the candidate operand; ties between minimizers are unspecified."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -1825,7 +1845,7 @@
       "declaration_mappings": [
         {
           "declaration_id": "P01-T4-D011",
-          "notes": "This declaration directly carries the atomic source claim.",
+          "notes": "This declaration states that a static comparison program realizes Psum and has a uniform O(n log n) worst-case bound. Its only data-dependent tests compare raw inputs, a rounded next candidate with zero, or the absolute values of two rounded next candidates.",
           "role": "primary_carrier"
         },
         {
@@ -1841,8 +1861,10 @@
       "review_unit_id": "P01-T4-U046",
       "scope": "Psum can be implemented with O(n log n) comparisons.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
-      "source_issue_notes": [],
-      "source_kind": "empirical_claim",
+      "source_issue_notes": [
+        "The sentence does not restate the conventional order-preservation property of floating addition used by the O(n log n) construction; the Lean carrier makes that implicit operational property explicit."
+      ],
+      "source_kind": "precise_unnumbered_claim",
       "source_locations": [
         {
           "anchor": "end of Psum paragraph; atomic clause: Psum comparison complexity",
@@ -1965,7 +1987,7 @@
       "source_issue_notes": [
         "The source does not give a quantitative meaning or threshold for r much smaller than t."
       ],
-      "source_kind": "definition",
+      "source_kind": "precise_unnumbered_claim",
       "source_locations": [
         {
           "anchor": "near-attainability construction; qualitative parameter regime before the displayed family",
@@ -1982,7 +2004,7 @@
     },
     {
       "assumptions": [
-        "r is much smaller than t in the source; formal uses require explicit inequalities."
+        "The source's r much smaller than t condition is qualitative and undefined; P01-T4-D013 records it without inventing a numerical threshold."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -1993,6 +2015,11 @@
           "declaration_id": "P01-T4-D012",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D013",
+          "notes": "This report records the source's qualitative r-much-smaller-than-t regime for the displayed family.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -2001,7 +2028,7 @@
       "inventory_id": "P01-I030",
       "review_unit_id": "P01-T4-U050",
       "scope": "Set u=2^-t, n=2^r, x(1)=1, x(2)=1-2^-t, and x(2^(j-1)+1:2^j)=1-2^(j-1-t).",
-      "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
+      "smallest_group_reason": "P01-T4-D012 directly carries the displayed input family, and P01-T4-D013 records its qualitative parameter regime.",
       "source_issue_notes": [],
       "source_kind": "symbolic_example",
       "source_locations": [
@@ -2021,7 +2048,7 @@
     },
     {
       "assumptions": [
-        "The near-attainability input family in P01-I030."
+        "The near-attainability input family in P01-I030, the paper's relative-error addition model with u=2^-t, and the qualitative r-much-smaller-than-t regime; x(1)=1 is initialized directly and the rounded additions begin at the next input."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -2030,8 +2057,18 @@
       "declaration_mappings": [
         {
           "declaration_id": "P01-T4-D014",
-          "notes": "This declaration directly carries the atomic source claim.",
+          "notes": "This declaration records the source-attributed trace for the actual rounded additions only (zero-based k>0), under model (1.2), without assuming universal exact addition of zero.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D012",
+          "notes": "The displayed input family is material context for this rounding-trace assertion.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D013",
+          "notes": "The qualitative r-much-smaller-than-t regime is material context for this assertion.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -2040,17 +2077,23 @@
       "inventory_id": "P01-I031B",
       "review_unit_id": "P01-T4-U051",
       "scope": "Under the qualitative regime r much smaller than t, the source asserts the displayed discarded-bit and computed-prefix rounding trace for the construction.",
-      "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
+      "smallest_group_reason": "P01-T4-D014 records the model-conditioned trace for exactly the actual additions after the direct initialization x(1)=1; P01-T4-D012 and P01-T4-D013 provide its displayed input and qualitative regime.",
       "source_issue_notes": [
         "No quantitative separation between r and t is supplied, so the assertion is retained as attributed status."
       ],
-      "source_kind": "symbolic_example",
-      "source_locations": [
-        {
-          "anchor": "sentence after the near-attainability input display; asserted discarded-bit trace",
-          "pdf_page": 4,
-          "printed_page": 786,
-          "section": "2"
+    "source_kind": "symbolic_example",
+    "source_locations": [
+      {
+        "anchor": "standard floating-point model context and near-attainability rounding trace",
+        "pdf_page": 2,
+        "printed_page": 784,
+        "section": "1--2"
+      },
+      {
+        "anchor": "standard floating-point model context and near-attainability rounding trace",
+        "pdf_page": 4,
+        "printed_page": 786,
+        "section": "1--2"
         }
       ],
       "source_order": 51,
@@ -2061,7 +2104,7 @@
     },
     {
       "assumptions": [
-        "The stated radix-two rounding regime and input family."
+        "The stated radix-two round-to-nearest regime and input family, with precision t and r < t as an explicit sufficient interpretation of the source's qualitative r much smaller than t regime."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -2097,7 +2140,8 @@
       "scope": "For the near-attainability input, every actually computed recursive prefix satisfies S_hat_k = k for k=1,...,n.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [
-        "The source uses an undefined block index k in this sentence; the target resolves it by the unique dyadic input block containing the step index."
+        "The source uses an undefined block index k in this sentence; the target resolves it by the unique dyadic input block containing the step index.",
+        "The source does not quantify r much smaller than t; the target uses the explicit sufficient separation r < t and derives the computed-prefix trace from the binary rounding model rather than assuming the trace."
       ],
       "source_kind": "symbolic_example",
       "source_locations": [
@@ -2182,6 +2226,21 @@
           "declaration_id": "P01-T4-D246",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D012",
+          "notes": "The displayed input family is material context for this total-error identity.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D013",
+          "notes": "The qualitative r-much-smaller-than-t regime is material context for this total-error identity.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D014",
+          "notes": "The asserted rounding trace is material context for this total-error identity.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -2210,7 +2269,8 @@
     },
     {
       "assumptions": [
-        "The denominator condition P01GammaValid (2^-t) (2^r)."
+        "The denominator condition P01GammaValid (2^-t) (2^r).",
+        "The qualitative regime r much smaller than t from the near-attainability construction."
       ],
       "author_label": null,
       "declaration_ids": [
@@ -2221,6 +2281,11 @@
           "declaration_id": "P01-T4-D247",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D013",
+          "notes": "The qualitative r-much-smaller-than-t regime is material context for this strict upper estimate.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -2228,8 +2293,8 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I033",
       "review_unit_id": "P01-T4-U055",
-      "scope": "For the near-attainability family, the equation-(2.6) bound is strictly less than [2^r*2^-t/(1-2^r*2^-t)]*2^r.",
-      "smallest_group_reason": "The theorem carries the strict displayed comparison, not merely its weak relaxation.",
+      "scope": "For the near-attainability family, the equation-(2.6) bound is at most [2^r*2^-t/(1-2^r*2^-t)]*2^r.",
+      "smallest_group_reason": "The theorem carries the same-domain strict strengthening of the displayed non-strict comparison.",
       "source_issue_notes": [],
       "source_kind": "symbolic_example",
       "source_locations": [
@@ -2260,6 +2325,11 @@
           "declaration_id": "P01-T4-D105",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D013",
+          "notes": "The qualitative r-much-smaller-than-t regime is material context for this reported approximation.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -2817,23 +2887,24 @@
     },
     {
       "assumptions": [
-        "M is large enough that fl(1+M)=M; the material footnote fixes the rounding modes.",
+        "M is a machine-base power satisfying fl(1+M)=M and the printed condition M >= u^-1; the material footnote fixes round-to-nearest with ties-to-even or ties-away.",
         "The four entries are floating-point data in the machine radix and precision."
       ],
       "author_label": null,
       "declaration_ids": [
-        "P01-T4-D015"
+        "P01-T4-D015",
+        "P01-T4-D324"
       ],
       "declaration_mappings": [
         {
           "declaration_id": "P01-T4-D015",
-          "notes": "This declaration directly carries the atomic source claim.",
+          "notes": "HighamBench.p01Eq29Input directly supplies the four-entry input formula.",
           "role": "primary_carrier"
         },
         {
-          "declaration_id": "P01-T4-D116",
-          "notes": "Its setup fields carry the machine-base-power, rounding-mode, tie-policy, fl(1+M)=M, and M>u^-1 qualifications; its later explanatory fields belong to the independently inventoried consequence.",
-          "role": "semantic_context"
+          "declaration_id": "P01-T4-D324",
+          "notes": "HighamBench.p01Eq29SetupReport directly carries the machine-power, M >= u^-1, rounding-mode, tie-policy, and fl(1+M)=M setup.",
+          "role": "primary_carrier"
         }
       ],
       "disposition": "included",
@@ -2841,8 +2912,8 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I036",
       "review_unit_id": "P01-T4-U069",
-      "scope": "Let x=[1,M,2M,-3M], where M is a machine-base power, fl(1+M)=M (hence M>u^-1), under round-to-nearest with ties-to-even or ties-away.",
-      "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
+      "scope": "Let x=[1,M,2M,-3M], where M is a machine-base power, fl(1+M)=M, and M>=u^-1, under round-to-nearest with ties-to-even or ties-away.",
+      "smallest_group_reason": "P01-T4-D015 gives the displayed input and P01-T4-D324 gives its full printed hypotheses; together they are the smallest direct carrier group.",
       "source_issue_notes": [],
       "source_kind": "symbolic_example",
       "source_locations": [
@@ -2918,6 +2989,11 @@
           "declaration_id": "P01-T4-D116",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D015",
+          "notes": "Equation (2.9)'s input and setup are material context for the decreasing-order explanation.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -2969,7 +3045,13 @@
       "source_kind": "symbolic_example",
       "source_locations": [
         {
-          "anchor": "unnumbered mu display after (2.9)",
+          "anchor": "equation (2.9) setup and the unnumbered running-magnitude display after it",
+          "pdf_page": 4,
+          "printed_page": 786,
+          "section": "2"
+        },
+        {
+          "anchor": "equation (2.9) setup and the unnumbered running-magnitude display after it",
           "pdf_page": 5,
           "printed_page": 787,
           "section": "2"
@@ -2995,6 +3077,11 @@
           "declaration_id": "P01-T4-D117",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D251",
+          "notes": "The three running-magnitude values are material context for the reported prediction.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -3172,9 +3259,7 @@
       ]
     },
     {
-      "assumptions": [
-        "A nontrivial execution with enough inputs to contain the claimed addition."
-      ],
+      "assumptions": [],
       "author_label": null,
       "declaration_ids": [
         "P01-T4-D252"
@@ -3193,9 +3278,7 @@
       "review_unit_id": "P01-T4-U078",
       "scope": "Every addition in recursive summation has at least one original input as an operand.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
-      "source_issue_notes": [
-        "The later powers-of-two insertion example reduces to a recursive trace and therefore conflicts with a literal universal reading of the second clause."
-      ],
+      "source_issue_notes": [],
       "source_kind": "precise_unnumbered_claim",
       "source_locations": [
         {
@@ -3203,24 +3286,16 @@
           "pdf_page": 5,
           "printed_page": 787,
           "section": "3"
-        },
-        {
-          "anchor": "structural comparison immediately after equation (3.1), with later insertion specialization; atomic clause: recursive-tree structural assertion",
-          "pdf_page": 7,
-          "printed_page": 789,
-          "section": "3"
         }
       ],
       "source_order": 80,
-      "source_status": "assertive_with_source_tension",
+      "source_status": "assertive",
       "source_tags": [
         "TXT"
       ]
     },
     {
-      "assumptions": [
-        "A nontrivial execution with enough inputs to contain the claimed addition."
-      ],
+      "assumptions": [],
       "author_label": null,
       "declaration_ids": [
         "P01-T4-D022"
@@ -3230,6 +3305,21 @@
           "declaration_id": "P01-T4-D022",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D016",
+          "notes": "Equation (3.1)'s general addition-scheme definition is material context for the structural assertion.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D270",
+          "notes": "The powers-of-two insertion specialization is material context for the source-level counterexample.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D271",
+          "notes": "The concrete powers-of-two insertion trace is material context for the source-level counterexample.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -3237,7 +3327,7 @@
       "exclusion_reason": null,
       "inventory_id": "P01-I040C",
       "review_unit_id": "P01-T4-U079",
-      "scope": "The paper reports that each of the other three general-class methods has at least one addition of two previously computed sums, but the insertion method on powers of two supplies a source-level counterexample to that literal wording.",
+      "scope": "The paper reports that each of the other general-class methods has at least one addition of two previously computed sums, but the insertion method on powers of two supplies a source-level counterexample to that literal wording.",
       "smallest_group_reason": "This single declaration directly carries the atomic source claim.",
       "source_issue_notes": [
         "The later powers-of-two insertion example reduces to a recursive trace and therefore conflicts with a literal universal reading of the second clause."
@@ -3504,6 +3594,41 @@
           "declaration_id": "P01-T4-D259",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D235",
+          "notes": "Equation (2.6) is material context for the recursive-tree specialization claim.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D240",
+          "notes": "Equation (2.7) is material context for the recursive-tree specialization claim.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D241",
+          "notes": "Equation (2.8) is material context for the recursive-tree specialization claim.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D254",
+          "notes": "The local tree-error formula is material context for equations (3.3)--(3.5).",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D255",
+          "notes": "Equation (3.3) is material context for the specialization claim.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D256",
+          "notes": "Equation (3.4) is material context for the specialization claim.",
+          "role": "semantic_context"
+        },
+        {
+          "declaration_id": "P01-T4-D258",
+          "notes": "Equation (3.5) is material context for the specialization claim.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",
@@ -3707,6 +3832,11 @@
           "declaration_id": "P01-T4-D191",
           "notes": "This declaration directly carries the atomic source claim.",
           "role": "primary_carrier"
+        },
+        {
+          "declaration_id": "P01-T4-D261",
+          "notes": "The logarithmic stage-count theorem is material context for the every-stage parallelism claim.",
+          "role": "semantic_context"
         }
       ],
       "disposition": "included",

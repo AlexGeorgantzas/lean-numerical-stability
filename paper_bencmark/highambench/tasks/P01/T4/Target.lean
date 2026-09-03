@@ -14,19 +14,25 @@ namespace HighamBench
 open scoped BigOperators
 
 /-- Recursive, pairwise, insertion, and sign-separated summation are the four
-methods with the literal indexed form (3.1). -/
-theorem p01_t4_four_methods_are_general_addition_schemes :
-    ∀ (n : ℕ) (x : Fin n → ℝ), 0 < n →
-      P01AdditionScheme n x
-          (p01RecursiveList (· + ·) (List.ofFn x)) ∧
-      (∀ result,
-        P01PairwiseEvaluation (· + ·) (List.ofFn x) result →
-        P01AdditionScheme n x result) ∧
-      (∀ result,
-        P01InsertionEvaluation (· + ·) (List.ofFn x) result →
-        P01AdditionScheme n x result) ∧
-      P01AdditionScheme n x
-        (p01PlusMinusFinal (· + ·) (List.ofFn x)) := by
+floating-point methods with the literal indexed structure (3.1). -/
+theorem p01_t4_four_methods_are_general_addition_schemes
+    (fp : P01RelativeAddModel) :
+    (∀ inputs : List ℝ, inputs ≠ [] →
+      ∃ tree : P01SumTree,
+        P01Equation31Instance inputs tree ∧
+        tree.rounded fp.fl_add = p01RecursiveList fp.fl_add inputs) ∧
+    (∀ inputs result, inputs ≠ [] →
+      P01PairwiseEvaluation fp.fl_add inputs result →
+      ∃ tree : P01SumTree,
+        P01Equation31Instance inputs tree ∧ tree.rounded fp.fl_add = result) ∧
+    (∀ inputs result, inputs ≠ [] →
+      P01InsertionEvaluation fp.fl_add inputs result →
+      ∃ tree : P01SumTree,
+        P01Equation31Instance inputs tree ∧ tree.rounded fp.fl_add = result) ∧
+    (∀ inputs result, inputs ≠ [] →
+      P01PlusMinusEvaluation fp.fl_add inputs result →
+      ∃ tree : P01SumTree,
+        P01Equation31Instance inputs tree ∧ tree.rounded fp.fl_add = result) := by
   -- PROOF_START P01-D001
   sorry
 /-- The function and coordinate-derivative symmetries stated immediately after
@@ -42,8 +48,13 @@ theorem p01_t4_rosenbrock_pair_swap (a b c d : ℝ) :
   sorry
 /-- Equation (2.1): all recursive additions admit bounded local factors. -/
 theorem p01_t4_eq_2_1
-    (fp : P01StandardAddModel) (n : ℕ) (v : Fin n → ℝ) (hn : 0 < n) :
-    ∃ δ : Fin n → ℝ, P01RecursiveDeltaWitness fp n v δ := by
+    (fp : P01RelativeAddModel) (n : ℕ) (v : Fin n → ℝ) (hn : 0 < n)
+    (hzero : ∀ x : ℝ, fp.fl_add 0 x = x) :
+    ∃ δ : Fin n → ℝ, ∀ k : Fin n, 0 < k.val →
+      |δ k| ≤ fp.u ∧
+      p01RecursivePrefixWith fp.fl_add n v k =
+        (p01RecursivePrefixWith fp.fl_add n v (p01PreviousIndex k) + v k) *
+          (1 + δ k) := by
   -- PROOF_START P01-D012
   sorry
 /-- Equation (2.2), represented as one path product for each input. -/
@@ -53,19 +64,9 @@ theorem p01_t4_eq_2_2
     p01RecursiveSum flAdd n v = p01RecursiveProductExpansion n v δ := by
   -- PROOF_START P01-D013
   sorry
-/-- The finite-product lemma displayed after equation (2.2). -/
-theorem p01_t4_finite_product_theta
-    (u : ℝ) (m : ℕ) (δ : Fin m → ℝ)
-    (hu : 0 ≤ u) (hvalid : P01GammaValid u m)
-    (hδ : ∀ i, |δ i| ≤ u) :
-    ∃ θ : ℝ,
-      (∏ i : Fin m, (1 + δ i)) = 1 + θ ∧ |θ| ≤ p01Gamma u m := by
-  -- PROOF_START P01-D014
-  sorry
 /-- Equation (2.3), with a separate product remainder for every input path. -/
 theorem p01_t4_eq_2_3
-    (fp : P01StandardAddModel) (n : ℕ) (v : Fin n → ℝ) (hn : 2 ≤ n)
-    (hvalid : P01GammaValid fp.u (n - 1)) :
+    (fp : P01StandardAddModel) (n : ℕ) (v : Fin n → ℝ) (hn : 2 ≤ n) :
     ∃ θ : Fin n → ℝ, P01RecursiveThetaWitness fp n v θ := by
   -- PROOF_START P01-D015
   sorry
@@ -126,12 +127,11 @@ theorem p01_t4_gamma_first_order_remainder
   sorry
 /-- The unnumbered relative-error consequence of equation (2.6). -/
 theorem p01_t4_recursive_relative_error
-    (flAdd : ℝ → ℝ → ℝ) (u : ℝ) (n : ℕ) (v : Fin n → ℝ)
-    (h26 : |p01RecursiveError flAdd n v| ≤
-      p01Gamma u (n - 1) * p01AbsoluteSum n v)
+    (fp : P01StandardAddModel) (n : ℕ) (v : Fin n → ℝ)
+    (hvalid : P01GammaValid fp.u (n - 1))
     (hsum : p01ExactSum n v ≠ 0) :
-    |p01RecursiveError flAdd n v| / |p01ExactSum n v| ≤
-      p01Gamma u (n - 1) * p01SummationCondition n v := by
+    |p01RecursiveError fp.fl_add n v| / |p01ExactSum n v| ≤
+      p01Gamma fp.u (n - 1) * p01SummationCondition n v := by
   -- PROOF_START P01-D021
   sorry
 /-- For nonnegative data with nonzero sum, the absolute-sum condition number is one. -/
@@ -188,6 +188,10 @@ theorem p01_t4_eq_2_8_recovers_eq_2_5
             C * (u : ℝ) ^ 2 := by
   -- PROOF_START P01-D026
   sorry
+/-- Psum can be implemented with `O(n log n)` comparisons. -/
+theorem p01PsumComplexityReport : P01PsumComplexityClaim := by
+  -- PROOF_START P01-D011
+  sorry
 /-- Psum can change when only the signs change, whereas magnitude ordering cannot. -/
 theorem p01_t4_psum_depends_on_signs :
     (∀ {n : ℕ} (v w : Fin n → ℝ) (p : Equiv.Perm (Fin n)),
@@ -211,12 +215,14 @@ theorem p01_t4_near_attainability_local_error
         (2 : ℝ) ^ ((Nat.log 2 k.val : ℤ) - (t : ℤ)) := by
   -- PROOF_START P01-D031E
   sorry
-/-- Every computed partial sum in the near-attainability example is the corresponding integer. -/
+/-- Under the explicit sufficient separation `r < t`, every binary
+round-to-nearest partial sum in the near-attainability example is the
+corresponding integer. -/
 theorem p01_t4_near_attainability_computed_prefixes
-    (flAdd : ℝ → ℝ → ℝ) (r t : ℕ)
-    (htrace : P01NearAttainabilityRoundingTrace flAdd r t) :
+    (fp : P01BinaryRoundModel) (r t : ℕ)
+    (hprecision : fp.precision = t) (hrt : r < t) :
     ∀ k : Fin (2 ^ r),
-      p01RecursiveSum flAdd (k.val + 1)
+      p01RecursiveSum (p01RoundAdd fp) (k.val + 1)
           (fun i => p01NearAttainabilityInput r t ⟨i.val, by omega⟩) =
         ((k.val + 1 : ℕ) : ℝ) := by
   -- PROOF_START P01-D031R
@@ -323,17 +329,17 @@ theorem p01_t4_recursive_tree_every_addition_has_original_operand
   -- PROOF_START P01-D040R
   sorry
 /-- Equation (3.2): every rounded addition tree has bounded local factors. -/
-theorem p01_t4_eq_3_2 (fp : P01StandardAddModel) (tree : P01SumTree) :
-    P01TreeRespectsStandardModel fp tree := by
+theorem p01_t4_eq_3_2 (fp : P01RelativeAddModel) (tree : P01SumTree) :
+    P01TreeRespectsRelativeModel fp tree := by
   -- PROOF_START P01-D041
   sorry
 /-- The local-error formula immediately preceding equation (3.3). -/
 theorem p01_t4_tree_local_error
-    (fp : P01StandardAddModel) (left right : P01SumTree) (hu : fp.u < 1) :
-    ∃ δ : ℝ, |δ| ≤ fp.u ∧
-      let value := P01SumTree.rounded fp.fl_add (.node left right)
-      value - (P01SumTree.rounded fp.fl_add left +
-        P01SumTree.rounded fp.fl_add right) = value * δ / (1 + δ) := by
+    (u left right value δ : ℝ)
+    (hstep : P01Equation32LocalStep u left right value δ)
+    (hden : 1 + δ ≠ 0) :
+    value - (left + right) = (left + right) * δ ∧
+    (left + right) * δ = value * δ / (1 + δ) := by
   -- PROOF_START P01-D042
   sorry
 /-- Equation (3.3): total error is the sum of the local addition errors. -/
@@ -346,7 +352,7 @@ theorem p01_t4_eq_3_3
 /-- Equation (3.4): the coefficient is the least uniform local-error coefficient,
 and it gives the general-tree running bound. -/
 theorem p01_t4_eq_3_4
-    (fp : P01StandardAddModel) (tree : P01SumTree) (hu : fp.u < 1) :
+    (fp : P01RelativeAddModel) (tree : P01SumTree) (hu : fp.u < 1) :
     (∀ c : ℝ,
       (∀ δ : ℝ, |δ| ≤ fp.u → |δ / (1 + δ)| ≤ c) →
         fp.u / (1 - fp.u) ≤ c) ∧

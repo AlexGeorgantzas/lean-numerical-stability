@@ -29,6 +29,16 @@ structure P01StandardAddModel where
 
 attribute [simp] P01StandardAddModel.fl_add_zero
 
+/-- The P01 relative-error addition model for floating-point inputs. -/
+structure P01RelativeAddModel where
+  u : ℝ
+  u_nonneg : 0 ≤ u
+  fl_add : ℝ → ℝ → ℝ
+  model_add :
+    ∀ x y : ℝ, ∃ δ : ℝ,
+      |δ| ≤ u ∧
+      fl_add x y = (x + y) * (1 + δ)
+
 /-- P01's accumulated-error number `γₙ = n*u/(1-n*u)`. -/
 noncomputable def p01Gamma (u : ℝ) (n : ℕ) : ℝ :=
   ((n : ℝ) * u) / (1 - (n : ℝ) * u)
@@ -36,6 +46,30 @@ noncomputable def p01Gamma (u : ℝ) (n : ℕ) : ℝ :=
 /-- Positivity condition for the denominator of `p01Gamma`. -/
 def P01GammaValid (u : ℝ) (n : ℕ) : Prop :=
   (n : ℝ) * u < 1
+
+/-- Status-preserving carrier for the finite-product claim whose printed form
+omits the denominator-positivity condition needed by the rational bound. -/
+structure P01FiniteProductThetaSourceIssueReport where
+  claimedStatement :
+    (u : ℝ) → (m : ℕ) → (Fin m → ℝ) → Prop
+  printedGamma : ℝ → ℕ → ℝ
+  sourceStatesTheClaim : Bool
+  denominatorPositivityConditionPrinted : Bool
+  denominatorPositivityNeededForCorrectedLemma : Bool
+  unrestrictedClaimValid : Bool
+
+noncomputable def p01_t4_finite_product_theta :
+    P01FiniteProductThetaSourceIssueReport :=
+  { claimedStatement := fun u m δ =>
+      (∀ i, |δ i| ≤ u) →
+        ∃ θ : ℝ,
+          (∏ i : Fin m, (1 + δ i)) = 1 + θ ∧
+          |θ| ≤ p01Gamma u m
+    printedGamma := p01Gamma
+    sourceStatesTheClaim := true
+    denominatorPositivityConditionPrinted := false
+    denominatorPositivityNeededForCorrectedLemma := true
+    unrestrictedClaimValid := false }
 
 /-- P01-local left-to-right recursive summation. -/
 noncomputable def p01RecursiveSum (flAdd : ℝ → ℝ → ℝ) :
@@ -45,6 +79,18 @@ noncomputable def p01RecursiveSum (flAdd : ℝ → ℝ → ℝ) :
       flAdd
         (p01RecursiveSum flAdd n (fun i => v i.castSucc))
         (v (Fin.last n))
+
+/-- Recursive evaluation on a list, keeping its first input exact. -/
+noncomputable def p01RecursiveList
+    (flAdd : ℝ → ℝ → ℝ) : List ℝ → ℝ
+  | [] => 0
+  | x :: xs => xs.foldl flAdd x
+
+/-- The printed zero-seeded recursive algorithm under the paper's relative-error
+floating-point addition model. -/
+noncomputable def p01FloatingRecursiveSum
+    (fp : P01RelativeAddModel) (n : ℕ) (v : Fin n → ℝ) : ℝ :=
+  p01RecursiveSum fp.fl_add n v
 
 /-- The weaker addition rule used when the arithmetic has no guard digit. -/
 structure NoGuardAddModel where
@@ -204,6 +250,12 @@ noncomputable def p01RecursiveError
     (flAdd : ℝ → ℝ → ℝ) (n : ℕ) (v : Fin n → ℝ) : ℝ :=
   p01RecursiveSum flAdd n v - p01ExactSum n v
 
+/-- The recursive-summation error under the paper's relative-error
+floating-point addition model. -/
+noncomputable def p01FloatingRecursiveError
+    (fp : P01RelativeAddModel) (n : ℕ) (v : Fin n → ℝ) : ℝ :=
+  p01RecursiveError fp.fl_add n v
+
 /-- The computed sum of the first `k+1` entries, for an explicitly supplied
 floating-point addition operation. -/
 noncomputable def p01RecursivePrefixWith
@@ -253,12 +305,15 @@ noncomputable def p01RecursiveProductExpansion
     (n : ℕ) (v δ : Fin n → ℝ) : ℝ :=
   ∑ i : Fin n, v i * p01RecursivePathFactor n δ i
 
-/-- A collection of product remainders used in equations (2.3)--(2.5). -/
+/-- The product remainders used in equations (2.3)--(2.5), tied to the
+rounding-factor product on each input path. -/
 def P01RecursiveThetaWitness
     (fp : P01StandardAddModel) (n : ℕ) (v θ : Fin n → ℝ) : Prop :=
   p01RecursiveSum fp.fl_add n v = ∑ i : Fin n, v i * (1 + θ i) ∧
-    (∀ i : Fin n, |θ i| ≤ p01Gamma fp.u (p01RecursivePathLength n i)) ∧
-    ∀ h : 1 < n, θ ⟨0, by omega⟩ = θ ⟨1, h⟩
+    (∀ h : 1 < n, θ ⟨0, by omega⟩ = θ ⟨1, h⟩) ∧
+    ∃ δ : Fin n → ℝ,
+      P01RecursiveDeltaWitness fp n v δ ∧
+      ∀ i : Fin n, θ i = p01RecursivePathFactor n δ i - 1
 
 /-- The paper's summation condition number `R_n`. -/
 noncomputable def p01SummationCondition (n : ℕ) (v : Fin n → ℝ) : ℝ :=
@@ -336,6 +391,24 @@ def P01PsumOptimal
     (p : Equiv.Perm (Fin n)) : Prop :=
   ∀ q : Equiv.Perm (Fin n), p01PsumObjective fp v p ≤ p01PsumObjective fp v q
 
+/-- Equation (2.8) suggests this permutation-minimization problem. -/
+structure P01PsumObjectiveSuggestionReport where
+  objective :
+    (n : ℕ) → P01StandardAddModel → (Fin n → ℝ) →
+      Equiv.Perm (Fin n) → ℝ
+  solutionPredicate :
+    (n : ℕ) → P01StandardAddModel → (Fin n → ℝ) →
+      Equiv.Perm (Fin n) → Prop
+  equation28SuggestsThisOptimizationProblem : Bool
+  taskIsToChooseAPermutationMinimizingTheObjective : Bool
+
+noncomputable def p01PsumObjectiveSuggestionReport :
+    P01PsumObjectiveSuggestionReport :=
+  { objective := fun _ fp v p => p01PsumObjective fp v p
+    solutionPredicate := fun _ fp v p => P01PsumOptimal fp v p
+    equation28SuggestsThisOptimizationProblem := true
+    taskIsToChooseAPermutationMinimizingTheObjective := true }
+
 /-- Qualitative status of globally minimizing the equation-(2.8) prefix objective. -/
 structure P01PsumGlobalOptimizationCostReport where
   objective :
@@ -360,10 +433,10 @@ noncomputable def p01PsumCandidate
     (p : Equiv.Perm (Fin n)) (k j : Fin n) : ℝ :=
   if k.val = 0 then |v j|
   else
-    |flAdd
-      (p01RecursiveSum flAdd k.val fun i =>
-        p01Permuted v p ⟨i.val, lt_trans i.isLt k.isLt⟩)
-      (v j)|
+    let selectedPrefix : List ℝ :=
+      List.ofFn fun i : Fin k.val =>
+        p01Permuted v p ⟨i.val, lt_trans i.isLt k.isLt⟩
+    |flAdd (p01RecursiveList flAdd selectedPrefix) (v j)|
 
 /-- The paper's greedy Psum ordering, with nondeterministic tie breaking. -/
 def P01PsumOrder
@@ -376,14 +449,97 @@ def P01PsumOrder
 def P01MagnitudeNondecreasing {n : ℕ} (v : Fin n → ℝ) : Prop :=
   ∀ i j : Fin n, i.val ≤ j.val → |v i| ≤ |v j|
 
-/-- The implementation-complexity claim made for Psum, whose code is not supplied. -/
-structure P01PsumComplexityReport where
-  comparisonOrderNLogN : Bool
-  implementationReportedToExist : Bool
+/-- The minimal arithmetic regularity used by the comparison implementation:
+for a fixed accumulated prefix, rounded addition preserves candidate order. -/
+def P01PsumRightMonotoneAddition (flAdd : ℝ → ℝ → ℝ) : Prop :=
+  ∀ s : ℝ, Monotone (flAdd s)
 
-def p01PsumComplexityReport : P01PsumComplexityReport :=
-  { comparisonOrderNLogN := true
-    implementationReportedToExist := true }
+/-- The rounded value obtained by appending one candidate to a selected Psum
+prefix.  The first selected entry is unrounded, as in the paper's rule. -/
+noncomputable def p01PsumNextValue
+    (flAdd : ℝ → ℝ → ℝ) {n : ℕ} (v : Fin n → ℝ)
+    (selected : List (Fin n)) (j : Fin n) : ℝ :=
+  match selected with
+  | [] => v j
+  | _ :: _ => flAdd (p01RecursiveList flAdd (selected.map v)) (v j)
+
+/-- The ordinary comparisons available to a Psum implementation. -/
+inductive P01PsumComparisonQuery (n : ℕ) where
+  | rawLE (i j : Fin n)
+  | nextNonpositive (selected : List (Fin n)) (j : Fin n)
+  | nextAbsLE (selected : List (Fin n)) (i j : Fin n)
+
+namespace P01PsumComparisonQuery
+
+/-- Semantics of one permitted Psum comparison. -/
+def Holds {n : ℕ} (query : P01PsumComparisonQuery n)
+    (flAdd : ℝ → ℝ → ℝ) (v : Fin n → ℝ) : Prop :=
+  match query with
+  | .rawLE i j => v i ≤ v j
+  | .nextNonpositive selected j =>
+      p01PsumNextValue flAdd v selected j ≤ 0
+  | .nextAbsLE selected i j =>
+      |p01PsumNextValue flAdd v selected i| ≤
+        |p01PsumNextValue flAdd v selected j|
+
+end P01PsumComparisonQuery
+
+/-- A static decision tree whose branches are restricted to ordinary Psum
+comparison queries. -/
+inductive P01PsumComparisonProgram (n : ℕ) (α : Type) where
+  | result (output : α)
+  | compare (query : P01PsumComparisonQuery n)
+      (ifTrue ifFalse : P01PsumComparisonProgram n α)
+
+namespace P01PsumComparisonProgram
+
+attribute [local instance] Classical.propDecidable
+
+/-- Evaluate a restricted comparison program. -/
+noncomputable def run {n : ℕ} :
+    P01PsumComparisonProgram n α →
+      (ℝ → ℝ → ℝ) → (Fin n → ℝ) → α
+  | .result output, _, _ => output
+  | .compare query ifTrue ifFalse, flAdd, v =>
+      if query.Holds flAdd v
+      then run ifTrue flAdd v
+      else run ifFalse flAdd v
+
+/-- Maximum number of permitted comparisons on a program path. -/
+def worstCaseComparisons {n : ℕ} :
+    P01PsumComparisonProgram n α → ℕ
+  | .result _ => 0
+  | .compare _ ifTrue ifFalse =>
+      Nat.succ (max ifTrue.worstCaseComparisons ifFalse.worstCaseComparisons)
+
+end P01PsumComparisonProgram
+
+/-- One input-independent restricted comparison program for each input size. -/
+abbrev P01PsumComparisonImplementation :=
+  (n : ℕ) → P01PsumComparisonProgram n (List (Fin n))
+
+/-- On every right-monotone rounded addition, the implementation returns an
+actual permutation satisfying the paper's sequential Psum rule. -/
+def P01PsumImplementationCorrect
+    (impl : P01PsumComparisonImplementation) : Prop :=
+  ∀ flAdd, P01PsumRightMonotoneAddition flAdd →
+    ∀ n v, ∃ p : Equiv.Perm (Fin n),
+      (impl n).run flAdd v = List.ofFn p ∧
+        P01PsumOrder flAdd v p
+
+/-- The implementation's worst-case permitted-comparison count is
+`O(n log n)`. -/
+def P01PsumComparisonCountIsONLogN
+    (impl : P01PsumComparisonImplementation) : Prop :=
+  ∃ C n₀ : ℕ, 0 < C ∧ ∀ n, n₀ ≤ n →
+    (impl n).worstCaseComparisons ≤ C * n * Nat.log 2 n
+
+/-- The proposition that Psum has a comparison-based `O(n log n)`
+implementation, with its output tied to the paper's Psum ordering rule. -/
+def P01PsumComplexityClaim : Prop :=
+  ∃ impl : P01PsumComparisonImplementation,
+    P01PsumImplementationCorrect impl ∧
+      P01PsumComparisonCountIsONLogN impl
 
 /-- The source's near-attainability input family; `i=0` is its printed `x(1)`. -/
 noncomputable def p01NearAttainabilityInput
@@ -395,6 +551,13 @@ noncomputable def p01NearAttainabilityInput
 def P01NearAttainabilityRoundingTrace
     (flAdd : ℝ → ℝ → ℝ) (r t : ℕ) : Prop :=
   ∀ k : Fin (2 ^ r),
+    flAdd (k.val : ℝ) (p01NearAttainabilityInput r t k) = k.val + 1
+
+/-- The actual additions in the displayed construction; `x(1)=1` is assigned
+directly, so the first rounded addition corresponds to zero-based index `k=1`. -/
+def P01NearAttainabilityActualAdditionTrace
+    (flAdd : ℝ → ℝ → ℝ) (r t : ℕ) : Prop :=
+  ∀ k : Fin (2 ^ r), 0 < k.val →
     flAdd (k.val : ℝ) (p01NearAttainabilityInput r t k) = k.val + 1
 
 /-- Qualitative parameter regime stated for the near-attainability family. -/
@@ -415,16 +578,21 @@ def p01NearAttainabilityQualitativeRegimeReport :
     rReportedMuchSmallerThanT := true
     quantitativeMeaningSpecified := false }
 
-/-- Status of the discarded-bit trace assertion under that qualitative regime. -/
+/-- Status of the discarded-bit trace assertion under the paper's floating-point
+model and qualitative parameter regime. -/
 structure P01NearAttainabilityRoundingTraceStatusReport where
-  tracePredicate : (ℝ → ℝ → ℝ) → ℕ → ℕ → Prop
+  tracePredicate : P01RelativeAddModel → ℕ → ℕ → Prop
+  qualitativeRegime : P01NearAttainabilityQualitativeRegimeReport
   appliesUnderRMuchSmallerThanT : Bool
   sourceAssertsDiscardedBitTrace : Bool
   quantitativeSeparationSpecified : Bool
 
 def p01NearAttainabilityRoundingTraceStatusReport :
     P01NearAttainabilityRoundingTraceStatusReport :=
-  { tracePredicate := P01NearAttainabilityRoundingTrace
+  { tracePredicate := fun fp r t =>
+      fp.u = (2 : ℝ) ^ (-(t : ℤ)) ∧
+        P01NearAttainabilityActualAdditionTrace fp.fl_add r t
+    qualitativeRegime := p01NearAttainabilityQualitativeRegimeReport
     appliesUnderRMuchSmallerThanT := true
     sourceAssertsDiscardedBitTrace := true
     quantitativeSeparationSpecified := false }
@@ -519,6 +687,14 @@ def P01AdditionScheme
     (n : ℕ) (x : Fin n → ℝ) (S : ℝ) : Prop :=
   ∃ T : ℕ → ℝ, P01Equation31Trace n x T S
 
+/-- A tree has equation-(3.1) structure and uses exactly the supplied inputs. -/
+def P01Equation31Instance
+    (inputs : List ℝ) (tree : P01SumTree) : Prop :=
+  tree.leaves.Perm inputs ∧
+  ∃ (n : ℕ) (x : Fin n → ℝ),
+    List.ofFn x = tree.leaves ∧
+    P01AdditionScheme n x tree.exact
+
 /-- Every internal addition has at least one original input as an operand. -/
 def P01EveryAdditionHasOriginalOperand : P01SumTree → Prop
   | .leaf _ => True
@@ -527,8 +703,8 @@ def P01EveryAdditionHasOriginalOperand : P01SumTree → Prop
   | .node (.node _ _) (.node _ _) => False
 
 /-- Equation (3.2), expressed simultaneously at all internal nodes. -/
-def P01TreeRespectsStandardModel
-    (fp : P01StandardAddModel) : P01SumTree → Prop
+def P01TreeRespectsRelativeModel
+    (fp : P01RelativeAddModel) : P01SumTree → Prop
   | .leaf _ => True
   | .node left right =>
       (∃ δ : ℝ,
@@ -536,8 +712,13 @@ def P01TreeRespectsStandardModel
         P01SumTree.rounded fp.fl_add (.node left right) =
           (P01SumTree.rounded fp.fl_add left +
             P01SumTree.rounded fp.fl_add right) * (1 + δ)) ∧
-      P01TreeRespectsStandardModel fp left ∧
-      P01TreeRespectsStandardModel fp right
+      P01TreeRespectsRelativeModel fp left ∧
+      P01TreeRespectsRelativeModel fp right
+
+/-- One equation-(3.2) node with its local rounding factor exposed. -/
+def P01Equation32LocalStep
+    (u left right value δ : ℝ) : Prop :=
+  |δ| ≤ u ∧ value = (left + right) * (1 + δ)
 
 /-- Sum of the magnitudes of all computed internal nodes. -/
 noncomputable def p01TreeRunningMagnitude
@@ -670,27 +851,10 @@ def p01InverseCubeApproximateLogComparisonReport :
     pairwiseBoundReportedApproximatelyLogTwoLarger := true
     approximationToleranceSpecified := false }
 
-/-- Recursive evaluation on a list, keeping its first input exact. -/
-noncomputable def p01RecursiveList
-    (flAdd : ℝ → ℝ → ℝ) : List ℝ → ℝ
-  | [] => 0
-  | x :: xs => xs.foldl flAdd x
-
 /-- The left-deep addition tree underlying ordinary recursive summation. -/
 def p01RecursiveTree : List ℝ → Option P01SumTree
   | [] => none
   | x :: xs => some (xs.foldl (fun tree y => .node tree (.leaf y)) (.leaf x))
-
-/-- Status-preserving form of the disputed nonrecursive-method clause after
-(3.1).  The paper's later insertion trace supplies the consistency check. -/
-structure P01OtherGeneralMethodsStructuralSourceErrorReport where
-  otherThreeReportedToContainAComputedComputedAddition : Bool
-  literalUniversalClauseConsistentWithLaterInsertionExample : Bool
-
-def p01OtherGeneralMethodsStructuralSourceErrorReport :
-    P01OtherGeneralMethodsStructuralSourceErrorReport :=
-  { otherThreeReportedToContainAComputedComputedAddition := true
-    literalUniversalClauseConsistentWithLaterInsertionExample := false }
 
 /-! ### Insertion and sign-separated summation -/
 
@@ -760,6 +924,24 @@ def p01InsertionOptimalityReport : P01InsertionOptimalityReport :=
 noncomputable def p01PowersOfTwo (n : ℕ) : List ℝ :=
   (List.range n).map fun k => (2 : ℝ) ^ k
 
+/-- Status-preserving form of the disputed other-method clause after (3.1).
+The paper's later powers-of-two insertion trace supplies the consistency check. -/
+structure P01OtherGeneralMethodsStructuralSourceErrorReport where
+  otherMethodsReportedToContainAComputedComputedAddition : Bool
+  counterexampleFamily : ℕ → List ℝ
+  displayedCounterexampleTrace : List (List ℝ)
+  laterInsertionExampleCoincidesWithRecursiveSummation : Bool
+  literalUniversalClauseConsistentWithLaterInsertionExample : Bool
+
+noncomputable def p01OtherGeneralMethodsStructuralSourceErrorReport :
+    P01OtherGeneralMethodsStructuralSourceErrorReport :=
+  { otherMethodsReportedToContainAComputedComputedAddition := true
+    counterexampleFamily := p01PowersOfTwo
+    displayedCounterexampleTrace :=
+      [[1, 2, 4, 8], [3, 4, 8], [7, 8], [15]]
+    laterInsertionExampleCoincidesWithRecursiveSummation := true
+    literalUniversalClauseConsistentWithLaterInsertionExample := false }
+
 /-- The source-order negative subsequence for sign-separated summation. -/
 noncomputable def p01PlusMinusNegativeInputs (inputs : List ℝ) : List ℝ :=
   inputs.filter fun x => x < 0
@@ -768,13 +950,6 @@ noncomputable def p01PlusMinusNegativeInputs (inputs : List ℝ) : List ℝ :=
 Zeros are assigned to this side so every original input remains a leaf. -/
 noncomputable def p01PlusMinusNonnegativeInputs (inputs : List ℝ) : List ℝ :=
   inputs.filter fun x => 0 ≤ x
-
-/-- The explicitly named final floating-point combination `S₊ + S₋`. -/
-noncomputable def p01PlusMinusConceptualFinal
-    (flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) : ℝ :=
-  flAdd
-    (p01RecursiveList flAdd (p01PlusMinusNonnegativeInputs inputs))
-    (p01RecursiveList flAdd (p01PlusMinusNegativeInputs inputs))
 
 /-- The sign-separated equation-(3.1) tree.  Each sign subtotal is accumulated
 recursively in its order from the input list.  When both sign classes occur,
@@ -791,17 +966,6 @@ noncomputable def P01PlusMinusTree
     p01RecursiveTree negatives = some negativeTree ∧
     p01RecursiveTree nonnegatives = some nonnegativeTree ∧
     tree = .node nonnegativeTree negativeTree
-
-/-- The equation-(3.1) operational value of sign-separated summation.  It is
-the explicit final combination when both subtotals exist and elides only a
-redundant addition with an empty subtotal otherwise. -/
-noncomputable def p01PlusMinusFinal
-    (flAdd : ℝ → ℝ → ℝ) (inputs : List ℝ) : ℝ :=
-  let negatives := p01PlusMinusNegativeInputs inputs
-  let nonnegatives := p01PlusMinusNonnegativeInputs inputs
-  if negatives = [] then p01RecursiveList flAdd nonnegatives
-  else if nonnegatives = [] then p01RecursiveList flAdd negatives
-  else p01PlusMinusConceptualFinal flAdd inputs
 
 /-- One of the methods available before the paper introduces plus/minus
 summation: recursive summation in a chosen order, pairwise summation, or
@@ -2198,11 +2362,15 @@ the two nondeterministic ordering relations would be false without an invented c
 -/
 structure P01PsumOneSignedIdentityReport where
   appliesWhenAllInputsHaveOneSign : Bool
+  concernsPsumOrdering : Bool
+  comparisonOrderingIsIncreasingMagnitude : Bool
   orderingsClaimedIdentical : Bool
   tieBreakingSpecifiedBySource : Bool
 
 def p01PsumOneSignedIdentityReport : P01PsumOneSignedIdentityReport :=
   { appliesWhenAllInputsHaveOneSign := true
+    concernsPsumOrdering := true
+    comparisonOrderingIsIncreasingMagnitude := true
     orderingsClaimedIdentical := true
     tieBreakingSpecifiedBySource := false }
 
@@ -2339,14 +2507,18 @@ it is retained as attributed source data instead of an impossible proof target.
 -/
 structure P01DecreasingEq28NoSmallerSourceErrorReport where
   appliesToPositiveInputs : Bool
-  concernsComputedPrefixMagnitudes : Bool
+  concernsEquation28ComputedPrefixBound : Bool
+  concernsDecreasingAbsoluteMagnitudeOrdering : Bool
+  comparisonOrderingIsIncreasingAbsoluteMagnitude : Bool
   decreasingBoundAssertedNoSmaller : Bool
   literalUniversalAssertionValidInPermittedModel : Bool
 
 def p01DecreasingEq28NoSmallerSourceErrorReport :
     P01DecreasingEq28NoSmallerSourceErrorReport :=
   { appliesToPositiveInputs := true
-    concernsComputedPrefixMagnitudes := true
+    concernsEquation28ComputedPrefixBound := true
+    concernsDecreasingAbsoluteMagnitudeOrdering := true
+    comparisonOrderingIsIncreasingAbsoluteMagnitude := true
     decreasingBoundAssertedNoSmaller := true
     literalUniversalAssertionValidInPermittedModel := false }
 
@@ -2404,27 +2576,35 @@ noncomputable def p01MaxExactValueMagnitude (tree : P01SumTree) : ℝ :=
 
 /-! ### Source explanations accompanying the section 2 and 3 comparisons -/
 
-/-- Explanation of the exact decreasing-order result in example (2.9). -/
-structure P01Eq29DecreasingExplanationReport where
+/-- The complete source setup for the symbolic example (2.9). -/
+structure P01Eq29SetupReport where
   input : ℝ → Fin 4 → ℝ
-  MRequiredToBeMachineBasePower : Bool
+  largeParameterCondition : ℝ → ℝ → Prop
+  machineBasePowerCondition : ℕ → ℝ → Prop
+  roundingCondition : (ℝ → ℝ) → ℝ → Prop
+  inputTermsRequiredToBeMachineNumbers : Bool
   roundingModeIsRoundToNearest : Bool
   permittedTiePolicies : List P01NearestTiePolicy
-  requiresRoundOnePlusMEqualsM : Bool
-  sourceInfersMStrictlyGreaterThanUnitRoundoffInverse : Bool
+
+def p01Eq29SetupReport : P01Eq29SetupReport :=
+  { input := p01Eq29Input
+    largeParameterCondition := fun u M => u⁻¹ ≤ M
+    machineBasePowerCondition := fun radix M =>
+      ∃ e : ℤ, M = (radix : ℝ) ^ e
+    roundingCondition := fun round M => round (1 + M) = M
+    inputTermsRequiredToBeMachineNumbers := true
+    roundingModeIsRoundToNearest := true
+    permittedTiePolicies := [.evenLastDigit, .awayFromZero] }
+
+/-- Explanation of the exact decreasing-order result in example (2.9). -/
+structure P01Eq29DecreasingExplanationReport where
   concernsDecreasingOrderingInExample29 : Bool
   unitTermAddedAfterInevitableHeavyCancellation : Bool
   comparisonOrderingsAddUnitTermBeforeThatCancellation : Bool
   lateAdditionRetainsImportantInformationInUnitTerm : Bool
 
 def p01Eq29DecreasingExplanationReport : P01Eq29DecreasingExplanationReport :=
-  { input := p01Eq29Input
-    MRequiredToBeMachineBasePower := true
-    roundingModeIsRoundToNearest := true
-    permittedTiePolicies := [.evenLastDigit, .awayFromZero]
-    requiresRoundOnePlusMEqualsM := true
-    sourceInfersMStrictlyGreaterThanUnitRoundoffInverse := true
-    concernsDecreasingOrderingInExample29 := true
+  { concernsDecreasingOrderingInExample29 := true
     unitTermAddedAfterInevitableHeavyCancellation := true
     comparisonOrderingsAddUnitTermBeforeThatCancellation := true
     lateAdditionRetainsImportantInformationInUnitTerm := true }
@@ -2917,30 +3097,37 @@ def P01StandardMethodEvaluation
     {n : ℕ} (v : Fin n → ℝ) (result : ℝ) : Prop :=
   P01SummationMethodEvaluation fp.fl_add method v result
 
-/-- The paper's first-order equation-(2.6) assertion for every one of the
-eight examined summation methods.  The assertion is retained as a
-source-facing family: its `C` and sufficiently small positive threshold may
-depend on the method and on the input length, but not on the inputs or result
-chosen below that threshold. -/
-def P01AllExaminedMethodsEquation26Claim
-    (family : P01StandardAddFamily) : Prop :=
-  ∀ method : P01SummationMethod, method ∈ p01EightSummationMethods →
-    ∀ n : ℕ, 0 < n →
-      ∃ C ε : ℝ, 0 ≤ C ∧ 0 < ε ∧
-        ∀ u : NNReal, 0 < (u : ℝ) → (u : ℝ) ≤ ε →
-          ∀ (v : Fin n → ℝ) (result : ℝ),
-            P01InputsRepresentableForAdd (family.model u) n v →
-            P01StandardMethodEvaluation (family.model u) method v result →
-            |result - p01ExactSum n v| ≤
-              (((n - 1 : ℕ) : ℝ) * (u : ℝ) + C * (u : ℝ) ^ 2) *
-                p01AbsoluteSum n v
+/-- Status-aware carrier of the paper-wide equation-(2.6) assertion. -/
+structure P01AllExaminedMethodsEquation26Report where
+  methods : List P01SummationMethod
+  claimedStatement : Prop
+  exactEquation26Bound :
+    (u : ℝ) → (n : ℕ) → (Fin n → ℝ) → ℝ
+  firstOrderCoefficient : ℕ → ℝ
+  allExaminedMethodsReportedToSatisfyEquation26 : Bool
+  firstOrderExpansionReported : Bool
+  literalAllMethodsClaimSupportedByBareStandardAddAxioms : Bool
 
-/-- The paper's equation-(2.6) first-order error claim for all eight examined
-methods. This source-facing proposition records the quantified claim without
-turning its asymptotic wording into an additional proof obligation. -/
-def p01_t4_all_examined_methods_equation26
-    (family : P01StandardAddFamily) : Prop :=
-  P01AllExaminedMethodsEquation26Claim family
+noncomputable def p01_t4_all_examined_methods_equation26 :
+    P01AllExaminedMethodsEquation26Report :=
+  { methods := p01EightSummationMethods
+    claimedStatement :=
+      ∀ (fp : P01RadixRoundModel) (n : ℕ) (v : Fin n → ℝ)
+        (method : P01SummationMethod) (result : ℝ),
+        method ∈ p01EightSummationMethods →
+        (∀ i, P01BaseRepresentable fp.radix fp.precision (v i)) →
+        P01GammaValid (p01RadixUnitRoundoff fp) (n - 1) →
+        P01SummationMethodEvaluation
+            (p01RadixRoundAdd fp) method v result →
+          |result - p01ExactSum n v| ≤
+            p01Gamma (p01RadixUnitRoundoff fp) (n - 1) *
+              p01AbsoluteSum n v
+    exactEquation26Bound := fun u n v =>
+      p01Gamma u (n - 1) * p01AbsoluteSum n v
+    firstOrderCoefficient := fun n => ((n - 1 : ℕ) : ℝ)
+    allExaminedMethodsReportedToSatisfyEquation26 := true
+    firstOrderExpansionReported := true
+    literalAllMethodsClaimSupportedByBareStandardAddAxioms := false }
 
 /-- A function-value-only maximization problem tied to a selected summation semantics. -/
 structure P01MaximizationProblem where
@@ -3526,31 +3713,24 @@ def P01DixonMillsRepeatedReduction
     (flAdd : ℝ → ℝ → ℝ) (start residual : List ℝ) : Prop :=
   Relation.ReflTransGen (P01DixonMillsStep flAdd) start residual
 
-/-- A terminal evaluation that preserves the maintained list order.  All
-binary associations are admitted because the source excerpt does not choose
-one after the opposite-sign phase ends. -/
-inductive P01OrderPreservingEvaluation
-    (flAdd : ℝ → ℝ → ℝ) : List ℝ → ℝ → Prop
-  | empty : P01OrderPreservingEvaluation flAdd [] 0
-  | singleton (x : ℝ) : P01OrderPreservingEvaluation flAdd [x] x
-  | append (left right : List ℝ) (leftResult rightResult : ℝ)
-      (hleft : left ≠ []) (hright : right ≠ [])
-      (evalLeft : P01OrderPreservingEvaluation flAdd left leftResult)
-      (evalRight : P01OrderPreservingEvaluation flAdd right rightResult) :
-      P01OrderPreservingEvaluation flAdd (left ++ right)
-        (flAdd leftResult rightResult)
+/-- Status-preserving carrier for the Dixon--Mills description.  The paper
+states the ordered opposite-sign reduction but does not state how a terminal
+multi-element one-sign residual is reduced to one scalar. -/
+structure P01DixonMillsAlgorithmSourceIssueReport where
+  specifiedReduction :
+    P01RelativeAddModel → List ℝ → List ℝ → Prop
+  sourceStatesThatTheProcedureEvaluatesTheFiniteSum : Bool
+  terminalScalarReductionRuleSpecified : Bool
 
-/-- The Dixon--Mills evaluation relation: perform exactly the stated ordered
-opposite-sign reductions, then finish without changing the remaining order.
-The terminal association remains deliberately unspecified, as in the source. -/
-def P01DixonMillsReduction
-    (fp : P01StandardAddModel) (inputs : List ℝ) (result : ℝ) : Prop :=
-  ∃ negatives nonnegatives residual : List ℝ,
-    P01DixonMillsPreparation inputs negatives nonnegatives ∧
-    P01DixonMillsRepeatedReduction
-      fp.fl_add (negatives ++ nonnegatives) residual ∧
-    P01DixonMillsTerminal residual ∧
-    P01OrderPreservingEvaluation fp.fl_add residual result
+def P01DixonMillsReduction : P01DixonMillsAlgorithmSourceIssueReport :=
+  { specifiedReduction := fun fp inputs residual =>
+      ∃ negatives nonnegatives : List ℝ,
+        P01DixonMillsPreparation inputs negatives nonnegatives ∧
+        P01DixonMillsRepeatedReduction
+          fp.fl_add (negatives ++ nonnegatives) residual ∧
+        P01DixonMillsTerminal residual
+    sourceStatesThatTheProcedureEvaluatesTheFiniteSum := true
+    terminalScalarReductionRuleSpecified := false }
 
 /-- The source-specified sorting and sign-list preparation in the Dixon--Mills procedure. -/
 def p01DixonMillsTieBreakingSpecificationReport
@@ -3558,11 +3738,20 @@ def p01DixonMillsTieBreakingSpecificationReport
   P01DixonMillsPreparation inputs negatives nonnegatives
 
 /-- The source-specified repeated combination and ordered reinsertion step. -/
-def p01DixonMillsTerminalReductionSpecificationReport
-    (flAdd : ℝ → ℝ → ℝ) (inputs negatives nonnegatives residual : List ℝ) : Prop :=
+def p01DixonMillsRepeatedCombinationSpecification
+    (fp : P01RelativeAddModel)
+    (inputs negatives nonnegatives residual : List ℝ) : Prop :=
   P01DixonMillsPreparation inputs negatives nonnegatives ∧
   P01DixonMillsRepeatedReduction
-    flAdd (negatives ++ nonnegatives) residual
+    fp.fl_add (negatives ++ nonnegatives) residual
+
+/-- Stable controlled spelling for the complete repeated-combination phase. -/
+def p01DixonMillsTerminalReductionSpecificationReport
+    (fp : P01RelativeAddModel)
+    (inputs negatives nonnegatives residual : List ℝ) : Prop :=
+  p01DixonMillsRepeatedCombinationSpecification
+      fp inputs negatives nonnegatives residual ∧
+    P01DixonMillsTerminal residual
 
 /-- Pairwise summation is attractive in parallel settings because every stage is parallelizable. -/
 structure P01PairwiseParallelStageReport where

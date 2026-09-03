@@ -45,7 +45,7 @@ def accepted_review(
     lean_names: list[str],
 ) -> dict:
     verdict = {
-        "score": 4,
+        "score": 3,
         "tag": "faithful-equivalent",
         "passed": True,
         "evidence": "All material mathematical content is preserved.",
@@ -374,6 +374,23 @@ def base_t4_task() -> dict:
     }
 
 
+def t4_task_with_semantic_context_only_declaration() -> dict:
+    task = base_t4_task()
+    algorithm_item = task["source_inventory"][1]
+    algorithm_item["declaration_ids"] = ["P01-T4-D002"]
+    algorithm_item["declaration_mappings"][1]["role"] = "semantic_context"
+    algorithm_item["declaration_mappings"][1]["notes"] = (
+        "This transition is context needed to interpret the primary carrier."
+    )
+
+    algorithm_unit = task["review_units"][1]
+    algorithm_unit["declaration_ids"] = ["P01-T4-D002"]
+    algorithm_review = task["faithfulness_reviews"][1]
+    algorithm_review["declaration_ids"] = ["P01-T4-D002"]
+    algorithm_review["lean_names"] = ["HighamBench.P01T4.centralAlgorithm"]
+    return task
+
+
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -665,6 +682,66 @@ class TierFourTaskMetadataTests(unittest.TestCase):
         )
         validate_t4_task_metadata(task)
 
+    def test_semantic_context_backlinks_without_becoming_review_carriers(
+        self,
+    ) -> None:
+        task = t4_task_with_semantic_context_only_declaration()
+
+        result = validate_t4_task_metadata(task)
+
+        self.assertEqual(result["declaration_count"], 3)
+        self.assertEqual(
+            task["source_inventory"][1]["declaration_ids"], ["P01-T4-D002"]
+        )
+        self.assertEqual(
+            task["review_units"][1]["declaration_ids"], ["P01-T4-D002"]
+        )
+        self.assertNotIn(
+            "P01-T4-D003",
+            {
+                declaration_id
+                for unit in task["review_units"]
+                for declaration_id in unit["declaration_ids"]
+            },
+        )
+
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            stage_t4_task(root, task)
+            self.assertEqual(validate_task_catalog(root)["task_count"], 1)
+
+    def test_semantic_context_mappings_remain_strictly_bidirectional(self) -> None:
+        missing_declaration_backlink = (
+            t4_task_with_semantic_context_only_declaration()
+        )
+        missing_declaration_backlink["declarations"][2]["source_item_ids"] = [
+            "P01-S001"
+        ]
+        with self.assertRaisesRegex(BenchmarkToolError, "not bidirectional"):
+            validate_t4_task_metadata(missing_declaration_backlink)
+
+        missing_inventory_mapping = t4_task_with_semantic_context_only_declaration()
+        missing_inventory_mapping["source_inventory"][1][
+            "declaration_mappings"
+        ].pop()
+        with self.assertRaisesRegex(BenchmarkToolError, "not bidirectional"):
+            validate_t4_task_metadata(missing_inventory_mapping)
+
+    def test_semantic_context_is_rejected_from_carrier_only_lists(self) -> None:
+        item_includes_context = t4_task_with_semantic_context_only_declaration()
+        item_includes_context["source_inventory"][1]["declaration_ids"].append(
+            "P01-T4-D003"
+        )
+        with self.assertRaisesRegex(BenchmarkToolError, "primary-carrier"):
+            validate_t4_task_metadata(item_includes_context)
+
+        unit_includes_context = t4_task_with_semantic_context_only_declaration()
+        unit_includes_context["review_units"][1]["declaration_ids"].append(
+            "P01-T4-D003"
+        )
+        with self.assertRaisesRegex(BenchmarkToolError, "declaration-order union"):
+            validate_t4_task_metadata(unit_includes_context)
+
     def test_rejects_duplicate_or_incomplete_review_unit_source_coverage(
         self,
     ) -> None:
@@ -912,7 +989,7 @@ class TierFourTaskMetadataTests(unittest.TestCase):
 
         missing_adjudication = base_t4_task()
         missing_adjudication["faithfulness_reviews"][0]["round_trip_judge"] = {
-            "score": 3,
+            "score": 4,
             "tag": "faithful-stronger",
             "passed": True,
             "evidence": "The reconstruction states a valid strengthening.",
@@ -988,7 +1065,7 @@ class TierFourTaskMetadataTests(unittest.TestCase):
         review = missing_adjudicator_execution["faithfulness_reviews"][0]
         review["round_trip_judge"].update(
             {
-                "score": 3,
+                "score": 4,
                 "tag": "faithful-stronger",
                 "evidence": "The reconstruction states a valid strengthening.",
             }
@@ -1028,18 +1105,25 @@ class TierFourTaskMetadataTests(unittest.TestCase):
                 with self.assertRaises(BenchmarkToolError):
                     validate_t4_task_metadata(task)
 
-    def test_numeric_score_difference_does_not_require_adjudication(self) -> None:
-        task = base_t4_task()
-        review = task["faithfulness_reviews"][0]
-        review["round_trip_judge"]["score"] = 3
-        review["final_verdict"]["score"] = 3
-        validate_t4_task_metadata(task)
+    def test_passing_scores_require_their_exact_semantic_tags(self) -> None:
+        cases = {
+            "score 4 cannot mean equivalent": (4, "faithful-equivalent"),
+            "score 3 cannot mean stronger": (3, "faithful-stronger"),
+        }
+        for name, (score, tag) in cases.items():
+            with self.subTest(name=name):
+                task = base_t4_task()
+                verdict = task["faithfulness_reviews"][0]["direct_judge"]
+                verdict["score"] = score
+                verdict["tag"] = tag
+                with self.assertRaisesRegex(BenchmarkToolError, "reserved for"):
+                    validate_t4_task_metadata(task)
 
     def test_tag_disagreement_requires_and_accepts_fresh_adjudication(self) -> None:
         task = base_t4_task()
         review = task["faithfulness_reviews"][0]
         review["round_trip_judge"] = {
-            "score": 3,
+            "score": 4,
             "tag": "faithful-stronger",
             "passed": True,
             "evidence": "The reconstruction states a valid strengthening.",
