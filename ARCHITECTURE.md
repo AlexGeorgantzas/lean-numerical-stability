@@ -60,8 +60,10 @@ split from the reusable library.
   point. Its declaration-free `FloatingPoint.IEEE` aggregate exposes reusable
   operations over the IEEE value-level model, beginning with
   `IEEE.NaiveMaximum`.
-- `NumStability.Algorithms.LinearSystems` is the declaration-free reusable
-  linear-systems entry point. It re-exports the canonical `Cholesky`,
+- `NumStability.Algorithms.LinearSystems` is the declaration-free linear-systems
+  discovery entry point. It reaches source-tier modules, so it is not a reusable
+  seed; the reusable seeds beneath it are `LinearSystems.LU`,
+  `LinearSystems.LU.BlockLU`, and `LinearSystems.Triangular`. It re-exports the canonical `Cholesky`,
   `CramersRule`, `GaussJordan`, `Iterative`, `IterativeRefinement`,
   `LeastSquares`, `LU`, `QR`, `SymmetricIndefinite`, `Triangular`, and
   `Underdetermined` families. As migration history, Phase 12 completed the
@@ -76,6 +78,10 @@ split from the reusable library.
   surface. Its `Recursive` and `Pairwise` family umbrellas preserve source
   reachability, while reusable consumers import their `.Core` leaves.
 - `NumStability.Source` is the canonical source-correspondence entry point.
+- `NumStability.Source.DrineasMahoney` is the provider aggregate for the Drineas
+  and Mahoney RandNLA (2016) correspondence. `Source.DrineasMahoney.RandNLA2016`
+  imports one declaration-free aggregate per numbered algorithm and equation,
+  each over its topic umbrella and leaves.
 - `NumStability.Analysis.Summation` is an import-only family aggregate split
   into reusable `Signs` and `ErrorBounds` leaves.
 - `NumStability.Analysis.Equidistribution` is the reusable equidistribution
@@ -101,8 +107,10 @@ split from the reusable library.
   the former reusable subset; numbered Chapter 6 results are exposed by the
   dedicated `Source.Higham.Chapter06.Norms` source aggregate. The historical
   `NumStability.Analysis.Norms` path is an import-only facade over both.
-- `NumStability.Analysis.Probability` is the reusable probability-analysis
-  entry point. Its declaration-free `Probability.Gaussian` aggregate exposes
+- `NumStability.Analysis.Probability` is the declaration-free probability-analysis
+  entry point. It is a discovery aggregate rather than a reusable seed, because
+  `Probability.Haar.NormalizedOrthogonalMatrixLaw` reaches Chapter 28 source
+  correspondence. Its declaration-free `Probability.Gaussian` aggregate exposes
   the source-neutral `Probability.Gaussian.AbsoluteMoment` leaf. Its
   declaration-free `Probability.Haar` aggregate exposes
   `Probability.Haar.HomogeneousSpaceUniqueness`, whose generic Haar-fiber and

@@ -106,8 +106,8 @@ isolated old-only tests.
 
 ## Current inventory
 
-The live ratchet classifies all 2,928 production modules (100%): 1,224 as
-source, 405 as aggregate, 712 as compatibility, 577 as reusable, 5 as
+The live ratchet classifies all 2,950 production modules (100%): 1,216 as
+source, 436 as aggregate, 712 as compatibility, 576 as reusable, 5 as
 internal, and 5 as upstream. The unclassified queue is empty and no module is
 marked mixed. The `NumStability.Algorithms` direct-import ceilings are read
 live from the `direct_import_ceilings` entry of
@@ -129,6 +129,7 @@ role and dependency semantics distinct. The Phase 11B1 reusable seeds include
 `FloatingPoint`, `FloatingPoint.IEEE`, `Analysis.Equidistribution`, and
 `Analysis.LeadingDigits` remain import-only aggregates while still seeding the
 transitive forbidden-edge audit. Phase 12A additionally seeds
-`Analysis.FirstOrder`, `Algorithms.LinearSystems`,
-`Algorithms.LinearSystems.LU`, and `Algorithms.LinearSystems.LU.BlockLU` so
-that no structural layer can hide a reusable-to-source path.
+`Analysis.FirstOrder`, `Algorithms.LinearSystems.LU`, and
+`Algorithms.LinearSystems.LU.BlockLU` so that no structural layer can hide a
+reusable-to-source path; `Algorithms.LinearSystems` itself reaches source-tier
+modules and is a discovery aggregate, not a seed.

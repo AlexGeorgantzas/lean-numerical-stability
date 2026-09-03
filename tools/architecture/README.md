@@ -19,6 +19,13 @@ book-formalization migration. The generator has two layers:
   code contains zero imports of historical paths outright. The former
   retained-boundary exception mechanism was retired with R0015; the checker
   carries no exception list.
+- `check_entrypoints.py` recomputes the entry-point manifest
+  `docs/architecture/entrypoints.json` live: every family parent, contracted
+  aggregate, advertised module and reusable seed is a row; non-compatibility
+  parents reach every canonical descendant; import-only parents are aggregates;
+  contracted or advertised entry points have isolated single-import tests that
+  check a declaration; and an ARCHITECTURE.md bullet may call a module reusable
+  only when its tier or seed status says so.
 - `check_layout.py` enforces the naming, classification, aggregate, generated-
   artifact, and documentation ratchet recorded in
   `docs/architecture/layout-exceptions.json`.

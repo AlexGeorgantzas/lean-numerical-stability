@@ -7,11 +7,11 @@ import NumStability.FloatingPoint.Model
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
 import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
-import NumStability.Source.Higham.Chapter20.Theorem07
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualClosure
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualGrowth
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualRhs
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualTrace
+import NumStability.Source.Higham.Chapter20.Theorem07.Core.Results
 
 namespace NumStability
 

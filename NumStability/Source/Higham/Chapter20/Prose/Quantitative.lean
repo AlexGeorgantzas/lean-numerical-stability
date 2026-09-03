@@ -7,7 +7,8 @@ import NumStability.Analysis.Perturbation.LeastSquares.Conditioning
 import NumStability.Analysis.Perturbation.LeastSquares.Normwise
 import NumStability.Analysis.SingularValues.Basic
 import NumStability.Analysis.SingularValues.Realification
-import NumStability.Source.Higham.Chapter20.Prose
+import NumStability.Source.Higham.Chapter20.Prose.Core.Results
+import NumStability.Source.Higham.Chapter20.Prose.MoorePenrose
 import NumStability.Source.Higham.Chapter20.Theorem03.QRSolve
 
 namespace NumStability

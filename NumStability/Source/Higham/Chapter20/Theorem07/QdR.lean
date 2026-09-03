@@ -1,14 +1,14 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Contract
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
-import NumStability.Source.Higham.Chapter20.Theorem07
+import NumStability.Source.Higham.Chapter20.Theorem07.Core.Results
 
 namespace NumStability
 

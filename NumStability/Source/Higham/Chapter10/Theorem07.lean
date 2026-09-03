@@ -16,6 +16,7 @@ import NumStability.Source.Higham.Chapter10.Section02.ErrorAnalysis.Factorizatio
 import NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.PivotingAndScaling.Results
 import NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.SchurStages.Bounds
 import NumStability.Source.Higham.Chapter10.Theorem07.Core.Results
+import NumStability.Source.Higham.Chapter10.Theorem07.FailureVacuity
 import NumStability.Source.Higham.Chapter10.Theorem07.SuccessThreshold.Factorization
 import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RoundedErrorAnalysis.Bounds
 import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SuccessfulRun.StageBounds

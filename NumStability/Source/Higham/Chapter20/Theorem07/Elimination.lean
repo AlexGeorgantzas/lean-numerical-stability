@@ -3,13 +3,13 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.RowSorting
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
 import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
-import NumStability.Source.Higham.Chapter20.Theorem07
+import NumStability.Source.Higham.Chapter20.Theorem07.Core.Results
 
 namespace NumStability
 

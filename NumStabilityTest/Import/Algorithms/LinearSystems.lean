@@ -1,5 +1,4 @@
 import NumStability.Algorithms.LinearSystems
-import NumStability.Algorithms.LinearSystems.SymmetricIndefinite
 
 /-!
 # Linear-systems aggregate import smoke test

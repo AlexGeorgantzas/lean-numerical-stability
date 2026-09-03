@@ -149,7 +149,7 @@ figures below are that accepted snapshot, not a live measurement:
 
 The reviewed I01 wave (R0014/R0015, applied at
 `9fbb1e36bcc85f866893e902cbe206ba468a65b0`) landed after this snapshot and
-added one production module: the live tree contains 2,928 production modules,
+added one production module: the live tree contains 2,950 production modules,
 all classified and documented, with 712 import-only forwarding modules over
 2,364 canonical targets. Regenerate the baseline for fresh live figures.
 

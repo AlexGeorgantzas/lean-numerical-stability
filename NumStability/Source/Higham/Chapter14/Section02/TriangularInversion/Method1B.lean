@@ -1,3 +1,4 @@
+import NumStability.Source.Higham.Chapter14.Section02.TriangularInversion.Method1B.BlockResidual.WholeMatrixBounds
 import NumStability.Source.Higham.Chapter14.Section02.TriangularInversion.Method1B.BlockTriInverse
 import NumStability.Source.Higham.Chapter14.Section02.TriangularInversion.Method1B.Method1BWhole
 
