@@ -1766,13 +1766,13 @@
     },
     {
       "declaration": "NumStability.zeroBlock",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 29,
         "message": "argument 2 a✝¹ : Fin r, argument 3 a✝ : Fin r"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 2 a✝¹ : Fin r, argument 3 a✝ : Fin r",
@@ -1781,8 +1781,8 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Algorithms/LinearSystems/LU/BlockLU/BlockMatrices.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
@@ -3988,13 +3988,13 @@
     },
     {
       "declaration": "NumStability.matMulCounterexampleA",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 728,
         "message": "argument 1 a✝¹ : Fin 1, argument 2 a✝ : Fin 1"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 1 a✝¹ : Fin 1, argument 2 a✝ : Fin 1",
@@ -4003,20 +4003,20 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Algorithms/MatMul.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
     {
       "declaration": "NumStability.matMulCounterexampleB",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 733,
         "message": "argument 1 a✝¹ : Fin 1"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 1 a✝¹ : Fin 1",
@@ -4025,20 +4025,20 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Algorithms/MatMul.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
     {
       "declaration": "NumStability.matMulCounterexampleC",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 738,
         "message": "argument 1 a✝¹ : Fin 1"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 1 a✝¹ : Fin 1",
@@ -4047,8 +4047,8 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Algorithms/MatMul.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
@@ -7332,13 +7332,13 @@
     },
     {
       "declaration": "NumStability.beneficialPowerStart",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 7890,
         "message": "argument 1 a✝ : Fin 3"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 1 a✝ : Fin 3",
@@ -7347,8 +7347,8 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Analysis/BeneficialRounding.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
@@ -10962,13 +10962,13 @@
     },
     {
       "declaration": "NumStability.theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_nat",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_conclusion_hypothesis",
       "evidence": {
         "column": 1,
         "line": 5073,
         "message": "argument 21 a✝ : k ≤ ↑j"
       },
-      "expiry_release": null,
+      "expiry_release": "next author revision of the theorem statement",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 21 a✝ : k ≤ ↑j",
@@ -10977,20 +10977,20 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Analysis/Perturbation/LeastSquares/Equality/RowwiseBackwardError.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is an anonymous hypothesis of a forall inside the CONCLUSION of the theorem, not a binder of its signature. Removing it strengthens and therefore changes the stated theorem, which is a statement-level decision for the author, not a lint fix. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider when the theorem statement is next revised; dropping the unused hypothesis there is a reviewed strengthening.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
     {
       "declaration": "NumStability.theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_conclusion_hypothesis",
       "evidence": {
         "column": 1,
         "line": 11500,
         "message": "argument 6 a✝ : ↑i + 1 < n"
       },
-      "expiry_release": null,
+      "expiry_release": "next author revision of the theorem statement",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 6 a✝ : ↑i + 1 < n",
@@ -10999,20 +10999,20 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Analysis/Perturbation/LeastSquares/Equality/RowwiseBackwardError.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is an anonymous hypothesis of a forall inside the CONCLUSION of the theorem, not a binder of its signature. Removing it strengthens and therefore changes the stated theorem, which is a statement-level decision for the author, not a lint fix. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider when the theorem statement is next revised; dropping the unused hypothesis there is a reviewed strengthening.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
     {
       "declaration": "NumStability.theorem20_7_compactStepSlack_coeff_bound_nat",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_conclusion_hypothesis",
       "evidence": {
         "column": 1,
         "line": 11404,
         "message": "argument 6 a✝ : ↑i + 1 < n"
       },
-      "expiry_release": null,
+      "expiry_release": "next author revision of the theorem statement",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 6 a✝ : ↑i + 1 < n",
@@ -11021,8 +11021,8 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Analysis/Perturbation/LeastSquares/Equality/RowwiseBackwardError.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is an anonymous hypothesis of a forall inside the CONCLUSION of the theorem, not a binder of its signature. Removing it strengthens and therefore changes the stated theorem, which is a statement-level decision for the author, not a lint fix. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider when the theorem statement is next revised; dropping the unused hypothesis there is a reviewed strengthening.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
@@ -13998,13 +13998,13 @@
     },
     {
       "declaration": "NumStability.ch7ColumnwiseRelativeToleranceMatrix",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 1821,
         "message": "argument 3 a✝¹ : Fin n"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 3 a✝¹ : Fin n",
@@ -14013,8 +14013,8 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Source/Higham/Chapter07/LinearSystemsConditioning/Problem06Columnwise.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
@@ -14306,13 +14306,13 @@
     },
     {
       "declaration": "NumStability.theorem7_5_literalRowInfCounterexampleIdentityScale",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 13644,
         "message": "argument 1 a✝ : Fin 2"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 1 a✝ : Fin 2",
@@ -14321,8 +14321,8 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Source/Higham/Chapter07/LinearSystemsConditioning/Theorem05/Part05.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
@@ -15208,13 +15208,13 @@
     },
     {
       "declaration": "NumStability.higham9_14_leadingPrincipalBlock_det_pos_of_symPosDef",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_conclusion_hypothesis",
       "evidence": {
         "column": 1,
         "line": 2034,
         "message": "argument 6 a✝ : k ≠ 0"
       },
-      "expiry_release": null,
+      "expiry_release": "next author revision of the theorem statement",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 6 a✝ : k ≠ 0",
@@ -15223,8 +15223,8 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Source/Higham/Chapter09/Theorem14/Actual.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is an anonymous hypothesis of a forall inside the CONCLUSION of the theorem, not a binder of its signature. Removing it strengthens and therefore changes the stated theorem, which is a statement-level decision for the author, not a lint fix. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider when the theorem statement is next revised; dropping the unused hypothesis there is a reviewed strengthening.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
@@ -59538,13 +59538,13 @@
     },
     {
       "declaration": "NumStability.higham13_algorithm13_3_stageLocalGrowthMatrix",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 376,
         "message": "argument 8 a✝¹ : Fin (r + r), argument 9 a✝ : Fin (r + r)"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 8 a✝¹ : Fin (r + r), argument 9 a✝ : Fin (r + r)",
@@ -59553,8 +59553,8 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Source/Higham/Chapter13/Problem04/LocalGrowth.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
@@ -65852,13 +65852,13 @@
     },
     {
       "declaration": "NumStability.ch19ext_wyWOne",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 55,
         "message": "argument 4 a✝ : Fin 1"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 4 a✝ : Fin 1",
@@ -65867,20 +65867,20 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Source/Higham/Chapter19/WYApplicationClosure.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
     {
       "declaration": "NumStability.ch19ext_wyYOne",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 59,
         "message": "argument 4 a✝ : Fin 1"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 4 a✝ : Fin 1",
@@ -65889,8 +65889,8 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Source/Higham/Chapter19/WYApplicationClosure.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
@@ -66292,13 +66292,13 @@
     },
     {
       "declaration": "NumStability.higham20QRSourceDenseDataVector",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 516,
         "message": "argument 6 a✝ : Fin m"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 6 a✝ : Fin m",
@@ -66307,20 +66307,20 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Source/Higham/Chapter20/Theorem03/ResidualQuality.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
     {
       "declaration": "NumStability.higham20QRSourceDenseMatrixMajorant",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 508,
         "message": "argument 4 a✝¹ : Fin m"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 4 a✝¹ : Fin m",
@@ -66329,20 +66329,20 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Source/Higham/Chapter20/Theorem03/ResidualQuality.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },
     {
       "declaration": "NumStability.higham20QRSourceDenseRhsMajorant",
-      "disposition": "baseline_debt",
+      "disposition": "reviewed_ignored_argument_by_design",
       "evidence": {
         "column": 1,
         "line": 512,
         "message": "argument 3 a✝ : Fin m"
       },
-      "expiry_release": null,
+      "expiry_release": "when the definition is next redesigned",
       "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
       "linter": "unusedArguments",
       "message_head": "argument 3 a✝ : Fin m",
@@ -66351,8 +66351,8 @@
       "occurrence": 0,
       "owner_family": "unusedArguments",
       "path": "NumStability/Source/Higham/Chapter20/Theorem03/ResidualQuality.lean",
-      "rationale": "Pre-existing hypothesis or instance argument that the declaration does not use; removing it changes the declaration's signature and every call site.",
-      "reconsideration_trigger": "Reconsider when the owning declaration's signature is next edited.",
+      "rationale": "The reported argument is a lambda binder inside a definition body: the definition has a function type and deliberately ignores some of its inputs (a zero block, a constant counterexample entry, a fixed majorant). Removing the binder would change the type of the definition and break every caller that applies it; the definition is a value of function type by design, not a theorem with a spurious hypothesis. Classified by the ua2 planner on 2026-09-02 and reviewed.",
+      "reconsideration_trigger": "Reconsider if the definition is rewritten to a non-function type or its ignored inputs become meaningful.",
       "reviewer": "primary-human",
       "status": "accepted_baseline"
     },

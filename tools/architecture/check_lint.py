@@ -174,6 +174,8 @@ REVIEWED_DEFERRED_MIGRATION = "reviewed_deferred_migration"
 REVIEWED_UPSTREAM_EXCEPTION = "reviewed_upstream_exception"
 REVIEWED_UNTYPED_PROOF_DEF = "reviewed_untyped_proof_def"
 REVIEWED_DOCUMENTATION_DEFERRED = "reviewed_documentation_deferred"
+REVIEWED_IGNORED_ARGUMENT_BY_DESIGN = "reviewed_ignored_argument_by_design"
+REVIEWED_CONCLUSION_HYPOTHESIS = "reviewed_conclusion_hypothesis"
 DISPOSITIONS = frozenset(
     {
         BASELINE_DEBT,
@@ -182,6 +184,8 @@ DISPOSITIONS = frozenset(
         REVIEWED_UPSTREAM_EXCEPTION,
         REVIEWED_UNTYPED_PROOF_DEF,
         REVIEWED_DOCUMENTATION_DEFERRED,
+        REVIEWED_IGNORED_ARGUMENT_BY_DESIGN,
+        REVIEWED_CONCLUSION_HYPOTHESIS,
     }
 )
 # Linter-wide reviewed dispositions: consulted when no (linter, path) entry
@@ -205,6 +209,69 @@ _DOCUMENTATION_DEFERRED = {
 }
 REVIEWED_DISPOSITIONS_BY_LINTER: dict[str, dict[str, Any]] = {
     "docBlame": _DOCUMENTATION_DEFERRED,
+}
+# Per-declaration reviewed dispositions, keyed by (linter, fully-qualified
+# declaration name). Highest precedence: consulted before the (linter, path)
+# table and the linter-wide table. Used when a linter reports something that is
+# not a removable binder of the declaration (for example a lambda binder inside
+# a definition body, or an anonymous hypothesis in a conclusion). Same
+# enforcement as debt; only the explanation changes.
+_IGNORED_BY_DESIGN = {
+    "disposition": REVIEWED_IGNORED_ARGUMENT_BY_DESIGN,
+    "rationale": (
+        "The reported argument is a lambda binder inside a definition body: the "
+        "definition has a function type and deliberately ignores some of its inputs "
+        "(a zero block, a constant counterexample entry, a fixed majorant). Removing "
+        "the binder would change the type of the definition and break every caller "
+        "that applies it; the definition is a value of function type by design, not "
+        "a theorem with a spurious hypothesis. Classified by the ua2 planner on "
+        "2026-09-02 and reviewed."
+    ),
+    "expiry_release": "when the definition is next redesigned",
+    "reconsideration_trigger": (
+        "Reconsider if the definition is rewritten to a non-function type or its "
+        "ignored inputs become meaningful."
+    ),
+}
+_CONCLUSION_HYPOTHESIS = {
+    "disposition": REVIEWED_CONCLUSION_HYPOTHESIS,
+    "rationale": (
+        "The reported argument is an anonymous hypothesis of a forall inside the "
+        "CONCLUSION of the theorem, not a binder of its signature. Removing it "
+        "strengthens and therefore changes the stated theorem, which is a "
+        "statement-level decision for the author, not a lint fix. Classified by the "
+        "ua2 planner on 2026-09-02 and reviewed."
+    ),
+    "expiry_release": "next author revision of the theorem statement",
+    "reconsideration_trigger": (
+        "Reconsider when the theorem statement is next revised; dropping the unused "
+        "hypothesis there is a reviewed strengthening."
+    ),
+}
+_BY_DECL_IGNORED = [
+    "NumStability.zeroBlock",
+    "NumStability.matMulCounterexampleA",
+    "NumStability.matMulCounterexampleB",
+    "NumStability.matMulCounterexampleC",
+    "NumStability.beneficialPowerStart",
+    "NumStability.ch7ColumnwiseRelativeToleranceMatrix",
+    "NumStability.theorem7_5_literalRowInfCounterexampleIdentityScale",
+    "NumStability.higham13_algorithm13_3_stageLocalGrowthMatrix",
+    "NumStability.ch19ext_wyWOne",
+    "NumStability.ch19ext_wyYOne",
+    "NumStability.higham20QRSourceDenseMatrixMajorant",
+    "NumStability.higham20QRSourceDenseRhsMajorant",
+    "NumStability.higham20QRSourceDenseDataVector",
+]
+_BY_DECL_CONCLUSION = [
+    "NumStability.theorem20_7_active_tail_stageA_bound_of_h19_row_sorting_source_initial_accumulated_error_nat",
+    "NumStability.theorem20_7_compactStepSlack_coeff_bound_nat",
+    "NumStability.theorem20_7_compactActiveHorizonStepSlack_coeff_bound_nat",
+    "NumStability.higham9_14_leadingPrincipalBlock_det_pos_of_symPosDef",
+]
+REVIEWED_DISPOSITIONS_BY_DECLARATION: dict[tuple[str, str], dict[str, Any]] = {
+    **{("unusedArguments", d): _IGNORED_BY_DESIGN for d in _BY_DECL_IGNORED},
+    **{("unusedArguments", d): _CONCLUSION_HYPOTHESIS for d in _BY_DECL_CONCLUSION},
 }
 # Reviewed dispositions keyed by (linter, path). Applied at record construction
 # so they survive regeneration from a bare log, not only a carry from a previous
@@ -655,7 +722,9 @@ def finding_record(
         "reviewer": PRIMARY_REVIEWER,
         "status": ACCEPTED_BASELINE,
     }
-    reviewed = REVIEWED_DISPOSITIONS.get((finding.linter, finding.path))
+    reviewed = REVIEWED_DISPOSITIONS_BY_DECLARATION.get((finding.linter, finding.declaration))
+    if reviewed is None:
+        reviewed = REVIEWED_DISPOSITIONS.get((finding.linter, finding.path))
     if reviewed is None:
         reviewed = REVIEWED_DISPOSITIONS_BY_LINTER.get(finding.linter)
     if reviewed is not None:
