@@ -2,10 +2,10 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Contract
@@ -15,11 +15,11 @@ import NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
 import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
 import NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific
-import NumStability.Source.Higham.Chapter20.Theorem07
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualAssembly
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualClosure
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualRhs
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualTrace
+import NumStability.Source.Higham.Chapter20.Theorem07.Core.Results
 
 namespace NumStability
 

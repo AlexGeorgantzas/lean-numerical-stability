@@ -1,4 +1,5 @@
 import NumStability.Source.Higham.Chapter05.Algorithm01.ComplexHorner.Basic
+import NumStability.Source.Higham.Chapter05.Algorithm01.ComplexHorner.ErrorBounds.Theorems
 import NumStability.Source.Higham.Chapter05.Equation14.MatrixPolynomialForms.Basic
 import NumStability.Source.Higham.Chapter05.Problem01.DifferentiatedHorner.Basic
 import NumStability.Source.Higham.Chapter05.Problem02.PowerBuilding.Basic
@@ -8,7 +9,9 @@ import NumStability.Source.Higham.Chapter05.Problem06.MatrixPolynomialHorner.Bas
 import NumStability.Source.Higham.Chapter05.Section01.Horner.Basic
 import NumStability.Source.Higham.Chapter05.Section01.RelativeError.Basic
 import NumStability.Source.Higham.Chapter05.Section02.BidiagonalDerivativeAnalysis.Basic
+import NumStability.Source.Higham.Chapter05.Section02.BidiagonalDerivativeAnalysis.Results.Theorems
 import NumStability.Source.Higham.Chapter05.Section02.DerivativeError.Basic
+import NumStability.Source.Higham.Chapter05.Section02.DerivativeError.Results.Theorems
 import NumStability.Source.Higham.Chapter05.Section02.DerivativeEvaluation.Bidiagonal
 import NumStability.Source.Higham.Chapter05.Section02.DerivativeEvaluation.SyntheticDivision
 import NumStability.Source.Higham.Chapter05.Section03.DividedDifferences.Basic
@@ -17,7 +20,9 @@ import NumStability.Source.Higham.Chapter05.Section03.NewtonEvaluation.Basic
 import NumStability.Source.Higham.Chapter05.Section03.NewtonEvaluation.HornerBasis
 import NumStability.Source.Higham.Chapter05.Section03.ResidualUnwind.Basic
 import NumStability.Source.Higham.Chapter05.Section04.PatersonStockmeyer.Basic
+import NumStability.Source.Higham.Chapter05.Section04.PatersonStockmeyer.Results.Theorems
 import NumStability.Source.Higham.Chapter05.Section05.FastPolynomialEvaluation.Basic
+import NumStability.Source.Higham.Chapter05.Section05.FastPolynomialEvaluation.Results.Theorems
 
 /-!
 # Higham Chapter 5

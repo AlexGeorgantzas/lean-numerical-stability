@@ -19,6 +19,13 @@ dropping them would lose real dependencies from their bodies.  This keeps graph 
 when Lean regenerates auxiliaries in a different importing module without weakening the semantic
 dependency record.
 
+Format 3 keeps every format-2 row and appends two fields to each `declaration` row: a docstring
+flag (`documented` or `undocumented`, from the environment rather than from the source text) and
+the structural hash of the declaration's elaborated type.  Together with the module and kind these
+make the environment-backed public-API inventory that `tools/architecture/public_api_inventory.py`
+digests: an accepted inventory detects a public statement that silently changed, not only one that
+disappeared.
+
 Run it through `tools/architecture/generate_baseline.py`; the TSV format is an implementation
 detail and is not intended to be checked in.
 -/
@@ -101,6 +108,40 @@ private def contractDependencyTargets
           pending := pending ++ (allConstants info).toArray
   return result
 
+/-- Structural hash of the value or proof term; `0` for declarations without a body. -/
+private def bodyHash : ConstantInfo → String
+  | .defnInfo value => toString value.value.hash
+  | .thmInfo value => toString value.value.hash
+  | .opaqueInfo value => toString value.value.hash
+  | _ => "0"
+
+/--
+The declaration this one is generated from, or `-`: constructors and recursors name their
+inductive type, projection functions name their structure.
+-/
+private def parentRelation (env : Environment) (name : Name) : ConstantInfo → String
+  | .ctorInfo value => s!"constructor-of:{value.induct}"
+  | .recInfo value => s!"recursor-of:{value.getMajorInduct}"
+  | _ =>
+    match env.getProjectionFnInfo? name with
+    | some info => s!"projection-of:{info.ctorName.getPrefix}"
+    | none => "-"
+
+private def reducibilityLabel (env : Environment) (name : Name) : String :=
+  match getReducibilityStatusCore env name with
+  | .reducible => "reducible"
+  | .semireducible => "semireducible"
+  | .irreducible => "irreducible"
+  | .implicitReducible => "implicit-reducible"
+
+private def instancePriorityLabel (env : Environment) (name : Name) : String :=
+  match (Meta.instanceExtension.getState env).instanceNames.find? name with
+  | some entry => s!"instance:{entry.priority}"
+  | none => "-"
+
+private def isSimpLemma (env : Environment) (name : Name) : Bool :=
+  (Meta.simpExtension.getState env).isLemma (.decl name)
+
 private structure ProjectDeclaration where
   name : Name
   moduleName : Name
@@ -156,7 +197,7 @@ private unsafe def extract (outputPath : System.FilePath) : IO Unit := do
     let authoredProjectNames : NameSet := declarations.foldl (init := {}) fun names declaration =>
       names.insert declaration.name
     IO.FS.withFile outputPath IO.FS.Mode.write fun handle => do
-      writeFields handle #["format", "2"]
+      writeFields handle #["format", "3"]
       for declaration in declarations do
         writeFields handle #[
           "declaration",
@@ -164,6 +205,27 @@ private unsafe def extract (outputPath : System.FilePath) : IO Unit := do
           declaration.moduleName.toString,
           declarationKind declaration.info,
           declarationVisibility declaration.name
+        ]
+      -- Format 3 adds one `api` row per declaration with the public-API facts the
+      -- documentation and drift gates need.  The `declaration` rows keep their format-2
+      -- shape so older consumers still parse the stream.
+      for declaration in declarations do
+        let docString? ← findDocString? env declaration.name
+        writeFields handle #[
+          "api",
+          declaration.name.toString,
+          if docString?.isSome then "documented" else "undocumented",
+          match docString? with
+          | some doc => toString doc.trimAscii.hash
+          | none => "0",
+          toString declaration.info.type.hash,
+          bodyHash declaration.info,
+          parentRelation env declaration.name declaration.info,
+          reducibilityLabel env declaration.name,
+          instancePriorityLabel env declaration.name,
+          if isSimpLemma env declaration.name then "simp" else "-",
+          if isProtected env declaration.name then "protected" else "-",
+          if isNoncomputable env declaration.name then "noncomputable" else "-"
         ]
       for declaration in declarations do
         writeEdges handle env authoredProjectNames allProjectNames "signature" declaration

@@ -6,8 +6,8 @@ import NumStability.Analysis.Perturbation.LeastSquares.Basic
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
-import NumStability.Source.Higham.Chapter20.Theorem07
 import NumStability.Source.Higham.Chapter20.Theorem07.Contract
+import NumStability.Source.Higham.Chapter20.Theorem07.Core.Results
 
 namespace NumStability
 

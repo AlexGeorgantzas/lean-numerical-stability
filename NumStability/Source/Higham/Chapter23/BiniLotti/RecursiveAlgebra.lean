@@ -347,6 +347,10 @@ theorem higham23_biniError_mul (h : ℕ) :
       simp [pow_succ]
       ring
 
+/-- Certificate for a Bini–Lotti recursive product at recursion depth `depth`: the computed `Xhat`
+is within `error` of the exact `X` entrywise (`Higham23BiniErrorLe`) and its norm is bounded by
+`norm` (`Higham23BiniNormLe`). Certificates compose under products, which is how the recursive
+error bound is assembled. -/
 structure Higham23BiniCertificate (h depth : ℕ)
     (X Xhat : Higham23BiniMatrix h depth) (error norm : ℝ) : Prop where
   error_le : Higham23BiniErrorLe h depth X Xhat error

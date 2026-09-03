@@ -62,6 +62,9 @@ theorem prefixReverseOperational_eq_suffix (w : ℕ → ℝ) (n : ℕ) : ∀ k :
       simp only [prefixScanNat, reverseSuffixScanNat]
       rw [ih]
 
+/-- Operational workspace for the Problem 15.6 tridiagonal-inverse runs: the forward (`lower`) and
+reverse (`upper`) scan states, stored as arrays of length `n + 1` in the way an implementation keeps
+its buffers. -/
 structure WorkspaceOperational (n : ℕ) where
   lower : Array ℝ
   upper : Array ℝ
@@ -319,6 +322,9 @@ theorem storedQResidualOperational_eq {n : ℕ} (T : TridiagData n) :
   unfold storedQResidualOperational problem15_6_qResidual
   split_ifs <;> simp
 
+/-- The four stored vectors `x`, `y`, `p`, `q` of the Problem 15.6 tridiagonal-inverse representation
+in operational, array-backed form, so that the stored-factor residual identities can be stated
+against the mathematical definitions. -/
 structure Problem15_6StoredFactorsOperational (n : ℕ) where
   x : Vector ℝ n
   y : Vector ℝ n

@@ -1,15 +1,15 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.RowSorting
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Basic
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
 import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
 import NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific
-import NumStability.Source.Higham.Chapter20.Theorem07
+import NumStability.Source.Higham.Chapter20.Theorem07.Core.Results
 import NumStability.Source.Higham.Chapter20.Theorem07.Elimination
 
 namespace NumStability

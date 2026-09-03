@@ -5,9 +5,9 @@
     "mathlib_revision": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
     "modules": "NumStability",
     "reported": {
-      "automatically_generated_declarations": 29838,
+      "automatically_generated_declarations": 29833,
       "declarations": 52461,
-      "findings": 3506,
+      "findings": 3497,
       "linters_run": 16,
       "target": "NumStability"
     },
@@ -225,7 +225,6 @@
       "NumStability/Source/Higham/Chapter07/LinearSystemsConditioning/Theorem05/Part05.lean": 1,
       "NumStability/Source/Higham/Chapter09/CompletePivotSharpClosure.lean": 1,
       "NumStability/Source/Higham/Chapter09/ComplexClosure.lean": 5,
-      "NumStability/Source/Higham/Chapter09/DoolittleClosure.lean": 1,
       "NumStability/Source/Higham/Chapter09/Problems.lean": 9,
       "NumStability/Source/Higham/Chapter09/Section02.lean": 5,
       "NumStability/Source/Higham/Chapter09/Section04.lean": 4,
@@ -259,7 +258,7 @@
       "NumStability/Source/Higham/Chapter11/Bunch/ActualSharpGrowthClosure.lean": 2,
       "NumStability/Source/Higham/Chapter11/Bunch/ExactTrace.lean": 6,
       "NumStability/Source/Higham/Chapter11/Bunch/SharpGrowthBridge.lean": 14,
-      "NumStability/Source/Higham/Chapter11/Bunch/TraceHadamard.lean": 5,
+      "NumStability/Source/Higham/Chapter11/Bunch/TraceHadamard.lean": 4,
       "NumStability/Source/Higham/Chapter11/BunchKaufman/Exact/Trace.lean": 1,
       "NumStability/Source/Higham/Chapter11/BunchKaufman/Rounded/Accumulated.lean": 7,
       "NumStability/Source/Higham/Chapter11/BunchKaufman/Rounded/Closure.lean": 3,
@@ -268,7 +267,7 @@
       "NumStability/Source/Higham/Chapter11/BunchKaufman/Rounded/MiddleSolve.lean": 1,
       "NumStability/Source/Higham/Chapter11/BunchKaufman/Rounded/Solve.lean": 4,
       "NumStability/Source/Higham/Chapter11/BunchTridiagonalActualSolve.lean": 1,
-      "NumStability/Source/Higham/Chapter11/Rook/ExactTrace.lean": 17,
+      "NumStability/Source/Higham/Chapter11/Rook/ExactTrace.lean": 16,
       "NumStability/Source/Higham/Chapter11/Rook/RoundedGap.lean": 3,
       "NumStability/Source/Higham/Chapter11/Section01/PartialPivoting.lean": 107,
       "NumStability/Source/Higham/Chapter11/Section01/Tridiagonal.lean": 809,
@@ -311,7 +310,7 @@
       "NumStability/Source/Higham/Chapter14/Corollary07/DiagonalDominance/WeakFamily.lean": 3,
       "NumStability/Source/Higham/Chapter14/Corollary07/FinalizedRunFamilies/ResidualAndForwardEnvelopes.lean": 1,
       "NumStability/Source/Higham/Chapter14/Corollary07/PrintedTraceFamilies/ResidualAndForwardEndpoints.lean": 2,
-      "NumStability/Source/Higham/Chapter14/Problem02/TriangularInversion/Families.lean": 3,
+      "NumStability/Source/Higham/Chapter14/Problem02/TriangularInversion/Families.lean": 1,
       "NumStability/Source/Higham/Chapter14/Problem02/TriangularInversion/TwoBlockFamilies/Derivations.lean": 3,
       "NumStability/Source/Higham/Chapter14/Problem05/InverseBasedSolve/AsymptoticFamilies.lean": 1,
       "NumStability/Source/Higham/Chapter14/Section01/InverseErrorAnalysis/AsymptoticFamilies.lean": 9,
@@ -328,7 +327,7 @@
       "NumStability/Source/Higham/Chapter15/Equation04/NormalizedDualDiscrepancy/Basic.lean": 2,
       "NumStability/Source/Higham/Chapter15/Problem06/TridiagonalInverseNorm/TridiagonalInverse.lean": 7,
       "NumStability/Source/Higham/Chapter15/Problem06/TridiagonalInverseNorm/TridiagonalInverseCompletion.lean": 12,
-      "NumStability/Source/Higham/Chapter15/Problem06/TridiagonalInverseNorm/TridiagonalInverseRuns.lean": 44,
+      "NumStability/Source/Higham/Chapter15/Problem06/TridiagonalInverseNorm/TridiagonalInverseRuns.lean": 42,
       "NumStability/Source/Higham/Chapter15/Section02/Boyd/GlobalConvergence/ScalarCase/Iteration.lean": 1,
       "NumStability/Source/Higham/Chapter15/Section02/Boyd/SourceDomain/BoydConcrete.lean": 1,
       "NumStability/Source/Higham/Chapter15/Section02/Boyd/SourceDomain/StrongLocalMaximum/Convergence.lean": 2,
@@ -405,7 +404,7 @@
       "NumStability/Source/Higham/Chapter23/BilinearAlgorithm.lean": 3,
       "NumStability/Source/Higham/Chapter23/BiniLotti/Execution.lean": 7,
       "NumStability/Source/Higham/Chapter23/BiniLotti/FirstOrder.lean": 1,
-      "NumStability/Source/Higham/Chapter23/BiniLotti/RecursiveAlgebra.lean": 9,
+      "NumStability/Source/Higham/Chapter23/BiniLotti/RecursiveAlgebra.lean": 8,
       "NumStability/Source/Higham/Chapter23/BlockAlgorithms.lean": 4,
       "NumStability/Source/Higham/Chapter23/ConventionalMultiplication.lean": 1,
       "NumStability/Source/Higham/Chapter23/Equation11.lean": 19,
@@ -416,7 +415,7 @@
       "NumStability/Source/Higham/Chapter23/Theorem03/Certificates.lean": 1,
       "NumStability/Source/Higham/Chapter23/Theorem03/ErrorBound.lean": 3,
       "NumStability/Source/Higham/Chapter23/Theorem03/ExactMajorant.lean": 21,
-      "NumStability/Source/Higham/Chapter23/ThreeM.lean": 3,
+      "NumStability/Source/Higham/Chapter23/ThreeM.lean": 2,
       "NumStability/Source/Higham/Chapter23/ThreeMStrassen/Execution.lean": 7,
       "NumStability/Source/Higham/Chapter23/ThreeMStrassen/FirstOrder.lean": 6,
       "NumStability/Source/Higham/Chapter24/CirculantSystems.lean": 16,
@@ -460,10 +459,10 @@
     },
     "by_linter": {
       "defLemma": 1848,
-      "docBlame": 1051,
+      "docBlame": 1042,
       "unusedArguments": 607
     },
-    "global": 3506
+    "global": 3497
   },
   "findings": [
     {
@@ -14459,28 +14458,6 @@
       "status": "accepted_baseline"
     },
     {
-      "declaration": "NumStability.higham9_2_RectDoolittleSourceCertificate",
-      "disposition": "reviewed_documentation_deferred",
-      "evidence": {
-        "column": 1,
-        "line": 519,
-        "message": "inductive missing documentation string"
-      },
-      "expiry_release": "next human revision of the owning module",
-      "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
-      "linter": "docBlame",
-      "message_head": "inductive missing documentation string",
-      "message_head_sha256": "d4b4e248100bd1baeba9340459db2f0add3b5a5bc61aaf0397ef8e17f5ff1d81",
-      "module": "NumStability.Source.Higham.Chapter09.DoolittleClosure",
-      "occurrence": 0,
-      "owner_family": "docBlame",
-      "path": "NumStability/Source/Higham/Chapter09/DoolittleClosure.lean",
-      "rationale": "Public declaration without a docstring. A docstring is an authored claim about what the declaration means in the source argument; generating over a thousand of them mechanically would produce unreviewed prose about mathematical content at a scale no human will read. Recorded by the primary human's delegated decision of 2026-09-01: the docstring is written when a human next revises the owning module.",
-      "reconsideration_trigger": "Reconsider when the owning declaration or module is next edited by a person; a documented declaration then disappears from the census as a reviewed reduction.",
-      "reviewer": "primary-human",
-      "status": "accepted_baseline"
-    },
-    {
       "declaration": "NumStability.higham9_16_fosterBandValue_antitone",
       "disposition": "baseline_debt",
       "evidence": {
@@ -17143,33 +17120,11 @@
       "status": "accepted_baseline"
     },
     {
-      "declaration": "NumStability.PrefixPrincipalMinor",
-      "disposition": "reviewed_documentation_deferred",
-      "evidence": {
-        "column": 1,
-        "line": 430,
-        "message": "inductive missing documentation string"
-      },
-      "expiry_release": "next human revision of the owning module",
-      "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
-      "linter": "docBlame",
-      "message_head": "inductive missing documentation string",
-      "message_head_sha256": "d4b4e248100bd1baeba9340459db2f0add3b5a5bc61aaf0397ef8e17f5ff1d81",
-      "module": "NumStability.Source.Higham.Chapter11.Bunch.TraceHadamard",
-      "occurrence": 0,
-      "owner_family": "docBlame",
-      "path": "NumStability/Source/Higham/Chapter11/Bunch/TraceHadamard.lean",
-      "rationale": "Public declaration without a docstring. A docstring is an authored claim about what the declaration means in the source argument; generating over a thousand of them mechanically would produce unreviewed prose about mathematical content at a scale no human will read. Recorded by the primary human's delegated decision of 2026-09-01: the docstring is written when a human next revises the owning module.",
-      "reconsideration_trigger": "Reconsider when the owning declaration or module is next edited by a person; a documented declaration then disappears from the census as a reviewed reduction.",
-      "reviewer": "primary-human",
-      "status": "accepted_baseline"
-    },
-    {
       "declaration": "NumStability.PrefixPrincipalMinor.e",
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 432,
+        "line": 435,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -17191,7 +17146,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 595,
+        "line": 598,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -17213,7 +17168,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 445,
+        "line": 448,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -17671,33 +17626,11 @@
       "status": "accepted_baseline"
     },
     {
-      "declaration": "NumStability.Higham11RookExecutorAdapter.Higham11ExactRookTrace",
-      "disposition": "reviewed_documentation_deferred",
-      "evidence": {
-        "column": 1,
-        "line": 230,
-        "message": "inductive missing documentation string"
-      },
-      "expiry_release": "next human revision of the owning module",
-      "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
-      "linter": "docBlame",
-      "message_head": "inductive missing documentation string",
-      "message_head_sha256": "d4b4e248100bd1baeba9340459db2f0add3b5a5bc61aaf0397ef8e17f5ff1d81",
-      "module": "NumStability.Source.Higham.Chapter11.Rook.ExactTrace",
-      "occurrence": 0,
-      "owner_family": "docBlame",
-      "path": "NumStability/Source/Higham/Chapter11/Rook/ExactTrace.lean",
-      "rationale": "Public declaration without a docstring. A docstring is an authored claim about what the declaration means in the source argument; generating over a thousand of them mechanically would produce unreviewed prose about mathematical content at a scale no human will read. Recorded by the primary human's delegated decision of 2026-09-01: the docstring is written when a human next revises the owning module.",
-      "reconsideration_trigger": "Reconsider when the owning declaration or module is next edited by a person; a documented declaration then disappears from the census as a reviewed reduction.",
-      "reviewer": "primary-human",
-      "status": "accepted_baseline"
-    },
-    {
       "declaration": "NumStability.Higham11RookExecutorAdapter.Higham11ExactRookTrace.D",
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 338,
+        "line": 343,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -17719,7 +17652,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 316,
+        "line": 321,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -17741,7 +17674,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 248,
+        "line": 253,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -18027,7 +17960,7 @@
       "disposition": "baseline_debt",
       "evidence": {
         "column": 1,
-        "line": 713,
+        "line": 718,
         "message": "argument 6 _hmu : 0 ≤ mu"
       },
       "expiry_release": null,
@@ -61451,50 +61384,6 @@
       "status": "accepted_baseline"
     },
     {
-      "declaration": "NumStability.Ch14Ext.Ch14Problem142Method1BStepFamily",
-      "disposition": "reviewed_documentation_deferred",
-      "evidence": {
-        "column": 1,
-        "line": 267,
-        "message": "inductive missing documentation string"
-      },
-      "expiry_release": "next human revision of the owning module",
-      "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
-      "linter": "docBlame",
-      "message_head": "inductive missing documentation string",
-      "message_head_sha256": "d4b4e248100bd1baeba9340459db2f0add3b5a5bc61aaf0397ef8e17f5ff1d81",
-      "module": "NumStability.Source.Higham.Chapter14.Problem02.TriangularInversion.Families",
-      "occurrence": 0,
-      "owner_family": "docBlame",
-      "path": "NumStability/Source/Higham/Chapter14/Problem02/TriangularInversion/Families.lean",
-      "rationale": "Public declaration without a docstring. A docstring is an authored claim about what the declaration means in the source argument; generating over a thousand of them mechanically would produce unreviewed prose about mathematical content at a scale no human will read. Recorded by the primary human's delegated decision of 2026-09-01: the docstring is written when a human next revises the owning module.",
-      "reconsideration_trigger": "Reconsider when the owning declaration or module is next edited by a person; a documented declaration then disappears from the census as a reviewed reduction.",
-      "reviewer": "primary-human",
-      "status": "accepted_baseline"
-    },
-    {
-      "declaration": "NumStability.Ch14Ext.Ch14Problem142Method2CStepFamily",
-      "disposition": "reviewed_documentation_deferred",
-      "evidence": {
-        "column": 1,
-        "line": 318,
-        "message": "inductive missing documentation string"
-      },
-      "expiry_release": "next human revision of the owning module",
-      "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
-      "linter": "docBlame",
-      "message_head": "inductive missing documentation string",
-      "message_head_sha256": "d4b4e248100bd1baeba9340459db2f0add3b5a5bc61aaf0397ef8e17f5ff1d81",
-      "module": "NumStability.Source.Higham.Chapter14.Problem02.TriangularInversion.Families",
-      "occurrence": 0,
-      "owner_family": "docBlame",
-      "path": "NumStability/Source/Higham/Chapter14/Problem02/TriangularInversion/Families.lean",
-      "rationale": "Public declaration without a docstring. A docstring is an authored claim about what the declaration means in the source argument; generating over a thousand of them mechanically would produce unreviewed prose about mathematical content at a scale no human will read. Recorded by the primary human's delegated decision of 2026-09-01: the docstring is written when a human next revises the owning module.",
-      "reconsideration_trigger": "Reconsider when the owning declaration or module is next edited by a person; a documented declaration then disappears from the census as a reviewed reduction.",
-      "reviewer": "primary-human",
-      "status": "accepted_baseline"
-    },
-    {
       "declaration": "NumStability.Ch14Ext.Ch14RoundoffFamily.unit",
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
@@ -63171,7 +63060,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 522,
+        "line": 528,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63193,7 +63082,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 515,
+        "line": 521,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63215,7 +63104,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 518,
+        "line": 524,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63237,7 +63126,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 516,
+        "line": 522,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63259,7 +63148,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 523,
+        "line": 529,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63281,7 +63170,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 520,
+        "line": 526,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63303,7 +63192,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 521,
+        "line": 527,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63325,7 +63214,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 519,
+        "line": 525,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63347,7 +63236,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 517,
+        "line": 523,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63365,33 +63254,11 @@
       "status": "accepted_baseline"
     },
     {
-      "declaration": "NumStability.Higham15Problem15_6.Problem15_6StoredFactorsOperational",
-      "disposition": "reviewed_documentation_deferred",
-      "evidence": {
-        "column": 1,
-        "line": 322,
-        "message": "inductive missing documentation string"
-      },
-      "expiry_release": "next human revision of the owning module",
-      "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
-      "linter": "docBlame",
-      "message_head": "inductive missing documentation string",
-      "message_head_sha256": "d4b4e248100bd1baeba9340459db2f0add3b5a5bc61aaf0397ef8e17f5ff1d81",
-      "module": "NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.TridiagonalInverseRuns",
-      "occurrence": 0,
-      "owner_family": "docBlame",
-      "path": "NumStability/Source/Higham/Chapter15/Problem06/TridiagonalInverseNorm/TridiagonalInverseRuns.lean",
-      "rationale": "Public declaration without a docstring. A docstring is an authored claim about what the declaration means in the source argument; generating over a thousand of them mechanically would produce unreviewed prose about mathematical content at a scale no human will read. Recorded by the primary human's delegated decision of 2026-09-01: the docstring is written when a human next revises the owning module.",
-      "reconsideration_trigger": "Reconsider when the owning declaration or module is next edited by a person; a documented declaration then disappears from the census as a reviewed reduction.",
-      "reviewer": "primary-human",
-      "status": "accepted_baseline"
-    },
-    {
       "declaration": "NumStability.Higham15Problem15_6.Problem15_6StoredFactorsOperational.p",
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 325,
+        "line": 331,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63413,7 +63280,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 326,
+        "line": 332,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63435,7 +63302,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 323,
+        "line": 329,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63457,7 +63324,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 324,
+        "line": 330,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63475,33 +63342,11 @@
       "status": "accepted_baseline"
     },
     {
-      "declaration": "NumStability.Higham15Problem15_6.WorkspaceOperational",
-      "disposition": "reviewed_documentation_deferred",
-      "evidence": {
-        "column": 1,
-        "line": 65,
-        "message": "inductive missing documentation string"
-      },
-      "expiry_release": "next human revision of the owning module",
-      "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
-      "linter": "docBlame",
-      "message_head": "inductive missing documentation string",
-      "message_head_sha256": "d4b4e248100bd1baeba9340459db2f0add3b5a5bc61aaf0397ef8e17f5ff1d81",
-      "module": "NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.TridiagonalInverseRuns",
-      "occurrence": 0,
-      "owner_family": "docBlame",
-      "path": "NumStability/Source/Higham/Chapter15/Problem06/TridiagonalInverseNorm/TridiagonalInverseRuns.lean",
-      "rationale": "Public declaration without a docstring. A docstring is an authored claim about what the declaration means in the source argument; generating over a thousand of them mechanically would produce unreviewed prose about mathematical content at a scale no human will read. Recorded by the primary human's delegated decision of 2026-09-01: the docstring is written when a human next revises the owning module.",
-      "reconsideration_trigger": "Reconsider when the owning declaration or module is next edited by a person; a documented declaration then disappears from the census as a reviewed reduction.",
-      "reviewer": "primary-human",
-      "status": "accepted_baseline"
-    },
-    {
       "declaration": "NumStability.Higham15Problem15_6.WorkspaceOperational.lower",
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 66,
+        "line": 69,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63523,7 +63368,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 3,
-        "line": 67,
+        "line": 70,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63545,7 +63390,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 199,
+        "line": 202,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63567,7 +63412,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 268,
+        "line": 271,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63589,7 +63434,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 193,
+        "line": 196,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63611,7 +63456,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 265,
+        "line": 268,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63633,7 +63478,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 187,
+        "line": 190,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63655,7 +63500,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 262,
+        "line": 265,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63677,7 +63522,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 205,
+        "line": 208,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63699,7 +63544,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 271,
+        "line": 274,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63721,7 +63566,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 441,
+        "line": 447,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63743,7 +63588,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 367,
+        "line": 373,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63765,7 +63610,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 581,
+        "line": 587,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63787,7 +63632,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 591,
+        "line": 597,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63809,7 +63654,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 453,
+        "line": 459,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63831,7 +63676,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 377,
+        "line": 383,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63853,7 +63698,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 525,
+        "line": 531,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63875,7 +63720,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 333,
+        "line": 339,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63897,7 +63742,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 458,
+        "line": 464,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63919,7 +63764,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 381,
+        "line": 387,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63941,7 +63786,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 77,
+        "line": 80,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -63985,7 +63830,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 305,
+        "line": 308,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -64007,7 +63852,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 298,
+        "line": 301,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -64029,7 +63874,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 136,
+        "line": 139,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -64051,7 +63896,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 99,
+        "line": 102,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -64073,7 +63918,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 446,
+        "line": 452,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -64095,7 +63940,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 372,
+        "line": 378,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -64117,7 +63962,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 71,
+        "line": 74,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -72121,28 +71966,6 @@
       "status": "accepted_baseline"
     },
     {
-      "declaration": "NumStability.Higham23BiniCertificate",
-      "disposition": "reviewed_documentation_deferred",
-      "evidence": {
-        "column": 1,
-        "line": 350,
-        "message": "inductive missing documentation string"
-      },
-      "expiry_release": "next human revision of the owning module",
-      "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
-      "linter": "docBlame",
-      "message_head": "inductive missing documentation string",
-      "message_head_sha256": "d4b4e248100bd1baeba9340459db2f0add3b5a5bc61aaf0397ef8e17f5ff1d81",
-      "module": "NumStability.Source.Higham.Chapter23.BiniLotti.RecursiveAlgebra",
-      "occurrence": 0,
-      "owner_family": "docBlame",
-      "path": "NumStability/Source/Higham/Chapter23/BiniLotti/RecursiveAlgebra.lean",
-      "rationale": "Public declaration without a docstring. A docstring is an authored claim about what the declaration means in the source argument; generating over a thousand of them mechanically would produce unreviewed prose about mathematical content at a scale no human will read. Recorded by the primary human's delegated decision of 2026-09-01: the docstring is written when a human next revises the owning module.",
-      "reconsideration_trigger": "Reconsider when the owning declaration or module is next edited by a person; a documented declaration then disappears from the census as a reviewed reduction.",
-      "reviewer": "primary-human",
-      "status": "accepted_baseline"
-    },
-    {
       "declaration": "NumStability.Higham23BiniErrorLe",
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
@@ -73551,33 +73374,11 @@
       "status": "accepted_baseline"
     },
     {
-      "declaration": "NumStability.Higham23TwoDotMode",
-      "disposition": "reviewed_documentation_deferred",
-      "evidence": {
-        "column": 1,
-        "line": 43,
-        "message": "inductive missing documentation string"
-      },
-      "expiry_release": "next human revision of the owning module",
-      "introduced_at": "86de0064e154c7d2a4d7cad4742312b131edf3b2",
-      "linter": "docBlame",
-      "message_head": "inductive missing documentation string",
-      "message_head_sha256": "d4b4e248100bd1baeba9340459db2f0add3b5a5bc61aaf0397ef8e17f5ff1d81",
-      "module": "NumStability.Source.Higham.Chapter23.ThreeM",
-      "occurrence": 0,
-      "owner_family": "docBlame",
-      "path": "NumStability/Source/Higham/Chapter23/ThreeM.lean",
-      "rationale": "Public declaration without a docstring. A docstring is an authored claim about what the declaration means in the source argument; generating over a thousand of them mechanically would produce unreviewed prose about mathematical content at a scale no human will read. Recorded by the primary human's delegated decision of 2026-09-01: the docstring is written when a human next revises the owning module.",
-      "reconsideration_trigger": "Reconsider when the owning declaration or module is next edited by a person; a documented declaration then disappears from the census as a reviewed reduction.",
-      "reviewer": "primary-human",
-      "status": "accepted_baseline"
-    },
-    {
       "declaration": "NumStability.Higham23TwoDotMode.rounded",
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 53,
+        "line": 56,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",
@@ -73599,7 +73400,7 @@
       "disposition": "reviewed_documentation_deferred",
       "evidence": {
         "column": 1,
-        "line": 49,
+        "line": 52,
         "message": "definition missing documentation string"
       },
       "expiry_release": "next human revision of the owning module",

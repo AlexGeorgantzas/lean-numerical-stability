@@ -5,7 +5,7 @@ book-formalization migration. The generator has two layers:
 
 - `generate_baseline.py` scans Lean sources and the direct-import graph using
   only the Python standard library.
-- `declaration_dependencies.lean` loads the compiled `NumStability`
+- `declaration_dependencies.lean` (format 3) loads the compiled `NumStability`
   environment, separates signature references from body/proof references, and
   contracts Lean-reserved or compiler-generated declarations onto the authored
   project declarations reachable through them. Authored private declarations
@@ -19,6 +19,23 @@ book-formalization migration. The generator has two layers:
   code contains zero imports of historical paths outright. The former
   retained-boundary exception mechanism was retired with R0015; the checker
   carries no exception list.
+- `check_entrypoints.py` recomputes the entry-point manifest
+  `docs/architecture/entrypoints.json` live: every family parent, contracted
+  aggregate, advertised module and reusable seed is a row; non-compatibility
+  parents reach every canonical descendant; import-only parents are aggregates;
+  contracted or advertised entry points have isolated single-import tests that
+  check a declaration; and an ARCHITECTURE.md bullet may call a module reusable
+  only when its tier or seed status says so.
+- `check_public_api_docs.py` enforces the public-API documentation policy
+  (`docs/architecture/public-api-policy.json`): every public type in the
+  reusable and source tiers carries a docstring, and no public declaration
+  may be added or lose its docstring without appearing in the reviewed
+  baseline `public-api-baseline.json`, which may only shrink.
+- `public_api_inventory.py` digests a format-3 extractor stream into
+  `docs/architecture/public-api-inventory.json`: per module, the public
+  declaration count, the documented count and a digest over
+  name, kind and elaborated-type hash, so an accepted inventory detects a
+  public statement that silently changed.
 - `check_layout.py` enforces the naming, classification, aggregate, generated-
   artifact, and documentation ratchet recorded in
   `docs/architecture/layout-exceptions.json`.

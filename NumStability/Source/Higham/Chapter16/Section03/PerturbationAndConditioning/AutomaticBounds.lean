@@ -1,4 +1,5 @@
 import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AutomaticBounds.All
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AutomaticBounds.Results.Core
 
 /-!
 # NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AutomaticBounds

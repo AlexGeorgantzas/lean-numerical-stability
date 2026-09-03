@@ -1,3 +1,4 @@
+import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.Aggregate
 import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
 import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares.Equality.Basic

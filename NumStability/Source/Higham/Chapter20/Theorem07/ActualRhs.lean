@@ -1,14 +1,14 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
-import NumStability.Source.Higham.Chapter20.Theorem07
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualClosure
 import NumStability.Source.Higham.Chapter20.Theorem07.ActualTrace
+import NumStability.Source.Higham.Chapter20.Theorem07.Core.Results
 
 namespace NumStability
 

@@ -11,7 +11,8 @@ import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
 import NumStability.Source.Higham.Chapter19.Core
 import NumStability.Source.Higham.Chapter19.Labels
-import NumStability.Source.Higham.Chapter20.Theorem03
+import NumStability.Source.Higham.Chapter20.Theorem03.Core.Results
+import NumStability.Source.Higham.Chapter20.Theorem03.QRSolve
 
 namespace NumStability
 

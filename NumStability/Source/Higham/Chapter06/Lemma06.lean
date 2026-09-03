@@ -1,5 +1,6 @@
 import NumStability.Analysis.MatrixNorms.Comparisons
 import NumStability.Source.Higham.Chapter06.Lemma06.Core.Results
+import NumStability.Source.Higham.Chapter06.Lemma06.OperatorTwoNormBound
 
 /-!
 # Lemma06

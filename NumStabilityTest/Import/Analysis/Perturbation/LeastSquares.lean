@@ -1,3 +1,4 @@
+import NumStabilityTest.Import.Analysis.Perturbation.LeastSquares.Aggregate
 import NumStabilityTest.Import.Analysis.Perturbation.LeastSquares.AugmentedSystem
 import NumStabilityTest.Import.Analysis.Perturbation.LeastSquares.BackwardError
 import NumStabilityTest.Import.Analysis.Perturbation.LeastSquares.Basic

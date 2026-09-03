@@ -1,5 +1,7 @@
 import NumStability.Source.Higham.Chapter20.Theorem03.Core.Results
 import NumStability.Source.Higham.Chapter20.Theorem03.QRSolve
+import NumStability.Source.Higham.Chapter20.Theorem03.ResidualQuality
+import NumStability.Source.Higham.Chapter20.Theorem03.ZeroDeltaB
 
 /-!
 # NumStability.Source.Higham.Chapter20.Theorem03

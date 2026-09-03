@@ -1,0 +1,67 @@
+{
+ "schema_version": 1,
+ "policy": {
+  "id": "public-api-documentation-and-drift",
+  "statement": "The supported public API is the set of user-authored, non-private declarations owned by reusable- or source-tier modules reachable from an advertised entrypoint. Every public type carries a docstring; no public declaration may be added or lose its docstring without appearing in the reviewed baseline, which may only shrink; and, once the environment-backed inventory is accepted, no public declaration may be added, removed, or change its type, body, documentation, reducibility, instance priority, simp membership, protected or noncomputable status without an accepted change record naming that exact row and delta.",
+  "enforced_by": ["tools/architecture/check_public_api_docs.py", "tools/architecture/public_api_inventory.py"],
+  "baseline": "docs/architecture/public-api-baseline.json",
+  "inventory": "docs/architecture/public-api-inventory.json",
+  "change_records": "docs/architecture/public-api-changes.json",
+  "review_sheet": "docs/architecture/public-api-review.tsv",
+  "reviewer": "primary-human",
+  "status": "accepted",
+  "review_date": "2026-09-03"
+ },
+ "supported_population": {
+  "advertised_entrypoints_source": "docs/architecture/entrypoints.json rows whose advertised_in is non-empty (README key-entry-point table and ARCHITECTURE.md entry-point bullets); the manifest is checked live by check_entrypoints.py",
+  "owner_tiers": ["reusable", "source"],
+  "visibility": "public (non-private, not an internal detail)",
+  "excluded_tiers": ["aggregate", "compatibility", "internal", "upstream"],
+  "excluded_declarations": "compiler-generated details, Lean-reserved names, recursors and equation lemmas (contracted out of the format-3 stream); compatibility paths preserve import and name access but own no second declaration",
+  "compatibility_removal_policy": "docs/architecture/COMPATIBILITY.md: no_removal_in_this_migration; a compatibility path is retired only by a declared breaking release recorded in compatibility.json"
+ },
+ "selection": {
+  "major_by_default_kinds": ["structure", "class", "inductive", "def", "abbrev", "opaque"],
+  "promoted_theorem_rule": "a theorem or lemma is a major candidate when a canonical or compatibility test checks it, public architecture or community documentation names it, or a reviewed numbered source endpoint row promotes it; path or name heuristics never decide API status",
+  "parent_rule": "constructors, projections and instances inherit the API status and documentation policy of their parent type unless a review row promotes them",
+  "source_endpoint_rule": "a source theorem's endpoint status is explicit per numbered owner in the review sheet"
+ },
+ "rules": [
+  {
+   "id": "types-documented",
+   "kinds": ["structure", "class", "inductive"],
+   "requirement": "docstring present",
+   "debt_allowed": false,
+   "rationale": "Types are the vocabulary of the API: a consumer cannot use a structure or inductive without knowing what its fields and constructors mean."
+  },
+  {
+   "id": "no-new-undocumented-declaration",
+   "kinds": ["theorem", "lemma", "def", "abbrev", "opaque", "instance"],
+   "requirement": "docstring present or fingerprint (module|kind|name|occurrence) in the baseline",
+   "debt_allowed": true,
+   "rationale": "About 7,800 inherited declarations lack docstrings; documenting them is a content campaign, and the ratchet stops the debt growing while the baseline records exactly what remains."
+  },
+  {
+   "id": "no-unrecorded-api-drift",
+   "scope": "every declaration in the accepted environment-backed inventory",
+   "requirement": "identical tracked fields, or an accepted change record naming the declaration and the exact field deltas",
+   "debt_allowed": false,
+   "rationale": "A public statement that changes silently breaks every downstream proof that relied on it; the inventory makes the change visible and reviewed."
+  }
+ ],
+ "content_standard": {
+  "applies_to": "reviewed major declarations",
+  "requirement": "the docstring names the mathematical or computational object; explains non-obvious parameters, assumptions and the meaning of the result; and for source declarations states the source locator and whether the declaration is a printed result, a correction, a discrepancy, or implementation support. Empty, label-only or copied text fails unless a reviewed exclusion row applies.",
+  "status": "standard recorded; adequacy is judged per reviewed row in the review sheet and is not yet machine-checked"
+ },
+ "measurement": {
+  "presence_scan": "textual: a declaration is documented when a `/-- ... -/` docstring ends on the nearest preceding non-blank, non-attribute line; runs before the build on every CI run",
+  "environment_inventory": "declaration_dependencies.lean format 3: documentation presence and trimmed-doc hash from Lean.findDocString?, elaborated-type hash, body hash, parent relation, reducibility, instance priority, simp membership, protected and noncomputable flags; digested by public_api_inventory.py after the build",
+  "notation_inventory": "docs/architecture/notation-inventory.json, enforced statically before the build and by importer probes after it (check_notation_inventory.py); the supported API exports no notation",
+  "inventory_status": "not yet accepted: public-api-inventory.json is written once at acceptance (ACCEPT-02/03) from a full-build extraction; until then the CI step parses the live stream and prints the totals as a notice, and the drift gate arms automatically once the file exists",
+  "not_yet_delivered": [
+   "per-candidate review rows with API status for the roughly 24,000 major candidates (the review sheet carries the nine reviewed types and explicit unreviewed classes)",
+   "machine check of the content standard beyond presence"
+  ]
+ }
+}

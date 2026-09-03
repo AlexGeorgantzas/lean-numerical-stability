@@ -1,18 +1,18 @@
 {
  "counts": {
   "by_role": {
-   "aggregate": 405,
+   "aggregate": 436,
    "compatibility": 712,
    "internal": 5,
-   "reusable": 577,
-   "source": 1224,
+   "reusable": 576,
+   "source": 1216,
    "upstream": 5
   },
-  "exact_rules": 2044,
+  "exact_rules": 2075,
   "exact_rules_with_absent_file": 0,
   "prefix_rules": 27,
   "prefix_rules_deciding_nothing": 1,
-  "production_modules": 2928
+  "production_modules": 2950
  },
  "exact": {
   "NumStability": "aggregate",
@@ -392,6 +392,7 @@
   "NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT": "source",
   "NumStability.Algorithms.LinearSystems.LeastSquares.RowSorting": "source",
   "NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel": "source",
+  "NumStability.Algorithms.LinearSystems.QR": "aggregate",
   "NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport": "compatibility",
   "NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport": "compatibility",
   "NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport": "compatibility",
@@ -1343,23 +1344,45 @@
   "NumStability.Higham.CrossChapter.Chapter09To12GenericSolver": "compatibility",
   "NumStability.Higham.CrossChapter.Chapter09To12Solver": "compatibility",
   "NumStability.Source": "aggregate",
+  "NumStability.Source.DrineasMahoney": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling": "aggregate",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling.HitCountConcentration": "source",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling.Sampling": "source",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling.TraceMGF": "source",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm02": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm02.RowSampling": "aggregate",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm02.RowSampling.Endpoints": "source",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning": "aggregate",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.FloatingPoint": "source",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.Preconditioning": "source",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.UniformRowComposition": "source",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.UniformRows": "source",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation02": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation02.SpectralApproximation": "aggregate",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Equation02.SpectralApproximation.ElementwiseSpectral": "source",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation04": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation04.RowSamplingProbability": "aggregate",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Equation04.RowSamplingProbability.Normalization": "source",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation05": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation05.GramApproximation": "aggregate",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Equation05.GramApproximation.Bounds": "source",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation06": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation06.LeverageProbability": "aggregate",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Equation06.LeverageProbability.Normalization": "source",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation07": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding": "aggregate",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding.ComputedBasis": "source",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding.Leverage": "source",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding.LeverageTraceMGF": "source",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding.RowNormTraceMGF": "source",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation08": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation08.LeastSquaresSketch": "aggregate",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Equation08.LeastSquaresSketch.Endpoints": "source",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation09": "aggregate",
+  "NumStability.Source.DrineasMahoney.RandNLA2016.Equation09.LowRankApproximation": "aggregate",
   "NumStability.Source.DrineasMahoney.RandNLA2016.Equation09.LowRankApproximation.Endpoints": "source",
   "NumStability.Source.Higham": "aggregate",
   "NumStability.Source.Higham.Chapter01": "aggregate",
@@ -1860,15 +1883,23 @@
   "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.RealCases": "source",
   "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.RealJordan": "source",
   "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.SpectralCriterion": "source",
+  "NumStability.Source.Higham.Chapter19": "aggregate",
   "NumStability.Source.Higham.Chapter19.Sensitivity": "aggregate",
   "NumStability.Source.Higham.Chapter19.StoredLoop": "aggregate",
   "NumStability.Source.Higham.Chapter20": "aggregate",
+  "NumStability.Source.Higham.Chapter20.Equations": "aggregate",
   "NumStability.Source.Higham.Chapter20.Equations.Core.Results": "source",
+  "NumStability.Source.Higham.Chapter20.Lemma11": "aggregate",
   "NumStability.Source.Higham.Chapter20.Lemma11.Core.Results": "source",
+  "NumStability.Source.Higham.Chapter20.Prose": "aggregate",
   "NumStability.Source.Higham.Chapter20.Prose.Core.Results": "source",
+  "NumStability.Source.Higham.Chapter20.Theorem03": "aggregate",
   "NumStability.Source.Higham.Chapter20.Theorem03.Core.Results": "source",
+  "NumStability.Source.Higham.Chapter20.Theorem04": "aggregate",
   "NumStability.Source.Higham.Chapter20.Theorem04.Core.Results": "source",
+  "NumStability.Source.Higham.Chapter20.Theorem07": "aggregate",
   "NumStability.Source.Higham.Chapter20.Theorem07.Core.Results": "source",
+  "NumStability.Source.Higham.Chapter20.Theorem08": "aggregate",
   "NumStability.Source.Higham.Chapter20.Theorem08.Core.Results": "source",
   "NumStability.Source.Higham.Chapter21": "aggregate",
   "NumStability.Source.Higham.Chapter21.Attainability.Results": "source",
@@ -9621,6 +9652,28 @@
    },
    "role": "source",
    "rule_id": "exact:NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel"
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "2e3234ae9adf1c196eb39e1e80608c56ea8c194a",
+    "date": "2026-07-31T00:00:28-07:00",
+    "determined_by": "diff_filter_add"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Algorithms.LinearSystems.QR",
+   "rationale": "Import-only family parent that re-exports its children; it owns no declarations, so it is a structural aggregate (EVID-04 rule R4).",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Algorithms.LinearSystems.QR",
+   "override_of": "prefix:NumStability.Algorithms.LinearSystems.QR",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Algorithms.LinearSystems.QR defaults to reusable."
   },
   {
    "exception": null,
@@ -28717,6 +28770,94 @@
   },
   {
    "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
    "extends": "prefix:NumStability.Source",
    "file_present": true,
    "introduction": {
@@ -28780,6 +28921,50 @@
   },
   {
    "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm02",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm02",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm02.RowSampling",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm02.RowSampling",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
    "extends": "prefix:NumStability.Source",
    "file_present": true,
    "introduction": {
@@ -28798,6 +28983,50 @@
    },
    "role": "source",
    "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm02.RowSampling.Endpoints"
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
   },
   {
    "exception": null,
@@ -28885,6 +29114,50 @@
   },
   {
    "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation02",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation02",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation02.SpectralApproximation",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation02.SpectralApproximation",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
    "extends": "prefix:NumStability.Source",
    "file_present": true,
    "introduction": {
@@ -28903,6 +29176,50 @@
    },
    "role": "source",
    "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation02.SpectralApproximation.ElementwiseSpectral"
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation04",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation04",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation04.RowSamplingProbability",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation04.RowSamplingProbability",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
   },
   {
    "exception": null,
@@ -28927,6 +29244,50 @@
   },
   {
    "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation05",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation05",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation05.GramApproximation",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation05.GramApproximation",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
    "extends": "prefix:NumStability.Source",
    "file_present": true,
    "introduction": {
@@ -28948,6 +29309,50 @@
   },
   {
    "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation06",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation06",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation06.LeverageProbability",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation06.LeverageProbability",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
    "extends": "prefix:NumStability.Source",
    "file_present": true,
    "introduction": {
@@ -28966,6 +29371,50 @@
    },
    "role": "source",
    "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation06.LeverageProbability.Normalization"
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation07",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation07",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
   },
   {
    "exception": null,
@@ -29053,6 +29502,50 @@
   },
   {
    "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation08",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation08",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation08.LeastSquaresSketch",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation08.LeastSquaresSketch",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
    "extends": "prefix:NumStability.Source",
    "file_present": true,
    "introduction": {
@@ -29071,6 +29564,50 @@
    },
    "role": "source",
    "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation08.LeastSquaresSketch.Endpoints"
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation09",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation09",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "3b8bbceddc2219e93032d4493cf4bd6f2112a7ea",
+    "date": "2026-09-03T12:00:00-04:00",
+    "determined_by": "introduced_by_landing_over_parent"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.DrineasMahoney.RandNLA2016.Equation09.LowRankApproximation",
+   "rationale": "Declaration-free source-correspondence aggregate introduced by EVID-04 so the Drineas and Mahoney leaves have navigable umbrellas.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.DrineasMahoney.RandNLA2016.Equation09.LowRankApproximation",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
   },
   {
    "exception": null,
@@ -39805,6 +40342,28 @@
    "exception": null,
    "file_present": true,
    "introduction": {
+    "commit": "2e3234ae9adf1c196eb39e1e80608c56ea8c194a",
+    "date": "2026-07-31T00:00:28-07:00",
+    "determined_by": "diff_filter_add"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.Higham.Chapter19",
+   "rationale": "Import-only family parent that re-exports its children; it owns no declarations, so it is a structural aggregate (EVID-04 rule R4).",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter19",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
     "commit": "e5e28016eb2712490f5235fdae1f750235bf96d1",
     "date": "2026-07-30T21:49:17-07:00",
     "determined_by": "diff_filter_add"
@@ -39869,6 +40428,28 @@
   },
   {
    "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "1a3004ec6461baa00a9ba21fe1a31d0f17b7fd4f",
+    "date": "2026-07-29T20:16:07-04:00",
+    "determined_by": "diff_filter_add"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.Higham.Chapter20.Equations",
+   "rationale": "Import-only family parent that re-exports its children; it owns no declarations, so it is a structural aggregate (EVID-04 rule R4).",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Equations",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
    "extends": "prefix:NumStability.Source",
    "file_present": true,
    "introduction": {
@@ -39887,6 +40468,28 @@
    },
    "role": "source",
    "rule_id": "exact:NumStability.Source.Higham.Chapter20.Equations.Core.Results"
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "897fb7fafdf6c539e2651e5bdd1faec500198406",
+    "date": "2026-07-29T19:18:53-04:00",
+    "determined_by": "diff_filter_add"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.Higham.Chapter20.Lemma11",
+   "rationale": "Import-only family parent that re-exports its children; it owns no declarations, so it is a structural aggregate (EVID-04 rule R4).",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Lemma11",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
   },
   {
    "exception": null,
@@ -39911,6 +40514,28 @@
   },
   {
    "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "1a3004ec6461baa00a9ba21fe1a31d0f17b7fd4f",
+    "date": "2026-07-29T20:16:07-04:00",
+    "determined_by": "diff_filter_add"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.Higham.Chapter20.Prose",
+   "rationale": "Import-only family parent that re-exports its children; it owns no declarations, so it is a structural aggregate (EVID-04 rule R4).",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Prose",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
    "extends": "prefix:NumStability.Source",
    "file_present": true,
    "introduction": {
@@ -39929,6 +40554,28 @@
    },
    "role": "source",
    "rule_id": "exact:NumStability.Source.Higham.Chapter20.Prose.Core.Results"
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "1a3004ec6461baa00a9ba21fe1a31d0f17b7fd4f",
+    "date": "2026-07-29T20:16:07-04:00",
+    "determined_by": "diff_filter_add"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.Higham.Chapter20.Theorem03",
+   "rationale": "Import-only family parent that re-exports its children; it owns no declarations, so it is a structural aggregate (EVID-04 rule R4).",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Theorem03",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
   },
   {
    "exception": null,
@@ -39953,6 +40600,28 @@
   },
   {
    "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "1a3004ec6461baa00a9ba21fe1a31d0f17b7fd4f",
+    "date": "2026-07-29T20:16:07-04:00",
+    "determined_by": "diff_filter_add"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.Higham.Chapter20.Theorem04",
+   "rationale": "Import-only family parent that re-exports its children; it owns no declarations, so it is a structural aggregate (EVID-04 rule R4).",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Theorem04",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
    "extends": "prefix:NumStability.Source",
    "file_present": true,
    "introduction": {
@@ -39974,6 +40643,28 @@
   },
   {
    "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "1a3004ec6461baa00a9ba21fe1a31d0f17b7fd4f",
+    "date": "2026-07-29T20:16:07-04:00",
+    "determined_by": "diff_filter_add"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.Higham.Chapter20.Theorem07",
+   "rationale": "Import-only family parent that re-exports its children; it owns no declarations, so it is a structural aggregate (EVID-04 rule R4).",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Theorem07",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
+  },
+  {
+   "exception": null,
    "extends": "prefix:NumStability.Source",
    "file_present": true,
    "introduction": {
@@ -39992,6 +40683,28 @@
    },
    "role": "source",
    "rule_id": "exact:NumStability.Source.Higham.Chapter20.Theorem07.Core.Results"
+  },
+  {
+   "exception": null,
+   "file_present": true,
+   "introduction": {
+    "commit": "2d6739ee3870236cfc5342d8250ea825cf1cb026",
+    "date": "2026-07-29T21:45:36-04:00",
+    "determined_by": "diff_filter_add"
+   },
+   "match_kind": "exact",
+   "module": "NumStability.Source.Higham.Chapter20.Theorem08",
+   "rationale": "Import-only family parent that re-exports its children; it owns no declarations, so it is a structural aggregate (EVID-04 rule R4).",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   },
+   "role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Theorem08",
+   "override_of": "prefix:NumStability.Source",
+   "override_rationale": "This module is classified aggregate although the enclosing prefix rule NumStability.Source defaults to source."
   },
   {
    "exception": null,
@@ -44742,6 +45455,114 @@
    },
    "rule_id": "prefix:NumStability.Higham",
    "to_role": "compatibility"
+  },
+  {
+   "from_role": "reusable",
+   "to_role": "aggregate",
+   "rule_id": "exact:NumStability.Algorithms.LinearSystems.QR",
+   "rationale": "The prefix rule classified this import-only family parent as reusable; a module with no declarations of its own is a structural surface. EVID-04 audit, rule R4.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   }
+  },
+  {
+   "from_role": "source",
+   "to_role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter19",
+   "rationale": "The prefix rule classified this import-only family parent as source; a module with no declarations of its own is a structural surface. EVID-04 audit, rule R4.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   }
+  },
+  {
+   "from_role": "source",
+   "to_role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Equations",
+   "rationale": "The prefix rule classified this import-only family parent as source; a module with no declarations of its own is a structural surface. EVID-04 audit, rule R4.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   }
+  },
+  {
+   "from_role": "source",
+   "to_role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Lemma11",
+   "rationale": "The prefix rule classified this import-only family parent as source; a module with no declarations of its own is a structural surface. EVID-04 audit, rule R4.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   }
+  },
+  {
+   "from_role": "source",
+   "to_role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Prose",
+   "rationale": "The prefix rule classified this import-only family parent as source; a module with no declarations of its own is a structural surface. EVID-04 audit, rule R4.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   }
+  },
+  {
+   "from_role": "source",
+   "to_role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Theorem03",
+   "rationale": "The prefix rule classified this import-only family parent as source; a module with no declarations of its own is a structural surface. EVID-04 audit, rule R4.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   }
+  },
+  {
+   "from_role": "source",
+   "to_role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Theorem04",
+   "rationale": "The prefix rule classified this import-only family parent as source; a module with no declarations of its own is a structural surface. EVID-04 audit, rule R4.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   }
+  },
+  {
+   "from_role": "source",
+   "to_role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Theorem07",
+   "rationale": "The prefix rule classified this import-only family parent as source; a module with no declarations of its own is a structural surface. EVID-04 audit, rule R4.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   }
+  },
+  {
+   "from_role": "source",
+   "to_role": "aggregate",
+   "rule_id": "exact:NumStability.Source.Higham.Chapter20.Theorem08",
+   "rationale": "The prefix rule classified this import-only family parent as source; a module with no declarations of its own is a structural surface. EVID-04 audit, rule R4.",
+   "review": {
+    "evidence": "docs/architecture/entrypoints.json",
+    "review_date": "2026-09-03T12:00:00-04:00",
+    "reviewer": "primary-human",
+    "status": "accepted"
+   }
   }
  ],
  "schema_version": 2,

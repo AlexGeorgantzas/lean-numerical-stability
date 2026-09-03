@@ -427,6 +427,9 @@ theorem one_le_bunchSharpGrowthBound {n : ℕ} (hn : 2 ≤ n) :
     norm_num
   exact htwo.trans hmono
 
+/-- A principal submatrix of `A`, selected by the injective index map `e`, whose determinant in
+absolute value equals the product of the determinants of the sharp-growth pivot `blocks`. It is
+the object on which the Bunch sharp-growth bound is realised as a Hadamard-type inequality. -/
 structure PrefixPrincipalMinor {n : ℕ} (A : Higham11BunchMatrix n)
     (blocks : List Higham11BunchSharpBlock) where
   e : Fin (totalWidth blocks) → Fin n

@@ -264,6 +264,10 @@ theorem ch14ext_problem14_2_lowerBlock_residual_family {ι : Type*}
     higham14_problem14_2_lowerBlock_maxEntryNorm_le hr hm
       (R11 t) (R21 t) (R22 t))
 
+/-- One recursive step of Method 1B in Higham Problem 14.2 (block triangular inversion), as a family
+indexed by `ι` along the filter `l`: the off-diagonal block `X21` comes from the rounded product
+`That ≈ L21 * X11` (error `DeltaMul`, constant `cMul`) followed by the rounded triangular solve
+`L22 * X21 ≈ -That` (error `DeltaSolve`, constant `cSolve`). -/
 structure Ch14Problem142Method1BStepFamily {ι : Type*} {l : Filter ι}
     (U : Ch14RoundoffFamily ι l) {r m : ℕ}
     (hr : 0 < r) (hm : 0 < m) (cMul cSolve : ℝ)
@@ -315,6 +319,10 @@ theorem Ch14Problem142Method1BStepFamily.offdiag_family
   exact higham14_problem14_2_maxEntryNormRect_neg_add_le hm hr
     (DeltaMul t) (DeltaSolve t)
 
+/-- One recursive step of Method 2C in Higham Problem 14.2, as a family indexed by `ι` along `l`:
+the off-diagonal block `X21` comes from the rounded product `That ≈ X22 * L21` (error `DeltaMul`,
+constant `cMul`) followed by the rounded right triangular solve `X21 * L11 ≈ -That` (error
+`DeltaSolve`, constant `cSolve`). -/
 structure Ch14Problem142Method2CStepFamily {ι : Type*} {l : Filter ι}
     (U : Ch14RoundoffFamily ι l) {r m : ℕ}
     (hr : 0 < r) (hm : 0 < m) (cMul cSolve : ℝ)

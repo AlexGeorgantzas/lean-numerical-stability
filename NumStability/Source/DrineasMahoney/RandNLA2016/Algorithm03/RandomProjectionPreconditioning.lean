@@ -1,0 +1,13 @@
+import NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.FloatingPoint
+import NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.Preconditioning
+import NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.SparsePreconditionedEmbeddings
+import NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.SparsePreconditionedGramBounds
+import NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.SparsePreconditionedGramGrids
+import NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.UniformRowComposition
+import NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.UniformRows
+
+/-!
+# NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning
+
+Declaration-free aggregate over the `RandomProjectionPreconditioning` leaves for Algorithm 3 (random-projection preconditioning) in Drineas and Mahoney (2016). Import it to reach every leaf of the topic; import a leaf directly for a narrower dependency.
+-/

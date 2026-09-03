@@ -1,0 +1,9 @@
+import NumStability.Source.Higham.Chapter16
+
+/-!
+# Higham Chapter 16 source-entry-point smoke test
+-/
+
+#check NumStability.H16_eq16_29_sylvesterComputedResidualBudget_of_schur_frobenius_error_model
+#check NumStability.H16_eq16_4_8_existsUnique_isSylvesterSolutionRect_and_HessenbergGEPPUTrace_growth_of_realSchur_upperHessenberg_triangular_no_common_complex_right_eigenvalue
+#check NumStability.Wave17.H16_eq16_4_8_auto_realSchur_existsUnique_solution_of_no_common

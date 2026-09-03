@@ -227,6 +227,11 @@ theorem higham11_5_exactSchurTwo_symmetric {n : ℕ}
   rw [hA j.succ.succ 0, hA j.succ.succ (Fin.succ 0)]
   ring
 
+/-- Exact-arithmetic trace of the rook pivoting recursion on a symmetric matrix. `nil` ends at the
+empty matrix; `one` records a `1 × 1` pivot at the rook terminal index followed by the trace of the
+exact Schur complement; `two` records a `2 × 2` pivot in the same way. The trace witnesses the pivot
+sizes the rook strategy selects, so statements about the recursion are proved by structural
+recursion on it. -/
 inductive Higham11ExactRookTrace :
     {n : ℕ} → (A : Higham11RookMatrix n) → Type
   | nil (A : Higham11RookMatrix 0) : Higham11ExactRookTrace A

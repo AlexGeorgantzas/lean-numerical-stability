@@ -1,5 +1,6 @@
 import NumStability.Source.Higham.Chapter20.Prose.Core.Results
 import NumStability.Source.Higham.Chapter20.Prose.MoorePenrose
+import NumStability.Source.Higham.Chapter20.Prose.Quantitative
 
 /-!
 # NumStability.Source.Higham.Chapter20.Prose

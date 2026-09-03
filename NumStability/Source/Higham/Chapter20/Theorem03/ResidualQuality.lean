@@ -4,7 +4,6 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part06
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.Basic
 import NumStability.Analysis.Perturbation.LeastSquares.Basic
@@ -13,8 +12,9 @@ import NumStability.Analysis.Rounding
 import NumStability.Analysis.SingularValues.Realification
 import NumStability.Analysis.VectorNorms.Basic
 import NumStability.FloatingPoint.Model
+import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part06
 import NumStability.Source.Higham.Chapter20.Theorem02.AlternativeBound
-import NumStability.Source.Higham.Chapter20.Theorem03
+import NumStability.Source.Higham.Chapter20.Theorem03.Core.Results
 import NumStability.Source.Higham.Chapter20.Theorem03.QRSolve
 
 namespace NumStability
