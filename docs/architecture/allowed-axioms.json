@@ -1,0 +1,62 @@
+{
+ "schema_version": 1,
+ "policy": {
+  "id": "classical-mathlib-foundation-only",
+  "statement": "Proofs in this repository may depend only on the three axioms of classical mathematics that Mathlib itself assumes. Any other axiom, and any axiom declared in this repository, requires a reviewed entry here. `sorryAx` may never be allowlisted: its presence in a dependency report means a proof was completed by `sorry` and reached the environment.",
+  "enforced_by": "tools/architecture/check_placeholders.py",
+  "evidence": "Lean `#print axioms` output captured in the full-build log and checked on every CI run.",
+  "reviewer": "primary-human",
+  "status": "accepted",
+  "review_date": "2026-09-03"
+ },
+ "allowed_axioms": [
+  {
+   "name": "propext",
+   "rationale": "Propositional extensionality. Assumed by Mathlib and by essentially all of its order, algebra and analysis development; every theorem in this repository inherits it through Mathlib.",
+   "reviewer": "primary-human",
+   "status": "accepted",
+   "expiry_release": null,
+   "reconsideration_trigger": "Reconsider only if Mathlib itself removes the axiom, which would be a foundational change far outside this repository."
+  },
+  {
+   "name": "Classical.choice",
+   "rationale": "The axiom of choice, in Lean's `Classical.choice` form. Required by classical logic as used throughout Mathlib, including decidability of real comparisons and the classical case analysis this repository's error bounds rely on.",
+   "reviewer": "primary-human",
+   "status": "accepted",
+   "expiry_release": null,
+   "reconsideration_trigger": "Reconsider only if the development is rebuilt on constructive foundations."
+  },
+  {
+   "name": "Quot.sound",
+   "rationale": "Soundness of quotient types. Assumed by Mathlib and reached through any use of quotient constructions, including the real numbers as used in every numerical-stability statement here.",
+   "reviewer": "primary-human",
+   "status": "accepted",
+   "expiry_release": null,
+   "reconsideration_trigger": "Reconsider only if Mathlib's quotient foundation changes."
+  }
+ ],
+ "allowed_axiom_declarations": [],
+ "forbidden": [
+  {
+   "name": "sorryAx",
+   "reason": "A dependency on sorryAx means a proof completed by `sorry` reached the environment. It is rejected unconditionally and cannot be allowlisted."
+  },
+  {
+   "name": "native_decide",
+   "reason": "Not an axiom but a trust extension: it discharges goals through compiled evaluation outside the kernel. No proof in this repository uses it, and introducing one would require a reviewed policy change rather than an allowlist entry."
+  }
+ ],
+ "measured": {
+  "axiom_reports_in_full_build": 95,
+  "distinct_axiom_sets": 1,
+  "union_of_reported_axioms": [
+   "Classical.choice",
+   "Quot.sound",
+   "propext"
+  ],
+  "axiom_declarations_in_repository": 0,
+  "placeholders_in_lean_code": 0,
+  "files_whose_documentation_mentions_sorry_or_admit": 36,
+  "note": "The 36 files are the reason strict comment and string handling is part of the contract: their documentation states that no placeholder is used, and a naive text search reports every one of them."
+ }
+}
