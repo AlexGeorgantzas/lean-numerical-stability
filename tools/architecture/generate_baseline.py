@@ -333,7 +333,8 @@ def audit_tiers(root: Path, modules: Sequence[SourceModule]) -> dict[str, Any] |
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise BaselineError(f"invalid tier manifest {manifest_path}: {error}") from error
-    if manifest.get("schema_version") != 1:
+    # TIER-01: schema 2 keeps the exact/prefixes/tiers keys this reader uses.
+    if manifest.get("schema_version") not in (1, 2):
         raise BaselineError("unsupported docs/architecture/tiers.json schema version")
 
     tiers = manifest.get("tiers")

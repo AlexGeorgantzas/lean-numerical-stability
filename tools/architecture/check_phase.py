@@ -584,7 +584,8 @@ class PhaseValidator:
         layout = self.git_json_at(commit, "docs/architecture/layout-exceptions.json", context)
         if tiers is None or layout is None:
             return None
-        if tiers.get("schema_version") != 1:
+        # TIER-01: schema 2 keeps the exact/prefixes/tiers keys this reader uses.
+        if tiers.get("schema_version") not in (1, 2):
             self.problems.malformed(context, "historical tiers.json must use schema_version 1")
             return None
         allowed_tiers = tiers.get("tiers")

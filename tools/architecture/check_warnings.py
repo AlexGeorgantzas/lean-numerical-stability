@@ -581,7 +581,9 @@ def tier_lookup(root: Path) -> tuple[dict[str, str], list[tuple[str, str]]]:
     """Read tiers.json the way check_layout.py does: exact map, then prefixes."""
 
     manifest = load_json(root / TIERS, TIERS.as_posix())
-    if manifest.get("schema_version") != 1:
+    # Schema 1 and 2 share the `exact`/`prefixes`/`tiers` keys this reader uses;
+    # schema 2 adds reviewed rule records alongside them (TIER-01).
+    if manifest.get("schema_version") not in (1, 2):
         raise InputError("unsupported tier manifest schema")
     exact = manifest.get("exact")
     prefixes = manifest.get("prefixes")

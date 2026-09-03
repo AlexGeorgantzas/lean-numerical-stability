@@ -96,7 +96,9 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def tier_assignments(modules: Iterable[SourceModule]) -> tuple[dict[str, str], set[str]]:
     manifest = load_json(TIERS)
-    if manifest.get("schema_version") != 1:
+    # Schema 1 and 2 share the `exact`/`prefixes`/`tiers` keys this reader uses;
+    # schema 2 adds reviewed rule records alongside them (TIER-01).
+    if manifest.get("schema_version") not in (1, 2):
         raise LayoutError("unsupported tier manifest schema")
     exact = manifest.get("exact")
     prefixes = manifest.get("prefixes")
