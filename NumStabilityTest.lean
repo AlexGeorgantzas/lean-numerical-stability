@@ -520,6 +520,7 @@ import NumStabilityTest.Import.Sylvester
 import NumStabilityTest.Import.TriangularCanonical
 import NumStabilityTest.Import.TriangularMigration
 import NumStabilityTest.Import.TridiagonalCondCanonical
+import NumStabilityTest.Reorganization.COMP02.All
 import NumStabilityTest.Reorganization.I01.All
 import NumStabilityTest.Reorganization.R01
 import NumStabilityTest.Reorganization.R02

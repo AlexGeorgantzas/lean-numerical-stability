@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import collections
 import json
 import tempfile
 import re
@@ -225,6 +226,170 @@ def self_test_manifest_contract() -> list[str]:
     return failures
 
 
+ISOLATION_COMMAND_RE = re.compile(r"^\s*#(check|print|eval|guard|reduce)\b", re.M)
+CHECKED_NAME_RE = re.compile(r"#(?:check|print)\s+@?([A-Za-z_][A-Za-z0-9_'.]*)")
+# A declaration keyword may stand alone on its line with the name following, so
+# the name is matched across at most one newline. A line-only pattern misses
+# roughly a hundred long-named theorems in this repository.
+DECLARATION_RE = re.compile(
+    r"^(?:@\[[^\]]*\]\s*)?(?:noncomputable\s+|private\s+|protected\s+)*"
+    r"(?:theorem|lemma|def|abbrev|instance|structure|class|inductive)\b[ \t]*\r?\n?[ \t]*"
+    r"([A-Za-z_][A-Za-z0-9_'.]*)", re.M)
+NAMESPACE_RE = re.compile(r"^namespace\s+([A-Za-z_][A-Za-z0-9_'.]*)", re.M)
+NAMESPACE_END_RE = re.compile(r"^end\s+([A-Za-z_][A-Za-z0-9_'.]*)", re.M)
+
+
+def isolation_coverage(root: Path) -> dict[str, tuple[str, frozenset]]:
+    """Modules covered by a strict single-import, declaration-bearing test file.
+
+    Returns module -> (covering test module, declarations that file checks).
+    """
+
+    covered: dict[str, tuple[str, frozenset]] = {}
+    for path in sorted((root / "NumStabilityTest").rglob("*.lean")):
+        text = remove_lean_comments(path.read_text(encoding="utf-8-sig", errors="replace"))
+        imports = IMPORT_RE.findall(text)
+        if len(imports) != 1 or not ISOLATION_COMMAND_RE.search(text):
+            continue
+        covered.setdefault(
+            imports[0],
+            (module_name(path.relative_to(root)), frozenset(CHECKED_NAME_RE.findall(text))),
+        )
+    return covered
+
+
+def declarations_in(root: Path, module: str) -> set[str]:
+    """Public declaration names a module declares, namespace-qualified."""
+
+    path = root / (module.replace(".", "/") + ".lean")
+    if not path.is_file():
+        return set()
+    body = remove_lean_comments(path.read_text(encoding="utf-8", errors="replace"))
+    lines = body.split("\n")
+    names: set[str] = set()
+    stack: list[str] = []
+    for index, line in enumerate(lines):
+        opened = NAMESPACE_RE.match(line)
+        if opened:
+            stack.append(opened.group(1))
+            continue
+        closed = NAMESPACE_END_RE.match(line)
+        if closed and stack and stack[-1] == closed.group(1):
+            stack.pop()
+            continue
+        chunk = line + "\n" + (lines[index + 1] if index + 1 < len(lines) else "")
+        found = DECLARATION_RE.match(chunk)
+        if found:
+            names.add(".".join(stack + [found.group(1)]) if stack else found.group(1))
+    return names
+
+
+def declaration_closure(root: Path, modules: list[str], budget: int = 400) -> set[str]:
+    """Declarations reachable by importing `modules`, bounded for CI cost."""
+
+    seen: set[str] = set()
+    queue = collections.deque(modules)
+    names: set[str] = set()
+    while queue and len(seen) < budget:
+        current = queue.popleft()
+        if current in seen:
+            continue
+        seen.add(current)
+        names |= declarations_in(root, current)
+        path = root / (current.replace(".", "/") + ".lean")
+        if path.is_file():
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for match in re.finditer(r"^import\s+(NumStability\S*)", text, re.M):
+                queue.append(match.group(1))
+    return names
+
+
+def isolation_failures(root: Path, mappings: dict) -> list[str]:
+    """Enforce per-file isolation coverage and old/canonical declaration consistency."""
+
+    failures: list[str] = []
+    covered = isolation_coverage(root)
+    historical = set(mappings)
+    targets = {target for values in mappings.values() for target in values}
+
+    uncovered_historical = sorted(historical - set(covered))
+    uncovered_canonical = sorted(targets - set(covered))
+    if uncovered_historical:
+        failures.append(
+            f"{len(uncovered_historical)} historical path(s) lack a strict single-import "
+            f"declaration-bearing test, first: {uncovered_historical[:3]}"
+        )
+    if uncovered_canonical:
+        failures.append(
+            f"{len(uncovered_canonical)} canonical target(s) lack a strict single-import "
+            f"declaration-bearing test, first: {uncovered_canonical[:3]}"
+        )
+
+    inconsistent: list[str] = []
+    for historical_module, canonical in sorted(mappings.items()):
+        if historical_module not in covered:
+            continue
+        old_checked = covered[historical_module][1]
+        if not old_checked:
+            continue
+        union: frozenset = frozenset()
+        for target in canonical:
+            if target in covered:
+                union |= covered[target][1]
+        if not union:
+            continue
+        if old_checked & union:
+            continue
+        if old_checked & declaration_closure(root, list(canonical)):
+            continue
+        inconsistent.append(historical_module)
+    if inconsistent:
+        failures.append(
+            f"{len(inconsistent)} forwarding pair(s) check declarations the canonical "
+            f"target does not provide, first: {inconsistent[:3]}"
+        )
+    return failures
+
+
+def self_test_isolation_rules() -> list[str]:
+    """Prove that a multi-import test does not count and that a strict one does."""
+
+    failures: list[str] = []
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        tests = root / "NumStabilityTest" / "Fixture"
+        tests.mkdir(parents=True)
+        (tests / "Multi.lean").write_text(
+            "import NumStability.Old\nimport NumStability.Other\n#check @Some.Decl\n",
+            encoding="utf-8",
+        )
+        if "NumStability.Old" in isolation_coverage(root):
+            failures.append("self-test: a multi-import test must not establish isolation")
+        (tests / "Bare.lean").write_text("import NumStability.Bare\n", encoding="utf-8")
+        if "NumStability.Bare" in isolation_coverage(root):
+            failures.append("self-test: an import-only test must not establish isolation")
+        (tests / "Strict.lean").write_text(
+            "import NumStability.Strict\n#check @Some.Decl\n", encoding="utf-8"
+        )
+        covered = isolation_coverage(root)
+        if "NumStability.Strict" not in covered:
+            failures.append("self-test: a strict declaration-bearing test must establish isolation")
+        elif covered["NumStability.Strict"][1] != frozenset({"Some.Decl"}):
+            failures.append("self-test: the checked declaration must be recorded")
+
+        # a declaration keyword alone on its line must still be found
+        lib = root / "NumStability"
+        lib.mkdir(exist_ok=True)
+        (lib / "Wrapped.lean").write_text(
+            "namespace NumStability\n\ntheorem\n    long_name_on_the_next_line\n"
+            "    (h : True) : True := h\n\nend NumStability\n",
+            encoding="utf-8",
+        )
+        if "NumStability.long_name_on_the_next_line" not in declarations_in(root, "NumStability.Wrapped"):
+            failures.append("self-test: a name on the line after its keyword must be found")
+    return failures
+
+
 def main() -> int:
     try:
         self_test_zero_production_imports()
@@ -301,34 +466,19 @@ def main() -> int:
                 production_import_edges.add((name, target))
     failures.extend(production_import_failures(production_import_edges))
 
-    test_imports: set[str] = set()
-    test_paths = [ROOT / "NumStabilityTest.lean"]
-    test_paths.extend(sorted((ROOT / "NumStabilityTest").rglob("*.lean")))
-    for path in test_paths:
-        text = path.read_text(encoding="utf-8-sig", errors="replace")
-        test_imports.update(IMPORT_RE.findall(remove_lean_comments(text)))
     canonical_names = {target for targets in mappings.values() for target in targets}
-    missing_historical_tests = sorted(historical_names - test_imports)
-    missing_canonical_tests = sorted(canonical_names - test_imports)
-    if missing_historical_tests:
-        failures.append(
-            "historical paths without a direct test import: "
-            + ", ".join(missing_historical_tests)
-        )
-    if missing_canonical_tests:
-        failures.append(
-            "canonical targets without a direct test import: "
-            + ", ".join(missing_canonical_tests)
-        )
+    failures.extend(self_test_isolation_rules())
+    failures.extend(isolation_failures(ROOT, mappings))
 
     if failures:
         for failure in failures:
             print(f"error: {failure}", file=sys.stderr)
         return 1
     target_count = sum(len(targets) for targets in mappings.values())
+    unique_target_count = len(canonical_names)
     print(
         f"compatibility contract passed: {len(mappings)} forwarding modules, "
-        f"{target_count} canonical targets, "
+        f"{unique_target_count} unique canonical targets over {target_count} target edges, "
         f"{len(production_import_edges)} production imports of historical paths"
     )
     return 0
