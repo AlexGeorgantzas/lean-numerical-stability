@@ -1,0 +1,78 @@
+{
+ "schema_version": 1,
+ "policy": "Every notation, macro or syntax extension declared in a reusable-, source- or internal-tier module is listed here with its owning module, canonical command text, precedence and scope. The static checker fails when the tree declares one that is not listed, or lists one that no longer exists; the probe checker proves each `local` row is not visible to an importer.",
+ "enforced_by": "tools/architecture/check_notation_inventory.py",
+ "reviewer": "primary-human",
+ "status": "accepted",
+ "review_date": "2026-09-03",
+ "scanned_tiers": ["reusable", "source", "internal"],
+ "scanned_commands": ["notation", "infix", "infixl", "infixr", "prefix", "postfix", "macro", "macro_rules", "syntax", "elab", "elab_rules", "declare_syntax_cat", "binder_predicate"],
+ "rows": [
+  {
+   "module": "NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality.Powers",
+   "tier": "reusable",
+   "command": "local notation \"𝔼\" => EuclideanSpace ℂ (Fin n)",
+   "kind": "notation",
+   "token": "𝔼",
+   "precedence": null,
+   "scope": "local",
+   "exported": false,
+   "supported_api": false,
+   "rationale": "File-local abbreviation for the ambient Euclidean space; the `local` modifier keeps it out of every importer, so it is not part of the supported surface.",
+   "probes": {"positive": "the owning module elaborates in the build", "negative": "an importer that writes the token fails to parse"}
+  },
+  {
+   "module": "NumStability.Analysis.LinearOperators.NumericalRadius.Berger.GeneralPowerInequality.PowersOfTwo",
+   "tier": "reusable",
+   "command": "local notation \"𝔼\" => EuclideanSpace ℂ (Fin n)",
+   "kind": "notation",
+   "token": "𝔼",
+   "precedence": null,
+   "scope": "local",
+   "exported": false,
+   "supported_api": false,
+   "rationale": "Same file-local abbreviation as its sibling module.",
+   "probes": {"positive": "the owning module elaborates in the build", "negative": "an importer that writes the token fails to parse"}
+  },
+  {
+   "module": "NumStability.Analysis.LinearOperators.NumericalRadius.Core.Internal.EuclideanSpaceNotation",
+   "tier": "internal",
+   "command": "local notation \"𝔼\" => EuclideanSpace ℂ (Fin n)",
+   "kind": "notation",
+   "token": "𝔼",
+   "precedence": null,
+   "scope": "local",
+   "exported": false,
+   "supported_api": false,
+   "rationale": "Internal-tier leaf; internal declarations are outside the supported API by policy, and the notation is file-local besides.",
+   "probes": {"positive": "the owning module elaborates in the build", "negative": "an importer that writes the token fails to parse"}
+  },
+  {
+   "module": "NumStability.Analysis.LinearOperators.NumericalRadius.Berger.Internal.HermitianEuclideanSpaceNotation",
+   "tier": "internal",
+   "command": "local notation \"𝔼\" => EuclideanSpace ℂ (Fin n)",
+   "kind": "notation",
+   "token": "𝔼",
+   "precedence": null,
+   "scope": "local",
+   "exported": false,
+   "supported_api": false,
+   "rationale": "Internal-tier leaf; internal declarations are outside the supported API by policy, and the notation is file-local besides.",
+   "probes": {"positive": "the owning module elaborates in the build", "negative": "an importer that writes the token fails to parse"}
+  },
+  {
+   "module": "NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent.Internal.ScalarNotation",
+   "tier": "internal",
+   "command": "local notation \"↑ₐ\" => algebraMap 𝕜 A",
+   "kind": "notation",
+   "token": "↑ₐ",
+   "precedence": null,
+   "scope": "local",
+   "exported": false,
+   "supported_api": false,
+   "rationale": "Internal-tier leaf reached through the family prefix rule; file-local abbreviation for the algebra map, outside the supported API by policy.",
+   "probes": {"positive": "the owning module elaborates in the build", "negative": "an importer that writes the token fails to parse"}
+  }
+ ],
+ "summary": {"rows": 5, "exported": 0, "supported_api": 0, "note": "No module in the reusable or source tier exports a notation, macro or syntax extension; the supported API has no notational surface."}
+}

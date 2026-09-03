@@ -661,7 +661,7 @@ def summarize_declaration_tsv(path: Path) -> dict[str, Any]:
         for line_number, raw_line in enumerate(stream, start=1):
             fields = raw_line.rstrip("\n\r").split("\t")
             if fields[:1] == ["format"]:
-                if len(fields) == 2 and fields[1] in {"1", "2"}:
+                if len(fields) == 2 and fields[1] in {"1", "2", "3"}:
                     extractor_format = int(fields[1])
             elif fields[:1] == ["declaration"] and len(fields) == 5:
                 name = fields[1]
@@ -672,6 +672,9 @@ def summarize_declaration_tsv(path: Path) -> dict[str, Any]:
                 modules.append(fields[2])
                 kinds.append(fields[3])
                 visibility.append(fields[4])
+            elif fields[:1] == ["api"]:
+                # format-3 public-API facts; consumed by public_api_inventory.py, not by the graph
+                continue
             elif fields[:1] == ["edge"] and len(fields) in {4, 6}:
                 try:
                     edge = (name_to_id[fields[2]], name_to_id[fields[3]])

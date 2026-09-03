@@ -1,0 +1,5 @@
+{
+ "schema_version": 1,
+ "note": "Accepted public-API change records. Each record names one declaration, the change (added, removed or modified), for modifications the exact field deltas as {field: [before, after]}, and reviewer, status and rationale. The drift gate public_api_inventory.py rejects any difference from public-api-inventory.json that is not authorized here, and rejects stale records.",
+ "changes": []
+}

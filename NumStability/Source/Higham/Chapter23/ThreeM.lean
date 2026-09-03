@@ -40,6 +40,9 @@ theorem higham23_eq23_9_threeM_correct (a1 a2 b1 b2 : R) :
   simp [higham23ThreeM]
   noncomm_ring
 
+/-- The two rounded two-term combinations used in the 3M complex-multiplication analysis: `add`
+forms a sum, rounded with `fl_add` and carrying sign `1`; `sub` forms a difference, rounded with
+`fl_sub` and carrying sign `-1`. -/
 inductive Higham23TwoDotMode
   | add
   | sub

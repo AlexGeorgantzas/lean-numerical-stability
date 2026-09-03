@@ -516,6 +516,11 @@ theorem higham9_2_rectAbsProductSum_eq_prefix_add_lower
   rw [hpref] at hsplit
   simpa [Labs, Uabs, abs_mul] using hsplit
 
+/-- Certificate that `L` and `U` form a rounded rectangular Doolittle factorization of `A`
+in the setting of Higham Section 9.2 with `n ≤ m` rows selected by `higham9_2_rectRow`: `L` is
+unit lower trapezoidal, `U` is upper triangular, every entry of `U` and `L` is the value the
+floating-point Doolittle recurrences produce under `fp`, and each entry satisfies the
+corresponding source residual bound. -/
 structure higham9_2_RectDoolittleSourceCertificate {m n : ℕ}
     (hmn : n ≤ m) (A L : Fin m → Fin n → ℝ)
     (U : Fin n → Fin n → ℝ) (fp : FPModel) : Prop where
