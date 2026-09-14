@@ -1,0 +1,93 @@
+{
+  "$schema": "schemas/config.schema.json",
+  "schema_version": "formalization-benchmark-config-1",
+  "pilot_id": "formalization-benchmark-t2-pilot-1",
+  "task_ids": [
+    "P01-T2",
+    "P02-T2",
+    "P03-T2",
+    "P13-T2",
+    "P14-T2"
+  ],
+  "condition_labels": [
+    "N",
+    "L"
+  ],
+  "condition_order": {
+    "P01-T2": ["N", "L"],
+    "P02-T2": ["L", "N"],
+    "P03-T2": ["N", "L"],
+    "P13-T2": ["L", "N"],
+    "P14-T2": ["N", "L"]
+  },
+  "runs_per_task_per_condition": 1,
+  "submission_limit": 4,
+  "contestant_active_time_limit_seconds": 18000,
+  "token_cap": null,
+  "formalizer_model": "gpt-5.6-sol",
+  "formalizer_reasoning_effort": "ultra",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "validation_timeout_seconds": 600,
+  "audit_timeout_seconds": 7200,
+  "audit_infrastructure_retries": 2,
+  "lean_toolchain": "leanprover/lean4:v4.29.0-rc3",
+  "mathlib_commit": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
+  "numstability_commit": "45813a95dacf577461bae13f033af0dbc985a225",
+  "hardware": {
+    "logical_cpus": 8,
+    "memory_bytes": 34359738368,
+    "tasks_max": 512,
+    "swap_enabled": false
+  },
+  "candidate": {
+    "file": "Candidate.lean",
+    "root_declaration": "HighamBenchCandidate.target",
+    "root_proof": "by sorry"
+  },
+  "hardware_envelope": {
+    "logical_cpus": 8,
+    "memory_gib": 32,
+    "tasks_max": 512,
+    "record_each_attempt": true
+  },
+  "command_resource_envelope": {
+    "memory_bytes": 25769803776,
+    "tasks_max": 384,
+    "swap_enabled": false,
+    "control_memory_low_bytes": 8589934592,
+    "control_cpu_weight": 10000,
+    "command_cpu_weight": 100
+  },
+  "workspace_limits": {
+    "maximum_entries": 10000,
+    "maximum_total_bytes": 1073741824,
+    "maximum_written_file_bytes": 268435456
+  },
+  "artifact_limits": {
+    "maximum_protocol_line_bytes": 2097152,
+    "maximum_event_trace_bytes": 16777216,
+    "maximum_event_count": 50000,
+    "maximum_stderr_archive_bytes": 8388608
+  },
+  "measurement_scope": {
+    "clock": "Cumulative contestant-active time from turn delivery through charged background-terminal cleanup/quiescence and candidate freeze/hash. The ordered post-terminal telemetry barrier/drain, compilation, integrity checks, and faithfulness auditing are logged off-clock.",
+    "tokens": "Exact deduplicated raw-response input, cached-input, cache-write-input, output, reasoning-output, and total tokens during formalization attempts only, cross-checked against cumulative thread telemetry.",
+    "audit": "Audit time and audit tokens are recorded separately and excluded from the contestant measurement."
+  },
+  "packet_policy": {
+    "allowed_content": [
+      "Bibliographic source",
+      "Exact source PDF path basename and SHA-256 digest",
+      "Precise printed and PDF page locations",
+      "Faithful neutral clarification of the selected source result",
+      "Scope constraints needed to disambiguate that result"
+    ],
+    "forbidden_content": [
+      "Pre-existing formal target or declaration",
+      "Shared formal scaffold or old benchmark context",
+      "Proof text, proof plan, or proof code",
+      "Library declaration names or condition-specific hints"
+    ]
+  }
+}

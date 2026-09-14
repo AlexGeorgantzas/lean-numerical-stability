@@ -1,0 +1,42 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "P13-T2",
+  "selected_result": "Componentwise data-perturbation condition bound for Lagrange interpolation",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "The Numerical Stability of Barycentric Lagrange Interpolation",
+    "venue": "IMA Journal of Numerical Analysis",
+    "volume": "24",
+    "issue": "4",
+    "year": 2004,
+    "pages": "547-556",
+    "doi": "10.1093/imanum/24.4.547"
+  },
+  "paper_pdf": {
+    "path_basename": "P13_The numerical stability of barycentric Lagrange interpolation.pdf",
+    "sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520"
+  },
+  "paper_locations": [
+    {
+      "section": "Section 2",
+      "printed_pages": "548",
+      "pdf_pages": "2",
+      "anchor": "Equation (2.1), Definition 2.1, Lemma 2.2, and the componentwise perturbation inequality following equation (2.2)"
+    }
+  ],
+  "task_clarification": [
+    "Fix n+1 distinct interpolation nodes x_0, ..., x_n and an evaluation point x. Let ell_j(x) be the Lagrange basis coefficients and p_f(x) = sum_(j=0)^n f_j*ell_j(x).",
+    "Assume p_f(x) is nonzero and define cond(x,n,f) = (sum_(j=0)^n |ell_j(x)*f_j|)/|p_f(x)|.",
+    "For a componentwise perturbation satisfying |Delta f_j| <= epsilon*|f_j| for every j, formalize the paper's bound |p_f(x)-p_(f+Delta f)(x)|/|p_f(x)| <= cond(x,n,f)*epsilon."
+  ],
+  "scope_constraints": [
+    "Use exactly n+1 nodes and data values indexed from 0 through n.",
+    "The nodes are distinct and remain fixed; only the data values are perturbed, and epsilon is nonnegative.",
+    "The evaluation point remains fixed and the unperturbed interpolant value there is nonzero.",
+    "Retain the paper's Lagrange basis coefficients and its stated condition-number expression.",
+    "The selected result is the perturbation inequality; exact attainment and the separate lower bound cond(x,n,f) >= 1 are outside its required conclusion.",
+    "Do not reinterpret this result as an algorithmic floating-point evaluation guarantee."
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "P03-T2",
+  "selected_result": "Theorem 4.1 residual recurrence for three-precision iterative refinement",
+  "bibliographic_source": {
+    "authors": [
+      "Erin Carson",
+      "Nicholas J. Higham"
+    ],
+    "title": "Accelerating the Solution of Linear Systems by Iterative Refinement in Three Precisions",
+    "venue": "SIAM Journal on Scientific Computing",
+    "volume": "40",
+    "issue": "2",
+    "year": 2018,
+    "pages": "A817-A847",
+    "doi": "10.1137/17M1140819"
+  },
+  "paper_pdf": {
+    "path_basename": "P03_ACCELERATING THE SOLUTION OF LINEAR SYSTEMS BYITERATIVE REFINEMENT IN THREE PRECISIONS.pdf",
+    "sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc"
+  },
+  "paper_locations": [
+    {
+      "section": "Section 1",
+      "printed_pages": "A817",
+      "pdf_pages": "1",
+      "anchor": "Precision relation u_r <= u <= u_f"
+    },
+    {
+      "section": "Section 1",
+      "printed_pages": "A818",
+      "pdf_pages": "2",
+      "anchor": "Algorithm 1.1, iterative refinement in three precisions, and precision relation u <= u_s <= u_f"
+    },
+    {
+      "section": "Section 2",
+      "printed_pages": "A821",
+      "pdf_pages": "5",
+      "anchor": "Definitions (2.1) and solver assumption (2.4)"
+    },
+    {
+      "section": "Section 3",
+      "printed_pages": "A823",
+      "pdf_pages": "7",
+      "anchor": "Residual and update rounding models (3.3) and (3.6)"
+    },
+    {
+      "section": "Section 4",
+      "printed_pages": "A824-A825",
+      "pdf_pages": "8-9",
+      "anchor": "Equation (4.1), correction-defect derivation, and Theorem 4.1 with the definitions of alpha_i and beta_i"
+    }
+  ],
+  "task_clarification": [
+    "Let A be a nonsingular real n by n matrix, let b be a real n-vector, and let xhat_i be the stored iterate produced by Algorithm 1.1. The precisions satisfy u_r <= u <= u_s <= u_f.",
+    "Use the paper's infinity norms and kappa_infinity(A) = ||A^{-1}||_infinity * ||A||_infinity. Let p be the maximum number of nonzeros in a row of the augmented matrix [A b], assume p*u_r < 1, and let gamma_p^r = p*u_r/(1-p*u_r).",
+    "At each fixed iteration i, let c_1(i) and c_2(i) be the nonnegative solver quantities described by the paper (functions of n, A, rhat_i, and u_s). The correction solver satisfies ||rhat_i - A*dhat_i||_infinity <= u_s*(c_1(i)*||A||_infinity*||dhat_i||_infinity + c_2(i)*||rhat_i||_infinity).",
+    "Assuming c_1(i)*kappa_infinity(A)*u_s < 1 at the iteration in question, formalize Theorem 4.1: for every i >= 0, ||b-A*xhat_(i+1)||_infinity <= alpha_i*||b-A*xhat_i||_infinity + beta_i.",
+    "Use alpha_i = u_s*(1 + (1+u_s)*(c_1(i)*kappa_infinity(A)+c_2(i))/(1-c_1(i)*kappa_infinity(A)*u_s)).",
+    "Use beta_i = (1 + u_s*(c_1(i)*kappa_infinity(A)+c_2(i))/(1-c_1(i)*kappa_infinity(A)*u_s))*(1+u_s)*gamma_p^r*(||b||_infinity + ||A||_infinity*||xhat_i||_infinity) + u*||A||_infinity*||xhat_(i+1)||_infinity."
+  ],
+  "scope_constraints": [
+    "Use positive dimension, a nonsingular matrix A, and nonnegative precision parameters.",
+    "Preserve the indexed execution of Algorithm 1.1 and the distinct roles of u_r, u, u_s, and u_f.",
+    "Represent the residual computation, residual rounding, correction solve, correction storage, and iterate update in their source order.",
+    "Retain the residual and update rounding equations (3.3) and (3.6); do not assume the final recurrence directly.",
+    "Retain the exact alpha_i and beta_i expressions, including their denominators and infinity norms.",
+    "Treat c_1(i) and c_2(i) as the iteration-indexed nonnegative quantities described by the source, not as unexplained constants uniform over all iterations.",
+    "Retain the smallness condition p*u_r < 1 used to define the positive coefficient gamma_p^r.",
+    "Formalize the exact recurrence in Theorem 4.1, not a qualitative approximation or a later corollary."
+  ]
+}

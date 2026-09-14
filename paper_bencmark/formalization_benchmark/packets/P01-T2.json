@@ -1,0 +1,49 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "P01-T2",
+  "selected_result": "Pairwise versus recursive summation forward-error bounds",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "The Accuracy of Floating Point Summation",
+    "venue": "SIAM Journal on Scientific and Statistical Computing",
+    "volume": "14",
+    "issue": "4",
+    "year": 1993,
+    "pages": "783-799",
+    "doi": "10.1137/0914050"
+  },
+  "paper_pdf": {
+    "path_basename": "P01_THE ACCURACY OF FLOATING POINT SUMMATION.pdf",
+    "sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7"
+  },
+  "paper_locations": [
+    {
+      "section": "Section 1 and Section 2",
+      "printed_pages": "784-785",
+      "pdf_pages": "2-3",
+      "anchor": "Floating-point model (1.2), recursive summation definition, product estimate following (2.2), and bound (2.6)"
+    },
+    {
+      "section": "Section 3",
+      "printed_pages": "788",
+      "pdf_pages": "6",
+      "anchor": "Pairwise summation definition, bound (3.6), and the comparison paragraph immediately following it"
+    }
+  ],
+  "task_clarification": [
+    "Let n = 2^r and let x_1, ..., x_n be real inputs. Use the paper's standard model for each floating-point addition, with unit roundoff u and no floating-point underflow.",
+    "Let gamma_k = k*u/(1-k*u). For pairwise summation, formalize the certified absolute forward-error bound |E_n| <= gamma_r * sum_i |x_i|.",
+    "For standard left-to-right recursive summation, formalize the certified absolute forward-error bound |E_n| <= gamma_(n-1) * sum_i |x_i|.",
+    "Under (n-1)*u < 1, formalize the coefficient comparison gamma_r <= gamma_(n-1)."
+  ],
+  "scope_constraints": [
+    "Use exactly 2^r inputs, permit arbitrary signs, and treat u as a nonnegative unit roundoff.",
+    "Recursive summation starts with the first input and performs n-1 rounded additions.",
+    "Pairwise summation must retain the recursive pair grouping described by the paper.",
+    "The comparison concerns the certified coefficients and bounds; it must not assert that the actual pairwise error is always smaller.",
+    "Exclude overflow and underflow consistently with the source model.",
+    "Represent the two computations and their rounding assumptions rather than postulating either requested error bound."
+  ]
+}

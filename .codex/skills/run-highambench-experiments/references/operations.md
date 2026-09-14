@@ -1,100 +1,337 @@
-# HighamBench operations map
+# Source-first formalization operations
 
-In this reference, `tools/` and `metadata/` are relative to
-`paper_bencmark/highambench/`, while `scratch_pad/` is relative to
-`paper_bencmark/`. Before invoking an entrypoint, inspect its current `--help`
-or shell header and its selected manager contract; frozen metadata and code
-take precedence over this map.
+Paths in this reference are relative to the repository root. The spelling
+`paper_bencmark` is intentional.
 
-## Route by requested operation
+## Canonical surfaces
 
-| Operation | Canonical entrypoints | Boundary |
+| Purpose | Path |
+| --- | --- |
+| Protocol | `paper_bencmark/formalization_benchmark/PROTOCOL.md` |
+| Runner | `paper_bencmark/formalization_benchmark/tools/run_benchmark.py` |
+| Frozen config | `paper_bencmark/formalization_benchmark/config.json` |
+| Frozen release manifest | `paper_bencmark/formalization_benchmark/manifest.json` |
+| Task packet | `paper_bencmark/formalization_benchmark/packets/<TASK-ID>.json` |
+| Common prompt | `paper_bencmark/formalization_benchmark/prompts/formalizer.md` |
+| L-only encouragement | `paper_bencmark/formalization_benchmark/prompts/condition_L.md` |
+| Repair prompt | `paper_bencmark/formalization_benchmark/prompts/repair.md` |
+| Repair-feedback schema | `paper_bencmark/formalization_benchmark/schemas/repair_feedback.schema.json` |
+
+These are source-first surfaces. File presence alone is not admission evidence;
+the runner must hash-authenticate their complete transitive release closure.
+
+## Compatibility boundary
+
+The existing `paper_bencmark/highambench/tools/runner.py`,
+`paper_bencmark/highambench/tools/run_matrix.py`, and their campaign managers
+implement the legacy fixed-target proof experiment. They are
+incompatible with this pilot because they expose a prewritten target/common
+scaffold, score proof completion, use the old one-shot submission boundary, use
+legacy time/token stopping rules, and do not implement candidate-specific
+faithfulness repair.
+
+Never call `runner.py`, `run_matrix.py`, a P01/P11 campaign manager, a pair-shard
+launcher, or a legacy canary launcher for a source-first request. Never translate a
+source-first task into an old pair ID. If the canonical source-first runner,
+metadata, task packet, validator adapter, or audit adapter is missing or its
+`doctor` gate is unavailable, report `source_first_runner_not_ready` and stop
+before a provider call. Do not invent flags or manually reproduce the loop.
+
+The repository's existing `paper_bencmark/faithfulness_audit/` workflow was
+written for fixed task targets. It may supply audited methodology and reusable
+components only through the source-first adapter authenticated by the runner.
+Do not point it at a generated candidate by overwriting an old `Target.lean` or
+task-local audit directory.
+
+## Natural-language dispatch
+
+Normalize harmless separators and case, but require the canonical result to be
+one of:
+
+```text
+P01-T2
+P02-T2
+P03-T2
+P13-T2
+P14-T2
+```
+
+`Run benchmark for P01-T2` means:
+
+1. select only `P01-T2`;
+2. authenticate one immutable pair manifest;
+3. run exactly one N condition and one L condition in the frozen order; and
+4. stop after both have a terminal, authenticated result or the pair reaches a
+   hard-stop incident.
+
+It does not authorize additional repetitions, the other pilot tasks, metadata
+refresh, controlled-file edits, publication, commit, push, or deletion of an
+existing result.
+
+The earlier accepted HighamBench tasks establish only that these source results
+can be formalized faithfully. They never pre-approve a generated candidate;
+every distinct semantic candidate still needs its own audit.
+
+## Admission
+
+On Titan, authenticate the installed release through its location-independent
+launcher:
+
+```bash
+~/.local/bin/run-highambench-formalization verify-release
+```
+
+Then run the canonical non-provider gate through the same installed hardware
+envelope:
+
+```bash
+~/.local/bin/run-highambench-formalization doctor \
+  --task-id P01-T2
+```
+
+Do not proceed unless `verify-release` and `doctor` both exit successfully and
+their authenticated outputs jointly confirm all of the following:
+
+- the task is pilot-allowlisted and the requested manifest resolves uniquely;
+- the exact PDF, cited source locations, neutral source contract packet, and
+  result ID match their recorded SHA-256 values;
+- the common prompt is byte-identical between conditions and only L receives
+  the separately hashed encouragement appendix;
+- N has no tool-visible NumStability bytes or metadata, while L has exactly the
+  frozen authenticated source and compiled snapshot;
+- the prior target, shared task scaffold, gold Lean, proof, and prior audit
+  artifacts are absent from both contestant and candidate-auditor views;
+- the frozen Lean, Mathlib, model, reasoning effort, tool allowlist, runner,
+  validator, audit policy, and feedback schema agree;
+- the candidate contract requires one designated root theorem with `by sorry`
+  and prohibits every other `sorry`, `admit`, new axiom, or unsound substitute;
+- the run contract is four total submissions, 18,000 cumulative active seconds,
+  no benchmark token cap, and separate off-clock validator/audit ledgers;
+- the outer allocation enforces 32 GiB RAM, 512 tasks, no swap, and exactly
+  eight assigned logical CPUs; the generated-command child enforces 24 GiB,
+  384 tasks, no swap, and its frozen CPU weight, while the trusted-control child
+  retains its configured reservation; all of these match the setup-frozen host,
+  CPU model, exact CPU set, and isolation scope;
+- the task index is either fresh or names an authenticated resumable/terminal
+  pair; official staging performs the final byte-for-byte N/L check before any
+  provider call; and
+- the private authentication file is present and the frozen Codex app-server
+  interface starts through the exact sandbox without beginning model activity
+  or writing secrets to logs.
+
+CLI arguments may assert frozen values but may not override them. A mismatch is
+a hard stop. Do not auto-refresh hashes, amend prompts, weaken isolation, change
+the task order, or use a force flag during admission.
+
+## Pair invocation
+
+After successful admission, invoke exactly one pair:
+
+```bash
+~/.local/bin/run-highambench-formalization run \
+  --task-id P01-T2
+```
+
+Replace `P01-T2` only with the single allowlisted task requested by the user.
+Do not add a repetition count. The runner, not the operator, selects the frozen
+N/L order and creates the pair/run identities.
+
+Reissue this same command to inspect or continue an interrupted pair. Recovery
+is supported before a condition's first turn and between terminal, hash-sealed
+condition records. A frozen-feedback transition continues automatically only
+while that condition's original app-server process remains alive. A controller
+or process interruption after any submission cannot be cold-resumed without
+losing exact raw usage and therefore becomes a fail-closed pair incident. Never
+edit the event stream or state files to advance a run.
+
+## Condition construction
+
+The runner must construct both conditions from the same authenticated neutral
+base:
+
+| Surface | N | L |
 | --- | --- | --- |
-| Protocol/status audit | `paper_bencmark/highambench/README.md`, `metadata/*.json`, `tools/task_tags.py`, `tools/validator.py` | Read-only unless the user explicitly requests a controlled refresh. Require all status surfaces to agree. |
-| Zero-provider admission rehearsal | `tools/run_matrix.py --only-pair-id ... --allocation-end-epoch 1` | Provider-free, not read-only: it creates result and status artifacts. Use only when local rehearsal writes are authorized. Accept only exit 75, `stopped_before_allocation_deadline`, and empty records/attempts/runs. Do not run `tools/preflight.py` against the repository root; the runner invokes it inside staged N workspaces. |
-| Host probe and inventory | `scratch_pad/probe_highambench_pair_node.sh`, `scratch_pad/inventory_highambench_host.py` | Require both host-class and provider-gate matches; record exact interpreter, runtime, hardware, and time-envelope evidence without starting a provider. |
-| Live-canary bootstrap | `scratch_pad/run_highambench_canary_bootstrap_actual_ultra.sh`, `tools/run_ultra_orchestration_canary.py`, `tools/run_token_control_canary.py`, `tools/promote_live_canary.py` | Provider calls and each promotion require authorization. Launcher pins must exactly match the current snapshot. Run, promote, and verify Ultra before token control. |
-| Legacy provider-gate script audit | `scratch_pad/run_highambench_provider_gate_canaries_v7_v3.sh` | Historical token-limit launcher; inspect only. Do not use for the current scored protocol when its frozen limit or manifest pin differs. |
-| P01 checkpoint campaign | `tools/manage_p01_campaign.py`, `scratch_pad/run_highambench_p01_actual_ultra.sh`, `tools/render_p01_report.py` | Exactly the declared P01 signposted scope; require current pins and keep older raw-access results separate. |
-| P11 campaign | `scratch_pad/manage_highambench_p11_campaign.py`, `scratch_pad/run_highambench_p11_actual_ultra.sh` | Require current pins and use its immutable begin/run/record/commit transaction. |
-| Reviewed pair shards | `scratch_pad/manage_highambench_pair_shard.py`, `scratch_pad/run_highambench_pair_shard_actual_ultra.sh` | Use only paper IDs accepted by the manager and prefer one `--only-pair-id`; no force or ad hoc pair order. |
-| Shard aggregation | `scratch_pad/aggregate_highambench_pair_shards.py` | Create, then independently verify the aggregate without changing source shards. |
-| Shard report | `scratch_pad/report_highambench_pair_shards.py` | Create, then verify; report only its declared paper/pair scope. |
-| Full result verification and reporting | `tools/result_set.py`, `tools/analyze.py`, `tools/render_report.py` | Require the complete authenticated matrix; renderers must refuse partial or stale input. There is currently no reviewed whole-corpus Slurm runbook to improvise. |
+| Frozen paper packet and source contract | identical | identical |
+| Common base prompt | identical | identical |
+| Lean and Mathlib | frozen | same frozen versions |
+| NumStability source/object/index | absent | frozen authenticated snapshot |
+| Prompt treatment appendix | absent | explicit frozen encouragement |
 
-All current campaign/bootstrap launchers carry explicit frozen pins. Compare
-them to the authenticated current metadata and stop on disagreement; never
-auto-edit a pin as part of admission. The generic pair-shard manager also has a
-reviewed paper allowlist. Read that allowlist rather than broadening it.
+The L appendix must encourage active library discovery and reuse, import,
+adaptation, or inspiration. It must also say that library material is not
+automatically source-faithful. Do not dilute this message, inject a neutralized
+version into N, or add condition-specific tips elsewhere. The frozen appendix
+must identify `/library/NumStability`, `/library/NumStability.lean`, compiled
+declarations on `LEAN_PATH`, and concrete `find`, `rg`, and
+`import NumStability` discovery/import options.
 
-The scratch-pad directory contains large ignored private artifacts. Only the
-allowlisted scripts above and their focused tests are repository code. Do not
-delete or ingest logs, results, PDFs, credentials, compiled environments, or
-provider transcripts merely because they share that directory.
+The common prompt must require the exact selected result, say that faithful
+formalization is known to be achievable and has been achieved before, explain
+the independent audit, and direct the formalizer to inspect the target and all
+supporting definitions before submitting.
 
-## Pair transaction and time admission
+Use fresh workspaces, caches, process namespaces, Codex homes, and formalizer
+conversations for N and L. Nothing learned from one condition, task, or run may
+enter another. Keep both conditions of the pair on the same authenticated
+hardware allocation. The deployment-wide lock must admit only one pilot pair
+at a time; do not bypass it to run separate tasks concurrently.
 
-`tools/run_matrix.py` is the canonical executor. Use atomic pair selection and
-let frozen metadata assert model, effort, time, token, prompt, and environment
-values. Pair order comes only from `metadata/run_order.json`.
+## Candidate state machine
 
-Both conditions of a pair must complete in the same authenticated allocation
-and node. Parallel scheduling may distribute whole pairs, never conditions.
+Each condition follows this trusted state machine:
 
-Admit a pair only when the manager and runner prove the full configured pair
-envelope is available. This includes both attempts, startup/retry allowances,
-validation allowances, and the guard interval; do not replace that calculation
-with an informal wall-time estimate.
+```text
+READY
+  -> MODEL_ACTIVE through contestant-process quiescence
+  -> OFF_CLOCK_TELEMETRY_AND_BOOKKEEPING
+  -> CANDIDATE_FROZEN (separately timed and charged)
+  -> VALIDATING
+  -> AUDITING
+  -> ACCEPTED
+     or FEEDBACK_FROZEN -> MODEL_ACTIVE
+     or TERMINAL_LIMIT
+```
 
-Managers own permanent, staging, active, failed, and checkpoint paths. Follow
-their state machine rather than moving files manually:
+The runner publishes the initial prompt or a repair-feedback packet only after
+recording its hash. It starts or resumes the model-active monotonic interval
+immediately before the `turn/start` RPC. The formalizer can inspect only its
+assigned environment, create the formalization, run Lean, and submit through
+the authenticated nonterminal candidate boundary.
 
-1. authenticate or create the campaign index before useful work;
-2. begin exactly one pair transaction;
-3. invoke `run_matrix.py` for that pair;
-4. record the exact exit and artifacts;
-5. manager-commit only a complete authenticated terminal pair;
-6. archive exit 75 as a zero-work deadline checkpoint and resubmit it;
-7. archive every other nonzero exit as failed and stop for audit.
+At submission, require the contestant process tree to become quiescent. This
+ends the model-active interval. After off-clock ordered telemetry settling and
+trusted bookkeeping, separately time and charge the stable copy/hash of the
+single submitted `Candidate.lean`. Scratch files and object files in the
+mutable workspace are not part of the submission. The contestant-active total
+is the sum of the model-active and candidate-freeze components. App-server
+teardown, artifact-log writing, validation, and auditing are off-clock. Every
+candidate snapshot consumes one of four slots, even when compilation or
+integrity fails.
 
-## Canary order
+The root theorem must formalize the exact source result and have proof body
+`by sorry`. Supporting definitions, structures, instances, notation and lemmas
+are permitted and charged. No other `sorry`, `admit`, new axiom, hidden target,
+unsafe escape, prohibited import, binary substitution, or undeclared external
+dependency is allowed.
 
-When replacement is required and authorized:
+The run terminates at the first faithful candidate, the fourth submitted
+candidate, or 18,000 cumulative contestant-active seconds. The active-time
+limit never resets after feedback. There is no contestant-token termination
+rule.
 
-1. run the synthetic Ultra orchestration canary;
-2. explicitly promote its attestation;
-3. run its verify-only path;
-4. run the synthetic token-control canary;
-5. explicitly promote its attestation;
-6. run its verify-only path;
-7. rerun release/runner admission before campaign-index creation.
+## Validation, audit, and repair
 
-Mere attestation-file presence never changes a descriptor to passed. Do not
-promote stale, copied, partial, task-bearing, or unauthenticated evidence.
-Run bootstrap serially under its lock. Concurrent shards may verify already
-frozen canaries but must never promote them.
+Trusted compilation and integrity validation begin after the candidate is
+frozen and remain off-clock. A compile- or integrity-invalid candidate does not
+receive a semantic audit. If another slot remains, the runner produces only
+frozen, categorical, fixed-schema validator feedback and returns it to the same
+formalizer conversation; raw compiler output is never included in repair
+feedback.
 
-## Results and recovery
+For each compiling candidate, record:
 
-Do not invent retries. A useful-work attempt without the exact authenticated
-submission boundary and natural drain is retained as unscored and stops the
-pair. An interrupted active marker or terminal incident remains a hard stop
-until the existing manager's audit/recovery path authenticates it.
+1. the submitted `Candidate.lean` SHA-256; and
+2. a semantic-statement SHA-256 over the elaborated root theorem type and the
+   recursive closure of reached generated/NumStability declarations plus the
+   recorded one-level type/body frontier of reached Lean/Mathlib declarations.
 
-Use the runbooks' private umask and ignored result roots. Preserve successful,
-failed, checkpoint, and unscored roots plus their read-only ledgers; never stage
-or publish raw authentication, provider, transcript, or rollout artifacts.
+Lean and Mathlib are a frozen, trusted semantic foundation. Their frontier is
+not recursively unfolded to foundational primitives: doing so would make the
+dossier unbounded and obscure standard-library meaning. Audit claims are
+therefore relative to the ordinary semantics of that hash-frozen foundation;
+the dossier records its exact frontier rather than claiming a complete
+transitive expansion of it.
 
-For a complete campaign, run result authentication before analysis and analysis
-before rendering. Preserve raw records and report failure categories exactly:
-`TIME`, `TOKEN`, `NO_SUBMISSION`, `RULE_VIOLATION`, syntax/elaboration, proof,
-and system incidents are not interchangeable.
+Every distinct semantic hash requires a fresh audit. Auditors must be fresh,
+stateless, blind to condition and attempt number, and unable to see the
+formalizer transcript, other candidates, timing, tokens, the legacy target, or
+library provenance wherever de-identification is reliable. The dossier
+contains candidate semantics under the explicit closure/frontier policy; paper
+and packet are supplied separately only to paper-facing roles.
 
-## Tooling checks
+Acceptance requires the frozen audit's `faithful` verdict: every material
+binder, premise, restriction, quantifier dependency, and conclusion must match
+the selected paper result without vacuity, unsupported assumptions, or narrower
+applicability. An evaluator failure, unresolved evaluator disagreement, or
+source ambiguity not caused by the candidate is an unscored audit-system
+incident; it does not consume a new contestant slot.
 
-After changing experiment tooling or launchers, run the focused Python tests
-under `paper_bencmark/highambench/tools/tests/`, the two allowlisted pair-shard
-test files in `paper_bencmark/scratch_pad/`, and `bash -n` on every changed
-launcher. Unset a forbidden inherited `LD_LIBRARY_PATH` for the authenticated
-runtime tests. Do not substitute the broad historical-host suite when its
-frozen interpreter is unavailable; report that host gate separately.
+For an unfaithful candidate with a slot remaining, render feedback only through
+the frozen condition-neutral schema. It identifies each missing paper
+requirement, the candidate mismatch, and the required direction of repair. It
+must not contain a gold theorem, Lean code, tactics, proof steps, adapters,
+NumStability names, condition/attempt labels, or raw auditor reasoning. Freeze
+and hash the feedback before returning it to the same conversation. Resume the
+active clock immediately before it is delivered.
+
+Never reuse an audit verdict for a candidate whose semantic closure changed.
+Never send raw role outputs or deliberations to the formalizer.
+
+## Metering and logging
+
+The contestant ledger sums each model-active interval and the separately timed
+candidate-freeze component. Model-active time includes provider latency,
+visible generation, tool calls, library search, shell work, contestant-initiated
+Lean builds, background-terminal cleanup/quiescence, and all descendants.
+Ordered telemetry settling and trusted bookkeeping between quiescence and
+freeze are excluded. Multi-agent execution is disabled for this pilot.
+
+The contestant token ledger measures, without imposing a cap, every raw
+provider response in the formalizer conversation. One raw-event-enabled
+app-server process stays alive across all repairs. Usage is deduplicated by
+response ID and cross-checked against the cumulative thread delta for input,
+cached input, cache-write input, output, reasoning output, and total tokens.
+Missing completed-turn usage is `telemetry_invalid`, never zero. Usage observed
+before an active-time interruption is retained as a clearly labeled lower
+bound; it does not replace the valid `ACTIVE_TIME_LIMIT` endpoint.
+
+Validation, audit, adjudication and feedback-rendering durations and tokens are
+recorded separately and excluded from contestant time/tokens. End-to-end
+elapsed time is still reported.
+
+Record observable evidence: frozen prompts and feedback, visible messages and
+reasoning summaries when exposed, provider-reported input, cached-input,
+cache-write-input, output, reasoning-output, and total token counts, tool calls,
+commands, executable/script hashes, outputs, candidate snapshots, imports,
+dependency evidence for reached L-library declarations, line counts, validator
+results, audit classifications, hardware observations, and all ledger
+transitions.
+
+Record the effective CPU set, memory and swap limits, CPU/host identity, and
+isolation identity at the start and end of every condition attempt. The outer
+cgroup is fixed at eight CPUs, 32 GiB, 512 tasks, and no swap. Generated command
+trees are additionally limited to 24 GiB, 384 tasks, and no swap, while the
+trusted controller has an 8-GiB `memory.low` reservation. Command-child limit
+events are terminal evidence. Other operating-system resource counters that
+are reported are observations, not frozen admission criteria.
+
+Never request or log hidden chain-of-thought. Never describe visible reasoning
+summaries or ordinary token counts as chain-of-thought. Keep system
+and developer prompts, credentials, authentication material, and restricted
+provider records out of publishable artifacts.
+
+## Results, resume, and reporting
+
+Preserve immutable run directories and their event streams. Do not delete,
+overwrite, merge, rename, or reuse an existing run ID. A hard-stop or
+interrupted run remains evidence. Continue only when the source-first CLI
+verifies its hash chain and advertises a pre-first-turn or between-condition
+transition; never cold-resume a submitted condition.
+
+For each condition report:
+
+- terminal classification and accepted semantic hash, if any;
+- number of submissions and failure class for each;
+- first-submission and cumulative contestant-active time;
+- first-submission and cumulative contestant tokens;
+- formalization size and dependency profile;
+- separate validation/audit time and token overhead;
+- end-to-end elapsed time and hardware/resource observations; and
+- immutable artifact and ledger paths.
+
+For the pair, report the frozen order and manifest identifiers and make only a
+descriptive N/L comparison. With one pair per task, this pilot evaluates
+pipeline behavior and does not support a precise stochastic-effect estimate.
+
+Do not publish, commit, push, upload, or expose raw result material unless the
+user separately authorizes that action.

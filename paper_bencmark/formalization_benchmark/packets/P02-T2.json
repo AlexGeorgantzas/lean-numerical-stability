@@ -1,0 +1,59 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "P02-T2",
+  "selected_result": "Forward-error bound for Algorithm 4.4, Sum2",
+  "bibliographic_source": {
+    "authors": [
+      "Takeshi Ogita",
+      "Siegfried M. Rump",
+      "Shin'ichi Oishi"
+    ],
+    "title": "Accurate Sum and Dot Product",
+    "venue": "SIAM Journal on Scientific Computing",
+    "volume": "26",
+    "issue": "6",
+    "year": 2005,
+    "pages": "1955-1988",
+    "doi": "10.1137/030601818"
+  },
+  "paper_pdf": {
+    "path_basename": "P02_ACCURATE SUM AND DOT PRODUCT.pdf",
+    "sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d"
+  },
+  "paper_locations": [
+    {
+      "section": "Sections 2-4",
+      "printed_pages": "1960-1963",
+      "pdf_pages": "6-9",
+      "anchor": "Floating-point arithmetic model, gamma_k, TwoSum and its exactness theorem, Algorithm 4.1, and identity (4.2)"
+    },
+    {
+      "section": "Section 4",
+      "printed_pages": "1964-1965",
+      "pdf_pages": "10-11",
+      "anchor": "Lemma 4.2, equations (4.4)-(4.6), Algorithm 4.3 VecSum, Algorithm 4.4 Sum2, Proposition 4.5, and bound (4.8)"
+    },
+    {
+      "section": "Section 4",
+      "printed_pages": "1966-1967",
+      "pdf_pages": "12-13",
+      "anchor": "Equations (4.10)-(4.12) and the continuation of the Proposition 4.5 argument"
+    }
+  ],
+  "task_clarification": [
+    "Let p_1, ..., p_n be floating-point inputs, let s = sum_i p_i be their exact real sum, and let S = sum_i |p_i|.",
+    "Assume no overflow. Underflow is allowed, as in the paper's statement of Proposition 4.5.",
+    "Model Algorithm 4.4 Sum2: apply VecSum, recursively sum the lower components returned by VecSum, and add that rounded correction to the leading component.",
+    "With eps denoting the paper's unit roundoff, gamma_k = k*eps/(1-k*eps), and n*eps < 1, formalize Proposition 4.5: the returned result res satisfies |res-s| <= eps*|s| + gamma_(n-1)^2*S.",
+    "The paper states that this result remains valid in the presence of underflow."
+  ],
+  "scope_constraints": [
+    "Use a nonempty finite input sequence whose entries are floating-point numbers, with eps a nonnegative unit roundoff.",
+    "Retain the operational roles of TwoSum, VecSum, the recursive summation of lower components, and the final rounded addition.",
+    "Retain the exact-sum preservation property of VecSum.",
+    "Use the paper's eps and gamma notation without adding a multiplication-rounding model that the selected Sum2 result does not require.",
+    "Preserve the source's claim that the bound also holds in the presence of underflow.",
+    "Assume that overflow does not occur.",
+    "Do not replace the algorithm by an arbitrary result constrained to satisfy the requested conclusion."
+  ]
+}

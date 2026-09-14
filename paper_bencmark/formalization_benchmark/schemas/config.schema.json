@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "config.schema.json",
+  "title": "HighamBench formalization pilot configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pilot_id",
+    "task_ids",
+    "condition_labels",
+    "condition_order",
+    "runs_per_task_per_condition",
+    "submission_limit",
+    "contestant_active_time_limit_seconds",
+    "token_cap",
+    "formalizer_model",
+    "formalizer_reasoning_effort",
+    "audit_model",
+    "audit_reasoning_effort",
+    "validation_timeout_seconds",
+    "audit_timeout_seconds",
+    "audit_infrastructure_retries",
+    "lean_toolchain",
+    "mathlib_commit",
+    "numstability_commit",
+    "hardware",
+    "candidate",
+    "hardware_envelope",
+    "command_resource_envelope",
+    "workspace_limits",
+    "artifact_limits",
+    "measurement_scope",
+    "packet_policy"
+  ],
+  "properties": {
+    "$schema": {"type": "string", "minLength": 1},
+    "schema_version": {"const": "formalization-benchmark-config-1"},
+    "pilot_id": {"type": "string", "minLength": 1},
+    "task_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^P[0-9]{2}-T[0-9]+$"}
+    },
+    "condition_labels": {
+      "type": "array",
+      "prefixItems": [{"const": "N"}, {"const": "L"}],
+      "items": false
+    },
+    "condition_order": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["P01-T2", "P02-T2", "P03-T2", "P13-T2", "P14-T2"],
+      "properties": {
+        "P01-T2": {"$ref": "#/$defs/conditionOrder"},
+        "P02-T2": {"$ref": "#/$defs/conditionOrder"},
+        "P03-T2": {"$ref": "#/$defs/conditionOrder"},
+        "P13-T2": {"$ref": "#/$defs/conditionOrder"},
+        "P14-T2": {"$ref": "#/$defs/conditionOrder"}
+      }
+    },
+    "runs_per_task_per_condition": {"const": 1},
+    "submission_limit": {"type": "integer", "minimum": 1},
+    "contestant_active_time_limit_seconds": {"type": "integer", "minimum": 1},
+    "token_cap": {"type": ["integer", "null"], "minimum": 1},
+    "formalizer_model": {"type": "string", "minLength": 1},
+    "formalizer_reasoning_effort": {"enum": ["low", "medium", "high", "xhigh", "max", "ultra"]},
+    "audit_model": {"type": "string", "minLength": 1},
+    "audit_reasoning_effort": {"enum": ["low", "medium", "high", "xhigh", "max", "ultra"]},
+    "validation_timeout_seconds": {"type": "integer", "minimum": 1},
+    "audit_timeout_seconds": {"type": "integer", "minimum": 1},
+    "audit_infrastructure_retries": {"type": "integer", "minimum": 0},
+    "lean_toolchain": {"const": "leanprover/lean4:v4.29.0-rc3"},
+    "mathlib_commit": {"const": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b"},
+    "numstability_commit": {"const": "45813a95dacf577461bae13f033af0dbc985a225"},
+    "hardware": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logical_cpus", "memory_bytes", "tasks_max", "swap_enabled"],
+      "properties": {
+        "logical_cpus": {"const": 8},
+        "memory_bytes": {"const": 34359738368},
+        "tasks_max": {"const": 512},
+        "swap_enabled": {"const": false}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "root_declaration", "root_proof"],
+      "properties": {
+        "file": {"const": "Candidate.lean"},
+        "root_declaration": {"const": "HighamBenchCandidate.target"},
+        "root_proof": {"const": "by sorry"}
+      }
+    },
+    "hardware_envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logical_cpus", "memory_gib", "tasks_max", "record_each_attempt"],
+      "properties": {
+        "logical_cpus": {"const": 8},
+        "memory_gib": {"const": 32},
+        "tasks_max": {"const": 512},
+        "record_each_attempt": {"const": true}
+      }
+    },
+    "workspace_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximum_entries", "maximum_total_bytes", "maximum_written_file_bytes"],
+      "properties": {
+        "maximum_entries": {"const": 10000},
+        "maximum_total_bytes": {"const": 1073741824},
+        "maximum_written_file_bytes": {"const": 268435456}
+      }
+    },
+    "command_resource_envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["memory_bytes", "tasks_max", "swap_enabled", "control_memory_low_bytes", "control_cpu_weight", "command_cpu_weight"],
+      "properties": {
+        "memory_bytes": {"const": 25769803776},
+        "tasks_max": {"const": 384},
+        "swap_enabled": {"const": false},
+        "control_memory_low_bytes": {"const": 8589934592},
+        "control_cpu_weight": {"const": 10000},
+        "command_cpu_weight": {"const": 100}
+      }
+    },
+    "artifact_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximum_protocol_line_bytes", "maximum_event_trace_bytes", "maximum_event_count", "maximum_stderr_archive_bytes"],
+      "properties": {
+        "maximum_protocol_line_bytes": {"const": 2097152},
+        "maximum_event_trace_bytes": {"const": 16777216},
+        "maximum_event_count": {"const": 50000},
+        "maximum_stderr_archive_bytes": {"const": 8388608}
+      }
+    },
+    "measurement_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["clock", "tokens", "audit"],
+      "properties": {
+        "clock": {"type": "string", "minLength": 1},
+        "tokens": {"type": "string", "minLength": 1},
+        "audit": {"type": "string", "minLength": 1}
+      }
+    },
+    "packet_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed_content", "forbidden_content"],
+      "properties": {
+        "allowed_content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "forbidden_content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "conditionOrder": {
+      "oneOf": [
+        {"const": ["N", "L"]},
+        {"const": ["L", "N"]}
+      ]
+    }
+  }
+}

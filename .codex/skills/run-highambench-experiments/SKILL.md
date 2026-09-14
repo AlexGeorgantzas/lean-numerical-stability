@@ -1,131 +1,131 @@
 ---
 name: run-highambench-experiments
-description: Prepare, preflight, launch, resume, validate, and report fixed HighamBench T1–T3 Condition N/L benchmarking experiments in this repository. Use for measurement and campaign operations; not for task construction, T4 corpora, or NumStability formalization.
+description: Operate the source-first HighamBench faithful-formalization pilot for P01-T2, P02-T2, P03-T2, P13-T2, or P14-T2. Use when the user says "Run benchmark for P01-T2" or asks to preflight, run, resume, validate, or report exactly one N/L formalization pair. Do not use for the legacy fixed-target proof benchmark, task construction, or a wider campaign.
 ---
 
-# Run HighamBench Experiments
+# Run HighamBench Formalization Experiments
 
-## Operating scope
+## Scope
 
-Operate the fixed T1–T3 corpus under `paper_bencmark/highambench` through its
-trusted tools and the allowlisted launchers in `paper_bencmark/scratch_pad`.
-This is an operator skill. Never place this skill, its instructions, or operator
-state inside a measured agent's prompt, workspace, Codex home, or mounted files.
+Treat a command such as `Run benchmark for P01-T2` as authorization to run
+exactly one Condition N run and one Condition L run for that named task.
+The pilot allowlist is exactly:
 
-Do not use this skill to select, construct, revise, or reclassify tasks; build a
-T4 corpus; formalize NumStability; or repair controlled content to make a run
-pass. A controlled change returns to construction and requires a new snapshot,
-validation, review, and authorization before measurement.
+- `P01-T2`
+- `P02-T2`
+- `P03-T2`
+- `P13-T2`
+- `P14-T2`
 
-Treat an explicit request to run a named experiment stage as authorization only
-for that stage. Inspection, cleanup, planning, preflight, or report requests do
-not authorize campaign or result-root creation, paid provider calls, live
-canaries, snapshot refresh, canary promotion, publication, commit, or push. Keep all measurements private unless
-the user separately authorizes release.
+Reject any other task or request for repetitions unless the frozen protocol and
+manifests have first been deliberately revised outside measurement. Never
+expand a one-task request into the five-task pilot. Do not create three
+repetitions: this pilot has one N/L pair per task.
 
-## Load context progressively
+This benchmark measures production of a compiling, source-faithful Lean
+formalization. It does not ask for or score a proof. The designated root theorem
+must have proof body `by sorry`; that root `sorry` is the only permitted
+placeholder in the complete candidate.
 
-Before any provider process or scored run:
+## Load the frozen contract
 
-1. Read `paper_bencmark/highambench/README.md` completely as the protocol and
-   current-status authority.
-2. Read [the operations map](references/operations.md) completely, then read
-   the selected launcher or manager before invoking it.
-3. Inspect `metadata/config.json`, `environment.json`, `manifest.json`,
-   `release_files.json`, `run_order.json`, `library_source.json`, and the
-   relevant compiled/runtime manifests through the canonical admission tools.
-   Do not hand-edit derived hashes or treat CLI values as overrides.
+Before any provider call or benchmark-state mutation on Titan:
 
-For a status-only, offline verification, or report request, load only the
-operation-specific files routed by the operations map. Do not load private
-proofs, gold solutions, unrelated result roots, or paper PDFs into a measured
-context.
+1. Read [the operations reference](references/operations.md) completely.
+2. Use only the installed `~/.local/bin/run-highambench-formalization`
+   launcher. Its deployment record binds the exact release checkout, so the
+   command works regardless of the current directory.
+3. Run the launcher's provider-free `verify-release` command.
+4. Authenticate the selected packet, prompts, runtime snapshots, executable
+   identities, deployment record, and hardware through the installed
+   launcher's `doctor` gate.
+5. Stop if either gate is absent or fails. Never use legacy
+   `paper_bencmark/highambench/tools/runner.py` or `tools/run_matrix.py` as a
+   substitute.
 
-## Non-negotiable experiment invariants
+The installed release's protocol and frozen manifests are authoritative. Treat command-line values
+as equality assertions, not experimental knobs. Never repair, refresh, or
+silently regenerate controlled inputs during admission or measurement.
 
-- Derive task, repetition, condition order, model, limits, toolchain, package,
-  prompt, runtime, and hardware expectations from the frozen metadata. The
-  current T1–T3 design is P01–P20, one T1/T2/T3 task per paper, three
-  repetitions, and paired N/L attempts; any catalog discrepancy is a hard stop.
-- N and L use byte-identical controlled task/context/shared inputs. N receives
-  no NumStability source, object, documentation, index, name list, or cache. L
-  alone receives the frozen L supplement and exact read-only NumStability
-  source/object mounts.
-- Condition L uses the authenticated `NumStability/` and `NumStability.lean`
-  in the current project checkout. Never substitute files from another branch,
-  mutable checkout, or unverified build.
-- Preserve fresh isolated workspaces, provider conversations, and private state
-  for every attempt. Never expose private construction proofs or proof hints.
-- Use the frozen order in `metadata/run_order.json`. Do not reorder N/L, invent
-  seeds, change limits, or describe repetition IDs as random seeds.
-- Treat the N/L pair as the hardware unit: both conditions must finish in the
-  same authenticated allocation and node. Parallelize complete pairs only;
-  never split the two conditions across jobs or machines.
-- Keep raw-access P01 results separate from signposted-library measurements.
-  Never pool, overwrite, or count them as repetitions of the current protocol.
+## Preserve the N/L treatment
 
-## Fail-closed admission
+N and L receive byte-identical paper packets and byte-identical common base
+prompts. The packet identifies the exact paper result and accompanies its
+frozen PDF with locators, neutral clarification, scope constraints, and hashes.
+It must not expose
+an old HighamBench target, task-specific common Lean scaffold, gold theorem,
+gold proof, prior audit output, or NumStability declaration hint.
 
-Before a provider call, require the canonical release and runner admission
-checks to authenticate the exact controlled files, source and object manifests,
-pinned commit, Lean/Mathlib/runtime, host, interpreter, provider binary, prompt,
-hardware, and both live-canary descriptors. All status fields and gates must
-agree. A dirty ignored result directory is not itself a failure, but drift in
-any controlled or release-listed path is.
+The common prompt must say that the exact result is required, faithfulness is
+known to be achievable, the statement will be independently audited, and the
+formalizer should check every supporting definition before submitting.
 
-Stop before provider startup when any required item is stale, missing,
-unscorable, contradictory, or mismatched; when the host cannot supply the
-complete pair time envelope; when a launcher pin differs from current frozen
-metadata; when a result root collides; or when an active marker or incident
-cannot be authenticated. Report the exact failed gate and evidence path. Never
-silently refresh metadata, edit launcher pins, relax validation, bypass
-canaries, use `--force`, or repair the corpus during measurement admission.
+Condition N receives only the frozen Lean/Mathlib environment and neutral
+harness. Verify that NumStability is absent from every tool-visible source,
+object, cache, index, history, environment variable, and filesystem path.
 
-If a descriptor explicitly requires replacement and the user authorized live
-canaries, run the synthetic Ultra canary, explicitly promote and verify it, then
-run the token-control canary, explicitly promote and verify it. Promotion is a
-controlled metadata mutation and must finish before campaign-index creation.
-Synthetic canaries must never receive benchmark task bytes.
+Condition L receives that same environment plus the frozen NumStability source
+and compiled snapshot. Append only the frozen L treatment message, which must
+explicitly encourage the formalizer to inspect, import, reuse, adapt, or draw
+inspiration from relevant NumStability material while still satisfying the
+source contract. The measured treatment is library availability plus this
+explicit encouragement. The frozen appendix identifies
+`/library/NumStability`, `/library/NumStability.lean`, and `LEAN_PATH`, and gives
+concrete `find`, `rg`, and `import NumStability` discovery/import examples.
 
-## Execute the smallest authorized unit
+## Enforce the submission and audit loop
 
-Prefer one immutable N/L pair transaction through `tools/run_matrix.py` and the
-appropriate reviewed campaign manager. Treat frozen CLI options as equality
-assertions, not knobs. Do not default a request for a check or canary to the
-360-run matrix. Do not invent a whole-corpus Slurm command when no reviewed
-runbook exists for it.
+Use one fresh persistent formalizer conversation per condition. Each condition
+allows at most four total submissions: the initial candidate plus at most three
+repairs. Every submission consumes a slot, including a compile- or
+integrity-invalid candidate.
 
-For each managed pair: begin the transaction, run the exact pair, record the
-exit, and manager-commit only a verified terminal pair. Exit 75 is a clean zero-work
-deadline checkpoint to archive and resubmit, not a proof failure. Any other
-nonzero exit is archived as failed and stops that campaign for audit.
+For each attempt, start the model-active interval immediately before the
+`turn/start` RPC and stop it after post-terminal cleanup proves the contestant
+process tree is quiescent. Ordered telemetry settling and trusted bookkeeping
+are off-clock. Separately time and charge the stable candidate copy/hash, then
+run compilation and integrity checks off-clock. A valid, previously unaudited
+semantic candidate receives a fresh, stateless, condition-blind and
+attempt-blind faithfulness audit. If rejected and a submission remains, freeze
+condition-neutral feedback and deliver it to the same formalizer conversation;
+resume metering immediately before delivery.
 
-Never delete, move, reuse, or overwrite permanent/staging/active result roots;
-clear an active marker; replay useful work; or bypass a hard-stop incident. The
-only automatic retry is the protocol's single authenticated pre-prompt system
-failure. Useful-work, second-startup, token, time, rule, syntax, elaboration,
-proof, and unverifiable incidents retain their frozen terminal semantics.
-The accepted Ultra nested-submit boundary and token-limit endpoint may be
-non-drained only when their exact frozen boundary/gate evidence authenticates
-that state; never generalize those exceptions to ordinary attempts.
+Charge at most 18,000 cumulative contestant-active seconds across all four
+submissions. There is no benchmark token cap: record contestant tokens as an
+outcome and never stop a run because of their count. Validator, audit,
+adjudication, and feedback-rendering time and tokens belong to separate
+overhead ledgers and do not affect the contestant metrics.
 
-## Validate and report
+## Execute fail closed
 
-Authenticate a complete result set before analysis, and analysis before report
-rendering. Use the P01 checkpoint and pair-shard reporting paths only for their
-declared scopes; never present a partial report as the complete matrix.
+Normalize the requested ID, require an exact allowlist match, and run only the
+source-first pair command documented in the operations reference. Require the
+runner to own prompt publication, process-tree metering, candidate freezing,
+validation, audit handoff, feedback publication, persistent-conversation
+continuation, and terminal state. Do not simulate these boundaries with manual
+timestamps or copied chat messages.
 
-Report the requested stage, exact assignment/pair IDs, frozen identifiers,
-commands, exit classifications, verified counts, result/evidence paths,
-incidents, retries, and remaining gates. Distinguish a clean checkpoint,
-unscored incident, failed proof, incomplete campaign, and complete authenticated
-matrix. Never claim measurement readiness or publishability from file presence
-alone.
+Do not overwrite, delete, reuse, or hand-edit run directories, snapshots,
+hashes, ledgers, attempt counters, audit decisions, or active markers. Reissue
+the same authenticated source-first `run` command only to return an existing
+terminal result or continue before the first turn or between sealed conditions.
+A submitted condition cannot be cold-resumed because its exact raw usage stream
+belongs to its live app-server process. Stop on
+missing telemetry, a hash mismatch, source ambiguity, an evaluator incident,
+an unsupported CLI transition, or any condition-isolation failure.
 
-Keep result roots and ledgers private under ignored scratch storage, with the
-runbooks' restrictive permissions. Never stage or expose credentials, raw
-rollout/provider data, immutable ledgers, private proofs, or result roots.
-Preserve the frozen protocol disclosure: these are amended HighamBench-derived
-measurements, not strict HighamBench 0.2, because of the signposted L prompt,
-undemonstrated backend seed, lack of a frozen OCI image, and external provider
-gate. Do not weaken that disclosure in reports.
+## Report observable evidence only
+
+Report the task, pair/run IDs, condition order, frozen identifiers, admission
+result, terminal status, submission count, active time, contestant tokens,
+validation/audit overhead, classifications, and artifact paths. Distinguish
+`faithful`, `attempt_limit`, `time_limit`, validation failure, audit-system
+incident, infrastructure incident, and invalid telemetry.
+
+Never request, expose, reconstruct, store, or claim to have recorded hidden
+chain-of-thought. The allowed trace comprises visible messages, exposed
+reasoning summaries when the interface provides them, provider-reported input,
+cached-input, cache-write-input, output, reasoning-output, and total token
+counts, tool calls, commands, outputs,
+candidate snapshots, and audited artifacts. Redact
+credentials and restricted system/developer material from user-facing reports.

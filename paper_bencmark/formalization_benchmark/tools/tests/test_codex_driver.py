@@ -1,0 +1,696 @@
+from __future__ import annotations
+
+import json
+import hashlib
+import os
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+from unittest import mock
+
+
+TOOLS = Path(__file__).resolve().parents[1]
+if str(TOOLS) not in sys.path:
+    sys.path.insert(0, str(TOOLS))
+
+from codex_driver import (  # noqa: E402
+    CodexDriver,
+    _normalize_raw_usage,
+    _normalize_usage_breakdown,
+)
+
+
+FAKE_APP_SERVER = r'''
+import hashlib
+import json
+import os
+from pathlib import Path
+import sys
+
+state = Path(os.environ["CODEX_HOME"])
+workspace = Path.cwd()
+(state / "config.toml").write_text("fixture = true\n", encoding="utf-8")
+(state / "skills" / ".system" / "fixture").mkdir(parents=True, exist_ok=True)
+(state / "skills" / ".system" / "fixture" / "SKILL.md").write_text(
+    "trusted system skill\n", encoding="utf-8"
+)
+(state / "tmp" / "arg0").mkdir(parents=True, exist_ok=True)
+temporary_link = state / "tmp" / "arg0" / "apply_patch"
+if not temporary_link.exists() and not temporary_link.is_symlink():
+    temporary_link.symlink_to(workspace / "does-not-exist")
+
+def receive():
+    line = sys.stdin.readline()
+    if not line:
+        return None
+    return json.loads(line)
+
+def send(value):
+    print(json.dumps(value, separators=(",", ":")), flush=True)
+
+initialize = receive()
+assert initialize is not None
+assert initialize["method"] == "initialize"
+send({"id": initialize["id"], "result": {"serverInfo": {"name": "fake"}}})
+initialized = receive()
+assert initialized is not None and initialized["method"] == "initialized"
+thread_request = receive()
+assert thread_request is not None
+assert thread_request["method"] == "thread/start"
+assert (state / "auth.json").is_file()
+thread_id = "thread-test"
+ephemeral = bool(thread_request["params"].get("ephemeral", False))
+thread = {
+    "id": thread_id,
+    "ephemeral": ephemeral,
+    "model": "test-model",
+}
+send({"method": "thread/started", "params": {"thread": thread}})
+send({"id": thread_request["id"], "result": {"thread": thread}})
+turn_number = 0
+cumulative = {
+    "inputTokens": 0,
+    "cachedInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "outputTokens": 0,
+    "reasoningOutputTokens": 0,
+    "totalTokens": 0,
+}
+late_pending = False
+late_turn_id = None
+exit_code_on_eof = 0
+late_on_eof = False
+while True:
+    turn_request = receive()
+    if turn_request is None:
+        if late_on_eof:
+            send({"method": "rawResponse/completed", "params": {"late": True}})
+        print("stderr emitted at app-server shutdown", file=sys.stderr, flush=True)
+        raise SystemExit(exit_code_on_eof)
+    if turn_request["method"] == "thread/backgroundTerminals/clean":
+        send({"id": turn_request["id"], "result": {}})
+        list_request = receive()
+        assert list_request is not None
+        assert list_request["method"] == "thread/backgroundTerminals/list"
+        send({"id": list_request["id"], "result": {"data": [], "nextCursor": None}})
+        continue
+    if turn_request["method"] == "thread/read":
+        if late_pending:
+            late_raw = {
+                "inputTokens": 4,
+                "cachedInputTokens": 1,
+                "cacheWriteInputTokens": 0,
+                "outputTokens": 2,
+                "reasoningOutputTokens": 1,
+                "totalTokens": 6,
+            }
+            send({
+                "method": "rawResponse/completed",
+                "params": {
+                    "responseId": "response-late-" + str(late_turn_id),
+                    "threadId": thread_id,
+                    "turnId": late_turn_id,
+                    "usage": late_raw,
+                },
+            })
+            for field in cumulative:
+                cumulative[field] += late_raw[field]
+            send({
+                "method": "thread/tokenUsage/updated",
+                "params": {
+                    "threadId": thread_id,
+                    "turnId": late_turn_id,
+                    "tokenUsage": {"total": dict(cumulative), "last": late_raw},
+                },
+            })
+            late_pending = False
+        send({"id": turn_request["id"], "result": {"thread": thread}})
+        continue
+    assert turn_request["method"] == "turn/start"
+    turn_number += 1
+    prompt_text = turn_request["params"]["input"][0]["text"]
+    if prompt_text == "bad-shutdown":
+        exit_code_on_eof = 7
+    if prompt_text == "late-on-close":
+        late_on_eof = True
+    auth_present = (state / "auth.json").is_file()
+    auth_sha256 = hashlib.sha256((state / "auth.json").read_bytes()).hexdigest()
+    with (workspace / "observations.jsonl").open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps({
+            "thread_method": thread_request["method"],
+            "turn_number": turn_number,
+            "server_pid": os.getpid(),
+            "auth_present_at_turn_start": auth_present,
+            "auth_sha256_at_turn_start": auth_sha256,
+            "output_schema": turn_request["params"].get("outputSchema"),
+            "thread_sandbox": thread_request["params"].get("sandbox"),
+            "experimental_raw_events": thread_request["params"].get("experimentalRawEvents"),
+            "history_mode": thread_request["params"].get("historyMode"),
+            "turn_sandbox_policy": turn_request["params"].get("sandboxPolicy"),
+        }) + "\n")
+    if not auth_present:
+        raise SystemExit(9)
+    if prompt_text == "rotate-auth":
+        (state / "auth.json").write_text(
+            '{"token":"rotated-credential-value"}\n', encoding="utf-8"
+        )
+    turn_id = "turn-" + str(turn_number)
+    send({
+        "method": "turn/started",
+        "params": {"threadId": thread_id, "turn": {"id": turn_id}},
+    })
+    send({"id": turn_request["id"], "result": {"turn": {"id": turn_id}}})
+    send({
+        "method": "item/completed",
+        "params": {
+            "completedAtMs": 1,
+            "threadId": thread_id,
+            "turnId": turn_id,
+            "item": {"id": "message-" + turn_id, "type": "agentMessage", "text": turn_id},
+        },
+    })
+    send({
+        "method": "rawResponseItem/completed",
+        "params": {
+            "threadId": thread_id,
+            "turnId": turn_id,
+            "item": {
+                "id": "reasoning-" + turn_id,
+                "type": "reasoning",
+                "summary": [{"type": "summary_text", "text": "visible summary"}],
+                "content": [{"type": "reasoning_text", "text": "hidden reasoning"}],
+                "encrypted_content": "encrypted-hidden-payload",
+            },
+        },
+    })
+    if prompt_text == "missing-usage":
+        send({
+            "method": "turn/completed",
+            "params": {
+                "threadId": thread_id,
+                "turn": {"id": turn_id, "status": "completed"},
+            },
+        })
+        continue
+    raw = (
+        {
+            "inputTokens": 15,
+            "cachedInputTokens": 3,
+            "cacheWriteInputTokens": 1,
+            "outputTokens": 3,
+            "reasoningOutputTokens": 1,
+            "totalTokens": 18,
+        }
+        if turn_number == 2
+        else {
+            "inputTokens": 10,
+            "cachedInputTokens": 2,
+            "cacheWriteInputTokens": 1,
+            "outputTokens": 5,
+            "reasoningOutputTokens": 2,
+            "totalTokens": 15,
+        }
+    )
+    send({
+        "method": "rawResponse/completed",
+        "params": {
+            "responseId": "response-" + turn_id,
+            "threadId": thread_id,
+            "turnId": turn_id,
+            "usage": raw,
+        },
+    })
+    for field in cumulative:
+        cumulative[field] += raw[field]
+    reported = dict(cumulative)
+    if prompt_text == "bad-usage":
+        reported["totalTokens"] += 1
+    send({
+        "method": "thread/tokenUsage/updated",
+        "params": {
+            "threadId": thread_id,
+            "turnId": turn_id,
+            "tokenUsage": {"total": reported, "last": raw},
+        },
+    })
+    if prompt_text == "late-usage":
+        late_pending = True
+        late_turn_id = turn_id
+    send({
+        "method": "turn/completed",
+        "params": {"threadId": thread_id, "turn": {"id": turn_id, "status": "completed"}},
+    })
+    cleanup_request = receive()
+    assert cleanup_request is not None
+    assert cleanup_request["method"] == "thread/backgroundTerminals/clean"
+    assert cleanup_request["params"]["threadId"] == thread_id
+    send({"id": cleanup_request["id"], "result": {}})
+    list_request = receive()
+    assert list_request is not None
+    assert list_request["method"] == "thread/backgroundTerminals/list"
+    assert list_request["params"]["threadId"] == thread_id
+    send({"id": list_request["id"], "result": {"data": [], "nextCursor": None}})
+'''
+
+
+class CodexDriverProtocolTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        self.workspace = self.root / "workspace"
+        self.workspace.mkdir()
+        self.auth = self.root / "source-auth.json"
+        self.auth.write_text('{"token":"fixture"}\n', encoding="utf-8")
+        self.codex = self.root / "fake-codex"
+        self.codex.write_text(f"#!{sys.executable}\n" + FAKE_APP_SERVER, encoding="utf-8")
+        self.codex.chmod(0o700)
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def driver(self, **overrides: object) -> CodexDriver:
+        options: dict[str, object] = {
+            "codex_binary": self.codex,
+            "model": "test-model",
+            "reasoning_effort": "high",
+            "state_root": self.root / "state",
+            "auth_file": self.auth,
+            "disable_features": ["multi_agent"],
+        }
+        options.update(overrides)
+        return CodexDriver(**options)  # type: ignore[arg-type]
+
+    def test_app_server_retains_private_auth_and_resumes_same_thread(self) -> None:
+        schema = self.root / "schema.json"
+        schema.write_text('{"type":"object"}\n', encoding="utf-8")
+        driver = self.driver()
+        first = driver.run_turn(
+            prompt="first",
+            workspace=self.workspace,
+            artifact_dir=self.root / "artifacts-1",
+            timeout_seconds=5,
+            output_schema=schema,
+        )
+        self.assertEqual(first.exit_code, 0)
+        self.assertEqual(first.thread_id, "thread-test")
+        self.assertEqual(first.final_message, "turn-1")
+        self.assertEqual(first.usage["total_tokens"], 15)
+        self.assertEqual(first.usage["reasoning_output_tokens"], 2)
+        self.assertTrue(first.usage_complete)
+        self.assertTrue((self.root / "state" / "auth.json").is_file())
+        self.assertEqual(first.command[1:3], ["app-server", "--stdio"])
+
+        second = driver.run_turn(
+            prompt="repair",
+            workspace=self.workspace,
+            artifact_dir=self.root / "artifacts-2",
+            timeout_seconds=5,
+            thread_id=first.thread_id,
+        )
+        self.assertEqual(second.exit_code, 0)
+        self.assertEqual(second.thread_id, first.thread_id)
+        self.assertEqual(second.final_message, "turn-2")
+        self.assertTrue(second.usage_complete)
+        self.assertEqual(
+            second.usage,
+            {
+                "input_tokens": 15,
+                "cached_input_tokens": 3,
+                "cache_write_input_tokens": 1,
+                "output_tokens": 3,
+                "reasoning_output_tokens": 1,
+                "total_tokens": 18,
+            },
+        )
+        self.assertTrue((self.root / "state" / "auth.json").is_file())
+
+        observations = [
+            json.loads(line)
+            for line in (self.workspace / "observations.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        self.assertEqual([item["thread_method"] for item in observations], ["thread/start", "thread/start"])
+        self.assertEqual([item["turn_number"] for item in observations], [1, 2])
+        self.assertEqual(len({item["server_pid"] for item in observations}), 1)
+        self.assertTrue(all(item["auth_present_at_turn_start"] for item in observations))
+        self.assertTrue(all(item["experimental_raw_events"] for item in observations))
+        self.assertTrue(all(item["history_mode"] == "legacy" for item in observations))
+        self.assertTrue(all(item["thread_sandbox"] == "workspace-write" for item in observations))
+        self.assertTrue(
+            all(item["turn_sandbox_policy"]["type"] == "workspaceWrite" for item in observations)
+        )
+        self.assertEqual(observations[0]["output_schema"], {"type": "object"})
+        turn_record = json.loads(
+            (self.root / "artifacts-1" / "turn.json").read_text(encoding="utf-8")
+        )
+        self.assertFalse(turn_record["temporary_auth_removed_before_turn_start"])
+        self.assertTrue(turn_record["private_auth_retained_for_refresh"])
+        self.assertEqual(turn_record["transport"], "codex-app-server-stdio")
+        self.assertEqual(turn_record["raw_response_count"], 1)
+        self.assertGreaterEqual(turn_record["event_trace_redactions"], 2)
+        events_text = (self.root / "artifacts-1" / "events.jsonl").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("visible summary", events_text)
+        self.assertNotIn("hidden reasoning", events_text)
+        self.assertNotIn("encrypted-hidden-payload", events_text)
+        self.assertEqual(
+            (self.root / "artifacts-1" / "last_message.txt").read_text(encoding="utf-8"),
+            "turn-1",
+        )
+        self.assertIsNotNone(first.active_ended_perf_ns)
+        second_record = json.loads(
+            (self.root / "artifacts-2" / "turn.json").read_text(encoding="utf-8")
+        )
+        self.assertTrue(second_record["app_server_process_reused"])
+        self.assertTrue(second_record["background_terminal_cleanup"]["verified_empty"])
+        self.assertTrue(
+            second_record["post_terminal_telemetry_settle"][
+                "thread_read_ordering_barrier"
+            ]
+        )
+        self.assertFalse(
+            second_record["background_terminal_cleanup"][
+                "excluded_from_contestant_measurement"
+            ]
+        )
+        self.assertTrue(
+            second_record["post_terminal_telemetry_settle"][
+                "excluded_from_contestant_measurement"
+            ]
+        )
+        close_artifacts = self.root / "formalizer-session-close"
+        driver.close(artifact_dir=close_artifacts)
+        self.assertFalse((self.root / "state" / "auth.json").exists())
+        shutdown = json.loads(
+            (close_artifacts / "shutdown.json").read_text(encoding="utf-8")
+        )
+        self.assertTrue(shutdown["graceful"])
+        self.assertEqual(shutdown["returncode"], 0)
+        self.assertTrue(shutdown["stdout_drained_to_eof"])
+        self.assertEqual(shutdown["late_stdout_line_count"], 0)
+        self.assertIn(
+            "stderr emitted at app-server shutdown",
+            (close_artifacts / "stderr-after-last-turn.log").read_text(
+                encoding="utf-8"
+            ),
+        )
+
+    def test_late_raw_usage_is_drained_before_next_repair(self) -> None:
+        driver = self.driver()
+        first = driver.run_turn(
+            prompt="late-usage",
+            workspace=self.workspace,
+            artifact_dir=self.root / "late-artifacts-1",
+            timeout_seconds=5,
+        )
+        self.assertEqual(
+            first.usage,
+            {
+                "input_tokens": 14,
+                "cached_input_tokens": 3,
+                "cache_write_input_tokens": 1,
+                "output_tokens": 7,
+                "reasoning_output_tokens": 3,
+                "total_tokens": 21,
+            },
+        )
+        self.assertTrue(first.usage_complete)
+        second = driver.run_turn(
+            prompt="repair",
+            workspace=self.workspace,
+            artifact_dir=self.root / "late-artifacts-2",
+            timeout_seconds=5,
+            thread_id=first.thread_id,
+        )
+        self.assertEqual(second.usage["total_tokens"], 18)
+        self.assertTrue(second.usage_complete)
+        driver.close()
+
+    def test_driver_owned_control_state_stays_outside_artifacts_and_is_removed(self) -> None:
+        driver = self.driver(state_root=None)
+        owned = driver._owned_control_root
+        self.assertIsNotNone(owned)
+        assert owned is not None
+        self.assertTrue(owned.is_dir())
+        result = driver.run_turn(
+            prompt="first",
+            workspace=self.workspace,
+            artifact_dir=self.root / "artifacts-private-control",
+            timeout_seconds=5,
+        )
+        self.assertEqual(result.exit_code, 0)
+        self.assertTrue((driver.state_root / "auth.json").is_file())
+        driver.close()
+        self.assertFalse(owned.exists())
+
+    def test_refresh_rotation_is_shared_and_reloaded_before_repair(self) -> None:
+        driver = self.driver()
+        first = driver.run_turn(
+            prompt="rotate-auth",
+            workspace=self.workspace,
+            artifact_dir=self.root / "rotate-first",
+            timeout_seconds=5,
+        )
+        self.assertEqual(first.exit_code, 0)
+        rotated = b'{"token":"rotated-credential-value"}\n'
+        self.assertEqual(self.auth.read_bytes(), rotated)
+
+        auditor_rotation = b'{"token":"auditor-rotated-credential"}\n'
+        self.auth.write_bytes(auditor_rotation)
+        second = driver.run_turn(
+            prompt="repair",
+            workspace=self.workspace,
+            artifact_dir=self.root / "rotate-second",
+            timeout_seconds=5,
+            thread_id=first.thread_id,
+        )
+        self.assertEqual(second.exit_code, 0)
+        observations = [
+            json.loads(line)
+            for line in (self.workspace / "observations.jsonl")
+            .read_text(encoding="utf-8")
+            .splitlines()
+        ]
+        self.assertEqual(
+            observations[-1]["auth_sha256_at_turn_start"],
+            hashlib.sha256(auditor_rotation).hexdigest(),
+        )
+        driver.close()
+
+    def test_nonzero_app_server_shutdown_is_archived_and_rejected(self) -> None:
+        driver = self.driver()
+        result = driver.run_turn(
+            prompt="bad-shutdown",
+            workspace=self.workspace,
+            artifact_dir=self.root / "bad-shutdown-turn",
+            timeout_seconds=5,
+        )
+        self.assertEqual(result.exit_code, 0)
+        close_artifacts = self.root / "bad-shutdown-close"
+        with self.assertRaisesRegex(Exception, "did not exit cleanly"):
+            driver.close(artifact_dir=close_artifacts)
+        shutdown = json.loads(
+            (close_artifacts / "shutdown.json").read_text(encoding="utf-8")
+        )
+        self.assertFalse(shutdown["graceful"])
+        self.assertEqual(shutdown["returncode"], 7)
+
+    def test_protocol_message_flushed_only_at_close_rejects_condition(self) -> None:
+        driver = self.driver()
+        result = driver.run_turn(
+            prompt="late-on-close",
+            workspace=self.workspace,
+            artifact_dir=self.root / "late-close-turn",
+            timeout_seconds=5,
+        )
+        self.assertEqual(result.exit_code, 0)
+        close_root = self.root / "late-close-session"
+        with self.assertRaisesRegex(Exception, "after the final telemetry boundary"):
+            driver.close(artifact_dir=close_root)
+        shutdown = json.loads(
+            (close_root / "shutdown.json").read_text(encoding="utf-8")
+        )
+        self.assertTrue(shutdown["stdout_drained_to_eof"])
+        self.assertEqual(shutdown["late_stdout_line_count"], 1)
+
+    def test_provider_free_preflight_stops_before_turn_start(self) -> None:
+        driver = self.driver()
+        record = driver.preflight(
+            workspace=self.workspace,
+            artifact_dir=self.root / "preflight-artifacts",
+            timeout_seconds=5,
+        )
+        self.assertFalse(record["provider_call_permitted"])
+        self.assertFalse(record["turn_start_sent"])
+        self.assertTrue(record["temporary_auth_removed_after_thread_start"])
+        self.assertEqual(record["thread_id"], "thread-test")
+        self.assertFalse((self.root / "state" / "auth.json").exists())
+        self.assertFalse((self.workspace / "observations.jsonl").exists())
+
+    def test_bwrap_shape_forces_controlled_passwd_and_clears_environment(self) -> None:
+        toolchain = self.root / "toolchain"
+        toolchain.mkdir()
+        packages = self.root / "packages"
+        (packages / "mathlib" / ".lake" / "build" / "lib" / "lean").mkdir(parents=True)
+        bwrap = self.root / "bwrap"
+        offline_shell = self.root / "offline-shell"
+        for executable in (bwrap, offline_shell):
+            executable.write_text("fixture\n", encoding="utf-8")
+            executable.chmod(0o500)
+        artifacts = self.root / "shape-artifacts"
+        artifacts.mkdir()
+        driver = self.driver(
+            bwrap_binary=bwrap,
+            offline_shell=offline_shell,
+            toolchain_root=toolchain,
+            packages_root=packages,
+        )
+        inner = driver._app_server_command("/codex")
+        command = driver._bwrap_command(
+            inner,
+            workspace=self.workspace,
+            artifact_dir=artifacts,
+            output_schema=None,
+        )
+        self.assertIn("--clearenv", command)
+        self.assertIn(
+            ["--ro-bind", str((driver._identity_root / "passwd").resolve()), "/etc/passwd"],
+            [command[index : index + 3] for index in range(len(command) - 2)],
+        )
+        self.assertGreater(command.index("/etc/passwd"), command.index("/etc"))
+        self.assertIn(
+            ["--setenv", "SHELL", "/offline-bash"],
+            [command[index : index + 3] for index in range(len(command) - 2)],
+        )
+        self.assertIn(
+            ["--setenv", "USER", "bench"],
+            [command[index : index + 3] for index in range(len(command) - 2)],
+        )
+        self.assertEqual(command[-len(inner) :], inner)
+        self.assertEqual(inner[:3], ["/codex", "app-server", "--stdio"])
+        self.assertNotIn("/artifacts", command)
+        self.assertNotIn(str(self.auth), command)
+        passwd = (driver._identity_root / "passwd").read_text(encoding="utf-8")
+        self.assertEqual(passwd.split(":")[-1], "/offline-bash\n")
+
+    def test_malformed_telemetry_fails_closed_and_removes_auth(self) -> None:
+        driver = self.driver()
+        result = driver.run_turn(
+            prompt="bad-usage",
+            workspace=self.workspace,
+            artifact_dir=self.root / "bad-artifacts",
+            timeout_seconds=5,
+        )
+        self.assertNotEqual(result.exit_code, 0)
+        self.assertEqual(result.usage["total_tokens"], 15)
+        self.assertFalse((self.root / "state" / "auth.json").exists())
+        self.assertFalse((self.root / ".state-usage.json").exists())
+        record = json.loads(
+            (self.root / "bad-artifacts" / "turn.json").read_text(encoding="utf-8")
+        )
+        self.assertIn("malformed cumulative usage", record["protocol_error"])
+
+    def test_missing_post_terminal_telemetry_is_not_charged_as_time_limit(self) -> None:
+        driver = self.driver()
+        with mock.patch("codex_driver.POST_TERMINAL_TELEMETRY_TIMEOUT_SECONDS", 0.05):
+            result = driver.run_turn(
+                prompt="missing-usage",
+                workspace=self.workspace,
+                artifact_dir=self.root / "artifacts-missing-usage",
+                timeout_seconds=30,
+            )
+        self.assertEqual(result.exit_code, 70)
+        self.assertFalse(result.timed_out)
+        self.assertFalse(result.usage_complete)
+        self.assertEqual(result.failure_kind, "telemetry_invalid")
+        record = json.loads(
+            (self.root / "artifacts-missing-usage" / "turn.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertIn("telemetry", record["protocol_error"])
+        driver.close()
+
+    def test_security_sensitive_control_baseline_detects_mutation(self) -> None:
+        driver = self.driver()
+        first = driver.run_turn(
+            prompt="first",
+            workspace=self.workspace,
+            artifact_dir=self.root / "baseline-artifacts",
+            timeout_seconds=5,
+        )
+        self.assertEqual(first.exit_code, 0)
+        baseline = self.root / ".state-control-baseline.json"
+        self.assertTrue(baseline.is_file())
+        (self.root / "state" / "config.toml").write_text(
+            "fixture = false\n", encoding="utf-8"
+        )
+        with self.assertRaisesRegex(Exception, "control state changed"):
+            driver.run_turn(
+                prompt="repair",
+                workspace=self.workspace,
+                artifact_dir=self.root / "mutated-artifacts",
+                timeout_seconds=5,
+                thread_id=first.thread_id,
+            )
+        (self.root / "state" / "config.toml").write_text(
+            "fixture = true\n", encoding="utf-8"
+        )
+        driver.close()
+
+    def test_usage_rejects_overlapping_cache_breakdown(self) -> None:
+        malformed = {
+            "inputTokens": 10,
+            "cachedInputTokens": 7,
+            "cacheWriteInputTokens": 4,
+            "outputTokens": 2,
+            "reasoningOutputTokens": 1,
+            "totalTokens": 12,
+        }
+        self.assertIsNone(_normalize_usage_breakdown(malformed))
+        self.assertIsNone(_normalize_raw_usage(malformed))
+
+    def test_usage_applies_documented_cache_write_schema_default(self) -> None:
+        without_optional_cache_write = {
+            "inputTokens": 10,
+            "cachedInputTokens": 2,
+            "outputTokens": 3,
+            "reasoningOutputTokens": 1,
+            "totalTokens": 13,
+        }
+        expected = {
+            "input_tokens": 10,
+            "cached_input_tokens": 2,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3,
+            "reasoning_output_tokens": 1,
+            "total_tokens": 13,
+        }
+        self.assertEqual(_normalize_raw_usage(without_optional_cache_write), expected)
+        self.assertEqual(
+            _normalize_usage_breakdown(without_optional_cache_write), expected
+        )
+
+    def test_cold_resume_is_rejected_for_exact_raw_metering(self) -> None:
+        driver = self.driver()
+        first = driver.run_turn(
+            prompt="first",
+            workspace=self.workspace,
+            artifact_dir=self.root / "cold-first",
+            timeout_seconds=5,
+        )
+        driver.close()
+        replacement = self.driver()
+        with self.assertRaisesRegex(Exception, "cold thread/resume"):
+            replacement.run_turn(
+                prompt="repair",
+                workspace=self.workspace,
+                artifact_dir=self.root / "cold-repair",
+                timeout_seconds=5,
+                thread_id=first.thread_id,
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()
