@@ -12,7 +12,7 @@ installed run-highambench-experiments skill
         +--> Titan doctor (PDF/runtime/executable/hardware identities)
         |
         v
-outer systemd scope: fixed 8 CPUs / 32 GiB / 512 tasks / no swap
+transient systemd user service: fixed 8 CPUs / 32 GiB / 512 tasks / no swap
         |
         +--> trusted-control child: 8-GiB memory.low reservation
         `--> generated-command child: 24 GiB / 384 tasks / no swap
@@ -97,9 +97,14 @@ prompt appendix points to `/library/NumStability` and
 `LEAN_PATH`, and gives concrete `find`, `rg`, and `import NumStability`
 discovery/import examples.
 
-The systemd scope limits the whole benchmark process tree to the frozen eight
-CPUs, 32 GiB, 512 tasks, and zero swap. It delegates separate cgroup-v2 children
-for the trusted controller and model-generated commands. Commands are migrated
+The waited, piped transient systemd user service applies the frozen eight-CPU
+affinity and limits the whole benchmark process tree to 32 GiB, 512 tasks, and
+zero swap. A service-wide syscall filter prevents the controller, Codex, build
+tools, auditors, and all descendants from changing their inherited CPU
+affinity; each strict snapshot proves the denial with a no-op syscall canary.
+It delegates separate cgroup-v2 children for the trusted controller and
+model-generated commands. The generated-command seccomp policy repeats the
+affinity denial. Commands are migrated
 into a 24-GiB, 384-task, zero-swap child with CPU weight 100; the control child
 uses CPU weight 10000 and an 8-GiB `memory.low` reservation. The controller
 checks resource identities and command-child limit events at every attempt.
@@ -117,6 +122,7 @@ the frozen package closure, and—only for L—the frozen library objects.
 | Script | Responsibility |
 | --- | --- |
 | `tools/setup_titan.py` | Build and hash the private Titan deployment in a resumable, atomically published transaction without paid model calls. |
+| `tools/measure_library_build.py` | Clean and measure the full NumStability build under the fixed outer resource envelope, retaining authenticated build output and resource evidence. |
 | `tools/runtime_canary.py` | Prove the N/L import boundary with provider-free sandboxed compilations. |
 | `tools/titan_envelope.py` | Enter the exact CPU, RAM, and swap cgroup. |
 | `tools/run_benchmark.py` | Expose `verify-release`, `doctor`, `run`, and `status`. |
@@ -134,6 +140,14 @@ The historical `paper_bencmark/highambench/tools/runner.py` and
 ## Artifact layout
 
 ```text
+runtime/library/
+  snapshot.json
+  source/...
+  olean/...
+  build/
+    build-record.json
+    build-output.log
+    gnu-time.txt
 runs/
   index/P01-T2.json
   pairs/<run-id>/
@@ -158,6 +172,17 @@ runs/
       roles/... fresh auditor transcripts and usage
       decision.json
 ```
+
+The library build record is provisioning evidence and is never added to either
+condition's contestant clock. It identifies the clean project build after the
+frozen dependency cache is prepared, the exact toolchain and source commits,
+all dependency commits and compiled OLean cache digests, clean source and
+project-configuration digests before and after, and the complete sanitized
+subprocess environment. It also records the enforced
+eight-CPU/32-GiB/512-task/no-swap service, monotonic and UTC time, GNU `time`
+resource metrics, strict cgroup counter deltas, source/object size counts, and
+hashes of the retained raw outputs. The library snapshot and deployment record
+bind the complete build-evidence tree so a later doctor detects any change.
 
 The records contain exact prompt and candidate hashes, source line counts,
 observable messages/reasoning summaries, tool events and commands, exact

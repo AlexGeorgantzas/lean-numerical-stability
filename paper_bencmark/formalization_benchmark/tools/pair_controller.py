@@ -20,6 +20,7 @@ from common import (
     bounded_tree_usage,
     canonical_json_bytes,
     discover_lean_declaration_names,
+    file_tree_fingerprint,
     freeze_candidate,
     load_json,
     make_repair_feedback,
@@ -38,6 +39,7 @@ from formalization_validator import validate_candidate
 from hardware import snapshot_hardware, verify_frozen_hardware_identity
 from lean_sandbox import compiler_command, extractor_command
 from manifest_control import MANIFEST_PATH, ROOT, task_record, verify_manifest
+from measure_library_build import validate_build_record
 
 
 TERMINAL_CONDITION_STATES = {
@@ -571,6 +573,7 @@ class PairController:
                 or auth_metadata.st_size > 4 * 1024 * 1024
             ):
                 raise BenchmarkError("Codex auth store permissions or type are unsafe")
+        deployment_record = load_json(self.deployment.path)
         library = load_json(self.deployment.library_snapshot_record)
         if library.get("schema_version") != "numstability-formalization-snapshot-1":
             raise BenchmarkError("unsupported NumStability snapshot record")
@@ -581,8 +584,66 @@ class PairController:
         for label, root, section_name in (
             ("NumStability source", self.deployment.library_source.parent, "source"),
             ("NumStability olean", self.deployment.library_olean, "olean"),
+            (
+                "NumStability setup build evidence",
+                self.deployment.library_snapshot_record.parent / "build",
+                "build",
+            ),
         ):
             verify_tree_manifest(root, library.get(section_name), label=label)
+        build_root = self.deployment.library_snapshot_record.parent / "build"
+        build_record_path = build_root / "build-record.json"
+        build_record = load_json(build_record_path)
+        validate_build_record(
+            build_record,
+            expected_source_commit=str(library["commit"]),
+            expected_mathlib_commit=str(self.config["mathlib_commit"]),
+            expected_toolchain=str(self.config["lean_toolchain"]),
+            expected_tool_hashes={
+                "lake_sha256": sha256_file(
+                    self.deployment.toolchain_root / "bin" / "lake"
+                ),
+                "lean_sha256": sha256_file(
+                    self.deployment.toolchain_root / "bin" / "lean"
+                ),
+                "gnu_time_sha256": sha256_file(Path("/usr/bin/time")),
+            },
+        )
+        deployed_output_tree = {
+            "present": True,
+            **file_tree_fingerprint(self.deployment.library_olean),
+        }
+        if build_record.get("generated_output_tree") != deployed_output_tree:
+            raise BenchmarkError("deployed NumStability build output digest changed")
+        deployed_olean_inventory = {
+            "present": True,
+            **file_tree_fingerprint(self.deployment.library_olean, suffix=".olean"),
+        }
+        if build_record.get("generated_olean") != deployed_olean_inventory:
+            raise BenchmarkError("deployed NumStability OLean inventory changed")
+        for section_name, expected_name in (
+            ("build_output", "build-output.log"),
+            ("gnu_time", "gnu-time.txt"),
+        ):
+            section = build_record.get(section_name)
+            if not isinstance(section, Mapping) or section.get("relative_path") != expected_name:
+                raise BenchmarkError(f"NumStability {section_name} record is malformed")
+            artifact = build_root / expected_name
+            if (
+                not artifact.is_file()
+                or artifact.is_symlink()
+                or section.get("sha256") != sha256_file(artifact)
+                or section.get("bytes") != artifact.stat().st_size
+            ):
+                raise BenchmarkError(f"NumStability {section_name} artifact changed")
+        for hardware_field in ("hardware_before", "hardware_after"):
+            observed = build_record.get(hardware_field)
+            if not isinstance(observed, Mapping) or observed.get("admitted") is not True:
+                raise BenchmarkError("NumStability build hardware envelope was not admitted")
+            if self.strict_hardware:
+                verify_frozen_hardware_identity(
+                    observed, deployment_record.get("hardware_identity")
+                )
         runtime = load_json(self.deployment.runtime_snapshot_record)
         if runtime.get("schema_version") != "formalization-runtime-snapshot-1":
             raise BenchmarkError("unsupported Lean/Mathlib snapshot record")
@@ -652,7 +713,6 @@ class PairController:
             or mathlib_commit.stdout.strip() != self.config["mathlib_commit"]
         ):
             raise BenchmarkError("deployed Mathlib commit mismatch")
-        deployment_record = load_json(self.deployment.path)
         if self.strict_hardware:
             expected_release_hash = deployment_record.get("release_manifest_sha256")
             if expected_release_hash != sha256_file(MANIFEST_PATH):
@@ -665,6 +725,11 @@ class PairController:
                     "library_snapshot_record_sha256",
                     self.deployment.library_snapshot_record,
                     "NumStability snapshot record",
+                ),
+                (
+                    "library_build_record_sha256",
+                    build_record_path,
+                    "NumStability setup build record",
                 ),
                 (
                     "runtime_snapshot_record_sha256",
@@ -782,6 +847,17 @@ class PairController:
             "numstability_snapshot_record_sha256": sha256_file(
                 self.deployment.library_snapshot_record
             ),
+            "numstability_build_record_sha256": sha256_file(build_record_path),
+            "numstability_build": {
+                "elapsed_monotonic_seconds": build_record.get(
+                    "elapsed_monotonic_seconds"
+                ),
+                "generated_olean": build_record.get("generated_olean"),
+                "dependency_olean_file_count": build_record.get("cache_state", {})
+                .get("dependency_closure_before", {})
+                .get("dependency_olean_file_count"),
+                "benchmark_charged": False,
+            },
             "runtime_snapshot_record_sha256": sha256_file(
                 self.deployment.runtime_snapshot_record
             ),

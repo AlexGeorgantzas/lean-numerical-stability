@@ -19,6 +19,8 @@ if str(TOOLS) not in sys.path:
 
 from common import (  # noqa: E402
     BenchmarkError,
+    file_tree_fingerprint,
+    sha256_bytes,
     sha256_file,
     treatment_free_runtime_manifest,
     tree_manifest,
@@ -40,22 +42,186 @@ class PairControllerDryRunTests(unittest.TestCase):
         lean = toolchain / "bin" / "lean"
         lean.write_text("#!/bin/sh\necho Lean-version-test\n", encoding="utf-8")
         lean.chmod(0o700)
+        lake = toolchain / "bin" / "lake"
+        lake.write_text("#!/bin/sh\necho Lake-version-test\n", encoding="utf-8")
+        lake.chmod(0o700)
         packages = self.root / "packages"
         (packages / "mathlib" / ".lake" / "build" / "lib" / "lean").mkdir(
             parents=True
         )
         library_source = self.root / "library" / "source" / "NumStability"
         library_olean = self.root / "library" / "olean"
+        library_build = self.root / "library" / "build"
         library_source.mkdir(parents=True)
         library_olean.mkdir(parents=True)
+        library_build.mkdir(parents=True)
+        (library_olean / "NumStability.olean").write_bytes(b"fixture-olean")
+        build_output = library_build / "build-output.log"
+        build_time = library_build / "gnu-time.txt"
+        build_output.write_text("fixture build\n", encoding="utf-8")
+        build_time.write_text("fixture time\n", encoding="utf-8")
+        source_commit = "45813a95dacf577461bae13f033af0dbc985a225"
+        mathlib_commit = "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b"
+        dependency_packages = [
+            {
+                "name": "mathlib",
+                "manifest_revision": mathlib_commit,
+                "head_commit": mathlib_commit,
+                "git_clean": True,
+                "olean": {
+                    "present": True,
+                    "file_count": 1,
+                    "bytes": 13,
+                    "tree_sha256": "d" * 64,
+                },
+            }
+        ]
+        dependency_closure = {
+            "lake_manifest_sha256": "c" * 64,
+            "package_count": 1,
+            "dependency_olean_file_count": 1,
+            "dependency_olean_bytes": 13,
+            "closure_sha256": sha256_bytes(
+                json.dumps(
+                    dependency_packages, sort_keys=True, separators=(",", ":")
+                ).encode("utf-8")
+            ),
+            "packages": dependency_packages,
+        }
+        git_state = {"head_commit": source_commit, "clean": True}
+        source_tree_fingerprint = {
+            "file_count": 0,
+            "bytes": 0,
+            "tree_sha256": "a" * 64,
+        }
+        root_module_fingerprint = {"bytes": 0, "sha256": "b" * 64}
+        source_fingerprint = {
+            "source_tree": source_tree_fingerprint,
+            "root_module": root_module_fingerprint,
+            "combined_sha256": sha256_bytes(
+                json.dumps(
+                    {
+                        "source_tree": source_tree_fingerprint,
+                        "root_module": root_module_fingerprint,
+                    },
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            ),
+        }
+        project_configuration = {
+            "lakefile.toml": {"bytes": 1, "sha256": "1" * 64},
+            "lake-manifest.json": {"bytes": 1, "sha256": "c" * 64},
+            "lean-toolchain": {
+                "bytes": 1,
+                "sha256": "2" * 64,
+                "value": "leanprover/lean4:v4.29.0-rc3",
+            },
+        }
+        cgroup = {
+            "memory_current_bytes": 1024,
+            "memory_peak_bytes": 2048,
+            "memory_swap_current_bytes": 0,
+            "pids_current": 2,
+            "memory_events": {"max": 0, "oom": 0, "oom_kill": 0},
+            "pids_events": {"max": 0},
+            "cpu_stat": {"usage_usec": 1, "user_usec": 1, "system_usec": 0},
+        }
+        build_record = {
+                    "schema_version": "numstability-setup-build-1",
+                    "benchmark_charged": False,
+                    "source_commit": source_commit,
+                    "mathlib_commit": mathlib_commit,
+                    "lean_toolchain": "leanprover/lean4:v4.29.0-rc3",
+                    "logical_command": ["lake", "build", "NumStability"],
+                    "build_environment": {
+                        "CC": "/usr/bin/cc",
+                        "HOME": "/nonexistent",
+                        "LANG": "C",
+                        "LC_ALL": "C",
+                        "PATH": "/toolchain/bin:/usr/bin:/bin",
+                        "TMPDIR": "/tmp",
+                        "TZ": "UTC",
+                    },
+                    "tool_versions": {
+                        "lake": "Lake-version-test",
+                        "lean": "Lean-version-test",
+                        "gnu_time": "time (GNU Time) test",
+                    },
+                    "tool_hashes": {
+                        "lake_sha256": sha256_file(lake),
+                        "lean_sha256": sha256_file(lean),
+                        "gnu_time_sha256": sha256_file(Path("/usr/bin/time")),
+                    },
+                    "cache_state": {
+                        "dependency_cache_prepared_before_measurement": True,
+                        "project_cleaned_immediately_before_measurement": True,
+                        "prebuild_project_tree": {
+                            "present": False,
+                            "file_count": 0,
+                            "bytes": 0,
+                            "tree_sha256": "f" * 64,
+                        },
+                        "dependency_closure_before": dependency_closure,
+                        "dependency_closure_after": dependency_closure,
+                        "dependency_closure_unchanged": True,
+                    },
+                    "source_inputs": {
+                        "git_before": git_state,
+                        "git_after": git_state,
+                        "fingerprint_before": source_fingerprint,
+                        "fingerprint_after": source_fingerprint,
+                        "unchanged": True,
+                    },
+                    "project_configuration": {
+                        "before": project_configuration,
+                        "after": project_configuration,
+                        "unchanged": True,
+                    },
+                    "returncode": 0,
+                    "timed_out": False,
+                    "output_limit_exceeded": False,
+                    "resource_limit_exceeded": False,
+                    "hardware_before": {"admitted": True, "cgroup_v2_path": "/fixture"},
+                    "hardware_after": {"admitted": True, "cgroup_v2_path": "/fixture"},
+                    "cgroup_before": cgroup,
+                    "cgroup_after": cgroup,
+                    "cgroup_counter_delta": {
+                        "cpu_stat": {"usage_usec": 0, "user_usec": 0, "system_usec": 0},
+                        "memory_events": {"max": 0, "oom": 0, "oom_kill": 0},
+                        "pids_events": {"max": 0},
+                    },
+                    "generated_output_tree": {
+                        "present": True,
+                        **file_tree_fingerprint(library_olean),
+                    },
+                    "generated_olean": {
+                        "present": True,
+                        **file_tree_fingerprint(library_olean, suffix=".olean"),
+                    },
+                    "build_output": {
+                        "relative_path": build_output.name,
+                        "bytes": build_output.stat().st_size,
+                        "sha256": sha256_file(build_output),
+                    },
+                    "gnu_time": {
+                        "relative_path": build_time.name,
+                        "bytes": build_time.stat().st_size,
+                        "sha256": sha256_file(build_time),
+                    },
+                }
+        (library_build / "build-record.json").write_text(
+            json.dumps(build_record), encoding="utf-8"
+        )
         snapshot = self.root / "library" / "snapshot.json"
         snapshot.write_text(
             json.dumps(
                 {
                     "schema_version": "numstability-formalization-snapshot-1",
-                    "commit": "45813a95dacf577461bae13f033af0dbc985a225",
+                    "commit": source_commit,
                     "source": tree_manifest(library_source.parent),
                     "olean": tree_manifest(library_olean),
+                    "build": tree_manifest(library_build),
                 }
             ),
             encoding="utf-8",
@@ -66,7 +232,7 @@ class PairControllerDryRunTests(unittest.TestCase):
                 {
                     "schema_version": "formalization-runtime-snapshot-1",
                     "lean_toolchain": "leanprover/lean4:v4.29.0-rc3",
-                    "mathlib_commit": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
+                    "mathlib_commit": mathlib_commit,
                     "toolchain": tree_manifest(toolchain),
                     "packages": tree_manifest(packages),
                     "condition_n_treatment_absence": treatment_free_runtime_manifest(
@@ -172,6 +338,12 @@ class PairControllerDryRunTests(unittest.TestCase):
         self.assertEqual(
             len(list((self.deployment.run_root / "preflights").iterdir())), 2
         )
+
+    def test_doctor_rejects_mutated_library_build_output(self) -> None:
+        output = self.deployment.library_snapshot_record.parent / "build" / "build-output.log"
+        output.write_text("mutated build evidence\n", encoding="utf-8")
+        with self.assertRaisesRegex(BenchmarkError, "setup build evidence"):
+            self.controller().run("P01-T2", dry_run=True)
 
     def test_reissuing_live_run_resumes_between_sealed_conditions(self) -> None:
         controller = self.controller()

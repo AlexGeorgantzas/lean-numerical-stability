@@ -99,6 +99,9 @@ their authenticated outputs jointly confirm all of the following:
   the separately hashed encouragement appendix;
 - N has no tool-visible NumStability bytes or metadata, while L has exactly the
   frozen authenticated source and compiled snapshot;
+- the NumStability snapshot includes an authenticated clean-build record,
+  complete build output, raw GNU `time` output, and admitted start/end hardware
+  observations, all classified as uncharged deployment evidence;
 - the prior target, shared task scaffold, gold Lean, proof, and prior audit
   artifacts are absent from both contestant and candidate-auditor views;
 - the frozen Lean, Mathlib, model, reasoning effort, tool allowlist, runner,
@@ -299,11 +302,16 @@ transitions.
 
 Record the effective CPU set, memory and swap limits, CPU/host identity, and
 isolation identity at the start and end of every condition attempt. The outer
-cgroup is fixed at eight CPUs, 32 GiB, 512 tasks, and no swap. Generated command
-trees are additionally limited to 24 GiB, 384 tasks, and no swap, while the
-trusted controller has an 8-GiB `memory.low` reservation. Command-child limit
-events are terminal evidence. Other operating-system resource counters that
-are reported are observations, not frozen admission criteria.
+service enforces affinity to eight CPUs plus cgroup limits of 32 GiB, 512 tasks,
+and no swap. Generated command trees are additionally limited to 24 GiB, 384
+tasks, and no swap, while the trusted controller has an 8-GiB `memory.low`
+reservation. A service-wide syscall filter denies affinity changes for the
+controller, Codex, build tools, auditors, and descendants; the command seccomp
+policy independently repeats that denial. Every strict hardware snapshot runs
+a no-op affinity syscall canary and fails unless the kernel rejects it.
+Command-child limit events are terminal evidence. Other operating-system
+resource counters that are reported are observations, not frozen admission
+criteria.
 
 Never request or log hidden chain-of-thought. Never describe visible reasoning
 summaries or ordinary token counts as chain-of-thought. Keep system

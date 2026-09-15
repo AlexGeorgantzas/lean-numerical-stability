@@ -122,6 +122,12 @@ validation/audit overhead, classifications, and artifact paths. Distinguish
 `faithful`, `attempt_limit`, `time_limit`, validation failure, audit-system
 incident, infrastructure incident, and invalid telemetry.
 
+When setup status or deployment provenance is in scope, also report the
+authenticated NumStability clean-build record and its hardware envelope. Keep
+that one-time wall/CPU/resource measurement explicitly separate from every
+contestant clock; its record, complete build output, and raw GNU `time` output
+live under the private deployment's `runtime/library/build/` directory.
+
 Never request, expose, reconstruct, store, or claim to have recorded hidden
 chain-of-thought. The allowed trace comprises visible messages, exposed
 reasoning summaries when the interface provides them, provider-reported input,

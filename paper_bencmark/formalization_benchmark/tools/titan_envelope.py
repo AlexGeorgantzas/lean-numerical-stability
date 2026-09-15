@@ -8,7 +8,11 @@ import sys
 from pathlib import Path
 
 from common import BenchmarkError
-from hardware import EXPECTED_MEMORY_BYTES, EXPECTED_TASKS_MAX, host_cpu_allowlist
+from hardware import (
+    EXPECTED_MEMORY_BYTES,
+    EXPECTED_TASKS_MAX,
+    systemd_service_envelope_prefix,
+)
 
 
 MARKER = "HIGHAMBENCH_TITAN_ENVELOPE"
@@ -89,7 +93,6 @@ def main() -> int:
     systemd_run = shutil.which("systemd-run")
     if systemd_run is None:
         raise BenchmarkError("systemd-run is required to enforce the Titan envelope")
-    cpus = host_cpu_allowlist()
     deployment = os.environ.get(DEPLOYMENT_VARIABLE)
     deployment_digest = os.environ.get(DEPLOYMENT_DIGEST_VARIABLE)
     if not deployment or not deployment_digest:
@@ -97,22 +100,7 @@ def main() -> int:
             "the deployment path and digest are required by the installed Titan launcher"
         )
     command = [
-        systemd_run,
-        "--user",
-        "--scope",
-        "--quiet",
-        "--wait",
-        "--collect",
-        "--property",
-        f"AllowedCPUs={cpus}",
-        "--property",
-        f"MemoryMax={EXPECTED_MEMORY_BYTES}",
-        "--property",
-        "MemorySwapMax=0",
-        "--property",
-        f"TasksMax={EXPECTED_TASKS_MAX}",
-        "--property",
-        "Delegate=yes",
+        *systemd_service_envelope_prefix(systemd_run),
         "--setenv",
         f"{MARKER}=1",
         "--setenv",

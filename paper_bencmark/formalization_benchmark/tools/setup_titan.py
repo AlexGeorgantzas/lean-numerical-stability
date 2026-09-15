@@ -10,11 +10,12 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from codex_driver import CodexDriver
 from common import (
     BenchmarkError,
+    file_tree_fingerprint,
     minimal_system_mount_args,
     sha256_bytes,
     sha256_file,
@@ -28,8 +29,14 @@ from common import (
 )
 from deployment import Deployment
 from formalization_validator import run_bounded_command
-from hardware import frozen_hardware_identity, host_cpu_selection, snapshot_hardware
+from hardware import (
+    frozen_hardware_identity,
+    host_cpu_selection,
+    snapshot_hardware,
+    systemd_service_envelope_prefix,
+)
 from manifest_control import EXPECTED_BASE_COMMIT, task_record, verify_manifest
+from measure_library_build import validate_build_record
 from runtime_canary import run_runtime_canaries
 
 
@@ -68,6 +75,66 @@ def command_path(name: str) -> Path:
     if raw is None:
         raise BenchmarkError(f"required Titan command is missing: {name}")
     return Path(raw).resolve()
+
+
+def measured_build_service_environment(deployment_root: Path) -> dict[str, str]:
+    """Prepare stable, private paths passed into the measured build service."""
+
+    tooling_root = deployment_root.parent / "tooling"
+    paths = {
+        "TMPDIR": tooling_root / "tmp",
+        "XDG_CACHE_HOME": tooling_root / "cache",
+        "ELAN_HOME": tooling_root / "elan",
+    }
+    for path in (tooling_root, *paths.values()):
+        path.mkdir(parents=True, exist_ok=True, mode=0o700)
+        metadata = path.lstat()
+        if (
+            path.is_symlink()
+            or not path.is_dir()
+            or metadata.st_uid != os.getuid()
+            or metadata.st_mode & 0o077
+        ):
+            raise BenchmarkError(f"measured-build tooling path is unsafe: {path.name}")
+    return {key: str(path.resolve()) for key, path in sorted(paths.items())}
+
+
+def measured_build_command(
+    *,
+    systemd_run: Path,
+    build_runner: Path,
+    checkout: Path,
+    artifact_root: Path,
+    toolchain_root: Path,
+    expected_commit: str,
+    mathlib_commit: str,
+    lean_toolchain: str,
+    service_environment: Mapping[str, str],
+) -> list[str]:
+    environment_arguments = [
+        argument
+        for key, value in sorted(service_environment.items())
+        for argument in ("--setenv", f"{key}={value}")
+    ]
+    return [
+        *systemd_service_envelope_prefix(str(systemd_run)),
+        *environment_arguments,
+        *isolated_runner_command(
+            build_runner,
+            "--checkout",
+            str(checkout),
+            "--artifact-root",
+            str(artifact_root),
+            "--toolchain-root",
+            str(toolchain_root),
+            "--expected-commit",
+            expected_commit,
+            "--mathlib-commit",
+            mathlib_commit,
+            "--lean-toolchain",
+            lean_toolchain,
+        ),
+    ]
 
 
 def copy_tree_read_only(source: Path, destination: Path) -> None:
@@ -543,8 +610,30 @@ def _install_once(
     manifest, config = verify_manifest()
     if sys.version_info < (3, 11):
         raise BenchmarkError("Titan requires Python 3.11 or newer")
-    for name in ("git", "cc", "bwrap", "pdftotext", "elan", "lake", "systemd-run"):
+    for name in (
+        "git",
+        "cc",
+        "bwrap",
+        "pdftotext",
+        "elan",
+        "lake",
+        "systemd-run",
+        "loginctl",
+        "rg",
+        "time",
+    ):
         command_path(name)
+    if command_path("rg") != Path("/usr/bin/rg"):
+        raise BenchmarkError("Titan requires ripgrep at /usr/bin/rg for the L sandbox")
+    if command_path("time") != Path("/usr/bin/time"):
+        raise BenchmarkError("Titan requires GNU time at /usr/bin/time")
+    if "GNU Time" not in run(["/usr/bin/time", "--version"]):
+        raise BenchmarkError("/usr/bin/time is not GNU time")
+    linger = run(
+        ["loginctl", "show-user", str(os.getuid()), "--property=Linger", "--value"]
+    )
+    if linger != "yes":
+        raise BenchmarkError("Titan requires user-manager lingering for long benchmark runs")
     codex = Path(args.codex_binary).expanduser().resolve() if args.codex_binary else command_path("codex")
     auth_file = Path(args.auth_file).expanduser().resolve()
     if not auth_file.is_file():
@@ -655,13 +744,74 @@ def _install_once(
             raise BenchmarkError("NumStability checkout resolved to the wrong commit")
         run(["lake", "update"], cwd=checkout)
         run(["lake", "exe", "cache", "get"], cwd=checkout)
-        run(["lake", "build", "NumStability"], cwd=checkout)
+        build_root = library_root / "build"
+        build_runner = frozen_benchmark_root / "tools" / "measure_library_build.py"
+        if not build_runner.is_file() or build_runner.is_symlink():
+            raise BenchmarkError("frozen release is missing the library build measurer")
+        build_service_environment = measured_build_service_environment(deployment_root)
+        run(
+            measured_build_command(
+                systemd_run=command_path("systemd-run"),
+                build_runner=build_runner,
+                checkout=checkout,
+                artifact_root=build_root,
+                toolchain_root=toolchain_root,
+                expected_commit=FROZEN_LIBRARY_COMMIT,
+                mathlib_commit=str(config["mathlib_commit"]),
+                lean_toolchain=FROZEN_TOOLCHAIN,
+                service_environment=build_service_environment,
+            ),
+            cwd=checkout,
+        )
+        build_record_path = build_root / "build-record.json"
+        if not build_record_path.is_file() or build_record_path.is_symlink():
+            raise BenchmarkError("measured NumStability build record is missing")
+        try:
+            build_record = json.loads(
+                stable_regular_bytes(build_record_path).decode("utf-8")
+            )
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise BenchmarkError("measured NumStability build record is malformed") from error
+        if not isinstance(build_record, dict):
+            raise BenchmarkError("measured NumStability build record is not an object")
+        validate_build_record(
+            build_record,
+            expected_source_commit=FROZEN_LIBRARY_COMMIT,
+            expected_mathlib_commit=str(config["mathlib_commit"]),
+            expected_toolchain=FROZEN_TOOLCHAIN,
+            expected_tool_hashes={
+                "lake_sha256": sha256_file(toolchain_root / "bin" / "lake"),
+                "lean_sha256": sha256_file(toolchain_root / "bin" / "lean"),
+                "gnu_time_sha256": sha256_file(Path("/usr/bin/time")),
+            },
+        )
+        generated_root = checkout / ".lake" / "build" / "lib" / "lean"
+        expected_generated_tree = {"present": True, **file_tree_fingerprint(generated_root)}
+        if build_record.get("generated_output_tree") != expected_generated_tree:
+            raise BenchmarkError("measured NumStability build output digest changed")
+        expected_generated_olean = {
+            "present": True,
+            **file_tree_fingerprint(generated_root, suffix=".olean"),
+        }
+        if build_record.get("generated_olean") != expected_generated_olean:
+            raise BenchmarkError("measured NumStability OLean inventory changed")
         source_root = library_root / "source"
         olean_root = library_root / "olean"
         copy_tree_read_only(checkout / "NumStability", source_root / "NumStability")
         shutil.copyfile(checkout / "NumStability.lean", source_root / "NumStability.lean")
         (source_root / "NumStability.lean").chmod(0o400)
         copy_tree_read_only(checkout / ".lake" / "build" / "lib" / "lean", olean_root)
+        published_generated_tree = {"present": True, **file_tree_fingerprint(olean_root)}
+        if build_record.get("generated_output_tree") != published_generated_tree:
+            raise BenchmarkError("published NumStability build output changed during copy")
+        published_generated_olean = {
+            "present": True,
+            **file_tree_fingerprint(olean_root, suffix=".olean"),
+        }
+        if build_record.get("generated_olean") != published_generated_olean:
+            raise BenchmarkError("published NumStability OLean inventory changed during copy")
+
+    make_tree_read_only(library_root / "build")
 
     library_record = {
         "schema_version": "numstability-formalization-snapshot-1",
@@ -669,6 +819,7 @@ def _install_once(
         "created_at_utc": utc_now(),
         "source": tree_manifest(library_root / "source"),
         "olean": tree_manifest(library_root / "olean"),
+        "build": tree_manifest(library_root / "build"),
     }
     library_record_path = library_root / "snapshot.json"
     write_json_atomic(library_record_path, library_record, mode=0o400)
@@ -727,6 +878,10 @@ def _install_once(
         "library_olean": str(published(library_root / "olean")),
         "library_snapshot_record": str(published(library_record_path)),
         "library_snapshot_record_sha256": sha256_file(library_record_path),
+        "library_build_record": str(published(library_root / "build" / "build-record.json")),
+        "library_build_record_sha256": sha256_file(
+            library_root / "build" / "build-record.json"
+        ),
         "runtime_snapshot_record": str(published(runtime_record_path)),
         "runtime_snapshot_record_sha256": sha256_file(runtime_record_path),
         "visible_system_runtime_record": str(published(visible_system_runtime_path)),

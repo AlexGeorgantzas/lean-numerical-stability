@@ -541,6 +541,44 @@ def tree_manifest(root: Path) -> dict[str, Any]:
     return {"entries": entries, "tree_sha256": sha256_bytes(payload)}
 
 
+def file_tree_fingerprint(root: Path, *, suffix: str | None = None) -> dict[str, Any]:
+    """Return a compact, content-only fingerprint of regular files in a tree.
+
+    ``tree_manifest`` remains the canonical frozen-tree record.  This compact
+    form is useful when the same bytes are copied into a read-only deployment:
+    it deliberately ignores permission changes while authenticating every
+    selected relative path, size, and file digest.  Symlinks matching the
+    requested suffix are rejected instead of being silently omitted.
+    """
+
+    manifest = tree_manifest(root)
+    selected: list[dict[str, Any]] = []
+    for entry in manifest["entries"]:
+        relative = entry["relative_path"]
+        matches = suffix is None or relative.endswith(suffix)
+        if entry["kind"] == "symlink" and matches:
+            raise BenchmarkError(
+                f"fingerprinted tree contains a selected symlink: {relative}"
+            )
+        if entry["kind"] != "file" or not matches:
+            continue
+        selected.append(
+            {
+                "relative_path": relative,
+                "bytes": entry["bytes"],
+                "sha256": entry["sha256"],
+            }
+        )
+    payload = json.dumps(selected, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
+    return {
+        "file_count": len(selected),
+        "bytes": sum(int(entry["bytes"]) for entry in selected),
+        "tree_sha256": sha256_bytes(payload),
+    }
+
+
 def bounded_tree_usage(
     root: Path, *, maximum_entries: int, maximum_bytes: int
 ) -> dict[str, int]:

@@ -47,10 +47,22 @@ Use `--dry-run` with `run` to exercise admission, staging, condition isolation,
 and hashing without making provider calls or consuming the task's one official
 pair slot.
 
-Every real run enters an outer cgroup limited to the setup-frozen eight logical
-CPUs, 32 GiB RAM, 512 tasks, and no swap. Generated shell-command trees are
-additionally confined to a delegated child cgroup limited to 24 GiB RAM, 384
-tasks, and no swap, leaving protected capacity for the trusted controller.
+Every real run enters a transient user service with systemd-enforced affinity
+to the setup-frozen eight logical CPUs and cgroup limits of 32 GiB RAM, 512
+tasks, and no swap. Generated shell-command trees are additionally confined to
+a delegated child cgroup limited to 24 GiB RAM, 384 tasks, and no swap, leaving
+protected capacity for the trusted controller. The outer service denies
+affinity changes throughout its process tree, every strict hardware snapshot
+tests that denial, and the generated-command seccomp policy repeats it.
+
+Setup also performs one clean full build of the frozen NumStability snapshot
+after preparing its dependency cache. That build runs in the same fixed outer
+hardware envelope but is never charged to either contestant. Its wall/CPU
+time, peak memory and other GNU `time` statistics, hardware/cgroup snapshots,
+sanitized environment, source/configuration and dependency-cache digests,
+source/object counts, complete build output, and hashes are retained under
+`runtime/library/build/` in the private deployment and authenticated by every
+doctor run.
 
 ## Private inputs
 

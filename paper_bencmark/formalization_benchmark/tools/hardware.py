@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import errno
 import os
 import platform
 import re
@@ -79,6 +80,24 @@ def host_cpu_selection() -> list[int]:
     return available[:EXPECTED_LOGICAL_CPUS]
 
 
+def affinity_mutation_canary(affinity: list[int]) -> dict[str, Any]:
+    """Prove that the outer service denies affinity changes for descendants."""
+
+    if not hasattr(os, "sched_setaffinity"):
+        return {"attempted": False, "denied": False, "errno": None}
+    try:
+        # Setting even the unchanged mask invokes sched_setaffinity without
+        # perturbing the process if a filter was accidentally omitted.
+        os.sched_setaffinity(0, set(affinity))
+    except OSError as error:
+        return {
+            "attempted": True,
+            "denied": error.errno in {errno.EPERM, errno.EACCES},
+            "errno": error.errno,
+        }
+    return {"attempted": True, "denied": False, "errno": None}
+
+
 def frozen_hardware_identity(
     snapshot: Mapping[str, Any], *, affinity_cpus: list[int] | None = None
 ) -> dict[str, Any]:
@@ -154,6 +173,11 @@ def snapshot_hardware(*, strict: bool) -> dict[str, Any]:
             if line.lower().startswith("model name") and ":" in line
         }
     )
+    mutation_canary = (
+        affinity_mutation_canary(affinity)
+        if strict
+        else {"attempted": False, "denied": None, "errno": None}
+    )
     record = {
         "recorded_at_utc": utc_now(),
         "platform": platform.platform(),
@@ -178,14 +202,20 @@ def snapshot_hardware(*, strict: bool) -> dict[str, Any]:
         "required_logical_cpus": EXPECTED_LOGICAL_CPUS,
         "required_memory_bytes": EXPECTED_MEMORY_BYTES,
         "required_tasks_max": EXPECTED_TASKS_MAX,
+        "affinity_mutation_canary": mutation_canary,
         "strict": strict,
     }
     checks = {
         "linux_x86_64": platform.system() == "Linux" and platform.machine() == "x86_64",
         "affinity_exactly_8": len(affinity) == EXPECTED_LOGICAL_CPUS,
+        "affinity_mutation_denied": mutation_canary.get("denied") is True,
         "cgroup_v2_present": cgroup is not None,
-        "cgroup_cpuset_exactly_8": len(cpuset) == EXPECTED_LOGICAL_CPUS,
-        "affinity_matches_cgroup": set(affinity) == set(cpuset),
+        "cgroup_cpuset_exactly_8_if_exposed": (
+            not cpuset or len(cpuset) == EXPECTED_LOGICAL_CPUS
+        ),
+        "affinity_matches_cgroup_if_exposed": (
+            not cpuset or set(affinity) == set(cpuset)
+        ),
         "memory_max_exactly_32_gib": memory_max == EXPECTED_MEMORY_BYTES,
         "effective_memory_exactly_32_gib": effective_memory_max == EXPECTED_MEMORY_BYTES,
         "memory_swap_disabled": swap_max_raw == "0",
@@ -214,3 +244,46 @@ def host_cpu_allowlist() -> str:
         start = previous = value
     runs.append(str(start) if start == previous else f"{start}-{previous}")
     return ",".join(runs)
+
+
+def systemd_service_envelope_prefix(systemd_run: str) -> list[str]:
+    """Build the synchronous delegated user-service prefix used on Titan.
+
+    Ubuntu's systemd 252 rejects ``--wait`` together with ``--scope``.  A
+    transient ``Type=exec`` user service supports synchronous exit propagation,
+    direct stdio, controller delegation, and the same resource properties.
+    ``CPUAffinity`` is the portable systemd-252 enforcement on Titan, while
+    ``AllowedCPUs`` additionally activates cgroup cpuset containment when that
+    controller is delegated.  The service-wide syscall filter prevents the
+    controller, Codex, auditors, build tools, and all descendants from widening
+    inherited affinity; the generated-command wrapper adds a second boundary.
+    """
+
+    cpus = host_cpu_allowlist()
+    return [
+        systemd_run,
+        "--user",
+        "--service-type=exec",
+        "--quiet",
+        "--wait",
+        "--collect",
+        "--pipe",
+        "--property",
+        f"AllowedCPUs={cpus}",
+        "--property",
+        f"CPUAffinity={cpus}",
+        "--property",
+        "SystemCallFilter=~sched_setaffinity",
+        "--property",
+        "SystemCallErrorNumber=EPERM",
+        "--property",
+        "SystemCallArchitectures=native",
+        "--property",
+        f"MemoryMax={EXPECTED_MEMORY_BYTES}",
+        "--property",
+        "MemorySwapMax=0",
+        "--property",
+        f"TasksMax={EXPECTED_TASKS_MAX}",
+        "--property",
+        "Delegate=yes",
+    ]

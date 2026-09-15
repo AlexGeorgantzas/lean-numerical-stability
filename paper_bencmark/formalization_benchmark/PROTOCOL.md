@@ -14,15 +14,23 @@ of a paper result. It does not measure proof construction.
 - Maximum submissions per condition: four (initial plus three repairs).
 - Cumulative contestant-active limit per condition: 18,000 seconds.
 - Benchmark token cap: none. Provider usage is still measured at every turn.
-- Hardware envelope: the complete condition process tree runs in an outer
-  cgroup restricted to exactly eight logical CPUs, 32 GiB RAM, 512 tasks, and
-  no swap. Model-generated command trees enter a delegated child cgroup capped
-  at 24 GiB RAM, 384 tasks, and no swap; the trusted control child has an 8 GiB
-  `memory.low` reservation. Setup freezes the Titan host identity, CPU model,
-  and exact eight-CPU set; the controller verifies that identity at admission
-  and at both ends of every attempt.
+- Hardware envelope: the complete condition process tree runs in a transient
+  user service with systemd-enforced affinity to exactly eight logical CPUs and
+  cgroup limits of 32 GiB RAM, 512 tasks, and no swap. Model-generated command
+  trees enter a delegated child cgroup capped at 24 GiB RAM, 384 tasks, and no
+  swap; the trusted control child has an 8 GiB `memory.low` reservation. The
+  outer service denies affinity changes for its complete descendant tree, and
+  the generated-command seccomp policy repeats the denial. Every strict
+  snapshot verifies that syscall denial. Setup freezes the Titan host identity,
+  CPU model, and exact eight-CPU set; the controller verifies that identity at
+  admission and at both ends of every attempt.
 - Pair concurrency: one measured N/L pair at a time on Titan, enforced by a
   deployment-wide nonblocking lock so pilot runs cannot contend with each other.
+- Library provisioning: after dependency-cache preparation, setup cleans and
+  fully builds the frozen NumStability target once inside the same outer
+  eight-CPU/32-GiB/512-task/no-swap envelope. Its wall/CPU/resource data and
+  complete output are authenticated deployment evidence and are never charged
+  to a contestant.
 
 The existing 51 accepted HighamBench tasks establish only that the selected
 paper results can be formalized faithfully. They do not pre-approve any

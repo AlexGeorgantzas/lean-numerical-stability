@@ -22,12 +22,48 @@ from setup_titan import (  # noqa: E402
     install,
     install_skill_atomically,
     isolated_runner_command,
+    measured_build_command,
+    measured_build_service_environment,
     remove_owned_deployment_root,
     write_launcher,
 )
 
 
 class SkillInstallTests(unittest.TestCase):
+    def test_measured_build_command_uses_bounded_service_and_only_explicit_paths(self) -> None:
+        with mock.patch("hardware.host_cpu_allowlist", return_value="0-7"):
+            command = measured_build_command(
+                systemd_run=Path("/usr/bin/systemd-run"),
+                build_runner=Path("/release/measure_library_build.py"),
+                checkout=Path("/private/checkout"),
+                artifact_root=Path("/deployment/build"),
+                toolchain_root=Path("/toolchain"),
+                expected_commit="a" * 40,
+                mathlib_commit="b" * 40,
+                lean_toolchain="leanprover/lean4:test",
+                service_environment={"TMPDIR": "/hdd/tooling/tmp"},
+            )
+        self.assertIn("CPUAffinity=0-7", command)
+        self.assertIn("SystemCallFilter=~sched_setaffinity", command)
+        self.assertIn("MemoryMax=34359738368", command)
+        self.assertIn("TMPDIR=/hdd/tooling/tmp", command)
+        self.assertIn("--expected-commit", command)
+        self.assertIn("--mathlib-commit", command)
+
+    def test_measured_build_service_environment_is_private_and_rejects_weak_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            deployment = parent / ".deployment.install-fixture"
+            environment = measured_build_service_environment(deployment)
+            self.assertEqual(
+                set(environment), {"ELAN_HOME", "TMPDIR", "XDG_CACHE_HOME"}
+            )
+            tooling = parent / "tooling"
+            self.assertEqual(tooling.stat().st_mode & 0o777, 0o700)
+            (tooling / "tmp").chmod(0o755)
+            with self.assertRaisesRegex(Exception, "tooling path is unsafe"):
+                measured_build_service_environment(deployment)
+
     def test_failed_install_cleanup_refuses_substituted_root(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             parent = Path(temporary)
