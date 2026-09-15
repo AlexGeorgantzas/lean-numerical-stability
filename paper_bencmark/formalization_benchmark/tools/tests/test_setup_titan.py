@@ -32,6 +32,42 @@ from setup_titan import (  # noqa: E402
 
 
 class SkillInstallTests(unittest.TestCase):
+    def test_command_canary_embedded_python_probe_parses(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            staging = root / ".deployment.install-fixture"
+            packages = root / "packages"
+            staging.mkdir()
+            packages.mkdir()
+            deployment = SimpleNamespace(
+                path=staging / "deployment.json",
+                bwrap_binary=root / "bwrap",
+                offline_shell=root / "offline-shell",
+                toolchain_root=root / "toolchain",
+                packages_root=packages,
+                library_source=root / "library" / "source" / "NumStability",
+                library_olean=root / "library" / "olean",
+            )
+            completed = SimpleNamespace(returncode=125, stdout="early failure")
+
+            with mock.patch(
+                "setup_titan.subprocess.run", return_value=completed
+            ) as sandbox_run, self.assertRaises(BenchmarkError):
+                run_command_sandbox_canary(deployment, "N")
+
+            command = sandbox_run.call_args.args[0]
+            script = command[-1]
+            heredoc_start = "python3 - <<'PY'\n"
+            self.assertIn(heredoc_start, script)
+            probe = script.split(heredoc_start, 1)[1].split("\nPY\n", 1)[0]
+            compile(probe, "<command-sandbox-canary>", "exec")
+            for expected_literal in (
+                "'socket-denied\\n'",
+                "'x32-denied\\n'",
+                "'signals-resources-scheduling-and-metadata-denied\\n'",
+            ):
+                self.assertIn(expected_literal, probe)
+
     def test_command_canary_preserves_early_failure_with_missing_markers(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

@@ -446,12 +446,12 @@ ctypes.set_errno(0)
 result = libc.socket(2, 1, 0)
 if result != -1 or ctypes.get_errno() != errno.EPERM:
     raise SystemExit(51)
-open('/workspace/network-ok', 'w', encoding='utf-8').write('socket-denied\n')
+open('/workspace/network-ok', 'w', encoding='utf-8').write('socket-denied\\n')
 
 result = libc.syscall(0x40000000 | 41, 2, 1, 0)
 if result != -1 or ctypes.get_errno() != errno.EPERM:
     raise SystemExit(52)
-open('/workspace/x32-ok', 'w', encoding='utf-8').write('x32-denied\n')
+open('/workspace/x32-ok', 'w', encoding='utf-8').write('x32-denied\\n')
 
 def require_denied(number, *arguments):
     ctypes.set_errno(0)
@@ -489,7 +489,7 @@ ctypes.set_errno(0)
 if libc.syscall(62, 0, 0) != 0:  # kill(0, 0) stays local to this process group.
     raise SystemExit(54)
 open('/workspace/isolation-ok', 'w', encoding='utf-8').write(
-    'signals-resources-scheduling-and-metadata-denied\n'
+    'signals-resources-scheduling-and-metadata-denied\\n'
 )
 PY
 if exec 9<>/dev/tcp/127.0.0.1/9; then exit 47; fi
