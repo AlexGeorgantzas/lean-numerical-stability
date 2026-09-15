@@ -202,6 +202,236 @@ def write_launcher(
     fsync_directory(path.parent)
 
 
+def _directory_state(path: Path) -> tuple[tuple[int, int], int]:
+    """Return one no-follow directory identity and mode from the same open."""
+
+    flags = os.O_RDONLY | os.O_CLOEXEC
+    if hasattr(os, "O_DIRECTORY"):
+        flags |= os.O_DIRECTORY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(path, flags)
+    try:
+        opened = os.fstat(descriptor)
+        named = os.stat(path, follow_symlinks=False)
+    finally:
+        os.close(descriptor)
+    if not stat.S_ISDIR(opened.st_mode) or not stat.S_ISDIR(named.st_mode):
+        raise BenchmarkError(f"expected a directory: {path}")
+    identity = (opened.st_dev, opened.st_ino)
+    if identity != (named.st_dev, named.st_ino):
+        raise BenchmarkError(f"directory changed while it was opened: {path}")
+    return identity, stat.S_IMODE(opened.st_mode)
+
+
+def _directory_has_identity(path: Path, expected: tuple[int, int]) -> bool:
+    try:
+        metadata = os.stat(path, follow_symlinks=False)
+    except OSError:
+        return False
+    return stat.S_ISDIR(metadata.st_mode) and (
+        metadata.st_dev,
+        metadata.st_ino,
+    ) == expected
+
+
+def _replace_skill_directory(
+    source: Path,
+    destination: Path,
+    *,
+    expected_identity: tuple[int, int],
+    preserved_mode: int,
+) -> None:
+    """Move one skill directory while preserving its exact root mode.
+
+    Some Linux filesystems reject a cross-parent directory rename when the
+    directory being moved is owner-read/execute-only.  Frozen skill roots are
+    intentionally mode 0500, so add only owner-write for the duration of the
+    rename.  Restoring through an open descriptor follows the directory across
+    the rename and also handles an exception raised after the rename committed.
+    """
+
+    flags = os.O_RDONLY | os.O_CLOEXEC
+    if hasattr(os, "O_DIRECTORY"):
+        flags |= os.O_DIRECTORY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(source, flags)
+    move_error: BaseException | None = None
+    try:
+        opened = os.fstat(descriptor)
+        named = os.stat(source, follow_symlinks=False)
+        if not stat.S_ISDIR(opened.st_mode) or not stat.S_ISDIR(named.st_mode):
+            raise BenchmarkError(f"skill move source is not a directory: {source}")
+        opened_identity = (opened.st_dev, opened.st_ino)
+        if opened_identity != expected_identity:
+            raise BenchmarkError(f"unexpected skill move source: {source}")
+        if opened_identity != (named.st_dev, named.st_ino):
+            raise BenchmarkError(f"skill move source changed before rename: {source}")
+        current_mode = stat.S_IMODE(opened.st_mode)
+        relaxed_mode = current_mode | stat.S_IWUSR
+        cross_parent = source.parent != destination.parent
+        if cross_parent and relaxed_mode != current_mode:
+            os.fchmod(descriptor, relaxed_mode)
+        try:
+            os.replace(source, destination)
+            installed = os.stat(destination, follow_symlinks=False)
+            if not stat.S_ISDIR(installed.st_mode) or (
+                installed.st_dev,
+                installed.st_ino,
+            ) != opened_identity:
+                raise BenchmarkError(
+                    "skill rename destination does not identify the moved directory: "
+                    f"{destination}"
+                )
+        except BaseException as error:
+            move_error = error
+            raise
+        finally:
+            if stat.S_IMODE(os.fstat(descriptor).st_mode) != preserved_mode:
+                try:
+                    os.fchmod(descriptor, preserved_mode)
+                except BaseException as first_restore_error:
+                    try:
+                        os.fchmod(descriptor, preserved_mode)
+                    except BaseException as retry_restore_error:
+                        message = (
+                            "skill directory mode could not be restored after rename; "
+                            "the transaction was retained for exact recovery: "
+                            f"{retry_restore_error}"
+                        )
+                        if move_error is not None:
+                            raise BenchmarkError(message) from move_error
+                        raise BenchmarkError(message) from first_restore_error
+                    if stat.S_IMODE(os.fstat(descriptor).st_mode) != preserved_mode:
+                        raise BenchmarkError(
+                            "skill directory mode recovery did not restore the exact "
+                            f"mode {preserved_mode:#o}"
+                        ) from first_restore_error
+                    message = (
+                        "skill directory mode restoration initially failed; exact "
+                        "mode was recovered and the installation was rolled back"
+                    )
+                    if move_error is None:
+                        raise BenchmarkError(message) from first_restore_error
+            if stat.S_IMODE(os.fstat(descriptor).st_mode) != preserved_mode:
+                raise BenchmarkError(
+                    "skill directory mode differs from its preserved mode after rename"
+                )
+            if move_error is None:
+                installed = os.stat(destination, follow_symlinks=False)
+                if not stat.S_ISDIR(installed.st_mode) or (
+                    installed.st_dev,
+                    installed.st_ino,
+                ) != opened_identity:
+                    raise BenchmarkError(
+                        "skill rename destination changed before move completion: "
+                        f"{destination}"
+                    )
+    finally:
+        os.close(descriptor)
+
+
+def _remove_directory_contents_by_descriptor(descriptor: int) -> None:
+    """Delete one owned directory tree without following path substitutions."""
+
+    metadata = os.fstat(descriptor)
+    if not stat.S_ISDIR(metadata.st_mode):
+        raise BenchmarkError("skill transaction cleanup descriptor is not a directory")
+    required_mode = stat.S_IMODE(metadata.st_mode) | stat.S_IWUSR
+    if required_mode != stat.S_IMODE(metadata.st_mode):
+        os.fchmod(descriptor, required_mode)
+    for name in os.listdir(descriptor):
+        named = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        if stat.S_ISDIR(named.st_mode):
+            flags = os.O_RDONLY | os.O_CLOEXEC
+            if hasattr(os, "O_DIRECTORY"):
+                flags |= os.O_DIRECTORY
+            if hasattr(os, "O_NOFOLLOW"):
+                flags |= os.O_NOFOLLOW
+            child = os.open(name, flags, dir_fd=descriptor)
+            try:
+                opened = os.fstat(child)
+                expected = (named.st_dev, named.st_ino)
+                if not stat.S_ISDIR(opened.st_mode) or (
+                    opened.st_dev,
+                    opened.st_ino,
+                ) != expected:
+                    raise BenchmarkError(
+                        f"skill transaction child changed before traversal: {name}"
+                    )
+                _remove_directory_contents_by_descriptor(child)
+                current = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+                if not stat.S_ISDIR(current.st_mode) or (
+                    current.st_dev,
+                    current.st_ino,
+                ) != expected:
+                    raise BenchmarkError(
+                        f"skill transaction child changed before removal: {name}"
+                    )
+            finally:
+                os.close(child)
+            os.rmdir(name, dir_fd=descriptor)
+        elif stat.S_ISREG(named.st_mode) or stat.S_ISLNK(named.st_mode):
+            os.unlink(name, dir_fd=descriptor)
+        else:
+            raise BenchmarkError(
+                f"unsafe special file in skill transaction: {name}"
+            )
+
+
+def _remove_skill_transaction_tree(transaction_root: Path) -> None:
+    """Quarantine then remove exactly one authenticated transaction tree."""
+
+    flags = os.O_RDONLY | os.O_CLOEXEC
+    if hasattr(os, "O_DIRECTORY"):
+        flags |= os.O_DIRECTORY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(transaction_root, flags)
+    quarantine = transaction_root.parent / (
+        f".{transaction_root.name}.cleanup-{os.getpid()}-{os.urandom(8).hex()}"
+    )
+    try:
+        opened = os.fstat(descriptor)
+        named = os.stat(transaction_root, follow_symlinks=False)
+        expected = (opened.st_dev, opened.st_ino)
+        if not stat.S_ISDIR(opened.st_mode) or not stat.S_ISDIR(named.st_mode):
+            raise BenchmarkError("skill transaction root is not a directory")
+        if expected != (named.st_dev, named.st_ino):
+            raise BenchmarkError("skill transaction root changed before quarantine")
+        os.rename(transaction_root, quarantine)
+        fsync_directory(transaction_root.parent)
+        quarantined = os.stat(quarantine, follow_symlinks=False)
+        if not stat.S_ISDIR(quarantined.st_mode) or (
+            quarantined.st_dev,
+            quarantined.st_ino,
+        ) != expected:
+            raise BenchmarkError("skill transaction root changed during quarantine")
+        _remove_directory_contents_by_descriptor(descriptor)
+        quarantined = os.stat(quarantine, follow_symlinks=False)
+        if not stat.S_ISDIR(quarantined.st_mode) or (
+            quarantined.st_dev,
+            quarantined.st_ino,
+        ) != expected:
+            raise BenchmarkError("skill transaction root changed before removal")
+        os.rmdir(quarantine)
+        fsync_directory(transaction_root.parent)
+    finally:
+        os.close(descriptor)
+
+
+def _quarantine_unverified_skill_destination(destination: Path) -> Path:
+    """Move an untrusted destination entry aside without traversing it."""
+
+    quarantine = destination.parent / (
+        f".{destination.name}.untrusted-{os.getpid()}-{os.urandom(8).hex()}"
+    )
+    os.replace(destination, quarantine)
+    fsync_directory(destination.parent)
+    return quarantine
+
+
 def install_skill_atomically(source: Path, destination: Path) -> None:
     """Replace an installed skill without deleting the prior copy first.
 
@@ -218,18 +448,42 @@ def install_skill_atomically(source: Path, destination: Path) -> None:
     for abandoned in destination.parent.glob(f".{destination.name}.install-*"):
         if not abandoned.is_dir() or abandoned.is_symlink():
             raise BenchmarkError(f"unsafe abandoned skill transaction: {abandoned}")
+        state_record = abandoned / "skill-install-state.json"
+        if os.path.lexists(state_record):
+            raise BenchmarkError(
+                "a journaled skill transaction requires exact recovery before a "
+                f"new install may start: {abandoned}"
+            )
         previous = abandoned / "previous"
         staged_abandoned = abandoned / "staged"
-        if not os.path.lexists(destination) and previous.is_dir() and not previous.is_symlink():
-            os.replace(previous, destination)
+        if (
+            not os.path.lexists(destination)
+            and previous.is_dir()
+            and not previous.is_symlink()
+        ):
+            previous_identity, previous_mode = _directory_state(previous)
+            _replace_skill_directory(
+                previous,
+                destination,
+                expected_identity=previous_identity,
+                preserved_mode=previous_mode,
+            )
             fsync_directory(destination.parent)
         if os.path.lexists(destination):
-            shutil.rmtree(abandoned, ignore_errors=True)
+            try:
+                _remove_skill_transaction_tree(abandoned)
+            except (BenchmarkError, OSError):
+                pass
         elif staged_abandoned.is_dir() and not staged_abandoned.is_symlink():
-            shutil.rmtree(abandoned, ignore_errors=True)
+            try:
+                _remove_skill_transaction_tree(abandoned)
+            except (BenchmarkError, OSError):
+                pass
     if destination.exists() or destination.is_symlink():
         if not destination.is_dir() or destination.is_symlink():
-            raise BenchmarkError(f"installed skill destination is unsafe: {destination}")
+            raise BenchmarkError(
+                f"installed skill destination is unsafe: {destination}"
+            )
 
     transaction_root = Path(
         tempfile.mkdtemp(
@@ -239,35 +493,119 @@ def install_skill_atomically(source: Path, destination: Path) -> None:
     staged = transaction_root / "staged"
     backup = transaction_root / "previous"
     destination_existed = destination.exists()
+    staged_identity: tuple[int, int] | None = None
+    staged_mode: int | None = None
+    previous_identity: tuple[int, int] | None = None
+    previous_mode: int | None = None
     try:
-        shutil.copytree(source, staged)
         if destination_existed:
-            os.replace(destination, backup)
+            previous_identity, previous_mode = _directory_state(destination)
+        shutil.copytree(source, staged)
+        staged_identity, staged_mode = _directory_state(staged)
+        write_json_atomic(
+            transaction_root / "skill-install-state.json",
+            {
+                "schema_version": 1,
+                "destination": str(destination),
+                "destination_existed": destination_existed,
+                "staged_identity": list(staged_identity),
+                "staged_mode": staged_mode,
+                "previous_identity": (
+                    list(previous_identity) if previous_identity is not None else None
+                ),
+                "previous_mode": previous_mode,
+            },
+            mode=0o600,
+        )
+        if destination_existed:
+            assert previous_identity is not None and previous_mode is not None
+            _replace_skill_directory(
+                destination,
+                backup,
+                expected_identity=previous_identity,
+                preserved_mode=previous_mode,
+            )
             fsync_directory(destination.parent)
-        os.replace(staged, destination)
+        _replace_skill_directory(
+            staged,
+            destination,
+            expected_identity=staged_identity,
+            preserved_mode=staged_mode,
+        )
         fsync_directory(destination.parent)
     except BaseException as install_error:
         try:
-            if backup.is_dir() and not backup.is_symlink():
+            backup_is_previous = (
+                previous_identity is not None
+                and _directory_has_identity(backup, previous_identity)
+            )
+            if backup_is_previous:
+                assert previous_identity is not None and previous_mode is not None
                 if os.path.lexists(destination):
-                    os.replace(destination, staged)
+                    if staged_identity is not None and _directory_has_identity(
+                        destination, staged_identity
+                    ):
+                        assert staged_mode is not None
+                        _replace_skill_directory(
+                            destination,
+                            staged,
+                            expected_identity=staged_identity,
+                            preserved_mode=staged_mode,
+                        )
+                        fsync_directory(destination.parent)
+                    else:
+                        _quarantine_unverified_skill_destination(destination)
+                _replace_skill_directory(
+                    backup,
+                    destination,
+                    expected_identity=previous_identity,
+                    preserved_mode=previous_mode,
+                )
+                fsync_directory(destination.parent)
+            elif destination_existed:
+                if previous_identity is None or not _directory_has_identity(
+                    destination, previous_identity
+                ):
+                    raise BenchmarkError(
+                        "previous skill is not at its destination or backup; "
+                        f"recover the retained transaction at {transaction_root}"
+                    )
+                assert previous_mode is not None
+                if stat.S_IMODE(
+                    os.stat(destination, follow_symlinks=False).st_mode
+                ) != previous_mode:
+                    raise BenchmarkError(
+                        "previous skill mode is not exact; recover the retained "
+                        f"transaction at {transaction_root}"
+                    )
+            elif os.path.lexists(destination):
+                if staged_identity is not None and _directory_has_identity(
+                    destination, staged_identity
+                ):
+                    assert staged_mode is not None
+                    _replace_skill_directory(
+                        destination,
+                        staged,
+                        expected_identity=staged_identity,
+                        preserved_mode=staged_mode,
+                    )
                     fsync_directory(destination.parent)
-                os.replace(backup, destination)
-                fsync_directory(destination.parent)
-            elif not destination_existed and os.path.lexists(destination):
-                os.replace(destination, staged)
-                fsync_directory(destination.parent)
+                else:
+                    _quarantine_unverified_skill_destination(destination)
         except BaseException as restore_error:
             raise BenchmarkError(
                 "skill install failed and its previous installation could not be "
                 f"restored; recover it from {transaction_root}: {restore_error}"
             ) from install_error
-        shutil.rmtree(transaction_root, ignore_errors=True)
+        try:
+            _remove_skill_transaction_tree(transaction_root)
+        except (BenchmarkError, OSError):
+            pass
         raise
     # The destination is now durably committed. Cleanup is best-effort and
     # must not turn a usable deployment into a rollback after the skill swap.
     try:
-        shutil.rmtree(transaction_root)
+        _remove_skill_transaction_tree(transaction_root)
     except BaseException:
         pass
 

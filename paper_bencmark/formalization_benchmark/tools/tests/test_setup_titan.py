@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import stat
 import subprocess
 import sys
 import tempfile
@@ -18,6 +19,7 @@ from common import BenchmarkError  # noqa: E402
 from setup_titan import (  # noqa: E402
     INSTALL_TRANSACTION,
     _load_transaction,
+    _remove_skill_transaction_tree,
     _transaction_record,
     directory_identity,
     install,
@@ -32,6 +34,34 @@ from setup_titan import (  # noqa: E402
 
 
 class SkillInstallTests(unittest.TestCase):
+    @staticmethod
+    def _write_read_only_skill(root: Path, contents: str) -> None:
+        references = root / "references"
+        references.mkdir(parents=True)
+        (root / "SKILL.md").write_text(contents, encoding="utf-8")
+        (references / "operations.md").write_text(contents, encoding="utf-8")
+        (root / "SKILL.md").chmod(0o400)
+        (references / "operations.md").chmod(0o400)
+        references.chmod(0o500)
+        root.chmod(0o500)
+
+    @staticmethod
+    def _linux_read_only_rename_guard(moves: list[tuple[str, str]]):
+        real_replace = os.replace
+
+        def guarded_replace(source_path, target_path):
+            source = Path(source_path)
+            target = Path(target_path)
+            if source.parent != target.parent:
+                if not stat.S_IMODE(source.stat().st_mode) & stat.S_IWUSR:
+                    raise PermissionError(
+                        f"read-only cross-parent directory rename: {source}"
+                    )
+                moves.append((source.name, target.name))
+            real_replace(source_path, target_path)
+
+        return guarded_replace
+
     def test_command_canary_embedded_python_probe_parses(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -281,6 +311,345 @@ class SkillInstallTests(unittest.TestCase):
                 list(destination.parent.glob(".run-highambench-experiments.install-*")),
                 [],
             )
+
+    def test_installs_0500_skill_under_linux_read_only_rename_guard(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source"
+            destination = root / "skills" / "run-highambench-experiments"
+            self._write_read_only_skill(source, "new\n")
+            moves: list[tuple[str, str]] = []
+
+            with mock.patch(
+                "setup_titan.os.replace",
+                side_effect=self._linux_read_only_rename_guard(moves),
+            ):
+                install_skill_atomically(source, destination)
+
+            self.assertEqual(
+                (destination / "SKILL.md").read_text(encoding="utf-8"), "new\n"
+            )
+            self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o500)
+            self.assertEqual(
+                stat.S_IMODE((destination / "references").stat().st_mode), 0o500
+            )
+            self.assertEqual(moves, [("staged", destination.name)])
+            self.assertEqual(
+                list(destination.parent.glob(".run-highambench-experiments.install-*")),
+                [],
+            )
+
+    def test_updates_0500_skill_and_removes_read_only_backup(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source"
+            destination = root / "skills" / "run-highambench-experiments"
+            self._write_read_only_skill(source, "new\n")
+            self._write_read_only_skill(destination, "old\n")
+            moves: list[tuple[str, str]] = []
+
+            with mock.patch(
+                "setup_titan.os.replace",
+                side_effect=self._linux_read_only_rename_guard(moves),
+            ):
+                install_skill_atomically(source, destination)
+
+            self.assertEqual(
+                (destination / "SKILL.md").read_text(encoding="utf-8"), "new\n"
+            )
+            self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o500)
+            self.assertEqual(
+                moves,
+                [(destination.name, "previous"), ("staged", destination.name)],
+            )
+            self.assertEqual(
+                list(destination.parent.glob(".run-highambench-experiments.install-*")),
+                [],
+            )
+
+    def test_rolls_back_0500_skill_after_committed_final_rename_error(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source"
+            destination = root / "skills" / "run-highambench-experiments"
+            self._write_read_only_skill(source, "new\n")
+            self._write_read_only_skill(destination, "old\n")
+            moves: list[tuple[str, str]] = []
+            guarded_replace = self._linux_read_only_rename_guard(moves)
+            injected = False
+
+            def fail_after_final_rename(source_path, target_path):
+                nonlocal injected
+                guarded_replace(source_path, target_path)
+                if (
+                    not injected
+                    and Path(source_path).name == "staged"
+                    and Path(target_path) == destination
+                ):
+                    injected = True
+                    raise OSError("injected post-rename failure")
+
+            with mock.patch(
+                "setup_titan.os.replace", side_effect=fail_after_final_rename
+            ):
+                with self.assertRaisesRegex(OSError, "injected post-rename failure"):
+                    install_skill_atomically(source, destination)
+
+            self.assertEqual(
+                (destination / "SKILL.md").read_text(encoding="utf-8"), "old\n"
+            )
+            self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o500)
+            self.assertEqual(
+                moves,
+                [
+                    (destination.name, "previous"),
+                    ("staged", destination.name),
+                    (destination.name, "staged"),
+                    ("previous", destination.name),
+                ],
+            )
+            self.assertEqual(
+                list(destination.parent.glob(".run-highambench-experiments.install-*")),
+                [],
+            )
+
+    def test_rejects_substituted_rename_destination_and_restores_previous(self) -> None:
+        for substitution in ("symlink", "directory"):
+            with self.subTest(substitution=substitution):
+                with tempfile.TemporaryDirectory() as temporary:
+                    root = Path(temporary)
+                    source = root / "source"
+                    outside = root / "outside"
+                    destination = root / "skills" / "run-highambench-experiments"
+                    self._write_read_only_skill(source, "new\n")
+                    self._write_read_only_skill(destination, "old\n")
+                    outside.mkdir()
+                    (outside / "marker").write_text("outside\n", encoding="utf-8")
+                    real_replace = os.replace
+                    injected = False
+
+                    def substitute_staged(source_path, target_path):
+                        nonlocal injected
+                        source_value = Path(source_path)
+                        target_value = Path(target_path)
+                        if (
+                            not injected
+                            and source_value.name == "staged"
+                            and target_value == destination
+                        ):
+                            injected = True
+                            real_replace(
+                                source_value,
+                                source_value.parent / "legitimate-staged",
+                            )
+                            if substitution == "symlink":
+                                source_value.symlink_to(
+                                    outside, target_is_directory=True
+                                )
+                            else:
+                                source_value.mkdir()
+                                (source_value / "attacker-marker").write_text(
+                                    "attacker\n", encoding="utf-8"
+                                )
+                        real_replace(source_path, target_path)
+
+                    with mock.patch(
+                        "setup_titan.os.replace", side_effect=substitute_staged
+                    ):
+                        with self.assertRaisesRegex(
+                            BenchmarkError, "does not identify the moved directory"
+                        ):
+                            install_skill_atomically(source, destination)
+
+                    self.assertFalse(destination.is_symlink())
+                    self.assertEqual(
+                        (destination / "SKILL.md").read_text(encoding="utf-8"),
+                        "old\n",
+                    )
+                    self.assertEqual(
+                        stat.S_IMODE(destination.stat().st_mode), 0o500
+                    )
+                    self.assertEqual(
+                        (outside / "marker").read_text(encoding="utf-8"),
+                        "outside\n",
+                    )
+                    quarantines = list(
+                        destination.parent.glob(
+                            ".run-highambench-experiments.untrusted-*"
+                        )
+                    )
+                    self.assertEqual(len(quarantines), 1)
+                    if substitution == "symlink":
+                        self.assertTrue(quarantines[0].is_symlink())
+                    else:
+                        self.assertEqual(
+                            (quarantines[0] / "attacker-marker").read_text(
+                                encoding="utf-8"
+                            ),
+                            "attacker\n",
+                        )
+
+    def test_mode_restore_failure_forces_exact_0500_rollback(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source"
+            destination = root / "skills" / "run-highambench-experiments"
+            self._write_read_only_skill(source, "new\n")
+            self._write_read_only_skill(destination, "old\n")
+            real_fchmod = os.fchmod
+            saw_relaxed_directory = False
+            injected = False
+
+            def fail_first_restore(descriptor, mode):
+                nonlocal saw_relaxed_directory, injected
+                if mode == 0o700:
+                    saw_relaxed_directory = True
+                elif mode == 0o500 and saw_relaxed_directory and not injected:
+                    injected = True
+                    raise OSError("injected mode-restore failure")
+                real_fchmod(descriptor, mode)
+
+            with mock.patch(
+                "setup_titan.os.fchmod", side_effect=fail_first_restore
+            ):
+                with self.assertRaisesRegex(
+                    BenchmarkError, "mode restoration initially failed"
+                ):
+                    install_skill_atomically(source, destination)
+
+            self.assertEqual(
+                (destination / "SKILL.md").read_text(encoding="utf-8"), "old\n"
+            )
+            self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o500)
+            self.assertEqual(
+                list(destination.parent.glob(".run-highambench-experiments.install-*")),
+                [],
+            )
+
+    def test_persistent_mode_restore_failure_retains_recovery_journal(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source"
+            destination = root / "skills" / "run-highambench-experiments"
+            self._write_read_only_skill(source, "new\n")
+            self._write_read_only_skill(destination, "old\n")
+            real_fchmod = os.fchmod
+
+            def reject_0500_restore(descriptor, mode):
+                if mode == 0o500:
+                    raise OSError("persistent mode-restore failure")
+                real_fchmod(descriptor, mode)
+
+            with mock.patch(
+                "setup_titan.os.fchmod", side_effect=reject_0500_restore
+            ):
+                with self.assertRaisesRegex(
+                    BenchmarkError, "previous installation could not be restored"
+                ):
+                    install_skill_atomically(source, destination)
+
+            self.assertEqual(
+                (destination / "SKILL.md").read_text(encoding="utf-8"), "old\n"
+            )
+            transactions = list(
+                destination.parent.glob(
+                    ".run-highambench-experiments.install-*"
+                )
+            )
+            self.assertEqual(len(transactions), 1)
+            state = json.loads(
+                (transactions[0] / "skill-install-state.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(state["previous_mode"], 0o500)
+            self.assertTrue((transactions[0] / "staged").is_dir())
+
+            with self.assertRaisesRegex(
+                BenchmarkError, "requires exact recovery"
+            ):
+                install_skill_atomically(source, destination)
+
+    def test_cleanup_quarantine_rejects_substituted_root(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            transaction = root / ".skill.install-fixture"
+            transaction.mkdir()
+            (transaction / "owned").write_text("owned\n", encoding="utf-8")
+            saved_owned = root / "saved-owned"
+            real_rename = os.rename
+            injected = False
+
+            def substitute_root(source_path, target_path, *args, **kwargs):
+                nonlocal injected
+                if not injected and Path(source_path) == transaction:
+                    injected = True
+                    real_rename(transaction, saved_owned)
+                    transaction.mkdir()
+                    (transaction / "replacement").write_text(
+                        "preserve\n", encoding="utf-8"
+                    )
+                real_rename(source_path, target_path, *args, **kwargs)
+
+            with mock.patch(
+                "setup_titan.os.rename", side_effect=substitute_root
+            ):
+                with self.assertRaisesRegex(
+                    BenchmarkError, "changed during quarantine"
+                ):
+                    _remove_skill_transaction_tree(transaction)
+
+            self.assertEqual(
+                (saved_owned / "owned").read_text(encoding="utf-8"), "owned\n"
+            )
+            quarantines = [path for path in root.iterdir() if ".cleanup-" in path.name]
+            self.assertEqual(len(quarantines), 1)
+            self.assertEqual(
+                (quarantines[0] / "replacement").read_text(encoding="utf-8"),
+                "preserve\n",
+            )
+
+    def test_cleanup_child_symlink_race_does_not_chmod_outside(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            transaction = root / ".skill.install-fixture"
+            child = transaction / "child"
+            outside = root / "outside"
+            child.mkdir(parents=True)
+            outside.mkdir()
+            (child / "owned").write_text("owned\n", encoding="utf-8")
+            outside.chmod(0o500)
+            child.chmod(0o500)
+            real_open = os.open
+            injected = False
+
+            def substitute_child(path, flags, mode=0o777, *, dir_fd=None):
+                nonlocal injected
+                if not injected and path == "child" and dir_fd is not None:
+                    injected = True
+                    os.rename(
+                        "child",
+                        "saved-child",
+                        src_dir_fd=dir_fd,
+                        dst_dir_fd=dir_fd,
+                    )
+                    os.symlink(
+                        str(outside),
+                        "child",
+                        target_is_directory=True,
+                        dir_fd=dir_fd,
+                    )
+                return real_open(path, flags, mode, dir_fd=dir_fd)
+
+            with mock.patch("setup_titan.os.open", side_effect=substitute_child):
+                with self.assertRaises(OSError):
+                    _remove_skill_transaction_tree(transaction)
+
+            self.assertEqual(stat.S_IMODE(outside.stat().st_mode), 0o500)
+            self.assertTrue((outside).is_dir())
+            quarantines = [path for path in root.iterdir() if ".cleanup-" in path.name]
+            self.assertEqual(len(quarantines), 1)
+            self.assertTrue((quarantines[0] / "child").is_symlink())
 
     def test_malformed_transaction_fails_as_benchmark_error(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
